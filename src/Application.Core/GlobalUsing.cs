@@ -1,0 +1,13 @@
+﻿global using Application.Core.Addon;
+global using Application.Core.Compatible;
+global using Application.Core.Compatible.Atomics;
+global using Application.Core.Compatible.Extensions;
+global using Application.Core.Loggers;
+global using Application.Core.tools;
+global using Application.EF;
+global using Application.EF.Entities;
+global using Application.Utility.Configs;
+global using Application.Utility.Exceptions;
+global using Serilog;
+global using System;
+global using System.Drawing;

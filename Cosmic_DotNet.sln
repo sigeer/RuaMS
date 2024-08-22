@@ -1,0 +1,93 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Console", "src\Application.Console\Application.Console.csproj", "{D5D08AD1-CA51-47EC-B177-53D58B68B148}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Core", "src\Application.Core\Application.Core.csproj", "{2AF986EB-2A1B-42E0-9B89-D6285A050413}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Utility", "src\Application.Utility\Application.Utility.csproj", "{55425983-CD61-447E-8CC3-05D1790BBD13}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E82E7D8C-3EAE-4EEF-AA2D-1A9F3F55AF30}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Java2CSharpMigration.MD = docs\Java2CSharpMigration.MD
+		README.MD = README.MD
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql", "sql", "{3575857B-BE85-44C4-84C0-9E6D41D05919}"
+	ProjectSection(SolutionItems) = preProject
+		sql\1-db_database.sql = sql\1-db_database.sql
+		sql\2-db_drops.sql = sql\2-db_drops.sql
+		sql\3-db_shopupdate.sql = sql\3-db_shopupdate.sql
+		sql\4-db-admin.sql = sql\4-db-admin.sql
+		sql\errors.txt = sql\errors.txt
+		sql\readme.txt = sql\readme.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "migration", "migration", "{E7006CBF-B1B4-4AB4-A76D-D0D08A77B14A}"
+	ProjectSection(SolutionItems) = preProject
+		sql\migration\monsterbook.sql = sql\migration\monsterbook.sql
+		sql\migration\README.md = sql\migration\README.md
+		sql\migration\v0.14.0.sql = sql\migration\v0.14.0.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7FE13C3E-9A93-4EE2-8AB4-98F1F5BD7149}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeMigration", "tools\CodeMigration\CodeMigration.csproj", "{F6C02188-4758-4B58-8872-F9B5954A3EC7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuartzTaskManager", "tools\QuartzTaskManager\QuartzTaskManager.csproj", "{CA1A0984-ED48-4D46-A7A7-E571198F3BCD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DCCF81D5-1F6C-40F8-BE70-D6DD24878D59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceTest", "test\ServiceTest\ServiceTest.csproj", "{0F67A2BB-2A3C-40FF-8568-E46074F468D2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5D08AD1-CA51-47EC-B177-53D58B68B148}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5D08AD1-CA51-47EC-B177-53D58B68B148}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5D08AD1-CA51-47EC-B177-53D58B68B148}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5D08AD1-CA51-47EC-B177-53D58B68B148}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AF986EB-2A1B-42E0-9B89-D6285A050413}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AF986EB-2A1B-42E0-9B89-D6285A050413}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AF986EB-2A1B-42E0-9B89-D6285A050413}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AF986EB-2A1B-42E0-9B89-D6285A050413}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55425983-CD61-447E-8CC3-05D1790BBD13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55425983-CD61-447E-8CC3-05D1790BBD13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55425983-CD61-447E-8CC3-05D1790BBD13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55425983-CD61-447E-8CC3-05D1790BBD13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6C02188-4758-4B58-8872-F9B5954A3EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6C02188-4758-4B58-8872-F9B5954A3EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6C02188-4758-4B58-8872-F9B5954A3EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6C02188-4758-4B58-8872-F9B5954A3EC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA1A0984-ED48-4D46-A7A7-E571198F3BCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA1A0984-ED48-4D46-A7A7-E571198F3BCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA1A0984-ED48-4D46-A7A7-E571198F3BCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA1A0984-ED48-4D46-A7A7-E571198F3BCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F67A2BB-2A3C-40FF-8568-E46074F468D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F67A2BB-2A3C-40FF-8568-E46074F468D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F67A2BB-2A3C-40FF-8568-E46074F468D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F67A2BB-2A3C-40FF-8568-E46074F468D2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D5D08AD1-CA51-47EC-B177-53D58B68B148} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
+		{2AF986EB-2A1B-42E0-9B89-D6285A050413} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
+		{55425983-CD61-447E-8CC3-05D1790BBD13} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
+		{E7006CBF-B1B4-4AB4-A76D-D0D08A77B14A} = {3575857B-BE85-44C4-84C0-9E6D41D05919}
+		{F6C02188-4758-4B58-8872-F9B5954A3EC7} = {7FE13C3E-9A93-4EE2-8AB4-98F1F5BD7149}
+		{CA1A0984-ED48-4D46-A7A7-E571198F3BCD} = {7FE13C3E-9A93-4EE2-8AB4-98F1F5BD7149}
+		{0F67A2BB-2A3C-40FF-8568-E46074F468D2} = {DCCF81D5-1F6C-40F8-BE70-D6DD24878D59}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {24613DFE-A8D5-438B-BCD0-3F036C9952D7}
+	EndGlobalSection
+EndGlobal

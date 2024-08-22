@@ -1,0 +1,202 @@
+/*
+    This file is part of the HeavenMS MapleStory Server
+    Copyleft (L) 2016 - 2019 RonanLana
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation version 3 as published by
+    the Free Software Foundation. You may not use, modify or distribute
+    this program under any other version of the GNU Affero General Public
+    License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+using client;
+using tools;
+
+namespace net.server.coordinator.partysearch;
+
+
+/**
+ * @author Ronan
+ */
+public class PartySearchStorage
+{
+
+    private List<PartySearchCharacter> storage = new(20);
+    private IntervalBuilder emptyIntervals = new IntervalBuilder();
+
+    ReaderWriterLockSlim psLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+
+    public PartySearchStorage()
+    {
+    }
+
+    public List<PartySearchCharacter> getStorageList()
+    {
+        psLock.EnterReadLock();
+        try
+        {
+            return new(storage);
+        }
+        finally
+        {
+            psLock.ExitReadLock();
+        }
+    }
+
+    private Dictionary<int, Character> fetchRemainingPlayers()
+    {
+        List<PartySearchCharacter> players = getStorageList();
+        Dictionary<int, Character> remainingPlayers = new(players.Count);
+
+        foreach (PartySearchCharacter psc in players)
+        {
+            if (psc.isQueued())
+            {
+                var chr = psc.getPlayer();
+                if (chr != null)
+                {
+                    remainingPlayers.AddOrUpdate(chr.getId(), chr);
+                }
+            }
+        }
+
+        return remainingPlayers;
+    }
+
+    public void updateStorage(ICollection<Character> echelon)
+    {
+        Dictionary<int, Character> newcomers = new();
+        foreach (Character chr in echelon)
+        {
+            newcomers.AddOrUpdate(chr.getId(), chr);
+        }
+
+        Dictionary<int, Character> curStorage = fetchRemainingPlayers();
+        curStorage.putAll(newcomers);
+
+        List<PartySearchCharacter> pscList = new(curStorage.Count);
+        foreach (Character chr in curStorage.Values)
+        {
+            pscList.Add(new PartySearchCharacter(chr));
+        }
+
+        pscList.Sort((c1, c2) =>
+        {
+            int levelP1 = c1.getLevel(), levelP2 = c2.getLevel();
+            return levelP1 > levelP2 ? 1 : (levelP1 == levelP2 ? 0 : -1);
+        });
+
+        psLock.EnterWriteLock();
+        try
+        {
+            storage.Clear();
+            storage.AddRange(pscList);
+        }
+        finally
+        {
+            psLock.ExitWriteLock();
+        }
+
+        emptyIntervals.clear();
+    }
+
+    private static int bsearchStorage(List<PartySearchCharacter> storage, int level)
+    {
+        int st = 0, en = storage.Count - 1;
+
+        int mid, idx;
+        while (en >= st)
+        {
+            idx = (st + en) / 2;
+            mid = storage.get(idx).getLevel();
+
+            if (mid == level)
+            {
+                return idx;
+            }
+            else if (mid < level)
+            {
+                st = idx + 1;
+            }
+            else
+            {
+                en = idx - 1;
+            }
+        }
+
+        return en;
+    }
+
+    public Character? callPlayer(int callerCid, int callerMapid, int minLevel, int maxLevel)
+    {
+        if (emptyIntervals.inInterval(minLevel, maxLevel))
+        {
+            return null;
+        }
+
+        List<PartySearchCharacter> pscList = getStorageList();
+
+        int idx = bsearchStorage(pscList, maxLevel);
+        for (int i = idx; i >= 0; i--)
+        {
+            PartySearchCharacter psc = pscList.get(i);
+            if (!psc.isQueued())
+            {
+                continue;
+            }
+
+            if (psc.getLevel() < minLevel)
+            {
+                break;
+            }
+
+            Character chr = psc.callPlayer(callerCid, callerMapid);
+            if (chr != null)
+            {
+                return chr;
+            }
+        }
+
+        emptyIntervals.addInterval(minLevel, maxLevel);
+        return null;
+    }
+
+    public void detachPlayer(Character chr)
+    {
+        PartySearchCharacter? toRemove = null;
+        foreach (PartySearchCharacter psc in getStorageList())
+        {
+            Character player = psc.getPlayer();
+
+            if (player != null && player.getId() == chr.getId())
+            {
+                toRemove = psc;
+                break;
+            }
+        }
+
+        if (toRemove != null)
+        {
+            psLock.EnterWriteLock();
+            try
+            {
+                storage.Remove(toRemove);
+            }
+            finally
+            {
+                psLock.ExitWriteLock();
+            }
+        }
+    }
+
+}
