@@ -22,7 +22,6 @@
 
 
 using Application.Core.scripting.Event;
-using client;
 using client.inventory;
 using constants.inventory;
 using Microsoft.ClearScript.V8;
@@ -45,7 +44,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
     private V8ScriptEngine iv;
     private ScheduledFuture? sprayTask = null;
 
-    public ReactorActionManager(Client c, Reactor reactor, V8ScriptEngine iv) : base(c)
+    public ReactorActionManager(IClient c, Reactor reactor, V8ScriptEngine iv) : base(c)
     {
         this.reactor = reactor;
         this.iv = iv;
@@ -61,7 +60,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         reactor.getMap().destroyNPC(npcId);
     }
 
-    private static void sortDropEntries(List<ReactorDropEntry> from, List<ReactorDropEntry> item, List<ReactorDropEntry> visibleQuest, List<ReactorDropEntry> otherQuest, Character chr)
+    private static void sortDropEntries(List<ReactorDropEntry> from, List<ReactorDropEntry> item, List<ReactorDropEntry> visibleQuest, List<ReactorDropEntry> otherQuest, IPlayer chr)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
@@ -85,7 +84,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
     }
 
-    private static List<ReactorDropEntry> assembleReactorDropEntries(Character chr, List<ReactorDropEntry> items)
+    private static List<ReactorDropEntry> assembleReactorDropEntries(IPlayer chr, List<ReactorDropEntry> items)
     {
         List<ReactorDropEntry> dropEntry = new();
         List<ReactorDropEntry> visibleQuestEntry = new();
@@ -164,7 +163,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     public void dropItems(bool delayed, int posX, int posY, bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (chr == null)
         {
             return;
@@ -192,7 +191,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
                     int range = maxMeso - minMeso;
                     int displayDrop = (int)(Randomizer.nextDouble() * range) + minMeso;
                     int mesoDrop = (displayDrop * c.getWorldServer().getMesoRate());
-                    reactor.getMap().spawnMesoDrop(mesoDrop, reactor.getMap().calcDropPos(dropPos, reactor.getPosition()), reactor, c.getPlayer(), false, 2);
+                    reactor.getMap().spawnMesoDrop(mesoDrop, reactor.getMap().calcDropPos(dropPos, reactor.getPosition()), reactor, c.OnlinedCharacter, false, 2);
                 }
                 else
                 {
@@ -310,7 +309,13 @@ public class ReactorActionManager : AbstractPlayerInteraction
     {
         for (int i = 0; i < qty; i++)
         {
-            reactor.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(id), pos);
+            var monster = LifeFactory.getMonster(id);
+            if (monster == null)
+            {
+                Log.Logger.Fatal("Monster (Id {MonsterId}) not found", id);
+                continue;
+            }
+            reactor.getMap().spawnMonsterOnGroundBelow(monster, pos);
         }
     }
 
@@ -355,7 +360,13 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     public void spawnFakeMonster(int id)
     {
-        reactor.getMap().spawnFakeMonsterOnGroundBelow(LifeFactory.getMonster(id), getPosition());
+        var monster = LifeFactory.getMonster(id);
+        if (monster == null)
+        {
+            Log.Logger.Fatal("Monster (Id {MonsterId}) not found", id);
+            return;
+        }
+        reactor.getMap().spawnFakeMonsterOnGroundBelow(monster, getPosition());
     }
 
     /**
@@ -382,21 +393,22 @@ public class ReactorActionManager : AbstractPlayerInteraction
         var skil = CarnivalFactory.getInstance().getGuardian(num);
         if (skil != null)
         {
-            foreach (Monster mons in getMap().getAllMonsters())
+            foreach (var mons in getMap().getAllMonsters())
             {
                 if (mons.getTeam() == team)
                 {
                     mons.dispelSkill(skil.getSkill());
                 }
             }
-        }
-        if (team == 0)
-        {
-            getPlayer().getMap().getRedTeamBuffs().Remove(skil);
-        }
-        else
-        {
-            getPlayer().getMap().getBlueTeamBuffs().Remove(skil);
+
+            if (team == 0)
+            {
+                getPlayer().getMap().getRedTeamBuffs().Remove(skil);
+            }
+            else
+            {
+                getPlayer().getMap().getBlueTeamBuffs().Remove(skil);
+            }
         }
     }
 }

@@ -29,7 +29,6 @@ namespace client.inventory;
 
 public class Item : IComparable<Item>
 {
-
     private static AtomicInteger runningCashId = new AtomicInteger(777000000);  // pets & rings shares cashid values
 
     private int id;

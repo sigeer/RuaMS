@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,9 +23,7 @@
 */
 
 
-using net.server.channel;
 using server.life;
-using server.maps;
 using tools;
 
 namespace client.command.commands.gm4;
@@ -42,9 +40,9 @@ public class PnpcCommand : Command
         setDescription("Spawn a permanent NPC on your location.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !pnpc <npcid>");
@@ -60,9 +58,9 @@ public class PnpcCommand : Command
             return;
         }
 
-        NPC npc = LifeFactory.getNPC(npcId);
+        var npc = LifeFactory.getNPC(npcId);
 
-        Point checkpos = player.getMap().getGroundBelow(player.getPosition());
+        var checkpos = player.getMap().getGroundBelow(player.getPosition());
         int xpos = checkpos.X;
         int ypos = checkpos.Y;
         int fh = player.getMap().getFootholds().findBelow(checkpos).getId();
@@ -76,7 +74,7 @@ public class PnpcCommand : Command
                 dbContext.Plives.Add(model);
                 dbContext.SaveChanges();
 
-                foreach (Channel ch in player.getWorldServer().getChannels())
+                foreach (var ch in player.getWorldServer().getChannels())
                 {
                     npc = LifeFactory.getNPC(npcId);
                     npc.setPosition(checkpos);
@@ -85,7 +83,7 @@ public class PnpcCommand : Command
                     npc.setRx1(xpos - 50);
                     npc.setFh(fh);
 
-                    MapleMap map = ch.getMapFactory().getMap(mapId);
+                    var map = ch.getMapFactory().getMap(mapId);
                     map.addMapObject(npc);
                     map.broadcastMessage(PacketCreator.spawnNPC(npc));
                 }

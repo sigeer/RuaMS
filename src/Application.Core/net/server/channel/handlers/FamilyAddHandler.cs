@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using net.server.coordinator.world;
 using tools;
@@ -34,7 +33,7 @@ namespace net.server.channel.handlers;
  */
 public class FamilyAddHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
@@ -42,7 +41,7 @@ public class FamilyAddHandler : AbstractPacketHandler
         }
         string toAdd = p.readString();
         var addChr = c.getChannelServer().getPlayerStorage().getCharacterByName(toAdd);
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (addChr == null)
         {
             c.sendPacket(PacketCreator.sendFamilyMessage(65, 0));

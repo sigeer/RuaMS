@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;
@@ -39,13 +38,13 @@ namespace net.server.channel.handlers;
  */
 public class ItemRewardHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         byte slot = (byte)p.readShort();
         int itemId = p.readInt(); // will load from xml I don't care.
 
-        Item it = c.getPlayer().getInventory(InventoryType.USE).getItem(slot);   // null check here thanks to Thora
-        if (it == null || it.getItemId() != itemId || c.getPlayer().getInventory(InventoryType.USE).countById(itemId) < 1)
+        var it = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);   // null check here thanks to Thora
+        if (it == null || it.getItemId() != itemId || c.OnlinedCharacter.getInventory(InventoryType.USE).countById(itemId) < 1)
         {
             return;
         }
@@ -79,7 +78,7 @@ public class ItemRewardHandler : AbstractPacketHandler
                 if (reward.worldmsg != null)
                 {
                     string msg = reward.worldmsg;
-                    msg.Replace("/name", c.getPlayer().getName());
+                    msg.Replace("/name", c.OnlinedCharacter.getName());
                     msg.Replace("/item", ii.getName(reward.itemid));
                     Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, msg));
                 }

@@ -1,6 +1,3 @@
-
-
-using client;
 using net.packet;
 using server;
 using tools;
@@ -13,9 +10,9 @@ namespace net.server.channel.handlers;
 public class AdminChatHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        if (!c.getPlayer().isGM())
+        if (!c.OnlinedCharacter.isGM())
         {//if ( (signed int)CWvsContext::GetAdminLevel((void *)v294) > 2 )
             return;
         }
@@ -39,7 +36,7 @@ public class AdminChatHandler : AbstractPacketHandler
                 }
             case 2:
                 {// /alertm /alertmap, /noticem /noticemap, /slidem /slidemap
-                    c.getPlayer().getMap().broadcastMessage(packet);
+                    c.OnlinedCharacter.getMap().broadcastMessage(packet);
                     ChatLogger.log(c, "Alert Map", message);
                     break;
                 }

@@ -1,5 +1,5 @@
 /*
-This file is part of the OdinMS Maple Story Server
+This file is part of the OdinMS Maple Story NewServer
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
 Jan Christian Meyer <vimes@odinms.de>
@@ -44,9 +44,9 @@ public class CashOperationHandler : AbstractPacketHandler
         this.noteService = noteService;
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         CashShop cs = chr.getCashShop();
 
         if (!cs.isOpened())
@@ -75,7 +75,7 @@ public class CashOperationHandler : AbstractPacketHandler
 
                     if (action == 0x03)
                     { // Item
-                        if (ItemConstants.isCashStore(cItem.getItemId()) && chr.getLevel() < 16)
+                        if (ItemConstants.isCashStore(cItem!.getItemId()) && chr.getLevel() < 16)
                         {
                             c.enableCSActions();
                             return;
@@ -98,7 +98,8 @@ public class CashOperationHandler : AbstractPacketHandler
                         c.sendPacket(PacketCreator.showBoughtCashItem(item, c.getAccID()));
                     }
                     else
-                    { // Package
+                    {
+                        // Package
                         cs.gainCash(useNX, cItem, chr.getWorld());
 
                         List<Item> cashPackage = CashItemFactory.getPackage(cItem.getItemId());
@@ -111,10 +112,11 @@ public class CashOperationHandler : AbstractPacketHandler
                     c.sendPacket(PacketCreator.showCash(chr));
                 }
                 else if (action == 0x04)
-                {//TODO check for gender
+                {
+                    //TODO check for gender
                     int birthday = p.readInt();
                     var cItem = CashItemFactory.getItem(p.readInt());
-                    Dictionary<string, string> recipient = Character.getCharacterFromDatabase(p.readString());
+                    var recipient = CharacterManager.GetCharacterFromDatabase(p.readString());
                     var message = p.readString();
                     if (canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)) || string.IsNullOrEmpty(message) || message.Length > 73)
                     {
@@ -131,27 +133,28 @@ public class CashOperationHandler : AbstractPacketHandler
                         c.sendPacket(PacketCreator.showCashShopMessage(0xA9));
                         return;
                     }
-                    else if (recipient.GetValueOrDefault("accountid") == c.getAccID().ToString())
+                    else if (recipient.AccountId == c.getAccID())
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0xA8));
                         return;
                     }
                     cs.gainCash(4, cItem, chr.getWorld());
-                    cs.gift(int.Parse(recipient.GetValueOrDefault("Id")), chr.getName(), message, cItem.getSN());
-                    c.sendPacket(PacketCreator.showGiftSucceed(recipient.GetValueOrDefault("Name"), cItem));
+                    cs.gift(recipient.CharacterId, chr.getName(), message, cItem.getSN());
+                    c.sendPacket(PacketCreator.showGiftSucceed(recipient.CharacterName, cItem));
                     c.sendPacket(PacketCreator.showCash(chr));
 
                     string noteMessage = chr.getName() + " has sent you a gift! Go check out the Cash Shop.";
-                    noteService.sendNormal(noteMessage, chr.getName(), recipient.GetValueOrDefault("Name"));
+                    noteService.sendNormal(noteMessage, chr.getName(), recipient.CharacterName);
 
-                    var receiver = c.getChannelServer().getPlayerStorage().getCharacterByName(recipient.GetValueOrDefault("Name"));
+                    var receiver = c.getChannelServer().getPlayerStorage().getCharacterByName(recipient.CharacterName);
                     if (receiver != null)
                     {
                         noteService.show(receiver);
                     }
                 }
                 else if (action == 0x05)
-                { // Modify wish list
+                { 
+                    // Modify wish list
                     cs.clearWishList();
                     for (byte i = 0; i < 10; i++)
                     {
@@ -191,18 +194,18 @@ public class CashOperationHandler : AbstractPacketHandler
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, Character.makeMapleReadable(chr.getName()));
+                            log.Warning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                     else
                     {
                         var cItem = CashItemFactory.getItem(p.readInt());
-                        int type = (cItem.getItemId() - 9110000) / 1000;
                         if (!canBuy(chr, cItem, cs.getCash(cash)))
                         {
                             c.enableCSActions();
                             return;
                         }
+                        int type = (cItem!.getItemId() - 9110000) / 1000;
                         int qty = 8;
                         if (!chr.canGainSlots(type, qty))
                         {
@@ -217,12 +220,13 @@ public class CashOperationHandler : AbstractPacketHandler
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, Character.makeMapleReadable(chr.getName()));
+                            log.Warning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                 }
                 else if (action == 0x07)
-                { // Increase Storage Slots
+                { 
+                    // Increase Storage Slots
                     p.skip(1);
                     int cash = p.readInt();
                     byte mode = p.readByte();
@@ -242,15 +246,14 @@ public class CashOperationHandler : AbstractPacketHandler
                         cs.gainCash(cash, -4000);
                         if (chr.getStorage().gainSlots(qty))
                         {
-                            log.Debug("Chr {CharacterName} bought {Slots} slots to their account storage.", c.getPlayer().getName(), qty);
-                            chr.setUsedStorage();
+                            log.Debug("Chr {CharacterName} bought {Slots} slots to their account storage.", c.OnlinedCharacter.getName(), qty);
 
                             c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.getStorage().getSlots()));
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots to {CharacterName}'s account.", qty, Character.makeMapleReadable(chr.getName()));
+                            log.Warning("Could not add {Slot} slots to {CharacterName}'s account.", qty, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                     else
@@ -270,21 +273,22 @@ public class CashOperationHandler : AbstractPacketHandler
                         }
                         cs.gainCash(cash, cItem, chr.getWorld());
                         if (chr.getStorage().gainSlots(qty))
-                        {    // thanks ABaldParrot & Thora for detecting storage issues here
-                            log.Debug("Chr {CharacterName} bought {Slot} slots to their account storage", c.getPlayer().getName(), qty);
-                            chr.setUsedStorage();
+                        {
+                            // thanks ABaldParrot & Thora for detecting storage issues here
+                            log.Debug("Chr {CharacterName} bought {Slot} slots to their account storage", c.OnlinedCharacter.getName(), qty);
 
                             c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.getStorage().getSlots()));
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots to {CharacterName}'s account", qty, Character.makeMapleReadable(chr.getName()));
+                            log.Warning("Could not add {Slot} slots to {CharacterName}'s account", qty, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                 }
                 else if (action == 0x08)
-                { // Increase Character Slots
+                { 
+                    // Increase Character Slots
                     p.skip(1);
                     int cash = p.readInt();
                     var cItem = CashItemFactory.getItem(p.readInt());
@@ -308,14 +312,15 @@ public class CashOperationHandler : AbstractPacketHandler
                     }
                     else
                     {
-                        log.Warning("Could not add a chr slot to {CharacterName}'s account", Character.makeMapleReadable(chr.getName()));
+                        log.Warning("Could not add a chr slot to {CharacterName}'s account", CharacterManager.makeMapleReadable(chr.getName()));
                         c.enableCSActions();
                         return;
                     }
                 }
                 else if (action == 0x0D)
-                { // Take from Cash Inventory
-                    Item item = cs.findByCashId(p.readInt());
+                { 
+                    // Take from Cash Inventory
+                    var item = cs.findByCashId(p.readInt());
                     if (item == null)
                     {
                         c.enableCSActions();
@@ -337,7 +342,8 @@ public class CashOperationHandler : AbstractPacketHandler
                     }
                 }
                 else if (action == 0x0E)
-                { // Put into Cash Inventory
+                {
+                    // Put into Cash Inventory
                     int cashId = p.readInt();
                     p.skip(4);
 
@@ -349,13 +355,13 @@ public class CashOperationHandler : AbstractPacketHandler
                     }
 
                     Inventory mi = chr.getInventory(InventoryTypeUtils.getByType(invType));
-                    Item item = mi.findByCashId(cashId);
+                    var item = mi.findByCashId(cashId);
                     if (item == null)
                     {
                         c.enableCSActions();
                         return;
                     }
-                    else if (c.getPlayer().getPetIndex(item.getPetId()) > -1)
+                    else if (c.OnlinedCharacter.getPetIndex(item.getPetId()) > -1)
                     {
                         chr.getClient().sendPacket(PacketCreator.serverNotice(1, "You cannot put the pet you currently equip into the Cash Shop inventory."));
                         c.enableCSActions();
@@ -372,7 +378,8 @@ public class CashOperationHandler : AbstractPacketHandler
                     c.sendPacket(PacketCreator.putIntoCashInventory(item, c.getAccID()));
                 }
                 else if (action == 0x1D)
-                { //crush ring (action 28)
+                { 
+                    //crush ring (action 28)
                     int birthday = p.readInt();
                     if (checkBirthday(c, birthday))
                     {
@@ -395,7 +402,7 @@ public class CashOperationHandler : AbstractPacketHandler
                                   return;
                               }*/ //Gotta let them faggots marry too, hence why this is commented out <3 
 
-                            if (itemRing.toItem() is Equip eqp)
+                            if (itemRing?.toItem() is Equip eqp)
                             {
                                 var rings = Ring.createRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
@@ -414,7 +421,7 @@ public class CashOperationHandler : AbstractPacketHandler
                         c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
                     }
 
-                    c.sendPacket(PacketCreator.showCash(c.getPlayer()));
+                    c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x20)
                 {
@@ -449,7 +456,7 @@ public class CashOperationHandler : AbstractPacketHandler
                             c.sendPacket(PacketCreator.showBoughtQuestItem(itemId));
                         }
                     }
-                    c.sendPacket(PacketCreator.showCash(c.getPlayer()));
+                    c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x23)
                 { //Friendship :3
@@ -470,7 +477,7 @@ public class CashOperationHandler : AbstractPacketHandler
                         else
                         {
                             // Need to check to make sure its actually an equip and the right SN...
-                            if (itemRing.toItem() is Equip eqp)
+                            if (itemRing?.toItem() is Equip eqp)
                             {
                                 var rings = Ring.createRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
@@ -489,7 +496,7 @@ public class CashOperationHandler : AbstractPacketHandler
                         c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
                     }
 
-                    c.sendPacket(PacketCreator.showCash(c.getPlayer()));
+                    c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x2E)
                 { //name change
@@ -589,7 +596,7 @@ public class CashOperationHandler : AbstractPacketHandler
         }
     }
 
-    public static bool checkBirthday(Client c, int idate)
+    public static bool checkBirthday(IClient c, int idate)
     {
         int year = idate / 10000;
         int month = (idate - year * 10000) / 100;
@@ -598,11 +605,15 @@ public class CashOperationHandler : AbstractPacketHandler
         return c.checkBirthDate(cal);
     }
 
-    private bool canBuy(Character chr, CashItem? item, int cash)
+    private bool canBuy(IPlayer chr, CashItem? item, int cash)
     {
         if (item != null && item.isOnSale() && item.getPrice() <= cash)
         {
-            log.Debug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}", chr, ItemInformationProvider.getInstance().getName(item.getItemId()), item.getSN(), item.getPrice());
+            log.Debug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}", 
+                chr, 
+                ItemInformationProvider.getInstance().getName(item.getItemId()), 
+                item.getSN(), 
+                item.getPrice());
             return true;
         }
         else

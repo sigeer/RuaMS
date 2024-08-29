@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -36,9 +36,9 @@ public class ItemDropCommand : Command
         setDescription("Spawn an item onto the ground.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
@@ -91,7 +91,7 @@ public class ItemDropCommand : Command
                     toDropTemp.setOwner("TRIAL-MODE");
                 }
 
-                c.getPlayer().getMap().spawnItemDrop(c.getPlayer(), c.getPlayer(), toDropTemp, c.getPlayer().getPosition(), true, true);
+                c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, toDropTemp, c.OnlinedCharacter.getPosition(), true, true);
 
                 return;
             }
@@ -124,6 +124,6 @@ public class ItemDropCommand : Command
             toDrop.setOwner("TRIAL-MODE");
         }
 
-        c.getPlayer().getMap().spawnItemDrop(c.getPlayer(), c.getPlayer(), toDrop, c.getPlayer().getPosition(), true, true);
+        c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, toDrop, c.OnlinedCharacter.getPosition(), true, true);
     }
 }

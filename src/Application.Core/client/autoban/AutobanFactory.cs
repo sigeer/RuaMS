@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+using Application.Core.Managers;
 using net.server;
 using tools;
 
@@ -89,7 +90,7 @@ public class AutobanFactory : EnumClass
         ban.addPoint(this, reason);
     }
 
-    public void alert(Character chr, string reason)
+    public void alert(IPlayer chr, string reason)
     {
         if (YamlConfig.config.server.USE_AUTOBAN)
         {
@@ -97,16 +98,16 @@ public class AutobanFactory : EnumClass
             {
                 return;
             }
-            Server.getInstance().broadcastGMMessage((chr != null ? chr.getWorld() : 0), PacketCreator.sendYellowTip((chr != null ? Character.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason));
+            Server.getInstance().broadcastGMMessage((chr != null ? chr.getWorld() : 0), PacketCreator.sendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason));
         }
         if (YamlConfig.config.server.USE_AUTOBAN_LOG)
         {
-            string chrName = chr != null ? Character.makeMapleReadable(chr.getName()) : "";
+            string chrName = chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "";
             Log.Logger.Information("Autoban alert - chr {CharacterName} caused {AutoBanType}-{AutoBanReason}", chrName, this.name(), reason);
         }
     }
 
-    public void autoban(Character chr, string value)
+    public void autoban(IPlayer chr, string value)
     {
         if (YamlConfig.config.server.USE_AUTOBAN)
         {

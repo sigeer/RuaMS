@@ -19,4 +19,9 @@
             return $"{Min}-{Max}";
         }
     }
+
+    public class RangeSteps
+    {
+        public const int Accounts = 1000;
+    }
 }

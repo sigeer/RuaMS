@@ -22,15 +22,14 @@
 
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
+using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Core.scripting.Event;
-using client;
 using constants.id;
 using net.packet;
 using net.server;
-using net.server.channel;
-using server.life;
-using server.maps;
 using System.Collections.Concurrent;
 using tools;
 
@@ -75,10 +74,10 @@ public class Expedition
             MobId.FURIOUS_TARGA,
     };
 
-    private Character leader;
+    private IPlayer leader;
     private ExpeditionType type;
     private bool registering;
-    private MapleMap startMap;
+    private IMap startMap;
     private List<string> bossLogs;
     private ScheduledFuture? schedule;
     private ConcurrentDictionary<int, string> members = new();
@@ -90,7 +89,7 @@ public class Expedition
     private int maxSize;
     private object pL = new();
 
-    public Expedition(Character player, ExpeditionType met, bool sil, int minPlayers, int maxPlayers)
+    public Expedition(IPlayer player, ExpeditionType met, bool sil, int minPlayers, int maxPlayers)
     {
         leader = player;
         members.AddOrUpdate(player.getId(), player.getName());
@@ -205,7 +204,7 @@ public class Expedition
         Server.getInstance().broadcastGMMessage(startMap.getWorld(), PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
     }
 
-    public string addMember(Character player)
+    public string addMember(IPlayer player)
     {
         if (!registering)
         {
@@ -235,7 +234,7 @@ public class Expedition
         return "You have registered for the expedition successfully!";
     }
 
-    public int addMemberInt(Character player)
+    public int addMemberInt(IPlayer player)
     {
         if (!registering)
         {
@@ -263,7 +262,7 @@ public class Expedition
     {
         int channel = this.getRecruitingMap().getChannelServer().getId();
 
-        foreach (Character chr in getActiveMembers())
+        foreach (IPlayer chr in getActiveMembers())
         {
             ExpeditionBossLog.attemptBoss(chr.getId(), channel, this, true);
         }
@@ -271,13 +270,13 @@ public class Expedition
 
     private void broadcastExped(Packet packet)
     {
-        foreach (Character chr in getActiveMembers())
+        foreach (IPlayer chr in getActiveMembers())
         {
             chr.sendPacket(packet);
         }
     }
 
-    public bool removeMember(Character chr)
+    public bool removeMember(IPlayer chr)
     {
         if (members.Remove(chr.getId(), out var d) && d != null)
         {
@@ -322,7 +321,7 @@ public class Expedition
         }
     }
 
-    public void monsterKilled(Character chr, Monster mob)
+    public void monsterKilled(IPlayer chr, Monster mob)
     {
         foreach (int expeditionBoss in EXPEDITION_BOSSES)
         {
@@ -365,11 +364,11 @@ public class Expedition
         return type;
     }
 
-    public List<Character> getActiveMembers()
+    public List<IPlayer> getActiveMembers()
     {    // thanks MedicOP for figuring out an issue with broadcasting packets to offline members
-        PlayerStorage ps = startMap.getWorldServer().getPlayerStorage();
+        var ps = startMap.getWorldServer().getPlayerStorage();
 
-        List<Character> activeMembers = new();
+        List<IPlayer> activeMembers = new();
         foreach (int chrid in getMembers().Keys)
         {
             var chr = ps.getCharacterById(chrid);
@@ -394,7 +393,7 @@ public class Expedition
 
     public bool isExpeditionTeamTogether()
     {
-        List<Character> chars = getActiveMembers();
+        List<IPlayer> chars = getActiveMembers();
         if (chars.Count <= 1)
         {
             return true;
@@ -405,9 +404,9 @@ public class Expedition
 
     public void warpExpeditionTeam(int warpFrom, int warpTo)
     {
-        List<Character> players = getActiveMembers();
+        List<IPlayer> players = getActiveMembers();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -418,9 +417,9 @@ public class Expedition
 
     public void warpExpeditionTeam(int warpTo)
     {
-        List<Character> players = getActiveMembers();
+        List<IPlayer> players = getActiveMembers();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             chr.changeMap(warpTo);
         }
@@ -428,9 +427,9 @@ public class Expedition
 
     public void warpExpeditionTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
     {
-        List<Character> players = getActiveMembers();
+        List<IPlayer> players = getActiveMembers();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -441,40 +440,40 @@ public class Expedition
 
     public void warpExpeditionTeamToMapSpawnPoint(int warpTo, int toSp)
     {
-        List<Character> players = getActiveMembers();
+        List<IPlayer> players = getActiveMembers();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             chr.changeMap(warpTo, toSp);
         }
     }
 
-    public bool addChannelExpedition(Channel ch)
+    public bool addChannelExpedition(IWorldChannel ch)
     {
         return ch.addExpedition(this);
     }
 
-    public void removeChannelExpedition(Channel ch)
+    public void removeChannelExpedition(IWorldChannel ch)
     {
         ch.removeExpedition(this);
     }
 
-    public Character getLeader()
+    public IPlayer getLeader()
     {
         return leader;
     }
 
-    public MapleMap getRecruitingMap()
+    public IMap getRecruitingMap()
     {
         return startMap;
     }
 
-    public bool contains(Character player)
+    public bool contains(IPlayer player)
     {
         return members.ContainsKey(player.getId()) || isLeader(player);
     }
 
-    public bool isLeader(Character player)
+    public bool isLeader(IPlayer player)
     {
         return isLeader(player.getId());
     }

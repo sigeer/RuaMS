@@ -275,7 +275,7 @@ public class SkillbookInformationProvider
         return sbe ?? SkillBookEntry.UNAVAILABLE;
     }
 
-    public static List<int> getTeachableSkills(Character chr)
+    public static List<int> getTeachableSkills(IPlayer chr)
     {
         List<int> list = new();
 

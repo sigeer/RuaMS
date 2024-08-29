@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using constants.skills;
 using net;
 using net.packet;
@@ -29,7 +28,7 @@ using tools;
 
 public class SkillEffectHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int skillId = p.readInt();
         int level = p.readByte();
@@ -56,10 +55,10 @@ public class SkillEffectHandler : AbstractPacketHandler
             case Hero.MONSTER_MAGNET:
             case Evan.FIRE_BREATH:
             case Evan.ICE_BREATH:
-                c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.skillEffect(c.getPlayer(), skillId, level, flags, speed, aids), false);
+                c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.skillEffect(c.OnlinedCharacter, skillId, level, flags, speed, aids), false);
                 return;
             default:
-                log.Warning("Chr {CharacterName} entered SkillEffectHandler without being handled using {SkillId}", c.getPlayer(), skillId);
+                log.Warning("Chr {CharacterName} entered SkillEffectHandler without being handled using {SkillId}", c.OnlinedCharacter, skillId);
                 return;
         }
     }

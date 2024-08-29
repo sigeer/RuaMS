@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,10 +23,11 @@
 */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using constants.id;
 using net.server;
 using server;
-using server.life;
 using server.maps;
 
 namespace client.command.commands.gm5;
@@ -45,9 +46,9 @@ public class DebugCommand : Command
     }
 
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
@@ -69,11 +70,11 @@ public class DebugCommand : Command
                 break;
 
             case "monster":
-                List<MapObject> monsters = player.getMap().getMapObjectsInRange(player.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
-                foreach (MapObject monstermo in monsters)
+                List<IMapObject> monsters = player.getMap().getMapObjectsInRange(player.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
+                foreach (var monstermo in monsters)
                 {
-                    Monster monster = (Monster)monstermo;
-                    Character controller = monster.getController();
+                    var monster = (Monster)monstermo;
+                    var controller = monster.getController();
                     player.message("Monster ID: " + monster.getId() + " Aggro target: " + ((controller != null) ? controller.getName() + " Has aggro: " + monster.isControllerHasAggro() + " Knowns aggro: " + monster.isControllerKnowsAboutAggro() : "<none>"));
                 }
                 break;
@@ -143,7 +144,7 @@ public class DebugCommand : Command
             case "reactors":
                 player.dropMessage(6, "Current reactor states on map " + player.getMapId() + ":");
 
-                foreach (MapObject mmo in player.getMap().getReactors())
+                foreach (var mmo in player.getMap().getReactors())
                 {
                     Reactor mr = (Reactor)mmo;
                     player.dropMessage(6, "Id: " + mr.getId() + " Oid: " + mr.getObjectId() + " name: '" + mr.getName() + "' -> Type: " + mr.getReactorType() + " State: " + mr.getState() + " Event State: " + mr.getEventState() + " Position: x " + mr.getPosition().X + " y " + mr.getPosition().Y + ".");
@@ -181,7 +182,7 @@ public class DebugCommand : Command
                 break;
 
             case "buff":
-                c.getPlayer().debugListAllBuffs();
+                c.OnlinedCharacter.debugListAllBuffs();
                 break;
         }
     }

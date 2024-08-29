@@ -79,7 +79,7 @@ public class Ring : IComparable<Ring>
         }
     }
 
-    public static RingPair createRing(int itemid, Character partner1, Character partner2)
+    public static RingPair createRing(int itemid, IPlayer partner1, IPlayer partner2)
     {
         try
         {

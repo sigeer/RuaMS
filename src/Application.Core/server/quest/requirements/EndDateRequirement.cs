@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.requirements;
@@ -50,7 +49,7 @@ public class EndDateRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         var dt = DateTimeOffset.Parse(timeStr);
         return dt >= DateTimeOffset.Now;

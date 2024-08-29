@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using client.inventory;
 using net.packet;
 using server;
@@ -36,9 +35,9 @@ namespace net.server.channel.handlers;
 public class CashShopSurpriseHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        CashShop cs = c.getPlayer().getCashShop();
+        CashShop cs = c.OnlinedCharacter.getCashShop();
         if (!cs.isOpened())
         {
             return;

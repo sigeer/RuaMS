@@ -42,7 +42,7 @@ namespace Application.Core.Addon
     {
         private Action _action;
 
-        private TempRunnable(string name, Action action): base(name)
+        private TempRunnable(string name, Action action) : base(name)
         {
             _action = action;
         }

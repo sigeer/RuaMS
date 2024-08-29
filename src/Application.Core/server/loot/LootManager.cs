@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using server.life;
 using server.quest;
 
@@ -31,7 +30,7 @@ namespace server.loot;
 public class LootManager
 {
 
-    private static bool isRelevantDrop(MonsterDropEntry dropEntry, List<Character> players, List<LootInventory> playersInv)
+    private static bool isRelevantDrop(MonsterDropEntry dropEntry, List<IPlayer> players, List<LootInventory> playersInv)
     {
         int qStartAmount = 0, qCompleteAmount = 0;
         Quest quest = Quest.getInstance(dropEntry.questid);
@@ -81,7 +80,7 @@ public class LootManager
         return false;
     }
 
-    public static List<MonsterDropEntry> retrieveRelevantDrops(int monsterId, List<Character> players)
+    public static List<MonsterDropEntry> retrieveRelevantDrops(int monsterId, List<IPlayer> players)
     {
         List<MonsterDropEntry> loots = MonsterInformationProvider.getInstance().retrieveEffectiveDrop(monsterId);
         if (loots.Count == 0)
@@ -90,7 +89,7 @@ public class LootManager
         }
 
         List<LootInventory> playersInv = new();
-        foreach (Character chr in players)
+        foreach (var chr in players)
         {
             LootInventory lootInv = new LootInventory(chr);
             playersInv.Add(lootInv);

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.autoban;
 using constants.inventory;
 using net.packet;
@@ -33,7 +32,7 @@ namespace net.server.channel.handlers;
  */
 public class NPCShopHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         byte bmode = p.readByte();
         switch (bmode)
@@ -45,13 +44,13 @@ public class NPCShopHandler : AbstractPacketHandler
                     short quantity = p.readShort();
                     if (quantity < 1)
                     {
-                        AutobanFactory.PACKET_EDIT.alert(c.getPlayer(),
-                                c.getPlayer().getName() + " tried to packet edit a npc shop.");
-                        log.Warning("Chr {} tried to buy quantity {} of itemid {}", c.getPlayer().getName(), quantity, itemId);
+                        AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter,
+                                c.OnlinedCharacter.getName() + " tried to packet edit a npc shop.");
+                        log.Warning("Chr {} tried to buy quantity {} of itemid {}", c.OnlinedCharacter.getName(), quantity, itemId);
                         c.disconnect(true, false);
                         return;
                     }
-                    c.getPlayer().getShop().buy(c, slot, itemId, quantity);
+                    c.OnlinedCharacter.getShop().buy(c, slot, itemId, quantity);
                     break;
                 }
             case 1:
@@ -59,18 +58,18 @@ public class NPCShopHandler : AbstractPacketHandler
                     short slot = p.readShort();
                     int itemId = p.readInt();
                     short quantity = p.readShort();
-                    c.getPlayer().getShop().sell(c, ItemConstants.getInventoryType(itemId), slot, quantity);
+                    c.OnlinedCharacter.getShop().sell(c, ItemConstants.getInventoryType(itemId), slot, quantity);
                     break;
                 }
             case 2:
                 { // recharge ;)
 
                     byte slot = (byte)p.readShort();
-                    c.getPlayer().getShop().recharge(c, slot);
+                    c.OnlinedCharacter.getShop().recharge(c, slot);
                     break;
                 }
             case 3: // leaving :(
-                c.getPlayer().setShop(null);
+                c.OnlinedCharacter.setShop(null);
                 break;
         }
 

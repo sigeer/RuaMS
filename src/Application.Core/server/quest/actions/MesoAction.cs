@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.actions;
@@ -46,12 +45,12 @@ public class MesoAction : AbstractQuestAction
         mesos = DataTool.getInt(data);
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         runAction(chr, mesos);
     }
 
-    public static void runAction(Character chr, int gain)
+    public static void runAction(IPlayer chr, int gain)
     {
         if (gain < 0)
         {

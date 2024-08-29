@@ -32,7 +32,7 @@ public class QuickslotBinding
     {
         // Quickslots are default.
         // The client will skip them and call CQuickslotKeyMappedMan::DefaultQuickslotKeyMap.
-        if (Arrays.Equals(this.m_aQuickslotKeyMapped, DEFAULT_QUICKSLOTS))
+        if (this.m_aQuickslotKeyMapped.SequenceEqual(DEFAULT_QUICKSLOTS))
         {
             p.writeBool(false);
             return;

@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.actions;
@@ -39,7 +38,7 @@ public class BuffAction : AbstractQuestAction
         processData(data);
     }
 
-    public override bool check(Character chr, int? extSelection)
+    public override bool check(IPlayer chr, int? extSelection)
     {
         return true;
     }
@@ -49,7 +48,7 @@ public class BuffAction : AbstractQuestAction
         itemEffect = DataTool.getInt(data);
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         ItemInformationProvider.getInstance().getItemEffect(itemEffect).applyTo(chr);
     }

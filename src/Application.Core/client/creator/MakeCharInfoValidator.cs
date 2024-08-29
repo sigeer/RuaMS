@@ -23,7 +23,7 @@ public class MakeCharInfoValidator
         premiumCharMale = new MakeCharInfo(data.getChildByPath("PremiumCharMale"));
     }
 
-    private static MakeCharInfo? getMakeCharInfo(Character character)
+    private static MakeCharInfo? getMakeCharInfo(IPlayer character)
     {
         return character.getJob() switch
         {
@@ -34,7 +34,7 @@ public class MakeCharInfoValidator
         };
     }
 
-    public static bool isNewCharacterValid(Character character)
+    public static bool isNewCharacterValid(IPlayer character)
     {
         var makeCharInfo = getMakeCharInfo(character);
         if (makeCharInfo == null)

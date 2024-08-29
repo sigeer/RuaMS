@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using constants.game;
 using net.packet;
 using tools;
@@ -31,13 +30,13 @@ namespace net.server.handlers.login;
 public class ServerlistRequestHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         Server server = Server.getInstance();
-        List<World> worlds = server.getWorlds();
+        var worlds = server.getWorlds();
         c.requestedServerlist(worlds.Count);
 
-        foreach (World world in worlds)
+        foreach (var world in worlds)
         {
             c.sendPacket(PacketCreator.getServerList(world.getId(), GameConstants.WORLD_NAMES[world.getId()], world.getFlag(), world.getEventMessage(), world.getChannels()));
         }

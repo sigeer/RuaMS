@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.task;
 
 /**
@@ -30,7 +32,7 @@ public class CharacterHpDecreaseTask : BaseTask
         wserv.runPlayerHpDecreaseSchedule();
     }
 
-    public CharacterHpDecreaseTask(World world) : base(world)
+    public CharacterHpDecreaseTask(IWorld world) : base(world)
     {
     }
 }

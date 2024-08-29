@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
@@ -36,13 +35,13 @@ namespace net.server.channel.handlers;
  */
 public class UseMountFoodHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.skip(4);
         short pos = p.readShort();
         int itemid = p.readInt();
 
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         var mount = chr.getMount();
         Inventory useInv = chr.getInventory(InventoryType.USE);
 

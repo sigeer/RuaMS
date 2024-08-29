@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ public abstract class Command
     protected int rank;
     protected string description;
 
-    public abstract void execute(Client client, string[] values);
+    public abstract void execute(IClient client, string[] values);
 
     public string getDescription()
     {

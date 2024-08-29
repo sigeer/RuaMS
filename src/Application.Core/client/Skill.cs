@@ -21,12 +21,13 @@
 */
 
 
+using Application.Core.Game.Skills;
 using server;
 using server.life;
 
 namespace client;
 
-public class Skill
+public class Skill: ISkill
 {
     private int id;
     private List<StatEffect> effects = new();

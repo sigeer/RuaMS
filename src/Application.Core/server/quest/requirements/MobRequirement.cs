@@ -58,7 +58,7 @@ public class MobRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
         foreach (int mobID in mobs.Keys)

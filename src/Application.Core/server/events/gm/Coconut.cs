@@ -22,9 +22,8 @@
 
 
 
-using client;
+using Application.Core.Game.Maps;
 using constants.id;
-using server.maps;
 using tools;
 
 namespace server.events.gm;
@@ -36,7 +35,7 @@ namespace server.events.gm;
 //Make them better :)
 public class Coconut : Event
 {
-    private MapleMap map = null;
+    private IMap map;
     private int MapleScore = 0;
     private int StoryScore = 0;
     private int countBombing = 80;
@@ -44,7 +43,7 @@ public class Coconut : Event
     private int countStopped = 20;
     private List<Coconuts> coconuts = new();
 
-    public Coconut(MapleMap map) : base(1, 50)
+    public Coconut(IMap map) : base(1, 50)
     {
 
         this.map = map;
@@ -71,7 +70,7 @@ public class Coconut : Event
                 }
                 else if (getMapleScore() > getStoryScore())
                 {
-                    foreach (Character chr in map.getCharacters())
+                    foreach (var chr in map.getCharacters())
                     {
                         if (chr.getTeam() == 0)
                         {
@@ -88,7 +87,7 @@ public class Coconut : Event
                 }
                 else
                 {
-                    foreach (Character chr in map.getCharacters())
+                    foreach (var chr in map.getCharacters())
                     {
                         if (chr.getTeam() == 1)
                         {
@@ -114,7 +113,7 @@ public class Coconut : Event
         {
             if (getMapleScore() == getStoryScore())
             {
-                foreach (Character chr in map.getCharacters())
+                foreach (var chr in map.getCharacters())
                 {
                     chr.sendPacket(PacketCreator.showEffect("event/coconut/lose"));
                     chr.sendPacket(PacketCreator.playSound("Coconut/Failed"));
@@ -123,7 +122,7 @@ public class Coconut : Event
             }
             else if (getMapleScore() > getStoryScore())
             {
-                foreach (Character chr in map.getCharacters())
+                foreach (var chr in map.getCharacters())
                 {
                     if (chr.getTeam() == 0)
                     {
@@ -140,7 +139,7 @@ public class Coconut : Event
             }
             else
             {
-                foreach (Character chr in map.getCharacters())
+                foreach (var chr in map.getCharacters())
                 {
                     if (chr.getTeam() == 1)
                     {
@@ -164,9 +163,9 @@ public class Coconut : Event
         setCoconutsHittable(false);
         TimerManager.getInstance().schedule(() =>
         {
-            List<Character> chars = new(map.getCharacters());
+            List<IPlayer> chars = new(map.getCharacters());
 
-            foreach (Character chr in chars)
+            foreach (var chr in chars)
             {
                 if ((getMapleScore() > getStoryScore() && chr.getTeam() == 0) || (getStoryScore() > getMapleScore() && chr.getTeam() == 1))
                 {

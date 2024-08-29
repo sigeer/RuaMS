@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.processor.npc;
 using net.packet;
 using tools;
@@ -31,7 +30,7 @@ namespace net.server.channel.handlers;
 public class DueyHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (!YamlConfig.config.server.USE_DUEY)
         {

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -48,12 +48,12 @@ public class BuddylistModifyHandler : AbstractPacketHandler
         }
     }
 
-    private void nextPendingRequest(Client c)
+    private void nextPendingRequest(IClient c)
     {
-        var pendingBuddyRequest = c.getPlayer().getBuddylist().pollPendingRequest();
+        var pendingBuddyRequest = c.OnlinedCharacter.getBuddylist().pollPendingRequest();
         if (pendingBuddyRequest != null)
         {
-            c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.getPlayer().getId(), pendingBuddyRequest.name));
+            c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.OnlinedCharacter.getId(), pendingBuddyRequest.name));
         }
     }
 
@@ -64,10 +64,10 @@ public class BuddylistModifyHandler : AbstractPacketHandler
            .Select(x => new CharacterIdNameBuddyCapacity(x.Id, x.Name, x.BuddyCapacity)).FirstOrDefault();
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int mode = p.readByte();
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         BuddyList buddylist = player.getBuddylist();
         using var dbContext = new DBContext();
         if (mode == 1)
@@ -91,7 +91,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
             {
                 try
                 {
-                    World world = c.getWorldServer();
+                    var world = c.getWorldServer();
                     CharacterIdNameBuddyCapacity? charWithId;
                     int channel;
                     var otherChar = c.getChannelServer().getPlayerStorage().getCharacterByName(addName);
@@ -209,9 +209,9 @@ public class BuddylistModifyHandler : AbstractPacketHandler
         }
     }
 
-    private void notifyRemoteChannel(Client c, int remoteChannel, int otherCid, BuddyOperation operation)
+    private void notifyRemoteChannel(IClient c, int remoteChannel, int otherCid, BuddyOperation operation)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (remoteChannel != -1)
         {
             c.getWorldServer().buddyChanged(otherCid, player.getId(), player.getName(), c.getChannel(), operation);

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -34,12 +33,12 @@ namespace net.server.channel.handlers;
  */
 public class PartySearchStartHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int min = p.readInt();
         int max = p.readInt();
 
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (min > max)
         {
             chr.dropMessage(1, "The min. value is higher than the max!");
@@ -64,13 +63,13 @@ public class PartySearchStartHandler : AbstractPacketHandler
         p.readInt(); // members
         int jobs = p.readInt();
 
-        var party = c.getPlayer().getParty();
-        if (party == null || !c.getPlayer().isPartyLeader())
+        var party = c.OnlinedCharacter.getParty();
+        if (party == null || !c.OnlinedCharacter.isPartyLeader())
         {
             return;
         }
 
-        World world = c.getWorldServer();
+        var world = c.getWorldServer();
         world.getPartySearchCoordinator().registerPartyLeader(chr, min, max, jobs);
     }
 }

@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using provider;
 
 namespace server.quest.requirements;
@@ -41,7 +40,7 @@ public class ScriptRequirement : AbstractQuestRequirement
         reqScript = !string.IsNullOrEmpty(DataTool.getString(data));
     }
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         return true;
     }

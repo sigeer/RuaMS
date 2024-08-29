@@ -21,20 +21,19 @@
 */
 
 
-using client;
 using net.packet;
 using net.server;
 
 namespace net;
 
-public abstract class AbstractPacketHandler : PacketHandler
+public abstract class AbstractPacketHandler : IPacketHandler
 {
     protected ILogger log;
     public AbstractPacketHandler()
     {
         log = LogFactory.GetLogger("packet/" + GetType().Name);
     }
-    public virtual bool validateState(Client c)
+    public virtual bool ValidateState(IClient c)
     {
         return c.isLoggedIn();
     }
@@ -44,5 +43,5 @@ public abstract class AbstractPacketHandler : PacketHandler
         return Server.getInstance().getCurrentTime();
     }
 
-    public abstract void handlePacket(InPacket p, Client c);
+    public abstract void HandlePacket(InPacket p, IClient c);
 }

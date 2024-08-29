@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using client;
 using Microsoft.ClearScript.V8;
 
 namespace scripting.map;
@@ -42,11 +41,11 @@ public class MapScriptManager : AbstractScriptManager
         scripts.Clear();
     }
 
-    public bool runMapScript(Client c, string mapScriptPath, bool firstUser)
+    public bool runMapScript(IClient c, string mapScriptPath, bool firstUser)
     {
         if (firstUser)
         {
-            Character chr = c.getPlayer();
+            var chr = c.OnlinedCharacter;
             int mapid = chr.getMapId();
             if (chr.hasEntered(mapScriptPath, mapid))
             {

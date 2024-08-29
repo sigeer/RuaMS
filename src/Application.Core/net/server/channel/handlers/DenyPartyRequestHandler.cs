@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using net.server.coordinator.world;
 using tools;
@@ -31,7 +30,7 @@ namespace net.server.channel.handlers;
 public class DenyPartyRequestHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readByte();
         string[] cname = p.readString().Split("PS: ");
@@ -39,7 +38,7 @@ public class DenyPartyRequestHandler : AbstractPacketHandler
         var cfrom = c.getChannelServer().getPlayerStorage().getCharacterByName(cname[cname.Length - 1]);
         if (cfrom != null)
         {
-            Character chr = c.getPlayer();
+            var chr = c.OnlinedCharacter;
 
             if (InviteCoordinator.answerInvite(InviteType.PARTY, chr.getId(), cfrom.getPartyId(), false).result == InviteResultType.DENIED)
             {

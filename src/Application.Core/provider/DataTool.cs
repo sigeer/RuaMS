@@ -25,8 +25,6 @@ using provider.wz;
 
 namespace provider;
 
-
-
 public class DataTool
 {
     public static string? getString(Data? data)

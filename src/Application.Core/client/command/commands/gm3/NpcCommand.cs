@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -35,22 +35,22 @@ public class NpcCommand : Command
         setDescription("Spawn an NPC on your location.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !npc <npcid>");
             return;
         }
-        NPC npc = LifeFactory.getNPC(int.Parse(paramsValue[0]));
+        var npc = LifeFactory.getNPC(int.Parse(paramsValue[0]));
         if (npc != null)
         {
             npc.setPosition(player.getPosition());
             npc.setCy(player.getPosition().Y);
             npc.setRx0(player.getPosition().X + 50);
             npc.setRx1(player.getPosition().X - 50);
-            npc.setFh(player.getMap().getFootholds().findBelow(c.getPlayer().getPosition()).getId());
+            npc.setFh(player.getMap().getFootholds().findBelow(c.OnlinedCharacter.getPosition()).getId());
             player.getMap().addMapObject(npc);
             player.getMap().broadcastMessage(PacketCreator.spawnNPC(npc));
         }

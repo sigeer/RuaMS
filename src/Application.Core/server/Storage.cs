@@ -18,7 +18,6 @@
  */
 
 
-using client;
 using client.inventory;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +45,7 @@ public class Storage
     private Dictionary<InventoryType, List<Item>> typeItems = new();
     private List<Item> items = new();
     private object lockObj = new object();
+    public bool IsChanged { get; set; }
 
     private Storage(int id, byte slots, int meso)
     {
@@ -119,6 +119,8 @@ public class Storage
             {
                 slots += this.slots;
                 this.slots = (byte)slots;
+
+                IsChanged = true;
                 return true;
             }
 
@@ -133,7 +135,8 @@ public class Storage
     public void saveToDB(DBContext dbContext)
     {
         dbContext.Storages.Where(x => x.Storageid == id).
-            ExecuteUpdate(x => x.SetProperty(y => y.Slots, slots).SetProperty(y => y.Meso, meso));
+            ExecuteUpdate(x => x.SetProperty(y => y.Slots, slots)
+                .SetProperty(y => y.Meso, meso));
 
         List<ItemInventoryType> itemsWithType = new();
 
@@ -144,6 +147,7 @@ public class Storage
         }
 
         ItemFactory.STORAGE.saveItems(itemsWithType, id, dbContext);
+        IsChanged = false;
     }
 
     public Item getItem(sbyte slot)
@@ -169,6 +173,7 @@ public class Storage
             InventoryType type = item.getInventoryType();
             typeItems.AddOrUpdate(type, new(filterItems(type)));
 
+            IsChanged = true;
             return ret;
         }
         finally
@@ -192,6 +197,7 @@ public class Storage
             InventoryType type = item.getInventoryType();
             typeItems.AddOrUpdate(type, new(filterItems(type)));
 
+            IsChanged = true;
             return true;
         }
         finally
@@ -251,11 +257,11 @@ public class Storage
         }
     }
 
-    public void sendStorage(Client c, int npcId)
+    public void sendStorage(IClient c, int npcId)
     {
-        if (c.getPlayer().getLevel() < 15)
+        if (c.OnlinedCharacter.getLevel() < 15)
         {
-            c.getPlayer().dropMessage(1, "You may only use the storage once you have reached level 15.");
+            c.OnlinedCharacter.dropMessage(1, "You may only use the storage once you have reached level 15.");
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
@@ -291,7 +297,7 @@ public class Storage
         }
     }
 
-    public void sendStored(Client c, InventoryType type)
+    public void sendStored(IClient c, InventoryType type)
     {
         Monitor.Enter(lockObj);
         try
@@ -304,7 +310,7 @@ public class Storage
         }
     }
 
-    public void sendTakenOut(Client c, InventoryType type)
+    public void sendTakenOut(IClient c, InventoryType type)
     {
         Monitor.Enter(lockObj);
         try
@@ -317,7 +323,7 @@ public class Storage
         }
     }
 
-    public void arrangeItems(Client c)
+    public void arrangeItems(IClient c)
     {
         Monitor.Enter(lockObj);
         try
@@ -351,15 +357,17 @@ public class Storage
             throw new Exception();
         }
         this.meso = meso;
+        IsChanged = true;
     }
 
-    public void sendMeso(Client c)
+    public void sendMeso(IClient c)
     {
         c.sendPacket(PacketCreator.mesoStorage(slots, meso));
     }
 
     public int getStoreFee()
-    {  // thanks to GabrielSin
+    {
+        // thanks to GabrielSin
         int npcId = currentNpcid;
         int? fee = trunkPutCache.get(npcId);
         if (fee == null)

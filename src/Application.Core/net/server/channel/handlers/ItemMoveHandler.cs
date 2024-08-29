@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
@@ -34,10 +33,10 @@ namespace net.server.channel.handlers;
  */
 public class ItemMoveHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.skip(4);
-        if (c.getPlayer().getAutobanManager().getLastSpam(6) + 300 > currentServerTime())
+        if (c.OnlinedCharacter.getAutobanManager().getLastSpam(6) + 300 > currentServerTime())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
@@ -65,6 +64,6 @@ public class ItemMoveHandler : AbstractPacketHandler
             InventoryManipulator.move(c, type, src, action);
         }
 
-        c.getPlayer().getAutobanManager().spam(6);
+        c.OnlinedCharacter.getAutobanManager().spam(6);
     }
 }

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.autoban;
 using net.packet;
 using server;
@@ -41,13 +40,13 @@ public class WhisperHandler : AbstractPacketHandler
     public static byte RT_CASH_SHOP = 0x02;
     public static byte RT_DIFFERENT_CHANNEL = 0x03;
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         byte request = p.readByte();
         string name = p.readString();
         var target = c.getWorldServer().getPlayerStorage().getCharacterByName(name);
 
-        if (target == null)
+        if (target == null || !target.IsOnlined)
         {
             c.sendPacket(PacketCreator.getWhisperResult(name, false));
             return;
@@ -56,22 +55,22 @@ public class WhisperHandler : AbstractPacketHandler
         switch (request)
         {
             case WhisperFlag.LOCATION | WhisperFlag.REQUEST:
-                handleFind(c.getPlayer(), target, WhisperFlag.LOCATION);
+                handleFind(c.OnlinedCharacter, target, WhisperFlag.LOCATION);
                 break;
             case WhisperFlag.WHISPER | WhisperFlag.REQUEST:
                 string message = p.readString();
-                handleWhisper(message, c.getPlayer(), target);
+                handleWhisper(message, c.OnlinedCharacter, target);
                 break;
             case WhisperFlag.LOCATION_FRIEND | WhisperFlag.REQUEST:
-                handleFind(c.getPlayer(), target, WhisperFlag.LOCATION_FRIEND);
+                handleFind(c.OnlinedCharacter, target, WhisperFlag.LOCATION_FRIEND);
                 break;
             default:
-                log.Warning("Unknown request {Request} triggered by {CharacterName}", request, c.getPlayer().getName());
+                log.Warning("Unknown request {Request} triggered by {CharacterName}", request, c.OnlinedCharacter.getName());
                 break;
         }
     }
 
-    private void handleFind(Character user, Character target, byte flag)
+    private void handleFind(IPlayer user, IPlayer target, byte flag)
     {
         if (user.gmLevel() >= target.gmLevel())
         {
@@ -95,7 +94,7 @@ public class WhisperHandler : AbstractPacketHandler
         }
     }
 
-    private void handleWhisper(string message, Character user, Character target)
+    private void handleWhisper(string message, IPlayer user, IPlayer target)
     {
         if (user.getAutobanManager().getLastSpam(7) + 200 > currentServerTime())
         {

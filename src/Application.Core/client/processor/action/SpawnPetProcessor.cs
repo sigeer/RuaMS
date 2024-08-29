@@ -37,13 +37,13 @@ public class SpawnPetProcessor
 {
     private static DataProvider dataRoot = DataProviderFactory.getDataProvider(WZFiles.ITEM);
 
-    public static void processSpawnPet(Client c, byte slot, bool lead)
+    public static void processSpawnPet(IClient c, byte slot, bool lead)
     {
         if (c.tryacquireClient())
         {
             try
             {
-                Character chr = c.getPlayer();
+                var chr = c.OnlinedCharacter;
                 var pet = chr.getInventory(InventoryType.CASH).getItem(slot)?.getPet();
                 if (pet == null)
                 {
@@ -69,7 +69,7 @@ public class SpawnPetProcessor
                         }
                         long expiration = chr.getInventory(InventoryType.CASH).getItem(slot).getExpiration();
                         InventoryManipulator.removeById(c, InventoryType.CASH, petid, 1, false, false);
-                        InventoryManipulator.addById(c, evolveid, 1, null, petId, expiration);
+                        InventoryManipulator.addById(c, evolveid, 1, null, petId, expiration: expiration);
 
                         c.sendPacket(PacketCreator.enableActions());
                         return;
@@ -83,7 +83,7 @@ public class SpawnPetProcessor
                 {
                     if (chr.getSkillLevel(SkillFactory.GetSkillTrust(8)) == 0 && chr.getPet(0) != null)
                     {
-                        chr.unequipPet(chr.getPet(0), false);
+                        chr.unequipPet(chr.getPet(0)!, false);
                     }
                     if (lead)
                     {
@@ -97,8 +97,8 @@ public class SpawnPetProcessor
                     pet.setSummoned(true);
                     pet.saveToDb();
                     chr.addPet(pet);
-                    chr.getMap().broadcastMessage(c.getPlayer(), PacketCreator.showPet(c.getPlayer(), pet, false, false), true);
-                    c.sendPacket(PacketCreator.petStatUpdate(c.getPlayer()));
+                    chr.getMap().broadcastMessage(c.getPlayer(), PacketCreator.showPet(chr, pet, false, false), true);
+                    c.sendPacket(PacketCreator.petStatUpdate(chr));
                     c.sendPacket(PacketCreator.enableActions());
 
                     chr.commitExcludedItems();

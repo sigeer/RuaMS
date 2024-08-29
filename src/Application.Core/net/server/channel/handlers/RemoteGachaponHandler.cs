@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using client.autoban;
 using constants.id;
 using constants.inventory;
@@ -35,25 +34,25 @@ namespace net.server.channel.handlers;
  */
 public class RemoteGachaponHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int ticket = p.readInt();
         int gacha = p.readInt();
         if (ticket != ItemId.REMOTE_GACHAPON_TICKET)
         {
-            AutobanFactory.GENERAL.alert(c.getPlayer(), " Tried to use RemoteGachaponHandler with item id: " + ticket);
+            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with item id: " + ticket);
             c.disconnect(false, false);
             return;
         }
         else if (gacha < 0 || gacha > 11)
         {
-            AutobanFactory.GENERAL.alert(c.getPlayer(), " Tried to use RemoteGachaponHandler with mode: " + gacha);
+            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with mode: " + gacha);
             c.disconnect(false, false);
             return;
         }
-        else if (c.getPlayer().getInventory(ItemConstants.getInventoryType(ticket)).countById(ticket) < 1)
+        else if (c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(ticket)).countById(ticket) < 1)
         {
-            AutobanFactory.GENERAL.alert(c.getPlayer(), " Tried to use RemoteGachaponHandler without a ticket.");
+            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler without a ticket.");
             c.disconnect(false, false);
             return;
         }

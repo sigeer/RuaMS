@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using net.packet;
 
 namespace net.server.channel.handlers;
@@ -29,19 +28,19 @@ namespace net.server.channel.handlers;
 public class CancelDebuffHandler : AbstractPacketHandler
 {//TIP: BAD STUFF LOL!
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        /*List<Disease> diseases = c.getPlayer().getDiseases();
+        /*List<Disease> diseases = c.OnlinedCharacter.getDiseases();
          List<Disease> diseases_ = new <Disease>();
          foreach(Disease disease in diseases) {
          List<Disease> disease_ = new <Disease>();
          disease_.Add(disease);
          diseases_.Add(disease);
          c.sendPacket(PacketCreator.cancelDebuff(disease_));
-         c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.cancelForeignDebuff(c.getPlayer().getId(), disease_), false);
+         c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.cancelForeignDebuff(c.OnlinedCharacter.getId(), disease_), false);
          }
          foreach(Disease disease in diseases_) {
-         c.getPlayer().removeDisease(disease);
+         c.OnlinedCharacter.removeDisease(disease);
          }*/
     }
 }

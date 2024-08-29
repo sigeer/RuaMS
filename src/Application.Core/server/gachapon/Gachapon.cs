@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using tools;
 
 namespace server.gachapon;
@@ -190,7 +189,7 @@ public class Gachapon
         }
     }
 
-    public static void log(Character player, int itemId, string map)
+    public static void log(IPlayer player, int itemId, string map)
     {
         string itemName = ItemInformationProvider.getInstance().getName(itemId);
         _log.Information("{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.", player.getName(), itemName, itemId, map);

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,12 +21,12 @@
 */
 
 
-using client;
+using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
 using client.autoban;
 using client.status;
 using net.packet;
 using server.life;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -39,16 +39,16 @@ namespace net.server.channel.handlers;
  */
 public class MobDamageMobHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int from = p.readInt();
         p.readInt();
         int to = p.readInt();
         bool magic = p.readByte() == 0;
         int dmg = p.readInt();
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
 
-        MapleMap map = chr.getMap();
+        var map = chr.getMap();
         var attacker = map.getMonsterByOid(from);
         var damaged = map.getMonsterByOid(to);
 
@@ -58,10 +58,10 @@ public class MobDamageMobHandler : AbstractPacketHandler
 
             if (dmg > maxDmg)
             {
-                AutobanFactory.DAMAGE_HACK.alert(c.getPlayer(), "Possible packet editing hypnotize damage exploit.");   // thanks Rien dev team
+                AutobanFactory.DAMAGE_HACK.alert(c.OnlinedCharacter, "Possible packet editing hypnotize damage exploit.");   // thanks Rien dev team
                 string attackerName = MonsterInformationProvider.getInstance().getMobNameFromId(attacker.getId());
                 string damagedName = MonsterInformationProvider.getInstance().getMobNameFromId(damaged.getId());
-                log.Warning("Chr {CharacterName} had hypnotized {Attacker} to attack {Damaged} with damage {Damage} (max: {MaxDamage})", c.getPlayer().getName(),
+                log.Warning("Chr {CharacterName} had hypnotized {Attacker} to attack {Damaged} with damage {Damage} (max: {MaxDamage})", c.OnlinedCharacter.getName(),
                         attackerName, damagedName, dmg, maxDmg);
                 dmg = maxDmg;
             }

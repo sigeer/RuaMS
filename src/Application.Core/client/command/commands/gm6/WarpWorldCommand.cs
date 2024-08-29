@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -39,9 +39,9 @@ public class WarpWorldCommand : Command
         setDescription("Warp to a different world.");
     }
 
-    public override void execute(Client c, string[] paramValues)
+    public override void execute(IClient c, string[] paramValues)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramValues.Length < 1)
         {
             player.yellowMessage("Syntax: !warpworld <worldid>");

@@ -36,7 +36,7 @@ public class FamilyEntry
 
     private int characterID;
     private volatile Family family;
-    private volatile Character? character;
+    private volatile IPlayer? character;
 
     private volatile FamilyEntry? senior;
     private FamilyEntry?[] juniors = new FamilyEntry[2];
@@ -63,12 +63,12 @@ public class FamilyEntry
         this.job = job;
     }
 
-    public Character? getChr()
+    public IPlayer? getChr()
     {
         return character;
     }
 
-    public void setCharacter(Character newCharacter)
+    public void setCharacter(IPlayer? newCharacter)
     {
         // bug£¿
         if (newCharacter == null)
@@ -82,7 +82,7 @@ public class FamilyEntry
         this.character = newCharacter;
     }
 
-    private void cacheOffline(Character? chr)
+    private void cacheOffline(IPlayer? chr)
     {
         if (chr != null)
         {
@@ -188,7 +188,7 @@ public class FamilyEntry
                 if (!success)
                 {
                     dbTrans.Rollback();
-                    log.Error("Could not fork family with new leader {}. (Old senior: {}, leader: {})", getName(), oldSenior.getName(), oldFamily.getLeader().getName());
+                    log.Error("Could not fork family with new leader {LeaderName}. (Old senior: {OldName}, leader: {NewName})", getName(), oldSenior?.getName(), oldFamily.getLeader().getName());
                 }
                 dbTrans.Commit();
 
@@ -256,7 +256,7 @@ public class FamilyEntry
             }
             setTotalSeniors(getTotalSeniors() + seniorCount);
             this.generation += seniorCount;
-            foreach (FamilyEntry junior in juniors)
+            foreach (var junior in juniors)
             {
                 if (junior != null)
                 {
@@ -271,11 +271,9 @@ public class FamilyEntry
     {
         lock (addJuniorLock)
         {
-
-
             // climbs tree and adds junior count
             setTotalJuniors(getTotalJuniors() + juniorCount);
-            FamilyEntry senior = getSenior();
+            var senior = getSenior();
             if (senior != null)
             {
                 senior.addJuniorCount(juniorCount);
@@ -639,7 +637,7 @@ public class FamilyEntry
         var senior = getSenior();
         if (senior != null)
         {
-            Character? seniorChr = senior.getChr();
+            var seniorChr = senior.getChr();
             if (seniorChr != null)
             {
                 seniorChr.sendPacket(packet);
@@ -661,7 +659,7 @@ public class FamilyEntry
         var senior = getSenior();
         if (senior != null)
         {
-            Character? seniorChr = senior.getChr();
+            var seniorChr = senior.getChr();
             if (seniorChr != null)
             {
                 seniorChr.sendPacket(PacketCreator.getFamilyInfo(senior));

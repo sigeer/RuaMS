@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,9 +21,8 @@
 */
 
 
-using client;
+using Application.Core.Managers;
 using net.packet;
-using net.server.guild;
 
 namespace net.server.channel.handlers;
 
@@ -33,13 +32,13 @@ namespace net.server.channel.handlers;
 public class DenyGuildRequestHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readByte();
         var cfrom = c.getWorldServer().getPlayerStorage().getCharacterByName(p.readString());
         if (cfrom != null)
         {
-            Guild.answerInvitation(c.getPlayer().getId(), c.getPlayer().getName(), cfrom.getGuildId(), false);
+            GuildManager.answerInvitation(c.OnlinedCharacter.Id, c.OnlinedCharacter.Name, cfrom.GuildId, false);
         }
     }
 }

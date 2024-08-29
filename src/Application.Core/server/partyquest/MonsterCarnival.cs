@@ -1,11 +1,9 @@
 
 
+using Application.Core.Game.Maps;
+using Application.Core.Game.Relation;
 using Application.Core.scripting.Event;
-using client;
 using constants.String;
-using net.server;
-using net.server.channel;
-using net.server.world;
 using server.maps;
 using tools;
 
@@ -22,16 +20,16 @@ public class MonsterCarnival
     public static int B = 1;
     public static int A = 0;
 
-    private Party p1, p2;
-    private MapleMap map;
+    private ITeam p1, p2;
+    private IMap map;
     private ScheduledFuture? timer, effectTimer, respawnTask;
     private long startTime = 0;
     private int summonsR = 0, summonsB = 0, room = 0;
-    private Character leader1, leader2, team1, team2;
+    private IPlayer leader1, leader2, team1, team2;
     private int redCP, blueCP, redTotalCP, blueTotalCP, redTimeupCP, blueTimeupCP;
     private bool cpq1;
 
-    public MonsterCarnival(Party p1, Party p2, int mapid, bool cpq1, int room)
+    public MonsterCarnival(ITeam p1, ITeam p2, int mapid, bool cpq1, int room)
     {
         try
         {
@@ -39,9 +37,10 @@ public class MonsterCarnival
             this.room = room;
             this.p1 = p1;
             this.p2 = p2;
-            Channel cs = Server.getInstance().getWorld(p2.getLeader().getWorld()).getChannel(p2.getLeader().getChannel());
+            var cs = p2.getLeader().getChannelServer();
             p1.setEnemy(p2);
             p2.setEnemy(p1);
+            // 是否可以替换成getMap？
             map = cs.getMapFactory().getDisposableMap(mapid);
             startTime = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds();
             int redPortal = 0;
@@ -51,9 +50,8 @@ public class MonsterCarnival
                 redPortal = 2;
                 bluePortal = 1;
             }
-            foreach (PartyCharacter mpc in p1.getMembers())
+            foreach (var mc in p1.getMembers())
             {
-                Character mc = mpc.getPlayer();
                 if (mc != null)
                 {
                     mc.setMonsterCarnival(this);
@@ -68,9 +66,8 @@ public class MonsterCarnival
                     team1 = mc;
                 }
             }
-            foreach (PartyCharacter mpc in p2.getMembers())
+            foreach (var mc in p2.getMembers())
             {
-                Character mc = mpc.getPlayer();
                 if (mc != null)
                 {
                     mc.setMonsterCarnival(this);
@@ -87,17 +84,15 @@ public class MonsterCarnival
             }
             if (team1 == null || team2 == null)
             {
-                foreach (PartyCharacter mpc in p1.getMembers())
+                foreach (var chr in p1.getMembers())
                 {
-                    Character chr = mpc.getPlayer();
                     if (chr != null)
                     {
                         chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
                     }
                 }
-                foreach (PartyCharacter mpc in p2.getMembers())
+                foreach (var chr in p2.getMembers())
                 {
-                    Character chr = mpc.getPlayer();
                     if (chr != null)
                     {
                         chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
@@ -128,21 +123,21 @@ public class MonsterCarnival
     public void playerDisconnected(int charid)
     {
         int team = -1;
-        foreach (PartyCharacter mpc in leader1.getParty().getMembers())
+        foreach (var mpc in leader1.getParty().getMembers())
         {
             if (mpc.getId() == charid)
             {
                 team = 0;
             }
         }
-        foreach (PartyCharacter mpc in leader2.getParty().getMembers())
+        foreach (var mpc in leader2.getParty().getMembers())
         {
             if (mpc.getId() == charid)
             {
                 team = 1;
             }
         }
-        foreach (Character chrMap in map.getAllPlayers())
+        foreach (var chrMap in map.getAllPlayers())
         {
             if (team == -1)
             {
@@ -228,8 +223,8 @@ public class MonsterCarnival
 
     protected void dispose(bool warpout)
     {
-        Channel cs = map.getChannelServer();
-        MapleMap outs;
+        var cs = map.getChannelServer();
+        IMap outs;
         if (!cpq1)
         { // cpq2
             outs = cs.getMapFactory().getMap(980030010);
@@ -238,9 +233,8 @@ public class MonsterCarnival
         {
             outs = cs.getMapFactory().getMap(980000010);
         }
-        foreach (PartyCharacter mpc in leader1.getParty().getMembers())
+        foreach (var mc in leader1.getParty().getMembers())
         {
-            Character mc = mpc.getPlayer();
             if (mc != null)
             {
                 mc.resetCP();
@@ -252,9 +246,8 @@ public class MonsterCarnival
                 }
             }
         }
-        foreach (PartyCharacter mpc in leader2.getParty().getMembers())
+        foreach (var mc in leader2.getParty().getMembers())
         {
-            Character mc = mpc.getPlayer();
             if (mc != null)
             {
                 mc.resetCP();
@@ -305,42 +298,41 @@ public class MonsterCarnival
     {
         try
         {
-            Channel cs = map.getChannelServer();
+            var cs = map.getChannelServer();
+            var mapFactory = cs.getMapFactory();
             if (winningTeam == 0)
             {
-                foreach (PartyCharacter mpc in leader1.getParty().getMembers())
+                foreach (var mc in leader1.getParty()!.getMembers())
                 {
-                    Character mc = mpc.getPlayer();
                     if (mc != null)
                     {
                         mc.gainFestivalPoints(this.redTotalCP);
                         mc.setMonsterCarnival(null);
                         if (cpq1)
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 2), cs.getMapFactory().getMap(map.getId() + 2).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 2), mapFactory.getMap(map.getId() + 2).getPortal(0));
                         }
                         else
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 200), cs.getMapFactory().getMap(map.getId() + 200).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 200), mapFactory.getMap(map.getId() + 200).getPortal(0));
                         }
                         mc.setTeam(-1);
                         mc.dispelDebuffs();
                     }
                 }
-                foreach (PartyCharacter mpc in leader2.getParty().getMembers())
+                foreach (var mc in leader2.getParty()!.getMembers())
                 {
-                    Character mc = mpc.getPlayer();
                     if (mc != null)
                     {
                         mc.gainFestivalPoints(this.blueTotalCP);
                         mc.setMonsterCarnival(null);
                         if (cpq1)
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 3), cs.getMapFactory().getMap(map.getId() + 3).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 3), mapFactory.getMap(map.getId() + 3).getPortal(0));
                         }
                         else
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 300), cs.getMapFactory().getMap(map.getId() + 300).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 300), mapFactory.getMap(map.getId() + 300).getPortal(0));
                         }
                         mc.setTeam(-1);
                         mc.dispelDebuffs();
@@ -349,39 +341,37 @@ public class MonsterCarnival
             }
             else if (winningTeam == 1)
             {
-                foreach (PartyCharacter mpc in leader2.getParty().getMembers())
+                foreach (var mc in leader2.getParty().getMembers())
                 {
-                    Character mc = mpc.getPlayer();
                     if (mc != null)
                     {
                         mc.gainFestivalPoints(this.blueTotalCP);
                         mc.setMonsterCarnival(null);
                         if (cpq1)
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 2), cs.getMapFactory().getMap(map.getId() + 2).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 2), mapFactory.getMap(map.getId() + 2).getPortal(0));
                         }
                         else
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 200), cs.getMapFactory().getMap(map.getId() + 200).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 200), mapFactory.getMap(map.getId() + 200).getPortal(0));
                         }
                         mc.setTeam(-1);
                         mc.dispelDebuffs();
                     }
                 }
-                foreach (PartyCharacter mpc in leader1.getParty().getMembers())
+                foreach (var mc in leader1.getParty().getMembers())
                 {
-                    Character mc = mpc.getPlayer();
                     if (mc != null)
                     {
                         mc.gainFestivalPoints(this.redTotalCP);
                         mc.setMonsterCarnival(null);
                         if (cpq1)
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 3), cs.getMapFactory().getMap(map.getId() + 3).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 3), mapFactory.getMap(map.getId() + 3).getPortal(0));
                         }
                         else
                         {
-                            mc.changeMap(cs.getMapFactory().getMap(map.getId() + 300), cs.getMapFactory().getMap(map.getId() + 300).getPortal(0));
+                            mc.changeMap(mapFactory.getMap(map.getId() + 300), mapFactory.getMap(map.getId() + 300).getPortal(0));
                         }
                         mc.setTeam(-1);
                         mc.dispelDebuffs();
@@ -427,7 +417,7 @@ public class MonsterCarnival
 
     private void extendTime()
     {
-        foreach (Character chrMap in map.getAllPlayers())
+        foreach (var chrMap in map.getAllPlayers())
         {
             chrMap.dropMessage(5, LanguageConstants.getMessage(chrMap, LanguageConstants.CPQExtendTime));
         }
@@ -460,9 +450,8 @@ public class MonsterCarnival
         }
 
         map.killAllMonsters();
-        foreach (PartyCharacter mpc in leader1.getParty().getMembers())
+        foreach (var mc in leader1.getParty().getMembers())
         {
-            Character mc = mpc.getPlayer();
             if (mc != null)
             {
                 if (redWin)
@@ -479,9 +468,8 @@ public class MonsterCarnival
                 }
             }
         }
-        foreach (PartyCharacter mpc in leader2.getParty().getMembers())
+        foreach (var mc in leader2.getParty().getMembers())
         {
-            Character mc = mpc.getPlayer();
             if (mc != null)
             {
                 if (!redWin)
@@ -500,47 +488,47 @@ public class MonsterCarnival
         }
     }
 
-    public Party getRed()
+    public ITeam getRed()
     {
         return p1;
     }
 
-    public void setRed(Party p1)
+    public void setRed(ITeam p1)
     {
         this.p1 = p1;
     }
 
-    public Party getBlue()
+    public ITeam getBlue()
     {
         return p2;
     }
 
-    public void setBlue(Party p2)
+    public void setBlue(ITeam p2)
     {
         this.p2 = p2;
     }
 
-    public Character getLeader1()
+    public IPlayer getLeader1()
     {
         return leader1;
     }
 
-    public void setLeader1(Character leader1)
+    public void setLeader1(IPlayer leader1)
     {
         this.leader1 = leader1;
     }
 
-    public Character getLeader2()
+    public IPlayer getLeader2()
     {
         return leader2;
     }
 
-    public void setLeader2(Character leader2)
+    public void setLeader2(IPlayer leader2)
     {
         this.leader2 = leader2;
     }
 
-    public Character getEnemyLeader(int team)
+    public IPlayer getEnemyLeader(int team)
     {
         switch (team)
         {
@@ -653,7 +641,7 @@ public class MonsterCarnival
         return this.room;
     }
 
-    public MapleMap getEventMap()
+    public IMap getEventMap()
     {
         return this.map;
     }

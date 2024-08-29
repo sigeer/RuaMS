@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -32,9 +32,9 @@ namespace net.server.channel.handlers;
 
 public class SkillBookHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        if (!c.getPlayer().isAlive())
+        if (!c.OnlinedCharacter.isAlive())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
@@ -49,18 +49,18 @@ public class SkillBookHandler : AbstractPacketHandler
         int skill = 0;
         int maxlevel = 0;
 
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (c.tryacquireClient())
         {
             try
             {
-                Inventory inv = c.getPlayer().getInventory(InventoryType.USE);
+                Inventory inv = c.OnlinedCharacter.getInventory(InventoryType.USE);
                 var toUse = inv.getItem(slot);
                 if (toUse == null || toUse.getItemId() != itemId)
                 {
                     return;
                 }
-                Dictionary<string, int> skilldata = ItemInformationProvider.getInstance().getSkillStats(toUse.getItemId(), c.getPlayer().getJob().getId());
+                Dictionary<string, int> skilldata = ItemInformationProvider.getInstance().getSkillStats(toUse.getItemId(), c.OnlinedCharacter.getJob().getId());
                 if (skilldata == null)
                 {
                     return;

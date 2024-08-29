@@ -50,7 +50,7 @@ public class IntervalRequirement : AbstractQuestRequirement
         interval = (DataTool.getInt(data)) * 60 * 1000;
     }
 
-    private static string getIntervalTimeLeft(Character chr, IntervalRequirement r)
+    private static string getIntervalTimeLeft(IPlayer chr, IntervalRequirement r)
     {
         long futureTime = chr.getQuest(Quest.getInstance(r.questID)).getCompletionTime() + r.getInterval();
         var leftTime = DateTimeOffset.FromUnixTimeMilliseconds(futureTime) - DateTimeOffset.Now;
@@ -67,7 +67,7 @@ public class IntervalRequirement : AbstractQuestRequirement
         return string.Join(", ", messages);
     }
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         bool check = !chr.getQuest(Quest.getInstance(questID)).getStatus().Equals(QuestStatus.Status.COMPLETED);
         bool check2 = chr.getQuest(Quest.getInstance(questID)).getCompletionTime() <= DateTimeOffset.Now.ToUnixTimeMilliseconds() - interval;

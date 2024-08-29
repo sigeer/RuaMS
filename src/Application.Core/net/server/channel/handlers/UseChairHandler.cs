@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.inventory;
 using constants.id;
 using net.packet;
@@ -30,12 +29,12 @@ namespace net.server.channel.handlers;
 
 public class UseChairHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int itemId = p.readInt();
 
         // thanks Darter (YungMoozi) for reporting unchecked chair item
-        if (!ItemId.isChair(itemId) || c.getPlayer().getInventory(InventoryType.SETUP).findById(itemId) == null)
+        if (!ItemId.isChair(itemId) || c.OnlinedCharacter.getInventory(InventoryType.SETUP).findById(itemId) == null)
         {
             return;
         }
@@ -44,7 +43,7 @@ public class UseChairHandler : AbstractPacketHandler
         {
             try
             {
-                c.getPlayer().sitChair(itemId);
+                c.OnlinedCharacter.sitChair(itemId);
             }
             finally
             {

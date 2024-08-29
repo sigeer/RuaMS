@@ -1,5 +1,5 @@
 /*
-    This file is part of the OdinMS Maple Story Server
+    This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
                Matthias Butz <matze@odinms.de>
                Jan Christian Meyer <vimes@odinms.de>
@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Life;
 using client;
 using net.packet;
 using server.life;
@@ -38,10 +39,10 @@ namespace net.server.channel.handlers;
 public class MoveLifeHandler : AbstractMovementPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character player = c.getPlayer();
-        MapleMap map = player.getMap();
+        var player = c.OnlinedCharacter;
+        var map = player.getMap();
 
         if (player.isChangingMaps())
         {  // thanks Lame for noticing mob movement shuffle (mob OID on different maps) happening on map transitions
@@ -56,8 +57,8 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
             return;
         }
 
-        Monster monster = (Monster)mmo;
-        List<Character> banishPlayers = null;
+        var monster = (Monster)mmo;
+        List<IPlayer>? banishPlayers = null;
 
         byte pNibbles = p.readByte();
         sbyte rawActivity = p.ReadSByte();
@@ -120,7 +121,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         int mobMp = monster.getMp();
         if (nextMovementCouldBeSkill && monster.hasAnySkill())
         {
-            MobSkillId skillToUse = monster.getRandomSkill();
+            var skillToUse = monster.getRandomSkill();
             nextSkillId = skillToUse.type.getId();
             nextSkillLevel = skillToUse.level;
             nextUse = MobSkillFactory.getMobSkillOrThrow(skillToUse.type, skillToUse.level);
@@ -182,7 +183,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
 
         if (banishPlayers != null)
         {
-            foreach (Character chr in banishPlayers)
+            foreach (var chr in banishPlayers)
             {
                 chr.changeMapBanish(monster.getBanish());
             }

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,7 @@
 */
 
 
-using client;
+using Application.Core.Game.Maps;
 using client.inventory;
 using constants.game;
 using net.packet;
@@ -36,15 +36,15 @@ namespace net.server.channel.handlers;
  */
 public class HiredMerchantRequest : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
 
         try
         {
-            foreach (MapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
+            foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
             {
-                if (mmo is Character mc)
+                if (mmo is IPlayer mc)
                 {
 
                     var shop = mc.getPlayerShop();

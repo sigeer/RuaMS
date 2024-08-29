@@ -31,5 +31,5 @@ public partial class FamilyCharacter
 
     public long Lastresettime { get; set; }
 
-    public virtual DB_Character CidNavigation { get; set; } = null!;
+    public virtual CharacterEntity CidNavigation { get; set; } = null!;
 }

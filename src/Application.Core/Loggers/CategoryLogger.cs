@@ -1,4 +1,4 @@
-﻿using client;
+﻿using Application.Utility;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Loggers
@@ -23,6 +23,16 @@ namespace Application.Core.Loggers
         public static ILogger GetLogger(string type)
         {
             return dataSource.GetOrAdd(type, e => new CategoryLogger(e)).Logger;
+        }
+
+        public static ILogger GetCharacterLog(int accountId, int characterId, string type = "Account")
+        {
+            return GetLogger($"{type}/{type}_{new RangeNumberGenerator(accountId, RangeSteps.Accounts)}/{accountId}/Character_{characterId}");
+        }
+
+        public static ILogger GetAccountLog(int accountId, string type = "Account")
+        {
+            return GetLogger($"{type}/{type}_{new RangeNumberGenerator(accountId, RangeSteps.Accounts)}/{accountId}/{type}");
         }
 
     }

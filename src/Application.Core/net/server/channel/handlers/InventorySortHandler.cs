@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using client.inventory;
 using net.packet;
 using server;
@@ -241,7 +240,7 @@ class PairedQuicksort
         return it.getItemId() / 10000;
     }
 
-    private int[] BinarySearchElement(List<Item> A, int rangeId)
+    private int[]? BinarySearchElement(List<Item> A, int rangeId)
     {
         int st = 0, en = A.Count - 1;
 
@@ -287,7 +286,7 @@ class PairedQuicksort
         return new int[] { st, en };
     }
 
-    public void reverseSortSublist(List<Item> A, int[] range)
+    public void reverseSortSublist(List<Item> A, int[]? range)
     {
         if (range != null)
         {
@@ -333,9 +332,9 @@ class PairedQuicksort
 
 public class InventorySortHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         p.readInt();
         chr.getAutobanManager().setTimestamp(3, Server.getInstance().getCurrentTimestamp(), 4);
 

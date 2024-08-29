@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -35,9 +35,9 @@ public class PapCommand : Command
         setDescription("Spawn Papulatus on your location.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
         // thanks Conrad for noticing mobid typo here
         player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(MobId.PAPULATUS_CLOCK), player.getPosition());

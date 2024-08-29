@@ -22,9 +22,8 @@
 
 
 
-using client;
+using Application.Core.Game.Relation;
 using net.server;
-using net.server.world;
 
 namespace server.partyquest;
 /**
@@ -35,19 +34,19 @@ public class PartyQuest
     private static ILogger log = LogFactory.GetLogger("PartyQuest");
 
     int channel, world;
-    Party party;
-    List<Character> participants = new();
+    ITeam party;
+    List<IPlayer> participants = new();
 
-    public PartyQuest(Party party)
+    public PartyQuest(ITeam party)
     {
         this.party = party;
-        PartyCharacter leader = party.getLeader();
-        channel = leader.getChannel();
+        var leader = party.getLeader();
+        channel = leader.Channel!.Value;
         world = leader.getWorld();
         int mapid = leader.getMapId();
-        foreach (PartyCharacter pchr in party.getMembers())
+        foreach (var pchr in party.getMembers())
         {
-            if (pchr.getChannel() == channel && pchr.getMapId() == mapid)
+            if (pchr.Channel == channel && pchr.getMapId() == mapid)
             {
                 var chr = Server.getInstance().getWorld(world).getChannel(channel).getPlayerStorage().getCharacterById(pchr.getId());
                 if (chr != null)
@@ -58,17 +57,17 @@ public class PartyQuest
         }
     }
 
-    public Party getParty()
+    public ITeam getParty()
     {
         return party;
     }
 
-    public List<Character> getParticipants()
+    public List<IPlayer> getParticipants()
     {
         return participants;
     }
 
-    public void removeParticipant(Character chr)
+    public void removeParticipant(IPlayer chr)
     {
         lock (participants)
         {

@@ -19,8 +19,9 @@
 */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using net.server;
-using net.server.channel;
 using server.maps;
 using tools;
 
@@ -60,7 +61,7 @@ public class PlayerNPCPositioner
         return (YamlConfig.config.server.PLAYERNPC_AREA_Y / 2) + (YamlConfig.config.server.PLAYERNPC_AREA_Y / (1 << (newStep + 1)));
     }
 
-    private static List<Point> rearrangePlayerNpcPositions(MapleMap map, int newStep, int pnpcsSize)
+    private static List<Point> rearrangePlayerNpcPositions(IMap map, int newStep, int pnpcsSize)
     {
         Rectangle mapArea = map.getMapArea();
 
@@ -98,7 +99,7 @@ public class PlayerNPCPositioner
         return null;
     }
 
-    private static Point? rearrangePlayerNpcs(MapleMap map, int newStep, List<PlayerNPC> pnpcs)
+    private static Point? rearrangePlayerNpcs(IMap map, int newStep, List<PlayerNPC> pnpcs)
     {
         Rectangle mapArea = map.getMapArea();
 
@@ -142,7 +143,7 @@ public class PlayerNPCPositioner
         return null;    // this area should not be reached under any scenario
     }
 
-    private static Point? reorganizePlayerNpcs(MapleMap map, int newStep, List<MapObject> mmoList)
+    private static Point? reorganizePlayerNpcs(IMap map, int newStep, List<IMapObject> mmoList)
     {
         if (mmoList.Count > 0)
         {
@@ -152,7 +153,7 @@ public class PlayerNPCPositioner
             }
 
             List<PlayerNPC> playerNpcs = new(mmoList.Count);
-            foreach (MapObject mmo in mmoList)
+            foreach (var mmo in mmoList)
             {
                 playerNpcs.Add((PlayerNPC)mmo);
             }
@@ -162,11 +163,11 @@ public class PlayerNPCPositioner
                 return p1.getScriptId() - p2.getScriptId(); // scriptid as playernpc history
             });
 
-            foreach (Channel ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
+            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
             {
-                MapleMap m = ch.getMapFactory().getMap(map.getId());
+                var m = ch.getMapFactory().getMap(map.getId());
 
-                foreach (PlayerNPC pn in playerNpcs)
+                foreach (var pn in playerNpcs)
                 {
                     m.removeMapObject(pn);
                     m.broadcastMessage(PacketCreator.removeNPCController(pn.getObjectId()));
@@ -176,11 +177,11 @@ public class PlayerNPCPositioner
 
             var ret = rearrangePlayerNpcs(map, newStep, playerNpcs);
 
-            foreach (Channel ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
+            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
             {
-                MapleMap m = ch.getMapFactory().getMap(map.getId());
+                var m = ch.getMapFactory().getMap(map.getId());
 
-                foreach (PlayerNPC pn in playerNpcs)
+                foreach (var pn in playerNpcs)
                 {
                     m.addPlayerNPCMapObject(pn);
                     m.broadcastMessage(PacketCreator.spawnPlayerNPC(pn));
@@ -194,11 +195,11 @@ public class PlayerNPCPositioner
         return null;
     }
 
-    private static Point? getNextPlayerNpcPosition(MapleMap map, int initStep)
+    private static Point? getNextPlayerNpcPosition(IMap map, int initStep)
     {   // automated playernpc position thanks to Ronan
-        List<MapObject> mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
+        var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
         List<Point> otherPlayerNpcs = new();
-        foreach (MapObject mmo in mmoList)
+        foreach (var mmo in mmoList)
         {
             otherPlayerNpcs.Add(mmo.getPosition());
         }
@@ -262,7 +263,7 @@ public class PlayerNPCPositioner
         return null;
     }
 
-    public static Point? getNextPlayerNpcPosition(MapleMap map)
+    public static Point? getNextPlayerNpcPosition(IMap map)
     {
         return getNextPlayerNpcPosition(map, map.getWorldServer().getPlayerNpcMapStep(map.getId()));
     }

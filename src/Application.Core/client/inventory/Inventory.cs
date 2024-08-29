@@ -21,9 +21,9 @@
 */
 
 
+using Application.Core.model;
 using client.inventory.manipulator;
 using constants.inventory;
-using Serilog;
 using server;
 using System.Collections;
 
@@ -40,11 +40,11 @@ public class Inventory : IEnumerable<Item>
     protected InventoryType type;
     protected object lockObj = new object();
 
-    protected Character owner;
+    protected IPlayer owner;
     protected byte slotLimit;
     protected bool isChecked = false;
 
-    public Inventory(Character mc, InventoryType type, byte slotLimit)
+    public Inventory(IPlayer mc, InventoryType type, byte slotLimit)
     {
         this.owner = mc;
         this.inventory = new();
@@ -553,12 +553,12 @@ public class Inventory : IEnumerable<Item>
         return true;
     }
 
-    public static bool checkSpot(Character chr, Item item)
+    public static bool checkSpot(IPlayer chr, Item item)
     {    // thanks Vcoc for noticing pshops not checking item stacks when taking item back
         return checkSpot(chr, Collections.singletonList(item));
     }
 
-    public static bool checkSpot(Character chr, List<Item> items)
+    public static bool checkSpot(IPlayer chr, List<Item> items)
     {
         List<ItemInventoryType> listItems = new();
         foreach (Item item in items)
@@ -569,12 +569,12 @@ public class Inventory : IEnumerable<Item>
         return checkSpotsAndOwnership(chr, listItems);
     }
 
-    public static bool checkSpots(Character chr, List<ItemInventoryType> items)
+    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items)
     {
         return checkSpots(chr, items, false);
     }
 
-    public static bool checkSpots(Character chr, List<ItemInventoryType> items, bool useProofInv)
+    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, bool useProofInv)
     {
         int invTypesSize = Enum.GetValues<InventoryType>().Length;
         List<int> zeroedList = new(invTypesSize);
@@ -586,7 +586,7 @@ public class Inventory : IEnumerable<Item>
         return checkSpots(chr, items, zeroedList, useProofInv);
     }
 
-    public static bool checkSpots(Character chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         // assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0.
 
@@ -624,7 +624,7 @@ public class Inventory : IEnumerable<Item>
             }
         }
 
-        Client c = chr.getClient();
+        var c = chr.getClient();
         foreach (var it in rcvItems)
         {
             int itemType = rcvTypes.GetValueOrDefault(it.Key) - 1;
@@ -668,23 +668,19 @@ public class Inventory : IEnumerable<Item>
         return (itemId << 32) + fnvHash32(owner);
     }
 
-    public static bool checkSpotsAndOwnership(Character chr, List<ItemInventoryType> items)
+    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items)
     {
         return checkSpotsAndOwnership(chr, items, false);
     }
 
-    public static bool checkSpotsAndOwnership(Character chr, List<ItemInventoryType> items, bool useProofInv)
+    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, bool useProofInv)
     {
-        List<int> zeroedList = new(5);
-        for (byte i = 0; i < 5; i++)
-        {
-            zeroedList.Add(0);
-        }
+        List<int> zeroedList = Enumerable.Repeat(0, 5).ToList();
 
         return checkSpotsAndOwnership(chr, items, zeroedList, useProofInv);
     }
 
-    public static bool checkSpotsAndOwnership(Character chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         //assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0 and item list to be checked is a legal one.
 
@@ -693,51 +689,44 @@ public class Inventory : IEnumerable<Item>
             return false;
         }
 
-        Dictionary<long, List<int>> rcvItems = new();
-        Dictionary<long, byte> rcvTypes = new();
-        Dictionary<long, string> rcvOwners = new();
+        Dictionary<long, GroupedItem> rcvInfo = new();
 
         foreach (var item in items)
         {
             long itemHash = hashKey(item.Item.getItemId(), item.Item.getOwner());
-            List<int>? qty = rcvItems.GetValueOrDefault(itemHash);
+            var qty = rcvInfo.GetValueOrDefault(itemHash);
 
             if (qty == null)
             {
-                List<int> itemQtyList = new();
-                itemQtyList.Add(item.Item.getQuantity());
-
-                rcvItems.AddOrUpdate(itemHash, itemQtyList);
-                rcvTypes.AddOrUpdate(itemHash, (byte)item.Type.getType());
-                rcvOwners.AddOrUpdate(itemHash, item.Item.getOwner());
+                rcvInfo.AddOrUpdate(itemHash, new GroupedItem(item, [item.Item.getQuantity()]));
             }
             else
             {
                 // thanks BHB88 for pointing out an issue with rechargeable items being stacked on inventory check
                 if (!ItemConstants.isEquipment(item.Item.getItemId()) && !ItemConstants.isRechargeable(item.Item.getItemId()))
                 {
-                    qty.set(0, qty.get(0) + item.Item.getQuantity());
+                    qty.GroupQuantity[0] += item.Item.getQuantity();
                 }
                 else
                 {
-                    qty.Add(item.Item.getQuantity());
+                    qty.GroupQuantity.Add(item.Item.getQuantity());
                 }
             }
         }
 
-        Client c = chr.getClient();
-        foreach (var it in rcvItems)
+        var c = chr.getClient();
+        foreach (var it in rcvInfo)
         {
-            int itemType = rcvTypes.GetValueOrDefault(it.Key) - 1;
             int itemId = (int)(it.Key >> 32);
+            int itemType = it.Value.ItemInventoryType.Type.getType() - 1;
 
-            foreach (int itValue in it.Value)
+            foreach (int itValue in it.Value.GroupQuantity)
             {
                 int usedSlots = typesSlotsUsed.get(itemType);
 
                 //System.out.print("inserting " + itemId + " with type " + itemType + " qty " + it.getValue() + " owner '" + rcvOwners.get(it.Key) + "' current usedSlots:");
                 //foreach(int i in typesSlotsUsed) System.out.print(" " + i);
-                int result = InventoryManipulator.checkSpaceProgressively(c, itemId, itValue, rcvOwners.GetValueOrDefault(it.Key), usedSlots, useProofInv);
+                int result = InventoryManipulator.checkSpaceProgressively(c, itemId, itValue, it.Value.ItemInventoryType.Item.getOwner(), usedSlots, useProofInv);
                 bool hasSpace = ((result % 2) != 0);
                 //System.out.print(" -> hasSpace: " + hasSpace + " RESULT : " + result + "\n");
 
@@ -768,7 +757,7 @@ public class Inventory : IEnumerable<Item>
         return GetEnumerator();
     }
 
-    public Item findByCashId(int cashId)
+    public Item? findByCashId(int cashId)
     {
         bool isRing = false;
         Equip equip = null;
@@ -826,7 +815,7 @@ public class Inventory : IEnumerable<Item>
 
     public void dispose()
     {
-        owner = null;
+
     }
 
 }

@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -35,9 +35,9 @@ public class ClearSlotCommand : Command
         setDescription("Clear all items in an inventory tab.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !clearslot <all, equip, use, setup, etc or cash.>");
@@ -49,7 +49,7 @@ public class ClearSlotCommand : Command
             case "all":
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.EQUIP).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.EQUIP).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -58,7 +58,7 @@ public class ClearSlotCommand : Command
                 }
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.USE).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -67,7 +67,7 @@ public class ClearSlotCommand : Command
                 }
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.ETC).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -76,7 +76,7 @@ public class ClearSlotCommand : Command
                 }
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.SETUP).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.SETUP).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -85,7 +85,7 @@ public class ClearSlotCommand : Command
                 }
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.CASH).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.CASH).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -97,7 +97,7 @@ public class ClearSlotCommand : Command
             case "equip":
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.EQUIP).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.EQUIP).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -109,7 +109,7 @@ public class ClearSlotCommand : Command
             case "use":
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.USE).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -121,7 +121,7 @@ public class ClearSlotCommand : Command
             case "setup":
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.SETUP).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.SETUP).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -133,7 +133,7 @@ public class ClearSlotCommand : Command
             case "etc":
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.ETC).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;
@@ -145,7 +145,7 @@ public class ClearSlotCommand : Command
             case "cash":
                 for (int i = 0; i < 101; i++)
                 {
-                    var tempItem = c.getPlayer().getInventory(InventoryType.CASH).getItem((byte)i);
+                    var tempItem = c.OnlinedCharacter.getInventory(InventoryType.CASH).getItem((byte)i);
                     if (tempItem == null)
                     {
                         continue;

@@ -20,9 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using client;
-
 namespace server.maps;
 
 
@@ -39,7 +36,7 @@ public interface Portal
     void setPortalStatus(bool newStatus);
     bool getPortalStatus();
     int getTargetMapId();
-    void enterPortal(Client c);
+    void enterPortal(IClient c);
     void setPortalState(bool state);
     bool getPortalState();
 }

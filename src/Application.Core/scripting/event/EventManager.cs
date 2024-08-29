@@ -21,18 +21,18 @@
 */
 
 
-using client;
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
+using Application.Core.Game.Relation;
+using Application.Core.Game.TheWorld;
 using constants.game;
 using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
 using net.server;
-using net.server.channel;
-using net.server.world;
 using scripting.Event.scheduler;
 using server;
 using server.expeditions;
 using server.life;
-using server.maps;
 using server.quest;
 using tools.exceptions;
 
@@ -48,8 +48,8 @@ public class EventManager
 {
     static ILogger log = LogFactory.GetLogger(LogType.EventManager);
     private V8ScriptEngine iv;
-    private Channel cserv;
-    private World wserv;
+    private IWorldChannel cserv;
+    private IWorld wserv;
     private Server server;
     private EventScriptScheduler ess = new EventScriptScheduler();
     private Dictionary<string, EventInstanceManager> instances = new();
@@ -74,12 +74,12 @@ public class EventManager
 
     private static int maxLobbys = 8;     // an event manager holds up to this amount of concurrent lobbys
 
-    public EventManager(Channel cserv, V8ScriptEngine iv, string name)
+    public EventManager(IWorldChannel cserv, V8ScriptEngine iv, string name)
     {
         this.server = Server.getInstance();
         this.iv = iv;
         this.cserv = cserv;
-        this.wserv = server.getWorld(cserv.getWorld())!;
+        this.wserv = cserv.WorldModel;
         this.name = name;
 
         this.openedLobbys = new();
@@ -206,12 +206,12 @@ public class EventManager
         return new EventScheduledFuture(r, ess);
     }
 
-    public World getWorldServer()
+    public IWorld getWorldServer()
     {
         return wserv;
     }
 
-    public Channel getChannelServer()
+    public IWorldChannel getChannelServer()
     {
         return cserv;
     }
@@ -417,7 +417,7 @@ public class EventManager
     }
 
     //Expedition method: starts an expedition
-    public bool startInstance(int lobbyId, Expedition exped, Character leader)
+    public bool startInstance(int lobbyId, Expedition exped, IPlayer leader)
     {
         if (this.isDisposed())
         {
@@ -503,17 +503,17 @@ public class EventManager
     }
 
     //Regular method: player 
-    public bool startInstance(Character chr)
+    public bool startInstance(IPlayer chr)
     {
         return startInstance(-1, chr);
     }
 
-    public bool startInstance(int lobbyId, Character leader)
+    public bool startInstance(int lobbyId, IPlayer leader)
     {
         return startInstance(lobbyId, leader, leader, 1);
     }
 
-    public bool startInstance(int lobbyId, Character chr, Character leader, int difficulty)
+    public bool startInstance(int lobbyId, IPlayer chr, IPlayer leader, int difficulty)
     {
         if (this.isDisposed())
         {
@@ -600,17 +600,17 @@ public class EventManager
     }
 
     //PQ method: starts a PQ
-    public bool startInstance(Party party, MapleMap map)
+    public bool startInstance(ITeam party, IMap map)
     {
         return startInstance(-1, party, map);
     }
 
-    public bool startInstance(int lobbyId, Party party, MapleMap map)
+    public bool startInstance(int lobbyId, ITeam party, IMap map)
     {
-        return startInstance(lobbyId, party, map, party.getLeader().getPlayer());
+        return startInstance(lobbyId, party, map, party.getLeader());
     }
 
-    public bool startInstance(int lobbyId, Party party, MapleMap map, Character leader)
+    public bool startInstance(int lobbyId, ITeam party, IMap map, IPlayer leader)
     {
         if (this.isDisposed())
         {
@@ -696,17 +696,17 @@ public class EventManager
     }
 
     //PQ method: starts a PQ with a difficulty level, requires function setup(difficulty, leaderid) instead of setup()
-    public bool startInstance(Party party, MapleMap map, int difficulty)
+    public bool startInstance(ITeam party, IMap map, int difficulty)
     {
         return startInstance(-1, party, map, difficulty);
     }
 
-    public bool startInstance(int lobbyId, Party party, MapleMap map, int difficulty)
+    public bool startInstance(int lobbyId, ITeam party, IMap map, int difficulty)
     {
-        return startInstance(lobbyId, party, map, difficulty, party.getLeader().getPlayer());
+        return startInstance(lobbyId, party, map, difficulty, party.getLeader());
     }
 
-    public bool startInstance(int lobbyId, Party party, MapleMap map, int difficulty, Character leader)
+    public bool startInstance(int lobbyId, ITeam party, IMap map, int difficulty, IPlayer leader)
     {
         if (this.isDisposed())
         {
@@ -797,7 +797,7 @@ public class EventManager
         return startInstance(-1, eim, ldr);
     }
 
-    public bool startInstance(EventInstanceManager eim, Character ldr)
+    public bool startInstance(EventInstanceManager eim, IPlayer ldr)
     {
         return startInstance(-1, eim, ldr.getName(), ldr);
     }
@@ -807,7 +807,7 @@ public class EventManager
         return startInstance(-1, eim, ldr, eim.getEm().getChannelServer().getPlayerStorage().getCharacterByName(ldr));  // things they make me do...
     }
 
-    public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr, Character leader)
+    public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr, IPlayer leader)
     {
         if (this.isDisposed())
         {
@@ -880,7 +880,7 @@ public class EventManager
         return false;
     }
 
-    public List<PartyCharacter> getEligibleParty(Party party)
+    public List<IPlayer> getEligibleParty(ITeam party)
     {
         if (party == null)
         {
@@ -891,7 +891,7 @@ public class EventManager
             object o = iv.InvokeSync("getEligibleParty", party.getPartyMembersOnline());
             if (o is IJavaScriptObject jobject)
             {
-                List<PartyCharacter> eligibleParty = jobject.ToEnumerable().OfType<PartyCharacter>().ToList();
+                List<IPlayer> eligibleParty = jobject.ToEnumerable().OfType<IPlayer>().ToList();
                 party.setEligibleMembers(eligibleParty);
                 return eligibleParty;
             }
@@ -916,7 +916,7 @@ public class EventManager
         }
     }
 
-    public void clearPQ(EventInstanceManager eim, MapleMap toMap)
+    public void clearPQ(EventInstanceManager eim, IMap toMap)
     {
         try
         {
@@ -1041,7 +1041,7 @@ public class EventManager
 
     public bool attemptStartGuildInstance()
     {
-        Character? chr = null;
+        IPlayer? chr = null;
         List<int>? guildInstance = null;
         while (chr == null)
         {
@@ -1065,7 +1065,7 @@ public class EventManager
         }
     }
 
-    public void startQuest(Character chr, int id, int npcid)
+    public void startQuest(IPlayer chr, int id, int npcid)
     {
         try
         {
@@ -1077,7 +1077,7 @@ public class EventManager
         }
     }
 
-    public void completeQuest(Character chr, int id, int npcid)
+    public void completeQuest(IPlayer chr, int id, int npcid)
     {
         try
         {

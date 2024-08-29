@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using scripting.map;
 using server.maps;
 using tools;
@@ -31,7 +30,7 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
 {
     private Portal portal;
 
-    public PortalPlayerInteraction(Client c, Portal portal) : base(c)
+    public PortalPlayerInteraction(IClient c, Portal portal) : base(c)
     {
         this.portal = portal;
     }
@@ -55,12 +54,12 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
 
     public void blockPortal()
     {
-        c.getPlayer().blockPortal(getPortal().getScriptName());
+        c.OnlinedCharacter.blockPortal(getPortal().getScriptName());
     }
 
     public void unblockPortal()
     {
-        c.getPlayer().unblockPortal(getPortal().getScriptName());
+        c.OnlinedCharacter.unblockPortal(getPortal().getScriptName());
     }
 
     public void playPortalSound()

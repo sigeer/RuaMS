@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -34,14 +34,14 @@ public class MapPlayersCommand : Command
         setDescription("Show all players on the map.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         string names = "";
         int map = player.getMapId();
-        foreach (World world in Server.getInstance().getWorlds())
+        foreach (var world in Server.getInstance().getWorlds())
         {
-            foreach (Character chr in world.getPlayerStorage().getAllCharacters())
+            foreach (var chr in world.getPlayerStorage().getAllCharacters())
             {
                 int curMap = chr.getMapId();
                 string hp = chr.getHp().ToString();

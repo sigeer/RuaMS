@@ -25,7 +25,6 @@ using client.newyear;
 using constants.id;
 using constants.inventory;
 using server;
-using server.maps;
 using tools;
 
 namespace client.inventory.manipulator;
@@ -40,29 +39,9 @@ public class InventoryManipulator
 {
     private static ILogger log = LogFactory.GetLogger("InventoryManipulator");
 
-    public static bool addById(Client c, int itemId, short quantity)
+    public static bool addById(IClient c, int itemId, short quantity, string? owner = null, int petid = -1, short flag = 0, long expiration = -1)
     {
-        return addById(c, itemId, quantity, null, -1, -1);
-    }
-
-    public static bool addById(Client c, int itemId, short quantity, long expiration)
-    {
-        return addById(c, itemId, quantity, null, -1, 0, expiration);
-    }
-
-    public static bool addById(Client c, int itemId, short quantity, string owner, int petid)
-    {
-        return addById(c, itemId, quantity, owner, petid, -1);
-    }
-
-    public static bool addById(Client c, int itemId, short quantity, string owner, int petid, long expiration)
-    {
-        return addById(c, itemId, quantity, owner, petid, 0, expiration);
-    }
-
-    public static bool addById(Client c, int itemId, short quantity, string owner, int petid, short flag, long expiration)
-    {
-        Character chr = c.getPlayer();
+        IPlayer chr = c.OnlinedCharacter;
         InventoryType type = ItemConstants.getInventoryType(itemId);
 
         Inventory inv = chr.getInventory(type);
@@ -77,7 +56,7 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addByIdInternal(Client c, Character chr, InventoryType type, Inventory inv, int itemId, short quantity, string owner, int petid, short flag, long expiration)
+    private static bool addByIdInternal(IClient c, IPlayer chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, int petid, short flag, long expiration)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (!type.Equals(InventoryType.EQUIP))
@@ -187,19 +166,15 @@ public class InventoryManipulator
         return true;
     }
 
-    public static bool addFromDrop(Client c, Item item)
-    {
-        return addFromDrop(c, item, true);
-    }
 
-    public static bool addFromDrop(Client c, Item item, bool show)
+    public static bool addFromDrop(IClient c, Item item, bool show = true)
     {
         return addFromDrop(c, item, show, item.getPetId());
     }
 
-    public static bool addFromDrop(Client c, Item? item, bool show, int petId)
+    public static bool addFromDrop(IClient c, Item item, bool show, int petId)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         InventoryType type = item.getInventoryType();
 
         Inventory inv = chr.getInventory(type);
@@ -214,7 +189,7 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addFromDropInternal(Client c, Character chr, InventoryType type, Inventory inv, Item? item, bool show, int petId)
+    private static bool addFromDropInternal(IClient c, IPlayer chr, InventoryType type, Inventory inv, Item item, bool show, int petId)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         int itemid = item.getItemId();
@@ -333,11 +308,11 @@ public class InventoryManipulator
         return inv.findById(itemid) != null;
     }
 
-    public static bool checkSpace(Client c, int itemid, int quantity, string owner)
+    public static bool checkSpace(IClient c, int itemid, int quantity, string owner)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         InventoryType type = ItemConstants.getInventoryType(itemid);
-        Character chr = c.getPlayer();
+        IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
 
         if (ii.isPickupRestricted(itemid))
@@ -399,7 +374,7 @@ public class InventoryManipulator
         }
     }
 
-    public static int checkSpaceProgressively(Client c, int itemid, int quantity, string owner, int usedSlots, bool useProofInv)
+    public static int checkSpaceProgressively(IClient c, int itemid, int quantity, string owner, int usedSlots, bool useProofInv)
     {
         // return value --> bit0: if has space for this one;
         //                  value after: new slots filled;
@@ -409,7 +384,7 @@ public class InventoryManipulator
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         InventoryType type = !useProofInv ? ItemConstants.getInventoryType(itemid) : InventoryType.CANHOLD;
-        Character chr = c.getPlayer();
+        IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
 
         if (ii.isPickupRestricted(itemid))
@@ -478,16 +453,16 @@ public class InventoryManipulator
         return returnValue;
     }
 
-    public static void removeFromSlot(Client c, InventoryType type, short slot, short quantity, bool fromDrop)
+    public static void removeFromSlot(IClient c, InventoryType type, short slot, short quantity, bool fromDrop)
     {
         removeFromSlot(c, type, slot, quantity, fromDrop, false);
     }
 
-    public static void removeFromSlot(Client c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume)
+    public static void removeFromSlot(IClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume)
     {
-        Character chr = c.getPlayer();
+        IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
-        var item = inv.getItem(slot);
+        var item = inv.getItem(slot)!;
         bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
 
         if (type == InventoryType.EQUIPPED)
@@ -536,7 +511,7 @@ public class InventoryManipulator
         }
     }
 
-    private static void announceModifyInventory(Client c, Item item, bool fromDrop, bool allowZero)
+    private static void announceModifyInventory(IClient c, Item item, bool fromDrop, bool allowZero)
     {
         if (item.getQuantity() == 0 && !allowZero)
         {
@@ -548,15 +523,15 @@ public class InventoryManipulator
         }
     }
 
-    public static void removeById(Client c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
+    public static void removeById(IClient c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
     {
         int removeQuantity = quantity;
-        Inventory inv = c.getPlayer().getInventory(type);
+        Inventory inv = c.OnlinedCharacter.Bag[type];
         int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
 
         for (short i = 0; i <= slotLimit; i++)
         {
-            Item item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
+            var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
             if (item != null)
             {
                 if (item.getItemId() == itemId || item.getCashId() == itemId)
@@ -586,9 +561,9 @@ public class InventoryManipulator
         return source.getOwner().Equals(target.getOwner());
     }
 
-    public static void move(Client c, InventoryType type, short src, short dst)
+    public static void move(IClient c, InventoryType type, short src, short dst)
     {
-        Inventory inv = c.getPlayer().getInventory(type);
+        Inventory inv = c.OnlinedCharacter.getInventory(type);
 
         if (src < 0 || dst < 0)
         {
@@ -599,13 +574,14 @@ public class InventoryManipulator
             return;
         }
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        Item source = inv.getItem(src);
-        Item initialTarget = inv.getItem(dst);
+        var source = inv.getItem(src);
+
         if (source == null)
         {
             return;
         }
         short olddstQ = -1;
+        var initialTarget = inv.getItem(dst);
         if (initialTarget != null)
         {
             olddstQ = initialTarget.getQuantity();
@@ -634,15 +610,15 @@ public class InventoryManipulator
         c.sendPacket(PacketCreator.modifyInventory(true, mods));
     }
 
-    public static void equip(Client c, short src, short dst)
+    public static void equip(IClient c, short src, short dst)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        Character chr = c.getPlayer();
+        IPlayer chr = c.OnlinedCharacter;
         Inventory eqpInv = chr.getInventory(InventoryType.EQUIP);
         Inventory eqpdInv = chr.getInventory(InventoryType.EQUIPPED);
 
-        Equip source = (Equip)eqpInv.getItem(src);
+        var source = (Equip?)eqpInv.getItem(src);
         if (source == null || !ii.canWearEquipment(chr, source, dst))
         {
             c.sendPacket(PacketCreator.enableActions());
@@ -719,20 +695,20 @@ public class InventoryManipulator
             case -18:
                 if (chr.getMount() != null)
                 {
-                    chr.getMount().setItemId(source.getItemId());
+                    chr.getMount()!.setItemId(source.getItemId());
                 }
                 break;
         }
 
         //1112413, 1112414, 1112405 (Lilin's Ring)
-        source = (Equip)eqpInv.getItem(src);
+        source = (Equip?)eqpInv.getItem(src);
         eqpInv.removeSlot(src);
 
-        Equip target;
+        Equip? target;
         eqpdInv.lockInventory();
         try
         {
-            target = (Equip)eqpdInv.getItem(dst);
+            target = (Equip?)eqpdInv.getItem(dst);
             if (target != null)
             {
                 chr.unequippedItem(target);
@@ -783,22 +759,22 @@ public class InventoryManipulator
         chr.equipChanged();
     }
 
-    public static void unequip(Client c, short src, short dst)
+    public static void unequip(IClient c, short src, short dst)
     {
-        Character chr = c.getPlayer();
+        IPlayer chr = c.OnlinedCharacter;
         Inventory eqpInv = chr.getInventory(InventoryType.EQUIP);
         Inventory eqpdInv = chr.getInventory(InventoryType.EQUIPPED);
 
-        Equip source = (Equip)eqpdInv.getItem(src);
-        Equip target = (Equip)eqpInv.getItem(dst);
         if (dst < 0)
         {
             return;
         }
+        var source = (Equip?)eqpdInv.getItem(src);
         if (source == null)
         {
             return;
         }
+        var target = (Equip?)eqpInv.getItem(dst);
         if (target != null && src <= 0)
         {
             c.sendPacket(PacketCreator.getInventoryFull());
@@ -863,14 +839,14 @@ public class InventoryManipulator
         }
     }
 
-    public static void drop(Client c, InventoryType type, short src, short quantity)
+    public static void drop(IClient c, InventoryType type, short src, short quantity)
     {
         if (src < 0)
         {
             type = InventoryType.EQUIPPED;
         }
 
-        Character chr = c.getPlayer();
+        IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
         var source = inv.getItem(src);
 
@@ -887,7 +863,7 @@ public class InventoryManipulator
         }
         int itemId = source.getItemId();
 
-        MapleMap map = chr.getMap();
+        var map = chr.getMap();
         if ((!ItemConstants.isRechargeable(itemId) && source.getQuantity() < quantity) || quantity < 0)
         {
             return;

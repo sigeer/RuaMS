@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 
+using Application.Core.Managers;
 using net.server;
 
 namespace client.autoban;
@@ -16,7 +17,7 @@ public class AutobanManager
 {
     private static ILogger log = LogFactory.GetLogger("AutobanManager");
 
-    private Character chr;
+    private IPlayer chr;
     private Dictionary<AutobanFactory, int> points = new();
     private Dictionary<AutobanFactory, long> lastTime = new();
     private int misses = 0;
@@ -27,7 +28,7 @@ public class AutobanManager
     private byte[] timestampcounter = new byte[20];
 
 
-    public AutobanManager(Character chr)
+    public AutobanManager(IPlayer chr)
     {
         this.chr = chr;
     }
@@ -63,7 +64,7 @@ public class AutobanManager
         if (YamlConfig.config.server.USE_AUTOBAN_LOG)
         {
             // Lets log every single point too.
-            log.Information("Autoban - chr {CharacterName} caused {AutoBanType} {BanReason}", Character.makeMapleReadable(chr.getName()), fac.name(), reason);
+            log.Information("Autoban - chr {CharacterName} caused {AutoBanType} {BanReason}", CharacterManager.makeMapleReadable(chr.getName()), fac.name(), reason);
         }
     }
 

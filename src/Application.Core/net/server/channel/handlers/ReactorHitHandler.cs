@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,9 +21,7 @@
 */
 
 
-using client;
 using net.packet;
-using server.maps;
 
 namespace net.server.channel.handlers;
 
@@ -32,7 +30,7 @@ namespace net.server.channel.handlers;
  */
 public class ReactorHitHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         //Console.WriteLine(slea); //To see if there are any differences with packets
         //[CD 00] [6B 00 00 00] [01 00 00 00] [03 00] [00 00 20 03] [F7 03 00 00]
@@ -42,7 +40,7 @@ public class ReactorHitHandler : AbstractPacketHandler
         short stance = p.readShort();
         p.skip(4);
         int skillid = p.readInt();
-        Reactor reactor = c.getPlayer().getMap().getReactorByOid(oid);
+        var reactor = c.OnlinedCharacter.getMap().getReactorByOid(oid);
         if (reactor != null)
         {
             reactor.hitReactor(true, charPos, stance, skillid, c);

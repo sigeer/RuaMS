@@ -21,12 +21,11 @@
 */
 
 
-using client;
 using net.packet;
 
 namespace net.server.handlers;
 
-public class LoginRequiringNoOpHandler : PacketHandler
+public class LoginRequiringNoOpHandler : IPacketHandler
 {
     private static LoginRequiringNoOpHandler instance = new LoginRequiringNoOpHandler();
 
@@ -35,11 +34,11 @@ public class LoginRequiringNoOpHandler : PacketHandler
         return instance;
     }
 
-    public void handlePacket(InPacket p, Client c)
+    public void HandlePacket(InPacket p, IClient c)
     {
     }
 
-    public bool validateState(Client c)
+    public bool ValidateState(IClient c)
     {
         return c.isLoggedIn();
     }

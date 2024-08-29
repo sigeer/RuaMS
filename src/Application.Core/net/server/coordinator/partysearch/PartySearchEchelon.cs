@@ -18,9 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using client;
-
 namespace net.server.coordinator.partysearch;
 
 /**
@@ -29,20 +26,20 @@ namespace net.server.coordinator.partysearch;
 public class PartySearchEchelon
 {
     ReaderWriterLockSlim psLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-    private Dictionary<int, WeakReference<Character>> echelon = new(20);
+    private Dictionary<int, WeakReference<IPlayer>> echelon = new(20);
 
     public PartySearchEchelon()
     {
     }
 
-    public List<Character> exportEchelon()
+    public List<IPlayer> exportEchelon()
     {
         psLock.EnterWriteLock();     // reversing read/write actually could provide a lax yet sure performance/precision trade-off here
         try
         {
-            List<Character> players = new(echelon.Count);
+            List<IPlayer> players = new(echelon.Count);
 
-            foreach (WeakReference<Character> chrRef in echelon.Values)
+            foreach (WeakReference<IPlayer> chrRef in echelon.Values)
             {
                 if (chrRef.TryGetTarget(out var chr) && chr != null)
                     players.Add(chr);
@@ -57,7 +54,7 @@ public class PartySearchEchelon
         }
     }
 
-    public void attachPlayer(Character chr)
+    public void attachPlayer(IPlayer chr)
     {
         psLock.EnterReadLock();
         try
@@ -70,7 +67,7 @@ public class PartySearchEchelon
         }
     }
 
-    public bool detachPlayer(Character chr)
+    public bool detachPlayer(IPlayer chr)
     {
         psLock.EnterReadLock();
         try

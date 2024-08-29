@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using scripting.npc;
 using scripting.quest;
@@ -33,7 +32,7 @@ namespace net.server.channel.handlers;
  */
 public class NPCMoreTalkHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         byte lastMsg = p.readByte(); // 00 (last msg type I think)
         byte action = p.readByte(); // 00 = end chat, 01 == follow

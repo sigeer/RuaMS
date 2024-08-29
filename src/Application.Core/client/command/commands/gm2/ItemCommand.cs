@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -37,9 +37,9 @@ public class ItemCommand : Command
         setDescription("Spawn an item into your inventory.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
@@ -77,7 +77,7 @@ public class ItemCommand : Command
                 long expiration = DateTimeOffset.Now.AddDays(days).ToUnixTimeMilliseconds();
                 int petid = Pet.createPet(itemId);
 
-                InventoryManipulator.addById(c, itemId, quantity, player.getName(), petid, expiration);
+                InventoryManipulator.addById(c, itemId, quantity, player.getName(), petid, expiration: expiration);
                 return;
             }
             else

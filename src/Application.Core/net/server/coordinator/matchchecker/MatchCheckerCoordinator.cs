@@ -19,9 +19,6 @@
 */
 
 
-using client;
-using static net.server.coordinator.matchchecker.MatchCheckerListenerFactory;
-
 namespace net.server.coordinator.matchchecker;
 
 
@@ -143,19 +140,19 @@ public class MatchCheckerCoordinator
             return s;
         }
 
-        public HashSet<Character> getMatchCharacters()
+        public HashSet<IPlayer> getMatchCharacters()
         {
-            HashSet<Character> players = new();
+            HashSet<IPlayer> players = new();
 
             var wserv = Server.getInstance().getWorld(world);
             if (wserv != null)
             {
-                PlayerStorage ps = wserv.getPlayerStorage();
+                var ps = wserv.getPlayerStorage();
 
                 foreach (int cid in getMatchPlayers())
                 {
                     var chr = ps.getCharacterById(cid);
-                    if (chr != null)
+                    if (chr != null && chr.IsOnlined)
                     {
                         players.Add(chr);
                     }
@@ -167,7 +164,7 @@ public class MatchCheckerCoordinator
 
         public void dispatchMatchCreated()
         {
-            HashSet<Character> nonLeaderMatchPlayers = getMatchCharacters();
+            HashSet<IPlayer> nonLeaderMatchPlayers = getMatchCharacters();
             var leader = nonLeaderMatchPlayers.FirstOrDefault(x => x.getId() == leaderCid);
             if (leader != null)
             {
@@ -374,7 +371,7 @@ public class MatchCheckerCoordinator
             {
                 Thread.Sleep(1000);
             }
-            catch (ThreadInterruptedException ie)
+            catch (ThreadInterruptedException)
             {
             }
         }
@@ -439,11 +436,13 @@ public class MatchCheckerCoordinator
 
                             if (mmce != null)
                             {
-                                lock (mmce)
+                                Monitor.Enter(mmce);
+                                try
                                 {
                                     if (!mmce.isMatchActive())
                                     {    // thanks Alex (Alex-0000) for noticing that exploiters could stall on match checking
                                         matchEntries.Remove(cid);
+                                        Monitor.Exit(mmce);
                                         mmce = null;
                                     }
                                     else
@@ -452,6 +451,7 @@ public class MatchCheckerCoordinator
                                         {
                                             if (!acceptMatchElement(mmce, cid))
                                             {
+                                                Monitor.Exit(mmce);
                                                 mmce = null;
                                             }
 
@@ -463,6 +463,11 @@ public class MatchCheckerCoordinator
                                             matchEntries.Remove(cid);
                                         }
                                     }
+                                }
+                                finally
+                                {
+                                    if (mmce != null)
+                                        Monitor.Exit(mmce);
                                 }
                             }
                         }
@@ -509,16 +514,23 @@ public class MatchCheckerCoordinator
 
                             if (mmce != null)
                             {
-                                lock (mmce)
+                                Monitor.Enter(mmce);
+                                try
                                 {
                                     if (!mmce.isMatchActive())
                                     {
+                                        Monitor.Exit(mmce);
                                         mmce = null;
                                     }
                                     else
                                     {
                                         dismissMatchElement(mmce, cid);
                                     }
+                                }
+                                finally
+                                {
+                                    if (mmce != null)
+                                        Monitor.Exit(mmce);
                                 }
                             }
                         }

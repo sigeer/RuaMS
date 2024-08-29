@@ -21,10 +21,9 @@
 */
 
 
-using client;
+using Application.Core.Game.Maps;
 using provider;
 using provider.wz;
-using server.maps;
 using tools;
 
 namespace server.events.gm;
@@ -36,18 +35,18 @@ public class OxQuiz
 {
     private int round = 1;
     private int question = 1;
-    private MapleMap map = null;
+    private IMap map;
     private int expGain = 200;
     private static DataProvider stringData = DataProviderFactory.getDataProvider(WZFiles.ETC);
 
-    public OxQuiz(MapleMap map)
+    public OxQuiz(IMap map)
     {
         this.map = map;
         this.round = Randomizer.nextInt(9);
         this.question = 1;
     }
 
-    private bool isCorrectAnswer(Character chr, int answer)
+    private bool isCorrectAnswer(IPlayer chr, int answer)
     {
         double x = chr.getPosition().X;
         double y = chr.getPosition().Y;
@@ -62,7 +61,7 @@ public class OxQuiz
     public void sendQuestion()
     {
         int gm = 0;
-        foreach (Character mc in map.getCharacters())
+        foreach (var mc in map.getCharacters())
         {
             if (mc.gmLevel() > 1)
             {
@@ -74,9 +73,9 @@ public class OxQuiz
         TimerManager.getInstance().schedule(() =>
         {
             map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
-            List<Character> chars = new(map.getCharacters());
+            List<IPlayer> chars = new(map.getCharacters());
 
-            foreach (Character chr in chars)
+            foreach (var chr in chars)
             {
                 if (chr != null) // make sure they aren't null... maybe something can happen in 12 seconds.
                 {

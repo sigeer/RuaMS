@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -34,10 +34,10 @@ namespace client.command.commands.gm2;
 
 public class SearchCommand : Command
 {
-    private static Data npcStringData;
-    private static Data mobStringData;
-    private static Data skillStringData;
-    private static Data mapStringData;
+    private Data npcStringData;
+    private Data mobStringData;
+    private Data skillStringData;
+    private Data mapStringData;
 
     public SearchCommand()
     {
@@ -50,9 +50,9 @@ public class SearchCommand : Command
         mapStringData = dataProvider.getData("Map.img");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
             player.yellowMessage("Syntax: !search <type> <name>");

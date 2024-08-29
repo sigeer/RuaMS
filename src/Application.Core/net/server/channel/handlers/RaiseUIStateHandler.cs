@@ -4,7 +4,7 @@ using client;
 using net.packet;
 using scripting.quest;
 using server.quest;
-using static client.Character;
+using static Application.Core.Game.Players.Player;
 
 namespace net.server.channel.handlers;
 
@@ -14,7 +14,7 @@ namespace net.server.channel.handlers;
 public class RaiseUIStateHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int infoNumber = p.readShort();
 
@@ -22,7 +22,7 @@ public class RaiseUIStateHandler : AbstractPacketHandler
         {
             try
             {
-                Character chr = c.getPlayer();
+                var chr = c.OnlinedCharacter;
                 Quest quest = Quest.getInstanceFromInfoNumber(infoNumber);
                 QuestStatus mqs = chr.getQuest(quest);
 

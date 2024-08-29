@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
@@ -33,9 +32,9 @@ namespace net.server.channel.handlers;
 public class InventoryMergeHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         p.readInt();
         chr.getAutobanManager().setTimestamp(2, Server.getInstance().getCurrentTimestamp(), 4);
 
@@ -53,7 +52,7 @@ public class InventoryMergeHandler : AbstractPacketHandler
         }
 
         InventoryType inventoryType = InventoryTypeUtils.getByType(invType);
-        Inventory inventory = c.getPlayer().getInventory(inventoryType);
+        Inventory inventory = c.OnlinedCharacter.getInventory(inventoryType);
         inventory.lockInventory();
         try
         {
@@ -93,7 +92,7 @@ public class InventoryMergeHandler : AbstractPacketHandler
 
             //------------------------------------------------------------
 
-            inventory = c.getPlayer().getInventory(inventoryType);
+            inventory = c.OnlinedCharacter.getInventory(inventoryType);
             bool sorted = false;
 
             while (!sorted)

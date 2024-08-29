@@ -21,19 +21,18 @@
 */
 
 
-using client;
 using net.packet;
 
 namespace net.server.handlers;
 
-public class KeepAliveHandler : PacketHandler
+public class KeepAliveHandler : IPacketHandler
 {
-    public void handlePacket(InPacket p, Client c)
+    public void HandlePacket(InPacket p, IClient c)
     {
         c.pongReceived();
     }
 
-    public bool validateState(Client c)
+    public bool ValidateState(IClient c)
     {
         return true;
     }

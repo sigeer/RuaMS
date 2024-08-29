@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -29,12 +28,12 @@ namespace net.server.channel.handlers;
 
 public class MonsterBookCoverHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int id = p.readInt();
         if (id == 0 || id / 10000 == 238)
         {
-            c.getPlayer().setMonsterBookCover(id);
+            c.OnlinedCharacter.setMonsterBookCover(id);
             c.sendPacket(PacketCreator.changeCover(id));
         }
     }

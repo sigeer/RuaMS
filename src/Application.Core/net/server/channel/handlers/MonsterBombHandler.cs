@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using constants.id;
 using net.packet;
 using tools;
@@ -30,18 +29,18 @@ namespace net.server.channel.handlers;
 
 public class MonsterBombHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int oid = p.readInt();
-        var monster = c.getPlayer().getMap().getMonsterByOid(oid);
-        if (!c.getPlayer().isAlive() || monster == null)
+        var monster = c.OnlinedCharacter.getMap().getMonsterByOid(oid);
+        if (!c.OnlinedCharacter.isAlive() || monster == null)
         {
             return;
         }
         if (monster.getId() == MobId.HIGH_DARKSTAR || monster.getId() == MobId.LOW_DARKSTAR)
         {
             monster.getMap().broadcastMessage(PacketCreator.killMonster(monster.getObjectId(), 4));
-            c.getPlayer().getMap().removeMapObject(oid);
+            c.OnlinedCharacter.getMap().removeMapObject(oid);
         }
     }
 }

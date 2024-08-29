@@ -22,10 +22,9 @@
 
 
 
+using Application.Core.Game.Relation;
 using Application.Core.scripting.Event;
-using client;
 using constants.id;
-using net.server.world;
 using tools;
 
 namespace server.partyquest;
@@ -50,7 +49,7 @@ public class Pyramid : PartyQuest
     ScheduledFuture? _timer = null;
     ScheduledFuture? gaugeSchedule = null;
 
-    public Pyramid(Party party, PyramidMode mode, int mapid) : base(party)
+    public Pyramid(ITeam party, PyramidMode mode, int mapid) : base(party)
     {
         this.mode = mode;
         this.map = mapid;
@@ -163,7 +162,7 @@ public class Pyramid : PartyQuest
 
     public void warp(int mapid)
     {
-        foreach (Character chr in getParticipants())
+        foreach (var chr in getParticipants())
         {
             chr.changeMap(mapid, 0);
         }
@@ -182,7 +181,7 @@ public class Pyramid : PartyQuest
 
     public void broadcastInfo(string info, int amount)
     {
-        foreach (Character chr in getParticipants())
+        foreach (var chr in getParticipants())
         {
             chr.sendPacket(PacketCreator.getEnergy("massacre_" + info, amount));
             chr.sendPacket(PacketCreator.pyramidGauge(count));
@@ -208,7 +207,7 @@ public class Pyramid : PartyQuest
         {
             buffcount++;
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            foreach (Character chr in getParticipants())
+            foreach (var chr in getParticipants())
             {
                 ii.getItemEffect(ItemId.PHARAOHS_BLESSING_1).applyTo(chr);
             }
@@ -219,7 +218,7 @@ public class Pyramid : PartyQuest
             buffcount++;
             skill++;
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            foreach (Character chr in getParticipants())
+            foreach (var chr in getParticipants())
             {
                 chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
                 ii.getItemEffect(ItemId.PHARAOHS_BLESSING_2).applyTo(chr);
@@ -230,7 +229,7 @@ public class Pyramid : PartyQuest
             buffcount++;
             skill++;
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            foreach (Character chr in getParticipants())
+            foreach (var chr in getParticipants())
             {
                 chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
                 ii.getItemEffect(ItemId.PHARAOHS_BLESSING_3).applyTo(chr);
@@ -246,7 +245,7 @@ public class Pyramid : PartyQuest
             buffcount++;
             skill++;
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            foreach (Character chr in getParticipants())
+            foreach (var chr in getParticipants())
             {
                 chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
                 ii.getItemEffect(ItemId.PHARAOHS_BLESSING_4).applyTo(chr);
@@ -264,7 +263,7 @@ public class Pyramid : PartyQuest
         }
     }
 
-    public void sendScore(Character chr)
+    public void sendScore(IPlayer chr)
     {
         if (_exp == 0)
         {

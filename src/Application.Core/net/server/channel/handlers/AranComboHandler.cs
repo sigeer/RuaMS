@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -31,9 +31,9 @@ namespace net.server.channel.handlers;
 public class AranComboHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         int skillLevel = player.getSkillLevel(SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY));
         if (GameConstants.isAran(player.getJob().getId()) && (skillLevel > 0 || player.getJob().getId() == 2000))
         {

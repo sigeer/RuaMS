@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.actions;
@@ -45,12 +44,12 @@ public class ExpAction : AbstractQuestAction
         exp = DataTool.getInt(data);
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         runAction(chr, exp);
     }
 
-    public static void runAction(Character chr, int gain)
+    public static void runAction(IPlayer chr, int gain)
     {
         if (!YamlConfig.config.server.USE_QUEST_RATE)
         {

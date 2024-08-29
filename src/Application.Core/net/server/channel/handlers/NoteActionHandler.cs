@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using service;
 using tools;
@@ -41,22 +40,22 @@ public class NoteActionHandler : AbstractPacketHandler
         this.noteService = noteService;
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int action = p.readByte();
-        if (action == 0 && c.getPlayer().getCashShop().getAvailableNotes() > 0)
+        if (action == 0 && c.OnlinedCharacter.getCashShop().getAvailableNotes() > 0)
         { // Reply to gift in cash shop
             string charname = p.readString();
             string message = p.readString();
-            if (c.getPlayer().getCashShop().isOpened())
+            if (c.OnlinedCharacter.getCashShop().isOpened())
             {
                 c.sendPacket(PacketCreator.showCashInventory(c));
             }
 
-            bool sendNoteSuccess = noteService.sendWithFame(message, c.getPlayer().getName(), charname);
+            bool sendNoteSuccess = noteService.sendWithFame(message, c.OnlinedCharacter.getName(), charname);
             if (sendNoteSuccess)
             {
-                c.getPlayer().getCashShop().decreaseNotes();
+                c.OnlinedCharacter.getCashShop().decreaseNotes();
             }
         }
         else if (action == 1)
@@ -81,7 +80,7 @@ public class NoteActionHandler : AbstractPacketHandler
             }
             if (fame > 0)
             {
-                c.getPlayer().gainFame(fame);
+                c.OnlinedCharacter.gainFame(fame);
             }
         }
     }

@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using System.Collections.Concurrent;
 
 namespace net.server.coordinator.world;
@@ -32,7 +31,7 @@ public class InviteCoordinator
 {
 
     // note: referenceFrom is a specific value that represents the "common association" created between the sender/recver parties
-    public static bool createInvite(InviteType type, Character from, object referenceFrom, int targetCid, params object[] paramsValue)
+    public static bool createInvite(InviteType type, IPlayer from, object referenceFrom, int targetCid, params object[] paramsValue)
     {
         return type.addRequest(from, referenceFrom, targetCid, paramsValue);
     }
@@ -46,9 +45,9 @@ public class InviteCoordinator
     {
         var table = type.getRequestsTable();
 
-        Character? from = null;
+        IPlayer? from = null;
         InviteResultType result = InviteResultType.NOT_FOUND;
-        KeyValuePair<Character, object[]>? inviteInfo = null;
+        KeyValuePair<IPlayer, object[]>? inviteInfo = null;
 
         var reference = table.GetValueOrDefault(targetCid);
         if (referenceFrom == reference)
@@ -115,7 +114,7 @@ public enum InviteResultType
     NOT_FOUND
 }
 
-public record InviteResult(InviteResultType result, Character? from, object[] paramsValue);
+public record InviteResult(InviteResultType result, IPlayer from, object[] paramsValue);
 
 
 public class InviteType : EnumClass
@@ -131,7 +130,7 @@ public class InviteType : EnumClass
 
     byte value;
     ConcurrentDictionary<int, object> invites;
-    ConcurrentDictionary<int, Character> inviteFrom;
+    ConcurrentDictionary<int, IPlayer> inviteFrom;
     ConcurrentDictionary<int, int> inviteTimeouts;
     ConcurrentDictionary<int, object[]> inviteParams;
     public InviteType(byte value)
@@ -154,7 +153,7 @@ public class InviteType : EnumClass
         return inviteTimeouts;
     }
 
-    public KeyValuePair<Character, object[]>? removeRequest(int target)
+    public KeyValuePair<IPlayer, object[]>? removeRequest(int target)
     {
         if (invites.TryRemove(target, out var _) && inviteFrom.TryRemove(target, out var from) && inviteParams.TryRemove(target, out var d))
         {
@@ -164,7 +163,7 @@ public class InviteType : EnumClass
         return null;
     }
 
-    public bool addRequest(Character from, object referenceFrom, int targetCid, object[] paramsValue)
+    public bool addRequest(IPlayer from, object referenceFrom, int targetCid, object[] paramsValue)
     {
         if (!invites.TryAdd(targetCid, referenceFrom))
         {

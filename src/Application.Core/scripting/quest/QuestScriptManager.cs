@@ -37,15 +37,15 @@ public class QuestScriptManager : AbstractScriptManager
 {
     private static QuestScriptManager instance = new QuestScriptManager();
 
-    private Dictionary<Client, QuestActionManager> qms = new();
-    private Dictionary<Client, V8ScriptEngine> scripts = new();
+    private Dictionary<IClient, QuestActionManager> qms = new();
+    private Dictionary<IClient, V8ScriptEngine> scripts = new();
 
     public static QuestScriptManager getInstance()
     {
         return instance;
     }
 
-    private V8ScriptEngine getQuestScriptEngine(Client c, short questid)
+    private V8ScriptEngine getQuestScriptEngine(IClient c, short questid)
     {
         var engine = getInvocableScriptEngine("quest/" + questid + ".js", c);
         if (engine == null && GameConstants.isMedalQuest(questid))
@@ -56,7 +56,7 @@ public class QuestScriptManager : AbstractScriptManager
         return engine;
     }
 
-    public void start(Client c, short questid, int npc)
+    public void start(IClient c, short questid, int npc)
     {
         Quest quest = Quest.getInstance(questid);
         try
@@ -98,7 +98,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void start(Client c, byte mode, byte type, int selection)
+    public void start(IClient c, byte mode, byte type, int selection)
     {
         var iv = scripts.GetValueOrDefault(c);
         if (iv != null)
@@ -110,16 +110,16 @@ public class QuestScriptManager : AbstractScriptManager
             }
             catch (Exception e)
             {
-                log.Error(e, "Error starting quest script: {QuestId}", getQM(c).getQuest());
+                log.Error(e, "Error starting quest script: {QuestId}", getQM(c)?.getQuest());
                 dispose(c);
             }
         }
     }
 
-    public void end(Client c, short questid, int npc)
+    public void end(IClient c, short questid, int npc)
     {
         Quest quest = Quest.getInstance(questid);
-        if (!c.getPlayer().getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED) || (!c.getPlayer().getMap().containsNPC(npc) && !quest.isAutoComplete()))
+        if (!c.OnlinedCharacter.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED) || (!c.OnlinedCharacter.getMap().containsNPC(npc) && !quest.isAutoComplete()))
         {
             dispose(c);
             return;
@@ -163,7 +163,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void end(Client c, byte mode, byte type, int selection)
+    public void end(IClient c, byte mode, byte type, int selection)
     {
         var iv = scripts.GetValueOrDefault(c);
         if (iv != null)
@@ -175,13 +175,13 @@ public class QuestScriptManager : AbstractScriptManager
             }
             catch (Exception e)
             {
-                log.Error(e, "Error ending quest script: {QuestId}", getQM(c).getQuest());
+                log.Error(e, "Error ending quest script: {QuestId}", getQM(c)?.getQuest());
                 dispose(c);
             }
         }
     }
 
-    public void raiseOpen(Client c, short questid, int npc)
+    public void raiseOpen(IClient c, short questid, int npc)
     {
         try
         {
@@ -216,16 +216,16 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void dispose(QuestActionManager qm, Client c)
+    public void dispose(QuestActionManager qm, IClient c)
     {
         qms.Remove(c);
         scripts.Remove(c);
-        c.getPlayer().setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
         resetContext("quest/" + qm.getQuest() + ".js", c);
-        c.getPlayer().flushDelayedUpdateQuests();
+        c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 
-    public void dispose(Client c)
+    public void dispose(IClient c)
     {
         var qm = qms.GetValueOrDefault(c);
         if (qm != null)
@@ -234,7 +234,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public QuestActionManager? getQM(Client c)
+    public QuestActionManager? getQM(IClient c)
     {
         return qms.GetValueOrDefault(c);
     }

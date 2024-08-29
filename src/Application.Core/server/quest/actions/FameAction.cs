@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.actions;
@@ -46,7 +45,7 @@ public class FameAction : AbstractQuestAction
         fame = DataTool.getInt(data);
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         chr.gainFame(fame);
     }

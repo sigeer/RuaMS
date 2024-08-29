@@ -47,7 +47,7 @@ public class PetSkillAction : AbstractQuestAction
         flag = DataTool.getInt("petskill", data);
     }
 
-    public override bool check(Character chr, int? extSelection)
+    public override bool check(IPlayer chr, int? extSelection)
     {
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
         if (!(status.getStatus() == QuestStatus.Status.NOT_STARTED && status.getForfeited() > 0))
@@ -58,7 +58,7 @@ public class PetSkillAction : AbstractQuestAction
         return chr.getPet(0) != null;
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         chr.getPet(0).setFlag((byte)ItemConstants.getFlagByInt(flag));
     }

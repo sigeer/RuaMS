@@ -18,6 +18,10 @@
         public const string StorageProcessor = "Processor/StorageProcessor";
 
         public const string NPC = "Life/NPC";
-        public const string Family = "Family";
+        public const string Monster = "Life/Monster";
+
+        public const string Family = "Relation/Family";
+        public const string Guild = "Relation/Guild";
+        public const string Alliance = "Relation/Alliance";
     }
 }

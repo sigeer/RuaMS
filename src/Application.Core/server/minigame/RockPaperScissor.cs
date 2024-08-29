@@ -1,6 +1,3 @@
-
-
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
@@ -19,16 +16,16 @@ public class RockPaperScissor
     private bool ableAnswer = true;
     private bool win = false;
 
-    public RockPaperScissor(Client c, byte mode)
+    public RockPaperScissor(IClient c, byte mode)
     {
         c.sendPacket(PacketCreator.rpsMode((byte)(9 + mode)));
         if (mode == 0)
         {
-            c.getPlayer().gainMeso(-1000, true, true, true);
+            c.OnlinedCharacter.gainMeso(-1000, true, true, true);
         }
     }
 
-    public bool answer(Client c, int answer)
+    public bool answer(IClient c, int answer)
     {
         if (ableAnswer && !win && answer >= 0 && answer <= 2)
         {
@@ -55,7 +52,7 @@ public class RockPaperScissor
         return false;
     }
 
-    public bool timeOut(Client c)
+    public bool timeOut(IClient c)
     {
         if (ableAnswer && !win)
         {
@@ -67,7 +64,7 @@ public class RockPaperScissor
         return false;
     }
 
-    public bool nextRound(Client c)
+    public bool nextRound(IClient c)
     {
         if (win)
         {
@@ -88,16 +85,16 @@ public class RockPaperScissor
         return false;
     }
 
-    public void reward(Client c)
+    public void reward(IClient c)
     {
         if (win)
         {
             InventoryManipulator.addFromDrop(c, new Item(ItemId.RPS_CERTIFICATE_BASE + round, 0, 1), true);
         }
-        c.getPlayer().setRPS(null);
+        c.OnlinedCharacter.setRPS(null);
     }
 
-    public void dispose(Client c)
+    public void dispose(IClient c)
     {
         reward(c);
         c.sendPacket(PacketCreator.rpsMode(0x0D));

@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -31,10 +31,10 @@ public class MaxHpMpCommand : Command
         setDescription("Set base HP/MP of a player.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
-        Character? victim = player;
+        var player = c.OnlinedCharacter;
+        var victim = player;
 
         int statUpdate = 1;
         if (paramsValue.Length >= 2)
@@ -51,7 +51,7 @@ public class MaxHpMpCommand : Command
             player.yellowMessage("Syntax: !maxhpmp [<playername>] <value>");
         }
 
-        if (victim != null)
+        if (victim != null && victim.IsOnlined)
         {
             int extraHp = victim.getCurrentMaxHp() - victim.getClientMaxHp();
             int extraMp = victim.getCurrentMaxMp() - victim.getClientMaxMp();

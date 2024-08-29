@@ -49,7 +49,7 @@ public abstract class CharacterFactory
     /// <param name="recipe"></param>
     /// <param name="newchar"></param>
     /// <returns>0=³É¹¦</returns>
-    public static int CreateCharacter(int world, int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out Character? newchar)
+    public static int CreateCharacter(int world, int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newchar)
     {
         lock (createNewLock)
         {
@@ -59,7 +59,7 @@ public abstract class CharacterFactory
                 return -1;
             }
 
-            Character newCharacter = Character.GetDefaultCharacter(world, accountId);
+            var newCharacter = CharacterManager.NewPlayer(world, accountId);
             newCharacter.setSkinColor(SkinColorUtils.getById(skin));
             newCharacter.setGender(gender);
             newCharacter.setName(name);
@@ -116,7 +116,7 @@ public abstract class CharacterFactory
             return 0;
         }
     }
-    protected static int createNewCharacter(Client c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
+    protected static int createNewCharacter(IClient c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
     {
         lock (createNewLock)
         {
@@ -128,6 +128,7 @@ public abstract class CharacterFactory
             var result = CreateCharacter(c.getWorld(), c.getAccID(), name, face, hair, skin, gender, recipe, out var newCharacter);
             if (result == 0 && newCharacter != null)
             {
+                newCharacter.setClient(c);
                 c.sendPacket(PacketCreator.addNewCharEntry(newCharacter));
 
                 Server.getInstance().createCharacterEntry(newCharacter);

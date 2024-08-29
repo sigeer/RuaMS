@@ -19,7 +19,7 @@ namespace net.server.channel.handlers;
 public class RaiseIncExpHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         sbyte inventorytype = p.ReadSByte();//nItemIT
         short slot = p.readShort();//nSlotPosition
@@ -39,7 +39,7 @@ public class RaiseIncExpHandler : AbstractPacketHandler
                 int infoNumber = consItem.questid;
                 Dictionary<int, int> consumables = consItem.items;
 
-                Character chr = c.getPlayer();
+                var chr = c.OnlinedCharacter;
                 Quest quest = Quest.getInstanceFromInfoNumber(infoNumber);
                 if (!chr.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED))
                 {

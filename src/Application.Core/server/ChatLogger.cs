@@ -1,5 +1,3 @@
-using client;
-
 namespace server;
 
 public class ChatLogger
@@ -9,11 +7,11 @@ public class ChatLogger
     /**
      * Log a chat message (if enabled in the config)
      */
-    public static void log(Client c, string chatType, string message)
+    public static void log(IClient c, string chatType, string message)
     {
         if (YamlConfig.config.server.USE_ENABLE_CHAT_LOG)
         {
-            _log.Information("({ChatType}) {CharacterName}: {ChatMessage}", chatType, c.getPlayer().getName(), message);
+            _log.Information("({ChatType}) {CharacterName}: {ChatMessage}", chatType, c.OnlinedCharacter.getName(), message);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.autoban;
 using net.packet;
 using server;
@@ -31,13 +30,13 @@ namespace net.server.channel.handlers;
 
 public class PetChatHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int petId = p.readInt();
         p.readInt();
         p.readByte();
         int act = p.readByte();
-        sbyte pet = c.getPlayer().getPetIndex(petId);
+        sbyte pet = c.OnlinedCharacter.getPetIndex(petId);
         if ((pet < 0 || pet > 3) || (act < 0 || act > 9))
         {
             return;
@@ -45,12 +44,12 @@ public class PetChatHandler : AbstractPacketHandler
         string text = p.readString();
         if (text.Length > sbyte.MaxValue)
         {
-            AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit with pets.");
-            log.Warning("Chr {CharacterName} tried to send text with length of {text.Length}", c.getPlayer().getName(), text.Length);
+            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with pets.");
+            log.Warning("Chr {CharacterName} tried to send text with length of {text.Length}", c.OnlinedCharacter.getName(), text.Length);
             c.disconnect(true, false);
             return;
         }
-        c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.petChat(c.getPlayer().getId(), pet, act, text), true);
+        c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.petChat(c.OnlinedCharacter.getId(), pet, act, text), true);
         ChatLogger.log(c, "Pet", text);
     }
 }

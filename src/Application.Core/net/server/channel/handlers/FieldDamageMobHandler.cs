@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,28 +19,26 @@
 */
 
 
-using client;
 using constants.game;
 using net.packet;
 using server.life;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
 
 public class FieldDamageMobHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int mobOid = p.readInt();    // packet structure found thanks to Darter (Rajan)
         int dmg = p.readInt();
 
-        Character chr = c.getPlayer();
-        MapleMap map = chr.getMap();
+        var chr = c.OnlinedCharacter;
+        var map = chr.getMap();
 
         if (map.getEnvironment().Count == 0)
         {   // no environment objects activated to actually hit the mob
-            log.Warning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack", c.getPlayer().getName(), map.getId());
+            log.Warning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack", c.OnlinedCharacter.getName(), map.getId());
             return;
         }
 
@@ -49,7 +47,7 @@ public class FieldDamageMobHandler : AbstractPacketHandler
         {
             if (dmg < 0 || dmg > GameConstants.MAX_FIELD_MOB_DAMAGE)
             {
-                log.Warning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack {MobName} with damage {Damage}", c.getPlayer().getName(),
+                log.Warning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack {MobName} with damage {Damage}", c.OnlinedCharacter.getName(),
                         map.getId(), MonsterInformationProvider.getInstance().getMobNameFromId(mob.getId()), dmg);
                 return;
             }

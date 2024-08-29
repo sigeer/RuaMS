@@ -48,7 +48,7 @@ function action(mode, type, selection) {
             cm.sendGetText("Please input your desired name below.");
         } else if (status == 2) {
             var text = cm.getText();
-            var canCreate = Character.canCreateChar(text);
+            var canCreate = CharacterManager.CheckCharacterName(text);
             if (canCreate) {
                 cm.getPlayer().setName(text);
                 cm.sendOk("Your name has been changed to #b" + text + "#k. You will have to login again for this to take effect.", 1);

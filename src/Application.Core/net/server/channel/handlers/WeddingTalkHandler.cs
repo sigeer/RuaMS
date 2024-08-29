@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 
 
-using client;
 using net.packet;
 using tools;
 using tools.packets;
@@ -33,14 +32,14 @@ namespace net.server.channel.handlers;
 public class WeddingTalkHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         byte action = p.readByte();
         if (action == 1)
         {
-            var eim = c.getPlayer().getEventInstance();
+            var eim = c.OnlinedCharacter.getEventInstance();
 
-            if (eim != null && !(c.getPlayer().getId() == eim.getIntProperty("groomId") || c.getPlayer().getId() == eim.getIntProperty("brideId")))
+            if (eim != null && !(c.OnlinedCharacter.getId() == eim.getIntProperty("groomId") || c.OnlinedCharacter.getId() == eim.getIntProperty("brideId")))
             {
                 c.sendPacket(WeddingPackets.OnWeddingProgress(false, 0, 0, 2));
             }

@@ -21,6 +21,9 @@
  */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
+using Application.Core.Game.Skills;
 using client;
 using client.status;
 using constants.id;
@@ -35,7 +38,7 @@ namespace server.life;
 /**
  * @author Danny (Leifde)
  */
-public class MobSkill
+public class MobSkill: ISkill
 {
     private static ILogger log = LogFactory.GetLogger("MobSkill");
 
@@ -182,7 +185,7 @@ public class MobSkill
         }
     }
 
-    public void applyDelayedEffect(Character player, Monster monster, bool skill, int animationTime)
+    public void applyDelayedEffect(IPlayer player, Monster monster, bool skill, int animationTime)
     {
         Action toRun = () =>
         {
@@ -202,7 +205,7 @@ public class MobSkill
     }
 
     // TODO: avoid output argument banishPlayersOutput
-    public void applyEffect(Character? player, Monster monster, bool skill, List<Character>? banishPlayersOutput)
+    public void applyEffect(IPlayer? player, Monster monster, bool skill, List<IPlayer>? banishPlayersOutput)
     {
         // See if the MobSkill is successful before doing anything
         if (!makeChanceResult())
@@ -338,9 +341,9 @@ public class MobSkill
     {
         if (lt != null && rb != null && skill)
         {
-            List<MapObject> objects = getObjectsInRange(monster, MapObjectType.MONSTER);
+            var objects = getObjectsInRange(monster, MapObjectType.MONSTER);
             int hps = (getX() / 1000) * (int)(950 + 1050 * Randomizer.nextDouble());
-            foreach (MapObject mons in objects)
+            foreach (var mons in objects)
             {
                 ((Monster)mons).heal(hps, getY());
             }
@@ -351,7 +354,7 @@ public class MobSkill
         }
     }
 
-    private void applyDispelEffect(bool skill, Monster monster, Character player)
+    private void applyDispelEffect(bool skill, Monster monster, IPlayer player)
     {
         if (lt != null && rb != null && skill)
         {
@@ -363,8 +366,8 @@ public class MobSkill
         }
     }
 
-    private void applyBanishEffect(bool skill, Monster monster, Character player,
-                                   List<Character> banishPlayersOutput)
+    private void applyBanishEffect(bool skill, Monster monster, IPlayer player,
+                                   List<IPlayer> banishPlayersOutput)
     {
         if (lt != null && rb != null && skill)
         {
@@ -387,7 +390,7 @@ public class MobSkill
     private void summonMonsters(Monster monster)
     {
         int skillLimit = this.limit;
-        MapleMap map = monster.getMap();
+        var map = monster.getMap();
 
         if (MapId.isDojo(map.getId()))
         {  // spawns in dojo should be unlimited
@@ -406,7 +409,7 @@ public class MobSkill
 
                 foreach (int mobId in summons.Take(summonLimit))
                 {
-                    Monster toSpawn = LifeFactory.getMonster(mobId);
+                    var toSpawn = LifeFactory.getMonster(mobId);
                     if (toSpawn != null)
                     {
                         if (bossRushMap)
@@ -485,7 +488,7 @@ public class MobSkill
     {
         if (lt != null && rb != null && skill)
         {
-            foreach (MapObject mons in getObjectsInRange(monster, MapObjectType.MONSTER))
+            foreach (var mons in getObjectsInRange(monster, MapObjectType.MONSTER))
             {
                 ((Monster)mons).applyMonsterBuff(stats, getX(), getDuration(), this, reflection);
             }
@@ -496,12 +499,12 @@ public class MobSkill
         }
     }
 
-    private void applyDisease(Disease disease, bool skill, Monster monster, Character player)
+    private void applyDisease(Disease disease, bool skill, Monster monster, IPlayer player)
     {
         if (lt != null && rb != null && skill)
         {
             int i = 0;
-            foreach (Character character in getPlayersInRange(monster))
+            foreach (var character in getPlayersInRange(monster))
             {
                 if (!character.hasActiveBuff(Bishop.HOLY_SHIELD))
                 {
@@ -526,7 +529,7 @@ public class MobSkill
         }
     }
 
-    private List<Character> getPlayersInRange(Monster monster)
+    private List<IPlayer> getPlayersInRange(Monster monster)
     {
         return monster.getMap().getPlayersInRange(calculateBoundingBox(monster.getPosition()));
     }
@@ -587,7 +590,7 @@ public class MobSkill
         return bounds;
     }
 
-    private List<MapObject> getObjectsInRange(Monster monster, MapObjectType objectType)
+    private List<IMapObject> getObjectsInRange(Monster monster, MapObjectType objectType)
     {
         return monster.getMap().getMapObjectsInBox(calculateBoundingBox(monster.getPosition()), Collections.singletonList(objectType));
     }

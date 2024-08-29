@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -31,7 +31,7 @@ namespace net.server.channel.handlers;
 public class CancelBuffHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int sourceid = p.readInt();
 
@@ -46,11 +46,11 @@ public class CancelBuffHandler : AbstractPacketHandler
             case WindArcher.HURRICANE:
             case Evan.FIRE_BREATH:
             case Evan.ICE_BREATH:
-                c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.skillCancel(c.getPlayer(), sourceid), false);
+                c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.skillCancel(c.OnlinedCharacter, sourceid), false);
                 break;
 
             default:
-                c.getPlayer().cancelEffect(SkillFactory.getSkill(sourceid).getEffect(1), false, -1);
+                c.OnlinedCharacter.cancelEffect(SkillFactory.getSkill(sourceid).getEffect(1), false, -1);
                 break;
         }
     }

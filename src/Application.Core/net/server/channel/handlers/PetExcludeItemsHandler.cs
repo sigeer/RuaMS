@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.autoban;
 using net.packet;
 
@@ -34,12 +33,12 @@ namespace net.server.channel.handlers;
 public class PetExcludeItemsHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int petId = p.readInt();
         p.skip(4); // timestamp
 
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         sbyte petIndex = chr.getPetIndex(petId);
         if (petIndex < 0)
         {

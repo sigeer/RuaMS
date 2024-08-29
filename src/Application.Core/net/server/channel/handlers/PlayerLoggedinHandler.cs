@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Managers;
 using client;
 using client.inventory;
 using constants.game;
@@ -71,12 +72,12 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
         }
     }
 
-    public override bool validateState(Client c)
+    public override bool ValidateState(IClient c)
     {
         return !c.isLoggedIn();
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int cid = p.readInt(); // TODO: investigate if this is the "client id" supplied in PacketCreator#getServerIP()
         Server server = Server.getInstance();
@@ -96,7 +97,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 return;
             }
 
-            Channel cserv = wserv.getChannel(c.getChannel());
+            var cserv = wserv.getChannel(c.getChannel());
             if (cserv == null)
             {
                 c.setChannel(1);
@@ -109,10 +110,11 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 }
             }
 
-            Character player = wserv.getPlayerStorage().getCharacterById(cid);
+            var storage = wserv.getPlayerStorage();
+            var player = storage.getCharacterById(cid);
 
-            Hwid hwid;
-            if (player == null)
+            Hwid? hwid;
+            if (player == null || !player.IsOnlined)
             {
                 hwid = SessionCoordinator.getInstance().pickLoginSessionHwid(c);
                 if (hwid == null)
@@ -135,11 +137,11 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             }
 
             bool newcomer = false;
-            if (player == null)
+            if (player == null || !player.IsOnlined)
             {
                 try
                 {
-                    player = Character.loadCharFromDB(cid, c, true);
+                    player = CharacterManager.LoadPlayerFromDB(cid, c, true);
                     newcomer = true;
                 }
                 catch (Exception e)
@@ -148,7 +150,8 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 }
 
                 if (player == null)
-                { //If you are still getting null here then please just uninstall the game >.>, we dont need you fucking with the logs
+                {
+                    //If you are still getting null here then please just uninstall the game >.>, we dont need you fucking with the logs
                     c.disconnect(true, false);
                     return;
                 }
@@ -159,7 +162,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             bool allowLogin = true;
 
             /*  is this check really necessary?
-            if (state == Client.LOGIN_SERVER_TRANSITION || state == Client.LOGIN_NOTLOGGEDIN) {
+            if (state == IClient.LOGIN_SERVER_TRANSITION || state == IClient.LOGIN_NOTLOGGEDIN) {
                 List<string> charNames = c.loadCharacterNames(c.getWorld());
                 if(!newcomer) {
                     charNames.Remove(player.getName());
@@ -211,6 +214,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 return;
             }
 
+            // 换线，离开商城拍卖回到主世界
             if (!newcomer)
             {
                 c.setLanguage(player.getClient().getLanguage());
@@ -219,8 +223,8 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             }
 
             cserv.addPlayer(player);
-            wserv.addPlayer(player);
-            player.setEnteredChannelWorld();
+
+            player.setEnteredChannelWorld(c.getChannel());
 
             var buffs = server.getPlayerBuffStorage().getBuffsFromStorage(cid);
             if (buffs != null)
@@ -262,8 +266,8 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             wserv.loggedOn(player.getName(), player.getId(), c.getChannel(), buddyIds);
             foreach (CharacterIdChannelPair onlineBuddy in wserv.multiBuddyFind(player.getId(), buddyIds))
             {
-                var ble = bl.get(onlineBuddy.getCharacterId());
-                ble.setChannel(onlineBuddy.getChannel());
+                var ble = bl.get(onlineBuddy.charid);
+                ble.setChannel(onlineBuddy.channel);
                 bl.put(ble);
             }
             c.sendPacket(PacketCreator.updateBuddylist(bl.getBuddies()));
@@ -299,47 +303,30 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 c.sendPacket(PacketCreator.getFamilyInfo(null));
             }
 
-            if (player.getGuildId() > 0)
+            if (player.GuildId > 0)
             {
-                var playerGuild = server.getGuild(player.getGuildId(), player.getWorld(), player);
+                var playerGuild = server.getGuild(player.GuildId, player);
                 if (playerGuild == null)
                 {
-                    player.deleteGuild(player.getGuildId());
-                    player.getMGC().setGuildId(0);
-                    player.getMGC().setGuildRank(5);
+                    player.deleteGuild(player.GuildId);
                 }
                 else
                 {
-                    playerGuild.getMGC(player.getId()).setCharacter(player);
-                    player.setMGC(playerGuild.getMGC(player.getId()));
                     server.setGuildMemberOnline(player, true, c.getChannel());
                     c.sendPacket(GuildPackets.showGuildInfo(player));
-                    int allianceId = player.getGuild().getAllianceId();
-                    if (allianceId > 0)
+                    if (player.AllianceModel != null)
                     {
-                        var newAlliance = server.getAlliance(allianceId);
-                        if (newAlliance == null)
-                        {
-                            newAlliance = Alliance.loadAlliance(allianceId);
-                            if (newAlliance != null)
-                            {
-                                server.addAlliance(allianceId, newAlliance);
-                            }
-                            else
-                            {
-                                player.getGuild().setAllianceId(0);
-                            }
-                        }
-                        if (newAlliance != null)
-                        {
-                            c.sendPacket(GuildPackets.updateAllianceInfo(newAlliance, c.getWorld()));
-                            c.sendPacket(GuildPackets.allianceNotice(newAlliance.getId(), newAlliance.getNotice()));
+                        c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel, c.getWorld()));
+                        c.sendPacket(GuildPackets.allianceNotice(player.AllianceModel.AllianceId, player.AllianceModel.getNotice()));
 
-                            if (newcomer)
-                            {
-                                server.allianceMessage(allianceId, GuildPackets.allianceMemberOnline(player, true), player.getId(), -1);
-                            }
+                        if (newcomer)
+                        {
+                            server.allianceMessage(player.AllianceModel.AllianceId, GuildPackets.allianceMemberOnline(player, true), player.getId(), -1);
                         }
+                    }
+                    else
+                    {
+                        playerGuild.AllianceId = 0;
                     }
                 }
             }
@@ -348,15 +335,9 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
             if (player.getParty() != null)
             {
-                PartyCharacter pchar = player.getMPC();
-
                 //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
                 //c.sendPacket(PacketCreator.partyCreated(pchar));
-
-                pchar.setChannel(c.getChannel());
-                pchar.setMapId(player.getMapId());
-                pchar.setOnline(true);
-                wserv.updateParty(player.getParty().getId(), PartyOperation.LOG_ONOFF, pchar);
+                wserv.updateParty(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player);
                 player.updatePartyMemberHP();
             }
 
@@ -376,10 +357,10 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
             c.sendPacket(PacketCreator.updateBuddylist(player.getBuddylist().getBuddies()));
 
-            var pendingBuddyRequest = c.getPlayer().getBuddylist().pollPendingRequest();
+            var pendingBuddyRequest = c.OnlinedCharacter.getBuddylist().pollPendingRequest();
             if (pendingBuddyRequest != null)
             {
-                c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.getPlayer().getId(), pendingBuddyRequest.name));
+                c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.OnlinedCharacter.getId(), pendingBuddyRequest.name));
             }
 
             c.sendPacket(PacketCreator.updateGender(player));
@@ -399,7 +380,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 }
 
                 var mount = player.getMount();   // thanks Ari for noticing a scenario where Silver Mane quest couldn't be started
-                if (mount.getItemId() != 0)
+                if (mount != null && mount.getItemId() != 0)
                 {
                     player.sendPacket(PacketCreator.updateMount(player.getId(), mount, false));
                 }
@@ -457,15 +438,14 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
             player.receivePartyMemberHP();
 
-            if (player.getPartnerId() > 0)
+            if (player.PartnerId > 0)
             {
-                int partnerId = player.getPartnerId();
-                var partner = wserv.getPlayerStorage().getCharacterById(partnerId);
+                var partner = wserv.getPlayerStorage().getCharacterById(player.PartnerId);
 
-                if (partner != null && !partner.isAwayFromWorld())
+                if (partner != null && partner.isLoggedinWorld())
                 {
-                    player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partnerId, partner.getMapId()));
-                    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
+                    player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.Map));
+                    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.Map));
                 }
             }
 
@@ -503,7 +483,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
         }
     }
 
-    private void showDueyNotification(Client c, Character player)
+    private void showDueyNotification(IClient c, IPlayer player)
     {
         try
         {

@@ -32,17 +32,15 @@ using tools;
 namespace client.processor.stat;
 
 
-
-
 /**
  * @author RonanLana - synchronization of AP transaction modules
  */
 public class AssignAPProcessor
 {
 
-    public static void APAutoAssignAction(InPacket inPacket, Client c)
+    public static void APAutoAssignAction(InPacket inPacket, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (chr.getRemainingAp() < 1)
         {
             return;
@@ -119,7 +117,7 @@ public class AssignAPProcessor
                 //c.getPlayer().message("SDL: s" + eqpStr + " d" + eqpDex + " l" + eqpLuk + " BASE STATS --> STR: " + chr.getStr() + " DEX: " + chr.getDex() + " INT: " + chr.getInt() + " LUK: " + chr.getLuk());
                 //c.getPlayer().message("SUM EQUIP STATS -> STR: " + str + " DEX: " + dex + " LUK: " + luk + " INT: " + int_);
 
-                Job stance = c.getPlayer().getJobStyle(opt);
+                Job stance = c.OnlinedCharacter.getJobStyle(opt);
                 int prStat = 0, scStat = 0, trStat = 0, temp, tempAp = remainingAp, CAP;
                 if (tempAp < 1)
                 {
@@ -546,12 +544,12 @@ public class AssignAPProcessor
         return Stat.STR;
     }
 
-    public static bool APResetAction(Client c, int APFrom, int APTo)
+    public static bool APResetAction(IClient c, int APFrom, int APTo)
     {
         c.lockClient();
         try
         {
-            Character player = c.getPlayer();
+            var player = c.OnlinedCharacter;
 
             switch (APFrom)
             {
@@ -716,12 +714,12 @@ public class AssignAPProcessor
         }
     }
 
-    public static void APAssignAction(Client c, int num)
+    public static void APAssignAction(IClient c, int num)
     {
         c.lockClient();
         try
         {
-            addStat(c.getPlayer(), num, false);
+            addStat(c.OnlinedCharacter, num, false);
         }
         finally
         {
@@ -729,7 +727,7 @@ public class AssignAPProcessor
         }
     }
 
-    private static bool addStat(Character chr, int apTo, bool usedAPReset)
+    private static bool addStat(IPlayer chr, int apTo, bool usedAPReset)
     {
         switch (apTo)
         {
@@ -788,7 +786,7 @@ public class AssignAPProcessor
         return true;
     }
 
-    private static int calcHpChange(Character player, bool usedAPReset)
+    private static int calcHpChange(IPlayer player, bool usedAPReset)
     {
         Job job = player.getJob();
         int MaxHP = 0;
@@ -898,7 +896,7 @@ public class AssignAPProcessor
         {
             if (!usedAPReset)
             {
-                Skill increaseHP = SkillFactory.getSkill(job.isA(Job.PIRATE) ? Brawler.IMPROVE_MAX_HP : ThunderBreaker.IMPROVE_MAX_HP);
+                Skill increaseHP = SkillFactory.GetSkillTrust(job.isA(Job.PIRATE) ? Brawler.IMPROVE_MAX_HP : ThunderBreaker.IMPROVE_MAX_HP);
                 int sLvl = player.getSkillLevel(increaseHP);
 
                 if (sLvl > 0)
@@ -942,7 +940,7 @@ public class AssignAPProcessor
         return MaxHP;
     }
 
-    private static int calcMpChange(Character player, bool usedAPReset)
+    private static int calcMpChange(IPlayer player, bool usedAPReset)
     {
         Job job = player.getJob();
         int MaxMP = 0;

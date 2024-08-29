@@ -39,7 +39,7 @@ public class MobSkillFactory
 
     public static MobSkill getMobSkillOrThrow(MobSkillType type, int level)
     {
-        return getMobSkill(type, level) ?? throw new Exception("No MobSkill exists for type %s, level %d"); ;
+        return getMobSkill(type, level) ?? throw new BusinessResException($"No MobSkill exists for type {type}, level {level}"); ;
     }
 
     public static MobSkill? getMobSkill(MobSkillType type, int level)

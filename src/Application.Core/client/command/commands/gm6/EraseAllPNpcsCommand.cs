@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 */
 
 
-using server.life;
+using Application.Core.Game.Life;
 
 namespace client.command.commands.gm6;
 
@@ -34,7 +34,7 @@ public class EraseAllPNpcsCommand : Command
         setDescription("Remove all player NPCs.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
         PlayerNPC.removeAllPlayerNPC();
     }

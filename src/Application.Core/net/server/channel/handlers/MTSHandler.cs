@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,12 +21,10 @@
  */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
 using net.packet;
 using server;
 using tools;
@@ -36,11 +34,11 @@ namespace net.server.channel.handlers;
 
 public class MTSHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         // TODO add karma-to-untradeable flag on sold items here
 
-        if (!c.getPlayer().getCashShop().isOpened())
+        if (!c.OnlinedCharacter.getCashShop().isOpened())
         {
             return;
         }
@@ -108,24 +106,24 @@ public class MTSHandler : AbstractPacketHandler
                         {
                             quantity = 1;
                         }
-                        if (quantity < 0 || price < 110 || c.getPlayer().getItemQuantity(itemid, false) < quantity)
+                        if (quantity < 0 || price < 110 || c.OnlinedCharacter.getItemQuantity(itemid, false) < quantity)
                         {
                             return;
                         }
                         InventoryType invType = ItemConstants.getInventoryType(itemid);
-                        var i = c.getPlayer().getInventory(invType).getItem(slot).copy();
-                        if (i != null && c.getPlayer().getMeso() >= 5000)
+                        var i = c.OnlinedCharacter.getInventory(invType).getItem(slot).copy();
+                        if (i != null && c.OnlinedCharacter.getMeso() >= 5000)
                         {
                             try
                             {
                                 using var dbContext = new DBContext();
-                                var count = dbContext.MtsItems.Where(x => x.Seller == c.getPlayer().getId()).Count();
+                                var count = dbContext.MtsItems.Where(x => x.Seller == c.OnlinedCharacter.getId()).Count();
                                 if (count > 10)
                                 {
-                                    c.getPlayer().dropMessage(1, "You already have 10 items up for auction!");
+                                    c.OnlinedCharacter.dropMessage(1, "You already have 10 items up for auction!");
                                     c.sendPacket(getMTS(1, 0, 0));
-                                    c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                                    c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                                    c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                                    c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                                     return;
                                 }
 
@@ -134,16 +132,16 @@ public class MTSHandler : AbstractPacketHandler
                                 if (!i.getInventoryType().Equals(InventoryType.EQUIP))
                                 {
                                     Item item = i;
-                                    var newModel = new MtsItem(1, invType.getType(), item.getItemId(), quantity, item.getExpiration(), item.getGiftFrom(), c.getPlayer().getId(), price, item.getOwner(), c.getPlayer().getName(), date);
+                                    var newModel = new MtsItem(1, invType.getType(), item.getItemId(), quantity, item.getExpiration(), item.getGiftFrom(), c.OnlinedCharacter.getId(), price, item.getOwner(), c.OnlinedCharacter.getName(), date);
                                     dbContext.MtsItems.Add(newModel);
                                 }
                                 else
                                 {
                                     Equip equip = (Equip)i;
-                                    var newModel = new MtsItem(1, invType.getType(), equip.getItemId(), quantity, equip.getExpiration(), equip.getGiftFrom(), c.getPlayer().getId(),
+                                    var newModel = new MtsItem(1, invType.getType(), equip.getItemId(), quantity, equip.getExpiration(), equip.getGiftFrom(), c.OnlinedCharacter.getId(),
                                         price, equip.getUpgradeSlots(), equip.getLevel(), equip.getStr(), equip.getDex(), equip.getInt(), equip.getLuk(), equip.getHp(), equip.getMp(),
                                         equip.getWatk(), equip.getMatk(), equip.getWdef(), equip.getMdef(), equip.getAcc(), equip.getAvoid(), equip.getHands(), equip.getSpeed(), equip.getJump(),
-                                        0, equip.getOwner(), c.getPlayer().getName(), date, equip.getVicious(), equip.getFlag(), equip.getItemExp(), equip.getItemLevel(), equip.getRingId());
+                                        0, equip.getOwner(), c.OnlinedCharacter.getName(), date, equip.getVicious(), equip.getFlag(), equip.getItemExp(), equip.getItemLevel(), equip.getRingId());
                                     dbContext.MtsItems.Add(newModel);
                                 }
                                 dbContext.SaveChanges();
@@ -154,12 +152,12 @@ public class MTSHandler : AbstractPacketHandler
                             {
                                 log.Error(e.ToString());
                             }
-                            c.getPlayer().gainMeso(-5000, false);
+                            c.OnlinedCharacter.gainMeso(-5000, false);
                             c.sendPacket(PacketCreator.MTSConfirmSell());
                             c.sendPacket(getMTS(1, 0, 0));
                             c.enableCSActions();
-                            c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                            c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                            c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                            c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                         }
                         break;
                     }
@@ -177,25 +175,25 @@ public class MTSHandler : AbstractPacketHandler
                         int tab = p.readInt();
                         int type = p.readInt();
                         int page = p.readInt();
-                        c.getPlayer().changePage(page);
+                        c.OnlinedCharacter.changePage(page);
                         if (tab == 4 && type == 0)
                         {
-                            c.sendPacket(getCart(c.getPlayer().getId()));
+                            c.sendPacket(getCart(c.OnlinedCharacter.getId()));
                         }
-                        else if (tab == c.getPlayer().getCurrentTab() && type == c.getPlayer().getCurrentType() && c.getPlayer().getSearch() != null)
+                        else if (tab == c.OnlinedCharacter.getCurrentTab() && type == c.OnlinedCharacter.getCurrentType() && c.OnlinedCharacter.getSearch() != null)
                         {
-                            c.sendPacket(getMTSSearch(tab, type, c.getPlayer().getCurrentCI(), c.getPlayer().getSearch(), page));
+                            c.sendPacket(getMTSSearch(tab, type, c.OnlinedCharacter.getCurrentCI(), c.OnlinedCharacter.getSearch()!, page));
                         }
                         else
                         {
-                            c.getPlayer().setSearch(null);
+                            c.OnlinedCharacter.setSearch(null);
                             c.sendPacket(getMTS(tab, type, page));
                         }
-                        c.getPlayer().changeTab(tab);
-                        c.getPlayer().changeType(type);
+                        c.OnlinedCharacter.changeTab(tab);
+                        c.OnlinedCharacter.changeType(type);
                         c.enableCSActions();
-                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                         break;
                     }
                 case 6:
@@ -205,16 +203,16 @@ public class MTSHandler : AbstractPacketHandler
                         p.readInt();
                         int ci = p.readInt();
                         string search = p.readString();
-                        c.getPlayer().setSearch(search);
-                        c.getPlayer().changeTab(tab);
-                        c.getPlayer().changeType(type);
-                        c.getPlayer().changeCI(ci);
+                        c.OnlinedCharacter.setSearch(search);
+                        c.OnlinedCharacter.changeTab(tab);
+                        c.OnlinedCharacter.changeType(type);
+                        c.OnlinedCharacter.changeCI(ci);
                         c.enableCSActions();
                         c.sendPacket(PacketCreator.enableActions());
-                        c.sendPacket(getMTSSearch(tab, type, ci, search, c.getPlayer().getCurrentPage()));
-                        c.sendPacket(PacketCreator.showMTSCash(c.getPlayer()));
-                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                        c.sendPacket(getMTSSearch(tab, type, ci, search, c.OnlinedCharacter.getCurrentPage()));
+                        c.sendPacket(PacketCreator.showMTSCash(c.OnlinedCharacter));
+                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                         break;
                     }
                 case 7:
@@ -223,7 +221,7 @@ public class MTSHandler : AbstractPacketHandler
                         try
                         {
                             using var dbContext = new DBContext();
-                            dbContext.MtsItems.Where(x => x.Id == id && x.Seller == c.getPlayer().getId()).ExecuteUpdate(x => x.SetProperty(y => y.Transfer, 1));
+                            dbContext.MtsItems.Where(x => x.Id == id && x.Seller == c.OnlinedCharacter.getId()).ExecuteUpdate(x => x.SetProperty(y => y.Transfer, 1));
                             dbContext.MtsItems.Where(x => x.Itemid == id).ExecuteDelete();
                         }
                         catch (Exception e)
@@ -231,10 +229,10 @@ public class MTSHandler : AbstractPacketHandler
                             log.Error(e.ToString());
                         }
                         c.enableCSActions();
-                        c.sendPacket(getMTS(c.getPlayer().getCurrentTab(), c.getPlayer().getCurrentType(),
-                                c.getPlayer().getCurrentPage()));
-                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
-                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
+                        c.sendPacket(getMTS(c.OnlinedCharacter.getCurrentTab(), c.OnlinedCharacter.getCurrentType(),
+                                c.OnlinedCharacter.getCurrentPage()));
+                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
+                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
                         break;
                     }
                 case 8:
@@ -243,7 +241,7 @@ public class MTSHandler : AbstractPacketHandler
                         try
                         {
                             using var dbContext = new DBContext();
-                            var dbModel = dbContext.MtsItems.Where(x => x.Id == id && x.Seller == c.getPlayer().getId() && x.Transfer == 1).OrderByDescending(x => x.Id).FirstOrDefault();
+                            var dbModel = dbContext.MtsItems.Where(x => x.Id == id && x.Seller == c.OnlinedCharacter.getId() && x.Transfer == 1).OrderByDescending(x => x.Id).FirstOrDefault();
                             if (dbModel != null)
                             {
                                 Item i;
@@ -252,7 +250,7 @@ public class MTSHandler : AbstractPacketHandler
                                     Item ii = new Item(dbModel.Itemid, 0, (short)dbModel.Quantity);
                                     ii.setOwner(dbModel.Owner);
                                     ii.setPosition(
-                                                c.getPlayer().getInventory(ItemConstants.getInventoryType(dbModel.Itemid))
+                                                c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(dbModel.Itemid))
                                                         .getNextFreeSlot());
                                     i = ii.copy();
                                 }
@@ -261,18 +259,18 @@ public class MTSHandler : AbstractPacketHandler
                                     Equip equip = new Equip(dbModel.Itemid, (byte)dbModel.Position, -1);
                                     equip.SetDataFromDB(dbModel);
                                     equip.setPosition(
-                                                c.getPlayer().getInventory(ItemConstants.getInventoryType(dbModel.Itemid))
+                                                c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(dbModel.Itemid))
                                                         .getNextFreeSlot());
                                     i = equip.copy();
                                 }
-                                dbContext.MtsItems.Where(x => x.Id == id && x.Seller == c.getPlayer().getId() && x.Transfer == 1).ExecuteDelete();
+                                dbContext.MtsItems.Where(x => x.Id == id && x.Seller == c.OnlinedCharacter.getId() && x.Transfer == 1).ExecuteDelete();
                                 InventoryManipulator.addFromDrop(c, i, false);
                                 c.enableCSActions();
-                                c.sendPacket(getCart(c.getPlayer().getId()));
-                                c.sendPacket(getMTS(c.getPlayer().getCurrentTab(), c.getPlayer().getCurrentType(),
-                                        c.getPlayer().getCurrentPage()));
+                                c.sendPacket(getCart(c.OnlinedCharacter.getId()));
+                                c.sendPacket(getMTS(c.OnlinedCharacter.getCurrentTab(), c.OnlinedCharacter.getCurrentType(),
+                                        c.OnlinedCharacter.getCurrentPage()));
                                 c.sendPacket(PacketCreator.MTSConfirmTransfer(i.getQuantity(), i.getPosition()));
-                                c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
+                                c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
                             }
 
                         }
@@ -288,13 +286,13 @@ public class MTSHandler : AbstractPacketHandler
                         try
                         {
                             using var dbContext = new DBContext();
-                            var dbModel = dbContext.MtsItems.Where(x => x.Id == id && x.Seller != c.getPlayer().getId()).Select(x => new { x.Id }).FirstOrDefault();
+                            var dbModel = dbContext.MtsItems.Where(x => x.Id == id && x.Seller != c.OnlinedCharacter.getId()).Select(x => new { x.Id }).FirstOrDefault();
                             if (dbModel != null)
                             {
-                                var hasData = dbContext.MtsCarts.Where(x => x.Cid == c.getPlayer().getId() && x.Itemid == id).Select(x => new { x.Cid }).FirstOrDefault();
+                                var hasData = dbContext.MtsCarts.Where(x => x.Cid == c.OnlinedCharacter.getId() && x.Itemid == id).Select(x => new { x.Cid }).FirstOrDefault();
                                 if (hasData == null)
                                 {
-                                    dbContext.MtsCarts.Add(new MtsCart { Cid = c.getPlayer().getId(), Itemid = id });
+                                    dbContext.MtsCarts.Add(new MtsCart { Cid = c.OnlinedCharacter.getId(), Itemid = id });
                                     dbContext.SaveChanges();
                                 }
 
@@ -306,11 +304,11 @@ public class MTSHandler : AbstractPacketHandler
                         {
                             log.Error(e.ToString());
                         }
-                        c.sendPacket(getMTS(c.getPlayer().getCurrentTab(), c.getPlayer().getCurrentType(), c.getPlayer().getCurrentPage()));
+                        c.sendPacket(getMTS(c.OnlinedCharacter.getCurrentTab(), c.OnlinedCharacter.getCurrentType(), c.OnlinedCharacter.getCurrentPage()));
                         c.enableCSActions();
                         c.sendPacket(PacketCreator.enableActions());
-                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                         break;
                     }
                 case 10:
@@ -319,16 +317,16 @@ public class MTSHandler : AbstractPacketHandler
                         try
                         {
                             using var dbContext = new DBContext();
-                            dbContext.MtsCarts.Where(x => x.Cid == c.getPlayer().getId() && x.Itemid == id).ExecuteDelete();
+                            dbContext.MtsCarts.Where(x => x.Cid == c.OnlinedCharacter.getId() && x.Itemid == id).ExecuteDelete();
                         }
                         catch (Exception e)
                         {
                             log.Error(e.ToString());
                         }
-                        c.sendPacket(getCart(c.getPlayer().getId()));
+                        c.sendPacket(getCart(c.OnlinedCharacter.getId()));
                         c.enableCSActions();
-                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                         break;
                     }
                 case 12: //put item up for auction
@@ -347,10 +345,10 @@ public class MTSHandler : AbstractPacketHandler
                             if (dbModel != null)
                             {
                                 int price = dbModel.Price + 100 + (int)(dbModel.Price * 0.1); // taxes
-                                if (c.getPlayer().getCashShop().getCash(CashShop.NX_PREPAID) >= price)
+                                if (c.OnlinedCharacter.getCashShop().getCash(CashShop.NX_PREPAID) >= price)
                                 { // FIX
                                     bool alwaysnull = true;
-                                    foreach (Channel cserv in Server.getInstance().getAllChannels())
+                                    foreach (var cserv in Server.getInstance().getAllChannels())
                                     {
                                         var victim = cserv.getPlayerStorage().getCharacterById(dbModel.Seller);
                                         if (victim != null)
@@ -368,15 +366,15 @@ public class MTSHandler : AbstractPacketHandler
                                         }
 
 
-                                        dbContext.MtsItems.Where(x => x.Id == id).ExecuteUpdate(x => x.SetProperty(y => y.Seller, c.getPlayer().getId()).SetProperty(y => y.Transfer, 1));
+                                        dbContext.MtsItems.Where(x => x.Id == id).ExecuteUpdate(x => x.SetProperty(y => y.Seller, c.OnlinedCharacter.getId()).SetProperty(y => y.Transfer, 1));
                                         dbContext.MtsCarts.Where(x => x.Itemid == id).ExecuteDelete();
-                                        c.getPlayer().getCashShop().gainCash(4, -price);
+                                        c.OnlinedCharacter.getCashShop().gainCash(4, -price);
                                         c.enableCSActions();
-                                        c.sendPacket(getMTS(c.getPlayer().getCurrentTab(), c.getPlayer().getCurrentType(), c.getPlayer().getCurrentPage()));
+                                        c.sendPacket(getMTS(c.OnlinedCharacter.getCurrentTab(), c.OnlinedCharacter.getCurrentType(), c.OnlinedCharacter.getCurrentPage()));
                                         c.sendPacket(PacketCreator.MTSConfirmBuy());
-                                        c.sendPacket(PacketCreator.showMTSCash(c.getPlayer()));
-                                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                                        c.sendPacket(PacketCreator.showMTSCash(c.OnlinedCharacter));
+                                        c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                                        c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                                         c.sendPacket(PacketCreator.enableActions());
                                     }
                                     else
@@ -403,9 +401,9 @@ public class MTSHandler : AbstractPacketHandler
                             if (dbModel != null)
                             {
                                 int price = dbModel.Price + 100 + (int)(dbModel.Price * 0.1);
-                                if (c.getPlayer().getCashShop().getCash(CashShop.NX_PREPAID) >= price)
+                                if (c.OnlinedCharacter.getCashShop().getCash(CashShop.NX_PREPAID) >= price)
                                 {
-                                    foreach (Channel cserv in Server.getInstance().getAllChannels())
+                                    foreach (var cserv in Server.getInstance().getAllChannels())
                                     {
                                         var victim = cserv.getPlayerStorage().getCharacterById(dbModel.Seller);
                                         if (victim != null)
@@ -420,16 +418,16 @@ public class MTSHandler : AbstractPacketHandler
                                             {
                                                 dbContext.Accounts.Where(x => x.Id == accountIdData.AccountId).ExecuteUpdate(x => x.SetProperty(y => y.NxPrepaid, y => y.NxPrepaid + dbModel.Price));
                                             }
-                                            dbContext.MtsItems.Where(x => x.Id == id).ExecuteUpdate(x => x.SetProperty(y => y.Seller, c.getPlayer().getId()).SetProperty(y => y.Transfer, 1));
+                                            dbContext.MtsItems.Where(x => x.Id == id).ExecuteUpdate(x => x.SetProperty(y => y.Seller, c.OnlinedCharacter.getId()).SetProperty(y => y.Transfer, 1));
                                             dbContext.MtsCarts.Where(x => x.Itemid == id).ExecuteDelete();
 
-                                            c.getPlayer().getCashShop().gainCash(4, -price);
-                                            c.sendPacket(getCart(c.getPlayer().getId()));
+                                            c.OnlinedCharacter.getCashShop().gainCash(4, -price);
+                                            c.sendPacket(getCart(c.OnlinedCharacter.getId()));
                                             c.enableCSActions();
                                             c.sendPacket(PacketCreator.MTSConfirmBuy());
-                                            c.sendPacket(PacketCreator.showMTSCash(c.getPlayer()));
-                                            c.sendPacket(PacketCreator.transferInventory(getTransfer(c.getPlayer().getId())));
-                                            c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.getPlayer().getId())));
+                                            c.sendPacket(PacketCreator.showMTSCash(c.OnlinedCharacter));
+                                            c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
+                                            c.sendPacket(PacketCreator.notYetSoldInv(getNotYetSold(c.OnlinedCharacter.getId())));
                                         }
                                     }
                                 }
@@ -454,7 +452,7 @@ public class MTSHandler : AbstractPacketHandler
         }
         else
         {
-            c.sendPacket(PacketCreator.showMTSCash(c.getPlayer()));
+            c.sendPacket(PacketCreator.showMTSCash(c.OnlinedCharacter));
         }
     }
 
@@ -529,7 +527,8 @@ public class MTSHandler : AbstractPacketHandler
         try
         {
             using var dbContext = new DBContext();
-            var dataList = dbContext.MtsItems.Where(x => x.Tab == tab && (type == 0 || type == x.Type))
+            var query = dbContext.MtsItems.Where(x => x.Tab == tab && (type == 0 || type == x.Type) && x.Transfer == 0);
+            var dataList = query
                 .OrderByDescending(x => x.Id)
                 .Skip((page - 1) * 16)
                 .Take(16)
@@ -537,7 +536,7 @@ public class MTSHandler : AbstractPacketHandler
                 .Select(MTSItemInfo.Map)
                 .ToList();
 
-            var count = dbContext.MtsItems.Where(x => x.Tab == tab && (type == 0 || type == x.Type) && x.Transfer == 0).Count();
+            var count = query.Count();
             pages = count / 16;
             if (count % 16 > 0)
             {
@@ -555,52 +554,29 @@ public class MTSHandler : AbstractPacketHandler
     {
         List<MTSItemInfo> items = new();
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        string listaitems = "";
-        if (cOi != 0)
-        {
-            List<string> retItems = new();
-            foreach (var itemPair in ii.getAllItems())
-            {
-                if (itemPair.Name.ToLower().Contains(search.ToLower()))
-                {
-                    retItems.Add(" itemid=" + itemPair.Id + " OR ");
-                }
-            }
-            listaitems += " AND (";
-            if (retItems != null && retItems.Count > 0)
-            {
-                foreach (string singleRetItem in retItems)
-                {
-                    listaitems += singleRetItem;
-                }
-                listaitems += " itemid=0 )";
-            }
-        }
-        else
-        {
-            listaitems = " AND sellername LIKE CONCAT('%','" + search + "', '%')";
-        }
         int pages = 0;
         try
         {
-            string sql;
+            using var dbContext = new DBContext();
+            var q = dbContext.MtsItems.Where(x => x.Tab == tab && x.Transfer == 0);
             if (type != 0)
+                q = q.Where(x => x.Type == type);
+            if (cOi != 0)
             {
-                sql = "SELECT * FROM mts_items WHERE tab = ? " + listaitems + " AND type = ? AND transfer = 0 ORDER BY id DESC LIMIT ?, 16";
+                var filteredItemId = ii.getAllItems().Where(itemPair => itemPair.Name.ToLower().Contains(search.ToLower())).Select(x => x.Id).ToList();
+                q = q.Where(x => filteredItemId.Contains(x.Itemid));
             }
             else
             {
-                sql = "SELECT * FROM mts_items WHERE tab = ? " + listaitems + " AND transfer = 0 ORDER BY id DESC LIMIT ?, 16";
+                q = q.Where(x => EF.Functions.Like(x.Sellername, $"%{search}%"));
             }
-            using var dbContext = new DBContext();
-            var dataList = dbContext.MtsItems.FromSqlRaw(sql, new MySqlParameter("tab", tab), new MySqlParameter("type", type), new MySqlParameter("skip", (page - 1) * 16))
+            items = q.OrderBy(x => x.Id).Skip((page - 1) * 16).Take(16).ToList()
                 .Select(MTSItemInfo.Map)
                 .ToList();
 
             if (type == 0)
             {
-                var count = dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM mts_items WHERE tab = ? " + listaitems + " AND transfer = 0", tab).FirstOrDefault();
-                // ?
+                var count = q.Count();
                 pages = count / 16;
                 if (count % 16 > 0)
                 {

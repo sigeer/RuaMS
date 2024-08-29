@@ -19,7 +19,7 @@
 */
 
 
-using client;
+using Application.Core.Managers;
 using constants.id;
 using net.server.coordinator.login;
 using System.Collections.Concurrent;
@@ -53,9 +53,9 @@ public class SessionCoordinator
 
     private SessionInitialization sessionInit = new SessionInitialization();
     private LoginStorage loginStorage = new LoginStorage();
-    private Dictionary<int, Client> onlineClients = new(); // Key: account id
+    private Dictionary<int, IClient> onlineClients = new(); // Key: account id
     private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
-    private ConcurrentDictionary<string, Client> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
+    private ConcurrentDictionary<string, IClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
     private HostHwidCache hostHwidCache = new HostHwidCache();
 
     private SessionCoordinator()
@@ -96,7 +96,7 @@ public class SessionCoordinator
         return false;
     }
 
-    public static string getSessionRemoteHost(Client client)
+    public static string getSessionRemoteHost(IClient client)
     {
         var hwid = client.getHwid();
 
@@ -113,7 +113,7 @@ public class SessionCoordinator
     /**
      * Overwrites any existing online client for the account id, making sure to disconnect it as well.
      */
-    public void updateOnlineClient(Client client)
+    public void updateOnlineClient(IClient client)
     {
         if (client != null)
         {
@@ -132,7 +132,7 @@ public class SessionCoordinator
         }
     }
 
-    public bool canStartLoginSession(Client client)
+    public bool canStartLoginSession(IClient client)
     {
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
         {
@@ -174,7 +174,7 @@ public class SessionCoordinator
         }
     }
 
-    public void closeLoginSession(Client client)
+    public void closeLoginSession(IClient client)
     {
         clearLoginRemoteHost(client);
 
@@ -197,14 +197,14 @@ public class SessionCoordinator
         }
     }
 
-    private void clearLoginRemoteHost(Client client)
+    private void clearLoginRemoteHost(IClient client)
     {
         string remoteHost = getSessionRemoteHost(client);
         loginRemoteHosts.Remove(client.getRemoteAddress());
         loginRemoteHosts.Remove(remoteHost);
     }
 
-    public AntiMulticlientResult attemptLoginSession(Client client, Hwid hwid, int accountId, bool routineCheck)
+    public AntiMulticlientResult attemptLoginSession(IClient client, Hwid hwid, int accountId, bool routineCheck)
     {
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
         {
@@ -249,7 +249,7 @@ public class SessionCoordinator
         }
     }
 
-    public AntiMulticlientResult attemptGameSession(Client client, int accountId, Hwid hwid)
+    public AntiMulticlientResult attemptGameSession(IClient client, int accountId, Hwid hwid)
     {
         string remoteHost = getSessionRemoteHost(client);
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
@@ -325,7 +325,7 @@ public class SessionCoordinator
         }
     }
 
-    private static Client? fetchInTransitionSessionClient(Client? client)
+    private static IClient? fetchInTransitionSessionClient(IClient? client)
     {
         Hwid hwid = SessionCoordinator.getInstance().getGameSessionHwid(client);
         if (hwid == null)
@@ -333,14 +333,14 @@ public class SessionCoordinator
             return null;
         }
 
-        Client fakeClient = Client.createMock();
+        var fakeClient = Client.createMock();
         fakeClient.setHwid(hwid);
         var chrId = Server.getInstance().freeCharacteridInTransition(client);
         if (chrId != null)
         {
             try
             {
-                fakeClient.setAccID(Character.loadCharFromDB(chrId.Value, client, false).getAccountID());
+                fakeClient.setAccID(CharacterManager.LoadPlayerFromDB(chrId.Value, client, false).getAccountID());
             }
             catch (Exception sqle)
             {
@@ -351,7 +351,7 @@ public class SessionCoordinator
         return fakeClient;
     }
 
-    public void closeSession(Client? client, bool? immediately)
+    public void closeSession(IClient? client, bool? immediately)
     {
         if (client == null)
         {
@@ -387,14 +387,14 @@ public class SessionCoordinator
         }
     }
 
-    public Hwid pickLoginSessionHwid(Client client)
+    public Hwid pickLoginSessionHwid(IClient client)
     {
         string remoteHost = client.getRemoteAddress();
         // thanks BHB, resinate for noticing players from same network not being able to login
         return hostHwidCache.removeEntryAndGetItsHwid(remoteHost);
     }
 
-    public Hwid getGameSessionHwid(Client? client)
+    public Hwid getGameSessionHwid(IClient? client)
     {
         string remoteHost = getSessionRemoteHost(client);
         return hostHwidCache.getEntryHwid(remoteHost);
@@ -439,7 +439,7 @@ public class SessionCoordinator
         }
     }
 
-    public void printSessionTrace(Client c)
+    public void printSessionTrace(IClient c)
     {
         string str = "Opened server sessions:\r\n\r\n";
 

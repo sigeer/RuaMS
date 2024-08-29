@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using provider;
 
 namespace server.quest.requirements;
@@ -42,7 +41,7 @@ public class MesoRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         if (chr.getMeso() >= meso)
         {

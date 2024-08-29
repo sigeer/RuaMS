@@ -1,5 +1,5 @@
 /*
-This file is part of the OdinMS Maple Story Server
+This file is part of the OdinMS Maple Story NewServer
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
 Jan Christian Meyer <vimes@odinms.de>
@@ -21,6 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -30,7 +32,6 @@ using constants.inventory;
 using constants.skills;
 using net.packet;
 using server.life;
-using server.maps;
 using tools;
 using static server.life.LifeFactory;
 
@@ -39,11 +40,11 @@ namespace net.server.channel.handlers;
 public class TakeDamageHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        List<Character> banishPlayers = new();
+        List<IPlayer> banishPlayers = new();
 
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         p.readInt();
         sbyte damagefrom = p.ReadSByte();
         p.readByte(); //Element
@@ -53,7 +54,7 @@ public class TakeDamageHandler : AbstractPacketHandler
         bool is_pgmr = false, is_pg = true, is_deadly = false;
         int mpattack = 0;
         Monster? attacker = null;
-        MapleMap map = chr.getMap();
+        var map = chr.getMap();
         if (damagefrom != -3 && damagefrom != -4)
         {
             monsteridfrom = p.readInt();
@@ -78,7 +79,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                         return;
                     }
 
-                    List<loseItem> loseItems;
+                    List<loseItem>? loseItems;
                     if (damage > 0)
                     {
                         loseItems = attacker.getStats().loseItem();
@@ -177,7 +178,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                     if (jobid == 212 || jobid == 222 || jobid == 232)
                     {
                         int id = jobid * 10000 + 1002;
-                        var manaReflectSkill = SkillFactory.getSkill(id);
+                        var manaReflectSkill = SkillFactory.GetSkillTrust(id);
                         if (chr.isBuffFrom(BuffStat.MANA_REFLECTION, manaReflectSkill) && chr.getSkillLevel(manaReflectSkill) > 0 && manaReflectSkill.getEffect(chr.getSkillLevel(manaReflectSkill)).makeChanceResult())
                         {
                             int bouncedamage = (damage * manaReflectSkill.getEffect(chr.getSkillLevel(manaReflectSkill)).getX() / 100);
@@ -224,7 +225,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                 {
                     if (chr.getBuffedValue(BuffStat.POWERGUARD) != null)
                     { // PG works on bosses, but only at half of the rate.
-                        int bouncedamage = (int)(damage * (chr.getBuffedValue(BuffStat.POWERGUARD) / (attacker.isBoss() ? 200 : 100)));
+                        int bouncedamage = damage * (chr.getBuffedValue(BuffStat.POWERGUARD)!.Value / (attacker.isBoss() ? 200 : 100));
                         bouncedamage = Math.Min(bouncedamage, attacker.getMaxHp() / 10);
                         damage -= bouncedamage;
                         map.damageMonster(chr, attacker, bouncedamage);
@@ -239,7 +240,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                         {
                             if (!attacker.isBoss() && bPressure.makeChanceResult())
                             {
-                                attacker.applyStatus(chr, new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.NEUTRALISE, 1), skill, null, false), false, (bPressure.getDuration() / 10) * 2, false);
+                                attacker.applyStatus(chr, new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.NEUTRALISE, 1), skill), false, (bPressure.getDuration() / 10) * 2, false);
                             }
                         }
                     }
@@ -326,7 +327,7 @@ public class TakeDamageHandler : AbstractPacketHandler
             c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        foreach (Character player in banishPlayers)
+        foreach (var player in banishPlayers)
         {  // chill, if this list ever gets non-empty an attacker does exist, trust me :)
             player.changeMapBanish(attacker.getBanish());
         }

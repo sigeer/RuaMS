@@ -20,7 +20,6 @@
  */
 
 
-using client;
 using net.opcodes;
 using tools;
 
@@ -66,9 +65,9 @@ public class MonitoredChrLogger
         return monitoredChrIds;
     }
 
-    public static void logPacketIfMonitored(Client c, short packetId, byte[] packetContent)
+    public static void logPacketIfMonitored(IClient c, short packetId, byte[] packetContent)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (chr == null)
         {
             return;

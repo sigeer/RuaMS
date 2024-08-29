@@ -19,7 +19,7 @@
 */
 
 
-using client;
+using Application.Core.Game.TheWorld;
 
 namespace net.server.task;
 
@@ -27,7 +27,8 @@ namespace net.server.task;
  * @author Ronan
  */
 public class CharacterAutosaverTask : BaseTask
-{  // thanks Alex09 (Alex-0000) for noticing these runnable classes are tasks, "workers" runs them
+{  
+    // thanks Alex09 (Alex-0000) for noticing these runnable classes are tasks, "workers" runs them
 
     public override void HandleRun()
     {
@@ -36,8 +37,8 @@ public class CharacterAutosaverTask : BaseTask
             return;
         }
 
-        PlayerStorage ps = wserv.getPlayerStorage();
-        foreach (Character chr in ps.getAllCharacters())
+        var ps = wserv.getPlayerStorage();
+        foreach (var chr in ps.getAllCharacters())
         {
             if (chr != null && chr.isLoggedin())
             {
@@ -46,7 +47,7 @@ public class CharacterAutosaverTask : BaseTask
         }
     }
 
-    public CharacterAutosaverTask(World world) : base(world)
+    public CharacterAutosaverTask(IWorld world) : base(world)
     {
     }
 }

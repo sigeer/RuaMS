@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 
 
 using Application.Core.Managers;
-using client;
 using net.packet;
 using tools;
 
@@ -33,7 +32,7 @@ namespace net.server.channel.handlers;
 public class TransferNameResultHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         string name = p.readString();
         c.sendPacket(PacketCreator.sendNameTransferCheck(name, CharacterManager.CheckCharacterName(name)));

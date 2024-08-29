@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -33,7 +32,7 @@ namespace net.server.channel.handlers;
 public class TransferNameHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readInt(); //cid
         int birthday = p.readInt();
@@ -48,13 +47,13 @@ public class TransferNameHandler : AbstractPacketHandler
             c.sendPacket(PacketCreator.sendNameTransferRules(4));
             return;
         }
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (chr.getLevel() < 10)
         {
             c.sendPacket(PacketCreator.sendNameTransferRules(4));
             return;
         }
-        else if (c.getTempBanCalendar() != null && c.getTempBanCalendar().Value.AddDays(30) < DateTimeOffset.Now)
+        else if (c.getTempBanCalendar() != null && c.getTempBanCalendar()!.Value.AddDays(30) < DateTimeOffset.Now)
         {
             c.sendPacket(PacketCreator.sendNameTransferRules(2));
             return;

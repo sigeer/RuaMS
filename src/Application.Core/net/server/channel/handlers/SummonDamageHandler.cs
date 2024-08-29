@@ -1,5 +1,5 @@
 /*
-This file is part of the OdinMS Maple Story Server
+This file is part of the OdinMS Maple Story NewServer
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
 Jan Christian Meyer <vimes@odinms.de>
@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Life.Monsters;
 using client;
 using client.autoban;
 using client.inventory;
@@ -60,10 +61,10 @@ public class SummonDamageHandler : AbstractDealDamageHandler
 
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int oid = p.readInt();
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (!player.isAlive())
         {
             return;
@@ -104,10 +105,10 @@ public class SummonDamageHandler : AbstractDealDamageHandler
             {
                 if (damage > maxDmg)
                 {
-                    AutobanFactory.DAMAGE_HACK.alert(c.getPlayer(), "Possible packet editing summon damage exploit.");
+                    AutobanFactory.DAMAGE_HACK.alert(c.OnlinedCharacter, "Possible packet editing summon damage exploit.");
                     string mobName = MonsterInformationProvider.getInstance().getMobNameFromId(target.getId());
                     log.Information("Possible exploit - chr {CharacterName} used a summon of skillId {SkillId} to attack {MobName} with damage {Damage} (max: {MaxDamage})",
-                            c.getPlayer().getName(), summon.getSkill(), mobName, damage, maxDmg);
+                            c.OnlinedCharacter.getName(), summon.getSkill(), mobName, damage, maxDmg);
                     damage = maxDmg;
                 }
 
@@ -115,7 +116,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                 {
                     if (summonEffect.makeChanceResult())
                     {
-                        target.applyStatus(player, new MonsterStatusEffect(summonEffect.getMonsterStati(), summonSkill, null, false), summonEffect.isPoison(), 4000);
+                        target.applyStatus(player, new MonsterStatusEffect(summonEffect.getMonsterStati(), summonSkill), summonEffect.isPoison(), 4000);
                     }
                 }
                 player.getMap().damageMonster(player, target, damage);
@@ -128,7 +129,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         }
     }
 
-    private static int calcMaxDamage(StatEffect summonEffect, Character player, bool magic)
+    private static int calcMaxDamage(StatEffect summonEffect, IPlayer player, bool magic)
     {
         double maxDamage;
 
@@ -140,7 +141,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         else
         {
             int watk = Math.Max(player.getTotalWatk(), 14);
-            Item weapon_item = player.getInventory(InventoryType.EQUIPPED).getItem(-11);
+            var weapon_item = player.getInventory(InventoryType.EQUIPPED).getItem(-11);
 
             int maxBaseDmg;  // thanks Conrad, Atoot for detecting some summons legitimately hitting over the calculated limit
             if (weapon_item != null)

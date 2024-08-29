@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.processor.action;
 using net.packet;
 using server;
@@ -31,7 +30,7 @@ namespace net.server.channel.handlers;
 public class PetAutoPotHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readByte();
         p.readLong();
@@ -39,8 +38,8 @@ public class PetAutoPotHandler : AbstractPacketHandler
         short slot = p.readShort();
         int itemId = p.readInt();
 
-        Character chr = c.getPlayer();
-        StatEffect stat = ItemInformationProvider.getInstance().getItemEffect(itemId);
+        var chr = c.OnlinedCharacter;
+        var stat = ItemInformationProvider.getInstance().getItemEffect(itemId);
         if (stat.getHp() > 0 || stat.getHpRate() > 0.0)
         {
             float estimatedHp = ((float)chr.getHp()) / chr.getMaxHp();

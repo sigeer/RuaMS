@@ -74,9 +74,9 @@ public class IdCommand : Command
         }
     }
 
-    public override void execute(Client client, string[] paramsValue)
+    public override void execute(IClient client, string[] paramsValue)
     {
-        Character chr = client.getPlayer();
+        var chr = client.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
             chr.yellowMessage("Syntax: !id <type> <query>");

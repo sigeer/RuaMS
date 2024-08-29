@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -26,16 +26,16 @@ namespace client.command.commands.gm0;
 
 public class DropLimitCommand : Command
 {
-    public override void execute(Client c, string[] paramValues)
+    public override void execute(IClient c, string[] paramValues)
     {
-        int dropCount = c.getPlayer().getMap().getDroppedItemCount();
+        int dropCount = c.OnlinedCharacter.getMap().getDroppedItemCount();
         if (((float)dropCount) / YamlConfig.config.server.ITEM_LIMIT_ON_MAP < 0.75f)
         {
-            c.getPlayer().showHint("Current drop count: #b" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
+            c.OnlinedCharacter.showHint("Current drop count: #b" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
         }
         else
         {
-            c.getPlayer().showHint("Current drop count: #r" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
+            c.OnlinedCharacter.showHint("Current drop count: #r" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
         }
 
     }

@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Managers;
 using client.autoban;
 
 namespace client.command.commands.gm3;
@@ -34,12 +35,12 @@ public class IgnoredCommand : Command
         setDescription("Show all characters being ignored in auto-ban alerts.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         foreach (int chrId in AutobanFactory.getIgnoredChrIds())
         {
-            player.yellowMessage(Character.getNameById(chrId) + " is being ignored.");
+            player.yellowMessage(CharacterManager.getNameById(chrId) + " is being ignored.");
         }
     }
 }

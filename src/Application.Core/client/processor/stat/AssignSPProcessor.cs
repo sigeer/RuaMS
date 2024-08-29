@@ -37,7 +37,7 @@ public class AssignSPProcessor
 {
     private static ILogger log = LogFactory.GetLogger("AssignSPProcessor");
 
-    public static bool canSPAssign(Client c, int skillid)
+    public static bool canSPAssign(IClient c, int skillid)
     {
         if (skillid == Aran.HIDDEN_FULL_DOUBLE || skillid == Aran.HIDDEN_FULL_TRIPLE || skillid == Aran.HIDDEN_OVER_DOUBLE || skillid == Aran.HIDDEN_OVER_TRIPLE)
         {
@@ -45,11 +45,11 @@ public class AssignSPProcessor
             return false;
         }
 
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if ((!GameConstants.isPqSkillMap(player.getMapId()) && GameConstants.isPqSkill(skillid)) || (!player.isGM() && GameConstants.isGMSkills(skillid)) || (!GameConstants.isInJobTree(skillid, player.getJob().getId()) && !player.isGM()))
         {
             AutobanFactory.PACKET_EDIT.alert(player, "tried to packet edit in distributing sp.");
-            log.Warning("Chr {CharacterName} tried to use skill {SkillId} without it being in their job.", c.getPlayer().getName(), skillid);
+            log.Warning("Chr {CharacterName} tried to use skill {SkillId} without it being in their job.", player.getName(), skillid);
 
             c.disconnect(true, false);
             return false;
@@ -58,7 +58,7 @@ public class AssignSPProcessor
         return true;
     }
 
-    public static void SPAssignAction(Client c, int skillid)
+    public static void SPAssignAction(IClient c, int skillid)
     {
         c.lockClient();
         try
@@ -68,7 +68,7 @@ public class AssignSPProcessor
                 return;
             }
 
-            Character player = c.getPlayer();
+            var player = c.OnlinedCharacter;
             int remainingSp = player.getRemainingSps()[GameConstants.getSkillBook(skillid / 10000)];
             bool isBeginnerSkill = false;
 
@@ -82,7 +82,7 @@ public class AssignSPProcessor
                 remainingSp = Math.Min((player.getLevel() - 1), 6) - total;
                 isBeginnerSkill = true;
             }
-            Skill skill = SkillFactory.getSkill(skillid);
+            var skill = SkillFactory.getSkill(skillid);
             int curLevel = player.getSkillLevel(skill);
             if ((remainingSp > 0 && curLevel + 1 <= (skill.isFourthJob() ? player.getMasterLevel(skill) : skill.getMaxLevel())))
             {

@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.requirements;
@@ -47,7 +46,7 @@ public abstract class AbstractQuestRequirement
      * @param npcid The NPC ID it was called from.
      * @return bool    If the check was passed or not.
      */
-    public abstract bool check(Character chr, int? npcid);
+    public abstract bool check(IPlayer chr, int? npcid);
 
     /**
      * Processes the data and stores it in the class for future use.

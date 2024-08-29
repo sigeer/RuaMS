@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net;
 using net.packet;
 using net.server.coordinator.world;
@@ -30,7 +29,7 @@ using tools;
 
 public class MessengerHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (c.tryacquireClient())
         {
@@ -38,8 +37,8 @@ public class MessengerHandler : AbstractPacketHandler
             {
                 string input;
                 byte mode = p.readByte();
-                Character player = c.getPlayer();
-                World world = c.getWorldServer();
+                var player = c.OnlinedCharacter;
+                var world = c.getWorldServer();
                 var messenger = player.getMessenger();
                 switch (mode)
                 {
@@ -102,9 +101,9 @@ public class MessengerHandler : AbstractPacketHandler
                             {
                                 if (target.getMessenger() == null)
                                 {
-                                    if (InviteCoordinator.createInvite(InviteType.MESSENGER, c.getPlayer(), messenger.getId(), target.getId()))
+                                    if (InviteCoordinator.createInvite(InviteType.MESSENGER, c.OnlinedCharacter, messenger.getId(), target.getId()))
                                     {
-                                        target.sendPacket(PacketCreator.messengerInvite(c.getPlayer().getName(), messenger.getId()));
+                                        target.sendPacket(PacketCreator.messengerInvite(c.OnlinedCharacter.getName(), messenger.getId()));
                                         c.sendPacket(PacketCreator.messengerNote(input, 4, 1));
                                     }
                                     else
@@ -121,7 +120,7 @@ public class MessengerHandler : AbstractPacketHandler
                             {
                                 if (world.find(input) > -1)
                                 {
-                                    world.messengerInvite(c.getPlayer().getName(), messenger.getId(), input, c.getChannel());
+                                    world.messengerInvite(c.OnlinedCharacter.getName(), messenger.getId(), input, c.getChannel());
                                 }
                                 else
                                 {

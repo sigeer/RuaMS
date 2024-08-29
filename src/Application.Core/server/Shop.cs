@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
@@ -73,13 +72,13 @@ public class Shop
         items.Add(item);
     }
 
-    public void sendShop(Client c)
+    public void sendShop(IClient c)
     {
-        c.getPlayer().setShop(this);
+        c.OnlinedCharacter.setShop(this);
         c.sendPacket(PacketCreator.getNPCShop(c, getNpcId(), items));
     }
 
-    public void buy(Client c, short slot, int itemId, short quantity)
+    public void buy(IClient c, short slot, int itemId, short quantity)
     {
         ShopItem item = findBySlot(slot);
         if (item != null)
@@ -98,21 +97,21 @@ public class Shop
         if (item.getPrice() > 0)
         {
             int amount = (int)Math.Min((float)item.getPrice() * quantity, int.MaxValue);
-            if (c.getPlayer().getMeso() >= amount)
+            if (c.OnlinedCharacter.getMeso() >= amount)
             {
                 if (InventoryManipulator.checkSpace(c, itemId, quantity, ""))
                 {
                     if (!ItemConstants.isRechargeable(itemId))
                     { //Pets can't be bought from shops
                         InventoryManipulator.addById(c, itemId, quantity, "", -1);
-                        c.getPlayer().gainMeso(-amount, false);
+                        c.OnlinedCharacter.gainMeso(-amount, false);
                     }
                     else
                     {
                         short slotMax = ii.getSlotMax(c, item.getItemId());
                         quantity = slotMax;
                         InventoryManipulator.addById(c, itemId, quantity, "", -1);
-                        c.getPlayer().gainMeso(-item.getPrice(), false);
+                        c.OnlinedCharacter.gainMeso(-item.getPrice(), false);
                     }
                     c.sendPacket(PacketCreator.shopTransaction(0));
                 }
@@ -132,7 +131,7 @@ public class Shop
         {
             int amount = (int)Math.Min((float)item.getPitch() * quantity, int.MaxValue);
 
-            if (c.getPlayer().getInventory(InventoryType.ETC).countById(ItemId.PERFECT_PITCH) >= amount)
+            if (c.OnlinedCharacter.getInventory(InventoryType.ETC).countById(ItemId.PERFECT_PITCH) >= amount)
             {
                 if (InventoryManipulator.checkSpace(c, itemId, quantity, ""))
                 {
@@ -157,27 +156,27 @@ public class Shop
             }
 
         }
-        else if (c.getPlayer().getInventory(InventoryType.CASH).countById(token) != 0)
+        else if (c.OnlinedCharacter.getInventory(InventoryType.CASH).countById(token) != 0)
         {
-            int amount = c.getPlayer().getInventory(InventoryType.CASH).countById(token);
+            int amount = c.OnlinedCharacter.getInventory(InventoryType.CASH).countById(token);
             int value = amount * tokenvalue;
             int cost = item.getPrice() * quantity;
-            if (c.getPlayer().getMeso() + value >= cost)
+            if (c.OnlinedCharacter.getMeso() + value >= cost)
             {
                 int cardreduce = value - cost;
-                int diff = cardreduce + c.getPlayer().getMeso();
+                int diff = cardreduce + c.OnlinedCharacter.getMeso();
                 if (InventoryManipulator.checkSpace(c, itemId, quantity, ""))
                 {
                     if (ItemConstants.isPet(itemId))
                     {
                         int petid = Pet.createPet(itemId);
-                        InventoryManipulator.addById(c, itemId, quantity, "", petid, -1);
+                        InventoryManipulator.addById(c, itemId, quantity, "", petid, expiration: -1);
                     }
                     else
                     {
-                        InventoryManipulator.addById(c, itemId, quantity, "", -1, -1);
+                        InventoryManipulator.addById(c, itemId, quantity, "", -1, expiration: -1);
                     }
-                    c.getPlayer().gainMeso(diff, false);
+                    c.OnlinedCharacter.gainMeso(diff, false);
                 }
                 else
                 {
@@ -223,14 +222,14 @@ public class Shop
         return quantity;
     }
 
-    public void sell(Client c, InventoryType type, short slot, short quantity)
+    public void sell(IClient c, InventoryType type, short slot, short quantity)
     {
         if (quantity <= 0)
         {
             return;
         }
 
-        var item = c.getPlayer().getInventory(type).getItem(slot);
+        var item = c.OnlinedCharacter.getInventory(type).getItem(slot);
         if (canSell(item, quantity))
         {
             quantity = getSellingQuantity(item, quantity);
@@ -240,7 +239,7 @@ public class Shop
             int recvMesos = ii.getPrice(item.getItemId(), quantity);
             if (recvMesos > 0)
             {
-                c.getPlayer().gainMeso(recvMesos, false);
+                c.OnlinedCharacter.gainMeso(recvMesos, false);
             }
             c.sendPacket(PacketCreator.shopTransaction(0x8));
         }
@@ -250,10 +249,10 @@ public class Shop
         }
     }
 
-    public void recharge(Client c, short slot)
+    public void recharge(IClient c, short slot)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        var item = c.getPlayer().getInventory(InventoryType.USE).getItem(slot);
+        var item = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);
         if (item == null || !ItemConstants.isRechargeable(item.getItemId()))
         {
             return;
@@ -266,11 +265,11 @@ public class Shop
         if (item.getQuantity() < slotMax)
         {
             int price = (int)Math.Ceiling(ii.getUnitPrice(item.getItemId()) * (slotMax - item.getQuantity()));
-            if (c.getPlayer().getMeso() >= price)
+            if (c.OnlinedCharacter.getMeso() >= price)
             {
                 item.setQuantity(slotMax);
-                c.getPlayer().forceUpdateItem(item);
-                c.getPlayer().gainMeso(-price, false, true, false);
+                c.OnlinedCharacter.forceUpdateItem(item);
+                c.OnlinedCharacter.gainMeso(-price, false, true, false);
                 c.sendPacket(PacketCreator.shopTransaction(0x8));
             }
             else

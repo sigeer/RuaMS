@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Relation;
+using Application.Core.Managers;
 using client;
 using client.command;
 using client.inventory;
@@ -31,7 +34,6 @@ using Microsoft.ClearScript.V8;
 using net.server;
 using net.server.channel;
 using net.server.channel.handlers;
-using net.server.guild;
 using server;
 using server.expeditions;
 using server.gachapon;
@@ -73,9 +75,9 @@ public abstract class AbstractScriptManager
             engine.AddHostType(typeof(MapId));
             engine.AddHostType(typeof(Rectangle));
             engine.AddHostType(typeof(RingActionHandler));
-            engine.AddHostType(typeof(Channel));
+            engine.AddHostType("Channel", typeof(WorldChannel));
             engine.AddHostType(typeof(CommandsExecutor));
-            engine.AddHostType(typeof(Character));
+            engine.AddHostType(typeof(CharacterManager));
             engine.AddHostType(typeof(Gachapon));
             engine.AddHostType(typeof(ItemInformationProvider));
             engine.AddHostType(typeof(MonsterBook));
@@ -84,7 +86,6 @@ public abstract class AbstractScriptManager
             engine.AddHostType(typeof(ExpeditionType));
             engine.AddHostType(typeof(ListExtensions));
             engine.AddHostType(typeof(Enumerable));
-            engine.AddHostType(typeof(DateTime));
             engine.AddHostType(typeof(Server));
             engine.AddHostType(typeof(Point));
             engine.AddHostType(typeof(LifeFactory));
@@ -107,7 +108,7 @@ public abstract class AbstractScriptManager
         }
     }
 
-    protected V8ScriptEngine getInvocableScriptEngine(string path, Client c)
+    protected V8ScriptEngine getInvocableScriptEngine(string path, IClient c)
     {
         V8ScriptEngine? engine = c.getScriptEngine(path);
         if (engine == null)
@@ -121,7 +122,7 @@ public abstract class AbstractScriptManager
 
 
 
-    protected void resetContext(string path, Client c)
+    protected void resetContext(string path, IClient c)
     {
         c.removeScriptEngine("scripts/" + path);
     }

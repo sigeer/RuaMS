@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using constants.inventory;
 using net.packet;
 using scripting.item;
@@ -34,7 +33,7 @@ namespace net.server.channel.handlers;
  */
 public class ScriptedItemHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readInt(); // trash stamp, thanks RMZero213
         short itemSlot = p.readShort(); // item slot, thanks RMZero213
@@ -47,7 +46,7 @@ public class ScriptedItemHandler : AbstractPacketHandler
             return;
         }
 
-        var item = c.getPlayer().getInventory(ItemConstants.getInventoryType(itemId)).getItem(itemSlot);
+        var item = c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(itemId)).getItem(itemSlot);
         if (item == null || item.getItemId() != itemId || item.getQuantity() < 1)
         {
             return;

@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using tools;
 
 namespace net.server.coordinator.partysearch;
@@ -53,12 +52,12 @@ public class PartySearchStorage
         }
     }
 
-    private Dictionary<int, Character> fetchRemainingPlayers()
+    private Dictionary<int, IPlayer> fetchRemainingPlayers()
     {
         List<PartySearchCharacter> players = getStorageList();
-        Dictionary<int, Character> remainingPlayers = new(players.Count);
+        Dictionary<int, IPlayer> remainingPlayers = new(players.Count);
 
-        foreach (PartySearchCharacter psc in players)
+        foreach (var psc in players)
         {
             if (psc.isQueued())
             {
@@ -73,19 +72,19 @@ public class PartySearchStorage
         return remainingPlayers;
     }
 
-    public void updateStorage(ICollection<Character> echelon)
+    public void updateStorage(ICollection<IPlayer> echelon)
     {
-        Dictionary<int, Character> newcomers = new();
-        foreach (Character chr in echelon)
+        Dictionary<int, IPlayer> newcomers = new();
+        foreach (IPlayer chr in echelon)
         {
             newcomers.AddOrUpdate(chr.getId(), chr);
         }
 
-        Dictionary<int, Character> curStorage = fetchRemainingPlayers();
+        Dictionary<int, IPlayer> curStorage = fetchRemainingPlayers();
         curStorage.putAll(newcomers);
 
         List<PartySearchCharacter> pscList = new(curStorage.Count);
-        foreach (Character chr in curStorage.Values)
+        foreach (IPlayer chr in curStorage.Values)
         {
             pscList.Add(new PartySearchCharacter(chr));
         }
@@ -137,7 +136,7 @@ public class PartySearchStorage
         return en;
     }
 
-    public Character? callPlayer(int callerCid, int callerMapid, int minLevel, int maxLevel)
+    public IPlayer? callPlayer(int callerCid, int callerMapid, int minLevel, int maxLevel)
     {
         if (emptyIntervals.inInterval(minLevel, maxLevel))
         {
@@ -160,7 +159,7 @@ public class PartySearchStorage
                 break;
             }
 
-            Character chr = psc.callPlayer(callerCid, callerMapid);
+            IPlayer chr = psc.callPlayer(callerCid, callerMapid);
             if (chr != null)
             {
                 return chr;
@@ -171,12 +170,12 @@ public class PartySearchStorage
         return null;
     }
 
-    public void detachPlayer(Character chr)
+    public void detachPlayer(IPlayer chr)
     {
         PartySearchCharacter? toRemove = null;
         foreach (PartySearchCharacter psc in getStorageList())
         {
-            Character player = psc.getPlayer();
+            IPlayer player = psc.getPlayer();
 
             if (player != null && player.getId() == chr.getId())
             {

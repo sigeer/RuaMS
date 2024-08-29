@@ -21,6 +21,9 @@
  */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
+using Application.Core.Game.Relation;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -28,8 +31,6 @@ using constants.game;
 using constants.id;
 using constants.inventory;
 using net.server;
-using net.server.guild;
-using net.server.world;
 using scripting.Event;
 using scripting.npc;
 using server;
@@ -39,33 +40,34 @@ using server.maps;
 using server.partyquest;
 using server.quest;
 using tools;
-using static client.Character;
+using static Application.Core.Game.Players.Player;
+
 
 namespace scripting;
 
 public class AbstractPlayerInteraction
 {
 
-    public Client c;
+    public IClient c;
 
-    public AbstractPlayerInteraction(Client c)
+    public AbstractPlayerInteraction(IClient c)
     {
         this.c = c;
     }
 
-    public Client getClient()
+    public IClient getClient()
     {
         return c;
     }
 
-    public Character getPlayer()
+    public IPlayer getPlayer()
     {
-        return c.getPlayer();
+        return c.OnlinedCharacter;
     }
 
-    public Character getChar()
+    public IPlayer getChar()
     {
-        return c.getPlayer();
+        return c.OnlinedCharacter;
     }
 
     public int getJobId()
@@ -83,9 +85,9 @@ public class AbstractPlayerInteraction
         return getPlayer().getLevel();
     }
 
-    public MapleMap getMap()
+    public IMap getMap()
     {
-        return c.getPlayer().getMap();
+        return c.OnlinedCharacter.getMap();
     }
 
     public int getHourOfDay()
@@ -98,7 +100,7 @@ public class AbstractPlayerInteraction
         return getMarketPortalId(getWarpMap(mapId));
     }
 
-    private int getMarketPortalId(MapleMap map)
+    private int getMarketPortalId(IMap map)
     {
         return (map.findMarketPortal() != null) ? map.findMarketPortal()!.getId() : map.getRandomPlayerSpawnpoint().getId();
     }
@@ -160,7 +162,7 @@ public class AbstractPlayerInteraction
 
     public void warpParty(int id, int portalId, int fromMinId, int fromMaxId)
     {
-        foreach (Character mc in this.getPlayer().getPartyMembersOnline())
+        foreach (var mc in this.getPlayer().getPartyMembersOnline())
         {
             if (mc.isLoggedinWorld())
             {
@@ -172,12 +174,12 @@ public class AbstractPlayerInteraction
         }
     }
 
-    public MapleMap getWarpMap(int map)
+    public IMap getWarpMap(int map)
     {
         return getPlayer().getWarpMap(map);
     }
 
-    public MapleMap getMap(int map)
+    public IMap getMap(int map)
     {
         return getWarpMap(map);
     }
@@ -308,7 +310,7 @@ public class AbstractPlayerInteraction
             addedItems.Add(new(it, ItemConstants.getInventoryType(itemids.get(i))));
         }
 
-        return Inventory.checkSpots(c.getPlayer(), addedItems);
+        return Inventory.checkSpots(c.OnlinedCharacter, addedItems);
     }
 
     private List<ItemInventoryType> prepareProofInventoryItems(List<ItemQuantity> items)
@@ -369,7 +371,7 @@ public class AbstractPlayerInteraction
 
                     List<ItemInventoryType> addItems = prepareProofInventoryItems(toAdd);
 
-                    bool canHold = Inventory.checkSpots(c.getPlayer(), addItems, true);
+                    bool canHold = Inventory.checkSpots(c.OnlinedCharacter, addItems, true);
                     if (!canHold)
                     {
                         return false;
@@ -390,12 +392,12 @@ public class AbstractPlayerInteraction
 
     public QuestStatus getQuestRecord(int id)
     {
-        return c.getPlayer().getQuestNAdd(Quest.getInstance(id));
+        return c.OnlinedCharacter.getQuestNAdd(Quest.getInstance(id));
     }
 
     public QuestStatus getQuestNoRecord(int id)
     {
-        return c.getPlayer().getQuestNoAdd(Quest.getInstance(id));
+        return c.OnlinedCharacter.getQuestNoAdd(Quest.getInstance(id));
     }
 
     //---- /\ /\ /\ /\ /\ /\ /\  NOT TESTED  /\ /\ /\ /\ /\ /\ /\ /\ /\ ----
@@ -419,12 +421,12 @@ public class AbstractPlayerInteraction
 
     public int getQuestStatus(int id)
     {
-        return (int)c.getPlayer().getQuest(Quest.getInstance(id)).getStatus();
+        return (int)c.OnlinedCharacter.getQuest(Quest.getInstance(id)).getStatus();
     }
 
     private QuestStatus.Status getQuestStat(int id)
     {
-        return c.getPlayer().getQuest(Quest.getInstance(id)).getStatus();
+        return c.OnlinedCharacter.getQuest(Quest.getInstance(id)).getStatus();
     }
 
     public bool isQuestCompleted(int id)
@@ -475,7 +477,7 @@ public class AbstractPlayerInteraction
 
     public void setQuestProgress(int id, int infoNumber, string progress)
     {
-        c.getPlayer().setQuestProgress(id, infoNumber, progress);
+        c.OnlinedCharacter.setQuestProgress(id, infoNumber, progress);
     }
 
     public string getQuestProgress(int id)
@@ -645,8 +647,8 @@ public class AbstractPlayerInteraction
 
         getPlayer().addPet(evolved);
 
-        getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.showPet(c.getPlayer(), evolved, false, false), true);
-        c.sendPacket(PacketCreator.petStatUpdate(c.getPlayer()));
+        getPlayer().getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showPet(c.OnlinedCharacter, evolved, false, false), true);
+        c.sendPacket(PacketCreator.petStatUpdate(c.OnlinedCharacter));
         c.sendPacket(PacketCreator.enableActions());
         chr.getClient().getWorldServer().registerPetHunger(chr, chr.getPetIndex(evolved));
         */
@@ -686,7 +688,7 @@ public class AbstractPlayerInteraction
         return gainItem(id, quantity, randomStats, showMessage, expires, null);
     }
 
-    public Item gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires, Pet? from)
+    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires, Pet? from)
     {
         Item? item = null;
         Pet evolved;
@@ -734,14 +736,14 @@ public class AbstractPlayerInteraction
                         it.setUpgradeSlots(3);
                     }
 
-                    if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && c.getPlayer().getCS() == true)
+                    if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && c.OnlinedCharacter.getCS() == true)
                     {
                         Equip eqp = (Equip)item;
-                        if (!(c.getPlayer().isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
+                        if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
                         {
                             eqp.setUpgradeSlots((byte)(eqp.getUpgradeSlots() + 1));
                         }
-                        item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.getPlayer().isGM());
+                        item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
                     }
                 }
             }
@@ -752,12 +754,12 @@ public class AbstractPlayerInteraction
 
             if (expires >= 0)
             {
-                item.setExpiration(DateTimeOffset.Now.ToUnixTimeMilliseconds() + expires);
+                item!.setExpiration(DateTimeOffset.Now.ToUnixTimeMilliseconds() + expires);
             }
 
             if (!InventoryManipulator.checkSpace(c, id, quantity, ""))
             {
-                c.getPlayer().dropMessage(1, "Your inventory is full. Please remove an item from your " + ItemConstants.getInventoryType(id).ToString() + " inventory.");
+                c.OnlinedCharacter.dropMessage(1, "Your inventory is full. Please remove an item from your " + ItemConstants.getInventoryType(id).ToString() + " inventory.");
                 return null;
             }
             if (ItemConstants.getInventoryType(id) == InventoryType.EQUIP)
@@ -830,13 +832,13 @@ public class AbstractPlayerInteraction
 
     public virtual void displayAranIntro()
     {
-        string intro = (c.getPlayer().getMapId()) switch
+        string intro = (c.OnlinedCharacter.getMapId()) switch
         {
             MapId.ARAN_TUTO_1 => "Effect/Direction1.img/aranTutorial/Scene0",
-            MapId.ARAN_TUTO_2 => "Effect/Direction1.img/aranTutorial/Scene1" + (c.getPlayer().getGender() == 0 ? "0" : "1"),
-            MapId.ARAN_TUTO_3 => "Effect/Direction1.img/aranTutorial/Scene2" + (c.getPlayer().getGender() == 0 ? "0" : "1"),
+            MapId.ARAN_TUTO_2 => "Effect/Direction1.img/aranTutorial/Scene1" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
+            MapId.ARAN_TUTO_3 => "Effect/Direction1.img/aranTutorial/Scene2" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
             MapId.ARAN_TUTO_4 => "Effect/Direction1.img/aranTutorial/Scene3",
-            MapId.ARAN_POLEARM => "Effect/Direction1.img/aranTutorial/HandedPoleArm" + (c.getPlayer().getGender() == 0 ? "0" : "1"),
+            MapId.ARAN_POLEARM => "Effect/Direction1.img/aranTutorial/HandedPoleArm" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
             MapId.ARAN_MAHA => "Effect/Direction1.img/aranTutorial/Maha",
             _ => ""
         };
@@ -856,17 +858,14 @@ public class AbstractPlayerInteraction
 
     public void guildMessage(int type, string message)
     {
-        if (getGuild() != null)
-        {
-            getGuild().guildMessage(PacketCreator.serverNotice(type, message));
-        }
+        getGuild()?.guildMessage(PacketCreator.serverNotice(type, message));
     }
 
-    public Guild? getGuild()
+    public IGuild? getGuild()
     {
         try
         {
-            return Server.getInstance().getGuild(getPlayer().getGuildId(), getPlayer().getWorld(), null);
+            return Server.getInstance().getGuild(getPlayer().getGuildId(), null);
         }
         catch (Exception e)
         {
@@ -875,7 +874,7 @@ public class AbstractPlayerInteraction
         return null;
     }
 
-    public virtual Party? getParty()
+    public virtual ITeam? getParty()
     {
         return getPlayer().getParty();
     }
@@ -897,19 +896,19 @@ public class AbstractPlayerInteraction
             return false;
         }
 
-        return getParty().getLeaderId() == getPlayer().getId();
+        return getParty()!.getLeaderId() == getPlayer().getId();
     }
 
     public bool isEventLeader()
     {
-        return getEventInstance() != null && getPlayer().getId() == getEventInstance().getLeaderId();
+        return getEventInstance() != null && getPlayer().getId() == getEventInstance()!.getLeaderId();
     }
 
-    public void givePartyItems(int id, short quantity, List<Character> party)
+    public void givePartyItems(int id, short quantity, List<IPlayer> partyMembers)
     {
-        foreach (Character chr in party)
+        foreach (var chr in partyMembers)
         {
-            Client cl = chr.getClient();
+            var cl = chr.getClient();
             if (quantity >= 0)
             {
                 InventoryManipulator.addById(cl, id, quantity);
@@ -939,14 +938,8 @@ public class AbstractPlayerInteraction
             removeAll(id);
             return;
         }
-        foreach (PartyCharacter mpc in getParty().getMembers())
+        foreach (var chr in getParty()!.getMembers())
         {
-            if (mpc == null || !mpc.isOnline())
-            {
-                continue;
-            }
-
-            Character chr = mpc.getPlayer();
             if (chr != null && chr.getClient() != null)
             {
                 removeAll(id, chr.getClient());
@@ -954,14 +947,14 @@ public class AbstractPlayerInteraction
         }
     }
 
-    public void giveCharacterExp(int amount, Character chr)
+    public void giveCharacterExp(int amount, IPlayer chr)
     {
         chr.gainExp((amount * chr.getExpRate()), true, true);
     }
 
-    public void givePartyExp(int amount, List<Character> party)
+    public void givePartyExp(int amount, List<IPlayer> party)
     {
-        foreach (Character chr in party)
+        foreach (var chr in party)
         {
             giveCharacterExp(amount, chr);
         }
@@ -985,32 +978,19 @@ public class AbstractPlayerInteraction
 
         if (instance)
         {
-            foreach (PartyCharacter member in party.getMembers())
+            foreach (var chr in party.getMembers())
             {
-                if (member == null || !member.isOnline())
+                if (!chr.IsOnlined || chr.getEventInstance() == null)
                 {
                     size--;
-                }
-                else
-                {
-                    Character chr = member.getPlayer();
-                    if (chr != null && chr.getEventInstance() == null)
-                    {
-                        size--;
-                    }
                 }
             }
         }
 
         int bonus = size < 4 ? 100 : 70 + (size * 10);
-        foreach (PartyCharacter member in party.getMembers())
+        foreach (var player in party.getMembers())
         {
-            if (member == null || !member.isOnline())
-            {
-                continue;
-            }
-            Character player = member.getPlayer();
-            if (player == null)
+            if (player == null || player.getEventInstance() == null)
             {
                 continue;
             }
@@ -1028,9 +1008,9 @@ public class AbstractPlayerInteraction
         }
     }
 
-    public void removeFromParty(int id, List<Character> party)
+    public void removeFromParty(int id, List<IPlayer> party)
     {
-        foreach (Character chr in party)
+        foreach (var chr in party)
         {
             InventoryType type = ItemConstants.getInventoryType(id);
             Inventory iv = chr.getInventory(type);
@@ -1048,10 +1028,10 @@ public class AbstractPlayerInteraction
         removeAll(id, c);
     }
 
-    public void removeAll(int id, Client cl)
+    public void removeAll(int id, IClient cl)
     {
         InventoryType invType = ItemConstants.getInventoryType(id);
-        int possessed = cl.getPlayer().getInventory(invType).countById(id);
+        int possessed = cl.OnlinedCharacter.getInventory(invType).countById(id);
         if (possessed > 0)
         {
             InventoryManipulator.removeById(cl, ItemConstants.getInventoryType(id), id, possessed, true, false);
@@ -1060,7 +1040,7 @@ public class AbstractPlayerInteraction
 
         if (invType == InventoryType.EQUIP)
         {
-            if (cl.getPlayer().getInventory(InventoryType.EQUIPPED).countById(id) > 0)
+            if (cl.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).countById(id) > 0)
             {
                 InventoryManipulator.removeById(cl, InventoryType.EQUIPPED, id, 1, true, false);
                 cl.sendPacket(PacketCreator.getShowItemGain(id, -1, true));
@@ -1070,7 +1050,7 @@ public class AbstractPlayerInteraction
 
     public int getMapId()
     {
-        return c.getPlayer().getMap().getId();
+        return c.OnlinedCharacter.getMap().getId();
     }
 
     public int getPlayerCount(int mapid)
@@ -1091,23 +1071,23 @@ public class AbstractPlayerInteraction
 
     public bool isAllReactorState(int reactorId, int state)
     {
-        return c.getPlayer().getMap().isAllReactorState(reactorId, state);
+        return c.OnlinedCharacter.getMap().isAllReactorState(reactorId, state);
     }
 
     public virtual void resetMap(int mapid)
     {
         getMap(mapid).resetReactors();
         getMap(mapid).killAllMonsters();
-        foreach (MapObject i in getMap(mapid).getMapObjectsInRange(c.getPlayer().getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)))
+        foreach (var i in getMap(mapid).getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM)))
         {
             getMap(mapid).removeMapObject(i);
-            getMap(mapid).broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), 0, c.getPlayer().getId()));
+            getMap(mapid).broadcastMessage(PacketCreator.removeItemFromMap(i.getObjectId(), 0, c.OnlinedCharacter.getId()));
         }
     }
 
     public void useItem(int id)
     {
-        ItemInformationProvider.getInstance().getItemEffect(id).applyTo(c.getPlayer());
+        ItemInformationProvider.getInstance().getItemEffect(id).applyTo(c.OnlinedCharacter);
         c.sendPacket(PacketCreator.getItemMessage(id));//Useful shet :3
     }
 
@@ -1123,7 +1103,7 @@ public class AbstractPlayerInteraction
 
     public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration, bool force)
     {
-        Skill skill = SkillFactory.getSkill(skillid);
+        var skill = SkillFactory.getSkill(skillid);
         var skillEntry = getPlayer().getSkills().GetValueOrDefault(skill);
         if (skillEntry != null)
         {
@@ -1143,26 +1123,26 @@ public class AbstractPlayerInteraction
 
     public void removeEquipFromSlot(short slot)
     {
-        var tempItem = c.getPlayer().getInventory(InventoryType.EQUIPPED).getItem(slot);
+        var tempItem = c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).getItem(slot);
         InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, tempItem.getQuantity(), false, false);
     }
 
     public void gainAndEquip(int itemid, short slot)
     {
-        var old = c.getPlayer().getInventory(InventoryType.EQUIPPED).getItem(slot);
+        var old = c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).getItem(slot);
         if (old != null)
         {
             InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, old.getQuantity(), false, false);
         }
         Item newItem = ItemInformationProvider.getInstance().getEquipById(itemid);
         newItem.setPosition(slot);
-        c.getPlayer().getInventory(InventoryType.EQUIPPED).addItemFromDB(newItem);
+        c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).addItemFromDB(newItem);
         c.sendPacket(PacketCreator.modifyInventory(false, Collections.singletonList(new ModifyInventory(0, newItem))));
     }
 
-    public void spawnNpc(int npcId, Point pos, MapleMap map)
+    public void spawnNpc(int npcId, Point pos, IMap map)
     {
-        NPC npc = LifeFactory.getNPC(npcId);
+        var npc = LifeFactory.getNPC(npcId);
         if (npc != null)
         {
             npc.setPosition(pos);
@@ -1177,12 +1157,12 @@ public class AbstractPlayerInteraction
 
     public void spawnMonster(int id, int x, int y)
     {
-        Monster monster = LifeFactory.getMonster(id);
+        var monster = LifeFactory.getMonster(id);
         monster.setPosition(new Point(x, y));
         getPlayer().getMap().spawnMonster(monster);
     }
 
-    public Monster getMonsterLifeFactory(int mid)
+    public Monster? getMonsterLifeFactory(int mid)
     {
         return LifeFactory.getMonster(mid);
     }
@@ -1209,12 +1189,12 @@ public class AbstractPlayerInteraction
 
     public void resetDojoEnergy()
     {
-        c.getPlayer().setDojoEnergy(0);
+        c.OnlinedCharacter.setDojoEnergy(0);
     }
 
     public void resetPartyDojoEnergy()
     {
-        foreach (Character pchr in c.getPlayer().getPartyMembersOnSameMap())
+        foreach (var pchr in c.OnlinedCharacter.getPartyMembersOnSameMap())
         {
             pchr.setDojoEnergy(0);
         }
@@ -1247,13 +1227,13 @@ public class AbstractPlayerInteraction
 
     public void updateAreaInfo(short area, string info)
     {
-        c.getPlayer().updateAreaInfo(area, info);
+        c.OnlinedCharacter.updateAreaInfo(area, info);
         c.sendPacket(PacketCreator.enableActions());//idk, nexon does the same :P
     }
 
     public bool containsAreaInfo(short area, string info)
     {
-        return c.getPlayer().containsAreaInfo(area, info);
+        return c.OnlinedCharacter.containsAreaInfo(area, info);
     }
 
     public void earnTitle(string msg)
@@ -1310,7 +1290,7 @@ public class AbstractPlayerInteraction
 
     public int createExpedition(ExpeditionType type, bool silent, int minPlayers, int maxPlayers)
     {
-        Character player = getPlayer();
+        var player = getPlayer();
         Expedition exped = new Expedition(player, type, silent, minPlayers, maxPlayers);
 
         int channel = player.getMap().getChannelServer().getId();
@@ -1399,7 +1379,7 @@ public class AbstractPlayerInteraction
             return true;
         }
 
-        Character chr = this.getPlayer();
+        var chr = this.getPlayer();
 
         switch (jobType)
         {
@@ -1454,7 +1434,7 @@ public class AbstractPlayerInteraction
 
     public void weakenAreaBoss(int monsterId, string message)
     {
-        MapleMap map = c.getPlayer().getMap();
+        var map = c.OnlinedCharacter.getMap();
         var monster = map.getMonsterById(monsterId);
         if (monster == null)
         {
@@ -1478,7 +1458,7 @@ public class AbstractPlayerInteraction
         reduceAvoidSkill.applyEffect(monster);
     }
 
-    private void sendBlueNotice(MapleMap map, string message)
+    private void sendBlueNotice(IMap map, string message)
     {
         map.dropMessage(6, message);
     }

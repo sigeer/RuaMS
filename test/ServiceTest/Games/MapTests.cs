@@ -1,10 +1,6 @@
-﻿using server.life;
+﻿using Application.Core.Game.Life;
+using server.life;
 using server.maps;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using tools;
 
 namespace ServiceTest.Games

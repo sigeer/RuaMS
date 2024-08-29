@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,8 @@
  */
 
 
-using client;
+using Application.Core.Game.Relation;
+using Application.Core.Managers;
 using net.packet;
 using net.server.guild;
 using tools;
@@ -34,21 +35,19 @@ namespace net.server.channel.handlers;
 public class AllianceOperationHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Alliance alliance = null;
-        Character chr = c.getPlayer();
 
-        if (chr.getGuild() == null)
+        var chr = c.OnlinedCharacter;
+
+        var chrGuild = chr.GuildModel;
+        if (chrGuild == null)
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
 
-        if (chr.getGuild().getAllianceId() > 0)
-        {
-            alliance = chr.getAlliance();
-        }
+        var alliance = chr.AllianceModel;
 
         byte b = p.readByte();
         if (alliance == null)
@@ -68,7 +67,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
                 return;
             }
 
-            if (chr.getMGC().getAllianceRank() > 2 || !alliance.getGuilds().Contains(chr.getGuildId()))
+            if (chr.AllianceRank > 2 || !alliance.getGuilds().Contains(chr.getGuildId()))
             {
                 c.sendPacket(PacketCreator.enableActions());
                 return;
@@ -79,35 +78,36 @@ public class AllianceOperationHandler : AbstractPacketHandler
         switch (b)
         {
             case 0x01:
-                Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.sendShowInfo(chr.getGuild().getAllianceId(), chr.getId()), -1, -1);
+                Server.getInstance().allianceMessage(alliance!.getId(), GuildPackets.sendShowInfo(alliance!.getId(), chr.getId()), -1, -1);
                 break;
             case 0x02:
-                { // Leave Alliance
-                    if (chr.getGuild().getAllianceId() == 0 || chr.getGuildId() < 1 || chr.getGuildRank() != 1)
+                {
+                    // Leave Alliance
+                    if (chr.GuildModel == null || chr.AllianceModel == null || chr.GuildRank != 1)
                     {
                         return;
                     }
 
-                    Alliance.removeGuildFromAlliance(chr.getGuild().getAllianceId(), chr.getGuildId(), chr.getWorld());
+                    chr.AllianceModel.removeGuildFromAlliance(chr.GuildId, chr.World);
                     break;
                 }
             case 0x03: // Send Invite
                 string guildName = p.readString();
 
-                if (alliance.getGuilds().Count == alliance.getCapacity())
+                if (alliance!.getGuilds().Count == alliance.getCapacity())
                 {
                     chr.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
                 }
                 else
                 {
-                    Alliance.sendInvitation(c, guildName, alliance.getId());
+                    AllianceManager.sendInvitation(c, guildName, alliance.getId());
                 }
 
                 break;
             case 0x04:
-                { // Accept Invite
-                    Guild guild = chr.getGuild();
-                    if (guild.getAllianceId() != 0 || chr.getGuildRank() != 1 || chr.getGuildId() < 1)
+                {
+                    // Accept Invite
+                    if (chrGuild.getAllianceId() != 0 || chr.getGuildRank() != 1 || chr.getGuildId() < 1)
                     {
                         return;
                     }
@@ -121,7 +121,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
                         return;
                     }
 
-                    if (!Alliance.answerInvitation(c.getPlayer().getId(), guild.getName(), alliance.getId(), true))
+                    if (!AllianceManager.answerInvitation(c.OnlinedCharacter.getId(), chrGuild.getName(), alliance.getId(), true))
                     {
                         return;
                     }
@@ -137,33 +137,31 @@ public class AllianceOperationHandler : AbstractPacketHandler
                     Server.getInstance().addGuildtoAlliance(alliance.getId(), guildid);
                     Server.getInstance().resetAllianceGuildPlayersRank(guildid);
 
-                    chr.getMGC().setAllianceRank(2);
-                    Guild g = Server.getInstance().getGuild(chr.getGuildId());
-                    if (g != null)
-                    {
-                        g.getMGC(chr.getId()).setAllianceRank(2);
-                    }
-
+                    chr.setAllianceRank(2);
                     chr.saveGuildStatus();
 
                     Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.addGuildToAlliance(alliance, guildid, c), -1, -1);
                     Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.updateAllianceInfo(alliance, c.getWorld()), -1, -1);
                     Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
-                    guild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
+                    chrGuild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
 
                     break;
                 }
             case 0x06:
-                { // Expel Guild
+                {
+                    // Expel Guild
                     int guildid = p.readInt();
                     int allianceid = p.readInt();
-                    if (chr.getGuild().getAllianceId() == 0 || chr.getGuild().getAllianceId() != allianceid)
+                    if (chrGuild.AllianceId == 0 || chrGuild.AllianceId != allianceid)
                     {
                         return;
                     }
 
-                    Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.removeGuildFromAlliance(alliance, guildid, c.getWorld()), -1, -1);
+                    Server.getInstance().allianceMessage(alliance!.getId(), GuildPackets.removeGuildFromAlliance(alliance, guildid, c.getWorld()), -1, -1);
                     Server.getInstance().removeGuildFromAlliance(alliance.getId(), guildid);
+
+                    // 为什么没有调用 removeGuildFromAllianceOnDb ？
+                    // 最后 saveToDB 会更新db
 
                     Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.getGuildAlliances(alliance, c.getWorld()), -1, -1);
                     Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
@@ -173,20 +171,21 @@ public class AllianceOperationHandler : AbstractPacketHandler
                     break;
                 }
             case 0x07:
-                { // Change Alliance Leader
-                    if (chr.getGuild().getAllianceId() == 0 || chr.getGuildId() < 1)
+                {
+                    // Change Alliance Leader
+                    if (chrGuild.AllianceId == 0 || chr.GuildId < 1)
                     {
                         return;
                     }
                     int victimid = p.readInt();
-                    Character player = Server.getInstance().getWorld(c.getWorld()).getPlayerStorage().getCharacterById(victimid);
-                    if (player.getAllianceRank() != 2)
+                    var player = c.getWorldServer().getPlayerStorage().getCharacterById(victimid);
+                    if (player == null || player.AllianceRank != 2)
                     {
                         return;
                     }
 
-                    //Server.getInstance().allianceMessage(alliance.getId(), sendChangeLeader(chr.getGuild().getAllianceId(), chr.getId(), slea.readInt()), -1, -1);
-                    changeLeaderAllianceRank(alliance, player);
+                    //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeLeader(chr.getGuild().getAllianceId(), chr.getId(), slea.readInt()), -1, -1);
+                    changeLeaderAllianceRank(alliance!, player);
                     break;
                 }
             case 0x08:
@@ -195,7 +194,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
                 {
                     ranks[i] = p.readString();
                 }
-                Server.getInstance().setAllianceRanks(alliance.getId(), ranks);
+                Server.getInstance().setAllianceRanks(alliance!.getId(), ranks);
                 Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.changeAllianceRankTitle(alliance.getId(), ranks), -1, -1);
                 break;
             case 0x09:
@@ -203,15 +202,15 @@ public class AllianceOperationHandler : AbstractPacketHandler
                     int int1 = p.readInt();
                     byte byte1 = p.readByte();
 
-                    //Server.getInstance().allianceMessage(alliance.getId(), sendChangeRank(chr.getGuild().getAllianceId(), chr.getId(), int1, byte1), -1, -1);
-                    Character player = Server.getInstance().getWorld(c.getWorld()).getPlayerStorage().getCharacterById(int1);
-                    changePlayerAllianceRank(alliance, player, (byte1 > 0));
+                    //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeRank(chr.getGuild().getAllianceId(), chr.getId(), int1, byte1), -1, -1);
+                    var player = Server.getInstance().getWorld(c.getWorld()).getPlayerStorage().getCharacterById(int1);
+                    changePlayerAllianceRank(alliance!, player, (byte1 > 0));
 
                     break;
                 }
             case 0x0A:
                 string notice = p.readString();
-                Server.getInstance().setAllianceNotice(alliance.getId(), notice);
+                Server.getInstance().setAllianceNotice(alliance!.getId(), notice);
                 Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.allianceNotice(alliance.getId(), notice), -1, -1);
 
                 alliance.dropMessage(5, "* Alliance Notice : " + notice);
@@ -224,21 +223,20 @@ public class AllianceOperationHandler : AbstractPacketHandler
         alliance.saveToDB();
     }
 
-    private void changeLeaderAllianceRank(Alliance alliance, Character newLeader)
+    private void changeLeaderAllianceRank(IAlliance alliance, IPlayer newLeader)
     {
-        GuildCharacter lmgc = alliance.getLeader();
-        Character leader = newLeader.getWorldServer().getPlayerStorage().getCharacterById(lmgc.getId());
-        leader.getMGC().setAllianceRank(2);
-        leader.saveGuildStatus();
+        var oldLeader = alliance.getLeader();
+        oldLeader.setAllianceRank(2);
+        oldLeader.saveGuildStatus();
 
-        newLeader.getMGC().setAllianceRank(1);
+        newLeader.setAllianceRank(1);
         newLeader.saveGuildStatus();
 
-        Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.getGuildAlliances(alliance, newLeader.getWorld()), -1, -1);
-        alliance.dropMessage("'" + newLeader.getName() + "' has been appointed as the new head of this Alliance.");
+        Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.getGuildAlliances(alliance, newLeader.World), -1, -1);
+        alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
     }
 
-    private void changePlayerAllianceRank(Alliance alliance, Character chr, bool raise)
+    private void changePlayerAllianceRank(IAlliance alliance, IPlayer chr, bool raise)
     {
         int newRank = chr.getAllianceRank() + (raise ? -1 : 1);
         if (newRank < 3 || newRank > 5)
@@ -246,7 +244,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
             return;
         }
 
-        chr.getMGC().setAllianceRank(newRank);
+        chr.setAllianceRank(newRank);
         chr.saveGuildStatus();
 
         Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.getGuildAlliances(alliance, chr.getWorld()), -1, -1);

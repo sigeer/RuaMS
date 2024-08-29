@@ -46,7 +46,7 @@ public class RankingLoginTask : AbstractRunnable
     {
         var jobRangeStart = job * 100;
         var jobRangeEnd = job * 100 + 99;
-        var dataList = (from a in dbContext.Characters.Where(x => x.Gm < 2 && x.World == world && (job == -1 || x.Job >= jobRangeStart && x.Job <= jobRangeEnd))
+        var dataList = (from a in dbContext.Characters.Where(x => x.Gm < 2 && x.World == world && (job == -1 || x.JobId >= jobRangeStart && x.JobId <= jobRangeEnd))
                         join b in dbContext.Accounts on a.AccountId equals b.Id
                         orderby a.Level descending, a.Exp descending, a.LastExpGainTime ascending, a.Fame descending, a.Meso descending
                         select new { a.Id, rank = job != -1 ? a.JobRank : a.Rank, rankMove = job != -1 ? a.JobRankMove : a.RankMove, b.Lastlogin, b.Loggedin }).ToList();

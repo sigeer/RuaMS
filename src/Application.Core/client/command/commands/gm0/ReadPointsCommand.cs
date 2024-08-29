@@ -7,10 +7,10 @@ public class ReadPointsCommand : Command
         setDescription("Show point total.");
     }
 
-    public override void execute(Client client, string[] paramsValue)
+    public override void execute(IClient client, string[] paramsValue)
     {
 
-        Character player = client.getPlayer();
+        var player = client.OnlinedCharacter;
         if (paramsValue.Length > 2)
         {
             player.yellowMessage("Syntax: @points (rp|vp|all)");

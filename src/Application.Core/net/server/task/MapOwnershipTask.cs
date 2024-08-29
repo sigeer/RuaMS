@@ -19,7 +19,7 @@
 */
 
 
-using net.server.channel;
+using Application.Core.Game.TheWorld;
 
 namespace net.server.task;
 
@@ -31,13 +31,13 @@ public class MapOwnershipTask : BaseTask
 
     public override void HandleRun()
     {
-        foreach (Channel ch in wserv.getChannels())
+        foreach (var ch in wserv.getChannels())
         {
             ch.runCheckOwnedMapsSchedule();
         }
     }
 
-    public MapOwnershipTask(World world) : base(world)
+    public MapOwnershipTask(IWorld world) : base(world)
     {
     }
 }

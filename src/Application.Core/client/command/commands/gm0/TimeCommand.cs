@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -32,8 +32,8 @@ public class TimeCommand : Command
         setDescription("Show current server time.");
     }
 
-    public override void execute(Client client, string[] paramsValue)
+    public override void execute(IClient client, string[] paramsValue)
     {
-        client.getPlayer().yellowMessage("Cosmic Server Time: " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+        client.OnlinedCharacter.yellowMessage("Cosmic NewServer Time: " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss"));
     }
 }

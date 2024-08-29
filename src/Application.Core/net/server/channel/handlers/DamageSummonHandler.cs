@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,23 +21,23 @@
 */
 
 
+using Application.Core.Game.Maps.AnimatedObjects;
 using client;
 using net.packet;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
 
 public class DamageSummonHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int oid = p.readInt();
         p.skip(1);   // -1
         int damage = p.readInt();
         int monsterIdFrom = p.readInt();
 
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         var mmo = player.getMap().getMapObject(oid);
 
         if (mmo is Summon summon)

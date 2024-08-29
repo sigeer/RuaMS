@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Life;
 using provider;
 using provider.wz;
 using tools;

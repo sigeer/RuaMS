@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 
 using Application.Core.Managers;
-using client;
 using net.packet;
 using tools;
 
@@ -31,9 +30,9 @@ namespace net.server.channel.handlers;
  */
 public class UseMapleLifeHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         long timeNow = currentServerTime();
 
         if (timeNow - player.getLastUsedCashItem() < 3000)

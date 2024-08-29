@@ -95,7 +95,7 @@ public class WarriorCreator : CharacterFactory
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(Client c, string name, int face, int hair, int skin, int gender, int improveSp)
+    public static int createCharacter(IClient c, string name, int face, int hair, int skin, int gender, int improveSp)
     {
         return createNewCharacter(c, name, face, hair, skin, gender, createRecipe(Job.WARRIOR, 30, MapId.PERION, equips[gender], equips[2 + gender], equips[4], weapons[0], gender, improveSp));
     }

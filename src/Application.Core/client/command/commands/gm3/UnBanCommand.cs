@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@
    @Author: Arthur L - Refactored command content into modules
 */
 
+using Application.Core.Managers;
 using Microsoft.EntityFrameworkCore;
 
 namespace client.command.commands.gm3;
@@ -36,9 +37,9 @@ public class UnBanCommand : Command
         setDescription("Unban a player.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !unban <playername>");
@@ -47,7 +48,7 @@ public class UnBanCommand : Command
 
         try
         {
-            int aid = Character.getAccountIdByName(paramsValue[0]);
+            int aid = CharacterManager.getAccountIdByName(paramsValue[0]);
             using var dbContext = new DBContext();
             dbContext.Accounts.Where(x => x.Id == aid).ExecuteUpdate(x => x.SetProperty(y => y.Banned, -1));
 

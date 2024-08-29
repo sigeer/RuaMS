@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using client;
 using scripting.npc;
 using static server.ItemInformationProvider;
 
@@ -37,7 +36,7 @@ public class ItemScriptManager
         return instance;
     }
 
-    public void runItemScript(Client c, ScriptedItem scriptItem)
+    public void runItemScript(IClient c, ScriptedItem scriptItem)
     {
         NPCScriptManager.getInstance().start(c, scriptItem, null);
     }

@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,8 @@
 */
 
 
+using Application.Core.Managers;
 using net.server;
-using net.server.channel;
 
 namespace client.command.commands.gm3;
 
@@ -35,20 +35,20 @@ public class OnlineTwoCommand : Command
         setDescription("Show all online players.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         int total = 0;
-        foreach (Channel ch in Server.getInstance().getChannelsFromWorld(player.getWorld()))
+        foreach (var ch in Server.getInstance().getChannelsFromWorld(player.getWorld()))
         {
             int size = ch.getPlayerStorage().getAllCharacters().Count;
             total += size;
             string s = "(Channel " + ch.getId() + " Online: " + size + ") : ";
             if (ch.getPlayerStorage().getAllCharacters().Count < 50)
             {
-                foreach (Character chr in ch.getPlayerStorage().getAllCharacters())
+                foreach (var chr in ch.getPlayerStorage().getAllCharacters())
                 {
-                    s += Character.makeMapleReadable(chr.getName()) + ", ";
+                    s += CharacterManager.makeMapleReadable(chr.getName()) + ", ";
                 }
                 player.dropMessage(6, s.Substring(0, s.Length - 2));
             }

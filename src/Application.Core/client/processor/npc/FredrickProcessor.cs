@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Managers;
 using Application.Core.model;
 using client.inventory;
 using client.inventory.manipulator;
@@ -49,7 +50,7 @@ public class FredrickProcessor
         this.noteService = noteService;
     }
 
-    private static byte canRetrieveFromFredrick(Character chr, List<ItemInventoryType> items)
+    private static byte canRetrieveFromFredrick(IPlayer chr, List<ItemInventoryType> items)
     {
         if (!Inventory.checkSpotsAndOwnership(chr, items))
         {
@@ -114,24 +115,17 @@ public class FredrickProcessor
         try
         {
             using var dbContext = new DBContext();
-            removeFredrickLog(dbContext, cid);
+            dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
         }
         catch (Exception sqle)
         {
             log.Error(sqle.ToString());
         }
     }
-
-    private static void removeFredrickLog(DBContext dbContext, int cid)
-    {
-        dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
-    }
-
-    public static void insertFredrickLog(int cid)
+    public static void insertFredrickLog(DBContext dbContext, int cid)
     {
         try
         {
-            using var dbContext = new DBContext();
             var dbModel = new Fredstorage()
             {
                 Cid = cid,
@@ -139,7 +133,7 @@ public class FredrickProcessor
                 Timestamp = DateTimeOffset.Now
             };
 
-            removeFredrickLog(dbContext, cid);
+            dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
             dbContext.Fredstorages.Add(dbModel);
             dbContext.SaveChanges();
         }
@@ -154,7 +148,7 @@ public class FredrickProcessor
         List<string> expiredCnames = new();
         foreach (var id in expiredCids)
         {
-            var name = Character.getNameById(id.CharacterId);
+            var name = CharacterManager.getNameById(id.CharacterId);
             if (name != null)
             {
                 expiredCnames.Add(name);
@@ -232,7 +226,7 @@ public class FredrickProcessor
                     if (wserv != null)
                     {
                         var chr = wserv.getPlayerStorage().getCharacterById(cid.CharacterId);
-                        if (chr != null)
+                        if (chr != null && chr.IsOnlined)
                         {
                             chr.setMerchantMeso(0);
                         }
@@ -282,13 +276,13 @@ public class FredrickProcessor
         }
     }
 
-    public void fredrickRetrieveItems(Client c)
+    public void fredrickRetrieveItems(IClient c)
     {     // thanks Gustav for pointing out the dupe on Fredrick handling
         if (c.tryacquireClient())
         {
             try
             {
-                Character chr = c.getPlayer();
+                var chr = c.OnlinedCharacter;
 
                 List<ItemInventoryType> items;
                 try

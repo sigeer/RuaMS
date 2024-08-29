@@ -21,7 +21,7 @@
 */
 namespace server.life;
 
-public class Element: EnumClass
+public class Element : EnumClass
 {
     public readonly static Element NEUTRAL = new(0);
     public readonly static Element PHYSICAL = new(1);

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -32,9 +32,9 @@ namespace net.server.channel.handlers;
 public class SpecialMoveHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         p.readInt();
         chr.getAutobanManager().setTimestamp(4, Server.getInstance().getCurrentTimestamp(), 28);
         int skillid = p.readInt();
@@ -50,7 +50,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
 
         Point? pos = null;
         int __skillLevel = p.readByte();
-        Skill skill = SkillFactory.getSkill(skillid);
+        var skill = SkillFactory.getSkill(skillid);
         int skillLevel = chr.getSkillLevel(skill);
         if (skillid % 10000000 == 1010 || skillid % 10000000 == 1011)
         {
@@ -68,7 +68,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
             return;
         }
 
-        StatEffect effect = skill.getEffect(skillLevel);
+        StatEffect effect = skill!.getEffect(skillLevel);
         if (effect.getCooldown() > 0)
         {
             if (chr.skillIsCooling(skillid))
@@ -116,7 +116,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
         }
         else if (skillid == Brawler.MP_RECOVERY)
         {// MP Recovery
-            var s = SkillFactory.getSkill(skillid);
+            var s = SkillFactory.GetSkillTrust(skillid);
             StatEffect ef = s.getEffect(chr.getSkillLevel(s));
 
             int lose = chr.safeAddHP(-1 * (chr.getCurrentMaxHp() / ef.getX()));

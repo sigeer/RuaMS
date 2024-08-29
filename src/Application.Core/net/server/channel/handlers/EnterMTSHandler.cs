@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using server;
 using server.maps;
@@ -32,9 +31,9 @@ namespace net.server.channel.handlers;
 public class EnterMTSHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
 
         if (!YamlConfig.config.server.USE_MTS)
         {
@@ -97,7 +96,7 @@ public class EnterMTSHandler : AbstractPacketHandler
         chr.saveCharToDB();
 
         c.getChannelServer().removePlayer(chr);
-        chr.getMap().removePlayer(c.getPlayer());
+        chr.getMap().removePlayer(c.OnlinedCharacter);
         try
         {
             c.sendPacket(PacketCreator.openCashShop(c, true));
@@ -109,7 +108,7 @@ public class EnterMTSHandler : AbstractPacketHandler
         chr.getCashShop().open(true);// xD
         c.enableCSActions();
         c.sendPacket(PacketCreator.MTSWantedListingOver(0, 0));
-        c.sendPacket(PacketCreator.showMTSCash(c.getPlayer()));
+        c.sendPacket(PacketCreator.showMTSCash(c.OnlinedCharacter));
         List<MTSItemInfo> items = new();
         int pages = 0;
         try

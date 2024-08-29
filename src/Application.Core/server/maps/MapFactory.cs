@@ -21,6 +21,8 @@
  */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using constants.id;
 using provider;
 using provider.wz;
@@ -44,7 +46,7 @@ public class MapFactory
         mapSource = DataProviderFactory.getDataProvider(WZFiles.MAP);
     }
 
-    private static void loadLifeFromWz(MapleMap map, Data mapData)
+    private static void loadLifeFromWz(IMap map, Data mapData)
     {
         foreach (var life in mapData.getChildByPath("life"))
         {
@@ -78,7 +80,7 @@ public class MapFactory
         }
     }
 
-    private static void loadLifeFromDb(MapleMap map)
+    private static void loadLifeFromDb(IMap map)
     {
         try
         {
@@ -110,9 +112,9 @@ public class MapFactory
         }
     }
 
-    private static void loadLifeRaw(MapleMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide, int mobTime, int team)
+    private static void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide, int mobTime, int team)
     {
-        AbstractLoadedLife myLife = loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide);
+        AbstractLifeObject myLife = loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide);
         if (myLife is Monster monster)
         {
 
@@ -134,17 +136,21 @@ public class MapFactory
         }
     }
 
-    public static MapleMap loadMapFromWz(int mapid, int world, int channel, EventInstanceManager? evt)
+    public static IMap loadMapFromWz(int mapid, int world, int channel, EventInstanceManager? evt)
     {
-        MapleMap map;
+        IMap map;
 
         string mapName = getMapName(mapid);
         var mapData = mapSource.getData(mapName);    // source.getData issue with giving nulls in rare ocasions found thanks to MedicOP
+        if (mapData == null)
+            throw new BusinessResException($"Map {mapName} not existed");
+
         var infoData = mapData.getChildByPath("info");
 
         string link = DataTool.getString(infoData?.getChildByPath("link")) ?? "";
-        if (!link.Equals(""))
-        { //nexon made hundreds of dojo maps so to reduce the size they added links.
+        if (!string.IsNullOrEmpty(link))
+        {
+            //nexon made hundreds of dojo maps so to reduce the size they added links.
             mapName = getMapName(int.Parse(link));
             mapData = mapSource.getData(mapName);
         }
@@ -152,7 +158,7 @@ public class MapFactory
         var mobRate = infoData?.getChildByPath("mobRate");
         if (mobRate != null)
         {
-            monsterRate = (float)mobRate.getData();
+            monsterRate = (float?)mobRate.getData() ?? 0;
         }
         map = new MapleMap(mapid, world, channel, DataTool.getInt("returnMap", infoData), monsterRate);
         map.setEventInstance(evt);
@@ -380,9 +386,9 @@ public class MapFactory
         return map;
     }
 
-    private static AbstractLoadedLife loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide)
+    private static AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide)
     {
-        AbstractLoadedLife myLife = LifeFactory.getLife(id, type) ?? throw new BusinessDataNullException();
+        AbstractLifeObject myLife = LifeFactory.getLife(id, type) ?? throw new BusinessResException();
         myLife.setCy(cy);
         myLife.setF(f);
         myLife.setFh(fh);

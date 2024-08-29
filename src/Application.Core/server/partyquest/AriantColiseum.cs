@@ -19,12 +19,11 @@
 */
 
 
+using Application.Core.Game.Maps;
 using Application.Core.scripting.Event;
-using client;
 using constants.game;
 using constants.id;
 using server.expeditions;
-using server.maps;
 using tools;
 
 namespace server.partyquest;
@@ -36,10 +35,10 @@ public class AriantColiseum
 {
 
     private Expedition exped;
-    private MapleMap map;
+    private IMap map;
 
-    private Dictionary<Character, int> score;
-    private Dictionary<Character, int> rewardTier;
+    private Dictionary<IPlayer, int> score;
+    private Dictionary<IPlayer, int> rewardTier;
     private bool scoreDirty = false;
 
     private ScheduledFuture? ariantUpdate;
@@ -50,7 +49,7 @@ public class AriantColiseum
 
     private bool eventClear = false;
 
-    public AriantColiseum(MapleMap eventMap, Expedition expedition)
+    public AriantColiseum(IMap eventMap, Expedition expedition)
     {
         exped = expedition;
         exped.finishRegistration();
@@ -61,10 +60,10 @@ public class AriantColiseum
         long pqTimer = 10 * 60 * 1000;
         long pqTimerBoard = 9 * 60 * 1000 + 50 * 1000;
 
-        List<Character> players = exped.getActiveMembers();
+        List<IPlayer> players = exped.getActiveMembers();
         score = new();
         rewardTier = new();
-        foreach (Character mc in players)
+        foreach (IPlayer mc in players)
         {
             mc.changeMap(map, 0);
             mc.setAriantColiseum(this);
@@ -72,7 +71,7 @@ public class AriantColiseum
             rewardTier.AddOrUpdate(mc, 0);
         }
 
-        foreach (Character mc in players)
+        foreach (IPlayer mc in players)
         {
             mc.sendPacket(PacketCreator.updateAriantPQRanking(score));
         }
@@ -133,17 +132,17 @@ public class AriantColiseum
         cancelAriantScoreBoard();
     }
 
-    public int getAriantScore(Character chr)
+    public int getAriantScore(IPlayer chr)
     {
         return score.GetValueOrDefault(chr);
     }
 
-    public void clearAriantScore(Character chr)
+    public void clearAriantScore(IPlayer chr)
     {
         score.Remove(chr);
     }
 
-    public void updateAriantScore(Character chr, int points)
+    public void updateAriantScore(IPlayer chr, int points)
     {
         if (map != null)
         {
@@ -156,7 +155,7 @@ public class AriantColiseum
     {
         if (scoreDirty)
         {
-            foreach (Character chr in score.Keys)
+            foreach (IPlayer chr in score.Keys)
             {
                 chr.sendPacket(PacketCreator.updateAriantPQRanking(score));
             }
@@ -164,12 +163,12 @@ public class AriantColiseum
         }
     }
 
-    public int getAriantRewardTier(Character chr)
+    public int getAriantRewardTier(IPlayer chr)
     {
         return rewardTier.GetValueOrDefault(chr);
     }
 
-    public void clearAriantRewardTier(Character chr)
+    public void clearAriantRewardTier(IPlayer chr)
     {
         rewardTier.Remove(chr);
     }
@@ -179,7 +178,7 @@ public class AriantColiseum
         lostShards += quantity;
     }
 
-    public void leaveArena(Character chr)
+    public void leaveArena(IPlayer chr)
     {
         if (!(eventClear && GameConstants.isAriantColiseumArena(chr.getMapId())))
         {
@@ -188,7 +187,7 @@ public class AriantColiseum
     }
 
     object leaveLock = new object();
-    private void leaveArenaInternal(Character chr)
+    private void leaveArenaInternal(IPlayer chr)
     {
         lock (leaveLock)
         {
@@ -211,7 +210,7 @@ public class AriantColiseum
         }
     }
 
-    public void playerDisconnected(Character chr)
+    public void playerDisconnected(IPlayer chr)
     {
         leaveArenaInternal(chr);
     }
@@ -254,7 +253,7 @@ public class AriantColiseum
     public void distributeAriantPoints()
     {
         int firstTop = -1, secondTop = -1;
-        Character? winner = null;
+        IPlayer? winner = null;
         List<int> runnerups = new();
 
         foreach (var e in score)
@@ -300,7 +299,7 @@ public class AriantColiseum
         exped.removeChannelExpedition(map.getChannelServer());
         cancelAriantSchedules();
 
-        foreach (Character chr in map.getAllPlayers())
+        foreach (IPlayer chr in map.getAllPlayers())
         {
             chr.changeMap(MapId.ARPQ_KINGS_ROOM, 0);
         }
@@ -315,7 +314,7 @@ public class AriantColiseum
             {
                 exped.dispose(false);
 
-                foreach (Character chr in exped.getActiveMembers())
+                foreach (IPlayer chr in exped.getActiveMembers())
                 {
                     chr.setAriantColiseum(null);
                     chr.changeMap(MapId.ARPQ_LOBBY, 0);

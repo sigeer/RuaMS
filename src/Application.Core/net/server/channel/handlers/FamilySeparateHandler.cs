@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -28,13 +28,13 @@ namespace net.server.channel.handlers;
 public class FamilySeparateHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
             return;
         }
-        var oldFamily = c.getPlayer().getFamily();
+        var oldFamily = c.OnlinedCharacter.getFamily();
         if (oldFamily == null)
         {
             return;
@@ -43,8 +43,8 @@ public class FamilySeparateHandler : AbstractPacketHandler
         bool isSenior;
         if (p.available() > 0)
         { //packet 0x95 doesn't send id, since there is only one senior
-            forkOn = c.getPlayer().getFamily().getEntryByID(p.readInt());
-            if (!c.getPlayer().getFamilyEntry().isJunior(forkOn))
+            forkOn = oldFamily.getEntryByID(p.readInt());
+            if (!c.OnlinedCharacter.getFamilyEntry().isJunior(forkOn))
             {
                 return; //packet editing?
             }
@@ -52,7 +52,7 @@ public class FamilySeparateHandler : AbstractPacketHandler
         }
         else
         {
-            forkOn = c.getPlayer().getFamilyEntry();
+            forkOn = c.OnlinedCharacter.getFamilyEntry();
             isSenior = false;
         }
         if (forkOn == null)
@@ -65,20 +65,20 @@ public class FamilySeparateHandler : AbstractPacketHandler
         {
             return;
         }
-        int levelDiff = Math.Abs(c.getPlayer().getLevel() - senior.getLevel());
+        int levelDiff = Math.Abs(c.OnlinedCharacter.getLevel() - senior.getLevel());
         int cost = 2500 * levelDiff;
         cost += levelDiff * levelDiff;
-        if (c.getPlayer().getMeso() < cost)
+        if (c.OnlinedCharacter.getMeso() < cost)
         {
             c.sendPacket(PacketCreator.sendFamilyMessage(isSenior ? 81 : 80, cost));
             return;
         }
-        c.getPlayer().gainMeso(-cost);
+        c.OnlinedCharacter.gainMeso(-cost);
         int repCost = separateRepCost(forkOn);
         senior.gainReputation(-repCost, false);
         if (senior.getSenior() != null)
         {
-            senior.getSenior().gainReputation(-(repCost / 2), false);
+            senior.getSenior()!.gainReputation(-(repCost / 2), false);
         }
         forkOn.announceToSenior(PacketCreator.serverNotice(5, forkOn.getName() + " has left the family."), true);
         forkOn.fork();

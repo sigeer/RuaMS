@@ -20,7 +20,6 @@
 
 
 using Application.Core.model;
-using client;
 using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
@@ -93,11 +92,11 @@ public class LoginBypassCoordinator
             HashSet<int> onlineAccounts = new();
             long timeNow = Server.getInstance().getCurrentTime();
 
-            foreach (World w in Server.getInstance().getWorlds())
+            foreach (var w in Server.getInstance().getWorlds())
             {
-                foreach (Character chr in w.getPlayerStorage().getAllCharacters())
+                foreach (var chr in w.getPlayerStorage().getAllCharacters())
                 {
-                    Client c = chr.getClient();
+                    var c = chr.getClient();
                     if (c != null)
                     {
                         onlineAccounts.Add(c.getAccID());

@@ -12,7 +12,7 @@ public class MobSkillCommand : Command
         setDescription("Apply a mob skill to all mobs on the map. Args: <mob skill id> <skill level>");
     }
 
-    public override void execute(Client client, string[] paramsValue)
+    public override void execute(IClient client, string[] paramsValue)
     {
         if (paramsValue.Length < 2)
         {
@@ -28,7 +28,7 @@ public class MobSkillCommand : Command
             return;
         }
 
-        Character chr = client.getPlayer();
+        var chr = client.OnlinedCharacter;
         MobSkill mobSkill = possibleSkill;
         chr.getMap().getAllMonsters().ForEach(
                 monster => mobSkill.applyEffect(chr, monster, false, [])

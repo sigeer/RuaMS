@@ -1,5 +1,5 @@
 /*
-This file is part of the OdinMS Maple Story Server
+This file is part of the OdinMS Maple Story NewServer
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
 Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -33,10 +32,10 @@ namespace net.server.channel.handlers;
 public class SnowballHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         //D3 00 02 00 00 A5 01
-        var chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         var map = chr.getMap();
         var snowball = map.getSnowball(chr.getTeam());
         var othersnowball = map.getSnowball(chr.getTeam() == 0 ? 1 : 0);

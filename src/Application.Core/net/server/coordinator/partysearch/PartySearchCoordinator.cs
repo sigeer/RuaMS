@@ -37,12 +37,12 @@ public class PartySearchCoordinator
     private Dictionary<Job, PartySearchStorage> storage = new();
     private Dictionary<Job, PartySearchEchelon> upcomers = new();
 
-    private List<Character> leaderQueue = new();
+    private List<IPlayer> leaderQueue = new();
 
-    private Dictionary<int, Character> searchLeaders = new();
+    private Dictionary<int, IPlayer> searchLeaders = new();
     private Dictionary<int, LeaderSearchMetadata> searchSettings = new();
 
-    private Dictionary<Character, LeaderSearchMetadata> timeoutLeaders = new();
+    private Dictionary<IPlayer, LeaderSearchMetadata> timeoutLeaders = new();
 
     private int updateCount = 0;
 
@@ -194,12 +194,12 @@ public class PartySearchCoordinator
 
     }
 
-    public void attachPlayer(Character chr)
+    public void attachPlayer(IPlayer chr)
     {
         upcomers.GetValueOrDefault(getPartySearchJob(chr.getJob())).attachPlayer(chr);
     }
 
-    public void detachPlayer(Character chr)
+    public void detachPlayer(IPlayer chr)
     {
         Job psJob = getPartySearchJob(chr.getJob());
 
@@ -237,12 +237,12 @@ public class PartySearchCoordinator
         }
     }
 
-    private Character? fetchPlayer(int callerCid, int callerMapid, Job job, int minLevel, int maxLevel)
+    private IPlayer? fetchPlayer(int callerCid, int callerMapid, Job job, int minLevel, int maxLevel)
     {
         return storage.GetValueOrDefault(getPartySearchJob(job)).callPlayer(callerCid, callerMapid, minLevel, maxLevel);
     }
 
-    private void addQueueLeader(Character leader)
+    private void addQueueLeader(IPlayer leader)
     {
         leaderQueueLock.EnterReadLock();
         try
@@ -255,7 +255,7 @@ public class PartySearchCoordinator
         }
     }
 
-    private void removeQueueLeader(Character leader)
+    private void removeQueueLeader(IPlayer leader)
     {
         leaderQueueLock.EnterReadLock();
         try
@@ -268,7 +268,7 @@ public class PartySearchCoordinator
         }
     }
 
-    public void registerPartyLeader(Character leader, int minLevel, int maxLevel, int jobs)
+    public void registerPartyLeader(IPlayer leader, int minLevel, int maxLevel, int jobs)
     {
         if (searchLeaders.ContainsKey(leader.getId()))
         {
@@ -280,7 +280,7 @@ public class PartySearchCoordinator
         addQueueLeader(leader);
     }
 
-    private void registerPartyLeader(Character leader, LeaderSearchMetadata settings)
+    private void registerPartyLeader(IPlayer leader, LeaderSearchMetadata settings)
     {
         if (searchLeaders.ContainsKey(leader.getId()))
         {
@@ -292,7 +292,7 @@ public class PartySearchCoordinator
         addQueueLeader(leader);
     }
 
-    public void unregisterPartyLeader(Character leader)
+    public void unregisterPartyLeader(IPlayer leader)
     {
         if (searchLeaders.Remove(leader.getId(), out var toRemove) && toRemove != null)
         {
@@ -305,7 +305,7 @@ public class PartySearchCoordinator
         }
     }
 
-    private Character? searchPlayer(Character leader)
+    private IPlayer? searchPlayer(IPlayer leader)
     {
         var settings = searchSettings.GetValueOrDefault(leader.getId());
         if (settings != null)
@@ -328,7 +328,7 @@ public class PartySearchCoordinator
         return null;
     }
 
-    private bool sendPartyInviteFromSearch(Character chr, Character leader)
+    private bool sendPartyInviteFromSearch(IPlayer chr, IPlayer leader)
     {
         if (chr == null)
         {
@@ -353,9 +353,9 @@ public class PartySearchCoordinator
         }
     }
 
-    private KeyValuePair<List<Character>, List<Character>> fetchQueuedLeaders()
+    private KeyValuePair<List<IPlayer>, List<IPlayer>> fetchQueuedLeaders()
     {
-        List<Character> queuedLeaders, nextLeaders;
+        List<IPlayer> queuedLeaders, nextLeaders;
 
         leaderQueueLock.EnterWriteLock();
         try
@@ -373,7 +373,7 @@ public class PartySearchCoordinator
         return new(queuedLeaders, nextLeaders);
     }
 
-    private void registerLongTermPartyLeaders(List<KeyValuePair<Character, LeaderSearchMetadata>> recycledLeaders)
+    private void registerLongTermPartyLeaders(List<KeyValuePair<IPlayer, LeaderSearchMetadata>> recycledLeaders)
     {
         leaderQueueLock.EnterReadLock();
         try
@@ -389,7 +389,7 @@ public class PartySearchCoordinator
         }
     }
 
-    private void unregisterLongTermPartyLeader(Character leader)
+    private void unregisterLongTermPartyLeader(IPlayer leader)
     {
         leaderQueueLock.EnterReadLock();
         try
@@ -404,7 +404,7 @@ public class PartySearchCoordinator
 
     private void reinstateLongTermPartyLeaders()
     {
-        Dictionary<Character, LeaderSearchMetadata> timeoutLeadersCopy;
+        Dictionary<IPlayer, LeaderSearchMetadata> timeoutLeadersCopy;
         leaderQueueLock.EnterWriteLock();
         try
         {
@@ -426,11 +426,11 @@ public class PartySearchCoordinator
     {
         var queuedLeaders = fetchQueuedLeaders();
 
-        List<Character> searchedLeaders = new();
-        List<Character> recalledLeaders = new();
-        List<Character> expiredLeaders = new();
+        List<IPlayer> searchedLeaders = new();
+        List<IPlayer> recalledLeaders = new();
+        List<IPlayer> expiredLeaders = new();
 
-        foreach (Character leader in queuedLeaders.Key)
+        foreach (IPlayer leader in queuedLeaders.Key)
         {
             var chr = searchPlayer(leader);
             if (sendPartyInviteFromSearch(chr, leader))
@@ -475,7 +475,7 @@ public class PartySearchCoordinator
             leaderQueueLock.ExitReadLock();
         }
 
-        foreach (Character leader in searchedLeaders)
+        foreach (IPlayer leader in searchedLeaders)
         {
             var party = leader.getParty();
             if (party != null && party.getMembers().Count < 6)
@@ -493,8 +493,8 @@ public class PartySearchCoordinator
             }
         }
 
-        List<KeyValuePair<Character, LeaderSearchMetadata>> recycledLeaders = new();
-        foreach (Character leader in expiredLeaders)
+        List<KeyValuePair<IPlayer, LeaderSearchMetadata>> recycledLeaders = new();
+        foreach (IPlayer leader in expiredLeaders)
         {
             searchLeaders.Remove(leader.getId());
             searchSettings.Remove(leader.getId(), out var settings);

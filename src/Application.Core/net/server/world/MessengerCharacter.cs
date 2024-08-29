@@ -20,9 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using client;
-
 namespace net.server.world;
 
 public class MessengerCharacter
@@ -33,7 +30,7 @@ public class MessengerCharacter
     private int channel;
     private bool online;
 
-    public MessengerCharacter(Character maplechar, int position)
+    public MessengerCharacter(IPlayer maplechar, int position)
     {
         this.name = maplechar.getName();
         this.channel = maplechar.getClient().getChannel();

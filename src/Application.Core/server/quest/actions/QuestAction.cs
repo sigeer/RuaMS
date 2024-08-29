@@ -55,7 +55,7 @@ public class QuestAction : AbstractQuestAction
         }
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         foreach (int questID in quests.Keys)
         {

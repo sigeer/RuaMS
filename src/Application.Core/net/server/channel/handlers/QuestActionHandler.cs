@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,14 +21,11 @@
 */
 
 
-using client;
 using net.packet;
 using scripting.quest;
 using server.quest;
 
 namespace net.server.channel.handlers;
-
-
 
 /**
  * @author Matze
@@ -37,7 +34,7 @@ public class QuestActionHandler : AbstractPacketHandler
 {
 
     // isNpcNearby thanks to GabrielSin
-    private static bool isNpcNearby(InPacket p, Character player, Quest quest, int npcId)
+    private static bool isNpcNearby(InPacket p, IPlayer player, Quest quest, int npcId)
     {
         Point playerP;
         Point pos = player.getPosition();
@@ -74,11 +71,11 @@ public class QuestActionHandler : AbstractPacketHandler
         return true;
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         byte action = p.readByte();
         short questid = p.readShort();
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         Quest quest = Quest.getInstance(questid);
 
         switch (action)

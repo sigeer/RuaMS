@@ -21,8 +21,8 @@
  */
 
 
+using Application.Core.Game.Maps;
 using Application.Core.scripting.Event;
-using client;
 using net.packet;
 using net.server.services.task.channel;
 using net.server.services.type;
@@ -44,7 +44,7 @@ public class Reactor : AbstractMapObject
     private sbyte state;
     private byte evstate;
     private int delay;
-    private MapleMap map;
+
     private string name;
     private bool alive;
     private bool shouldCollect;
@@ -151,16 +151,6 @@ public class Reactor : AbstractMapObject
         return attackHit;
     }
 
-    public void setMap(MapleMap map)
-    {
-        this.map = map;
-    }
-
-    public MapleMap getMap()
-    {
-        return map;
-    }
-
     public KeyValuePair<int, int>? getReactItem(byte index)
     {
         return stats.getReactItem(state, index);
@@ -181,7 +171,7 @@ public class Reactor : AbstractMapObject
         this.alive = alive;
     }
 
-    public override void sendDestroyData(Client client)
+    public override void sendDestroyData(IClient client)
     {
         client.sendPacket(makeDestroyData());
     }
@@ -191,7 +181,7 @@ public class Reactor : AbstractMapObject
         return PacketCreator.destroyReactor(this);
     }
 
-    public override void sendSpawnData(Client client)
+    public override void sendSpawnData(IClient client)
     {
         if (this.isAlive())
         {
@@ -211,9 +201,9 @@ public class Reactor : AbstractMapObject
         setShouldCollect(true);
         refreshReactorTimeout();
 
-        if (map != null)
+        if (MapModel != null)
         {
-            map.searchItemReactors(this);
+            MapModel.searchItemReactors(this);
         }
     }
 
@@ -223,7 +213,7 @@ public class Reactor : AbstractMapObject
         try
         {
             this.resetReactorActions(newState);
-            map.broadcastMessage(PacketCreator.triggerReactor(this, 0));
+            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
         }
         finally
         {
@@ -241,7 +231,7 @@ public class Reactor : AbstractMapObject
         try
         {
             this.resetReactorActions(newState);
-            map.broadcastMessage(PacketCreator.triggerReactor(this, 0));
+            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, 0));
         }
         finally
         {
@@ -273,7 +263,7 @@ public class Reactor : AbstractMapObject
         }
     }
 
-    public void delayedHitReactor(Client c, long delay)
+    public void delayedHitReactor(IClient c, long delay)
     {
         TimerManager.getInstance().schedule(() =>
         {
@@ -281,12 +271,12 @@ public class Reactor : AbstractMapObject
         }, delay);
     }
 
-    public void hitReactor(Client c)
+    public void hitReactor(IClient c)
     {
         hitReactor(false, 0, 0, 0, c);
     }
 
-    public void hitReactor(bool wHit, int charPos, short stance, int skillid, Client c)
+    public void hitReactor(bool wHit, int charPos, short stance, int skillid, IClient c)
     {
         try
         {
@@ -305,18 +295,21 @@ public class Reactor : AbstractMapObject
 
                     if (YamlConfig.config.server.USE_DEBUG)
                     {
-                        c.getPlayer().dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
+                        c.OnlinedCharacter.dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
                     }
                     ReactorScriptManager.getInstance().onHit(c, this);
 
                     int reactorType = stats.getType(state);
                     if (reactorType < 999 && reactorType != -1)
-                    {//type 2 = only hit from right (kerning swamp plants), 00 is air left 02 is ground left
+                    {
+                        //type 2 = only hit from right (kerning swamp plants), 00 is air left 02 is ground left
                         if (!(reactorType == 2 && (stance == 0 || stance == 2)))
-                        { //get next state
+                        {
+                            //get next state
                             for (byte b = 0; b < stats.getStateSize(state); b++)
-                            {//YAY?
-                                List<int> activeSkills = stats.getActiveSkills(state, b);
+                            {
+                                //YAY?
+                                var activeSkills = stats.getActiveSkills(state, b);
                                 if (activeSkills != null)
                                 {
                                     if (!activeSkills.Contains(skillid))
@@ -329,30 +322,36 @@ public class Reactor : AbstractMapObject
                                 sbyte nextState = stats.getNextState(state, b);
                                 bool isInEndState = nextState < this.state;
                                 if (isInEndState)
-                                {//end of reactor
+                                {
+                                    //end of reactor
                                     if (reactorType < 100)
-                                    {//reactor broken
+                                    {
+                                        //reactor broken
                                         if (delay > 0)
                                         {
-                                            map.destroyReactor(getObjectId());
+                                            MapModel.destroyReactor(getObjectId());
                                         }
                                         else
-                                        {//trigger as normal
-                                            map.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                                        {
+                                            //trigger as normal
+                                            MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                                         }
                                     }
                                     else
-                                    {//item-triggered on step
-                                        map.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                                    {
+                                        //item-triggered on step
+                                        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                                     }
 
                                     ReactorScriptManager.getInstance().act(c, this);
                                 }
                                 else
-                                { //reactor not broken yet
-                                    map.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                                {
+                                    //reactor not broken yet
+                                    MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                                     if (state == stats.getNextState(state, b))
-                                    {//current state = next state, looping reactor
+                                    {
+                                        //current state = next state, looping reactor
                                         ReactorScriptManager.getInstance().act(c, this);
                                     }
 
@@ -360,7 +359,7 @@ public class Reactor : AbstractMapObject
                                     refreshReactorTimeout();
                                     if (stats.getType(state) == 100)
                                     {
-                                        map.searchItemReactors(this);
+                                        MapModel.searchItemReactors(this);
                                     }
                                 }
                                 break;
@@ -370,7 +369,7 @@ public class Reactor : AbstractMapObject
                     else
                     {
                         state++;
-                        map.broadcastMessage(PacketCreator.triggerReactor(this, stance));
+                        MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                         if (this.getId() != 9980000 && this.getId() != 9980001)
                         {
                             ReactorScriptManager.getInstance().act(c, this);
@@ -380,7 +379,7 @@ public class Reactor : AbstractMapObject
                         refreshReactorTimeout();
                         if (stats.getType(state) == 100)
                         {
-                            map.searchItemReactors(this);
+                            MapModel.searchItemReactors(this);
                         }
                     }
                 }
@@ -426,7 +425,7 @@ public class Reactor : AbstractMapObject
             }
         }
 
-        map.broadcastMessage(PacketCreator.destroyReactor(this));
+        MapModel.broadcastMessage(PacketCreator.destroyReactor(this));
         return false;
     }
 
@@ -443,7 +442,7 @@ public class Reactor : AbstractMapObject
             this.unlockReactor();
         }
 
-        map.broadcastMessage(this.makeSpawnData());
+        MapModel.broadcastMessage(this.makeSpawnData());
     }
 
     public void delayedRespawn()
@@ -454,8 +453,8 @@ public class Reactor : AbstractMapObject
             respawn();
         };
 
-        OverallService service = (OverallService)map.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
-        service.registerOverallAction(map.getId(), delayedRespawnRun, this.getDelay());
+        OverallService service = (OverallService)MapModel.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+        service.registerOverallAction(MapModel.getId(), delayedRespawnRun, this.getDelay());
     }
 
     public bool forceDelayedRespawn()
@@ -464,8 +463,8 @@ public class Reactor : AbstractMapObject
 
         if (r != null)
         {
-            OverallService service = (OverallService)map.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
-            service.forceRunOverallAction(map.getId(), r);
+            OverallService service = (OverallService)MapModel.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+            service.forceRunOverallAction(MapModel.getId(), r);
             return true;
         }
         else
@@ -494,12 +493,12 @@ public class Reactor : AbstractMapObject
         this.name = name;
     }
 
-    public GuardianSpawnPoint getGuardian()
+    public GuardianSpawnPoint? getGuardian()
     {
         return guardian;
     }
 
-    public void setGuardian(GuardianSpawnPoint guardian)
+    public void setGuardian(GuardianSpawnPoint? guardian)
     {
         this.guardian = guardian;
     }

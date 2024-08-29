@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,9 +21,7 @@
  */
 
 
-using client;
 using net.packet;
-using net.server.channel;
 using tools;
 
 namespace net.server.handlers.login;
@@ -31,7 +29,7 @@ namespace net.server.handlers.login;
 public class CharlistRequestHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readByte();
         int world = p.readByte();
@@ -44,7 +42,7 @@ public class CharlistRequestHandler : AbstractPacketHandler
         }
 
         int channel = p.readByte() + 1;
-        Channel ch = wserv.getChannel(channel);
+        var ch = wserv.getChannel(channel);
         if (ch == null)
         {
             c.sendPacket(PacketCreator.getServerStatus(2));

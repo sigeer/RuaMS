@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,9 @@
 
 
 
+using Application.Core.Game.Life;
 using client;
 using net.packet;
-using server.life;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -34,9 +33,9 @@ namespace net.server.channel.handlers;
 public class PlayerMapTransitionHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         chr.setMapTransitionComplete();
 
         int beaconid = chr.getBuffSource(BuffStat.HOMING_BEACON);
@@ -50,7 +49,7 @@ public class PlayerMapTransitionHandler : AbstractPacketHandler
 
         if (!chr.isHidden())
         {  // thanks Lame (Conrad) for noticing hidden characters controlling mobs
-            foreach (MapObject mo in chr.getMap().getMonsters())
+            foreach (var mo in chr.getMap().getMonsters())
             {    // thanks BHB, IxianMace, Jefe for noticing several issues regarding mob statuses (such as freeze)
                 Monster m = (Monster)mo;
                 if (m.getSpawnEffect() == 0 || m.getHp() < m.getMaxHp())

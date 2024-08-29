@@ -26,7 +26,8 @@ using constants.id;
 using server.quest;
 using System.Text;
 using tools;
-using static client.Character;
+using static Application.Core.Game.Players.Player;
+
 
 namespace scripting.map;
 
@@ -35,13 +36,13 @@ public class MapScriptMethods : AbstractPlayerInteraction
 
     private string rewardstring = " title has been rewarded. Please see NPC Dalair to receive your Medal.";
 
-    public MapScriptMethods(Client c) : base(c)
+    public MapScriptMethods(IClient c) : base(c)
     {
     }
 
     public void displayCygnusIntro()
     {
-        switch (c.getPlayer().getMapId())
+        switch (c.OnlinedCharacter.getMapId())
         {
             case MapId.CYGNUS_INTRO_LEAD:
                 {
@@ -65,7 +66,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
 
     public override void displayAranIntro()
     {
-        switch (c.getPlayer().getMapId())
+        switch (c.OnlinedCharacter.getMapId())
         {
             case MapId.ARAN_TUTO_1:
                 {
@@ -74,16 +75,16 @@ public class MapScriptMethods : AbstractPlayerInteraction
                     break;
                 }
             case MapId.ARAN_TUTO_2:
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene1" + c.getPlayer().getGender()));
+                c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene1" + c.OnlinedCharacter.getGender()));
                 break;
             case MapId.ARAN_TUTO_3:
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene2" + c.getPlayer().getGender()));
+                c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene2" + c.OnlinedCharacter.getGender()));
                 break;
             case MapId.ARAN_TUTO_4: c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene3")); break;
             case MapId.ARAN_POLEARM:
                 {
                     lockUI();
-                    c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/HandedPoleArm" + c.getPlayer().getGender()));
+                    c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/HandedPoleArm" + c.OnlinedCharacter.getGender()));
                     break;
                 }
         }
@@ -91,22 +92,22 @@ public class MapScriptMethods : AbstractPlayerInteraction
 
     public void startExplorerExperience()
     {
-        switch (c.getPlayer().getMapId())
+        switch (c.OnlinedCharacter.getMapId())
         {
             case 1020100: //Swordman
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/swordman/Scene" + c.getPlayer().getGender()));
+                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/swordman/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020200: //Magician
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/magician/Scene" + c.getPlayer().getGender()));
+                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/magician/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020300: //Archer
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/archer/Scene" + c.getPlayer().getGender()));
+                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/archer/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020400: //Rogue
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/rogue/Scene" + c.getPlayer().getGender()));
+                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/rogue/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020500: //Pirate
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/pirate/Scene" + c.getPlayer().getGender()));
+                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/pirate/Scene" + c.OnlinedCharacter.getGender()));
                 break;
         }
     }
@@ -114,13 +115,13 @@ public class MapScriptMethods : AbstractPlayerInteraction
     public void goAdventure()
     {
         lockUI();
-        c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/goAdventure/Scene" + c.getPlayer().getGender()));
+        c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/goAdventure/Scene" + c.OnlinedCharacter.getGender()));
     }
 
     public void goLith()
     {
         lockUI();
-        c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/goLith/Scene" + c.getPlayer().getGender()));
+        c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/goLith/Scene" + c.OnlinedCharacter.getGender()));
     }
 
     public void explorerQuest(short questid, string questName)

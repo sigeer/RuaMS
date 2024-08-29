@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.requirements;
@@ -49,7 +48,7 @@ public class FieldEnterRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         return mapId == chr.getMapId();
     }

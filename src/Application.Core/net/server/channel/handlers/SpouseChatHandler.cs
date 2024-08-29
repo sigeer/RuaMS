@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using server;
 using tools;
@@ -30,29 +29,30 @@ namespace net.server.channel.handlers;
 
 public class SpouseChatHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readString();//recipient
         string msg = p.readString();
 
-        int partnerId = c.getPlayer().getPartnerId();
+        int partnerId = c.OnlinedCharacter.getPartnerId();
         if (partnerId > 0)
-        { // yay marriage
+        {
+            // yay marriage
             var spouse = c.getWorldServer().getPlayerStorage().getCharacterById(partnerId);
-            if (spouse != null)
+            if (spouse != null && spouse.isLoggedinWorld())
             {
-                spouse.sendPacket(PacketCreator.OnCoupleMessage(c.getPlayer().getName(), msg, true));
-                c.sendPacket(PacketCreator.OnCoupleMessage(c.getPlayer().getName(), msg, true));
+                spouse.sendPacket(PacketCreator.OnCoupleMessage(c.OnlinedCharacter.getName(), msg, true));
+                c.sendPacket(PacketCreator.OnCoupleMessage(c.OnlinedCharacter.getName(), msg, true));
                 ChatLogger.log(c, "Spouse", msg);
             }
             else
             {
-                c.getPlayer().dropMessage(5, "Your spouse is currently offline.");
+                c.OnlinedCharacter.dropMessage(5, "Your spouse is currently offline.");
             }
         }
         else
         {
-            c.getPlayer().dropMessage(5, "You don't have a spouse.");
+            c.OnlinedCharacter.dropMessage(5, "You don't have a spouse.");
         }
     }
 }

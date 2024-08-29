@@ -23,7 +23,6 @@
 
 
 using Application.Core.scripting.Event;
-using client;
 using constants.id;
 using tools;
 
@@ -36,13 +35,13 @@ namespace server.events.gm;
  */
 public class Fitness
 {
-    private Character chr;
+    private IPlayer chr;
     private long time = 0;
     private long timeStarted = 0;
     private ScheduledFuture? schedule = null;
     private ScheduledFuture? schedulemsg = null;
 
-    public Fitness(Character chr)
+    public Fitness(IPlayer chr)
     {
         this.chr = chr;
         this.schedule = TimerManager.getInstance().schedule(() =>

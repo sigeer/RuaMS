@@ -14,7 +14,7 @@ namespace ServiceTest.Handlers
             var bytes = bytesString.Split(',').Select(byte.Parse).ToArray();
             var reader = new ByteBufInPacket(Unpooled.WrappedBuffer(bytes));
             reader.readShort(); // get packet handler
-            new KeymapChangeHandler().handlePacket(reader, TestFactory.GenerateTestClient());
+            new KeymapChangeHandler().HandlePacket(reader, TestFactory.GenerateTestClient());
             Assert.Pass();
         }
 

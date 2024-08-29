@@ -31,10 +31,10 @@ public class Mount
     private int tiredness;
     private int exp;
     private int level;
-    private Character? owner;
+    private IPlayer? owner;
     private bool active;
 
-    public Mount(Character owner, int id, int skillid)
+    public Mount(IPlayer owner, int id, int skillid)
     {
         this.itemid = id;
         this.skillid = skillid;

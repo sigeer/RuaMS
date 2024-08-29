@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,10 +21,9 @@
  */
 
 
-using client;
+using Application.Core.Game.Maps.AnimatedObjects;
 using constants.skills;
 using net.packet;
-using server.maps;
 
 namespace net.server.channel.handlers;
 
@@ -37,10 +36,10 @@ public class BeholderHandler : AbstractPacketHandler
 {
     //Summon Skills noobs
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         //Console.WriteLine(slea.ToString());
-        var summons = c.getPlayer().getSummonsValues();
+        var summons = c.OnlinedCharacter.getSummonsValues();
         int oid = p.readInt();
         Summon? summon = null;
         foreach (Summon sum in summons)
@@ -64,7 +63,7 @@ public class BeholderHandler : AbstractPacketHandler
         }
         else
         {
-            c.getPlayer().clearSummons();
+            c.OnlinedCharacter.clearSummons();
         }
     }
 }

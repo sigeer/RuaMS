@@ -19,8 +19,6 @@
 */
 
 
-using client;
-using client.inventory;
 using provider;
 
 namespace server.quest.actions;
@@ -45,11 +43,11 @@ public class PetTamenessAction : AbstractQuestAction
         tameness = DataTool.getInt(data);
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
-        Client c = chr.getClient();
+        var c = chr.getClient();
 
-        Pet pet = chr.getPet(0);   // assuming here only the pet leader will gain tameness
+        var pet = chr.getPet(0);   // assuming here only the pet leader will gain tameness
         if (pet == null)
         {
             return;

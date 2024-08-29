@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using net.packet;
 using net.server.coordinator.session;
 using System.Net;
@@ -45,7 +44,7 @@ public class ViewAllCharSelectedHandler : AbstractPacketHandler
         };
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int charId = p.readInt();
         p.readInt(); // please don't let the client choose which world they should login
@@ -90,7 +89,7 @@ public class ViewAllCharSelectedHandler : AbstractPacketHandler
 
         c.setWorld(server.getCharacterWorld(charId));
 
-        World wserv = c.getWorldServer();
+        var wserv = c.getWorldServer();
         if (wserv == null || wserv.isWorldCapacityFull())
         {
             c.sendPacket(PacketCreator.getAfterLoginError(10));

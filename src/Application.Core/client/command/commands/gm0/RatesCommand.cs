@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -31,9 +31,9 @@ public class RatesCommand : Command
         setDescription("Show your rates.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
         // travel rates not applicable since it's intrinsically a server/environment rate rather than a character rate
         string showMsg_ = "#eCHARACTER RATES#n" + "\r\n\r\n";
