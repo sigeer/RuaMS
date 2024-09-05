@@ -76,7 +76,7 @@ public partial class Player
         {
             return teamModel;
         }
-        set
+        private set
         {
             teamModel = value;
             Party = teamModel?.getId() ?? 0;
@@ -627,8 +627,7 @@ public partial class Player
                 {
                     MapModel.broadcastNONGMMessage(this, PacketCreator.removePlayerFromMap(getId()), false);
                 }
-                List<KeyValuePair<BuffStat, int>> ldsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.DARKSIGHT, 0));
-                MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(Id, ldsstat), false);
+                MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
                 this.releaseControlledMonsters();
             }
             sendPacket(PacketCreator.enableActions());
@@ -2017,9 +2016,9 @@ public partial class Player
         MapModel.broadcastUpdateCharLookMessage(this, this);
         equipchanged = true;
         updateLocalStats();
-        if (getMessenger() != null)
+        if (Messenger != null)
         {
-            getWorldServer().updateMessenger(getMessenger()!, getName(), getWorld(), Client.getChannel());
+            getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.getChannel());
         }
     }
 
@@ -2289,89 +2288,6 @@ public partial class Player
         return false;
     }
 
-    private List<KeyValuePair<BuffStat, int>> getActiveStatupsFromSourceid(int sourceid)
-    {
-        if (!buffEffects.ContainsKey(sourceid))
-            return new List<KeyValuePair<BuffStat, int>>();
-        // already under effLock & chrLock
-        List<KeyValuePair<BuffStat, int>> ret = new();
-        List<KeyValuePair<BuffStat, int>> singletonStatups = new();
-        foreach (var bel in buffEffects[sourceid])
-        {
-            BuffStat mbs = bel.Key;
-            BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(bel.Key);
-
-            KeyValuePair<BuffStat, int> p;
-            if (mbsvh != null)
-            {
-                p = new(mbs, mbsvh.value);
-            }
-            else
-            {
-                p = new(mbs, 0);
-            }
-
-            if (!isSingletonStatup(mbs))
-            {   // thanks resinate, Daddy Egg for pointing out morph issues when updating it along with other statups
-                ret.Add(p);
-            }
-            else
-            {
-                singletonStatups.Add(p);
-            }
-        }
-        ret.Sort((p1, p2) => p1.Key.CompareTo(p2.Key));
-
-        if (singletonStatups.Count > 0)
-        {
-            singletonStatups.Sort((p1, p2) => p1.Key.CompareTo(p2.Key));
-
-            ret.AddRange(singletonStatups);
-        }
-
-        return ret;
-    }
-
-    private void addItemEffectHolder(int sourceid, long expirationtime, Dictionary<BuffStat, BuffStatValueHolder> statups)
-    {
-        buffEffects.AddOrUpdate(sourceid, statups);
-        buffExpires.AddOrUpdate(sourceid, expirationtime);
-    }
-
-    private bool removeEffectFromItemEffectHolder(int sourceid, BuffStat buffStat)
-    {
-        Dictionary<BuffStat, BuffStatValueHolder>? lbe = buffEffects.GetValueOrDefault(sourceid);
-
-        if (lbe != null && lbe.Remove(buffStat, out var d) && d != null)
-        {
-            buffEffectsCount.AddOrUpdate(buffStat, (sbyte)(buffEffectsCount.GetValueOrDefault(buffStat) - 1));
-
-            if (lbe.Count == 0)
-            {
-                buffEffects.Remove(sourceid);
-                buffExpires.Remove(sourceid);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private void removeItemEffectHolder(int sourceid)
-    {
-        buffEffects.Remove(sourceid, out var be);
-        if (be != null)
-        {
-            foreach (var bei in be)
-            {
-                buffEffectsCount.AddOrUpdate(bei.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(bei.Key) - 1));
-            }
-        }
-
-        buffExpires.Remove(sourceid);
-    }
-
     private void dropWorstEffectFromItemEffectHolder(BuffStat mbs)
     {
         int min = int.MaxValue;
@@ -2425,22 +2341,6 @@ public partial class Player
         }
         return mbsvh;
     }
-
-
-
-    private static int getJobMapChair(Job job)
-    {
-        switch (job.getId() / 1000)
-        {
-            case 0:
-                return Beginner.MAP_CHAIR;
-            case 1:
-                return Noblesse.MAP_CHAIR;
-            default:
-                return Legend.MAP_CHAIR;
-        }
-    }
-
 
 
     public int getChair()
@@ -2776,7 +2676,7 @@ public partial class Player
 
     public int getRawExpRate()
     {
-        return expRate / (expCoupon * getWorldServer().getExpRate());
+        return expRate / (expCoupon * getWorldServer().ExpRate);
     }
 
     public int getDropRate()
@@ -2791,13 +2691,13 @@ public partial class Player
 
     public int getRawDropRate()
     {
-        return dropRate / (dropCoupon * getWorldServer().getDropRate());
+        return dropRate / (dropCoupon * getWorldServer().DropRate);
     }
 
     public int getBossDropRate()
     {
         var w = getWorldServer();
-        return (dropRate / w.getDropRate()) * w.getBossDropRate();
+        return (dropRate / w.DropRate) * w.BossDropRate;
     }
 
     public int getMesoRate()
@@ -2812,7 +2712,7 @@ public partial class Player
 
     public int getRawMesoRate()
     {
-        return mesoRate / (mesoCoupon * getWorldServer().getMesoRate());
+        return mesoRate / (mesoCoupon * getWorldServer().MesoRate);
     }
 
     public int getQuestExpRate()
@@ -2823,13 +2723,13 @@ public partial class Player
         }
 
         var w = getWorldServer();
-        return w.getExpRate() * w.getQuestRate();
+        return w.ExpRate * w.QuestRate;
     }
 
     public int getQuestMesoRate()
     {
         var w = getWorldServer();
-        return w.getMesoRate() * w.getQuestRate();
+        return w.MesoRate * w.QuestRate;
     }
 
     public float getCardRate(int itemid)
@@ -3647,7 +3547,7 @@ public partial class Player
             {
                 energybar = 10000;
             }
-            List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.ENERGY_CHARGE, energybar));
+            var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
             setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
             sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
             sendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
@@ -3662,7 +3562,7 @@ public partial class Player
             tMan.schedule(() =>
             {
                 energybar = 0;
-                List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.ENERGY_CHARGE, energybar));
+                var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
                 setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
                 sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
                 MapModel.broadcastPacket(chr, PacketCreator.cancelForeignFirstDebuff(Id, ((long)1) << 50));
@@ -3675,7 +3575,7 @@ public partial class Player
     {
         int skillid = isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
         var combo = SkillFactory.GetSkillTrust(skillid);
-        List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.COMBO, 1));
+        var stat = new BuffStatValue(BuffStat.COMBO, 1);
         setBuffedValue(BuffStat.COMBO, 1);
         sendPacket(PacketCreator.giveBuff(skillid,
             combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.Now.ToUnixTimeMilliseconds()),
@@ -4289,17 +4189,17 @@ public partial class Player
     public void setWorldRates()
     {
         var worldz = getWorldServer();
-        this.expRate *= worldz.getExpRate();
-        this.mesoRate *= worldz.getMesoRate();
-        this.dropRate *= worldz.getDropRate();
+        this.expRate *= worldz.ExpRate;
+        this.mesoRate *= worldz.MesoRate;
+        this.dropRate *= worldz.DropRate;
     }
 
     public void revertWorldRates()
     {
         var worldz = getWorldServer();
-        this.expRate /= worldz.getExpRate();
-        this.mesoRate /= worldz.getMesoRate();
-        this.dropRate /= worldz.getDropRate();
+        this.expRate /= worldz.ExpRate;
+        this.mesoRate /= worldz.MesoRate;
+        this.dropRate /= worldz.DropRate;
     }
 
     private void setCouponRates()
@@ -4694,25 +4594,7 @@ public partial class Player
         setStance(0);
     }
 
-    private void prepareDragonBlood(StatEffect bloodEffect)
-    {
-        if (dragonBloodSchedule != null)
-        {
-            dragonBloodSchedule.cancel(false);
-        }
-        dragonBloodSchedule = TimerManager.getInstance().register(() =>
-        {
-            if (awayFromWorld.Get())
-            {
-                return;
-            }
 
-            addHP(-bloodEffect.getX());
-            sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
-            MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
-
-        }, 4000, 4000);
-    }
 
     private void recalcEquipStats()
     {
@@ -6146,7 +6028,7 @@ public partial class Player
         {
             Client.sendPacket(PacketCreator.spawnPlayerMapObject(Client, this, false));
 
-            if (buffEffects.ContainsKey(getJobMapChair(JobModel)))
+            if (buffEffects.ContainsKey(JobModel.getJobMapChair()))
             { // mustn't effLock, chrLock sendSpawnData
                 Client.sendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
             }
@@ -6154,8 +6036,7 @@ public partial class Player
 
         if (this.isHidden())
         {
-            List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.DARKSIGHT, 0));
-            MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(getId(), dsstat), false);
+            MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
         }
     }
 

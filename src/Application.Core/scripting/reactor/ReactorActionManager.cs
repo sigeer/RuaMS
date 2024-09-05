@@ -190,7 +190,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
                 {
                     int range = maxMeso - minMeso;
                     int displayDrop = (int)(Randomizer.nextDouble() * range) + minMeso;
-                    int mesoDrop = (displayDrop * c.getWorldServer().getMesoRate());
+                    int mesoDrop = (displayDrop * c.getWorldServer().MesoRate);
                     reactor.getMap().spawnMesoDrop(mesoDrop, reactor.getMap().calcDropPos(dropPos, reactor.getPosition()), reactor, c.OnlinedCharacter, false, 2);
                 }
                 else
@@ -214,7 +214,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         {
             Reactor r = reactor;
             List<ReactorDropEntry> dropItems = items;
-            int worldMesoRate = c.getWorldServer().getMesoRate();
+            int worldMesoRate = c.getWorldServer().MesoRate;
 
             dropPos.X -= (12 * items.Count);
 

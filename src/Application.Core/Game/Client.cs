@@ -1120,7 +1120,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
             if (chr.Party > 0)
             {
-                chr.TeamModel = chr.getWorldServer().getParty(chr.Party);
+                chr.setParty(chr.getWorldServer().getParty(chr.Party));
                 chr.leaveParty();   // thanks Vcoc for pointing out deleted characters would still stay in a party
 
                 this.setPlayer(null);

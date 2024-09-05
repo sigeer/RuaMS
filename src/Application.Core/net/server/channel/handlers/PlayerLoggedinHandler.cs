@@ -414,11 +414,8 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 }
             }
 
-            player.buffExpireTask();
-            player.diseaseExpireTask();
-            player.skillCooldownTask();
-            player.expirationTask();
-            player.questExpirationTask();
+            player.StartPlayerTask();
+            
             if (GameConstants.hasSPTable(player.getJob()) && player.getJob().getId() != 2001)
             {
                 player.createDragon();

@@ -44,7 +44,7 @@ public class QuestRateCommand : Command
         }
 
         int questrate = Math.Max(int.Parse(paramsValue[0]), 1);
-        c.getWorldServer().setQuestRate(questrate);
+        c.getWorldServer().QuestRate  = questrate;
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Quest Rate has been changed to " + questrate + "x."));
 
     }

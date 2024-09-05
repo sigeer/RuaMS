@@ -21,6 +21,7 @@
 
 
 using Application.Core.Game.Life;
+using Application.Core.Game.Skills;
 using client;
 using net.packet;
 using tools;
@@ -43,8 +44,7 @@ public class PlayerMapTransitionHandler : AbstractPacketHandler
         {
             chr.cancelBuffStats(BuffStat.HOMING_BEACON);
 
-            List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.HOMING_BEACON, 0));
-            chr.sendPacket(PacketCreator.giveBuff(1, beaconid, stat));
+            chr.sendPacket(PacketCreator.giveBuff(1, beaconid, new BuffStatValue(BuffStat.HOMING_BEACON, 0)));
         }
 
         if (!chr.isHidden())

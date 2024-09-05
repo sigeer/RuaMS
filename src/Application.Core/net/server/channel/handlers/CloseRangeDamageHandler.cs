@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Skills;
 using client;
 using constants.game;
 using constants.id;
@@ -128,7 +129,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                         }
 
                         int duration = combo.getEffect(olv).getDuration();
-                        List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.COMBO, neworbcount));
+                        var stat = new BuffStatValue(BuffStat.COMBO, neworbcount);
                         chr.setBuffedValue(BuffStat.COMBO, neworbcount);
                         duration -= (int)(currentServerTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
                         c.sendPacket(PacketCreator.giveBuff(oid, duration, stat));

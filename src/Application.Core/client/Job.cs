@@ -19,6 +19,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using constants.skills;
+
 namespace client;
 
 public enum Job
@@ -134,8 +136,21 @@ public static class JobUtils
         case 5: PIRATE;
         */
     }
+
+    public static int getJobMapChair(this Job job)
+    {
+        switch (job.getId() / 1000)
+        {
+            case 0:
+                return Beginner.MAP_CHAIR;
+            case 1:
+                return Noblesse.MAP_CHAIR;
+            default:
+                return Legend.MAP_CHAIR;
+        }
+    }
 }
-public static class MapleJobExtensions
+public static class JobExtensions
 {
     public static int getId(this Job m)
     {
@@ -143,7 +158,8 @@ public static class MapleJobExtensions
     }
 
     public static bool isA(this Job thisJob, Job basejob)
-    {  // thanks Steve (kaito1410) for pointing out an improvement here
+    {  
+        // thanks Steve (kaito1410) for pointing out an improvement here
         int basebranch = basejob.getId() / 10;
         return (thisJob.getId() / 10 == basebranch && thisJob.getId() >= basejob.getId()) || (basebranch % 10 == 0 && thisJob.getId() / 100 == basejob.getId() / 100);
     }

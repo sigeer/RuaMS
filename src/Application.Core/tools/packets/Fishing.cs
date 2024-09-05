@@ -57,7 +57,7 @@ public class Fishing
 
     private static bool hitFishingTime(IPlayer chr, int baitLevel, double yearLikelihood, double timeLikelihood)
     {
-        double baitLikelihood = 0.0002 * chr.getWorldServer().getFishingRate() * baitLevel;   // can improve 10.0 at "max level 50000" on rate 1x
+        double baitLikelihood = 0.0002 * chr.getWorldServer().FishingRate * baitLevel;   // can improve 10.0 at "max level 50000" on rate 1x
 
         if (YamlConfig.config.server.USE_DEBUG)
         {

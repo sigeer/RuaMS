@@ -532,7 +532,7 @@ namespace Application.Core.Game.Players
                     {
                         foreach (var p in mse!.getStatups())
                         {
-                            updatedBuffs.Add(p.Key);
+                            updatedBuffs.Add(p.BuffState);
                         }
                     }
                 }
@@ -567,7 +567,7 @@ namespace Application.Core.Game.Players
                     {
                         foreach (var statup in mbsvh.effect.getStatups())
                         {
-                            retrievedStats.Add(statup.Key);
+                            retrievedStats.Add(statup.BuffState);
                         }
                     }
                 }
@@ -694,6 +694,40 @@ namespace Application.Core.Game.Players
             cancelPlayerBuffs(Arrays.asList(stat));
         }
 
+        private bool removeEffectFromItemEffectHolder(int sourceid, BuffStat buffStat)
+        {
+            Dictionary<BuffStat, BuffStatValueHolder>? lbe = buffEffects.GetValueOrDefault(sourceid);
+
+            if (lbe != null && lbe.Remove(buffStat, out var d) && d != null)
+            {
+                buffEffectsCount.AddOrUpdate(buffStat, (sbyte)(buffEffectsCount.GetValueOrDefault(buffStat) - 1));
+
+                if (lbe.Count == 0)
+                {
+                    buffEffects.Remove(sourceid);
+                    buffExpires.Remove(sourceid);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private void removeItemEffectHolder(int sourceid)
+        {
+            buffEffects.Remove(sourceid, out var be);
+            if (be != null)
+            {
+                foreach (var bei in be)
+                {
+                    buffEffectsCount.AddOrUpdate(bei.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(bei.Key) - 1));
+                }
+            }
+
+            buffExpires.Remove(sourceid);
+        }
+
         private Dictionary<BuffStat, BuffStatValueHolder> extractCurrentBuffStats(StatEffect effect)
         {
             chLock.EnterReadLock();
@@ -754,7 +788,7 @@ namespace Application.Core.Game.Players
                 HashSet<BuffStat> effectStatups = new();
                 foreach (var efstat in effect.getStatups())
                 {
-                    effectStatups.Add(efstat.Key);
+                    effectStatups.Add(efstat.BuffState);
                 }
 
                 foreach (var it in stats)
@@ -927,7 +961,7 @@ namespace Application.Core.Game.Players
 
                 foreach (var statup in mse.getStatups())
                 {
-                    BuffStat stat = statup.Key;
+                    BuffStat stat = statup.BuffState;
 
                     var statBuffs = buffEffects.GetValueOrDefault(stat);
                     if (statBuffs == null)
@@ -968,7 +1002,7 @@ namespace Application.Core.Game.Players
                 {
                     foreach (var ps in mse.getStatups())
                     {
-                        BuffStat mbs = ps.Key;
+                        BuffStat mbs = ps.BuffState;
                         if (retrievedStats.Contains(mbs))
                         {
                             BuffStatValueHolder mbsvhe = effects.GetValueOrDefault(mbs)!;
@@ -1032,7 +1066,7 @@ namespace Application.Core.Game.Players
                     int maxEffectiveStatup = int.MinValue;
                     foreach (var st in mse.getStatups())
                     {
-                        BuffStat mbs = st.Key;
+                        BuffStat mbs = st.BuffState;
 
                         bool relevantStatup = true;
                         if (mbs == BuffStat.WATK)
@@ -1088,7 +1122,7 @@ namespace Application.Core.Game.Players
                 toUpdateEffects.Add(new(mse.getBuffSourceId(), retrievedEffects.GetValueOrDefault(mse.getBuffSourceId())));
             }
 
-            List<KeyValuePair<BuffStat, int>> activeStatups = new();
+            List<BuffStatValue> activeStatups = new();
             foreach (var lmse in toUpdateEffects)
             {
                 KeyValuePair<StatEffect, long> msel = lmse.Value;
@@ -1098,7 +1132,7 @@ namespace Application.Core.Game.Players
                     activeStatups.Add(statup);
                 }
 
-                msel.Key.updateBuffEffect(this, activeStatups, msel.Value);
+                msel.Key.updateBuffEffect(this, activeStatups.ToArray(), msel.Value);
                 activeStatups.Clear();
             }
 
@@ -1112,15 +1146,13 @@ namespace Application.Core.Game.Players
                     activeStatups.Add(statup);
                 }
 
-                msel.Key.updateBuffEffect(this, activeStatups, msel.Value);
+                msel.Key.updateBuffEffect(this, activeStatups.ToArray(), msel.Value);
                 activeStatups.Clear();
             }
 
             if (this.isRidingBattleship())
             {
-                List<KeyValuePair<BuffStat, int>> statups = new(1);
-                statups.Add(new(BuffStat.MONSTER_RIDING, 0));
-                this.sendPacket(PacketCreator.giveBuff(ItemId.BATTLESHIP, 5221006, statups));
+                this.sendPacket(PacketCreator.giveBuff(ItemId.BATTLESHIP, 5221006, new BuffStatValue(BuffStat.MONSTER_RIDING, 0)));
                 this.announceBattleshipHp();
             }
         }
@@ -1129,13 +1161,56 @@ namespace Application.Core.Game.Players
         {
             foreach (var mbs in mse.getStatups())
             {
-                if (isSingletonStatup(mbs.Key))
+                if (isSingletonStatup(mbs.BuffState))
                 {
-                    return mbs.Key;
+                    return mbs.BuffState;
                 }
             }
 
             return null;
+        }
+
+        private List<BuffStatValue> getActiveStatupsFromSourceid(int sourceid)
+        {
+            if (!buffEffects.ContainsKey(sourceid))
+                return new List<BuffStatValue>();
+            // already under effLock & chrLock
+            List<BuffStatValue> ret = new();
+            List<BuffStatValue> singletonStatups = new();
+            foreach (var bel in buffEffects[sourceid])
+            {
+                BuffStat mbs = bel.Key;
+                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(bel.Key);
+
+                BuffStatValue p;
+                if (mbsvh != null)
+                {
+                    p = new(mbs, mbsvh.value);
+                }
+                else
+                {
+                    p = new(mbs, 0);
+                }
+
+                if (!isSingletonStatup(mbs))
+                {   // thanks resinate, Daddy Egg for pointing out morph issues when updating it along with other statups
+                    ret.Add(p);
+                }
+                else
+                {
+                    singletonStatups.Add(p);
+                }
+            }
+            ret.Sort((p1, p2) => p1.BuffState.CompareTo(p2.BuffState));
+
+            if (singletonStatups.Count > 0)
+            {
+                singletonStatups.Sort((p1, p2) => p1.BuffState.CompareTo(p2.BuffState));
+
+                ret.AddRange(singletonStatups);
+            }
+
+            return ret;
         }
 
         private static bool isSingletonStatup(BuffStat mbs)
@@ -1179,6 +1254,12 @@ namespace Application.Core.Game.Players
                 default:
                     return false;
             }
+        }
+
+        private void addItemEffectHolder(int sourceid, long expirationtime, Dictionary<BuffStat, BuffStatValueHolder> statups)
+        {
+            buffEffects.AddOrUpdate(sourceid, statups);
+            buffExpires.AddOrUpdate(sourceid, expirationtime);
         }
 
         private void addItemEffectHolderCount(BuffStat stat)
@@ -1336,7 +1417,7 @@ namespace Application.Core.Game.Players
 
                 foreach (var ps in effect.getStatups())
                 {
-                    appliedStatups.AddOrUpdate(ps.Key, new BuffStatValueHolder(effect, starttime, ps.Value));
+                    appliedStatups.AddOrUpdate(ps.BuffState, new BuffStatValueHolder(effect, starttime, ps.Value));
                 }
 
                 bool active = effect.isActive(this);
@@ -1362,7 +1443,7 @@ namespace Application.Core.Game.Players
                                 {
                                     foreach (var mbs in mbsvh.effect.getStatups())
                                     {
-                                        retrievedStats.Add(mbs.Key);
+                                        retrievedStats.Add(mbs.BuffState);
                                     }
                                 }
                             }
@@ -1379,9 +1460,9 @@ namespace Application.Core.Game.Players
                         {
                             foreach (var p in mbsvh.effect.getStatups())
                             {
-                                if (updated.Contains(p.Key))
+                                if (updated.Contains(p.BuffState))
                                 {
-                                    retrievedStats.Add(p.Key);
+                                    retrievedStats.Add(p.BuffState);
                                 }
                             }
                         }
@@ -1427,6 +1508,26 @@ namespace Application.Core.Game.Players
             }
 
             updateLocalStats();
+        }
+
+        private void prepareDragonBlood(StatEffect bloodEffect)
+        {
+            if (dragonBloodSchedule != null)
+            {
+                dragonBloodSchedule.cancel(false);
+            }
+            dragonBloodSchedule = TimerManager.getInstance().register(() =>
+            {
+                if (awayFromWorld.Get())
+                {
+                    return;
+                }
+
+                addHP(-bloodEffect.getX());
+                sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
+                MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
+
+            }, 4000, 4000);
         }
     }
 }

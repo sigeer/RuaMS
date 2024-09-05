@@ -121,7 +121,7 @@ namespace Application.Core.Game.Players
                         {
                             ExpLogRecord expLogRecord = new ExpLogRecord(
                                 Id,
-                                getWorldServer().getExpRate(),
+                                getWorldServer().ExpRate,
                                 expCoupon,
                                 totalExpGained,
                                 ExpValue.get(),

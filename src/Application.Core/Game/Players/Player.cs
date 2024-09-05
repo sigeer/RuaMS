@@ -8,6 +8,7 @@ using constants.game;
 using constants.id;
 using server.events;
 using server.maps;
+using System.Numerics;
 
 namespace Application.Core.Game.Players
 {
@@ -118,6 +119,27 @@ namespace Application.Core.Game.Players
         public IPlayer generateCharacterEntry()
         {
             return this;
+        }
+
+        public void StartPlayerTask()
+        {
+            buffExpireTask();
+            diseaseExpireTask();
+            skillCooldownTask();
+            expirationTask();
+            questExpirationTask();
+        }
+
+        public void StopPlayerTask()
+        {
+            cancelAllBuffs(true);
+            cancelAllDebuffs();
+            cancelBuffExpireTask();
+            cancelDiseaseExpireTask();
+            cancelSkillCooldownTask();
+            cancelExpirationTask();
+            forfeitExpirableQuests();
+            cancelQuestExpirationTask();
         }
     }
 }

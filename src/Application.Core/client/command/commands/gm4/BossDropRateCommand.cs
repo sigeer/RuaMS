@@ -43,7 +43,7 @@ public class BossDropRateCommand : Command
         }
 
         int bossdroprate = Math.Max(int.Parse(paramsValue[0]), 1);
-        c.getWorldServer().setBossDropRate(bossdroprate);
+        c.getWorldServer().BossDropRate = bossdroprate;
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Boss Drop Rate has been changed to " + bossdroprate + "x."));
     }
 }

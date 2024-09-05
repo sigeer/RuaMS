@@ -28,24 +28,27 @@ namespace Application.Core.Game.TheWorld;
 public class World : IWorld
 {
     private ILogger log;
+    public int Id { get; set; }
+    public int Flag { get; set; }
+    public int ExpRate { get; set; }
+    public int DropRate { get; set; }
+    public int BossDropRate { get; set; }
+    public int MesoRate { get; set; }
+    public int QuestRate { get; set; }
+    public int TravelRate { get; set; }
+    public int FishingRate { get; set; }
 
-    private int id;
-    private int flag;
-    private int exprate;
-    private int droprate;
-    private int bossdroprate;
-    private int mesorate;
-    private int questrate;
-    private int travelrate;
-    private int fishingrate;
-    private string eventmsg;
+    public string EventMessage { get; set; }
+
     public List<IWorldChannel> Channels { get; }
     WorldPlayerStorage? _players;
-    public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(id));
+    public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
     public WorldGuildStorage GuildStorage => new WorldGuildStorage();
     public Dictionary<int, ITeam> TeamStorage { get; }
+
     private Dictionary<int, byte> pnpcStep = new();
     private Dictionary<int, short> pnpcPodium = new();
+
     private Dictionary<int, Messenger> messengers = new();
     private AtomicInteger runningMessengerId = new AtomicInteger();
     private Dictionary<int, Family> families = new();
@@ -115,18 +118,18 @@ public class World : IWorld
 
     public World(int world, int flag, string eventmsg, int exprate, int droprate, int bossdroprate, int mesorate, int questrate, int travelrate, int fishingrate)
     {
-        this.id = world;
-        this.flag = flag;
-        this.eventmsg = eventmsg;
-        this.exprate = exprate;
-        this.droprate = droprate;
-        this.bossdroprate = bossdroprate;
-        this.mesorate = mesorate;
-        this.questrate = questrate;
-        this.travelrate = travelrate;
-        this.fishingrate = fishingrate;
+        this.Id = world;
+        this.Flag = flag;
+        this.EventMessage = eventmsg;
+        this.ExpRate = exprate;
+        this.DropRate = droprate;
+        this.BossDropRate = bossdroprate;
+        this.MesoRate = mesorate;
+        this.QuestRate = questrate;
+        this.TravelRate = travelrate;
+        this.FishingRate = fishingrate;
 
-        log = LogFactory.GetLogger("World_" + id);
+        log = LogFactory.GetLogger("World_" + Id);
         Channels = new List<IWorldChannel>();
         TeamStorage = new Dictionary<int, ITeam>();
 
@@ -275,36 +278,9 @@ public class World : IWorld
     {
         if (Players.Count() > 0) return false;
 
-        foreach (var ch in this.getChannels())
-        {
-            if (!ch.canUninstall())
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return this.getChannels().All(x => x.canUninstall());
     }
 
-    public void setFlag(byte b)
-    {
-        this.flag = b;
-    }
-
-    public int getFlag()
-    {
-        return flag;
-    }
-
-    public string getEventMessage()
-    {
-        return eventmsg;
-    }
-
-    public int getExpRate()
-    {
-        return exprate;
-    }
 
     public void setExpRate(int exp)
     {
@@ -318,7 +294,7 @@ public class World : IWorld
             }
             chr.revertWorldRates();
         }
-        this.exprate = exp;
+        this.ExpRate = exp;
         foreach (IPlayer chr in list)
         {
             if (!chr.isLoggedin())
@@ -329,10 +305,6 @@ public class World : IWorld
         }
     }
 
-    public int getDropRate()
-    {
-        return droprate;
-    }
 
     public void setDropRate(int drop)
     {
@@ -346,7 +318,7 @@ public class World : IWorld
             }
             chr.revertWorldRates();
         }
-        this.droprate = drop;
+        this.DropRate = drop;
         foreach (IPlayer chr in list)
         {
             if (!chr.isLoggedin())
@@ -356,22 +328,6 @@ public class World : IWorld
             chr.setWorldRates();
         }
     }
-
-    public int getBossDropRate()
-    {  // boss rate concept thanks to Lapeiro
-        return bossdroprate;
-    }
-
-    public void setBossDropRate(int bossdrop)
-    {
-        bossdroprate = bossdrop;
-    }
-
-    public int getMesoRate()
-    {
-        return mesorate;
-    }
-
     public void setMesoRate(int meso)
     {
         var list = getPlayerStorage().getAllCharacters();
@@ -384,7 +340,7 @@ public class World : IWorld
             }
             chr.revertWorldRates();
         }
-        this.mesorate = meso;
+        this.MesoRate = meso;
         foreach (IPlayer chr in list)
         {
             if (!chr.isLoggedin())
@@ -395,39 +351,9 @@ public class World : IWorld
         }
     }
 
-    public int getQuestRate()
-    {
-        return questrate;
-    }
-
-    public void setQuestRate(int quest)
-    {
-        this.questrate = quest;
-    }
-
-    public int getTravelRate()
-    {
-        return travelrate;
-    }
-
-    public void setTravelRate(int travel)
-    {
-        this.travelrate = travel;
-    }
-
     public int getTransportationTime(int travelTime)
     {
-        return (int)Math.Ceiling((double)travelTime / travelrate);
-    }
-
-    public int getFishingRate()
-    {
-        return fishingrate;
-    }
-
-    public void setFishingRate(int quest)
-    {
-        this.fishingrate = quest;
+        return (int)Math.Ceiling((double)travelTime / TravelRate);
     }
 
     public void loadAccountCharactersView(int accountId, List<IPlayer> chars)
@@ -504,7 +430,7 @@ public class World : IWorld
 
     private void registerAccountStorage(int accountId)
     {
-        Storage storage = Storage.loadOrCreateFromDB(accountId, this.id);
+        Storage storage = Storage.loadOrCreateFromDB(accountId, this.Id);
         Monitor.Enter(accountCharsLock);
         try
         {
@@ -640,7 +566,7 @@ public class World : IWorld
 
     public int getId()
     {
-        return id;
+        return Id;
     }
 
     public void addFamily(int id, Family f)
@@ -929,50 +855,6 @@ public class World : IWorld
         log.Debug("Guest list: " + marriageGuests);
     }
 
-    private void registerCharacterParty(int chrid, int partyid)
-    {
-        Monitor.Enter(partyLock);
-        try
-        {
-            partyChars.AddOrUpdate(chrid, partyid);
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
-    }
-
-    private void unregisterCharacterPartyInternal(int chrid)
-    {
-        partyChars.Remove(chrid);
-    }
-
-    private void unregisterCharacterParty(int chrid)
-    {
-        Monitor.Enter(partyLock);
-        try
-        {
-            unregisterCharacterPartyInternal(chrid);
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
-    }
-
-    public int getCharacterPartyid(int chrid)
-    {
-        Monitor.Enter(partyLock);
-        try
-        {
-            return partyChars.GetValueOrDefault(chrid);
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
-    }
-
     public ITeam createParty(IPlayer chrfor)
     {
         int partyid = runningPartyId.getAndIncrement();
@@ -982,7 +864,6 @@ public class World : IWorld
         try
         {
             TeamStorage.AddOrUpdate(party.getId(), party);
-            registerCharacterParty(chrfor.getId(), partyid);
         }
         finally
         {
@@ -1020,45 +901,11 @@ public class World : IWorld
         }
     }
 
-    private void updateCharacterParty(ITeam party, PartyOperation operation, IPlayer target, ICollection<IPlayer> partyMembers)
-    {
-        switch (operation)
-        {
-            case PartyOperation.JOIN:
-                registerCharacterParty(target.getId(), party.getId());
-                break;
-
-            case PartyOperation.LEAVE:
-            case PartyOperation.EXPEL:
-                unregisterCharacterParty(target.getId());
-                break;
-
-            case PartyOperation.DISBAND:
-                Monitor.Enter(partyLock);
-                try
-                {
-                    foreach (IPlayer partychar in partyMembers)
-                    {
-                        unregisterCharacterPartyInternal(partychar.getId());
-                    }
-                }
-                finally
-                {
-                    Monitor.Exit(partyLock);
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-
     private void updateParty(ITeam party, PartyOperation operation, IPlayer target)
     {
         var partyMembers = party.getMembers();
-        updateCharacterParty(party, operation, target, partyMembers);
 
-        foreach (IPlayer partychar in partyMembers)
+        foreach (var partychar in partyMembers)
         {
             var chr = getPlayerStorage().getCharacterById(partychar.getId());
             if (chr != null && chr.IsOnlined)
@@ -1278,7 +1125,7 @@ public class World : IWorld
 
     public void addMessengerPlayer(Messenger messenger, string namefrom, int fromchannel, int position)
     {
-        foreach (MessengerCharacter messengerchar in messenger.getMembers())
+        foreach (var messengerchar in messenger.getMembers())
         {
             var chr = getPlayerStorage().getCharacterByName(messengerchar.getName());
             if (chr == null || !chr.IsOnlined)
@@ -1300,7 +1147,7 @@ public class World : IWorld
 
     public void removeMessengerPlayer(Messenger messenger, int position)
     {
-        foreach (MessengerCharacter messengerchar in messenger.getMembers())
+        foreach (var messengerchar in messenger.getMembers())
         {
             var chr = getPlayerStorage().getCharacterByName(messengerchar.getName());
             if (chr != null && chr.IsOnlined)
@@ -1315,7 +1162,7 @@ public class World : IWorld
         string from = "";
         string to1 = "";
         string to2 = "";
-        foreach (MessengerCharacter messengerchar in messenger.getMembers())
+        foreach (var messengerchar in messenger.getMembers())
         {
             if (!(messengerchar.getName().Equals(namefrom)))
             {
@@ -1345,9 +1192,9 @@ public class World : IWorld
         if (isConnected(sender))
         {
             var senderChr = getPlayerStorage().getCharacterByName(sender);
-            if (senderChr != null && senderChr.IsOnlined && senderChr.getMessenger() != null)
+            if (senderChr != null && senderChr.IsOnlined && senderChr.Messenger != null)
             {
-                if (InviteCoordinator.answerInvite(InviteType.MESSENGER, player.getId(), senderChr.getMessenger()!.getId(), false).result == InviteResultType.DENIED)
+                if (InviteCoordinator.answerInvite(InviteType.MESSENGER, player.getId(), senderChr.Messenger.getId(), false).result == InviteResultType.DENIED)
                 {
                     senderChr.sendPacket(PacketCreator.messengerNote(player.getName(), 5, 0));
                 }
@@ -1364,7 +1211,7 @@ public class World : IWorld
 
     public void updateMessenger(Messenger messenger, string namefrom, int position, int fromchannel)
     {
-        foreach (MessengerCharacter messengerchar in messenger.getMembers())
+        foreach (var messengerchar in messenger.getMembers())
         {
             var ch = getChannel(fromchannel);
             if (!(messengerchar.getName().Equals(namefrom)))
@@ -2210,12 +2057,12 @@ public class World : IWorld
 
                 if (step != -1)
                 {
-                    executePlayerNpcMapDataUpdate(dbContext, false, pnpcStep, (short)step, id, mapid);
+                    executePlayerNpcMapDataUpdate(dbContext, false, pnpcStep, (short)step, Id, mapid);
                 }
 
                 if (podium != -1)
                 {
-                    executePlayerNpcMapDataUpdate(dbContext, true, pnpcPodium, (short)podium, id, mapid);
+                    executePlayerNpcMapDataUpdate(dbContext, true, pnpcPodium, (short)podium, Id, mapid);
                 }
             }
             catch (Exception e)
@@ -2581,6 +2428,6 @@ public class World : IWorld
         Players.disconnectAll();
 
         clearWorldData();
-        log.Information("Finished shutting down world {WorldId}", id);
+        log.Information("Finished shutting down world {WorldId}", Id);
     }
 }

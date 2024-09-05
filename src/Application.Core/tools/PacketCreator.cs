@@ -25,6 +25,7 @@ using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
@@ -3172,14 +3173,14 @@ public class PacketCreator
      * @return
      */
     //1F 00 00 00 00 00 03 00 00 40 00 00 00 E0 00 00 00 00 00 00 00 00 E0 01 8E AA 4F 00 00 C2 EB 0B E0 01 8E AA 4F 00 00 C2 EB 0B 0C 00 8E AA 4F 00 00 C2 EB 0B 44 02 8E AA 4F 00 00 C2 EB 0B 44 02 8E AA 4F 00 00 C2 EB 0B 00 00 E0 7A 1D 00 8E AA 4F 00 00 00 00 00 00 00 00 03
-    public static Packet giveBuff(int buffid, int bufflength, List<KeyValuePair<BuffStat, int>> statups)
+    public static Packet giveBuff(int buffid, int bufflength, params BuffStatValue[] statups)
     {
         OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
         bool special = false;
         writeLongMask(p, statups);
-        foreach (KeyValuePair<BuffStat, int> statup in statups)
+        foreach (var statup in statups)
         {
-            if (statup.Key.Equals(BuffStat.MONSTER_RIDING) || statup.Key.Equals(BuffStat.HOMING_BEACON))
+            if (statup.BuffState.Equals(BuffStat.MONSTER_RIDING) || statup.BuffState.Equals(BuffStat.HOMING_BEACON))
             {
                 special = true;
             }
@@ -3189,7 +3190,7 @@ public class PacketCreator
         }
         p.writeInt(0);
         p.writeByte(0);
-        p.writeInt(statups.get(0).Value); //Homing beacon ...
+        p.writeInt(statups[0].Value); //Homing beacon ...
 
         if (special)
         {
@@ -3389,12 +3390,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet giveForeignBuff(int chrId, List<KeyValuePair<BuffStat, int>> statups)
+    public static Packet giveForeignBuff(int chrId, params BuffStatValue[] statups)
     {
         OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         p.writeInt(chrId);
         writeLongMask(p, statups);
-        foreach (KeyValuePair<BuffStat, int> statup in statups)
+        foreach (var statup in statups)
         {
             p.writeShort(statup.Value);
         }
@@ -3419,19 +3420,19 @@ public class PacketCreator
         return p;
     }
 
-    private static void writeLongMask(OutPacket p, List<KeyValuePair<BuffStat, int>> statups)
+    private static void writeLongMask(OutPacket p, params BuffStatValue[] statups)
     {
         long firstmask = 0;
         long secondmask = 0;
         foreach (var statup in statups)
         {
-            if (statup.Key.IsFirst)
+            if (statup.BuffState.IsFirst)
             {
-                firstmask |= statup.Key.getValue();
+                firstmask |= statup.BuffState.getValue();
             }
             else
             {
-                secondmask |= statup.Key.getValue();
+                secondmask |= statup.BuffState.getValue();
             }
         }
         p.writeLong(firstmask);
@@ -3545,7 +3546,7 @@ public class PacketCreator
     }
 
     // packet found thanks to Ronan
-    public static Packet giveForeignWKChargeEffect(int cid, int buffid, List<KeyValuePair<BuffStat, int>> statups)
+    public static Packet giveForeignWKChargeEffect(int cid, int buffid, params BuffStatValue[] statups)
     {
         OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         p.writeInt(cid);
@@ -6136,11 +6137,11 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet givePirateBuff(List<KeyValuePair<BuffStat, int>> statups, int buffid, int duration)
+    public static Packet givePirateBuff(IEnumerable<BuffStatValue> statups, int buffid, int duration)
     {
         OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
         bool infusion = buffid == Buccaneer.SPEED_INFUSION || buffid == ThunderBreaker.SPEED_INFUSION || buffid == Corsair.SPEED_INFUSION;
-        writeLongMask(p, statups);
+        writeLongMask(p, statups.ToArray());
         p.writeShort(0);
         foreach (var stat in statups)
         {
@@ -6153,7 +6154,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet giveForeignPirateBuff(int cid, int buffid, int time, List<KeyValuePair<BuffStat, int>> statups)
+    public static Packet giveForeignPirateBuff(int cid, int buffid, int time, params BuffStatValue[] statups)
     {
         OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         bool infusion = buffid == Buccaneer.SPEED_INFUSION || buffid == ThunderBreaker.SPEED_INFUSION || buffid == Corsair.SPEED_INFUSION;

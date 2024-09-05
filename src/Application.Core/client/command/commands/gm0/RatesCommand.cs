@@ -43,7 +43,7 @@ public class RatesCommand : Command
         showMsg_ += "BOSS DROP Rate: #e#b" + player.getBossDropRate() + "x#k#n" + "\r\n";
         if (YamlConfig.config.server.USE_QUEST_RATE)
         {
-            showMsg_ += "QUEST Rate: #e#b" + c.getWorldServer().getQuestRate() + "x#k#n" + "\r\n";
+            showMsg_ += "QUEST Rate: #e#b" + c.getWorldServer().QuestRate + "x#k#n" + "\r\n";
         }
 
         player.showHint(showMsg_, 300);

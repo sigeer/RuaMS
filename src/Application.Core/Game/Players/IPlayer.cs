@@ -43,7 +43,7 @@ namespace Application.Core.Game.Players
         public Dictionary<Skill, SkillEntry> Skills { get; set; }
         public SkillMacro?[] SkillMacros { get; set; }
 
-        public ITeam? TeamModel { get; set; }
+        public ITeam? TeamModel { get; }
         public IGuild? GuildModel { get; }
         public IAlliance? AllianceModel { get; }
         public ISchool? SchoolModel { get; set; }
@@ -68,6 +68,7 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnJobUpdate;
         public event EventHandler<IPlayer>? OnLodgedUpdate;
 
+        void StartPlayerTask();
         void addCooldown(int skillId, long startTime, long length);
         void addCP(int ammount);
         void addCrushRing(Ring r);
