@@ -11,5 +11,5 @@ public partial class Famelog
 
     public DateTimeOffset When { get; set; }
 
-    public virtual DB_Character Character { get; set; } = null!;
+    public virtual CharacterEntity Character { get; set; } = null!;
 }

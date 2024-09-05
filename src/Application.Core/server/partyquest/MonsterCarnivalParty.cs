@@ -1,7 +1,6 @@
 
 
-using client;
-using server.maps;
+using Application.Core.Game.Maps;
 using tools;
 
 namespace server.partyquest;
@@ -15,32 +14,32 @@ namespace server.partyquest;
 public class MonsterCarnivalParty
 {
 
-    private List<Character> members = new();
-    private Character leader;
+    private List<IPlayer> members = new();
+    private IPlayer leader;
     private byte team;
     private short availableCP = 0, totalCP = 0;
     private int summons = 8;
     private bool winner = false;
 
-    public MonsterCarnivalParty(Character owner, List<Character> members1, byte team1)
+    public MonsterCarnivalParty(IPlayer owner, List<IPlayer> members1, byte team1)
     {
         leader = owner;
         members = members1;
         team = team1;
 
-        foreach (Character chr in members)
+        foreach (IPlayer chr in members)
         {
             chr.setMonsterCarnivalParty(this);
             chr.setTeam(team);
         }
     }
 
-    public Character getLeader()
+    public IPlayer getLeader()
     {
         return leader;
     }
 
-    public void addCP(Character player, short ammount)
+    public void addCP(IPlayer player, short ammount)
     {
         totalCP += ammount;
         availableCP += ammount;
@@ -57,13 +56,13 @@ public class MonsterCarnivalParty
         return availableCP;
     }
 
-    public void useCP(Character player, short ammount)
+    public void useCP(IPlayer player, short ammount)
     {
         availableCP -= ammount;
         player.useCP(ammount);
     }
 
-    public List<Character> getMembers()
+    public List<IPlayer> getMembers()
     {
         return members;
     }
@@ -75,7 +74,7 @@ public class MonsterCarnivalParty
 
     public void warpOut(int map)
     {
-        foreach (Character chr in members)
+        foreach (var chr in members)
         {
             chr.changeMap(map, 0);
             chr.setMonsterCarnivalParty(null);
@@ -84,9 +83,9 @@ public class MonsterCarnivalParty
         members.Clear();
     }
 
-    public void warp(MapleMap map, int portalid)
+    public void warp(IMap map, int portalid)
     {
-        foreach (Character chr in members)
+        foreach (var chr in members)
         {
             chr.changeMap(map, map.getPortal(portalid));
         }
@@ -104,10 +103,10 @@ public class MonsterCarnivalParty
         }
     }
 
-    public bool allInMap(MapleMap map)
+    public bool allInMap(IMap map)
     {
         bool status = true;
-        foreach (Character chr in members)
+        foreach (var chr in members)
         {
             if (chr.getMap() != map)
             {
@@ -117,7 +116,7 @@ public class MonsterCarnivalParty
         return status;
     }
 
-    public void removeMember(Character chr)
+    public void removeMember(IPlayer chr)
     {
         members.Remove(chr);
         chr.changeMap(980000010);
@@ -139,7 +138,7 @@ public class MonsterCarnivalParty
     {
         string effect = winner ? "quest/carnival/win" : "quest/carnival/lose";
 
-        foreach (Character chr in members)
+        foreach (var chr in members)
         {
             chr.sendPacket(PacketCreator.showEffect(effect));
         }

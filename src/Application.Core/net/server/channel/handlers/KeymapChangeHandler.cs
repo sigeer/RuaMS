@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -31,7 +31,7 @@ namespace net.server.channel.handlers;
 
 public class KeymapChangeHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (p.available() >= 8)
         {
@@ -52,43 +52,45 @@ public class KeymapChangeHandler : AbstractPacketHandler
                         if (skill != null)
                         {
                             isBanndedSkill = GameConstants.bannedBindSkills(skill.getId());
-                            if (isBanndedSkill || (!c.getPlayer().isGM() && GameConstants.isGMSkills(skill.getId())) || (!GameConstants.isInJobTree(skill.getId(), c.getPlayer().getJob().getId()) && !c.getPlayer().isGM()))
+                            if (isBanndedSkill
+                                || (!c.OnlinedCharacter.isGM() && GameConstants.isGMSkills(skill.getId()))
+                                || (!GameConstants.isInJobTree(skill.getId(), c.OnlinedCharacter.getJob().getId()) && !c.OnlinedCharacter.isGM()))
                             { //for those skills are are "technically" in the beginner tab, like bamboo rain in Dojo or skills you find in PYPQ
-                                //AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit keymapping.");
-                                //FilePrinter.printError(FilePrinter.EXPLOITS + c.getPlayer().getName() + ".txt", c.getPlayer().getName() + " tried to use skill " + skill.getId());
+                                //AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit keymapping.");
+                                //FilePrinter.printError(FilePrinter.EXPLOITS + c.OnlinedCharacter.getName() + ".txt", c.OnlinedCharacter.getName() + " tried to use skill " + skill.getId());
                                 //c.disconnect(true, false);
                                 //return;
 
                                 continue;   // fk that
                             }
-                            /* if (c.getPlayer().getSkillLevel(skill) < 1) {    HOW WOULD A SKILL EVEN BE AVAILABLE TO KEYBINDING
+                            /* if (c.OnlinedCharacter.getSkillLevel(skill) < 1) {    HOW WOULD A SKILL EVEN BE AVAILABLE TO KEYBINDING
                                     continue;                                   IF THERE IS NOT EVEN A SINGLE POINT USED INTO IT??
                             } */
                         }
                     }
 
-                    c.getPlayer().changeKeybinding(key, new KeyBinding(type, action));
+                    c.OnlinedCharacter.changeKeybinding(key, new KeyBinding(type, action));
                 }
             }
             else if (mode == 1)
             { // Auto HP Potion
                 int itemID = p.readInt();
-                if (itemID != 0 && c.getPlayer().getInventory(InventoryType.USE).findById(itemID) == null)
+                if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
                     c.disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
-                c.getPlayer().changeKeybinding(91, new KeyBinding(7, itemID));
+                c.OnlinedCharacter.changeKeybinding(91, new KeyBinding(7, itemID));
             }
             else if (mode == 2)
             { // Auto MP Potion
                 int itemID = p.readInt();
-                if (itemID != 0 && c.getPlayer().getInventory(InventoryType.USE).findById(itemID) == null)
+                if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
                     c.disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
-                c.getPlayer().changeKeybinding(92, new KeyBinding(7, itemID));
+                c.OnlinedCharacter.changeKeybinding(92, new KeyBinding(7, itemID));
             }
         }
     }

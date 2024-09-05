@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -49,7 +48,7 @@ public class MapEffect
         return PacketCreator.startMapEffect(msg, itemId, active);
     }
 
-    public void sendStartData(Client client)
+    public void sendStartData(IClient client)
     {
         client.sendPacket(makeStartData());
     }

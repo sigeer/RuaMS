@@ -62,7 +62,7 @@ public class Family
 
     private static bool idInUse(int id)
     {
-        foreach (World world in Server.getInstance().getWorlds())
+        foreach (var world in Server.getInstance().getWorlds())
         {
             if (world.getFamily(id) != null)
             {
@@ -238,7 +238,7 @@ public class Family
                                                 b.World,
                                                 b.Name,
                                                 b.Level,
-                                                b.Job,
+                                                b.JobId,
                                                 entitlementIdList = c
                                             }).ToList();
 
@@ -247,7 +247,7 @@ public class Family
                 int cid = item.Cid;
                 string name = item.Name;
                 int level = item.World;
-                int jobID = item.Job;
+                int jobID = item.JobId;
                 int world = item.World;
 
                 int familyid = item.Familyid;
@@ -312,7 +312,7 @@ public class Family
                 }
             }
 
-            foreach (World world in Server.getInstance().getWorlds())
+            foreach (var world in Server.getInstance().getWorlds())
             {
                 foreach (Family family in world.getFamilies())
                 {

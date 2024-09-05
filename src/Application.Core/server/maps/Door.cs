@@ -21,7 +21,7 @@
 */
 
 
-using client;
+using Application.Core.Game.Maps;
 using net.server.services.task.channel;
 using net.server.services.type;
 
@@ -35,9 +35,9 @@ namespace server.maps;
 public class Door
 {
     private int ownerId;
-    private MapleMap town;
+    private IMap town;
     private Portal townPortal;
-    private MapleMap target;
+    private IMap target;
     private KeyValuePair<string, int>? posStatus = null;
     private long deployTime;
     private bool active;
@@ -45,7 +45,7 @@ public class Door
     private DoorObject townDoor;
     private DoorObject areaDoor;
 
-    public Door(Character owner, Point targetPosition)
+    public Door(IPlayer owner, Point targetPosition)
     {
         this.ownerId = owner.getId();
         this.target = owner.getMap();
@@ -88,7 +88,7 @@ public class Door
         }
     }
 
-    public void updateDoorPortal(Character owner)
+    public void updateDoorPortal(IPlayer owner)
     {
         int slot = owner.fetchDoorSlot();
 
@@ -100,13 +100,13 @@ public class Door
         }
     }
 
-    private void broadcastRemoveDoor(Character owner)
+    private void broadcastRemoveDoor(IPlayer owner)
     {
         DoorObject areaDoor = this.getAreaDoor();
         DoorObject townDoor = this.getTownDoor();
 
-        MapleMap target = this.getTarget();
-        MapleMap town = this.getTown();
+        IMap target = this.getTarget();
+        IMap town = this.getTown();
 
         var targetChars = target.getCharacters();
         var townChars = town.getCharacters();
@@ -114,13 +114,13 @@ public class Door
         target.removeMapObject(areaDoor);
         town.removeMapObject(townDoor);
 
-        foreach (Character chr in targetChars)
+        foreach (IPlayer chr in targetChars)
         {
             areaDoor.sendDestroyData(chr.getClient());
             chr.removeVisibleMapObject(areaDoor);
         }
 
-        foreach (Character chr in townChars)
+        foreach (IPlayer chr in townChars)
         {
             townDoor.sendDestroyData(chr.getClient());
             chr.removeVisibleMapObject(townDoor);
@@ -130,7 +130,7 @@ public class Door
 
         if (this.getTownPortal().getId() == 0x80)
         {
-            foreach (Character chr in townChars)
+            foreach (IPlayer chr in townChars)
             {
                 var door = chr.getMainTownDoor();
                 if (door != null)
@@ -142,7 +142,7 @@ public class Door
         }
     }
 
-    public static void attemptRemoveDoor(Character owner)
+    public static void attemptRemoveDoor(IPlayer owner)
     {
         var destroyDoor = owner.getPlayerDoor();
         if (destroyDoor != null && destroyDoor.dispose())
@@ -150,7 +150,7 @@ public class Door
             long effectTimeLeft = 3000 - destroyDoor.getElapsedDeployTime();   // portal deployment effect duration
             if (effectTimeLeft > 0)
             {
-                MapleMap town = destroyDoor.getTown();
+                IMap town = destroyDoor.getTown();
 
                 OverallService service = (OverallService)town.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
                 service.registerOverallAction(town.getId(), () =>
@@ -185,7 +185,7 @@ public class Door
         return areaDoor;
     }
 
-    public MapleMap getTown()
+    public IMap getTown()
     {
         return town;
     }
@@ -195,7 +195,7 @@ public class Door
         return townPortal;
     }
 
-    public MapleMap getTarget()
+    public IMap getTarget()
     {
         return target;
     }

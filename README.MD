@@ -3,7 +3,7 @@
 
 基于 Cosmic的[Commit: 8f2c2dc08f44254660505cfd2ad87cc3f2caa36d](https://github.com/P0nk/Cosmic/commit/8f2c2dc08f44254660505cfd2ad87cc3f2caa36d)的C#版。
 
-初期代码来自字符串替换，可能存在大量bug。
+初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。
 
 
 ## 项目
@@ -18,12 +18,13 @@
 
 #### tools
 
-- CodeMigration 转换代码的迁移工具，ReplaceJsContent类用于替换js脚本中的Java代码
+- CodeMigration：转换代码的迁移工具
+- ReplaceJsContent类：用于替换js脚本中的Java代码
 
 #### sql
 
 初始化sql脚本。
-由于EFCore会将`tiny(1)` 视作`bool`，现将脚本中非bool类型却使用`tiny(1)`的字段的数据类型改为`tiny`。
+ 由于EFCore会将`tiny(1)` 视作`bool`，现将脚本中非bool类型却使用`tiny(1)`的字段的数据类型改为`tiny`。
 
 #### test
 

@@ -1,4 +1,3 @@
-using client;
 using database;
 using database.note;
 using net.packet.outs;
@@ -65,7 +64,7 @@ public class NoteService
      *
      * @param chr Note recipient
      */
-    public void show(Character chr)
+    public void show(IPlayer? chr)
     {
         if (chr == null)
         {

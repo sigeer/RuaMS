@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,6 @@
    @Author: MedicOP - Add warpmap command
 */
 
-
-using server.maps;
-
 namespace client.command.commands.gm2;
 
 
@@ -36,9 +33,9 @@ public class WarpMapCommand : Command
         setDescription("Warp all characters on current map to a new map.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !warpmap <mapid>");
@@ -47,7 +44,7 @@ public class WarpMapCommand : Command
 
         try
         {
-            MapleMap target = c.getChannelServer().getMapFactory().getMap(int.Parse(paramsValue[0]));
+            var target = c.getChannelServer().getMapFactory().getMap(int.Parse(paramsValue[0]));
             if (target == null)
             {
                 player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
@@ -56,7 +53,7 @@ public class WarpMapCommand : Command
 
             var characters = player.getMap().getAllPlayers();
 
-            foreach (Character victim in characters)
+            foreach (var victim in characters)
             {
                 victim.saveLocationOnWarp();
                 victim.changeMap(target, target.getRandomPlayerSpawnpoint());

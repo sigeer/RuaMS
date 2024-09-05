@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using client.newyear;
 using constants.id;
 using constants.inventory;
@@ -37,9 +36,9 @@ namespace net.server.channel.handlers;
 public class NewYearCardHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         byte reqMode = p.readByte();                 //[00] -> NewYearReq (0 = Send)
 
         if (reqMode == 0)
@@ -59,7 +58,7 @@ public class NewYearCardHandler : AbstractPacketHandler
                         int receiverid = getReceiverId(receiver, c.getWorld());
                         if (receiverid != -1)
                         {
-                            if (receiverid != c.getPlayer().getId())
+                            if (receiverid != c.OnlinedCharacter.getId())
                             {
                                 string message = p.readString();   //[06 00 4C 65 74 74 65 72] -> sContent (message)
 
@@ -159,7 +158,7 @@ public class NewYearCardHandler : AbstractPacketHandler
     }
 
 
-    private static int getValidNewYearCardStatus(int itemid, Character player, short slot)
+    private static int getValidNewYearCardStatus(int itemid, IPlayer player, short slot)
     {
         if (!ItemConstants.isNewYearCardUse(itemid))
         {

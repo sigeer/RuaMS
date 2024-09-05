@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -39,7 +39,7 @@ namespace net.server.channel.handlers;
 public class ScrollHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (c.tryacquireClient())
         {
@@ -57,7 +57,7 @@ public class ScrollHandler : AbstractPacketHandler
                 }
 
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                Character chr = c.getPlayer();
+                var chr = c.OnlinedCharacter;
                 var toScroll = chr.getInventory(InventoryType.EQUIPPED).getItem(equipSlot) as Equip;
                 Skill LegendarySpirit = SkillFactory.GetSkillTrust(1003);
                 if (chr.getSkillLevel(LegendarySpirit) > 0 && equipSlot >= 0)
@@ -106,7 +106,7 @@ public class ScrollHandler : AbstractPacketHandler
                     }
                 }
 
-                Equip scrolled = (Equip)ii.scrollEquipWithId(toScroll, scroll.getItemId(), whiteScroll, 0, chr.isGM());
+                var scrolled = (Equip?)ii.scrollEquipWithId(toScroll, scroll.getItemId(), whiteScroll, 0, chr.isGM());
                 var scrollSuccess = Equip.ScrollResult.FAIL; // fail
                 if (scrolled == null)
                 {
@@ -208,11 +208,11 @@ public class ScrollHandler : AbstractPacketHandler
         }
     }
 
-    private static void announceCannotScroll(Client c, bool legendarySpirit)
+    private static void announceCannotScroll(IClient c, bool legendarySpirit)
     {
         if (legendarySpirit)
         {
-            c.sendPacket(PacketCreator.getScrollEffect(c.getPlayer().getId(), Equip.ScrollResult.FAIL, false, false));
+            c.sendPacket(PacketCreator.getScrollEffect(c.OnlinedCharacter.getId(), Equip.ScrollResult.FAIL, false, false));
         }
         else
         {

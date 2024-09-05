@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
@@ -39,10 +38,10 @@ public class StorageProcessor
 {
     private static ILogger log = LogFactory.GetLogger(LogType.StorageProcessor);
 
-    public static void storageAction(InPacket p, Client c)
+    public static void storageAction(InPacket p, IClient c)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         Storage storage = chr.getStorage();
         string gmBlockedStorageMessage = "You cannot use the storage as a GM of this level.";
 
@@ -67,8 +66,8 @@ public class StorageProcessor
                             sbyte slot = p.ReadSByte();
                             if (slot < 0 || slot > storage.getSlots())
                             { // removal starts at zero
-                                AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit with storage.");
-                                log.Warning("Chr {CharacterName} tried to work with storage slot {Slot}", c.getPlayer().getName(), slot);
+                                AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with storage.");
+                                log.Warning("Chr {CharacterName} tried to work with storage slot {Slot}", chr.getName(), slot);
                                 c.disconnect(true, false);
                                 return;
                             }
@@ -108,13 +107,11 @@ public class StorageProcessor
                                 {
                                     if (storage.takeOut(item))
                                     {
-                                        chr.setUsedStorage();
-
                                         KarmaManipulator.toggleKarmaFlagToUntradeable(item);
                                         InventoryManipulator.addFromDrop(c, item, false);
 
                                         var itemName = ii.getName(item.getItemId());
-                                        log.Debug("Chr {CharacterName} took out {ItemQuantity}x {ItemName} ({ItemId})", c.getPlayer().getName(), item.getQuantity(), itemName, item.getItemId());
+                                        log.Debug("Chr {CharacterName} took out {ItemQuantity}x {ItemName} ({ItemId})", chr.getName(), item.getQuantity(), itemName, item.getItemId());
 
                                         storage.sendTakenOut(c, item.getInventoryType());
                                     }
@@ -140,9 +137,9 @@ public class StorageProcessor
                             Inventory inv = chr.getInventory(invType);
                             if (slot < 1 || slot > inv.getSlotLimit())
                             { // player inv starts at one
-                                AutobanFactory.PACKET_EDIT.alert(c.getPlayer(),
-                                        c.getPlayer().getName() + " tried to packet edit with storage.");
-                                log.Warning("Chr {ChracterName} tried to store item at slot {Slot}", c.getPlayer().getName(), slot);
+                                AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter,
+                                        c.OnlinedCharacter.getName() + " tried to packet edit with storage.");
+                                log.Warning("Chr {ChracterName} tried to store item at slot {Slot}", c.OnlinedCharacter.getName(), slot);
                                 c.disconnect(true, false);
                                 return;
                             }
@@ -213,10 +210,9 @@ public class StorageProcessor
                                 item.setQuantity(quantity);
 
                                 storage.store(item); // inside a critical section, "!(storage.isFull())" is still in effect...
-                                chr.setUsedStorage();
 
                                 var itemName = ii.getName(item.getItemId());
-                                log.Debug("Chr {CharacterName} stored {ItemQuantity}x {ItemName} ({ItemId})", c.getPlayer().getName(), item.getQuantity(), itemName, item.getItemId());
+                                log.Debug("Chr {CharacterName} stored {ItemQuantity}x {ItemName} ({ItemId})", c.OnlinedCharacter.getName(), item.getQuantity(), itemName, item.getItemId());
                                 storage.sendStored(c, ItemConstants.getInventoryType(itemId));
                             }
                             break;
@@ -264,8 +260,7 @@ public class StorageProcessor
                                 }
                                 storage.setMeso(storageMesos - meso);
                                 chr.gainMeso(meso, false, true, false);
-                                chr.setUsedStorage();
-                                log.Debug("Chr {CharacterName} {0} {meso} mesos", c.getPlayer().getName(), meso > 0 ? "took out" : "stored", Math.Abs(meso));
+                                log.Debug("Chr {CharacterName} {0} {meso} mesos", c.OnlinedCharacter.getName(), meso > 0 ? "took out" : "stored", Math.Abs(meso));
                                 storage.sendMeso(c);
                             }
                             else
@@ -287,7 +282,7 @@ public class StorageProcessor
         }
     }
 
-    private static bool hasGMRestrictions(Character character)
+    private static bool hasGMRestrictions(IPlayer character)
     {
         return character.isGM() && character.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE;
     }

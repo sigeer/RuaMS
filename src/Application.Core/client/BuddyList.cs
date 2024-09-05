@@ -21,9 +21,9 @@
 */
 
 
+using Application.Core.Game.TheWorld;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
-using net.server;
 using System.Collections.Concurrent;
 using tools;
 
@@ -112,7 +112,7 @@ public class BuddyList
 
     public ICollection<BuddylistEntry> getBuddies()
     {
-        return buddies.Values;
+        return buddies.Values.ToList();
     }
 
     public bool isFull()
@@ -137,7 +137,7 @@ public class BuddyList
         }
     }
 
-    public void broadcast(Packet packet, PlayerStorage pstorage)
+    public void broadcast(Packet packet, WorldPlayerStorage pstorage)
     {
         foreach (int bid in getBuddyIds())
         {
@@ -174,12 +174,12 @@ public class BuddyList
         return null;
     }
 
-    public void addBuddyRequest(Client c, int cidFrom, string nameFrom, int channelFrom)
+    public void addBuddyRequest(IClient c, int cidFrom, string nameFrom, int channelFrom)
     {
         put(new BuddylistEntry(nameFrom, "Default Group", cidFrom, channelFrom, false));
         if (_pendingRequests.Count == 0)
         {
-            c.sendPacket(PacketCreator.requestBuddylistAdd(cidFrom, c.getPlayer().getId(), nameFrom));
+            c.sendPacket(PacketCreator.requestBuddylistAdd(cidFrom, c.OnlinedCharacter.getId(), nameFrom));
         }
         else
         {

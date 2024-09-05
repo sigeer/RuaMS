@@ -1,5 +1,5 @@
 /*
-    This file is part of the OdinMS Maple Story Server
+    This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
                Matthias Butz <matze@odinms.de>
                Jan Christian Meyer <vimes@odinms.de>
@@ -22,9 +22,7 @@
 
 
 
-using client;
 using net.packet;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -34,14 +32,14 @@ namespace net.server.channel.handlers;
  */
 public class CoconutHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         /*CB 00 A6 00 06 01
          * A6 00 = coconut id
          * 06 01 = ?
          */
         int id = p.readShort();
-        MapleMap map = c.getPlayer().getMap();
+        var map = c.OnlinedCharacter.getMap();
         var evt = map.getCoconut();
         if (evt == null)
         {
@@ -77,15 +75,15 @@ public class CoconutHandler : AbstractPacketHandler
             {
                 map.broadcastMessage(PacketCreator.hitCoconut(false, id, 3));
                 evt.fallCoconut();
-                if (c.getPlayer().getTeam() == 0)
+                if (c.OnlinedCharacter.getTeam() == 0)
                 {
                     evt.addMapleScore();
-                    map.broadcastMessage(PacketCreator.serverNotice(5, c.getPlayer().getName() + " of Team Maple knocks down a coconut."));
+                    map.broadcastMessage(PacketCreator.serverNotice(5, c.OnlinedCharacter.getName() + " of Team Maple knocks down a coconut."));
                 }
                 else
                 {
                     evt.addStoryScore();
-                    map.broadcastMessage(PacketCreator.serverNotice(5, c.getPlayer().getName() + " of Team Story knocks down a coconut."));
+                    map.broadcastMessage(PacketCreator.serverNotice(5, c.OnlinedCharacter.getName() + " of Team Story knocks down a coconut."));
                 }
                 map.broadcastMessage(PacketCreator.coconutScore(evt.getMapleScore(), evt.getStoryScore()));
             }

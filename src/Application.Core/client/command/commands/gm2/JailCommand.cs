@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 
 
 using constants.id;
-using server.maps;
 
 namespace client.command.commands.gm2;
 
@@ -35,9 +34,9 @@ public class JailCommand : Command
         setDescription("Move a player to the jail.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !jail <playername> [<minutes>]");
@@ -56,13 +55,13 @@ public class JailCommand : Command
         }
 
         var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (victim != null)
+        if (victim != null && victim.IsOnlined)
         {
             victim.addJailExpirationTime(minutesJailed * 60 * 1000);
 
             if (victim.getMapId() != MapId.JAIL)
             {    // those gone to jail won't be changing map anyway
-                MapleMap target = c.getChannelServer().getMapFactory().getMap(MapId.JAIL);
+                var target = c.getChannelServer().getMapFactory().getMap(MapId.JAIL);
                 var targetPortal = target.getPortal(0);
                 victim.saveLocationOnWarp();
                 victim.changeMap(target, targetPortal);

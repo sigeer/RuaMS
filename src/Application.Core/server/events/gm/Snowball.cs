@@ -21,9 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-using client;
+using Application.Core.Game.Maps;
 using constants.id;
-using server.maps;
 using tools;
 
 namespace server.events.gm;
@@ -32,21 +31,21 @@ namespace server.events.gm;
  */
 public class Snowball
 {
-    private MapleMap map;
+    private IMap map;
     private int position = 0;
     private int hits = 3;
     private int snowmanhp = 1000;
     private bool hittable = false;
     private int team;
     private bool winner = false;
-    List<Character> characters = new();
+    List<IPlayer> characters = new();
 
-    public Snowball(int team, MapleMap map)
+    public Snowball(int team, IMap map)
     {
         this.map = map;
         this.team = team;
 
-        foreach (Character chr in map.getCharacters())
+        foreach (var chr in map.getCharacters())
         {
             if (chr.getTeam() == team)
             {
@@ -62,7 +61,7 @@ public class Snowball
             return;
         }
 
-        foreach (Character chr in characters)
+        foreach (var chr in characters)
         {
             if (chr != null)
             {
@@ -75,7 +74,7 @@ public class Snowball
         {
             if (map.getSnowball(team).getPosition() > map.getSnowball(team == 0 ? 1 : 0).getPosition())
             {
-                foreach (Character chr in characters)
+                foreach (var chr in characters)
                 {
                     if (chr != null)
                     {
@@ -86,7 +85,7 @@ public class Snowball
             }
             else if (map.getSnowball(team == 0 ? 1 : 0).getPosition() > map.getSnowball(team).getPosition())
             {
-                foreach (Character chr in characters)
+                foreach (var chr in characters)
                 {
                     if (chr != null)
                     {
@@ -178,7 +177,7 @@ public class Snowball
 
     public void message(int message)
     {
-        foreach (Character chr in characters)
+        foreach (var chr in characters)
         {
             if (chr != null)
             {

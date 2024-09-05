@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using constants.id;
 using constants.inventory;
 using server;
@@ -56,7 +55,7 @@ public class Fishing
         return new double[] { yearLikelihood, timeLikelihood };
     }
 
-    private static bool hitFishingTime(Character chr, int baitLevel, double yearLikelihood, double timeLikelihood)
+    private static bool hitFishingTime(IPlayer chr, int baitLevel, double yearLikelihood, double timeLikelihood)
     {
         double baitLikelihood = 0.0002 * chr.getWorldServer().getFishingRate() * baitLevel;   // can improve 10.0 at "max level 50000" on rate 1x
 
@@ -70,7 +69,7 @@ public class Fishing
         return (0.23 * yearLikelihood) + (0.77 * timeLikelihood) + (baitLikelihood) > 57.777;
     }
 
-    public static void doFishing(Character chr, int baitLevel, double yearLikelihood, double timeLikelihood)
+    public static void doFishing(IPlayer chr, int baitLevel, double yearLikelihood, double timeLikelihood)
     {
         // thanks Fadi, Vcoc for suggesting a custom fishing system
 

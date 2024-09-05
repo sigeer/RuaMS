@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -22,7 +22,6 @@
 
 
 using Application.Core.Managers;
-using client;
 using net.packet;
 using tools;
 
@@ -31,7 +30,7 @@ namespace net.server.handlers.login;
 public class CheckCharNameHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         string name = p.readString();
         c.sendPacket(PacketCreator.charNameResponse(name, !CharacterManager.CheckCharacterName(name)));

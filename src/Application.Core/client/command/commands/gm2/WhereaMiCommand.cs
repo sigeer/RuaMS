@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,7 @@
 */
 
 
-using server.life;
-using server.maps;
+using Application.Core.Game.Life;
 
 namespace client.command.commands.gm2;
 
@@ -37,22 +36,22 @@ public class WhereaMiCommand : Command
         setDescription("Show info about objects on current map.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
-        HashSet<Character> chars = new();
+        HashSet<IPlayer> chars = new();
         HashSet<NPC> npcs = new();
         HashSet<PlayerNPC> playernpcs = new();
         HashSet<Monster> mobs = new();
 
-        foreach (MapObject mmo in player.getMap().getMapObjects())
+        foreach (var mmo in player.getMap().getMapObjects())
         {
             if (mmo is NPC npc)
             {
                 npcs.Add(npc);
             }
-            else if (mmo is Character mc)
+            else if (mmo is IPlayer mc)
             {
                 chars.Add(mc);
             }
@@ -72,7 +71,7 @@ public class WhereaMiCommand : Command
         player.yellowMessage("Map ID: " + player.getMap().getId());
 
         player.yellowMessage("Players on this map:");
-        foreach (Character chr in chars)
+        foreach (var chr in chars)
         {
             player.dropMessage(5, ">> " + chr.getName() + " - " + chr.getId() + " - Oid: " + chr.getObjectId());
         }

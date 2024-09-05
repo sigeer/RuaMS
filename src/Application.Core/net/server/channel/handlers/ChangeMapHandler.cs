@@ -1,5 +1,5 @@
 /*
-This file is part of the OdinMS Maple Story Server
+This file is part of the OdinMS Maple Story NewServer
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
 Jan Christian Meyer <vimes@odinms.de>
@@ -21,13 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
 using net.packet;
 using server;
-using server.maps;
 using System.Net;
 using tools;
 
@@ -35,9 +33,9 @@ namespace net.server.channel.handlers;
 
 public class ChangeMapHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
 
         if (chr.isChangingMaps() || chr.isBanned())
         {
@@ -72,7 +70,7 @@ public class ChangeMapHandler : AbstractPacketHandler
             p.readByte(); // 1 = from dying 0 = regular portals
             int targetMapId = p.readInt();
             string portalName = p.readString();
-            Portal portal = chr.getMap().getPortal(portalName);
+            var portal = chr.getMap().getPortal(portalName);
             p.readByte();
             bool wheel = p.readByte() > 0;
 
@@ -87,7 +85,7 @@ public class ChangeMapHandler : AbstractPacketHandler
             {
                 if (!chr.isAlive())
                 {
-                    MapleMap map = chr.getMap();
+                    var map = chr.getMap();
                     if (wheel && chr.haveItemWithId(ItemId.WHEEL_OF_FORTUNE, false))
                     {
                         // thanks lucasziron (lziron) for showing revivePlayer() triggering by Wheel
@@ -115,7 +113,7 @@ public class ChangeMapHandler : AbstractPacketHandler
                 {
                     if (chr.isGM())
                     {
-                        MapleMap to = chr.getWarpMap(targetMapId);
+                        var to = chr.getWarpMap(targetMapId);
                         chr.changeMap(to, to.getPortal(0));
                     }
                     else
@@ -168,7 +166,7 @@ public class ChangeMapHandler : AbstractPacketHandler
                         }
                         if (warp)
                         {
-                            MapleMap to = chr.getWarpMap(targetMapId);
+                            var to = chr.getWarpMap(targetMapId);
                             chr.changeMap(to, to.getPortal(0));
                         }
                     }
@@ -213,9 +211,9 @@ public class ChangeMapHandler : AbstractPacketHandler
 
     }
 
-    private void enterFromCashShop(Client c)
+    private void enterFromCashShop(IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
 
         if (!chr.getCashShop().isOpened())
         {

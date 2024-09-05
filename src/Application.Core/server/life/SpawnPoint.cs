@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Life;
 using net.server;
 
 namespace server.life;

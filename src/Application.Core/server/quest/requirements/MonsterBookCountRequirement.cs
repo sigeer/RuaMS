@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using provider;
 
 namespace server.quest.requirements;
@@ -45,7 +44,7 @@ public class MonsterBookCountRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         return chr.getMonsterBook().getTotalCards() >= reqCards;
     }

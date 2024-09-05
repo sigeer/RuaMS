@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,9 +21,8 @@
 */
 
 
-using client;
+using Application.Core.Game.Maps;
 using net.packet;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -33,19 +32,19 @@ namespace net.server.channel.handlers;
  */
 public class DoorHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int ownerid = p.readInt();
         p.readByte(); // specifies if backwarp or not, 1 town to target, 0 target to town
 
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (chr.isChangingMaps() || chr.isBanned())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
 
-        foreach (MapObject obj in chr.getMap().getMapObjects())
+        foreach (var obj in chr.getMap().getMapObjects())
         {
             if (obj is DoorObject door)
             {

@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -22,7 +22,6 @@
 
 
 using Application.Core.Managers;
-using client;
 using net.packet;
 using net.server.coordinator.session;
 using tools;
@@ -32,12 +31,12 @@ namespace net.server.handlers.login;
 public class LoginPasswordHandler : AbstractPacketHandler
 {
 
-    public override bool validateState(Client c)
+    public override bool ValidateState(IClient c)
     {
         return !c.isLoggedIn();
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         string remoteHost = c.getRemoteAddress();
         if (string.IsNullOrEmpty(remoteHost) || remoteHost == "null")
@@ -125,7 +124,7 @@ public class LoginPasswordHandler : AbstractPacketHandler
         }
     }
 
-    private static void CompleteLogin(Client c)
+    private static void CompleteLogin(IClient c)
     {
         c.sendPacket(PacketCreator.getAuthSuccess(c));//why the fk did I do c.getAccountName()?
         Server.getInstance().registerLoginState(c);

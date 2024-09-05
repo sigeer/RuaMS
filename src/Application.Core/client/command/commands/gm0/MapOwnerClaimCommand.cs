@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,6 @@
    @Author: Ronan
 */
 
-
-using server.maps;
-
 namespace client.command.commands.gm0;
 
 public class MapOwnerClaimCommand : Command
@@ -34,19 +31,19 @@ public class MapOwnerClaimCommand : Command
         setDescription("Claim ownership of the current map.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
         if (c.tryacquireClient())
         {
             try
             {
-                Character chr = c.getPlayer();
+                var chr = c.OnlinedCharacter;
 
                 if (YamlConfig.config.server.USE_MAP_OWNERSHIP_SYSTEM)
                 {
                     if (chr.getEventInstance() == null)
                     {
-                        MapleMap map = chr.getMap();
+                        var map = chr.getMap();
                         if (map.countBosses() == 0)
                         {   // thanks Conrad for suggesting bosses prevent map leasing
                             var ownedMap = chr.getOwnedMap();  // thanks Conrad for suggesting not unlease a map as soon as player exits it

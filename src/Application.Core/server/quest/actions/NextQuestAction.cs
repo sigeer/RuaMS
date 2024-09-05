@@ -46,7 +46,7 @@ public class NextQuestAction : AbstractQuestAction
         nextQuest = DataTool.getInt(data);
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
         chr.sendPacket(PacketCreator.updateQuestFinish((short)questID, status.getNpc(), (short)nextQuest));

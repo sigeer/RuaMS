@@ -1,3 +1,4 @@
+using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using client;
 
@@ -5,9 +6,9 @@ namespace net.server.task;
 
 public class FamilyDailyResetTask : AbstractRunnable
 {
-    private World world;
+    private IWorld world;
 
-    public FamilyDailyResetTask(World world)
+    public FamilyDailyResetTask(IWorld world)
     {
         this.world = world;
     }

@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using client.inventory;
 using provider;
 
@@ -40,9 +39,9 @@ public class PetSpeedAction : AbstractQuestAction
 
     public override void processData(Data data) { }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
-        Client c = chr.getClient();
+        var c = chr.getClient();
 
         var pet = chr.getPet(0);   // assuming here only the pet leader will gain owner speed
         if (pet == null)
@@ -53,7 +52,7 @@ public class PetSpeedAction : AbstractQuestAction
         c.lockClient();
         try
         {
-            pet.addPetAttribute(c.getPlayer(), PetAttribute.OWNER_SPEED);
+            pet.addPetAttribute(chr, PetAttribute.OWNER_SPEED);
         }
         finally
         {

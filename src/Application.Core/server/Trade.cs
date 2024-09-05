@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
@@ -47,11 +46,11 @@ public class Trade
     private int meso = 0;
     private int exchangeMeso;
     private AtomicBoolean locked = new AtomicBoolean(false);
-    private Character chr;
+    private IPlayer chr;
     private byte number;
     private bool fullTrade = false;
 
-    public Trade(byte number, Character chr)
+    public Trade(byte number, IPlayer chr)
     {
         this.chr = chr;
         this.number = number;
@@ -249,7 +248,7 @@ public class Trade
         this.partner = partner;
     }
 
-    public Character getChr()
+    public IPlayer getChr()
     {
         return chr;
     }
@@ -331,7 +330,7 @@ public class Trade
         }
     }
 
-    public static void completeTrade(Character chr)
+    public static void completeTrade(IPlayer chr)
     {
         var local = chr.getTrade();
         var partner = local.getPartner();
@@ -422,7 +421,7 @@ public class Trade
         }
     }
 
-    private static void cancelTradeInternal(Character chr, byte selfResult, byte partnerResult)
+    private static void cancelTradeInternal(IPlayer chr, byte selfResult, byte partnerResult)
     {
         var trade = chr.getTrade();
         if (trade == null)
@@ -503,7 +502,7 @@ public class Trade
         }
     }
 
-    public static void cancelTrade(Character chr, TradeResult result)
+    public static void cancelTrade(IPlayer chr, TradeResult result)
     {
         var trade = chr.getTrade();
         if (trade == null)
@@ -514,7 +513,7 @@ public class Trade
         trade.cancelHandshake((byte)result);
     }
 
-    public static void startTrade(Character chr)
+    public static void startTrade(IPlayer chr)
     {
         if (chr.getTrade() == null)
         {
@@ -522,7 +521,7 @@ public class Trade
         }
     }
 
-    private static bool hasTradeInviteBack(Character c1, Character c2)
+    private static bool hasTradeInviteBack(IPlayer c1, IPlayer c2)
     {
         var other = c2.getTrade();
         if (other != null)
@@ -537,7 +536,7 @@ public class Trade
         return false;
     }
 
-    public static void inviteTrade(Character c1, Character c2)
+    public static void inviteTrade(IPlayer c1, IPlayer c2)
     {
 
         if ((c1.isGM() && !c2.isGM()) && c1.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_TRADE)
@@ -600,7 +599,7 @@ public class Trade
         }
     }
 
-    public static void visitTrade(Character c1, Character c2)
+    public static void visitTrade(IPlayer c1, IPlayer c2)
     {
         InviteResult inviteRes = InviteCoordinator.answerInvite(InviteType.TRADE, c1.getId(), c2.getId(), true);
 
@@ -626,14 +625,14 @@ public class Trade
         }
     }
 
-    public static void declineTrade(Character chr)
+    public static void declineTrade(IPlayer chr)
     {
         var trade = chr.getTrade();
         if (trade != null)
         {
             if (trade.getPartner() != null)
             {
-                Character other = trade.getPartner().getChr();
+                IPlayer other = trade.getPartner().getChr();
                 if (InviteCoordinator.answerInvite(InviteType.TRADE, chr.getId(), other.getId(), false).result == InviteResultType.DENIED)
                 {
                     other.message(chr.getName() + " has declined your trade request.");

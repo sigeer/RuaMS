@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Game.Maps;
 using server.maps;
 
 namespace client.command.commands.gm2;
@@ -34,15 +35,15 @@ public class LootCommand : Command
         setDescription("Loots all items that belong to you.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        List<MapObject> items = c.getPlayer().getMap().getMapObjectsInRange(c.getPlayer().getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
-        foreach (MapObject item in items)
+        var items = c.OnlinedCharacter.getMap().getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
+        foreach (var item in items)
         {
             MapItem mapItem = (MapItem)item;
-            if (mapItem.getOwnerId() == c.getPlayer().getId() || mapItem.getOwnerId() == c.getPlayer().getPartyId())
+            if (mapItem.getOwnerId() == c.OnlinedCharacter.getId() || mapItem.getOwnerId() == c.OnlinedCharacter.getPartyId())
             {
-                c.getPlayer().pickupItem(mapItem);
+                c.OnlinedCharacter.pickupItem(mapItem);
             }
         }
 

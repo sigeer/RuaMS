@@ -72,7 +72,7 @@ public class ItemInformationProvider
     protected Dictionary<int, int> wholePriceCache = new();
     protected Dictionary<int, double> unitPriceCache = new();
     protected Dictionary<int, int> projectileWatkCache = new();
-    protected Dictionary<int, string> nameCache = new();
+    protected Dictionary<int, string?> nameCache = new();
     protected Dictionary<int, string> descCache = new();
     protected Dictionary<int, string> msgCache = new();
     protected Dictionary<int, bool> accountItemRestrictionCache = new();
@@ -134,8 +134,7 @@ public class ItemInformationProvider
             return itemNameCache;
         }
         List<ItemInfoBase> itemPairs = new();
-        Data itemsData;
-        itemsData = stringData.getData("Cash.img");
+        var itemsData = stringData.getData("Cash.img");
         foreach (Data itemFolder in itemsData.getChildren())
         {
             itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
@@ -179,7 +178,7 @@ public class ItemInformationProvider
         }
 
         List<ItemInfoBase> itemPairs = new();
-        Data itemsData;
+        Data? itemsData;
 
         itemsData = stringData.getData("Etc.img").getChildByPath("Etc");
         foreach (Data itemFolder in itemsData.getChildren())
@@ -308,7 +307,7 @@ public class ItemInformationProvider
             return noCancelMouseCache[itemId];
         }
 
-        Data item = getItemData(itemId);
+        var item = getItemData(itemId);
         if (item == null)
         {
             noCancelMouseCache.Add(itemId, false);
@@ -329,7 +328,7 @@ public class ItemInformationProvider
         {
             foreach (DataFileEntry iFile in topDir.getFiles())
             {
-                if (iFile.getName().Equals(idStr.Substring(0, 4) + ".img"))
+                if (iFile.getName() == idStr.Substring(0, 4) + ".img")
                 {
                     ret = itemData.getData(topDir.getName() + "/" + iFile.getName());
                     if (ret == null)
@@ -339,7 +338,7 @@ public class ItemInformationProvider
                     ret = ret.getChildByPath(idStr);
                     return ret;
                 }
-                else if (iFile.getName().Equals(idStr.Substring(1) + ".img"))
+                else if (iFile.getName() == idStr.Substring(1) + ".img")
                 {
                     return itemData.getData(topDir.getName() + "/" + iFile.getName());
                 }
@@ -350,7 +349,7 @@ public class ItemInformationProvider
         {
             foreach (DataFileEntry iFile in topDir.getFiles())
             {
-                if (iFile.getName().Equals(idStr + ".img"))
+                if (iFile.getName() == idStr + ".img")
                 {
                     return equipData.getData(topDir.getName() + "/" + iFile.getName());
                 }
@@ -388,31 +387,31 @@ public class ItemInformationProvider
         return list;
     }
 
-    private static int getExtraSlotMaxFromPlayer(Client c, int itemId)
+    private static int getExtraSlotMaxFromPlayer(IClient c, int itemId)
     {
         int ret = 0;
 
         // thanks GMChuck for detecting player sensitive data being cached into getSlotMax
         if (ItemConstants.isThrowingStar(itemId))
         {
-            if (c.getPlayer().getJob().isA(Job.NIGHTWALKER1))
+            if (c.OnlinedCharacter.getJob().isA(Job.NIGHTWALKER1))
             {
-                ret += c.getPlayer().getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.CLAW_MASTERY)) * 10;
+                ret += c.OnlinedCharacter.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.CLAW_MASTERY)) * 10;
             }
             else
             {
-                ret += c.getPlayer().getSkillLevel(SkillFactory.GetSkillTrust(Assassin.CLAW_MASTERY)) * 10;
+                ret += c.OnlinedCharacter.getSkillLevel(SkillFactory.GetSkillTrust(Assassin.CLAW_MASTERY)) * 10;
             }
         }
         else if (ItemConstants.isBullet(itemId))
         {
-            ret += c.getPlayer().getSkillLevel(SkillFactory.GetSkillTrust(Gunslinger.GUN_MASTERY)) * 10;
+            ret += c.OnlinedCharacter.getSkillLevel(SkillFactory.GetSkillTrust(Gunslinger.GUN_MASTERY)) * 10;
         }
 
         return ret;
     }
 
-    public short getSlotMax(Client c, int itemId)
+    public short getSlotMax(IClient c, int itemId)
     {
         var slotMax = slotMaxCache.get(itemId);
         if (slotMax != null)
@@ -1863,7 +1862,7 @@ public class ItemInformationProvider
         return new(ret, retSkill);
     }
 
-    public Dictionary<string, int> getSkillStats(int itemId, double playerJob)
+    public Dictionary<string, int>? getSkillStats(int itemId, double playerJob)
     {
         var retData = getSkillStatsInternal(itemId);
         if (retData.Key.Count == 0)
@@ -1872,7 +1871,7 @@ public class ItemInformationProvider
         }
 
         Dictionary<string, int> ret = new(retData.Key);
-        Data skill = retData.Value;
+        Data? skill = retData.Value;
         int curskill;
         for (int i = 0; i < skill.getChildren().Count; i++)
         {
@@ -1908,16 +1907,14 @@ public class ItemInformationProvider
                 var specData = data.getChildByPath("spec");
                 foreach (Data specItem in specData.getChildren())
                 {
-                    string itemName = specItem.getName();
+                    var itemName = specItem.getName();
 
-                    try
+                    if (int.TryParse(itemName, out var _))
                     {
-                        int.Parse(itemName); // check if it's a petid node
-
                         int petid = DataTool.getInt(specItem, 0);
                         pets.Add(petid);
                     }
-                    catch (Exception npe)
+                    else
                     {
                         if (itemName == "inc")
                         {
@@ -2202,7 +2199,7 @@ public class ItemInformationProvider
         return YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_PET && ItemConstants.isPet(itemId);
     }
 
-    public ICollection<Item> canWearEquipment(Character chr, ICollection<Item> items)
+    public ICollection<Item> canWearEquipment(IPlayer chr, ICollection<Item> items)
     {
         Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
         if (inv.IsChecked())
@@ -2298,7 +2295,7 @@ public class ItemInformationProvider
         return itemz;
     }
 
-    public bool canWearEquipment(Character chr, Equip equip, int dst)
+    public bool canWearEquipment(IPlayer chr, Equip equip, int dst)
     {
         int id = equip.getItemId();
 
@@ -2308,7 +2305,7 @@ public class ItemInformationProvider
             return false;
         }
 
-        string islot = getEquipmentSlot(id);
+        var islot = getEquipmentSlot(id);
         if (!EquipSlot.getFromTextSlot(islot).isAllowed(dst, isCash(id)))
         {
             equip.wear(false);
@@ -2401,10 +2398,10 @@ public class ItemInformationProvider
                 return null;
             }
 
-            Data iData = getItemData(itemId);
+            var iData = getItemData(itemId);
             if (iData != null)
             {
-                Data data = iData.getChildByPath("info/level");
+                var data = iData.getChildByPath("info/level");
                 if (data != null)
                 {
                     equipLevelData = data.getChildByPath("info");
@@ -2424,7 +2421,7 @@ public class ItemInformationProvider
         {
             eqLevel = 1;    // greater than 1 means that it was supposed to levelup on GMS
 
-            Data data = getEquipLevelInfo(itemId);
+            var data = getEquipLevelInfo(itemId);
             if (data != null)
             {
                 if (getMaxLevel)
@@ -2433,7 +2430,7 @@ public class ItemInformationProvider
 
                     while (true)
                     {
-                        Data data2 = data.getChildByPath(curLevel.ToString());
+                        var data2 = data.getChildByPath(curLevel.ToString());
                         if (data2 == null || data2.getChildren().Count <= 1)
                         {
                             eqLevel = curLevel;
@@ -2446,7 +2443,7 @@ public class ItemInformationProvider
                 }
                 else
                 {
-                    Data data2 = data.getChildByPath("1");
+                    var data2 = data.getChildByPath("1");
                     if (data2 != null && data2.getChildren().Count > 1)
                     {
                         eqLevel = 2;
@@ -2464,66 +2461,67 @@ public class ItemInformationProvider
         var data = getEquipLevelInfo(itemId);
         if (data != null)
         {
-            Data data2 = data.getChildByPath(level.ToString());
+            var data2 = data.getChildByPath(level.ToString());
             if (data2 != null)
             {
                 foreach (Data da in data2.getChildren())
                 {
                     if (Randomizer.nextDouble() < 0.9)
                     {
-                        if (da.getName().StartsWith("incDEXMin"))
+                        var dataName = da.getName() ?? "";
+                        if (dataName.StartsWith("incDEXMin"))
                         {
                             list.Add(new("incDEX", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incDEXMax")))));
                         }
-                        else if (da.getName().StartsWith("incSTRMin"))
+                        else if (dataName.StartsWith("incSTRMin"))
                         {
                             list.Add(new("incSTR", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incSTRMax")))));
                         }
-                        else if (da.getName().StartsWith("incINTMin"))
+                        else if (dataName.StartsWith("incINTMin"))
                         {
                             list.Add(new("incINT", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incINTMax")))));
                         }
-                        else if (da.getName().StartsWith("incLUKMin"))
+                        else if (dataName.StartsWith("incLUKMin"))
                         {
                             list.Add(new("incLUK", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incLUKMax")))));
                         }
-                        else if (da.getName().StartsWith("incMHPMin"))
+                        else if (dataName.StartsWith("incMHPMin"))
                         {
                             list.Add(new("incMHP", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMHPMax")))));
                         }
-                        else if (da.getName().StartsWith("incMMPMin"))
+                        else if (dataName.StartsWith("incMMPMin"))
                         {
                             list.Add(new("incMMP", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMMPMax")))));
                         }
-                        else if (da.getName().StartsWith("incPADMin"))
+                        else if (dataName.StartsWith("incPADMin"))
                         {
                             list.Add(new("incPAD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incPADMax")))));
                         }
-                        else if (da.getName().StartsWith("incMADMin"))
+                        else if (dataName.StartsWith("incMADMin"))
                         {
                             list.Add(new("incMAD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMADMax")))));
                         }
-                        else if (da.getName().StartsWith("incPDDMin"))
+                        else if (dataName.StartsWith("incPDDMin"))
                         {
                             list.Add(new("incPDD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incPDDMax")))));
                         }
-                        else if (da.getName().StartsWith("incMDDMin"))
+                        else if (dataName.StartsWith("incMDDMin"))
                         {
                             list.Add(new("incMDD", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incMDDMax")))));
                         }
-                        else if (da.getName().StartsWith("incACCMin"))
+                        else if (dataName.StartsWith("incACCMin"))
                         {
                             list.Add(new("incACC", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incACCMax")))));
                         }
-                        else if (da.getName().StartsWith("incEVAMin"))
+                        else if (dataName.StartsWith("incEVAMin"))
                         {
                             list.Add(new("incEVA", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incEVAMax")))));
                         }
-                        else if (da.getName().StartsWith("incSpeedMin"))
+                        else if (dataName.StartsWith("incSpeedMin"))
                         {
                             list.Add(new("incSpeed", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incSpeedMax")))));
                         }
-                        else if (da.getName().StartsWith("incJumpMin"))
+                        else if (dataName.StartsWith("incJumpMin"))
                         {
                             list.Add(new("incJump", Randomizer.rand(DataTool.getInt(da), DataTool.getInt(data2.getChildByPath("incJumpMax")))));
                         }
@@ -2738,8 +2736,7 @@ public class ItemInformationProvider
         itemid = -1;
         foreach (Data md in etcData.getData("ItemMake.img").getChildren())
         {
-            Data me = md.getChildByPath(StringUtil.getLeftPaddedStr(itemId.ToString(), '0', 8));
-
+            var me = md.getChildByPath(StringUtil.getLeftPaddedStr(itemId.ToString(), '0', 8));
             if (me != null)
             {
                 itemid = DataTool.getInt(me.getChildByPath("catalyst"), -1);
@@ -2775,19 +2772,19 @@ public class ItemInformationProvider
         return list;
     }
 
-    private bool canUseSkillBook(Character player, int skillBookId)
+    private bool canUseSkillBook(IPlayer player, int skillBookId)
     {
-        Dictionary<string, int> skilldata = getSkillStats(skillBookId, player.getJob().getId());
+        var skilldata = getSkillStats(skillBookId, player.getJob().getId());
         if (skilldata == null || skilldata.get("skillid") == 0)
         {
             return false;
         }
 
-        Skill skill2 = SkillFactory.getSkill(skilldata.GetValueOrDefault("skillid"));
+        var skill2 = SkillFactory.getSkill(skilldata.GetValueOrDefault("skillid"));
         return (skilldata.get("skillid") != 0 && ((player.getSkillLevel(skill2) >= skilldata.get("reqSkillLevel") || skilldata.get("reqSkillLevel") == 0) && player.getMasterLevel(skill2) < skilldata.get("masterLevel")));
     }
 
-    public List<int> usableMasteryBooks(Character player)
+    public List<int> usableMasteryBooks(IPlayer player)
     {
         List<int> masterybook = new();
         for (int i = 2290000; i <= 2290139; i++)
@@ -2801,7 +2798,7 @@ public class ItemInformationProvider
         return masterybook;
     }
 
-    public List<int> usableSkillBooks(Character player)
+    public List<int> usableSkillBooks(IPlayer player)
     {
         List<int> skillbook = new();
         for (int i = 2280000; i <= 2280019; i++)
@@ -2824,8 +2821,8 @@ public class ItemInformationProvider
         var data = getItemData(itemId);
         QuestConsItem? qcItem = null;
 
-        var infoData = data.getChildByPath("info");
-        if (infoData.getChildByPath("uiData") != null)
+        var infoData = data?.getChildByPath("info");
+        if (infoData?.getChildByPath("uiData") != null)
         {
             qcItem = new QuestConsItem();
             qcItem.exp = DataTool.getInt("exp", infoData);
@@ -2834,7 +2831,7 @@ public class ItemInformationProvider
             qcItem.items = new(2);
 
             Dictionary<int, int> cItems = qcItem.items;
-            Data ciData = infoData.getChildByPath("consumeItem");
+            var ciData = infoData.getChildByPath("consumeItem");
             if (ciData != null)
             {
                 foreach (Data ciItem in ciData.getChildren())

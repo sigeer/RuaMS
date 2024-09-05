@@ -20,7 +20,7 @@ public class DevtestCommand : Command
 
     }
 
-    public override void execute(Client client, string[] paramsValue)
+    public override void execute(IClient client, string[] paramsValue)
     {
         DevtestScriptManager scriptManager = new DevtestScriptManager();
         var scriptEngine = scriptManager.GetScriptEngine("devtest.js");

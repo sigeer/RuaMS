@@ -7,7 +7,6 @@
 
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;
@@ -18,22 +17,19 @@ using tools.packets;
 
 namespace net.server.channel.handlers;
 
-
-
-
 /**
  * @author Drago (Dragohe4rt)
  */
 public class WeddingHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
 
         if (c.tryacquireClient())
         {
             try
             {
-                Character chr = c.getPlayer();
+                var chr = c.OnlinedCharacter;
                 byte mode = p.readByte();
 
                 if (mode == 6)
@@ -42,7 +38,7 @@ public class WeddingHandler : AbstractPacketHandler
                     int itemid = p.readInt();
                     short quantity = p.readShort();
 
-                    var marriage = c.getPlayer().getMarriageInstance();
+                    var marriage = c.OnlinedCharacter.getMarriageInstance();
                     if (marriage != null)
                     {
                         try
@@ -153,13 +149,13 @@ public class WeddingHandler : AbstractPacketHandler
                                 }
                                 else
                                 {
-                                    c.getPlayer().dropMessage(1, "Free a slot on your inventory before collecting this item.");
+                                    c.OnlinedCharacter.dropMessage(1, "Free a slot on your inventory before collecting this item.");
                                     c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
                                 }
                             }
                             else
                             {
-                                c.getPlayer().dropMessage(1, "You have already collected this item.");
+                                c.OnlinedCharacter.dropMessage(1, "You have already collected this item.");
                                 c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
                             }
                         }
@@ -180,13 +176,13 @@ public class WeddingHandler : AbstractPacketHandler
                             }
                             else
                             {
-                                c.getPlayer().dropMessage(1, "Free a slot on your inventory before collecting this item.");
+                                c.OnlinedCharacter.dropMessage(1, "Free a slot on your inventory before collecting this item.");
                                 c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), items));
                             }
                         }
                         catch (Exception e)
                         {
-                            c.getPlayer().dropMessage(1, "You have already collected this item.");
+                            c.OnlinedCharacter.dropMessage(1, "You have already collected this item.");
                             c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), items));
                         }
                     }

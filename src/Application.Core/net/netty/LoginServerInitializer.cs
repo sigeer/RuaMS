@@ -1,6 +1,3 @@
-
-
-using client;
 using DotNetty.Transport.Channels.Sockets;
 using net.server.coordinator.session;
 
@@ -18,7 +15,7 @@ public class LoginServerInitializer : ServerChannelInitializer
         PacketProcessor packetProcessor = PacketProcessor.getLoginServerProcessor();
         long clientSessionId = sessionId.getAndIncrement();
         string remoteAddress = getRemoteAddress(socketChannel);
-        Client client = Client.createLoginClient(clientSessionId, remoteAddress, packetProcessor, LoginServer.WORLD_ID, LoginServer.CHANNEL_ID);
+        var client = Client.createLoginClient(clientSessionId, remoteAddress, packetProcessor, LoginServer.WORLD_ID, LoginServer.CHANNEL_ID);
 
         if (!SessionCoordinator.getInstance().canStartLoginSession(client))
         {

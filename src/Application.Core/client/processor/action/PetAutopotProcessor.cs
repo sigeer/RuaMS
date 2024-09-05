@@ -39,7 +39,7 @@ public class PetAutopotProcessor
     private class AutopotAction
     {
 
-        private Client c;
+        private IClient c;
         private short slot;
         private int itemId;
 
@@ -50,7 +50,7 @@ public class PetAutopotProcessor
         private int maxHp, maxMp, curHp, curMp;
         private double incHp, incMp;
 
-        private bool cursorOnNextAvailablePot(Character chr)
+        private bool cursorOnNextAvailablePot(IPlayer chr)
         {
             if (toUseList == null)
             {
@@ -74,7 +74,7 @@ public class PetAutopotProcessor
             return false;
         }
 
-        public AutopotAction(Client c, short slot, int itemId)
+        public AutopotAction(IClient c, short slot, int itemId)
         {
             this.c = c;
             this.slot = slot;
@@ -83,8 +83,8 @@ public class PetAutopotProcessor
 
         public void run()
         {
-            Client c = this.c;
-            Character chr = c.getPlayer();
+            var c = this.c;
+            var chr = c.OnlinedCharacter;
             if (!chr.isAlive())
             {
                 c.sendPacket(PacketCreator.enableActions());
@@ -125,7 +125,7 @@ public class PetAutopotProcessor
                         }
                     }
 
-                    stat = ItemInformationProvider.getInstance().getItemEffect(toUse.getItemId()) ?? throw new BusinessDataNullException();
+                    stat = ItemInformationProvider.getInstance().getItemEffect(toUse.getItemId()) ?? throw new BusinessResException();
                     hasHpGain = stat.getHp() > 0 || stat.getHpRate() > 0.0;
                     hasMpGain = stat.getMp() > 0 || stat.getMpRate() > 0.0;
 
@@ -215,7 +215,7 @@ public class PetAutopotProcessor
         }
     }
 
-    public static void runAutopotAction(Client c, short slot, int itemid)
+    public static void runAutopotAction(IClient c, short slot, int itemid)
     {
         AutopotAction action = new AutopotAction(c, slot, itemid);
         action.run();

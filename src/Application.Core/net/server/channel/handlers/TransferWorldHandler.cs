@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -34,7 +33,7 @@ namespace net.server.channel.handlers;
 public class TransferWorldHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readInt(); //cid
         int birthday = p.readInt();
@@ -44,7 +43,7 @@ public class TransferWorldHandler : AbstractPacketHandler
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (!YamlConfig.config.server.ALLOW_CASHSHOP_WORLD_TRANSFER || Server.getInstance().getWorldsSize() <= 1)
         {
             c.sendPacket(PacketCreator.sendWorldTransferRules(9, c));

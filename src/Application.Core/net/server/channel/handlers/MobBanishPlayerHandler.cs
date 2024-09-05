@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using net.packet;
 
 namespace net.server.channel.handlers;
@@ -27,11 +26,11 @@ namespace net.server.channel.handlers;
 public class MobBanishPlayerHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int mobId = p.readInt();     // mob banish handling detected thanks to MedicOP
 
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         var mob = chr.getMap().getMonsterById(mobId);
         if (mob == null)
         {

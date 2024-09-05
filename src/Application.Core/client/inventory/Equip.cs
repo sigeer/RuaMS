@@ -606,7 +606,7 @@ public class Equip : Item
         return new(lvupStr, new(gotSlot, gotVicious));
     }
 
-    private void gainLevel(Client c)
+    private void gainLevel(IClient c)
     {
         List<KeyValuePair<StatUpgrade, int>> stats = new();
 
@@ -686,14 +686,14 @@ public class Equip : Item
             lvupStr += "+UPGSLOT ";
         }
 
-        c.getPlayer().equipChanged();
+        c.OnlinedCharacter.equipChanged();
 
         showLevelupMessage(showStr, c); // thanks to Polaris dev team !
-        c.getPlayer().dropMessage(6, lvupStr);
+        c.OnlinedCharacter.dropMessage(6, lvupStr);
 
         c.sendPacket(PacketCreator.showEquipmentLevelUp());
-        c.getPlayer().getMap().broadcastPacket(c.getPlayer(), PacketCreator.showForeignEffect(c.getPlayer().getId(), 15));
-        c.getPlayer().forceUpdateItem(this);
+        c.OnlinedCharacter.getMap().broadcastPacket(c.OnlinedCharacter, PacketCreator.showForeignEffect(c.OnlinedCharacter.getId(), 15));
+        c.OnlinedCharacter.forceUpdateItem(this);
     }
 
     public int getItemExp()
@@ -729,7 +729,7 @@ public class Equip : Item
     }
 
     object gainExpLock = new object();
-    public void gainItemExp(Client c, int gain)
+    public void gainItemExp(IClient c, int gain)
     {
         lock (gainExpLock)
         {
@@ -760,8 +760,8 @@ public class Equip : Item
 
             if (YamlConfig.config.server.USE_DEBUG_SHOW_INFO_EQPEXP)
             {
-                log.Debug("{ItemName} -> EXP Gain: {ItemGainExp}, Mastery: {}, Base gain: {ItemBaseGainExp}, exp: {ItemExp} / {ItemExpNeed}, Kills TNL: {}", ii.getName(getItemId()),
-                        gain, masteryModifier, baseExpGain, itemExp, expNeeded, expNeeded / (baseExpGain / c.getPlayer().getExpRate()));
+                log.Debug("{ItemName} -> EXP Gain: {ItemGainExp}, Mastery: {Mastery}, Base gain: {ItemBaseGainExp}, exp: {ItemExp} / {ItemExpNeed}, Kills TNL: {0}", ii.getName(getItemId()),
+                        gain, masteryModifier, baseExpGain, itemExp, expNeeded, expNeeded / (baseExpGain / c.OnlinedCharacter.getExpRate()));
             }
 
             if (itemExp >= expNeeded)
@@ -781,7 +781,7 @@ public class Equip : Item
                 }
             }
 
-            c.getPlayer().forceUpdateItem(this);
+            c.OnlinedCharacter.forceUpdateItem(this);
             //if(YamlConfig.config.server.USE_DEBUG) c.getPlayer().dropMessage("'" + ii.getName(this.getItemId()) + "': " + itemExp + " / " + expNeeded);
         }
     }
@@ -799,7 +799,7 @@ public class Equip : Item
         return itemLevel >= YamlConfig.config.server.USE_EQUIPMNT_LVLUP;
     }
 
-    public string showEquipFeatures(Client c)
+    public string showEquipFeatures(IClient c)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (!ii.isUpgradeable(this.getItemId()))
@@ -807,15 +807,15 @@ public class Equip : Item
             return "";
         }
 
-        string eqpName = ii.getName(getItemId());
-        string eqpInfo = reachedMaxLevel() ? " #e#rMAX LEVEL#k#n" : (" EXP: #e#b" + (int)itemExp + "#k#n / " + ExpTable.getEquipExpNeededForLevel(itemLevel));
+        var eqpName = ii.getName(getItemId());
+        var eqpInfo = reachedMaxLevel() ? " #e#rMAX LEVEL#k#n" : (" EXP: #e#b" + (int)itemExp + "#k#n / " + ExpTable.getEquipExpNeededForLevel(itemLevel));
 
         return "'" + eqpName + "' -> LV: #e#b" + itemLevel + "#k#n    " + eqpInfo + "\r\n";
     }
 
-    private static void showLevelupMessage(string msg, Client c)
+    private static void showLevelupMessage(string msg, IClient c)
     {
-        c.getPlayer().showHint(msg, 300);
+        c.OnlinedCharacter.showHint(msg, 300);
     }
 
     public void setItemExp(int exp)

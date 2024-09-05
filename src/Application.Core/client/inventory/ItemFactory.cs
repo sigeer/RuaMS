@@ -78,7 +78,7 @@ public class ItemFactory
 
     public void saveItems(List<ItemInventoryType> items, int id, DBContext dbContext)
     {
-        saveItems(items, null, id, dbContext);
+        saveItems(items, [], id, dbContext);
     }
 
     public void saveItems(List<ItemInventoryType> items, List<short> bundlesList, int id, DBContext dbContext)

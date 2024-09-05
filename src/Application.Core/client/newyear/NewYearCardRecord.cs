@@ -187,7 +187,7 @@ public class NewYearCardRecord
         return newyear;
     }
 
-    public static void loadPlayerNewYearCards(Character chr)
+    public static void loadPlayerNewYearCards(IPlayer chr)
     {
         using var dbConext = new DBContext();
         var ds = dbConext.Newyears.Where(x => x.SenderId == chr.getId() || x.ReceiverId == chr.getId()).ToList().Select(x =>
@@ -199,7 +199,7 @@ public class NewYearCardRecord
         }).ToList();
     }
 
-    public static void printNewYearRecords(Character chr)
+    public static void printNewYearRecords(IPlayer chr)
     {
         chr.dropMessage(5, "New Years: " + chr.getNewYearRecords().Count);
 
@@ -269,7 +269,7 @@ public class NewYearCardRecord
         dbConext.Newyears.Where(x => x.Id == id).ExecuteDelete();
     }
 
-    public static void removeAllNewYearCard(bool send, Character chr)
+    public static void removeAllNewYearCard(bool send, IPlayer chr)
     {
         int cid = chr.getId();
 
@@ -323,7 +323,7 @@ public class NewYearCardRecord
 
                     chr.getMap().broadcastMessage(PacketCreator.onNewYearCardRes(chr, nyc, 0xE, 0));
 
-                    Character other = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(nyc.getSenderId());
+                    var other = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(nyc.getSenderId());
                     if (other != null && other.isLoggedinWorld())
                     {
                         other.removeNewYearRecord(nyc);

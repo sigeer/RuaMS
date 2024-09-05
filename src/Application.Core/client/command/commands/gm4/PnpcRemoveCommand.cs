@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,6 @@
    @Author: Ronan
 */
 
-
-using net.server.channel;
-using server.maps;
-
 namespace client.command.commands.gm4;
 
 
@@ -36,9 +32,9 @@ public class PnpcRemoveCommand : Command
         setDescription("Remove a permanent NPC on the map.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
         int mapId = player.getMapId();
         int npcId = paramsValue.Length > 0 ? int.Parse(paramsValue[0]) : -1;
@@ -68,9 +64,9 @@ public class PnpcRemoveCommand : Command
 
             if (toRemove.Count > 0)
             {
-                foreach (Channel ch in player.getWorldServer().getChannels())
+                foreach (var ch in player.getWorldServer().getChannels())
                 {
-                    MapleMap map = ch.getMapFactory().getMap(mapId);
+                    var map = ch.getMapFactory().getMap(mapId);
 
                     foreach (var r in toRemove)
                     {

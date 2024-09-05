@@ -21,11 +21,6 @@
 */
 namespace net.server.world;
 
-
-
-
-
-
 public class Messenger
 {
 

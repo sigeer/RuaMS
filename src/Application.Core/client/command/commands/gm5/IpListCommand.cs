@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -38,11 +38,11 @@ public class IpListCommand : Command
         setDescription("Show IP of all players.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
         string str = "Player-IP relation:";
 
-        foreach (World w in Server.getInstance().getWorlds())
+        foreach (var w in Server.getInstance().getWorlds())
         {
             var chars = w.getPlayerStorage().getAllCharacters();
 
@@ -50,7 +50,7 @@ public class IpListCommand : Command
             {
                 str += "\r\n" + GameConstants.WORLD_NAMES[w.getId()] + "\r\n";
 
-                foreach (Character chr in chars)
+                foreach (var chr in chars)
                 {
                     str += "  " + chr.getName() + " - " + chr.getClient().getRemoteAddress() + "\r\n";
                 }

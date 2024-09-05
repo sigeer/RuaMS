@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,7 @@
 */
 
 
-using client;
+using Application.Core.Managers;
 using net.packet;
 using net.server.coordinator.world;
 using net.server.world;
@@ -34,26 +34,26 @@ namespace net.server.channel.handlers;
 public class PartyOperationHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int operation = p.readByte();
-        Character player = c.getPlayer();
-        World world = c.getWorldServer();
+        var player = c.OnlinedCharacter;
+        var world = c.getWorldServer();
         var party = player.getParty();
         switch (operation)
         {
             case 1:
                 { // create
-                    Party.createParty(player, false);
+                    TeamManager.createParty(player, false);
                     break;
                 }
             case 2:
                 { // leave/disband
                     if (party != null)
                     {
-                        List<Character> partymembers = player.getPartyMembersOnline();
+                        var partymembers = player.getPartyMembersOnline();
 
-                        Party.leaveParty(party, c);
+                        TeamManager.leaveParty(party, c);
                         player.updatePartySearchAvailability(true);
                         player.partyOperationUpdate(party, partymembers);
                     }
@@ -67,7 +67,7 @@ public class PartyOperationHandler : AbstractPacketHandler
                     InviteResultType res = inviteRes.result;
                     if (res == InviteResultType.ACCEPTED)
                     {
-                        Party.joinParty(player, partyid, false);
+                        TeamManager.joinParty(player, partyid, false);
                     }
                     else
                     {
@@ -79,7 +79,7 @@ public class PartyOperationHandler : AbstractPacketHandler
                 { // invite
                     string name = p.readString();
                     var invited = world.getPlayerStorage().getCharacterByName(name);
-                    if (invited != null)
+                    if (invited != null && invited.IsOnlined)
                     {
                         if (invited.getLevel() < 10 && (!YamlConfig.config.server.USE_PARTY_FOR_STARTERS || player.getLevel() >= 10))
                         { //min requirement is level 10
@@ -96,7 +96,7 @@ public class PartyOperationHandler : AbstractPacketHandler
                         {
                             if (party == null)
                             {
-                                if (!Party.createParty(player, false))
+                                if (!TeamManager.createParty(player, false))
                                 {
                                     return;
                                 }
@@ -133,13 +133,13 @@ public class PartyOperationHandler : AbstractPacketHandler
             case 5:
                 { // expel
                     int cid = p.readInt();
-                    Party.expelFromParty(party, c, cid);
+                    TeamManager.expelFromParty(party, c, cid);
                     break;
                 }
             case 6:
                 { // change leader
                     int newLeader = p.readInt();
-                    PartyCharacter newLeadr = party.getMemberById(newLeader);
+                    var newLeadr = party.getMemberById(newLeader);
                     world.updateParty(party.getId(), PartyOperation.CHANGE_LEADER, newLeadr);
                     break;
                 }

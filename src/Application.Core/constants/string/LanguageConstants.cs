@@ -1,7 +1,3 @@
-
-
-using client;
-
 namespace constants.String;
 
 /**
@@ -77,7 +73,7 @@ public class LanguageConstants
 
     }
 
-    public static string getMessage(Character chr, string[] message)
+    public static string getMessage(IPlayer chr, string[] message)
     {
         return message[chr.getLanguage()];
     }

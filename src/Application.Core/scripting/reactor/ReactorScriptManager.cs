@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using client;
 using Microsoft.ClearScript.V8;
 using server.maps;
 
@@ -42,7 +41,7 @@ public class ReactorScriptManager : AbstractScriptManager
         return instance;
     }
 
-    public void onHit(Client c, Reactor reactor)
+    public void onHit(IClient c, Reactor reactor)
     {
         try
         {
@@ -60,7 +59,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
     }
 
-    public void act(Client c, Reactor reactor)
+    public void act(IClient c, Reactor reactor)
     {
         try
         {
@@ -107,17 +106,17 @@ public class ReactorScriptManager : AbstractScriptManager
         drops.Clear();
     }
 
-    public void touch(Client c, Reactor reactor)
+    public void touch(IClient c, Reactor reactor)
     {
         touching(c, reactor, true);
     }
 
-    public void untouch(Client c, Reactor reactor)
+    public void untouch(IClient c, Reactor reactor)
     {
         touching(c, reactor, false);
     }
 
-    private void touching(Client c, Reactor reactor, bool touching)
+    private void touching(IClient c, Reactor reactor, bool touching)
     {
         string functionName = touching ? "touch" : "untouch";
         try
@@ -136,7 +135,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
     }
 
-    private V8ScriptEngine? initializeInvocable(Client c, Reactor reactor)
+    private V8ScriptEngine? initializeInvocable(IClient c, Reactor reactor)
     {
         var engine = getInvocableScriptEngine("reactor/" + reactor.getId() + ".js", c);
         if (engine == null)

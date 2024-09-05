@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@ public class StartMapEventCommand : Command
         setDescription("Start a \"classic\" event on current map.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        c.getPlayer().getMap().startEvent(c.getPlayer());
+        c.OnlinedCharacter.getMap().startEvent(c.OnlinedCharacter);
     }
 }

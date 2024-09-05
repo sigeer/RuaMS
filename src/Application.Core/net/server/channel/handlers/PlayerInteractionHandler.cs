@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,7 @@
 */
 
 
-using client;
+using Application.Core.Game.Maps;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
@@ -95,7 +95,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
         SELECT_CARD = 0x44
     }
 
-    private static int establishMiniroomStatus(Character chr, bool isMinigame)
+    private static int establishMiniroomStatus(IPlayer chr, bool isMinigame)
     {
         if (isMinigame && FieldLimit.CANNOTMINIGAME.check(chr.getMap().getFieldLimit()))
         {
@@ -115,7 +115,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
         return 0;
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (!c.tryacquireClient())
         {    // thanks GabrielSin for pointing dupes within player interactions
@@ -126,7 +126,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
         try
         {
             byte mode = p.readByte();
-            Character chr = c.getPlayer();
+            var chr = c.OnlinedCharacter;
 
             if (mode == Action.CREATE.getCode())
             {
@@ -374,11 +374,11 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                 var merchant = chr.getHiredMerchant();
                 if (chr.getTrade() != null)
                 {
-                    chr.getTrade().chat(p.readString());
+                    chr.getTrade()!.chat(p.readString());
                 }
                 else if (chr.getPlayerShop() != null)
                 { //mini game
-                    PlayerShop shop = chr.getPlayerShop();
+                    var shop = chr.getPlayerShop();
                     if (shop != null)
                     {
                         shop.chat(c, p.readString());
@@ -386,7 +386,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                 }
                 else if (chr.getMiniGame() != null)
                 {
-                    MiniGame game = chr.getMiniGame();
+                    var game = chr.getMiniGame();
                     if (game != null)
                     {
                         game.chat(c, p.readString());
@@ -468,17 +468,17 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.READY.getCode())
             {
-                MiniGame game = chr.getMiniGame();
-                game.broadcast(PacketCreator.getMiniGameReady(game));
+                var game = chr.getMiniGame();
+                game?.broadcast(PacketCreator.getMiniGameReady(game));
             }
             else if (mode == Action.UN_READY.getCode())
             {
-                MiniGame game = chr.getMiniGame();
-                game.broadcast(PacketCreator.getMiniGameUnReady(game));
+                var game = chr.getMiniGame();
+                game?.broadcast(PacketCreator.getMiniGameUnReady(game));
             }
             else if (mode == Action.START.getCode())
             {
-                MiniGame game = chr.getMiniGame();
+                var game = chr.getMiniGame();
                 if (game.getGameType().Equals(MiniGameType.OMOK))
                 {
                     game.minigameMatchStarted();
@@ -495,7 +495,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.GIVE_UP.getCode())
             {
-                MiniGame game = chr.getMiniGame();
+                var game = chr.getMiniGame();
                 if (game.getGameType().Equals(MiniGameType.OMOK))
                 {
                     if (game.isOwner(chr))
@@ -521,7 +521,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.REQUEST_TIE.getCode())
             {
-                MiniGame game = chr.getMiniGame();
+                var game = chr.getMiniGame();
                 if (!game.isTieDenied(chr))
                 {
                     if (game.isOwner(chr))
@@ -536,7 +536,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.ANSWER_TIE.getCode())
             {
-                MiniGame game = chr.getMiniGame();
+                var game = chr.getMiniGame();
                 if (p.readByte() != 0)
                 {
                     game.minigameMatchDraw();
@@ -557,7 +557,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.SKIP.getCode())
             {
-                MiniGame game = chr.getMiniGame();
+                var game = chr.getMiniGame();
                 if (game.isOwner(chr))
                 {
                     game.broadcast(PacketCreator.getMiniGameSkipOwner(game));
@@ -578,7 +578,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             {
                 int turn = p.readByte(); // 1st turn = 1; 2nd turn = 0
                 int slot = p.readByte(); // slot
-                MiniGame game = chr.getMiniGame();
+                var game = chr.getMiniGame();
                 int firstslot = game.getFirstSlot();
                 if (turn == 1)
                 {
@@ -1062,10 +1062,10 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.EXPEL.getCode())
             {
-                MiniGame miniGame = chr.getMiniGame();
+                var miniGame = chr.getMiniGame();
                 if (miniGame != null && miniGame.isOwner(chr))
                 {
-                    Character visitor = miniGame.getVisitor();
+                    var visitor = miniGame.getVisitor();
 
                     if (visitor != null)
                     {
@@ -1076,7 +1076,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.EXIT_AFTER_GAME.getCode())
             {
-                MiniGame miniGame = chr.getMiniGame();
+                var miniGame = chr.getMiniGame();
                 if (miniGame != null)
                 {
                     miniGame.setQuitAfterGame(chr, true);
@@ -1084,7 +1084,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.CANCEL_EXIT_AFTER_GAME.getCode())
             {
-                MiniGame miniGame = chr.getMiniGame();
+                var miniGame = chr.getMiniGame();
                 if (miniGame != null)
                 {
                     miniGame.setQuitAfterGame(chr, false);
@@ -1097,7 +1097,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
         }
     }
 
-    private bool isTradeOpen(Character chr)
+    private bool isTradeOpen(IPlayer chr)
     {
         if (chr.getTrade() != null)
         {   // thanks to Rien dev team
@@ -1109,13 +1109,13 @@ public class PlayerInteractionHandler : AbstractPacketHandler
         return false;
     }
 
-    private bool canPlaceStore(Character chr)
+    private bool canPlaceStore(IPlayer chr)
     {
         try
         {
-            foreach (MapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
+            foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
             {
-                if (mmo is Character mc)
+                if (mmo is IPlayer mc)
                 {
                     if (mc.getId() == chr.getId())
                     {

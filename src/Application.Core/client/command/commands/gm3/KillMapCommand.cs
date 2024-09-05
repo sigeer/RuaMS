@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -31,10 +31,10 @@ public class KillMapCommand : Command
         setDescription("Kill all players in the map.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
-        foreach (Character mch in player.getMap().getCharacters())
+        var player = c.OnlinedCharacter;
+        foreach (var mch in player.getMap().getCharacters())
         {
             mch.updateHp(0);
         }

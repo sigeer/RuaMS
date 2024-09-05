@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -33,10 +32,10 @@ namespace net.server.handlers.login;
 public class GuestLoginHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         c.sendPacket(PacketCreator.sendGuestTOS());
         //Console.WriteLine(slea.ToString());
-        new LoginPasswordHandler().handlePacket(p, c);
+        new LoginPasswordHandler().HandlePacket(p, c);
     }
 }

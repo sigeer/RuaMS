@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Managers;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -63,11 +64,11 @@ public class RingActionHandler : AbstractPacketHandler
         };
     }
 
-    public static void sendEngageProposal(Client c, string name, int itemid)
+    public static void sendEngageProposal(IClient c, string name, int itemid)
     {
         int newBoxId = getEngagementBoxId(itemid);
         var target = c.getChannelServer().getPlayerStorage().getCharacterByName(name);
-        Character source = c.getPlayer();
+        var source = c.OnlinedCharacter;
 
         // TODO: get the correct packet bytes for these popups
         if (source.isMarried())
@@ -214,12 +215,10 @@ public class RingActionHandler : AbstractPacketHandler
     }
 
     static object breakMarriageLock = new object();
-    private static void breakMarriage(Character chr)
+    private static void breakMarriage(IPlayer chr)
     {
         lock (breakMarriageLock)
         {
-
-
             int partnerid = chr.getPartnerId();
             if (partnerid <= 0)
             {
@@ -230,7 +229,7 @@ public class RingActionHandler : AbstractPacketHandler
             Ring.removeRing(chr.getMarriageRing());
 
             var partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
-            if (partner == null)
+            if (partner == null || !partner.IsOnlined)
             {
                 eraseEngagementOffline(partnerid);
             }
@@ -246,7 +245,7 @@ public class RingActionHandler : AbstractPacketHandler
                 partner.addMarriageRing(null);
             }
 
-            chr.dropMessage(5, "You have successfully break the marriage with " + Character.getNameById(partnerid) + ".");
+            chr.dropMessage(5, "You have successfully break the marriage with " + CharacterManager.getNameById(partnerid) + ".");
 
             //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
             chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
@@ -257,7 +256,7 @@ public class RingActionHandler : AbstractPacketHandler
         }
     }
 
-    private static void resetRingId(Character player)
+    private static void resetRingId(IPlayer player)
     {
         int ringitemid = player.getMarriageRing().getItemId();
 
@@ -275,7 +274,7 @@ public class RingActionHandler : AbstractPacketHandler
     }
 
     static object breakEngagementLock = new object();
-    private static void breakEngagement(Character chr)
+    private static void breakEngagement(IPlayer chr)
     {
         lock (breakEngagementLock)
         {
@@ -287,7 +286,7 @@ public class RingActionHandler : AbstractPacketHandler
             chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
 
             var partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
-            if (partner == null)
+            if (partner == null || !partner.IsOnlined)
             {
                 breakEngagementOffline(partnerid);
             }
@@ -311,7 +310,7 @@ public class RingActionHandler : AbstractPacketHandler
             {
                 InventoryManipulator.removeById(chr.getClient(), InventoryType.ETC, marriageitemid, 1, false, false);
             }
-            chr.dropMessage(5, "You have successfully break the engagement with " + Character.getNameById(partnerid) + ".");
+            chr.dropMessage(5, "You have successfully break the engagement with " + CharacterManager.getNameById(partnerid) + ".");
 
             //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
             chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
@@ -320,7 +319,7 @@ public class RingActionHandler : AbstractPacketHandler
         }
     }
 
-    public static void breakMarriageRing(Character chr, int wItemId)
+    public static void breakMarriageRing(IPlayer chr, int wItemId)
     {
         InventoryType type = InventoryTypeUtils.getByType((sbyte)(wItemId / 1000000));
         var wItem = chr.getInventory(type).findById(wItemId);
@@ -347,7 +346,7 @@ public class RingActionHandler : AbstractPacketHandler
         }
     }
 
-    public static void giveMarriageRings(Character player, Character partner, int marriageRingId)
+    public static void giveMarriageRings(IPlayer player, IPlayer partner, int marriageRingId)
     {
         var rings = Ring.createRing(marriageRingId, player, partner);
         var ii = ItemInformationProvider.getInstance();
@@ -367,7 +366,7 @@ public class RingActionHandler : AbstractPacketHandler
         partner.broadcastMarriageMessage();
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         byte mode = p.readByte();
         string name;
@@ -379,9 +378,9 @@ public class RingActionHandler : AbstractPacketHandler
                 break;
 
             case 1: // Cancel Proposal
-                if (c.getPlayer().getMarriageItemId() / 1000000 != 4)
+                if (c.OnlinedCharacter.getMarriageItemId() / 1000000 != 4)
                 {
-                    c.getPlayer().setMarriageItemId(-1);
+                    c.OnlinedCharacter.setMarriageItemId(-1);
                 }
                 break;
 
@@ -391,9 +390,9 @@ public class RingActionHandler : AbstractPacketHandler
                 int id = p.readInt();
 
                 var source = c.getWorldServer().getPlayerStorage().getCharacterByName(name);
-                Character target = c.getPlayer();
+                var target = c.OnlinedCharacter;
 
-                if (source == null)
+                if (source == null || !source.IsOnlined)
                 {
                     target.sendPacket(PacketCreator.enableActions());
                     return;
@@ -450,7 +449,7 @@ public class RingActionHandler : AbstractPacketHandler
                 break;
 
             case 3: // Break Engagement
-                breakMarriageRing(c.getPlayer(), p.readInt());
+                breakMarriageRing(c.OnlinedCharacter, p.readInt());
                 break;
 
             case 5: // Invite %s to Wedding
@@ -461,7 +460,7 @@ public class RingActionHandler : AbstractPacketHandler
                 int itemId;
                 try
                 {
-                    itemId = c.getPlayer().getInventory(InventoryType.ETC).getItem(slot).getItemId();
+                    itemId = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot).getItemId();
                 }
                 catch (NullReferenceException npe)
                 {
@@ -469,24 +468,24 @@ public class RingActionHandler : AbstractPacketHandler
                     return;
                 }
 
-                if ((itemId != ItemId.INVITATION_CHAPEL && itemId != ItemId.INVITATION_CATHEDRAL) || !c.getPlayer().haveItem(itemId))
+                if ((itemId != ItemId.INVITATION_CHAPEL && itemId != ItemId.INVITATION_CATHEDRAL) || !c.OnlinedCharacter.haveItem(itemId))
                 {
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }
 
-                string groom = c.getPlayer().getName();
-                string bride = Character.getNameById(c.getPlayer().getPartnerId());
-                int guest = Character.getIdByName(name);
+                string groom = c.OnlinedCharacter.getName();
+                string bride = CharacterManager.getNameById(c.OnlinedCharacter.getPartnerId());
+                int guest = CharacterManager.getIdByName(name);
                 if (groom == null || bride == null || groom.Equals("") || bride.Equals("") || guest <= 0)
                 {
-                    c.getPlayer().dropMessage(5, "Unable to find " + name + "!");
+                    c.OnlinedCharacter.dropMessage(5, "Unable to find " + name + "!");
                     return;
                 }
 
                 try
                 {
-                    World wserv = c.getWorldServer();
+                    var wserv = c.getWorldServer();
                     var registration = wserv.getMarriageQueuedLocation(marriageId);
 
                     if (registration != null)
@@ -496,7 +495,7 @@ public class RingActionHandler : AbstractPacketHandler
                             bool cathedral = registration.Value.Key;
                             int newItemId = cathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
 
-                            Channel cserv = c.getChannelServer();
+                            var cserv = c.getChannelServer();
                             int resStatus = cserv.getWeddingReservationStatus(marriageId, cathedral);
                             if (resStatus > 0)
                             {
@@ -504,7 +503,9 @@ public class RingActionHandler : AbstractPacketHandler
 
                                 string baseMessage = $"You've been invited to {groom} and {bride}'s Wedding!";
                                 var guestChr = c.getWorldServer().getPlayerStorage().getCharacterById(guest);
-                                if (guestChr != null && InventoryManipulator.checkSpace(guestChr.getClient(), newItemId, 1, "") && InventoryManipulator.addById(guestChr.getClient(), newItemId, 1, expiration))
+                                if (guestChr != null && guestChr.isLoggedinWorld()
+                                    && InventoryManipulator.checkSpace(guestChr.getClient(), newItemId, 1, "")
+                                    && InventoryManipulator.addById(guestChr.getClient(), newItemId, 1, expiration: expiration))
                                 {
                                     guestChr.dropMessage(6, $"[Wedding] {baseMessage}");
                                 }
@@ -528,17 +529,17 @@ public class RingActionHandler : AbstractPacketHandler
                             }
                             else
                             {
-                                c.getPlayer().dropMessage(5, "Wedding is already under way. You cannot invite any more guests for the event.");
+                                c.OnlinedCharacter.dropMessage(5, "Wedding is already under way. You cannot invite any more guests for the event.");
                             }
                         }
                         else
                         {
-                            c.getPlayer().dropMessage(5, "'" + name + "' is already invited for your marriage.");
+                            c.OnlinedCharacter.dropMessage(5, "'" + name + "' is already invited for your marriage.");
                         }
                     }
                     else
                     {
-                        c.getPlayer().dropMessage(5, "Invitation was not sent to '" + name + "'. Either the time for your marriage reservation already came or it was not found.");
+                        c.OnlinedCharacter.dropMessage(5, "Invitation was not sent to '" + name + "'. Either the time for your marriage reservation already came or it was not found.");
                     }
 
                 }
@@ -557,7 +558,7 @@ public class RingActionHandler : AbstractPacketHandler
 
                 if (invitationid == ItemId.RECEIVED_INVITATION_CHAPEL || invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL)
                 {
-                    var item = c.getPlayer().getInventory(InventoryType.ETC).getItem(slot);
+                    var item = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot);
                     if (item == null || item.getItemId() != invitationid)
                     {
                         c.sendPacket(PacketCreator.enableActions());
@@ -565,11 +566,11 @@ public class RingActionHandler : AbstractPacketHandler
                     }
 
                     // collision case: most soon-to-come wedding will show up
-                    var coupleId = c.getWorldServer().getWeddingCoupleForGuest(c.getPlayer().getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
+                    var coupleId = c.getWorldServer().getWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
                     if (coupleId != null)
                     {
                         int groomId = coupleId.Value.Key, brideId = coupleId.Value.Value;
-                        c.sendPacket(WeddingPackets.sendWeddingInvitation(Character.getNameById(groomId), Character.getNameById(brideId)));
+                        c.sendPacket(WeddingPackets.sendWeddingInvitation(CharacterManager.getNameById(groomId), CharacterManager.getNameById(brideId)));
                     }
                 }
 
@@ -581,7 +582,7 @@ public class RingActionHandler : AbstractPacketHandler
                     // By -- Dragoso (Drago)
                     // Groom and Bride's Wishlist
 
-                    Character player = c.getPlayer();
+                    var player = c.OnlinedCharacter;
 
                     var eim = player.getEventInstance();
                     if (eim != null)

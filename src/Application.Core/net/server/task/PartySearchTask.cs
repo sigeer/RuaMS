@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.task;
 
 /**
@@ -31,7 +33,7 @@ public class PartySearchTask : BaseTask
         wserv.runPartySearchUpdateSchedule();
     }
 
-    public PartySearchTask(World world) : base(world)
+    public PartySearchTask(IWorld world) : base(world)
     {
     }
 }

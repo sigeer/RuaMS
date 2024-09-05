@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -34,16 +34,16 @@ public class SpawnCommand : Command
         setDescription("Spawn mob(s) on your location.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !spawn <mobid> [<mobqty>]");
             return;
         }
 
-        Monster monster = LifeFactory.getMonster(int.Parse(paramsValue[0]));
+        var monster = LifeFactory.getMonster(int.Parse(paramsValue[0]));
         if (monster == null)
         {
             return;
@@ -52,12 +52,12 @@ public class SpawnCommand : Command
         {
             for (int i = 0; i < int.Parse(paramsValue[1]); i++)
             {
-                player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(int.Parse(paramsValue[0])), player.getPosition());
+                player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition());
             }
         }
         else
         {
-            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(int.Parse(paramsValue[0])), player.getPosition());
+            player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition());
         }
     }
 }

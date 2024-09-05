@@ -1,19 +1,18 @@
-﻿using client;
+﻿using Application.Core.Managers;
 using constants.game;
 using constants.id;
 using net.packet;
 using net.server;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
-using net.server.world;
 
 namespace Application.Core.net.server.coordinator.matchchecker.listener
 {
     public class MatchCheckerGuildCreationListener : AbstractMatchCheckerListener
     {
-        private static void broadcastGuildCreationDismiss(HashSet<Character> nonLeaderMatchPlayers)
+        private static void broadcastGuildCreationDismiss(HashSet<IPlayer> nonLeaderMatchPlayers)
         {
-            foreach (Character chr in nonLeaderMatchPlayers)
+            foreach (var chr in nonLeaderMatchPlayers)
             {
                 if (chr.isLoggedinWorld())
                 {
@@ -21,11 +20,11 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 }
             }
         }
-        public override void onMatchCreated(Character leader, HashSet<Character> nonLeaderMatchPlayers, string message)
+        public override void onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
         {
             Packet createGuildPacket = GuildPackets.createGuildMessage(leader.getName(), message);
 
-            foreach (Character chr in nonLeaderMatchPlayers)
+            foreach (var chr in nonLeaderMatchPlayers)
             {
                 if (chr.isLoggedinWorld())
                 {
@@ -34,7 +33,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
         }
 
-        public override void onMatchAccepted(int leaderid, HashSet<Character> matchPlayers, string message)
+        public override void onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
             var leader = matchPlayers.FirstOrDefault(x => x.getId() == leaderid);
 
@@ -64,7 +63,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 broadcastGuildCreationDismiss(matchPlayers);
                 return;
             }
-            foreach (Character chr in matchPlayers)
+            foreach (var chr in matchPlayers)
             {
                 if (leader.getMap().getCharacterById(chr.getId()) == null)
                 {
@@ -90,22 +89,21 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
 
             leader.getMGC().setGuildId(gid);
-            Guild guild = Server.getInstance().getGuild(leader.getGuildId(), leader.getWorld(), leader);  // initialize guild structure
+            var guild = Server.getInstance().getGuild(leader.getGuildId(), leader);  // initialize guild structure
             Server.getInstance().changeRank(gid, leader.getId(), 1);
 
             leader.sendPacket(GuildPackets.showGuildInfo(leader));
             leader.dropMessage(1, "You have successfully created a Guild.");
 
-            foreach (Character chr in matchPlayers)
+            foreach (var chr in matchPlayers)
             {
                 bool cofounder = chr.getPartyId() == partyid;
 
-                GuildCharacter mgc = chr.getMGC();
-                mgc.setGuildId(gid);
-                mgc.setGuildRank(cofounder ? 2 : 5);
-                mgc.setAllianceRank(5);
+                chr.GuildId = gid;
+                chr.GuildRank = cofounder ? 2 : 5;
+                chr.AllianceRank = 5;
 
-                Server.getInstance().addGuildMember(mgc, chr);
+                chr.GuildModel?.addGuildMember(chr);
 
                 if (chr.isLoggedinWorld())
                 {
@@ -128,13 +126,13 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             guild.broadcastEmblemChanged();
         }
 
-        public override void onMatchDeclined(int leaderid, HashSet<Character> matchPlayers, string message)
+        public override void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
-            foreach (Character chr in matchPlayers)
+            foreach (var chr in matchPlayers)
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    Party.leaveParty(chr.getParty(), chr.getClient());
+                    TeamManager.leaveParty(chr.getParty(), chr.getClient());
                 }
 
                 if (chr.isLoggedinWorld())
@@ -144,7 +142,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
         }
 
-        public override void onMatchDismissed(int leaderid, HashSet<Character> matchPlayers, string message)
+        public override void onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
 
             var leader = matchPlayers.FirstOrDefault(x => x.getId() == leaderid);
@@ -159,11 +157,11 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 msg = "The Guild creation has been dismissed since a member was already in a party when they answered.";
             }
 
-            foreach (Character chr in matchPlayers)
+            foreach (var chr in matchPlayers)
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    Party.leaveParty(chr.getParty(), chr.getClient());
+                    TeamManager.leaveParty(chr.getParty(), chr.getClient());
                 }
 
                 if (chr.isLoggedinWorld())

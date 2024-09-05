@@ -19,11 +19,9 @@
 */
 
 
+using Application.Core.Game.Life;
 using Application.Core.scripting.Event;
-using client;
 using server;
-using server.life;
-using server.maps;
 
 namespace net.server.coordinator.world;
 
@@ -166,7 +164,7 @@ public class MonsterAggroCoordinator
             return;
         }
 
-        List<PlayerAggroEntry>? sortedAggro = mobSortedAggros.GetValueOrDefault(mob);
+        var sortedAggro = mobSortedAggros.GetValueOrDefault(mob);
         Dictionary<int, PlayerAggroEntry>? mobAggro = mobAggroEntries.GetValueOrDefault(mob);
         if (mobAggro == null)
         {
@@ -199,16 +197,16 @@ public class MonsterAggroCoordinator
             }
         }
 
-        PlayerAggroEntry? aggroEntry = mobAggro.GetValueOrDefault(cid);
+        var aggroEntry = mobAggro.GetValueOrDefault(cid);
         if (aggroEntry == null)
         {
             aggroEntry = new PlayerAggroEntry(cid);
 
             lock (mobAggro)
             {
-                lock (sortedAggro)
+                lock (sortedAggro!)
                 {
-                    PlayerAggroEntry? mappedEntry = mobAggro.GetValueOrDefault(cid);
+                    var mappedEntry = mobAggro.GetValueOrDefault(cid);
 
                     if (mappedEntry == null)
                     {
@@ -246,7 +244,7 @@ public class MonsterAggroCoordinator
         foreach (var am in aggroMobs)
         {
             Dictionary<int, PlayerAggroEntry> mobAggro = am.Value;
-            List<PlayerAggroEntry>? sortedAggro = mobSortedAggros.GetValueOrDefault(am.Key);
+            var sortedAggro = mobSortedAggros.GetValueOrDefault(am.Key);
 
             if (sortedAggro != null)
             {
@@ -350,7 +348,7 @@ public class MonsterAggroCoordinator
         }
     }
 
-    public bool isLeadingCharacterAggro(Monster mob, Character player)
+    public bool isLeadingCharacterAggro(Monster mob, IPlayer player)
     {
         if (mob.isLeadingPuppetInVicinity())
         {
@@ -364,16 +362,16 @@ public class MonsterAggroCoordinator
         // by assuming the quasi-sorted nature of "mobAggroList", this method
         // returns whether the player given as parameter can be elected as next aggro leader
 
-        List<PlayerAggroEntry>? mobAggroList = mobSortedAggros.GetValueOrDefault(mob);
+        var mobAggroList = mobSortedAggros.GetValueOrDefault(mob);
         if (mobAggroList != null)
         {
 
             mobAggroList = new(mobAggroList.Take(Math.Min(mobAggroList.Count, 5)));
 
-            MapleMap map = mob.getMap();
+            var map = mob.getMap();
             foreach (PlayerAggroEntry pae in mobAggroList)
             {
-                Character? chr = map.getCharacterById(pae.cid);
+                var chr = map.getCharacterById(pae.cid);
                 if (chr != null)
                 {
                     if (player.getId() == pae.cid)
@@ -427,7 +425,7 @@ public class MonsterAggroCoordinator
         }
     }
 
-    public void addPuppetAggro(Character player)
+    public void addPuppetAggro(IPlayer player)
     {
         lock (mapPuppetEntries)
         {

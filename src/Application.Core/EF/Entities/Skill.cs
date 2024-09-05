@@ -1,6 +1,6 @@
 ﻿namespace Application.EF.Entities;
 
-public partial class DB_Skill
+public partial class SkillEntity
 {
     public int Id { get; set; }
 
@@ -14,5 +14,5 @@ public partial class DB_Skill
 
     public long Expiration { get; set; }
 
-    public virtual DB_Character Character { get; set; } = null!;
+    public virtual CharacterEntity Character { get; set; } = null!;
 }

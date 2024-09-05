@@ -1,26 +1,3 @@
-/*
- This file is part of the OdinMS Maple Story Server
- Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
- Matthias Butz <matze@odinms.de>
- Jan Christian Meyer <vimes@odinms.de>
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU Affero General Public License as
- published by the Free Software Foundation version 3 as published by
- the Free Software Foundation. You may not use, modify or distribute
- this program under any other version of the GNU Affero General Public
- License.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Affero General Public License for more details.
-
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
@@ -29,43 +6,36 @@ using tools;
 
 namespace net.server.channel.handlers;
 
-
-
-
-
-/**
- * @author Jay Estrella
- * @author Ubaware
- */
 public class AcceptFamilyHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
             return;
         }
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         int inviterId = p.readInt();
         p.readString();
         bool accept = p.readByte() != 0;
         // string inviterName = slea.readMapleAsciiString();
         var inviter = c.getWorldServer().getPlayerStorage().getCharacterById(inviterId);
-        if (inviter != null)
+        if (inviter != null && inviter.IsOnlined)
         {
-            InviteResult inviteResult = InviteCoordinator.answerInvite(InviteType.FAMILY, c.getPlayer().getId(), c.getPlayer(), accept);
+            InviteResult inviteResult = InviteCoordinator.answerInvite(InviteType.FAMILY, c.OnlinedCharacter.getId(), c.OnlinedCharacter, accept);
             if (inviteResult.result == InviteResultType.NOT_FOUND)
             {
                 return; //was never invited. (or expired on server only somehow?)
             }
             if (accept)
             {
-                if (inviter.getFamily() != null)
+                var inviterFamily = inviter.getFamily();
+                if (inviterFamily != null)
                 {
                     if (chr.getFamily() == null)
                     {
-                        FamilyEntry newEntry = new FamilyEntry(inviter.getFamily(), chr.getId(), chr.getName(), chr.getLevel(), chr.getJob());
+                        var newEntry = new FamilyEntry(inviterFamily, chr.getId(), chr.getName(), chr.getLevel(), chr.getJob());
                         newEntry.setCharacter(chr);
                         if (!newEntry.setSenior(inviter.getFamilyEntry(), true))
                         {
@@ -75,19 +45,19 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                         else
                         {
                             // save
-                            inviter.getFamily().addEntry(newEntry);
-                            insertNewFamilyRecord(chr.getId(), inviter.getFamily().getID(), inviter.getId(), false);
+                            inviterFamily.addEntry(newEntry);
+                            insertNewFamilyRecord(chr.getId(), inviterFamily.getID(), inviter.getId(), false);
                         }
                     }
                     else
                     { //absorb target family
-                        FamilyEntry targetEntry = chr.getFamilyEntry();
+                        var targetEntry = chr.getFamilyEntry();
                         Family targetFamily = targetEntry.getFamily();
                         if (targetFamily.getLeader() != targetEntry)
                         {
                             return;
                         }
-                        if (inviter.getFamily().getTotalGenerations() + targetFamily.getTotalGenerations() <= YamlConfig.config.server.FAMILY_MAX_GENERATIONS)
+                        if (inviterFamily.getTotalGenerations() + targetFamily.getTotalGenerations() <= YamlConfig.config.server.FAMILY_MAX_GENERATIONS)
                         {
                             targetEntry.join(inviter.getFamilyEntry());
                         }
@@ -101,7 +71,9 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                 }
                 else
                 { // create new family
-                    if (chr.getFamily() != null && inviter.getFamily() != null && chr.getFamily().getTotalGenerations() + inviter.getFamily().getTotalGenerations() >= YamlConfig.config.server.FAMILY_MAX_GENERATIONS)
+                    if (chr.getFamily() != null
+                        && inviter.getFamily() != null
+                        && chr.getFamily().getTotalGenerations() + inviter.getFamily().getTotalGenerations() >= YamlConfig.config.server.FAMILY_MAX_GENERATIONS)
                     {
                         inviter.sendPacket(PacketCreator.sendFamilyMessage(76, 0));
                         chr.sendPacket(PacketCreator.sendFamilyMessage(76, 0));
@@ -130,14 +102,14 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                         chr.getFamilyEntry().join(inviterEntry);
                     }
                 }
-                c.getPlayer().getFamily().broadcast(PacketCreator.sendFamilyJoinResponse(true, c.getPlayer().getName()), c.getPlayer().getId());
+                chr.getFamily().broadcast(PacketCreator.sendFamilyJoinResponse(true, chr.getName()), chr.getId());
                 c.sendPacket(PacketCreator.getSeniorMessage(inviter.getName()));
                 c.sendPacket(PacketCreator.getFamilyInfo(chr.getFamilyEntry()));
                 chr.getFamilyEntry().updateSeniorFamilyInfo(true);
             }
             else
             {
-                inviter.sendPacket(PacketCreator.sendFamilyJoinResponse(false, c.getPlayer().getName()));
+                inviter.sendPacket(PacketCreator.sendFamilyJoinResponse(false, chr.getName()));
             }
         }
         c.sendPacket(PacketCreator.sendFamilyMessage(0, 0));

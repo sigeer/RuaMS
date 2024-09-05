@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,9 +19,8 @@
 */
 
 
-using client;
+using Application.Core.Managers;
 using net.packet;
-using net.server.guild;
 
 namespace net.server.channel.handlers;
 
@@ -31,7 +30,7 @@ namespace net.server.channel.handlers;
 public class DenyAllianceRequestHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readByte();
         string inviterName = p.readString();
@@ -43,7 +42,7 @@ public class DenyAllianceRequestHandler : AbstractPacketHandler
             var alliance = chr.getAlliance();
             if (alliance != null)
             {
-                Alliance.answerInvitation(c.getPlayer().getId(), guildName, alliance.getId(), false);
+                AllianceManager.answerInvitation(c.OnlinedCharacter.getId(), guildName, alliance.getId(), false);
             }
         }
     }

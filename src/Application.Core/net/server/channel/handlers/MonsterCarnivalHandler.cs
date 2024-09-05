@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,9 +21,7 @@
  */
 
 
-using client;
 using net.packet;
-using net.server.world;
 using server.life;
 using server.partyquest;
 using tools;
@@ -37,7 +35,7 @@ namespace net.server.channel.handlers;
 public class MonsterCarnivalHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (c.tryacquireClient())
         {
@@ -50,26 +48,26 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                     int neededCP = 0;
                     if (tab == 0)
                     {
-                        var mobs = c.getPlayer().getMap().getMobsToSpawn();
-                        if (num >= mobs.Count || c.getPlayer().getCP() < mobs.get(num).Value)
+                        var mobs = c.OnlinedCharacter.getMap().getMobsToSpawn();
+                        if (num >= mobs.Count || c.OnlinedCharacter.getCP() < mobs.get(num).Value)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        Monster mob = LifeFactory.getMonster(mobs.get(num).Key);
-                        var mcpq = c.getPlayer().getMonsterCarnival();
+                        var mob = LifeFactory.getMonster(mobs.get(num).Key);
+                        var mcpq = c.OnlinedCharacter.getMonsterCarnival();
                         if (mcpq != null)
                         {
-                            if (!mcpq.canSummonR() && c.getPlayer().getTeam() == 0 || !mcpq.canSummonB() && c.getPlayer().getTeam() == 1)
+                            if (!mcpq.canSummonR() && c.OnlinedCharacter.getTeam() == 0 || !mcpq.canSummonB() && c.OnlinedCharacter.getTeam() == 1)
                             {
                                 c.sendPacket(PacketCreator.CPQMessage(2));
                                 c.sendPacket(PacketCreator.enableActions());
                                 return;
                             }
 
-                            if (c.getPlayer().getTeam() == 0)
+                            if (c.OnlinedCharacter.getTeam() == 0)
                             {
                                 mcpq.summonR();
                             }
@@ -78,11 +76,11 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                                 mcpq.summonB();
                             }
 
-                            var spawnPos = c.getPlayer().getMap().getRandomSP(c.getPlayer().getTeam());
+                            var spawnPos = c.OnlinedCharacter.getMap().getRandomSP(c.OnlinedCharacter.getTeam());
                             mob.setPosition(spawnPos.Value);
 
-                            c.getPlayer().getMap().addMonsterSpawn(mob, 1, c.getPlayer().getTeam());
-                            c.getPlayer().getMap().addAllMonsterSpawn(mob, 1, c.getPlayer().getTeam());
+                            c.OnlinedCharacter.getMap().addMonsterSpawn(mob, 1, c.OnlinedCharacter.getTeam());
+                            c.OnlinedCharacter.getMap().addAllMonsterSpawn(mob, 1, c.OnlinedCharacter.getTeam());
                             c.sendPacket(PacketCreator.enableActions());
                         }
 
@@ -90,30 +88,29 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                     }
                     else if (tab == 1)
                     { //debuffs
-                        List<int> skillid = c.getPlayer().getMap().getSkillIds();
+                        List<int> skillid = c.OnlinedCharacter.getMap().getSkillIds();
                         if (num >= skillid.Count)
                         {
-                            c.getPlayer().dropMessage(5, "An unexpected error has occurred.");
+                            c.OnlinedCharacter.dropMessage(5, "An unexpected error has occurred.");
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
                         var skill = CarnivalFactory.getInstance().getSkill(skillid.get(num)); //ugh wtf
-                        if (skill == null || c.getPlayer().getCP() < skill.cpLoss)
+                        if (skill == null || c.OnlinedCharacter.getCP() < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
                         var dis = skill.getDisease();
-                        Party enemies = c.getPlayer().getParty().getEnemy();
+                        var enemies = c.OnlinedCharacter.getParty()!.getEnemy();
                         if (skill.targetsAll)
                         {
                             int hitChance = rollHitChance(dis.getMobSkillType().Value);
                             if (hitChance <= 80)
                             {
-                                foreach (PartyCharacter mpc in enemies.getPartyMembers())
+                                foreach (var mc in enemies.getPartyMembers())
                                 {
-                                    Character mc = mpc.getPlayer();
                                     if (mc != null)
                                     {
                                         if (dis == null)
@@ -132,7 +129,7 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                         {
                             int amount = enemies.getMembers().Count - 1;
                             int randd = (int)Math.Floor(Randomizer.nextDouble() * amount);
-                            var chrApp = c.getPlayer().getMap().getCharacterById(enemies.getMemberByPos(randd).getId());
+                            var chrApp = c.OnlinedCharacter.getMap().getCharacterById(enemies.getMemberByPos(randd).getId());
                             if (chrApp != null && chrApp.getMap().isCPQMap())
                             {
                                 if (dis == null)
@@ -151,24 +148,24 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                     else if (tab == 2)
                     { //protectors
                         var skill = CarnivalFactory.getInstance().getGuardian(num);
-                        if (skill == null || c.getPlayer().getCP() < skill.cpLoss)
+                        if (skill == null || c.OnlinedCharacter.getCP() < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        var mcpq = c.getPlayer().getMonsterCarnival();
+                        var mcpq = c.OnlinedCharacter.getMonsterCarnival();
                         if (mcpq != null)
                         {
-                            if (!mcpq.canGuardianR() && c.getPlayer().getTeam() == 0 || !mcpq.canGuardianB() && c.getPlayer().getTeam() == 1)
+                            if (!mcpq.canGuardianR() && c.OnlinedCharacter.getTeam() == 0 || !mcpq.canGuardianB() && c.OnlinedCharacter.getTeam() == 1)
                             {
                                 c.sendPacket(PacketCreator.CPQMessage(2));
                                 c.sendPacket(PacketCreator.enableActions());
                                 return;
                             }
 
-                            int success = c.getPlayer().getMap().spawnGuardian(c.getPlayer().getTeam(), num);
+                            int success = c.OnlinedCharacter.getMap().spawnGuardian(c.OnlinedCharacter.getTeam(), num);
                             if (success != 1)
                             {
                                 switch (success)
@@ -194,8 +191,8 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                             }
                         }
                     }
-                    c.getPlayer().gainCP(-neededCP);
-                    c.getPlayer().getMap().broadcastMessage(PacketCreator.playerSummoned(c.getPlayer().getName(), tab, num));
+                    c.OnlinedCharacter.gainCP(-neededCP);
+                    c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.playerSummoned(c.OnlinedCharacter.getName(), tab, num));
                 }
                 catch (Exception e)
                 {

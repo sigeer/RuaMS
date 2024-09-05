@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using client.inventory;
 
 namespace server.loot;
@@ -31,7 +30,7 @@ public class LootInventory
 {
     Dictionary<int, int> items = new(50);
 
-    public LootInventory(Character from)
+    public LootInventory(IPlayer from)
     {
         foreach (InventoryType values in Enum.GetValues<InventoryType>())
         {

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -36,7 +36,7 @@ namespace net.server.channel.handlers;
  */
 public class FamilyUseHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
@@ -44,22 +44,22 @@ public class FamilyUseHandler : AbstractPacketHandler
         }
         FamilyEntitlement type = FamilyEntitlement.values<FamilyEntitlement>()[p.readInt()];
         int cost = type.getRepCost();
-        FamilyEntry entry = c.getPlayer().getFamilyEntry();
+        var entry = c.OnlinedCharacter.getFamilyEntry();
         if (entry.getReputation() < cost || entry.isEntitlementUsed(type))
         {
             return; // shouldn't even be able to request it
         }
         c.sendPacket(PacketCreator.getFamilyInfo(entry));
-        Character? victim;
+        IPlayer? victim;
         if (type == FamilyEntitlement.FAMILY_REUINION || type == FamilyEntitlement.SUMMON_FAMILY)
         {
             victim = c.getChannelServer().getPlayerStorage().getCharacterByName(p.readString());
-            if (victim != null && victim != c.getPlayer())
+            if (victim != null && victim != c.OnlinedCharacter)
             {
-                if (victim.getFamily() == c.getPlayer().getFamily())
+                if (victim.getFamily() == c.OnlinedCharacter.getFamily())
                 {
-                    MapleMap targetMap = victim.getMap();
-                    MapleMap ownMap = c.getPlayer().getMap();
+                    var targetMap = victim.getMap();
+                    var ownMap = c.OnlinedCharacter.getMap();
                     if (targetMap != null)
                     {
                         if (type == FamilyEntitlement.FAMILY_REUINION)
@@ -68,7 +68,7 @@ public class FamilyUseHandler : AbstractPacketHandler
                                     && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(targetMap.getId())) && targetMap.getEventInstance() == null)
                             {
 
-                                c.getPlayer().changeMap(victim.getMap(), victim.getMap().getPortal(0));
+                                c.OnlinedCharacter.changeMap(victim.getMap(), victim.getMap().getPortal(0));
                                 useEntitlement(entry, type);
                             }
                             else
@@ -88,8 +88,8 @@ public class FamilyUseHandler : AbstractPacketHandler
                                     c.sendPacket(PacketCreator.sendFamilyMessage(74, 0));
                                     return;
                                 }
-                                InviteCoordinator.createInvite(InviteType.FAMILY_SUMMON, c.getPlayer(), victim, victim.getId(), c.getPlayer().getMap());
-                                victim.sendPacket(PacketCreator.sendFamilySummonRequest(c.getPlayer().getFamily().getName(), c.getPlayer().getName()));
+                                InviteCoordinator.createInvite(InviteType.FAMILY_SUMMON, c.OnlinedCharacter, victim, victim.getId(), c.OnlinedCharacter.getMap());
+                                victim.sendPacket(PacketCreator.sendFamilySummonRequest(c.OnlinedCharacter.getFamily().getName(), c.OnlinedCharacter.getName()));
                                 useEntitlement(entry, type);
                             }
                             else

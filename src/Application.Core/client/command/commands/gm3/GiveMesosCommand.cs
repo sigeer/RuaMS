@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -31,9 +31,9 @@ public class GiveMesosCommand : Command
         setDescription("Give mesos to a player.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !givems [<playername>] <gainmeso>");
@@ -50,7 +50,7 @@ public class GiveMesosCommand : Command
         }
         else
         {
-            recv_ = c.getPlayer().getName();
+            recv_ = c.OnlinedCharacter.getName();
             value_ = paramsValue[0];
         }
 
@@ -79,7 +79,7 @@ public class GiveMesosCommand : Command
         }
 
         var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(recv_);
-        if (victim != null)
+        if (victim != null && victim.IsOnlined)
         {
             victim.gainMeso((int)mesos_, true);
             player.message("MESO given.");

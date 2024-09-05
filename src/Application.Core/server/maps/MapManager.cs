@@ -20,6 +20,7 @@
 
 
 
+using Application.Core.Game.Maps;
 using scripting.Event;
 
 namespace server.maps;
@@ -30,7 +31,7 @@ public class MapManager
     private int world;
     private EventInstanceManager? evt;
 
-    private Dictionary<int, MapleMap> maps = new();
+    private Dictionary<int, IMap> maps = new();
 
     ReaderWriterLockSlim mapsLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
@@ -41,7 +42,7 @@ public class MapManager
         this.evt = eim;
     }
 
-    public MapleMap resetMap(int mapid)
+    public IMap resetMap(int mapid)
     {
         mapsLock.EnterWriteLock();
         try
@@ -57,11 +58,11 @@ public class MapManager
     }
 
     object loadWZLock = new object();
-    private MapleMap loadMapFromWz(int mapid, bool cache)
+    private IMap loadMapFromWz(int mapid, bool cache)
     {
         lock (loadWZLock)
         {
-            MapleMap? map;
+            IMap? map;
 
             if (cache)
             {
@@ -101,24 +102,12 @@ public class MapManager
 
     }
 
-    public MapleMap getMap(int mapid)
+    public IMap getMap(int mapid)
     {
-        MapleMap? map;
-
-        mapsLock.EnterReadLock();
-        try
-        {
-            map = maps.GetValueOrDefault(mapid);
-        }
-        finally
-        {
-            mapsLock.ExitReadLock();
-        }
-
-        return map ?? loadMapFromWz(mapid, true);
+        return loadMapFromWz(mapid, true);
     }
 
-    public MapleMap getDisposableMap(int mapid)
+    public IMap getDisposableMap(int mapid)
     {
         return loadMapFromWz(mapid, false);
     }
@@ -136,7 +125,7 @@ public class MapManager
         }
     }
 
-    public Dictionary<int, MapleMap> getMaps()
+    public Dictionary<int, IMap> getMaps()
     {
         mapsLock.EnterReadLock();
         try
@@ -151,7 +140,7 @@ public class MapManager
 
     public void updateMaps()
     {
-        foreach (MapleMap map in getMaps().Values)
+        foreach (IMap map in getMaps().Values)
         {
             map.respawn();
             map.mobMpRecovery();
@@ -160,7 +149,7 @@ public class MapManager
 
     public void dispose()
     {
-        foreach (MapleMap map in getMaps().Values)
+        foreach (IMap map in getMaps().Values)
         {
             map.dispose();
         }

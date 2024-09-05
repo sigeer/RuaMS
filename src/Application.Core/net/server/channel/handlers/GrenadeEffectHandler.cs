@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using constants.skills;
 using net.packet;
 using tools;
@@ -33,9 +32,9 @@ namespace net.server.channel.handlers;
  */
 public class GrenadeEffectHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         Point position = new Point(p.readInt(), p.readInt());
         int keyDown = p.readInt();
         int skillId = p.readInt();

@@ -52,7 +52,7 @@ public class QuestRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         foreach (int questID in quests.Keys)
         {

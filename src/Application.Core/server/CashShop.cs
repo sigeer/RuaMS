@@ -28,7 +28,6 @@ using Microsoft.EntityFrameworkCore;
 using net.server;
 using provider;
 using provider.wz;
-using Serilog;
 using tools;
 
 namespace server;
@@ -39,7 +38,9 @@ namespace server;
  */
 public class CashShop
 {
-    static readonly ILogger log = LogFactory.GetLogger("CashShop");
+    ILogger? _log;
+    ILogger log => _log ?? (_log = LogFactory.GetCharacterLog(accountId, characterId, "CashShop"));
+
     public const int NX_CREDIT = 1;
     public const int MAPLE_POINT = 2;
     public const int NX_PREPAID = 4;
@@ -271,7 +272,7 @@ public class CashShop
             }
             catch (Exception ex)
             {
-                log.Error(ex.ToString());
+                Log.Logger.Error(ex.ToString());
                 // x.printStackTrace();
             }
         }
@@ -353,8 +354,11 @@ public class CashShop
         }
     }
 
-    public void gainCash(int type, CashItem buyItem, int world)
+    public void gainCash(int type, CashItem? buyItem, int world)
     {
+        if (buyItem == null)
+            return;
+
         gainCash(type, -buyItem.getPrice());
         if (!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
         {
@@ -385,10 +389,10 @@ public class CashShop
         }
     }
 
-    public Item findByCashId(int cashId)
+    public Item? findByCashId(int cashId)
     {
         bool isRing;
-        Equip equip = null;
+        Equip? equip = null;
         foreach (Item item in getInventory())
         {
             if (item.getInventoryType().Equals(InventoryType.EQUIP))
@@ -491,7 +495,7 @@ public class CashShop
             foreach (var rs in dataList)
             {
                 notes++;
-                CashItem? cItem = CashItemFactory.getItem(rs.Sn);
+                var cItem = CashItemFactory.getItem(rs.Sn);
                 Item item = cItem.toItem();
                 Equip? equip = null;
                 item.setGiftFrom(rs.From);

@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -55,10 +55,10 @@ public class CommandsExecutor
         return instance;
     }
 
-    public static bool isCommand(Client client, string content)
+    public static bool isCommand(IClient client, string content)
     {
         char heading = content.ElementAt(0);
-        if (client.getPlayer().isGM())
+        if (client.OnlinedCharacter.isGM())
         {
             return heading == USER_HEADING || heading == GM_HEADING;
         }
@@ -81,7 +81,7 @@ public class CommandsExecutor
         return commandsNameDesc;
     }
 
-    public void handle(Client client, string message)
+    public void handle(IClient client, string message)
     {
         if (client.tryacquireClient())
         {
@@ -96,15 +96,15 @@ public class CommandsExecutor
         }
         else
         {
-            client.getPlayer().dropMessage(5, "Try again in a while... Latest commands are currently being processed.");
+            client.OnlinedCharacter.dropMessage(5, "Try again in a while... Latest commands are currently being processed.");
         }
     }
 
-    private void handleInternal(Client client, string message)
+    private void handleInternal(IClient client, string message)
     {
-        if (client.getPlayer().getMapId() == MapId.JAIL)
+        if (client.OnlinedCharacter.getMapId() == MapId.JAIL)
         {
-            client.getPlayer().yellowMessage("You do not have permission to use commands while in jail.");
+            client.OnlinedCharacter.yellowMessage("You do not have permission to use commands while in jail.");
             return;
         }
         string splitRegex = " ";
@@ -114,19 +114,19 @@ public class CommandsExecutor
             SplitedMessage = new string[] { SplitedMessage[0], "" };
         }
 
-        client.getPlayer().setLastCommandMessage(SplitedMessage[1]);    // thanks Tochi & Nulliphite for noticing string messages being marshalled lowercase
+        client.OnlinedCharacter.setLastCommandMessage(SplitedMessage[1]);    // thanks Tochi & Nulliphite for noticing string messages being marshalled lowercase
         string commandName = SplitedMessage[0].ToLower();
         string[] lowercaseParams = SplitedMessage[1].ToLower().Split(splitRegex);
 
         var command = registeredCommands.GetValueOrDefault(commandName);
         if (command == null)
         {
-            client.getPlayer().yellowMessage("Command '" + commandName + "' is not available. See @commands for a list of available commands.");
+            client.OnlinedCharacter.yellowMessage("Command '" + commandName + "' is not available. See @commands for a list of available commands.");
             return;
         }
-        if (client.getPlayer().gmLevel() < command.getRank())
+        if (client.OnlinedCharacter.gmLevel() < command.getRank())
         {
-            client.getPlayer().yellowMessage("You do not have permission to use this command.");
+            client.OnlinedCharacter.yellowMessage("You do not have permission to use this command.");
             return;
         }
         string[] paramsValue;
@@ -140,7 +140,7 @@ public class CommandsExecutor
         }
 
         command.execute(client, paramsValue);
-        log.Information("Chr {} used command {}", client.getPlayer().getName(), command.GetType().Name);
+        log.Information("Chr {CharacterName} used command {Command}", client.OnlinedCharacter.getName(), command.GetType().Name);
     }
 
     private void addCommandInfo<T>(string name) where T : Command

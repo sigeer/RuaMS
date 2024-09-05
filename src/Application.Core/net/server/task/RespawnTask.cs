@@ -1,4 +1,3 @@
-using net.server.channel;
 using server.maps;
 
 namespace net.server.task;
@@ -11,9 +10,9 @@ public class RespawnTask : AbstractRunnable
 
     public override void HandleRun()
     {
-        foreach (Channel ch in Server.getInstance().getAllChannels())
+        foreach (var ch in Server.getInstance().getAllChannels())
         {
-            PlayerStorage ps = ch.getPlayerStorage();
+            var ps = ch.getPlayerStorage();
             if (ps != null)
             {
                 if (ps.getAllCharacters().Count() > 0)

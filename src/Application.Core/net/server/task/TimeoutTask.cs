@@ -1,6 +1,6 @@
 
 
-using client;
+using Application.Core.Game.TheWorld;
 
 namespace net.server.task;
 
@@ -15,7 +15,7 @@ public class TimeoutTask : BaseTask
     {
         long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         var chars = wserv.getPlayerStorage().getAllCharacters();
-        foreach (Character chr in chars)
+        foreach (var chr in chars)
         {
             if (time - chr.getClient().getLastPacket() > YamlConfig.config.server.TIMEOUT_DURATION)
             {
@@ -25,7 +25,7 @@ public class TimeoutTask : BaseTask
         }
     }
 
-    public TimeoutTask(World world) : base(world)
+    public TimeoutTask(IWorld world) : base(world)
     {
     }
 }

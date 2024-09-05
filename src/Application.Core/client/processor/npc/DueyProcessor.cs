@@ -58,7 +58,7 @@ public class DueyProcessor
         }
     }
 
-    private static void showDueyNotification(Client c, Character player)
+    private static void showDueyNotification(IClient c, IPlayer player)
     {
         try
         {
@@ -118,7 +118,7 @@ public class DueyProcessor
         return rs;
     }
 
-    private static List<Dueypackage> loadPackages(Character chr)
+    private static List<Dueypackage> loadPackages(IPlayer chr)
     {
         List<Dueypackage> packages = new();
         try
@@ -171,7 +171,9 @@ public class DueyProcessor
         {
             ItemInventoryType dueyItem = new(item, InventoryTypeUtils.getByType(item.getItemType()));
             using var dbContext = new DBContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
             ItemFactory.DUEY.saveItems(Collections.singletonList(dueyItem), packageId, dbContext);
+            dbTrans.Commit();
             return true;
         }
         catch (Exception sqle)
@@ -182,14 +184,14 @@ public class DueyProcessor
         return false;
     }
 
-    private static int addPackageItemFromInventory(int packageId, Client c, sbyte invTypeId, short itemPos, short amount)
+    private static int addPackageItemFromInventory(int packageId, IClient c, sbyte invTypeId, short itemPos, short amount)
     {
         if (invTypeId > 0)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
             InventoryType invType = InventoryTypeUtils.getByType(invTypeId);
-            Inventory inv = c.getPlayer().getInventory(invType);
+            Inventory inv = c.OnlinedCharacter.getInventory(invType);
 
             Item? item;
             inv.lockInventory();
@@ -236,16 +238,16 @@ public class DueyProcessor
         return 0;
     }
 
-    public static void dueySendItem(Client c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
+    public static void dueySendItem(IClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
     {
         if (c.tryacquireClient())
         {
             try
             {
-                if (c.getPlayer().isGM() && c.getPlayer().gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_DUEY)
+                if (c.OnlinedCharacter.isGM() && c.OnlinedCharacter.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_DUEY)
                 {
-                    c.getPlayer().message("You cannot use Duey to send items at your GM level.");
-                    log.Information("GM {GM} tried to send a namespace to {Recipient}", c.getPlayer().getName(), recipient);
+                    c.OnlinedCharacter.message("You cannot use Duey to send items at your GM level.");
+                    log.Information("GM {GM} tried to send a namespace to {Recipient}", c.OnlinedCharacter.getName(), recipient);
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                     return;
                 }
@@ -253,8 +255,8 @@ public class DueyProcessor
                 int fee = Trade.getFee(sendMesos);
                 if (sendMessage != null && sendMessage.Length > 100)
                 {
-                    AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit with Quick Delivery on duey.");
-                    log.Warning("Chr {CharacterName} tried to use duey with too long of a text", c.getPlayer().getName());
+                    AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
+                    log.Warning("Chr {CharacterName} tried to use duey with too long of a text", c.OnlinedCharacter.getName());
                     c.disconnect(true, false);
                     return;
                 }
@@ -262,10 +264,10 @@ public class DueyProcessor
                 {
                     fee += 5000;
                 }
-                else if (!c.getPlayer().haveItem(ItemId.QUICK_DELIVERY_TICKET))
+                else if (!c.OnlinedCharacter.haveItem(ItemId.QUICK_DELIVERY_TICKET))
                 {
-                    AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit with Quick Delivery on duey.");
-                    log.Warning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {} and amount {}", c.getPlayer().getName(), sendMesos, amount);
+                    AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
+                    log.Warning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {} and amount {}", c.OnlinedCharacter.getName(), sendMesos, amount);
                     c.disconnect(true, false);
                     return;
                 }
@@ -273,13 +275,13 @@ public class DueyProcessor
                 long finalcost = (long)sendMesos + fee;
                 if (finalcost < 0 || finalcost > int.MaxValue || (amount < 1 && sendMesos == 0))
                 {
-                    AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit with duey.");
-                    log.Warning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.getPlayer().getName(), sendMesos, amount);
+                    AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
+                    log.Warning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
                     c.disconnect(true, false);
                     return;
                 }
 
-                if (c.getPlayer().getMeso() < finalcost)
+                if (c.OnlinedCharacter.getMeso() < finalcost)
                 {
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NOT_ENOUGH_MESOS.getCode()));
                     return;
@@ -306,13 +308,13 @@ public class DueyProcessor
                     InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.QUICK_DELIVERY_TICKET, 1, false, false);
                 }
 
-                int packageId = createPackage(sendMesos, sendMessage, c.getPlayer().getName(), recipientCid, quick);
+                int packageId = createPackage(sendMesos, sendMessage, c.OnlinedCharacter.getName(), recipientCid, quick);
                 if (packageId == -1)
                 {
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_ENABLE_ACTIONS.getCode()));
                     return;
                 }
-                c.getPlayer().gainMeso((int)-finalcost, false);
+                c.OnlinedCharacter.gainMeso((int)-finalcost, false);
 
                 int res = addPackageItemFromInventory(packageId, c, invTypeId, itemPos, amount);
                 if (res == 0)
@@ -328,7 +330,7 @@ public class DueyProcessor
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                 }
 
-                Client? rClient = null;
+                IClient? rClient = null;
                 int channel = c.getWorldServer().find(recipient);
                 if (channel > -1)
                 {
@@ -343,9 +345,9 @@ public class DueyProcessor
                     }
                 }
 
-                if (rClient != null && rClient.isLoggedIn() && !rClient.getPlayer().isAwayFromWorld())
+                if (rClient != null && rClient.isLoggedIn() && !rClient.OnlinedCharacter.isAwayFromWorld())
                 {
-                    showDueyNotification(rClient, rClient.getPlayer());
+                    showDueyNotification(rClient, rClient.OnlinedCharacter);
                 }
             }
             finally
@@ -355,7 +357,7 @@ public class DueyProcessor
         }
     }
 
-    public static void dueyRemovePackage(Client c, int packageid, bool playerRemove)
+    public static void dueyRemovePackage(IClient c, int packageid, bool playerRemove)
     {
         if (c.tryacquireClient())
         {
@@ -371,7 +373,7 @@ public class DueyProcessor
         }
     }
 
-    public static void dueyClaimPackage(Client c, int packageId)
+    public static void dueyClaimPackage(IClient c, int packageId)
     {
         if (c.tryacquireClient())
         {
@@ -391,7 +393,7 @@ public class DueyProcessor
                     if (dp == null)
                     {
                         c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                        log.Warning("Chr {CharacterName} tried to receive namespace from duey with id {PackageId}", c.getPlayer().getName(), packageId);
+                        log.Warning("Chr {CharacterName} tried to receive namespace from duey with id {PackageId}", c.OnlinedCharacter.getName(), packageId);
                         return;
                     }
 
@@ -404,7 +406,7 @@ public class DueyProcessor
                     var dpItem = dp.Item;
                     if (dpItem != null)
                     {
-                        if (!c.getPlayer().canHoldMeso(dp.Mesos))
+                        if (!c.OnlinedCharacter.canHoldMeso(dp.Mesos))
                         {
                             c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
                             return;
@@ -413,7 +415,7 @@ public class DueyProcessor
                         if (!InventoryManipulator.checkSpace(c, dpItem.getItemId(), dpItem.getQuantity(), dpItem.getOwner()))
                         {
                             int itemid = dpItem.getItemId();
-                            if (ItemInformationProvider.getInstance().isPickupRestricted(itemid) && c.getPlayer().getInventory(ItemConstants.getInventoryType(itemid)).findById(itemid) != null)
+                            if (ItemInformationProvider.getInstance().isPickupRestricted(itemid) && c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(itemid)).findById(itemid) != null)
                             {
                                 c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
                             }
@@ -430,7 +432,7 @@ public class DueyProcessor
                         }
                     }
 
-                    c.getPlayer().gainMeso(dp.Mesos, false);
+                    c.OnlinedCharacter.gainMeso(dp.Mesos, false);
 
                     dueyRemovePackage(c, packageId, false);
                 }
@@ -446,19 +448,19 @@ public class DueyProcessor
         }
     }
 
-    public static void dueySendTalk(Client c, bool quickDelivery)
+    public static void dueySendTalk(IClient c, bool quickDelivery)
     {
         if (c.tryacquireClient())
         {
             try
             {
                 long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                if (timeNow - c.getPlayer().getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
+                if (timeNow - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
                 {
                     c.sendPacket(PacketCreator.enableActions());
                     return;
                 }
-                c.getPlayer().setNpcCooldown(timeNow);
+                c.OnlinedCharacter.setNpcCooldown(timeNow);
 
                 if (quickDelivery)
                 {
@@ -466,7 +468,7 @@ public class DueyProcessor
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.sendDuey(0x8, loadPackages(c.getPlayer())));
+                    c.sendPacket(PacketCreator.sendDuey(0x8, loadPackages(c.OnlinedCharacter)));
                 }
             }
             finally

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -22,9 +22,8 @@
 
 
 
-using client;
+using Application.Core.Game.Maps;
 using net.packet;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -34,9 +33,9 @@ namespace net.server.channel.handlers;
  */
 public class RemoteStoreHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         var hm = getMerchant(c);
         if (hm != null && hm.isOwner(chr))
         {
@@ -57,11 +56,11 @@ public class RemoteStoreHandler : AbstractPacketHandler
         c.sendPacket(PacketCreator.enableActions());
     }
 
-    private static HiredMerchant? getMerchant(Client c)
+    private static HiredMerchant? getMerchant(IClient c)
     {
-        if (c.getPlayer().hasMerchant())
+        if (c.OnlinedCharacter.hasMerchant())
         {
-            return c.getWorldServer().getHiredMerchant(c.getPlayer().getId());
+            return c.getWorldServer().getHiredMerchant(c.OnlinedCharacter.getId());
         }
         return null;
     }

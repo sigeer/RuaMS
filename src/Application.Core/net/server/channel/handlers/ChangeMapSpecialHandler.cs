@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,35 +21,33 @@
 */
 
 
-using client;
 using net.packet;
 using server;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
 
 public class ChangeMapSpecialHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readByte();
         string startwp = p.readString();
         p.readShort();
-        Portal portal = c.getPlayer().getMap().getPortal(startwp);
-        if (portal == null || c.getPlayer().portalDelay() > currentServerTime() || c.getPlayer().getBlockedPortals().Contains(portal.getScriptName()))
+        var portal = c.OnlinedCharacter.getMap().getPortal(startwp);
+        if (portal == null || c.OnlinedCharacter.portalDelay() > currentServerTime() || c.OnlinedCharacter.getBlockedPortals().Contains(portal.getScriptName()))
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
-        if (c.getPlayer().isChangingMaps() || c.getPlayer().isBanned())
+        if (c.OnlinedCharacter.isChangingMaps() || c.OnlinedCharacter.isBanned())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
-        if (c.getPlayer().getTrade() != null)
+        if (c.OnlinedCharacter.getTrade() != null)
         {
-            Trade.cancelTrade(c.getPlayer(), TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
+            Trade.cancelTrade(c.OnlinedCharacter, TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
         }
         portal.enterPortal(c);
     }

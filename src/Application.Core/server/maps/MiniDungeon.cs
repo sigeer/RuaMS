@@ -20,7 +20,6 @@
 
 
 using Application.Core.scripting.Event;
-using client;
 using tools;
 
 namespace server.maps;
@@ -30,7 +29,7 @@ namespace server.maps;
  */
 public class MiniDungeon
 {
-    List<Character> players = new();
+    List<IPlayer> players = new();
     ScheduledFuture? timeoutTask = null;
     object lockObj = new object();
 
@@ -46,7 +45,7 @@ public class MiniDungeon
         expireTime += DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
 
-    public bool registerPlayer(Character chr)
+    public bool registerPlayer(IPlayer chr)
     {
         int time = (int)((expireTime - DateTimeOffset.Now.ToUnixTimeMilliseconds()) / 1000);
         if (time > 0)
@@ -72,7 +71,7 @@ public class MiniDungeon
         return true;
     }
 
-    public bool unregisterPlayer(Character chr)
+    public bool unregisterPlayer(IPlayer chr)
     {
         chr.sendPacket(PacketCreator.removeClock());
 
@@ -105,9 +104,9 @@ public class MiniDungeon
         Monitor.Enter(lockObj);
         try
         {
-            List<Character> lchr = new(players);
+            List<IPlayer> lchr = new(players);
 
-            foreach (Character chr in lchr)
+            foreach (IPlayer chr in lchr)
             {
                 chr.changeMap(baseMap);
             }

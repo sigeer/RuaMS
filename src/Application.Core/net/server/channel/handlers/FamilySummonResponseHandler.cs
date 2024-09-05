@@ -1,9 +1,9 @@
 
 
+using Application.Core.Game.Maps;
 using client;
 using net.packet;
 using net.server.coordinator.world;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -11,7 +11,7 @@ namespace net.server.channel.handlers;
 public class FamilySummonResponseHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
@@ -19,28 +19,28 @@ public class FamilySummonResponseHandler : AbstractPacketHandler
         }
         p.readString(); //family name
         bool accept = p.readByte() != 0;
-        InviteResult inviteResult = InviteCoordinator.answerInvite(InviteType.FAMILY_SUMMON, c.getPlayer().getId(), c.getPlayer(), accept);
+        InviteResult inviteResult = InviteCoordinator.answerInvite(InviteType.FAMILY_SUMMON, c.OnlinedCharacter.getId(), c.OnlinedCharacter, accept);
         if (inviteResult.result == InviteResultType.NOT_FOUND)
         {
             return;
         }
-        Character inviter = inviteResult.from;
-        FamilyEntry inviterEntry = inviter.getFamilyEntry();
+        var inviter = inviteResult.from;
+        var inviterEntry = inviter.getFamilyEntry();
         if (inviterEntry == null)
         {
             return;
         }
-        MapleMap map = (MapleMap)inviteResult.paramsValue[0];
+        var map = (IMap)inviteResult.paramsValue[0];
         if (accept && inviter.getMap() == map)
         { //cancel if inviter has changed maps
-            c.getPlayer().changeMap(map, map.getPortal(0));
+            c.OnlinedCharacter.changeMap(map, map.getPortal(0));
         }
         else
         {
             inviterEntry.refundEntitlement(FamilyEntitlement.SUMMON_FAMILY);
             inviterEntry.gainReputation(FamilyEntitlement.SUMMON_FAMILY.getRepCost(), false); //refund rep cost if declined
             inviter.sendPacket(PacketCreator.getFamilyInfo(inviterEntry));
-            inviter.dropMessage(5, c.getPlayer().getName() + " has denied the summon request.");
+            inviter.dropMessage(5, c.OnlinedCharacter.getName() + " has denied the summon request.");
         }
     }
 

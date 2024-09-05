@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
@@ -37,10 +36,10 @@ namespace net.server.channel.handlers;
 public class UseSummonBagHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         //[4A 00][6C 4C F2 02][02 00][63 0B 20 00]
-        if (!c.getPlayer().isAlive())
+        if (!c.OnlinedCharacter.isAlive())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
@@ -48,7 +47,7 @@ public class UseSummonBagHandler : AbstractPacketHandler
         p.readInt();
         short slot = p.readShort();
         int itemId = p.readInt();
-        Item toUse = c.getPlayer().getInventory(InventoryType.USE).getItem(slot);
+        var toUse = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);
         if (toUse != null && toUse.getQuantity() > 0 && toUse.getItemId() == itemId)
         {
             InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
@@ -57,7 +56,7 @@ public class UseSummonBagHandler : AbstractPacketHandler
             {
                 if (Randomizer.nextInt(100) < toSpawnChild[1])
                 {
-                    c.getPlayer().getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(toSpawnChild[0]), c.getPlayer().getPosition());
+                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(toSpawnChild[0]), c.OnlinedCharacter.getPosition());
                 }
             }
         }

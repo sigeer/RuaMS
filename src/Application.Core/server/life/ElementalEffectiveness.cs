@@ -23,10 +23,10 @@ namespace server.life;
 
 public enum ElementalEffectiveness
 {
-    NORMAL, 
-    IMMUNE, 
-    STRONG, 
-    WEAK, 
+    NORMAL,
+    IMMUNE,
+    STRONG,
+    WEAK,
     NEUTRAL
 }
 

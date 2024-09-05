@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using client.inventory;
 using constants.inventory;
 
@@ -32,11 +31,11 @@ namespace server;
  */
 public class StorageInventory
 {
-    private Client c;
+    private IClient c;
     private Dictionary<short, Item> inventory = new();
     private byte slotLimit;
 
-    public StorageInventory(Client c, List<Item> toSort)
+    public StorageInventory(IClient c, List<Item> toSort)
     {
         this.inventory = new();
         this.slotLimit = (byte)toSort.Count;

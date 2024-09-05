@@ -1,5 +1,5 @@
 /*
-This file is part of the OdinMS Maple Story Server
+This file is part of the OdinMS Maple Story NewServer
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
 Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using client;
 using client.autoban;
 using client.command;
 using net.packet;
@@ -32,10 +31,10 @@ namespace net.server.channel.handlers;
 
 public class GeneralChatHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         string s = p.readString();
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (chr.getAutobanManager().getLastSpam(7) + 200 > currentServerTime())
         {
             c.sendPacket(PacketCreator.enableActions());
@@ -43,8 +42,8 @@ public class GeneralChatHandler : AbstractPacketHandler
         }
         if (s.Length > sbyte.MaxValue && !chr.isGM())
         {
-            AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit in General Chat.");
-            log.Warning("Chr {CharacterName} tried to send text with length of {StringLength}", c.getPlayer().getName(), s.Length);
+            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit in General Chat.");
+            log.Warning("Chr {CharacterName} tried to send text with length of {StringLength}", c.OnlinedCharacter.getName(), s.Length);
             c.disconnect(true, false);
             return;
         }

@@ -18,7 +18,6 @@
 */
 
 
-using client;
 using provider;
 
 namespace server.quest.actions;
@@ -40,10 +39,10 @@ public abstract class AbstractQuestAction
         this.questID = quest.getId();
     }
 
-    public abstract void run(Character chr, int? extSelection);
+    public abstract void run(IPlayer chr, int? extSelection);
     public abstract void processData(Data data);
 
-    public virtual bool check(Character chr, int? extSelection)
+    public virtual bool check(IPlayer chr, int? extSelection)
     {
         return true;
     }

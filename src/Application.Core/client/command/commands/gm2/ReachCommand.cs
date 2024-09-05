@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -22,9 +22,6 @@
    @Author: Arthur L - Refactored command content into modules
 */
 
-
-using server.maps;
-
 namespace client.command.commands.gm2;
 
 public class ReachCommand : Command
@@ -34,9 +31,9 @@ public class ReachCommand : Command
         setDescription("Warp to a player.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !reach <playername>");
@@ -44,7 +41,7 @@ public class ReachCommand : Command
         }
 
         var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (victim != null && victim.isLoggedin())
+        if (victim != null && victim.IsOnlined)
         {
             if (player.getClient().getChannel() != victim.getClient().getChannel())
             {
@@ -52,7 +49,7 @@ public class ReachCommand : Command
             }
             else
             {
-                MapleMap map = victim.getMap();
+                var map = victim.getMap();
                 player.saveLocationOnWarp();
                 player.forceChangeMap(map, map.findClosestPortal(victim.getPosition()));
             }

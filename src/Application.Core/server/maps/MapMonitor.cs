@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Maps;
 using Application.Core.scripting.Event;
 
 namespace server.maps;
@@ -30,10 +31,10 @@ namespace server.maps;
 public class MapMonitor
 {
     private ScheduledFuture? monitorSchedule;
-    private MapleMap? map;
+    private IMap map;
     private Portal? portal;
 
-    public MapMonitor(MapleMap map, string portal)
+    public MapMonitor(IMap map, string portal)
     {
         this.map = map;
         this.portal = map.getPortal(portal);
@@ -62,7 +63,6 @@ public class MapMonitor
         }
         map.resetReactors();
 
-        map = null;
         portal = null;
     }
 }

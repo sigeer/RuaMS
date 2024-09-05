@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,36 +21,35 @@
 */
 
 
-using client;
 using client.autoban;
 using net.packet;
 using tools;
-using static client.Character;
+using static Application.Core.Game.Players.Player;
 
 namespace net.server.channel.handlers;
 
 public class GiveFameHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        var target = (Character)c.getPlayer().getMap().getMapObject(p.readInt());
+        var target = (IPlayer)c.OnlinedCharacter.getMap().getMapObject(p.readInt());
         int mode = p.readByte();
         int famechange = 2 * mode - 1;
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (target == null || target.getId() == player.getId() || player.getLevel() < 15)
         {
             return;
         }
         else if (famechange != 1 && famechange != -1)
         {
-            AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit fame.");
-            log.Warning("Chr {CharacterName} tried to fame hack with famechange {FameChange}", c.getPlayer().getName(), famechange);
+            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit fame.");
+            log.Warning("Chr {CharacterName} tried to fame hack with famechange {FameChange}", c.OnlinedCharacter.getName(), famechange);
             c.disconnect(true, false);
             return;
         }
 
-        FameStatus status = player.canGiveFame(target);
+        var status = player.canGiveFame(target);
         if (status == FameStatus.OK)
         {
             if (target.gainFame(famechange, player, mode))

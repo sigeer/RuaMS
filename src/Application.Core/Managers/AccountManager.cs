@@ -31,5 +31,6 @@ namespace Application.Core.Managers
             using var dbContext = new DBContext();
             dbContext.Accounts.Where(x => x.Name == loginAccount).ExecuteUpdate(x => x.SetProperty(y => y.Password, BCrypt.hashpw(pwd, BCrypt.gensalt(12))));
         }
+
     }
 }

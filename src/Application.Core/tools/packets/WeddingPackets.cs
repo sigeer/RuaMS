@@ -6,7 +6,7 @@
 
 
 
-using client;
+using Application.Core.Managers;
 using client.inventory;
 using constants.id;
 using net.opcodes;
@@ -74,7 +74,7 @@ public class WeddingPackets : PacketCreator
 
     public class WeddingWishList
     {
-        public Character pUser;
+        public IPlayer pUser;
         public int dwMarriageNo;
         public int nGender;
         public int nWLType;
@@ -202,7 +202,7 @@ public class WeddingPackets : PacketCreator
      * @param m_dwUsers         The List of all Character guests within the current cake map to be encoded
      * @return mplew (MaplePacket) Byte array to be converted and read for byte[]->ImageIO
      */
-    public static Packet onTakePhoto(string ReservedGroomName, string ReservedBrideName, int m_dwField, List<Character> m_dwUsers)
+    public static Packet onTakePhoto(string ReservedGroomName, string ReservedBrideName, int m_dwField, List<IPlayer> m_dwUsers)
     { // OnIFailedAtWeddingPhotos
         OutPacket p = OutPacket.create(SendOpcode.WEDDING_PHOTO);// v53 header, convert -> v83
         p.writeString(ReservedGroomName);
@@ -210,7 +210,7 @@ public class WeddingPackets : PacketCreator
         p.writeInt(m_dwField); // field id?
         p.writeInt(m_dwUsers.Count);
 
-        foreach (Character guest in m_dwUsers)
+        foreach (IPlayer guest in m_dwUsers)
         {
             // Begin Avatar Encoding
             addCharLook(p, guest, false); // CUser::EncodeAvatar
@@ -246,7 +246,7 @@ public class WeddingPackets : PacketCreator
      * @param wedding
      * @return mplew
      */
-    public static Packet OnMarriageResult(int marriageId, Character chr, bool wedding)
+    public static Packet OnMarriageResult(int marriageId, IPlayer chr, bool wedding)
     {
         OutPacket p = OutPacket.create(SendOpcode.MARRIAGE_RESULT);
         p.writeByte(11);
@@ -264,8 +264,8 @@ public class WeddingPackets : PacketCreator
             p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
             p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
         }
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : Character.getNameById(chr.getPartnerId()), '\0', 13));
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? Character.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
+        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : CharacterManager.getNameById(chr.getPartnerId()), '\0', 13));
+        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? CharacterManager.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
 
         return p;
     }

@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using provider;
 
 namespace server.quest.actions;
@@ -45,7 +44,7 @@ public class InfoAction : AbstractQuestAction
     }
 
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         chr.getAbstractPlayerInteraction().setQuestProgress(questID, info);
     }

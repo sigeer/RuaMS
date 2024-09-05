@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Maps;
 using client;
 using client.creator.veteran;
 using client.inventory;
@@ -51,9 +52,9 @@ public class UseCashItemHandler : AbstractPacketHandler
         this.noteService = noteService;
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
 
         long timeNow = currentServerTime();
         if (timeNow - player.getLastUsedCashItem() < 3000)
@@ -108,7 +109,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                 int mapId = p.readInt();
                 if (itemId / 1000 >= 5041 || mapId / 100000000 == player.getMapId() / 100000000)
                 { //check vip or same continent
-                    MapleMap targetMap = c.getChannelServer().getMapFactory().getMap(mapId);
+                    var targetMap = c.getChannelServer().getMapFactory().getMap(mapId);
                     if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(mapId)))
                     {
                         player.forceChangeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
@@ -131,7 +132,7 @@ public class UseCashItemHandler : AbstractPacketHandler
 
                 if (victim != null)
                 {
-                    MapleMap targetMap = victim.getMap();
+                    var targetMap = victim.getMap();
                     if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(targetMap.getId())))
                     {
                         if (!victim.isGM() || victim.gmLevel() <= player.gmLevel())
@@ -191,7 +192,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                     if ((curLevelSPFrom - 1) == 0)
                     {
                         bool updated = false;
-                        foreach (SkillMacro macro in player.getMacros())
+                        foreach (var macro in player.getMacros())
                         {
                             if (macro == null)
                             {
@@ -340,7 +341,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                     int tvType = itemId % 10;
                     bool megassenger = false;
                     bool ear = false;
-                    Character? victim = null;
+                    IPlayer? victim = null;
                     if (tvType != 1)
                     {
                         if (tvType >= 3)
@@ -453,7 +454,7 @@ public class UseCashItemHandler : AbstractPacketHandler
         {
             if (ii.getStateChangeItem(itemId) != 0)
             {
-                foreach (Character mChar in player.getMap().getCharacters())
+                foreach (var mChar in player.getMap().getCharacters())
                 {
                     ii.getItemEffect(ii.getStateChangeItem(itemId))?.applyTo(mChar);
                 }
@@ -732,7 +733,7 @@ public class UseCashItemHandler : AbstractPacketHandler
             InventoryManipulator.removeFromSlot(c, InventoryType.USE, uSlot, 1, false);
             remove(c, position, itemId);
 
-            Client client = c;
+            IClient client = c;
             TimerManager.getInstance().schedule(() =>
             {
                 if (!player.isLoggedin())
@@ -764,9 +765,9 @@ public class UseCashItemHandler : AbstractPacketHandler
         }
     }
 
-    private static void remove(Client c, short position, int itemid)
+    private static void remove(IClient c, short position, int itemid)
     {
-        Inventory cashInv = c.getPlayer().getInventory(InventoryType.CASH);
+        Inventory cashInv = c.OnlinedCharacter.getInventory(InventoryType.CASH);
         cashInv.lockInventory();
         try
         {
@@ -788,7 +789,7 @@ public class UseCashItemHandler : AbstractPacketHandler
         }
     }
 
-    private static bool getIncubatedItem(Client c, int id)
+    private static bool getIncubatedItem(IClient c, int id)
     {
         int[] ids = { 1012070, 1302049, 1302063, 1322027, 2000004, 2000005, 2020013, 2020015, 2040307, 2040509, 2040519, 2040521, 2040533, 2040715, 2040717, 2040810, 2040811, 2070005, 2070006, 4020009, };
         int[] quantitys = { 1, 1, 1, 1, 240, 200, 200, 200, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3 };
@@ -800,7 +801,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                 amount = quantitys[i];
             }
         }
-        if (c.getPlayer().getInventory(InventoryTypeUtils.getByType((sbyte)(id / 1000000))).isFull())
+        if (c.OnlinedCharacter.getInventory(InventoryTypeUtils.getByType((sbyte)(id / 1000000))).isFull())
         {
             return false;
         }

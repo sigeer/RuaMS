@@ -132,7 +132,7 @@ public class MakeCharInfo
         return this.charWeapons.Contains(id);
     }
 
-    public bool verifyCharacter(Character character)
+    public bool verifyCharacter(IPlayer character)
     {
         if (!verifyFaceId(character.getFace())) return false;
         if (!verifyHairId(character.getHair())) return false;

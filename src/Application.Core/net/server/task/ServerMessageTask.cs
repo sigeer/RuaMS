@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.task;
 
 /**
@@ -34,7 +36,7 @@ public class ServerMessageTask : BaseTask
         wserv.runDisabledServerMessagesSchedule();
     }
 
-    public ServerMessageTask(World world) : base(world)
+    public ServerMessageTask(IWorld world) : base(world)
     {
     }
 }

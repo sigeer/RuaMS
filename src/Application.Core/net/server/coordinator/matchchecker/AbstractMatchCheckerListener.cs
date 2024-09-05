@@ -18,9 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using client;
-
 namespace net.server.coordinator.matchchecker;
 
 
@@ -31,8 +28,8 @@ namespace net.server.coordinator.matchchecker;
 
 public abstract class AbstractMatchCheckerListener
 {
-    public abstract void onMatchCreated(Character leader, HashSet<Character> nonLeaderMatchPlayers, string message);
-    public abstract void onMatchAccepted(int leaderid, HashSet<Character> matchPlayers, string message);
-    public abstract void onMatchDeclined(int leaderid, HashSet<Character> matchPlayers, string message);
-    public abstract void onMatchDismissed(int leaderid, HashSet<Character> matchPlayers, string message);
+    public abstract void onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message);
+    public abstract void onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message);
+    public abstract void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message);
+    public abstract void onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message);
 }

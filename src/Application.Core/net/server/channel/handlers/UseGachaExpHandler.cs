@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -22,7 +22,6 @@
 
 
 
-using client;
 using client.autoban;
 using net.packet;
 using tools;
@@ -37,18 +36,18 @@ namespace net.server.channel.handlers;
 public class UseGachaExpHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
 
         if (c.tryacquireClient())
         {
             try
             {
-                if (c.getPlayer().getGachaExp() <= 0)
+                if (c.OnlinedCharacter.getGachaExp() <= 0)
                 {
-                    AutobanFactory.GACHA_EXP.autoban(c.getPlayer(), "Player tried to redeem GachaEXP, but had none to redeem.");
+                    AutobanFactory.GACHA_EXP.autoban(c.OnlinedCharacter, "Player tried to redeem GachaEXP, but had none to redeem.");
                 }
-                c.getPlayer().gainGachaExp();
+                c.OnlinedCharacter.gainGachaExp();
             }
             finally
             {

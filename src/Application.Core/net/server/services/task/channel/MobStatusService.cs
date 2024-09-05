@@ -19,7 +19,7 @@
 */
 
 
-using client.status;
+using Application.Core.Game.Life.Monsters;
 
 namespace net.server.services.task.channel;
 

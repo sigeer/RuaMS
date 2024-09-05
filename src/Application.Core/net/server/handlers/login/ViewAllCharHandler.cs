@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -29,9 +28,9 @@ namespace net.server.handlers.login;
 
 public class ViewAllCharHandler : AbstractPacketHandler
 {
-    private static int CHARACTER_LIMIT = 60; // Client will crash if sending 61 or more characters
+    private static int CHARACTER_LIMIT = 60; // IClient will crash if sending 61 or more characters
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         try
         {
@@ -62,7 +61,7 @@ public class ViewAllCharHandler : AbstractPacketHandler
         }
     }
 
-    private static SortedDictionary<int, List<Character>> limitTotalChrs(SortedDictionary<int, List<Character>> worldChrs, int limit)
+    private static SortedDictionary<int, List<IPlayer>> limitTotalChrs(SortedDictionary<int, List<IPlayer>> worldChrs, int limit)
     {
         if (countTotalChrs(worldChrs) <= limit)
         {
@@ -75,20 +74,20 @@ public class ViewAllCharHandler : AbstractPacketHandler
         }
     }
 
-    private static int countTotalChrs(IDictionary<int, List<Character>> worldChrs)
+    private static int countTotalChrs(IDictionary<int, List<IPlayer>> worldChrs)
     {
         return worldChrs.Sum(x => x.Value.Count);
     }
 
-    private static SortedDictionary<int, List<Character>> cutAfterChrLimit(SortedDictionary<int, List<Character>> worldChrs,
+    private static SortedDictionary<int, List<IPlayer>> cutAfterChrLimit(SortedDictionary<int, List<IPlayer>> worldChrs,
                                                                         int limit)
     {
-        SortedDictionary<int, List<Character>> cappedCopy = new();
+        SortedDictionary<int, List<IPlayer>> cappedCopy = new();
         int runningChrTotal = 0;
         foreach (var entry in worldChrs)
         {
             int worldId = entry.Key;
-            List<Character> chrs = entry.Value;
+            List<IPlayer> chrs = entry.Value;
             if (runningChrTotal + chrs.Count <= limit)
             {
                 // Limit not reached, move them all
@@ -98,7 +97,7 @@ public class ViewAllCharHandler : AbstractPacketHandler
             else
             { // Limit would be reached if all chrs were moved. Move just enough to fit within limit.
                 int remainingSlots = limit - runningChrTotal;
-                List<Character> lastChrs = chrs.Take(remainingSlots).ToList();
+                List<IPlayer> lastChrs = chrs.Take(remainingSlots).ToList();
                 cappedCopy.AddOrUpdate(worldId, lastChrs);
                 break;
             }
@@ -115,12 +114,12 @@ public class ViewAllCharHandler : AbstractPacketHandler
      * @param totalChrs total amount of characters to display on 'View all characters' screen
      * @return if we need to pad the last row to include the characters that would otherwise not appear
      */
-    private static void padChrsIfNeeded(SortedDictionary<int, List<Character>> worldChrs)
+    private static void padChrsIfNeeded(SortedDictionary<int, List<IPlayer>> worldChrs)
     {
         while (shouldPadLastRow(countTotalChrs(worldChrs)))
         {
-            List<Character> lastWorldChrs = worldChrs.Last().Value;
-            Character lastChrForPadding = lastWorldChrs.Last();
+            List<IPlayer> lastWorldChrs = worldChrs.Last().Value;
+            var lastChrForPadding = lastWorldChrs.Last();
             lastWorldChrs.Add(lastChrForPadding);
         }
     }

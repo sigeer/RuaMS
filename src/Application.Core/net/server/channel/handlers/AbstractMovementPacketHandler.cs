@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,8 +21,8 @@
  */
 
 
+using Application.Core.Game.Maps;
 using net.packet;
-using server.maps;
 using server.movement;
 using tools.exceptions;
 
@@ -155,7 +155,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
         return res;
     }
 
-    protected void updatePosition(InPacket p, AnimatedMapObject target, int yOffset)
+    protected void updatePosition(InPacket p, IAnimatedMapObject target, int yOffset)
     {
 
         byte numCommands = p.readByte();

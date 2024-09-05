@@ -18,7 +18,7 @@ public partial class DBContext : DbContext
     public virtual DbSet<ExpLogRecord> ExpLogRecords { get; set; }
     public virtual DbSet<Account> Accounts { get; set; }
 
-    public virtual DbSet<DB_Alliance> Alliances { get; set; }
+    public virtual DbSet<AllianceEntity> Alliances { get; set; }
 
     public virtual DbSet<Allianceguild> AllianceGuilds { get; set; }
 
@@ -34,7 +34,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Buddy> Buddies { get; set; }
 
-    public virtual DbSet<DB_Character> Characters { get; set; }
+    public virtual DbSet<CharacterEntity> Characters { get; set; }
 
     public virtual DbSet<Cooldown> Cooldowns { get; set; }
 
@@ -58,7 +58,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Gift> Gifts { get; set; }
 
-    public virtual DbSet<DB_Guild> Guilds { get; set; }
+    public virtual DbSet<GuildEntity> Guilds { get; set; }
 
     public virtual DbSet<Hwidaccount> Hwidaccounts { get; set; }
 
@@ -150,7 +150,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Shopitem> Shopitems { get; set; }
 
-    public virtual DbSet<DB_Skill> Skills { get; set; }
+    public virtual DbSet<SkillEntity> Skills { get; set; }
 
     public virtual DbSet<Skillmacro> Skillmacros { get; set; }
 
@@ -291,7 +291,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("webadmin");
         });
 
-        modelBuilder.Entity<DB_Alliance>(entity =>
+        modelBuilder.Entity<AllianceEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -500,7 +500,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("pending");
         });
 
-        modelBuilder.Entity<DB_Character>(entity =>
+        modelBuilder.Entity<CharacterEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -516,7 +516,7 @@ public partial class DBContext : DbContext
 
             entity.HasIndex(e => new { e.Level, e.Exp }, "ranking1");
 
-            entity.HasIndex(e => new { e.Gm, e.Job }, "ranking2");
+            entity.HasIndex(e => new { e.Gm, e.JobId }, "ranking2");
 
             entity.Property(e => e.Id)
                 .HasColumnType("int(11)")
@@ -612,7 +612,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Jailexpire)
                 .HasColumnType("bigint(20)")
                 .HasColumnName("jailexpire");
-            entity.Property(e => e.Job)
+            entity.Property(e => e.JobId)
                 .HasColumnType("int(11)")
                 .HasColumnName("job");
             entity.Property(e => e.JobRank)
@@ -1068,7 +1068,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("to");
         });
 
-        modelBuilder.Entity<DB_Guild>(entity =>
+        modelBuilder.Entity<GuildEntity>(entity =>
         {
             entity.HasKey(e => e.GuildId).HasName("PRIMARY");
 
@@ -2469,7 +2469,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("shopid");
         });
 
-        modelBuilder.Entity<DB_Skill>(entity =>
+        modelBuilder.Entity<SkillEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

@@ -1,6 +1,3 @@
-
-
-using client;
 using constants.id;
 using net.packet;
 using server.minigame;
@@ -16,10 +13,10 @@ namespace net.server.channel.handlers;
 public class RPSActionHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
-        RockPaperScissor rps = chr.getRPS();
+        var chr = c.OnlinedCharacter;
+        var rps = chr.getRPS();
 
         if (c.tryacquireClient())
         {

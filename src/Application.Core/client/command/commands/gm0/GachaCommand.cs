@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -36,10 +36,10 @@ public class GachaCommand : Command
         setDescription("Show gachapon rewards.");
     }
 
-    public override void execute(Client c, string[] paramValues)
+    public override void execute(IClient c, string[] paramValues)
     {
         Gachapon.GachaponType? gacha = null;
-        string search = c.getPlayer().getLastCommandMessage();
+        string search = c.OnlinedCharacter.getLastCommandMessage();
         string gachaName = "";
         string[] names = { "Henesys", "Ellinia", "Perion", "Kerning City", "Sleepywood", "Mushroom Shrine", "Showa Spa Male", "Showa Spa Female", "New Leaf City", "Nautilus Harbor" };
         int[] ids = {NpcId.GACHAPON_HENESYS, NpcId.GACHAPON_ELLINIA, NpcId.GACHAPON_PERION, NpcId.GACHAPON_KERNING,
@@ -55,10 +55,10 @@ public class GachaCommand : Command
         }
         if (gacha == null)
         {
-            c.getPlayer().yellowMessage("Please use @gacha <name> where name corresponds to one of the below:");
+            c.OnlinedCharacter.yellowMessage("Please use @gacha <name> where name corresponds to one of the below:");
             foreach (string name in names)
             {
-                c.getPlayer().yellowMessage(name);
+                c.OnlinedCharacter.yellowMessage(name);
             }
             return;
         }

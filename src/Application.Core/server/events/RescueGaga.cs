@@ -37,7 +37,7 @@ public class RescueGaga : Events
         return getCompleted();
     }
 
-    public void giveSkill(Character chr)
+    public void giveSkill(IPlayer chr)
     {
         int skillid = 0;
         switch (chr.getJobType())

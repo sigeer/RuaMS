@@ -1,6 +1,3 @@
-
-
-using client;
 using DotNetty.Transport.Channels.Sockets;
 using net.server;
 using net.server.coordinator.session;

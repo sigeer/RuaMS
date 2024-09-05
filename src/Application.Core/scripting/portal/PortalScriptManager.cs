@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using client;
 using Microsoft.ClearScript.V8;
 using server.maps;
 
@@ -59,7 +58,7 @@ public class PortalScriptManager : AbstractScriptManager
         return script;
     }
 
-    public bool executePortalScript(Portal portal, Client c)
+    public bool executePortalScript(Portal portal, IClient c)
     {
         try
         {

@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.autoban;
 using net.packet;
 using server;
@@ -31,9 +30,9 @@ namespace net.server.channel.handlers;
 
 public class MultiChatHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (player.getAutobanManager().getLastSpam(7) + 200 > currentServerTime())
         {
             return;
@@ -49,12 +48,12 @@ public class MultiChatHandler : AbstractPacketHandler
         string chattext = p.readString();
         if (chattext.Length > sbyte.MaxValue && !player.isGM())
         {
-            AutobanFactory.PACKET_EDIT.alert(c.getPlayer(), c.getPlayer().getName() + " tried to packet edit chats.");
-            log.Warning("Chr {CharacterName} tried to send text with length of {}", c.getPlayer().getName(), chattext.Length);
+            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit chats.");
+            log.Warning("Chr {CharacterName} tried to send text with length of {ChatContent}", c.OnlinedCharacter.getName(), chattext.Length);
             c.disconnect(true, false);
             return;
         }
-        World world = c.getWorldServer();
+        var world = c.getWorldServer();
         if (type == 0)
         {
             world.buddyChat(recipients, player.getId(), player.getName(), chattext);
@@ -62,7 +61,7 @@ public class MultiChatHandler : AbstractPacketHandler
         }
         else if (type == 1 && player.getParty() != null)
         {
-            world.partyChat(player.getParty(), chattext, player.getName());
+            world.partyChat(player.getParty()!, chattext, player.getName());
             ChatLogger.log(c, "Party", chattext);
         }
         else if (type == 2 && player.getGuildId() > 0)
@@ -72,7 +71,7 @@ public class MultiChatHandler : AbstractPacketHandler
         }
         else if (type == 3 && player.getGuild() != null)
         {
-            int allianceId = player.getGuild().getAllianceId();
+            int allianceId = player.getGuild()!.getAllianceId();
             if (allianceId > 0)
             {
                 Server.getInstance().allianceMessage(allianceId, PacketCreator.multiChat(player.getName(), chattext, 3), player.getId(), -1);

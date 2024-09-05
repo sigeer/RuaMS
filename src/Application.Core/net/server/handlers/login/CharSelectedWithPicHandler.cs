@@ -1,6 +1,3 @@
-
-
-using client;
 using net.packet;
 using net.server.coordinator.session;
 using System.Net;
@@ -26,7 +23,7 @@ public class CharSelectedWithPicHandler : AbstractPacketHandler
         };
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         string pic = p.readString();
         int charId = p.readInt();
@@ -65,7 +62,7 @@ public class CharSelectedWithPicHandler : AbstractPacketHandler
         if (c.checkPic(pic))
         {
             c.setWorld(server.getCharacterWorld(charId));
-            World wserv = c.getWorldServer();
+            var wserv = c.getWorldServer();
             if (wserv == null || wserv.isWorldCapacityFull())
             {
                 c.sendPacket(PacketCreator.getAfterLoginError(10));

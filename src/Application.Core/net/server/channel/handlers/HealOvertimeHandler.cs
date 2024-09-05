@@ -1,5 +1,5 @@
 /*
-This file is part of the OdinMS Maple Story Server
+This file is part of the OdinMS Maple Story NewServer
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
 Jan Christian Meyer <vimes@odinms.de>
@@ -21,19 +21,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using client;
 using client.autoban;
 using net.packet;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
 
 public class HealOvertimeHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (!chr.isLoggedinWorld())
         {
             return;
@@ -52,7 +50,7 @@ public class HealOvertimeHandler : AbstractPacketHandler
                 AutobanFactory.FAST_HP_HEALING.addPoint(abm, "Fast hp healing");
             }
 
-            MapleMap map = chr.getMap();
+            var map = chr.getMap();
             int abHeal = (int)(77 * map.getRecovery() * 1.5); // thanks Ari for noticing players not getting healed in sauna in certain cases
             if (healHP > abHeal)
             {

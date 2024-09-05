@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -37,9 +37,9 @@ namespace net.server.channel.handlers;
  */
 public class UseItemHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
 
         if (!chr.isAlive())
         {
@@ -97,7 +97,7 @@ public class UseItemHandler : AbstractPacketHandler
             else
             {
                 var mse = ii.getItemEffect(toUse.getItemId());
-                foreach (Character player in chr.getMap().getCharacters())
+                foreach (var player in chr.getMap().getCharacters())
                 {
                     mse.applyTo(player);
                 }
@@ -105,7 +105,7 @@ public class UseItemHandler : AbstractPacketHandler
         }
     }
 
-    private void remove(Client c, short slot)
+    private void remove(IClient c, short slot)
     {
         InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
         c.sendPacket(PacketCreator.enableActions());

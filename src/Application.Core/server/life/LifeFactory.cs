@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.constants.game;
+using Application.Core.Game.Life;
 using Application.Core.model;
 using provider;
 using provider.wz;
@@ -53,7 +54,7 @@ public class LifeFactory
         return ret;
     }
 
-    public static AbstractLoadedLife? getLife(int id, string type)
+    public static AbstractLifeObject? getLife(int id, string type)
     {
         if (type.ToLower() == LifeType.NPC)
         {

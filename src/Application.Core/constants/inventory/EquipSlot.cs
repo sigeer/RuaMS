@@ -30,11 +30,12 @@ public class EquipSlot : EnumClass
     public static readonly EquipSlot BELT = new EquipSlot("Be", -50);
     public static readonly EquipSlot PET_EQUIP = new EquipSlot();
 
-    private string text;
+    private string? text;
     private int[] allowed;
 
     EquipSlot()
     {
+        allowed = new int[] { };
     }
 
     private EquipSlot(string wz_name, params int[] alloweds) : this()
@@ -43,7 +44,7 @@ public class EquipSlot : EnumClass
         allowed = alloweds;
     }
 
-    public string getName()
+    public string? getName()
     {
         return text;
     }
@@ -67,18 +68,15 @@ public class EquipSlot : EnumClass
         return cash && slot < 0;
     }
 
-    public static EquipSlot getFromTextSlot(string slot)
+    public static EquipSlot getFromTextSlot(string? slot)
     {
-        if (slot.Count() > 0)
+        if (!string.IsNullOrEmpty(slot))
         {
             foreach (EquipSlot c in values<EquipSlot>())
             {
-                if (c.getName() != null)
+                if (c.getName() == slot)
                 {
-                    if (c.getName().Equals(slot))
-                    {
-                        return c;
-                    }
+                    return c;
                 }
             }
         }

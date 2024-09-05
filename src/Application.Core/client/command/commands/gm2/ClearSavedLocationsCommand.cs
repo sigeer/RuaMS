@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -34,14 +34,15 @@ public class ClearSavedLocationsCommand : Command
         setDescription("Clear saved locations for a player.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer(), victim;
+        var player = c.OnlinedCharacter;
+        IPlayer? victim;
 
         if (paramsValue.Length > 0)
         {
             victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-            if (victim == null)
+            if (victim == null || !victim.IsOnlined)
             {
                 player.message("Player '" + paramsValue[0] + "' could not be found.");
                 return;
@@ -49,7 +50,7 @@ public class ClearSavedLocationsCommand : Command
         }
         else
         {
-            victim = c.getPlayer();
+            victim = c.OnlinedCharacter;
         }
 
         foreach (SavedLocationType type in Enum.GetValues<SavedLocationType>())

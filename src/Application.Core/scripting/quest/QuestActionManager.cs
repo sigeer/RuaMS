@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using scripting.npc;
 using server;
 using server.quest;
@@ -37,7 +36,7 @@ public class QuestActionManager : NPCConversationManager
     private bool start; // this is if the script in question is start or end
     private int quest;
 
-    public QuestActionManager(Client c, int quest, int npc, bool start) : base(c, npc, null)
+    public QuestActionManager(IClient c, int quest, int npc, bool start) : base(c, npc, null)
     {
 
         this.quest = quest;
@@ -91,7 +90,7 @@ public class QuestActionManager : NPCConversationManager
         MesoAction.runAction(getPlayer(), gain);
     }
 
-    public string getMedalName()
+    public string? getMedalName()
     {  // usable only for medal quests (id 299XX)
         Quest q = Quest.getInstance(quest);
         return ItemInformationProvider.getInstance().getName(q.getMedalRequirement());

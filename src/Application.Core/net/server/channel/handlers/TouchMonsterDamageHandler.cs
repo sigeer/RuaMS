@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -28,12 +28,12 @@ namespace net.server.channel.handlers;
 
 public class TouchMonsterDamageHandler : AbstractDealDamageHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         if (chr.getEnergyBar() == 15000 || chr.getBuffedValue(BuffStat.BODY_PRESSURE) != null)
         {
-            applyAttack(parseDamage(p, chr, false, false), c.getPlayer(), 1);
+            applyAttack(parseDamage(p, chr, false, false), c.OnlinedCharacter, 1);
         }
     }
 }

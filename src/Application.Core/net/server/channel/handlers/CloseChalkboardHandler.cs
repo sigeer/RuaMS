@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -33,9 +32,9 @@ namespace net.server.channel.handlers;
 public class CloseChalkboardHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        c.getPlayer().setChalkboard(null);
-        c.getPlayer().getMap().broadcastMessage(PacketCreator.useChalkboard(c.getPlayer(), true));
+        c.OnlinedCharacter.setChalkboard(null);
+        c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.useChalkboard(c.OnlinedCharacter, true));
     }
 }

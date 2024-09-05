@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,16 +19,11 @@
 */
 
 
-using client;
 using constants.id;
 using net.packet;
 using tools;
 
 namespace net.server.channel.handlers;
-
-
-
-
 
 
 /**
@@ -37,7 +32,7 @@ namespace net.server.channel.handlers;
 public class UseOwlOfMinervaHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         var owlSearched = c.getWorldServer().getOwlSearchedItems();
         List<int> owlLeaderboards;

@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using client.inventory;
 using constants.inventory;
 using provider;
@@ -56,7 +55,7 @@ public class ItemRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Character chr, int? npcid)
+    public override bool check(IPlayer chr, int? npcid)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         foreach (int itemId in items.Keys)

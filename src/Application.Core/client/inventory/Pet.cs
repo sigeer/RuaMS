@@ -80,7 +80,7 @@ public class Pet : Item
         }
     }
 
-    public static void deleteFromDb(Character owner, int petid)
+    public static void deleteFromDb(IPlayer owner, int petid)
     {
         try
         {
@@ -181,12 +181,12 @@ public class Pet : Item
         return level;
     }
 
-    public void gainTamenessFullness(Character owner, int incTameness, int incFullness, int type)
+    public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type)
     {
         gainTamenessFullness(owner, incTameness, incFullness, type, false);
     }
 
-    public void gainTamenessFullness(Character owner, int incTameness, int incFullness, int type, bool forceEnjoy)
+    public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type, bool forceEnjoy)
     {
         sbyte slot = owner.getPetIndex(this);
         bool enjoyed;
@@ -313,7 +313,7 @@ public class Pet : Item
         this.petAttribute = flag;
     }
 
-    public void addPetAttribute(Character owner, PetAttribute flag)
+    public void addPetAttribute(IPlayer owner, PetAttribute flag)
     {
         this.petAttribute |= (int)flag;
         saveToDb();
@@ -325,7 +325,7 @@ public class Pet : Item
         }
     }
 
-    public void removePetAttribute(Character owner, PetAttribute flag)
+    public void removePetAttribute(IPlayer owner, PetAttribute flag)
     {
         this.petAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
         saveToDb();

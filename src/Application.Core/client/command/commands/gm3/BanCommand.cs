@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Managers;
 using net.server;
 using server;
 using System.Text.RegularExpressions;
@@ -38,9 +39,9 @@ public class BanCommand : Command
         setDescription("Ban a player.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
             player.yellowMessage("Syntax: !ban <IGN> <Reason> (Please be descriptive)");
@@ -51,7 +52,7 @@ public class BanCommand : Command
         var target = c.getChannelServer().getPlayerStorage().getCharacterByName(ign);
         if (target != null)
         {
-            string readableTargetName = Character.makeMapleReadable(target.getName());
+            string readableTargetName = CharacterManager.makeMapleReadable(target.getName());
             string ip = target.getClient().getRemoteAddress();
             //Ban ip
             try
@@ -70,20 +71,20 @@ public class BanCommand : Command
             catch (Exception ex)
             {
                 log.Error(ex.ToString());
-                c.getPlayer().message("Error occured while banning IP address");
-                c.getPlayer().message(target.getName() + "'s IP was not banned: " + ip);
+                c.OnlinedCharacter.message("Error occured while banning IP address");
+                c.OnlinedCharacter.message(target.getName() + "'s IP was not banned: " + ip);
             }
             target.getClient().banMacs();
-            reason = c.getPlayer().getName() + " banned " + readableTargetName + " for " + reason + " (IP: " + ip + ") " + "(MAC: " + c.getMacs() + ")";
+            reason = c.OnlinedCharacter.getName() + " banned " + readableTargetName + " for " + reason + " (IP: " + ip + ") " + "(MAC: " + c.getMacs() + ")";
             target.ban(reason);
-            target.yellowMessage("You have been banned by #b" + c.getPlayer().getName() + " #k.");
+            target.yellowMessage("You have been banned by #b" + c.OnlinedCharacter.getName() + " #k.");
             target.yellowMessage("Reason: " + reason);
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
-            Character rip = target;
+            var rip = target;
             TimerManager.getInstance().schedule(() => rip.getClient().disconnect(false, false), TimeSpan.FromSeconds(5)); //5 Seconds
             Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
-        else if (Character.ban(ign, reason, false))
+        else if (CharacterManager.Ban(ign, reason, false))
         {
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
             Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));

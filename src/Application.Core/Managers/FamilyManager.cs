@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Application.Core.Game.TheWorld;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Managers
 {
     public class FamilyManager
     {
         static readonly ILogger log = LogFactory.GetLogger(LogType.Family);
-        public static void resetEntitlementUsage(World world)
+        public static void resetEntitlementUsage(IWorld world)
         {
             var resetTime = DateTimeOffset.Now.AddMinutes(1).ToUnixTimeMilliseconds();
             try

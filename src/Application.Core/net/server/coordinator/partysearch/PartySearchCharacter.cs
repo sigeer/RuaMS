@@ -18,9 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using client;
-
 namespace net.server.coordinator.partysearch;
 
 
@@ -31,11 +28,11 @@ namespace net.server.coordinator.partysearch;
 public class PartySearchCharacter
 {
 
-    private WeakReference<Character> player;
+    private WeakReference<IPlayer> player;
     private int level;
     private bool queued;
 
-    public PartySearchCharacter(Character chr)
+    public PartySearchCharacter(IPlayer chr)
     {
         player = new(chr);
         level = chr.getLevel();
@@ -47,7 +44,7 @@ public class PartySearchCharacter
         return !player.TryGetTarget(out var chr) || chr == null ? "[empty]" : chr.ToString();
     }
 
-    public Character? callPlayer(int leaderid, int callerMapid)
+    public IPlayer? callPlayer(int leaderid, int callerMapid)
     {
         if (!player.TryGetTarget(out var chr) || chr == null || !PartySearchCoordinator.isInVicinity(callerMapid, chr.getMapId()))
         {
@@ -70,7 +67,7 @@ public class PartySearchCharacter
         }
     }
 
-    public Character? getPlayer()
+    public IPlayer? getPlayer()
     {
         return player.TryGetTarget(out var chr) ? chr : null;
     }

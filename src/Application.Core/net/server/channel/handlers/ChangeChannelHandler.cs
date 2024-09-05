@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using client.autoban;
 using net.packet;
 
@@ -33,18 +32,18 @@ namespace net.server.channel.handlers;
 public class ChangeChannelHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int channel = p.readByte() + 1;
         p.readInt();
-        c.getPlayer().getAutobanManager().setTimestamp(6, Server.getInstance().getCurrentTimestamp(), 3);
+        c.OnlinedCharacter.getAutobanManager().setTimestamp(6, Server.getInstance().getCurrentTimestamp(), 3);
         if (c.getChannel() == channel)
         {
-            AutobanFactory.GENERAL.alert(c.getPlayer(), "CCing to same channel.");
+            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, "CCing to same channel.");
             c.disconnect(false, false);
             return;
         }
-        else if (c.getPlayer().getCashShop().isOpened() || c.getPlayer().getMiniGame() != null || c.getPlayer().getPlayerShop() != null)
+        else if (c.OnlinedCharacter.getCashShop().isOpened() || c.OnlinedCharacter.getMiniGame() != null || c.OnlinedCharacter.getPlayerShop() != null)
         {
             return;
         }

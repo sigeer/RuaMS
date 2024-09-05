@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -23,9 +23,9 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
 using server;
@@ -40,11 +40,10 @@ namespace net.server.channel.handlers;
  */
 public class CouponCodeHandler : AbstractPacketHandler
 {
-    private List<TypedItemQuantity> getNXCodeItems(Character chr, DBContext dbContext, int codeid)
+    private List<TypedItemQuantity> getNXCodeItems(IPlayer chr, DBContext dbContext, int codeid)
     {
         Dictionary<int, int> couponItems = new();
         Dictionary<int, int> couponPoints = new(5);
-
 
         var dataList = dbContext.NxcodeItems.AsNoTracking().Where(x => x.Codeid == codeid).ToList();
         foreach (var rs in dataList)
@@ -92,9 +91,9 @@ public class CouponCodeHandler : AbstractPacketHandler
         return ret;
     }
 
-    private StatuedTypedItemQuantity getNXCodeResult(Character chr, string code)
+    private StatuedTypedItemQuantity getNXCodeResult(IPlayer chr, string code)
     {
-        Client c = chr.getClient();
+        var c = chr.getClient();
         List<TypedItemQuantity> ret = new List<TypedItemQuantity>();
         try
         {
@@ -162,7 +161,7 @@ public class CouponCodeHandler : AbstractPacketHandler
         }
     }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.skip(2);
         string code = p.readString();
@@ -171,7 +170,7 @@ public class CouponCodeHandler : AbstractPacketHandler
         {
             try
             {
-                var codeRes = getNXCodeResult(c.getPlayer(), code.ToUpper());
+                var codeRes = getNXCodeResult(c.OnlinedCharacter, code.ToUpper());
                 int type = codeRes.status;
                 if (type < 0)
                 {
@@ -191,11 +190,11 @@ public class CouponCodeHandler : AbstractPacketHandler
                         type = pair.Type;
                         int quantity = pair.Item.Quantity;
 
-                        CashShop cs = c.getPlayer().getCashShop();
+                        CashShop cs = c.OnlinedCharacter.getCashShop();
                         switch (type)
                         {
                             case 0:
-                                c.getPlayer().gainMeso(quantity, false); //mesos
+                                c.OnlinedCharacter.gainMeso(quantity, false); //mesos
                                 mesos += quantity;
                                 break;
                             case 4:

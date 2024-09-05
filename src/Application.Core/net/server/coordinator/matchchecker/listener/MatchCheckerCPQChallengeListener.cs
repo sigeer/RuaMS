@@ -1,30 +1,28 @@
-﻿using client;
-using constants.String;
+﻿using constants.String;
 using net.server.coordinator.matchchecker;
-using net.server.world;
 using scripting.npc;
 
 namespace Application.Core.net.server.coordinator.matchchecker.listener
 {
     public class MatchCheckerCPQChallengeListener : AbstractMatchCheckerListener
     {
-        private static Character? getChallenger(int leaderid, HashSet<Character> matchPlayers)
+        private static IPlayer? getChallenger(int leaderid, HashSet<IPlayer> matchPlayers)
         {
             return matchPlayers.FirstOrDefault(x => x.getId() == leaderid);
         }
-        public override void onMatchCreated(Character leader, HashSet<Character> nonLeaderMatchPlayers, string message)
+        public override void onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
         {
             NPCConversationManager cm = leader.getClient().getCM();
             int npcid = cm.getNpc();
 
-            Character? ldr = nonLeaderMatchPlayers.FirstOrDefault();
+            var ldr = nonLeaderMatchPlayers.FirstOrDefault();
 
-            Character chr = leader;
+            var chr = leader;
 
-            List<PartyCharacter> chrMembers = new();
-            foreach (PartyCharacter mpc in chr.getParty().getMembers())
+            List<IPlayer> chrMembers = new();
+            foreach (IPlayer mpc in chr.getParty().getMembers())
             {
-                if (mpc.isOnline())
+                if (mpc.IsOnlined)
                 {
                     chrMembers.Add(mpc);
                 }
@@ -42,11 +40,11 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             cm.sendOk(LanguageConstants.getMessage(chr, LanguageConstants.CPQChallengeRoomSent));
         }
 
-        public override void onMatchAccepted(int leaderid, HashSet<Character> matchPlayers, string message)
+        public override void onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
             var chr = getChallenger(leaderid, matchPlayers)!;
 
-            Character ldr = matchPlayers.FirstOrDefault(x => x != chr)!;
+            var ldr = matchPlayers.FirstOrDefault(x => x != chr)!;
 
             if (message == ("cpq1"))
             {
@@ -62,12 +60,12 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             chr.setChallenged(false);
         }
 
-        public override void onMatchDeclined(int leaderid, HashSet<Character> matchPlayers, string message)
+        public override void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
             var chr = getChallenger(leaderid, matchPlayers);
             chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQChallengeRoomDenied));
         }
 
-        public override void onMatchDismissed(int leaderid, HashSet<Character> matchPlayers, string message) { }
+        public override void onMatchDismissed(int leaderid, HashSet<IPlayer> matchPlayers, string message) { }
     }
 }

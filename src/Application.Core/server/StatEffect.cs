@@ -21,6 +21,10 @@
  */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
+using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.AnimatedObjects;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -30,7 +34,6 @@ using constants.inventory;
 using constants.skills;
 using net.packet;
 using net.server;
-using net.server.world;
 using provider;
 using server.life;
 using server.maps;
@@ -68,7 +71,7 @@ public class StatEffect
     private Point? lt, rb;
     private short bulletCount, bulletConsume;
     private byte mapProtection;
-    private CardItemupStats cardStats;
+    private CardItemupStats? cardStats;
 
     public class CardItemupStats
     {
@@ -118,7 +121,7 @@ public class StatEffect
         return !cardStats.party || partyHunting;
     }
 
-    public bool isActive(Character applyto)
+    public bool isActive(IPlayer applyto)
     {
         return isEffectActive(applyto.getMapId(), applyto.getPartyMembersOnSameMap().Count > 1);
     }
@@ -152,12 +155,12 @@ public class StatEffect
 
     public static StatEffect loadSkillEffectFromData(Data? source, int skillid, bool overtime)
     {
-        return loadFromData(source, skillid, true, overtime);
+        return new (source, skillid, true, overtime);
     }
 
     public static StatEffect loadItemEffectFromData(Data? source, int itemid)
     {
-        return loadFromData(source, itemid, false, false);
+        return new (source, itemid, false, false);
     }
 
     private static void addBuffStatPairToListIfNotZero(List<KeyValuePair<BuffStat, int>> list, BuffStat buffstat, int val)
@@ -184,20 +187,19 @@ public class StatEffect
         }
     }
 
-    private static StatEffect loadFromData(Data? source, int sourceid, bool skill, bool overTime)
+    private StatEffect (Data? source, int sourceid, bool skill, bool overTime)
     {
-        StatEffect ret = new StatEffect();
-        ret.duration = DataTool.getIntConvert("time", source, -1);
-        ret.hp = (short)DataTool.getInt("hp", source, 0);
-        ret.hpR = DataTool.getInt("hpR", source, 0) / 100.0;
-        ret.mp = (short)DataTool.getInt("mp", source, 0);
-        ret.mpR = DataTool.getInt("mpR", source, 0) / 100.0;
-        ret.mpCon = (short)DataTool.getInt("mpCon", source, 0);
-        ret.hpCon = (short)DataTool.getInt("hpCon", source, 0);
+        duration = DataTool.getIntConvert("time", source, -1);
+        hp = (short)DataTool.getInt("hp", source, 0);
+        hpR = DataTool.getInt("hpR", source, 0) / 100.0;
+        mp = (short)DataTool.getInt("mp", source, 0);
+        mpR = DataTool.getInt("mpR", source, 0) / 100.0;
+        mpCon = (short)DataTool.getInt("mpCon", source, 0);
+        hpCon = (short)DataTool.getInt("hpCon", source, 0);
         int iprop = DataTool.getInt("prop", source, 100);
-        ret.prop = iprop / 100.0;
+        prop = iprop / 100.0;
 
-        ret.cp = DataTool.getInt("cp", source, 0);
+        cp = DataTool.getInt("cp", source, 0);
         List<Disease> cure = new(5);
         if (DataTool.getInt("poison", source, 0) > 0)
         {
@@ -220,28 +222,28 @@ public class StatEffect
         {
             cure.Add(Disease.CURSE);
         }
-        ret.cureDebuffs = cure;
-        ret.nuffSkill = DataTool.getInt("nuffSkill", source, 0);
+        cureDebuffs = cure;
+        nuffSkill = DataTool.getInt("nuffSkill", source, 0);
 
-        ret.mobCount = DataTool.getInt("mobCount", source, 1);
-        ret.cooldown = DataTool.getInt("cooltime", source, 0);
-        ret.morphId = DataTool.getInt("morph", source, 0);
-        ret.ghost = DataTool.getInt("ghost", source, 0);
-        ret.fatigue = DataTool.getInt("incFatigue", source, 0);
-        ret.repeatEffect = DataTool.getInt("repeatEffect", source, 0) > 0;
+        mobCount = DataTool.getInt("mobCount", source, 1);
+        cooldown = DataTool.getInt("cooltime", source, 0);
+        morphId = DataTool.getInt("morph", source, 0);
+        ghost = DataTool.getInt("ghost", source, 0);
+        fatigue = DataTool.getInt("incFatigue", source, 0);
+        repeatEffect = DataTool.getInt("repeatEffect", source, 0) > 0;
 
         var mdd = source.getChildByPath("0");
         if (mdd != null && mdd.getChildren().Count > 0)
         {
-            ret.mobSkill = (short)DataTool.getInt("mobSkill", mdd, 0);
-            ret.mobSkillLevel = (short)DataTool.getInt("level", mdd, 0);
-            ret.target = DataTool.getInt("target", mdd, 0);
+            mobSkill = (short)DataTool.getInt("mobSkill", mdd, 0);
+            mobSkillLevel = (short)DataTool.getInt("level", mdd, 0);
+            target = DataTool.getInt("target", mdd, 0);
         }
         else
         {
-            ret.mobSkill = 0;
-            ret.mobSkillLevel = 0;
-            ret.target = 0;
+            mobSkill = 0;
+            mobSkillLevel = 0;
+            target = 0;
         }
 
         var mdds = source.getChildByPath("mob");
@@ -249,60 +251,60 @@ public class StatEffect
         {
             if (mdds.getChildren() != null && mdds.getChildren().Count > 0)
             {
-                ret.mob = DataTool.getInt("mob", mdds, 0);
+                mob = DataTool.getInt("mob", mdds, 0);
             }
         }
-        ret.sourceid = sourceid;
-        ret.skill = skill;
-        if (!ret.skill && ret.duration > -1)
+        this.sourceid = sourceid;
+        this.skill = skill;
+        if (!skill && duration > -1)
         {
-            ret.overTime = true;
+            this.overTime = true;
         }
         else
         {
-            ret.duration *= 1000; // items have their times stored in ms, of course
-            ret.overTime = overTime;
+            duration *= 1000; // items have their times stored in ms, of course
+            this.overTime = overTime;
         }
 
-        List<KeyValuePair<BuffStat, int>> statups = new();
-        ret.watk = (short)DataTool.getInt("pad", source, 0);
-        ret.wdef = (short)DataTool.getInt("pdd", source, 0);
-        ret.matk = (short)DataTool.getInt("mad", source, 0);
-        ret.mdef = (short)DataTool.getInt("mdd", source, 0);
-        ret.acc = (short)DataTool.getIntConvert("acc", source, 0);
-        ret.avoid = (short)DataTool.getInt("eva", source, 0);
+        statups = new();
+        watk = (short)DataTool.getInt("pad", source, 0);
+        wdef = (short)DataTool.getInt("pdd", source, 0);
+        matk = (short)DataTool.getInt("mad", source, 0);
+        mdef = (short)DataTool.getInt("mdd", source, 0);
+        acc = (short)DataTool.getIntConvert("acc", source, 0);
+        avoid = (short)DataTool.getInt("eva", source, 0);
 
-        ret.speed = (short)DataTool.getInt("speed", source, 0);
-        ret.jump = (short)DataTool.getInt("jump", source, 0);
+        speed = (short)DataTool.getInt("speed", source, 0);
+        jump = (short)DataTool.getInt("jump", source, 0);
 
-        ret.barrier = DataTool.getInt("barrier", source, 0);
-        addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, ret.barrier);
+        barrier = DataTool.getInt("barrier", source, 0);
+        addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, barrier);
 
-        ret.mapProtection = GetMapProtection(sourceid);
-        addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, ret.mapProtection);
+        mapProtection = GetMapProtection(sourceid);
+        addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, mapProtection);
 
-        if (ret.overTime && ret.getSummonMovementType() == null)
+        if (overTime && getSummonMovementType() == null)
         {
             if (!skill)
             {
                 if (ItemId.isPyramidBuff(sourceid))
                 {
-                    ret.berserk = DataTool.getInt("berserk", source, 0);
-                    ret.booster = DataTool.getInt("booster", source, 0);
+                    berserk = DataTool.getInt("berserk", source, 0);
+                    booster = DataTool.getInt("booster", source, 0);
 
-                    addBuffStatPairToListIfNotZero(statups, BuffStat.BERSERK, ret.berserk);
-                    addBuffStatPairToListIfNotZero(statups, BuffStat.BOOSTER, ret.booster);
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.BERSERK, berserk);
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.BOOSTER, booster);
 
                 }
                 else if (ItemId.isDojoBuff(sourceid) || isHpMpRecovery(sourceid))
                 {
-                    ret.mhpR = (byte)DataTool.getInt("mhpR", source, 0);
-                    ret.mhpRRate = (short)(DataTool.getInt("mhpRRate", source, 0) * 100);
-                    ret.mmpR = (byte)DataTool.getInt("mmpR", source, 0);
-                    ret.mmpRRate = (short)(DataTool.getInt("mmpRRate", source, 0) * 100);
+                    mhpR = (byte)DataTool.getInt("mhpR", source, 0);
+                    mhpRRate = (short)(DataTool.getInt("mhpRRate", source, 0) * 100);
+                    mmpR = (byte)DataTool.getInt("mmpR", source, 0);
+                    mmpRRate = (short)(DataTool.getInt("mmpRRate", source, 0) * 100);
 
-                    addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, ret.mhpR);
-                    addBuffStatPairToListIfNotZero(statups, BuffStat.MPREC, ret.mmpR);
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, mhpR);
+                    addBuffStatPairToListIfNotZero(statups, BuffStat.MPREC, mmpR);
 
                 }
                 else if (ItemId.isRateCoupon(sourceid))
@@ -425,7 +427,7 @@ public class StatEffect
                         addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, thaw > 0 ? 1 : 2);
                     }
 
-                    ret.cardStats = new CardItemupStats(itemupCode, prob, areas, inParty);
+                    cardStats = new CardItemupStats(itemupCode, prob, areas, inParty);
                 }
                 else if (ItemId.isExpIncrease(sourceid))
                 {
@@ -441,53 +443,52 @@ public class StatEffect
                 else if (YamlConfig.config.server.USE_ULTRA_NIMBLE_FEET
                     && (sourceid == Beginner.NIMBLE_FEET || sourceid == Noblesse.NIMBLE_FEET || sourceid == Evan.NIMBLE_FEET || sourceid == Legend.AGILE_BODY))
                 {
-                    ret.jump = (short)(ret.speed * 4);
-                    ret.speed *= 15;
+                    jump = (short)(speed * 4);
+                    speed *= 15;
                 }
             }
 
-            addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, ret.watk);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, ret.wdef);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, ret.matk);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.MDEF, ret.mdef);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.ACC, ret.acc);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.AVOID, ret.avoid);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.SPEED, ret.speed);
-            addBuffStatPairToListIfNotZero(statups, BuffStat.JUMP, ret.jump);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, matk);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MDEF, mdef);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.ACC, acc);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.AVOID, avoid);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.SPEED, speed);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.JUMP, jump);
         }
 
         var ltd = source.getChildByPath("lt");
         if (ltd != null)
         {
-            ret.lt = (Point)ltd.getData()!;
-            ret.rb = (Point)source.getChildByPath("rb").getData()!;
+            lt = (Point)ltd.getData()!;
+            rb = (Point)source.getChildByPath("rb").getData()!;
 
             if (YamlConfig.config.server.USE_MAXRANGE_ECHO_OF_HERO && (sourceid == Beginner.ECHO_OF_HERO || sourceid == Noblesse.ECHO_OF_HERO || sourceid == Legend.ECHO_OF_HERO || sourceid == Evan.ECHO_OF_HERO))
             {
-                ret.lt = new Point(int.MinValue, int.MinValue);
-                ret.rb = new Point(int.MaxValue, int.MaxValue);
+                lt = new Point(int.MinValue, int.MinValue);
+                rb = new Point(int.MaxValue, int.MaxValue);
             }
         }
 
-        int x = DataTool.getInt("x", source, 0);
+        x = DataTool.getInt("x", source, 0);
 
         if ((sourceid == Beginner.RECOVERY || sourceid == Noblesse.RECOVERY || sourceid == Evan.RECOVERY || sourceid == Legend.RECOVERY) && YamlConfig.config.server.USE_ULTRA_RECOVERY == true)
         {
             x *= 10;
         }
-        ret.x = x;
-        ret.y = DataTool.getInt("y", source, 0);
+        y = DataTool.getInt("y", source, 0);
 
-        ret.damage = DataTool.getIntConvert("damage", source, 100);
-        ret.fixdamage = DataTool.getIntConvert("fixdamage", source, -1);
-        ret.attackCount = DataTool.getIntConvert("attackCount", source, 1);
-        ret.bulletCount = (short)DataTool.getIntConvert("bulletCount", source, 1);
-        ret.bulletConsume = (short)DataTool.getIntConvert("bulletConsume", source, 0);
-        ret.moneyCon = DataTool.getIntConvert("moneyCon", source, 0);
-        ret.itemCon = DataTool.getInt("itemCon", source, 0);
-        ret.itemConNo = DataTool.getInt("itemConNo", source, 0);
-        ret.moveTo = DataTool.getInt("moveTo", source, -1);
-        Dictionary<MonsterStatus, int> monsterStatus = new();
+        damage = DataTool.getIntConvert("damage", source, 100);
+        fixdamage = DataTool.getIntConvert("fixdamage", source, -1);
+        attackCount = DataTool.getIntConvert("attackCount", source, 1);
+        bulletCount = (short)DataTool.getIntConvert("bulletCount", source, 1);
+        bulletConsume = (short)DataTool.getIntConvert("bulletConsume", source, 0);
+        moneyCon = DataTool.getIntConvert("moneyCon", source, 0);
+        itemCon = DataTool.getInt("itemCon", source, 0);
+        itemConNo = DataTool.getInt("itemConNo", source, 0);
+        moveTo = DataTool.getInt("moveTo", source, -1);
+        monsterStatus = new();
         if (skill)
         {
             switch (sourceid)
@@ -503,7 +504,7 @@ public class StatEffect
                 case Noblesse.ECHO_OF_HERO:
                 case Legend.ECHO_OF_HERO:
                 case Evan.ECHO_OF_HERO:
-                    statups.Add(new(BuffStat.ECHO_OF_HERO, ret.x));
+                    statups.Add(new(BuffStat.ECHO_OF_HERO, x));
                     break;
                 case Beginner.MONSTER_RIDER:
                 case Noblesse.MONSTER_RIDER:
@@ -539,7 +540,7 @@ public class StatEffect
                 case GM.HYPER_BODY:
                 case SuperGM.HYPER_BODY:
                     statups.Add(new(BuffStat.HYPERBODYHP, x));
-                    statups.Add(new(BuffStat.HYPERBODYMP, ret.y));
+                    statups.Add(new(BuffStat.HYPERBODYMP, y));
                     break;
                 case Crusader.COMBO:
                 case DawnWarrior.COMBO:
@@ -558,7 +559,7 @@ public class StatEffect
                     statups.Add(new(BuffStat.WK_CHARGE, x));
                     break;
                 case DragonKnight.DRAGON_BLOOD:
-                    statups.Add(new(BuffStat.DRAGONBLOOD, ret.x));
+                    statups.Add(new(BuffStat.DRAGONBLOOD, x));
                     break;
                 case Hero.STANCE:
                 case Paladin.STANCE:
@@ -636,7 +637,7 @@ public class StatEffect
                     break;
                 case Bowmaster.SHARP_EYES:
                 case Marksman.SHARP_EYES:
-                    statups.Add(new(BuffStat.SHARP_EYES, ret.x << 8 | ret.y));
+                    statups.Add(new(BuffStat.SHARP_EYES, x << 8 | y));
                     break;
                 case WindArcher.WIND_WALK:
                     statups.Add(new(BuffStat.WIND_WALK, x));
@@ -667,8 +668,8 @@ public class StatEffect
                 case ThunderBreaker.DASH:
                 case Beginner.SPACE_DASH:
                 case Noblesse.SPACE_DASH:
-                    statups.Add(new(BuffStat.DASH2, ret.x));
-                    statups.Add(new(BuffStat.DASH, ret.y));
+                    statups.Add(new(BuffStat.DASH2, x));
+                    statups.Add(new(BuffStat.DASH, y));
                     break;
                 case Corsair.SPEED_INFUSION:
                 case Buccaneer.SPEED_INFUSION:
@@ -723,7 +724,7 @@ public class StatEffect
                 case Buccaneer.MAPLE_WARRIOR:
                 case Aran.MAPLE_WARRIOR:
                 case Evan.MAPLE_WARRIOR:
-                    statups.Add(new(BuffStat.MAPLE_WARRIOR, ret.x));
+                    statups.Add(new(BuffStat.MAPLE_WARRIOR, x));
                     break;
                 // SUMMON
                 case Ranger.SILVER_HAWK:
@@ -757,22 +758,22 @@ public class StatEffect
                     monsterStatus.AddOrUpdate(MonsterStatus.SEAL_SKILL, 1);
                     break;
                 case Rogue.DISORDER:
-                    monsterStatus.AddOrUpdate(MonsterStatus.WATK, ret.x);
-                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, ret.y);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WATK, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, y);
                     break;
                 case Corsair.HYPNOTIZE:
                     monsterStatus.AddOrUpdate(MonsterStatus.INERTMOB, 1);
                     break;
                 case NightLord.NINJA_AMBUSH:
                 case Shadower.NINJA_AMBUSH:
-                    monsterStatus.AddOrUpdate(MonsterStatus.NINJA_AMBUSH, ret.damage);
+                    monsterStatus.AddOrUpdate(MonsterStatus.NINJA_AMBUSH, damage);
                     break;
                 case Page.THREATEN:
-                    monsterStatus.AddOrUpdate(MonsterStatus.WATK, ret.x);
-                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, ret.y);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WATK, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, y);
                     break;
                 case DragonKnight.DRAGON_ROAR:
-                    ret.hpR = -x / 100.0;
+                    hpR = -x / 100.0;
                     monsterStatus.AddOrUpdate(MonsterStatus.STUN, 1);
                     break;
                 case Crusader.AXE_COMA:
@@ -797,9 +798,9 @@ public class StatEffect
                     break;
                 case NightLord.TAUNT:
                 case Shadower.TAUNT:
-                    monsterStatus.AddOrUpdate(MonsterStatus.SHOWDOWN, ret.x);
-                    monsterStatus.AddOrUpdate(MonsterStatus.MDEF, ret.x);
-                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, ret.x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.SHOWDOWN, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.MDEF, x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.WDEF, x);
                     break;
                 case ILWizard.COLD_BEAM:
                 case ILMage.ICE_STRIKE:
@@ -811,12 +812,12 @@ public class StatEffect
                 case Aran.COMBO_TEMPEST:
                 case Evan.ICE_BREATH:
                     monsterStatus.AddOrUpdate(MonsterStatus.FREEZE, 1);
-                    ret.duration *= 2; // freezing skills are a little strange
+                    duration *= 2; // freezing skills are a little strange
                     break;
                 case FPWizard.SLOW:
                 case ILWizard.SLOW:
                 case BlazeWizard.SLOW:
-                    monsterStatus.AddOrUpdate(MonsterStatus.SPEED, ret.x);
+                    monsterStatus.AddOrUpdate(MonsterStatus.SPEED, x);
                     break;
                 case FPWizard.POISON_BREATH:
                 case FPMage.ELEMENT_COMPOSITION:
@@ -847,36 +848,33 @@ public class StatEffect
                     statups.Add(new(BuffStat.ARAN_COMBO, 100));
                     break;
                 case Aran.COMBO_BARRIER:
-                    statups.Add(new(BuffStat.COMBO_BARRIER, ret.x));
+                    statups.Add(new(BuffStat.COMBO_BARRIER, x));
                     break;
                 case Aran.COMBO_DRAIN:
-                    statups.Add(new(BuffStat.COMBO_DRAIN, ret.x));
+                    statups.Add(new(BuffStat.COMBO_DRAIN, x));
                     break;
                 case Aran.SMART_KNOCKBACK:
-                    statups.Add(new(BuffStat.SMART_KNOCKBACK, ret.x));
+                    statups.Add(new(BuffStat.SMART_KNOCKBACK, x));
                     break;
                 case Aran.BODY_PRESSURE:
-                    statups.Add(new(BuffStat.BODY_PRESSURE, ret.x));
+                    statups.Add(new(BuffStat.BODY_PRESSURE, x));
                     break;
                 case Aran.SNOW_CHARGE:
-                    statups.Add(new(BuffStat.WK_CHARGE, ret.duration));
+                    statups.Add(new(BuffStat.WK_CHARGE, duration));
                     break;
                 default:
                     break;
             }
         }
-        if (ret.isMorph())
+        if (isMorph())
         {
-            statups.Add(new(BuffStat.MORPH, ret.getMorph()));
+            statups.Add(new(BuffStat.MORPH, getMorph()));
         }
-        if (ret.ghost > 0 && !skill)
+        if (ghost > 0 && !skill)
         {
-            statups.Add(new(BuffStat.GHOST_MORPH, ret.ghost));
+            statups.Add(new(BuffStat.GHOST_MORPH, ghost));
         }
-        ret.monsterStatus = monsterStatus;
         statups.TrimExcess();
-        ret.statups = statups;
-        return ret;
     }
 
     /**
@@ -884,7 +882,7 @@ public class StatEffect
      * @param obj
      * @param attack  damage done by the skill
      */
-    public void applyPassive(Character applyto, MapObject obj, int attack)
+    public void applyPassive(IPlayer applyto, IMapObject obj, int attack)
     {
         if (makeChanceResult())
         {
@@ -914,13 +912,13 @@ public class StatEffect
         }
     }
 
-    public bool applyEchoOfHero(Character applyfrom)
+    public bool applyEchoOfHero(IPlayer applyfrom)
     {
-        Dictionary<int, Character> mapPlayers = applyfrom.getMap().getMapPlayers();
+        Dictionary<int, IPlayer> mapPlayers = applyfrom.getMap().getMapPlayers();
         mapPlayers.Remove(applyfrom.getId());
 
         bool hwResult = applyTo(applyfrom);
-        foreach (Character chr in mapPlayers.Values)
+        foreach (IPlayer chr in mapPlayers.Values)
         {    // Echo of Hero not buffing players in the map detected thanks to Masterrulax
             applyTo(applyfrom, chr, false, null, false, 1);
         }
@@ -928,23 +926,23 @@ public class StatEffect
         return hwResult;
     }
 
-    public bool applyTo(Character chr)
+    public bool applyTo(IPlayer chr)
     {
         return applyTo(chr, chr, true, null, false, 1);
     }
 
-    public bool applyTo(Character chr, bool useMaxRange)
+    public bool applyTo(IPlayer chr, bool useMaxRange)
     {
         return applyTo(chr, chr, true, null, useMaxRange, 1);
     }
 
-    public bool applyTo(Character chr, Point pos)
+    public bool applyTo(IPlayer chr, Point pos)
     {
         return applyTo(chr, chr, true, pos, false, 1);
     }
 
     // primary: the player caster of the buff
-    private bool applyTo(Character applyfrom, Character applyto, bool primary, Point? pos, bool useMaxRange, int affectedPlayers)
+    private bool applyTo(IPlayer applyfrom, IPlayer applyto, bool primary, Point? pos, bool useMaxRange, int affectedPlayers)
     {
         if (skill && (sourceid == GM.HIDE || sourceid == SuperGM.HIDE))
         {
@@ -1006,7 +1004,7 @@ public class StatEffect
         {
             if (moveTo != applyto.getMapId())
             {
-                MapleMap target;
+                IMap target;
                 Portal pt;
 
                 if (moveTo == MapId.NONE)
@@ -1018,7 +1016,14 @@ public class StatEffect
                 {
                     target = applyto.getClient().getWorldServer().getChannel(applyto.getClient().getChannel()).getMapFactory().getMap(moveTo);
                     int targetid = target.getId() / 10000000;
-                    if (targetid != 60 && applyto.getMapId() / 10000000 != 61 && targetid != applyto.getMapId() / 10000000 && targetid != 21 && targetid != 20 && targetid != 12 && (applyto.getMapId() / 10000000 != 10 && applyto.getMapId() / 10000000 != 12))
+                    if (targetid != 60 
+                        && applyto.getMapId() / 10000000 != 61 
+                        && targetid != applyto.getMapId() / 10000000 
+                        && targetid != 21 
+                        && targetid != 20 
+                        && targetid != 12 
+                        && (applyto.getMapId() / 10000000 != 10 
+                        && applyto.getMapId() / 10000000 != 12))
                     {
                         return false;
                     }
@@ -1068,20 +1073,12 @@ public class StatEffect
                 use.unlockInventory();
             }
         }
-        SummonMovementType? summonMovementType = getSummonMovementType();
+        var summonMovementType = getSummonMovementType();
         if (overTime || isCygnusFA() || summonMovementType != null)
         {
             if (summonMovementType != null && pos != null)
             {
-                if (summonMovementType.Value.getValue() == SummonMovementType.STATIONARY.getValue())
-                {
-                    applyto.cancelBuffStats(BuffStat.PUPPET);
-                }
-                else
-                {
-                    applyto.cancelBuffStats(BuffStat.SUMMON);
-                }
-
+                applyto.cancelBuffStats(summonMovementType.Value == SummonMovementType.STATIONARY ? BuffStat.PUPPET : BuffStat.SUMMON);
                 applyto.sendPacket(PacketCreator.enableActions());
             }
 
@@ -1174,12 +1171,11 @@ public class StatEffect
             if (skill != null)
             {
                 var dis = skill.getDisease();
-                Party opposition = applyfrom.getParty().getEnemy();
+                var opposition = applyfrom.getParty()!.getEnemy();
                 if (skill.targetsAll)
                 {
-                    foreach (PartyCharacter enemyChrs in opposition.getPartyMembers())
+                    foreach (var chrApp in opposition.getPartyMembers())
                     {
-                        Character chrApp = enemyChrs.getPlayer();
                         if (chrApp != null && chrApp.getMap().isCPQMap())
                         {
                             if (dis == null)
@@ -1229,7 +1225,7 @@ public class StatEffect
 
             if (target > 0)
             {
-                foreach (Character chr in applyto.getMap().getAllPlayers())
+                foreach (IPlayer chr in applyto.getMap().getAllPlayers())
                 {
                     if (chr.getId() != applyto.getId())
                     {
@@ -1245,18 +1241,18 @@ public class StatEffect
         return true;
     }
 
-    private int applyBuff(Character applyfrom, bool useMaxRange)
+    private int applyBuff(IPlayer applyfrom, bool useMaxRange)
     {
         int affectedc = 1;
 
         if (isPartyBuff() && (applyfrom.getParty() != null || isGmBuff()))
         {
             Rectangle bounds = (!useMaxRange) ? calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft()) : new Rectangle(int.MinValue / 2, int.MinValue / 2, int.MaxValue, int.MaxValue);
-            List<MapObject> affecteds = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.PLAYER));
-            List<Character> affectedp = new(affecteds.Count);
-            foreach (MapObject affectedmo in affecteds)
+            List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.PLAYER));
+            List<IPlayer> affectedp = new(affecteds.Count);
+            foreach (var affectedmo in affecteds)
             {
-                Character affected = (Character)affectedmo;
+                IPlayer affected = (IPlayer)affectedmo;
                 if (affected != applyfrom && (isGmBuff() || applyfrom.getParty().Equals(affected.getParty())))
                 {
                     if (!isResurrection())
@@ -1277,7 +1273,7 @@ public class StatEffect
             }
 
             affectedc += affectedp.Count;   // used for heal
-            foreach (Character affected in affectedp)
+            foreach (IPlayer affected in affectedp)
             {
                 applyTo(applyfrom, affected, false, null, useMaxRange, affectedc);
                 affected.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 2));
@@ -1288,13 +1284,13 @@ public class StatEffect
         return affectedc;
     }
 
-    private void applyMonsterBuff(Character applyfrom)
+    private void applyMonsterBuff(IPlayer applyfrom)
     {
         Rectangle bounds = calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft());
-        List<MapObject> affected = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.MONSTER));
+        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.MONSTER));
         var skill_ = SkillFactory.GetSkillTrust(sourceid);
         int i = 0;
-        foreach (MapObject mo in affected)
+        foreach (var mo in affected)
         {
             Monster monster = (Monster)mo;
             if (isDispel())
@@ -1309,7 +1305,7 @@ public class StatEffect
             {
                 if (makeChanceResult())
                 {
-                    monster.applyStatus(applyfrom, new MonsterStatusEffect(getMonsterStati(), skill_, null, false), isPoison(), getDuration());
+                    monster.applyStatus(applyfrom, new MonsterStatusEffect(getMonsterStati(), skill_), isPoison(), getDuration());
                     if (isCrash())
                     {
                         monster.debuffMob(skill_.getId());
@@ -1347,7 +1343,7 @@ public class StatEffect
         return !YamlConfig.config.server.USE_BUFF_EVERLASTING ? duration : int.MaxValue;
     }
 
-    public void silentApplyBuff(Character chr, long localStartTime)
+    public void silentApplyBuff(IPlayer chr, long localStartTime)
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(chr, localDuration, false);
@@ -1371,7 +1367,7 @@ public class StatEffect
         }
     }
 
-    public void applyComboBuff(Character applyto, int combo)
+    public void applyComboBuff(IPlayer applyto, int combo)
     {
         List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.ARAN_COMBO, combo));
         applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, stat));
@@ -1382,7 +1378,7 @@ public class StatEffect
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
-    public void applyBeaconBuff(Character applyto, int objectid)
+    public void applyBeaconBuff(IPlayer applyto, int objectid)
     { // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
         List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.HOMING_BEACON, objectid));
         applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, stat));
@@ -1391,7 +1387,7 @@ public class StatEffect
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
-    public void updateBuffEffect(Character target, List<KeyValuePair<BuffStat, int>> activeStats, long starttime)
+    public void updateBuffEffect(IPlayer target, List<KeyValuePair<BuffStat, int>> activeStats, long starttime)
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
@@ -1410,7 +1406,7 @@ public class StatEffect
         }
     }
 
-    private void applyBuffEffect(Character applyfrom, Character applyto, bool primary)
+    private void applyBuffEffect(IPlayer applyfrom, IPlayer applyto, bool primary)
     {
         if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
         {     // last mystic door already dispelled if it has been used before.
@@ -1584,7 +1580,7 @@ public class StatEffect
         }
     }
 
-    private int calcHPChange(Character applyfrom, bool primary, int affectedPlayers)
+    private int calcHPChange(IPlayer applyfrom, bool primary, int affectedPlayers)
     {
         int hpchange = 0;
         if (hp != 0)
@@ -1643,7 +1639,7 @@ public class StatEffect
         return (int)((Randomizer.nextDouble() * ((int)(stat * upperfactor * rate) - (int)(stat * lowerfactor * rate) + 1)) + (int)(stat * lowerfactor * rate));
     }
 
-    private int calcMPChange(Character applyfrom, bool primary)
+    private int calcMPChange(IPlayer applyfrom, bool primary)
     {
         int mpchange = 0;
         if (mp != 0)
@@ -1697,7 +1693,7 @@ public class StatEffect
         return mpchange;
     }
 
-    private int alchemistModifyVal(Character chr, int val, bool withX)
+    private int alchemistModifyVal(IPlayer chr, int val, bool withX)
     {
         if (!skill && (chr.getJob().isA(Job.HERMIT) || chr.getJob().isA(Job.NIGHTWALKER3)))
         {
@@ -1710,7 +1706,7 @@ public class StatEffect
         return val;
     }
 
-    private StatEffect? getAlchemistEffect(Character chr)
+    private StatEffect? getAlchemistEffect(IPlayer chr)
     {
         int id = Hermit.ALCHEMIST;
         if (chr.isCygnus())
@@ -1912,7 +1908,13 @@ public class StatEffect
 
     private bool isMist()
     {
-        return skill && (sourceid == FPMage.POISON_MIST || sourceid == Shadower.SMOKE_SCREEN || sourceid == BlazeWizard.FLAME_GEAR || sourceid == NightWalker.POISON_BOMB || sourceid == Evan.RECOVERY_AURA);
+        return skill 
+            && 
+            (sourceid == FPMage.POISON_MIST 
+            || sourceid == Shadower.SMOKE_SCREEN 
+            || sourceid == BlazeWizard.FLAME_GEAR 
+            || sourceid == NightWalker.POISON_BOMB 
+            || sourceid == Evan.RECOVERY_AURA);
     }
 
     private bool isSoulArrow()
@@ -2033,7 +2035,7 @@ public class StatEffect
         return morphId;
     }
 
-    private int getMorph(Character chr)
+    private int getMorph(IPlayer chr)
     {
         if (morphId == 1000 || morphId == 1001 || morphId == 1003)
         { // morph skill
@@ -2102,17 +2104,17 @@ public class StatEffect
      private static class CancelEffectAction : Runnable {
 
      private StatEffect effect;
-     private WeakReference<Character> target;
+     private WeakReference<IPlayer> target;
      private long startTime;
 
-     public CancelEffectAction(Character target, StatEffect effect, long startTime) {
+     public CancelEffectAction(IPlayer target, StatEffect effect, long startTime) {
      this.effect = effect;
      this.target = new WeakReference<>(target);
      this.startTime = startTime;
      }
 
      public override void run() {
-     Character realTarget = target.get();
+     IPlayer realTarget = target.get();
      if (realTarget != null) {
      realTarget.cancelEffect(effect, false, startTime);
      }

@@ -21,8 +21,8 @@
  */
 
 
+using Application.Core.Game.TheWorld;
 using Microsoft.ClearScript.V8;
-using net.server.channel;
 using System.Collections.Concurrent;
 
 namespace scripting.Event;
@@ -52,7 +52,7 @@ public class EventScriptManager : AbstractScriptManager
         public EventManager em;
     }
 
-    public EventScriptManager(Channel channel, string[] scripts)
+    public EventScriptManager(IWorldChannel channel, string[] scripts)
     {
         foreach (string script in scripts)
         {
@@ -106,7 +106,7 @@ public class EventScriptManager : AbstractScriptManager
             return;
         }
 
-        Channel channel = eventEntries.FirstOrDefault().Value.em.getChannelServer();
+        var channel = eventEntries.FirstOrDefault().Value.em.getChannelServer();
         foreach (var entry in eventEntries)
         {
             string script = entry.Key;
@@ -114,7 +114,7 @@ public class EventScriptManager : AbstractScriptManager
         }
     }
 
-    private EventEntry initializeEventEntry(string script, Channel channel)
+    private EventEntry initializeEventEntry(string script, IWorldChannel channel)
     {
         V8ScriptEngine? engine = getInvocableScriptEngine(GetEventScriptPath(script));
         EventManager eventManager = new EventManager(channel, engine, script);

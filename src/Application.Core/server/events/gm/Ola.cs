@@ -22,7 +22,6 @@
 
 
 using Application.Core.scripting.Event;
-using client;
 using constants.id;
 using tools;
 
@@ -35,12 +34,12 @@ namespace server.events.gm;
  */
 public class Ola
 {
-    private Character chr;
+    private IPlayer chr;
     private long time = 0;
     private long timeStarted = 0;
     private ScheduledFuture? schedule = null;
 
-    public Ola(Character chr)
+    public Ola(IPlayer chr)
     {
         this.chr = chr;
         this.schedule = TimerManager.getInstance().schedule(() =>

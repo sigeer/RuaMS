@@ -29,9 +29,6 @@ using net.server.handlers.login;
 
 namespace net;
 
-
-
-
 public class PacketProcessor
 {
     private static ILogger log = LogFactory.GetLogger("PacketProcessor");
@@ -39,7 +36,7 @@ public class PacketProcessor
 
     private static ChannelDependencies channelDeps;
 
-    private PacketHandler[] handlers;
+    private IPacketHandler[] handlers;
 
     private PacketProcessor()
     {
@@ -51,7 +48,7 @@ public class PacketProcessor
                 maxRecvOp = op.getValue();
             }
         }
-        handlers = new PacketHandler[maxRecvOp + 1];
+        handlers = new IPacketHandler[maxRecvOp + 1];
     }
 
     public static void registerGameHandlerDependencies(ChannelDependencies channelDependencies)
@@ -74,17 +71,17 @@ public class PacketProcessor
         return getProcessor(world, channel);
     }
 
-    public PacketHandler getHandler(short packetId)
+    public IPacketHandler getHandler(short packetId)
     {
         if (packetId > handlers.Length)
         {
             return null;
         }
-        PacketHandler handler = handlers[packetId];
+        IPacketHandler handler = handlers[packetId];
         return handler;
     }
 
-    public void registerHandler(RecvOpcode code, PacketHandler handler)
+    public void registerHandler(RecvOpcode code, IPacketHandler handler)
     {
         try
         {
@@ -115,7 +112,7 @@ public class PacketProcessor
 
     public void reset(int channel)
     {
-        handlers = new PacketHandler[handlers.Length];
+        handlers = new IPacketHandler[handlers.Length];
 
         registerCommonHandlers();
 

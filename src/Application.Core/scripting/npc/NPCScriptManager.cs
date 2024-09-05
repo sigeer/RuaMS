@@ -21,9 +21,7 @@
  */
 
 
-using client;
 using Microsoft.ClearScript.V8;
-using net.server.world;
 using tools;
 using static server.ItemInformationProvider;
 
@@ -36,15 +34,15 @@ public class NPCScriptManager : AbstractScriptManager
 {
     private static NPCScriptManager instance = new NPCScriptManager();
 
-    private Dictionary<Client, NPCConversationManager> cms = new();
-    private Dictionary<Client, V8ScriptEngine> scripts = new();
+    private Dictionary<IClient, NPCConversationManager> cms = new();
+    private Dictionary<IClient, V8ScriptEngine> scripts = new();
 
     public static NPCScriptManager getInstance()
     {
         return instance;
     }
 
-    public bool isNpcScriptAvailable(Client c, string fileName)
+    public bool isNpcScriptAvailable(IClient c, string fileName)
     {
         V8ScriptEngine? engine = null;
         if (fileName != null)
@@ -55,32 +53,32 @@ public class NPCScriptManager : AbstractScriptManager
         return engine != null;
     }
 
-    public bool start(Client c, int npc, Character chr)
+    public bool start(IClient c, int npc, IPlayer? chr)
     {
         return start(c, npc, -1, chr);
     }
 
-    public bool start(Client c, int npc, int oid, Character chr)
+    public bool start(IClient c, int npc, int oid, IPlayer? chr)
     {
         return start(c, npc, oid, null, chr);
     }
 
-    public bool start(Client c, int npc, string fileName, Character chr)
+    public bool start(IClient c, int npc, string? fileName, IPlayer? chr)
     {
         return start(c, npc, -1, fileName, chr);
     }
 
-    public bool start(Client c, int npc, int oid, string fileName, Character chr)
+    public bool start(IClient c, int npc, int oid, string? fileName, IPlayer? chr)
     {
         return start(c, npc, oid, fileName, chr, false, "cm");
     }
 
-    public bool start(Client c, ScriptedItem scriptItem, Character chr)
+    public bool start(IClient c, ScriptedItem scriptItem, IPlayer? chr)
     {
         return start(c, scriptItem.getNpc(), -1, scriptItem.getScript(), chr, true, "im");
     }
 
-    public void start(string filename, Client c, int npc, List<PartyCharacter> chrs)
+    public void start(string filename, IClient c, int npc, List<IPlayer> chrs)
     {
         try
         {
@@ -95,7 +93,7 @@ public class NPCScriptManager : AbstractScriptManager
 
             if (engine == null)
             {
-                c.getPlayer().dropMessage(1, "NPC " + npc + " is uncoded.");
+                c.OnlinedCharacter.dropMessage(1, "NPC " + npc + " is uncoded.");
                 cm.dispose();
                 return;
             }
@@ -118,7 +116,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
     }
 
-    private bool start(Client c, int npc, int oid, string fileName, Character chr, bool itemScript, string engineName)
+    private bool start(IClient c, int npc, int oid, string? fileName, IPlayer? chr, bool itemScript, string engineName)
     {
         try
         {
@@ -163,7 +161,7 @@ public class NPCScriptManager : AbstractScriptManager
                 {
                     engine.InvokeSync("start");
                 }
-                catch (Exception nsme)
+                catch (Exception)
                 {
                     try
                     {
@@ -190,7 +188,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
     }
 
-    public void action(Client c, byte mode, byte type, int selection)
+    public void action(IClient c, byte mode, byte type, int selection)
     {
         var iv = scripts.GetValueOrDefault(c);
         if (iv != null)
@@ -204,7 +202,7 @@ public class NPCScriptManager : AbstractScriptManager
             {
                 if (getCM(c) != null)
                 {
-                    log.Error(t, "Error performing NPC script action for npc: {ScriptName}", getCM(c).getNpc());
+                    log.Error(t, "Error performing NPC script action for npc: {ScriptName}", getCM(c)!.getNpc());
                 }
                 dispose(c);
             }
@@ -213,9 +211,9 @@ public class NPCScriptManager : AbstractScriptManager
 
     public void dispose(NPCConversationManager cm)
     {
-        Client c = cm.getClient();
-        c.getPlayer().setCS(false);
-        c.getPlayer().setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        IClient c = cm.getClient();
+        c.OnlinedCharacter.setCS(false);
+        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
         cms.Remove(c);
         scripts.Remove(c);
 
@@ -229,10 +227,10 @@ public class NPCScriptManager : AbstractScriptManager
             resetContext(scriptFolder + "/" + cm.getNpc() + ".js", c);
         }
 
-        c.getPlayer().flushDelayedUpdateQuests();
+        c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 
-    public void dispose(Client c)
+    public void dispose(IClient c)
     {
         var cm = cms.GetValueOrDefault(c);
         if (cm != null)
@@ -241,7 +239,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
     }
 
-    public NPCConversationManager? getCM(Client c)
+    public NPCConversationManager? getCM(IClient c)
     {
         return cms.GetValueOrDefault(c);
     }

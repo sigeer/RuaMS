@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -24,9 +24,7 @@
 
 
 using Application.Core.constants.game;
-using net.server.channel;
 using server.life;
-using server.maps;
 
 namespace client.command.commands.gm4;
 
@@ -37,9 +35,9 @@ public class PmobCommand : Command
         setDescription("Spawn a permanent mob on your location.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !pmob <mobid> [<mobtime>]");
@@ -72,9 +70,9 @@ public class PmobCommand : Command
                 dbContext.Plives.Add(newModel);
                 dbContext.SaveChanges();
 
-                foreach (Channel ch in player.getWorldServer().getChannels())
+                foreach (var ch in player.getWorldServer().getChannels())
                 {
-                    MapleMap map = ch.getMapFactory().getMap(mapId);
+                    var map = ch.getMapFactory().getMap(mapId);
                     map.addMonsterSpawn(mob, mobTime, -1);
                     map.addAllMonsterSpawn(mob, mobTime, -1);
                 }

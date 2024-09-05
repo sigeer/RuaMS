@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using net.server;
 using tools;
 
@@ -40,7 +39,7 @@ public class MapleTVEffect
     private static bool[] ACTIVE = new bool[Server.getInstance().getWorldsSize()];
 
     static object lock1 = new object();
-    public static bool broadcastMapleTVIfNotActive(Character player, Character? victim, List<string> messages, int tvType)
+    public static bool broadcastMapleTVIfNotActive(IPlayer player, IPlayer? victim, List<string> messages, int tvType)
     {
         lock (lock1)
         {
@@ -56,7 +55,7 @@ public class MapleTVEffect
     }
 
     static object lock2 = new object();
-    private static void broadcastTV(bool activity, int userWorld, List<string> message, Character user, int type, Character partner)
+    private static void broadcastTV(bool activity, int userWorld, List<string> message, IPlayer user, int type, IPlayer partner)
     {
         lock (lock2)
         {

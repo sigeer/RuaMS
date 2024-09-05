@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,47 +21,31 @@
 */
 
 
-using client;
+using Application.Core.constants;
+using Application.Core.Managers;
 using constants.game;
 using constants.id;
 using net.packet;
+using net.server.coordinator.matchchecker;
 using net.server.guild;
-using net.server.world;
 using tools;
-using static net.server.coordinator.matchchecker.MatchCheckerListenerFactory;
 
 namespace net.server.channel.handlers;
 
 public class GuildOperationHandler : AbstractPacketHandler
 {
-    private bool isGuildNameAcceptable(string name)
-    {
-        if (name.Length < 3 || name.Length > 12)
-        {
-            return false;
-        }
-        for (int i = 0; i < name.Length; i++)
-        {
-            if (!char.IsLower(name.ElementAt(i)) && !char.IsUpper(name.ElementAt(i)))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        Character mc = c.getPlayer();
+        var mc = c.OnlinedCharacter;
         byte type = p.readByte();
-        int allianceId = -1;
         switch (type)
         {
             case 0x00:
                 //c.sendPacket(PacketCreator.showGuildInfo(mc));
                 break;
             case 0x02:
-                if (mc.getGuildId() > 0)
+                if (mc.GuildId > 0)
                 {
                     mc.dropMessage(1, "You cannot create a new Guild while in one.");
                     return;
@@ -72,13 +56,13 @@ public class GuildOperationHandler : AbstractPacketHandler
                     return;
                 }
                 string guildName = p.readString();
-                if (!isGuildNameAcceptable(guildName))
+                if (!GuildManager.CheckGuildName(guildName))
                 {
                     mc.dropMessage(1, "The Guild name you have chosen is not accepted.");
                     return;
                 }
 
-                HashSet<Character> eligibleMembers = new(Guild.getEligiblePlayersForGuild(mc));
+                HashSet<IPlayer> eligibleMembers = new(GuildManager.getEligiblePlayersForGuild(mc));
                 if (eligibleMembers.Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
                 {
                     if (mc.getMap().getAllPlayers().Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
@@ -95,28 +79,24 @@ public class GuildOperationHandler : AbstractPacketHandler
                     return;
                 }
 
-                if (!Party.createParty(mc, true))
+                if (!TeamManager.createParty(mc, true))
                 {
                     mc.dropMessage(1, "You cannot create a new Guild while in a party.");
                     return;
                 }
 
-                HashSet<int> eligibleCids = new();
-                foreach (Character chr in eligibleMembers)
-                {
-                    eligibleCids.Add(chr.getId());
-                }
+                var eligibleCids = eligibleMembers.Select(x => x.Id).ToHashSet();
 
                 c.getWorldServer().getMatchCheckerCoordinator().createMatchConfirmation(MatchCheckerType.GUILD_CREATION, c.getWorld(), mc.getId(), eligibleCids, guildName);
                 break;
             case 0x05:
-                if (mc.getGuildId() <= 0 || mc.getGuildRank() > 2)
+                if (mc.GuildId <= 0 || mc.GuildRank > 2)
                 {
                     return;
                 }
 
                 string targetName = p.readString();
-                var mgr = Guild.sendInvitation(c, targetName);
+                var mgr = GuildManager.sendInvitation(c, targetName);
                 if (mgr != null)
                 {
                     c.sendPacket(mgr.Value.getPacket(targetName));
@@ -127,7 +107,7 @@ public class GuildOperationHandler : AbstractPacketHandler
 
                 break;
             case 0x06:
-                if (mc.getGuildId() > 0)
+                if (mc.GuildId > 0)
                 {
                     log.Warning("[Hack] Chr {CharacterName} attempted to join a guild when s/he is already in one.", mc.getName());
                     return;
@@ -140,34 +120,33 @@ public class GuildOperationHandler : AbstractPacketHandler
                     return;
                 }
 
-                if (!Guild.answerInvitation(cid, mc.getName(), gid, true))
+                if (!GuildManager.answerInvitation(cid, mc.getName(), gid, true))
                 {
                     return;
                 }
 
-                mc.getMGC().setGuildId(gid); // joins the guild
-                mc.getMGC().setGuildRank(5); // start at lowest rank
-                mc.getMGC().setAllianceRank(5);
+                mc.GuildId = gid;
+                mc.GuildRank = 5;
+                mc.AllianceRank = 5;
 
-                int s = Server.getInstance().addGuildMember(mc.getMGC(), mc);
+                int s = mc.GuildModel!.addGuildMember(mc);
                 if (s == 0)
                 {
                     mc.dropMessage(1, "The guild you are trying to join is already full.");
-                    mc.getMGC().setGuildId(0);
+                    mc.GuildId = Defaults.GuildId;
                     return;
                 }
 
                 c.sendPacket(GuildPackets.showGuildInfo(mc));
 
-                allianceId = mc.getGuild().getAllianceId();
-                if (allianceId > 0)
+                if (mc.AllianceModel != null)
                 {
-                    Server.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                    mc.AllianceModel.updateAlliancePackets(mc);
                 }
 
                 mc.saveGuildStatus(); // update database
-                mc.getMap().broadcastPacket(mc, GuildPackets.guildNameChanged(mc.getId(), mc.getGuild().getName())); // thanks Vcoc for pointing out an issue with updating guild tooltip to players in the map
-                mc.getMap().broadcastPacket(mc, GuildPackets.guildMarkChanged(mc.getId(), mc.getGuild()));
+                mc.getMap().broadcastPacket(mc, GuildPackets.guildNameChanged(mc.getId(), mc.GuildModel!.Name));
+                mc.getMap().broadcastPacket(mc, GuildPackets.guildMarkChanged(mc.getId(), mc.GuildModel));
                 break;
             case 0x07:
                 cid = p.readInt();
@@ -178,37 +157,34 @@ public class GuildOperationHandler : AbstractPacketHandler
                     return;
                 }
 
-                allianceId = mc.getGuild().getAllianceId();
 
-                c.sendPacket(GuildPackets.updateGP(mc.getGuildId(), 0));
-                Server.getInstance().leaveGuild(mc.getMGC());
+                c.sendPacket(GuildPackets.updateGP(mc.GuildId, 0));
+                Server.getInstance().leaveGuild(mc);
 
                 c.sendPacket(GuildPackets.showGuildInfo(null));
-                if (allianceId > 0)
+                if (mc.AllianceModel != null)
                 {
-                    Server.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                    mc.AllianceModel.updateAlliancePackets(mc);
                 }
 
-                mc.getMGC().setGuildId(0);
-                mc.getMGC().setGuildRank(5);
+                mc.GuildId = 0;
+                mc.GuildRank = 5;
                 mc.saveGuildStatus();
                 mc.getMap().broadcastPacket(mc, GuildPackets.guildNameChanged(mc.getId(), ""));
                 break;
             case 0x08:
-                allianceId = mc.getGuild().getAllianceId();
-
                 cid = p.readInt();
                 name = p.readString();
-                if (mc.getGuildRank() > 2 || mc.getGuildId() <= 0)
+                if (mc.GuildRank > 2 || mc.GuildId <= 0)
                 {
                     log.Warning("[Hack] Chr {CharacterName} is trying to expel without rank 1 or 2", mc.getName());
                     return;
                 }
 
-                Server.getInstance().expelMember(mc.getMGC(), name, cid);
-                if (allianceId > 0)
+                Server.getInstance().expelMember(mc, name, cid);
+                if (mc.AllianceModel != null)
                 {
-                    Server.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                    mc.AllianceModel!.updateAlliancePackets(mc);
                 }
                 break;
             case 0x0d:
@@ -237,10 +213,10 @@ public class GuildOperationHandler : AbstractPacketHandler
                 {
                     return;
                 }
-                Server.getInstance().changeRank(mc.getGuildId(), cid, newRank);
+                Server.getInstance().changeRank(mc.GuildId, cid, newRank);
                 break;
             case 0x0f:
-                if (mc.getGuildId() <= 0 || mc.getGuildRank() != 1 || mc.getMapId() != MapId.GUILD_HQ)
+                if (mc.GuildId <= 0 || mc.GuildRank != 1 || mc.getMapId() != MapId.GUILD_HQ)
                 {
                     log.Warning("[Hack] Chr {CharacterName} tried to change guild emblem without being the guild leader", mc.getName());
                     return;
@@ -254,24 +230,23 @@ public class GuildOperationHandler : AbstractPacketHandler
                 byte bgcolor = p.readByte();
                 short logo = p.readShort();
                 byte logocolor = p.readByte();
-                Server.getInstance().setGuildEmblem(mc.getGuildId(), bg, bgcolor, logo, logocolor);
+                Server.getInstance().setGuildEmblem(mc.GuildId, bg, bgcolor, logo, logocolor);
 
-                if (mc.getGuild() != null && mc.getGuild().getAllianceId() > 0)
+                if (mc.AllianceModel != null)
                 {
-                    var alliance = mc.getAlliance();
-                    Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.getGuildAlliances(alliance, c.getWorld()), -1, -1);
+                    Server.getInstance().allianceMessage(mc.AllianceModel.AllianceId, GuildPackets.getGuildAlliances(mc.AllianceModel, c.getWorld()), -1, -1);
                 }
 
                 mc.gainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);
-                mc.getGuild().broadcastNameChanged();
-                mc.getGuild().broadcastEmblemChanged();
+                mc.GuildModel!.broadcastEmblemChanged();
+                mc.GuildModel!.broadcastNameChanged();
                 break;
             case 0x10:
-                if (mc.getGuildId() <= 0 || mc.getGuildRank() > 2)
+                if (mc.GuildId <= 0 || mc.GuildRank > 2)
                 {
-                    if (mc.getGuildId() <= 0)
+                    if (mc.GuildId <= 0)
                     {
-                        log.Warning("[Hack] Chr {CharacterName} tried to change guild notice while not in a guild", mc.getName());
+                        log.Warning("[Hack] Chr {CharacterName} tried to change guild notice while not in a guild", mc.Name);
                     }
                     return;
                 }
@@ -280,11 +255,11 @@ public class GuildOperationHandler : AbstractPacketHandler
                 {
                     return;
                 }
-                Server.getInstance().setGuildNotice(mc.getGuildId(), notice);
+                Server.getInstance().setGuildNotice(mc.GuildId, notice);
                 break;
             case 0x1E:
                 p.readInt();
-                World wserv = c.getWorldServer();
+                var wserv = c.getWorldServer();
 
                 if (mc.getParty() != null)
                 {
@@ -304,7 +279,7 @@ public class GuildOperationHandler : AbstractPacketHandler
                             int partyid = leader.getPartyId();
                             if (partyid != -1)
                             {
-                                Party.joinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
+                                TeamManager.joinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
                             }
                         }
                     }

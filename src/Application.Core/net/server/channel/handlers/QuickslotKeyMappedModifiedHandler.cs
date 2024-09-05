@@ -1,6 +1,3 @@
-
-
-using client;
 using client.keybind;
 using net.packet;
 
@@ -11,12 +8,12 @@ namespace net.server.channel.handlers;
  */
 public class QuickslotKeyMappedModifiedHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         // Invalid size for the packet.
         if (p.available() != QuickslotBinding.QUICKSLOT_SIZE * sizeof(int) ||
                 // not logged in-game
-                c.getPlayer() == null)
+                c.OnlinedCharacter == null)
         {
             return;
         }
@@ -28,6 +25,6 @@ public class QuickslotKeyMappedModifiedHandler : AbstractPacketHandler
             aQuickslotKeyMapped[i] = (byte)p.readInt();
         }
 
-        c.getPlayer().changeQuickslotKeybinding(aQuickslotKeyMapped);
+        c.OnlinedCharacter.changeQuickslotKeybinding(aQuickslotKeyMapped);
     }
 }

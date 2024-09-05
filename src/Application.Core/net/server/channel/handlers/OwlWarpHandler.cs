@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server
+    This file is part of the HeavenMS MapleStory NewServer
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -19,10 +19,9 @@
 */
 
 
-using client;
+using Application.Core.Game.Maps;
 using constants.game;
 using net.packet;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -33,23 +32,23 @@ namespace net.server.channel.handlers;
 public class OwlWarpHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int ownerid = p.readInt();
         int mapid = p.readInt();
 
-        if (ownerid == c.getPlayer().getId())
+        if (ownerid == c.OnlinedCharacter.getId())
         {
             c.sendPacket(PacketCreator.serverNotice(1, "You cannot visit your own shop."));
             return;
         }
 
-        HiredMerchant hm = c.getWorldServer().getHiredMerchant(ownerid);   // if both hired merchant and player shop is on the same map
-        PlayerShop ps;
-        if (hm == null || hm.getMapId() != mapid || !hm.hasItem(c.getPlayer().getOwlSearch()))
+        var hm = c.getWorldServer().getHiredMerchant(ownerid);   // if both hired merchant and player shop is on the same map
+        PlayerShop? ps;
+        if (hm == null || hm.getMapId() != mapid || !hm.hasItem(c.OnlinedCharacter.getOwlSearch()))
         {
             ps = c.getWorldServer().getPlayerShop(ownerid);
-            if (ps == null || ps.getMapId() != mapid || !ps.hasItem(c.getPlayer().getOwlSearch()))
+            if (ps == null || ps.getMapId() != mapid || !ps.hasItem(c.OnlinedCharacter.getOwlSearch()))
             {
                 if (hm == null && ps == null)
                 {
@@ -68,13 +67,13 @@ public class OwlWarpHandler : AbstractPacketHandler
                 {
                     if (ps.getChannel() == c.getChannel())
                     {
-                        c.getPlayer().changeMap(mapid);
+                        c.OnlinedCharacter.changeMap(mapid);
 
                         if (ps.isOpen())
                         {   //change map has a delay, must double check
-                            if (!ps.visitShop(c.getPlayer()))
+                            if (!ps.visitShop(c.OnlinedCharacter))
                             {
-                                if (!ps.isBanned(c.getPlayer().getName()))
+                                if (!ps.isBanned(c.OnlinedCharacter.getName()))
                                 {
                                     c.sendPacket(PacketCreator.getOwlMessage(2));
                                 }
@@ -114,14 +113,14 @@ public class OwlWarpHandler : AbstractPacketHandler
                 {
                     if (hm.getChannel() == c.getChannel())
                     {
-                        c.getPlayer().changeMap(mapid);
+                        c.OnlinedCharacter.changeMap(mapid);
 
                         if (hm.isOpen())
                         {   //change map has a delay, must double check
-                            if (hm.addVisitor(c.getPlayer()))
+                            if (hm.addVisitor(c.OnlinedCharacter))
                             {
-                                c.sendPacket(PacketCreator.getHiredMerchant(c.getPlayer(), hm, false));
-                                c.getPlayer().setHiredMerchant(hm);
+                                c.sendPacket(PacketCreator.getHiredMerchant(c.OnlinedCharacter, hm, false));
+                                c.OnlinedCharacter.setHiredMerchant(hm);
                             }
                             else
                             {

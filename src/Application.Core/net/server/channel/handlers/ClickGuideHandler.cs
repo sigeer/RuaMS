@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -34,9 +34,9 @@ namespace net.server.channel.handlers;
  */
 public class ClickGuideHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        if (c.getPlayer().getJob().Equals(Job.NOBLESSE))
+        if (c.OnlinedCharacter.getJob().Equals(Job.NOBLESSE))
         {
             NPCScriptManager.getInstance().start(c, NpcId.MIMO, null);
         }

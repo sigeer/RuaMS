@@ -19,7 +19,6 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using scripting.Event;
@@ -60,7 +59,7 @@ public class Marriage : EventInstanceManager
         this.setObjectProperty("brideGiftlist", brideGifts);
     }
 
-    public List<Item> getGiftItems(Client c, bool groom)
+    public List<Item> getGiftItems(IClient c, bool groom)
     {
         List<Item> gifts = getGiftItemsList(groom);
         lock (gifts)
@@ -74,7 +73,7 @@ public class Marriage : EventInstanceManager
         return (List<Item>)this.getObjectProperty(groom ? "groomGiftlist" : "brideGiftlist");
     }
 
-    public Item? getGiftItem(Client c, bool groom, int idx)
+    public Item? getGiftItem(IClient c, bool groom, int idx)
     {
         try
         {
@@ -104,7 +103,7 @@ public class Marriage : EventInstanceManager
         }
     }
 
-    public bool? isMarriageGroom(Character chr)
+    public bool? isMarriageGroom(IPlayer chr)
     {
         bool? groom = null;
         try
@@ -126,7 +125,7 @@ public class Marriage : EventInstanceManager
         return groom;
     }
 
-    public static bool claimGiftItems(Client c, Character chr)
+    public static bool claimGiftItems(IClient c, IPlayer chr)
     {
         List<Item> gifts = loadGiftItemsFromDb(c, chr.getId());
         if (Inventory.checkSpot(chr, gifts))
@@ -134,7 +133,9 @@ public class Marriage : EventInstanceManager
             try
             {
                 using var dbContext = new DBContext();
+                using var dbTrans = dbContext.Database.BeginTransaction();
                 ItemFactory.MARRIAGE_GIFTS.saveItems(new(), chr.getId(), dbContext);
+                dbTrans.Commit();
             }
             catch (Exception sqle)
             {
@@ -152,7 +153,7 @@ public class Marriage : EventInstanceManager
         return false;
     }
 
-    public static List<Item> loadGiftItemsFromDb(Client c, int cid)
+    public static List<Item> loadGiftItemsFromDb(IClient c, int cid)
     {
         List<Item> items = new();
 
@@ -171,12 +172,12 @@ public class Marriage : EventInstanceManager
         return items;
     }
 
-    public void saveGiftItemsToDb(Client c, bool groom, int cid)
+    public void saveGiftItemsToDb(IClient c, bool groom, int cid)
     {
         Marriage.saveGiftItemsToDb(c, getGiftItems(c, groom), cid);
     }
 
-    public static void saveGiftItemsToDb(Client c, List<Item> giftItems, int cid)
+    public static void saveGiftItemsToDb(IClient c, List<Item> giftItems, int cid)
     {
         List<ItemInventoryType> items = new();
         foreach (Item it in giftItems)
@@ -187,7 +188,9 @@ public class Marriage : EventInstanceManager
         try
         {
             using var dbContext = new DBContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
             ItemFactory.MARRIAGE_GIFTS.saveItems(items, cid, dbContext);
+            dbTrans.Commit();
         }
         catch (Exception sqle)
         {

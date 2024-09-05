@@ -1,5 +1,5 @@
-﻿using client;
-using static client.Character;
+﻿using Application.Core.Game.Skills;
+using client;
 
 namespace Application.Core.model
 {

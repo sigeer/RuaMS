@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,7 @@
  */
 
 
-using client;
+using Application.Core.Managers;
 using net.packet;
 using tools;
 
@@ -34,7 +34,7 @@ namespace net.server.channel.handlers;
  */
 public class ReportHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         int type = p.readByte(); //00 = Illegal program claim, 01 = Conversation claim
         string victim = p.readString();
@@ -42,12 +42,12 @@ public class ReportHandler : AbstractPacketHandler
         string description = p.readString();
         if (type == 0)
         {
-            if (c.getPlayer().getPossibleReports() > 0)
+            if (c.OnlinedCharacter.getPossibleReports() > 0)
             {
-                if (c.getPlayer().getMeso() > 299)
+                if (c.OnlinedCharacter.getMeso() > 299)
                 {
-                    c.getPlayer().decreaseReports();
-                    c.getPlayer().gainMeso(-300, true);
+                    c.OnlinedCharacter.decreaseReports();
+                    c.OnlinedCharacter.gainMeso(-300, true);
                 }
                 else
                 {
@@ -61,7 +61,7 @@ public class ReportHandler : AbstractPacketHandler
                 return;
             }
             Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            addReport(c.getPlayer().getId(), Character.getIdByName(victim), 0, description, "");
+            addReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, "");
         }
         else if (type == 1)
         {
@@ -70,12 +70,12 @@ public class ReportHandler : AbstractPacketHandler
             {
                 return;
             }
-            if (c.getPlayer().getPossibleReports() > 0)
+            if (c.OnlinedCharacter.getPossibleReports() > 0)
             {
-                if (c.getPlayer().getMeso() > 299)
+                if (c.OnlinedCharacter.getMeso() > 299)
                 {
-                    c.getPlayer().decreaseReports();
-                    c.getPlayer().gainMeso(-300, true);
+                    c.OnlinedCharacter.decreaseReports();
+                    c.OnlinedCharacter.gainMeso(-300, true);
                 }
                 else
                 {
@@ -84,11 +84,11 @@ public class ReportHandler : AbstractPacketHandler
                 }
             }
             Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            addReport(c.getPlayer().getId(), Character.getIdByName(victim), reason, description, chatlog);
+            addReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), reason, description, chatlog);
         }
         else
         {
-            Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, c.getPlayer().getName() + " is probably packet editing. Got unknown report type, which is impossible."));
+            Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type, which is impossible."));
         }
     }
 

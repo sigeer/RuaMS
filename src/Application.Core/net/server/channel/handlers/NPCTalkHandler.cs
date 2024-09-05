@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,12 +21,11 @@
 */
 
 
-using client;
+using Application.Core.Game.Life;
 using client.processor.npc;
 using constants.id;
 using net.packet;
 using scripting.npc;
-using server.life;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -34,27 +33,27 @@ namespace net.server.channel.handlers;
 public class NPCTalkHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
-        if (!c.getPlayer().isAlive())
+        if (!c.OnlinedCharacter.isAlive())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
 
-        if (currentServerTime() - c.getPlayer().getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
+        if (currentServerTime() - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
 
         int oid = p.readInt();
-        var obj = c.getPlayer().getMap().getMapObject(oid);
+        var obj = c.OnlinedCharacter.getMap().getMapObject(oid);
         if (obj is NPC npc)
         {
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                c.getPlayer().dropMessage(5, "Talking to NPC " + npc.getId());
+                c.OnlinedCharacter.dropMessage(5, "Talking to NPC " + npc.getId());
             }
 
             if (npc.getId() == NpcId.DUEY)
@@ -88,7 +87,7 @@ public class NPCTalkHandler : AbstractPacketHandler
                             log.Warning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
                             return;
                         }
-                        else if (c.getPlayer().getShop() != null)
+                        else if (c.OnlinedCharacter.getShop() != null)
                         {
                             c.sendPacket(PacketCreator.enableActions());
                             return;

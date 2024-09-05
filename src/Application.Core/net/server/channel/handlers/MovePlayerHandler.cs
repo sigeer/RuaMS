@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using tools;
 using tools.exceptions;
@@ -30,24 +29,24 @@ namespace net.server.channel.handlers;
 
 public class MovePlayerHandler : AbstractMovementPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.skip(9);
         try
         {   // thanks Sa for noticing empty movement sequences crashing players
             int movementDataStart = p.getPosition();
-            updatePosition(p, c.getPlayer(), 0);
+            updatePosition(p, c.OnlinedCharacter, 0);
             long movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
             p.seek(movementDataStart);
 
-            c.getPlayer().getMap().movePlayer(c.getPlayer(), c.getPlayer().getPosition());
-            if (c.getPlayer().isHidden())
+            c.OnlinedCharacter.getMap().movePlayer(c.OnlinedCharacter, c.OnlinedCharacter.getPosition());
+            if (c.OnlinedCharacter.isHidden())
             {
-                c.getPlayer().getMap().broadcastGMMessage(c.getPlayer(), PacketCreator.movePlayer(c.getPlayer().getId(), p, movementDataLength), false);
+                c.OnlinedCharacter.getMap().broadcastGMMessage(c.OnlinedCharacter, PacketCreator.movePlayer(c.OnlinedCharacter.getId(), p, movementDataLength), false);
             }
             else
             {
-                c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.movePlayer(c.getPlayer().getId(), p, movementDataLength), false);
+                c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.movePlayer(c.OnlinedCharacter.getId(), p, movementDataLength), false);
             }
         }
         catch (EmptyMovementException e)

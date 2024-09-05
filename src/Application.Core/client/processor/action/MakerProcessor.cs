@@ -39,7 +39,7 @@ public class MakerProcessor
     private static ILogger log = LogFactory.GetLogger("MakerProcessor");
     private static ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-    public static void makerAction(InPacket p, Client c)
+    public static void makerAction(InPacket p, IClient c)
     {
         if (c.tryacquireClient())
         {
@@ -72,7 +72,7 @@ public class MakerProcessor
                     p.readInt(); // 1... probably inventory type
                     pos = p.readInt();
 
-                    var it = c.getPlayer().getInventory(InventoryType.EQUIP).getItem((short)pos);
+                    var it = c.OnlinedCharacter.getInventory(InventoryType.EQUIP).getItem((short)pos);
                     if (it != null && it.getItemId() == toCreate)
                     {
                         toDisassemble = toCreate;
@@ -166,7 +166,7 @@ public class MakerProcessor
                 switch (createStatus)
                 {
                     case -1:// non-available for Maker itemid has been tried to forge
-                        log.Warning("Chr {CharacterName} tried to craft itemid {ItemId} using the Maker skill.", c.getPlayer().getName(), toCreate);
+                        log.Warning("Chr {CharacterName} tried to craft itemid {ItemId} using the Maker skill.", c.OnlinedCharacter.getName(), toCreate);
                         c.sendPacket(PacketCreator.serverNotice(1, "The requested item could not be crafted on this operation."));
                         c.sendPacket(PacketCreator.makerEnableActions());
                         break;
@@ -214,14 +214,14 @@ public class MakerProcessor
                         {
                             if (cost > 0)
                             {
-                                c.getPlayer().gainMeso(-cost, false);
+                                c.OnlinedCharacter.gainMeso(-cost, false);
                             }
 
                             foreach (var pair in recipe.getGainItems())
                             {
-                                c.getPlayer().setCS(true);
+                                c.OnlinedCharacter.setCS(true);
                                 c.getAbstractPlayerInteraction().gainItem(pair.ItemId, (short)pair.Quantity, false);
-                                c.getPlayer().setCS(false);
+                                c.OnlinedCharacter.setCS(false);
                             }
                         }
                         else
@@ -242,7 +242,7 @@ public class MakerProcessor
 
                             if (cost > 0)
                             {
-                                c.getPlayer().gainMeso(-cost, false);
+                                c.OnlinedCharacter.gainMeso(-cost, false);
                             }
                             makerSucceeded = addBoostedMakerItem(c, toCreate, stimulantid, reagentids);
                         }
@@ -262,9 +262,9 @@ public class MakerProcessor
                         }
 
                         c.sendPacket(PacketCreator.showMakerEffect(makerSucceeded));
-                        c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.showForeignMakerEffect(c.getPlayer().getId(), makerSucceeded), false);
+                        c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showForeignMakerEffect(c.OnlinedCharacter.getId(), makerSucceeded), false);
 
-                        if (toCreate == 4260003 && type == 3 && c.getPlayer().getQuestStatus(6033) == 1)
+                        if (toCreate == 4260003 && type == 3 && c.OnlinedCharacter.getQuestStatus(6033) == 1)
                         {
                             c.getAbstractPlayerInteraction().setQuestProgress(6033, 1);
                         }
@@ -373,12 +373,12 @@ public class MakerProcessor
         return null;
     }
 
-    public static int getMakerSkillLevel(Character chr)
+    public static int getMakerSkillLevel(IPlayer chr)
     {
         return chr.getSkillLevel((chr.getJob().getId() / 1000) * 10000000 + 1007);
     }
 
-    private static short getCreateStatus(Client c, MakerItemCreateEntry recipe)
+    private static short getCreateStatus(IClient c, MakerItemCreateEntry recipe)
     {
         if (recipe.isInvalid())
         {
@@ -390,17 +390,17 @@ public class MakerProcessor
             return 1;
         }
 
-        if (c.getPlayer().getMeso() < recipe.getCost())
+        if (c.OnlinedCharacter.getMeso() < recipe.getCost())
         {
             return 2;
         }
 
-        if (c.getPlayer().getLevel() < recipe.getReqLevel())
+        if (c.OnlinedCharacter.getLevel() < recipe.getReqLevel())
         {
             return 3;
         }
 
-        if (getMakerSkillLevel(c.getPlayer()) < recipe.getReqSkillLevel())
+        if (getMakerSkillLevel(c.OnlinedCharacter) < recipe.getReqSkillLevel())
         {
             return 4;
         }
@@ -430,12 +430,12 @@ public class MakerProcessor
         return 0;
     }
 
-    private static bool hasItems(Client c, MakerItemCreateEntry recipe)
+    private static bool hasItems(IClient c, MakerItemCreateEntry recipe)
     {
         foreach (var p in recipe.getReqItems())
         {
             int itemId = p.ItemId;
-            if (c.getPlayer().getInventory(ItemConstants.getInventoryType(itemId)).countById(itemId) < p.Quantity)
+            if (c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(itemId)).countById(itemId) < p.Quantity)
             {
                 return false;
             }
@@ -443,7 +443,7 @@ public class MakerProcessor
         return true;
     }
 
-    private static bool addBoostedMakerItem(Client c, int itemid, int stimulantid, Dictionary<int, short> reagentids)
+    private static bool addBoostedMakerItem(IClient c, int itemid, int stimulantid, Dictionary<int, short> reagentids)
     {
         if (stimulantid != -1 && !ItemInformationProvider.rollSuccessChance(90.0))
         {
@@ -464,11 +464,11 @@ public class MakerProcessor
 
         if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true)
         {
-            if (!(c.getPlayer().isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
+            if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
             {
                 eqp.setUpgradeSlots((byte)(eqp.getUpgradeSlots() + 1));
             }
-            item = ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.getPlayer().isGM());
+            item = ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
         }
 
         if (reagentids.Count > 0)

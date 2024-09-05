@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using client.inventory;
 using constants.id;
 using net.packet;
@@ -31,17 +30,17 @@ namespace net.server.channel.handlers;
 
 public class UseItemEffectHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         Item? toUse;
         int itemId = p.readInt();
         if (itemId == ItemId.BUMMER_EFFECT || itemId == ItemId.GOLDEN_CHICKEN_EFFECT)
         {
-            toUse = c.getPlayer().getInventory(InventoryType.ETC).findById(itemId);
+            toUse = c.OnlinedCharacter.getInventory(InventoryType.ETC).findById(itemId);
         }
         else
         {
-            toUse = c.getPlayer().getInventory(InventoryType.CASH).findById(itemId);
+            toUse = c.OnlinedCharacter.getInventory(InventoryType.CASH).findById(itemId);
         }
         if (toUse == null || toUse.getQuantity() < 1)
         {
@@ -50,7 +49,7 @@ public class UseItemEffectHandler : AbstractPacketHandler
                 return;
             }
         }
-        c.getPlayer().setItemEffect(itemId);
-        c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.itemEffect(c.getPlayer().getId(), itemId), false);
+        c.OnlinedCharacter.setItemEffect(itemId);
+        c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.itemEffect(c.OnlinedCharacter.getId(), itemId), false);
     }
 }

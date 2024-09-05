@@ -1,5 +1,5 @@
 /*
-	This file is part of the OdinMS Maple Story Server
+	This file is part of the OdinMS Maple Story NewServer
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
 */
 
 
-using client;
 using net.packet;
 using tools;
 
@@ -30,17 +29,16 @@ namespace net.server.channel.handlers;
 public class CharInfoRequestHandler : AbstractPacketHandler
 {
 
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.skip(4);
         int cid = p.readInt();
-        var target = c.getPlayer().getMap().getMapObject(cid);
+        var target = c.OnlinedCharacter.getMap().getMapObject(cid);
         if (target != null)
         {
-            if (target is Character player)
+            if (target is IPlayer player)
             {
-
-                if (c.getPlayer().getId() != player.getId())
+                if (c.OnlinedCharacter.getId() != player.getId())
                 {
                     player.exportExcludedItems(c);
                 }

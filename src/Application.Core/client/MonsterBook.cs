@@ -49,9 +49,9 @@ public class MonsterBook
         }
     }
 
-    public void addCard(Client c, int cardid)
+    public void addCard(IClient c, int cardid)
     {
-        c.getPlayer().getMap().broadcastMessage(c.getPlayer(), PacketCreator.showForeignCardEffect(c.getPlayer().getId()), false);
+        c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showForeignCardEffect(c.OnlinedCharacter.Id), false);
 
         int? qty;
         Monitor.Enter(lockObj);
@@ -189,12 +189,11 @@ public class MonsterBook
         }
     }
 
-    public void loadCards(int charid)
+    public void loadCards(DBContext dbContext, int charid)
     {
         Monitor.Enter(lockObj);
         try
         {
-            using var dbContext = new DBContext();
             var dataList = dbContext.Monsterbooks.Where(x => x.Charid == charid).OrderBy(x => x.Cardid).Select(x => new { x.Cardid, x.Level });
             foreach (var item in dataList)
             {

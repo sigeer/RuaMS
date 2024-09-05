@@ -19,8 +19,9 @@
 */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using net.server;
-using net.server.channel;
 using server.maps;
 using tools;
 
@@ -64,7 +65,7 @@ public class PlayerNPCPodium
         return pos;
     }
 
-    private static Point rearrangePlayerNpcs(MapleMap map, int newStep, List<PlayerNPC> pnpcs)
+    private static Point rearrangePlayerNpcs(IMap map, int newStep, List<PlayerNPC> pnpcs)
     {
         int i = 0;
         foreach (PlayerNPC pn in pnpcs)
@@ -76,7 +77,7 @@ public class PlayerNPCPodium
         return calcNextPos(i, newStep);
     }
 
-    private static Point? reorganizePlayerNpcs(MapleMap map, int newStep, List<MapObject> mmoList)
+    private static Point? reorganizePlayerNpcs(IMap map, int newStep, List<IMapObject> mmoList)
     {
         if (mmoList.Count > 0)
         {
@@ -86,7 +87,7 @@ public class PlayerNPCPodium
             }
 
             List<PlayerNPC> playerNpcs = new(mmoList.Count);
-            foreach (MapObject mmo in mmoList)
+            foreach (var mmo in mmoList)
             {
                 playerNpcs.Add((PlayerNPC)mmo);
             }
@@ -96,11 +97,11 @@ public class PlayerNPCPodium
                 return p1.getScriptId() - p2.getScriptId(); // scriptid as playernpc history
             });
 
-            foreach (Channel ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
+            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
             {
-                MapleMap m = ch.getMapFactory().getMap(map.getId());
+                var m = ch.getMapFactory().getMap(map.getId());
 
-                foreach (PlayerNPC pn in playerNpcs)
+                foreach (var pn in playerNpcs)
                 {
                     m.removeMapObject(pn);
                     m.broadcastMessage(PacketCreator.removeNPCController(pn.getObjectId()));
@@ -110,11 +111,11 @@ public class PlayerNPCPodium
 
             Point ret = rearrangePlayerNpcs(map, newStep, playerNpcs);
 
-            foreach (Channel ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
+            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
             {
-                MapleMap m = ch.getMapFactory().getMap(map.getId());
+                var m = ch.getMapFactory().getMap(map.getId());
 
-                foreach (PlayerNPC pn in playerNpcs)
+                foreach (var pn in playerNpcs)
                 {
                     m.addPlayerNPCMapObject(pn);
                     m.broadcastMessage(PacketCreator.spawnPlayerNPC(pn));
@@ -133,7 +134,7 @@ public class PlayerNPCPodium
         return (podiumCount * (1 << 5)) + podiumStep;
     }
 
-    private static Point? getNextPlayerNpcPosition(MapleMap map, int podiumData)
+    private static Point? getNextPlayerNpcPosition(IMap map, int podiumData)
     {   // automated playernpc position thanks to Ronan
         int podiumStep = podiumData % (1 << 5), podiumCount = (podiumData / (1 << 5));
 
@@ -144,7 +145,7 @@ public class PlayerNPCPodium
                 return null;
             }
 
-            List<MapObject> mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
+            var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
             map.getWorldServer().setPlayerNpcMapPodiumData(map.getId(), encodePodiumData(podiumStep + 1, podiumCount + 1));
             return reorganizePlayerNpcs(map, podiumStep + 1, mmoList);
         }
@@ -155,7 +156,7 @@ public class PlayerNPCPodium
         }
     }
 
-    public static Point? getNextPlayerNpcPosition(MapleMap map)
+    public static Point? getNextPlayerNpcPosition(IMap map)
     {
         var pos = getNextPlayerNpcPosition(map, map.getWorldServer().getPlayerNpcMapPodiumData(map.getId()));
         if (pos == null)

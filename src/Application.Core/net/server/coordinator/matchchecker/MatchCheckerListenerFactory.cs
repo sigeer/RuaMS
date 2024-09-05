@@ -19,33 +19,28 @@
 */
 
 
-using net.server.coordinator.matchchecker.listener;
+using Application.Core.net.server.coordinator.matchchecker.listener;
 
 namespace net.server.coordinator.matchchecker;
 
 /**
  * @author Ronan
  */
-public class MatchCheckerListenerFactory
+public class MatchCheckerType
 {
 
-    public class MatchCheckerType
+    public static readonly MatchCheckerType GUILD_CREATION = new(new MatchCheckerGuildCreationListener());
+    public static readonly MatchCheckerType CPQ_CHALLENGE = new(new MatchCheckerCPQChallengeListener());
+
+    private AbstractMatchCheckerListener listener;
+
+    private MatchCheckerType(AbstractMatchCheckerListener listener)
     {
-
-        public static readonly MatchCheckerType GUILD_CREATION = new(MatchCheckerGuildCreation.loadListener());
-        public static readonly MatchCheckerType CPQ_CHALLENGE = new(MatchCheckerCPQChallenge.loadListener());
-
-        private AbstractMatchCheckerListener listener;
-
-        private MatchCheckerType(AbstractMatchCheckerListener listener)
-        {
-            this.listener = listener;
-        }
-
-        public AbstractMatchCheckerListener getListener()
-        {
-            return this.listener;
-        }
+        this.listener = listener;
     }
 
+    public AbstractMatchCheckerListener getListener()
+    {
+        return this.listener;
+    }
 }

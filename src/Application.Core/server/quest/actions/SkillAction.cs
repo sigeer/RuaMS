@@ -73,7 +73,7 @@ public class SkillAction : AbstractQuestAction
         }
     }
 
-    public override void run(Character chr, int? extSelection)
+    public override void run(IPlayer chr, int? extSelection)
     {
         foreach (SkillData skill in skillData.Values)
         {

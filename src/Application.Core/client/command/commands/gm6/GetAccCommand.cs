@@ -1,5 +1,5 @@
 /*
-    This file is part of the HeavenMS MapleStory Server, commands OdinMS-based
+    This file is part of the HeavenMS MapleStory NewServer, commands OdinMS-based
     Copyleft (L) 2016 - 2019 RonanLana
 
     This program is free software: you can redistribute it and/or modify
@@ -31,16 +31,16 @@ public class GetAccCommand : Command
         setDescription("Show account name of an online player.");
     }
 
-    public override void execute(Client c, string[] paramsValue)
+    public override void execute(IClient c, string[] paramsValue)
     {
-        Character player = c.getPlayer();
+        var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
             player.yellowMessage("Syntax: !getacc <playername>");
             return;
         }
-        Character victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (victim != null)
+        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        if (victim != null && victim.IsOnlined)
         {
             player.message(victim.getName() + "'s account name is " + victim.getClient().getAccountName() + ".");
         }

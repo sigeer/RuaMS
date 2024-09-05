@@ -19,7 +19,7 @@
 */
 
 
-using net.server.channel;
+using Application.Core.Game.TheWorld;
 
 namespace net.server.task;
 
@@ -33,7 +33,7 @@ public class WeddingReservationTask : BaseTask
 
     public override void HandleRun()
     {
-        foreach (Channel ch in wserv.getChannels())
+        foreach (var ch in wserv.getChannels())
         {
             KeyValuePair<bool, KeyValuePair<int, HashSet<int>>>? wedding;
 
@@ -59,7 +59,7 @@ public class WeddingReservationTask : BaseTask
         }
     }
 
-    public WeddingReservationTask(World world) : base(world)
+    public WeddingReservationTask(IWorld world) : base(world)
     {
     }
 }

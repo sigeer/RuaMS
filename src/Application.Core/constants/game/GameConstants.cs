@@ -1,5 +1,6 @@
 
 
+using Application.Core.Game.Maps;
 using client;
 using constants.id;
 using constants.skills;
@@ -663,7 +664,7 @@ public class GameConstants
         return mapid / 1000000 == 910 && mapid > MapId.FM_ENTRANCE; // FM rooms subset, thanks to shavitush (shavit)
     }
 
-    public static bool isMerchantLocked(MapleMap map)
+    public static bool isMerchantLocked(IMap map)
     {
         if (FieldLimit.CANNOTMIGRATE.check(map.getFieldLimit()))
         {   // maps that cannot access cash shop cannot access merchants too (except FM rooms).
@@ -815,4 +816,5 @@ public class GameConstants
         return maxMobDmg;
     }
 
+    public static string LEVEL_200 = "[Congrats] {0} has reached Level {1}! Congratulate {2} on such an amazing achievement!";
 }

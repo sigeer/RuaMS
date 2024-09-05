@@ -1,5 +1,5 @@
 /*
- This file is part of the OdinMS Maple Story Server
+ This file is part of the OdinMS Maple Story NewServer
  Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
  Matthias Butz <matze@odinms.de>
  Jan Christian Meyer <vimes@odinms.de>
@@ -21,7 +21,6 @@
  */
 
 
-using client;
 using net.packet;
 
 namespace net.server.channel.handlers;
@@ -34,13 +33,13 @@ namespace net.server.channel.handlers;
  */
 public class ItemPickupHandler : AbstractPacketHandler
 {
-    public override void handlePacket(InPacket p, Client c)
+    public override void HandlePacket(InPacket p, IClient c)
     {
         p.readInt(); //Timestamp
         p.readByte();
         p.readPos(); //cpos
         int oid = p.readInt();
-        Character chr = c.getPlayer();
+        var chr = c.OnlinedCharacter;
         var ob = chr.getMap().getMapObject(oid);
         if (ob == null)
         {
@@ -52,7 +51,7 @@ public class ItemPickupHandler : AbstractPacketHandler
         if (Math.Abs(charPos.X - obPos.X) > 800 || Math.Abs(charPos.Y - obPos.Y) > 600)
         {
             log.Warning("Chr {} tried to pick up an item too far away. Mapid: {}, player pos: {}, object pos: {}",
-                    c.getPlayer().getName(), chr.getMapId(), charPos, obPos);
+                    c.OnlinedCharacter.getName(), chr.getMapId(), charPos, obPos);
             return;
         }
 

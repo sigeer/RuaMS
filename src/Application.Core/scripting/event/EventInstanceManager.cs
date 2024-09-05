@@ -21,13 +21,15 @@
  */
 
 
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
+using Application.Core.Game.Relation;
+using Application.Core.model;
 using Application.Core.scripting.Event;
 using client;
 using constants.inventory;
 using net.server.coordinator.world;
-using net.server.world;
 using scripting.Event.scheduler;
-using Serilog;
 using server;
 using server.expeditions;
 using server.life;
@@ -43,10 +45,10 @@ namespace scripting.Event;
 public class EventInstanceManager
 {
     ILogger log = LogFactory.GetLogger("EventInstanceManger");
-    private Dictionary<int, Character> chars = new();
+    private Dictionary<int, IPlayer> chars = new();
     private int leaderId = -1;
     private List<Monster> mobs = new();
-    private Dictionary<Character, int> killCount = new();
+    private Dictionary<IPlayer, int> killCount = new();
     private EventManager em;
     private EventScriptScheduler ess;
     private MapManager mapManager;
@@ -69,9 +71,7 @@ public class EventInstanceManager
     private bool eventStarted = false;
 
     // multi-leveled PQ rewards!
-    private Dictionary<int, List<int>> collectionSet = new(YamlConfig.config.server.MAX_EVENT_LEVELS);
-    private Dictionary<int, List<int>> collectionQty = new(YamlConfig.config.server.MAX_EVENT_LEVELS);
-    private Dictionary<int, int> collectionExp = new(YamlConfig.config.server.MAX_EVENT_LEVELS);
+    Dictionary<int, EventRewardsPair> eventRewards = new Dictionary<int, EventRewardsPair>(YamlConfig.config.server.MAX_EVENT_LEVELS);
 
     // Exp/Meso rewards by CLEAR on a stage
     private List<int> onMapClearExp = new();
@@ -128,12 +128,12 @@ public class EventInstanceManager
 
     public void applyEventPlayersItemBuff(int itemId)
     {
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
         var mse = ItemInformationProvider.getInstance().getItemEffect(itemId);
 
         if (mse != null)
         {
-            foreach (Character player in players)
+            foreach (IPlayer player in players)
             {
                 mse.applyTo(player);
             }
@@ -147,7 +147,7 @@ public class EventInstanceManager
 
     public void applyEventPlayersSkillBuff(int skillId, int skillLv)
     {
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
         var skill = SkillFactory.getSkill(skillId);
 
         if (skill != null)
@@ -155,7 +155,7 @@ public class EventInstanceManager
             StatEffect mse = skill.getEffect(Math.Min(skillLv, skill.getMaxLevel()));
             if (mse != null)
             {
-                foreach (Character player in players)
+                foreach (IPlayer player in players)
                 {
                     mse.applyTo(player);
                 }
@@ -175,18 +175,18 @@ public class EventInstanceManager
             return;
         }
 
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
 
         if (mapId == -1)
         {
-            foreach (Character mc in players)
+            foreach (IPlayer mc in players)
             {
                 mc.gainExp(gain * mc.getExpRate(), true, true);
             }
         }
         else
         {
-            foreach (Character mc in players)
+            foreach (IPlayer mc in players)
             {
                 if (mc.getMapId() == mapId)
                 {
@@ -208,18 +208,18 @@ public class EventInstanceManager
             return;
         }
 
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
 
         if (mapId == -1)
         {
-            foreach (Character mc in players)
+            foreach (IPlayer mc in players)
             {
                 mc.gainMeso(gain * mc.getMesoRate());
             }
         }
         else
         {
-            foreach (Character mc in players)
+            foreach (IPlayer mc in players)
             {
                 if (mc.getMapId() == mapId)
                 {
@@ -243,16 +243,8 @@ public class EventInstanceManager
     }
 
     object registerLock = new object();
-    public void registerPlayer(Character chr)
-    {
-        lock (registerLock)
-        {
-            registerPlayer(chr, true);
-        }
 
-    }
-
-    public void registerPlayer(Character chr, bool runEntryScript)
+    public void registerPlayer(IPlayer chr, bool runEntryScript = true)
     {
 
         lock (registerLock)
@@ -293,7 +285,7 @@ public class EventInstanceManager
 
     }
 
-    public void exitPlayer(Character chr)
+    public void exitPlayer(IPlayer chr)
     {
         if (chr == null || !chr.isLoggedin())
         {
@@ -314,7 +306,7 @@ public class EventInstanceManager
 
     public void dropMessage(int type, string message)
     {
-        foreach (Character chr in getPlayers())
+        foreach (IPlayer chr in getPlayers())
         {
             chr.dropMessage(type, message);
         }
@@ -331,7 +323,7 @@ public class EventInstanceManager
         timeStarted = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         eventTime = time;
 
-        foreach (Character chr in getPlayers())
+        foreach (IPlayer chr in getPlayers())
         {
             chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
         }
@@ -383,7 +375,7 @@ public class EventInstanceManager
 
     private void dismissEventTimer()
     {
-        foreach (Character chr in getPlayers())
+        foreach (IPlayer chr in getPlayers())
         {
             chr.sendPacket(PacketCreator.removeClock());
         }
@@ -414,7 +406,7 @@ public class EventInstanceManager
         return eventTime - (DateTimeOffset.Now.ToUnixTimeMilliseconds() - timeStarted);
     }
 
-    public void registerParty(Character chr)
+    public void registerParty(IPlayer chr)
     {
         if (chr.isPartyLeader())
         {
@@ -422,11 +414,11 @@ public class EventInstanceManager
         }
     }
 
-    public void registerParty(Party party, MapleMap map)
+    public void registerParty(ITeam party, IMap map)
     {
-        foreach (PartyCharacter mpc in party.getEligibleMembers())
+        foreach (var mpc in party.getEligibleMembers())
         {
-            if (mpc.isOnline())
+            if (mpc.IsOnlined)
             {
                 // thanks resinate
                 var chr = map.getCharacterById(mpc.getId());
@@ -448,7 +440,7 @@ public class EventInstanceManager
     {
         expedition = exped;
 
-        foreach (Character chr in exped.getActiveMembers())
+        foreach (IPlayer chr in exped.getActiveMembers())
         {
             if (chr.getMapId() == recruitMap)
             {
@@ -457,7 +449,7 @@ public class EventInstanceManager
         }
     }
 
-    public void unregisterPlayer(Character chr)
+    public void unregisterPlayer(IPlayer chr)
     {
         try
         {
@@ -496,7 +488,7 @@ public class EventInstanceManager
         }
     }
 
-    public Character? getPlayerById(int id)
+    public IPlayer? getPlayerById(int id)
     {
         lockObj.EnterReadLock();
         try
@@ -509,7 +501,7 @@ public class EventInstanceManager
         }
     }
 
-    public List<Character> getPlayers()
+    public List<IPlayer> getPlayers()
     {
         lockObj.EnterReadLock();
         try
@@ -522,7 +514,7 @@ public class EventInstanceManager
         }
     }
 
-    private List<Character> getPlayerList()
+    private List<IPlayer> getPlayerList()
     {
         lockObj.EnterReadLock();
         try
@@ -543,7 +535,7 @@ public class EventInstanceManager
         }
     }
 
-    public void movePlayer(Character chr)
+    public void movePlayer(IPlayer chr)
     {
         try
         {
@@ -555,7 +547,7 @@ public class EventInstanceManager
         }
     }
 
-    public void changedMap(Character chr, int mapId)
+    public void changedMap(IPlayer chr, int mapId)
     {
         try
         {
@@ -566,7 +558,7 @@ public class EventInstanceManager
         } // optional
     }
 
-    public void afterChangedMap(Character chr, int mapId)
+    public void afterChangedMap(IPlayer chr, int mapId)
     {
         try
         {
@@ -578,7 +570,7 @@ public class EventInstanceManager
     }
 
     object changeLeaderLock = new object();
-    public void changedLeader(PartyCharacter ldr)
+    public void changedLeader(IPlayer ldr)
     {
         lock (changeLeaderLock)
         {
@@ -678,7 +670,7 @@ public class EventInstanceManager
         } // optional
     }
 
-    public void playerKilled(Character chr)
+    public void playerKilled(IPlayer chr)
     {
         ThreadManager.getInstance().newTask(() =>
         {
@@ -703,7 +695,7 @@ public class EventInstanceManager
         } // optional
     }
 
-    public bool revivePlayer(Character chr)
+    public bool revivePlayer(IPlayer chr)
     {
         try
         {
@@ -720,7 +712,7 @@ public class EventInstanceManager
         return true;
     }
 
-    public void playerDisconnected(Character chr)
+    public void playerDisconnected(IPlayer chr)
     {
         try
         {
@@ -734,7 +726,7 @@ public class EventInstanceManager
         EventRecallCoordinator.getInstance().storeEventInstance(chr.getId(), this);
     }
 
-    public void monsterKilled(Character chr, Monster mob)
+    public void monsterKilled(IPlayer chr, Monster mob)
     {
         try
         {
@@ -764,7 +756,7 @@ public class EventInstanceManager
         }
     }
 
-    public int getKillCount(Character chr)
+    public int getKillCount(IPlayer chr)
     {
         return killCount.GetValueOrDefault(chr, 0);
     }
@@ -774,7 +766,7 @@ public class EventInstanceManager
         lockObj.EnterReadLock();
         try
         {
-            foreach (Character chr in chars.Values)
+            foreach (IPlayer chr in chars.Values)
             {
                 chr.setEventInstance(null);
             }
@@ -815,7 +807,7 @@ public class EventInstanceManager
             lockObj.EnterWriteLock();
             try
             {
-                foreach (Character chr in chars.Values)
+                foreach (IPlayer chr in chars.Values)
                 {
                     chr.setEventInstance(null);
                 }
@@ -909,9 +901,9 @@ public class EventInstanceManager
         return name;
     }
 
-    public MapleMap getMapInstance(int mapId)
+    public IMap getMapInstance(int mapId)
     {
-        MapleMap map = mapManager.getMap(mapId);
+        IMap map = mapManager.getMap(mapId);
         map.setEventInstance(this);
 
         if (!mapManager.isMapLoaded(mapId))
@@ -1020,7 +1012,7 @@ public class EventInstanceManager
         }
     }
 
-    public void leftParty(Character chr)
+    public void leftParty(IPlayer chr)
     {
         try
         {
@@ -1056,7 +1048,7 @@ public class EventInstanceManager
         }
     }
 
-    public void removePlayer(Character chr)
+    public void removePlayer(IPlayer chr)
     {
         try
         {
@@ -1068,17 +1060,17 @@ public class EventInstanceManager
         }
     }
 
-    public bool isLeader(Character chr)
+    public bool isLeader(IPlayer chr)
     {
         return (chr.getParty().getLeaderId() == chr.getId());
     }
 
-    public bool isEventLeader(Character chr)
+    public bool isEventLeader(IPlayer chr)
     {
         return (chr.getId() == getLeaderId());
     }
 
-    public MapleMap? getInstanceMap(int mapid)
+    public IMap? getInstanceMap(int mapid)
     {
         if (disposed)
         {
@@ -1099,19 +1091,19 @@ public class EventInstanceManager
             return false;
         }
 
-        MapleMap? map = null;
+        IMap? map = null;
         if (towarp > 0)
         {
             map = this.getMapFactory().getMap(towarp);
         }
 
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
 
         try
         {
             if (players.Count < size)
             {
-                foreach (Character chr in players)
+                foreach (IPlayer chr in players)
                 {
                     if (chr == null)
                     {
@@ -1137,7 +1129,7 @@ public class EventInstanceManager
         return false;
     }
 
-    public void spawnNpc(int npcId, Point pos, MapleMap map)
+    public void spawnNpc(int npcId, Point pos, IMap map)
     {
         NPC npc = LifeFactory.getNPC(npcId);
         if (npc != null)
@@ -1157,9 +1149,9 @@ public class EventInstanceManager
         var mapChars = getInstanceMap(mapid).getMapPlayers();
         if (mapChars.Count > 0)
         {
-            List<Character> eventMembers = getPlayers();
+            List<IPlayer> eventMembers = getPlayers();
 
-            foreach (Character evChr in eventMembers)
+            foreach (IPlayer evChr in eventMembers)
             {
                 var chr = mapChars.GetValueOrDefault(evChr.getId());
 
@@ -1194,7 +1186,8 @@ public class EventInstanceManager
     }
 
     public int getClearStageExp(int stage)
-    {    //stage counts from ONE.
+    {
+        //stage counts from ONE.
         if (stage > onMapClearExp.Count)
         {
             return 0;
@@ -1203,7 +1196,8 @@ public class EventInstanceManager
     }
 
     public int getClearStageMeso(int stage)
-    {   //stage counts from ONE.
+    {
+        //stage counts from ONE.
         if (stage > onMapClearMeso.Count)
         {
             return 0;
@@ -1220,7 +1214,7 @@ public class EventInstanceManager
         return list;
     }
 
-    private void dropExclusiveItems(Character chr)
+    private void dropExclusiveItems(IPlayer chr)
     {
         AbstractPlayerInteraction api = chr.getAbstractPlayerInteraction();
 
@@ -1277,9 +1271,7 @@ public class EventInstanceManager
         lockObj.EnterWriteLock();
         try
         {
-            collectionSet.AddOrUpdate(eventLevel, rewardIds);
-            collectionQty.AddOrUpdate(eventLevel, rewardQtys);
-            collectionExp.AddOrUpdate(eventLevel, expGiven);
+            eventRewards.AddOrUpdate(eventLevel, new EventRewardsPair(rewardIds, rewardQtys, expGiven));
         }
         finally
         {
@@ -1289,15 +1281,15 @@ public class EventInstanceManager
 
     private byte getRewardListRequirements(int level)
     {
-        if (level >= collectionSet.Count)
+        if (level >= eventRewards.Count)
         {
             return 0;
         }
 
         byte rewardTypes = 0;
-        var list = collectionSet.GetValueOrDefault(level);
+        var list = eventRewards.GetValueOrDefault(level)!;
 
-        foreach (int itemId in list)
+        foreach (int itemId in list.Rewards)
         {
             rewardTypes |= (byte)(1 << (int)ItemConstants.getInventoryType(itemId));
         }
@@ -1305,7 +1297,7 @@ public class EventInstanceManager
         return rewardTypes;
     }
 
-    private bool hasRewardSlot(Character player, int eventLevel)
+    private bool hasRewardSlot(IPlayer player, int eventLevel)
     {
         byte listReq = getRewardListRequirements(eventLevel);   //gets all types of items present in the event reward list
 
@@ -1321,13 +1313,13 @@ public class EventInstanceManager
         return true;
     }
 
-    public bool giveEventReward(Character player)
+    public bool giveEventReward(IPlayer player)
     {
         return giveEventReward(player, 1);
     }
 
     //gives out EXP & a random item in a similar fashion of when clearing KPQ, LPQ, etc.
-    public bool giveEventReward(Character player, int eventLevel)
+    public bool giveEventReward(IPlayer player, int eventLevel)
     {
         List<int>? rewardsSet, rewardsQty;
         int rewardExp;
@@ -1336,15 +1328,16 @@ public class EventInstanceManager
         try
         {
             eventLevel--;       //event level starts counting from 1
-            if (eventLevel >= collectionSet.Count)
+            if (eventLevel >= eventRewards.Count)
             {
                 return true;
             }
 
-            rewardsSet = collectionSet.GetValueOrDefault(eventLevel);
-            rewardsQty = collectionQty.GetValueOrDefault(eventLevel);
+            var item = eventRewards.GetValueOrDefault(eventLevel)!;
+            rewardsSet = item.Rewards;
+            rewardsQty = item.Quantity;
 
-            rewardExp = collectionExp.GetValueOrDefault(eventLevel);
+            rewardExp = item.Exp;
         }
         finally
         {
@@ -1418,7 +1411,7 @@ public class EventInstanceManager
     {
         eventCleared = true;
 
-        foreach (Character chr in getPlayers())
+        foreach (IPlayer chr in getPlayers())
         {
             chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
         }
@@ -1448,7 +1441,7 @@ public class EventInstanceManager
 
     private bool isEventTeamLeaderOn()
     {
-        foreach (Character chr in getPlayers())
+        foreach (IPlayer chr in getPlayers())
         {
             if (chr.getId() == getLeaderId())
             {
@@ -1473,7 +1466,7 @@ public class EventInstanceManager
         return getPlayerCount() < minPlayers;
     }
 
-    public bool isExpeditionTeamLackingNow(bool leavingEventMap, int minPlayers, Character quitter)
+    public bool isExpeditionTeamLackingNow(bool leavingEventMap, int minPlayers, IPlayer quitter)
     {
         if (eventCleared)
         {
@@ -1486,7 +1479,7 @@ public class EventInstanceManager
         }
     }
 
-    public bool isEventTeamLackingNow(bool leavingEventMap, int minPlayers, Character quitter)
+    public bool isEventTeamLackingNow(bool leavingEventMap, int minPlayers, IPlayer quitter)
     {
         if (eventCleared)
         {
@@ -1524,9 +1517,9 @@ public class EventInstanceManager
 
     public void warpEventTeam(int warpFrom, int warpTo)
     {
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -1537,9 +1530,9 @@ public class EventInstanceManager
 
     public void warpEventTeam(int warpTo)
     {
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             chr.changeMap(warpTo);
         }
@@ -1547,9 +1540,9 @@ public class EventInstanceManager
 
     public void warpEventTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
     {
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -1560,9 +1553,9 @@ public class EventInstanceManager
 
     public void warpEventTeamToMapSpawnPoint(int warpTo, int toSp)
     {
-        List<Character> players = getPlayerList();
+        List<IPlayer> players = getPlayerList();
 
-        foreach (Character chr in players)
+        foreach (IPlayer chr in players)
         {
             chr.changeMap(warpTo, toSp);
         }
@@ -1581,7 +1574,7 @@ public class EventInstanceManager
         }
     }
 
-    public Character? getLeader()
+    public IPlayer? getLeader()
     {
         lockObj.EnterReadLock();
         try
@@ -1594,7 +1587,7 @@ public class EventInstanceManager
         }
     }
 
-    public void setLeader(Character chr)
+    public void setLeader(IPlayer chr)
     {
         lockObj.EnterWriteLock();
         try
@@ -1614,7 +1607,7 @@ public class EventInstanceManager
 
     public void showWrongEffect(int mapId)
     {
-        MapleMap map = getMapInstance(mapId);
+        IMap map = getMapInstance(mapId);
         map.broadcastMessage(PacketCreator.showEffect("quest/party/wrong_kor"));
         map.broadcastMessage(PacketCreator.playSound("Party1/Failed"));
     }
@@ -1626,7 +1619,7 @@ public class EventInstanceManager
 
     public void showClearEffect(bool hasGate)
     {
-        Character? leader = getLeader();
+        IPlayer? leader = getLeader();
         if (leader != null)
         {
             showClearEffect(hasGate, leader.getMapId());
@@ -1650,7 +1643,7 @@ public class EventInstanceManager
 
     public void showClearEffect(bool hasGate, int mapId, string mapObj, int newState)
     {
-        MapleMap map = getMapInstance(mapId);
+        IMap map = getMapInstance(mapId);
         map.broadcastMessage(PacketCreator.showEffect("quest/party/clear"));
         map.broadcastMessage(PacketCreator.playSound("Party1/Clear"));
         if (hasGate)
@@ -1668,7 +1661,7 @@ public class EventInstanceManager
         }
     }
 
-    public void recoverOpenedGate(Character chr, int thisMapId)
+    public void recoverOpenedGate(IPlayer chr, int thisMapId)
     {
         KeyValuePair<string, int>? gateData = null;
 
@@ -1702,8 +1695,9 @@ public class EventInstanceManager
     {
         giveEventPlayersStageReward(thisStage);
         thisStage--;    //stages counts from ONE, scripts from ZERO
-
-        MapleMap nextStage = getMapInstance(thisMapId);
+        // 修改js中的全局变量
+        em.getIv().Script["thisStage"]--;
+        IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal("next00");
         if (portal != null)
         {
@@ -1715,8 +1709,9 @@ public class EventInstanceManager
     {
         giveEventPlayersStageReward(thisStage);
         thisStage--;    //stages counts from ONE, scripts from ZERO
-
-        MapleMap nextStage = getMapInstance(thisMapId);
+        // 修改js中的全局变量thisStage
+        em.getIv().Script["thisStage"]--;
+        IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal(portalName);
         if (portal != null)
         {
@@ -1725,7 +1720,7 @@ public class EventInstanceManager
     }
 
     // registers a player status in an event
-    public void gridInsert(Character chr, int newStatus)
+    public void gridInsert(IPlayer chr, int newStatus)
     {
         lockObj.EnterWriteLock();
         try
@@ -1739,7 +1734,7 @@ public class EventInstanceManager
     }
 
     // unregisters a player status in an event
-    public void gridRemove(Character chr)
+    public void gridRemove(IPlayer chr)
     {
         lockObj.EnterWriteLock();
         try
@@ -1753,7 +1748,7 @@ public class EventInstanceManager
     }
 
     // checks a player status
-    public int gridCheck(Character chr)
+    public int gridCheck(IPlayer chr)
     {
         lockObj.EnterReadLock();
         try
@@ -1797,7 +1792,7 @@ public class EventInstanceManager
         return activatedAllReactorsOnMap(this.getMapInstance(mapId), minReactorId, maxReactorId);
     }
 
-    public bool activatedAllReactorsOnMap(MapleMap map, int minReactorId, int maxReactorId)
+    public bool activatedAllReactorsOnMap(IMap map, int minReactorId, int maxReactorId)
     {
         if (map == null)
         {
