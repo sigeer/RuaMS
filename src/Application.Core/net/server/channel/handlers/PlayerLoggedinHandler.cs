@@ -261,16 +261,9 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             player.getMap().addPlayer(player);
             player.visitMap(player.getMap());
 
-            BuddyList bl = player.getBuddylist();
-            int[] buddyIds = bl.getBuddyIds();
+            int[] buddyIds = player.BuddyList.getBuddyIds();
             wserv.loggedOn(player.getName(), player.getId(), c.getChannel(), buddyIds);
-            foreach (CharacterIdChannelPair onlineBuddy in wserv.multiBuddyFind(player.getId(), buddyIds))
-            {
-                var ble = bl.get(onlineBuddy.charid);
-                ble.setChannel(onlineBuddy.channel);
-                bl.put(ble);
-            }
-            c.sendPacket(PacketCreator.updateBuddylist(bl.getBuddies()));
+            c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
             c.sendPacket(PacketCreator.loadFamily(player));
             if (player.getFamilyId() > 0)
@@ -355,9 +348,9 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 eqpInv.unlockInventory();
             }
 
-            c.sendPacket(PacketCreator.updateBuddylist(player.getBuddylist().getBuddies()));
+            c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
-            var pendingBuddyRequest = c.OnlinedCharacter.getBuddylist().pollPendingRequest();
+            var pendingBuddyRequest = c.OnlinedCharacter.BuddyList.pollPendingRequest();
             if (pendingBuddyRequest != null)
             {
                 c.sendPacket(PacketCreator.requestBuddylistAdd(pendingBuddyRequest.id, c.OnlinedCharacter.getId(), pendingBuddyRequest.name));
@@ -415,7 +408,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             }
 
             player.StartPlayerTask();
-            
+
             if (GameConstants.hasSPTable(player.getJob()) && player.getJob().getId() != 2001)
             {
                 player.createDragon();

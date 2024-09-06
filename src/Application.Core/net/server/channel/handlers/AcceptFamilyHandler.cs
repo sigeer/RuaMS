@@ -129,7 +129,7 @@ public class AcceptFamilyHandler : AbstractPacketHandler
             }
             catch (Exception e)
             {
-                log.Error(e, "Could not save new family record for chrId {}", characterID);
+                log.Error(e, "Could not save new family record for chrId {CharacterId}", characterID);
             }
             if (updateChar)
             {

@@ -1,4 +1,4 @@
-﻿using client;
+﻿using Application.Core.Game.Items;
 using tools;
 
 namespace Application.Core.Game.Players

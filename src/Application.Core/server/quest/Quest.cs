@@ -135,7 +135,7 @@ public class Quest
                         break;
                 }
 
-                AbstractQuestRequirement req = this.getRequirement(type, startReq);
+                var req = this.getRequirement(type, startReq);
                 if (req == null)
                 {
                     continue;
@@ -179,7 +179,7 @@ public class Quest
             foreach (Data startAct in startActData.getChildren())
             {
                 QuestActionType questActionType = QuestActionTypeUtils.getByWZName(startAct.getName());
-                AbstractQuestAction act = this.getAction(questActionType, startAct);
+                var act = this.getAction(questActionType, startAct);
 
                 if (act == null)
                 {
@@ -195,7 +195,7 @@ public class Quest
             foreach (Data completeAct in completeActData.getChildren())
             {
                 QuestActionType questActionType = QuestActionTypeUtils.getByWZName(completeAct.getName());
-                AbstractQuestAction act = this.getAction(questActionType, completeAct);
+                var act = this.getAction(questActionType, completeAct);
 
                 if (act == null)
                 {
@@ -559,7 +559,7 @@ public class Quest
         quests.Clear();
     }
 
-    private AbstractQuestRequirement getRequirement(QuestRequirementType type, Data data)
+    private AbstractQuestRequirement? getRequirement(QuestRequirementType type, Data data)
     {
         AbstractQuestRequirement? ret = null;
         switch (type)
@@ -635,7 +635,7 @@ public class Quest
         return ret;
     }
 
-    private AbstractQuestAction getAction(QuestActionType type, Data data)
+    private AbstractQuestAction? getAction(QuestActionType type, Data data)
     {
         AbstractQuestAction? ret = null;
         switch (type)

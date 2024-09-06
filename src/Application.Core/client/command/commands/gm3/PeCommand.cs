@@ -71,7 +71,7 @@ public class PeCommand : Command
             catch (Exception t)
             {
                 string chrInfo = player != null ? player.getName() + " on map " + player.getMapId() : "?";
-                log.Warning(t, "Error in packet handler {}. Chr {}, account {}. Packet: {}", packetHandler.GetType().Name,
+                log.Warning(t, "Error in packet handler {HandlerName}. Chr {CharacterName}, account {AccountName}. Packet: {Packet}", packetHandler.GetType().Name,
                         chrInfo, c.getAccountName(), packet);
             }
         }

@@ -20,6 +20,7 @@
  */
 
 
+using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
@@ -197,7 +198,7 @@ public class PacketCreator
         p.writeLong(-1);
         p.writeByte(0);
         addCharStats(p, chr);
-        p.writeByte(chr.getBuddylist().getCapacity());
+        p.writeByte(chr.BuddyList.Capacity);
 
         if (chr.getLinkedName() == null)
         {
@@ -4643,13 +4644,13 @@ public class PacketCreator
         p.writeByte(buddylist.Count());
         foreach (BuddylistEntry buddy in buddylist)
         {
-            if (buddy.isVisible())
+            if (buddy.Visible)
             {
                 p.writeInt(buddy.getCharacterId()); // cid
                 p.writeFixedString(getRightPaddedStr(buddy.getName(), '\0', 13));
                 p.writeByte(0); // opposite status
                 p.writeInt(buddy.getChannel() - 1);
-                p.writeFixedString(getRightPaddedStr(buddy.getGroup(), '\0', 13));
+                p.writeFixedString(getRightPaddedStr(buddy.Group, '\0', 13));
                 p.writeInt(0);//mapid?
             }
         }

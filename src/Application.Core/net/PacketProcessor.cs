@@ -89,7 +89,7 @@ public class PacketProcessor
         }
         catch (IndexOutOfRangeException e)
         {
-            log.Error(e, "Error registering handler {}", code.ToString());
+            log.Error(e, "Error registering handler {Code}", code.ToString());
         }
     }
 

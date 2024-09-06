@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.model;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
@@ -72,7 +73,7 @@ namespace Application.Core.Game.TheWorld
         string getServerMessage();
         BaseService getServiceAccess(ChannelServices sv);
         int getStoredVar(int key);
-        KeyValuePair<int, int>? getWeddingCoupleForGuest(int guestId, bool cathedral);
+        CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral);
         int getWeddingReservationStatus(int? weddingId, bool cathedral);
         string? getWeddingReservationTimeLeft(int? weddingId);
         long getWeddingTicketExpireTime(int resSlot);

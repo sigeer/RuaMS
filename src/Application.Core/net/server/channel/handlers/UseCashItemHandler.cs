@@ -760,7 +760,7 @@ public class UseCashItemHandler : AbstractPacketHandler
         }
         else
         {
-            log.Warning("NEW CASH ITEM TYPE: {ItemType}, packet: {}", itemType, p);
+            log.Warning("NEW CASH ITEM TYPE: {ItemType}, packet: {Packet}", itemType, p);
             c.sendPacket(PacketCreator.enableActions());
         }
     }

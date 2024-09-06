@@ -28,7 +28,6 @@ using Application.Core.Managers;
 using Application.Core.model;
 using client;
 using client.command;
-using client.inventory;
 using client.inventory.manipulator;
 using client.newyear;
 using client.processor.npc;
@@ -70,8 +69,8 @@ public class Server
     /// <summary>
     /// ËùÓÐÕËºÅid-½ÇÉ«id
     /// </summary>
-    private Dictionary<int, HashSet<int>> accountChars = new();
-    private Dictionary<int, int> worldChars = new();
+    private Dictionary<int, HashSet<IPlayer>> accountChars = new();
+
     private Dictionary<string, int> transitioningChars = new();
     private List<KeyValuePair<int, string>> _worldRecommendedList = new();
     private Dictionary<int, IGuild> guilds = new(100);
@@ -1475,7 +1474,7 @@ public class Server
         lgnLock.EnterReadLock();
         try
         {
-            return worldChars.GetValueOrDefault(chrid, -1);
+            return AllPlayerStorage.GetOrAddCharacterById(chrid)?.World ?? -1;
         }
         finally
         {
@@ -1488,8 +1487,8 @@ public class Server
         lgnLock.EnterReadLock();
         try
         {
-            var accChars = accountChars.GetValueOrDefault(accountid);
-            return accChars?.Contains(chrid) ?? false;
+            var accChars = accountChars.GetValueOrDefault(accountid) ?? [];
+            return accChars.Any(x => x.Id == chrid);
         }
         finally
         {
@@ -1515,17 +1514,7 @@ public class Server
         lgnLock.EnterReadLock();
         try
         {
-            short count = 0;
-
-            foreach (int chr in accountChars.GetValueOrDefault(accountid))
-            {
-                if (worldChars.get(chr).Equals(worldid))
-                {
-                    count++;
-                }
-            }
-
-            return count;
+            return (short)getAccountCharacterEntries(accountid).Count(x => x.World == worldid);
         }
         finally
         {
@@ -1533,12 +1522,15 @@ public class Server
         }
     }
 
-    private HashSet<int> getAccountCharacterEntries(int accountid)
+    private HashSet<IPlayer> getAccountCharacterEntries(int accountid)
     {
         lgnLock.EnterReadLock();
         try
         {
-            return new(accountChars.GetValueOrDefault(accountid));
+            if (!accountChars.ContainsKey(accountid))
+                accountChars[accountid] = new HashSet<IPlayer>();
+
+            return new(accountChars[accountid]);
         }
         finally
         {
@@ -1553,7 +1545,7 @@ public class Server
         lgnLock.EnterWriteLock();
         try
         {
-            var wserv = this.getWorld(chrView.getWorld());
+            var wserv = this.getWorld(chrView.World);
             if (wserv != null)
             {
                 wserv.registerAccountCharacterView(chrView.getAccountID(), chrView);
@@ -1573,12 +1565,10 @@ public class Server
         try
         {
             if (!accountChars.ContainsKey(accountid))
-                accountChars.Add(accountid, new HashSet<int>());
+                accountChars.Add(accountid, new HashSet<IPlayer>());
 
             var accChars = accountChars[accountid];
-            accChars.Add(chrid);
-
-            worldChars.AddOrUpdate(chrid, world);
+            accChars.Add(chr);
 
             var chrView = chr.generateCharacterEntry();
 
@@ -1599,15 +1589,14 @@ public class Server
         lgnLock.EnterWriteLock();
         try
         {
-            if (!accountChars.ContainsKey(accountid))
-                accountChars.Add(accountid, new HashSet<int>());
+            var accChars = accountChars.GetValueOrDefault(accountid);
+            if (accChars != null)
+                accChars = accChars.Where(x => x.Id != chrid).ToHashSet();
 
-            var accChars = accountChars[accountid];
-            accChars.Remove(chrid);
-
-            if (worldChars.Remove(chrid, out var world))
+            var charModel = AllPlayerStorage.GetOrAddCharacterById(chrid);
+            if (charModel != null)
             {
-                var wserv = this.getWorld(world);
+                var wserv = this.getWorld(charModel.World);
                 if (wserv != null)
                 {
                     wserv.unregisterAccountCharacterView(accountid, chrid);
@@ -1626,17 +1615,12 @@ public class Server
         try
         {
             int chrid = chr.getId(), accountid = chr.getAccountID();
-            var world = worldChars.get(chr.getId());
-            if (world != null)
-            {
-                var wservTmp = this.getWorld(world.Value);
-                if (wservTmp != null)
-                {
-                    wservTmp.unregisterAccountCharacterView(accountid, chrid);
-                }
-            }
 
-            worldChars.AddOrUpdate(chrid, toWorld);
+            var wservTmp = this.getWorld(chr.World);
+            if (wservTmp != null)
+            {
+                wservTmp.unregisterAccountCharacterView(accountid, chrid);
+            }
 
             var chrView = chr.generateCharacterEntry();
 
@@ -1706,44 +1690,6 @@ public class Server
         return worldChrs;
     }
 
-    /// <summary>
-    /// world - player
-    /// </summary>
-    /// <param name="accId"></param>
-    /// <param name="wlen"></param>
-    /// <returns></returns>
-    private static Dictionary<int, List<IPlayer>> loadAccountCharactersViewFromDb(int accId, int wlen)
-    {
-        try
-        {
-            var accEquips = ItemFactory.loadEquippedItems(accId, true, true);
-            Dictionary<int, List<Item>> accPlayerEquips = new();
-
-            foreach (var ae in accEquips)
-            {
-                var playerEquips = accPlayerEquips.GetValueOrDefault(ae.Value);
-                if (playerEquips == null)
-                {
-                    playerEquips = new();
-                    accPlayerEquips.AddOrUpdate(ae.Value, playerEquips);
-                }
-
-                playerEquips.Add(ae.Key);
-            }
-
-
-            using var dbContext = new DBContext();
-            return dbContext.Characters.AsNoTracking().Where(x => x.AccountId == accId).OrderBy(x => x.World).ToList()
-                .GroupBy(x => x.World)
-                .Select(x => new KeyValuePair<int, List<IPlayer>>(x.Key, x.Select(y => CharacterManager.GetPlayerPreview(y, accPlayerEquips.GetValueOrDefault(y.Id))).ToList()))
-                .ToDictionary();
-        }
-        catch (Exception sqle)
-        {
-            log.Error(sqle.ToString());
-            return new Dictionary<int, List<IPlayer>>();
-        }
-    }
 
     public void loadAllAccountsCharactersView()
     {
@@ -1857,39 +1803,8 @@ public class Server
         int accId = c.getAccID();
         if (!isFirstAccountLogin(accId))
         {
-            HashSet<int> accWorlds = new();
-
-            lgnLock.EnterReadLock();
-            try
-            {
-                foreach (int chrid in getAccountCharacterEntries(accId))
-                {
-                    accWorlds.Add(worldChars.GetValueOrDefault(chrid));
-                }
-            }
-            finally
-            {
-                lgnLock.ExitReadLock();
-            }
-
-            int gmLevelTemp = 0;
-            foreach (int aw in accWorlds)
-            {
-                var wserv = this.getWorld(aw);
-
-                if (wserv != null)
-                {
-                    foreach (var chr in wserv.getAllCharactersView())
-                    {
-                        if (gmLevelTemp < chr.gmLevel())
-                        {
-                            gmLevelTemp = chr.gmLevel();
-                        }
-                    }
-                }
-            }
-
-            c.setGMLevel(gmLevelTemp);
+            var maxGMLevel = getAccountCharacterEntries(accId).Max(x => x.gmLevel());
+            c.setGMLevel(maxGMLevel);
             return;
         }
 
@@ -1898,26 +1813,19 @@ public class Server
     }
 
     private int loadAccountCharactersView(int accId, int gmLevel, int fromWorldid)
-    {    // returns the maximum gmLevel found
+    {
+        // returns the maximum gmLevel found
         var wlist = this.getWorlds();
-        var accCharacters = loadAccountCharactersViewFromDb(accId, wlist.Count);
-
         lgnLock.EnterWriteLock();
         try
         {
-            var accChars = accCharacters;
-
-            HashSet<int>? chars = accountChars.GetValueOrDefault(accId);
-            if (chars == null)
-            {
-                chars = new(5);
-            }
+            var chars = getAccountCharacterEntries(accId);
 
             for (int wid = fromWorldid; wid < wlist.Count; wid++)
             {
-                var w = wlist.get(wid);
-                var wchars = accChars[wid];
-                w.loadAccountCharactersView(accId, wchars);
+                var w = wlist[wid];
+                w.loadAccountCharactersView(accId);
+                var wchars = w.getAccountCharactersView(accId);
 
                 foreach (var chr in wchars)
                 {
@@ -1927,8 +1835,7 @@ public class Server
                         gmLevel = chr.gmLevel();
                     }
 
-                    chars.Add(cid);
-                    worldChars.AddOrUpdate(cid, wid);
+                    chars.Add(chr);
                 }
             }
 
@@ -1945,28 +1852,7 @@ public class Server
     public void loadAccountStorages(IClient c)
     {
         int accountId = c.getAccID();
-        HashSet<int> accWorlds = new();
-        lgnLock.EnterWriteLock();
-        try
-        {
-            if (!accountChars.ContainsKey(accountId))
-                accountChars.Add(accountId, new HashSet<int>());
-
-            var chars = accountChars[accountId];
-
-            foreach (int cid in chars)
-            {
-                var worldid = worldChars.get(cid);
-                if (worldid != null)
-                {
-                    accWorlds.Add(worldid.Value);
-                }
-            }
-        }
-        finally
-        {
-            lgnLock.ExitWriteLock();
-        }
+        var accWorlds = getAccountCharacterEntries(accountId).Select(x => x.World).ToHashSet();
 
         var worldList = this.getWorlds();
         foreach (int worldid in accWorlds)

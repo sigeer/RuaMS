@@ -41,7 +41,7 @@ public class ChangeMapHandler : AbstractPacketHandler
         {
             if (chr.isChangingMaps())
             {
-                log.Warning("Chr {} got stuck when changing maps. Last visited mapids: {}", chr.getName(), chr.getLastVisitedMapids());
+                log.Warning("Chr {CharacterName} got stuck when changing maps. Last visited mapids: {LastVisitedMapId}", chr.getName(), chr.getLastVisitedMapids());
             }
 
             c.sendPacket(PacketCreator.enableActions());

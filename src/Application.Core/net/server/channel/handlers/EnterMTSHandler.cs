@@ -84,14 +84,7 @@ public class EnterMTSHandler : AbstractPacketHandler
         chr.notifyMapTransferToPartner(-1);
         chr.removeIncomingInvites();
 
-        chr.cancelAllBuffs(true);
-        chr.cancelAllDebuffs();
-        chr.cancelBuffExpireTask();
-        chr.cancelDiseaseExpireTask();
-        chr.cancelSkillCooldownTask();
-        chr.cancelExpirationTask();
-        chr.forfeitExpirableQuests();
-        chr.cancelQuestExpirationTask();
+        chr.StopPlayerTask();
 
         chr.saveCharToDB();
 

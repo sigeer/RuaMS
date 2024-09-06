@@ -422,7 +422,7 @@ public class PlayerNPC : AbstractMapObject
 
         if (YamlConfig.config.server.USE_DEBUG)
         {
-            log.Debug("GOT SID {}, POS {}", scriptId, pos);
+            log.Debug("GOT SID {ScriptId}, POS {Position}", scriptId, pos);
         }
 
         int worldId = chr.getWorld();

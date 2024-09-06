@@ -72,15 +72,8 @@ public class EnterCashShopHandler : AbstractPacketHandler
             mc.setAwayFromChannelWorld();
             mc.notifyMapTransferToPartner(-1);
             mc.removeIncomingInvites();
-            mc.cancelAllBuffs(true);
-            mc.cancelAllDebuffs();
-            mc.cancelBuffExpireTask();
-            mc.cancelDiseaseExpireTask();
-            mc.cancelSkillCooldownTask();
-            mc.cancelExpirationTask();
 
-            mc.forfeitExpirableQuests();
-            mc.cancelQuestExpirationTask();
+            mc.StopPlayerTask();
 
             c.sendPacket(PacketCreator.openCashShop(c, false));
             c.sendPacket(PacketCreator.showCashInventory(c));

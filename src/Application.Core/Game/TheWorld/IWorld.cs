@@ -1,5 +1,6 @@
 ﻿using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.model;
 using client;
 using net.packet;
 using net.server.channel;
@@ -62,7 +63,7 @@ namespace Application.Core.Game.TheWorld
         /// <param name="name">character name</param>
         /// <returns>channel</returns>
         int find(string name);
-        List<IPlayer>? getAccountCharactersView(int accountId);
+        List<IPlayer> getAccountCharactersView(int accountId);
         Storage getAccountStorage(int accountId);
         List<HiredMerchant> getActiveMerchants();
         List<PlayerShop> getActivePlayerShops();
@@ -76,7 +77,7 @@ namespace Application.Core.Game.TheWorld
         IGuild? getGuild(IPlayer? mgc);
         HiredMerchant? getHiredMerchant(int ownerid);
         int getId();
-        KeyValuePair<int, int>? getMarriageQueuedCouple(int marriageId);
+        CoupleIdPair? getMarriageQueuedCouple(int marriageId);
         KeyValuePair<bool, bool>? getMarriageQueuedLocation(int marriageId);
         MatchCheckerCoordinator getMatchCheckerCoordinator();
         Messenger? getMessenger(int messengerid);
@@ -88,11 +89,11 @@ namespace Application.Core.Game.TheWorld
         int getPlayerNpcMapStep(int mapid);
         PlayerShop? getPlayerShop(int ownerid);
         WorldPlayerStorage getPlayerStorage();
-        KeyValuePair<int, int>? getRelationshipCouple(int relationshipId);
+        CoupleIdPair? getRelationshipCouple(int relationshipId);
         int getRelationshipId(int playerId);
         BaseService getServiceAccess(WorldServices sv);
         int getTransportationTime(int travelTime);
-        KeyValuePair<int, int>? getWeddingCoupleForGuest(int guestId, bool cathedral);
+        CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral);
         int getWorldCapacityStatus();
         bool isConnected(string charName);
         bool isGuildQueued(int guildId);
@@ -100,7 +101,7 @@ namespace Application.Core.Game.TheWorld
         bool isWorldCapacityFull();
         void joinMessenger(int messengerid, MessengerCharacter target, string from, int fromchannel);
         void leaveMessenger(int messengerid, MessengerCharacter target);
-        void loadAccountCharactersView(int accountId, List<IPlayer> chars);
+        void loadAccountCharactersView(int accountId);
         void loadAccountStorage(int accountId);
         List<IPlayer> loadAndGetAllCharactersView();
         void loggedOff(string name, int characterId, int channel, int[] buddies);

@@ -19,29 +19,30 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace client;
+namespace Application.Core.Game.Items;
 
 /**
  * @author PurpleMadness < Patrick :O >
  */
-public class Mount
+public class Mount : IMount
 {
     private int itemid;
     private int skillid;
     private int tiredness;
     private int exp;
     private int level;
-    private IPlayer? owner;
+    private IPlayer owner;
     private bool active;
 
-    public Mount(IPlayer owner, int id, int skillid)
+    public Mount(IPlayer owner, int id)
     {
-        this.itemid = id;
-        this.skillid = skillid;
-        this.tiredness = 0;
-        this.level = 1;
-        this.exp = 0;
         this.owner = owner;
+        itemid = id;
+
+        skillid = owner.getJobType() * 10000000 + 1004;
+        tiredness = 0;
+        level = 1;
+        exp = 0;
         active = true;
     }
 
@@ -72,7 +73,7 @@ public class Mount
      */
     public int getId()
     {
-        if (this.itemid < 1903000)
+        if (itemid < 1903000)
         {
             return itemid - 1901999;
         }
@@ -96,42 +97,38 @@ public class Mount
 
     public void setTiredness(int newtiredness)
     {
-        this.tiredness = newtiredness;
-        if (tiredness < 0)
-        {
-            tiredness = 0;
-        }
+        tiredness = Math.Max(newtiredness, 0);
     }
 
     public int incrementAndGetTiredness()
     {
-        this.tiredness++;
-        return this.tiredness;
+        tiredness++;
+        return tiredness;
     }
 
     public void setExp(int newexp)
     {
-        this.exp = newexp;
+        exp = newexp;
     }
 
     public void setLevel(int newlevel)
     {
-        this.level = newlevel;
+        level = newlevel;
     }
 
     public void setItemId(int newitemid)
     {
-        this.itemid = newitemid;
+        itemid = newitemid;
     }
 
     public void setSkillId(int newskillid)
     {
-        this.skillid = newskillid;
+        skillid = newskillid;
     }
 
     public void setActive(bool set)
     {
-        this.active = set;
+        active = set;
     }
 
     public bool isActive()
@@ -145,6 +142,5 @@ public class Mount
         {
             owner.getClient().getWorldServer().unregisterMountHunger(owner);
         }
-        this.owner = null;
     }
 }

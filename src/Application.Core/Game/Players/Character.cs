@@ -1069,8 +1069,8 @@ public partial class Player
 
     public void broadcastAcquaintances(Packet packet)
     {
-        BuddyList.broadcast(packet, getWorldServer().getPlayerStorage());
-        Family? family = getFamily();
+        BuddyList.broadcast(packet);
+        var family = getFamily();
         if (family != null)
         {
             family.broadcast(packet, Id);
@@ -1830,14 +1830,12 @@ public partial class Player
 
     public void deleteBuddy(int otherCid)
     {
-        BuddyList bl = getBuddylist();
-
-        if (bl.containsVisible(otherCid))
+        if (BuddyList.containsVisible(otherCid))
         {
             notifyRemoteChannel(Client, getWorldServer().find(otherCid), otherCid, BuddyList.BuddyOperation.DELETED);
         }
-        bl.remove(otherCid);
-        sendPacket(PacketCreator.updateBuddylist(getBuddylist().getBuddies()));
+        BuddyList.remove(otherCid);
+        sendPacket(PacketCreator.updateBuddylist(BuddyList.getBuddies()));
         nextPendingRequest(Client);
     }
 
@@ -5234,8 +5232,6 @@ public partial class Player
         BuddyList.setCapacity(capacity);
         sendPacket(PacketCreator.updateBuddyCapacity(capacity));
     }
-
-
 
     public void setChalkboard(string? text)
     {

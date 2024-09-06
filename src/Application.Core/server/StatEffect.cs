@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;

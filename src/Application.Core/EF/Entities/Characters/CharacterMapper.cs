@@ -18,7 +18,7 @@ namespace Application.Core.EF.Entities
                 .ForMember(x => x.Meso, opt => opt.MapFrom(x => x.MesoValue.get()))
                 .ForMember(x => x.Exp, opt => opt.MapFrom(x => x.ExpValue.get()))
                 .ForMember(x => x.Gachaexp, opt => opt.MapFrom(x => x.GachaExpValue.get()))
-                .ForMember(x => x.BuddyCapacity, opt => opt.MapFrom(x => x.BuddyList.getCapacity()))
+                .ForMember(x => x.BuddyCapacity, opt => opt.MapFrom(x => x.BuddyList.Capacity))
                 .ForMember(x => x.Equipslots, opt => opt.MapFrom(x => x.Bag[InventoryType.EQUIP].getSlotLimit()))
                 .ForMember(x => x.Useslots, opt => opt.MapFrom(x => x.Bag[InventoryType.USE].getSlotLimit()))
                 .ForMember(x => x.Etcslots, opt => opt.MapFrom(x => x.Bag[InventoryType.ETC].getSlotLimit()))

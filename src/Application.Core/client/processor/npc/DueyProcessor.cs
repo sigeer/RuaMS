@@ -267,7 +267,7 @@ public class DueyProcessor
                 else if (!c.OnlinedCharacter.haveItem(ItemId.QUICK_DELIVERY_TICKET))
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
-                    log.Warning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {} and amount {}", c.OnlinedCharacter.getName(), sendMesos, amount);
+                    log.Warning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
                     c.disconnect(true, false);
                     return;
                 }

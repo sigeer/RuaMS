@@ -32,5 +32,11 @@ namespace Application.Core.Managers
             dbContext.Accounts.Where(x => x.Name == loginAccount).ExecuteUpdate(x => x.SetProperty(y => y.Password, BCrypt.hashpw(pwd, BCrypt.gensalt(12))));
         }
 
+        public static List<int> LoadAccountWorldPlayers(int accountId, int world)
+        {
+            using var dbContext = new DBContext();
+            return dbContext.Characters.Where(x => x.AccountId == accountId && x.World == world).OrderBy(x => x.Id).Select(x => x.Id).ToList();
+        }
+
     }
 }

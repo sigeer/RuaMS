@@ -130,7 +130,7 @@ public class FamilyEntry
                 if (!success)
                 {
                     dbTrans.Rollback();
-                    log.Error("Could not absorb {}'s family into {}'s family. (SQL ERROR)", oldFamily.getName(), newFamily.getName());
+                    log.Error("Could not absorb {OldName}'s family into {NewName}'s family. (SQL ERROR)", oldFamily.getName(), newFamily.getName());
                 }
                 dbTrans.Commit();
             }
@@ -747,7 +747,7 @@ public class FamilyEntry
         }
         catch (Exception e)
         {
-            log.Error(e, "Could not refund family entitlement \"{}\" for chr {CharacterName}", entitlement.getName(), getName());
+            log.Error(e, "Could not refund family entitlement \"{EntitleName}\" for chr {CharacterName}", entitlement.getName(), getName());
         }
         entitlements[id] = 0;
         return true;

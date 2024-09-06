@@ -12,24 +12,24 @@ namespace Application.Core.Game.TheWorld
         {
             Channels = new Dictionary<int, ChannelPlayerStorage>();
             _world = world;
-            WorldData = new ChannelPlayerStorage(world, -999);
         }
         public Dictionary<int, ChannelPlayerStorage> Channels { get; set; }
         public void RelateChannel(int channelId, ChannelPlayerStorage data)
         {
             data.OnChannelAddPlayer += (obj, p) =>
             {
-                WorldData.AddPlayer(p);
+                AllPlayerStorage.AddPlayer(p);
             };
             Channels[channelId] = data;
         }
 
-        public ChannelPlayerStorage WorldData { get; set; }
-
-        public IPlayer? this[string name] => getCharacterByName(name);
         public IPlayer? getCharacterByName(string name)
         {
-            return GetOrAddCharacterByName(name);
+            var m = AllPlayerStorage.GetOrAddCharacterByName(name);
+
+            if (m != null && m.World == _world)
+                return m;
+            return null;
         }
 
         public IPlayer? this[int id] => getCharacterById(id);
@@ -40,22 +40,30 @@ namespace Application.Core.Game.TheWorld
         /// <returns></returns>
         public IPlayer? getCharacterById(int id)
         {
-            return GetOrAddCharacterById(id);
+            var m = AllPlayerStorage.GetOrAddCharacterById(id);
+
+            if (m != null && m.World == _world)
+                return m;
+            return null;
         }
+        /// <summary>
+        /// 获取所有在线玩家
+        /// </summary>
+        /// <returns></returns>
         public ICollection<IPlayer> getAllCharacters()
         {
-            return WorldData.getAllCharacters().Where(x => x.IsOnlined).ToList();
+            return AllPlayerStorage.GetAllOnlinedPlayers();
         }
 
         public int Count()
         {
-            return WorldData.Count();
+            return getAllCharacters().Count;
         }
 
-        public void RemovePlayer(int playerId)
-        {
-            WorldData.RemovePlayer(playerId);
-        }
+        //public void RemovePlayer(int playerId)
+        //{
+        //    WorldData.RemovePlayer(playerId);
+        //}
 
         public void disconnectAll()
         {
@@ -65,62 +73,13 @@ namespace Application.Core.Game.TheWorld
             }
         }
 
-        public IPlayer? GetOrAddCharacterById(int id)
-        {
-            var m = WorldData.getCharacterById(id);
-            if (m != null)
-                return m;
-
-            m = CharacterManager.GetPlayerById(id);
-            if (m != null)
-                WorldData.AddPlayer(m);
-            return m;
-        }
-
         public List<IPlayer> GetPlayersByIds(IEnumerable<int> idList)
         {
-            List<IPlayer> list = new();
-
-            List<int> notFound = new List<int>();
-            foreach (var id in idList)
-            {
-                var m = WorldData.getCharacterById(id);
-                if (m != null)
-                    list.Add(m);
-                else
-                    notFound.Add(id);
-            }
-
-            list.AddRange(CharacterManager.GetPlayersById(notFound));
-            return list;
-        }
-        public IPlayer? GetOrAddCharacterByName(string name)
-        {
-            var m = WorldData.getCharacterByName(name);
-            if (m != null)
-                return m;
-
-            m = CharacterManager.GetPlayerByName(name);
-            if (m != null)
-                WorldData.AddPlayer(m);
-            return m;
+            return AllPlayerStorage.GetPlayersByIds(idList).Where(x => x.World == _world).ToList();
         }
         public List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList)
         {
-            List<IPlayer> list = new();
-
-            List<string> notFound = new();
-            foreach (var id in nameList)
-            {
-                var m = WorldData.getCharacterByName(id);
-                if (m != null)
-                    list.Add(m);
-                else
-                    notFound.Add(id);
-            }
-
-            list.AddRange(CharacterManager.GetPlayersByName(notFound));
-            return list;
+            return AllPlayerStorage.GetPlayersByNames(nameList).Where(x => x.World == _world).ToList();
         }
     }
 }

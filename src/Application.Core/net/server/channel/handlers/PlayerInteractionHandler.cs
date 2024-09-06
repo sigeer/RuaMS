@@ -776,7 +776,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                 if (perBundle <= 0 || perBundle * bundles > 2000 || bundles <= 0 || price <= 0 || price > int.MaxValue)
                 {
                     AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with hired merchants.");
-                    log.Warning("Chr {CharacterName} might possibly have packet edited Hired Merchants. perBundle: {}, perBundle * bundles (This multiplied cannot be greater than 2000): {}, bundles: {}, price: {}",
+                    log.Warning("Chr {CharacterName} might possibly have packet edited Hired Merchants. perBundle: {0}, perBundle * bundles (This multiplied cannot be greater than 2000): {1}, bundles: {2}, price: {Price}",
                             chr.getName(), perBundle, perBundle * bundles, bundles, price);
                     return;
                 }
@@ -873,7 +873,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                     if (slot >= shop.getItems().Count || slot < 0)
                     {
                         AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with a player shop.");
-                        log.Warning("Chr {} tried to remove item at slot {}", chr.getName(), slot);
+                        log.Warning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slot);
                         c.disconnect(true, false);
                         return;
                     }
@@ -1001,7 +1001,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                     if (slot >= merchant.getItems().Count || slot < 0)
                     {
                         AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with a hired merchant.");
-                        log.Warning("Chr {} tried to remove item at slot {}", chr.getName(), slot);
+                        log.Warning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slot);
                         c.disconnect(true, false);
                         return;
                     }

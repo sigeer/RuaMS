@@ -1,4 +1,5 @@
 using Application.Core.Game.Life;
+using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using client;
@@ -994,7 +995,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             }
                             if (bl != null)
                             {
-                                wserv.loggedOff(Character.getName(), Character.getId(), channel, Character.getBuddylist().getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -1005,7 +1006,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             // if dc inside of cash shop.
                             if (bl != null)
                             {
-                                wserv.loggedOff(Character.getName(), Character.getId(), channel, Character.getBuddylist().getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
                             }
                         }
                     }

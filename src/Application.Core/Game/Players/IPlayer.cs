@@ -1,4 +1,5 @@
 ﻿using Application.Core.client.Characters;
+using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -69,6 +70,7 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnLodgedUpdate;
 
         void StartPlayerTask();
+        void StopPlayerTask();
         void addCooldown(int skillId, long startTime, long length);
         void addCP(int ammount);
         void addCrushRing(Ring r);

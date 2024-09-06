@@ -23,65 +23,65 @@ namespace client;
 
 public class SkillMacro
 {
-    private int skill1;
-    private int skill2;
-    private int skill3;
-    private string name;
-    private int shout;
-    private int position;
+    public int Skill1 { get; set; }
+    public int Skill2 { get; set; }
+    public int Skill3 { get; set; }
+    public string Name { get; set; }
+    public int Shout { get; set; }
+    public int Position { get; set; }
 
     public SkillMacro(int skill1, int skill2, int skill3, string name, int shout, int position)
     {
-        this.skill1 = skill1;
-        this.skill2 = skill2;
-        this.skill3 = skill3;
-        this.name = name;
-        this.shout = shout;
-        this.position = position;
+        this.Skill1 = skill1;
+        this.Skill2 = skill2;
+        this.Skill3 = skill3;
+        this.Name = name;
+        this.Shout = shout;
+        this.Position = position;
     }
 
     public int getSkill1()
     {
-        return skill1;
+        return Skill1;
     }
 
     public int getSkill2()
     {
-        return skill2;
+        return Skill2;
     }
 
     public int getSkill3()
     {
-        return skill3;
+        return Skill3;
     }
 
     public void setSkill1(int skill)
     {
-        skill1 = skill;
+        Skill1 = skill;
     }
 
     public void setSkill2(int skill)
     {
-        skill2 = skill;
+        Skill2 = skill;
     }
 
     public void setSkill3(int skill)
     {
-        skill3 = skill;
+        Skill3 = skill;
     }
 
     public string getName()
     {
-        return name;
+        return Name;
     }
 
     public int getShout()
     {
-        return shout;
+        return Shout;
     }
 
     public int getPosition()
     {
-        return position;
+        return Position;
     }
 }

@@ -188,7 +188,7 @@ namespace Application.Core.Game.Players
                     return;
                 }
 
-                log.Debug("Attempting to {0} chr {CharacterName}", notAutosave ? "save" : "autosave", Name);
+                log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", Name);
 
                 Server.getInstance().updateCharacterEntry(this);
 
@@ -244,18 +244,12 @@ namespace Application.Core.Game.Players
                         }
                     }
 
-                    entity.BuddyCapacity = BuddyList.getCapacity();
                     entity.MessengerId = Messenger?.getId() ?? 0;
                     entity.MessengerPosition = Messenger == null ? 4 : MessengerPosition;
 
                     entity.MountLevel = MountModel?.getLevel() ?? 1;
                     entity.MountExp = MountModel?.getExp() ?? 0;
                     entity.Mounttiredness = MountModel?.getTiredness() ?? 0;
-
-                    entity.Equipslots = getSlots(1);
-                    entity.Useslots = getSlots(2);
-                    entity.Setupslots = getSlots(3);
-                    entity.Etcslots = getSlots(4);
 
                     Monsterbook.saveCards(dbContext, getId());
                     dbContext.SaveChanges();
@@ -297,7 +291,7 @@ namespace Application.Core.Game.Players
                         var macro = SkillMacros[i];
                         if (macro != null)
                         {
-                            dbContext.Skillmacros.Add(new Skillmacro(getId(), (sbyte)macro.getPosition(), macro.getSkill1(), macro.getSkill2(), macro.getSkill3(), macro.getName(), (sbyte)macro.getShout()));
+                            dbContext.Skillmacros.Add(new Skillmacro(Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
                         }
                     }
                     dbContext.SaveChanges();
@@ -336,12 +330,12 @@ namespace Application.Core.Game.Players
                         );
                     dbContext.SaveChanges();
 
-                    dbContext.Trocklocations.Where(x => x.Characterid == getId()).ExecuteDelete();
+                    dbContext.Trocklocations.Where(x => x.Characterid == Id).ExecuteDelete();
                     for (int i = 0; i < getTrockSize(); i++)
                     {
                         if (TrockMaps[i] != 999999999)
                         {
-                            dbContext.Trocklocations.Add(new Trocklocation(getId(), TrockMaps[i], 0));
+                            dbContext.Trocklocations.Add(new Trocklocation(Id, TrockMaps[i], 0));
                         }
                     }
 
@@ -349,7 +343,7 @@ namespace Application.Core.Game.Players
                     {
                         if (VipTrockMaps[i] != 999999999)
                         {
-                            dbContext.Trocklocations.Add(new Trocklocation(getId(), VipTrockMaps[i], 1));
+                            dbContext.Trocklocations.Add(new Trocklocation(Id, VipTrockMaps[i], 1));
                         }
                     }
                     dbContext.SaveChanges();
@@ -357,9 +351,9 @@ namespace Application.Core.Game.Players
                     dbContext.Buddies.Where(x => x.CharacterId == getId() && x.Pending == 0).ExecuteDelete();
                     foreach (var entry in BuddyList.getBuddies())
                     {
-                        if (entry.isVisible())
+                        if (entry.Visible)
                         {
-                            dbContext.Buddies.Add(new Buddy(getId(), entry.getCharacterId(), 0, entry.getGroup()));
+                            dbContext.Buddies.Add(new Buddy(getId(), entry.getCharacterId(), 0, entry.Group));
                         }
                     }
                     dbContext.SaveChanges();
@@ -400,7 +394,8 @@ namespace Application.Core.Game.Players
                             familyEntry.savedSuccessfully();
                         var senior = familyEntry.getSenior();
                         if (senior != null && senior.getChr() == null)
-                        { //only save for offline family members
+                        {
+                            //only save for offline family members
                             if (senior.saveReputation(dbContext))
                                 senior.savedSuccessfully();
 
