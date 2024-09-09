@@ -1,10 +1,6 @@
-
-
 using net.opcodes;
 
 namespace net.packet;
-
-
 
 public interface OutPacket : Packet
 {

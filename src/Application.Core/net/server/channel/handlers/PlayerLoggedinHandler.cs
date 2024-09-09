@@ -460,7 +460,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
             if (newcomer)
             {
-                player.setLoginTime(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+                player.setLoginTime(DateTimeOffset.Now);
             }
         }
         catch (Exception e)
