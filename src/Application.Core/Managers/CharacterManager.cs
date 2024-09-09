@@ -1,9 +1,7 @@
-﻿using Application.Core.Game.Maps;
+﻿using Application.Core.Game.Items;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
 using Application.Core.model;
-using Application.EF.Entities;
 using AutoMapper;
 using client;
 using client.inventory;
@@ -11,25 +9,19 @@ using client.inventory.manipulator;
 using client.keybind;
 using client.newyear;
 using client.processor.npc;
+using constants.game;
 using constants.id;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using net.server;
-using net.server.world;
-using Serilog;
-using server;
 using server.events;
 using server.life;
 using server.maps;
 using server.quest;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using tools;
-using static Microsoft.IO.RecyclableMemoryStreamManager;
-using static Mysqlx.Notice.Warning.Types;
-using YamlDotNet.Core.Tokens;
 
 namespace Application.Core.Managers
 {
@@ -422,7 +414,7 @@ namespace Application.Core.Managers
                     }
                     ret.setPosition(portal.getPosition());
 
-                    ret.TeamModel = wserv.getParty(dbModel.Party);
+                    ret.setParty(wserv.getParty(dbModel.Party));
 
                     int messengerid = dbModel.MessengerId;
                     int position = dbModel.MessengerPosition;
@@ -611,9 +603,11 @@ namespace Application.Core.Managers
                     #endregion
 
                     // Skill macros
-                    ret.SkillMacros = dbContext.Skillmacros.Where(x => x.Characterid == ret.Id).OrderBy(x => x.Position).ToList()
-                            .Select(item => new SkillMacro(item.Skill1, item.Skill2, item.Skill3, item.Name!, item.Shout, item.Position))
-                            .ToArray();
+                    var dbSkillMacros = dbContext.Skillmacros.Where(x => x.Characterid == ret.Id).OrderBy(x => x.Position).ToList();
+                    dbSkillMacros.ForEach(o =>
+                    {
+                        ret.SkillMacros[o.Position] = new SkillMacro(o.Skill1, o.Skill2, o.Skill3, o.Name, o.Shout, o.Position);
+                    });
 
                     // Key config
                     ret.KeyMap.Clear();
@@ -635,7 +629,7 @@ namespace Application.Core.Managers
                     ret.LastFameTime = fameLogFromDB.Max(x => x.When).ToUnixTimeMilliseconds();
                     ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
 
-                    ret.BuddyList.loadFromDb(charid);
+                    ret.BuddyList.LoadFromDb();
                     ret.Storage = wserv.getAccountStorage(ret.AccountId);
 
                     int startHp = ret.Hp, startMp = ret.Mp;
@@ -644,15 +638,7 @@ namespace Application.Core.Managers
                     //ret.resetBattleshipHp();
                 }
 
-                int mountid = ret.getJobType() * 10000000 + 1004;
-                if (ret.getInventory(InventoryType.EQUIPPED).getItem(-18) != null)
-                {
-                    ret.MountModel = new Mount(ret, ret.getInventory(InventoryType.EQUIPPED).getItem(-18)!.getItemId(), mountid);
-                }
-                else
-                {
-                    ret.MountModel = new Mount(ret, 0, mountid);
-                }
+                ret.MountModel = new Mount(ret, ret.Bag[InventoryType.EQUIPPED].getItem(-18)?.getItemId() ?? 0);
                 ret.MountModel.setExp(ret.MountExp);
                 ret.MountModel.setLevel(ret.MountLevel);
                 ret.MountModel.setTiredness(ret.Mounttiredness);
@@ -1087,7 +1073,6 @@ namespace Application.Core.Managers
                         }
                     }
 
-                    entity.BuddyCapacity = player.BuddyList.getCapacity();
                     entity.MessengerId = player.Messenger?.getId() ?? 0;
                     entity.MessengerPosition = player.Messenger == null ? 4 : player.MessengerPosition;
 
@@ -1118,13 +1103,13 @@ namespace Application.Core.Managers
                     CharacterManager.SaveQuickSlotMapped(dbContext, player);
 
 
-                    dbContext.Skillmacros.Where(x => x.Characterid == player.getId()).ExecuteDelete();
+                    dbContext.Skillmacros.Where(x => x.Characterid == player.Id).ExecuteDelete();
                     for (int i = 0; i < 5; i++)
                     {
                         var macro = player.SkillMacros[i];
                         if (macro != null)
                         {
-                            dbContext.Skillmacros.Add(new Skillmacro(player.getId(), (sbyte)macro.getPosition(), macro.getSkill1(), macro.getSkill2(), macro.getSkill3(), macro.getName(), (sbyte)macro.getShout()));
+                            dbContext.Skillmacros.Add(new Skillmacro(player.Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
                         }
                     }
                     dbContext.SaveChanges();
@@ -1184,9 +1169,9 @@ namespace Application.Core.Managers
                     dbContext.Buddies.Where(x => x.CharacterId == player.getId() && x.Pending == 0).ExecuteDelete();
                     foreach (var entry in player.BuddyList.getBuddies())
                     {
-                        if (entry.isVisible())
+                        if (entry.Visible)
                         {
-                            dbContext.Buddies.Add(new Buddy(player.getId(), entry.getCharacterId(), 0, entry.getGroup()));
+                            dbContext.Buddies.Add(new Buddy(player.getId(), entry.getCharacterId(), 0, entry.Group));
                         }
                     }
                     dbContext.SaveChanges();
@@ -1258,6 +1243,17 @@ namespace Application.Core.Managers
                     // log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", player.Name, player.Level, player.JobId);
                 }
             }
+        }
+
+        public static void deleteGuild(IPlayer player)
+        {
+            using var dbContext = new DBContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
+            dbContext.Characters.Where(x => x.GuildId == player.GuildId).ExecuteUpdate(x => x.SetProperty(y => y.GuildId, 0).SetProperty(y => y.GuildRank, 5));
+            dbContext.Guilds.Where(x => x.GuildId == player.GuildId).ExecuteDelete();
+            dbTrans.Commit();
+            player.GuildId = 0;
+            player.GuildRank = 5;
         }
     }
 }

@@ -21,12 +21,13 @@
 */
 
 
+using Application.Core.Game.Relation;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
 using tools;
-using static client.BuddyList;
-using static client.BuddyList.BuddyOperation;
+using static Application.Core.Game.Relation.BuddyList;
+using static Application.Core.Game.Relation.BuddyList.BuddyOperation;
 
 namespace net.server.channel.handlers;
 
@@ -71,7 +72,8 @@ public class BuddylistModifyHandler : AbstractPacketHandler
         BuddyList buddylist = player.getBuddylist();
         using var dbContext = new DBContext();
         if (mode == 1)
-        { // add
+        { 
+            // add
             string addName = p.readString();
             string group = p.readString();
             if (group.Length > 16 || addName.Length < 4 || addName.Length > 13)
@@ -79,7 +81,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
                 return; //hax.
             }
             var ble = buddylist.get(addName);
-            if (ble != null && !ble.isVisible() && group.Equals(ble.getGroup()))
+            if (ble != null && !ble.Visible && group.Equals(ble.Group))
             {
                 c.sendPacket(PacketCreator.serverNotice(1, "You already have \"" + ble.getName() + "\" on your Buddylist"));
             }
@@ -98,7 +100,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
                     if (otherChar != null)
                     {
                         channel = c.getChannel();
-                        charWithId = new CharacterIdNameBuddyCapacity(otherChar.getId(), otherChar.getName(), otherChar.getBuddylist().getCapacity());
+                        charWithId = new CharacterIdNameBuddyCapacity(otherChar.getId(), otherChar.getName(), otherChar.BuddyList.Capacity);
                     }
                     else
                     {
@@ -150,7 +152,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
                                 });
                                 dbContext.SaveChanges();
                             }
-                            buddylist.put(new BuddylistEntry(charWithId.name, group, charWithId.id, displayChannel, true));
+                            buddylist.put(group ,charWithId.id);
                             c.sendPacket(PacketCreator.updateBuddylist(buddylist.getBuddies()));
                         }
                     }
@@ -166,12 +168,13 @@ public class BuddylistModifyHandler : AbstractPacketHandler
             }
             else
             {
-                ble.changeGroup(group);
+                ble.Group = group;
                 c.sendPacket(PacketCreator.updateBuddylist(buddylist.getBuddies()));
             }
         }
         else if (mode == 2)
-        { // accept buddy
+        { 
+            // accept buddy
             int otherCid = p.readInt();
             if (!buddylist.isFull())
             {
@@ -190,7 +193,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
                     }
                     if (otherName != null)
                     {
-                        buddylist.put(new BuddylistEntry(otherName, "Default Group", otherCid, channel, true));
+                        buddylist.put("Default Group", otherCid);
                         c.sendPacket(PacketCreator.updateBuddylist(buddylist.getBuddies()));
                         notifyRemoteChannel(c, channel, otherCid, ADDED);
                     }

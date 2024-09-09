@@ -65,4 +65,11 @@ namespace Application.Utility.Exceptions
         {
         }
     }
+
+    public class BusinessCharacterNotFoundException : BusinessException
+    {
+        public BusinessCharacterNotFoundException() : base("Client not found")
+        {
+        }
+    }
 }

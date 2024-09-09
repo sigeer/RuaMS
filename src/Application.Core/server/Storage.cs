@@ -94,7 +94,7 @@ public class Storage
         catch (Exception ex)
         {
             // exceptions leading to deploy null storages found thanks to Jefe
-            Log.Logger.Error(ex, "SQL error occurred when trying to load storage for accId {}, world {}", id, GameConstants.WORLD_NAMES[world]);
+            Log.Logger.Error(ex, "SQL error occurred when trying to load storage for accId {AccountId}, world {WorldId}", id, GameConstants.WORLD_NAMES[world]);
             throw;
         }
     }

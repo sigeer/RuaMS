@@ -44,7 +44,7 @@ public class FishingRateCommand : Command
         }
 
         int fishrate = Math.Max(int.Parse(paramsValue[0]), 1);
-        c.getWorldServer().setFishingRate(fishrate);
+        c.getWorldServer().FishingRate = fishrate;
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Fishing Rate has been changed to " + fishrate + "x."));
     }
 }

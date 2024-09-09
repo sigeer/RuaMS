@@ -31,7 +31,7 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
         }
         catch (NullReferenceException npe)
         {
-            log.Warning("Unable to get remote address from netty Channel: {}", channel, npe);
+            log.Warning(npe, "Unable to get remote address from netty Channel: {ChannelId}", channel);
         }
 
         return remoteAddress;

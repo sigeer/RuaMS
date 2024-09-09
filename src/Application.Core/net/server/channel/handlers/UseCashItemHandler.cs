@@ -108,7 +108,8 @@ public class UseCashItemHandler : AbstractPacketHandler
             {
                 int mapId = p.readInt();
                 if (itemId / 1000 >= 5041 || mapId / 100000000 == player.getMapId() / 100000000)
-                { //check vip or same continent
+                { 
+                    //check vip or same continent
                     var targetMap = c.getChannelServer().getMapFactory().getMap(mapId);
                     if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(mapId)))
                     {
@@ -760,7 +761,7 @@ public class UseCashItemHandler : AbstractPacketHandler
         }
         else
         {
-            log.Warning("NEW CASH ITEM TYPE: {ItemType}, packet: {}", itemType, p);
+            log.Warning("NEW CASH ITEM TYPE: {ItemType}, packet: {Packet}", itemType, p);
             c.sendPacket(PacketCreator.enableActions());
         }
     }

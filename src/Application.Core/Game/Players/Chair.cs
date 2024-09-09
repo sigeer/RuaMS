@@ -227,7 +227,7 @@ namespace Application.Core.Game.Players
                 return false;
             }
 
-            int skillId = getJobMapChair(JobModel);
+            int skillId = JobModel.getJobMapChair();
             int skillLv = getSkillLevel(skillId);
             if (skillLv > 0)
             {
@@ -245,7 +245,7 @@ namespace Application.Core.Game.Players
                 return false;
             }
 
-            int skillId = getJobMapChair(JobModel);
+            int skillId = JobModel.getJobMapChair();
             int skillLv = getSkillLevel(skillId);
             if (skillLv > 0)
             {

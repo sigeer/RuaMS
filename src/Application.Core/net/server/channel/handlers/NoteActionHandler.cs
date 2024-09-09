@@ -72,7 +72,7 @@ public class NoteActionHandler : AbstractPacketHandler
                 var discardedNote = noteService.delete(id);
                 if (discardedNote == null)
                 {
-                    log.Warning("Note with id {} not able to be discarded. Already discarded?", id);
+                    log.Warning("Note with id {NoteId} not able to be discarded. Already discarded?", id);
                     continue;
                 }
 

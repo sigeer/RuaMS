@@ -1,4 +1,5 @@
 ﻿using Application.Core.Game.Relation;
+using Application.Core.Managers;
 
 namespace Application.Core.Game.TheWorld
 {
@@ -9,13 +10,10 @@ namespace Application.Core.Game.TheWorld
             if (_dataSource.ContainsKey(guildId))
                 return _dataSource[guildId];
 
-            using var dbContext = new DBContext();
-            var m = dbContext.Guilds.FirstOrDefault(x => x.GuildId == guildId);
-
-            if (m == null)
+            var d = GuildManager.FindGuildFromDB(guildId);
+            if (d == null)
                 return null;
 
-            var d = GlobalConfigs.Mapper.Map<Guild>(m);
             _dataSource.Add(guildId, d);
             return d;
         }

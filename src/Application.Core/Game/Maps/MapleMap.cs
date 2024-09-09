@@ -24,6 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.scripting.Event;
 using Application.Utility;
@@ -3190,8 +3191,7 @@ public class MapleMap : IMap
             broadcastGMSpawnPlayerMapObjectMessage(chr, chr, true);
             chr.sendPacket(PacketCreator.getGMEffect(0x10, 1));
 
-            List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.DARKSIGHT, 0));
-            broadcastGMMessage(chr, PacketCreator.giveForeignBuff(chr.getId(), dsstat), false);
+            broadcastGMMessage(chr, PacketCreator.giveForeignBuff(chr.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
         }
         else
         {
@@ -5697,5 +5697,4 @@ public class MapleMap : IMap
     {
         this.timeExpand = timeExpand;
     }
-
 }

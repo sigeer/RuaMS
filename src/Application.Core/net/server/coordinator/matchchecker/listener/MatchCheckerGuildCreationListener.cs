@@ -88,7 +88,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
             leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
 
-            leader.getMGC().setGuildId(gid);
+            leader.setGuildId(gid);
             var guild = Server.getInstance().getGuild(leader.getGuildId(), leader);  // initialize guild structure
             Server.getInstance().changeRank(gid, leader.getId(), 1);
 

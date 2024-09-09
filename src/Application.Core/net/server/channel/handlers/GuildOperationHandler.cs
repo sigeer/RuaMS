@@ -153,7 +153,7 @@ public class GuildOperationHandler : AbstractPacketHandler
                 string name = p.readString();
                 if (cid != mc.getId() || !name.Equals(mc.getName()) || mc.getGuildId() <= 0)
                 {
-                    log.Warning("[Hack] Chr {CharacterName} tried to quit guild under the name {} and current guild id of {}", mc.getName(), name, mc.getGuildId());
+                    log.Warning("[Hack] Chr {CharacterName} tried to quit guild under the name {GuildName} and current guild id of {GuildId}", mc.getName(), name, mc.getGuildId());
                     return;
                 }
 
@@ -289,7 +289,7 @@ public class GuildOperationHandler : AbstractPacketHandler
 
                 break;
             default:
-                log.Warning("Unhandled GUILD_OPERATION packet: {}", p);
+                log.Warning("Unhandled GUILD_OPERATION packet: {Packet}", p);
                 break;
         }
     }

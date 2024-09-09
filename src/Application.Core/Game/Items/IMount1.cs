@@ -1,5 +1,5 @@
-/*
-	This file is part of the OdinMS Maple Story NewServer
+﻿/*
+	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
 		       Jan Christian Meyer <vimes@odinms.de>
@@ -19,29 +19,24 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-
-using constants.game;
-using net.packet;
-using tools;
-
-namespace net.server.handlers.login;
-
-public class ServerlistRequestHandler : AbstractPacketHandler
+namespace Application.Core.Game.Items
 {
-
-    public override void HandlePacket(InPacket p, IClient c)
+    public interface IMount
     {
-        Server server = Server.getInstance();
-        var worlds = server.getWorlds();
-        c.requestedServerlist(worlds.Count);
-
-        foreach (var world in worlds)
-        {
-            c.sendPacket(PacketCreator.getServerList(world.Id, GameConstants.WORLD_NAMES[world.Id], world.Flag, world.EventMessage, world.Channels));
-        }
-        c.sendPacket(PacketCreator.getEndOfServerList());
-        c.sendPacket(PacketCreator.selectWorld(0));//too lazy to make a check lol
-        c.sendPacket(PacketCreator.sendRecommended(server.worldRecommendedList()));
+        void empty();
+        int getExp();
+        int getId();
+        int getItemId();
+        int getLevel();
+        int getSkillId();
+        int getTiredness();
+        int incrementAndGetTiredness();
+        bool isActive();
+        void setActive(bool set);
+        void setExp(int newexp);
+        void setItemId(int newitemid);
+        void setLevel(int newlevel);
+        void setSkillId(int newskillid);
+        void setTiredness(int newtiredness);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using client;
 using client.autoban;
@@ -8,6 +9,7 @@ using constants.game;
 using constants.id;
 using server.events;
 using server.maps;
+using System.Numerics;
 
 namespace Application.Core.Game.Players
 {
@@ -60,7 +62,7 @@ namespace Application.Core.Game.Players
             ExpValue = new AtomicInteger();
             GachaExpValue = new AtomicInteger();
 
-            BuddyList = new BuddyList(20);
+            BuddyList = new BuddyList(this, 20);
             LastFameCIds = new List<int>();
 
             KeyMap = new Dictionary<int, KeyBinding>();
@@ -118,6 +120,28 @@ namespace Application.Core.Game.Players
         public IPlayer generateCharacterEntry()
         {
             return this;
+        }
+
+        public void StartPlayerTask()
+        {
+            buffExpireTask();
+            diseaseExpireTask();
+            skillCooldownTask();
+            expirationTask();
+            questExpirationTask();
+        }
+
+        public void StopPlayerTask()
+        {
+            cancelAllBuffs(true);
+            cancelAllDebuffs();
+            cancelBuffExpireTask();
+            cancelDiseaseExpireTask();
+            cancelSkillCooldownTask();
+            cancelExpirationTask();
+
+            forfeitExpirableQuests();
+            cancelQuestExpirationTask();
         }
     }
 }

@@ -443,13 +443,7 @@ public class WorldChannel : IWorldChannel
                 }
             }
         }
-        int[] retArr = new int[ret.Count];
-        int pos = 0;
-        foreach (int i in ret)
-        {
-            retArr[pos++] = i;
-        }
-        return retArr;
+        return ret.ToArray();
     }
 
     public bool addExpedition(Expedition exped)
@@ -858,7 +852,7 @@ public class WorldChannel : IWorldChannel
         var coupleId = wserv.getMarriageQueuedCouple(ret.Value)!;
         var typeGuests = wserv.removeMarriageQueued(ret.Value);
 
-        CoupleNamePair couple = new(CharacterManager.getNameById(coupleId.Value.Key), CharacterManager.getNameById(coupleId.Value.Value));
+        CoupleNamePair couple = new(CharacterManager.getNameById(coupleId.HusbandId), CharacterManager.getNameById(coupleId.WifeId));
         wserv.dropMessage(6, couple.CharacterName1 + " and " + couple.CharacterName2 + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + channel + ".");
 
         return new(typeGuests.Key, new(ret.Value, typeGuests.Value));
@@ -1187,7 +1181,7 @@ public class WorldChannel : IWorldChannel
         }
     }
 
-    public KeyValuePair<int, int>? getWeddingCoupleForGuest(int guestId, bool cathedral)
+    public CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral)
     {
         Monitor.Enter(lockObj);
         try
@@ -1266,13 +1260,13 @@ public class WorldChannel : IWorldChannel
         log.Debug("Current Queue: {0}", cathedralReservationQueue);
         log.Debug("Cancel Task?: {0}", cathedralReservationTask != null);
         log.Debug("Ongoing wid: {0}", ongoingCathedral);
-        log.Debug("Ongoing wid: {0}, isPremium: {0}", ongoingCathedral, ongoingCathedralType);
+        log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingCathedral, ongoingCathedralType);
         log.Debug("Guest list: {0}", ongoingCathedralGuests);
         log.Debug(" ----- CHAPEL -----");
         log.Debug("Current Queue: {0}", chapelReservationQueue);
         log.Debug("Cancel Task?: {0}", chapelReservationTask != null);
         log.Debug("Ongoing wid: {0}", ongoingChapel);
-        log.Debug("Ongoing wid: 0{}, isPremium: {}", ongoingChapel, ongoingChapelType);
+        log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingChapel, ongoingChapelType);
         log.Debug("Guest list: {0}", ongoingChapelGuests);
         log.Debug("Starttime: {0}", ongoingStartTime);
     }

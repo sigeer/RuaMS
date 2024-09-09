@@ -44,7 +44,7 @@ public class IpListCommand : Command
 
         foreach (var w in Server.getInstance().getWorlds())
         {
-            var chars = w.getPlayerStorage().getAllCharacters();
+            var chars = w.getPlayerStorage().GetAllOnlinedPlayers();
 
             if (chars.Count > 0)
             {

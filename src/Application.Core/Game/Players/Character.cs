@@ -70,13 +70,13 @@ namespace Application.Core.Game.Players;
 public partial class Player
 {
     private ITeam? teamModel;
-    public ITeam? TeamModel 
+    public ITeam? TeamModel
     {
         get
         {
             return teamModel;
         }
-        set
+        private set
         {
             teamModel = value;
             Party = teamModel?.getId() ?? 0;
@@ -248,7 +248,7 @@ public partial class Player
     private long nextWarningTime = 0;
     private DateTimeOffset lastExpGainTime;
     private bool pendingNameChange; //only used to change name on logout, not to be relied upon elsewhere
-    private long loginTime;
+    private DateTimeOffset loginTime;
     private bool chasing = false;
 
     ReaderWriterLockSlim chLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -627,8 +627,7 @@ public partial class Player
                 {
                     MapModel.broadcastNONGMMessage(this, PacketCreator.removePlayerFromMap(getId()), false);
                 }
-                List<KeyValuePair<BuffStat, int>> ldsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.DARKSIGHT, 0));
-                MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(Id, ldsstat), false);
+                MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
                 this.releaseControlledMonsters();
             }
             sendPacket(PacketCreator.enableActions());
@@ -1070,8 +1069,8 @@ public partial class Player
 
     public void broadcastAcquaintances(Packet packet)
     {
-        BuddyList.broadcast(packet, getWorldServer().getPlayerStorage());
-        Family? family = getFamily();
+        BuddyList.broadcast(packet);
+        var family = getFamily();
         if (family != null)
         {
             family.broadcast(packet, Id);
@@ -1800,16 +1799,6 @@ public partial class Player
         this.possibleReports--;
     }
 
-    public void deleteGuild(int guildId)
-    {
-        using var dbContext = new DBContext();
-        using var dbTrans = dbContext.Database.BeginTransaction();
-        dbContext.Characters.Where(x => x.GuildId == guildId).ExecuteUpdate(x => x.SetProperty(y => y.GuildId, 0).SetProperty(y => y.GuildRank, 5));
-        dbContext.Guilds.Where(x => x.GuildId == guildId).ExecuteDelete();
-        dbTrans.Commit();
-        GuildId = 0;
-        GuildRank = 5;
-    }
 
     private void nextPendingRequest(IClient c)
     {
@@ -1831,28 +1820,14 @@ public partial class Player
 
     public void deleteBuddy(int otherCid)
     {
-        BuddyList bl = getBuddylist();
-
-        if (bl.containsVisible(otherCid))
+        if (BuddyList.containsVisible(otherCid))
         {
             notifyRemoteChannel(Client, getWorldServer().find(otherCid), otherCid, BuddyList.BuddyOperation.DELETED);
         }
-        bl.remove(otherCid);
-        sendPacket(PacketCreator.updateBuddylist(getBuddylist().getBuddies()));
+        BuddyList.remove(otherCid);
+        sendPacket(PacketCreator.updateBuddylist(BuddyList.getBuddies()));
         nextPendingRequest(Client);
     }
-
-
-    private void deleteWhereCharacterId(DBContext dbContext, string sql)
-    {
-        dbContext.Database.ExecuteSqlRaw(sql, this.Id);
-    }
-
-    public static void deleteWhereCharacterId(DBContext dbContext, string sql, int cid)
-    {
-        dbContext.Database.ExecuteSqlRaw(sql, cid);
-    }
-
 
     private void stopExtraTask()
     {
@@ -1936,7 +1911,8 @@ public partial class Player
                 if (mbsvh.effect.isSkill())
                 {
                     if (mbsvh.effect.getBuffSourceId() != Aran.COMBO_ABILITY)
-                    { // check discovered thanks to Croosade dev team
+                    {
+                        // check discovered thanks to Croosade dev team
                         cancelEffect(mbsvh.effect, false, mbsvh.startTime);
                     }
                 }
@@ -1983,6 +1959,10 @@ public partial class Player
         }
     }
 
+    /// <summary>
+    /// F1 - F8的表情？
+    /// </summary>
+    /// <param name="emote"></param>
     public void changeFaceExpression(int emote)
     {
         long timeNow = Server.getInstance().getCurrentTime();
@@ -2017,65 +1997,11 @@ public partial class Player
         MapModel.broadcastUpdateCharLookMessage(this, this);
         equipchanged = true;
         updateLocalStats();
-        if (getMessenger() != null)
+        if (Messenger != null)
         {
-            getWorldServer().updateMessenger(getMessenger()!, getName(), getWorld(), Client.getChannel());
+            getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.getChannel());
         }
     }
-
-
-
-    public void cancelBuffExpireTask()
-    {
-        if (_buffExpireTask != null)
-        {
-            _buffExpireTask.cancel(false);
-            _buffExpireTask = null;
-        }
-    }
-
-    public void buffExpireTask()
-    {
-        if (_buffExpireTask == null)
-        {
-            _buffExpireTask = TimerManager.getInstance().register(() =>
-            {
-                HashSet<KeyValuePair<int, long>> es;
-                List<BuffStatValueHolder> toCancel = new();
-
-                Monitor.Enter(effLock);
-                chLock.EnterReadLock();
-                try
-                {
-                    es = new(buffExpires);
-
-                    long curTime = Server.getInstance().getCurrentTime();
-                    foreach (var bel in es)
-                    {
-                        if (curTime >= bel.Value)
-                        {
-                            toCancel.Add(buffEffects.GetValueOrDefault(bel.Key)!.Values.First());    //rofl
-                        }
-                    }
-                }
-                finally
-                {
-                    chLock.ExitReadLock();
-                    Monitor.Exit(effLock);
-                }
-
-                foreach (BuffStatValueHolder mbsvh in toCancel)
-                {
-                    cancelEffect(mbsvh.effect, false, mbsvh.startTime);
-                }
-
-            }, 1500);
-        }
-    }
-
-
-
-
 
     public enum FameStatus
     {
@@ -2263,134 +2189,25 @@ public partial class Player
         }
     }
 
-    public bool hasActiveBuff(int sourceid)
-    {
-        LinkedList<BuffStatValueHolder> allBuffs;
+    //private void dropWorstEffectFromItemEffectHolder(BuffStat mbs)
+    //{
+    //    int min = int.MaxValue;
+    //    int srcid = -1;
+    //    foreach (var bpl in buffEffects)
+    //    {
+    //        BuffStatValueHolder? mbsvh = bpl.Value.GetValueOrDefault(mbs);
+    //        if (mbsvh != null)
+    //        {
+    //            if (mbsvh.value < min)
+    //            {
+    //                min = mbsvh.value;
+    //                srcid = bpl.Key;
+    //            }
+    //        }
+    //    }
 
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        try
-        {
-            allBuffs = new(effects.Values);
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
-
-        foreach (BuffStatValueHolder mbsvh in allBuffs)
-        {
-            if (mbsvh.effect.getBuffSourceId() == sourceid)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private List<KeyValuePair<BuffStat, int>> getActiveStatupsFromSourceid(int sourceid)
-    {
-        if (!buffEffects.ContainsKey(sourceid))
-            return new List<KeyValuePair<BuffStat, int>>();
-        // already under effLock & chrLock
-        List<KeyValuePair<BuffStat, int>> ret = new();
-        List<KeyValuePair<BuffStat, int>> singletonStatups = new();
-        foreach (var bel in buffEffects[sourceid])
-        {
-            BuffStat mbs = bel.Key;
-            BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(bel.Key);
-
-            KeyValuePair<BuffStat, int> p;
-            if (mbsvh != null)
-            {
-                p = new(mbs, mbsvh.value);
-            }
-            else
-            {
-                p = new(mbs, 0);
-            }
-
-            if (!isSingletonStatup(mbs))
-            {   // thanks resinate, Daddy Egg for pointing out morph issues when updating it along with other statups
-                ret.Add(p);
-            }
-            else
-            {
-                singletonStatups.Add(p);
-            }
-        }
-        ret.Sort((p1, p2) => p1.Key.CompareTo(p2.Key));
-
-        if (singletonStatups.Count > 0)
-        {
-            singletonStatups.Sort((p1, p2) => p1.Key.CompareTo(p2.Key));
-
-            ret.AddRange(singletonStatups);
-        }
-
-        return ret;
-    }
-
-    private void addItemEffectHolder(int sourceid, long expirationtime, Dictionary<BuffStat, BuffStatValueHolder> statups)
-    {
-        buffEffects.AddOrUpdate(sourceid, statups);
-        buffExpires.AddOrUpdate(sourceid, expirationtime);
-    }
-
-    private bool removeEffectFromItemEffectHolder(int sourceid, BuffStat buffStat)
-    {
-        Dictionary<BuffStat, BuffStatValueHolder>? lbe = buffEffects.GetValueOrDefault(sourceid);
-
-        if (lbe != null && lbe.Remove(buffStat, out var d) && d != null)
-        {
-            buffEffectsCount.AddOrUpdate(buffStat, (sbyte)(buffEffectsCount.GetValueOrDefault(buffStat) - 1));
-
-            if (lbe.Count == 0)
-            {
-                buffEffects.Remove(sourceid);
-                buffExpires.Remove(sourceid);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private void removeItemEffectHolder(int sourceid)
-    {
-        buffEffects.Remove(sourceid, out var be);
-        if (be != null)
-        {
-            foreach (var bei in be)
-            {
-                buffEffectsCount.AddOrUpdate(bei.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(bei.Key) - 1));
-            }
-        }
-
-        buffExpires.Remove(sourceid);
-    }
-
-    private void dropWorstEffectFromItemEffectHolder(BuffStat mbs)
-    {
-        int min = int.MaxValue;
-        int srcid = -1;
-        foreach (var bpl in buffEffects)
-        {
-            BuffStatValueHolder? mbsvh = bpl.Value.GetValueOrDefault(mbs);
-            if (mbsvh != null)
-            {
-                if (mbsvh.value < min)
-                {
-                    min = mbsvh.value;
-                    srcid = bpl.Key;
-                }
-            }
-        }
-
-        removeEffectFromItemEffectHolder(srcid, mbs);
-    }
+    //    removeEffectFromItemEffectHolder(srcid, mbs);
+    //}
 
     private BuffStatValueHolder? fetchBestEffectFromItemEffectHolder(BuffStat mbs)
     {
@@ -2425,22 +2242,6 @@ public partial class Player
         }
         return mbsvh;
     }
-
-
-
-    private static int getJobMapChair(Job job)
-    {
-        switch (job.getId() / 1000)
-        {
-            case 0:
-                return Beginner.MAP_CHAIR;
-            case 1:
-                return Noblesse.MAP_CHAIR;
-            default:
-                return Legend.MAP_CHAIR;
-        }
-    }
-
 
 
     public int getChair()
@@ -2776,7 +2577,7 @@ public partial class Player
 
     public int getRawExpRate()
     {
-        return expRate / (expCoupon * getWorldServer().getExpRate());
+        return expRate / (expCoupon * getWorldServer().ExpRate);
     }
 
     public int getDropRate()
@@ -2791,13 +2592,13 @@ public partial class Player
 
     public int getRawDropRate()
     {
-        return dropRate / (dropCoupon * getWorldServer().getDropRate());
+        return dropRate / (dropCoupon * getWorldServer().DropRate);
     }
 
     public int getBossDropRate()
     {
         var w = getWorldServer();
-        return (dropRate / w.getDropRate()) * w.getBossDropRate();
+        return (dropRate / w.DropRate) * w.BossDropRate;
     }
 
     public int getMesoRate()
@@ -2812,7 +2613,7 @@ public partial class Player
 
     public int getRawMesoRate()
     {
-        return mesoRate / (mesoCoupon * getWorldServer().getMesoRate());
+        return mesoRate / (mesoCoupon * getWorldServer().MesoRate);
     }
 
     public int getQuestExpRate()
@@ -2823,13 +2624,13 @@ public partial class Player
         }
 
         var w = getWorldServer();
-        return w.getExpRate() * w.getQuestRate();
+        return w.ExpRate * w.QuestRate;
     }
 
     public int getQuestMesoRate()
     {
         var w = getWorldServer();
-        return w.getMesoRate() * w.getQuestRate();
+        return w.MesoRate * w.QuestRate;
     }
 
     public float getCardRate(int itemid)
@@ -2868,14 +2669,7 @@ public partial class Player
 
     public Family? getFamily()
     {
-        if (familyEntry != null)
-        {
-            return familyEntry.getFamily();
-        }
-        else
-        {
-            return null;
-        }
+        return familyEntry?.getFamily();
     }
 
     public FamilyEntry? getFamilyEntry()
@@ -2972,9 +2766,6 @@ public partial class Player
     {
         return InitialSpawnPoint;
     }
-
-
-
 
 
     public Job getJob()
@@ -3096,26 +2887,6 @@ public partial class Player
         return MessengerPosition;
     }
 
-    public IPlayer? getMGC()
-    {
-        return this;
-    }
-
-    public void setMGC(IPlayer? mgc)
-    {
-        // this.mgc = mgc;
-    }
-
-    public IPlayer getMPC()
-    {
-        return this;
-    }
-
-    public void setMPC(IPlayer? mpc)
-    {
-        // this.mpc = mpc;
-    }
-
     public int getTargetHpBarHash()
     {
         return this.targetHpBarHash;
@@ -3201,15 +2972,7 @@ public partial class Player
         Monitor.Enter(petLock);
         try
         {
-            int ret = 0;
-            for (int i = 0; i < 3; i++)
-            {
-                if (pets[i] != null)
-                {
-                    ret++;
-                }
-            }
-            return ret;
+            return pets.Count(x => x != null);
         }
         finally
         {
@@ -3519,11 +3282,7 @@ public partial class Player
         try
         {
             BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(effect);
-            if (mbsvh == null)
-            {
-                return null;
-            }
-            return mbsvh.effect;
+            return mbsvh?.effect;
         }
         finally
         {
@@ -3635,7 +3394,8 @@ public partial class Player
     }
 
     public void handleEnergyChargeGain()
-    { // to get here energychargelevel has to be > 0
+    {
+        // to get here energychargelevel has to be > 0
         Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
         StatEffect ceffect;
         ceffect = energycharge.getEffect(getSkillLevel(energycharge));
@@ -3647,7 +3407,7 @@ public partial class Player
             {
                 energybar = 10000;
             }
-            List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.ENERGY_CHARGE, energybar));
+            var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
             setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
             sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
             sendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
@@ -3662,7 +3422,7 @@ public partial class Player
             tMan.schedule(() =>
             {
                 energybar = 0;
-                List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.ENERGY_CHARGE, energybar));
+                var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
                 setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
                 sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
                 MapModel.broadcastPacket(chr, PacketCreator.cancelForeignFirstDebuff(Id, ((long)1) << 50));
@@ -3675,7 +3435,7 @@ public partial class Player
     {
         int skillid = isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
         var combo = SkillFactory.GetSkillTrust(skillid);
-        List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.COMBO, 1));
+        var stat = new BuffStatValue(BuffStat.COMBO, 1);
         setBuffedValue(BuffStat.COMBO, 1);
         sendPacket(PacketCreator.giveBuff(skillid,
             combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.Now.ToUnixTimeMilliseconds()),
@@ -3768,7 +3528,7 @@ public partial class Player
         int seconds = (int)Math.Floor((double)timeLeft / 1000) % 60;
         int minutes = (int)Math.Floor((double)timeLeft / 60000) % 60;
 
-        return (minutes > 0 ? (string.Format("%02d", minutes) + " minutes, ") : "") + string.Format("%02d", seconds) + " seconds";
+        return (minutes > 0 ? (string.Format("{0:D2}", minutes) + " minutes, ") : "") + string.Format("{0:D2}", seconds) + " seconds";
     }
 
     public bool isBuffFrom(BuffStat stat, Skill skill)
@@ -3832,7 +3592,7 @@ public partial class Player
         Monitor.Enter(prtLock);
         try
         {
-            return TeamModel != null && TeamModel.getLeaderId() == getId();
+            return TeamModel?.getLeaderId() == getId();
         }
         finally
         {
@@ -3874,7 +3634,7 @@ public partial class Player
     {
         int curSp = getUsedSp(newJob) + getJobRemainingSp(newJob);
         int spGain = 0;
-        int expectedSp = getJobLevelSp(Level - 10, newJob, GameConstants.getJobBranch(newJob));
+        int expectedSp = JobManager.GetJobLevelSp(Level - 10, newJob.getId(), GameConstants.getJobBranch(newJob));
         if (curSp < expectedSp)
         {
             spGain += (expectedSp - curSp);
@@ -3900,22 +3660,7 @@ public partial class Player
         return spUsed;
     }
 
-    private int getJobLevelSp(int level, Job job, int jobBranch)
-    {
-        if (JobManager.GetJobStyleInternal(JobId, 0x40) == Job.MAGICIAN)
-        {
-            level += 2;  // starts earlier, level 8
-        }
 
-        return 3 * level + GameConstants.getChangeJobSpUpgrade(jobBranch);
-    }
-
-    private int getJobMaxSp(Job job)
-    {
-        int jobBranch = GameConstants.getJobBranch(job);
-        int jobRange = GameConstants.getJobUpgradeLevelRange(jobBranch);
-        return getJobLevelSp(jobRange, job, jobBranch);
-    }
 
     private int getJobRemainingSp(Job job)
     {
@@ -3938,7 +3683,7 @@ public partial class Player
 
     private int getSpGain(int spGain, int curSp, Job job)
     {
-        int maxSp = getJobMaxSp(job);
+        int maxSp = JobManager.GetJobMaxSp(job);
 
         spGain = Math.Min(spGain, maxSp - curSp);
         int jobBranch = GameConstants.getJobBranch(job);
@@ -4289,17 +4034,17 @@ public partial class Player
     public void setWorldRates()
     {
         var worldz = getWorldServer();
-        this.expRate *= worldz.getExpRate();
-        this.mesoRate *= worldz.getMesoRate();
-        this.dropRate *= worldz.getDropRate();
+        this.expRate *= worldz.ExpRate;
+        this.mesoRate *= worldz.MesoRate;
+        this.dropRate *= worldz.DropRate;
     }
 
     public void revertWorldRates()
     {
         var worldz = getWorldServer();
-        this.expRate /= worldz.getExpRate();
-        this.mesoRate /= worldz.getMesoRate();
-        this.dropRate /= worldz.getDropRate();
+        this.expRate /= worldz.ExpRate;
+        this.mesoRate /= worldz.MesoRate;
+        this.dropRate /= worldz.DropRate;
     }
 
     private void setCouponRates()
@@ -4545,17 +4290,6 @@ public partial class Player
         }
     }
 
-    private void loadCharSkillPoints(string[] skillPoints)
-    {
-        int[] sps = new int[skillPoints.Length];
-        for (int i = 0; i < skillPoints.Length; i++)
-        {
-            sps[i] = int.Parse(skillPoints[i]);
-        }
-
-        setRemainingSp(sps);
-    }
-
     public int getRemainingSp()
     {
         return getRemainingSp(JobId); //default
@@ -4694,25 +4428,7 @@ public partial class Player
         setStance(0);
     }
 
-    private void prepareDragonBlood(StatEffect bloodEffect)
-    {
-        if (dragonBloodSchedule != null)
-        {
-            dragonBloodSchedule.cancel(false);
-        }
-        dragonBloodSchedule = TimerManager.getInstance().register(() =>
-        {
-            if (awayFromWorld.Get())
-            {
-                return;
-            }
 
-            addHP(-bloodEffect.getX());
-            sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
-            MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
-
-        }, 4000, 4000);
-    }
 
     private void recalcEquipStats()
     {
@@ -5352,8 +5068,6 @@ public partial class Player
         BuddyList.setCapacity(capacity);
         sendPacket(PacketCreator.updateBuddyCapacity(capacity));
     }
-
-
 
     public void setChalkboard(string? text)
     {
@@ -6096,13 +5810,9 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            getWorldServer().updateParty(chrParty.getId(), PartyOperation.SILENT_UPDATE, getMPC());
+            getWorldServer().updateParty(chrParty.getId(), PartyOperation.SILENT_UPDATE, this);
         }
     }
-
-
-
-
 
     public enum DelayedQuestUpdate
     {    // quest updates allow player actions during NPC talk...
@@ -6146,7 +5856,7 @@ public partial class Player
         {
             Client.sendPacket(PacketCreator.spawnPlayerMapObject(Client, this, false));
 
-            if (buffEffects.ContainsKey(getJobMapChair(JobModel)))
+            if (buffEffects.ContainsKey(JobModel.getJobMapChair()))
             { // mustn't effLock, chrLock sendSpawnData
                 Client.sendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
             }
@@ -6154,8 +5864,7 @@ public partial class Player
 
         if (this.isHidden())
         {
-            List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.DARKSIGHT, 0));
-            MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(getId(), dsstat), false);
+            MapModel.broadcastGMMessage(this, PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)), false);
         }
     }
 
@@ -6183,7 +5892,7 @@ public partial class Player
 
     public void portalDelay(long delay)
     {
-        this.portaldelay = DateTimeOffset.Now.ToUnixTimeMilliseconds() + delay;
+        this.portaldelay = DateTimeOffset.Now.AddMilliseconds(delay).ToUnixTimeMilliseconds();
     }
 
     public long portalDelay()
@@ -6591,19 +6300,22 @@ public partial class Player
         dbContext.Characters.Where(x => x.Id == getId()).ExecuteUpdate(x => x.SetProperty(y => y.LastLogoutTime, DateTimeOffset.Now));
     }
 
-    public void setLoginTime(long time)
+    public void setLoginTime(DateTimeOffset time)
     {
         this.loginTime = time;
     }
 
-    public long getLoginTime()
+    public DateTimeOffset getLoginTime()
     {
         return loginTime;
     }
-
-    public long getLoggedInTime()
+    /// <summary>
+    /// 获取登录时长
+    /// </summary>
+    /// <returns></returns>
+    public TimeSpan getLoggedInTime()
     {
-        return DateTimeOffset.Now.ToUnixTimeMilliseconds() - loginTime;
+        return DateTimeOffset.Now - loginTime;
     }
 
     public bool isLoggedin()
@@ -6743,7 +6455,7 @@ public partial class Player
     }
     public void doPendingNameChange()
     { //called on logout
-        if (!pendingNameChange) 
+        if (!pendingNameChange)
             return;
         try
         {
@@ -6876,14 +6588,14 @@ public partial class Player
 
     public void setLanguage(int num)
     {
-        getClient().setLanguage(num);
+        Client.setLanguage(num);
         using var dbContext = new DBContext();
-        dbContext.Accounts.Where(x => x.Id == getClient().getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Language, num));
+        dbContext.Accounts.Where(x => x.Id == Client.getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Language, num));
     }
 
     public int getLanguage()
     {
-        return getClient().getLanguage();
+        return Client.getLanguage();
     }
 
     public bool isChasing()

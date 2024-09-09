@@ -168,7 +168,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
 
             if (YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_MVLIFE)
             {
-                log.Debug("{} rawAct: {}, opt: {}, skillId: {}, skillLv: {}, allowSkill: {}, mobMp: {}",
+                log.Debug("{Item} rawAct: {Act}, opt: {Option}, skillId: {SkillId}, skillLv: {SkillLevel}, allowSkill: {NextSkill}, mobMp: {MobMp}",
                         isSkill ? "SKILL" : (isAttack ? "ATTCK" : ""), rawActivity, pOption, useSkillId,
                         useSkillLevel, nextMovementCouldBeSkill, mobMp);
             }

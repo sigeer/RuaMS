@@ -569,7 +569,7 @@ public class RingActionHandler : AbstractPacketHandler
                     var coupleId = c.getWorldServer().getWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
                     if (coupleId != null)
                     {
-                        int groomId = coupleId.Value.Key, brideId = coupleId.Value.Value;
+                        int groomId = coupleId.HusbandId, brideId = coupleId.WifeId;
                         c.sendPacket(WeddingPackets.sendWeddingInvitation(CharacterManager.getNameById(groomId), CharacterManager.getNameById(brideId)));
                     }
                 }

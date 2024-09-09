@@ -50,7 +50,7 @@ public class ItemPickupHandler : AbstractPacketHandler
         Point obPos = ob.getPosition();
         if (Math.Abs(charPos.X - obPos.X) > 800 || Math.Abs(charPos.Y - obPos.Y) > 600)
         {
-            log.Warning("Chr {} tried to pick up an item too far away. Mapid: {}, player pos: {}, object pos: {}",
+            log.Warning("Chr {CharacterName} tried to pick up an item too far away. Mapid: {MapId}, player pos: {PlayerPosition}, object pos: {ObjectPosition}",
                     c.OnlinedCharacter.getName(), chr.getMapId(), charPos, obPos);
             return;
         }

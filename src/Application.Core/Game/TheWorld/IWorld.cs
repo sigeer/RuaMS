@@ -1,5 +1,6 @@
 ﻿using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.model;
 using client;
 using net.packet;
 using net.server.channel;
@@ -20,6 +21,16 @@ namespace Application.Core.Game.TheWorld
         WorldPlayerStorage Players { get; }
         Dictionary<int, ITeam> TeamStorage { get; }
 
+        public int Id { get; set; }
+        public int Flag { get; set; }
+        public string EventMessage { get; set; }
+        public int ExpRate { get; set; }
+        public int DropRate { get; set; }
+        public int BossDropRate { get; set; }
+        public int MesoRate { get; set; }
+        public int QuestRate { get; set; }
+        public int TravelRate { get; set; }
+        public int FishingRate { get; set; }
         void addCashItemBought(int snid);
         bool addChannel(IWorldChannel channel);
         void addFamily(int id, Family f);
@@ -40,33 +51,35 @@ namespace Application.Core.Game.TheWorld
         void declineChat(string sender, IPlayer player);
         void deleteRelationship(int playerId, int partnerId);
         void dropMessage(int type, string message);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">character id</param>
+        /// <returns>channel</returns>
         int find(int id);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name">character name</param>
+        /// <returns>channel</returns>
         int find(string name);
-        List<IPlayer>? getAccountCharactersView(int accountId);
+        List<IPlayer> getAccountCharactersView(int accountId);
         Storage getAccountStorage(int accountId);
         List<HiredMerchant> getActiveMerchants();
         List<PlayerShop> getActivePlayerShops();
         List<IPlayer> getAllCharactersView();
         List<KeyValuePair<PlayerShopItem, AbstractMapObject>> getAvailableItemBundles(int itemid);
-        int getBossDropRate();
         IWorldChannel getChannel(int channel);
         List<IWorldChannel> getChannels();
         int getChannelsSize();
-        int getCharacterPartyid(int chrid);
-        int getDropRate();
-        string getEventMessage();
-        int getExpRate();
         ICollection<Family> getFamilies();
         Family? getFamily(int id);
-        int getFishingRate();
-        int getFlag();
         IGuild? getGuild(IPlayer? mgc);
         HiredMerchant? getHiredMerchant(int ownerid);
         int getId();
-        KeyValuePair<int, int>? getMarriageQueuedCouple(int marriageId);
+        CoupleIdPair? getMarriageQueuedCouple(int marriageId);
         KeyValuePair<bool, bool>? getMarriageQueuedLocation(int marriageId);
         MatchCheckerCoordinator getMatchCheckerCoordinator();
-        int getMesoRate();
         Messenger? getMessenger(int messengerid);
         List<List<int>> getMostSellerCashItems();
         List<KeyValuePair<int, int>> getOwlSearchedItems();
@@ -76,13 +89,11 @@ namespace Application.Core.Game.TheWorld
         int getPlayerNpcMapStep(int mapid);
         PlayerShop? getPlayerShop(int ownerid);
         WorldPlayerStorage getPlayerStorage();
-        int getQuestRate();
-        KeyValuePair<int, int>? getRelationshipCouple(int relationshipId);
+        CoupleIdPair? getRelationshipCouple(int relationshipId);
         int getRelationshipId(int playerId);
         BaseService getServiceAccess(WorldServices sv);
         int getTransportationTime(int travelTime);
-        int getTravelRate();
-        KeyValuePair<int, int>? getWeddingCoupleForGuest(int guestId, bool cathedral);
+        CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral);
         int getWorldCapacityStatus();
         bool isConnected(string charName);
         bool isGuildQueued(int guildId);
@@ -90,7 +101,7 @@ namespace Application.Core.Game.TheWorld
         bool isWorldCapacityFull();
         void joinMessenger(int messengerid, MessengerCharacter target, string from, int fromchannel);
         void leaveMessenger(int messengerid, MessengerCharacter target);
-        void loadAccountCharactersView(int accountId, List<IPlayer> chars);
+        void loadAccountCharactersView(int accountId);
         void loadAccountStorage(int accountId);
         List<IPlayer> loadAndGetAllCharactersView();
         void loggedOff(string name, int characterId, int channel, int[] buddies);
@@ -129,21 +140,17 @@ namespace Application.Core.Game.TheWorld
         void runPlayerHpDecreaseSchedule();
         void runTimedMapObjectSchedule();
         void sendPacket(List<int> targetIds, Packet packet, int exception);
-        void setBossDropRate(int bossdrop);
         void setDropRate(int drop);
         void setExpRate(int exp);
-        void setFishingRate(int quest);
-        void setFlag(byte b);
+        void setMesoRate(int meso);
         void setGuildAndRank(int cid, int guildid, int rank);
         void setGuildAndRank(List<int> cids, int guildid, int rank, int exception);
-        void setMesoRate(int meso);
+
         void setOfflineGuildStatus(int guildid, int guildrank, int cid);
         void setPlayerNpcMapData(int mapid, int step, int podium);
         void setPlayerNpcMapPodiumData(int mapid, int podium);
         void setPlayerNpcMapStep(int mapid, int step);
-        void setQuestRate(int quest);
         void setServerMessage(string msg);
-        void setTravelRate(int travel);
         void shutdown();
         void silentJoinMessenger(int messengerid, MessengerCharacter target, int position);
         void silentLeaveMessenger(int messengerid, MessengerCharacter target);

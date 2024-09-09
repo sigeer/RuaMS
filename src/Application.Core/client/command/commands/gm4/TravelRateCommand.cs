@@ -44,7 +44,7 @@ public class TravelRateCommand : Command
         }
 
         int travelrate = Math.Max(int.Parse(paramsValue[0]), 1);
-        c.getWorldServer().setTravelRate(travelrate);
+        c.getWorldServer().TravelRate = travelrate;
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Travel Rate has been changed to " + travelrate + "x."));
     }
 }

@@ -21,10 +21,12 @@
  */
 
 
+using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Skills;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -62,7 +64,7 @@ public class StatEffect
     private int cp, nuffSkill;
     private List<Disease> cureDebuffs;
     private bool skill;
-    private List<KeyValuePair<BuffStat, int>> statups;
+    private List<BuffStatValue> statups;
     private Dictionary<MonsterStatus, int> monsterStatus;
     private int x, y, mobCount, moneyCon, cooldown, morphId = 0, ghost, fatigue, berserk, booster;
     private double prop;
@@ -163,7 +165,7 @@ public class StatEffect
         return new (source, itemid, false, false);
     }
 
-    private static void addBuffStatPairToListIfNotZero(List<KeyValuePair<BuffStat, int>> list, BuffStat buffstat, int val)
+    private static void addBuffStatPairToListIfNotZero(List<BuffStatValue> list, BuffStat buffstat, int val)
     {
         if (val != 0)
         {
@@ -1369,8 +1371,7 @@ public class StatEffect
 
     public void applyComboBuff(IPlayer applyto, int combo)
     {
-        List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.ARAN_COMBO, combo));
-        applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, stat));
+        applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
 
         long starttime = Server.getInstance().getCurrentTime();
         //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
@@ -1379,15 +1380,15 @@ public class StatEffect
     }
 
     public void applyBeaconBuff(IPlayer applyto, int objectid)
-    { // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
-        List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.HOMING_BEACON, objectid));
-        applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, stat));
+    { 
+        // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
+        applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
 
         long starttime = Server.getInstance().getCurrentTime();
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
-    public void updateBuffEffect(IPlayer target, List<KeyValuePair<BuffStat, int>> activeStats, long starttime)
+    public void updateBuffEffect(IPlayer target, BuffStatValue[] activeStats, long starttime)
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
@@ -1413,7 +1414,7 @@ public class StatEffect
             applyto.cancelEffect(this, true, -1);
         }
 
-        List<KeyValuePair<BuffStat, int>> localstatups = statups;
+        BuffStatValue[] localstatups = statups.ToArray();
         int localDuration = getBuffLocalDuration();
         int localsourceid = sourceid;
         int seconds = localDuration / 1000;
@@ -1458,15 +1459,15 @@ public class StatEffect
 
             localDuration = sourceid;
             localsourceid = ridingMountId;
-            localstatups = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.MONSTER_RIDING, 0));
+            localstatups = [new BuffStatValue(BuffStat.MONSTER_RIDING, 0)];
         }
         else if (isSkillMorph())
         {
-            for (int i = 0; i < localstatups.Count; i++)
+            for (int i = 0; i < localstatups.Length; i++)
             {
-                if (localstatups.get(i).Key.Equals(BuffStat.MORPH))
+                if (localstatups[i].BuffState.Equals(BuffStat.MORPH))
                 {
-                    localstatups.set(i, new(BuffStat.MORPH, getMorph(applyto)));
+                    localstatups[i] = new(BuffStat.MORPH, getMorph(applyto));
                     break;
                 }
             }
@@ -1476,7 +1477,7 @@ public class StatEffect
             localDuration = alchemistModifyVal(applyfrom, localDuration, false);
             applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), false);
         }
-        if (localstatups.Count > 0)
+        if (localstatups.Length > 0)
         {
             Packet? buff = null;
             Packet? mbuff = null;
@@ -1500,22 +1501,20 @@ public class StatEffect
             }
             else if (isDs())
             {
-                List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.DARKSIGHT, 0));
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), dsstat);
+                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0));
             }
             else if (isWw())
             {
-                List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.WIND_WALK, 0));
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), dsstat);
+                List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>());
+                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.WIND_WALK, 0));
             }
             else if (isCombo())
             {
                 int comboCount = applyto.getBuffedValue(BuffStat.COMBO) ?? 0;
 
-
-                List<KeyValuePair<BuffStat, int>> cbstat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.COMBO, comboCount));
-                buff = PacketCreator.giveBuff((skill ? sourceid : -sourceid), localDuration, cbstat);
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), cbstat);
+                var combo = new BuffStatValue(BuffStat.COMBO, comboCount);
+                buff = PacketCreator.giveBuff((skill ? sourceid : -sourceid), localDuration, combo);
+                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), combo);
             }
             else if (isMonsterRiding())
             {
@@ -1526,7 +1525,7 @@ public class StatEffect
                         applyto.resetBattleshipHp();
                     }
 
-                    localstatups = statups;
+                    localstatups = statups.ToArray();
                 }
                 buff = PacketCreator.giveBuff(localsourceid, localDuration, localstatups);
                 mbuff = PacketCreator.showMonsterRiding(applyto.getId(), givemount);
@@ -1534,13 +1533,11 @@ public class StatEffect
             }
             else if (isShadowPartner())
             {
-                List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.SHADOWPARTNER, 0));
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), stat);
+                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.SHADOWPARTNER, 0));
             }
             else if (isSoulArrow())
             {
-                List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.SOULARROW, 0));
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), stat);
+                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.SOULARROW, 0));
             }
             else if (isEnrage())
             {
@@ -1548,13 +1545,11 @@ public class StatEffect
             }
             else if (isMorph())
             {
-                List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.MORPH, getMorph(applyto)));
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), stat);
+                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.MORPH, getMorph(applyto)));
             }
             else if (isAriantShield())
             {
-                List<KeyValuePair<BuffStat, int>> stat = Collections.singletonList(new KeyValuePair<BuffStat, int>(BuffStat.AURA, 1));
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), stat);
+                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.AURA, 1));
             }
 
             if (buff != null)
@@ -1986,7 +1981,7 @@ public class StatEffect
 
         foreach (var p in statups)
         {
-            if (p.Key.Equals(BuffStat.WK_CHARGE))
+            if (p.BuffState.Equals(BuffStat.WK_CHARGE))
             {
                 return true;
             }
@@ -2186,7 +2181,7 @@ public class StatEffect
         return duration;
     }
 
-    public List<KeyValuePair<BuffStat, int>> getStatups()
+    public List<BuffStatValue> getStatups()
     {
         return statups;
     }

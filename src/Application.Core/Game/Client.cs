@@ -1,4 +1,5 @@
 using Application.Core.Game.Life;
+using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using client;
@@ -994,7 +995,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             }
                             if (bl != null)
                             {
-                                wserv.loggedOff(Character.getName(), Character.getId(), channel, Character.getBuddylist().getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -1005,7 +1006,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             // if dc inside of cash shop.
                             if (bl != null)
                             {
-                                wserv.loggedOff(Character.getName(), Character.getId(), channel, Character.getBuddylist().getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -1120,7 +1121,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
             if (chr.Party > 0)
             {
-                chr.TeamModel = chr.getWorldServer().getParty(chr.Party);
+                chr.setParty(chr.getWorldServer().getParty(chr.Party));
                 chr.leaveParty();   // thanks Vcoc for pointing out deleted characters would still stay in a party
 
                 this.setPlayer(null);
@@ -1260,7 +1261,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
         foreach (var w in Server.getInstance().getWorlds())
         {
-            foreach (IPlayer chr in w.getPlayerStorage().getAllCharacters())
+            foreach (IPlayer chr in w.getPlayerStorage().GetAllOnlinedPlayers())
             {
                 if (accid == chr.getAccountID())
                 {

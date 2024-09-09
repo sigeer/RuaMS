@@ -27,7 +27,7 @@ public class NoteDao
         }
         catch (Exception e)
         {
-            throw new DaoException(string.Format("Failed to find notes sent to: %s", to), e);
+            throw new DaoException(string.Format("Failed to find notes sent to: {0}", to), e);
         }
     }
 

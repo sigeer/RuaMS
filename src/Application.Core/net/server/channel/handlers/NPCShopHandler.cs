@@ -46,7 +46,7 @@ public class NPCShopHandler : AbstractPacketHandler
                     {
                         AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter,
                                 c.OnlinedCharacter.getName() + " tried to packet edit a npc shop.");
-                        log.Warning("Chr {} tried to buy quantity {} of itemid {}", c.OnlinedCharacter.getName(), quantity, itemId);
+                        log.Warning("Chr {CharacterName} tried to buy quantity {ItemQuantity} of itemid {ItemId}", c.OnlinedCharacter.getName(), quantity, itemId);
                         c.disconnect(true, false);
                         return;
                     }

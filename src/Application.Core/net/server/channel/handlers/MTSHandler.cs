@@ -446,7 +446,7 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 default:
-                    log.Warning("Unhandled OP (MTS): {}, packet: {}", op, p);
+                    log.Warning("Unhandled OP (MTS): {OP}, packet: {Packet}", op, p);
                     break;
             }
         }

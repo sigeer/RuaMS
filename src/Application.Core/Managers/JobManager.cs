@@ -1,4 +1,5 @@
 ﻿using client;
+using constants.game;
 
 namespace Application.Core.Managers
 {
@@ -44,6 +45,23 @@ namespace Application.Core.Managers
             }
 
             return (Job.BEGINNER);
+        }
+
+        public static int GetJobLevelSp(int level, int jobId, int jobBranch)
+        {
+            if (GetJobStyleInternal(jobId, 0x40) == Job.MAGICIAN)
+            {
+                level += 2;  // starts earlier, level 8
+            }
+
+            return 3 * level + GameConstants.getChangeJobSpUpgrade(jobBranch);
+        }
+
+        public static int GetJobMaxSp(Job job)
+        {
+            int jobBranch = GameConstants.getJobBranch(job);
+            int jobRange = GameConstants.getJobUpgradeLevelRange(jobBranch);
+            return GetJobLevelSp(jobRange, job.getId(), jobBranch);
         }
     }
 }
