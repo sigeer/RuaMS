@@ -67,7 +67,7 @@ public class MonitoredChrLogger
 
     public static void logPacketIfMonitored(IClient c, short packetId, byte[] packetContent)
     {
-        var chr = c.OnlinedCharacter;
+        var chr = c.Character;
         if (chr == null)
         {
             return;

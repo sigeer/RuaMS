@@ -31,7 +31,10 @@ public class ByteBufOutPacket : OutPacket
 
     public byte[] getBytes()
     {
-        return byteBuf.Array;
+        var bytes = new byte[byteBuf.ReadableBytes];
+        byteBuf.ReadBytes(bytes);
+        byteBuf.SetReaderIndex(0);
+        return bytes;
     }
 
     public void writeByte(byte value)
@@ -114,6 +117,6 @@ public class ByteBufOutPacket : OutPacket
 
     public override string ToString()
     {
-        return string.Join(", ", byteBuf.Array);
+        return string.Join(", ", getBytes());
     }
 }

@@ -170,14 +170,14 @@ public class Client : ChannelHandlerAdapter, IClient
         {
             try
             {
-                MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
+                // MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
                 handler.HandlePacket(packet, this);
             }
             catch (Exception t)
             {
                 string chrInfo = Character != null ? Character.getName() + " on map " + Character.getMapId() : "?";
-                log.Warning("Error in packet handler {Handler}. Chr {CharacterName}, account {AccountName}. Packet: {Packet}", handler.GetType().Name,
-                        chrInfo, getAccountName(), packet, t);
+                log.Warning(t, "Error in packet handler {Handler}. Chr {CharacterName}, account {AccountName}. Packet: {Packet}", handler.GetType().Name,
+                        chrInfo, getAccountName(), packet);
                 //client.sendPacket(PacketCreator.enableActions());//bugs sometimes
             }
         }
