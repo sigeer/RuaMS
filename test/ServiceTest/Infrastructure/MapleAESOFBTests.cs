@@ -33,7 +33,7 @@ namespace ServiceTest.Infrastructure
             MapleCustomEncryption.encryptData(bytes);
             var result = senderCypher.crypt(bytes);
 
-            var strOutput = string.Join(',', result);
+            var strOutput = string.Join(',', result.Cast<sbyte>());
             Console.WriteLine(strOutput);
             return strOutput;
         }

@@ -35,6 +35,9 @@ public class InitializationVector
 
     private static byte getRandomByte()
     {
+        #region DEBUG
+        return 1;
+        #endregion
         return (byte)(Randomizer.nextDouble() * 255);
     }
 }
