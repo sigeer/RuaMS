@@ -94,7 +94,7 @@ public class LoginBypassCoordinator
 
             foreach (var w in Server.getInstance().getWorlds())
             {
-                foreach (var chr in w.getPlayerStorage().getAllCharacters())
+                foreach (var chr in w.getPlayerStorage().GetAllOnlinedPlayers())
                 {
                     var c = chr.getClient();
                     if (c != null)

@@ -41,7 +41,7 @@ public class MapPlayersCommand : Command
         int map = player.getMapId();
         foreach (var world in Server.getInstance().getWorlds())
         {
-            foreach (var chr in world.getPlayerStorage().getAllCharacters())
+            foreach (var chr in world.getPlayerStorage().GetAllOnlinedPlayers())
             {
                 int curMap = chr.getMapId();
                 string hp = chr.getHp().ToString();

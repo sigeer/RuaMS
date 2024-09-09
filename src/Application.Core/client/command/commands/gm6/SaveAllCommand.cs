@@ -40,7 +40,7 @@ public class SaveAllCommand : Command
         var player = c.OnlinedCharacter;
         foreach (var world in Server.getInstance().getWorlds())
         {
-            foreach (var chr in world.getPlayerStorage().getAllCharacters())
+            foreach (var chr in world.getPlayerStorage().GetAllOnlinedPlayers())
             {
                 chr.saveCharToDB();
             }

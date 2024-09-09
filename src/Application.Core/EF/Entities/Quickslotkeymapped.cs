@@ -6,5 +6,5 @@ public partial class Quickslotkeymapped
 
     public long Keymap { get; set; }
 
-    public virtual Account Account { get; set; } = null!;
+    public virtual AccountEntity Account { get; set; } = null!;
 }

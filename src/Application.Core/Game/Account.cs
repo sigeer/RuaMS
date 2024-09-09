@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Core.Game
 {
-    public class Account1 : IAccount
+    public class Account : IAccount
     {
         public int Id { get; }
         public string Name { get; }

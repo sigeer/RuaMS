@@ -621,7 +621,7 @@ public class Server
     {
         foreach (var world in getWorlds())
         {
-            foreach (var chr in world.getPlayerStorage().getAllCharacters())
+            foreach (var chr in world.getPlayerStorage().GetAllOnlinedPlayers())
             {
                 if (!chr.isLoggedin())
                 {
@@ -1411,7 +1411,7 @@ public class Server
     public void reloadGuildCharacters(int world)
     {
         var worlda = getWorld(world);
-        foreach (var mc in worlda.getPlayerStorage().getAllCharacters())
+        foreach (var mc in worlda.getPlayerStorage().GetAllOnlinedPlayers())
         {
             if (mc.getGuildId() > 0)
             {
@@ -1439,17 +1439,7 @@ public class Server
 
     public bool isGmOnline(int world)
     {
-        foreach (var ch in getChannelsFromWorld(world))
-        {
-            foreach (var player in ch.getPlayerStorage().getAllCharacters())
-            {
-                if (player.isGM())
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return getWorld(world).Players.GetAllOnlinedPlayers().Any(x => x.isGM());
     }
 
     public void changeFly(int accountid, bool canFly)
@@ -1610,7 +1600,8 @@ public class Server
     }
 
     public void transferWorldCharacterEntry(IPlayer chr, int toWorld)
-    { // used before setting the new worldid on the character object
+    {
+        // used before setting the new worldid on the character object
         lgnLock.EnterWriteLock();
         try
         {
@@ -2015,7 +2006,7 @@ public class Server
 
     private void disconnectIdlesOnLoginTask()
     {
-        TimerManager.getInstance().register(() => disconnectIdlesOnLoginState(), 300000);
+        TimerManager.getInstance().register(() => disconnectIdlesOnLoginState(), TimeSpan.FromMinutes(5));
     }
 
     public Action shutdown(bool restart)

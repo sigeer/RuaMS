@@ -1261,7 +1261,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
         foreach (var w in Server.getInstance().getWorlds())
         {
-            foreach (IPlayer chr in w.getPlayerStorage().getAllCharacters())
+            foreach (IPlayer chr in w.getPlayerStorage().GetAllOnlinedPlayers())
             {
                 if (accid == chr.getAccountID())
                 {

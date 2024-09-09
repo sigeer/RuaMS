@@ -1,9 +1,7 @@
-﻿using Application.Core.Game.Maps;
+﻿using Application.Core.Game.Items;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
 using Application.Core.model;
-using Application.EF.Entities;
 using AutoMapper;
 using client;
 using client.inventory;
@@ -11,26 +9,19 @@ using client.inventory.manipulator;
 using client.keybind;
 using client.newyear;
 using client.processor.npc;
+using constants.game;
 using constants.id;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using net.server;
-using net.server.world;
-using Serilog;
-using server;
 using server.events;
 using server.life;
 using server.maps;
 using server.quest;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using tools;
-using static Microsoft.IO.RecyclableMemoryStreamManager;
-using static Mysqlx.Notice.Warning.Types;
-using YamlDotNet.Core.Tokens;
-using Application.Core.Game.Items;
 
 namespace Application.Core.Managers
 {
@@ -1252,6 +1243,17 @@ namespace Application.Core.Managers
                     // log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", player.Name, player.Level, player.JobId);
                 }
             }
+        }
+
+        public static void deleteGuild(IPlayer player)
+        {
+            using var dbContext = new DBContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
+            dbContext.Characters.Where(x => x.GuildId == player.GuildId).ExecuteUpdate(x => x.SetProperty(y => y.GuildId, 0).SetProperty(y => y.GuildRank, 5));
+            dbContext.Guilds.Where(x => x.GuildId == player.GuildId).ExecuteDelete();
+            dbTrans.Commit();
+            player.GuildId = 0;
+            player.GuildRank = 5;
         }
     }
 }

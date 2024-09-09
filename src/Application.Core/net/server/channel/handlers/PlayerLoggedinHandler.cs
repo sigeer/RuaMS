@@ -301,7 +301,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 var playerGuild = server.getGuild(player.GuildId, player);
                 if (playerGuild == null)
                 {
-                    player.deleteGuild(player.GuildId);
+                    CharacterManager.deleteGuild(player);
                 }
                 else
                 {

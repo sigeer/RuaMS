@@ -69,13 +69,13 @@ function action(mode, type, selection) {
 
             cm.sendYesNo("Oh, are you interested in forming a Guild Union? The current fee for this operation is #b" + allianceCost + " mesos#k.");
         } else if (selection == 3) {
-            if (cm.getPlayer().getMGC() == null) {
+            if (cm.getPlayer().getGuild() == null) {
                 cm.sendOk("You can not expand a Guild Union if you don't own one.");
                 cm.dispose();
                 return;
             }
 
-            var rank = cm.getPlayer().getMGC().getAllianceRank();
+            var rank = cm.getPlayer().getAllianceRank();
             if (rank == 1) {
                 cm.sendYesNo("Do you want to increase your Alliance by #rone guild#k slot? The fee for this procedure is #b" + increaseCost + " mesos#k.");
             } else {
@@ -83,13 +83,13 @@ function action(mode, type, selection) {
                 cm.dispose();
             }
         } else if (selection == 4) {
-            if (cm.getPlayer().getMGC() == null) {
+            if (cm.getPlayer().getGuild() == null) {
                 cm.sendOk("You can not disband a Guild Union if you don't own one.");
                 cm.dispose();
                 return;
             }
 
-            var rank = cm.getPlayer().getMGC().getAllianceRank();
+            var rank = cm.getPlayer().getAllianceRank();
             if (rank == 1) {
                 cm.sendYesNo("Are you sure you want to disband your Guild Union?");
             } else {

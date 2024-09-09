@@ -1,6 +1,4 @@
-﻿using Application.Core.Managers;
-
-namespace Application.Core.Game.TheWorld
+﻿namespace Application.Core.Game.TheWorld
 {
     /// <summary>
     /// 所有关于角色数据加载的都放在这里，如果未登录，则client是offlineclient，否则则是正常的client
@@ -50,14 +48,14 @@ namespace Application.Core.Game.TheWorld
         /// 获取所有在线玩家
         /// </summary>
         /// <returns></returns>
-        public ICollection<IPlayer> getAllCharacters()
+        public ICollection<IPlayer> GetAllOnlinedPlayers()
         {
-            return AllPlayerStorage.GetAllOnlinedPlayers();
+            return AllPlayerStorage.GetAllOnlinedPlayers().Where(x => x.World == _world).ToList();
         }
 
         public int Count()
         {
-            return getAllCharacters().Count;
+            return GetAllOnlinedPlayers().Count;
         }
 
         //public void RemovePlayer(int playerId)

@@ -15,7 +15,7 @@ namespace Application.Core.Managers
         {
             using var dbContext = new DBContext();
             var password = YamlConfig.config.server.BCRYPT_MIGRATION ? BCrypt.hashpw(pwd, BCrypt.gensalt(12)) : HashDigest.HashByType("SHA-512", pwd).ToHexString();
-            var newAccModel = new Account
+            var newAccModel = new AccountEntity
             {
                 Name = loginAccount,
                 Password = password,

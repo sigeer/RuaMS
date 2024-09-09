@@ -45,7 +45,7 @@ public class TimerAllCommand : Command
 
         if (paramsValue[0].Equals("remove", StringComparison.OrdinalIgnoreCase))
         {
-            foreach (var victim in player.getWorldServer().getPlayerStorage().getAllCharacters())
+            foreach (var victim in player.getWorldServer().getPlayerStorage().GetAllOnlinedPlayers())
             {
                 victim.sendPacket(PacketCreator.removeClock());
             }
@@ -55,7 +55,7 @@ public class TimerAllCommand : Command
             try
             {
                 int seconds = int.Parse(paramsValue[0]);
-                foreach (var victim in player.getWorldServer().getPlayerStorage().getAllCharacters())
+                foreach (var victim in player.getWorldServer().getPlayerStorage().GetAllOnlinedPlayers())
                 {
                     victim.sendPacket(PacketCreator.getClock(seconds));
                 }

@@ -173,7 +173,6 @@ namespace Application.Core.Game.Players
         void deleteBuddy(int otherCid);
         void deleteFromTrocks(int map);
         void deleteFromVipTrocks(int map);
-        void deleteGuild(int guildId);
         void disablePartySearchInvite(int fromLeaderid);
         void disbandGuild();
         void diseaseExpireTask();
@@ -317,8 +316,8 @@ namespace Application.Core.Game.Players
         int getLevel();
         int getLinkedLevel();
         string? getLinkedName();
-        long getLoggedInTime();
-        long getLoginTime();
+        TimeSpan getLoggedInTime();
+        DateTimeOffset getLoginTime();
         SkillMacro?[] getMacros();
         Door? getMainTownDoor();
         int getMapId();
@@ -337,15 +336,12 @@ namespace Application.Core.Game.Players
         int getMesosTraded();
         Messenger? getMessenger();
         int getMessengerPosition();
-        IPlayer? getMGC();
-
         int getMiniGamePoints(MiniGame.MiniGameResult type, bool omok);
         MonsterBook getMonsterBook();
         int getMonsterBookCover();
         MonsterCarnival? getMonsterCarnival();
         MonsterCarnivalParty? getMonsterCarnivalParty();
         Mount? getMount();
-        IPlayer? getMPC();
         string getName();
         NewYearCardRecord? getNewYearRecord(int cardid);
         HashSet<NewYearCardRecord> getNewYearRecords();
@@ -627,7 +623,7 @@ namespace Application.Core.Game.Players
         void setLastSnowballAttack(long time);
         void setLastUsedCashItem(long time);
         void setLevel(int level);
-        void setLoginTime(long time);
+        void setLoginTime(DateTimeOffset time);
         void setMap(int PmapId);
         void setMapId(int mapid);
         void setMapTransitionComplete();
@@ -636,14 +632,12 @@ namespace Application.Core.Game.Players
         void setMerchantMeso(int set);
         void setMessenger(Messenger? messenger);
         void setMessengerPosition(int position);
-        void setMGC(IPlayer? mgc);
         MiniGame? getMiniGame();
         void setMiniGame(MiniGame? miniGame);
         void setMiniGamePoints(IPlayer visitor, int winnerslot, bool omok);
         void setMonsterBookCover(int bookCover);
         void setMonsterCarnival(MonsterCarnival? monsterCarnival);
         void setMonsterCarnivalParty(MonsterCarnivalParty? mcp);
-        void setMPC(IPlayer? mpc);
         void setName(string name);
         void setNpcCooldown(long d);
         // void setOfflineGuildRank(int newRank);

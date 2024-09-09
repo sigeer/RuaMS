@@ -14,7 +14,7 @@ public class TimeoutTask : BaseTask
     public override void HandleRun()
     {
         long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        var chars = wserv.getPlayerStorage().getAllCharacters();
+        var chars = wserv.getPlayerStorage().GetAllOnlinedPlayers();
         foreach (var chr in chars)
         {
             if (time - chr.getClient().getLastPacket() > YamlConfig.config.server.TIMEOUT_DURATION)

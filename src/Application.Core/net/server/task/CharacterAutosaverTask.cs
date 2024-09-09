@@ -38,7 +38,7 @@ public class CharacterAutosaverTask : BaseTask
         }
 
         var ps = wserv.getPlayerStorage();
-        foreach (var chr in ps.getAllCharacters())
+        foreach (var chr in ps.GetAllOnlinedPlayers())
         {
             if (chr != null && chr.isLoggedin())
             {

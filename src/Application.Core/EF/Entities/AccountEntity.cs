@@ -1,6 +1,6 @@
 ﻿namespace Application.EF.Entities;
 
-public partial class Account
+public partial class AccountEntity
 {
     public int Id { get; set; }
 

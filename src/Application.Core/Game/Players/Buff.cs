@@ -252,6 +252,55 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public void buffExpireTask()
+        {
+            if (_buffExpireTask == null)
+            {
+                _buffExpireTask = TimerManager.getInstance().register(() =>
+                {
+                    HashSet<KeyValuePair<int, long>> es;
+                    List<BuffStatValueHolder> toCancel = new();
+
+                    Monitor.Enter(effLock);
+                    chLock.EnterReadLock();
+                    try
+                    {
+                        es = new(buffExpires);
+
+                        long curTime = Server.getInstance().getCurrentTime();
+                        foreach (var bel in es)
+                        {
+                            if (curTime >= bel.Value)
+                            {
+                                toCancel.Add(buffEffects.GetValueOrDefault(bel.Key)!.Values.First());    //rofl
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        chLock.ExitReadLock();
+                        Monitor.Exit(effLock);
+                    }
+
+                    foreach (BuffStatValueHolder mbsvh in toCancel)
+                    {
+                        cancelEffect(mbsvh.effect, false, mbsvh.startTime);
+                    }
+
+                }, 1500);
+            }
+        }
+
+        public void cancelBuffExpireTask()
+        {
+            if (_buffExpireTask != null)
+            {
+                _buffExpireTask.cancel(false);
+                _buffExpireTask = null;
+            }
+        }
+
+
         public void cancelAllBuffs(bool softcancel)
         {
             if (softcancel)
@@ -1528,6 +1577,32 @@ namespace Application.Core.Game.Players
                 MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
 
             }, 4000, 4000);
+        }
+
+        public bool hasActiveBuff(int sourceid)
+        {
+            LinkedList<BuffStatValueHolder> allBuffs;
+
+            Monitor.Enter(effLock);
+            chLock.EnterReadLock();
+            try
+            {
+                allBuffs = new(effects.Values);
+            }
+            finally
+            {
+                chLock.ExitReadLock();
+                Monitor.Exit(effLock);
+            }
+
+            foreach (BuffStatValueHolder mbsvh in allBuffs)
+            {
+                if (mbsvh.effect.getBuffSourceId() == sourceid)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -73,7 +73,7 @@ public class ShutdownCommand : Command
 
             foreach (var w in Server.getInstance().getWorlds())
             {
-                foreach (var chr in w.getPlayerStorage().getAllCharacters())
+                foreach (var chr in w.getPlayerStorage().GetAllOnlinedPlayers())
                 {
                     chr.dropMessage("NewServer is undergoing maintenance process, and will be shutdown in " + strTime + ". Prepare yourself to quit safely in the mean time.");
                 }

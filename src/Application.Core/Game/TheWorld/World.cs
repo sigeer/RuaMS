@@ -286,7 +286,7 @@ public class World : IWorld
 
     public void setExpRate(int exp)
     {
-        var list = getPlayerStorage().getAllCharacters();
+        var list = getPlayerStorage().GetAllOnlinedPlayers();
 
         foreach (IPlayer chr in list)
         {
@@ -310,7 +310,7 @@ public class World : IWorld
 
     public void setDropRate(int drop)
     {
-        var list = getPlayerStorage().getAllCharacters();
+        var list = getPlayerStorage().GetAllOnlinedPlayers();
 
         foreach (IPlayer chr in list)
         {
@@ -332,7 +332,7 @@ public class World : IWorld
     }
     public void setMesoRate(int meso)
     {
-        var list = getPlayerStorage().getAllCharacters();
+        var list = getPlayerStorage().GetAllOnlinedPlayers();
 
         foreach (IPlayer chr in list)
         {
@@ -2108,7 +2108,7 @@ public class World : IWorld
 
     public void broadcastPacket(Packet packet)
     {
-        foreach (IPlayer chr in Players.getAllCharacters())
+        foreach (IPlayer chr in Players.GetAllOnlinedPlayers())
         {
             chr.sendPacket(packet);
         }
@@ -2265,7 +2265,7 @@ public class World : IWorld
 
     public void dropMessage(int type, string message)
     {
-        foreach (var player in getPlayerStorage().getAllCharacters())
+        foreach (var player in getPlayerStorage().GetAllOnlinedPlayers())
         {
             player.dropMessage(type, message);
         }

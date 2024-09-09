@@ -2242,7 +2242,7 @@ public class PacketCreator
         }
         else
         {
-            MiniGame miniGame = chr.getMiniGame();
+            var miniGame = chr.getMiniGame();
             if (miniGame != null && miniGame.isOwner(chr))
             {
                 if (miniGame.hasFreeSlot())
@@ -6763,8 +6763,9 @@ public class PacketCreator
         }
         addPedigreeEntry(p, entry);
         if (hasOtherJunior)
-        { //must be sent after own entry
-            var otherJunior = entry.getSenior().getOtherJunior(entry);
+        { 
+            //must be sent after own entry
+            var otherJunior = entry.getSenior()?.getOtherJunior(entry);
             if (otherJunior != null)
             {
                 addPedigreeEntry(p, otherJunior);
@@ -6821,7 +6822,7 @@ public class PacketCreator
         p.writeInt(entry.getRepsToSenior()); //reps recorded to senior
         p.writeInt(entry.getTodaysRep());
         p.writeInt(isOnline ? ((chr!.isAwayFromWorld() || chr.getCashShop().isOpened()) ? -1 : chr.getClient().getChannel() - 1) : 0);
-        p.writeInt(isOnline ? (int)(chr!.getLoggedInTime() / 60000) : 0); //time online in minutes
+        p.writeInt(isOnline ? (int)(chr!.getLoggedInTime().Minutes) : 0); //time online in minutes
         p.writeString(entry.getName()); //name
     }
 

@@ -16,7 +16,7 @@ public partial class DBContext : DbContext
 
     #region Entities
     public virtual DbSet<ExpLogRecord> ExpLogRecords { get; set; }
-    public virtual DbSet<Account> Accounts { get; set; }
+    public virtual DbSet<AccountEntity> Accounts { get; set; }
 
     public virtual DbSet<AllianceEntity> Alliances { get; set; }
 
@@ -176,7 +176,7 @@ public partial class DBContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Account>(entity =>
+        modelBuilder.Entity<AccountEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

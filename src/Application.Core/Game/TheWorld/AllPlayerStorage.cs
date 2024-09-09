@@ -2,6 +2,9 @@
 
 namespace Application.Core.Game.TheWorld
 {
+    /// <summary>
+    /// 所有区、频道的玩家角色都从这里获取（包含了不在线玩家）
+    /// </summary>
     public class AllPlayerStorage
     {
         private static Dictionary<int, IPlayer> CachedData { get; set; } = new Dictionary<int, IPlayer>();

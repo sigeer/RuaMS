@@ -5697,5 +5697,4 @@ public class MapleMap : IMap
     {
         this.timeExpand = timeExpand;
     }
-
 }
