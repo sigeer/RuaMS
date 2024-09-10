@@ -245,11 +245,11 @@ public class FredrickProcessor
 
                 foreach (var cid in notifCids)
                 {
-                    dbContext.Fredstorages.Where(x => x.Cid == cid.Key.CharacterId).ExecuteUpdate(x => x.SetProperty(y => y.Daynotes, cid.Value));
+                    dbContext.Fredstorages.Where(x => x.Cid == cid.Key.Id).ExecuteUpdate(x => x.SetProperty(y => y.Daynotes, cid.Value));
 
 
                     string msg = fredrickReminderMessage(cid.Value - 1);
-                    noteService.sendNormal(msg, "FREDRICK", cid.Key.CharacterName);
+                    noteService.sendNormal(msg, "FREDRICK", cid.Key.Name);
                 }
 
             }

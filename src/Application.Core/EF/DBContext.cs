@@ -2498,10 +2498,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Skilllevel)
                 .HasColumnType("int(11)")
                 .HasColumnName("skilllevel");
-
-            entity.HasOne(d => d.Character).WithMany(p => p.Skills)
-                .HasForeignKey(d => d.Characterid)
-                .HasConstraintName("skills_chrid_fk");
         });
 
         modelBuilder.Entity<Skillmacro>(entity =>

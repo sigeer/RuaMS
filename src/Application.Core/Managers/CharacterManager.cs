@@ -403,6 +403,8 @@ namespace Application.Core.Managers
 
                 if (login)
                 {
+                   client.setPlayer(ret);
+
                     var mapManager = client.getChannelServer().getMapFactory();
                     ret.setMap(mapManager.getMap(ret.Map) ?? mapManager.getMap(MapId.HENESYS));
 
@@ -624,8 +626,11 @@ namespace Application.Core.Managers
                     // Fame history
                     var now = DateTimeOffset.Now;
                     var fameLogFromDB = dbContext.Famelogs.Where(x => x.Characterid == ret.Id && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
-                    ret.LastFameTime = fameLogFromDB.Max(x => x.When).ToUnixTimeMilliseconds();
-                    ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
+                    if (fameLogFromDB.Count > 0)
+                    {
+                        ret.LastFameTime = fameLogFromDB.Max(x => x.When).ToUnixTimeMilliseconds();
+                        ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
+                    }
 
                     ret.BuddyList.LoadFromDb();
                     ret.Storage = wserv.getAccountStorage(ret.AccountId);
@@ -649,9 +654,6 @@ namespace Application.Core.Managers
                     ret.QuickSlotLoaded = LongTool.LongToBytes(accKeyMapFromDB.Value);
                     ret.QuickSlotKeyMapped = new QuickslotBinding(ret.QuickSlotLoaded);
                 }
-
-                if (login)
-                    client.setPlayer(ret);
 
                 return ret;
             }

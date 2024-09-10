@@ -316,14 +316,14 @@ public class Client : ChannelHandlerAdapter, IClient
         this.sendPacket(PacketCreator.getCharList(this, server, 0));
     }
 
-    public List<IPlayer> loadCharacters(int serverId)
+    public List<IPlayer> loadCharacters(int worldId)
     {
         List<IPlayer> chars = new(15);
         try
         {
-            foreach (var cni in loadCharactersInternal(serverId))
+            foreach (var cni in LoadAccountWorldCharacters(worldId))
             {
-                var m = CharacterManager.LoadPlayerFromDB(cni.id, this, false);
+                var m = AllPlayerStorage.GetOrAddCharacterById(cni.id);
                 if (m == null)
                 {
                     log.Warning($"LoadPlayerFromDB Failed for {cni.id}");
@@ -341,15 +341,10 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public List<string> loadCharacterNames(int worldId)
     {
-        List<string> chars = new(15);
-        foreach (var cni in loadCharactersInternal(worldId))
-        {
-            chars.Add(cni.name);
-        }
-        return chars;
+        return LoadAccountWorldCharacters(worldId).Select(x => x.name).ToList();
     }
 
-    private List<CharacterNameAndId> loadCharactersInternal(int worldId)
+    private List<CharacterNameAndId> LoadAccountWorldCharacters(int worldId)
     {
         using var dbContext = new DBContext();
         return dbContext.Characters.Where(x => x.AccountId == accId && x.World == worldId).Select(x => new CharacterNameAndId(x.Id, x.Name)).Take(15).ToList();

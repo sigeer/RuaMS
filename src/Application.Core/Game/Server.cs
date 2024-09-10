@@ -963,7 +963,6 @@ public class Server
         try
         {
             using var dbContext = new DBContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
             setAllLoggedOut(dbContext);
             setAllMerchantsInactive(dbContext);
             cleanNxcodeCoupons(dbContext);
@@ -974,7 +973,6 @@ public class Server
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             applyAllWorldTransfers(dbContext);
             PlayerNPC.loadRunningRankData(dbContext, worldCount);
-            dbTrans.Commit();
         }
         catch (Exception sqle)
         {
