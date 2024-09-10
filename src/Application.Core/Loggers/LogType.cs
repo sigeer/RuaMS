@@ -11,8 +11,6 @@
         public const string NoteService = "NoteService";
         public const string TimerManager = "TimerManager";
 
-        public const string Data_Quest = "Data/Quest";
-
         public const string Equip = "Item/Equip";
         public const string Session = "Session";
         public const string StorageProcessor = "Processor/StorageProcessor";

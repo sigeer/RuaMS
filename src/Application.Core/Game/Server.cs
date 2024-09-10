@@ -921,9 +921,11 @@ public class Server
         return rankSystem;
     }
 
-    public async Task init()
+    public async Task Start()
     {
         log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
+        Stopwatch totalSw = new Stopwatch();
+        totalSw.Start();
 
         if (YamlConfig.config.server.SHUTDOWNHOOK)
         {
@@ -931,45 +933,48 @@ public class Server
         }
 
         channelDependencies = registerChannelDependencies();
+        _ = Task.Run(() =>
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            SkillFactory.loadAllSkills();
+            sw.Stop();
+            log.Debug("Skills loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
 
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
+            sw.Restart();
+            CashItemFactory.loadAllCashItems();
+            sw.Stop();
+            log.Debug("CashItems loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
 
-        SkillFactory.loadAllSkills();
-        sw.Stop();
-        log.Debug($"Skills loaded in {sw.Elapsed.TotalSeconds} seconds");
+            sw.Restart();
+            Quest.loadAllQuests();
+            sw.Stop();
+            log.Debug("Quest loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
 
-        sw.Restart();
-        CashItemFactory.loadAllCashItems();
-        sw.Stop();
-        log.Debug($"CashItems loaded in {sw.Elapsed.TotalSeconds} seconds");
+            sw.Restart();
+            SkillbookInformationProvider.loadAllSkillbookInformation();
+            sw.Stop();
+            log.Debug("Skillbook loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+        });
 
-        sw.Restart();
-        Quest.loadAllQuests();
-        sw.Stop();
-        log.Debug($"Quest loaded in {sw.Elapsed.TotalSeconds} seconds");
-
-        sw.Restart();
-        SkillbookInformationProvider.loadAllSkillbookInformation();
-        sw.Stop();
-        log.Debug($"Skillbook loaded in {sw.Elapsed.TotalSeconds} seconds");
 
         int worldCount = Math.Min(GameConstants.WORLD_NAMES.Length, YamlConfig.config.server.WORLDS);
 
-        sw.Restart();
         try
         {
             using var dbContext = new DBContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
             setAllLoggedOut(dbContext);
             setAllMerchantsInactive(dbContext);
             cleanNxcodeCoupons(dbContext);
             loadCouponRates(dbContext);
             updateActiveCoupons(dbContext);
-            NewYearCardRecord.startPendingNewYearCardRequests();
+            NewYearCardRecord.startPendingNewYearCardRequests(dbContext);
             CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             applyAllWorldTransfers(dbContext);
             PlayerNPC.loadRunningRankData(dbContext, worldCount);
+            dbTrans.Commit();
         }
         catch (Exception sqle)
         {
@@ -977,7 +982,6 @@ public class Server
             throw;
         }
 
-        ThreadManager.getInstance().start();
         await initializeTimelyTasks(channelDependencies);    // aggregated method for timely tasks thanks to lxconan
 
         try
@@ -1005,12 +1009,12 @@ public class Server
         // Wait on all async tasks to complete
 
         loginServer = await initLoginServer(8484);
+        online = true;
 
         log.Information("Listening on port 8484");
 
-        online = true;
-        sw.Stop();
-        log.Information("Cosmic is now online after {Startup} s.", sw.Elapsed.TotalSeconds);
+        totalSw.Stop();
+        log.Information("Cosmic is now online after {Startup} s.", totalSw.Elapsed.TotalSeconds);
 
         OpcodeConstants.generateOpcodeNames();
         CommandsExecutor.getInstance();
@@ -2082,7 +2086,7 @@ public class Server
         {
             log.Information("Restarting the server...");
             instance = null;
-            await getInstance().init();//DID I DO EVERYTHING?! D:
+            await getInstance().Start();//DID I DO EVERYTHING?! D:
         }
     }
 }

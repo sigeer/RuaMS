@@ -38,7 +38,6 @@ namespace server.quest;
  */
 public class Quest
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.Data_Quest);
     private static volatile Dictionary<int, Quest> quests = new();
     private static volatile Dictionary<int, int> infoNumberQuests = new();
     private static Dictionary<short, int> medals = new();
@@ -90,7 +89,7 @@ public class Quest
         var checkData = questCheck.getChildByPath(id.ToString());
         if (checkData == null)
         {
-            log.Error("QuestInfo: Id = {QuestId} not found in Check.img", id);
+            LogFactory.ResLogger.Error("QuestInfo: Id = {QuestId} not found in Check.img", id);
             return;
         }
 
@@ -113,7 +112,7 @@ public class Quest
         }
         else
         {
-            log.Error("QuestInfo: Id = {QuestId} not found in QuestInfo.img", id);
+            LogFactory.ResLogger.Error("QuestInfo: Id = {QuestId} not found in QuestInfo.img", id);
         }
 
         var startReqData = checkData.getChildByPath("0");
@@ -773,12 +772,12 @@ public class Quest
     public static void loadAllQuests()
     {
         var allWZData = questInfo.getChildren();
-        log.Debug($"QuestCount: {allWZData.Count}");
+        LogFactory.ResLogger.Debug($"QuestCount: {allWZData.Count}");
 
         Dictionary<int, Quest> loadedQuests = new();
         Dictionary<int, int> loadedInfoNumberQuests = new();
 
-        foreach (Data quest in questInfo.getChildren())
+        foreach (Data quest in allWZData)
         {
             Quest q = new Quest(quest);
             int questID = q.getId();

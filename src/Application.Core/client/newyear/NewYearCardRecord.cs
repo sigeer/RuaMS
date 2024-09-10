@@ -336,9 +336,8 @@ public class NewYearCardRecord
         }
     }
 
-    public static void startPendingNewYearCardRequests()
+    public static void startPendingNewYearCardRequests(DBContext dbContext)
     {
-        using var dbConext = new DBContext();
         dbConext.Newyears.Where(x => x.TimeReceived == 0 && !x.SenderDiscard).ToList()
             .ForEach(x =>
             {

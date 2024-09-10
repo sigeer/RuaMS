@@ -27,7 +27,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    await Server.getInstance().init();
+    await Server.getInstance().Start();
 }
 catch (Exception ex)
 {

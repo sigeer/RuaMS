@@ -61,10 +61,6 @@ public class ThreadManager
         });
     }
 
-    public void start()
-    {
-
-    }
 
     public void stop()
     {

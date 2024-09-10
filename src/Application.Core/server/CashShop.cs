@@ -91,7 +91,7 @@ public class CashShop
             this.nxPrepaid = dbModel.NxPrepaid ?? 0;
         }
 
-        foreach (var item in factory.loadItems(accountId, false))
+        foreach (var item in factory!.loadItems(accountId, false))
         {
             inventory.Add(item.Item);
         }
@@ -237,7 +237,8 @@ public class CashShop
             DataProvider etc = DataProviderFactory.getDataProvider(WZFiles.ETC);
 
             Dictionary<int, CashItem> loadedItems = new();
-            foreach (Data item in etc.getData("Commodity.img").getChildren())
+            var itemsRes = etc.getData("Commodity.img").getChildren();
+            foreach (Data item in itemsRes)
             {
                 int sn = DataTool.getIntConvert("SN", item);
                 int itemId = DataTool.getIntConvert("ItemId", item);
@@ -272,8 +273,7 @@ public class CashShop
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex.ToString());
-                // x.printStackTrace();
+                LogFactory.ResLogger.Error(ex.ToString());
             }
         }
 
