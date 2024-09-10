@@ -100,8 +100,9 @@ public class RankingLoginTask : AbstractRunnable
                 {
                     updateRanking(dbContext, i, j);
                 }
-                dbTrans.Commit();
             }
+            dbTrans.Commit();
+
             lastUpdate = DateTimeOffset.Now;
         }
         catch (Exception e)

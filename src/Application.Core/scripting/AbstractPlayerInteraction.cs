@@ -407,7 +407,7 @@ public class AbstractPlayerInteraction
         openNpc(npcid, null);
     }
 
-    public void openNpc(int npcid, string script)
+    public void openNpc(int npcid, string? script)
     {
         if (c.getCM() != null)
         {
@@ -630,7 +630,7 @@ public class AbstractPlayerInteraction
             return (null);
         }
 
-        Item tmp = gainItem(afterId, 1, false, true, period, target);
+        var tmp = gainItem(afterId, 1, false, true, period, target);
 
         /*
         evolved = Pet.loadFromDb(tmp.getItemId(), tmp.getPosition(), tmp.getPetId());
@@ -974,6 +974,9 @@ public class AbstractPlayerInteraction
         //5 players = +20% bonus (120)
         //6 players = +30% bonus (130)
         var party = getPlayer().getParty();
+        if (party == null)
+            return;
+
         int size = party.getMembers().Count;
 
         if (instance)
@@ -1103,7 +1106,7 @@ public class AbstractPlayerInteraction
 
     public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration, bool force)
     {
-        var skill = SkillFactory.getSkill(skillid);
+        var skill = SkillFactory.GetSkillTrust(skillid);
         var skillEntry = getPlayer().getSkills().GetValueOrDefault(skill);
         if (skillEntry != null)
         {

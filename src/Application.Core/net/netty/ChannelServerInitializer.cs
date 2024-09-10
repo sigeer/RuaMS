@@ -6,7 +6,7 @@ namespace net.netty;
 
 public class ChannelServerInitializer : ServerChannelInitializer
 {
-    private static ILogger log = LogFactory.GetLogger("ChannelServerInitializer");
+    private static ILogger log = LogFactory.GetLogger("ServerChannelInitializer/Channel");
 
     private int world;
     private int channel;

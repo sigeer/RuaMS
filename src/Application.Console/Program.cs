@@ -25,7 +25,6 @@ Log.Logger = new LoggerConfiguration()
          )
     .CreateLogger();
 
-
 try
 {
     await Server.getInstance().init();

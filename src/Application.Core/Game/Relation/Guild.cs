@@ -76,8 +76,7 @@ public class Guild : IGuild
         if (world != -1)
             return world;
 
-        using var dbContext = new DBContext();
-        return world = dbContext.Characters.FirstOrDefault(x => x.GuildId == GuildId)!.World;
+        return world = members.FirstOrDefault(x => x.GuildId == GuildId)!.World;
     }
 
     private IWorld GetWorldModel()

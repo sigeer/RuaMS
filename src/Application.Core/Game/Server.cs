@@ -62,7 +62,7 @@ public class Server
     private static List<int> activeCoupons = new();
     private static ChannelDependencies channelDependencies;
 
-    private LoginServer loginServer;
+    private LoginServer loginServer = null!;
     private List<Dictionary<int, string>> channels = new();
     private List<IWorld> worlds = new();
     private Dictionary<string, string> subnetInfo = new();
@@ -234,7 +234,7 @@ public class Server
             }
             return channelz;
         }
-        catch (NullReferenceException npe)
+        catch (NullReferenceException)
         {
             return new(0);
         }

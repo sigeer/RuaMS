@@ -35,7 +35,7 @@ namespace Application.Core.Game;
 public class Client : ChannelHandlerAdapter, IClient
 {
     ILogger? _log;
-    ILogger log => _log ?? (_log = LogFactory.GetLogger("Client"));
+    ILogger log => _log ?? (_log = LogFactory.GetLogger($"Client/Session_{sessionId}"));
     public static int LOGIN_NOTLOGGEDIN = 0;
     public static int LOGIN_SERVER_TRANSITION = 1;
     public static int LOGIN_LOGGEDIN = 2;
@@ -48,7 +48,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private string remoteAddress;
 
 
-    private IChannel ioChannel;
+    private IChannel ioChannel = null!;
     /// <summary>
     /// 启动了客户端，但是角色可能并不在线
     /// </summary>
@@ -152,7 +152,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public override void ChannelRead(IChannelHandlerContext ctx, object msg)
     {
-        if (!(msg is InPacket packet))
+        if (msg is not InPacket packet)
         {
             log.Warning("Received invalid message: {Packet}", msg);
             return;
@@ -170,7 +170,7 @@ public class Client : ChannelHandlerAdapter, IClient
         {
             try
             {
-                // MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
+                MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
                 handler.HandlePacket(packet, this);
             }
             catch (Exception t)

@@ -31,9 +31,10 @@ public class ByteBufOutPacket : OutPacket
 
     public byte[] getBytes()
     {
+        byteBuf.MarkReaderIndex();
         var bytes = new byte[byteBuf.ReadableBytes];
         byteBuf.ReadBytes(bytes);
-        byteBuf.SetReaderIndex(0);
+        byteBuf.ResetReaderIndex();
         return bytes;
     }
 

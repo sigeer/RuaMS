@@ -30,7 +30,7 @@ public class InPacketLogger : ChannelHandlerAdapter, PacketLogger
         {
             short opcode = LoggingUtil.readFirstShort(content);
             string opcodeHex = opcode.ToString("X2");
-            string opcodeName = getRecvOpcodeName(opcode);
+            string? opcodeName = getRecvOpcodeName(opcode);
             string prefix = opcodeName == null ? "<UnknownPacket> " : "";
             _log.Debug("{Packet}ClientSend:{PacketName} [{PacketCode}] ({PacketLength}) <HEX> {PacketContentHex} <TEXT> {PacketContentString}", prefix, opcodeName, opcodeHex, packetLength,
                     HexTool.toHexString(content), HexTool.toStringFromAscii(content));
@@ -41,7 +41,7 @@ public class InPacketLogger : ChannelHandlerAdapter, PacketLogger
         }
     }
 
-    private string getRecvOpcodeName(short opcode)
+    private string? getRecvOpcodeName(short opcode)
     {
         return OpcodeConstants.recvOpcodeNames.GetValueOrDefault(opcode);
     }

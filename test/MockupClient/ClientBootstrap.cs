@@ -4,19 +4,19 @@ using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using System.Net;
 
-namespace ServiceTest.Net
+namespace MockupClient
 {
-    public class MockupClient
+    public class ClientBootstrap
     {
         Bootstrap bootstrap;
-        public MockupClient()
+        public ClientBootstrap()
         {
             var group = new MultithreadEventLoopGroup();
-
             bootstrap = new Bootstrap();
             bootstrap
-                .Group(group)
-                .Channel<TcpSocketChannel>();
+            .Group(group)
+                .Channel<TcpSocketChannel>()
+                .Handler(new ClientChannleInitializer());
         }
         IChannel _channel;
         public async Task Initialize()

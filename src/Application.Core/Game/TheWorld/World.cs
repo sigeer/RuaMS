@@ -1223,7 +1223,8 @@ public class World : IWorld
                 var chr = ch.getPlayerStorage().getCharacterByName(messengerchar.getName());
                 if (chr != null)
                 {
-                    chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom), position, (byte)(fromchannel - 1)));
+                    var fromPlayer = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
+                    chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, fromPlayer, position, (byte)(fromchannel - 1)));
                 }
             }
         }
