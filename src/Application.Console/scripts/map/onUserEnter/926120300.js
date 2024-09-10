@@ -1,9 +1,7 @@
 ﻿function getInactiveReactors(map) {
     var reactors = [];
 
-    var iter = map.getReactors().iterator();
-    while (iter.hasNext()) {
-        var mo = iter.next();
+    for (var mo of map.getReactors()) {
         if (mo.getState() >= 7) {
             reactors.push(mo);
         }

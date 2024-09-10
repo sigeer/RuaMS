@@ -74,7 +74,7 @@ public class ItemInformationProvider
     protected Dictionary<int, int> projectileWatkCache = new();
     protected Dictionary<int, string?> nameCache = new();
     protected Dictionary<int, string> descCache = new();
-    protected Dictionary<int, string> msgCache = new();
+    protected Dictionary<int, string?> msgCache = new();
     protected Dictionary<int, bool> accountItemRestrictionCache = new();
     protected Dictionary<int, bool> dropRestrictionCache = new();
     protected Dictionary<int, bool> pickupRestrictionCache = new();
@@ -93,6 +93,7 @@ public class ItemInformationProvider
     protected Dictionary<int, int> levelCache = new();
     protected Dictionary<int, KeyValuePair<int, List<RewardItem>>> rewardCache = new();
     protected List<ItemInfoBase> itemNameCache = new();
+    protected List<ItemInfoBase> etcItemCache = new List<ItemInfoBase>();
     protected Dictionary<int, bool> consumeOnPickupCache = new();
     protected Dictionary<int, bool> isQuestItemCache = new();
     protected Dictionary<int, bool> isPartyQuestItemCache = new();
@@ -167,14 +168,16 @@ public class ItemInformationProvider
         {
             itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
+
+        itemNameCache = itemPairs;
         return itemPairs;
     }
 
     public List<ItemInfoBase> getAllEtcItems()
     {
-        if (itemNameCache.Count > 0)
+        if (etcItemCache.Count > 0)
         {
-            return itemNameCache;
+            return etcItemCache;
         }
 
         List<ItemInfoBase> itemPairs = new();
@@ -185,6 +188,7 @@ public class ItemInformationProvider
         {
             itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
+        etcItemCache = itemPairs;
         return itemPairs;
     }
 
@@ -723,7 +727,27 @@ public class ItemInformationProvider
     public WeaponType getWeaponType(int itemId)
     {
         int cat = (itemId / 10000) % 100;
-        WeaponType[] type = { WeaponType.SWORD1H, WeaponType.GENERAL1H_SWING, WeaponType.GENERAL1H_SWING, WeaponType.DAGGER_OTHER, WeaponType.NOT_A_WEAPON, WeaponType.NOT_A_WEAPON, WeaponType.NOT_A_WEAPON, WeaponType.WAND, WeaponType.STAFF, WeaponType.NOT_A_WEAPON, WeaponType.SWORD2H, WeaponType.GENERAL2H_SWING, WeaponType.GENERAL2H_SWING, WeaponType.SPEAR_STAB, WeaponType.POLE_ARM_SWING, WeaponType.BOW, WeaponType.CROSSBOW, WeaponType.CLAW, WeaponType.KNUCKLE, WeaponType.GUN };
+        WeaponType[] type = {
+            WeaponType.SWORD1H,
+            WeaponType.GENERAL1H_SWING,
+            WeaponType.GENERAL1H_SWING,
+            WeaponType.DAGGER_OTHER,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.WAND,
+            WeaponType.STAFF,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.SWORD2H,
+            WeaponType.GENERAL2H_SWING,
+            WeaponType.GENERAL2H_SWING,
+            WeaponType.SPEAR_STAB,
+            WeaponType.POLE_ARM_SWING,
+            WeaponType.BOW,
+            WeaponType.CROSSBOW,
+            WeaponType.CLAW,
+            WeaponType.KNUCKLE,
+            WeaponType.GUN };
         if (cat < 30 || cat > 49)
         {
             return WeaponType.NOT_A_WEAPON;
@@ -2157,10 +2181,17 @@ public class ItemInformationProvider
 
     public bool isTwoHanded(int itemId)
     {
-        var arr = new double[] { (double)WeaponType.GENERAL2H_SWING , (double)WeaponType.BOW ,
-        (double)WeaponType.CLAW,(double)WeaponType.CROSSBOW,(double)WeaponType.POLE_ARM_SWING,
-       (double)WeaponType.SPEAR_STAB, (double)WeaponType.SWORD2H,   (double)WeaponType.GUN, (double)WeaponType.KNUCKLE};
-        return arr.Contains((double)getWeaponType(itemId));
+        var arr = new WeaponType[] {
+            WeaponType.GENERAL2H_SWING ,
+            WeaponType.BOW ,
+            WeaponType.CLAW,
+            WeaponType.CROSSBOW,
+            WeaponType.POLE_ARM_SWING,
+            WeaponType.SPEAR_STAB,
+            WeaponType.SWORD2H,
+            WeaponType.GUN,
+            WeaponType.KNUCKLE};
+        return arr.Contains(getWeaponType(itemId));
     }
 
     public bool isCash(int itemId)

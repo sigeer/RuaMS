@@ -159,9 +159,7 @@ function getRawItems() {
     var mapItems = cm.getPlayer().getMap().getItems();
     var rawItems = [];
 
-    var iter = mapItems.iterator();
-    while (iter.hasNext()) {
-        var item = iter.next();
+    for (var item of mapItems) {
         var id = item.getItem().getItemId();
         if (id < 4001027 || id > 4001030) {
 

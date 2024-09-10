@@ -63,7 +63,7 @@ public class Guild : IGuild
     private Dictionary<int, List<int>> notifications = new();
     private bool bDirty = true;
 
-    readonly IMapper Mapper = GlobalConfigs.Mapper;
+    readonly IMapper Mapper = GlobalTools.Mapper;
 
     public Guild(List<IPlayer> members)
     {

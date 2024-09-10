@@ -35,9 +35,7 @@ function playersTooClose() {
     var npcpos = cm.getMap().getMapObject(cm.getNpcObjectId()).getPosition();
     var listchr = cm.getMap().getPlayers();
 
-    for (var iterator = listchr.iterator(); iterator.hasNext();) {
-        var chr = iterator.next();
-
+    for (var chr of listchr) {
         var chrpos = chr.getPosition();
         if (Math.sqrt(Math.pow((npcpos.getX() - chrpos.getX()), 2) + Math.pow((npcpos.getY() - chrpos.getY()), 2)) < 310) {
             return true;

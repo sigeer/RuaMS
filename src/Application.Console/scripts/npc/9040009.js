@@ -125,9 +125,7 @@ function action(mode, type, selection) {
 function getReactors() {
     var reactors = [];
 
-    var iter = cm.getPlayer().getMap().getReactors().iterator();
-    while (iter.hasNext()) {
-        var mo = iter.next();
+    for (var mo of cm.getPlayer().getMap().getReactors()) {
         if (mo.getName() !== "statuegate") {
             reactors.push(mo.getObjectId());
         }

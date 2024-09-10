@@ -31,8 +31,6 @@ namespace client.inventory;
 
 public class Equip : Item
 {
-    private ILogger log = LogFactory.GetLogger(LogType.Equip);
-
     public enum ScrollResult
     {
 
@@ -62,7 +60,7 @@ public class Equip : Item
 
     public Equip(int id, short position, int slots = 0) : base(id, position, 1)
     {
-
+        log = LogFactory.GetLogger(LogType.Equip);
         this.upgradeSlots = (byte)slots;
         this.itemExp = 0;
         this.itemLevel = 1;

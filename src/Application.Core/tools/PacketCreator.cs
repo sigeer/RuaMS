@@ -438,9 +438,9 @@ public class PacketCreator
         {
             Pet pet = item.getPet()!;
             p.writeFixedString(StringUtil.getRightPaddedStr(pet.getName(), '\0', 13));
-            p.writeByte(pet.getLevel());
-            p.writeShort(pet.getTameness());
-            p.writeByte(pet.getFullness());
+            p.writeByte(pet.Level);
+            p.writeShort(pet.Tameness);
+            p.writeByte(pet.Fullness);
             addExpirationTime(p, item.getExpiration());
             p.writeShort(pet.getPetAttribute()); // PetAttribute noticed by lrenex & Spoon
             p.writeShort(0); // PetSkill
@@ -3100,10 +3100,10 @@ public class PacketCreator
             {
                 p.writeByte(petObj.getUniqueId());
                 p.writeInt(petObj.getItemId()); // petid
-                p.writeString(petObj.getName());
-                p.writeByte(petObj.getLevel()); // pet level
-                p.writeShort(petObj.getTameness()); // pet tameness
-                p.writeByte(petObj.getFullness()); // pet fullness
+                p.writeString(petObj.Name);
+                p.writeByte(petObj.Level); // pet level
+                p.writeShort(petObj.Tameness); // pet tameness
+                p.writeByte(petObj.Fullness); // pet fullness
                 p.writeShort(0);
                 p.writeInt(inv != null ? inv.getItemId() : 0);
             }
@@ -4312,7 +4312,7 @@ public class PacketCreator
         var partymembers = party.getMembers();
         while (partymembers.Count < 6)
         {
-            partymembers.Add(Player.CreateEmptyPlayer());
+            partymembers.Add(new Player());
         }
         foreach (var partychar in partymembers)
         {

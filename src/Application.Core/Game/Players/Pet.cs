@@ -1,4 +1,5 @@
-﻿using client.inventory;
+﻿using Application.Core.Game.Items;
+using client.inventory;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -191,17 +192,17 @@ namespace Application.Core.Game.Players
                 return;
             }
 
-            int newFullness = pet.getFullness() - PetDataFactory.getHunger(pet.getItemId());
+            int newFullness = pet.Fullness - PetDataFactory.getHunger(pet.getItemId());
             if (newFullness <= 5)
             {
-                pet.setFullness(15);
+                pet.Fullness = 15;
                 pet.saveToDb();
                 unequipPet(pet, true);
                 dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
             }
             else
             {
-                pet.setFullness(newFullness);
+                pet.Fullness = newFullness;
                 pet.saveToDb();
                 Item? petz = getInventory(InventoryType.CASH).getItem(pet.getPosition());
                 if (petz != null)

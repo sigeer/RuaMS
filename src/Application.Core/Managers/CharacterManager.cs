@@ -27,7 +27,7 @@ namespace Application.Core.Managers
 {
     public class CharacterManager
     {
-        static IMapper Mapper = GlobalConfigs.Mapper;
+        static IMapper Mapper = GlobalTools.Mapper;
         public static string makeMapleReadable(string input)
         {
             string i = input.Replace('I', 'i');
@@ -475,11 +475,9 @@ namespace Application.Core.Managers
                 var eventStatsFromDB = dbContext.Eventstats.Where(x => x.Characterid == ret.Id).Select(x => new { x.Name, x.Info }).ToList();
                 foreach (var item in eventStatsFromDB)
                 {
-                    string name = item.Name;
-                    // 全是rescueGaga才插入，应该会有重复键bug
                     if (item.Name == "rescueGaga")
                     {
-                        ret.Events.AddOrUpdate(name, new RescueGaga(item.Info));
+                        ret.Events.AddOrUpdate(item.Name, new RescueGaga(item.Info));
                     }
                 }
 
@@ -662,32 +660,6 @@ namespace Application.Core.Managers
                 Log.Logger.Error(e.ToString());
             }
             return null;
-        }
-
-        public static IPlayer GetPlayerPreview(CharacterEntity rs, List<Item>? equipped)
-        {
-            var ret = Player.CreateEmptyPlayer();
-
-            try
-            {
-                Mapper.Map(rs, ret);
-
-                if (equipped != null)
-                {
-                    // players can have no equipped items at all, ofc
-                    Inventory inv = ret.Bag[InventoryType.EQUIPPED];
-                    foreach (Item item in equipped)
-                    {
-                        inv.addItemFromDB(item);
-                    }
-                }
-            }
-            catch (Exception sqle)
-            {
-                Log.Logger.Error(sqle.ToString());
-            }
-
-            return ret;
         }
 
         public static IPlayer? GetPlayerById(int Id)
@@ -1039,7 +1011,7 @@ namespace Application.Core.Managers
 
                 try
                 {
-                    GlobalConfigs.Mapper.Map(player, entity);
+                    GlobalTools.Mapper.Map(player, entity);
 
                     if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
                     {

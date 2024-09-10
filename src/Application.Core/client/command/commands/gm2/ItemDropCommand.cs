@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Managers;
 using client.inventory;
 using constants.inventory;
 using server;
@@ -74,7 +75,7 @@ public class ItemDropCommand : Command
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
                 long expiration = DateTimeOffset.Now.AddDays(days).ToUnixTimeMilliseconds();
-                int petid = Pet.createPet(itemId);
+                int petid = ItemManager.CreatePet(itemId);
 
                 var toDropTemp = new Item(itemId, 0, quantity, petid);
                 toDropTemp.setExpiration(expiration);

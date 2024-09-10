@@ -204,7 +204,7 @@ namespace Application.Core.Game.Players
                     statLock.EnterWriteLock();
                     try
                     {
-                        GlobalConfigs.Mapper.Map(this, entity);
+                        GlobalTools.Mapper.Map(this, entity);
                     }
                     finally
                     {

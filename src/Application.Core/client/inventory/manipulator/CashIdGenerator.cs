@@ -48,7 +48,6 @@ public class CashIdGenerator
         lock (loadLock)
         {
 
-
             loadExistentCashIdsFromQuery(dbContext, "SELECT id FROM rings");
             loadExistentCashIdsFromQuery(dbContext, "SELECT petid FROM pets");
 

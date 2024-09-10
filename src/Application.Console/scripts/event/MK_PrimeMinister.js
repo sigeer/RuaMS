@@ -50,9 +50,7 @@ function afterSetup(eim) {}
 function primeMinisterCheck(eim) {
     var map = eim.getMapInstance(entryMap);
 
-    var pIter = map.getAllPlayers().iterator();
-    while (pIter.hasNext()) {
-        var player = pIter.next();
+    for (var player of map.getAllPlayers()) {
         if (player.getQuestStatus(2333) == 1 && player.getAbstractPlayerInteraction().getQuestProgressInt(2333, mobId) == 0) {
             return true;
         }

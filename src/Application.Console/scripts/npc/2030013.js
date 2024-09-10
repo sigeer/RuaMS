@@ -141,7 +141,7 @@ function action(mode, type, selection) {
                 var text = "The following members make up your expedition (Click on them to expel them):\r\n";
                 text += "\r\n\t\t1." + expedition.getLeader().getName();
                 for (var i = 1; i < size; i++) {
-                    text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers.get(i).getValue() + "#l\n";
+                    text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers.get(i).Name + "#l\n";
                 }
                 cm.sendSimple(text);
                 status = 6;
@@ -185,7 +185,7 @@ function action(mode, type, selection) {
             if (selection > 0) {
                 var banned = expedMembers.get(selection - 1);
                 expedition.ban(banned);
-                cm.sendOk("You have banned " + banned.getValue() + " from the expedition.");    // getValue, thanks MedicOP (MicroWilly69) for finding this issue
+                cm.sendOk("You have banned " + banned.Name + " from the expedition.");    // getValue, thanks MedicOP (MicroWilly69) for finding this issue
                 cm.dispose();
             } else {
                 cm.sendSimple(list);

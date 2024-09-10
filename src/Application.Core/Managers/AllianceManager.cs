@@ -154,7 +154,7 @@ namespace Application.Core.Managers
                 if (dbModel == null)
                     return null;
 
-                GlobalConfigs.Mapper.Map(dbModel, alliance);
+                GlobalTools.Mapper.Map(dbModel, alliance);
 
                 var guilds = dbContext.AllianceGuilds.Where(x => x.AllianceId == dbModel.Id).Select(x => x.GuildId).ToList();
                 guilds.ForEach(x =>

@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* Wayne
-	Marriage NPC
+    Marriage NPC
  */
 
 var status;
@@ -51,8 +51,7 @@ function isSuitedForWedding(player, equipped) {
 function getMarriageInstance(player) {
     var em = cm.getEventManager(weddingEventName);
 
-    for (var iterator = em.getInstances().iterator(); iterator.hasNext();) {
-        var eim = iterator.next();
+    for (var eim of em.getInstances()) {
         if (eim.isEventLeader(player)) {
             return eim;
         }

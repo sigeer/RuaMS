@@ -388,7 +388,7 @@ public class Expedition
 
     public List<CharacterIdNamePair> getMemberList()
     {
-        return getMembers().OrderBy(x => isLeader(x.Key)).Select(x => new CharacterIdNamePair(x.Key, x.Value)).ToList();
+        return getMembers().OrderByDescending(x => isLeader(x.Key)).ThenBy(x => x.Key).Select(x => new CharacterIdNamePair(x.Key, x.Value)).ToList();
     }
 
     public bool isExpeditionTeamTogether()

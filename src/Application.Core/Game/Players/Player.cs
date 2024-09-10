@@ -98,13 +98,9 @@ namespace Application.Core.Game.Players
             Bag[InventoryType.USE].setSlotLimit(Useslots);
             Bag[InventoryType.SETUP].setSlotLimit(Setupslots);
             Bag[InventoryType.ETC].setSlotLimit(Etcslots);
-            Bag[InventoryType.CASH].setSlotLimit(96);
+            Bag[InventoryType.CASH].setSlotLimit(PlayerBag.DEFAULT_CASH_BAG_SIZE);
         }
 
-        public static IPlayer CreateEmptyPlayer()
-        {
-            return new Player();
-        }
         public void LoadKeyMapDefault()
         {
             KeyMap.Clear();

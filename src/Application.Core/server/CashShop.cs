@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Managers;
 using client.inventory;
 using constants.id;
 using constants.inventory;
@@ -152,7 +153,7 @@ public class CashShop
             int petid = -1;
             if (ItemConstants.isPet(itemId))
             {
-                petid = Pet.createPet(itemId);
+                petid = ItemManager.CreatePet(itemId);
             }
 
             if (ItemConstants.getInventoryType(itemId).Equals(InventoryType.EQUIP))

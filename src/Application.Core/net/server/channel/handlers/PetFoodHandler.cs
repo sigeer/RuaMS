@@ -57,10 +57,10 @@ public class PetFoodHandler : AbstractPacketHandler
             var petObj = pets[i];
             if (petObj != null)
             {
-                if (petObj.getFullness() < previousFullness)
+                if (petObj.Fullness < previousFullness)
                 {
                     slot = i;
-                    previousFullness = petObj.getFullness();
+                    previousFullness = petObj.Fullness;
                 }
             }
         }
@@ -88,7 +88,7 @@ public class PetFoodHandler : AbstractPacketHandler
                         return;
                     }
 
-                    pet.gainTamenessFullness(chr, (pet.getFullness() <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
+                    pet.gainTamenessFullness(chr, (pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
                     InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
                 }
                 finally
