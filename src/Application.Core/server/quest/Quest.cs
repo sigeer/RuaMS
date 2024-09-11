@@ -151,7 +151,7 @@ public class Quest
             {
                 QuestRequirementType type = QuestRequirementTypeUtils.getByWZName(completeReq.getName());
 
-                AbstractQuestRequirement req = this.getRequirement(type, completeReq);
+                var req = this.getRequirement(type, completeReq);
                 if (req == null)
                 {
                     continue;
@@ -460,38 +460,26 @@ public class Quest
     public int getStartItemAmountNeeded(int itemid)
     {
         var req = startReqs.GetValueOrDefault(QuestRequirementType.ITEM);
-        if (req == null)
-        {
-            return int.MinValue;
-        }
+        if (req is ItemRequirement ireq)
+            return ireq.getItemAmountNeeded(itemid, false);
+        return int.MinValue;
 
-        ItemRequirement ireq = (ItemRequirement)req;
-        return ireq.getItemAmountNeeded(itemid, false);
     }
 
     public int getCompleteItemAmountNeeded(int itemid)
     {
         var req = completeReqs.GetValueOrDefault(QuestRequirementType.ITEM);
-        if (req == null)
-        {
-            return int.MaxValue;
-        }
-
-        ItemRequirement ireq = (ItemRequirement)req;
-        return ireq.getItemAmountNeeded(itemid, true);
+        if (req is ItemRequirement ireq)
+             return ireq.getItemAmountNeeded(itemid, true);
+        return int.MaxValue;
     }
 
     public int getMobAmountNeeded(int mid)
     {
         var req = completeReqs.GetValueOrDefault(QuestRequirementType.MOB);
-        if (req == null)
-        {
-            return 0;
-        }
-
-        MobRequirement mreq = (MobRequirement)req;
-
-        return mreq.getRequiredMobCount(mid);
+        if (req  is MobRequirement mreq)
+            return mreq.getRequiredMobCount(mid);
+        return 0;
     }
 
     public short getInfoNumber(Status qs)
@@ -500,47 +488,24 @@ public class Quest
         Dictionary<QuestRequirementType, AbstractQuestRequirement> reqs = !checkEnd ? startReqs : completeReqs;
 
         var req = reqs.GetValueOrDefault(QuestRequirementType.INFO_NUMBER);
-        if (req != null)
-        {
-            InfoNumberRequirement inReq = (InfoNumberRequirement)req;
+        if (req is InfoNumberRequirement inReq)
             return inReq.getInfoNumber();
-        }
-        else
-        {
-            return 0;
-        }
+        return 0;
     }
 
     public string getInfoEx(Status qs, int index)
     {
-        bool checkEnd = qs.Equals(Status.STARTED);
-        Dictionary<QuestRequirementType, AbstractQuestRequirement> reqs = !checkEnd ? startReqs : completeReqs;
-        try
-        {
-            var req = reqs.GetValueOrDefault(QuestRequirementType.INFO_EX);
-            InfoExRequirement ixReq = (InfoExRequirement)req;
-            return ixReq.getInfo().get(index);
-        }
-        catch (Exception e)
-        {
-            return "";
-        }
+        return getInfoEx(qs).ElementAtOrDefault(index) ?? "";
     }
 
     public List<string> getInfoEx(Status qs)
     {
         bool checkEnd = qs.Equals(Status.STARTED);
-        Dictionary<QuestRequirementType, AbstractQuestRequirement> reqs = !checkEnd ? startReqs : completeReqs;
-        try
-        {
-            var req = reqs.GetValueOrDefault(QuestRequirementType.INFO_EX);
-            InfoExRequirement ixReq = req as InfoExRequirement;
+        Dictionary<QuestRequirementType, AbstractQuestRequirement> reqs = !checkEnd ? startReqs : completeReqs; 
+        var req = reqs.GetValueOrDefault(QuestRequirementType.INFO_EX);
+        if (req is InfoExRequirement ixReq)
             return ixReq.getInfo();
-        }
-        catch (Exception e)
-        {
-            return new();
-        }
+        return new();
     }
 
     public int getTimeLimit()
