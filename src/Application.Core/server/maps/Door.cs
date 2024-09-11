@@ -36,7 +36,7 @@ public class Door
 {
     private int ownerId;
     private IMap town;
-    private Portal townPortal;
+    private Portal? townPortal;
     private IMap target;
     private KeyValuePair<string, int>? posStatus = null;
     private long deployTime;
@@ -92,7 +92,7 @@ public class Door
     {
         int slot = owner.fetchDoorSlot();
 
-        Portal nextTownPortal = getTownDoorPortal(slot);
+        var nextTownPortal = getTownDoorPortal(slot);
         if (nextTownPortal != null)
         {
             townPortal = nextTownPortal;

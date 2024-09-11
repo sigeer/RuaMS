@@ -973,12 +973,13 @@ public class EventInstanceManager
         }
     }
 
-    public string getProperty(string key)
+    public string? getProperty(string key)
     {
         Monitor.Enter(propertyLock);
         try
         {
-            return props.GetValueOrDefault(key).ToString();
+            var d = props.GetValueOrDefault(key);
+            return d?.ToString();
         }
         finally
         {
@@ -991,7 +992,10 @@ public class EventInstanceManager
         Monitor.Enter(propertyLock);
         try
         {
-            return (int)(props.GetValueOrDefault(key));
+            var d = props.GetValueOrDefault(key);
+            if (d == null)
+                return 0;
+            return (int)d;
         }
         finally
         {

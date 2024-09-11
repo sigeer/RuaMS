@@ -34,7 +34,6 @@ namespace server.quest.actions;
  */
 public class QuestAction : AbstractQuestAction
 {
-    int mesos;
     Dictionary<int, int> quests = new();
 
     public QuestAction(Quest quest, Data data) : base(QuestActionType.QUEST, quest)

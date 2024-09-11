@@ -580,8 +580,6 @@ public class FamilyEntry
     {
         lock (checkJuniorLock)
         {
-
-
             //require locking since result accuracy is vital
             if (juniors[0] == entry)
             {

@@ -40,7 +40,7 @@ public class ViewAllCharHandler : AbstractPacketHandler
                 return;
             }
 
-            var worldChrs = Server.getInstance().loadAccountCharlist(c.getAccID(), c.getVisibleWorlds());
+            var worldChrs = Server.getInstance().LoadAccountCharList(c.getAccID(), c.getVisibleWorlds());
             worldChrs = limitTotalChrs(worldChrs, CHARACTER_LIMIT);
 
             padChrsIfNeeded(worldChrs);

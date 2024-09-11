@@ -16,7 +16,7 @@
         {
             data.OnChannelAddPlayer += (obj, p) =>
             {
-                AllPlayerStorage.AddPlayer(p);
+                AllPlayerStorage.AddPlayer(new DataLevel(2, p));
             };
             Channels[channelId] = data;
         }
@@ -71,13 +71,13 @@
             }
         }
 
-        public List<IPlayer> GetPlayersByIds(IEnumerable<int> idList)
+        public List<IPlayer> GetPlayersByIds(IEnumerable<int> idList, int level = 0)
         {
-            return AllPlayerStorage.GetPlayersByIds(idList).Where(x => x.World == _world).ToList();
+            return AllPlayerStorage.GetPlayersByIds(idList, level).Where(x => x.World == _world).ToList();
         }
-        public List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList)
+        public List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList, int level = 0)
         {
-            return AllPlayerStorage.GetPlayersByNames(nameList).Where(x => x.World == _world).ToList();
+            return AllPlayerStorage.GetPlayersByNames(nameList, level).Where(x => x.World == _world).ToList();
         }
     }
 }

@@ -211,7 +211,6 @@ namespace Application.Core.Game.Players
         void gainMeso(int gain, bool show, bool enableActions, bool inChat);
         bool gainSlots(int type, int slots);
         bool gainSlots(int type, int slots, bool update);
-        IPlayer generateCharacterEntry();
 
         // IPlayer generateCharacterEntry();
         void genericGuildMessage(int code);

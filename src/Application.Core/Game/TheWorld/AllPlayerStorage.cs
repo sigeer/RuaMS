@@ -7,30 +7,33 @@ namespace Application.Core.Game.TheWorld
     /// </summary>
     public class AllPlayerStorage
     {
-        private static Dictionary<int, IPlayer> CachedData { get; set; } = new Dictionary<int, IPlayer>();
-        private static Dictionary<string, IPlayer> NamedCacheData { get; set; } = new();
+        private static Dictionary<int, DataLevel> CachedData { get; set; } = new Dictionary<int, DataLevel>();
+        private static Dictionary<string, DataLevel> NamedCacheData { get; set; } = new();
         public static List<IPlayer> GetAllOnlinedPlayers()
         {
-            return CachedData.Values.Where(x => x.IsOnlined).ToList();
+            return CachedData.Values.Select(x => x.Data).Where(x => x.IsOnlined).ToList();
         }
-        public static void AddPlayer(IPlayer player)
+        public static void AddPlayer(DataLevel dataLevel)
         {
-            CachedData[player.Id] = player;
-            NamedCacheData[player.Name] = player;
+            CachedData[dataLevel.Data.Id] = dataLevel;
+            NamedCacheData[dataLevel.Data.Name] = dataLevel;
         }
-        public static IPlayer? GetOrAddCharacterById(int id)
+        public static IPlayer? GetOrAddCharacterById(int id, int level = 0)
         {
             var m = CachedData.GetValueOrDefault(id);
-            if (m != null)
-                return m;
+            if (m != null && m.Level >= level)
+                return m.Data;
 
-            m = CharacterManager.GetPlayerById(id);
-            if (m != null)
-                AddPlayer(m);
-            return m;
+            IPlayer? player = CharacterManager.GetPlayerById(id, level > 0);
+
+            if (player == null)
+                return null;
+
+            AddPlayer(new DataLevel(level, player));
+            return player;
         }
 
-        public static List<IPlayer> GetPlayersByIds(IEnumerable<int> idList)
+        public static List<IPlayer> GetPlayersByIds(IEnumerable<int> idList, int level = 0)
         {
             List<IPlayer> list = new();
 
@@ -38,42 +41,45 @@ namespace Application.Core.Game.TheWorld
             foreach (var id in idList)
             {
                 var m = CachedData.GetValueOrDefault(id);
-                if (m != null)
-                    list.Add(m);
+                if (m != null && m.Level >= level)
+                    list.Add(m.Data);
                 else
                     notFound.Add(id);
             }
 
-            var notFoundList = CharacterManager.GetPlayersById(notFound);
+            var notFoundList = CharacterManager.GetPlayersById(notFound, level > 0);
             foreach (var item in notFoundList)
             {
-                AddPlayer(item);
+                AddPlayer(new DataLevel(level, item));
                 list.Add(item);
             }
             return list;
         }
 
-        public static IPlayer? GetOrAddCharacterByName(string name)
+        public static IPlayer? GetOrAddCharacterByName(string name, int level = 0)
         {
             var m = NamedCacheData.GetValueOrDefault(name);
-            if (m != null)
-                return m;
+            if (m != null && m.Level >= level)
+                return m.Data;
 
-            m = CharacterManager.GetPlayerByName(name);
-            if (m != null)
-                AddPlayer(m);
-            return m;
+            IPlayer? player = CharacterManager.GetPlayerByName(name, level > 0);
+
+            if (player == null)
+                return null;
+
+            AddPlayer(new DataLevel(level, player));
+            return player;
         }
-        public static List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList)
+        public static List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList, int level = 0)
         {
             List<IPlayer> list = new();
 
             List<string> notFound = new();
             foreach (var name in nameList)
             {
-                var m = NamedCacheData[name];
-                if (m != null)
-                    list.Add(m);
+                var m = NamedCacheData.GetValueOrDefault(name);
+                if (m != null && m.Level >= level)
+                    list.Add(m.Data);
                 else
                     notFound.Add(name);
             }
@@ -81,10 +87,31 @@ namespace Application.Core.Game.TheWorld
             var notFoundList = CharacterManager.GetPlayersByName(notFound);
             foreach (var item in notFoundList)
             {
-                AddPlayer(item);
+                AddPlayer(new DataLevel(level, item));
                 list.Add(item);
             }
             return list;
         }
+
+        public static void DeleteCharacter(int id)
+        {
+            var data = CachedData.GetValueOrDefault(id);
+            if (data != null)
+            {
+                CachedData.Remove(id);
+                NamedCacheData.Remove(data.Data.Name);
+            }
+        }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="Level">
+    /// <para>0: 最低限度的Player数据</para>
+    /// <para>1: 附带佩戴道具的Player数据</para>
+    /// <para>2: 登录世界时的Player数据</para>
+    /// </param>
+    /// <param name="Data">Player数据</param>
+    public record DataLevel(int Level, IPlayer Data);
 }

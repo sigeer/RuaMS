@@ -1374,7 +1374,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public short getAvailableCharacterWorldSlots()
     {
-        return (short)Math.Max(0, characterSlots - Server.getInstance().getAccountWorldCharacterCount(accId, world));
+        return getAvailableCharacterWorldSlots(world);
     }
 
     public short getAvailableCharacterWorldSlots(int world)

@@ -329,7 +329,8 @@ public class SessionCoordinator
     {
         Hwid hwid = SessionCoordinator.getInstance().getGameSessionHwid(client);
         if (hwid == null)
-        {   // maybe this session was currently in-transition?
+        {   
+            // maybe this session was currently in-transition?
             return null;
         }
 
@@ -357,6 +358,8 @@ public class SessionCoordinator
         {
             client = fetchInTransitionSessionClient(client);
         }
+        if (client == null)
+            return;
 
         var hwid = client.getHwid();
         client.setHwid(null); // making sure to clean up calls to this function on login phase

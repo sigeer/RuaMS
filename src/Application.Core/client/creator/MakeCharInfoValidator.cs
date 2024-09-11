@@ -15,12 +15,12 @@ public class MakeCharInfoValidator
     static MakeCharInfoValidator()
     {
         Data data = DataProviderFactory.getDataProvider(WZFiles.ETC).getData("MakeCharInfo.img");
-        charFemale = new MakeCharInfo(data.getChildByPath("Info/CharFemale"));
-        charMale = new MakeCharInfo(data.getChildByPath("Info/CharMale"));
-        orientCharFemale = new MakeCharInfo(data.getChildByPath("OrientCharFemale"));
-        orientCharMale = new MakeCharInfo(data.getChildByPath("OrientCharMale"));
-        premiumCharFemale = new MakeCharInfo(data.getChildByPath("PremiumCharFemale"));
-        premiumCharMale = new MakeCharInfo(data.getChildByPath("PremiumCharMale"));
+        charFemale = new MakeCharInfo(data.getChildByPath("Info/CharFemale")!);
+        charMale = new MakeCharInfo(data.getChildByPath("Info/CharMale")!);
+        orientCharFemale = new MakeCharInfo(data.getChildByPath("OrientCharFemale")!);
+        orientCharMale = new MakeCharInfo(data.getChildByPath("OrientCharMale")!);
+        premiumCharFemale = new MakeCharInfo(data.getChildByPath("PremiumCharFemale")!);
+        premiumCharMale = new MakeCharInfo(data.getChildByPath("PremiumCharMale")!);
     }
 
     private static MakeCharInfo? getMakeCharInfo(IPlayer character)

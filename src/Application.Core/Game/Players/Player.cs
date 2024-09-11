@@ -113,11 +113,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public IPlayer generateCharacterEntry()
-        {
-            return this;
-        }
-
         public void StartPlayerTask()
         {
             buffExpireTask();

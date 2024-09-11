@@ -101,7 +101,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
         }
         else
         {
-            var weapon = chr.getInventory(InventoryType.EQUIPPED).getItem(-11);
+            var weapon = chr.getInventory(InventoryType.EQUIPPED).getItem(-11)!;
             WeaponType type = ItemInformationProvider.getInstance().getWeaponType(weapon.getItemId());
             if (type == WeaponType.NOT_A_WEAPON)
             {
@@ -145,7 +145,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             Inventory inv = chr.getInventory(InventoryType.USE);
             for (short i = 1; i <= inv.getSlotLimit(); i++)
             {
-                Item item = inv.getItem(i);
+                var item = inv.getItem(i);
                 if (item != null)
                 {
                     int id = item.getItemId();
@@ -255,7 +255,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
 
                 if (attack.skill != 0)
                 {
-                    var skill = SkillFactory.getSkill(attack.skill);
+                    var skill = SkillFactory.GetSkillTrust(attack.skill);
                     StatEffect effect_ = skill.getEffect(chr.getSkillLevel(skill));
                     if (effect_.getCooldown() > 0)
                     {

@@ -63,7 +63,6 @@ public class World : IWorld
 
     private ReaderWriterLockSlim chnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-    private Dictionary<int, SortedDictionary<int, IPlayer>> accountChars = new();
     private Dictionary<int, Storage> accountStorages = new();
     private object accountCharsLock = new object();
 
@@ -358,119 +357,7 @@ public class World : IWorld
         return (int)Math.Ceiling((double)travelTime / TravelRate);
     }
 
-    public void loadAccountCharactersView(int accountId)
-    {
-        Monitor.Enter(accountCharsLock);    // accountCharsLock should be used after server's lgnWLock for compliance
-        try
-        {
-            var accountPlayers = AccountManager.LoadAccountWorldPlayers(accountId, Id);
-            var chars = Players.GetPlayersByIds(accountPlayers);
-            SortedDictionary<int, IPlayer> charsMap = new();
-            foreach (IPlayer chr in chars)
-            {
-                charsMap.AddOrUpdate(chr.getId(), chr);
-            }
 
-            accountChars.AddOrUpdate(accountId, charsMap);
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-    }
-
-    public List<IPlayer> getAllCharactersView()
-    {
-        // sorting by accountid, charid
-        List<IPlayer> chrList = new();
-        Dictionary<int, SortedDictionary<int, IPlayer>> accChars;
-
-        Monitor.Enter(accountCharsLock);
-        try
-        {
-            accChars = new(accountChars);
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-
-        foreach (var e in getSortedAccountCharacterView(accChars))
-        {
-            chrList.AddRange(e.Value.Values);
-        }
-
-        return chrList;
-    }
-
-    public List<IPlayer> getAccountCharactersView(int accountId)
-    {
-        Monitor.Enter(accountCharsLock);
-        try
-        {
-            var accChars = accountChars.GetValueOrDefault(accountId);
-            if (accChars != null)
-            {
-                return new(accChars.Values);
-            }
-            else
-            {
-                accountChars.AddOrUpdate(accountId, new());
-                return new List<IPlayer>();
-            }
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-
-
-    }
-
-    public void registerAccountCharacterView(int accountId, IPlayer chr)
-    {
-        Monitor.Enter(accountCharsLock);
-        try
-        {
-            if (accountChars.ContainsKey(accountId))
-                accountChars[accountId].AddOrUpdate(chr.getId(), chr);
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-    }
-
-    public void unregisterAccountCharacterView(int accountId, int chrId)
-    {
-        Monitor.Enter(accountCharsLock);
-        try
-        {
-            if (accountChars.ContainsKey(accountId))
-                accountChars[accountId].Remove(chrId);
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-    }
-
-    public void clearAccountCharacterView(int accountId)
-    {
-        Monitor.Enter(accountCharsLock);
-        try
-        {
-            accountChars.Remove(accountId, out var accChars);
-            if (accChars != null)
-            {
-                accChars.Clear();
-            }
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-    }
 
     public void loadAccountStorage(int accountId)
     {
@@ -518,15 +405,9 @@ public class World : IWorld
         return m;
     }
 
-    private static List<KeyValuePair<int, SortedDictionary<int, IPlayer>>> getSortedAccountCharacterView(Dictionary<int, SortedDictionary<int, IPlayer>> map)
-    {
-        return map.OrderBy(x => x.Key).ToList(); ;
-    }
-
     public List<IPlayer> loadAndGetAllCharactersView()
     {
-        Server.getInstance().loadAllAccountsCharactersView();
-        return getAllCharactersView();
+        return Server.getInstance().loadAllAccountsCharactersView().Where(x => x.World == Id).ToList();
     }
 
 

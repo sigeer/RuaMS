@@ -769,7 +769,7 @@ public class AbstractPlayerInteraction
             {
                 if (randomStats)
                 {
-                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip?)item), false, petId);
+                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item), false, petId);
                 }
                 else
                 {

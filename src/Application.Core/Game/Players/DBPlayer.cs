@@ -190,8 +190,6 @@ namespace Application.Core.Game.Players
 
                 log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", Name);
 
-                Server.getInstance().updateCharacterEntry(this);
-
                 using var dbContext = new DBContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
                 var entity = dbContext.Characters.FirstOrDefault(x => x.Id == getId());

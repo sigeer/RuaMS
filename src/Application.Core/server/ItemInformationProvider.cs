@@ -183,7 +183,7 @@ public class ItemInformationProvider
         List<ItemInfoBase> itemPairs = new();
         Data? itemsData;
 
-        itemsData = stringData.getData("Etc.img").getChildByPath("Etc");
+        itemsData = stringData.getData("Etc.img").getChildByPath("Etc")!;
         foreach (Data itemFolder in itemsData.getChildren())
         {
             itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
@@ -2285,6 +2285,7 @@ public class ItemInformationProvider
                     reqLevel = 0;
                 }
             }
+            var equipState = getEquipStats(equip.getItemId());
             /*
              int reqJob = getEquipStats(equip.getItemId()).get("reqJob");
              if (reqJob != 0) {
@@ -2295,26 +2296,26 @@ public class ItemInformationProvider
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqDEX") > tdex)
+            else if (equipState?.get("reqDEX") > tdex)
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqSTR") > tstr)
+            else if (equipState?.get("reqSTR") > tstr)
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqLUK") > tluk)
+            else if (equipState?.get("reqLUK") > tluk)
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqINT") > tint)
+            else if (equipState?.get("reqINT") > tint)
             {
                 continue;
             }
-            var reqPOP = getEquipStats(equip.getItemId()).get("reqPOP");
+            var reqPOP = equipState?.get("reqPOP");
             if (reqPOP > 0)
             {
-                if (getEquipStats(equip.getItemId()).get("reqPOP") > fame)
+                if (reqPOP > fame)
                 {
                     continue;
                 }
@@ -2375,30 +2376,32 @@ public class ItemInformationProvider
         }
         int i = 0; //lol xD
                    //Removed job check. Shouldn't really be needed.
+
+        var equipState = getEquipStats(equip.getItemId());
         if (reqLevel > chr.getLevel())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqDEX") > chr.getTotalDex())
+        else if (equipState?.get("reqDEX") > chr.getTotalDex())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqSTR") > chr.getTotalStr())
+        else if (equipState?.get("reqSTR") > chr.getTotalStr())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqLUK") > chr.getTotalLuk())
+        else if (equipState?.get("reqLUK") > chr.getTotalLuk())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqINT") > chr.getTotalInt())
+        else if (equipState?.get("reqINT") > chr.getTotalInt())
         {
             i++;
         }
-        var reqPOP = getEquipStats(equip.getItemId()).get("reqPOP");
+        var reqPOP = equipState?.get("reqPOP");
         if (reqPOP > 0)
         {
-            if (getEquipStats(equip.getItemId()).get("reqPOP") > chr.getFame())
+            if (reqPOP > chr.getFame())
             {
                 i++;
             }
@@ -2914,7 +2917,7 @@ public class ItemInformationProvider
 
         public int itemid, period;
         public short prob, quantity;
-        public string effect, worldmsg;
+        public string? effect, worldmsg;
     }
 
     public class QuestConsItem

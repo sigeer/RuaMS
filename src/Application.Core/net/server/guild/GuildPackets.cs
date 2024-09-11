@@ -543,7 +543,7 @@ public class GuildPackets
         p.writeInt(alliance.getCapacity());
         p.writeString(alliance.getNotice());
         p.writeInt(expelledGuild);
-        getGuildInfo(p, Server.getInstance().getGuild(expelledGuild, null));
+        getGuildInfo(p, Server.getInstance().getGuild(expelledGuild));
         p.writeByte(0x01);
         return p;
     }
