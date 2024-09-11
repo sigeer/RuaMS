@@ -21,9 +21,11 @@
  */
 
 
+using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.Managers;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -407,7 +409,7 @@ public class AbstractPlayerInteraction
         openNpc(npcid, null);
     }
 
-    public void openNpc(int npcid, string script)
+    public void openNpc(int npcid, string? script)
     {
         if (c.getCM() != null)
         {
@@ -630,7 +632,7 @@ public class AbstractPlayerInteraction
             return (null);
         }
 
-        Item tmp = gainItem(afterId, 1, false, true, period, target);
+        var tmp = gainItem(afterId, 1, false, true, period, target);
 
         /*
         evolved = Pet.loadFromDb(tmp.getItemId(), tmp.getPosition(), tmp.getPetId());
@@ -698,24 +700,25 @@ public class AbstractPlayerInteraction
         {
             if (ItemConstants.isPet(id))
             {
-                petId = Pet.createPet(id);
+                petId = ItemManager.CreatePet(id);
 
                 if (from != null)
                 {
-                    evolved = Pet.loadFromDb(id, 0, petId);
+                    evolved = ItemManager.loadFromDb(id, 0, petId)!;
 
                     Point pos = getPlayer().getPosition();
                     pos.Y -= 12;
                     evolved.setPos(pos);
                     evolved.setFh(getPlayer().getMap().getFootholds().findBelow(evolved.getPos()).getId());
                     evolved.setStance(0);
-                    evolved.setSummoned(true);
+                    evolved.Summoned = true;
 
-                    evolved.setName(from.getName().CompareTo(ItemInformationProvider.getInstance().getName(from.getItemId())) != 0 ? from.getName() : ItemInformationProvider.getInstance().getName(id));
-                    evolved.setTameness(from.getTameness());
-                    evolved.setFullness(from.getFullness());
-                    evolved.setLevel(from.getLevel());
-                    evolved.setExpiration(DateTimeOffset.Now.ToUnixTimeMilliseconds() + expires);
+                    var fromDefaultName = ItemInformationProvider.getInstance().getName(from.getItemId());
+                    evolved.Name = from.Name?.CompareTo(fromDefaultName) != 0 ? from.Name : ItemInformationProvider.getInstance().getName(id);
+                    evolved.Tameness = from.Tameness;
+                    evolved.Fullness = from.Fullness;
+                    evolved.Level = from.Level;
+                    evolved.setExpiration(DateTimeOffset.Now.AddMicroseconds(expires).ToUnixTimeMilliseconds());
                     evolved.saveToDb();
                 }
 
@@ -766,7 +769,7 @@ public class AbstractPlayerInteraction
             {
                 if (randomStats)
                 {
-                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip?)item), false, petId);
+                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item), false, petId);
                 }
                 else
                 {
@@ -974,6 +977,9 @@ public class AbstractPlayerInteraction
         //5 players = +20% bonus (120)
         //6 players = +30% bonus (130)
         var party = getPlayer().getParty();
+        if (party == null)
+            return;
+
         int size = party.getMembers().Count;
 
         if (instance)
@@ -1103,7 +1109,7 @@ public class AbstractPlayerInteraction
 
     public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration, bool force)
     {
-        var skill = SkillFactory.getSkill(skillid);
+        var skill = SkillFactory.GetSkillTrust(skillid);
         var skillEntry = getPlayer().getSkills().GetValueOrDefault(skill);
         if (skillEntry != null)
         {

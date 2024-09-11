@@ -102,7 +102,7 @@ public class WorldChannel : IWorldChannel
         this.mapManager = new MapManager(null, this.world, channel);
         this.port = BASE_PORT + (this.channel - 1) + (this.world * 100);
         this.ip = YamlConfig.config.server.HOST + ":" + port;
-        log = LogFactory.GetLogger($"World_{world}/Channel_{channel}");
+        log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
         try
         {
             this.channelServer = initServer(port, this.world, channel);

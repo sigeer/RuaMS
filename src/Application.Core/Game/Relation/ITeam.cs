@@ -19,7 +19,7 @@ namespace Application.Core.Game.Relation
         int getId();
         IPlayer getLeader();
         int getLeaderId();
-        IPlayer getMemberById(int id);
+        IPlayer? getMemberById(int id);
         IPlayer? getMemberByPos(int pos);
         ICollection<IPlayer> getMembers();
         List<int> getMembersSortedByHistory();

@@ -19,7 +19,7 @@
 */
 
 
-using client.inventory;
+using Application.Core.Game.Items;
 using provider;
 
 namespace server.quest.actions;

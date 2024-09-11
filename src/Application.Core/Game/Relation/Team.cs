@@ -92,19 +92,12 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public IPlayer getMemberById(int id)
+        public IPlayer? getMemberById(int id)
         {
             Monitor.Enter(lockObj);
             try
             {
-                foreach (IPlayer chr in members)
-                {
-                    if (chr.getId() == id)
-                    {
-                        return chr;
-                    }
-                }
-                return null;
+                return members.FirstOrDefault(x => x.getId() == id);
             }
             finally
             {

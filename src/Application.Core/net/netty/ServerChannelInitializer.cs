@@ -9,16 +9,10 @@ using tools;
 
 namespace net.netty;
 
-
-
-
 public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChannel>
 {
     private static ILogger log = LogFactory.GetLogger("ServerChannelInitializer");
     private static int IDLE_TIME_SECONDS = 30;
-    private static bool LOG_PACKETS = YamlConfig.config.server.USE_DEBUG_SHOW_PACKET;
-    private static IChannelHandler sendPacketLogger = new OutPacketLogger();
-    private static IChannelHandler receivePacketLogger = new InPacketLogger();
 
     protected static AtomicLong sessionId = new AtomicLong(7777);
 
@@ -57,10 +51,10 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
         pipeline.AddLast("PacketCodec", new PacketCodec(ClientCyphers.of(sendIv, recvIv)));
         pipeline.AddLast("Client", client);
 
-        if (LOG_PACKETS)
+        if (YamlConfig.config.server.USE_DEBUG_SHOW_PACKET)
         {
-            pipeline.AddBefore("Client", "SendPacketLogger", sendPacketLogger);
-            pipeline.AddBefore("Client", "ReceivePacketLogger", receivePacketLogger);
+            pipeline.AddBefore("Client", "SendPacketLogger", new OutPacketLogger());
+            pipeline.AddBefore("Client", "ReceivePacketLogger", new InPacketLogger());
         }
     }
 }

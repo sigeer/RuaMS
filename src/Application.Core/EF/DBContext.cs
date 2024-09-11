@@ -110,7 +110,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Nxcoupon> Nxcoupons { get; set; }
 
-    public virtual DbSet<DB_Pet> Pets { get; set; }
+    public virtual DbSet<PetEntity> Pets { get; set; }
 
     public virtual DbSet<Petignore> Petignores { get; set; }
 
@@ -1920,7 +1920,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("starthour");
         });
 
-        modelBuilder.Entity<DB_Pet>(entity =>
+        modelBuilder.Entity<PetEntity>(entity =>
         {
             entity.HasKey(e => e.Petid).HasName("PRIMARY");
 
@@ -2498,10 +2498,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Skilllevel)
                 .HasColumnType("int(11)")
                 .HasColumnName("skilllevel");
-
-            entity.HasOne(d => d.Character).WithMany(p => p.Skills)
-                .HasForeignKey(d => d.Characterid)
-                .HasConstraintName("skills_chrid_fk");
         });
 
         modelBuilder.Entity<Skillmacro>(entity =>

@@ -93,7 +93,6 @@ public abstract class AbstractScriptManager
             engine.AddHostType(typeof(GameConstants));
             engine.AddHostType(typeof(PlayerNPC));
             engine.AddHostType(typeof(ShopFactory));
-
             engine.AddHostType(typeof(PacketCreator));
             engine.AddHostType(typeof(InventoryType));
             engine.AddHostType(typeof(YamlConfig));

@@ -24,6 +24,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
@@ -72,7 +73,7 @@ public class ForceVacCommand : Command
                 }
                 else if (mapItem.getItem().getItemId() >= 5000000 && mapItem.getItem().getItemId() <= 5000100)
                 {
-                    int petId = Pet.createPet(mapItem.getItem().getItemId());
+                    int petId = ItemManager.CreatePet(mapItem.getItem().getItemId());
                     if (petId == -1)
                     {
                         continue;

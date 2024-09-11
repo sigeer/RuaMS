@@ -178,9 +178,7 @@ function setup(level, lobbyid) {
 function isTeamAllCouple(eim) {     // everyone partner of someone on the team
     var eventPlayers = eim.getPlayers();
 
-    for (var iterator = eventPlayers.iterator(); iterator.hasNext();) {
-        var chr = iterator.next();
-
+    for (var chr of eventPlayers) {
         var pid = chr.getPartnerId();
         if (pid <= 0 || eim.getPlayerById(pid) == null) {
             return false;

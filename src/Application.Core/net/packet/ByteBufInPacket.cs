@@ -18,7 +18,11 @@ public class ByteBufInPacket : InPacket
 
     public byte[] getBytes()
     {
-        return byteBuf.Array;
+        byteBuf.MarkReaderIndex();
+        var bytes = new byte[byteBuf.ReadableBytes];
+        byteBuf.ReadBytes(bytes);
+        byteBuf.ResetReaderIndex();
+        return bytes;
     }
 
     public byte readByte()

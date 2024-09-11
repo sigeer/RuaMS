@@ -53,9 +53,7 @@ function hasSuitForWedding(player) {
 function getMarriageInstance(weddingId) {
     var em = cm.getEventManager(weddingEventName);
 
-    for (var iterator = em.getInstances().iterator(); iterator.hasNext();) {
-        var eim = iterator.next();
-
+    for (var eim of em.getInstances()) {
         if (eim.getIntProperty("weddingId") == weddingId) {
             return eim;
         }

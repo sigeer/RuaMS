@@ -189,6 +189,4 @@ public class CharacterEntity : IDB_Character
 
     public virtual FamilyCharacter? FamilyCharacter { get; set; }
 
-    public virtual ICollection<SkillEntity> Skills { get; set; } = new List<SkillEntity>();
-
 }

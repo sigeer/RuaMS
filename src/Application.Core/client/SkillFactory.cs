@@ -51,7 +51,8 @@ public class SkillFactory
         Dictionary<int, Skill> loadedSkills = new();
         DataDirectoryEntry root = datasource.getRoot();
         foreach (DataFileEntry topDir in root.getFiles())
-        { // Loop thru jobs
+        { 
+            // Loop thru jobs
             if (topDir.getName().Length <= 8)
             {
                 foreach (var data in datasource.getData(topDir.getName()))

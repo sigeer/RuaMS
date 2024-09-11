@@ -5,7 +5,7 @@ namespace net.netty;
 
 public class LoginServerInitializer : ServerChannelInitializer
 {
-    private static ILogger log = LogFactory.GetLogger("LoginServerInitializer");
+    private static ILogger log = LogFactory.GetLogger("ServerChannelInitializer/Login");
 
     protected override void InitChannel(ISocketChannel socketChannel)
     {

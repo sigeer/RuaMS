@@ -35,5 +35,7 @@ namespace Application.Core.Loggers
             return GetLogger($"{type}/{type}_{new RangeNumberGenerator(accountId, RangeSteps.Accounts)}/{accountId}/{type}");
         }
 
+        public static ILogger ResLogger => GetLogger($"Res");
+
     }
 }

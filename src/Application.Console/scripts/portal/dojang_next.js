@@ -42,10 +42,7 @@ function enter(pi) {
                         for (var i = 0; i < 5; i++) {
                             var chrlist = pi.getMap(mapId - 100 * i).getAllPlayers();
 
-                            var pIter = chrlist.iterator();
-                            while (pIter.hasNext()) {
-                                var chr = pIter.next();
-
+                            for (var chr of chrlist) {
                                 for (var j = i; j >= 0; j--) {
                                     chr.message("You received " + chr.addDojoPointsByMap(mapId - 100 * j) + " training points. Your total training points score is now " + chr.getDojoPoints() + ".");
                                 }

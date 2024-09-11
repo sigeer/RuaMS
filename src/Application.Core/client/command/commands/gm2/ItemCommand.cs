@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;
@@ -75,7 +76,7 @@ public class ItemCommand : Command
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
                 long expiration = DateTimeOffset.Now.AddDays(days).ToUnixTimeMilliseconds();
-                int petid = Pet.createPet(itemId);
+                int petid = ItemManager.CreatePet(itemId);
 
                 InventoryManipulator.addById(c, itemId, quantity, player.getName(), petid, expiration: expiration);
                 return;

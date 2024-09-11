@@ -1,10 +1,10 @@
 ﻿namespace Application.EF.Entities;
 
-public partial class DB_Pet
+public partial class PetEntity
 {
     public int Petid { get; set; }
 
-    public string Name { get; set; } = null!;
+    public string? Name { get; set; }
 
     public int Level { get; set; }
 

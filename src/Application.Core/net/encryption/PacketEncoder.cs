@@ -1,5 +1,3 @@
-
-
 using DotNetty.Buffers;
 using DotNetty.Codecs;
 using DotNetty.Transport.Channels;

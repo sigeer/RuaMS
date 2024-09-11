@@ -47,7 +47,8 @@ public class XMLDomMapleData : Data
     ConcurrentDictionary<string, Data?> dataCache = new ConcurrentDictionary<string, Data?>();
     object getChildLock = new object();
     public Data? getChildByPath(string path)
-    {  // the whole XML reading system seems susceptible to give nulls on strenuous read scenarios
+    {  
+        // the whole XML reading system seems susceptible to give nulls on strenuous read scenarios
         lock (getChildLock)
         {
             string[] segments = path.Split("/");
@@ -93,23 +94,19 @@ public class XMLDomMapleData : Data
 
     public List<Data> getChildren()
     {
-        lock (getChildLock)
+        BlockingCollection<Data> ret = new();
+
+        XmlNodeList childNodes = node.ChildNodes;
+        Parallel.For(0, childNodes.Count, i =>
         {
-            List<Data> ret = new();
-
-            XmlNodeList childNodes = node.ChildNodes;
-            for (int i = 0; i < childNodes.Count; i++)
+            XmlNode? childNode = childNodes.Item(i);
+            if (childNode != null && childNode.NodeType == XmlNodeType.Element)
             {
-                XmlNode? childNode = childNodes.Item(i);
-                if (childNode != null && childNode.NodeType == XmlNodeType.Element)
-                {
-                    XMLDomMapleData child = new XMLDomMapleData(childNode);
-                    ret.Add(child);
-                }
+                XMLDomMapleData child = new XMLDomMapleData(childNode);
+                ret.Add(child);
             }
-
-            return ret;
-        }
+        });
+        return ret.ToList();
     }
 
     object getDataLock = new object();

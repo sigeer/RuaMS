@@ -9,8 +9,8 @@ namespace Application.Core.EF.Entities
         {
             CreateMap<CharacterEntity, Player>()
                 .ForMember(x => x.MesoValue, opt => opt.MapFrom(x => new AtomicInteger(x.Meso)))
-                .ForMember(x => x.ExpValue, opt => opt.MapFrom(x => new AtomicLong(x.Exp)))
-                .ForMember(x => x.Gachaexp, opt => opt.MapFrom(x => new AtomicLong(x.Gachaexp)))
+                .ForMember(x => x.ExpValue, opt => opt.MapFrom(x => new AtomicInteger(x.Exp)))
+                .ForMember(x => x.GachaExpValue, opt => opt.MapFrom(x => new AtomicInteger(x.Gachaexp)))
                 .ForMember(x => x.RemainingSp, opt => opt.MapFrom(x => TranslateArray(x.Sp)))
                 .AfterMap((before, after) => after.Reload())
                 .ReverseMap()

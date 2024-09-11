@@ -74,7 +74,7 @@ public class ItemInformationProvider
     protected Dictionary<int, int> projectileWatkCache = new();
     protected Dictionary<int, string?> nameCache = new();
     protected Dictionary<int, string> descCache = new();
-    protected Dictionary<int, string> msgCache = new();
+    protected Dictionary<int, string?> msgCache = new();
     protected Dictionary<int, bool> accountItemRestrictionCache = new();
     protected Dictionary<int, bool> dropRestrictionCache = new();
     protected Dictionary<int, bool> pickupRestrictionCache = new();
@@ -93,6 +93,7 @@ public class ItemInformationProvider
     protected Dictionary<int, int> levelCache = new();
     protected Dictionary<int, KeyValuePair<int, List<RewardItem>>> rewardCache = new();
     protected List<ItemInfoBase> itemNameCache = new();
+    protected List<ItemInfoBase> etcItemCache = new List<ItemInfoBase>();
     protected Dictionary<int, bool> consumeOnPickupCache = new();
     protected Dictionary<int, bool> isQuestItemCache = new();
     protected Dictionary<int, bool> isPartyQuestItemCache = new();
@@ -167,24 +168,27 @@ public class ItemInformationProvider
         {
             itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
+
+        itemNameCache = itemPairs;
         return itemPairs;
     }
 
     public List<ItemInfoBase> getAllEtcItems()
     {
-        if (itemNameCache.Count > 0)
+        if (etcItemCache.Count > 0)
         {
-            return itemNameCache;
+            return etcItemCache;
         }
 
         List<ItemInfoBase> itemPairs = new();
         Data? itemsData;
 
-        itemsData = stringData.getData("Etc.img").getChildByPath("Etc");
+        itemsData = stringData.getData("Etc.img").getChildByPath("Etc")!;
         foreach (Data itemFolder in itemsData.getChildren())
         {
             itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
+        etcItemCache = itemPairs;
         return itemPairs;
     }
 
@@ -723,7 +727,27 @@ public class ItemInformationProvider
     public WeaponType getWeaponType(int itemId)
     {
         int cat = (itemId / 10000) % 100;
-        WeaponType[] type = { WeaponType.SWORD1H, WeaponType.GENERAL1H_SWING, WeaponType.GENERAL1H_SWING, WeaponType.DAGGER_OTHER, WeaponType.NOT_A_WEAPON, WeaponType.NOT_A_WEAPON, WeaponType.NOT_A_WEAPON, WeaponType.WAND, WeaponType.STAFF, WeaponType.NOT_A_WEAPON, WeaponType.SWORD2H, WeaponType.GENERAL2H_SWING, WeaponType.GENERAL2H_SWING, WeaponType.SPEAR_STAB, WeaponType.POLE_ARM_SWING, WeaponType.BOW, WeaponType.CROSSBOW, WeaponType.CLAW, WeaponType.KNUCKLE, WeaponType.GUN };
+        WeaponType[] type = {
+            WeaponType.SWORD1H,
+            WeaponType.GENERAL1H_SWING,
+            WeaponType.GENERAL1H_SWING,
+            WeaponType.DAGGER_OTHER,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.WAND,
+            WeaponType.STAFF,
+            WeaponType.NOT_A_WEAPON,
+            WeaponType.SWORD2H,
+            WeaponType.GENERAL2H_SWING,
+            WeaponType.GENERAL2H_SWING,
+            WeaponType.SPEAR_STAB,
+            WeaponType.POLE_ARM_SWING,
+            WeaponType.BOW,
+            WeaponType.CROSSBOW,
+            WeaponType.CLAW,
+            WeaponType.KNUCKLE,
+            WeaponType.GUN };
         if (cat < 30 || cat > 49)
         {
             return WeaponType.NOT_A_WEAPON;
@@ -2157,10 +2181,17 @@ public class ItemInformationProvider
 
     public bool isTwoHanded(int itemId)
     {
-        var arr = new double[] { (double)WeaponType.GENERAL2H_SWING , (double)WeaponType.BOW ,
-        (double)WeaponType.CLAW,(double)WeaponType.CROSSBOW,(double)WeaponType.POLE_ARM_SWING,
-       (double)WeaponType.SPEAR_STAB, (double)WeaponType.SWORD2H,   (double)WeaponType.GUN, (double)WeaponType.KNUCKLE};
-        return arr.Contains((double)getWeaponType(itemId));
+        var arr = new WeaponType[] {
+            WeaponType.GENERAL2H_SWING ,
+            WeaponType.BOW ,
+            WeaponType.CLAW,
+            WeaponType.CROSSBOW,
+            WeaponType.POLE_ARM_SWING,
+            WeaponType.SPEAR_STAB,
+            WeaponType.SWORD2H,
+            WeaponType.GUN,
+            WeaponType.KNUCKLE};
+        return arr.Contains(getWeaponType(itemId));
     }
 
     public bool isCash(int itemId)
@@ -2254,6 +2285,7 @@ public class ItemInformationProvider
                     reqLevel = 0;
                 }
             }
+            var equipState = getEquipStats(equip.getItemId());
             /*
              int reqJob = getEquipStats(equip.getItemId()).get("reqJob");
              if (reqJob != 0) {
@@ -2264,26 +2296,26 @@ public class ItemInformationProvider
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqDEX") > tdex)
+            else if (equipState?.get("reqDEX") > tdex)
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqSTR") > tstr)
+            else if (equipState?.get("reqSTR") > tstr)
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqLUK") > tluk)
+            else if (equipState?.get("reqLUK") > tluk)
             {
                 continue;
             }
-            else if (getEquipStats(equip.getItemId()).get("reqINT") > tint)
+            else if (equipState?.get("reqINT") > tint)
             {
                 continue;
             }
-            var reqPOP = getEquipStats(equip.getItemId()).get("reqPOP");
+            var reqPOP = equipState?.get("reqPOP");
             if (reqPOP > 0)
             {
-                if (getEquipStats(equip.getItemId()).get("reqPOP") > fame)
+                if (reqPOP > fame)
                 {
                     continue;
                 }
@@ -2344,30 +2376,32 @@ public class ItemInformationProvider
         }
         int i = 0; //lol xD
                    //Removed job check. Shouldn't really be needed.
+
+        var equipState = getEquipStats(equip.getItemId());
         if (reqLevel > chr.getLevel())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqDEX") > chr.getTotalDex())
+        else if (equipState?.get("reqDEX") > chr.getTotalDex())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqSTR") > chr.getTotalStr())
+        else if (equipState?.get("reqSTR") > chr.getTotalStr())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqLUK") > chr.getTotalLuk())
+        else if (equipState?.get("reqLUK") > chr.getTotalLuk())
         {
             i++;
         }
-        else if (getEquipStats(equip.getItemId()).get("reqINT") > chr.getTotalInt())
+        else if (equipState?.get("reqINT") > chr.getTotalInt())
         {
             i++;
         }
-        var reqPOP = getEquipStats(equip.getItemId()).get("reqPOP");
+        var reqPOP = equipState?.get("reqPOP");
         if (reqPOP > 0)
         {
-            if (getEquipStats(equip.getItemId()).get("reqPOP") > chr.getFame())
+            if (reqPOP > chr.getFame())
             {
                 i++;
             }
@@ -2883,7 +2917,7 @@ public class ItemInformationProvider
 
         public int itemid, period;
         public short prob, quantity;
-        public string effect, worldmsg;
+        public string? effect, worldmsg;
     }
 
     public class QuestConsItem

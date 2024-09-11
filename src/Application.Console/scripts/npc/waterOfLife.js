@@ -61,15 +61,12 @@ function action(mode, type, selection) {
             var listStr = "";
             var i = 0;
 
-            var dIter = dList.iterator();
-            while (dIter.hasNext()) {
-                var dPet = dIter.next();
-
+            for(var dPet of dList) {
                 listStr += "#b#L" + i + "# " + dPet.getName() + " #k - Lv " + dPet.getLevel() + " Closeness " + dPet.getTameness();
                 listStr += "#l\r\n";
 
                 i++;
-            }
+            });
 
             cm.sendSimple(talkStr + listStr);
         } else if (status == 2) {

@@ -63,7 +63,7 @@ public class Guild : IGuild
     private Dictionary<int, List<int>> notifications = new();
     private bool bDirty = true;
 
-    readonly IMapper Mapper = GlobalConfigs.Mapper;
+    readonly IMapper Mapper = GlobalTools.Mapper;
 
     public Guild(List<IPlayer> members)
     {
@@ -76,8 +76,7 @@ public class Guild : IGuild
         if (world != -1)
             return world;
 
-        using var dbContext = new DBContext();
-        return world = dbContext.Characters.FirstOrDefault(x => x.GuildId == GuildId)!.World;
+        return world = members.FirstOrDefault(x => x.GuildId == GuildId)!.World;
     }
 
     private IWorld GetWorldModel()

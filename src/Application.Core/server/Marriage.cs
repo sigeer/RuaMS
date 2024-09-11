@@ -41,7 +41,7 @@ public class Marriage : EventInstanceManager
 
     public List<string> getWishlistItems(bool groom)
     {
-        string strItems = this.getProperty(groom ? "groomWishlist" : "brideWishlist");
+        var strItems = this.getProperty(groom ? "groomWishlist" : "brideWishlist");
         if (strItems != null)
         {
             return Arrays.asList(strItems.Split("\r\n"));

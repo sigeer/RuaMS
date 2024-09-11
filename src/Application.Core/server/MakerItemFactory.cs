@@ -232,7 +232,8 @@ public class MakerItemFactory
         }
 
         public bool isInvalid()
-        {    // thanks Rohenn, Wh1SK3Y for noticing some items not getting checked properly
+        {
+            // thanks Rohenn, Wh1SK3Y for noticing some items not getting checked properly
             return reqLevel < 0;
         }
     }

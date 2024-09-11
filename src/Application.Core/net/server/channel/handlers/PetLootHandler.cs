@@ -49,7 +49,7 @@ public class PetLootHandler : AbstractPacketHandler
 
         p.skip(13);
         int oid = p.readInt();
-        var ob = chr.getMap().getMapObject(oid);
+        var ob = chr.getMap().getMapObject(oid)!;
         try
         {
             MapItem mapitem = (MapItem)ob;
@@ -92,7 +92,7 @@ public class PetLootHandler : AbstractPacketHandler
 
             chr.pickupItem(ob, petIndex);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             c.sendPacket(PacketCreator.enableActions());
         }

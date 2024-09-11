@@ -496,9 +496,7 @@ function refineItems(refineType) {
 
     var refineFees = [[300, 300, 300, 500, 500, 500, 800, 270], [500, 500, 500, 500, 500, 500, 500, 1000, 3000], [5000, 5000, 5000, 5000, 1000000]];
     var itemCount = {};
-    var iter = cm.getPlayer().getInventory(InventoryType.ETC).iterator();
-    while (iter.hasNext()) {
-        var it = iter.next();
+    for (var it of cm.getPlayer().getInventory(InventoryType.ETC)) {
         var itemid = it.getItemId();
 
         if (isRefineTarget(refineType, itemid)) {
@@ -550,9 +548,7 @@ function refineRockItems() {
 
     var rockItems = [4011007, 4021009];
     var rockFees = [10000, 15000];
-    var iter = cm.getPlayer().getInventory(InventoryType.ETC).iterator();
-    while (iter.hasNext()) {
-        var it = iter.next();
+    for (var it of cm.getPlayer().getInventory(InventoryType.ETC)) {
         var itemid = it.getItemId();
         var rockRefine = getRockRefineTarget(itemid);
         if (rockRefine >= 0) {

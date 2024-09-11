@@ -24,7 +24,7 @@ namespace Application.Core.scripting.Event.jobs
                     await scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
                     await scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
 
-                    Log.Logger.Debug($"task {context.JobDetail.Key} removed");
+                    Log.Logger.Debug($"Task {context.JobDetail.Key} removed after executed");
                 }
             }
         }

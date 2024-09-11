@@ -55,7 +55,7 @@ namespace Application.Core.Managers
             var members = dbContext.Characters.Where(x => x.GuildId == guildId).Select(x => x.Id).ToList();
             var memberList = players.GetPlayersByIds(members).OrderBy(x => x.GuildRank).ThenBy(x => x.Name).ToList();
             var guidModel = new Guild(memberList);
-            var guild = GlobalConfigs.Mapper.Map<GuildEntity, Guild>(dbModel, guidModel);
+            var guild = GlobalTools.Mapper.Map<GuildEntity, Guild>(dbModel, guidModel);
             return guild;
         }
 

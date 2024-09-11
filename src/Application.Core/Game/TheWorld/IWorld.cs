@@ -43,7 +43,6 @@ namespace Application.Core.Game.TheWorld
         void buddyChat(int[] recipientCharacterIds, int cidFrom, string nameFrom, string chattext);
         bool canUninstall();
         void changeEmblem(int gid, List<int> affectedPlayers, IGuild mgs);
-        void clearAccountCharacterView(int accountId);
         Messenger createMessenger(MessengerCharacter chrfor);
         ITeam createParty(IPlayer chrfor);
         int createRelationship(int groomId, int brideId);
@@ -63,11 +62,9 @@ namespace Application.Core.Game.TheWorld
         /// <param name="name">character name</param>
         /// <returns>channel</returns>
         int find(string name);
-        List<IPlayer> getAccountCharactersView(int accountId);
         Storage getAccountStorage(int accountId);
         List<HiredMerchant> getActiveMerchants();
         List<PlayerShop> getActivePlayerShops();
-        List<IPlayer> getAllCharactersView();
         List<KeyValuePair<PlayerShopItem, AbstractMapObject>> getAvailableItemBundles(int itemid);
         IWorldChannel getChannel(int channel);
         List<IWorldChannel> getChannels();
@@ -101,7 +98,6 @@ namespace Application.Core.Game.TheWorld
         bool isWorldCapacityFull();
         void joinMessenger(int messengerid, MessengerCharacter target, string from, int fromchannel);
         void leaveMessenger(int messengerid, MessengerCharacter target);
-        void loadAccountCharactersView(int accountId);
         void loadAccountStorage(int accountId);
         List<IPlayer> loadAndGetAllCharactersView();
         void loggedOff(string name, int characterId, int channel, int[] buddies);
@@ -112,7 +108,6 @@ namespace Application.Core.Game.TheWorld
         void partyChat(ITeam party, string chattext, string namefrom);
         void putGuildQueued(int guildId);
         void putMarriageQueued(int marriageId, bool cathedral, bool premium, int groomId, int brideId);
-        void registerAccountCharacterView(int accountId, IPlayer chr);
         bool registerDisabledServerMessage(int chrid);
         bool registerFisherPlayer(IPlayer chr, int baitLevel);
         void registerHiredMerchant(HiredMerchant hm);
@@ -154,7 +149,6 @@ namespace Application.Core.Game.TheWorld
         void shutdown();
         void silentJoinMessenger(int messengerid, MessengerCharacter target, int position);
         void silentLeaveMessenger(int messengerid, MessengerCharacter target);
-        void unregisterAccountCharacterView(int accountId, int chrId);
         void unregisterAccountStorage(int accountId);
         bool unregisterDisabledServerMessage(int chrid);
         int unregisterFisherPlayer(IPlayer chr);

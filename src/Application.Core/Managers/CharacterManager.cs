@@ -1,6 +1,7 @@
 ﻿using Application.Core.Game.Items;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Skills;
+using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using AutoMapper;
 using client;
@@ -9,7 +10,6 @@ using client.inventory.manipulator;
 using client.keybind;
 using client.newyear;
 using client.processor.npc;
-using constants.game;
 using constants.id;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +27,7 @@ namespace Application.Core.Managers
 {
     public class CharacterManager
     {
-        static IMapper Mapper = GlobalConfigs.Mapper;
+        static IMapper Mapper = GlobalTools.Mapper;
         public static string makeMapleReadable(string input)
         {
             string i = input.Replace('I', 'i');
@@ -234,6 +234,7 @@ namespace Application.Core.Managers
                 dbContext.SaveChanges();
                 dbTrans.Commit();
                 Server.getInstance().deleteCharacterEntry(accId, cid);
+                AllPlayerStorage.DeleteCharacter(cid);
                 return true;
             }
             catch (Exception e)
@@ -316,6 +317,13 @@ namespace Application.Core.Managers
             return dbContext.Characters.Where(x => x.Id == id).Select(x => x.Name).FirstOrDefault()!;
         }
 
+        /// <summary>
+        /// 角色
+        /// </summary>
+        /// <param name="charid"></param>
+        /// <param name="client"></param>
+        /// <param name="login"></param>
+        /// <returns></returns>
         public static IPlayer? LoadPlayerFromDB(int charid, IClient client, bool login)
         {
             try
@@ -403,6 +411,8 @@ namespace Application.Core.Managers
 
                 if (login)
                 {
+                    client.setPlayer(ret);
+
                     var mapManager = client.getChannelServer().getMapFactory();
                     ret.setMap(mapManager.getMap(ret.Map) ?? mapManager.getMap(MapId.HENESYS));
 
@@ -475,11 +485,9 @@ namespace Application.Core.Managers
                 var eventStatsFromDB = dbContext.Eventstats.Where(x => x.Characterid == ret.Id).Select(x => new { x.Name, x.Info }).ToList();
                 foreach (var item in eventStatsFromDB)
                 {
-                    string name = item.Name;
-                    // 全是rescueGaga才插入，应该会有重复键bug
                     if (item.Name == "rescueGaga")
                     {
-                        ret.Events.AddOrUpdate(name, new RescueGaga(item.Info));
+                        ret.Events.AddOrUpdate(item.Name, new RescueGaga(item.Info));
                     }
                 }
 
@@ -626,8 +634,11 @@ namespace Application.Core.Managers
                     // Fame history
                     var now = DateTimeOffset.Now;
                     var fameLogFromDB = dbContext.Famelogs.Where(x => x.Characterid == ret.Id && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
-                    ret.LastFameTime = fameLogFromDB.Max(x => x.When).ToUnixTimeMilliseconds();
-                    ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
+                    if (fameLogFromDB.Count > 0)
+                    {
+                        ret.LastFameTime = fameLogFromDB.Max(x => x.When).ToUnixTimeMilliseconds();
+                        ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
+                    }
 
                     ret.BuddyList.LoadFromDb();
                     ret.Storage = wserv.getAccountStorage(ret.AccountId);
@@ -652,9 +663,6 @@ namespace Application.Core.Managers
                     ret.QuickSlotKeyMapped = new QuickslotBinding(ret.QuickSlotLoaded);
                 }
 
-                if (login)
-                    client.setPlayer(ret);
-
                 return ret;
             }
             catch (Exception e)
@@ -664,56 +672,69 @@ namespace Application.Core.Managers
             return null;
         }
 
-        public static IPlayer GetPlayerPreview(CharacterEntity rs, List<Item>? equipped)
+
+        public static IPlayer? GetPlayerById(int chrId, bool showEquipped = false)
         {
-            var ret = Player.CreateEmptyPlayer();
-
-            try
-            {
-                Mapper.Map(rs, ret);
-
-                if (equipped != null)
-                {
-                    // players can have no equipped items at all, ofc
-                    Inventory inv = ret.Bag[InventoryType.EQUIPPED];
-                    foreach (Item item in equipped)
-                    {
-                        inv.addItemFromDB(item);
-                    }
-                }
-            }
-            catch (Exception sqle)
-            {
-                Log.Logger.Error(sqle.ToString());
-            }
-
-            return ret;
+            return GetPlayersById([chrId], showEquipped).FirstOrDefault();
         }
-
-        public static IPlayer? GetPlayerById(int Id)
-        {
-            return GetPlayersById([Id]).FirstOrDefault();
-        }
-
-        public static List<IPlayer> GetPlayersById(List<int> idList)
+        /// <summary>
+        /// 简化版获取角色，用于角色不在线时作为关联数据获取
+        /// </summary>
+        /// <param name="idList">角色Id</param>
+        /// <param name="showEquipped">是否加载穿戴的道具</param>
+        /// <returns></returns>
+        public static List<IPlayer> GetPlayersById(List<int> idList, bool showEquipped = false)
         {
             using var dbContext = new DBContext();
             var dataList = dbContext.Characters.AsNoTracking().Where(x => idList.Contains(x.Id)).ToList();
 
-            return new List<IPlayer>(dataList.Select(Mapper.Map<Player>).ToList());
+            var players = new List<IPlayer>(dataList.Select(Mapper.Map<Player>).ToList());
+            if (showEquipped)
+            {
+                foreach (var ret in players)
+                {
+                    var equipped = ItemFactory.loadEquippedItems(ret.AccountId, true, true);
+                    // players can have no equipped items at all, ofc
+                    Inventory inv = ret.Bag[InventoryType.EQUIPPED];
+                    foreach (var item in equipped)
+                    {
+                        inv.addItemFromDB(item.Key);
+                    }
+                }
+            }
+            return players;
         }
 
-        public static IPlayer? GetPlayerByName(string name)
+        public static IPlayer? GetPlayerByName(string name, bool showEquipped = false)
         {
-            return GetPlayersByName([name]).FirstOrDefault();
+            return GetPlayersByName([name], showEquipped).FirstOrDefault();
         }
-
-        public static List<IPlayer> GetPlayersByName(List<string> nameList)
+        /// <summary>
+        /// 简化版获取角色，用于角色不在线时作为关联数据获取
+        /// </summary>
+        /// <param name="nameList">角色name</param>
+        /// <param name="showEquipped">是否加载穿戴的道具</param>
+        /// <returns></returns>
+        public static List<IPlayer> GetPlayersByName(List<string> nameList, bool showEquipped = false)
         {
             using var dbContext = new DBContext();
             var dataList = dbContext.Characters.AsNoTracking().Where(x => nameList.Contains(x.Name)).ToList();
 
-            return new List<IPlayer>(dataList.Select(Mapper.Map<Player>).ToList());
+            var players = new List<IPlayer>(dataList.Select(Mapper.Map<Player>).ToList());
+            if (showEquipped)
+            {
+                foreach (var ret in players)
+                {
+                    var equipped = ItemFactory.loadEquippedItems(ret.AccountId, true, true);
+                    // players can have no equipped items at all, ofc
+                    Inventory inv = ret.Bag[InventoryType.EQUIPPED];
+                    foreach (var item in equipped)
+                    {
+                        inv.addItemFromDB(item.Key);
+                    }
+                }
+            }
+            return players;
         }
 
         public static CharacterBaseInfo GetCharacterFromDatabase(string name)
@@ -1029,8 +1050,6 @@ namespace Application.Core.Managers
 
                 // log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", player.Name);
 
-                Server.getInstance().updateCharacterEntry(player);
-
                 using var dbContext = new DBContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
                 var entity = dbContext.Characters.FirstOrDefault(x => x.Id == player.getId());
@@ -1039,7 +1058,7 @@ namespace Application.Core.Managers
 
                 try
                 {
-                    GlobalConfigs.Mapper.Map(player, entity);
+                    GlobalTools.Mapper.Map(player, entity);
 
                     if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
                     {

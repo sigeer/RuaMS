@@ -244,18 +244,16 @@ function getPlayerCardTierPower() {
     var cardset = cm.getPlayer().getMonsterBook().getCardSet();
     var countTier = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-    for (var iterator = cardset.iterator(); iterator.hasNext();) {
-        var ce = iterator.next();
-
-        var cardid = ce.getKey();
+    for (var ce of cardset) {
+        var cardid = ce.Key;
         var ceTier = Math.floor(cardid / 1000) % 10;
-        countTier[ceTier] += ce.getValue();
+        countTier[ceTier] += ce.Value;
 
         if (ceTier >= 8) {  // is special card
             var mobLevel = LifeFactory.getMonsterLevel(ItemInformationProvider.getInstance().getCardMobId(cardid));
             var mobTier = getLevelTier(mobLevel) - 1;
 
-            countTier[mobTier] += (ce.getValue() * 1.2);
+            countTier[mobTier] += (ce.Value * 1.2);
         }
     }
 

@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Items;
 using client.inventory;
 using net.packet;
 using tools;

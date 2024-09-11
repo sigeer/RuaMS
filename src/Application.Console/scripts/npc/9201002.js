@@ -36,8 +36,7 @@ function isWeddingIndoors(mapid) {
 function getMarriageInstance(player) {
     var em = cm.getEventManager(weddingEventName);
 
-    for (var iterator = em.getInstances().iterator(); iterator.hasNext();) {
-        var eim = iterator.next();
+    for (var eim of em.getInstances()) {
         if (eim.isEventLeader(player)) {
             return eim;
         }

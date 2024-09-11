@@ -35,7 +35,7 @@ namespace Application.Core.Game;
 public class Client : ChannelHandlerAdapter, IClient
 {
     ILogger? _log;
-    ILogger log => _log ?? (_log = LogFactory.GetLogger("Client"));
+    ILogger log => _log ?? (_log = LogFactory.GetLogger($"Client/Session_{sessionId}"));
     public static int LOGIN_NOTLOGGEDIN = 0;
     public static int LOGIN_SERVER_TRANSITION = 1;
     public static int LOGIN_LOGGEDIN = 2;
@@ -48,7 +48,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private string remoteAddress;
 
 
-    private IChannel ioChannel;
+    private IChannel ioChannel = null!;
     /// <summary>
     /// 启动了客户端，但是角色可能并不在线
     /// </summary>
@@ -152,7 +152,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public override void ChannelRead(IChannelHandlerContext ctx, object msg)
     {
-        if (!(msg is InPacket packet))
+        if (msg is not InPacket packet)
         {
             log.Warning("Received invalid message: {Packet}", msg);
             return;
@@ -176,8 +176,8 @@ public class Client : ChannelHandlerAdapter, IClient
             catch (Exception t)
             {
                 string chrInfo = Character != null ? Character.getName() + " on map " + Character.getMapId() : "?";
-                log.Warning("Error in packet handler {Handler}. Chr {CharacterName}, account {AccountName}. Packet: {Packet}", handler.GetType().Name,
-                        chrInfo, getAccountName(), packet, t);
+                log.Warning(t, "Error in packet handler {Handler}. Chr {CharacterName}, account {AccountName}. Packet: {Packet}", handler.GetType().Name,
+                        chrInfo, getAccountName(), packet);
                 //client.sendPacket(PacketCreator.enableActions());//bugs sometimes
             }
         }
@@ -316,14 +316,14 @@ public class Client : ChannelHandlerAdapter, IClient
         this.sendPacket(PacketCreator.getCharList(this, server, 0));
     }
 
-    public List<IPlayer> loadCharacters(int serverId)
+    public List<IPlayer> loadCharacters(int worldId)
     {
         List<IPlayer> chars = new(15);
         try
         {
-            foreach (var cni in loadCharactersInternal(serverId))
+            foreach (var cni in LoadAccountWorldCharacters(worldId))
             {
-                var m = CharacterManager.LoadPlayerFromDB(cni.id, this, false);
+                var m = AllPlayerStorage.GetOrAddCharacterById(cni.id);
                 if (m == null)
                 {
                     log.Warning($"LoadPlayerFromDB Failed for {cni.id}");
@@ -341,15 +341,10 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public List<string> loadCharacterNames(int worldId)
     {
-        List<string> chars = new(15);
-        foreach (var cni in loadCharactersInternal(worldId))
-        {
-            chars.Add(cni.name);
-        }
-        return chars;
+        return LoadAccountWorldCharacters(worldId).Select(x => x.name).ToList();
     }
 
-    private List<CharacterNameAndId> loadCharactersInternal(int worldId)
+    private List<CharacterNameAndId> LoadAccountWorldCharacters(int worldId)
     {
         using var dbContext = new DBContext();
         return dbContext.Characters.Where(x => x.AccountId == accId && x.World == worldId).Select(x => new CharacterNameAndId(x.Id, x.Name)).Take(15).ToList();
@@ -1379,7 +1374,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public short getAvailableCharacterWorldSlots()
     {
-        return (short)Math.Max(0, characterSlots - Server.getInstance().getAccountWorldCharacterCount(accId, world));
+        return getAvailableCharacterWorldSlots(world);
     }
 
     public short getAvailableCharacterWorldSlots(int world)

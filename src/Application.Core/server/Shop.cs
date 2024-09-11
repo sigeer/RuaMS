@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
@@ -169,7 +170,7 @@ public class Shop
                 {
                     if (ItemConstants.isPet(itemId))
                     {
-                        int petid = Pet.createPet(itemId);
+                        int petid = ItemManager.CreatePet(itemId);
                         InventoryManipulator.addById(c, itemId, quantity, "", petid, expiration: -1);
                     }
                     else

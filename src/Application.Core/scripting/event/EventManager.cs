@@ -1056,7 +1056,7 @@ public class EventManager
 
         if (startInstance(chr))
         {
-            exportReadyGuild(guildInstance.get(0));
+            exportReadyGuild(guildInstance!.get(0));
             return true;
         }
         else

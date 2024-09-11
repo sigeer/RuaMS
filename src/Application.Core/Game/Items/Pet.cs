@@ -22,78 +22,41 @@
 
 
 using Application.Core.model;
-using client.inventory.manipulator;
+using client.inventory;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
 using server;
 using server.movement;
 using tools;
 
-namespace client.inventory;
+namespace Application.Core.Game.Items;
 
 /**
  * @author Matze
  */
 public class Pet : Item
 {
-    private string name;
     private int uniqueid;
-    private int tameness = 0;
-    private byte level = 1;
-    private int fullness = 100;
     private int Fh;
     private Point pos;
     private int stance;
-    private bool summoned;
     private int petAttribute = 0;
 
+    public string? Name { get; set; }
+    public int Fullness { get; set; } = MaxFullness;
+    public int Tameness { get; set; }
+    public byte Level { get; set; } = 1;
+    public bool Summoned { get; set; }
 
-    private Pet(int id, short position, int uniqueid) : base(id, position, 1)
+    public const int MaxFullness = 100;
+    public const int MaxTameness = 30000;
+    public const int MaxLevel = 30;
+
+    public Pet(int id, short position, int uniqueid) : base(id, position, 1)
     {
-
+        log = LogFactory.GetLogger(LogType.Pet);
         this.uniqueid = uniqueid;
-        this.pos = new Point(0, 0);
-    }
-
-    public static Pet loadFromDb(int itemid, short position, int petid)
-    {
-        Pet ret = new Pet(itemid, position, petid);
-        try
-        { // Get the pet details...
-            using var dbContext = new DBContext();
-            var dbModel = dbContext.Pets.FirstOrDefault(x => x.Petid == petid);
-            if (dbModel != null)
-            {
-                ret.setName(dbModel.Name);
-                ret.setTameness(Math.Min(dbModel.Closeness, 30000));
-                ret.setLevel((byte)Math.Min(dbModel.Level, 30));
-                ret.setFullness(Math.Min(dbModel.Fullness, 100));
-                ret.setSummoned(dbModel.Summoned);
-                ret.setPetAttribute(dbModel.Flag);
-            }
-            return ret;
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return null;
-        }
-    }
-
-    public static void deleteFromDb(IPlayer owner, int petid)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            dbContext.Pets.Where(x => x.Petid == petid).ExecuteDelete();
-
-            owner.resetExcluded(petid);
-            CashIdGenerator.freeCashId(petid);
-        }
-        catch (Exception ex)
-        {
-            Log.Logger.Error(ex.ToString());
-        }
+        pos = new Point(0, 0);
     }
 
     public void saveToDb()
@@ -101,59 +64,29 @@ public class Pet : Item
         try
         {
             using var dbContext = new DBContext();
-            dbContext.Pets.Where(x => x.Petid == getUniqueId()).ExecuteUpdate(x =>
-                x.SetProperty(y => y.Flag, getPetAttribute())
-                .SetProperty(y => y.Name, getName())
-                .SetProperty(y => y.Level, getLevel())
-                .SetProperty(y => y.Closeness, getTameness())
-                .SetProperty(y => y.Fullness, getFullness())
-                .SetProperty(y => y.Summoned, isSummoned()));
+            dbContext.Pets.Where(x => x.Petid == getUniqueId())
+                .ExecuteUpdate(x =>
+                    x.SetProperty(y => y.Flag, getPetAttribute())
+                    .SetProperty(y => y.Name, Name)
+                    .SetProperty(y => y.Level, Level)
+                    .SetProperty(y => y.Closeness, Tameness)
+                    .SetProperty(y => y.Fullness, Fullness)
+                    .SetProperty(y => y.Summoned, Summoned));
         }
         catch (Exception e)
         {
-            Log.Logger.Error(e.ToString());
+            log.Error(e.ToString());
         }
     }
 
-    public static int createPet(int itemid)
+    public string? getName()
     {
-        return createPet(itemid, 1, 0, 100);
+        return Name;
     }
 
-    public static int createPet(int itemid, byte level, int tameness, int fullness)
+    public void setName(string? name)
     {
-        try
-        {
-            using var dbContext = new DBContext();
-            var dbModel = new DB_Pet
-            {
-                Petid = CashIdGenerator.generateCashId(),
-                Name = ItemInformationProvider.getInstance().getName(itemid),
-                Level = level,
-                Closeness = tameness,
-                Fullness = fullness,
-                Summoned = false,
-                Flag = 0
-            };
-            dbContext.Pets.Add(dbModel);
-            dbContext.SaveChanges();
-            return dbModel.Petid;
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return -1;
-        }
-    }
-
-    public string getName()
-    {
-        return name;
-    }
-
-    public void setName(string name)
-    {
-        this.name = name;
+        Name = name;
     }
 
     public int getUniqueId()
@@ -163,22 +96,22 @@ public class Pet : Item
 
     public void setUniqueId(int id)
     {
-        this.uniqueid = id;
+        uniqueid = id;
     }
 
     public int getTameness()
     {
-        return tameness;
+        return Tameness;
     }
 
     public void setTameness(int tameness)
     {
-        this.tameness = tameness;
+        Tameness = tameness;
     }
 
     public byte getLevel()
     {
-        return level;
+        return Level;
     }
 
     public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type)
@@ -193,27 +126,28 @@ public class Pet : Item
 
         //will NOT increase pet's tameness if tried to feed pet with 100% fullness
         // unless forceEnjoy == true (cash shop)
-        if (fullness < 100 || incFullness == 0 || forceEnjoy)
-        {   //incFullness == 0: command given
-            int newFullness = fullness + incFullness;
-            if (newFullness > 100)
+        if (Fullness < MaxFullness || incFullness == 0 || forceEnjoy)
+        {
+            //incFullness == 0: command given
+            int newFullness = Fullness + incFullness;
+            if (newFullness > MaxFullness)
             {
-                newFullness = 100;
+                newFullness = MaxFullness;
             }
-            fullness = newFullness;
+            Fullness = newFullness;
 
-            if (incTameness > 0 && tameness < 30000)
+            if (incTameness > 0 && Tameness < MaxTameness)
             {
-                int newTameness = tameness + incTameness;
-                if (newTameness > 30000)
+                int newTameness = Tameness + incTameness;
+                if (newTameness > MaxTameness)
                 {
-                    newTameness = 30000;
+                    newTameness = MaxTameness;
                 }
 
-                tameness = newTameness;
-                while (newTameness >= ExpTable.getTamenessNeededForLevel(level))
+                Tameness = newTameness;
+                while (newTameness >= ExpTable.getTamenessNeededForLevel(Level))
                 {
-                    level += 1;
+                    Level += 1;
                     owner.sendPacket(PacketCreator.showOwnPetLevelUp(slot));
                     owner.getMap().broadcastMessage(PacketCreator.showPetLevelUp(owner, slot));
                 }
@@ -223,16 +157,16 @@ public class Pet : Item
         }
         else
         {
-            int newTameness = tameness - 1;
+            int newTameness = Tameness - 1;
             if (newTameness < 0)
             {
                 newTameness = 0;
             }
 
-            tameness = newTameness;
-            if (level > 1 && newTameness < ExpTable.getTamenessNeededForLevel(level - 1))
+            Tameness = newTameness;
+            if (Level > 1 && newTameness < ExpTable.getTamenessNeededForLevel(Level - 1))
             {
-                level -= 1;
+                Level -= 1;
             }
 
             enjoyed = false;
@@ -250,17 +184,17 @@ public class Pet : Item
 
     public void setLevel(byte level)
     {
-        this.level = level;
+        Level = level;
     }
 
     public int getFullness()
     {
-        return fullness;
+        return Fullness;
     }
 
     public void setFullness(int fullness)
     {
-        this.fullness = fullness;
+        Fullness = fullness;
     }
 
     public int getFh()
@@ -295,27 +229,27 @@ public class Pet : Item
 
     public bool isSummoned()
     {
-        return summoned;
+        return Summoned;
     }
 
     public void setSummoned(bool yes)
     {
-        this.summoned = yes;
+        Summoned = yes;
     }
 
     public int getPetAttribute()
     {
-        return this.petAttribute;
+        return petAttribute;
     }
 
-    private void setPetAttribute(int flag)
+    public void setPetAttribute(int flag)
     {
-        this.petAttribute = flag;
+        petAttribute = flag;
     }
 
     public void addPetAttribute(IPlayer owner, PetAttribute flag)
     {
-        this.petAttribute |= (int)flag;
+        petAttribute |= (int)flag;
         saveToDb();
 
         Item? petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
@@ -327,7 +261,7 @@ public class Pet : Item
 
     public void removePetAttribute(IPlayer owner, PetAttribute flag)
     {
-        this.petAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
+        petAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
         saveToDb();
 
         Item? petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
@@ -339,7 +273,7 @@ public class Pet : Item
 
     public PetCanConsumePair canConsume(int itemId)
     {
-        return ItemInformationProvider.getInstance().canPetConsume(this.getItemId(), itemId);
+        return ItemInformationProvider.getInstance().canPetConsume(getItemId(), itemId);
     }
 
     public void updatePosition(List<LifeMovementFragment> movement)
@@ -350,9 +284,9 @@ public class Pet : Item
             {
                 if (move is AbsoluteLifeMovement)
                 {
-                    this.setPos(move.getPosition());
+                    setPos(move.getPosition());
                 }
-                this.setStance(((LifeMovement)move).getNewstate());
+                setStance(((LifeMovement)move).getNewstate());
             }
         }
     }

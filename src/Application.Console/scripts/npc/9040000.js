@@ -30,9 +30,7 @@ var sel;
 var em = null;
 
 function findLobby(guild) {
-    for (var iterator = em.getInstances().iterator(); iterator.hasNext();) {
-        var lobby = iterator.next();
-
+    for (var lobby of em.getInstances()) {
         if (lobby.getIntProperty("guild") == guild) {
             if (lobby.getIntProperty("canJoin") == 1) {
                 return lobby;

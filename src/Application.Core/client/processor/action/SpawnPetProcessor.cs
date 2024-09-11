@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
@@ -62,7 +63,7 @@ public class SpawnPetProcessor
                     else
                     {
                         int evolveid = DataTool.getInt("info/evol1", dataRoot.getData("Pet/" + petid + ".img"));
-                        int petId = Pet.createPet(evolveid);
+                        int petId = ItemManager.CreatePet(evolveid);
                         if (petId == -1)
                         {
                             return;

@@ -8,5 +8,5 @@ public partial class Petignore
 
     public int Itemid { get; set; }
 
-    public virtual DB_Pet Pet { get; set; } = null!;
+    public virtual PetEntity Pet { get; set; } = null!;
 }

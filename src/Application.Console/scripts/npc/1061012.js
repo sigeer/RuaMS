@@ -51,11 +51,7 @@ function checkJob() {
     //    if (party.getMembers().size() != 2) {
     //	return 0;
     //    }
-    var it = party.getMembers().iterator();
-
-    while (it.hasNext()) {
-        var cPlayer = it.next();
-
+    for (var cPlayer of party.getMembers()) {
         if (cPlayer.getJobId() == 312 || cPlayer.getJobId() == 322 || cPlayer.getJobId() == 900) {
             if (cPlayer.getLevel() < 120) {
                 return 2;

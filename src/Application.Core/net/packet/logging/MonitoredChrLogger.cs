@@ -27,9 +27,6 @@ namespace net.packet.logging;
 
 
 
-
-
-
 /**
  * Logs packets from monitored characters to a file.
  *
@@ -67,7 +64,7 @@ public class MonitoredChrLogger
 
     public static void logPacketIfMonitored(IClient c, short packetId, byte[] packetContent)
     {
-        var chr = c.OnlinedCharacter;
+        var chr = c.Character;
         if (chr == null)
         {
             return;
@@ -88,11 +85,15 @@ public class MonitoredChrLogger
 
     private static bool isRecvBlocked(RecvOpcode op)
     {
-        return (op) switch
-        {
-            RecvOpcode.MOVE_PLAYER or RecvOpcode.GENERAL_CHAT or RecvOpcode.TAKE_DAMAGE or RecvOpcode.MOVE_PET or RecvOpcode.MOVE_LIFE or RecvOpcode.NPC_ACTION or RecvOpcode.FACE_EXPRESSION => true,
-            _ => false
-        };
+        return new RecvOpcode[] {
+            RecvOpcode.MOVE_PLAYER ,
+            RecvOpcode.GENERAL_CHAT ,
+            RecvOpcode.TAKE_DAMAGE ,
+            RecvOpcode.MOVE_PET ,
+            RecvOpcode.MOVE_LIFE ,
+            RecvOpcode.NPC_ACTION ,
+            RecvOpcode.FACE_EXPRESSION
+            }.Contains(op);
     }
 
     private static RecvOpcode getOpcodeFromValue(int value)
