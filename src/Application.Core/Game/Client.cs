@@ -318,25 +318,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public List<IPlayer> loadCharacters(int worldId)
     {
-        List<IPlayer> chars = new(15);
-        try
-        {
-            foreach (var cni in LoadAccountWorldCharacters(worldId))
-            {
-                var m = AllPlayerStorage.GetOrAddCharacterById(cni.id);
-                if (m == null)
-                {
-                    log.Warning($"LoadPlayerFromDB Failed for {cni.id}");
-                    continue;
-                }
-                chars.Add(m);
-            }
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-        return chars;
+        return Server.getInstance().LoadAccountCharList(this.accId, worldId + 1).GetValueOrDefault(worldId, []);
     }
 
     public List<string> loadCharacterNames(int worldId)
