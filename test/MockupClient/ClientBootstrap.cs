@@ -2,7 +2,9 @@
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
+using net.encryption;
 using System.Net;
+using tools;
 
 namespace MockupClient
 {

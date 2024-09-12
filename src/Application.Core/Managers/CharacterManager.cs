@@ -693,12 +693,12 @@ namespace Application.Core.Managers
             {
                 foreach (var ret in players)
                 {
-                    var equipped = ItemFactory.loadEquippedItems(ret.AccountId, true, true);
+                    var equipped = ItemFactory.loadEquippedItems(ret.Id);
                     // players can have no equipped items at all, ofc
                     Inventory inv = ret.Bag[InventoryType.EQUIPPED];
                     foreach (var item in equipped)
                     {
-                        inv.addItemFromDB(item.Key);
+                        inv.addItemFromDB(item);
                     }
                 }
             }
@@ -725,12 +725,12 @@ namespace Application.Core.Managers
             {
                 foreach (var ret in players)
                 {
-                    var equipped = ItemFactory.loadEquippedItems(ret.AccountId, true, true);
+                    var equipped = ItemFactory.loadEquippedItems(ret.Id);
                     // players can have no equipped items at all, ofc
                     Inventory inv = ret.Bag[InventoryType.EQUIPPED];
                     foreach (var item in equipped)
                     {
-                        inv.addItemFromDB(item.Key);
+                        inv.addItemFromDB(item);
                     }
                 }
             }

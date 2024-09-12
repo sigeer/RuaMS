@@ -25,6 +25,12 @@ public class PacketDecoder : ReplayingDecoder<DecodingState>
         }
 
         int packetLength = MapleAESOFB.GetLengthFromPacketHeader(header);
+        if (packetLength > inValue.ReadableBytes)
+        {
+            RequestReplay();
+            return;
+        }
+
         byte[] packet = new byte[packetLength];
         inValue.ReadBytes(packet);
         receiveCypher.crypt(packet);

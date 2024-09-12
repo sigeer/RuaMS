@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetty.Transport" Version="0.7.6" />
+    <ProjectReference Include="..\..\src\Application.Core\Application.Core.csproj" />
   </ItemGroup>
 
 </Project>

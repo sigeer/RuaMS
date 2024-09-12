@@ -12,30 +12,12 @@ namespace Application.Core.Game.Players
 
         public HashSet<NewYearCardRecord> getReceivedNewYearRecords()
         {
-            HashSet<NewYearCardRecord> received = new();
-
-            foreach (NewYearCardRecord nyc in newyears)
-            {
-                if (nyc.isReceiverCardReceived())
-                {
-                    received.Add(nyc);
-                }
-            }
-
-            return received;
+            return newyears.Where(x => x.isReceiverCardReceived()).ToHashSet();
         }
 
         public NewYearCardRecord? getNewYearRecord(int cardid)
         {
-            foreach (NewYearCardRecord nyc in newyears)
-            {
-                if (nyc.getId() == cardid)
-                {
-                    return nyc;
-                }
-            }
-
-            return null;
+            return newyears.FirstOrDefault(x => x.getId() == cardid);
         }
 
         public void addNewYearRecord(NewYearCardRecord newyear)
