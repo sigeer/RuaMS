@@ -658,24 +658,32 @@ public class PacketCreator
         return OutPacket.create(SendOpcode.PING);
     }
 
-    /**
-     * Gets a login failed packet.
-     * <p>
-     * Possible values for <code>reason</code>:<br> 3: ID deleted or blocked<br>
-     * 4: Incorrect password<br> 5: Not a registered id<br> 6: System error<br>
-     * 7: Already logged in<br> 8: System error<br> 9: System error<br> 10:
-     * Cannot process so many connections<br> 11: Only users older than 20 can
-     * use this channel<br> 13: Unable to log on as master at this ip<br> 14:
-     * Wrong gateway or personal info and weird korean button<br> 15: Processing
-     * request with that korean button!<br> 16: Please verify your account
-     * through email...<br> 17: Wrong gateway or personal info<br> 21: Please
-     * verify your account through email...<br> 23: License agreement<br> 25:
-     * Maple Europe notice =[ FUCK YOU NEXON<br> 27: Some weird full client
-     * notice, probably for trial versions<br>
-     *
-     * @param reason The reason logging in failed.
-     * @return The login failed packet.
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="reason">
+    /// The reason logging in failed.
+    /// <para>Possible values for <paramref name="reason"/>:</para>
+    /// <para>3: ID deleted or blocked</para>
+    /// <para>4: Incorrect password</para>
+    /// <para>5: Not a registered id</para>
+    /// <para>6: System error</para>
+    /// <para>7: Already logged in</para>
+    /// <para>8: System error</para>
+    /// <para>9: System error</para>
+    /// <para>10: Cannot process so many connections</para>
+    /// <para>11: Only users older than 20 can use this channel</para>
+    /// <para>13: Unable to log on as master at this ip</para>
+    /// <para>14: Wrong gateway or personal info and weird korean button</para>
+    /// <para>15: Processing request with that korean button!</para>
+    /// <para>16: Please verify your account through email...</para>
+    /// <para>17: Wrong gateway or personal info</para>
+    /// <para>21: Please verify your account through email...</para>
+    /// <para>23: License agreement</para>
+    /// <para>25: Maple Europe notice =[ FUCK YOU NEXON</para>
+    /// <para>27: Some weird full client  notice, probably for trial versions</para>
+    /// </param>
+    /// <returns>The login failed packet.</returns>
     public static Packet getLoginFailed(int reason)
     {
         OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);
@@ -685,26 +693,33 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a login failed packet.
-     * <p>
-     * Possible values for <code>reason</code>:<br> 2: ID deleted or blocked<br>
-     * 3: ID deleted or blocked<br> 4: Incorrect password<br> 5: Not a
-     * registered id<br> 6: Trouble logging into the game?<br> 7: Already logged
-     * in<br> 8: Trouble logging into the game?<br> 9: Trouble logging into the
-     * game?<br> 10: Cannot process so many connections<br> 11: Only users older
-     * than 20 can use this channel<br> 12: Trouble logging into the game?<br>
-     * 13: Unable to log on as master at this ip<br> 14: Wrong gateway or
-     * personal info and weird korean button<br> 15: Processing request with
-     * that korean button!<br> 16: Please verify your account through
-     * email...<br> 17: Wrong gateway or personal info<br> 21: Please verify
-     * your account through email...<br> 23: Crashes<br> 25: Maple Europe notice
-     * =[ FUCK YOU NEXON<br> 27: Some weird full client notice, probably for
-     * trial versions<br>
-     *
-     * @param reason The reason logging in failed.
-     * @return The login failed packet.
-     */
+    /// <summary>
+    /// Gets a login failed packet.
+    /// </summary>
+    /// <param name="reason">
+    /// The reason logging in failed.
+    /// <para>Possible values for <paramref name="reason"/>:</para>
+    /// <para>3: ID deleted or blocked</para>
+    /// <para>4: Incorrect password</para>
+    /// <para>5: Not a registered id</para>
+    /// <para>6: Trouble logging into the game?</para>
+    /// <para>7: Already logged in</para>
+    /// <para>8: Trouble logging into the game?</para>
+    /// <para>9: Trouble logging into the game?</para>
+    /// <para>10: Cannot process so many connections</para>
+    /// <para>11: Only users older than 20 can use this channel</para>
+    /// <para>12: Trouble logging into the game?</para>
+    /// <para>13: Unable to log on as master at this ip</para>
+    /// <para>14: Wrong gateway or personal info and weird korean button</para>
+    /// <para>15: Processing request with that korean button!</para>
+    /// <para>16: Please verify your account through email...</para>
+    /// <para>17: Wrong gateway or personal info</para>
+    /// <para>21: Please verify your account through email...</para>
+    /// <para>23: Crashes</para>
+    /// <para>25: Maple Europe notice =[ FUCK YOU NEXON</para>
+    /// <para>27: Some weird full client  notice, probably for trial versions</para>
+    /// </param>
+    /// <returns>The login failed packet.</returns>
     public static Packet getAfterLoginError(int reason)
     {//same as above o.o
         OutPacket p = OutPacket.create(SendOpcode.SELECT_CHARACTER_BY_VAC);

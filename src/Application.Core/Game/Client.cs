@@ -36,9 +36,9 @@ public class Client : ChannelHandlerAdapter, IClient
 {
     ILogger? _log;
     ILogger log => _log ?? (_log = LogFactory.GetLogger($"Client/Session_{sessionId}"));
-    public static int LOGIN_NOTLOGGEDIN = 0;
-    public static int LOGIN_SERVER_TRANSITION = 1;
-    public static int LOGIN_LOGGEDIN = 2;
+    public const int LOGIN_NOTLOGGEDIN = 0;
+    public const int LOGIN_SERVER_TRANSITION = 1;
+    public const int LOGIN_LOGGEDIN = 2;
 
     private Type type;
     private long sessionId;
@@ -462,25 +462,6 @@ public class Client : ChannelHandlerAdapter, IClient
         }
     }
 
-    public int finishLogin()
-    {
-        Monitor.Enter(encoderLock);
-        try
-        {
-            if (getLoginState() > LOGIN_NOTLOGGEDIN)
-            { // 0 = LOGIN_NOTLOGGEDIN, 1= LOGIN_SERVER_TRANSITION, 2 = LOGIN_LOGGEDIN
-                loggedIn = false;
-                return 7;
-            }
-            updateLoginState(Client.LOGIN_LOGGEDIN);
-        }
-        finally
-        {
-            Monitor.Exit(encoderLock);
-        }
-
-        return 0;
-    }
 
     public void setPin(string pin)
     {
@@ -590,7 +571,8 @@ public class Client : ChannelHandlerAdapter, IClient
                 }
 
                 if (getLoginState() > LOGIN_NOTLOGGEDIN)
-                { // already loggedin
+                { 
+                    // already loggedin
                     loggedIn = false;
                     loginok = 7;
                 }
@@ -654,6 +636,106 @@ public class Client : ChannelHandlerAdapter, IClient
             return loginok;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns>0: success</returns>
+    public int finishLogin()
+    {
+        Monitor.Enter(encoderLock);
+        try
+        {
+            if (getLoginState() > LOGIN_NOTLOGGEDIN)
+            {
+                // 0 = LOGIN_NOTLOGGEDIN, 1= LOGIN_SERVER_TRANSITION, 2 = LOGIN_LOGGEDIN
+                loggedIn = false;
+                return 7;
+            }
+            updateLoginState(Client.LOGIN_LOGGEDIN);
+        }
+        finally
+        {
+            Monitor.Exit(encoderLock);
+        }
+
+        return 0;
+    }
+
+
+    public void updateLoginState(int newState)
+    {
+        // rules out possibility of multiple account entries
+        if (newState == LOGIN_LOGGEDIN)
+        {
+            SessionCoordinator.getInstance().updateOnlineClient(this);
+        }
+
+        using var dbContext = new DBContext();
+        dbContext.Accounts.Where(x => x.Id == getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Loggedin, (sbyte)newState).SetProperty(y => y.Lastlogin, DateTimeOffset.Now));
+
+        if (newState == LOGIN_NOTLOGGEDIN)
+        {
+            loggedIn = false;
+            serverTransition = false;
+            setAccID(0);
+        }
+        else
+        {
+            serverTransition = (newState == LOGIN_SERVER_TRANSITION);
+            loggedIn = !serverTransition;
+        }
+    }
+
+    public int getLoginState()
+    {
+        // 0 = LOGIN_NOTLOGGEDIN, 1= LOGIN_SERVER_TRANSITION, 2 = LOGIN_LOGGEDIN
+        try
+        {
+            using var dbContext = new DBContext();
+            var data = dbContext.Accounts.Where(x => x.Id == getAccID()).Select(x => new { x.Loggedin, x.Lastlogin, x.Birthday }).FirstOrDefault();
+            if (data == null)
+            {
+                throw new Exception("getLoginState - MapleClient AccID: " + getAccID());
+            }
+
+            birthday = data.Birthday;
+
+            int state = data.Loggedin;
+            if (state == LOGIN_SERVER_TRANSITION)
+            {
+                if (data.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < Server.getInstance().getCurrentTime())
+                {
+                    int accountId = accId;
+                    state = LOGIN_NOTLOGGEDIN;
+                    updateLoginState(LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
+                    this.setAccID(accountId);
+                }
+            }
+            if (state == LOGIN_LOGGEDIN)
+            {
+                loggedIn = true;
+            }
+            else if (state == LOGIN_SERVER_TRANSITION)
+            {
+                dbContext.Accounts.Where(x => x.Id == getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Loggedin, 0));
+            }
+            else
+            {
+                loggedIn = false;
+            }
+
+            return state;
+        }
+        catch (DbUpdateException e)
+        {
+            loggedIn = false;
+            log.Error(e.ToString());
+            throw new Exception("login state");
+        }
+    }
+
+
 
     public DateTimeOffset? getTempBanCalendarFromDB()
     {
@@ -732,77 +814,6 @@ public class Client : ChannelHandlerAdapter, IClient
     public int getAccID()
     {
         return accId;
-    }
-
-    public void updateLoginState(int newState)
-    {
-        // rules out possibility of multiple account entries
-        if (newState == LOGIN_LOGGEDIN)
-        {
-            SessionCoordinator.getInstance().updateOnlineClient(this);
-        }
-
-        using var dbContext = new DBContext();
-        dbContext.Accounts.Where(x => x.Id == getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Loggedin, (sbyte)newState).SetProperty(y => y.Lastlogin, DateTimeOffset.Now));
-
-        if (newState == LOGIN_NOTLOGGEDIN)
-        {
-            loggedIn = false;
-            serverTransition = false;
-            setAccID(0);
-        }
-        else
-        {
-            serverTransition = (newState == LOGIN_SERVER_TRANSITION);
-            loggedIn = !serverTransition;
-        }
-    }
-
-    public int getLoginState()
-    {  // 0 = LOGIN_NOTLOGGEDIN, 1= LOGIN_SERVER_TRANSITION, 2 = LOGIN_LOGGEDIN
-        try
-        {
-            using var dbContext = new DBContext();
-            var data = dbContext.Accounts.Where(x => x.Id == getAccID()).Select(x => new { x.Loggedin, x.Lastlogin, x.Birthday }).FirstOrDefault();
-            if (data == null)
-            {
-                throw new Exception("getLoginState - MapleClient AccID: " + getAccID());
-            }
-
-            birthday = data.Birthday;
-
-            int state = data.Loggedin;
-            if (state == LOGIN_SERVER_TRANSITION)
-            {
-                if (data.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < Server.getInstance().getCurrentTime())
-                {
-                    int accountId = accId;
-                    state = LOGIN_NOTLOGGEDIN;
-                    updateLoginState(LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
-                    this.setAccID(accountId);
-                }
-            }
-            if (state == LOGIN_LOGGEDIN)
-            {
-                loggedIn = true;
-            }
-            else if (state == LOGIN_SERVER_TRANSITION)
-            {
-                dbContext.Accounts.Where(x => x.Id == getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Loggedin, 0));
-            }
-            else
-            {
-                loggedIn = false;
-            }
-
-            return state;
-        }
-        catch (DbUpdateException e)
-        {
-            loggedIn = false;
-            log.Error(e.ToString());
-            throw new Exception("login state");
-        }
     }
 
 
