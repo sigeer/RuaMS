@@ -836,16 +836,15 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet detailing a server and its channels.
-     *
-     * @param serverId
-     * @param serverName  The name of the server.
-     * @param flag
-     * @param eventmsg
-     * @param channelLoad Load of the channel - 1200 seems to be max.
-     * @return The server info packet.
-     */
+    /// <summary>
+    /// Gets a packet detailing a server and its channels.
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="serverName">The name of the server.</param>
+    /// <param name="flag"></param>
+    /// <param name="eventmsg"></param>
+    /// <param name="channelLoad">Load of the channel - 1200 seems to be max.</param>
+    /// <returns>The server info packet.</returns>
     public static Packet getServerList(int serverId, string serverName, int flag, string eventmsg, List<IWorldChannel> channelLoad)
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVERLIST);
@@ -873,11 +872,10 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet saying that the server list is over.
-     *
-     * @return The end of server list packet.
-     */
+    /// <summary>
+    /// Gets a packet saying that the server list is over.
+    /// </summary>
+    /// <returns>The end of server list packet.</returns>
     public static Packet getEndOfServerList()
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVERLIST);
@@ -885,15 +883,17 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet detailing a server status message.
-     * <p>
-     * Possible values for <code>status</code>:<br> 0 - Normal<br> 1 - Highly
-     * populated<br> 2 - Full
-     *
-     * @param status The server status.
-     * @return The server status packet.
-     */
+
+    /// <summary>
+    /// Gets a packet detailing a server status message.
+    /// </summary>
+    /// <param name="status">The server status.
+    /// <para>Possible values for <paramref name="status"/>:</para>
+    /// <para>0 - Normal</para>
+    /// <para>1 - Highly populated</para>
+    /// <para>2 - Full</para>
+    /// </param>
+    /// <returns>The server status packet.</returns>
     public static Packet getServerStatus(int status)
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVERSTATUS);
@@ -901,14 +901,13 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet telling the client the IP of the channel server.
-     *
-     * @param inetAddr The InetAddress of the requested channel server.
-     * @param port     The port the channel is on.
-     * @param clientId The ID of the client.
-     * @return The server IP packet.
-     */
+    /// <summary>
+    /// Gets a packet telling the client the IP of the channel server.
+    /// </summary>
+    /// <param name="inetAddr">The InetAddress of the requested channel server.</param>
+    /// <param name="port">The port the channel is on.</param>
+    /// <param name="clientId">The ID of the client.</param>
+    /// <returns>The server IP packet.</returns>
     public static Packet getServerIP(IPAddress inetAddr, int port, int clientId)
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVER_IP);
@@ -921,13 +920,13 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet telling the client the IP of the new channel.
-     *
-     * @param inetAddr The InetAddress of the requested channel server.
-     * @param port     The port the channel is on.
-     * @return The server IP packet.
-     */
+
+    /// <summary>
+    /// Gets a packet telling the client the IP of the new channel.
+    /// </summary>
+    /// <param name="inetAddr">The InetAddress of the requested channel server.</param>
+    /// <param name="port">The port the channel is on.</param>
+    /// <returns>The server IP packet.</returns>
     public static Packet getChannelChange(IPAddress inetAddr, int port)
     {
         OutPacket p = OutPacket.create(SendOpcode.CHANGE_CHANNEL);
@@ -938,29 +937,28 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet with a list of characters.
-     *
-     * @param c        The IClient to load characters of.
-     * @param serverId The ID of the server requested.
-     * @param status   The charlist request result.
-     * @return The character list packet.
-     * <p>
-     * Possible values for <code>status</code>:
-     * <br> 2: ID deleted or blocked<br>
-     * <br> 3: ID deleted or blocked<br>
-     * <br> 4: Incorrect password<br>
-     * <br> 5: Not an registered ID<br>
-     * <br> 6: Trouble logging in?<br>
-     * <br> 10: Server handling too many connections<br>
-     * <br> 11: Only 20 years or older<br>
-     * <br> 13: Unable to log as master at IP<br>
-     * <br> 14: Wrong gateway or personal info<br>
-     * <br> 15: Still processing request<br>
-     * <br> 16: Verify account via email<br>
-     * <br> 17: Wrong gateway or personal info<br>
-     * <br> 21: Verify account via email<br>
-     */
+    /// <summary>
+    ///  Gets a packet with a list of characters.
+    /// </summary>
+    /// <param name="c">The IClient to load characters of.</param>
+    /// <param name="serverId">The ID of the server requested.</param>
+    /// <param name="status">The charlist request result.
+    /// Possible values for <paramref name="status"/>:
+    /// <para> 2: ID deleted or blocked</para>
+    /// <para> 3: ID deleted or blocked</para>
+    /// <para> 4: Incorrect password</para>
+    /// <para> 5: Not an registered ID</para>
+    /// <para> 6: Trouble logging in?</para>
+    /// <para> 10: Server handling too many connections</para>
+    /// <para> 11: Only 20 years or older</para>
+    /// <para> 13: Unable to log as master at IP</para>
+    /// <para> 14: Wrong gateway or personal info</para>
+    /// <para> 15: Still processing request</para>
+    /// <para> 16: Verify account via email</para>
+    /// <para> 17: Wrong gateway or personal info</para>
+    /// <para> 21: Verify account via email</para>
+    /// </param>
+    /// <returns>The character list packet.</returns>
     public static Packet getCharList(IClient c, int serverId, int status)
     {
         OutPacket p = OutPacket.create(SendOpcode.CHARLIST);
@@ -972,7 +970,7 @@ public class PacketCreator
             addCharEntry(p, chr, false);
         }
 
-        p.writeByte(YamlConfig.config.server.ENABLE_PIC && !c.canBypassPic() ? (c.getPic() == null || c.getPic().Equals("") ? 0 : 1) : 2);
+        p.writeByte(YamlConfig.config.server.ENABLE_PIC && !c.canBypassPic() ? (string.IsNullOrEmpty(c.getPic()) ? 0 : 1) : 2);
         p.writeInt(YamlConfig.config.server.COLLECTIVE_CHARSLOT ? chars.Count + c.getAvailableCharacterSlots() : c.getCharacterSlots());
         return p;
     }
@@ -985,25 +983,28 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Removes TV
-     *
-     * @return The Remove TV Packet
-     */
+
+    /// <summary>
+    /// Removes TV
+    /// </summary>
+    /// <returns>The Remove TV Packet</returns>
     public static Packet removeTV()
     {
         return OutPacket.create(SendOpcode.REMOVE_TV);
     }
 
-    /**
-     * Sends MapleTV
-     *
-     * @param chr      The character shown in TV
-     * @param messages The message sent with the TV
-     * @param type     The type of TV
-     * @param partner  The partner shown with chr
-     * @return the SEND_TV packet
-     */
+    /// <summary>
+    /// Sends MapleTV
+    /// </summary>
+    /// <param name="chr">The character shown in TV</param>
+    /// <param name="messages">The message sent with the TV</param>
+    /// <param name="type">The type of TV
+    /// <para>0 - Normal</para>
+    /// <para>1 - Star</para>
+    /// <para>2 - Heart</para>
+    /// </param>
+    /// <param name="partner">The partner shown with chr</param>
+    /// <returns>the SEND_TV packet</returns>
     public static Packet sendTV(IPlayer chr, List<string> messages, int type, IPlayer partner)
     {
         OutPacket p = OutPacket.create(SendOpcode.SEND_TV);
@@ -1038,12 +1039,11 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets character info for a character.
-     *
-     * @param chr The character to get info about.
-     * @return The character info packet.
-     */
+    /// <summary>
+    /// Gets character info for a character.
+    /// </summary>
+    /// <param name="chr">The character to get info about.</param>
+    /// <returns>The character info packet.</returns>
     public static Packet getCharInfo(IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
@@ -1060,24 +1060,22 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets an empty stat update.
-     *
-     * @return The empty stat update packet.
-     */
+    /// <summary>
+    /// Gets an empty stat update.
+    /// </summary>
+    /// <returns>The empty stat update packet.</returns>
     public static Packet enableActions()
     {
         return updatePlayerStats(EMPTY_STATUPDATE, true, null);
     }
 
-    /**
-     * Gets an update for specified stats.
-     *
-     * @param stats         The list of stats to update.
-     * @param enableActions Allows actions after the update.
-     * @param chr           The update target.
-     * @return The stat update packet.
-     */
+    /// <summary>
+    /// Gets an update for specified stats.
+    /// </summary>
+    /// <param name="stats">The list of stats to update.</param>
+    /// <param name="enableActions">Allows actions after the update.</param>
+    /// <param name="chr">The update target.</param>
+    /// <returns>The stat update packet.</returns>
     public static Packet updatePlayerStats(List<KeyValuePair<Stat, int>> stats, bool enableActions, IPlayer? chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.STAT_CHANGED);
@@ -1142,14 +1140,13 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet telling the client to change maps.
-     *
-     * @param to         The <code>MapleDictionary</code> to warp to.
-     * @param spawnPoint The spawn portal number to spawn at.
-     * @param chr        The character warping to <code>to</code>
-     * @return The map change packet.
-     */
+    /// <summary>
+    /// Gets a packet telling the client to change maps.
+    /// </summary>
+    /// <param name="to">The <see cref="MapleMap"/> to warp to.</param>
+    /// <param name="spawnPoint">The spawn portal number to spawn at.</param>
+    /// <param name="chr">The character warping to <paramref name="to"/></param>
+    /// <returns>The map change packet.</returns>
     public static Packet getWarpToMap(IMap to, int spawnPoint, IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
@@ -1186,14 +1183,13 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet to spawn a portal.
-     *
-     * @param townId   The ID of the town the portal goes to.
-     * @param targetId The ID of the target.
-     * @param pos      Where to put the portal.
-     * @return The portal spawn packet.
-     */
+    /// <summary>
+    /// Gets a packet to spawn a portal.
+    /// </summary>
+    /// <param name="townId">The ID of the town the portal goes to.</param>
+    /// <param name="targetId">The ID of the target.</param>
+    /// <param name="pos">Where to put the portal.</param>
+    /// <returns>The portal spawn packet.</returns>
     public static Packet spawnPortal(int townId, int targetId, Point pos)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_PORTAL);
@@ -1334,45 +1330,28 @@ public class PacketCreator
         return serverMessage(4, 0, message, true, false, 0);
     }
 
-    /**
-     * Gets a server notice packet.
-     * <p>
-     * Possible values for <code>type</code>:<br> 0: [Notice]<br> 1: Popup<br>
-     * 2: Megaphone<br> 3: Super Megaphone<br> 4: Scrolling message at top<br>
-     * 5: Pink Text<br> 6: Lightblue Text
-     *
-     * @param type    The type of the notice.
-     * @param message The message to convey.
-     * @return The server notice packet.
-     */
-    public static Packet serverNotice(int type, string message)
-    {
-        return serverMessage(type, 0, message, false, false, 0);
-    }
-
-    /**
-     * Gets a server notice packet.
-     * <p>
-     * Possible values for <code>type</code>:<br> 0: [Notice]<br> 1: Popup<br>
-     * 2: Megaphone<br> 3: Super Megaphone<br> 4: Scrolling message at top<br>
-     * 5: Pink Text<br> 6: Lightblue Text
-     *
-     * @param type    The type of the notice.
-     * @param channel The channel this notice was sent on.
-     * @param message The message to convey.
-     * @return The server notice packet.
-     */
-    public static Packet serverNotice(int type, string message, int npc)
+    /// <summary>
+    /// Gets a server notice packet.
+    /// </summary>
+    /// <param name="type">The type of the notice.
+    /// <para>Possible values for <paramref name="type"/>:</para>
+    /// <para>0 - Notice</para>
+    /// <para>1 - Popup</para>
+    /// <para>2 - Megaphone</para>
+    /// <para>3 - SuperMegaphone</para>
+    /// <para>4 - ScrollingMessage at top</para>
+    /// <para>5 - PinkText</para>
+    /// <para>6 - Lightblue Text</para>
+    /// </param>
+    /// <param name="message">The message to convey.</param>
+    /// <param name="npc"></param>
+    /// <returns></returns>
+    public static Packet serverNotice(int type, string message, int npc = 0)
     {
         return serverMessage(type, 0, message, false, false, npc);
     }
 
-    public static Packet serverNotice(int type, int channel, string message)
-    {
-        return serverMessage(type, channel, message, false, false, 0);
-    }
-
-    public static Packet serverNotice(int type, int channel, string message, bool smegaEar)
+    public static Packet serverNotice(int type, int channel, string message, bool smegaEar = false)
     {
         return serverMessage(type, channel, message, false, smegaEar, 0);
     }
@@ -1415,17 +1394,17 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Sends a Avatar Super Megaphone packet.
-     *
-     * @param chr     The character name.
-     * @param medal   The medal text.
-     * @param channel Which channel.
-     * @param itemId  Which item used.
-     * @param message The message sent.
-     * @param ear     Whether or not the ear is shown for whisper.
-     * @return
-     */
+
+    /// <summary>
+    /// Sends a Avatar Super Megaphone packet.
+    /// </summary>
+    /// <param name="chr">The character name.</param>
+    /// <param name="medal">The medal text.</param>
+    /// <param name="channel">Which channel.</param>
+    /// <param name="itemId">Which item used.</param>
+    /// <param name="message">The message sent.</param>
+    /// <param name="ear">Whether or not the ear is shown for whisper.</param>
+    /// <returns></returns>
     public static Packet getAvatarMega(IPlayer chr, string medal, int channel, int itemId, List<string> message, bool ear)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_AVATAR_MEGAPHONE);
@@ -1441,10 +1420,11 @@ public class PacketCreator
         return p;
     }
 
-    /*
-     * Sends a packet to remove the tiger megaphone
-     * @return
-     */
+
+    /// <summary>
+    /// Sends a packet to remove the tiger megaphone
+    /// </summary>
+    /// <returns></returns>
     public static Packet byeAvatarMega()
     {
         OutPacket p = OutPacket.create(SendOpcode.CLEAR_AVATAR_MEGAPHONE);
@@ -1452,14 +1432,14 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Sends the Gachapon green message when a user uses a gachapon ticket.
-     *
-     * @param item
-     * @param town
-     * @param player
-     * @return
-     */
+
+    /// <summary>
+    /// Sends the Gachapon green message when a user uses a gachapon ticket.
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="town"></param>
+    /// <param name="player"></param>
+    /// <returns></returns>
     public static Packet gachaponMessage(Item item, string town, IPlayer player)
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVERMESSAGE);
@@ -1502,17 +1482,6 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a spawn monster packet.
-     *
-     * @param life     The monster to spawn.
-     * @param newSpawn Is it a new spawn?
-     * @return The spawn monster packet.
-     */
-    public static Packet spawnMonster(Monster life, bool newSpawn)
-    {
-        return spawnMonsterInternal(life, false, newSpawn, false, 0, false);
-    }
 
     /**
      * Gets a spawn monster packet.
@@ -1522,7 +1491,7 @@ public class PacketCreator
      * @param effect   The spawn effect.
      * @return The spawn monster packet.
      */
-    public static Packet spawnMonster(Monster life, bool newSpawn, int effect)
+    public static Packet spawnMonster(Monster life, bool newSpawn, int effect = 0)
     {
         return spawnMonsterInternal(life, false, newSpawn, false, effect, false);
     }
@@ -1711,13 +1680,12 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Handles monsters not being targettable, such as Zakum's first body.
-     *
-     * @param life   The mob to spawn as non-targettable.
-     * @param effect The effect to show when spawning.
-     * @return The packet to spawn the mob as non-targettable.
-     */
+    /// <summary>
+    /// Handles monsters not being targettable, such as Zakum's first body.
+    /// </summary>
+    /// <param name="life">The mob to spawn as non-targettable.</param>
+    /// <param name="effect">The effect to show when spawning.</param>
+    /// <returns>The packet to spawn the mob as non-targettable.</returns>
     public static Packet spawnFakeMonster(Monster life, int effect)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_MONSTER_CONTROL);
@@ -1742,12 +1710,11 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Makes a monster previously spawned as non-targettable, targettable.
-     *
-     * @param life The mob to make targettable.
-     * @return The packet to make the mob targettable.
-     */
+    /// <summary>
+    /// Makes a monster previously spawned as non-targettable, targettable.
+    /// </summary>
+    /// <param name="life">The mob to make targettable.</param>
+    /// <returns>The packet to make the mob targettable.</returns>
     public static Packet makeMonsterReal(Monster life)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_MONSTER);
@@ -1764,12 +1731,11 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a stop control monster packet.
-     *
-     * @param oid The ObjectID of the monster to stop controlling.
-     * @return The stop control monster packet.
-     */
+    /// <summary>
+    /// Gets a stop control monster packet.
+    /// </summary>
+    /// <param name="oid">The ObjectID of the monster to stop controlling.</param>
+    /// <returns>The stop control monster packet.</returns>
     public static Packet stopControllingMonster(int oid)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_MONSTER_CONTROL);
@@ -1778,33 +1744,18 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a response to a move monster packet.
-     *
-     * @param objectid  The ObjectID of the monster being moved.
-     * @param moveid    The movement ID.
-     * @param currentMp The current MP of the monster.
-     * @param useSkills Can the monster use skills?
-     * @return The move response packet.
-     */
-    public static Packet moveMonsterResponse(int objectid, short moveid, int currentMp, bool useSkills)
-    {
-        return moveMonsterResponse(objectid, moveid, currentMp, useSkills, 0, 0);
-    }
+    /// <summary>
+    /// Gets a response to a move monster packet.
+    /// </summary>
+    /// <param name="objectid">The ObjectID of the monster being moved.</param>
+    /// <param name="moveid">The movement ID.</param>
+    /// <param name="currentMp">The current MP of the monster.</param>
+    /// <param name="useSkills">Can the monster use skills?</param>
+    /// <param name="skillId">The skill ID for the monster to use.</param>
+    /// <param name="skillLevel">The level of the skill to use.</param>
+    /// <returns></returns>
 
-    /**
-     * Gets a response to a move monster packet.
-     *
-     * @param objectid   The ObjectID of the monster being moved.
-     * @param moveid     The movement ID.
-     * @param currentMp  The current MP of the monster.
-     * @param useSkills  Can the monster use skills?
-     * @param skillId    The skill ID for the monster to use.
-     * @param skillLevel The level of the skill to use.
-     * @return The move response packet.
-     */
-
-    public static Packet moveMonsterResponse(int objectid, short moveid, int currentMp, bool useSkills, int skillId, int skillLevel)
+    public static Packet moveMonsterResponse(int objectid, short moveid, int currentMp, bool useSkills, int skillId = 0, int skillLevel = 0)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_MONSTER_RESPONSE);
         p.writeInt(objectid);
@@ -1816,15 +1767,14 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a general chat packet.
-     *
-     * @param cidfrom The character ID who sent the chat.
-     * @param text    The text of the chat.
-     * @param whiteBG
-     * @param show
-     * @return The general chat packet.
-     */
+    /// <summary>
+    /// Gets a general chat packet.
+    /// </summary>
+    /// <param name="cidfrom">The character ID who sent the chat.</param>
+    /// <param name="text">The text of the chat.</param>
+    /// <param name="gm"></param>
+    /// <param name="show"></param>
+    /// <returns>The general chat packet.</returns>
     public static Packet getChatText(int cidfrom, string text, bool gm, int show)
     {
         OutPacket p = OutPacket.create(SendOpcode.CHATTEXT);
@@ -1835,14 +1785,15 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet telling the client to show an EXP increase.
-     *
-     * @param gain   The amount of EXP gained.
-     * @param inChat In the chat box?
-     * @param white  White text or yellow?
-     * @return The exp gained packet.
-     */
+    /// <summary>
+    /// Gets a packet telling the client to show an EXP increase.
+    /// </summary>
+    /// <param name="gain">The amount of EXP gained.</param>
+    /// <param name="equip">In the chat box?</param>
+    /// <param name="party">White text or yellow?</param>
+    /// <param name="inChat"></param>
+    /// <param name="white"></param>
+    /// <returns>The exp gained packet.</returns>
     public static Packet getShowExpGain(int gain, int equip, int party, bool inChat, bool white)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
@@ -1867,12 +1818,11 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet telling the client to show a fame gain.
-     *
-     * @param gain How many fame gained.
-     * @return The meso gain packet.
-     */
+    /// <summary>
+    /// Gets a packet telling the client to show a fame gain.
+    /// </summary>
+    /// <param name="gain">How many fame gained.</param>
+    /// <returns>The meso gain packet.</returns>
     public static Packet getShowFameGain(int gain)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
@@ -1881,25 +1831,14 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet telling the client to show a meso gain.
-     *
-     * @param gain How many mesos gained.
-     * @return The meso gain packet.
-     */
-    public static Packet getShowMesoGain(int gain)
-    {
-        return getShowMesoGain(gain, false);
-    }
 
-    /**
-     * Gets a packet telling the client to show a meso gain.
-     *
-     * @param gain   How many mesos gained.
-     * @param inChat Show in the chat window?
-     * @return The meso gain packet.
-     */
-    public static Packet getShowMesoGain(int gain, bool inChat)
+    /// <summary>
+    /// Gets a packet telling the client to show a meso gain.
+    /// </summary>
+    /// <param name="gain">How many mesos gained.</param>
+    /// <param name="inChat">Show in the chat window?</param>
+    /// <returns>The meso gain packet.</returns>
+    public static Packet getShowMesoGain(int gain, bool inChat = false)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
         if (!inChat)
@@ -1916,26 +1855,24 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet telling the client to show a item gain.
-     *
-     * @param itemId   The ID of the item gained.
-     * @param quantity How many items gained.
-     * @return The item gain packet.
-     */
+    /// <summary>
+    /// Gets a packet telling the client to show a item gain.
+    /// </summary>
+    /// <param name="itemId">The ID of the item gained.</param>
+    /// <param name="quantity">How many items gained.</param>
+    /// <returns>The item gain packet.</returns>
     public static Packet getShowItemGain(int itemId, short quantity)
     {
         return getShowItemGain(itemId, quantity, false);
     }
 
-    /**
-     * Gets a packet telling the client to show an item gain.
-     *
-     * @param itemId   The ID of the item gained.
-     * @param quantity The number of items gained.
-     * @param inChat   Show in the chat window?
-     * @return The item gain packet.
-     */
+    /// <summary>
+    /// Gets a packet telling the client to show an item gain.
+    /// </summary>
+    /// <param name="itemId">The ID of the item gained.</param>
+    /// <param name="quantity">The number of items gained.</param>
+    /// <param name="inChat">Show in the chat window?</param>
+    /// <returns>The item gain packet.</returns>
     public static Packet getShowItemGain(int itemId, short quantity, bool inChat)
     {
         OutPacket p;
@@ -2396,7 +2333,7 @@ public class PacketCreator
         {
             if (ring.equipped())
             {
-                if (yes == false)
+                if (!yes)
                 {
                     yes = true;
                     p.writeByte(1);
@@ -2408,7 +2345,7 @@ public class PacketCreator
                 p.writeInt(ring.getItemId());
             }
         }
-        if (yes == false)
+        if (!yes)
         {
             p.writeByte(0);
         }
@@ -2730,17 +2667,22 @@ public class PacketCreator
         return p;
     }
 
-    /* 00 = /
-     * 01 = You don't have enough in stock
-     * 02 = You do not have enough mesos
-     * 03 = Please check if your inventory is full or not
-     * 05 = You don't have enough in stock
-     * 06 = Due to an error, the trade did not happen
-     * 07 = Due to an error, the trade did not happen
-     * 08 = /
-     * 0D = You need more items
-     * 0E = CRASH; LENGTH NEEDS TO BE LONGER :O
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="code">
+    /// <para>00 = /</para>
+    /// <para>01 = You don't have enough in stock</para>
+    /// <para>02 = You do not have enough mesos</para>
+    /// <para>03 = Please check if your inventory is full or not</para>
+    /// <para>05 = You don't have enough in stock</para>
+    /// <para>06 = Due to an error, the trade did not happen</para>
+    /// <para>07 = Due to an error, the trade did not happen</para>
+    /// <para>08 = /</para>
+    /// <para>0D = You need more items</para>
+    /// <para>0E = CRASH; LENGTH NEEDS TO BE LONGER :O</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet shopTransaction(byte code)
     {
         OutPacket p = OutPacket.create(SendOpcode.CONFIRM_SHOP_TRANSACTION);
@@ -2826,7 +2768,8 @@ public class PacketCreator
     }
 
     public static Packet catchMessage(int message)
-    { // not done, I guess
+    { 
+        // not done, I guess
         OutPacket p = OutPacket.create(SendOpcode.BRIDLE_MOB_CATCH_FAIL);
         p.writeByte(message); // 1 = too strong, 2 = Elemental Rock
         p.writeInt(0);//Maybe itemid?
@@ -2844,15 +2787,17 @@ public class PacketCreator
     }
 
     public static Packet showAriantScoreBoard()
-    {   // thanks lrenex for pointing match's end scoreboard packet
+    {   
+        // thanks lrenex for pointing match's end scoreboard packet
         return OutPacket.create(SendOpcode.ARIANT_ARENA_SHOW_RESULT);
     }
 
     public static Packet updateAriantPQRanking(IPlayer chr, int score)
     {
-        return updateAriantPQRanking(new Dictionary<IPlayer, int>() {
-            { chr, score  }
-});
+        return updateAriantPQRanking(
+            new Dictionary<IPlayer, int>() {
+                { chr, score  }
+            });
     }
 
     public static Packet updateAriantPQRanking(Dictionary<IPlayer, int> playerScore)
@@ -2879,33 +2824,22 @@ public class PacketCreator
         return removeItemFromMap(objId, 1, 0);
     }
 
-    /**
-     * animation: 0 - expire<br/> 1 - without animation<br/> 2 - pickup<br/> 4 -
-     * explode<br/> cid is ignored for 0 and 1
-     *
-     * @param objId
-     * @param animation
-     * @param chrId
-     * @return
-     */
-    public static Packet removeItemFromMap(int objId, int animation, int chrId)
-    {
-        return removeItemFromMap(objId, animation, chrId, false, 0);
-    }
-
-    /**
-     * animation: 0 - expire<br/> 1 - without animation<br/> 2 - pickup<br/> 4 -
-     * explode<br/> cid is ignored for 0 and 1.<br /><br />Flagging pet as true
-     * will make a pet pick up the item.
-     *
-     * @param objId
-     * @param animation
-     * @param chrId
-     * @param pet
-     * @param slot
-     * @return
-     */
-    public static Packet removeItemFromMap(int objId, int animation, int chrId, bool pet, int slot)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="objId"></param>
+    /// <param name="animation">
+    /// <para>0 - expire</para>
+    /// <para>1 - without animation</para>
+    /// <para>2 - pickup</para>
+    /// <para>4 - explode</para>
+    /// <para>cid is ignored for 0 and 1.</para>
+    /// </param>
+    /// <param name="chrId"></param>
+    /// <param name="pet">true will make a pet pick up the item.</param>
+    /// <param name="slot"></param>
+    /// <returns></returns>
+    public static Packet removeItemFromMap(int objId, int animation, int chrId, bool pet = false, int slot = 0)
     {
         OutPacket p = OutPacket.create(SendOpcode.REMOVE_ITEM_FROM_MAP);
         p.writeByte(animation); // expire
@@ -3016,23 +2950,23 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * State :
-     * 0x00 = success
-     * 0x06 = Trouble logging into the game?
-     * 0x09 = Unknown error
-     * 0x0A = Could not be processed due to too many connection requests to the server.
-     * 0x12 = invalid bday
-     * 0x14 = incorrect pic
-     * 0x16 = Cannot delete a guild master.
-     * 0x18 = Cannot delete a character with a pending wedding.
-     * 0x1A = Cannot delete a character with a pending world transfer.
-     * 0x1D = Cannot delete a character that has a family.
-     *
-     * @param cid
-     * @param state
-     * @return
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="cid"></param>
+    /// <param name="state">
+    /// <para>0x00 = success</para>
+    /// <para>0x06 = Trouble logging into the game?</para>
+    /// <para>0x09 = Unknown error</para>
+    /// <para>0x0A = Could not be processed due to too many connection requests to the server.</para>
+    /// <para>0x12 = invalid bday</para>
+    /// <para>0x14 = incorrect pic</para>
+    /// <para>0x16 = Cannot delete a guild master.</para>
+    /// <para>0x18 = Cannot delete a character with a pending wedding.</para>
+    /// <para>0x1A = Cannot delete a character with a pending world transfer.</para>
+    /// <para>0x1D = Cannot delete a character that has a family.</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet deleteCharResponse(int cid, int state)
     {
         OutPacket p = OutPacket.create(SendOpcode.DELETE_CHAR_RESPONSE);
@@ -5352,18 +5286,31 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * 1 = Room already closed  2 = Can't enter due full cappacity 3 = Other requests at this minute
-     * 4 = Can't do while dead 5 = Can't do while middle event 6 = This character unable to do it
-     * 7, 20 = Not allowed to trade anymore 9 = Can only trade on same map 10 = May not open store near portal
-     * 11, 14 = Can't start game here 12 = Can't open store at this channel 13 = Can't estabilish miniroom
-     * 15 = Stores only an the free market 16 = Lists the rooms at FM (?) 17 = You may not enter this store
-     * 18 = Owner undergoing store maintenance 19 = Unable to enter tournament room 21 = Not enough mesos to enter
-     * 22 = Incorrect password
-     *
-     * @param status
-     * @return
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="status">
+    /// <para>1 = Room already closed</para>
+    /// <para>2 = Can't enter due full cappacity</para>
+    /// <para>3 = Other requests at this minute</para>
+    /// <para>4 = Can't do while dead</para>
+    /// <para>5 = Can't do while middle event</para>
+    /// <para>6 = This character unable to do it</para>
+    /// <para>7, 20 = Not allowed to trade anymore</para>
+    /// <para>9 = Can only trade on same map</para>
+    /// <para>10 = May not open store near portal</para>
+    /// <para>11, 14 = Can't start game here</para>
+    /// <para>12 = Can't open store at this channel</para>
+    /// <para>13 = Can't estabilish miniroom</para>
+    /// <para>15 = Stores only an the free market</para>
+    /// <para>16 = Lists the rooms at FM (?)</para>
+    /// <para>17 = You may not enter this store</para>
+    /// <para>18 = Owner undergoing store maintenance</para>
+    /// <para>19 = Unable to enter tournament room</para>
+    /// <para>21 = Not enough mesos to enter</para>
+    /// <para>22 = Incorrect password</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet getMiniRoomError(int status)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
@@ -5736,16 +5683,22 @@ public class PacketCreator
         return p;
     }
 
-    // 0: Success
-    // 1: The room is already closed.
-    // 2: You can't enter the room due to full capacity.
-    // 3: Other requests are being fulfilled this minute.
-    // 4: You can't do it while you're dead.
-    // 7: You are not allowed to trade other items at this point.
-    // 17: You may not enter this store.
-    // 18: The owner of the store is currently undergoing store maintenance. Please try again in a bit.
-    // 23: This can only be used inside the Free Market.
-    // default: This character is unable to do it.
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="msg">
+    /// <para>0: Success</para>
+    /// <para>1: The room is already closed.</para>
+    /// <para>2: You can't enter the room due to full capacity.</para>
+    /// <para>3: Other requests are being fulfilled this minute.</para>
+    /// <para>4: You can't do it while you're dead.</para>
+    /// <para>7: You are not allowed to trade other items at this point.</para>
+    /// <para>17: You may not enter this store.</para>
+    /// <para>18: The owner of the store is currently undergoing store maintenance. Please try again in a bit.</para>
+    /// <para>23: This can only be used inside the Free Market.</para>
+    /// <para>default: This character is unable to do it.</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet getOwlMessage(int msg)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOP_LINK_RESULT);
@@ -5838,9 +5791,9 @@ public class PacketCreator
      * 0x11 = You cannot sell any items when managing.. blabla
      * 0x12 = FKING POPUP LOL
      */
-
     public static Packet getHiredMerchant(IPlayer chr, HiredMerchant hm, bool firstTime)
-    {//Thanks Dustin
+    {
+        //Thanks Dustin
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
         p.writeByte(0x05);
@@ -6204,11 +6157,16 @@ public class PacketCreator
         return p;
     }
 
-    /*
-     *  0 = Player online, use whisper
-     *  1 = Check player's name
-     *  2 = Receiver inbox full
-     */
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="error">
+    /// <para>0 = Player online, use whisper</para>
+    /// <para>1 = Check player's name</para>
+    /// <para>2 = Receiver inbox full</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet noteError(byte error)
     {
         OutPacket p = OutPacket.create(SendOpcode.MEMO_RESULT);
@@ -6258,16 +6216,22 @@ public class PacketCreator
         return p;
     }
 
-    /*  1: cannot find char info,
-            2: cannot transfer under 20,
-            3: cannot send banned,
-            4: cannot send married,
-            5: cannot send guild leader,
-            6: cannot send if account already requested transfer,
-            7: cannot transfer within 30days,
-            8: must quit family,
-            9: unknown error
-        */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="error">
+    /// <para>1: cannot find char info,</para>
+    /// <para>2: cannot transfer under 20,</para>
+    /// <para>3: cannot send banned,</para>
+    /// <para>4: cannot send married,</para>
+    /// <para>5: cannot send guild leader,</para>
+    /// <para>6: cannot send if account already requested transfer,</para>
+    /// <para>7: cannot transfer within 30days,</para>
+    /// <para>8: must quit family,</para>
+    /// <para>9: unknown error</para>
+    /// </param>
+    /// <param name="c"></param>
+    /// <returns></returns>
     public static Packet sendWorldTransferRules(int error, IClient c)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_CHECK_TRANSFER_WORLD_POSSIBLE_RESULT);
@@ -6295,12 +6259,17 @@ public class PacketCreator
         return p;
     }
 
-    /*  0: no error, send rules
-            1: name change already submitted
-            2: name change within a month
-            3: recently banned
-            4: unknown error
-        */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="error">
+    /// <para>0: no error, send rules</para>
+    /// <para>1: name change already submitted</para>
+    /// <para>2: name change within a month</para>
+    /// <para>3: recently banned</para>
+    /// <para>4: unknown error</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet sendNameTransferRules(int error)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_CHECK_NAME_CHANGE_POSSIBLE_RESULT);
@@ -6311,11 +6280,16 @@ public class PacketCreator
         return p;
     }
 
-    /*  0: Name available
-     * >0: Name is in use
-     * <0: Unknown error
-     */
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="availableName">
+    /// <para> 0: Name available</para>
+    /// <para> &gt; 0: Name is in use</para>
+    /// <para> &lt; 0: Unknown error</para>
+    /// </param>
+    /// <param name="canUseName"></param>
+    /// <returns></returns>
     public static Packet sendNameTransferCheck(string availableName, bool canUseName)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_CHECK_NAME_CHANGE);
@@ -6589,14 +6563,16 @@ public class PacketCreator
     }
 
     public static Packet enableReport()
-    { // thanks to snow
+    { 
+        // thanks to snow
         OutPacket p = OutPacket.create(SendOpcode.CLAIM_STATUS_CHANGED);
         p.writeByte(1);
         return p;
     }
 
     public static Packet giveFinalAttack(int skillid, int time)
-    { // packets found thanks to lailainoob
+    { 
+        // packets found thanks to lailainoob
         OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
         p.writeLong(0);
         p.writeShort(0);

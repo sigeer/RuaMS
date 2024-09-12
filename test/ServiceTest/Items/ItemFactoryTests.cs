@@ -7,7 +7,7 @@ namespace ServiceTest.Items
         [Test]
         public void loadEquippedItems_Test()
         {
-            var data = ItemFactory.loadEquippedItems(1, true, false);
+            var data = ItemFactory.loadEquippedItems(1);
             Assert.That(data.Count > 0);
         }
     }

@@ -128,8 +128,12 @@ public class ItemFactory
         return equip;
     }
 
-
-    public static List<KeyValuePair<Item, int>> loadEquippedItems(int accOrCharId, bool isAccount, bool login)
+    /// <summary>
+    /// 加载已穿戴的装备
+    /// </summary>
+    /// <param name="characterId"></param>
+    /// <returns>Item</returns>
+    public static List<Equip> loadEquippedItems(int characterId)
     {
         var equipedType = InventoryType.EQUIPPED.getType();
 
@@ -137,11 +141,11 @@ public class ItemFactory
         var dataList = (from a in dbContext.Inventoryitems
                         join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
                         from bs in bss.DefaultIfEmpty()
-                        where isAccount ? a.Accountid == accOrCharId : a.Characterid == accOrCharId
-                        where !login || a.Inventorytype == equipedType
+                        where a.Characterid == characterId
+                        where a.Inventorytype == equipedType
                         select new EquipItemModelFromDB(a, bs)).ToList();
 
-        return dataList.Select(x => new KeyValuePair<Item, int>(loadEquipFromResultSet(x), x.CharacterId)).ToList();
+        return dataList.Select(x => loadEquipFromResultSet(x)).ToList();
     }
 
     private List<ItemInventoryType> loadItemsCommon(int id, bool login)

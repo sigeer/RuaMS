@@ -112,7 +112,6 @@ namespace Application.Core.Game
         bool hasBeenBanned();
         bool isInTransition();
         bool isLoggedIn();
-        List<string> loadCharacterNames(int worldId);
         List<IPlayer> loadCharacters(int serverId);
         void lockClient();
         int login(string login, string pwd, Hwid nibbleHwid);

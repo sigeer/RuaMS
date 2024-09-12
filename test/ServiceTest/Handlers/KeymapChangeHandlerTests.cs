@@ -1,7 +1,6 @@
 ﻿using DotNetty.Buffers;
 using net.packet;
 using net.server.channel.handlers;
-using ServiceTest.Net;
 
 namespace ServiceTest.Handlers
 {

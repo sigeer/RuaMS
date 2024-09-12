@@ -316,20 +316,14 @@ public class Client : ChannelHandlerAdapter, IClient
         this.sendPacket(PacketCreator.getCharList(this, server, 0));
     }
 
+    /// <summary>
+    /// 选择角色时加载的角色
+    /// </summary>
+    /// <param name="worldId"></param>
+    /// <returns></returns>
     public List<IPlayer> loadCharacters(int worldId)
     {
         return Server.getInstance().LoadAccountCharList(this.accId, worldId + 1).GetValueOrDefault(worldId, []);
-    }
-
-    public List<string> loadCharacterNames(int worldId)
-    {
-        return LoadAccountWorldCharacters(worldId).Select(x => x.name).ToList();
-    }
-
-    private List<CharacterNameAndId> LoadAccountWorldCharacters(int worldId)
-    {
-        using var dbContext = new DBContext();
-        return dbContext.Characters.Where(x => x.AccountId == accId && x.World == worldId).Select(x => new CharacterNameAndId(x.Id, x.Name)).Take(15).ToList();
     }
 
     public bool isLoggedIn()
