@@ -382,7 +382,7 @@ public class CashShop
         Monitor.Enter(lockObj);
         try
         {
-            return inventory;
+            return inventory.ToList();
         }
         finally
         {
