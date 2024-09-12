@@ -1,4 +1,5 @@
 ﻿using Application.Core.Managers;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Game.TheWorld
 {
@@ -7,13 +8,13 @@ namespace Application.Core.Game.TheWorld
     /// </summary>
     public class AllPlayerStorage
     {
-        private static Dictionary<int, DataLevel> CachedData { get; set; } = new Dictionary<int, DataLevel>();
-        private static Dictionary<string, DataLevel> NamedCacheData { get; set; } = new();
+        private static ConcurrentDictionary<int, DataLevel> CachedData { get; set; } = new ();
+        private static ConcurrentDictionary<string, DataLevel> NamedCacheData { get; set; } = new();
         public static List<IPlayer> GetAllOnlinedPlayers()
         {
             return CachedData.Values.Select(x => x.Data).Where(x => x.IsOnlined).ToList();
         }
-        public static void AddPlayer(DataLevel dataLevel)
+        public static void AddOrUpdate(DataLevel dataLevel)
         {
             CachedData[dataLevel.Data.Id] = dataLevel;
             NamedCacheData[dataLevel.Data.Name] = dataLevel;
@@ -29,7 +30,7 @@ namespace Application.Core.Game.TheWorld
             if (player == null)
                 return null;
 
-            AddPlayer(new DataLevel(level, player));
+            AddOrUpdate(new DataLevel(level, player));
             return player;
         }
 
@@ -50,7 +51,7 @@ namespace Application.Core.Game.TheWorld
             var notFoundList = CharacterManager.GetPlayersById(notFound, level > 0);
             foreach (var item in notFoundList)
             {
-                AddPlayer(new DataLevel(level, item));
+                AddOrUpdate(new DataLevel(level, item));
                 list.Add(item);
             }
             return list;
@@ -67,7 +68,7 @@ namespace Application.Core.Game.TheWorld
             if (player == null)
                 return null;
 
-            AddPlayer(new DataLevel(level, player));
+            AddOrUpdate(new DataLevel(level, player));
             return player;
         }
         public static List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList, int level = 0)
@@ -87,7 +88,7 @@ namespace Application.Core.Game.TheWorld
             var notFoundList = CharacterManager.GetPlayersByName(notFound);
             foreach (var item in notFoundList)
             {
-                AddPlayer(new DataLevel(level, item));
+                AddOrUpdate(new DataLevel(level, item));
                 list.Add(item);
             }
             return list;

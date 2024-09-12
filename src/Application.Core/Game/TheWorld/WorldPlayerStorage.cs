@@ -16,7 +16,7 @@
         {
             data.OnChannelAddPlayer += (obj, p) =>
             {
-                AllPlayerStorage.AddPlayer(new DataLevel(2, p));
+                AllPlayerStorage.AddOrUpdate(new DataLevel(2, p));
             };
             Channels[channelId] = data;
         }
