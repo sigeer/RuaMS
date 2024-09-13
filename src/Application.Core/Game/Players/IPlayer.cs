@@ -413,7 +413,6 @@ namespace Application.Core.Game.Players
         Trade? getTrade();
         List<int> getTrockMaps();
         int getTrockSize();
-        MapObjectType getType();
         int getVanquisherKills();
         int getVanquisherStage();
         List<int> getVipTrockMaps();

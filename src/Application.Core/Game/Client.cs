@@ -2,13 +2,14 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
+using Application.Core.Scripting.Infrastructure;
 using client;
 using client.inventory;
 using constants.game;
 using constants.id;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
-using Microsoft.ClearScript.V8;
+using JavaScriptEngineSwitcher.Core;
 using Microsoft.EntityFrameworkCore;
 using net;
 using net.netty;
@@ -66,7 +67,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private long lastPong;
     private int gmlevel;
     private HashSet<string> macs = new();
-    private Dictionary<string, V8ScriptEngine> engines = new();
+    private Dictionary<string, IEngine> engines = new();
     private sbyte characterSlots = 3;
     private byte loginattempt = 0;
     private string _pin = "";
@@ -571,7 +572,7 @@ public class Client : ChannelHandlerAdapter, IClient
                 }
 
                 if (getLoginState() > LOGIN_NOTLOGGEDIN)
-                { 
+                {
                     // already loggedin
                     loggedIn = false;
                     loginok = 7;
@@ -1188,12 +1189,12 @@ public class Client : ChannelHandlerAdapter, IClient
         gmlevel = level;
     }
 
-    public void setScriptEngine(string name, V8ScriptEngine e)
+    public void setScriptEngine(string name, IEngine e)
     {
         engines.AddOrUpdate(name, e);
     }
 
-    public V8ScriptEngine? getScriptEngine(string name)
+    public IEngine? getScriptEngine(string name)
     {
         return engines.GetValueOrDefault(name);
     }

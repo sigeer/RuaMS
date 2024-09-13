@@ -7,6 +7,10 @@ namespace ServiceTest.Games
 {
     public class MapTests
     {
+        public MapTests()
+        {
+            Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
+        }
         [Test]
         [TestCase(10000, ExpectedResult = 3)]
         public int SpawnNpc_Test(int mapId)
@@ -30,11 +34,11 @@ namespace ServiceTest.Games
         }
 
         [Test]
+        [TestCase(107000300)]
         [TestCase(10000)]
         public void LoadMapFromWZ_Test(int mapId)
         {
-            var map = MapFactory.loadMapFromWz(mapId, 0, 0, null);
-            Assert.Pass();
+            Assert.DoesNotThrow(() => MapFactory.loadMapFromWz(mapId, 0, 0, null));
         }
     }
 }

@@ -23,9 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
+using Application.Core.Scripting.Infrastructure;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
-using Microsoft.ClearScript.V8;
+using JavaScriptEngineSwitcher.Core;
 using net.packet;
 using net.server.coordinator.session;
 using scripting;
@@ -98,7 +99,7 @@ namespace Application.Core.Game
         IPlayer? getPlayer();
         QuestActionManager getQM();
         string getRemoteAddress();
-        V8ScriptEngine? getScriptEngine(string name);
+        IEngine? getScriptEngine(string name);
         long getSessionId();
         DateTimeOffset? getTempBanCalendar();
         DateTimeOffset? getTempBanCalendarFromDB();
@@ -136,7 +137,7 @@ namespace Application.Core.Game
         void setPic(string pic);
         void setPin(string pin);
         void setPlayer(IPlayer? player);
-        void setScriptEngine(string name, V8ScriptEngine e);
+        void setScriptEngine(string name, IEngine e);
         void setWorld(int world);
         bool tryacquireClient();
         bool tryacquireEncoder();

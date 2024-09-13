@@ -23,11 +23,12 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
+using Application.Core.Scripting.Infrastructure;
 using constants.game;
-using Microsoft.ClearScript.JavaScript;
-using Microsoft.ClearScript.V8;
+using JavaScriptEngineSwitcher.Core;
 using net.server;
 using scripting.Event.scheduler;
 using server;
@@ -47,7 +48,7 @@ namespace scripting.Event;
 public class EventManager
 {
     static ILogger log = LogFactory.GetLogger(LogType.EventManager);
-    private V8ScriptEngine iv;
+    private IEngine iv;
     private IWorldChannel cserv;
     private IWorld wserv;
     private Server server;
@@ -74,7 +75,7 @@ public class EventManager
 
     private static int maxLobbys = 8;     // an event manager holds up to this amount of concurrent lobbys
 
-    public EventManager(IWorldChannel cserv, V8ScriptEngine iv, string name)
+    public EventManager(IWorldChannel cserv, IEngine iv, string name)
     {
         this.server = Server.getInstance();
         this.iv = iv;
@@ -100,7 +101,7 @@ public class EventManager
 
         try
         {
-            iv.InvokeSync("cancelSchedule");
+            iv.CallFunction("cancelSchedule");
         }
         catch (Exception ex)
         {
@@ -153,7 +154,7 @@ public class EventManager
     {
         try
         {
-            return (int)iv.InvokeSync("getMaxLobbies");
+            return (int)iv.CallFunction("getMaxLobbies");
         }
         catch (Exception ex)
         {
@@ -174,11 +175,11 @@ public class EventManager
         {
             try
             {
-                iv.InvokeSync(methodName, eim);
+                iv.CallFunction(methodName, eim);
             }
             catch (Exception ex)
             {
-                log.Error(ex, "Event script schedule, Script: {Script}", name);
+                log.Error(ex, "Event script schedule, Script: {Script}, Method: {Method}", name, methodName);
             }
         };
 
@@ -194,7 +195,7 @@ public class EventManager
         {
             try
             {
-                iv.InvokeSync(methodName);
+                iv.CallFunction(methodName);
             }
             catch (Exception ex)
             {
@@ -216,7 +217,7 @@ public class EventManager
         return cserv;
     }
 
-    public V8ScriptEngine getIv()
+    public IEngine getIv()
     {
         return iv;
     }
@@ -392,7 +393,7 @@ public class EventManager
 
     private EventInstanceManager createInstance(string name, params object?[] args)
     {
-        return (EventInstanceManager)iv.InvokeSync(name, args);
+        return (EventInstanceManager)iv.CallFunction(name, args);
     }
 
     private void registerEventInstance(string eventName, int lobbyId)
@@ -852,7 +853,7 @@ public class EventManager
                         registerEventInstance(eim.getName(), lobbyId);
                         eim.setLeader(leader);
 
-                        iv.InvokeSync("setup", eim);
+                        iv.CallFunction("setup", eim);
                         eim.setProperty("leader", ldr);
 
                         eim.startEvent();
@@ -888,13 +889,9 @@ public class EventManager
         }
         try
         {
-            object o = iv.InvokeSync("getEligibleParty", party.getPartyMembersOnline());
-            if (o is IJavaScriptObject jobject)
-            {
-                List<IPlayer> eligibleParty = jobject.ToEnumerable().OfType<IPlayer>().ToList();
-                party.setEligibleMembers(eligibleParty);
-                return eligibleParty;
-            }
+            var eligibleParty = (List<IPlayer>)iv.CallFunction("getEligibleParty", party.getPartyMembersOnline());
+            party.setEligibleMembers(eligibleParty);
+            return eligibleParty;
         }
         catch (Exception ex)
         {
@@ -908,7 +905,7 @@ public class EventManager
     {
         try
         {
-            iv.InvokeSync("clearPQ", eim);
+            iv.CallFunction("clearPQ", eim);
         }
         catch (Exception ex)
         {
@@ -920,7 +917,7 @@ public class EventManager
     {
         try
         {
-            iv.InvokeSync("clearPQ", eim, toMap);
+            iv.CallFunction("clearPQ", eim, toMap);
         }
         catch (Exception ex)
         {

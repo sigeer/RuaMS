@@ -22,6 +22,7 @@
 
 using Application.Core.Game.Maps;
 using scripting.Event;
+using System.Collections.Concurrent;
 
 namespace server.maps;
 
@@ -31,7 +32,7 @@ public class MapManager
     private int world;
     private EventInstanceManager? evt;
 
-    private Dictionary<int, IMap> maps = new();
+    private ConcurrentDictionary<int, IMap> maps = new();
 
     ReaderWriterLockSlim mapsLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 

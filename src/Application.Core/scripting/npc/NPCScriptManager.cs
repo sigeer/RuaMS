@@ -21,7 +21,8 @@
  */
 
 
-using Microsoft.ClearScript.V8;
+using Application.Core.Scripting.Infrastructure;
+using JavaScriptEngineSwitcher.Core;
 using tools;
 using static server.ItemInformationProvider;
 
@@ -35,7 +36,7 @@ public class NPCScriptManager : AbstractScriptManager
     private static NPCScriptManager instance = new NPCScriptManager();
 
     private Dictionary<IClient, NPCConversationManager> cms = new();
-    private Dictionary<IClient, V8ScriptEngine> scripts = new();
+    private Dictionary<IClient, IEngine> scripts = new();
 
     public static NPCScriptManager getInstance()
     {
@@ -44,7 +45,7 @@ public class NPCScriptManager : AbstractScriptManager
 
     public bool isNpcScriptAvailable(IClient c, string fileName)
     {
-        V8ScriptEngine? engine = null;
+        IEngine? engine = null;
         if (fileName != null)
         {
             engine = getInvocableScriptEngine("npc/" + fileName + ".js", c);
@@ -89,7 +90,7 @@ public class NPCScriptManager : AbstractScriptManager
                 return;
             }
             cms.Add(c, cm);
-            V8ScriptEngine engine = getInvocableScriptEngine("npc/" + filename + ".js", c);
+            var engine = getInvocableScriptEngine("npc/" + filename + ".js", c);
 
             if (engine == null)
             {
@@ -97,11 +98,11 @@ public class NPCScriptManager : AbstractScriptManager
                 cm.dispose();
                 return;
             }
-            engine.AddHostObject("cm", cm);
+            engine.AddHostedObject("cm", cm);
             scripts.AddOrUpdate(c, engine);
             try
             {
-                engine.InvokeSync("start", chrs);
+                engine.CallFunction("start", chrs);
             }
             catch (Exception nsme)
             {
@@ -128,7 +129,7 @@ public class NPCScriptManager : AbstractScriptManager
             if (c.canClickNPC())
             {
                 cms.Add(c, cm);
-                V8ScriptEngine? engine = null;
+                IEngine? engine = null;
                 if (!itemScript)
                 {
                     if (fileName != null)
@@ -153,19 +154,19 @@ public class NPCScriptManager : AbstractScriptManager
                     dispose(c);
                     return false;
                 }
-                engine.AddHostObject(engineName, cm);
+                engine.AddHostedObject(engineName, cm);
 
                 scripts.AddOrUpdate(c, engine);
                 c.setClickedNPC();
                 try
                 {
-                    engine.InvokeSync("start");
+                    engine.CallFunction("start");
                 }
                 catch (Exception)
                 {
                     try
                     {
-                        engine.InvokeSync("start", chr);
+                        engine.CallFunction("start", chr);
                     }
                     catch (Exception nsma)
                     {
@@ -196,7 +197,7 @@ public class NPCScriptManager : AbstractScriptManager
             try
             {
                 c.setClickedNPC();
-                iv.InvokeSync("action", mode, type, selection);
+                iv.CallFunction("action", mode, type, selection);
             }
             catch (Exception t)
             {

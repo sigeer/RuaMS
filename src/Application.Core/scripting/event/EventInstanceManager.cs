@@ -234,7 +234,7 @@ public class EventInstanceManager
     {
         if (!disposed)
         {
-            return em.getIv().InvokeSync(name, args);
+            return em.getIv().CallFunction(name, args);
         }
         else
         {
@@ -1700,7 +1700,7 @@ public class EventInstanceManager
         giveEventPlayersStageReward(thisStage);
         thisStage--;    //stages counts from ONE, scripts from ZERO
         // 修改js中的全局变量
-        em.getIv().Script["thisStage"]--;
+        em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal("next00");
         if (portal != null)
@@ -1714,7 +1714,7 @@ public class EventInstanceManager
         giveEventPlayersStageReward(thisStage);
         thisStage--;    //stages counts from ONE, scripts from ZERO
         // 修改js中的全局变量thisStage
-        em.getIv().Script["thisStage"]--;
+        em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal(portalName);
         if (portal != null)

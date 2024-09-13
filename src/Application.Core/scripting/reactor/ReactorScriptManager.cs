@@ -21,7 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Microsoft.ClearScript.V8;
+using Application.Core.Scripting.Infrastructure;
+using JavaScriptEngineSwitcher.Core;
 using server.maps;
 
 namespace scripting.reactor;
@@ -51,7 +52,7 @@ public class ReactorScriptManager : AbstractScriptManager
                 return;
             }
 
-            iv.InvokeSync("hit");
+            iv.CallFunction("hit");
         }
         catch (Exception e)
         {
@@ -69,7 +70,7 @@ public class ReactorScriptManager : AbstractScriptManager
                 return;
             }
 
-            iv.InvokeSync("act");
+            iv.CallFunction("act");
         }
         catch (Exception e)
         {
@@ -127,7 +128,7 @@ public class ReactorScriptManager : AbstractScriptManager
                 return;
             }
 
-            iv.InvokeSync(functionName);
+            iv.CallFunction(functionName);
         }
         catch (Exception e)
         {
@@ -135,7 +136,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
     }
 
-    private V8ScriptEngine? initializeInvocable(IClient c, Reactor reactor)
+    private IEngine? initializeInvocable(IClient c, Reactor reactor)
     {
         var engine = getInvocableScriptEngine("reactor/" + reactor.getId() + ".js", c);
         if (engine == null)
@@ -144,7 +145,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
 
         ReactorActionManager rm = new ReactorActionManager(c, reactor, engine);
-        engine.AddHostObject("rm", rm);
+        engine.AddHostedObject("rm", rm);
 
         return engine;
     }

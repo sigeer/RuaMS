@@ -22,9 +22,10 @@
 
 
 using Application.Core.scripting.Event;
+using Application.Core.Scripting.Infrastructure;
 using client.inventory;
 using constants.inventory;
-using Microsoft.ClearScript.V8;
+using JavaScriptEngineSwitcher.Core;
 using server;
 using server.life;
 using server.maps;
@@ -41,10 +42,10 @@ namespace scripting.reactor;
 public class ReactorActionManager : AbstractPlayerInteraction
 {
     private Reactor reactor;
-    private V8ScriptEngine iv;
+    private IEngine iv;
     private ScheduledFuture? sprayTask = null;
 
-    public ReactorActionManager(IClient c, Reactor reactor, V8ScriptEngine iv) : base(c)
+    public ReactorActionManager(IClient c, Reactor reactor, IEngine iv) : base(c)
     {
         this.reactor = reactor;
         this.iv = iv;

@@ -21,9 +21,10 @@
  */
 
 
+using Application.Core.Scripting.Infrastructure;
 using client;
 using constants.game;
-using Microsoft.ClearScript.V8;
+using JavaScriptEngineSwitcher.Core;
 using server.quest;
 
 namespace scripting.quest;
@@ -38,14 +39,14 @@ public class QuestScriptManager : AbstractScriptManager
     private static QuestScriptManager instance = new QuestScriptManager();
 
     private Dictionary<IClient, QuestActionManager> qms = new();
-    private Dictionary<IClient, V8ScriptEngine> scripts = new();
+    private Dictionary<IClient, IEngine> scripts = new();
 
     public static QuestScriptManager getInstance()
     {
         return instance;
     }
 
-    private V8ScriptEngine getQuestScriptEngine(IClient c, short questid)
+    private IEngine getQuestScriptEngine(IClient c, short questid)
     {
         var engine = getInvocableScriptEngine("quest/" + questid + ".js", c);
         if (engine == null && GameConstants.isMedalQuest(questid))
@@ -84,11 +85,11 @@ public class QuestScriptManager : AbstractScriptManager
                     return;
                 }
 
-                engine.AddHostObject("qm", qm);
+                engine.AddHostedObject("qm", qm);
 
                 scripts.AddOrUpdate(c, engine);
                 c.setClickedNPC();
-                engine.InvokeSync("start", (byte)1, (byte)0, 0);
+                engine.CallFunction("start", (byte)1, (byte)0, 0);
             }
         }
         catch (Exception t)
@@ -106,7 +107,7 @@ public class QuestScriptManager : AbstractScriptManager
             try
             {
                 c.setClickedNPC();
-                iv.InvokeSync("start", mode, type, selection);
+                iv.CallFunction("start", mode, type, selection);
             }
             catch (Exception e)
             {
@@ -149,11 +150,11 @@ public class QuestScriptManager : AbstractScriptManager
                     return;
                 }
 
-                engine.AddHostObject("qm", qm);
+                engine.AddHostedObject("qm", qm);
 
                 scripts.AddOrUpdate(c, engine);
                 c.setClickedNPC();
-                engine.InvokeSync("end", (byte)1, (byte)0, 0);
+                engine.CallFunction("end", (byte)1, (byte)0, 0);
             }
         }
         catch (Exception t)
@@ -171,7 +172,7 @@ public class QuestScriptManager : AbstractScriptManager
             try
             {
                 c.setClickedNPC();
-                iv.InvokeSync("end", mode, type, selection);
+                iv.CallFunction("end", mode, type, selection);
             }
             catch (Exception e)
             {
@@ -202,11 +203,11 @@ public class QuestScriptManager : AbstractScriptManager
                     return;
                 }
 
-                engine.AddHostObject("qm", qm);
+                engine.AddHostedObject("qm", qm);
 
                 scripts.AddOrUpdate(c, engine);
                 c.setClickedNPC();
-                engine.InvokeSync("raiseOpen");
+                engine.CallFunction("raiseOpen");
             }
         }
         catch (Exception t)

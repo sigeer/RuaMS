@@ -115,8 +115,7 @@ public class WorldChannel : IWorldChannel
             }
             else
             {
-                string[] ev = { "0_EXAMPLE" };
-                eventSM = new EventScriptManager(this, ev);
+                eventSM = new EventScriptManager(this, ["0_EXAMPLE"]);
             }
 
             dojoStage = new int[20];

@@ -26,6 +26,7 @@ using Application.Core.Game.Life;
 using Application.Core.model;
 using provider;
 using provider.wz;
+using System.Collections.Concurrent;
 using tools;
 
 namespace server.life;
@@ -38,7 +39,7 @@ public class LifeFactory
     private static DataProvider stringDataWZ = DataProviderFactory.getDataProvider(WZFiles.STRING);
     private static Data mobStringData = stringDataWZ.getData("Mob.img");
     private static Data npcStringData = stringDataWZ.getData("Npc.img");
-    private static Dictionary<int, MonsterStats> monsterStats = new();
+    private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
     private static HashSet<int> hpbarBosses = getHpBarBosses();
 
     private static HashSet<int> getHpBarBosses()
@@ -274,7 +275,7 @@ public class LifeFactory
                 stats = mobStats.Key;
                 setMonsterAttackInfo(mid, mobStats.Value);
 
-                monsterStats.Add(mid, stats);
+                monsterStats.AddOrUpdate(mid, stats);
             }
             return new Monster(mid, stats);
         }
