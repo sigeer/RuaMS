@@ -22,6 +22,7 @@
 
 
 using provider.wz;
+using System.Collections.Concurrent;
 
 namespace provider;
 
@@ -29,9 +30,10 @@ namespace provider;
 
 public class DataProviderFactory
 {
+    static ConcurrentDictionary<string, XMLWZFile> cached = new();
     private static DataProvider getWZ(string inValue)
     {
-        return new XMLWZFile(inValue);
+        return cached.GetOrAdd(inValue, (key) => new XMLWZFile(key));
     }
 
     public static DataProvider getDataProvider(WZFiles inValue)

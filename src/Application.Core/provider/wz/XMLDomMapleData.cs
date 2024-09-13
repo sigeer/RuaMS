@@ -31,7 +31,6 @@ namespace provider.wz;
 public class XMLDomMapleData : Data
 {
     private XmlNode node;
-
     public XMLDomMapleData(FileStream fis)
     {
         XmlDocument document = new XmlDocument();
@@ -45,51 +44,49 @@ public class XMLDomMapleData : Data
     }
 
     ConcurrentDictionary<string, Data?> dataCache = new ConcurrentDictionary<string, Data?>();
-    object getChildLock = new object();
     public Data? getChildByPath(string path)
-    {  
+    {
         // the whole XML reading system seems susceptible to give nulls on strenuous read scenarios
-        lock (getChildLock)
+
+        string[] segments = path.Split("/");
+        if (segments[0].Equals(".."))
         {
-            string[] segments = path.Split("/");
-            if (segments[0].Equals(".."))
-            {
-                return ((Data)getParent()).getChildByPath(path.Substring(path.IndexOf("/") + 1));
-            }
+            return ((Data)getParent()).getChildByPath(path.Substring(path.IndexOf("/") + 1));
+        }
 
-            if (segments.Count() == 1)
-            {
-                if (dataCache.ContainsKey(segments[0]))
-                    return dataCache[segments[0]];
+        if (segments.Count() == 1)
+        {
+            if (dataCache.ContainsKey(segments[0]))
+                return dataCache[segments[0]];
 
-                XmlNodeList childNodes = node.ChildNodes;
-                for (int i = 0; i < childNodes.Count; i++)
+            XmlNodeList childNodes = node.ChildNodes;
+            for (int i = 0; i < childNodes.Count; i++)
+            {
+                var childNode = childNodes.Item(i);
+                if (childNode != null && childNode.NodeType == XmlNodeType.Element)
                 {
-                    var childNode = childNodes.Item(i);
-                    if (childNode != null && childNode.NodeType == XmlNodeType.Element)
+                    var nodeName = childNode.Attributes!.GetNamedItem("name")!.Value!;
+                    if (!dataCache.ContainsKey(nodeName))
                     {
-                        var nodeName = childNode.Attributes!.GetNamedItem("name")!.Value!;
-                        if (!dataCache.ContainsKey(nodeName))
-                        {
-                            XMLDomMapleData ret = new XMLDomMapleData(childNode);
-                            dataCache.TryAdd(nodeName, ret);
-                        }
+                        XMLDomMapleData ret = new XMLDomMapleData(childNode);
+                        dataCache.TryAdd(nodeName, ret);
                     }
                 }
-
-                if (dataCache.ContainsKey(segments[0]))
-                    return dataCache[segments[0]];
-                else
-                {
-                    dataCache.TryAdd(segments[0], null);
-                    return null;
-                }
             }
+
+            if (dataCache.ContainsKey(segments[0]))
+                return dataCache[segments[0]];
             else
             {
-                return getChildByPath(segments[0])?.getChildByPath(string.Join('/', segments.Skip(1)));
+                dataCache.TryAdd(segments[0], null);
+                return null;
             }
         }
+        else
+        {
+            return getChildByPath(segments[0])?.getChildByPath(string.Join('/', segments.Skip(1)));
+        }
+
     }
 
     public List<Data> getChildren()
@@ -102,120 +99,129 @@ public class XMLDomMapleData : Data
             XmlNode? childNode = childNodes.Item(i);
             if (childNode != null && childNode.NodeType == XmlNodeType.Element)
             {
-                XMLDomMapleData child = new XMLDomMapleData(childNode);
-                ret.Add(child);
+                var nodeName = childNode.Attributes!.GetNamedItem("name")!.Value!;
+                var child = dataCache.GetOrAdd(nodeName, new XMLDomMapleData(childNode));
+                if (child != null)
+                    ret.Add(child);
             }
         });
         return ret.ToList();
     }
-
-    object getDataLock = new object();
+    object? cachedData;
     public object? getData()
     {
-        lock (getDataLock)
+        if (cachedData != null)
+            return cachedData;
+
+        var attributes = node.Attributes!;
+        var type = getType();
+        switch (type)
         {
-            var attributes = node.Attributes!;
-            var type = getType();
-            switch (type)
-            {
-                case DataType.DOUBLE:
-                case DataType.FLOAT:
-                case DataType.INT:
-                case DataType.SHORT:
+
+            case DataType.DOUBLE:
+            case DataType.FLOAT:
+            case DataType.INT:
+            case DataType.SHORT:
+                {
+                    var value = attributes.GetNamedItem("value")?.Value;
+                    if (value == null)
+                        break;
+
+                    switch (type)
                     {
-                        string value = attributes.GetNamedItem("value")?.Value ?? "0";
-                        switch (type)
-                        {
-                            case DataType.DOUBLE:
-                                return double.Parse(value);
-                            case DataType.FLOAT:
-                                return float.Parse(value);
-                            case DataType.INT:
-                                return int.Parse(value);
-                            case DataType.SHORT:
-                                return short.Parse(value);
-                            default:
-                                return 0;
-                        }
+                        case DataType.DOUBLE:
+                            cachedData = double.Parse(value);
+                            break;
+                        case DataType.FLOAT:
+                            cachedData = float.Parse(value);
+                            break;
+                        case DataType.INT:
+                            cachedData = int.Parse(value);
+                            break;
+                        case DataType.SHORT:
+                            cachedData = short.Parse(value);
+                            break;
+                        default:
+                            cachedData = 0;
+                            break;
                     }
-                case DataType.STRING:
-                case DataType.UOL:
-                    {
-                        string? value = attributes.GetNamedItem("value")?.Value;
-                        return value;
-                    }
-                case DataType.VECTOR:
-                    {
-                        string x = attributes.GetNamedItem("x")?.Value ?? "0";
-                        string y = attributes.GetNamedItem("y")?.Value ?? "0";
-                        return new Point(int.Parse(x), int.Parse(y));
-                    }
-                default:
-                    return null;
-            }
+                }
+                break;
+            case DataType.STRING:
+            case DataType.UOL:
+                {
+                    var value = attributes.GetNamedItem("value")?.Value;
+                    cachedData = value;
+                    break;
+                }
+            case DataType.VECTOR:
+                {
+                    string x = attributes.GetNamedItem("x")?.Value ?? "0";
+                    string y = attributes.GetNamedItem("y")?.Value ?? "0";
+                    cachedData = new Point(int.Parse(x), int.Parse(y));
+                    break;
+                }
+            default:
+                break;
         }
+        return cachedData;
     }
 
     public DataType? getType()
     {
-        lock (getDataLock)
-        {
-            string nodeName = node.Name;
+        string nodeName = node.Name;
 
-            switch (nodeName)
-            {
-                case "imgdir":
-                    return DataType.PROPERTY;
-                case "canvas":
-                    return DataType.CANVAS;
-                case "convex":
-                    return DataType.CONVEX;
-                case "sound":
-                    return DataType.SOUND;
-                case "uol":
-                    return DataType.UOL;
-                case "double":
-                    return DataType.DOUBLE;
-                case "float":
-                    return DataType.FLOAT;
-                case "int":
-                    return DataType.INT;
-                case "short":
-                    return DataType.SHORT;
-                case "string":
-                    return DataType.STRING;
-                case "vector":
-                    return DataType.VECTOR;
-                case "null":
-                    return DataType.IMG_0x00;
-            }
-            return null;
+        switch (nodeName)
+        {
+            case "imgdir":
+                return DataType.PROPERTY;
+            case "canvas":
+                return DataType.CANVAS;
+            case "convex":
+                return DataType.CONVEX;
+            case "sound":
+                return DataType.SOUND;
+            case "uol":
+                return DataType.UOL;
+            case "double":
+                return DataType.DOUBLE;
+            case "float":
+                return DataType.FLOAT;
+            case "int":
+                return DataType.INT;
+            case "short":
+                return DataType.SHORT;
+            case "string":
+                return DataType.STRING;
+            case "vector":
+                return DataType.VECTOR;
+            case "null":
+                return DataType.IMG_0x00;
         }
+        return null;
+
     }
 
-    object getParentLock = new object();
     public DataEntity getParent()
     {
-        lock (getParentLock)
+        var parentNode = node.ParentNode;
+        if (parentNode == null || parentNode.NodeType == XmlNodeType.Document)
         {
-            var parentNode = node.ParentNode;
-            if (parentNode == null || parentNode.NodeType == XmlNodeType.Document)
-            {
-                return null!;
-            }
-            return new XMLDomMapleData(parentNode);
+            return null!;
         }
+        return new XMLDomMapleData(parentNode);
+
     }
 
-    object getNameLock = new object();
+    string? _name;
     public string? getName()
     {
-        lock (getNameLock)
-        {
-            return node.Attributes?.GetNamedItem("name")?.Value;
-        }
-    }
+        if (!string.IsNullOrEmpty(_name))
+            return _name;
 
+        _name = node.Attributes?.GetNamedItem("name")?.Value;
+        return _name;
+    }
     public IEnumerator<Data> GetEnumerator()
     {
         return new XMLDomDataEnumerator(getChildren());
