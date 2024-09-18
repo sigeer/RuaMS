@@ -1,9 +1,6 @@
 ﻿using Application.Core.Scripting.Infrastructure;
 using Jint;
-using Jint.Native.Array;
-using Jint.Runtime;
 using Jint.Runtime.Interop;
-using MySqlX.XDevAPI.Common;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Application.Core.scripting.Infrastructure
@@ -58,7 +55,7 @@ namespace Application.Core.scripting.Infrastructure
 
         public override bool TryConvert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields)] Type type, IFormatProvider formatProvider, [NotNullWhen(true)] out object? converted)
         {
-            if (value is object[] arr)
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && value is object[] arr)
             {
                 var list = new List<object>();
                 foreach (var element in arr)
