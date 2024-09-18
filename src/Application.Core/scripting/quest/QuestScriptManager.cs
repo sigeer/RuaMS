@@ -24,7 +24,6 @@
 using Application.Core.Scripting.Infrastructure;
 using client;
 using constants.game;
-using JavaScriptEngineSwitcher.Core;
 using server.quest;
 
 namespace scripting.quest;

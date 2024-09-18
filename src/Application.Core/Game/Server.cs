@@ -936,7 +936,7 @@ public class Server
 
         channelDependencies = registerChannelDependencies();
 
-        await Task.Run(() =>
+        _ = Task.Run(() =>
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -945,7 +945,7 @@ public class Server
             log.Debug("Skills loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
-        await Task.Run(() =>
+        _ = Task.Run(() =>
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -954,7 +954,7 @@ public class Server
             log.Debug("CashItems loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
-        await Task.Run(() =>
+        _ = Task.Run(() =>
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -963,7 +963,7 @@ public class Server
             log.Debug("Quest loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
-        await Task.Run(() =>
+        _ = Task.Run(() =>
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();

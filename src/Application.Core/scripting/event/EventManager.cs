@@ -23,12 +23,10 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using constants.game;
-using JavaScriptEngineSwitcher.Core;
 using net.server;
 using scripting.Event.scheduler;
 using server;
@@ -47,7 +45,7 @@ namespace scripting.Event;
  */
 public class EventManager
 {
-    static ILogger log = LogFactory.GetLogger(LogType.EventManager);
+    ILogger log = LogFactory.GetLogger(LogType.EventManager);
     private IEngine iv;
     private IWorldChannel cserv;
     private IWorld wserv;
@@ -96,7 +94,8 @@ public class EventManager
     }
 
     public void cancel()
-    {  // make sure to only call this when there are NO PLAYERS ONLINE to mess around with the event manager!
+    {  
+        // make sure to only call this when there are NO PLAYERS ONLINE to mess around with the event manager!
         ess.dispose();
 
         try
@@ -142,6 +141,7 @@ public class EventManager
         cserv = null;
         wserv = null;
         server = null;
+        iv.Dispose();
         iv = null;
     }
 

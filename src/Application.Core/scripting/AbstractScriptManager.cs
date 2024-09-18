@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using Application.Core.Managers;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Infrastructure;
@@ -52,7 +53,7 @@ public abstract class AbstractScriptManager
 
     protected AbstractScriptManager()
     {
-        log = LogFactory.GetLogger($"script/{GetType().Name}");
+        log = LogFactory.GetLogger($"Script/{GetType().Name}");
     }
 
     protected IEngine? getInvocableScriptEngine(string path)
@@ -67,6 +68,8 @@ public abstract class AbstractScriptManager
         var engine = new JintEngine();
         try
         {
+            engine.AddHostedObject("log", log);
+
             engine.AddHostedType("Item", typeof(Item));
             engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
             engine.AddHostedType("BuffStat", typeof(BuffStat));
@@ -91,12 +94,13 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("PacketCreator", typeof(PacketCreator));
             engine.AddHostedType("YamlConfig", typeof(YamlConfig));
             engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
+            engine.AddHostedType("Map", typeof(MapleMap));
 
             engine.AddHostedObject("Job", typeof(Job));
             engine.AddHostedObject("InventoryType", typeof(InventoryType));
 
-            engine.AddHostedType("ListExtensions", typeof(ListExtensions));
-            engine.AddHostedType("Enumerable", typeof(Enumerable));
+            //engine.AddHostedType("ListExtensions", typeof(ListExtensions));
+            //engine.AddHostedType("Enumerable", typeof(Enumerable));
 
             engine.Evaluate(File.ReadAllText(path));
             return engine;

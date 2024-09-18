@@ -130,14 +130,15 @@ public class LifeFactory
         stats.setCP(DataTool.getIntConvert("getCP", monsterInfoData, stats.getCP()));
         stats.setRemoveOnMiss(DataTool.getIntConvert("removeOnMiss", monsterInfoData, stats.removeOnMiss() ? 1 : 0) > 0);
 
-        var special = monsterInfoData.getChildByPath("coolDamage");
+        var special = monsterInfoData?.getChildByPath("coolDamage");
         if (special != null)
         {
             int coolDmg = DataTool.getIntConvert("coolDamage", monsterInfoData);
             int coolProb = DataTool.getIntConvert("coolDamageProb", monsterInfoData, 0);
             stats.setCool(new(coolDmg, coolProb));
         }
-        special = monsterInfoData.getChildByPath("loseItem");
+
+        special = monsterInfoData?.getChildByPath("loseItem");
         if (special != null)
         {
             foreach (Data liData in special.getChildren())
@@ -145,12 +146,14 @@ public class LifeFactory
                 stats.addLoseItem(new loseItem(DataTool.getInt(liData.getChildByPath("id")), (byte)DataTool.getInt(liData.getChildByPath("prop")), (byte)DataTool.getInt(liData.getChildByPath("x"))));
             }
         }
-        special = monsterInfoData.getChildByPath("selfDestruction");
+
+        special = monsterInfoData?.getChildByPath("selfDestruction");
         if (special != null)
         {
             stats.setSelfDestruction(new selfDestruction((byte)DataTool.getInt(special.getChildByPath("action")), DataTool.getIntConvert("removeAfter", special, -1), DataTool.getIntConvert("hp", special, -1)));
         }
-        var firstAttackData = monsterInfoData.getChildByPath("firstAttack");
+
+        var firstAttackData = monsterInfoData?.getChildByPath("firstAttack");
         int firstAttack = 0;
         if (firstAttackData != null)
         {
@@ -173,7 +176,7 @@ public class LifeFactory
 
         foreach (Data idata in monsterData)
         {
-            if (!idata.getName().Equals("info"))
+            if (idata.getName() != "info")
             {
                 int delay = 0;
                 foreach (Data pic in idata.getChildren())

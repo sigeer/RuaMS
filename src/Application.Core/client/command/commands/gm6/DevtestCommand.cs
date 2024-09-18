@@ -1,5 +1,4 @@
 using Application.Core.Scripting.Infrastructure;
-using JavaScriptEngineSwitcher.Core;
 using scripting;
 
 namespace client.command.commands.gm6;

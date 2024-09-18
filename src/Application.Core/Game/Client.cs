@@ -9,7 +9,6 @@ using constants.game;
 using constants.id;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
-using JavaScriptEngineSwitcher.Core;
 using Microsoft.EntityFrameworkCore;
 using net;
 using net.netty;
@@ -211,7 +210,7 @@ public class Client : ChannelHandlerAdapter, IClient
         }
         else if (cause is BusinessException)
         {
-            // 
+            //
         }
     }
 

@@ -1,7 +1,5 @@
-﻿using JavaScriptEngineSwitcher.Core;
-using Jint.Native;
+﻿using Jint.Native;
 using Jint.Runtime.Interop;
-using System.Runtime.InteropServices.JavaScript;
 
 namespace Application.Core.Compatible.Extensions
 {
@@ -19,31 +17,31 @@ namespace Application.Core.Compatible.Extensions
         //}
 
 
-        public static TResult? InvokeFunction<TResult>(this IJsEngine engine, string functionName, params object?[] args)
-        {
-            var r = engine.CallFunction(functionName, args);
-            if (r is ObjectWrapper jsObject)
-            {
-                return (TResult)Convert.ChangeType(jsObject.ToObject(), typeof(TResult));
-            }
-            else
-            {
-                if (r is TResult d)
-                    return d;
+        //public static TResult? InvokeFunction<TResult>(this IJsEngine engine, string functionName, params object?[] args)
+        //{
+        //    var r = engine.CallFunction(functionName, args);
+        //    if (r is ObjectWrapper jsObject)
+        //    {
+        //        return (TResult)Convert.ChangeType(jsObject.ToObject(), typeof(TResult));
+        //    }
+        //    else
+        //    {
+        //        if (r is TResult d)
+        //            return d;
 
-                return default;
-            }
-        }
+        //        return default;
+        //    }
+        //}
 
-        public static List<TResult> InvokeFunctionList<TResult>(this IJsEngine engine, string functionName, params object?[] args)
-        {
-            var r = engine.CallFunction(functionName, args);
-            if (r is JsArray arr)
-            {
-                return arr.Select(x => (TResult)Convert.ChangeType(x.ToObject(), typeof(TResult))).ToList();
-            }
-            return [];
-        }
+        //public static List<TResult> InvokeFunctionList<TResult>(this IJsEngine engine, string functionName, params object?[] args)
+        //{
+        //    var r = engine.CallFunction(functionName, args);
+        //    if (r is JsArray arr)
+        //    {
+        //        return arr.Select(x => (TResult)Convert.ChangeType(x.ToObject(), typeof(TResult))).ToList();
+        //    }
+        //    return [];
+        //}
 
         ///// <summary>
         ///// js没有返回值时，会返回<see cref="Undefined"/>。

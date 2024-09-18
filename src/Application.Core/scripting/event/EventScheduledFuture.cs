@@ -38,7 +38,8 @@ public class EventScheduledFuture
     }
 
     public void cancel(bool dummy)
-    {   // will always implement "non-interrupt if running" regardless of bool value
+    {
+        // will always implement "non-interrupt if running" regardless of bool value
         ess.cancelEntry(r);
     }
 }

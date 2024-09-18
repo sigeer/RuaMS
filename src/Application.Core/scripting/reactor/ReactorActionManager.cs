@@ -25,7 +25,6 @@ using Application.Core.scripting.Event;
 using Application.Core.Scripting.Infrastructure;
 using client.inventory;
 using constants.inventory;
-using JavaScriptEngineSwitcher.Core;
 using server;
 using server.life;
 using server.maps;

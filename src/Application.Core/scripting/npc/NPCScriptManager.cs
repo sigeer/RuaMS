@@ -22,7 +22,6 @@
 
 
 using Application.Core.Scripting.Infrastructure;
-using JavaScriptEngineSwitcher.Core;
 using tools;
 using static server.ItemInformationProvider;
 

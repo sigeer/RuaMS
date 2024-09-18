@@ -34,8 +34,6 @@ public class MapManager
 
     private ConcurrentDictionary<int, IMap> maps = new();
 
-    ReaderWriterLockSlim mapsLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
     public MapManager(EventInstanceManager eim, int world, int channel)
     {
         this.world = world;
@@ -45,15 +43,7 @@ public class MapManager
 
     public IMap resetMap(int mapid)
     {
-        mapsLock.EnterWriteLock();
-        try
-        {
-            maps.Remove(mapid);
-        }
-        finally
-        {
-            mapsLock.ExitWriteLock();
-        }
+        maps.Remove(mapid);
 
         return getMap(mapid);
     }
@@ -67,15 +57,7 @@ public class MapManager
 
             if (cache)
             {
-                mapsLock.EnterReadLock();
-                try
-                {
-                    map = maps.GetValueOrDefault(mapid);
-                }
-                finally
-                {
-                    mapsLock.ExitReadLock();
-                }
+                map = maps.GetValueOrDefault(mapid);
 
                 if (map != null)
                 {
@@ -87,15 +69,7 @@ public class MapManager
 
             if (cache)
             {
-                mapsLock.EnterWriteLock();
-                try
-                {
-                    maps.AddOrUpdate(mapid, map);
-                }
-                finally
-                {
-                    mapsLock.ExitWriteLock();
-                }
+                maps.AddOrUpdate(mapid, map);
             }
 
             return map;
@@ -115,28 +89,12 @@ public class MapManager
 
     public bool isMapLoaded(int mapId)
     {
-        mapsLock.EnterReadLock();
-        try
-        {
-            return maps.ContainsKey(mapId);
-        }
-        finally
-        {
-            mapsLock.ExitReadLock();
-        }
+        return maps.ContainsKey(mapId);
     }
 
     public Dictionary<int, IMap> getMaps()
     {
-        mapsLock.EnterReadLock();
-        try
-        {
-            return new(maps);
-        }
-        finally
-        {
-            mapsLock.ExitReadLock();
-        }
+        return new(maps);
     }
 
     public void updateMaps()
