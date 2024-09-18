@@ -889,7 +889,8 @@ public class EventManager
         }
         try
         {
-            var eligibleParty = (List<IPlayer>)iv.CallFunction("getEligibleParty", party.getPartyMembersOnline());
+            var result = iv.CallFunction("getEligibleParty", party.getPartyMembersOnline());
+            var eligibleParty = ((object[]?)result ?? []).OfType<IPlayer>().ToList();
             party.setEligibleMembers(eligibleParty);
             return eligibleParty;
         }

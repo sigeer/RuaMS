@@ -10,7 +10,7 @@ namespace Application.Core.Scripting.Infrastructure
     {
         public void AddHostedObject(string name, object obj);
         public void AddHostedType(string name, Type type);
-        public object CallFunction(string functionName, params object?[] paramsValue);
+        public object? CallFunction(string functionName, params object?[] paramsValue);
         public object Evaluate(string code);
     }
 }

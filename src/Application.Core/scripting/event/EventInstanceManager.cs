@@ -1243,22 +1243,12 @@ public class EventInstanceManager
         }
     }
 
-    public void setEventRewards(List<object> rwds, List<object> qtys, int expGiven)
+    public void setEventRewards(List<object> rwds, List<object> qtys, int expGiven = 0)
     {
         setEventRewards(1, rwds, qtys, expGiven);
     }
 
-    public void setEventRewards(List<object> rwds, List<object> qtys)
-    {
-        setEventRewards(1, rwds, qtys);
-    }
-
-    public void setEventRewards(int eventLevel, List<object> rwds, List<object> qtys)
-    {
-        setEventRewards(eventLevel, rwds, qtys, 0);
-    }
-
-    public void setEventRewards(int eventLevel, List<object> rwds, List<object> qtys, int expGiven)
+    public void setEventRewards(int eventLevel, List<object> rwds, List<object> qtys, int expGiven = 0)
     {
         // fixed EXP will be rewarded at the same time the random item is given
 

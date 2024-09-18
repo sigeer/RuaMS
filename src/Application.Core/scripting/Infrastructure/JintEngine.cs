@@ -1,7 +1,10 @@
 ﻿using Application.Core.Scripting.Infrastructure;
 using Jint;
+using Jint.Native.Array;
 using Jint.Runtime;
 using Jint.Runtime.Interop;
+using MySqlX.XDevAPI.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Application.Core.scripting.Infrastructure
 {
@@ -12,9 +15,12 @@ namespace Application.Core.scripting.Infrastructure
         {
             _engine = new Engine(o =>
             {
-                o.AllowClr().AddExtensionMethods(typeof(ListExtensions), typeof(Enumerable));
+                o.AllowClr().AddExtensionMethods(typeof(JsEngineExtensions));
+                o.SetTypeConverter(o =>
+                {
+                    return new CustomeTypeConverter(o);
+                });
                 o.Strict = false;
-                o.Interop.Enabled = true;
             });
         }
         public void AddHostedObject(string name, object obj)
@@ -27,14 +33,10 @@ namespace Application.Core.scripting.Infrastructure
             _engine.SetValue(name, type);
         }
 
-        public object CallFunction(string functionName, params object?[] paramsValue)
+        public object? CallFunction(string functionName, params object?[] paramsValue)
         {
             var m = _engine.Invoke(functionName, paramsValue);
-            if (m is ObjectWrapper wrapper)
-            {
-                return wrapper.ToObject();
-            }
-            return m;
+            return m.ToObject();
         }
 
         public void Dispose()
@@ -45,6 +47,29 @@ namespace Application.Core.scripting.Infrastructure
         public object Evaluate(string code)
         {
             return _engine.Evaluate(code);
+        }
+    }
+
+    public class CustomeTypeConverter : DefaultTypeConverter
+    {
+        public CustomeTypeConverter(Engine engine) : base(engine)
+        {
+        }
+
+        public override bool TryConvert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields)] Type type, IFormatProvider formatProvider, [NotNullWhen(true)] out object? converted)
+        {
+            if (value is object[] arr)
+            {
+                var list = new List<object>();
+                foreach (var element in arr)
+                {
+                    list.Add(element);
+                }
+                converted = list;
+                return true;
+            }
+
+            return base.TryConvert(value, type, formatProvider, out converted);
         }
     }
 }

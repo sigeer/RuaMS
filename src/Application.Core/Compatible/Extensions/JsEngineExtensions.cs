@@ -1,10 +1,31 @@
-﻿using Jint.Native;
-using Jint.Runtime.Interop;
-
-namespace Application.Core.Compatible.Extensions
+﻿namespace Application.Core.Compatible.Extensions
 {
     public static class JsEngineExtensions
     {
+        /// <summary>
+        /// 兼容js
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public static int Size(this object list)
+        {
+            var objType = list.GetType();
+            if (objType.IsGenericType && objType.GetGenericTypeDefinition() == typeof(List<>))
+                return (int)objType.GetProperty("Count")!.GetValue(list)!;
+            return 0;
+        }
+
+        public static object? Get(this object list, int index)
+        {
+            var objType = list.GetType();
+            if (objType.IsGenericType && objType.GetGenericTypeDefinition() == typeof(List<>))
+                return objType.GetMethod("ElementAtDefault")!.Invoke(list, [index]);
+            return null;
+        }
+
+
+
         //public static object? InvokeSync(this IJsEngine engine, string functionName, params object?[] args)
         //{
         //    var r = engine.CallFunction(functionName, args);
