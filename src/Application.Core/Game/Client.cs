@@ -66,7 +66,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private long lastPong;
     private int gmlevel;
     private HashSet<string> macs = new();
-    private Dictionary<string, IEngine> engines = new();
+    readonly EngineStorage _engines = new EngineStorage();
     private sbyte characterSlots = 3;
     private byte loginattempt = 0;
     private string _pin = "";
@@ -1042,7 +1042,7 @@ public class Client : ChannelHandlerAdapter, IClient
                 updateLoginState(Client.LOGIN_NOTLOGGEDIN);
             }
 
-            engines.Clear();
+            _engines.Clear();
         }
     }
 
@@ -1060,7 +1060,7 @@ public class Client : ChannelHandlerAdapter, IClient
         this.macs.Clear();
         this._hwid = null;
         this.birthday = null;
-        this.engines.Clear();
+        this._engines.Clear();
         this.Character = null;
     }
 
@@ -1190,17 +1190,17 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public void setScriptEngine(string name, IEngine e)
     {
-        engines.AddOrUpdate(name, e);
+        _engines[name] = e;
     }
 
     public IEngine? getScriptEngine(string name)
     {
-        return engines.GetValueOrDefault(name);
+        return _engines[name];
     }
 
     public void removeScriptEngine(string name)
     {
-        engines.Remove(name);
+        _engines.Remove(name);
     }
 
     public NPCConversationManager getCM()

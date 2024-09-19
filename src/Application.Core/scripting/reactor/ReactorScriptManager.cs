@@ -137,7 +137,7 @@ public class ReactorScriptManager : AbstractScriptManager
 
     private IEngine? initializeInvocable(IClient c, Reactor reactor)
     {
-        var engine = getInvocableScriptEngine("reactor/" + reactor.getId() + ".js", c);
+        var engine = getInvocableScriptEngine(GetReactorScriptPath(reactor.getId().ToString()), c);
         if (engine == null)
         {
             return null;

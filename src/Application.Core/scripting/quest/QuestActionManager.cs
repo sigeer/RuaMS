@@ -38,7 +38,6 @@ public class QuestActionManager : NPCConversationManager
 
     public QuestActionManager(IClient c, int quest, int npc, bool start) : base(c, npc, null)
     {
-
         this.quest = quest;
         this.start = start;
     }
