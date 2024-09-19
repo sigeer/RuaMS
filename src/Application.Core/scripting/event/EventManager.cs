@@ -154,7 +154,7 @@ public class EventManager
     {
         try
         {
-            return (int)iv.CallFunction("getMaxLobbies");
+            return Convert.ToInt32(iv.CallFunction("getMaxLobbies"));
         }
         catch (Exception ex)
         {

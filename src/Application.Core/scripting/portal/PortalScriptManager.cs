@@ -65,7 +65,7 @@ public class PortalScriptManager : AbstractScriptManager
             var script = getPortalScript(portal.getScriptName());
             if (script != null)
             {
-                return (bool)script.CallFunction("enter", new PortalPlayerInteraction(c, portal));
+                return Convert.ToBoolean(script.CallFunction("enter", new PortalPlayerInteraction(c, portal)));
             }
         }
         catch (Exception e)
