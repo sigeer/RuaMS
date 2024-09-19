@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Microsoft.ClearScript.V8;
+using Application.Core.Scripting.Infrastructure;
 using server.maps;
 
 namespace scripting.portal;
@@ -32,14 +32,14 @@ public class PortalScriptManager : AbstractScriptManager
 {
     private static PortalScriptManager instance = new PortalScriptManager();
 
-    private Dictionary<string, V8ScriptEngine> scripts = new();
+    private Dictionary<string, IEngine> scripts = new();
 
     public static PortalScriptManager getInstance()
     {
         return instance;
     }
 
-    private V8ScriptEngine? getPortalScript(string scriptName)
+    private IEngine? getPortalScript(string scriptName)
     {
         string scriptPath = "portal/" + scriptName + ".js";
         var script = scripts.GetValueOrDefault(scriptPath);
@@ -65,7 +65,7 @@ public class PortalScriptManager : AbstractScriptManager
             var script = getPortalScript(portal.getScriptName());
             if (script != null)
             {
-                return (bool)script.InvokeSync("enter", new PortalPlayerInteraction(c, portal));
+                return (bool)script.CallFunction("enter", new PortalPlayerInteraction(c, portal));
             }
         }
         catch (Exception e)

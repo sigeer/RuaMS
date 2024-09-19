@@ -19,16 +19,7 @@
             return list[index];
         }
 
-        /// <summary>
-        /// 兼容js
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public static int size<T>(this List<T> list)
-        {
-            return list.Count;
-        }
+
 
         /// <summary>
         /// 兼容js

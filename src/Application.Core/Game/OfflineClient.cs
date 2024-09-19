@@ -1,8 +1,8 @@
 ﻿using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
+using Application.Core.Scripting.Infrastructure;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
-using Microsoft.ClearScript.V8;
 using net.packet;
 using net.server.coordinator.session;
 using scripting;
@@ -286,7 +286,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public V8ScriptEngine? getScriptEngine(string name)
+        public IEngine? getScriptEngine(string name)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -481,7 +481,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void setScriptEngine(string name, V8ScriptEngine e)
+        public void setScriptEngine(string name, IEngine e)
         {
             throw new BusinessCharacterOfflineException();
         }

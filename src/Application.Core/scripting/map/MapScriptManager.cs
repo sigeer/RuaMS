@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Microsoft.ClearScript.V8;
+using Application.Core.Scripting.Infrastructure;
 
 namespace scripting.map;
 
@@ -29,7 +29,7 @@ public class MapScriptManager : AbstractScriptManager
 {
     private static MapScriptManager instance = new MapScriptManager();
 
-    private Dictionary<string, V8ScriptEngine> scripts = new();
+    private Dictionary<string, IEngine> scripts = new();
 
     public static MapScriptManager getInstance()
     {
@@ -62,7 +62,7 @@ public class MapScriptManager : AbstractScriptManager
         {
             try
             {
-                iv.InvokeSync("start", new MapScriptMethods(c));
+                iv.CallFunction("start", new MapScriptMethods(c));
                 return true;
             }
             catch (Exception e)
@@ -80,7 +80,7 @@ public class MapScriptManager : AbstractScriptManager
             }
 
             scripts.AddOrUpdate(mapScriptPath, iv);
-            iv.InvokeSync("start", new MapScriptMethods(c));
+            iv.CallFunction("start", new MapScriptMethods(c));
             return true;
         }
         catch (Exception e)

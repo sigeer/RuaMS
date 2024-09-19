@@ -22,15 +22,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Life;
-using Application.Core.Game.Relation;
+using Application.Core.Game.Maps;
 using Application.Core.Managers;
+using Application.Core.Scripting.Infrastructure;
 using client;
 using client.command;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using constants.id;
-using Microsoft.ClearScript.V8;
 using net.server;
 using net.server.channel;
 using net.server.channel.handlers;
@@ -52,10 +52,10 @@ public abstract class AbstractScriptManager
 
     protected AbstractScriptManager()
     {
-        log = LogFactory.GetLogger($"script/{GetType().Name}");
+        log = LogFactory.GetLogger($"Script/{GetType().Name}");
     }
 
-    protected V8ScriptEngine? getInvocableScriptEngine(string path)
+    protected IEngine? getInvocableScriptEngine(string path)
     {
         path = GetFullScriptPath(path);
         if (!File.Exists(path))
@@ -64,40 +64,44 @@ public abstract class AbstractScriptManager
             return null;
         }
 
-        V8ScriptEngine engine = new V8ScriptEngine();
+        var engine = new JintEngine();
         try
         {
-            engine.AddHostType(typeof(Console));
-            engine.AddHostType(typeof(Item));
-            engine.AddHostType(typeof(InventoryManipulator));
-            engine.AddHostType(typeof(Guild));
-            engine.AddHostType(typeof(BuffStat));
-            engine.AddHostType(typeof(MapId));
-            engine.AddHostType(typeof(Rectangle));
-            engine.AddHostType(typeof(RingActionHandler));
-            engine.AddHostType("Channel", typeof(WorldChannel));
-            engine.AddHostType(typeof(CommandsExecutor));
-            engine.AddHostType(typeof(CharacterManager));
-            engine.AddHostType(typeof(Gachapon));
-            engine.AddHostType(typeof(ItemInformationProvider));
-            engine.AddHostType(typeof(MonsterBook));
-            engine.AddHostType(typeof(Job));
-            engine.AddHostType(typeof(ExpTable));
-            engine.AddHostType(typeof(ExpeditionType));
-            engine.AddHostType(typeof(ListExtensions));
-            engine.AddHostType(typeof(Enumerable));
-            engine.AddHostType(typeof(Server));
-            engine.AddHostType(typeof(Point));
-            engine.AddHostType(typeof(LifeFactory));
-            engine.AddHostType("Wedding", typeof(WeddingPackets));
-            engine.AddHostType(typeof(GameConstants));
-            engine.AddHostType(typeof(PlayerNPC));
-            engine.AddHostType(typeof(ShopFactory));
-            engine.AddHostType(typeof(PacketCreator));
-            engine.AddHostType(typeof(InventoryType));
-            engine.AddHostType(typeof(YamlConfig));
-            engine.AddHostType(typeof(MakerProcessor));
-            engine.Execute(File.ReadAllText(path));
+            engine.AddHostedObject("log", log);
+
+            engine.AddHostedType("Item", typeof(Item));
+            engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
+            engine.AddHostedType("BuffStat", typeof(BuffStat));
+            engine.AddHostedType("MapId", typeof(MapId));
+            engine.AddHostedType("Rectangle", typeof(Rectangle));
+            engine.AddHostedType("RingActionHandler", typeof(RingActionHandler));
+            engine.AddHostedType("Channel", typeof(WorldChannel));
+            engine.AddHostedType("CommandsExecutor", typeof(CommandsExecutor));
+            engine.AddHostedType("CharacterManager", typeof(CharacterManager));
+            engine.AddHostedType("Gachapon", typeof(Gachapon));
+            engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
+            engine.AddHostedType("MonsterBook", typeof(MonsterBook));
+            engine.AddHostedType("ExpTable", typeof(ExpTable));
+            engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
+            engine.AddHostedType("Server", typeof(Server));
+            engine.AddHostedType("Point", typeof(Point));
+            engine.AddHostedType("LifeFactory", typeof(LifeFactory));
+            engine.AddHostedType("Wedding", typeof(WeddingPackets));
+            engine.AddHostedType("GameConstants", typeof(GameConstants));
+            engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
+            engine.AddHostedType("ShopFactory", typeof(ShopFactory));
+            engine.AddHostedType("PacketCreator", typeof(PacketCreator));
+            engine.AddHostedType("YamlConfig", typeof(YamlConfig));
+            engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
+            engine.AddHostedType("Guild", typeof(GuildManager));
+
+            engine.AddHostedType("Job", typeof(Job));
+            engine.AddHostedType("InventoryType", typeof(InventoryType));
+
+            //engine.AddHostedType("ListExtensions", typeof(ListExtensions));
+            //engine.AddHostedType("Enumerable", typeof(Enumerable));
+
+            engine.Evaluate(File.ReadAllText(path));
             return engine;
         }
         catch (Exception ex)
@@ -107,12 +111,12 @@ public abstract class AbstractScriptManager
         }
     }
 
-    protected V8ScriptEngine getInvocableScriptEngine(string path, IClient c)
+    protected IEngine getInvocableScriptEngine(string path, IClient c)
     {
-        V8ScriptEngine? engine = c.getScriptEngine(path);
+        var engine = c.getScriptEngine(path);
         if (engine == null)
         {
-            engine = getInvocableScriptEngine(path);
+            engine = getInvocableScriptEngine(path)!;
             c.setScriptEngine(path, engine);
         }
 

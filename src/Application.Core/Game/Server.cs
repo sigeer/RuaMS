@@ -935,6 +935,7 @@ public class Server
         }
 
         channelDependencies = registerChannelDependencies();
+
         _ = Task.Run(() =>
         {
             Stopwatch sw = new Stopwatch();
@@ -942,18 +943,30 @@ public class Server
             SkillFactory.loadAllSkills();
             sw.Stop();
             log.Debug("Skills loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+        });
 
-            sw.Restart();
+        _ = Task.Run(() =>
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             CashItemFactory.loadAllCashItems();
             sw.Stop();
             log.Debug("CashItems loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+        });
 
-            sw.Restart();
+        _ = Task.Run(() =>
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             Quest.loadAllQuests();
             sw.Stop();
             log.Debug("Quest loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+        });
 
-            sw.Restart();
+        _ = Task.Run(() =>
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             SkillbookInformationProvider.loadAllSkillbookInformation();
             sw.Stop();
             log.Debug("Skillbook loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);

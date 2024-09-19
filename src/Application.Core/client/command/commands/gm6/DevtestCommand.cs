@@ -1,4 +1,4 @@
-using Microsoft.ClearScript.V8;
+using Application.Core.Scripting.Infrastructure;
 using scripting;
 
 namespace client.command.commands.gm6;
@@ -13,7 +13,7 @@ public class DevtestCommand : Command
     private class DevtestScriptManager : AbstractScriptManager
     {
 
-        public V8ScriptEngine? GetScriptEngine(string path)
+        public IEngine? GetScriptEngine(string path)
         {
             return base.getInvocableScriptEngine(path);
         }
@@ -26,7 +26,7 @@ public class DevtestCommand : Command
         var scriptEngine = scriptManager.GetScriptEngine("devtest.js");
         try
         {
-            scriptEngine?.InvokeSync("run", client.getPlayer());
+            scriptEngine?.CallFunction("run", client.getPlayer());
         }
         catch (Exception e)
         {

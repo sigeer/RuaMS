@@ -63,108 +63,89 @@ public class EventScriptScheduler
 
             idleProcs = 0;
             registeredEntriesCopy = new(registeredEntries);
-        }
-        finally
-        {
-            Monitor.Exit(schedulerLock);
-        }
 
-        long timeNow = Server.getInstance().getCurrentTime();
-        toRemove = new();
-        foreach (var rmd in registeredEntriesCopy)
-        {
-            if (rmd.Value < timeNow)
+
+            long timeNow = Server.getInstance().getCurrentTime();
+            toRemove = new();
+            foreach (var rmd in registeredEntriesCopy)
             {
-                var r = rmd.Key;
+                if (rmd.Value < timeNow)
+                {
+                    var r = rmd.Key;
 
-                r.Invoke();  // runs the scheduled action
-                toRemove.Add(r);
+                    r.Invoke();  // runs the scheduled action
+                    toRemove.Add(r);
+                }
             }
-        }
 
-        if (toRemove.Count > 0)
-        {
-            Monitor.Enter(schedulerLock);
-            try
+            if (toRemove.Count > 0)
             {
                 foreach (Action r in toRemove)
                 {
                     registeredEntries.Remove(r);
                 }
             }
-            finally
-            {
-                Monitor.Exit(schedulerLock);
-            }
+        }
+        finally
+        {
+            Monitor.Exit(schedulerLock);
         }
     }
 
     public void registerEntry(Action scheduledAction, long duration)
     {
-
-        ThreadManager.getInstance().newTask(() =>
+        Monitor.Enter(schedulerLock);
+        try
         {
-            Monitor.Enter(schedulerLock);
-            try
+            idleProcs = 0;
+            if (schedulerTask == null)
             {
-                idleProcs = 0;
-                if (schedulerTask == null)
+                if (disposed)
                 {
-                    if (disposed)
-                    {
-                        return;
-                    }
-
-                    schedulerTask = TimerManager.getInstance().register(() => runBaseSchedule(), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+                    return;
                 }
 
-                registeredEntries.Add(scheduledAction, Server.getInstance().getCurrentTime() + duration);
+                schedulerTask = TimerManager.getInstance().register(() => runBaseSchedule(), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
             }
-            finally
-            {
-                Monitor.Exit(schedulerLock);
-            }
-        });
+
+            registeredEntries.Add(scheduledAction, Server.getInstance().getCurrentTime() + duration);
+        }
+        finally
+        {
+            Monitor.Exit(schedulerLock);
+        }
     }
 
     public void cancelEntry(Action scheduledAction)
     {
-
-        ThreadManager.getInstance().newTask(() =>
+        Monitor.Enter(schedulerLock);
+        try
         {
-            Monitor.Enter(schedulerLock);
-            try
-            {
-                registeredEntries.Remove(scheduledAction);
-            }
-            finally
-            {
-                Monitor.Exit(schedulerLock);
-            }
-        });
+            registeredEntries.Remove(scheduledAction);
+        }
+        finally
+        {
+            Monitor.Exit(schedulerLock);
+        }
     }
 
     public void dispose()
     {
-
-        ThreadManager.getInstance().newTask(() =>
+        Monitor.Enter(schedulerLock);
+        try
         {
-            Monitor.Enter(schedulerLock);
-            try
+            if (schedulerTask != null)
             {
-                if (schedulerTask != null)
-                {
-                    schedulerTask.cancel(false);
-                    schedulerTask = null;
-                }
+                schedulerTask.cancel(false);
+                schedulerTask = null;
+            }
 
-                registeredEntries.Clear();
-                disposed = true;
-            }
-            finally
-            {
-                Monitor.Exit(schedulerLock);
-            }
-        });
+            registeredEntries.Clear();
+            disposed = true;
+        }
+        finally
+        {
+            Monitor.Exit(schedulerLock);
+        }
     }
 }

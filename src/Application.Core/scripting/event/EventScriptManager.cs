@@ -22,7 +22,7 @@
 
 
 using Application.Core.Game.TheWorld;
-using Microsoft.ClearScript.V8;
+using Application.Core.Scripting.Infrastructure;
 using System.Collections.Concurrent;
 
 namespace scripting.Event;
@@ -34,7 +34,7 @@ namespace scripting.Event;
  */
 public class EventScriptManager : AbstractScriptManager
 {
-    private static string INJECTED_VARIABLE_NAME = "em";
+    private const string INJECTED_VARIABLE_NAME = "em";
     private static EventEntry? fallback;
     private ConcurrentDictionary<string, EventEntry> events = new();
     private bool active = false;
@@ -42,13 +42,13 @@ public class EventScriptManager : AbstractScriptManager
     private class EventEntry
     {
 
-        public EventEntry(V8ScriptEngine iv, EventManager em)
+        public EventEntry(IEngine iv, EventManager em)
         {
             this.iv = iv;
             this.em = em;
         }
 
-        public V8ScriptEngine iv;
+        public IEngine iv;
         public EventManager em;
     }
 
@@ -87,7 +87,7 @@ public class EventScriptManager : AbstractScriptManager
         {
             try
             {
-                entry.iv.InvokeSync("init");
+                entry.iv.CallFunction("init");
             }
             catch (Exception ex)
             {
@@ -116,9 +116,10 @@ public class EventScriptManager : AbstractScriptManager
 
     private EventEntry initializeEventEntry(string script, IWorldChannel channel)
     {
-        V8ScriptEngine? engine = getInvocableScriptEngine(GetEventScriptPath(script));
+        //var engine = new JurassicJsEngine();
+        var engine = getInvocableScriptEngine(GetEventScriptPath(script));
         EventManager eventManager = new EventManager(channel, engine, script);
-        engine.AddHostObject(INJECTED_VARIABLE_NAME, eventManager);
+        engine.AddHostedObject(INJECTED_VARIABLE_NAME, eventManager);
         return new EventEntry(engine, eventManager);
     }
 

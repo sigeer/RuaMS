@@ -234,7 +234,7 @@ public class EventInstanceManager
     {
         if (!disposed)
         {
-            return em.getIv().InvokeSync(name, args);
+            return em.getIv().CallFunction(name, args);
         }
         else
         {
@@ -1243,22 +1243,12 @@ public class EventInstanceManager
         }
     }
 
-    public void setEventRewards(List<object> rwds, List<object> qtys, int expGiven)
+    public void setEventRewards(List<object> rwds, List<object> qtys, int expGiven = 0)
     {
         setEventRewards(1, rwds, qtys, expGiven);
     }
 
-    public void setEventRewards(List<object> rwds, List<object> qtys)
-    {
-        setEventRewards(1, rwds, qtys);
-    }
-
-    public void setEventRewards(int eventLevel, List<object> rwds, List<object> qtys)
-    {
-        setEventRewards(eventLevel, rwds, qtys, 0);
-    }
-
-    public void setEventRewards(int eventLevel, List<object> rwds, List<object> qtys, int expGiven)
+    public void setEventRewards(int eventLevel, List<object> rwds, List<object> qtys, int expGiven = 0)
     {
         // fixed EXP will be rewarded at the same time the random item is given
 
@@ -1700,7 +1690,7 @@ public class EventInstanceManager
         giveEventPlayersStageReward(thisStage);
         thisStage--;    //stages counts from ONE, scripts from ZERO
         // 修改js中的全局变量
-        em.getIv().Script["thisStage"]--;
+        em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal("next00");
         if (portal != null)
@@ -1714,7 +1704,7 @@ public class EventInstanceManager
         giveEventPlayersStageReward(thisStage);
         thisStage--;    //stages counts from ONE, scripts from ZERO
         // 修改js中的全局变量thisStage
-        em.getIv().Script["thisStage"]--;
+        em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal(portalName);
         if (portal != null)

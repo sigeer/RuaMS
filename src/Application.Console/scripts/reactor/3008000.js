@@ -8,7 +8,7 @@
 function hit() {
     var players = rm.getMap().getAllPlayers().toArray();
 
-    for (var i = 0; i < players.length; i++) {
+    for (var i = 0; i < players.Length; i++) {
         rm.giveCharacterExp(52000, players[i]);
     }
 }

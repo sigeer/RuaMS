@@ -1,6 +1,6 @@
-## 代码更新的处理方式
+主体代码通过字符串替换处理
 
-### 代码替换以及正则表达式
+### C#
 
 ```
 // 部分多参数枚举替换
@@ -41,9 +41,13 @@ SECONDS.toMillis\((\S+)\)
 TimeSpan.FromSeconds($1)
 ```
 
-js中
-```
-移除 Java.type
+### JS
 
-移除 Java.to
-```
+- 移除 `Java.type`
+- 移除 `Java.to`
+- `iterator()` 用 `for ... of `替换
+- `size()`, `toArray()`, `get()` 目前通过扩展方法适配
+- 一些静态方法的类名已经发生修改
+	`Channel` -> `WorldChannel`
+	`Character` -> `CharacterManager`
+	`Wedding` -> `WeddingPackets`
