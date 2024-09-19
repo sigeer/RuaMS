@@ -20,7 +20,17 @@
         {
             var objType = list.GetType();
             if (objType.IsGenericType && objType.GetGenericTypeDefinition() == typeof(List<>))
-                return objType.GetMethod("ElementAtDefault")!.Invoke(list, [index]);
+            {
+                var indexer = objType.GetProperty("Item");
+                if (indexer != null)
+                {
+                    var parameters = indexer.GetIndexParameters();
+                    if (parameters.Length > 0 && parameters[0].ParameterType == typeof(int))
+                    {
+                        return indexer.GetValue(list, new object[] { index });
+                    }
+                }
+            }
             return null;
         }
 
