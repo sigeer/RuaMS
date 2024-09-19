@@ -1,9 +1,8 @@
-﻿using Application.Core.Scripting.Infrastructure;
-using Jint;
+﻿using Jint;
 using Jint.Runtime.Interop;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Application.Core.scripting.Infrastructure
+namespace Application.Core.Scripting.Infrastructure
 {
     public class JintEngine : IEngine
     {
@@ -57,12 +56,7 @@ namespace Application.Core.scripting.Infrastructure
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && value is object[] arr)
             {
-                var list = new List<object>();
-                foreach (var element in arr)
-                {
-                    list.Add(element);
-                }
-                converted = list;
+                converted = arr.ToList();
                 return true;
             }
 

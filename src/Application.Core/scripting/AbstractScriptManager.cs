@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Managers;
-using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Infrastructure;
 using client;
 using client.command;
