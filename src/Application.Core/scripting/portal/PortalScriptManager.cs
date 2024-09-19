@@ -32,7 +32,7 @@ public class PortalScriptManager : AbstractScriptManager
 {
     private static PortalScriptManager instance = new PortalScriptManager();
 
-    private Dictionary<string, IEngine> scripts = new();
+    readonly EngineStorage _scripts = new EngineStorage();
 
     public static PortalScriptManager getInstance()
     {
@@ -41,8 +41,8 @@ public class PortalScriptManager : AbstractScriptManager
 
     private IEngine? getPortalScript(string scriptName)
     {
-        string scriptPath = "portal/" + scriptName + ".js";
-        var script = scripts.GetValueOrDefault(scriptPath);
+        string scriptPath = GetPortalScriptPath(scriptName);
+        var script = _scripts[scriptPath];
         if (script != null)
         {
             return script;
@@ -54,7 +54,7 @@ public class PortalScriptManager : AbstractScriptManager
             return null;
         }
 
-        scripts.AddOrUpdate(scriptPath, engine);
+        _scripts[scriptPath] = engine;
         return script;
     }
 
@@ -77,6 +77,6 @@ public class PortalScriptManager : AbstractScriptManager
 
     public void reloadPortalScripts()
     {
-        scripts.Clear();
+        _scripts.Clear();
     }
 }

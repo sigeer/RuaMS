@@ -38,7 +38,7 @@ public class QuestScriptManager : AbstractScriptManager
     private static QuestScriptManager instance = new QuestScriptManager();
 
     private Dictionary<IClient, QuestActionManager> qms = new();
-    private Dictionary<IClient, IEngine> scripts = new();
+    readonly EngineStorate<IClient> _scripts = new EngineStorate<IClient>();
 
     public static QuestScriptManager getInstance()
     {
@@ -47,10 +47,10 @@ public class QuestScriptManager : AbstractScriptManager
 
     private IEngine getQuestScriptEngine(IClient c, short questid)
     {
-        var engine = getInvocableScriptEngine("quest/" + questid + ".js", c);
+        var engine = getInvocableScriptEngine(GetQuestScriptPath(questid.ToString()), c);
         if (engine == null && GameConstants.isMedalQuest(questid))
         {
-            engine = getInvocableScriptEngine("quest/medalQuest.js", c);   // start generic medal quest
+            engine = getInvocableScriptEngine(GetQuestScriptPath("medalQuest"), c);   // start generic medal quest
         }
 
         return engine;
@@ -61,13 +61,14 @@ public class QuestScriptManager : AbstractScriptManager
         Quest quest = Quest.getInstance(questid);
         try
         {
-            QuestActionManager qm = new QuestActionManager(c, questid, npc, true);
             if (qms.ContainsKey(c))
             {
                 return;
             }
+
             if (c.canClickNPC())
             {
+                QuestActionManager qm = new QuestActionManager(c, questid, npc, true);
                 qms.AddOrUpdate(c, qm);
 
                 if (!quest.hasScriptRequirement(false))
@@ -86,7 +87,7 @@ public class QuestScriptManager : AbstractScriptManager
 
                 engine.AddHostedObject("qm", qm);
 
-                scripts.AddOrUpdate(c, engine);
+                _scripts[c] = engine;
                 c.setClickedNPC();
                 engine.CallFunction("start", (byte)1, (byte)0, 0);
             }
@@ -100,7 +101,7 @@ public class QuestScriptManager : AbstractScriptManager
 
     public void start(IClient c, byte mode, byte type, int selection)
     {
-        var iv = scripts.GetValueOrDefault(c);
+        var iv = _scripts[c];
         if (iv != null)
         {
             try
@@ -126,13 +127,14 @@ public class QuestScriptManager : AbstractScriptManager
         }
         try
         {
-            var qm = new QuestActionManager(c, questid, npc, false);
             if (qms.ContainsKey(c))
             {
                 return;
             }
+
             if (c.canClickNPC())
             {
+                var qm = new QuestActionManager(c, questid, npc, false);
                 qms.AddOrUpdate(c, qm);
 
                 if (!quest.hasScriptRequirement(true))
@@ -151,7 +153,7 @@ public class QuestScriptManager : AbstractScriptManager
 
                 engine.AddHostedObject("qm", qm);
 
-                scripts.AddOrUpdate(c, engine);
+                _scripts[c] = engine;
                 c.setClickedNPC();
                 engine.CallFunction("end", (byte)1, (byte)0, 0);
             }
@@ -165,7 +167,7 @@ public class QuestScriptManager : AbstractScriptManager
 
     public void end(IClient c, byte mode, byte type, int selection)
     {
-        var iv = scripts.GetValueOrDefault(c);
+        var iv = _scripts[c];
         if (iv != null)
         {
             try
@@ -204,7 +206,7 @@ public class QuestScriptManager : AbstractScriptManager
 
                 engine.AddHostedObject("qm", qm);
 
-                scripts.AddOrUpdate(c, engine);
+                _scripts[c] = engine;
                 c.setClickedNPC();
                 engine.CallFunction("raiseOpen");
             }
@@ -219,9 +221,9 @@ public class QuestScriptManager : AbstractScriptManager
     public void dispose(QuestActionManager qm, IClient c)
     {
         qms.Remove(c);
-        scripts.Remove(c);
+        _scripts.Remove(c);
         c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
-        resetContext("quest/" + qm.getQuest() + ".js", c);
+        resetContext(GetQuestScriptPath(qm.getQuest().ToString()), c);
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 
@@ -241,7 +243,7 @@ public class QuestScriptManager : AbstractScriptManager
 
     public void reloadQuestScripts()
     {
-        scripts.Clear();
+        _scripts.Clear();
         qms.Clear();
     }
 }

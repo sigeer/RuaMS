@@ -29,7 +29,7 @@ public class MapScriptManager : AbstractScriptManager
 {
     private static MapScriptManager instance = new MapScriptManager();
 
-    private Dictionary<string, IEngine> scripts = new();
+    readonly EngineStorage _scripts = new EngineStorage();
 
     public static MapScriptManager getInstance()
     {
@@ -38,7 +38,7 @@ public class MapScriptManager : AbstractScriptManager
 
     public void reloadScripts()
     {
-        scripts.Clear();
+        _scripts.Clear();
     }
 
     public bool runMapScript(IClient c, string mapScriptPath, bool firstUser)
@@ -57,7 +57,7 @@ public class MapScriptManager : AbstractScriptManager
             }
         }
 
-        var iv = scripts.GetValueOrDefault(mapScriptPath);
+        var iv = _scripts[mapScriptPath];
         if (iv != null)
         {
             try
@@ -73,13 +73,13 @@ public class MapScriptManager : AbstractScriptManager
 
         try
         {
-            iv = getInvocableScriptEngine("map/" + mapScriptPath + ".js");
+            iv = getInvocableScriptEngine(GetMapScriptPath(mapScriptPath));
             if (iv == null)
             {
                 return false;
             }
 
-            scripts.AddOrUpdate(mapScriptPath, iv);
+            _scripts[mapScriptPath] = iv;
             iv.CallFunction("start", new MapScriptMethods(c));
             return true;
         }

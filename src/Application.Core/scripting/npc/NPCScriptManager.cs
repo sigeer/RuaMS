@@ -35,7 +35,7 @@ public class NPCScriptManager : AbstractScriptManager
     private static NPCScriptManager instance = new NPCScriptManager();
 
     private Dictionary<IClient, NPCConversationManager> cms = new();
-    private Dictionary<IClient, IEngine> scripts = new();
+    readonly EngineStorate<IClient> _scripts = new EngineStorate<IClient>();
 
     public static NPCScriptManager getInstance()
     {
@@ -47,7 +47,7 @@ public class NPCScriptManager : AbstractScriptManager
         IEngine? engine = null;
         if (fileName != null)
         {
-            engine = getInvocableScriptEngine("npc/" + fileName + ".js", c);
+            engine = getInvocableScriptEngine(GetNpcScriptPath(fileName), c);
         }
 
         return engine != null;
@@ -84,12 +84,13 @@ public class NPCScriptManager : AbstractScriptManager
         {
             NPCConversationManager cm = new NPCConversationManager(c, npc, chrs, true);
             cm.dispose();
+
             if (cms.ContainsKey(c))
             {
                 return;
             }
-            cms.Add(c, cm);
-            var engine = getInvocableScriptEngine("npc/" + filename + ".js", c);
+            cms.AddOrUpdate(c, cm);
+            var engine = getInvocableScriptEngine(GetNpcScriptPath(filename), c);
 
             if (engine == null)
             {
@@ -98,7 +99,7 @@ public class NPCScriptManager : AbstractScriptManager
                 return;
             }
             engine.AddHostedObject("cm", cm);
-            scripts.AddOrUpdate(c, engine);
+            _scripts[c] =  engine;
             try
             {
                 engine.CallFunction("start", chrs);
@@ -120,32 +121,33 @@ public class NPCScriptManager : AbstractScriptManager
     {
         try
         {
-            NPCConversationManager cm = new NPCConversationManager(c, npc, oid, fileName, itemScript);
             if (cms.ContainsKey(c))
             {
                 dispose(c);
             }
+
             if (c.canClickNPC())
             {
-                cms.Add(c, cm);
+                NPCConversationManager cm = new NPCConversationManager(c, npc, oid, fileName, itemScript);
+                cms.AddOrUpdate(c, cm);
                 IEngine? engine = null;
                 if (!itemScript)
                 {
                     if (fileName != null)
                     {
-                        engine = getInvocableScriptEngine("npc/" + fileName + ".js", c);
+                        engine = getInvocableScriptEngine(GetNpcScriptPath(fileName), c);
                     }
                 }
                 else
                 {
                     if (fileName != null)
                     {     // thanks MiLin for drafting NPC-based item scripts
-                        engine = getInvocableScriptEngine("item/" + fileName + ".js", c);
+                        engine = getInvocableScriptEngine(GetItemScriptPath(fileName), c);
                     }
                 }
                 if (engine == null)
                 {
-                    engine = getInvocableScriptEngine("npc/" + npc + ".js", c);
+                    engine = getInvocableScriptEngine(GetNpcScriptPath(npc.ToString()), c);
                     cm.resetItemScript();
                 }
                 if (engine == null)
@@ -155,7 +157,7 @@ public class NPCScriptManager : AbstractScriptManager
                 }
                 engine.AddHostedObject(engineName, cm);
 
-                scripts.AddOrUpdate(c, engine);
+                _scripts[c] = engine;
                 c.setClickedNPC();
                 try
                 {
@@ -190,7 +192,7 @@ public class NPCScriptManager : AbstractScriptManager
 
     public void action(IClient c, byte mode, byte type, int selection)
     {
-        var iv = scripts.GetValueOrDefault(c);
+        var iv = _scripts[c];
         if (iv != null)
         {
             try
@@ -215,7 +217,7 @@ public class NPCScriptManager : AbstractScriptManager
         c.OnlinedCharacter.setCS(false);
         c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
         cms.Remove(c);
-        scripts.Remove(c);
+        _scripts.Remove(c);
 
         string scriptFolder = (cm.isItemScript() ? "item" : "npc");
         if (cm.getScriptName() != null)
