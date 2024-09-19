@@ -21,23 +21,33 @@ namespace JSMigration
 
 
         HashSet<string> unsupport = new HashSet<string>();
-        HashSet<string> usedTypes = new HashSet<string>();
+        Dictionary<string, List<string>> javaTypes = new Dictionary<string, List<string>>();
+        Dictionary<string, List<string>> javaTos = new Dictionary<string, List<string>>();
+
         Regex javaType = new Regex("[\\r\\s]*((const)|(var))\\s*.*?\\s*=\\s*Java\\.type\\((.*?)\\);?");
         Regex javaTo = new Regex("Java\\.to\\((.*?),.*\\);?");
 
         string RemoveJavaType(string file, string jsContent)
         {
-            return javaType.Replace(jsContent, e => 
+            return javaType.Replace(jsContent, e =>
             {
                 // AbstractScriptManager engine.AddHostType
-                usedTypes.Add($"File: {file} - {e.Groups[4].Value}");
+                if (!javaTypes.ContainsKey(e.Groups[4].Value))
+                    javaTypes[e.Groups[4].Value] = new List<string>();
+                javaTypes[e.Groups[4].Value].Add(file);
                 return "";
             });
         }
 
         string RemoveJavaTo(string file, string jsContent)
         {
-            return javaTo.Replace(jsContent, e => e.Groups[1].Value);
+            return javaTo.Replace(jsContent, e =>
+            {
+                if (!javaTos.ContainsKey(e.Value))
+                    javaTos[e.Value] = new List<string>();
+                javaTos[e.Value].Add(file);
+                return e.Groups[1].Value;
+            });
         }
 
         string ReplaceSpecial(string file, string jsContent)
@@ -103,8 +113,11 @@ namespace JSMigration
             var packageListPath = Path.Combine(dir, "Unsupported.txt");
             File.WriteAllLines(packageListPath, unsupport);
 
-            var usedTypeFilePath = Path.Combine(dir, "UsedType.txt");
-            File.WriteAllLines(usedTypeFilePath, usedTypes);
+            var usedTypeFilePath = Path.Combine(dir, "JavaType.txt");
+            File.WriteAllLines(usedTypeFilePath, javaTypes.SelectMany(x => x.Value.Select(y => $"Type: {x.Key} -- File: {y}")));
+
+            var javaToPath = Path.Combine(dir, "JavaTo.txt");
+            File.WriteAllLines(javaToPath, javaTos.SelectMany(x => x.Value.Select(y => $"Type: {x.Key} -- File: {y}")));
         }
     }
 }

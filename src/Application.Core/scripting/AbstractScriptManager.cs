@@ -93,10 +93,10 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("PacketCreator", typeof(PacketCreator));
             engine.AddHostedType("YamlConfig", typeof(YamlConfig));
             engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
-            engine.AddHostedType("Map", typeof(MapleMap));
+            engine.AddHostedType("Guild", typeof(GuildManager));
 
-            engine.AddHostedObject("Job", typeof(Job));
-            engine.AddHostedObject("InventoryType", typeof(InventoryType));
+            engine.AddHostedType("Job", typeof(Job));
+            engine.AddHostedType("InventoryType", typeof(InventoryType));
 
             //engine.AddHostedType("ListExtensions", typeof(ListExtensions));
             //engine.AddHostedType("Enumerable", typeof(Enumerable));
