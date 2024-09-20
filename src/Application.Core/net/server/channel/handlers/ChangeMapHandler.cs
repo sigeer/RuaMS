@@ -182,11 +182,11 @@ public class ChangeMapHandler : AbstractPacketHandler
 
             if (chr.getMapId() == MapId.FITNESS_EVENT_LAST)
             {
-                chr.getFitness().resetTimes();
+                chr.Fitness?.resetTimes();
             }
             else if (chr.getMapId() == MapId.OLA_EVENT_LAST_1 || chr.getMapId() == MapId.OLA_EVENT_LAST_2)
             {
-                chr.getOla().resetTimes();
+                chr.Ola?.resetTimes();
             }
 
             if (portal != null)

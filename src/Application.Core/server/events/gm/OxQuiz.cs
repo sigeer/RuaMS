@@ -102,8 +102,8 @@ public class OxQuiz
             if (map.getCharacters().Count - number <= 2)
             {
                 map.broadcastMessage(PacketCreator.serverNotice(6, "The event has ended"));
-                map.getPortal("join00").setPortalStatus(true);
-                map.setOx(null);
+                map.getPortal("join00")!.setPortalStatus(true);
+                map.Ox =null;
                 map.setOxQuiz(false);
                 //prizes here
                 return;

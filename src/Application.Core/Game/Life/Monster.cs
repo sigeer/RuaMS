@@ -64,7 +64,7 @@ public class Monster : AbstractLifeObject
     private HashSet<MobSkillId> usedSkills = new();
     private HashSet<int> usedAttacks = new();
     private HashSet<int>? calledMobOids = null;
-    private WeakReference<Monster> callerMob = new(null);
+    private WeakReference<Monster?> callerMob = new(null);
     private List<int> stolenItems = new(5);
     private int team;
     private int parentMobOid = 0;
@@ -82,7 +82,12 @@ public class Monster : AbstractLifeObject
 
     public Monster(int id, MonsterStats stats) : base(id)
     {
-        initWithStats(stats);
+        setStance(5);
+        this.stats = stats.copy();
+        hp.set(stats.getHp());
+        mp = stats.getMp();
+
+        maxHpPlusHeal.set(hp.get());
 
         var range = new RangeNumberGenerator(id, 10000000);
         log = LogFactory.GetLogger($"Life_Monster/{range}");
@@ -204,7 +209,7 @@ public class Monster : AbstractLifeObject
         this.removeAfterAction = run;
     }
 
-    public Action popRemoveAfterAction()
+    public Action? popRemoveAfterAction()
     {
         var r = this.removeAfterAction;
         this.removeAfterAction = null;
@@ -433,7 +438,7 @@ public class Monster : AbstractLifeObject
             Packet packet = PacketCreator.showMonsterHP(getObjectId(), remainingHP);
             if (from.getParty() != null)
             {
-                foreach (var mpc in from.getParty().getMembers())
+                foreach (var mpc in from.getParty()!.getMembers())
                 {
                     var member = from.getMap().getCharacterById(mpc.getId()); // god bless
                     if (member != null)
@@ -931,7 +936,7 @@ public class Monster : AbstractLifeObject
 
                 TimerManager.getInstance().schedule(() =>
                 {
-                    IPlayer controller = lastController.Key;
+                    var controller = lastController.Key;
                     bool aggro = lastController.Value;
 
                     foreach (int mid in toSpawn)
@@ -1496,12 +1501,13 @@ public class Monster : AbstractLifeObject
             {
                 int poisonLevel, matk, jobid = from.getJob().getId();
                 int skillid = (jobid == 412 ? NightLord.VENOMOUS_STAR : (jobid == 422 ? Shadower.VENOMOUS_STAB : NightWalker.VENOM));
-                poisonLevel = from.getSkillLevel(SkillFactory.getSkill(skillid));
+                var skill = SkillFactory.getSkill(skillid);
+                poisonLevel = from.getSkillLevel(skill);
                 if (poisonLevel <= 0)
                 {
                     return false;
                 }
-                matk = SkillFactory.getSkill(skillid).getEffect(poisonLevel).getMatk();
+                matk = skill!.getEffect(poisonLevel).getMatk();
                 int luk = from.getLuk();
                 int maxDmg = (int)Math.Ceiling(Math.Min(short.MaxValue, 0.2 * luk * matk));
                 int minDmg = (int)Math.Ceiling(Math.Min(short.MaxValue, 0.1 * luk * matk));
@@ -1538,8 +1544,9 @@ public class Monster : AbstractLifeObject
             */
         }
         else if (effectSkill.getId() == 4121004 || effectSkill.getId() == 4221004)
-        { // Ninja Ambush
-            var skill = SkillFactory.getSkill(effectSkill.getId());
+        { 
+            // Ninja Ambush
+            var skill = SkillFactory.GetSkillTrust(effectSkill.getId());
             var level = from.getSkillLevel(skill);
             int damage = (int)((from.getStr() + from.getLuk()) * ((3.7 * skill.getEffect(level).getDamage()) / 100));
 
@@ -2321,7 +2328,7 @@ public class Monster : AbstractLifeObject
     /**
      * Removes controllability status from the current controller of this mob.
      */
-    public KeyValuePair<IPlayer, bool> aggroRemoveController()
+    public KeyValuePair<IPlayer?, bool> aggroRemoveController()
     {
         IPlayer? chrController;
         bool hadAggro;

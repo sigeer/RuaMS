@@ -69,6 +69,8 @@ public class MapleMap : IMap
     private List<SpawnPoint> allMonsterSpawn = new();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
     public AtomicInteger droppedItemCount { get; set; } = new AtomicInteger(0);
+
+
     private HashSet<IPlayer> characters = new();
     private Dictionary<int, HashSet<int>> mapParty = new();
     private Dictionary<int, Portal> portals = new();
@@ -104,15 +106,15 @@ public class MapleMap : IMap
     private float recovery = 1.0f;
     private int protectItem = 0;
     private bool town;
-    private OxQuiz? ox;
-    private bool _isOxQuiz = false;
+
+
     private bool dropsOn = true;
     private string onFirstUserEnter;
     private string onUserEnter;
     private int fieldType;
     private int fieldLimit = 0;
     private int mobCapacity = -1;
-    private MonsterAggroCoordinator? aggroMonitor = null;   // aggroMonitor activity in sync with itemMonitor
+    private MonsterAggroCoordinator aggroMonitor;   // aggroMonitor activity in sync with itemMonitor
     private ScheduledFuture? itemMonitor = null;
     private ScheduledFuture? expireItemsTask = null;
     private ScheduledFuture? mobSpawnLootTask = null;
@@ -128,7 +130,10 @@ public class MapleMap : IMap
     private bool eventstarted = false, _isMuted = false;
     private Snowball? snowball0 = null;
     private Snowball? snowball1 = null;
-    private Coconut? coconut;
+
+    public Coconut? Coconut { get; set; }
+    private bool _isOxQuiz = false;
+    public OxQuiz? Ox { get; set; }
 
     //CPQ
     private int maxMobs;
@@ -706,7 +711,7 @@ public class MapleMap : IMap
 
     public KeyValuePair<string, int>? getDoorPositionStatus(Point pos)
     {
-        Portal? portal = findClosestPlayerSpawnpoint(pos);
+        var portal = findClosestPlayerSpawnpoint(pos);
 
         double angle = getAngle(portal.getPosition(), pos);
         double distn = pos.distanceSq(portal.getPosition());
@@ -2182,13 +2187,13 @@ public class MapleMap : IMap
     public Monster? getMonsterByOid(int oid)
     {
         IMapObject? mmo = getMapObject(oid);
-        return (mmo != null && mmo.getType() == MapObjectType.MONSTER) ? (Monster)mmo : null;
+        return mmo as Monster;
     }
 
     public Reactor? getReactorByOid(int oid)
     {
         IMapObject? mmo = getMapObject(oid);
-        return (mmo != null && mmo.getType() == MapObjectType.REACTOR) ? (Reactor)mmo : null;
+        return mmo as Reactor;
     }
 
     public Reactor? getReactorById(int Id)
@@ -2734,13 +2739,8 @@ public class MapleMap : IMap
         spawnItemDropList(list, 1, 1, dropper, owner, pos, true, false);
     }
 
-    public void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos)
-    {
-        spawnItemDropList(list, minCopies, maxCopies, dropper, owner, pos, true, false);
-    }
-
     // spawns item instances of all defined item ids on a list
-    public void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos, bool ffaDrop, bool playerDrop)
+    public void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos, bool ffaDrop = true, bool playerDrop = false)
     {
         int copies = (maxCopies - minCopies) + 1;
         if (copies < 1)
@@ -2760,7 +2760,7 @@ public class MapleMap : IMap
         {
             if (list[i] == 0)
             {
-                spawnMesoDrop(owner != null ? 10 * owner.getMesoRate() : 10, calcDropPos(dropPos, pos), dropper, owner, playerDrop, (byte)(ffaDrop ? 2 : 0));
+                spawnMesoDrop(10 * owner.getMesoRate(), calcDropPos(dropPos, pos), dropper, owner, playerDrop, (byte)(ffaDrop ? 2 : 0));
             }
             else
             {
@@ -3204,7 +3204,7 @@ public class MapleMap : IMap
 
         if (isStartingEventMap() && !eventStarted())
         {
-            chr.getMap().getPortal("join00").setPortalStatus(false);
+            chr.getMap().getPortal("join00")!.setPortalStatus(false);
         }
         if (hasForcedEquip())
         {
@@ -3248,7 +3248,7 @@ public class MapleMap : IMap
         StatEffect? summonStat = chr.getStatForBuff(BuffStat.SUMMON);
         if (summonStat != null)
         {
-            Summon? summon = chr.getSummonByKey(summonStat.getSourceId());
+            var summon = chr.getSummonByKey(summonStat.getSourceId())!;
             summon.setPosition(chr.getPosition());
             chr.getMap().spawnSummon(summon);
             updateMapObjectVisibility(chr, summon);
@@ -3266,14 +3266,14 @@ public class MapleMap : IMap
         {
             chr.sendPacket(PacketCreator.getClock((int)(chr.getEventInstance()!.getTimeLeft() / 1000)));
         }
-        if (chr.getFitness() != null && chr.getFitness()!.isTimerStarted())
+        if (chr.Fitness != null && chr.Fitness.isTimerStarted())
         {
-            chr.sendPacket(PacketCreator.getClock((int)(chr.getFitness()!.getTimeLeft() / 1000)));
+            chr.sendPacket(PacketCreator.getClock((int)(chr.Fitness.getTimeLeft() / 1000)));
         }
 
-        if (chr.getOla() != null && chr.getOla()!.isTimerStarted())
+        if (chr.Ola != null && chr.Ola.isTimerStarted())
         {
-            chr.sendPacket(PacketCreator.getClock((int)(chr.getOla()!.getTimeLeft() / 1000)));
+            chr.sendPacket(PacketCreator.getClock((int)(chr.Ola.getTimeLeft() / 1000)));
         }
 
         if (mapid == MapId.EVENT_SNOWBALL)
@@ -3485,17 +3485,6 @@ public class MapleMap : IMap
         broadcastGMMessage(null, packet, double.PositiveInfinity, null);
     }
 
-    /**
-     * Nonranged. Repeat to source according to parameter.
-     *
-     * @param source
-     * @param packet
-     * @param repeatToSource
-     */
-    public void broadcastMessage(IPlayer? source, Packet packet, bool repeatToSource)
-    {
-        broadcastMessage(repeatToSource ? null : source, packet, double.PositiveInfinity, source?.getPosition());
-    }
 
     /**
      * Ranged and repeat according to parameters.
@@ -3505,7 +3494,7 @@ public class MapleMap : IMap
      * @param repeatToSource
      * @param ranged
      */
-    public void broadcastMessage(IPlayer? source, Packet packet, bool repeatToSource, bool ranged)
+    public void broadcastMessage(IPlayer source, Packet packet, bool repeatToSource, bool ranged = false)
     {
         broadcastMessage(repeatToSource ? null : source, packet, ranged ? getRangedDistance() : double.PositiveInfinity, source.getPosition());
     }
@@ -3582,12 +3571,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet)
-    {
-        broadcastBossHpMessage(mm, bossHash, null, packet, double.PositiveInfinity, null);
-    }
-
-    public void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point rangedFrom)
+    public void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null)
     {
         broadcastBossHpMessage(mm, bossHash, null, packet, getRangedDistance(), rangedFrom);
     }
@@ -3907,7 +3891,7 @@ public class MapleMap : IMap
         mapArea.setBounds(vrLeft, vrTop, vrRight - vrLeft, vrBottom - vrTop);
     }
 
-    public MonsterAggroCoordinator? getAggroCoordinator()
+    public MonsterAggroCoordinator getAggroCoordinator()
     {
         return aggroMonitor;
     }
@@ -4788,16 +4772,6 @@ public class MapleMap : IMap
         }
     }
 
-    public OxQuiz getOx()
-    {
-        return ox;
-    }
-
-    public void setOx(OxQuiz? set)
-    {
-        this.ox = set;
-    }
-
     public void setOxQuiz(bool b)
     {
         this._isOxQuiz = b;
@@ -4935,12 +4909,12 @@ public class MapleMap : IMap
 
     public void setCoconut(Coconut? nut)
     {
-        this.coconut = nut;
+        this.Coconut = nut;
     }
 
     public Coconut? getCoconut()
     {
-        return coconut;
+        return Coconut;
     }
 
     public void warpOutByTeam(int team, int mapid)
@@ -4960,26 +4934,26 @@ public class MapleMap : IMap
 
     public void startEvent(IPlayer chr)
     {
-        if (this.mapid == MapId.EVENT_COCONUT_HARVEST && getCoconut() == null)
+        if (this.mapid == MapId.EVENT_COCONUT_HARVEST && Coconut == null)
         {
-            setCoconut(new Coconut(this));
-            coconut.startEvent();
+            Coconut = new Coconut(this);
+            Coconut.startEvent();
         }
         else if (this.mapid == MapId.EVENT_PHYSICAL_FITNESS)
         {
-            chr.setFitness(new Fitness(chr));
-            chr.getFitness().startFitness();
+            chr.Fitness = new Fitness(chr);
+            chr.Fitness.startFitness();
         }
         else if (this.mapid == MapId.EVENT_OLA_OLA_1 || this.mapid == MapId.EVENT_OLA_OLA_2 ||
                 this.mapid == MapId.EVENT_OLA_OLA_3 || this.mapid == MapId.EVENT_OLA_OLA_4)
         {
-            chr.setOla(new Ola(chr));
-            chr.getOla()!.startOla();
+            chr.Ola = new Ola(chr);
+            chr.Ola.startOla();
         }
-        else if (this.mapid == MapId.EVENT_OX_QUIZ && getOx() == null)
+        else if (this.mapid == MapId.EVENT_OX_QUIZ && Ox == null)
         {
-            setOx(new OxQuiz(this));
-            getOx().sendQuestion();
+            Ox = new OxQuiz(this);
+            Ox.sendQuestion();
             setOxQuiz(true);
         }
         else if (this.mapid == MapId.EVENT_SNOWBALL && getSnowball(chr.getTeam()) == null)
@@ -5161,7 +5135,7 @@ public class MapleMap : IMap
         var htIntro = LifeFactory.getMonster(MobId.SUMMON_HORNTAIL)!;
         spawnMonsterOnGroundBelow(htIntro, targetPoint);    // htintro spawn animation converting into horntail detected thanks to Arnah
 
-        var ht = LifeFactory.getMonster(MobId.HORNTAIL);
+        var ht = LifeFactory.getMonster(MobId.HORNTAIL)!;
         ht.setParentMobOid(htIntro.getObjectId());
         ht.addListener(new ActualMonsterListener()
         {
@@ -5484,7 +5458,7 @@ public class MapleMap : IMap
             this.spawnReactor(reactor);
             reactor.setGuardian(pt);
             this.buffMonsters(team, skill);
-            getReactorByOid(reactor.getObjectId()).hitReactor(((IPlayer)this.getAllPlayer().get(0)).getClient());
+            getReactorByOid(reactor.getObjectId())!.hitReactor(((IPlayer)this.getAllPlayer().get(0)).getClient());
         }
         catch (Exception e)
         {
@@ -5614,11 +5588,7 @@ public class MapleMap : IMap
         chrLock.EnterWriteLock();
         try
         {
-            if (aggroMonitor != null)
-            {
-                aggroMonitor.dispose();
-                aggroMonitor = null;
-            }
+            aggroMonitor.dispose();
 
             if (itemMonitor != null)
             {

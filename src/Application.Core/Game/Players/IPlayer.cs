@@ -62,6 +62,8 @@ namespace Application.Core.Game.Players
 
         public byte[]? QuickSlotLoaded { get; set; }
         public QuickslotBinding? QuickSlotKeyMapped { get; set; }
+        public Fitness? Fitness { get ; set ; }
+        public Ola? Ola { get; set; }
 
         public object SaveToDBLock { get; set; }
 
@@ -284,7 +286,6 @@ namespace Application.Core.Game.Players
         int getFestivalPoints();
         int getFh();
         bool getFinishedDojoTutorial();
-        Fitness? getFitness();
         List<Ring> getFriendshipRings();
         int getGachaExp();
         int getGender();
@@ -351,11 +352,14 @@ namespace Application.Core.Game.Players
         int getNoPets();
         long getNpcCooldown();
         int getNumControlledMonsters();
-        Ola? getOla();
         int getOwlSearch();
         IMap? getOwnedMap();
         int getPartnerId();
         ITeam? getParty();
+        /// <summary>
+        /// 不存在队伍时为 -1
+        /// </summary>
+        /// <returns></returns>
         int getPartyId();
         List<IPlayer> getPartyMembersOnline();
         List<IPlayer> getPartyMembersOnSameMap();
@@ -385,7 +389,7 @@ namespace Application.Core.Game.Players
         int getRelationshipId();
         int getRemainingSp();
         int getRewardPoints();
-        Ring getRingById(int id);
+        Ring? getRingById(int id);
         RockPaperScissor? getRPS();
         int getSavedLocation(string type);
         string? getSearch();
@@ -602,7 +606,6 @@ namespace Application.Core.Game.Players
         void setFamilyId(int familyId);
         void setFestivalPoints(int pontos);
         void setFinishedDojoTutorial();
-        void setFitness(Fitness? fit);
         void setGachaExp(int amount);
         void setGender(int gender);
         void setGM(int level);
@@ -642,7 +645,6 @@ namespace Application.Core.Game.Players
         void setName(string name);
         void setNpcCooldown(long d);
         // void setOfflineGuildRank(int newRank);
-        void setOla(Ola? ola);
         void setOwlSearch(int id);
         void setOwnedMap(IMap? map);
         void setPartnerId(int partnerid);
