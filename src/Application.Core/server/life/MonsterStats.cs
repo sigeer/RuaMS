@@ -402,14 +402,14 @@ public class MonsterStats
         catch (Exception e)
         {
             Log.Logger.Error(e.ToString());
-            try
-            {
-                Thread.Sleep(10000);
-            }
-            catch (Exception ex)
-            {
+            //try
+            //{
+            //    Thread.Sleep(10000);
+            //}
+            //catch (Exception ex)
+            //{
 
-            }
+            //}
 
         }
 

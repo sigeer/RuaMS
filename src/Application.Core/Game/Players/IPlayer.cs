@@ -105,7 +105,8 @@ namespace Application.Core.Game.Players
         void awardQuestPoint(int awardedPoints);
         void ban(string reason);
         void block(int reason, int days, string desc);
-        void blockPortal(string scriptName);
+        void blockPortal(string? scriptName);
+        void unblockPortal(string? scriptName);
         void broadcastAcquaintances(int type, string message);
         void broadcastAcquaintances(Packet packet);
         void broadcastMarriageMessage();
@@ -692,8 +693,6 @@ namespace Application.Core.Game.Players
         void toggleHide(bool login);
         bool toggleRecvPartySearchInvite();
         void toggleWhiteChat();
-        string ToString();
-        void unblockPortal(string scriptName);
         void unequipAllPets();
         void unequippedItem(Equip equip);
         void unequipPet(Pet pet, bool shift_left);

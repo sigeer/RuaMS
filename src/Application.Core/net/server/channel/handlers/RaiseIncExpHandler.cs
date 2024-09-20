@@ -52,7 +52,7 @@ public class RaiseIncExpHandler : AbstractPacketHandler
                 inv.lockInventory();
                 try
                 {
-                    consId = inv.getItem(slot).getItemId();
+                    consId = inv.getItem(slot)!.getItemId();
                     if (!consumables.ContainsKey(consId) || !chr.haveItem(consId))
                     {
                         return;

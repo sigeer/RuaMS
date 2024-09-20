@@ -388,162 +388,155 @@ public class PlayerNPC : AbstractMapObject
 
     private static PlayerNPC? createPlayerNPCInternal(IMap map, Point? pos, IPlayer chr)
     {
-        int mapId = map.getId();
-
-        if (!canSpawnPlayerNpc(chr.getName(), mapId))
+        lock (proLock)
         {
-            return null;
-        }
 
-        byte branch = GameConstants.getHallOfFameBranch(chr.getJob(), mapId);
 
-        int scriptId = getNextScriptId(branch);
-        if (scriptId == -1)
-        {
-            return null;
-        }
+            int mapId = map.getId();
 
-        if (pos == null)
-        {
-            if (GameConstants.isPodiumHallOfFameMap(map.getId()))
+            if (!canSpawnPlayerNpc(chr.getName(), mapId))
             {
-                pos = PlayerNPCPodium.getNextPlayerNpcPosition(map);
+                return null;
             }
-            else
+
+            byte branch = GameConstants.getHallOfFameBranch(chr.getJob(), mapId);
+
+            int scriptId = getNextScriptId(branch);
+            if (scriptId == -1)
             {
-                pos = PlayerNPCPositioner.getNextPlayerNpcPosition(map);
+                return null;
             }
 
             if (pos == null)
             {
+                if (GameConstants.isPodiumHallOfFameMap(map.getId()))
+                {
+                    pos = PlayerNPCPodium.getNextPlayerNpcPosition(map);
+                }
+                else
+                {
+                    pos = PlayerNPCPositioner.getNextPlayerNpcPosition(map);
+                }
+
+                if (pos == null)
+                {
+                    return null;
+                }
+            }
+
+            if (YamlConfig.config.server.USE_DEBUG)
+            {
+                log.Debug("GOT SID {ScriptId}, POS {Position}", scriptId, pos);
+            }
+
+            int worldId = chr.getWorld();
+            int jobId = (chr.getJob().getId() / 100) * 100;
+
+            PlayerNPC? ret;
+
+            try
+            {
+                using var dbContext = new DBContext();
+                using var dbTrans = dbContext.Database.BeginTransaction();
+                var dbModel = dbContext.Playernpcs.Where(x => x.Scriptid == scriptId).First();
+
+                if (dbModel == null)
+                {
+                    int npcId;
+                    // creates new playernpc if scriptid doesn't exist
+                    dbModel = new Playernpc()
+                    {
+                        Name = chr.getName(),
+                        Hair = chr.getHair(),
+                        Face = chr.getFace(),
+                        Skin = (int)chr.getSkinColor(),
+                        Gender = chr.getGender(),
+                        X = pos.Value.X,
+                        Cy = pos.Value.Y,
+                        World = worldId,
+                        Map = mapId,
+                        Scriptid = scriptId,
+                        Dir = 1,
+                        Fh = map.getFootholds().findBelow(pos.Value).getId(),
+                        Rx0 = pos.Value.X + 50,
+                        Rx1 = pos.Value.X - 50,
+                        Worldrank = runningWorldRank[worldId].getAndIncrement(),
+                        Overallrank = runningOverallRank.getAndIncrement(),
+                        Worldjobrank = getAndIncrementRunningWorldJobRanks(worldId, jobId),
+                        Job = jobId
+                    };
+                    dbContext.Playernpcs.Add(dbModel);
+                    dbContext.SaveChanges();
+
+                    npcId = dbModel.Id;
+
+
+                    List<PlayernpcsEquip> equips = new List<PlayernpcsEquip>();
+                    foreach (Item equip in chr.getInventory(InventoryType.EQUIPPED))
+                    {
+                        int position = Math.Abs(equip.getPosition());
+                        if ((position < 12 && position > 0) || (position > 100 && position < 112))
+                        {
+                            equips.Add(new PlayernpcsEquip()
+                            {
+                                Npcid = npcId,
+                                Equipid = equip.getItemId(),
+                                Equippos = equip.getPosition()
+                            });
+
+                        }
+                    }
+                    dbContext.PlayernpcsEquips.AddRange(equips);
+                    dbContext.SaveChanges();
+                    dbTrans.Commit();
+                    ret = new PlayerNPC(dbModel, equips);
+                }
+                else
+                {
+                    ret = null;
+                }
+
+                return ret;
+            }
+            catch (Exception e)
+            {
+                Log.Logger.Error(e.ToString());
                 return null;
             }
-        }
-
-        if (YamlConfig.config.server.USE_DEBUG)
-        {
-            log.Debug("GOT SID {ScriptId}, POS {Position}", scriptId, pos);
-        }
-
-        int worldId = chr.getWorld();
-        int jobId = (chr.getJob().getId() / 100) * 100;
-
-        PlayerNPC? ret;
-
-        try
-        {
-            using var dbContext = new DBContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-            var dbModel = dbContext.Playernpcs.Where(x => x.Scriptid == scriptId).First();
-
-            if (dbModel == null)
-            {
-                int npcId;
-                // creates new playernpc if scriptid doesn't exist
-                dbModel = new Playernpc()
-                {
-                    Name = chr.getName(),
-                    Hair = chr.getHair(),
-                    Face = chr.getFace(),
-                    Skin = (int)chr.getSkinColor(),
-                    Gender = chr.getGender(),
-                    X = pos.Value.X,
-                    Cy = pos.Value.Y,
-                    World = worldId,
-                    Map = mapId,
-                    Scriptid = scriptId,
-                    Dir = 1,
-                    Fh = map.getFootholds().findBelow(pos.Value).getId(),
-                    Rx0 = pos.Value.X + 50,
-                    Rx1 = pos.Value.X - 50,
-                    Worldrank = runningWorldRank[worldId].getAndIncrement(),
-                    Overallrank = runningOverallRank.getAndIncrement(),
-                    Worldjobrank = getAndIncrementRunningWorldJobRanks(worldId, jobId),
-                    Job = jobId
-                };
-                dbContext.Playernpcs.Add(dbModel);
-                dbContext.SaveChanges();
-
-                npcId = dbModel.Id;
-
-
-                List<PlayernpcsEquip> equips = new List<PlayernpcsEquip>();
-                foreach (Item equip in chr.getInventory(InventoryType.EQUIPPED))
-                {
-                    int position = Math.Abs(equip.getPosition());
-                    if ((position < 12 && position > 0) || (position > 100 && position < 112))
-                    {
-                        equips.Add(new PlayernpcsEquip()
-                        {
-                            Npcid = npcId,
-                            Equipid = equip.getItemId(),
-                            Equippos = equip.getPosition()
-                        });
-
-                    }
-                }
-                dbContext.PlayernpcsEquips.AddRange(equips);
-                dbContext.SaveChanges();
-                dbTrans.Commit();
-                ret = new PlayerNPC(dbModel, equips);
-            }
-            else
-            {
-                ret = null;
-            }
-
-            return ret;
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return null;
         }
     }
 
     private static List<int> removePlayerNPCInternal(IMap? map, IPlayer chr)
     {
-        HashSet<int> mapids = new() { chr.getWorld() };
-
-        try
+        lock (proLock)
         {
-            using var dbContext = new DBContext();
-            var queryExpression = dbContext.Playernpcs.Where(x => Microsoft.EntityFrameworkCore.EF.Functions.Like(x.Name, chr.getName()));
-            if (map != null)
-                queryExpression = queryExpression.Where(x => x.Map == map.getId());
+            HashSet<int> mapids = new() { chr.getWorld() };
 
-            var dataList = queryExpression.Select(x => new { x.Id, x.Map }).ToList();
+            try
+            {
+                using var dbContext = new DBContext();
+                var queryExpression = dbContext.Playernpcs.Where(x => Microsoft.EntityFrameworkCore.EF.Functions.Like(x.Name, chr.getName()));
+                if (map != null)
+                    queryExpression = queryExpression.Where(x => x.Map == map.getId());
 
-            var npcIdList = dataList.Select(x => x.Id).ToList();
-            dbContext.Playernpcs.Where(x => npcIdList.Contains(x.Id)).ExecuteDelete();
-            dbContext.PlayernpcsEquips.Where(x => npcIdList.Contains(x.Npcid)).ExecuteDelete();
-            mapids.addAll<int>(dataList.Select(x => x.Map).ToArray());
+                var dataList = queryExpression.Select(x => new { x.Id, x.Map }).ToList();
 
+                var npcIdList = dataList.Select(x => x.Id).ToList();
+                dbContext.Playernpcs.Where(x => npcIdList.Contains(x.Id)).ExecuteDelete();
+                dbContext.PlayernpcsEquips.Where(x => npcIdList.Contains(x.Npcid)).ExecuteDelete();
+                mapids.addAll<int>(dataList.Select(x => x.Map).ToArray());
+
+            }
+            catch (Exception e)
+            {
+                Log.Logger.Error(e.ToString());
+            }
+            return mapids.ToList();
         }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-        return mapids.ToList();
     }
 
 
     static object proLock = new object();
-    private static KeyValuePair<PlayerNPC?, List<int>> processPlayerNPCInternal(IMap map, Point? pos, IPlayer chr, bool create)
-    {
-        lock (proLock)
-        {
-            if (create)
-            {
-                return new(createPlayerNPCInternal(map, pos, chr), []);
-            }
-            else
-            {
-                return new(null, removePlayerNPCInternal(map, chr));
-            }
-        }
-    }
-
     public static bool spawnPlayerNPC(int mapid, IPlayer chr)
     {
         return spawnPlayerNPC(mapid, null, chr);
@@ -556,7 +549,7 @@ public class PlayerNPC : AbstractMapObject
             return false;
         }
 
-        var pn = processPlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapid), pos, chr, true).Key;
+        var pn = createPlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapid), pos, chr);
         if (pn != null)
         {
             foreach (var channel in Server.getInstance().getChannelsFromWorld(chr.getWorld()))
@@ -599,7 +592,7 @@ public class PlayerNPC : AbstractMapObject
             return;
         }
 
-        List<int> updateMapids = processPlayerNPCInternal(null, null, chr, false).Value;
+        List<int> updateMapids = removePlayerNPCInternal(null, chr);
         int worldid = updateMapids.remove(0);
 
         foreach (int mapid in updateMapids)

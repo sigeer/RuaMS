@@ -31,9 +31,10 @@ using tools;
 namespace server;
 
 
-/**
- * @author Matze
- */
+/// <summary>
+/// NPC�̵ꣿ
+/// @author Matze
+/// </summary>
 public class Shop
 {
     private static ILogger log = LogFactory.GetLogger("Shop");

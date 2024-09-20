@@ -50,7 +50,8 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                         }
                     }
                     else
-                    { //absorb target family
+                    {
+                        //absorb target family
                         var targetEntry = chr.getFamilyEntry();
                         Family targetFamily = targetEntry.getFamily();
                         if (targetFamily.getLeader() != targetEntry)

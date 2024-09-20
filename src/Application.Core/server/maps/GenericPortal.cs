@@ -29,9 +29,6 @@ using tools;
 namespace server.maps;
 
 
-
-
-
 public class GenericPortal : Portal
 {
     private string name;
@@ -95,7 +92,7 @@ public class GenericPortal : Portal
         return type;
     }
 
-    public string getScriptName()
+    public string? getScriptName()
     {
         return scriptName;
     }
@@ -144,14 +141,14 @@ public class GenericPortal : Portal
         {
             try
             {
-                Monitor.Enter(scriptLock);
+                Monitor.Enter(scriptLock!);
                 try
                 {
                     changed = PortalScriptManager.getInstance().executePortalScript(this, c);
                 }
                 finally
                 {
-                    Monitor.Exit(scriptLock);
+                    Monitor.Exit(scriptLock!);
                 }
             }
             catch (NullReferenceException npe)
@@ -164,7 +161,7 @@ public class GenericPortal : Portal
             var chr = c.OnlinedCharacter;
             if (!(chr.getChalkboard() != null && GameConstants.isFreeMarketRoom(getTargetMapId())))
             {
-                var to = chr.getEventInstance() == null ? c.getChannelServer().getMapFactory().getMap(getTargetMapId()) : chr.getEventInstance().getMapInstance(getTargetMapId());
+                var to = chr.getEventInstance() == null ? c.getChannelServer().getMapFactory().getMap(getTargetMapId()) : chr.getEventInstance()!.getMapInstance(getTargetMapId());
                 var pto = to.getPortal(getTarget());
                 if (pto == null)
                 {// fallback for missing portals - no real life case anymore - interesting for not implemented areas

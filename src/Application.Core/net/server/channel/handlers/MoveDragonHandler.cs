@@ -53,6 +53,7 @@ public class MoveDragonHandler : AbstractMovementPacketHandler
             }
             catch (EmptyMovementException e)
             {
+                log.Error(e.ToString());
             }
         }
     }

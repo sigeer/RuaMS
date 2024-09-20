@@ -43,7 +43,6 @@ public class MobMistService : BaseService
             if (mobMistSchedulers[i] != null)
             {
                 mobMistSchedulers[i].dispose();
-                mobMistSchedulers[i] = null;
             }
         }
     }

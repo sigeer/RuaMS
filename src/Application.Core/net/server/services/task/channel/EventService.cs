@@ -43,7 +43,6 @@ public class EventService : BaseService
             if (eventSchedulers[i] != null)
             {
                 eventSchedulers[i].dispose();
-                eventSchedulers[i] = null;
             }
         }
     }

@@ -43,7 +43,6 @@ public class MobClearSkillService : BaseService
             if (mobClearSkillSchedulers[i] != null)
             {
                 mobClearSkillSchedulers[i].dispose();
-                mobClearSkillSchedulers[i] = null;
             }
         }
     }

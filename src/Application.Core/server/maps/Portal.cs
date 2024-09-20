@@ -31,7 +31,7 @@ public interface Portal
     Point getPosition();
     string getName();
     string getTarget();
-    string getScriptName();
+    string? getScriptName();
     void setScriptName(string newName);
     void setPortalStatus(bool newStatus);
     bool getPortalStatus();

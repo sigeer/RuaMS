@@ -44,6 +44,7 @@ public class StatStrCommand : Command
             }
             catch (Exception e)
             {
+                log.Warning(e.ToString());
                 player.dropMessage("That is not a valid number!");
                 return;
             }

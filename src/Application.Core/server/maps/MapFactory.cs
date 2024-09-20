@@ -54,7 +54,7 @@ public class MapFactory
             var id = DataTool.getString(life.getChildByPath("id")) ?? "0";
             var type = DataTool.getString(life.getChildByPath("type"));
             int team = DataTool.getInt("team", life, -1);
-            if (map.isCPQMap2() && type.Equals("m"))
+            if (map.isCPQMap2() && type == "m")
             {
                 if ((int.Parse(life.getName()) % 2) == 0)
                 {
@@ -164,28 +164,28 @@ public class MapFactory
         map.setEventInstance(evt);
 
         var mapStr = mapid.ToString();
-        string onFirstEnter = DataTool.getString(infoData.getChildByPath("onFirstUserEnter")) ?? mapStr;
+        string onFirstEnter = DataTool.getString(infoData?.getChildByPath("onFirstUserEnter")) ?? mapStr;
         map.setOnFirstUserEnter(onFirstEnter.Equals("") ? mapStr : onFirstEnter);
 
-        string onEnter = DataTool.getString(infoData.getChildByPath("onUserEnter")) ?? mapStr;
+        string onEnter = DataTool.getString(infoData?.getChildByPath("onUserEnter")) ?? mapStr;
         map.setOnUserEnter(onEnter.Equals("") ? mapStr : onEnter);
 
-        map.setFieldLimit(DataTool.getInt(infoData.getChildByPath("fieldLimit"), 0));
-        map.setMobInterval((short)DataTool.getInt(infoData.getChildByPath("createMobInterval"), 5000));
+        map.setFieldLimit(DataTool.getInt(infoData?.getChildByPath("fieldLimit"), 0));
+        map.setMobInterval((short)DataTool.getInt(infoData?.getChildByPath("createMobInterval"), 5000));
         PortalFactory portalFactory = new PortalFactory();
         foreach (var portal in mapData.getChildByPath("portal"))
         {
             map.addPortal(portalFactory.makePortal(DataTool.getInt(portal.getChildByPath("pt")), portal));
         }
-        var timeMob = infoData.getChildByPath("timeMob");
+        var timeMob = infoData?.getChildByPath("timeMob");
         if (timeMob != null)
         {
             map.setTimeMob(DataTool.getInt(timeMob.getChildByPath("id")), DataTool.getString(timeMob.getChildByPath("message")));
         }
 
         int[] bounds = new int[4];
-        bounds[0] = DataTool.getInt(infoData.getChildByPath("VRTop"));
-        bounds[1] = DataTool.getInt(infoData.getChildByPath("VRBottom"));
+        bounds[0] = DataTool.getInt(infoData?.getChildByPath("VRTop"));
+        bounds[1] = DataTool.getInt(infoData?.getChildByPath("VRBottom"));
 
         if (bounds[0] == bounds[1])
         {    // old-style baked map
@@ -207,8 +207,8 @@ public class MapFactory
         }
         else
         {
-            bounds[2] = DataTool.getInt(infoData.getChildByPath("VRLeft"));
-            bounds[3] = DataTool.getInt(infoData.getChildByPath("VRRight"));
+            bounds[2] = DataTool.getInt(infoData?.getChildByPath("VRLeft"));
+            bounds[3] = DataTool.getInt(infoData?.getChildByPath("VRRight"));
 
             map.setMapLineBoundings(bounds[0], bounds[1], bounds[2], bounds[3]);
         }
@@ -351,13 +351,13 @@ public class MapFactory
         map.setTown(DataTool.getIntConvert("town", infoData, 0) != 0);
         map.setHPDec(DataTool.getIntConvert("decHP", infoData, 0));
         map.setHPDecProtect(DataTool.getIntConvert("protectItem", infoData, 0));
-        map.setForcedReturnMap(DataTool.getInt(infoData.getChildByPath("forcedReturn"), MapId.NONE));
+        map.setForcedReturnMap(DataTool.getInt(infoData?.getChildByPath("forcedReturn"), MapId.NONE));
         map.setBoat(mapData.getChildByPath("shipObj") != null);
         map.setTimeLimit(DataTool.getIntConvert("timeLimit", infoData, -1));
         map.setFieldType(DataTool.getIntConvert("fieldType", infoData, 0));
         map.setMobCapacity(DataTool.getIntConvert("fixedMobCapacity", infoData, 500));//Is there a map that contains more than 500 mobs?
 
-        var recData = infoData.getChildByPath("recovery");
+        var recData = infoData?.getChildByPath("recovery");
         if (recData != null)
         {
             map.setRecovery(DataTool.getFloat(recData));
@@ -505,6 +505,7 @@ public class MapFactory
         }
         catch (Exception e)
         {
+            LogFactory.ResLogger.Error(e.ToString());
             return "";
         }
     }
@@ -517,6 +518,7 @@ public class MapFactory
         }
         catch (Exception e)
         {
+            LogFactory.ResLogger.Error(e.ToString());
             return "";
         }
     }

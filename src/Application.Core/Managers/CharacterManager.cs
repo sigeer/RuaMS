@@ -1260,7 +1260,7 @@ namespace Application.Core.Managers
                 }
                 catch (Exception e)
                 {
-                    // log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", player.Name, player.Level, player.JobId);
+                    player.Log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", player.Name, player.Level, player.JobId);
                 }
             }
         }

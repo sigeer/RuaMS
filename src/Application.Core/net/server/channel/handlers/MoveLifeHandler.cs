@@ -179,6 +179,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         }
         catch (EmptyMovementException e)
         {
+            log.Error(e.ToString());
         }
 
         if (banishPlayers != null)

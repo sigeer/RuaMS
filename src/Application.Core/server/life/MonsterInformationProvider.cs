@@ -277,11 +277,7 @@ public class MonsterInformationProvider
         {
             try
             {
-                boss = LifeFactory.getMonster(id)?.isBoss();
-            }
-            catch (NullReferenceException npe)
-            {
-                boss = false;
+                boss = LifeFactory.getMonster(id)?.isBoss() ?? false;
             }
             catch (Exception e)
             {   //nonexistant mob

@@ -61,6 +61,7 @@ public class WarpMapCommand : Command
         }
         catch (Exception ex)
         {
+            log.Warning(ex.ToString());
             player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
         }
     }

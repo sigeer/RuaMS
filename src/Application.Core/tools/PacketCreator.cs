@@ -1101,16 +1101,7 @@ public class PacketCreator
         {
             updateMask |= statupdate.Key.getValue();
         }
-        List<KeyValuePair<Stat, int>> mystats = stats;
-        if (mystats.Count > 1)
-        {
-            mystats.Sort((o1, o2) =>
-            {
-                int val1 = o1.Key.getValue();
-                int val2 = o2.Key.getValue();
-                return (val1 < val2 ? -1 : (val1 == val2 ? 0 : 1));
-            });
-        }
+        var mystats = stats.OrderBy(x => x.Key.getValue()).ToList();
         p.writeInt(updateMask);
         foreach (var statupdate in mystats)
         {
@@ -1130,7 +1121,7 @@ public class PacketCreator
                 }
                 else if (statupdate.Key.getValue() == 0x8000)
                 {
-                    if (GameConstants.hasSPTable(chr.getJob()))
+                    if (GameConstants.hasSPTable(chr!.getJob()))
                     {
                         addRemainingSkillInfo(p, chr);
                     }
@@ -1973,7 +1964,7 @@ public class PacketCreator
 
         if (mod != 2)
         {
-            p.writePos(dropfrom.Value);
+            p.writePos(dropfrom!.Value);
             p.writeShort(0);//Fh?
         }
         if (drop.getMeso() == 0)
@@ -4206,7 +4197,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         p.writeByte(4);
-        p.writeInt(from.getParty().getId());
+        p.writeInt(from.getParty()!.getId());
         p.writeString(from.getName());
         p.writeByte(0);
         return p;
@@ -4216,7 +4207,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         p.writeByte(4);
-        p.writeInt(from.getParty().getId());
+        p.writeInt(from.getParty()!.getId());
         p.writeString("PS: " + from.getName());
         p.writeByte(0);
         return p;
@@ -4466,11 +4457,11 @@ public class PacketCreator
             p.writeShort(stat.Value);
             if (mse.isMonsterSkill())
             {
-                writeMobSkillId(p, mse.getMobSkill().getId());
+                writeMobSkillId(p, mse.getMobSkill()!.getId());
             }
             else
             {
-                p.writeInt(mse.getSkill().getId());
+                p.writeInt(mse.getSkill()!.getId());
             }
             p.writeShort(-1); // might actually be the buffTime but it's not displayed anywhere
         }
