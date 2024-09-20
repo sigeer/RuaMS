@@ -62,6 +62,7 @@ public class TimerMapCommand : Command
             }
             catch (FormatException e)
             {
+                log.Warning(e.ToString());
                 player.yellowMessage("Syntax: !timermap <seconds>|remove");
             }
         }

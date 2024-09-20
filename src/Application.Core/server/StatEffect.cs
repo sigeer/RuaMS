@@ -80,9 +80,9 @@ public class StatEffect
     {
         public int itemCode, prob;
         public bool party;
-        public List<KeyValuePair<int, int>> areas;
+        public List<KeyValuePair<int, int>>? areas;
 
-        public CardItemupStats(int code, int prob, List<KeyValuePair<int, int>> areas, bool inParty)
+        public CardItemupStats(int code, int prob, List<KeyValuePair<int, int>>? areas, bool inParty)
         {
             this.itemCode = code;
             this.prob = prob;
@@ -1118,7 +1118,8 @@ public class StatEffect
             }
         }
         if (isMagicDoor() && !FieldLimit.DOOR.check(applyto.getMap().getFieldLimit()))
-        { // Magic Door
+        { 
+            // Magic Door
             int y = applyto.getFh();
             if (y == 0)
             {

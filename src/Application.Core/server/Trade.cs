@@ -570,7 +570,7 @@ public class Trade
 
             return;
         }
-        else if (c1.getTrade().isFullTrade())
+        else if (c1.getTrade()!.isFullTrade())
         {
             c1.message("You are already in a trade.");
             return;
@@ -582,10 +582,10 @@ public class Trade
             {
                 var c2Trade = new Trade(1, c2);
                 c2.setTrade(c2Trade);
-                c2.getTrade()!.setPartner(c1.getTrade());
-                c1.getTrade().setPartner(c2.getTrade());
+                c2.getTrade()!.setPartner(c1.getTrade()!);
+                c1.getTrade()!.setPartner(c2.getTrade()!);
 
-                c1.sendPacket(PacketCreator.getTradeStart(c1.getClient(), c1.getTrade(), 0));
+                c1.sendPacket(PacketCreator.getTradeStart(c1.getClient(), c1.getTrade()!, 0));
                 c2.sendPacket(PacketCreator.tradeInvite(c1));
             }
             else
@@ -609,12 +609,12 @@ public class Trade
         InviteResultType res = inviteRes.result;
         if (res == InviteResultType.ACCEPTED)
         {
-            if (c1.getTrade() != null && c1.getTrade().getPartner() == c2.getTrade() && c2.getTrade() != null && c2.getTrade().getPartner() == c1.getTrade())
+            if (c1.getTrade() != null && c1.getTrade()!.getPartner() == c2.getTrade() && c2.getTrade() != null && c2.getTrade()!.getPartner() == c1.getTrade())
             {
                 c2.sendPacket(PacketCreator.getTradePartnerAdd(c1));
-                c1.sendPacket(PacketCreator.getTradeStart(c1.getClient(), c1.getTrade(), 1));
-                c1.getTrade().setFullTrade(true);
-                c2.getTrade().setFullTrade(true);
+                c1.sendPacket(PacketCreator.getTradeStart(c1.getClient(), c1.getTrade()!, 1));
+                c1.getTrade()!.setFullTrade(true);
+                c2.getTrade()!.setFullTrade(true);
             }
             else
             {
@@ -641,7 +641,7 @@ public class Trade
                     other.message(chr.getName() + " has declined your trade request.");
                 }
 
-                other.getTrade().cancel((byte)TradeResult.PARTNER_CANCEL);
+                other.getTrade()!.cancel((byte)TradeResult.PARTNER_CANCEL);
                 other.setTrade(null);
 
             }

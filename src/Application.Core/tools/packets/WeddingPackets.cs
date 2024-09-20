@@ -264,8 +264,8 @@ public class WeddingPackets : PacketCreator
             p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
             p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
         }
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : CharacterManager.getNameById(chr.getPartnerId()), '\0', 13));
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? CharacterManager.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
+        p.writeFixedString(chr.getGender() == 0 ? chr.getName() : CharacterManager.getNameById(chr.getPartnerId()));
+        p.writeFixedString(chr.getGender() == 0 ? CharacterManager.getNameById(chr.getPartnerId()) : chr.getName());
 
         return p;
     }

@@ -48,7 +48,6 @@ public class MobAnimationService : BaseService
             if (mobAnimationSchedulers[i] != null)
             {
                 mobAnimationSchedulers[i].dispose();
-                mobAnimationSchedulers[i] = null;
             }
         }
     }
@@ -103,11 +102,6 @@ public class MobAnimationService : BaseService
             {
                 Monitor.Exit(animationLock);
             }
-        }
-
-        public override void dispose()
-        {
-
         }
 
     }

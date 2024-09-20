@@ -49,7 +49,8 @@ public class LifeFactory
         DataProvider uiDataWZ = DataProviderFactory.getDataProvider(WZFiles.UI);
         foreach (var bossData in uiDataWZ.getData("UIWindow.img").getChildByPath("MobGage/Mob").getChildren())
         {
-            ret.Add(int.Parse(bossData.getName()));
+            if (int.TryParse(bossData.getName(), out var d))
+                ret.Add(d);
         }
 
         return ret;
@@ -57,11 +58,11 @@ public class LifeFactory
 
     public static AbstractLifeObject? getLife(int id, string type)
     {
-        if (type.ToLower() == LifeType.NPC)
+        if (type.Equals(LifeType.NPC, StringComparison.CurrentCultureIgnoreCase))
         {
             return getNPC(id);
         }
-        else if (type.ToLower() == LifeType.Monster)
+        else if (type.Equals(LifeType.Monster, StringComparison.CurrentCultureIgnoreCase))
         {
             return getMonster(id);
         }
@@ -176,17 +177,18 @@ public class LifeFactory
 
         foreach (Data idata in monsterData)
         {
-            if (idata.getName() != "info")
+            var idataName = idata.getName();
+            if (idataName != "info")
             {
                 int delay = 0;
                 foreach (Data pic in idata.getChildren())
                 {
                     delay += DataTool.getIntConvert("delay", pic, 0);
                 }
-                stats.setAnimationTime(idata.getName(), delay);
+                stats.setAnimationTime(idataName, delay);
             }
         }
-        var reviveInfo = monsterInfoData.getChildByPath("revive");
+        var reviveInfo = monsterInfoData?.getChildByPath("revive");
         if (reviveInfo != null)
         {
             List<int> revives = new();
@@ -199,7 +201,7 @@ public class LifeFactory
         decodeElementalString(stats, DataTool.getString("elemAttr", monsterInfoData) ?? "");
 
         MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
-        var monsterSkillInfoData = monsterInfoData.getChildByPath("skill");
+        var monsterSkillInfoData = monsterInfoData?.getChildByPath("skill");
         if (monsterSkillInfoData != null)
         {
             int localI = 0;
@@ -245,7 +247,7 @@ public class LifeFactory
             i++;
         }
 
-        var banishData = monsterInfoData.getChildByPath("ban");
+        var banishData = monsterInfoData?.getChildByPath("ban");
         if (banishData != null)
         {
             int map = DataTool.getInt("banMap/0/field", banishData, -1);

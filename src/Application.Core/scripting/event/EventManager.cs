@@ -135,11 +135,7 @@ public class EventManager
         }
 
         props.Clear();
-        cserv = null;
-        wserv = null;
-        server = null;
         iv.Dispose();
-        iv = null;
     }
 
     public long getLobbyDelay()
@@ -474,6 +470,7 @@ public class EventManager
         }
         catch (ThreadInterruptedException ie)
         {
+            log.Error(ie.ToString());
             playerPermit.Remove(leader.getId());
         }
 
@@ -571,6 +568,7 @@ public class EventManager
         }
         catch (ThreadInterruptedException ie)
         {
+            log.Error(ie.ToString());
             playerPermit.Remove(leader.getId());
         }
 
@@ -625,7 +623,7 @@ public class EventManager
                         EventInstanceManager eim;
                         try
                         {
-                            eim = createInstance("setup", null);
+                            eim = createInstance("setup");
                             registerEventInstance(eim.getName(), lobbyId);
                         }
                         catch (Exception e)
@@ -667,6 +665,7 @@ public class EventManager
         }
         catch (ThreadInterruptedException ie)
         {
+            log.Error(ie.ToString());
             playerPermit.Remove(leader.getId());
         }
 
@@ -763,6 +762,7 @@ public class EventManager
         }
         catch (ThreadInterruptedException ie)
         {
+            log.Error(ie.ToString());
             playerPermit.Remove(leader.getId());
         }
 
@@ -782,7 +782,7 @@ public class EventManager
 
     public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr)
     {
-        return startInstance(-1, eim, ldr, eim.getEm().getChannelServer().getPlayerStorage().getCharacterByName(ldr));  // things they make me do...
+        return startInstance(lobbyId, eim, ldr, eim.getEm().getChannelServer().getPlayerStorage().getCharacterByName(ldr));  // things they make me do...
     }
 
     public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr, IPlayer leader)
@@ -911,11 +911,14 @@ public class EventManager
     private void exportReadyGuild(int guildId)
     {
         var mg = server.getGuild(guildId);
-        string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
+        if (mg != null)
+        {
+            string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                 + " and HAS JUST STARTED THE STRATEGY PHASE. After 3 minutes, no more guild members will be allowed to join the effort."
                 + " Check out Shuang at the excavation site in Perion for more info.";
 
-        mg.dropMessage(6, callout);
+            mg.dropMessage(6, callout);
+        }
     }
 
     private void exportMovedQueueToGuild(int guildId, int place)

@@ -1,7 +1,8 @@
 
 ### 项目介绍
 
-基于 Cosmic的[Commit: 8f2c2dc08f44254660505cfd2ad87cc3f2caa36d](https://github.com/P0nk/Cosmic/commit/8f2c2dc08f44254660505cfd2ad87cc3f2caa36d)的C#版。
+基于 Cosmic的C#版。
+截至 [Commit: 8f2c2dc08f44254660505cfd2ad87cc3f2caa36d](https://github.com/P0nk/Cosmic/commit/8f2c2dc08f44254660505cfd2ad87cc3f2caa36d)
 
 初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。
 

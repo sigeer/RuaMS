@@ -33,7 +33,7 @@ public class GiveFameHandler : AbstractPacketHandler
 
     public override void HandlePacket(InPacket p, IClient c)
     {
-        var target = (IPlayer)c.OnlinedCharacter.getMap().getMapObject(p.readInt());
+        var target = c.OnlinedCharacter.getMap().getMapObject(p.readInt()) as IPlayer;
         int mode = p.readByte();
         int famechange = 2 * mode - 1;
         var player = c.OnlinedCharacter;

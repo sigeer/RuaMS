@@ -101,15 +101,15 @@ public class FootholdTree
             }
             else if (f.getX1() > center.X && f.getY2() <= center.Y)
             {
-                ne.insert(f);
+                ne!.insert(f);
             }
             else if (f.getX2() <= center.X && f.getY1() > center.Y)
             {
-                sw.insert(f);
+                sw!.insert(f);
             }
             else
             {
-                se.insert(f);
+                se!.insert(f);
             }
         }
     }
@@ -130,15 +130,15 @@ public class FootholdTree
             }
             else if (p.X > center.X && p.Y <= center.Y)
             {
-                ne.getRelevants(p, list);
+                ne!.getRelevants(p, list);
             }
             else if (p.X <= center.X && p.Y > center.Y)
             {
-                sw.getRelevants(p, list);
+                sw!.getRelevants(p, list);
             }
             else
             {
-                se.getRelevants(p, list);
+                se!.getRelevants(p, list);
             }
         }
         return list;
@@ -167,7 +167,7 @@ public class FootholdTree
             }
             if ((p1.X > center.X || p2.X > center.X) && p1.Y <= center.Y)
             {
-                ret = ne.findWallR(p1, p2);
+                ret = ne!.findWallR(p1, p2);
                 if (ret != null)
                 {
                     return ret;
@@ -175,7 +175,7 @@ public class FootholdTree
             }
             if (p1.X <= center.X && p1.Y > center.Y)
             {
-                ret = sw.findWallR(p1, p2);
+                ret = sw!.findWallR(p1, p2);
                 if (ret != null)
                 {
                     return ret;
@@ -183,7 +183,7 @@ public class FootholdTree
             }
             if ((p1.X > center.X || p2.X > center.X) && p1.Y > center.Y)
             {
-                ret = se.findWallR(p1, p2);
+                ret = se!.findWallR(p1, p2);
                 return ret;
             }
         }

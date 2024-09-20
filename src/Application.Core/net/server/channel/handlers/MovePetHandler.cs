@@ -45,6 +45,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
         }
         catch (EmptyMovementException e)
         {
+            log.Error(e.ToString());
             return;
         }
         var player = c.OnlinedCharacter;

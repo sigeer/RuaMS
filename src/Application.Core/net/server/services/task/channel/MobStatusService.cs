@@ -47,7 +47,6 @@ public class MobStatusService : BaseService
             if (mobStatusSchedulers[i] != null)
             {
                 mobStatusSchedulers[i].dispose();
-                mobStatusSchedulers[i] = null;
             }
         }
     }

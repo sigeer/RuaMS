@@ -760,7 +760,7 @@ public class Inventory : IEnumerable<Item>
     public Item? findByCashId(int cashId)
     {
         bool isRing = false;
-        Equip equip = null;
+        Equip? equip = null;
         foreach (Item item in list())
         {
             if (item.getInventoryType().Equals(InventoryType.EQUIP))

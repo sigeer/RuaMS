@@ -542,7 +542,7 @@ public class ItemInformationProvider
             {
                 fEntry = getRoundedUnitPrice(DataTool.getDouble(pData), 5);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 fEntry = DataTool.getInt(pData);
             }

@@ -409,7 +409,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
             player.StartPlayerTask();
 
-            if (GameConstants.hasSPTable(player.getJob()) && player.getJob().getId() != 2001)
+            if (GameConstants.hasSPTable(player.getJob()) && player.getJob() != Job.EVAN)
             {
                 player.createDragon();
             }

@@ -5,7 +5,6 @@ using tools;
 namespace Application.Core.Game.Maps;
 
 
-
 public class Kite : AbstractMapObject
 {
     private Point pos;

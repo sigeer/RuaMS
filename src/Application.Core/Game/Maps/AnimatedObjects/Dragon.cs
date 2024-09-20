@@ -27,6 +27,9 @@ using tools;
 namespace server.maps;
 
 
+/// <summary>
+/// ÁúÉñµÄÁú
+/// </summary>
 public class Dragon : AbstractAnimatedMapObject
 {
     private IPlayer owner;

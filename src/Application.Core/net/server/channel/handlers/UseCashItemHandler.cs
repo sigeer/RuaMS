@@ -582,7 +582,8 @@ public class UseCashItemHandler : AbstractPacketHandler
             }
         }
         else if (itemType == 545)
-        { // MiuMiu's travel store
+        { 
+            // MiuMiu's travel store
             if (player.getShop() == null)
             {
                 var shop = ShopFactory.getInstance().getShop(1338);

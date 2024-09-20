@@ -138,7 +138,7 @@ public class PacketCreator
     private static void addCharStats(OutPacket p, IPlayer chr)
     {
         p.writeInt(chr.getId()); // character id
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getName(), '\0', 13));
+        p.writeFixedString(chr.getName());
         p.writeByte(chr.getGender()); // gender (0 = male, 1 = female)
         p.writeByte((byte)chr.getSkinColor()); // skin color
         p.writeInt(chr.getFace()); // face
@@ -438,7 +438,7 @@ public class PacketCreator
         if (isPet)
         {
             Pet pet = item.getPet()!;
-            p.writeFixedString(StringUtil.getRightPaddedStr(pet.getName(), '\0', 13));
+            p.writeFixedString(pet.getName());
             p.writeByte(pet.Level);
             p.writeShort(pet.Tameness);
             p.writeByte(pet.Fullness);
@@ -1101,16 +1101,7 @@ public class PacketCreator
         {
             updateMask |= statupdate.Key.getValue();
         }
-        List<KeyValuePair<Stat, int>> mystats = stats;
-        if (mystats.Count > 1)
-        {
-            mystats.Sort((o1, o2) =>
-            {
-                int val1 = o1.Key.getValue();
-                int val2 = o2.Key.getValue();
-                return (val1 < val2 ? -1 : (val1 == val2 ? 0 : 1));
-            });
-        }
+        var mystats = stats.OrderBy(x => x.Key.getValue()).ToList();
         p.writeInt(updateMask);
         foreach (var statupdate in mystats)
         {
@@ -1130,7 +1121,7 @@ public class PacketCreator
                 }
                 else if (statupdate.Key.getValue() == 0x8000)
                 {
-                    if (GameConstants.hasSPTable(chr.getJob()))
+                    if (GameConstants.hasSPTable(chr!.getJob()))
                     {
                         addRemainingSkillInfo(p, chr);
                     }
@@ -1973,7 +1964,7 @@ public class PacketCreator
 
         if (mod != 2)
         {
-            p.writePos(dropfrom.Value);
+            p.writePos(dropfrom!.Value);
             p.writeShort(0);//Fh?
         }
         if (drop.getMeso() == 0)
@@ -4206,7 +4197,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         p.writeByte(4);
-        p.writeInt(from.getParty().getId());
+        p.writeInt(from.getParty()!.getId());
         p.writeString(from.getName());
         p.writeByte(0);
         return p;
@@ -4216,7 +4207,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         p.writeByte(4);
-        p.writeInt(from.getParty().getId());
+        p.writeInt(from.getParty()!.getId());
         p.writeString("PS: " + from.getName());
         p.writeByte(0);
         return p;
@@ -4271,7 +4262,7 @@ public class PacketCreator
         }
         foreach (var partychar in partymembers)
         {
-            p.writeFixedString(getRightPaddedStr(partychar.getName(), '\0', 13));
+            p.writeFixedString(partychar.getName());
         }
         foreach (var partychar in partymembers)
         {
@@ -4466,11 +4457,11 @@ public class PacketCreator
             p.writeShort(stat.Value);
             if (mse.isMonsterSkill())
             {
-                writeMobSkillId(p, mse.getMobSkill().getId());
+                writeMobSkillId(p, mse.getMobSkill()!.getId());
             }
             else
             {
-                p.writeInt(mse.getSkill().getId());
+                p.writeInt(mse.getSkill()!.getId());
             }
             p.writeShort(-1); // might actually be the buffTime but it's not displayed anywhere
         }
@@ -4598,10 +4589,10 @@ public class PacketCreator
             if (buddy.Visible)
             {
                 p.writeInt(buddy.getCharacterId()); // cid
-                p.writeFixedString(getRightPaddedStr(buddy.getName(), '\0', 13));
+                p.writeFixedString(buddy.getName());
                 p.writeByte(0); // opposite status
                 p.writeInt(buddy.getChannel() - 1);
-                p.writeFixedString(getRightPaddedStr(buddy.Group, '\0', 13));
+                p.writeFixedString(buddy.Group);
                 p.writeInt(0);//mapid?
             }
         }
@@ -4626,7 +4617,7 @@ public class PacketCreator
         p.writeInt(chrIdFrom);
         p.writeString(nameFrom);
         p.writeInt(chrIdFrom);
-        p.writeFixedString(getRightPaddedStr(nameFrom, '\0', 11));
+        p.writeFixedString(nameFrom, 11);
         p.writeByte(0x09);
         p.writeByte(0xf0);
         p.writeByte(0x01);
@@ -7445,10 +7436,6 @@ public class PacketCreator
             {
                 p.writeInt(dp.PackageId);
                 p.writeFixedString(dp.SenderName);
-                for (int i = dp.SenderName.Length; i < 13; i++)
-                {
-                    p.writeByte(0);
-                }
 
                 p.writeInt(dp.Mesos);
                 p.writeLong(getTime(dp.sentTimeInMilliseconds()));
@@ -7457,11 +7444,7 @@ public class PacketCreator
                 if (msg != null)
                 {
                     p.writeInt(1);
-                    p.writeFixedString(msg);
-                    for (int i = msg.Length; i < 200; i++)
-                    {
-                        p.writeByte(0);
-                    }
+                    p.writeFixedString(msg, 200);
                 }
                 else
                 {
@@ -7686,7 +7669,7 @@ public class PacketCreator
         foreach (Ring ring in chr.getCrushRings())
         {
             p.writeInt(ring.getPartnerChrId());
-            p.writeFixedString(getRightPaddedStr(ring.getPartnerName(), '\0', 13));
+            p.writeFixedString(ring.getPartnerName());
             p.writeInt(ring.getRingId());
             p.writeInt(0);
             p.writeInt(ring.getPartnerRingId());
@@ -7696,7 +7679,7 @@ public class PacketCreator
         foreach (Ring ring in chr.getFriendshipRings())
         {
             p.writeInt(ring.getPartnerChrId());
-            p.writeFixedString(getRightPaddedStr(ring.getPartnerName(), '\0', 13));
+            p.writeFixedString(ring.getPartnerName());
             p.writeInt(ring.getRingId());
             p.writeInt(0);
             p.writeInt(ring.getPartnerRingId());
@@ -7723,8 +7706,8 @@ public class PacketCreator
                 p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
                 p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
             }
-            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : CharacterManager.getNameById(chr.getPartnerId()), '\0', 13));
-            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? CharacterManager.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
+            p.writeFixedString(chr.getGender() == 0 ? chr.getName() : CharacterManager.getNameById(chr.getPartnerId()));
+            p.writeFixedString(chr.getGender() == 0 ? CharacterManager.getNameById(chr.getPartnerId()) : chr.getName());
         }
         else
         {
@@ -7923,10 +7906,10 @@ public class PacketCreator
             p.writeInt(item.getSN());
             p.writeShort(item.getQuantity());
         }
-        p.writeFixedString(StringUtil.getRightPaddedStr(item.getGiftFrom(), '\0', 13));
+        p.writeFixedString(item.getGiftFrom());
         if (isGift)
         {
-            p.writeFixedString(StringUtil.getRightPaddedStr(giftMessage!, '\0', 73));
+            p.writeFixedString(giftMessage, 73);
             return;
         }
         addExpirationTime(p, item.getExpiration());

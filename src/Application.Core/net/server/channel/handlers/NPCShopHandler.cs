@@ -34,6 +34,11 @@ public class NPCShopHandler : AbstractPacketHandler
 {
     public override void HandlePacket(InPacket p, IClient c)
     {
+        var playerShop = c.OnlinedCharacter.getShop();
+        if (playerShop == null)
+        {
+            return;
+        }
         byte bmode = p.readByte();
         switch (bmode)
         {
@@ -50,7 +55,7 @@ public class NPCShopHandler : AbstractPacketHandler
                         c.disconnect(true, false);
                         return;
                     }
-                    c.OnlinedCharacter.getShop().buy(c, slot, itemId, quantity);
+                    playerShop.buy(c, slot, itemId, quantity);
                     break;
                 }
             case 1:
@@ -58,14 +63,14 @@ public class NPCShopHandler : AbstractPacketHandler
                     short slot = p.readShort();
                     int itemId = p.readInt();
                     short quantity = p.readShort();
-                    c.OnlinedCharacter.getShop().sell(c, ItemConstants.getInventoryType(itemId), slot, quantity);
+                    playerShop.sell(c, ItemConstants.getInventoryType(itemId), slot, quantity);
                     break;
                 }
             case 2:
                 { // recharge ;)
 
                     byte slot = (byte)p.readShort();
-                    c.OnlinedCharacter.getShop().recharge(c, slot);
+                    playerShop.recharge(c, slot);
                     break;
                 }
             case 3: // leaving :(

@@ -1042,7 +1042,7 @@ public partial class Player
 
             broadcastChangeJob();
 
-            if (GameConstants.hasSPTable(newJob.Value) && newJob.Value.getId() != 2001)
+            if (GameConstants.hasSPTable(newJob.Value) && newJob.Value != Job.EVAN)
             {
                 if (getBuffedValue(BuffStat.MONSTER_RIDING) != null)
                 {
@@ -3823,11 +3823,11 @@ public partial class Player
             }
             if (improvingMaxHPLevel > 0 && (JobModel.isA(Job.WARRIOR) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.DAWNWARRIOR1) || JobModel.isA(Job.THUNDERBREAKER1)))
             {
-                addhp += improvingMaxHP.getEffect(improvingMaxHPLevel).getX();
+                addhp += improvingMaxHP!.getEffect(improvingMaxHPLevel).getX();
             }
             if (improvingMaxMPLevel > 0 && (JobModel.isA(Job.MAGICIAN) || JobModel.isA(Job.CRUSADER) || JobModel.isA(Job.BLAZEWIZARD1)))
             {
-                addmp += improvingMaxMP.getEffect(improvingMaxMPLevel).getX();
+                addmp += improvingMaxMP!.getEffect(improvingMaxMPLevel).getX();
             }
 
             if (YamlConfig.config.server.USE_RANDOMIZE_HPMP_GAIN)
@@ -5901,18 +5901,18 @@ public partial class Player
         return portaldelay;
     }
 
-    public void blockPortal(string scriptName)
+    public void blockPortal(string? scriptName)
     {
-        if (!blockedPortals.Contains(scriptName) && scriptName != null)
+        if (scriptName != null && !blockedPortals.Contains(scriptName))
         {
             blockedPortals.Add(scriptName);
             sendPacket(PacketCreator.enableActions());
         }
     }
 
-    public void unblockPortal(string scriptName)
+    public void unblockPortal(string? scriptName)
     {
-        if (blockedPortals.Contains(scriptName) && scriptName != null)
+        if (scriptName != null && blockedPortals.Contains(scriptName))
         {
             blockedPortals.Remove(scriptName);
         }
