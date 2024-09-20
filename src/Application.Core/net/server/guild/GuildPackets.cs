@@ -39,7 +39,7 @@ public class GuildPackets
         }
         foreach (var mgc in members)
         {
-            p.writeFixedString(StringUtil.getRightPaddedStr(mgc.getName(), '\0', 13));
+            p.writeFixedString(mgc.getName());
             p.writeInt(mgc.JobId);
             p.writeInt(mgc.getLevel());
             p.writeInt(mgc.getGuildRank());
@@ -131,7 +131,7 @@ public class GuildPackets
         p.writeByte(0x27);
         p.writeInt(mgc.GuildId);
         p.writeInt(mgc.Id);
-        p.writeFixedString(StringUtil.getRightPaddedStr(mgc.getName(), '\0', 13));
+        p.writeFixedString(mgc.getName());
         p.writeInt(mgc.JobId);
         p.writeInt(mgc.getLevel());
         p.writeInt(mgc.getGuildRank()); //should be always 5 but whatevs
@@ -384,7 +384,7 @@ public class GuildPackets
         }
         foreach (var mgc in members)
         {
-            p.writeFixedString(StringUtil.getRightPaddedStr(mgc.getName(), '\0', 13));
+            p.writeFixedString(mgc.getName());
             p.writeInt(mgc.JobId);
             p.writeInt(mgc.getLevel());
             p.writeInt(mgc.getGuildRank());

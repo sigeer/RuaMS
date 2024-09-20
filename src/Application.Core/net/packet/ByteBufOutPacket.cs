@@ -1,7 +1,11 @@
 
 
 using DotNetty.Buffers;
+using Microsoft.IO;
 using net.opcodes;
+using server.gachapon;
+using System;
+using System.Buffers;
 using System.Text;
 
 namespace net.packet;
@@ -90,15 +94,19 @@ public class ByteBufOutPacket : OutPacket
         writeBytes(bytes);
     }
 
-    public void writeFixedString(string value)
+    public void writeFixedString(string value, int fix = 13)
     {
-        writeBytes(Encoding.UTF8.GetBytes(value));
+        var bytes = Encoding.UTF8.GetBytes(value);
+        var fixedBytes = new byte[fix];
+        var actualLength = fix > bytes.Length ? bytes.Length : fix;
+        Buffer.BlockCopy(bytes, 0, fixedBytes, 0, actualLength);
+        writeBytes(fixedBytes);
     }
 
     public void writePos(Point value)
     {
-        writeShort((short)value.X);
-        writeShort((short)value.Y);
+        writeShort(value.X);
+        writeShort(value.Y);
     }
 
     public void skip(int numberOfBytes)

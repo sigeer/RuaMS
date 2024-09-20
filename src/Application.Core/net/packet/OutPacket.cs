@@ -14,7 +14,7 @@ public interface OutPacket : Packet
     void writeLong(long value);
     void writeBool(bool value);
     void writeString(string value);
-    void writeFixedString(string value);
+    void writeFixedString(string value, int fix = 13);
     void writePos(Point value);
     void skip(int numberOfBytes);
 
