@@ -52,7 +52,7 @@ public class SkillAction : AbstractQuestAction
         {
             byte skillLevel = 0;
             int skillid = DataTool.getInt(sEntry.getChildByPath("id"));
-            Data skillLevelData = sEntry.getChildByPath("skillLevel");
+            var skillLevelData = sEntry.getChildByPath("skillLevel");
             if (skillLevelData != null)
             {
                 skillLevel = (byte)DataTool.getInt(skillLevelData);
@@ -77,7 +77,7 @@ public class SkillAction : AbstractQuestAction
     {
         foreach (SkillData skill in skillData.Values)
         {
-            Skill skillObject = SkillFactory.getSkill(skill.getId());
+            var skillObject = SkillFactory.getSkill(skill.getId());
             if (skillObject == null)
             {
                 continue;

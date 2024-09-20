@@ -132,7 +132,7 @@ public class StorageInventory
             return;
         }
 
-        Item source = this.getItem(src);
+        var source = this.getItem(src);
         if (source == null)
         {
             return;
@@ -214,7 +214,7 @@ public class StorageInventory
                 {
                     continue;
                 }
-                if (dstItem.getQuantity() == ii.getSlotMax(c, this.getItem(dst).getItemId()))
+                if (dstItem.getQuantity() == ii.getSlotMax(c, dstItem.getItemId()))
                 {
                     break;
                 }

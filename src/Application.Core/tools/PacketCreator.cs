@@ -25,6 +25,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
@@ -2264,11 +2265,11 @@ public class PacketCreator
         {
             case 4: // Successfully sent a New Year Card\r\n to %s.
             case 6: // Successfully received a New Year Card.
-                encodeNewYearCard(newyear, p);
+                encodeNewYearCard(newyear!, p);
                 break;
 
             case 8: // Successfully deleted a New Year Card.
-                p.writeInt(newyear.getId());
+                p.writeInt(newyear!.getId());
                 break;
 
             case 5: // Nexon's stupid and makes 4 modes do the same operation..
@@ -2290,10 +2291,11 @@ public class PacketCreator
                 int nSN = 1;
                 p.writeInt(nSN);
                 if ((nSN - 1) <= 98 && nSN > 0)
-                {//lol nexon are you kidding
+                {
+                    //lol nexon are you kidding
                     for (int i = 0; i < nSN; i++)
                     {
-                        p.writeInt(newyear.getId());
+                        p.writeInt(newyear!.getId());
                         p.writeInt(newyear.getSenderId());
                         p.writeString(newyear.getSenderName());
                     }
@@ -2301,17 +2303,17 @@ public class PacketCreator
                 break;
 
             case 0xC:   // NotiArrived
-                p.writeInt(newyear.getId());
+                p.writeInt(newyear!.getId());
                 p.writeString(newyear.getSenderName());
                 break;
 
             case 0xD:   // BroadCast_AddCardInfo
-                p.writeInt(newyear.getId());
+                p.writeInt(newyear!.getId());
                 p.writeInt(user.getId());
                 break;
 
             case 0xE:   // BroadCast_RemoveCardInfo
-                p.writeInt(newyear.getId());
+                p.writeInt(newyear!.getId());
                 break;
         }
         return p;
@@ -3027,13 +3029,11 @@ public class PacketCreator
         string allianceName = "";
         if (chr.getGuildId() > 0)
         {
-            var mg = Server.getInstance().getGuild(chr.getGuildId());
-            guildName = mg.getName();
+            guildName = chr.GuildModel?.Name ?? "";
 
-            var alliance = Server.getInstance().getAlliance(chr.getGuild().getAllianceId());
-            if (alliance != null)
+            if (chr.AllianceModel != null)
             {
-                allianceName = alliance.getName();
+                allianceName = chr.AllianceModel.getName();
             }
         }
         p.writeString(guildName);
@@ -3059,14 +3059,16 @@ public class PacketCreator
         }
         p.writeByte(0); //end of pets
 
+
         Item? mount;     //mounts can potentially crash the client if the player's level is not properly checked
-        if (chr.getMount() != null && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(-18)) != null && ItemInformationProvider.getInstance().getEquipLevelReq(mount.getItemId()) <= chr.getLevel())
+        if (chr.MountModel != null 
+            && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(-18)) != null 
+            && ItemInformationProvider.getInstance().getEquipLevelReq(mount.getItemId()) <= chr.getLevel())
         {
-            var mmount = chr.getMount();
-            p.writeByte(mmount.getId()); //mount
-            p.writeInt(mmount.getLevel()); //level
-            p.writeInt(mmount.getExp()); //exp
-            p.writeInt(mmount.getTiredness()); //tiredness
+            p.writeByte(chr.MountModel.getId()); //mount
+            p.writeInt(chr.MountModel.getLevel()); //level
+            p.writeInt(chr.MountModel.getExp()); //exp
+            p.writeInt(chr.MountModel.getTiredness()); //tiredness
         }
         else
         {
@@ -3155,7 +3157,7 @@ public class PacketCreator
      * @param mount
      * @return
      */
-    public static Packet showMonsterRiding(int cid, Mount mount)
+    public static Packet showMonsterRiding(int cid, IMount mount)
     { //Gtfo with this, this is just giveForeignBuff
         OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         p.writeInt(cid);
@@ -4345,7 +4347,7 @@ public class PacketCreator
         }
     }
 
-    public static Packet updateParty(int forChannel, ITeam party, PartyOperation op, IPlayer? target)
+    public static Packet updateParty(int forChannel, ITeam party, PartyOperation op, IPlayer target)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         switch (op)
@@ -4524,7 +4526,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet spawnMobMist(int objId, int ownerMobId, MobSkillId msId, Mist mist)
+    public static Packet spawnMobMist(int objId, int ownerMobId, MobSkillId msId, MobMist mist)
     {
         return spawnMist(objId, ownerMobId, msId.type.getId(), msId.level, mist);
     }
@@ -5189,7 +5191,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateMount(int charid, Mount mount, bool levelup)
+    public static Packet updateMount(int charid, IMount mount, bool levelup)
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_TAMING_MOB_INFO);
         p.writeInt(charid);

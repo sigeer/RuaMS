@@ -26,6 +26,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using client;
 using client.inventory;
@@ -1156,7 +1157,7 @@ public class StatEffect
         else if (isMist())
         {
             Rectangle bounds = calculateBoundingBox(sourceid == NightWalker.POISON_BOMB ? pos.Value : applyfrom.getPosition(), applyfrom.isFacingLeft());
-            Mist mist = new Mist(bounds, applyfrom, this);
+            var mist = new PlayerMist(bounds, applyfrom, this);
             applyfrom.getMap().spawnMist(mist, getDuration(), mist.isPoisonMist(), false, mist.isRecoveryMist());
         }
         else if (isTimeLeap())
@@ -1418,7 +1419,7 @@ public class StatEffect
         int localDuration = getBuffLocalDuration();
         int localsourceid = sourceid;
         int seconds = localDuration / 1000;
-        Mount? givemount = null;
+        IMount? givemount = null;
         if (isMonsterRiding())
         {
             int ridingMountId = 0;
@@ -1528,7 +1529,7 @@ public class StatEffect
                     localstatups = statups.ToArray();
                 }
                 buff = PacketCreator.giveBuff(localsourceid, localDuration, localstatups);
-                mbuff = PacketCreator.showMonsterRiding(applyto.getId(), givemount);
+                mbuff = PacketCreator.showMonsterRiding(applyto.getId(), givemount!);
                 localDuration = duration;
             }
             else if (isShadowPartner())
@@ -1676,7 +1677,7 @@ public class StatEffect
                 }
                 else if (applyfrom.getBuffedValue(BuffStat.CONCENTRATE) != null)
                 {
-                    mpchange -= (int)(mpchange * (applyfrom.getBuffedValue(BuffStat.CONCENTRATE) / 100));
+                    mpchange -= (int)(mpchange * ((applyfrom.getBuffedValue(BuffStat.CONCENTRATE) ?? 0) / 100));
                 }
             }
         }
@@ -1708,8 +1709,9 @@ public class StatEffect
         {
             id = NightWalker.ALCHEMIST;
         }
-        int alchemistLevel = chr.getSkillLevel(SkillFactory.getSkill(id));
-        return alchemistLevel == 0 ? null : SkillFactory.getSkill(id).getEffect(alchemistLevel);
+        var skill = SkillFactory.GetSkillTrust(id);
+        int alchemistLevel = chr.getSkillLevel(skill);
+        return alchemistLevel == 0 ? null : skill.getEffect(alchemistLevel);
     }
 
     private bool isGmBuff()

@@ -25,94 +25,83 @@ public class MonsterCarnival
     private ScheduledFuture? timer, effectTimer, respawnTask;
     private long startTime = 0;
     private int summonsR = 0, summonsB = 0, room = 0;
-    private IPlayer leader1, leader2, team1, team2;
+    private IPlayer leader1, leader2;
+    IPlayer? team1, team2;
     private int redCP, blueCP, redTotalCP, blueTotalCP, redTimeupCP, blueTimeupCP;
     private bool cpq1;
 
     public MonsterCarnival(ITeam p1, ITeam p2, int mapid, bool cpq1, int room)
     {
-        try
+        this.cpq1 = cpq1;
+        this.room = room;
+        this.p1 = p1;
+        this.p2 = p2;
+        var cs = p2.getLeader().getChannelServer();
+        p1.setEnemy(p2);
+        p2.setEnemy(p1);
+        // 是否可以替换成getMap？不可以，任务结束后会关闭地图，getMap不会创建新地图
+        map = cs.getMapFactory().getDisposableMap(mapid);
+        startTime = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds();
+        int redPortal = 0;
+        int bluePortal = 0;
+        if (map.isPurpleCPQMap())
         {
-            this.cpq1 = cpq1;
-            this.room = room;
-            this.p1 = p1;
-            this.p2 = p2;
-            var cs = p2.getLeader().getChannelServer();
-            p1.setEnemy(p2);
-            p2.setEnemy(p1);
-            // 是否可以替换成getMap？
-            map = cs.getMapFactory().getDisposableMap(mapid);
-            startTime = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds();
-            int redPortal = 0;
-            int bluePortal = 0;
-            if (map.isPurpleCPQMap())
-            {
-                redPortal = 2;
-                bluePortal = 1;
-            }
-            foreach (var mc in p1.getMembers())
-            {
-                if (mc != null)
-                {
-                    mc.setMonsterCarnival(this);
-                    mc.setTeam(0);
-                    mc.setFestivalPoints(0);
-                    mc.forceChangeMap(map, map.getPortal(redPortal));
-                    mc.dropMessage(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntry));
-                    if (p1.getLeader().getId() == mc.getId())
-                    {
-                        leader1 = mc;
-                    }
-                    team1 = mc;
-                }
-            }
-            foreach (var mc in p2.getMembers())
-            {
-                if (mc != null)
-                {
-                    mc.setMonsterCarnival(this);
-                    mc.setTeam(1);
-                    mc.setFestivalPoints(0);
-                    mc.forceChangeMap(map, map.getPortal(bluePortal));
-                    mc.dropMessage(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntry));
-                    if (p2.getLeader().getId() == mc.getId())
-                    {
-                        leader2 = mc;
-                    }
-                    team2 = mc;
-                }
-            }
-            if (team1 == null || team2 == null)
-            {
-                foreach (var chr in p1.getMembers())
-                {
-                    if (chr != null)
-                    {
-                        chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
-                    }
-                }
-                foreach (var chr in p2.getMembers())
-                {
-                    if (chr != null)
-                    {
-                        chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
-                    }
-                }
-                return;
-            }
-
-            // thanks Atoot, Vcoc for noting double CPQ functional being sent to players in CPQ start
-
-            timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.getTimeDefault())); // thanks Atoot for noticing an irregular "event extended" issue here
-            effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.getTimeDefault() - 10));
-            respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
-
-            cs.initMonsterCarnival(cpq1, room);
+            redPortal = 2;
+            bluePortal = 1;
         }
-        catch (Exception e)
+        leader1 = p1.getLeader();
+        foreach (var mc in p1.getMembers())
         {
-            Log.Logger.Error(e.ToString());
+            if (mc != null)
+            {
+                mc.setMonsterCarnival(this);
+                mc.setTeam(0);
+                mc.setFestivalPoints(0);
+                mc.forceChangeMap(map, map.getPortal(redPortal));
+                mc.dropMessage(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntry));
+                team1 = mc;
+            }
         }
+
+        leader2 = p2.getLeader();
+        foreach (var mc in p2.getMembers())
+        {
+            if (mc != null)
+            {
+                mc.setMonsterCarnival(this);
+                mc.setTeam(1);
+                mc.setFestivalPoints(0);
+                mc.forceChangeMap(map, map.getPortal(bluePortal));
+                mc.dropMessage(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntry));
+                team2 = mc;
+            }
+        }
+        if (team1 == null || team2 == null)
+        {
+            foreach (var chr in p1.getMembers())
+            {
+                if (chr != null)
+                {
+                    chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
+                }
+            }
+            foreach (var chr in p2.getMembers())
+            {
+                if (chr != null)
+                {
+                    chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
+                }
+            }
+            return;
+        }
+
+        // thanks Atoot, Vcoc for noting double CPQ functional being sent to players in CPQ start
+
+        timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.getTimeDefault())); // thanks Atoot for noticing an irregular "event extended" issue here
+        effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.getTimeDefault() - 10));
+        respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
+
+        cs.initMonsterCarnival(cpq1, room);
     }
 
     private void respawn()
@@ -123,14 +112,14 @@ public class MonsterCarnival
     public void playerDisconnected(int charid)
     {
         int team = -1;
-        foreach (var mpc in leader1.getParty().getMembers())
+        foreach (var mpc in leader1.getParty()!.getMembers())
         {
             if (mpc.getId() == charid)
             {
                 team = 0;
             }
         }
-        foreach (var mpc in leader2.getParty().getMembers())
+        foreach (var mpc in leader2.getParty()!.getMembers())
         {
             if (mpc.getId() == charid)
             {
@@ -233,7 +222,7 @@ public class MonsterCarnival
         {
             outs = cs.getMapFactory().getMap(980000010);
         }
-        foreach (var mc in leader1.getParty().getMembers())
+        foreach (var mc in leader1.getParty()!.getMembers())
         {
             if (mc != null)
             {
@@ -246,7 +235,7 @@ public class MonsterCarnival
                 }
             }
         }
-        foreach (var mc in leader2.getParty().getMembers())
+        foreach (var mc in leader2.getParty()!.getMembers())
         {
             if (mc != null)
             {
@@ -276,10 +265,10 @@ public class MonsterCarnival
         }
         redTotalCP = 0;
         blueTotalCP = 0;
-        leader1.getParty().setEnemy(null);
-        leader2.getParty().setEnemy(null);
+        leader1.getParty()!.setEnemy(null);
+        leader2.getParty()!.setEnemy(null);
         map.dispose();
-        map = null;
+        // map = null;
 
         cs.finishMonsterCarnival(cpq1, room);
     }
@@ -341,7 +330,7 @@ public class MonsterCarnival
             }
             else if (winningTeam == 1)
             {
-                foreach (var mc in leader2.getParty().getMembers())
+                foreach (var mc in leader2.getParty()!.getMembers())
                 {
                     if (mc != null)
                     {
@@ -359,7 +348,7 @@ public class MonsterCarnival
                         mc.dispelDebuffs();
                     }
                 }
-                foreach (var mc in leader1.getParty().getMembers())
+                foreach (var mc in leader1.getParty()!.getMembers())
                 {
                     if (mc != null)
                     {
@@ -450,7 +439,7 @@ public class MonsterCarnival
         }
 
         map.killAllMonsters();
-        foreach (var mc in leader1.getParty().getMembers())
+        foreach (var mc in leader1.getParty()!.getMembers())
         {
             if (mc != null)
             {
@@ -468,7 +457,7 @@ public class MonsterCarnival
                 }
             }
         }
-        foreach (var mc in leader2.getParty().getMembers())
+        foreach (var mc in leader2.getParty()!.getMembers())
         {
             if (mc != null)
             {
@@ -537,7 +526,7 @@ public class MonsterCarnival
             case 1:
                 return leader1;
         }
-        return null;
+        throw new BusinessException();
     }
 
     public int getBlueCP()

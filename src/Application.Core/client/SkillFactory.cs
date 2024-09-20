@@ -51,20 +51,23 @@ public class SkillFactory
         Dictionary<int, Skill> loadedSkills = new();
         DataDirectoryEntry root = datasource.getRoot();
         foreach (DataFileEntry topDir in root.getFiles())
-        { 
+        {
+            var topDirName = topDir.getName();
             // Loop thru jobs
-            if (topDir.getName().Length <= 8)
+            if (topDirName?.Length <= 8)
             {
-                foreach (var data in datasource.getData(topDir.getName()))
-                { // Loop thru each jobs
+                foreach (var data in datasource.getData(topDirName))
+                { 
+                    // Loop thru each jobs
                     if (data.getName() == "skill")
                     {
                         foreach (Data data2 in data)
-                        { // Loop thru each jobs
+                        { 
+                            // Loop thru each jobs
                             if (data2 != null)
                             {
-                                int skillId = int.Parse(data2.getName());
-                                loadedSkills.AddOrUpdate(skillId, loadFromData(skillId, data2));
+                                if (int.TryParse(data2.getName(), out var skillId))
+                                    loadedSkills.AddOrUpdate(skillId, loadFromData(skillId, data2));
                             }
                         }
                     }

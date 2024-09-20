@@ -42,7 +42,7 @@ public class Trade
 
     private Trade partner = null;
     private List<Item> items = new();
-    private List<Item> exchangeItems;
+    private List<Item> exchangeItems = new();
     private int meso = 0;
     private int exchangeMeso;
     private AtomicBoolean locked = new AtomicBoolean(false);
@@ -333,6 +333,9 @@ public class Trade
     public static void completeTrade(IPlayer chr)
     {
         var local = chr.getTrade();
+        if (local == null)
+            return;
+
         var partner = local.getPartner();
         if (local.checkCompleteHandshake())
         {

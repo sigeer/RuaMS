@@ -328,7 +328,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         if (picklv > 0)
                         {
                             int delay = 0;
-                            var maxmeso = player.getBuffedValue(BuffStat.PICKPOCKET);
+                            var maxmeso = player.getBuffedValue(BuffStat.PICKPOCKET) ?? 0;
                             foreach (int eachd in onedList)
                             {
                                 int tempInt = eachd;
@@ -344,7 +344,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
                                     TimerManager.getInstance().schedule(() =>
                                         map.spawnMesoDrop(
-                                            Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso.Value),
+                                            Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso),
                                             new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y),
                                             monster,
                                             player,
@@ -365,9 +365,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
                     else if (attack.skill == Bandit.STEAL)
                     {
-                        var steal = SkillFactory.getSkill(Bandit.STEAL);
+                        var steal = SkillFactory.GetSkillTrust(Bandit.STEAL);
                         if (monster.getStolen().Count < 1)
-                        { // One steal per mob <3
+                        { 
+                            // One steal per mob <3
                             if (steal.getEffect(player.getSkillLevel(steal)).makeChanceResult())
                             {
                                 monster.addStolen(0);
@@ -831,7 +832,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         StatEffect? effect = null;
         if (ret.skill != 0)
         {
-            var skill = SkillFactory.getSkill(ret.skill);
+            var skill = SkillFactory.GetSkillTrust(ret.skill);
             effect = skill.getEffect(ret.skilllevel);
 
             if (magic)

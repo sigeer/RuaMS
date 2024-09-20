@@ -188,7 +188,7 @@ namespace Application.Core.Game.Players
                     return;
                 }
 
-                log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", Name);
+                Log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", Name);
 
                 using var dbContext = new DBContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
@@ -422,7 +422,7 @@ namespace Application.Core.Game.Players
                 }
                 catch (Exception e)
                 {
-                    log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", Name, Level, JobId);
+                    Log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", Name, Level, JobId);
                 }
             }
         }

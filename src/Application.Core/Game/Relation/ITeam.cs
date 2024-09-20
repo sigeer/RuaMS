@@ -14,7 +14,7 @@ namespace Application.Core.Game.Relation
         bool Equals(object? obj);
         Dictionary<int, Door> getDoors();
         ICollection<IPlayer> getEligibleMembers();
-        ITeam getEnemy();
+
         int GetHashCode();
         int getId();
         IPlayer getLeader();
@@ -29,7 +29,8 @@ namespace Application.Core.Game.Relation
         void removeDoor(int owner);
         void removeMember(IPlayer member);
         void setEligibleMembers(List<IPlayer> eliParty);
-        void setEnemy(ITeam enemy);
+        ITeam? getEnemy();
+        void setEnemy(ITeam? enemy);
         void setId(int id);
         void setLeader(IPlayer victim);
         void updateMember(IPlayer member);

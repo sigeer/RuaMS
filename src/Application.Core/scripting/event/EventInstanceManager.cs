@@ -555,6 +555,7 @@ public class EventInstanceManager
         }
         catch (Exception ex)
         {
+            log.Error(ex.ToString());
         } // optional
     }
 
@@ -566,6 +567,7 @@ public class EventInstanceManager
         }
         catch (Exception ex)
         {
+            log.Error(ex.ToString());
         } // optional
     }
 
@@ -645,6 +647,7 @@ public class EventInstanceManager
         }
         catch (Exception ex)
         {
+            log.Error(ex.ToString());
         } //optional
     }
 
@@ -656,6 +659,7 @@ public class EventInstanceManager
         }
         catch (Exception ex)
         {
+            log.Error(ex.ToString());
         } // optional
     }
 
@@ -667,6 +671,7 @@ public class EventInstanceManager
         }
         catch (Exception ex)
         {
+            log.Error(ex.ToString());
         } // optional
     }
 
@@ -680,6 +685,7 @@ public class EventInstanceManager
             }
             catch (Exception ex)
             {
+                log.Error(ex.ToString());
             } // optional
         });
     }
@@ -692,6 +698,7 @@ public class EventInstanceManager
         }
         catch (Exception ex)
         {
+            log.Error(ex.ToString());
         } // optional
     }
 
@@ -699,14 +706,11 @@ public class EventInstanceManager
     {
         try
         {
-            var b = invokeScriptFunction("playerRevive", this, chr);
-            if (b is bool o)
-            {
-                return o;
-            }
+            return Convert.ToBoolean(invokeScriptFunction("playerRevive", this, chr));
         }
         catch (Exception ex)
         {
+            log.Error(ex.ToString());
         } // optional
 
         return true;
@@ -730,7 +734,7 @@ public class EventInstanceManager
     {
         try
         {
-            int inc = (int?)invokeScriptFunction("monsterValue", this, mob.getId()) ?? 0;
+            int inc = Convert.ToInt32(invokeScriptFunction("monsterValue", this, mob.getId()));
 
             if (inc != 0)
             {
@@ -911,7 +915,7 @@ public class EventInstanceManager
             Monitor.Enter(scriptLock);
             try
             {
-                if (em.getProperty("shuffleReactors") != null && em.getProperty("shuffleReactors").Equals("true"))
+                if (em.getProperty("shuffleReactors") == "true")
                 {
                     map.shuffleReactors();
                 }
@@ -1066,7 +1070,7 @@ public class EventInstanceManager
 
     public bool isLeader(IPlayer chr)
     {
-        return (chr.getParty().getLeaderId() == chr.getId());
+        return chr.isPartyLeader();
     }
 
     public bool isEventLeader(IPlayer chr)
@@ -1150,7 +1154,7 @@ public class EventInstanceManager
 
     public void dispatchRaiseQuestMobCount(int mobid, int mapid)
     {
-        var mapChars = getInstanceMap(mapid).getMapPlayers();
+        var mapChars = getInstanceMap(mapid)?.getMapPlayers() ?? [];
         if (mapChars.Count > 0)
         {
             List<IPlayer> eventMembers = getPlayers();

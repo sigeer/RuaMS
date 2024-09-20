@@ -112,51 +112,51 @@ public class FamilyUseHandler : AbstractPacketHandler
         }
         else
         {
-            bool party = false;
-            bool isExp = false;
-            float rate = 1.5f;
-            int duration = 15;
-            while (true)
-            {
-                if (type == FamilyEntitlement.PARTY_EXP_2_30MIN)
-                {
-                    party = true;
-                    isExp = true;
-                    type = FamilyEntitlement.SELF_EXP_2_30MIN;
-                    continue;
-                }
-                else if (type == FamilyEntitlement.PARTY_DROP_2_30MIN)
-                {
-                    party = true;
-                    type = FamilyEntitlement.SELF_DROP_2_30MIN;
-                    continue;
-                }
-                else if (type == FamilyEntitlement.SELF_DROP_2_30MIN)
-                {
-                    duration = 30;
-                }
-                else if (type == FamilyEntitlement.SELF_DROP_2)
-                {
-                    rate = 2.0f;
-                }
-                else if (type == FamilyEntitlement.SELF_EXP_2_30MIN)
-                {
-                    duration = 30;
-                }
-                else if (type == FamilyEntitlement.SELF_EXP_2)
-                {
-                    rate = 2.0f;
-                }
-                else if (type == FamilyEntitlement.SELF_EXP_1_5)
-                {
-                    isExp = true;
-                }
-                else
-                {
-                    break;
-                }
-                break;
-            }
+            //bool party = false;
+            //bool isExp = false;
+            //float rate = 1.5f;
+            //int duration = 15;
+            //while (true)
+            //{
+            //    if (type == FamilyEntitlement.PARTY_EXP_2_30MIN)
+            //    {
+            //        party = true;
+            //        isExp = true;
+            //        type = FamilyEntitlement.SELF_EXP_2_30MIN;
+            //        continue;
+            //    }
+            //    else if (type == FamilyEntitlement.PARTY_DROP_2_30MIN)
+            //    {
+            //        party = true;
+            //        type = FamilyEntitlement.SELF_DROP_2_30MIN;
+            //        continue;
+            //    }
+            //    else if (type == FamilyEntitlement.SELF_DROP_2_30MIN)
+            //    {
+            //        duration = 30;
+            //    }
+            //    else if (type == FamilyEntitlement.SELF_DROP_2)
+            //    {
+            //        rate = 2.0f;
+            //    }
+            //    else if (type == FamilyEntitlement.SELF_EXP_2_30MIN)
+            //    {
+            //        duration = 30;
+            //    }
+            //    else if (type == FamilyEntitlement.SELF_EXP_2)
+            //    {
+            //        rate = 2.0f;
+            //    }
+            //    else if (type == FamilyEntitlement.SELF_EXP_1_5)
+            //    {
+            //        isExp = true;
+            //    }
+            //    else
+            //    {
+            //        break;
+            //    }
+            //    break;
+            //}
             //not implemented
         }
     }

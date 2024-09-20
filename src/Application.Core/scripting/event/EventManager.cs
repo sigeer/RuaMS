@@ -33,6 +33,7 @@ using server;
 using server.expeditions;
 using server.life;
 using server.quest;
+using System.Collections.Concurrent;
 using tools.exceptions;
 
 //using jdk.nashorn.api.scripting;
@@ -51,7 +52,7 @@ public class EventManager
     private IWorld wserv;
     private Server server;
     private EventScriptScheduler ess = new EventScriptScheduler();
-    private Dictionary<string, EventInstanceManager> instances = new();
+    private ConcurrentDictionary<string, EventInstanceManager> instances = new();
     private Dictionary<string, int> instanceLocks = new();
     private Queue<int> queuedGuilds = new();
     private Dictionary<int, int> queuedGuildLeaders = new();
@@ -94,7 +95,7 @@ public class EventManager
     }
 
     public void cancel()
-    {  
+    {
         // make sure to only call this when there are NO PLAYERS ONLINE to mess around with the event manager!
         ess.dispose();
 
@@ -107,12 +108,8 @@ public class EventManager
             log.Error(ex.ToString());
         }
 
-        ICollection<EventInstanceManager> eimList;
-        lock (instances)
-        {
-            eimList = getInstances();
-            instances.Clear();
-        }
+        var eimList = instances.Values.ToList();
+        instances.Clear();
 
         foreach (EventInstanceManager eim in eimList)
         {
@@ -229,10 +226,7 @@ public class EventManager
 
     public ICollection<EventInstanceManager> getInstances()
     {
-        lock (instances)
-        {
-            return instances.Values.ToList();
-        }
+        return instances.Values.ToList();
     }
 
     public EventInstanceManager newInstance(string name)
@@ -241,15 +235,8 @@ public class EventManager
 
         ret.setName(name);
 
-        lock (instances)
-        {
-            if (instances.ContainsKey(name))
-            {
-                throw new EventInstanceInProgressException(name, this.getName());
-            }
-
-            instances.Add(name, ret);
-        }
+        if (!instances.TryAdd(name, ret))
+            throw new EventInstanceInProgressException(name, this.getName());
         return ret;
     }
 
@@ -257,15 +244,8 @@ public class EventManager
     {
         Marriage ret = new Marriage(this, name);
 
-        lock (instances)
-        {
-            if (instances.ContainsKey(name))
-            {
-                throw new EventInstanceInProgressException(name, this.getName());
-            }
-
-            instances.Add(name, ret);
-        }
+        if (!instances.TryAdd(name, ret))
+            throw new EventInstanceInProgressException(name, this.getName());
         return ret;
     }
 
@@ -275,10 +255,7 @@ public class EventManager
         {
             freeLobbyInstance(name);
 
-            lock (instances)
-            {
-                instances.Remove(name);
-            }
+            instances.Remove(name);
         }, YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000);
     }
 

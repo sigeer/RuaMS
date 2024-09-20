@@ -78,9 +78,9 @@ public class SkillbookInformationProvider
 
     private static int fetchQuestbook(Data checkData, string quest)
     {
-        var questStartData = checkData.getChildByPath(quest).getChildByPath("0");
+        var questStartData = checkData.getChildByPath(quest)?.getChildByPath("0");
 
-        var startReqItemData = questStartData.getChildByPath("item");
+        var startReqItemData = questStartData?.getChildByPath("item");
         if (startReqItemData != null)
         {
             foreach (Data itemData in startReqItemData.getChildren())
@@ -93,7 +93,7 @@ public class SkillbookInformationProvider
             }
         }
 
-        var startReqQuestData = questStartData.getChildByPath("quest");
+        var startReqQuestData = questStartData?.getChildByPath("quest");
         if (startReqQuestData != null)
         {
             HashSet<int> reqQuests = new();

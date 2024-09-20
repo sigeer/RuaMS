@@ -453,12 +453,7 @@ public class InventoryManipulator
         return returnValue;
     }
 
-    public static void removeFromSlot(IClient c, InventoryType type, short slot, short quantity, bool fromDrop)
-    {
-        removeFromSlot(c, type, slot, quantity, fromDrop, false);
-    }
-
-    public static void removeFromSlot(IClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume)
+    public static void removeFromSlot(IClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
         IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
@@ -552,7 +547,7 @@ public class InventoryManipulator
         }
         if (removeQuantity > 0 && type != InventoryType.CANHOLD)
         {
-            throw new Exception("[Hack] Not enough items available of Item:" + itemId + ", Quantity (After Quantity/Over Current Quantity): " + (quantity - removeQuantity) + "/" + quantity);
+            throw new BusinessException("[Hack] Not enough items available of Item:" + itemId + ", Quantity (After Quantity/Over Current Quantity): " + (quantity - removeQuantity) + "/" + quantity);
         }
     }
 

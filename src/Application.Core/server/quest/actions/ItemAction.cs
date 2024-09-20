@@ -56,7 +56,7 @@ public class ItemAction : AbstractQuestAction
             int period = DataTool.getInt(iEntry.getChildByPath("period"), 0);
 
             int? prop = null;
-            Data propData = iEntry.getChildByPath("prop");
+            var propData = iEntry.getChildByPath("prop");
             if (propData != null)
             {
                 prop = DataTool.getInt(propData);
@@ -74,7 +74,7 @@ public class ItemAction : AbstractQuestAction
                 job = DataTool.getInt(iEntry.getChildByPath("job"));
             }
 
-            items.Add(new ItemData(int.Parse(iEntry.getName()), id, count, prop ?? 0, job, gender, period));
+            items.Add(new ItemData(int.Parse(iEntry.getName()), id, count, prop, job, gender, period));
         }
 
         items.Sort((o1, o2) => o1.map - o2.map);
@@ -90,7 +90,7 @@ public class ItemAction : AbstractQuestAction
         {
             if (item.getProp() != null && item.getProp() != -1 && canGetItem(item, chr))
             {
-                props += item.getProp();
+                props += item.getProp()!.Value;
             }
         }
 
@@ -117,7 +117,7 @@ public class ItemAction : AbstractQuestAction
                 }
                 else
                 {
-                    accProps += iEntry.getProp();
+                    accProps += iEntry.getProp()!.Value;
 
                     if (accProps <= rndProps)
                     {
@@ -385,9 +385,9 @@ public class ItemAction : AbstractQuestAction
     private class ItemData
     {
         public int map, id, count, job, gender, period;
-        private int prop;
+        private int? prop;
 
-        public ItemData(int map, int id, int count, int prop, int job, int gender, int period)
+        public ItemData(int map, int id, int count, int? prop, int job, int gender, int period)
         {
             this.map = map;
             this.id = id;
@@ -408,7 +408,7 @@ public class ItemAction : AbstractQuestAction
             return count;
         }
 
-        public int getProp()
+        public int? getProp()
         {
             return prop;
         }

@@ -23,6 +23,7 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using client;
 using client.status;
@@ -382,7 +383,7 @@ public class MobSkill: ISkill
     private void spawnMonsterMist(Monster monster)
     {
         Rectangle mistArea = calculateBoundingBox(monster.getPosition());
-        var mist = new Mist(mistArea, monster, this);
+        var mist = new MobMist(mistArea, monster, this);
         int mistDuration = x * 100;
         monster.getMap().spawnMist(mist, mistDuration, false, false, false);
     }

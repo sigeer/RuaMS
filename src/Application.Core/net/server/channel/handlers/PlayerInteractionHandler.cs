@@ -521,7 +521,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.REQUEST_TIE.getCode())
             {
-                var game = chr.getMiniGame();
+                var game = chr.getMiniGame()!;
                 if (!game.isTieDenied(chr))
                 {
                     if (game.isOwner(chr))
@@ -536,7 +536,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.ANSWER_TIE.getCode())
             {
-                var game = chr.getMiniGame();
+                var game = chr.getMiniGame()!;
                 if (p.readByte() != 0)
                 {
                     game.minigameMatchDraw();
@@ -557,7 +557,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.SKIP.getCode())
             {
-                var game = chr.getMiniGame();
+                var game = chr.getMiniGame()!;
                 if (game.isOwner(chr))
                 {
                     game.broadcast(PacketCreator.getMiniGameSkipOwner(game));
@@ -572,13 +572,13 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                 int x = p.readInt(); // x point
                 int y = p.readInt(); // y point
                 int type = p.readByte(); // piece ( 1 or 2; Owner has one piece, visitor has another, it switches every game.)
-                chr.getMiniGame().setPiece(x, y, type, chr);
+                chr.getMiniGame()!.setPiece(x, y, type, chr);
             }
             else if (mode == Action.SELECT_CARD.getCode())
             {
                 int turn = p.readByte(); // 1st turn = 1; 2nd turn = 0
                 int slot = p.readByte(); // slot
-                var game = chr.getMiniGame();
+                var game = chr.getMiniGame()!;
                 int firstslot = game.getFirstSlot();
                 if (turn == 1)
                 {
@@ -616,7 +616,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.SET_MESO.getCode())
             {
-                chr.getTrade().setMeso(p.readInt());
+                chr.getTrade()!.setMeso(p.readInt());
             }
             else if (mode == Action.SET_ITEMS.getCode())
             {

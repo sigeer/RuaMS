@@ -209,7 +209,7 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                log.Warning(e, "IPlayer.mobKilled. chrId {CharacterId}, last quest processed: {LastQuestProcessed}", Id, lastQuestProcessed);
+                Log.Warning(e, "IPlayer.mobKilled. chrId {CharacterId}, last quest processed: {LastQuestProcessed}", Id, lastQuestProcessed);
             }
         }
 

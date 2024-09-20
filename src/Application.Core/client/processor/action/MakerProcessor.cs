@@ -462,7 +462,7 @@ public class MakerProcessor
             eqp.setUpgradeSlots(3);
         }
 
-        if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true)
+        if (YamlConfig.config.server.USE_ENHANCED_CRAFTING)
         {
             if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
             {

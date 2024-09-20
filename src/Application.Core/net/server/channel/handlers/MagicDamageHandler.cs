@@ -66,8 +66,8 @@ public class MagicDamageHandler : AbstractDealDamageHandler
         chr.getMap().broadcastMessage(chr, packet, false, true);
         var effect = attack.getAttackEffect(chr, null);
         var skill = SkillFactory.getSkill(attack.skill);
-        StatEffect effect_ = skill.getEffect(chr.getSkillLevel(skill));
-        if (effect_.getCooldown() > 0)
+        var effect_ = skill?.getEffect(chr.getSkillLevel(skill));
+        if (effect_?.getCooldown() > 0)
         {
             if (chr.skillIsCooling(attack.skill))
             {
@@ -80,13 +80,13 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             }
         }
         applyAttack(attack, chr, effect.getAttackCount());
-        Skill eaterSkill = SkillFactory.getSkill((chr.getJob().getId() - (chr.getJob().getId() % 10)) * 10000);// MP Eater, works with right job
+        var eaterSkill = SkillFactory.getSkill((chr.getJob().getId() - (chr.getJob().getId() % 10)) * 10000);// MP Eater, works with right job
         int eaterLevel = chr.getSkillLevel(eaterSkill);
         if (eaterLevel > 0)
         {
             foreach (int singleDamage in attack.allDamage.Keys)
             {
-                eaterSkill.getEffect(eaterLevel).applyPassive(chr, chr.getMap().getMapObject(singleDamage), 0);
+                eaterSkill!.getEffect(eaterLevel).applyPassive(chr, chr.getMap().getMapObject(singleDamage), 0);
             }
         }
     }

@@ -219,7 +219,7 @@ namespace Application.Core.Game.Players
                 {
                     if (TeamModel != null)
                     {
-                        sendPacket(PacketCreator.updateParty(Client.getChannel(), TeamModel, PartyOperation.SILENT_UPDATE, null));
+                        sendPacket(PacketCreator.updateParty(Client.getChannel(), TeamModel, PartyOperation.SILENT_UPDATE, this));
                         updatePartyMemberHPInternal();
                     }
                 }
@@ -235,7 +235,7 @@ namespace Application.Core.Game.Players
             }
             else
             {
-                log.Warning("Chr {CharacterName} got stuck when moving to map {MapId}", getName(), MapModel.getId());
+                Log.Warning("Chr {CharacterName} got stuck when moving to map {MapId}", getName(), MapModel.getId());
                 Client.disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
                 return;
             }

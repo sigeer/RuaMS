@@ -258,14 +258,9 @@ public class RingActionHandler : AbstractPacketHandler
 
     private static void resetRingId(IPlayer player)
     {
-        int ringitemid = player.getMarriageRing().getItemId();
+        int ringitemid = player.getMarriageRing()!.getItemId();
 
-        var it = player.getInventory(InventoryType.EQUIP).findById(ringitemid);
-        if (it == null)
-        {
-            it = player.getInventory(InventoryType.EQUIPPED).findById(ringitemid);
-        }
-
+        var it = player.getInventory(InventoryType.EQUIP).findById(ringitemid) ?? player.getInventory(InventoryType.EQUIPPED).findById(ringitemid);
         if (it != null)
         {
             Equip eqp = (Equip)it;
@@ -477,7 +472,7 @@ public class RingActionHandler : AbstractPacketHandler
                 string groom = c.OnlinedCharacter.getName();
                 string bride = CharacterManager.getNameById(c.OnlinedCharacter.getPartnerId());
                 int guest = CharacterManager.getIdByName(name);
-                if (groom == null || bride == null || groom.Equals("") || bride.Equals("") || guest <= 0)
+                if (string.IsNullOrEmpty(groom) || string.IsNullOrEmpty(bride) || guest <= 0)
                 {
                     c.OnlinedCharacter.dropMessage(5, "Unable to find " + name + "!");
                     return;
@@ -621,8 +616,9 @@ public class RingActionHandler : AbstractPacketHandler
                         }
                     }
                 }
-                catch (FormatException nfe)
+                catch (Exception ex)
                 {
+                    log.Error(ex.ToString());
                 }
 
                 break;
