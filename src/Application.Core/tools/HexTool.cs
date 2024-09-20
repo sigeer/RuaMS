@@ -22,6 +22,7 @@
 
 
 using System.Text;
+using System.Text.RegularExpressions;
 
 
 namespace tools;
@@ -67,7 +68,7 @@ public static class HexTool
         return ToHexString(bytes, hasSpace: false, isUpcase: true);
     }
 
-    public static byte[] GetByteArrayFromHexString(string hex)
+    private static byte[] GetByteArrayFromHexString(string hex)
     {
         return Enumerable.Range(0, hex.Length / 2)
                                   .Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))
@@ -86,9 +87,8 @@ public static class HexTool
      */
     public static byte[] toBytes(string hexString)
     {
-        return GetByteArrayFromHexString(hexString.Replace("\\s", ""));
+        return GetByteArrayFromHexString(Regex.Replace(hexString, "\\s", ""));
     }
-
 
     public static string toStringFromAscii(byte[] bytes)
     {
