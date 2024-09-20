@@ -48,7 +48,7 @@ public class PetCommandHandler : AbstractPacketHandler
         p.readInt();
         p.readByte();
         byte command = p.readByte();
-        PetCommand petCommand = PetDataFactory.getPetCommand(pet.getItemId(), command);
+        var petCommand = PetDataFactory.getPetCommand(pet!.getItemId(), command);
         if (petCommand == null)
         {
             return;

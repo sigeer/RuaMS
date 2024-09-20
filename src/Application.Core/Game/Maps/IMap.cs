@@ -1,5 +1,6 @@
 ﻿using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.TheWorld;
 using client.inventory;
 using net.packet;
@@ -206,8 +207,7 @@ namespace Application.Core.Game.Maps
         void killAllMonstersNotFriendly();
         void killFriendlies(Monster mob);
         void killMonster(int mobId);
-        void killMonster(Monster monster, IPlayer? chr, bool withDrops);
-        void killMonster(Monster monster, IPlayer? chr, bool withDrops, int animation);
+        void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1);
         void killMonsterWithDrops(int mobId);
         void limitReactor(int rid, int num);
         bool makeDisappearItemFromMap(MapItem mapitem);
@@ -306,7 +306,7 @@ namespace Application.Core.Game.Maps
         void spawnMonster(Monster monster);
         void spawnMonster(Monster monster, int difficulty, bool isPq);
         void spawnMonsterOnGroundBelow(int id, int x, int y);
-        void spawnMonsterOnGroundBelow(Monster mob, Point pos);
+        void spawnMonsterOnGroundBelow(Monster? mob, Point pos);
         void spawnMonsterWithEffect(Monster monster, int effect, Point pos);
         void spawnReactor(Reactor reactor);
         void spawnRevives(Monster monster);

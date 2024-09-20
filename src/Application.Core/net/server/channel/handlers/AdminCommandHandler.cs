@@ -66,10 +66,12 @@ public class AdminCommandHandler : AbstractPacketHandler
                     sbyte inventoryType = p.ReadSByte();
                     Inventory inValue = c.OnlinedCharacter.getInventory(InventoryTypeUtils.getByType(inventoryType));
                     for (short i = 1; i <= inValue.getSlotLimit(); i++)
-                    { //TODO What is the point of this loop?
-                        if (inValue.getItem(i) != null)
+                    {
+                        //TODO What is the point of this loop?
+                        var item = inValue.getItem(i);
+                        if (item != null)
                         {
-                            InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventoryType), i, inValue.getItem(i).getQuantity(), false);
+                            InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventoryType), i, item.getQuantity(), false);
                         }
                         return;
                     }

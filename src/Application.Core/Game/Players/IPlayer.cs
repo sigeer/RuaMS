@@ -52,7 +52,7 @@ namespace Application.Core.Game.Players
         public MonsterBook Monsterbook { get; set; }
         public Messenger? Messenger { get; set; }
 
-        public Mount? MountModel { get; set; }
+        public IMount? MountModel { get; }
         public Job JobModel { get; set; }
         public SkinColor SkinColorModel { get; set; }
 
@@ -68,6 +68,8 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnLevelUp;
         public event EventHandler<IPlayer>? OnJobUpdate;
         public event EventHandler<IPlayer>? OnLodgedUpdate;
+
+        public ILogger Log { get; }
 
         void StartPlayerTask();
         void StopPlayerTask();
@@ -340,7 +342,8 @@ namespace Application.Core.Game.Players
         int getMonsterBookCover();
         MonsterCarnival? getMonsterCarnival();
         MonsterCarnivalParty? getMonsterCarnivalParty();
-        Mount? getMount();
+        void SetMount(IMount? mount);
+        IMount? getMount();
         string getName();
         NewYearCardRecord? getNewYearRecord(int cardid);
         HashSet<NewYearCardRecord> getNewYearRecords();
@@ -503,7 +506,7 @@ namespace Application.Core.Game.Players
         bool mergeAllItemsFromName(string name);
         void mergeAllItemsFromPosition(Dictionary<Equip.StatUpgrade, float> statups, short pos);
         void message(string m);
-        Mount mount(int id, int skillid);
+        IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
         void newClient(IClient c);
         void notifyMapTransferToPartner(int mapid);

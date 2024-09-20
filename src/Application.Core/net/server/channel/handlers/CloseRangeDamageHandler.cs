@@ -186,7 +186,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         }
         else if (attack.skill > 0)
         {
-            Skill skill = SkillFactory.getSkill(attack.skill);
+            Skill skill = SkillFactory.GetSkillTrust(attack.skill);
             StatEffect effect_ = skill.getEffect(chr.getSkillLevel(skill));
             if (effect_.getCooldown() > 0)
             {

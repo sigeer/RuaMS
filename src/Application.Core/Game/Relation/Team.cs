@@ -193,12 +193,12 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public ITeam getEnemy()
+        public ITeam? getEnemy()
         {
             return enemy;
         }
 
-        public void setEnemy(ITeam enemy)
+        public void setEnemy(ITeam? enemy)
         {
             this.enemy = enemy;
         }

@@ -326,13 +326,13 @@ public class WeddingPackets : PacketCreator
         return p;
     }
 
-    /**
-     * When we open a Wedding Invitation, we display the Bride & Groom
-     *
-     * @param groom
-     * @param bride
-     * @return mplew
-     */
+
+    /// <summary>
+    ///  When we open a Wedding Invitation, we display the Bride & Groom
+    /// </summary>
+    /// <param name="groom"></param>
+    /// <param name="bride"></param>
+    /// <returns></returns>
     public static Packet sendWeddingInvitation(string groom, string bride)
     {
         OutPacket p = OutPacket.create(SendOpcode.MARRIAGE_RESULT);
@@ -344,21 +344,22 @@ public class WeddingPackets : PacketCreator
     }
 
     public static Packet sendWishList()
-    { // fuck my life
+    {
+        // fuck my life
         OutPacket p = OutPacket.create(SendOpcode.MARRIAGE_REQUEST);
         p.writeByte(9);
         return p;
     }
 
-    /**
-     * Handles all of WeddingWishlist packets
-     *
-     * @param mode
-     * @param itemnames
-     * @param items
-     * @return mplew
-     */
-    public static Packet onWeddingGiftResult(byte mode, List<string> itemnames, List<Item> items)
+
+    /// <summary>
+    /// Handles all of WeddingWishlist packets
+    /// </summary>
+    /// <param name="mode"></param>
+    /// <param name="itemnames"></param>
+    /// <param name="items"></param>
+    /// <returns></returns>
+    public static Packet onWeddingGiftResult(byte mode, List<string> itemnames, List<Item>? items)
     {
         OutPacket p = OutPacket.create(SendOpcode.WEDDING_GIFT_RESULT);
         p.writeByte(mode);

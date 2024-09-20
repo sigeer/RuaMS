@@ -5,15 +5,20 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public Mount? MountModel { get; set; }
+        public IMount? MountModel { get; private set; }
 
-        public Mount? getMount()
+        public void SetMount(IMount? mount)
+        {
+            MountModel = mount;
+        }
+
+        public IMount? getMount()
         {
             return MountModel;
         }
-        public Mount mount(int id, int skillid)
+        public IMount mount(int id, int skillid)
         {
-            Mount mount = MountModel!;
+            var mount = MountModel!;
             mount.setItemId(id);
             mount.setSkillId(skillid);
             return mount;

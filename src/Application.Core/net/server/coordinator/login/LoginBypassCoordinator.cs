@@ -48,7 +48,7 @@ public class LoginBypassCoordinator
 
             return !pic || p;
         }
-        catch (NullReferenceException npe)
+        catch (NullReferenceException)
         {
             return false;
         }
@@ -67,7 +67,7 @@ public class LoginBypassCoordinator
                 pic |= value.Key;
                 expireTime = Math.Max(value.Value, expireTime);
             }
-            catch (NullReferenceException npe)
+            catch (NullReferenceException)
             {
             }
 

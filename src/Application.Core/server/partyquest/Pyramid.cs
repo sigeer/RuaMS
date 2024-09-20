@@ -43,7 +43,8 @@ public class Pyramid : PartyQuest
     int _kill = 0, _miss = 0, _cool = 0, _exp = 0, map, count;
     byte coolAdd = 5, missSub = 4, decrease = 1;//hmmm
     short gauge;
-    byte rank, skill = 0, stage = 0, buffcount = 0;//buffcount includes buffs + skills
+    byte rank, skill = 0,  buffcount = 0;//buffcount includes buffs + skills
+    sbyte stage = 0;
     PyramidMode mode;
 
     ScheduledFuture? _timer = null;
@@ -168,9 +169,9 @@ public class Pyramid : PartyQuest
         }
         if (stage > -1)
         {
-            gaugeSchedule.cancel(false);
+            gaugeSchedule?.cancel(false);
             gaugeSchedule = null;
-            _timer.cancel(false);
+            _timer?.cancel(false);
             _timer = null;
         }
         else
@@ -209,7 +210,7 @@ public class Pyramid : PartyQuest
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             foreach (var chr in getParticipants())
             {
-                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_1).applyTo(chr);
+                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_1)?.applyTo(chr);
             }
 
         }
@@ -221,7 +222,7 @@ public class Pyramid : PartyQuest
             foreach (var chr in getParticipants())
             {
                 chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
-                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_2).applyTo(chr);
+                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_2)?.applyTo(chr);
             }
         }
         else if (buffcount == 2 && total >= 1000)
@@ -232,7 +233,7 @@ public class Pyramid : PartyQuest
             foreach (var chr in getParticipants())
             {
                 chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
-                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_3).applyTo(chr);
+                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_3)?.applyTo(chr);
             }
         }
         else if (buffcount == 3 && total >= 1500)
@@ -248,7 +249,7 @@ public class Pyramid : PartyQuest
             foreach (var chr in getParticipants())
             {
                 chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
-                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_4).applyTo(chr);
+                ii.getItemEffect(ItemId.PHARAOHS_BLESSING_4)?.applyTo(chr);
             }
         }
         else if (buffcount == 5 && total >= 2500)

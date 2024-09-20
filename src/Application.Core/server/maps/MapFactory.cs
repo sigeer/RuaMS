@@ -332,7 +332,7 @@ public class MapFactory
 
         if (mapData.getChildByPath("reactor") != null)
         {
-            foreach (var reactor in mapData.getChildByPath("reactor"))
+            foreach (var reactor in mapData.getChildByPath("reactor")!)
             {
                 var id = DataTool.getString(reactor.getChildByPath("id"));
                 if (id != null)

@@ -25,6 +25,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.scripting.Event;
@@ -1678,12 +1679,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void killMonster(Monster monster, IPlayer? chr, bool withDrops)
-    {
-        killMonster(monster, chr, withDrops, 1);
-    }
-
-    public void killMonster(Monster monster, IPlayer? chr, bool withDrops, int animation)
+    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1)
     {
         if (monster == null)
         {
@@ -2275,8 +2271,11 @@ public class MapleMap : IMap
         spawnMonsterOnGroundBelow(mob, new Point(x, y));
     }
 
-    public void spawnMonsterOnGroundBelow(Monster mob, Point pos)
+    public void spawnMonsterOnGroundBelow(Monster? mob, Point pos)
     {
+        if (mob == null)
+            return;
+
         Point spos = new Point(pos.X, pos.Y - 1);
         var calcedPos = calcPointBelow(spos);
         if (calcedPos != null)
@@ -2478,7 +2477,7 @@ public class MapleMap : IMap
                 {
                     if (skil != null)
                     {
-                        skil.getSkill().applyEffect(null, monster, false, null);
+                        skil.getSkill()!.applyEffect(null, monster, false, null);
                     }
                 }
             }
@@ -2617,15 +2616,16 @@ public class MapleMap : IMap
         ScheduledFuture? poisonSchedule;
         if (poison)
         {
+            var playerMist = (mist as PlayerMist)!;
             Action poisonTask = () =>
             {
                 List<IMapObject> affectedMonsters = getMapObjectsInBox(mist.getBox(), Collections.singletonList(MapObjectType.MONSTER));
                 foreach (IMapObject mo in affectedMonsters)
                 {
-                    if (mist.makeChanceResult())
+                    if (playerMist.makeChanceResult())
                     {
-                        MonsterStatusEffect poisonEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), mist.getSourceSkill());
-                        ((Monster)mo).applyStatus(mist.getOwner(), poisonEffect, true, duration);
+                        MonsterStatusEffect poisonEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), playerMist.getSourceSkill());
+                        ((Monster)mo).applyStatus(playerMist.getOwner(), poisonEffect, true, duration);
                     }
                 }
             };
@@ -2633,17 +2633,18 @@ public class MapleMap : IMap
         }
         else if (recovery)
         {
+            var playerMist = (mist as PlayerMist)!;
             Action poisonTask = () =>
             {
                 List<IMapObject> players = getMapObjectsInBox(mist.getBox(), Collections.singletonList(MapObjectType.PLAYER));
                 foreach (IMapObject mo in players)
                 {
-                    if (mist.makeChanceResult())
+                    if (playerMist.makeChanceResult())
                     {
                         IPlayer chr = (IPlayer)mo;
-                        if (mist.getOwner()?.getId() == chr.getId() || mist.getOwner()?.getParty() != null && mist.getOwner().getParty().containsMembers(chr))
+                        if (playerMist.getOwner().getId() == chr.getId() || playerMist.getOwner().getParty() != null && playerMist.getOwner().getParty()!.containsMembers(chr))
                         {
-                            chr.addMP(mist.getSourceSkill().getEffect(chr.getSkillLevel(mist.getSourceSkill().getId())).getX() * chr.getMp() / 100);
+                            chr.addMP(playerMist.getSourceSkill().getEffect(chr.getSkillLevel(playerMist.getSourceSkill().getId())).getX() * chr.getMp() / 100);
                         }
                     }
                 }

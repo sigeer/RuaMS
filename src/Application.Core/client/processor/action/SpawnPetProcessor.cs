@@ -45,7 +45,11 @@ public class SpawnPetProcessor
             try
             {
                 var chr = c.OnlinedCharacter;
-                var pet = chr.getInventory(InventoryType.CASH).getItem(slot)?.getPet();
+                var item = chr.getInventory(InventoryType.CASH).getItem(slot);
+                if (item == null)
+                    return;
+
+                var pet = item.getPet();
                 if (pet == null)
                 {
                     return;
@@ -68,7 +72,7 @@ public class SpawnPetProcessor
                         {
                             return;
                         }
-                        long expiration = chr.getInventory(InventoryType.CASH).getItem(slot).getExpiration();
+                        long expiration = item.getExpiration();
                         InventoryManipulator.removeById(c, InventoryType.CASH, petid, 1, false, false);
                         InventoryManipulator.addById(c, evolveid, 1, null, petId, expiration: expiration);
 

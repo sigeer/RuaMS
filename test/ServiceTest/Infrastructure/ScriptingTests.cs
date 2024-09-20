@@ -63,6 +63,20 @@ namespace ServiceTest.Infrastructure
             var id = Convert.ToInt32(d);
             Assert.That(Is.Equals(id, 3));
         }
+
+        [Test]
+        public void CallCsharpWithIntTest()
+        {
+            _engine.Evaluate("""
+                function call_csharp_with_int(m) {
+                    var arr = 123;
+                    return m.FromJs(arr);
+                }
+                """);
+            var d = _engine.CallFunction("call_csharp_with_int", [_testModel]);
+            var id = Convert.ToInt32(d);
+            Assert.That(Is.Equals(id, 123));
+        }
         [Test]
         public void CallCsharpUpdateJsValueTest()
         {
@@ -167,6 +181,11 @@ namespace ServiceTest.Infrastructure
         public int FromJs(List<object> list)
         {
             return list.Count;
+        }
+
+        public int FromJs(int i)
+        {
+            return i;
         }
 
         public void UpdateJsValue(int i)

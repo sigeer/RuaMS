@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Managers;
 using client;
 using client.creator.veteran;
 using client.inventory;
@@ -164,7 +165,8 @@ public class UseCashItemHandler : AbstractPacketHandler
             }
         }
         else if (itemType == 505)
-        { // AP/SP reset
+        { 
+            // AP/SP reset
             if (!player.isAlive())
             {
                 c.sendPacket(PacketCreator.enableActions());
@@ -174,60 +176,9 @@ public class UseCashItemHandler : AbstractPacketHandler
             if (itemId > ItemId.AP_RESET)
             {
                 int SPTo = p.readInt();
-                if (!AssignSPProcessor.canSPAssign(c, SPTo))
-                {  // exploit found thanks to Arnah
-                    return;
-                }
-
                 int SPFrom = p.readInt();
-                var skillSPTo = SkillFactory.getSkill(SPTo);
-                var skillSPFrom = SkillFactory.getSkill(SPFrom);
-                var curLevel = player.getSkillLevel(skillSPTo);
-                var curLevelSPFrom = player.getSkillLevel(skillSPFrom);
-                if ((curLevel < skillSPTo.getMaxLevel()) && curLevelSPFrom > 0)
-                {
-                    player.changeSkillLevel(skillSPFrom, (sbyte)(curLevelSPFrom - 1), player.getMasterLevel(skillSPFrom), -1);
-                    player.changeSkillLevel(skillSPTo, (sbyte)(curLevel + 1), player.getMasterLevel(skillSPTo), -1);
 
-                    // update macros, thanks to Arnah
-                    if ((curLevelSPFrom - 1) == 0)
-                    {
-                        bool updated = false;
-                        foreach (var macro in player.getMacros())
-                        {
-                            if (macro == null)
-                            {
-                                continue;
-                            }
-
-                            bool update = false;// cleaner?
-                            if (macro.getSkill1() == SPFrom)
-                            {
-                                update = true;
-                                macro.setSkill1(0);
-                            }
-                            if (macro.getSkill2() == SPFrom)
-                            {
-                                update = true;
-                                macro.setSkill2(0);
-                            }
-                            if (macro.getSkill3() == SPFrom)
-                            {
-                                update = true;
-                                macro.setSkill3(0);
-                            }
-                            if (update)
-                            {
-                                updated = true;
-                                player.updateMacros(macro.getPosition(), macro);
-                            }
-                        }
-                        if (updated)
-                        {
-                            player.sendMacros();
-                        }
-                    }
-                }
+                SkillManager.ResetSkill(player, SPTo, SPFrom);
             }
             else
             {
@@ -252,7 +203,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                     return;
                 }
                 eq = player.getInventory(InventoryType.EQUIPPED).getItem((short)equipSlot);
-                eq.setOwner(player.getName());
+                eq?.setOwner(player.getName());
             }
             else if (itemId == 5060001 || itemId == 5061000 || itemId == 5061001 || itemId == 5061002 || itemId == 5061003)
             { // Sealing lock

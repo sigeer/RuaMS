@@ -148,7 +148,7 @@ namespace Application.Core.Game.Players
                 }
                 catch (Exception e)
                 {
-                    log.Error(e, "Error while saving {name}'s Hired Merchant items.", Name);
+                    Log.Error(e, "Error while saving {name}'s Hired Merchant items.", Name);
                 }
             }
         }

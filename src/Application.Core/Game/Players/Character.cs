@@ -87,7 +87,7 @@ public partial class Player
     public Storage Storage { get; set; } = null!;
 
     private ILogger? _log;
-    private ILogger log => _log ?? (_log = LogFactory.GetCharacterLog(AccountId, Id));
+    public ILogger Log => _log ?? (_log = LogFactory.GetCharacterLog(AccountId, Id));
 
     public int InitialSpawnPoint { get; set; }
     private int currentPage, currentType = 0, currentTab = 1;
@@ -1897,7 +1897,7 @@ public partial class Player
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            Log.Error(e.ToString());
         }
     }
 
@@ -2720,7 +2720,7 @@ public partial class Player
         }
         catch (Exception ex)
         {
-            log.Error(ex.ToString());
+            Log.Error(ex.ToString());
             return null;
         }
     }
@@ -2734,7 +2734,7 @@ public partial class Player
         }
         catch (Exception ex)
         {
-            log.Error(ex.ToString());
+            Log.Error(ex.ToString());
             return null;
         }
     }
@@ -3389,7 +3389,7 @@ public partial class Player
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            Log.Error(e.ToString());
         }
     }
 
@@ -3470,7 +3470,7 @@ public partial class Player
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            Log.Error(e.ToString());
         }
     }
 
@@ -4797,7 +4797,7 @@ public partial class Player
                 }
                 else
                 {
-                    log.Warning("Chr {CharacterId} tried to have its stats reset without enough AP available", this.Id);
+                    Log.Warning("Chr {CharacterId} tried to have its stats reset without enough AP available", this.Id);
                 }
             }
             finally
@@ -4873,7 +4873,7 @@ public partial class Player
         }
         catch (Exception se)
         {
-            log.Error(se.ToString());
+            Log.Error(se.ToString());
         }
     }
 
@@ -4955,7 +4955,7 @@ public partial class Player
             int updateRows = dbContext.SaveChanges();
             if (updateRows < 1)
             {
-                log.Error("Error trying to insert " + Name);
+                Log.Error("Error trying to insert " + Name);
                 return false;
             }
             this.Id = dbModel.Id;
@@ -4997,7 +4997,7 @@ public partial class Player
         }
         catch (Exception t)
         {
-            log.Error(t, "Error creating chr {CharacterName}, level: {Level}, job: {JobId}", Name, Level, JobId);
+            Log.Error(t, "Error creating chr {CharacterName}, level: {Level}, job: {JobId}", Name, Level, JobId);
             return false;
         }
     }
@@ -5024,7 +5024,7 @@ public partial class Player
         { //Auto DC and log if no GM is online
             Client.disconnect(false, false);
         }
-        log.Information(message);
+        Log.Information(message);
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
         //sendPacket(PacketCreator.sendPolice(text));
         //this.isbanned = true;
@@ -5978,7 +5978,7 @@ public partial class Player
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            Log.Error(e.ToString());
         }
     }
 
@@ -6408,7 +6408,7 @@ public partial class Player
             }
             catch (Exception e)
             {
-                log.Error(e, "Failed to register name change for chr {CharacterName}", getName());
+                Log.Error(e, "Failed to register name change for chr {CharacterName}", getName());
                 return false;
             }
 
@@ -6427,12 +6427,12 @@ public partial class Player
             }
             catch (Exception e)
             {
-                log.Error(e, "Failed to register name change for chr {CharacterName}", getName());
+                Log.Error(e, "Failed to register name change for chr {CharacterName}", getName());
             }
         }
         catch (Exception e)
         {
-            log.Error(e, "Failed to get DB connection while registering name change");
+            Log.Error(e, "Failed to get DB connection while registering name change");
         }
         return false;
     }
@@ -6449,7 +6449,7 @@ public partial class Player
         }
         catch (Exception e)
         {
-            log.Error(e, "Failed to cancel name change for chr {CharacterName}", getName());
+            Log.Error(e, "Failed to cancel name change for chr {CharacterName}", getName());
             return false;
         }
     }
@@ -6473,19 +6473,19 @@ public partial class Player
             }
             catch (Exception e)
             {
-                log.Error(e, "Failed to retrieve pending name changes for chr {CharacterName}", this.Name);
+                Log.Error(e, "Failed to retrieve pending name changes for chr {CharacterName}", this.Name);
             }
             using var dbTrans = dbContext.Database.BeginTransaction();
             bool success = CharacterManager.doNameChange(dbContext, getId(), getName(), newName!, nameChangeId);
             if (!success)
                 dbTrans.Rollback();
             else
-                log.Information("Name change applied: from {0} to {1}", this.Name, newName);
+                Log.Information("Name change applied: from {0} to {1}", this.Name, newName);
             dbTrans.Commit();
         }
         catch (Exception e)
         {
-            log.Error(e, "Failed to get DB connection for pending chr name change");
+            Log.Error(e, "Failed to get DB connection for pending chr name change");
         }
     }
 
@@ -6508,7 +6508,7 @@ public partial class Player
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            Log.Error(e.ToString());
         }
         return -1;
     }
@@ -6523,7 +6523,7 @@ public partial class Player
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            Log.Error(e.ToString());
         }
     }
 

@@ -65,10 +65,24 @@ public class ScrollHandler : AbstractPacketHandler
                     legendarySpirit = true;
                     toScroll = chr.getInventory(InventoryType.EQUIP).getItem(equipSlot) as Equip;
                 }
+
+                if (toScroll == null)
+                {
+                    announceCannotScroll(c, legendarySpirit);
+                    return;
+                }
+
                 byte oldLevel = toScroll.getLevel();
                 byte oldSlots = toScroll.getUpgradeSlots();
                 Inventory useInventory = chr.getInventory(InventoryType.USE);
                 Item? scroll = useInventory.getItem(scrollSlot);
+
+                if (scroll == null)
+                {
+                    announceCannotScroll(c, legendarySpirit);
+                    return;
+                }
+
                 Item? wscroll = null;
 
                 if (ItemConstants.isCleanSlate(scroll.getItemId()) && !ii.canUseCleanSlate(toScroll))
@@ -128,7 +142,7 @@ public class ScrollHandler : AbstractPacketHandler
 
                     if (whiteScroll && !ItemConstants.isCleanSlate(scroll.getItemId()))
                     {
-                        if (wscroll.getQuantity() < 1)
+                        if (wscroll!.getQuantity() < 1)
                         {
                             announceCannotScroll(c, legendarySpirit);
                             return;

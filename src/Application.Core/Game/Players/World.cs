@@ -112,7 +112,7 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                Log.Logger.Error(e, "Change character name");
+                Serilog.Log.Logger.Error(e, "Change character name");
                 return "SQL Error";
             }
             try
@@ -125,7 +125,7 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                Log.Logger.Error(e, "Change character name");
+                Serilog.Log.Logger.Error(e, "Change character name");
                 return "SQL Error";
             }
             try
@@ -136,7 +136,7 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                Log.Logger.Error(e, "Change character name");
+                Serilog.Log.Logger.Error(e, "Change character name");
                 return "SQL Error";
             }
             return null;
@@ -158,7 +158,7 @@ namespace Application.Core.Game.Players
                 }
                 catch (Exception e)
                 {
-                    log.Error(e, "Failed to register world transfer for chr {CharacterName}", getName());
+                    Log.Error(e, "Failed to register world transfer for chr {CharacterName}", getName());
                     return false;
                 }
 
@@ -171,12 +171,12 @@ namespace Application.Core.Game.Players
                 }
                 catch (Exception e)
                 {
-                    log.Error(e, "Failed to register world transfer for chr {CharacterName}", getName());
+                    Log.Error(e, "Failed to register world transfer for chr {CharacterName}", getName());
                 }
             }
             catch (Exception e)
             {
-                log.Error(e, "Failed to get DB connection while registering world transfer");
+                Log.Error(e, "Failed to get DB connection while registering world transfer");
             }
             return false;
         }
@@ -190,7 +190,7 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                log.Error(e, "Failed to cancel pending world transfer for chr {CharacterName}", getName());
+                Log.Error(e, "Failed to cancel pending world transfer for chr {CharacterName}", getName());
                 return false;
             }
         }
@@ -203,14 +203,14 @@ namespace Application.Core.Game.Players
                 var mesosFromDB = dbContext.Characters.Where(x => x.Id == characterId).Select(x => new { x.Meso }).FirstOrDefault();
                 if (mesosFromDB == null)
                 {
-                    Log.Logger.Warning("Character data invalid for world transfer? chrId {CharacterId}", characterId);
+                    Serilog.Log.Logger.Warning("Character data invalid for world transfer? chrId {CharacterId}", characterId);
                     return false;
                 }
                 mesos = mesosFromDB.Meso;
             }
             catch (Exception e)
             {
-                Log.Logger.Error(e, "Failed to do world transfer for chrId {CharacterId}", characterId);
+                Serilog.Log.Logger.Error(e, "Failed to do world transfer for chrId {CharacterId}", characterId);
                 return false;
             }
             try
@@ -222,7 +222,7 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                Log.Logger.Error(e, "Failed to update chrId {CharacterId} during world transfer", characterId);
+                Serilog.Log.Logger.Error(e, "Failed to update chrId {CharacterId} during world transfer", characterId);
                 return false;
             }
             try
@@ -231,7 +231,7 @@ namespace Application.Core.Game.Players
             }
             catch (Exception e)
             {
-                Log.Logger.Error(e, "Failed to delete buddies for chrId {CharacterId} during world transfer", characterId);
+                Serilog.Log.Logger.Error(e, "Failed to delete buddies for chrId {CharacterId} during world transfer", characterId);
                 return false;
             }
             if (worldTransferId != -1)
@@ -242,7 +242,7 @@ namespace Application.Core.Game.Players
                 }
                 catch (Exception e)
                 {
-                    Log.Logger.Error(e, "Failed to update world transfer for chrId {CharacterId}", characterId);
+                    Serilog.Log.Logger.Error(e, "Failed to update world transfer for chrId {CharacterId}", characterId);
                     return false;
                 }
             }

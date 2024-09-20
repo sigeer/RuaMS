@@ -103,10 +103,10 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                             return;
                         }
                         var dis = skill.getDisease();
-                        var enemies = c.OnlinedCharacter.getParty()!.getEnemy();
+                        var enemies = c.OnlinedCharacter.getParty()!.getEnemy()!;
                         if (skill.targetsAll)
                         {
-                            int hitChance = rollHitChance(dis.getMobSkillType().Value);
+                            int hitChance = rollHitChance(dis?.getMobSkillType());
                             if (hitChance <= 80)
                             {
                                 foreach (var mc in enemies.getPartyMembers())
@@ -206,7 +206,7 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
         }
     }
 
-    private int rollHitChance(MobSkillType type)
+    private int rollHitChance(MobSkillType? type)
     {
         return (type) switch
         {

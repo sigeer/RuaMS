@@ -242,7 +242,7 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                log.Debug("ALL BUFFS COUNT: {Buffs}", string.Join(", ", buffEffectsCount.Select(entry => entry.Key.name() + " -> " + entry.Value))
+                Log.Debug("ALL BUFFS COUNT: {Buffs}", string.Join(", ", buffEffectsCount.Select(entry => entry.Key.name() + " -> " + entry.Value))
                 ); ;
             }
             finally

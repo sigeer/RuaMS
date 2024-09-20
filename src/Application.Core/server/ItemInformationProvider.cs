@@ -1868,9 +1868,9 @@ public class ItemInformationProvider
             {
                 foreach (Data data in info.getChildren())
                 {
-                    if (data.getName().StartsWith("inc"))
+                    if (data.getName() != null && data.getName()!.StartsWith("inc"))
                     {
-                        ret.Add(data.getName().Substring(3), DataTool.getIntConvert(data));
+                        ret.Add(data.getName()!.Substring(3), DataTool.getIntConvert(data));
                     }
                 }
                 ret.AddOrUpdate("masterLevel", DataTool.getInt("masterLevel", info, 0));

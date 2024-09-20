@@ -7,8 +7,9 @@
 - 提取了一些接口
 - Party重命名为Team
 - 调整了PlayerStorage，通过`OnChannelAddPlayer`事件更新WorldPlayerStorage
-- 移除`GuildCharacter`、`PartyCharacter`
 	- 修改了机制，之前PlayerStorage中只会存放在线的角色。现在改为存放所有关联到的角色，所有角色都从`WorldStorage`中获取。所以之前通过null判断在线的，还需要进行在线判断
+- 移除`GuildCharacter`、`PartyCharacter`
+	- 还有一些Party.members循环的null判断，但是并没有看到为null的情况（下线不会置null）
 
 
 2024.9.6

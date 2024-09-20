@@ -70,13 +70,17 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                     }
                 }
                 else
-                { // create new family
-                    if (chr.getFamily() != null
-                        && inviter.getFamily() != null
-                        && chr.getFamily().getTotalGenerations() + inviter.getFamily().getTotalGenerations() >= YamlConfig.config.server.FAMILY_MAX_GENERATIONS)
+                {
+                    var chrFamily = chr.getFamily();
+                    // create new family
+                    // !!! inviterFamily在此处为null
+                    if (chrFamily != null
+                        && inviterFamily != null
+                        && chrFamily.getTotalGenerations() + inviterFamily.getTotalGenerations() >= YamlConfig.config.server.FAMILY_MAX_GENERATIONS)
                     {
-                        inviter.sendPacket(PacketCreator.sendFamilyMessage(76, 0));
-                        chr.sendPacket(PacketCreator.sendFamilyMessage(76, 0));
+                        var message = PacketCreator.sendFamilyMessage(76, 0);
+                        inviter.sendPacket(message);
+                        chr.sendPacket(message);
                         return;
                     }
                     Family newFamily = new Family(-1, c.getWorld());
