@@ -5,17 +5,19 @@ name: .NET
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - "master"
     paths:
       - 'src/Application.Console/Program.cs'
       - 'src/Application.Core/*'
       - 'src/Application.Utility/*'
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - "master"
     paths:
       - 'src/Application.Console/Program.cs'
-      - 'src/Application.Core/*'
-      - 'src/Application.Utility/*'
+      - 'src/Application.Core/**'
+      - 'src/Application.Utility/**'
 
 jobs:
   build:

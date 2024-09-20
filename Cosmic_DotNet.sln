@@ -12,8 +12,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E82E7D8C-3EAE-4EEF-AA2D-1A9F3F55AF30}"
 	ProjectSection(SolutionItems) = preProject
 		docs\CHANGES.MD = docs\CHANGES.MD
-		README.MD = README.MD
 		docs\CodeMigration.MD = docs\CodeMigration.MD
+		README.MD = README.MD
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql", "sql", "{3575857B-BE85-44C4-84C0-9E6D41D05919}"
@@ -44,6 +44,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceTest", "test\ServiceTest\ServiceTest.csproj", "{0F67A2BB-2A3C-40FF-8568-E46074F468D2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MockupClient", "test\MockupClient\MockupClient.csproj", "{2AA8D5B8-0312-41D6-89DE-6BF1D8D82240}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{BD851960-79BB-4DE0-901D-CA29E0DF1FCA}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
