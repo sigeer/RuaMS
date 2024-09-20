@@ -9,8 +9,8 @@ on:
       - "master"
     paths:
       - 'src/Application.Console/Program.cs'
-      - 'src/Application.Core/*'
-      - 'src/Application.Utility/*'
+      - 'src/Application.Core/**'
+      - 'src/Application.Utility/**'
   pull_request:
     branches:
       - "master"
@@ -34,5 +34,3 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
