@@ -92,7 +92,7 @@ public class Fitness
     {
         this.schedulemsg = TimerManager.getInstance().register(() =>
         {
-            if (chr.getFitness() == null)
+            if (chr.Fitness == null)
             {
                 resetTimes();
             }

@@ -8,13 +8,14 @@ namespace Application.Core.Game.Maps;
 public class MapItem : AbstractMapObject
 {
     protected IClient ownerClient;
-    protected Item item;
+    protected Item? item;
     protected IMapObject dropper;
     protected int character_ownerid, party_ownerid, meso, questid = -1;
     protected byte type;
-    protected bool pickedUp = false, playerDrop, partyDrop;
+    protected bool pickedUp = false, playerDrop;
     protected long dropTime;
     private object itemLock = new object();
+    public bool IsPartyDrop => this.party_ownerid != -1;
 
     public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop)
     {
@@ -23,13 +24,22 @@ public class MapItem : AbstractMapObject
         this.dropper = dropper;
         this.character_ownerid = owner.getId();
         this.party_ownerid = owner.getPartyId();
-        this.partyDrop = this.party_ownerid != -1;
         this.ownerClient = owner.getClient();
         this.meso = 0;
         this.type = type;
         this.playerDrop = playerDrop;
     }
 
+    /// <summary>
+    /// 任务道具掉落
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="position"></param>
+    /// <param name="dropper"></param>
+    /// <param name="owner"></param>
+    /// <param name="type"></param>
+    /// <param name="playerDrop"></param>
+    /// <param name="questid"></param>
     public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop, int questid)
         : this(item, position, dropper, owner, type, playerDrop)
     {
@@ -43,7 +53,6 @@ public class MapItem : AbstractMapObject
         this.dropper = dropper;
         this.character_ownerid = owner.getId();
         this.party_ownerid = owner.getPartyId();
-        this.partyDrop = this.party_ownerid != -1;
         this.ownerClient = owner.getClient();
         this.meso = meso;
         this.type = type;
@@ -90,8 +99,9 @@ public class MapItem : AbstractMapObject
     }
 
     public int getClientsideOwnerId()
-    {   // thanks nozphex (RedHat) for noting an issue with collecting party items
-        if (this.party_ownerid == -1)
+    {   
+        // thanks nozphex (RedHat) for noting an issue with collecting party items
+        if (IsPartyDrop)
         {
             return this.character_ownerid;
         }
@@ -123,7 +133,7 @@ public class MapItem : AbstractMapObject
             return true;
         }
 
-        if (party_ownerid == -1)
+        if (!IsPartyDrop)
         {
             if (chr.getId() == character_ownerid)
             {

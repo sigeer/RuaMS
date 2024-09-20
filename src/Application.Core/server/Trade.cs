@@ -40,7 +40,7 @@ public class Trade
     private static ILogger log = LogFactory.GetLogger("Trade");
 
 
-    private Trade partner = null;
+    private Trade? partner = null;
     private List<Item> items = new();
     private List<Item> exchangeItems = new();
     private int meso = 0;

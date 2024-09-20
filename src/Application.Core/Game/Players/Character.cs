@@ -231,6 +231,7 @@ public partial class Player
     sbyte doorSlot = -1;
 
     public Dictionary<string, Events> Events { get; set; }
+
     private PartyQuest? partyQuest = null;
 
     private Dragon? dragon = null;
@@ -6530,6 +6531,9 @@ public partial class Player
     //EVENTS
     private sbyte team = 0;
     private Fitness? fitness;
+    public Fitness? Fitness { get => fitness; set => fitness = value; }
+    public Ola? Ola { get => ola; set => ola = value; }
+
     private Ola? ola;
     private long snowballattack;
 
@@ -6541,26 +6545,6 @@ public partial class Player
     public void setTeam(int team)
     {
         this.team = (sbyte)team;
-    }
-
-    public Ola? getOla()
-    {
-        return ola;
-    }
-
-    public void setOla(Ola? ola)
-    {
-        this.ola = ola;
-    }
-
-    public Fitness? getFitness()
-    {
-        return fitness;
-    }
-
-    public void setFitness(Fitness? fit)
-    {
-        this.fitness = fit;
     }
 
     public long getLastSnowballAttack()

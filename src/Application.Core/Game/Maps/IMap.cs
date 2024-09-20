@@ -16,6 +16,8 @@ namespace Application.Core.Game.Maps
     public interface IMap
     {
         AtomicInteger droppedItemCount { get; set; }
+        public Coconut? Coconut { get; set; }
+        public OxQuiz? Ox { get; set; }
 
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
         void addGuardianSpawnPoint(GuardianSpawnPoint a);
@@ -32,16 +34,14 @@ namespace Application.Core.Game.Maps
         void addSkillId(int z);
         void allowSummonState(bool b);
         void broadcastBalrogVictory(string leaderName);
-        void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet);
-        void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point rangedFrom);
+        void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null);
         void broadcastEnemyShip(bool state);
         void broadcastGMMessage(IPlayer source, Packet packet, bool repeatToSource);
         void broadcastGMMessage(Packet packet);
         void broadcastGMPacket(IPlayer source, Packet packet);
         void broadcastGMSpawnPlayerMapObjectMessage(IPlayer source, IPlayer player, bool enteringField);
         void broadcastHorntailVictory();
-        void broadcastMessage(IPlayer? source, Packet packet, bool repeatToSource);
-        void broadcastMessage(IPlayer? source, Packet packet, bool repeatToSource, bool ranged);
+        void broadcastMessage(IPlayer source, Packet packet, bool repeatToSource, bool ranged = false);
         void broadcastMessage(IPlayer? source, Packet packet, Point rangedFrom);
         void broadcastMessage(Packet packet);
         void broadcastMessage(Packet packet, Point rangedFrom);
@@ -95,7 +95,7 @@ namespace Application.Core.Game.Maps
         Portal? findClosestTeleportPortal(Point from);
         Portal? findMarketPortal();
         void generateMapDropRangeCache();
-        MonsterAggroCoordinator? getAggroCoordinator();
+        MonsterAggroCoordinator getAggroCoordinator();
         List<Monster> getAllMonsters();
         List<IMapObject> getAllPlayer();
         List<IPlayer> getAllPlayers();
@@ -152,7 +152,6 @@ namespace Application.Core.Game.Maps
         int getNumPlayersItemsInRect(Rectangle rect);
         string getOnFirstUserEnter();
         string getOnUserEnter();
-        OxQuiz getOx();
         List<IMapObject> getPlayers();
         List<IPlayer> getPlayersInRange(Rectangle box);
         Point? getPointBelow(Point pos);
@@ -268,7 +267,6 @@ namespace Application.Core.Game.Maps
         void setMuted(bool mute);
         void setOnFirstUserEnter(string onFirstUserEnter);
         void setOnUserEnter(string onUserEnter);
-        void setOx(OxQuiz? set);
         void setOxQuiz(bool b);
         void setReactorState();
         void setRecovery(float recRate);
@@ -297,8 +295,7 @@ namespace Application.Core.Game.Maps
         void spawnHorntailOnGroundBelow(Point targetPoint);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, byte dropType, bool playerDrop);
-        void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos);
-        void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos, bool ffaDrop, bool playerDrop);
+        void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos, bool ffaDrop = true, bool playerDrop = false);
         void spawnItemDropList(List<int> list, IMapObject dropper, IPlayer owner, Point pos);
         void spawnKite(Kite kite);
         void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype);

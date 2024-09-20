@@ -37,15 +37,15 @@ public class LeaveEventCommand : Command
         int returnMap = player.getSavedLocation("EVENT");
         if (returnMap != -1)
         {
-            if (player.getOla() != null)
+            if (player.Ola != null)
             {
-                player.getOla()!.resetTimes();
-                player.setOla(null);
+                player.Ola.resetTimes();
+                player.Ola = null;
             }
-            if (player.getFitness() != null)
+            if (player.Fitness != null)
             {
-                player.getFitness()!.resetTimes();
-                player.setFitness(null);
+                player.Fitness.resetTimes();
+                player.Fitness = null;
             }
 
             player.saveLocationOnWarp();
