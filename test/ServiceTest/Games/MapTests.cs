@@ -5,12 +5,8 @@ using tools;
 
 namespace ServiceTest.Games
 {
-    public class MapTests
+    public class MapTests: TestBase
     {
-        public MapTests()
-        {
-            Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
-        }
         [Test]
         [TestCase(10000, ExpectedResult = 3)]
         public int SpawnNpc_Test(int mapId)

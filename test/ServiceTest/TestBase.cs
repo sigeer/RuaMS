@@ -4,9 +4,13 @@ using net.server;
 
 namespace ServiceTest
 {
-    public class TestFactory
+    public class TestBase
     {
-        public static IClient GenerateTestClient()
+        public TestBase()
+        {
+            Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
+        }
+        protected static IClient GenerateTestClient()
         {
             Server.getInstance().forceUpdateCurrentTime();
             var mockClient = Client.createMock();

@@ -2,7 +2,7 @@
 
 namespace ServiceTest.Items
 {
-    public class ItemFactoryTests
+    public class ItemFactoryTests: TestBase
     {
         [Test]
         public void loadEquippedItems_Test()

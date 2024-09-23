@@ -35,7 +35,7 @@ namespace ServiceTest.Infrastructure
                 """);
             var d = _engine.CallFunction("check_size", new object[] { new List<string>() { "1", "2", "3" } });
             var id = Convert.ToInt32(d);
-            Assert.That(Is.Equals(id, 3));
+            Assert.That(id, Is.EqualTo(3));
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace ServiceTest.Infrastructure
                 }
                 """);
             var d = _engine.CallFunction("check_get", new object[] { new List<string>() { "1", "2", "3" } });
-            Assert.That(Is.Equals(d, "2"));
+            Assert.That(d, Is.EqualTo("2"));
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace ServiceTest.Infrastructure
                 """);
             var d = _engine.CallFunction("call_csharp_with_array", [_testModel]);
             var id = Convert.ToInt32(d);
-            Assert.That(Is.Equals(id, 3));
+            Assert.That(id, Is.EqualTo(3));
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace ServiceTest.Infrastructure
                 """);
             var d = _engine.CallFunction("call_csharp_with_int", [_testModel]);
             var id = Convert.ToInt32(d);
-            Assert.That(Is.Equals(id, 123));
+            Assert.That(id, Is.EqualTo(123));
         }
         [Test]
         public void CallCsharpUpdateJsValueTest()
@@ -89,7 +89,7 @@ namespace ServiceTest.Infrastructure
                 """);
             var d = _engine.CallFunction("call_csharp_update_jsvalue", [_testModel]);
             var id = Convert.ToInt32(d);
-            Assert.That(Is.Equals(id, 2));
+            Assert.That(id, Is.EqualTo(2));
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace ServiceTest.Infrastructure
                 """);
             _engine.AddHostedType("E", typeof(TestEnum));
             var d = _engine.CallFunction("use_enum", [_testModel]);
-            Assert.That(Is.Equals(d, "B"));
+            Assert.That(d, Is.EqualTo("B"));
         }
         [Test]
         public void CheckReturnIntTest()
@@ -113,7 +113,7 @@ namespace ServiceTest.Infrastructure
                 }
                 """);
             var d = Convert.ToInt32(_engine.CallFunction("check_return_int"));
-            Assert.That(Is.Equals(d, 123));
+            Assert.That(d, Is.EqualTo(123));
         }
         [Test]
         public void CheckReturnDoubleTest()
@@ -124,7 +124,7 @@ namespace ServiceTest.Infrastructure
                 }
                 """);
             var d = Convert.ToDouble(_engine.CallFunction("check_return_double"));
-            Assert.That(Is.Equals(d, 123.456));
+            Assert.That(d, Is.EqualTo(123.456));
         }
         [Test]
         public void CheckReturnBoolTest()
@@ -135,7 +135,7 @@ namespace ServiceTest.Infrastructure
                 }
                 """);
             var d = Convert.ToBoolean(_engine.CallFunction("check_return_bool"));
-            Assert.That(Is.Equals(d, true));
+            Assert.That(d, Is.EqualTo(true));
         }
 
         [Test]
@@ -148,8 +148,8 @@ namespace ServiceTest.Infrastructure
                 """);
             _engine.AddHostedType("Point", typeof(Point));
             var d = (Point)_engine.CallFunction("check_return_object");
-            Assert.That(Is.Equals(d.X, 4));
-            Assert.That(Is.Equals(d.Y, 5));
+            Assert.That(d.X, Is.EqualTo(4));
+            Assert.That(d.Y, Is.EqualTo(5));
         }
 
         [Test]
@@ -166,7 +166,7 @@ namespace ServiceTest.Infrastructure
                 """);
             _engine.AddHostedType("Point", typeof(Point));
             var d = (_engine.CallFunction("check_return_array") as object[]).OfType<Point>().ToList();
-            Assert.That(d.Count == 3);
+            Assert.That(d.Count, Is.EqualTo(3));
         }
     }
 
