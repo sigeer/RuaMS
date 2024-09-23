@@ -41,19 +41,20 @@ public class MonsterInformationProvider
         return instance;
     }
 
-    private Dictionary<int, List<MonsterDropEntry>> drops = new();
     private List<MonsterGlobalDropEntry> globaldrops = new();
-    private Dictionary<int, List<MonsterGlobalDropEntry>> continentdrops = new();
 
-    private Dictionary<int, List<int>> dropsChancePool = new();    // thanks to ronan
     private HashSet<int> hasNoMultiEquipDrops = new();
-    private Dictionary<int, List<MonsterDropEntry>> extraMultiEquipDrops = new();
+
+    private ConcurrentDictionary<int, List<MonsterGlobalDropEntry>> continentdrops = new();
+    private ConcurrentDictionary<int, List<MonsterDropEntry>> extraMultiEquipDrops = new();
 
     private ConcurrentDictionary<KeyValuePair<int, int>, int> mobAttackAnimationTime = new();
     private ConcurrentDictionary<MobSkill, int> mobSkillAnimationTime = new();
 
     private ConcurrentDictionary<int, KeyValuePair<int, int>> mobAttackInfo = new();
 
+    private Dictionary<int, List<MonsterDropEntry>> drops = new();
+    private Dictionary<int, List<int>> dropsChancePool = new();    // thanks to ronan
     private Dictionary<int, bool> mobBossCache = new();
     private Dictionary<int, string> mobNameCache = new();
 
@@ -68,16 +69,9 @@ public class MonsterInformationProvider
 
         var contiItems = continentdrops.GetValueOrDefault(continentid);
         if (contiItems == null)
-        {   // continent separated global drops found thanks to marcuswoon
-            contiItems = new();
-
-            foreach (MonsterGlobalDropEntry e in globaldrops)
-            {
-                if (e.continentid < 0 || e.continentid == continentid)
-                {
-                    contiItems.Add(e);
-                }
-            }
+        {   
+            // continent separated global drops found thanks to marcuswoon
+            contiItems = globaldrops.Where(e => e.continentid < 0 || e.continentid == continentid).ToList();
 
             continentdrops.AddOrUpdate(continentid, contiItems);
         }
@@ -90,10 +84,8 @@ public class MonsterInformationProvider
         try
         {
             using var dbContext = new DBContext();
-            var dataList = dbContext.DropDataGlobals.Where(x => x.Chance > 0).ToList()
-                .Select(x => new MonsterGlobalDropEntry(x.Itemid, x.Chance, x.Continent, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid));
-
-            globaldrops.AddRange(dataList);
+            globaldrops = dbContext.DropDataGlobals.Where(x => x.Chance > 0).ToList()
+                .Select(x => new MonsterGlobalDropEntry(x.Itemid, x.Chance, x.Continent, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
         }
         catch (Exception e)
         {
@@ -184,7 +176,8 @@ public class MonsterInformationProvider
     }
 
     public List<int> retrieveDropPool(int monsterId)
-    {  // ignores Quest and Party Quest items
+    {  
+        // ignores Quest and Party Quest items
         if (dropsChancePool.ContainsKey(monsterId))
         {
             return dropsChancePool[monsterId];
