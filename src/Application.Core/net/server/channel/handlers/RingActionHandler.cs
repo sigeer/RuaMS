@@ -226,7 +226,7 @@ public class RingActionHandler : AbstractPacketHandler
             }
 
             chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
-            Ring.removeRing(chr.getMarriageRing());
+            RingManager.RemoveRing(chr.getMarriageRing());
 
             var partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
             if (partner == null || !partner.IsOnlined)
@@ -328,7 +328,7 @@ public class RingActionHandler : AbstractPacketHandler
                 breakMarriage(chr);
             }
 
-            chr.getMap().disappearingItemDrop(chr, chr, wItem, chr.getPosition());
+            chr.getMap().disappearingItemDrop(chr, chr, wItem!, chr.getPosition());
         }
         else if (weddingToken)
         {
@@ -337,28 +337,8 @@ public class RingActionHandler : AbstractPacketHandler
                 breakEngagement(chr);
             }
 
-            chr.getMap().disappearingItemDrop(chr, chr, wItem, chr.getPosition());
+            chr.getMap().disappearingItemDrop(chr, chr, wItem!, chr.getPosition());
         }
-    }
-
-    public static void giveMarriageRings(IPlayer player, IPlayer partner, int marriageRingId)
-    {
-        var rings = Ring.createRing(marriageRingId, player, partner);
-        var ii = ItemInformationProvider.getInstance();
-
-        Item ringObj = ii.getEquipById(marriageRingId);
-        Equip ringEqp = (Equip)ringObj;
-        ringEqp.setRingId(rings.MyRingId);
-        player.addMarriageRing(Ring.loadFromDb(rings.MyRingId));
-        InventoryManipulator.addFromDrop(player.getClient(), ringEqp, false, -1);
-        player.broadcastMarriageMessage();
-
-        ringObj = ii.getEquipById(marriageRingId);
-        ringEqp = (Equip)ringObj;
-        ringEqp.setRingId(rings.PartnerRingId);
-        partner.addMarriageRing(Ring.loadFromDb(rings.PartnerRingId));
-        InventoryManipulator.addFromDrop(partner.getClient(), ringEqp, false, -1);
-        partner.broadcastMarriageMessage();
     }
 
     public override void HandlePacket(InPacket p, IClient c)

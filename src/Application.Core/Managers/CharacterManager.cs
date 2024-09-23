@@ -365,7 +365,7 @@ namespace Application.Core.Managers
                         Equip equip = (Equip)item.Item;
                         if (equip.getRingId() > -1)
                         {
-                            var ring = Ring.loadFromDb(equip.getRingId())!;
+                            var ring = RingManager.LoadFromDb(equip.getRingId())!;
                             if (ring != null)
                             {
                                 if (item.Type.Equals(InventoryType.EQUIPPED))

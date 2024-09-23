@@ -356,7 +356,7 @@ function action(mode, type, selection) {
 
                                             cm.gainItem(playerItemId, -1);
                                             cmPartner.gainItem(partnerItemId, -1);
-                                            RingActionHandler.giveMarriageRings(player, partner, marriageRingId);
+                                            RingManager.GiveMarriageRings(player, partner, marriageRingId);
                                             player.setMarriageItemId(marriageRingId);
                                             partner.setMarriageItemId(marriageRingId);
 

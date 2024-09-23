@@ -140,7 +140,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Response> Responses { get; set; }
 
-    public virtual DbSet<DB_Ring> Rings { get; set; }
+    public virtual DbSet<Ring_Entity> Rings { get; set; }
 
     public virtual DbSet<Savedlocation> Savedlocations { get; set; }
 
@@ -2352,7 +2352,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("response");
         });
 
-        modelBuilder.Entity<DB_Ring>(entity =>
+        modelBuilder.Entity<Ring_Entity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

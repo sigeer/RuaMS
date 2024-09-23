@@ -1,8 +1,8 @@
 ﻿namespace Application.EF.Entities;
 
-public partial class DB_Ring
+public partial class Ring_Entity
 {
-    public DB_Ring(int id, int itemId, int partnerRingId, int partnerChrId, string partnerName)
+    public Ring_Entity(int id, int itemId, int partnerRingId, int partnerChrId, string partnerName)
     {
         Id = id;
         ItemId = itemId;
@@ -11,7 +11,7 @@ public partial class DB_Ring
         PartnerName = partnerName;
     }
 
-    private DB_Ring()
+    private Ring_Entity()
     {
     }
 
