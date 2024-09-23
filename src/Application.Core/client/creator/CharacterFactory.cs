@@ -20,6 +20,7 @@
 
 
 using Application.Core.Managers;
+using Application.Core.Managers.Constants;
 using client.inventory;
 using net.server;
 using server;
@@ -56,7 +57,7 @@ public abstract class CharacterFactory
             newchar = null;
             if (!CharacterManager.CheckCharacterName(name))
             {
-                return -1;
+                return CreateCharResult.NameInvalid;
             }
 
             var newCharacter = CharacterManager.NewPlayer(world, accountId);
@@ -106,14 +107,14 @@ public abstract class CharacterFactory
             if (!MakeCharInfoValidator.isNewCharacterValid(newCharacter))
             {
                 log.Warning("Owner from account {AccountId} tried to packet edit in character creation", newCharacter.getAccountID());
-                return -2;
+                return CreateCharResult.Error;
             }
 
             if (!newCharacter.insertNewChar(recipe))
             {
-                return -2;
+                return CreateCharResult.Error;
             }
-            return 0;
+            return CreateCharResult.Success;
         }
     }
     protected static int createNewCharacter(IClient c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
@@ -122,11 +123,11 @@ public abstract class CharacterFactory
         {
             if (YamlConfig.config.server.COLLECTIVE_CHARSLOT ? c.getAvailableCharacterSlots() <= 0 : c.getAvailableCharacterWorldSlots() <= 0)
             {
-                return -3;
+                return CreateCharResult.CharSlotLimited;
             }
 
             var result = CreateCharacter(c.getWorld(), c.getAccID(), name, face, hair, skin, gender, recipe, out var newCharacter);
-            if (result == 0 && newCharacter != null)
+            if (result == CreateCharResult.Success && newCharacter != null)
             {
                 newCharacter.setClient(c);
                 c.sendPacket(PacketCreator.addNewCharEntry(newCharacter));
@@ -135,7 +136,7 @@ public abstract class CharacterFactory
                 Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[New Char]: " + c.getAccountName() + " has created a new character with IGN " + name));
                 log.Information("Account {AccountName} created chr with name {CharacterName}", c.getAccountName(), name);
 
-                return 0;
+                return CreateCharResult.Success;
             }
             return result;
         }

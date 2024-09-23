@@ -4,7 +4,7 @@ using net.server.channel.handlers;
 
 namespace ServiceTest.Handlers
 {
-    public class KeymapChangeHandlerTests
+    public class KeymapChangeHandlerTests: TestBase
     {
         [TestCase("135,0,1,0,0,0,0,0,0,0")]
         [Test]
@@ -13,7 +13,7 @@ namespace ServiceTest.Handlers
             var bytes = bytesString.Split(',').Select(byte.Parse).ToArray();
             var reader = new ByteBufInPacket(Unpooled.WrappedBuffer(bytes));
             reader.readShort(); // get packet handler
-            new KeymapChangeHandler().HandlePacket(reader, TestFactory.GenerateTestClient());
+            new KeymapChangeHandler().HandlePacket(reader, GenerateTestClient());
             Assert.Pass();
         }
 
