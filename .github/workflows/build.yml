@@ -4,13 +4,6 @@
 name: .NET
 
 on:
-  push:
-    branches:
-      - "master"
-    paths:
-      - 'src/Application.Console/Program.cs'
-      - 'src/Application.Core/**'
-      - 'src/Application.Utility/**'
   pull_request:
     branches:
       - "master"
