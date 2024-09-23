@@ -20,11 +20,10 @@ namespace Application.Core.Game.Relation
         IPlayer getLeader();
         int getLeaderId();
         IPlayer? getMemberById(int id);
-        IPlayer? getMemberByPos(int pos);
+        IPlayer GetRandomMember();
         ICollection<IPlayer> getMembers();
         List<int> getMembersSortedByHistory();
         sbyte getPartyDoor(int cid);
-        List<IPlayer> getPartyMembers();
         List<IPlayer> getPartyMembersOnline();
         void removeDoor(int owner);
         void removeMember(IPlayer member);
