@@ -74,7 +74,7 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("BuffStat", typeof(BuffStat));
             engine.AddHostedType("MapId", typeof(MapId));
             engine.AddHostedType("Rectangle", typeof(Rectangle));
-            engine.AddHostedType("RingActionHandler", typeof(RingActionHandler));
+            engine.AddHostedType("RingManager", typeof(RingManager));
             engine.AddHostedType("Channel", typeof(WorldChannel));
             engine.AddHostedType("CommandsExecutor", typeof(CommandsExecutor));
             engine.AddHostedType("CharacterManager", typeof(CharacterManager));
