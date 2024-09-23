@@ -22,8 +22,6 @@
 
 
 using Application.Core.Game.Maps;
-using Application.Core.Managers;
-using client;
 using client.creator.veteran;
 using client.inventory;
 using client.inventory.manipulator;
@@ -109,7 +107,7 @@ public class UseCashItemHandler : AbstractPacketHandler
             {
                 int mapId = p.readInt();
                 if (itemId / 1000 >= 5041 || mapId / 100000000 == player.getMapId() / 100000000)
-                { 
+                {
                     //check vip or same continent
                     var targetMap = c.getChannelServer().getMapFactory().getMap(mapId);
                     if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(mapId)))
@@ -165,7 +163,7 @@ public class UseCashItemHandler : AbstractPacketHandler
             }
         }
         else if (itemType == 505)
-        { 
+        {
             // AP/SP reset
             if (!player.isAlive())
             {
@@ -178,7 +176,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                 int SPTo = p.readInt();
                 int SPFrom = p.readInt();
 
-                SkillManager.ResetSkill(player, SPTo, SPFrom);
+                AssignSPProcessor.ResetSkill(player, SPTo, SPFrom);
             }
             else
             {
@@ -582,7 +580,7 @@ public class UseCashItemHandler : AbstractPacketHandler
             }
         }
         else if (itemType == 545)
-        { 
+        {
             // MiuMiu's travel store
             if (player.getShop() == null)
             {

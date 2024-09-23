@@ -102,7 +102,7 @@ public class Gachapon
             return chance < gacha.Length ? gacha[chance] : global[chance - gacha.Length];
         }
 
-        public static GachaponType getByNpcId(int npcId)
+        public static GachaponType? getByNpcId(int npcId)
         {
             foreach (GachaponType gacha in values)
             {
@@ -137,7 +137,7 @@ public class Gachapon
                         str += ("  #rTier " + i + "#k:\r\n");
                         foreach (int itemid in gachaItems)
                         {
-                            string itemName = ii.getName(itemid);
+                            var itemName = ii.getName(itemid);
                             if (itemName == null)
                             {
                                 itemName = "MISSING NAME #" + itemid;
@@ -161,7 +161,7 @@ public class Gachapon
 
     public GachaponItem process(int npcId)
     {
-        GachaponType gacha = GachaponType.getByNpcId(npcId);
+        GachaponType gacha = GachaponType.getByNpcId(npcId)!;
         int tier = gacha.getTier();
         int item = gacha.getItem(tier);
         return new GachaponItem(tier, item);

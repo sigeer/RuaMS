@@ -64,4 +64,10 @@ public class Randomizer
     {
         return (int)((_rand.NextDouble() * (ubound - lbound + 1)) + lbound);
     }
+
+    public static TItem Select<TItem>(IEnumerable<TItem> list)
+    {
+        var len = list.Count();
+        return list.ElementAt(nextInt(len));
+    }
 }
