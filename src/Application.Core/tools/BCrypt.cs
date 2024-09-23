@@ -768,14 +768,7 @@ public class BCrypt
      */
     private static sbyte[] stringToBytes(string plaintext)
     {
-        try
-        {
-            return Encoding.UTF8.GetBytes(plaintext).ToSBytes();
-        }
-        catch (EncoderFallbackException uee)
-        {
-            throw new Exception("UTF-8 is not supported");
-        }
+        return Encoding.UTF8.GetBytes(plaintext).ToSBytes();
     }
 
     /**
@@ -1000,6 +993,7 @@ public class BCrypt
         }
         catch (EncoderFallbackException uee)
         {
+            Log.Logger.Error(uee.ToString());
             return false;
         }
         if (hashed_bytes.Length != try_bytes.Length)

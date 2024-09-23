@@ -116,10 +116,12 @@ public class IdCommand : Command
             }
             catch (IdTypeNotSupportedException e)
             {
+                log.Error(e.ToString());
                 chr.yellowMessage("Your query type is not supported.");
             }
             catch (IOException e)
             {
+                log.Error(e.ToString());
                 chr.yellowMessage("Error reading file, please contact your administrator.");
             }
         };

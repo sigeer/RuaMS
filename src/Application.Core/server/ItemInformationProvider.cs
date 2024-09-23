@@ -1695,6 +1695,8 @@ public class ItemInformationProvider
         return ret;
     }
 
+    public StatEffect GetItemEffectTrust(int itemId) => getItemEffect(itemId) ?? throw new BusinessResException($"getItemEffect({itemId})");
+
     public int[][] getSummonMobs(int itemId)
     {
         var data = getItemData(itemId);

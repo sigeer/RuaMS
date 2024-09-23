@@ -958,6 +958,14 @@ public class World : IWorld
         return foundsChars.ToArray();
     }
 
+    public Messenger createMessenger(MessengerCharacter chrfor)
+    {
+        int messengerid = runningMessengerId.getAndIncrement();
+        Messenger messenger = new Messenger(messengerid, chrfor);
+        messengers.AddOrUpdate(messenger.getId(), messenger);
+        return messenger;
+    }
+
     public Messenger? getMessenger(int messengerid)
     {
         return messengers.GetValueOrDefault(messengerid);
@@ -1142,13 +1150,7 @@ public class World : IWorld
         messenger.addMember(target, position);
     }
 
-    public Messenger createMessenger(MessengerCharacter chrfor)
-    {
-        int messengerid = runningMessengerId.getAndIncrement();
-        Messenger messenger = new Messenger(messengerid, chrfor);
-        messengers.AddOrUpdate(messenger.getId(), messenger);
-        return messenger;
-    }
+
 
     public bool isConnected(string charName)
     {

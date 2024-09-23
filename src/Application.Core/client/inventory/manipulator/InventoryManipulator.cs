@@ -845,6 +845,12 @@ public class InventoryManipulator
         Inventory inv = chr.getInventory(type);
         var source = inv.getItem(src);
 
+        if (chr.getTrade() != null || chr.getMiniGame() != null || source == null)
+        { 
+            //Only check needed would prob be merchants (to see if the player is in one)
+            return;
+        }
+
         if (chr.isGM() && chr.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
             chr.message("You cannot drop items at your GM level.");
@@ -852,10 +858,7 @@ public class InventoryManipulator
             return;
         }
 
-        if (chr.getTrade() != null || chr.getMiniGame() != null || source == null)
-        { //Only check needed would prob be merchants (to see if the player is in one)
-            return;
-        }
+
         int itemId = source.getItemId();
 
         var map = chr.getMap();
@@ -871,7 +874,8 @@ public class InventoryManipulator
             if (petIdx > -1)
             {
                 var pet = chr.getPet(petIdx);
-                chr.unequipPet(pet, true);
+                if (pet != null)
+                    chr.unequipPet(pet, true);
             }
         }
 

@@ -22,6 +22,7 @@
 using client.inventory;
 using client.inventory.manipulator;
 using scripting.Event;
+using Serilog;
 
 namespace server;
 /**
@@ -118,7 +119,7 @@ public class Marriage : EventInstanceManager
                 groom = false;
             }
         }
-        catch (Exception nfe)
+        catch (Exception e)
         {
         }
 

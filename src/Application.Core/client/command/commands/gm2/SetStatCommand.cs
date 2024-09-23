@@ -55,8 +55,9 @@ public class SetStatCommand : Command
 
             player.updateStrDexIntLuk(x);
         }
-        catch (Exception nfe)
+        catch (Exception e)
         {
+            log.Error(e.ToString());
         }
     }
 }

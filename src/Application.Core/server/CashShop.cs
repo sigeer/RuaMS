@@ -285,14 +285,8 @@ public class CashShop
                 return null;
             }
 
-            var list = items.Values.Where(x => x.isOnSale() && !!ItemId.isCashPackage(x.getItemId())).ToList();
-            int rnd = Randomizer.nextInt(list.Count);
-            return list.ElementAtOrDefault(rnd);
-        }
-
-        private static CashItem getRandomItem(List<CashItem> items)
-        {
-            return items.get(new Random().Next(items.Count));
+            var list = items.Values.Where(x => x.isOnSale() && !ItemId.isCashPackage(x.getItemId())).ToList();
+            return Randomizer.Select(list);
         }
 
         public static CashItem? getItem(int sn)
@@ -300,13 +294,15 @@ public class CashShop
             return items.GetValueOrDefault(sn);
         }
 
+        public static CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
+
         public static List<Item> getPackage(int itemId)
         {
             List<Item> cashPackage = new();
 
             foreach (int sn in packages.GetValueOrDefault(itemId))
             {
-                cashPackage.Add(getItem(sn).toItem());
+                cashPackage.Add(GetItemTrust(sn).toItem());
             }
 
             return cashPackage;
@@ -496,7 +492,7 @@ public class CashShop
             foreach (var rs in dataList)
             {
                 notes++;
-                var cItem = CashItemFactory.getItem(rs.Sn);
+                var cItem = CashItemFactory.GetItemTrust(rs.Sn);
                 Item item = cItem.toItem();
                 Equip? equip = null;
                 item.setGiftFrom(rs.From);

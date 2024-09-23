@@ -93,14 +93,8 @@ public class MonsterCarnivalParty
 
     public void warpOut()
     {
-        if (winner == true)
-        {
-            warpOut(980000003 + (leader.getMonsterCarnival().getRoom() * 100));
-        }
-        else
-        {
-            warpOut(980000004 + (leader.getMonsterCarnival().getRoom() * 100));
-        }
+        var baseId = winner ? 980000003 : 980000004;
+        warpOut(baseId + (leader.getMonsterCarnival()!.getRoom() * 100));
     }
 
     public bool allInMap(IMap map)

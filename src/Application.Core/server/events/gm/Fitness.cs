@@ -61,7 +61,7 @@ public class Fitness
         this.time = 900000;
         checkAndMessage();
 
-        chr.getMap().getPortal("join00").setPortalStatus(true);
+        chr.getMap().getPortal("join00")!.setPortalStatus(true);
         chr.sendPacket(PacketCreator.serverNotice(0, "The portal has now opened. Press the up arrow key at the portal to enter."));
     }
 

@@ -159,7 +159,7 @@ public class PartySearchStorage
                 break;
             }
 
-            IPlayer chr = psc.callPlayer(callerCid, callerMapid);
+            var chr = psc.callPlayer(callerCid, callerMapid);
             if (chr != null)
             {
                 return chr;
@@ -175,7 +175,7 @@ public class PartySearchStorage
         PartySearchCharacter? toRemove = null;
         foreach (PartySearchCharacter psc in getStorageList())
         {
-            IPlayer player = psc.getPlayer();
+            var player = psc.getPlayer();
 
             if (player != null && player.getId() == chr.getId())
             {

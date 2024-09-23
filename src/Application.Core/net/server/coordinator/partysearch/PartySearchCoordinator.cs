@@ -196,16 +196,16 @@ public class PartySearchCoordinator
 
     public void attachPlayer(IPlayer chr)
     {
-        upcomers.GetValueOrDefault(getPartySearchJob(chr.getJob())).attachPlayer(chr);
+        upcomers.GetValueOrDefault(getPartySearchJob(chr.getJob()))!.attachPlayer(chr);
     }
 
     public void detachPlayer(IPlayer chr)
     {
         Job psJob = getPartySearchJob(chr.getJob());
 
-        if (!upcomers.GetValueOrDefault(psJob).detachPlayer(chr))
+        if (!upcomers.GetValueOrDefault(psJob)!.detachPlayer(chr))
         {
-            storage.GetValueOrDefault(psJob).detachPlayer(chr);
+            storage.GetValueOrDefault(psJob)!.detachPlayer(chr);
         }
     }
 
@@ -213,7 +213,7 @@ public class PartySearchCoordinator
     {
         foreach (var psUpdate in upcomers)
         {
-            storage.GetValueOrDefault(psUpdate.Key).updateStorage(psUpdate.Value.exportEchelon());
+            storage.GetValueOrDefault(psUpdate.Key)!.updateStorage(psUpdate.Value.exportEchelon());
         }
     }
 
@@ -239,7 +239,7 @@ public class PartySearchCoordinator
 
     private IPlayer? fetchPlayer(int callerCid, int callerMapid, Job job, int minLevel, int maxLevel)
     {
-        return storage.GetValueOrDefault(getPartySearchJob(job)).callPlayer(callerCid, callerMapid, minLevel, maxLevel);
+        return storage.GetValueOrDefault(getPartySearchJob(job))!.callPlayer(callerCid, callerMapid, minLevel, maxLevel);
     }
 
     private void addQueueLeader(IPlayer leader)

@@ -84,6 +84,7 @@ public class SummonCommand : Command
             }
             catch (ThreadInterruptedException e)
             {
+                log.Error(e.ToString());
             }
 
             var map = player.getMap();

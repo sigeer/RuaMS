@@ -42,7 +42,7 @@ public class ResetSkillCommand : Command
         {
             try
             {
-                Skill skill = SkillFactory.getSkill(int.Parse(skill_.getName()));
+                var skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()!));
                 player.changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception e)

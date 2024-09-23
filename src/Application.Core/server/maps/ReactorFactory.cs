@@ -87,7 +87,7 @@ public class ReactorFactory
                             reactItem,
                             (byte)DataTool.getIntConvert("state", reactorInfoData),
                             DataTool.getIntConvert("timeOut", reactorInfoData_, -1),
-                            (byte)(canTouch ? 2 : (DataTool.getIntConvert("2", reactorInfoData, 0) > 0 || reactorInfoData.getChildByPath("clickArea") != null || type == 9 ? 1 : 0)));
+                            (byte)(canTouch ? 2 : (DataTool.getIntConvert("2", reactorInfoData, 0) > 0 || reactorInfoData?.getChildByPath("clickArea") != null || type == 9 ? 1 : 0)));
                     }
                     else
                     {

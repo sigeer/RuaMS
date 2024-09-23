@@ -336,7 +336,8 @@ public class CashOperationHandler : AbstractPacketHandler
                             if (equip.getRingId() >= 0)
                             {
                                 var ring = Ring.loadFromDb(equip.getRingId());
-                                chr.addPlayerRing(ring);
+                                if (ring != null)
+                                    chr.addPlayerRing(ring);
                             }
                         }
                     }
@@ -410,7 +411,7 @@ public class CashOperationHandler : AbstractPacketHandler
                                 c.sendPacket(PacketCreator.showBoughtCashItem(eqp, c.getAccID()));
                                 cs.gainCash(toCharge, itemRing, chr.getWorld());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
-                                chr.addCrushRing(Ring.loadFromDb(rings.MyRingId));
+                                chr.addCrushRing(Ring.loadFromDb(rings.MyRingId)!);
                                 noteService.sendWithFame(text, chr.getName(), partner.getName());
                                 noteService.show(partner);
                             }
@@ -485,7 +486,7 @@ public class CashOperationHandler : AbstractPacketHandler
                                 c.sendPacket(PacketCreator.showBoughtCashRing(eqp, partner.getName(), c.getAccID()));
                                 cs.gainCash(payment, -itemRing.getPrice());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
-                                chr.addFriendshipRing(Ring.loadFromDb(rings.MyRingId));
+                                chr.addFriendshipRing(Ring.loadFromDb(rings.MyRingId)!);
                                 noteService.sendWithFame(text, chr.getName(), partner.getName());
                                 noteService.show(partner);
                             }

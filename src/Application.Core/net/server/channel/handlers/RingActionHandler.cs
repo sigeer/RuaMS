@@ -328,7 +328,7 @@ public class RingActionHandler : AbstractPacketHandler
                 breakMarriage(chr);
             }
 
-            chr.getMap().disappearingItemDrop(chr, chr, wItem, chr.getPosition());
+            chr.getMap().disappearingItemDrop(chr, chr, wItem!, chr.getPosition());
         }
         else if (weddingToken)
         {
@@ -337,7 +337,7 @@ public class RingActionHandler : AbstractPacketHandler
                 breakEngagement(chr);
             }
 
-            chr.getMap().disappearingItemDrop(chr, chr, wItem, chr.getPosition());
+            chr.getMap().disappearingItemDrop(chr, chr, wItem!, chr.getPosition());
         }
     }
 
@@ -455,7 +455,7 @@ public class RingActionHandler : AbstractPacketHandler
                 int itemId;
                 try
                 {
-                    itemId = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot).getItemId();
+                    itemId = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot)?.getItemId() ?? 0;
                 }
                 catch (NullReferenceException npe)
                 {

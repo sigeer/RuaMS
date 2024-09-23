@@ -146,7 +146,7 @@ public class TakeDamageHandler : AbstractPacketHandler
             catch (InvalidCastException e)
             {
                 //this happens due to mob on last map damaging player just before changing maps
-                log.Warning(e, "Attack is not a mob-type, rather is a {MapObject} entity", map.getMapObject(oid).GetType().Name);
+                log.Warning(e, "Attack is not a mob-type, rather is a {MapObject} entity", map.getMapObject(oid)?.GetType()?.Name);
                 return;
             }
 
@@ -235,7 +235,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                     var bPressure = chr.getBuffEffect(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise
                     if (bPressure != null)
                     {
-                        var skill = SkillFactory.getSkill(Aran.BODY_PRESSURE);
+                        var skill = SkillFactory.GetSkillTrust(Aran.BODY_PRESSURE);
                         if (!attacker.alreadyBuffedStats().Contains(MonsterStatus.NEUTRALISE))
                         {
                             if (!attacker.isBoss() && bPressure.makeChanceResult())

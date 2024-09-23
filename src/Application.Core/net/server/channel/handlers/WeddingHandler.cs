@@ -115,8 +115,9 @@ public class WeddingHandler : AbstractPacketHandler
                                 c.sendPacket(WeddingPackets.onWeddingGiftResult(0xC, marriage.getWishlistItems(groomWishlist), null));
                             }
                         }
-                        catch (FormatException nfe)
+                        catch (FormatException e)
                         {
+                            log.Error(e.ToString());
                         }
                     }
                     else
@@ -182,6 +183,7 @@ public class WeddingHandler : AbstractPacketHandler
                         }
                         catch (Exception e)
                         {
+                            log.Error(e.ToString());
                             c.OnlinedCharacter.dropMessage(1, "You have already collected this item.");
                             c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), items));
                         }

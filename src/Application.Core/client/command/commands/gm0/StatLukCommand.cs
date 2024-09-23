@@ -45,6 +45,7 @@ public class StatLukCommand : Command
             }
             catch (Exception e)
             {
+                log.Error(e.ToString());
                 player.dropMessage("That is not a valid number!");
                 return;
             }
