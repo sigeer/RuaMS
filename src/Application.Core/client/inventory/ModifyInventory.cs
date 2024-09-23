@@ -6,17 +6,14 @@ namespace client.inventory;
 public class ModifyInventory
 {
 
+    /// <summary>
+    /// 0: add, 1: update, 2: move, 3: remove
+    /// </summary>
     private int mode;
     private Item item;
     private short oldPos;
 
-    public ModifyInventory(int mode, Item item)
-    {
-        this.mode = mode;
-        this.item = item.copy();
-    }
-
-    public ModifyInventory(int mode, Item item, short oldPos)
+    public ModifyInventory(int mode, Item item, short oldPos = 0)
     {
         this.mode = mode;
         this.item = item.copy();
@@ -55,6 +52,5 @@ public class ModifyInventory
 
     public void clear()
     {
-        this.item = null;
     }
 }

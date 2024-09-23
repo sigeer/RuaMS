@@ -3373,7 +3373,7 @@ public class MapleMap : IMap
     {
         foreach (Portal portal in portals.Values)
         {
-            string ptScript = portal.getScriptName();
+            var ptScript = portal.getScriptName();
             if (ptScript != null && ptScript.Contains("market"))
             {
                 return portal;

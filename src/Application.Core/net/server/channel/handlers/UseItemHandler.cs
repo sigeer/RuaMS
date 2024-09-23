@@ -81,7 +81,7 @@ public class UseItemHandler : AbstractPacketHandler
             }
             else if (ItemConstants.isTownScroll(itemId))
             {
-                if (ii.getItemEffect(toUse.getItemId()).applyTo(chr))
+                if (ii.GetItemEffectTrust(toUse.getItemId()).applyTo(chr))
                 {
                     remove(c, slot);
                 }
@@ -92,11 +92,11 @@ public class UseItemHandler : AbstractPacketHandler
 
             if (toUse.getItemId() != ItemId.HAPPY_BIRTHDAY)
             {
-                ii.getItemEffect(toUse.getItemId()).applyTo(chr);
+                ii.GetItemEffectTrust(toUse.getItemId()).applyTo(chr);
             }
             else
             {
-                var mse = ii.getItemEffect(toUse.getItemId());
+                var mse = ii.GetItemEffectTrust(toUse.getItemId());
                 foreach (var player in chr.getMap().getCharacters())
                 {
                     mse.applyTo(player);

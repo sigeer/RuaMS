@@ -435,7 +435,7 @@ public class RingActionHandler : AbstractPacketHandler
                 int itemId;
                 try
                 {
-                    itemId = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot).getItemId();
+                    itemId = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot)?.getItemId() ?? 0;
                 }
                 catch (NullReferenceException npe)
                 {

@@ -1093,13 +1093,13 @@ public class AbstractPlayerInteraction
 
     public void useItem(int id)
     {
-        ItemInformationProvider.getInstance().getItemEffect(id).applyTo(c.OnlinedCharacter);
+        ItemInformationProvider.getInstance().GetItemEffectTrust(id).applyTo(c.OnlinedCharacter);
         c.sendPacket(PacketCreator.getItemMessage(id));//Useful shet :3
     }
 
     public void cancelItem(int id)
     {
-        getPlayer().cancelEffect(ItemInformationProvider.getInstance().getItemEffect(id), false, -1);
+        getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false, -1);
     }
 
     public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration)
@@ -1329,7 +1329,7 @@ public class AbstractPlayerInteraction
     public string getExpeditionMemberNames(ExpeditionType type)
     {
         string members = "";
-        Expedition? exped = getExpedition(type);
+        var exped = getExpedition(type);
         foreach (string memberName in exped.getMembers().Values)
         {
             members += "" + memberName + ", ";

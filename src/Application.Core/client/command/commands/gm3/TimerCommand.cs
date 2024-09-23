@@ -58,6 +58,7 @@ public class TimerCommand : Command
                 }
                 catch (FormatException e)
                 {
+                    log.Error(e.ToString());
                     player.yellowMessage("Syntax: !timer <playername> <seconds>|remove");
                 }
             }

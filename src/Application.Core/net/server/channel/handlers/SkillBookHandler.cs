@@ -60,12 +60,12 @@ public class SkillBookHandler : AbstractPacketHandler
                 {
                     return;
                 }
-                Dictionary<string, int> skilldata = ItemInformationProvider.getInstance().getSkillStats(toUse.getItemId(), c.OnlinedCharacter.getJob().getId());
+                var skilldata = ItemInformationProvider.getInstance().getSkillStats(toUse.getItemId(), c.OnlinedCharacter.getJob().getId());
                 if (skilldata == null)
                 {
                     return;
                 }
-                Skill skill2 = SkillFactory.GetSkillTrust(skilldata.GetValueOrDefault("skillid"));
+                var skill2 = SkillFactory.GetSkillTrust(skilldata.GetValueOrDefault("skillid"));
                 if (skilldata.get("skillid") == 0)
                 {
                     canuse = false;

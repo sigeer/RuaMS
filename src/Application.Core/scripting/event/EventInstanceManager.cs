@@ -1121,7 +1121,7 @@ public class EventInstanceManager
                     unregisterPlayer(chr);
                     if (towarp > 0)
                     {
-                        chr.changeMap(map, map.getPortal(0));
+                        chr.changeMap(map!, map!.getPortal(0));
                     }
                 }
 
@@ -1210,7 +1210,7 @@ public class EventInstanceManager
         {
             return 0;
         }
-        return onMapClearMeso.get(stage - 1);
+        return onMapClearMeso.ElementAt(stage - 1);
     }
 
     public List<int> getClearStageBonus(int stage)

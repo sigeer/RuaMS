@@ -52,8 +52,8 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                     else
                     {
                         //absorb target family
-                        var targetEntry = chr.getFamilyEntry();
-                        Family targetFamily = targetEntry.getFamily();
+                        var targetEntry = chr.getFamilyEntry()!;
+                        var targetFamily = targetEntry.getFamily();
                         if (targetFamily.getLeader() != targetEntry)
                         {
                             return;
@@ -104,7 +104,7 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                     { //new family for inviter, absorb invitee family
                         insertNewFamilyRecord(inviter.getId(), newFamily.getID(), 0, true);
                         newFamily.setMessage("", true);
-                        chr.getFamilyEntry().join(inviterEntry);
+                        chr.getFamilyEntry()!.join(inviterEntry);
                     }
                 }
                 chr.getFamily().broadcast(PacketCreator.sendFamilyJoinResponse(true, chr.getName()), chr.getId());

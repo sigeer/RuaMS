@@ -38,7 +38,7 @@ public class PortalFactory
 
     public Portal makePortal(int type, Data portal)
     {
-        GenericPortal ret = null;
+        GenericPortal? ret = null;
         if (type == PortalConstants.MAP_PORTAL)
         {
             ret = new MapPortal();

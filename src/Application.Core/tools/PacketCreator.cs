@@ -7894,7 +7894,7 @@ public class PacketCreator
             equip = (Equip)item;
             isRing = equip.getRingId() > -1;
         }
-        p.writeLong(item.getPetId() > -1 ? item.getPetId() : isRing ? equip.getRingId() : item.getCashId());
+        p.writeLong(item.getPetId() > -1 ? item.getPetId() : isRing ? equip!.getRingId() : item.getCashId());
         if (!isGift)
         {
             p.writeInt(accountId);

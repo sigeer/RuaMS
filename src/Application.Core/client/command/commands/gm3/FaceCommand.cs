@@ -82,6 +82,7 @@ public class FaceCommand : Command
         }
         catch (Exception e)
         {
+            log.Error(e.ToString());
         }
 
     }

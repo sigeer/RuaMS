@@ -62,6 +62,7 @@ public class TimerAllCommand : Command
             }
             catch (FormatException e)
             {
+                log.Error(e.ToString());
                 player.yellowMessage("Syntax: !timerall <seconds>|remove");
             }
         }

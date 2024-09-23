@@ -522,9 +522,9 @@ public class PlayerShop : AbstractMapObject
             foreach (var it in chatLog)
             {
                 IPlayer chr = it.Key;
-                var pos = chatSlot.get(chr.getId());
+                var pos = chatSlot.GetValueOrDefault(chr.getId());
 
-                broadcastToVisitors(PacketCreator.getPlayerShopChat(chr, it.Value, pos.Value));
+                broadcastToVisitors(PacketCreator.getPlayerShopChat(chr, it.Value, pos));
             }
         }
     }

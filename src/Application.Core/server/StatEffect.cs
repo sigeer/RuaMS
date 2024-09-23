@@ -1101,9 +1101,9 @@ public class StatEffect
             }
         }
 
-        if (this.getFatigue() != 0)
+        if (applyto.MountModel != null && this.getFatigue() != 0)
         {
-            applyto.getMount().setTiredness(applyto.getMount().getTiredness() + this.getFatigue());
+            applyto.MountModel.setTiredness(applyto.MountModel.getTiredness() + this.getFatigue());
         }
 
         if (summonMovementType != null && pos != null)
@@ -1225,7 +1225,7 @@ public class StatEffect
         {
             MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkill);
             MobSkill ms = MobSkillFactory.getMobSkillOrThrow(mobSkillType, mobSkillLevel);
-            var dis = Disease.getBySkill(mobSkillType);
+            var dis = Disease.GetBySkillTrust(mobSkillType);
 
             if (target > 0)
             {
@@ -1257,7 +1257,7 @@ public class StatEffect
             foreach (var affectedmo in affecteds)
             {
                 IPlayer affected = (IPlayer)affectedmo;
-                if (affected != applyfrom && (isGmBuff() || applyfrom.getParty().Equals(affected.getParty())))
+                if (affected != applyfrom && (isGmBuff() || (applyfrom.getParty()?.Equals(affected.getParty()) ?? false)))
                 {
                     if (!isResurrection())
                     {

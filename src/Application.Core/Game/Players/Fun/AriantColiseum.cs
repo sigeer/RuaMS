@@ -44,7 +44,7 @@ namespace Application.Core.Game.Players
 
         public void updateAriantScore(int dropQty)
         {
-            AriantColiseum arena = this.getAriantColiseum();
+            var arena = this.getAriantColiseum();
             if (arena != null)
             {
                 arena.updateAriantScore(this, countItem(ItemId.ARPQ_SPIRIT_JEWEL));

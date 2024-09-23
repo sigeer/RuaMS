@@ -39,6 +39,6 @@ public class OpenPortalCommand : Command
             player.yellowMessage("Syntax: !openportal <portalid>");
             return;
         }
-        player.getMap().getPortal(paramsValue[0]).setPortalState(true);
+        player.getMap().getPortal(paramsValue[0])?.setPortalState(true);
     }
 }
