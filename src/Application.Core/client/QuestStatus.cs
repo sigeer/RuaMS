@@ -55,18 +55,9 @@ public class QuestStatus
         }
     }
 
-    public QuestStatus(Quest quest, Status status, int npc)
+    public QuestStatus(Quest quest, Status status, int npc): this(quest, status)
     {
-        this.questID = quest.getId();
-        this.setStatus(status);
         this.setNpc(npc);
-        this.completionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        this.expirationTime = 0;
-        //this.updated = true;
-        if (status == Status.STARTED)
-        {
-            registerMobs();
-        }
     }
 
     public Quest getQuest()

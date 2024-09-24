@@ -38,7 +38,7 @@ public class OpenFamilyPedigreeHandler : AbstractPacketHandler
         var target = c.getChannelServer().getPlayerStorage().getCharacterByName(p.readString());
         if (target != null && target.getFamily() != null)
         {
-            c.sendPacket(PacketCreator.showPedigree(target.getFamilyEntry()));
+            c.sendPacket(PacketCreator.showPedigree(target.getFamilyEntry()!));
         }
     }
 }

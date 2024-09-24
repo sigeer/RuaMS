@@ -25,7 +25,7 @@ using tools;
 
 namespace Application.Core.Managers
 {
-    public class CharacterManager
+    public partial class CharacterManager
     {
         static IMapper Mapper = GlobalTools.Mapper;
         public static string makeMapleReadable(string input)
@@ -50,7 +50,7 @@ namespace Application.Core.Managers
             if (BLOCKED_NAMES.Any(x => x.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 return false;
 
-            if (!Regex.IsMatch(name, "[a-zA-Z0-9]{3,12}"))
+            if (!CheckNameReg().IsMatch(name))
                 return false;
 
             using DBContext dbContext = new DBContext();
@@ -183,10 +183,7 @@ namespace Application.Core.Managers
                 dbContext.BbsThreads.Where(x => x.Postercid == cid).ExecuteDelete();
 
 
-                var rs = dbContext.Characters.FirstOrDefault(x => x.Id == cid && x.AccountId == accId);
-                if (rs == null)
-                    throw new BusinessCharacterNotFoundException(cid);
-
+                var rs = dbContext.Characters.FirstOrDefault(x => x.Id == cid && x.AccountId == accId) ?? throw new BusinessCharacterNotFoundException(cid);
                 Server.getInstance().deleteGuildCharacter(player);
 
                 dbContext.Wishlists.Where(x => x.CharId == cid).ExecuteDelete();
@@ -330,11 +327,7 @@ namespace Application.Core.Managers
             {
                 var ret = new Player(client);
                 using var dbContext = new DBContext();
-                var dbModel = dbContext.Characters.FirstOrDefault(x => x.Id == charid);
-                if (dbModel == null)
-                {
-                    throw new Exception("Loading char failed (not found)");
-                }
+                var dbModel = dbContext.Characters.FirstOrDefault(x => x.Id == charid) ?? throw new BusinessCharacterNotFoundException(charid);
 
                 Mapper.Map(dbModel, ret);
 
@@ -533,10 +526,7 @@ namespace Application.Core.Managers
                     foreach (var item in questProgressFromDB)
                     {
                         var status = loadedQuestStatus.GetValueOrDefault(item.Queststatusid);
-                        if (status != null)
-                        {
-                            status.setProgress(item.Progressid, item.Progress);
-                        }
+                        status?.setProgress(item.Progressid, item.Progress);
                     }
 
                     // Medal map visit progress
@@ -544,10 +534,7 @@ namespace Application.Core.Managers
                     foreach (var item in medalMapFromDB)
                     {
                         var status = loadedQuestStatus.GetValueOrDefault(item.Queststatusid);
-                        if (status != null)
-                        {
-                            status.addMedalMap(item.Mapid);
-                        }
+                        status?.addMedalMap(item.Mapid);
                     }
 
                     loadedQuestStatus.Clear();
@@ -742,10 +729,7 @@ namespace Application.Core.Managers
         {
             using DBContext dbContext = new DBContext();
             var ds = dbContext.Characters.Where(x => x.Name == name).Select(x => new { x.Id, x.AccountId, x.Name }).FirstOrDefault();
-            if (ds == null)
-                throw new BusinessCharacterNotFoundException(name);
-
-            return new CharacterBaseInfo(ds.AccountId, ds.Id, ds.Name);
+            return ds == null ? throw new BusinessCharacterNotFoundException(name) : new CharacterBaseInfo(ds.AccountId, ds.Id, ds.Name);
         }
 
         public static string? checkWorldTransferEligibility(DBContext dbContext, int characterId, int oldWorld, int newWorld)
@@ -1053,10 +1037,7 @@ namespace Application.Core.Managers
 
                 using var dbContext = new DBContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
-                var entity = dbContext.Characters.FirstOrDefault(x => x.Id == player.getId());
-                if (entity == null)
-                    throw new BusinessCharacterNotFoundException(player.getId());
-
+                var entity = dbContext.Characters.FirstOrDefault(x => x.Id == player.getId()) ?? throw new BusinessCharacterNotFoundException(player.getId());
                 try
                 {
                     GlobalTools.Mapper.Map(player, entity);
@@ -1246,10 +1227,7 @@ namespace Application.Core.Managers
 
                     }
 
-                    if (player.CashShopModel != null)
-                    {
-                        player.CashShopModel.save(dbContext);
-                    }
+                    player.CashShopModel?.save(dbContext);
 
                     if (player.Storage != null && player.Storage.IsChanged)
                     {
@@ -1275,5 +1253,8 @@ namespace Application.Core.Managers
             player.GuildId = 0;
             player.GuildRank = 5;
         }
+
+        [GeneratedRegex("[a-zA-Z0-9]{3,12}")]
+        private static partial Regex CheckNameReg();
     }
 }

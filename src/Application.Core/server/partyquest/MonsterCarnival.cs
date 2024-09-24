@@ -519,14 +519,12 @@ public class MonsterCarnival
 
     public IPlayer getEnemyLeader(int team)
     {
-        switch (team)
+        return team switch
         {
-            case 0:
-                return leader2;
-            case 1:
-                return leader1;
-        }
-        throw new BusinessException();
+            0 => leader2,
+            1 => leader1,
+            _ => throw new BusinessException(),
+        };
     }
 
     public int getBlueCP()

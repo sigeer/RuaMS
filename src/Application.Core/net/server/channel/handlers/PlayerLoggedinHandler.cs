@@ -442,10 +442,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             if (newcomer)
             {
                 var eim = EventRecallCoordinator.getInstance().recallEventInstance(cid);
-                if (eim != null)
-                {
-                    eim.registerPlayer(player);
-                }
+                eim?.registerPlayer(player);
             }
 
             // Tell the client to use the custom scripts available for the NPCs provided, instead of the WZ entries.
