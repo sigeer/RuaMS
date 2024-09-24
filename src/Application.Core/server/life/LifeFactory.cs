@@ -291,6 +291,8 @@ public class LifeFactory
         }
     }
 
+    public static Monster GetMonsterTrust(int mid) => getMonster(mid) ?? throw new BusinessResException($"getMonster({mid})");
+
     public static int getMonsterLevel(int mid)
     {
         try

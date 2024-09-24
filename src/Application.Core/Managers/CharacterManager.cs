@@ -185,7 +185,7 @@ namespace Application.Core.Managers
 
                 var rs = dbContext.Characters.FirstOrDefault(x => x.Id == cid && x.AccountId == accId);
                 if (rs == null)
-                    throw new BusinessResException();
+                    throw new BusinessCharacterNotFoundException(cid);
 
                 Server.getInstance().deleteGuildCharacter(player);
 
@@ -743,7 +743,7 @@ namespace Application.Core.Managers
             using DBContext dbContext = new DBContext();
             var ds = dbContext.Characters.Where(x => x.Name == name).Select(x => new { x.Id, x.AccountId, x.Name }).FirstOrDefault();
             if (ds == null)
-                throw new BusinessDataNullException();
+                throw new BusinessCharacterNotFoundException(name);
 
             return new CharacterBaseInfo(ds.AccountId, ds.Id, ds.Name);
         }
@@ -1055,7 +1055,7 @@ namespace Application.Core.Managers
                 using var dbTrans = dbContext.Database.BeginTransaction();
                 var entity = dbContext.Characters.FirstOrDefault(x => x.Id == player.getId());
                 if (entity == null)
-                    throw new BusinessResException();
+                    throw new BusinessCharacterNotFoundException(player.getId());
 
                 try
                 {

@@ -666,7 +666,8 @@ public class AbstractPlayerInteraction
     }
 
     public void gainItem(int id, short quantity, bool show)
-    {//this will fk randomStats equip :P
+    {
+        //this will fk randomStats equip :P
         gainItem(id, quantity, false, show);
     }
 
@@ -680,17 +681,7 @@ public class AbstractPlayerInteraction
         gainItem(id, 1, false, true);
     }
 
-    public Item gainItem(int id, short quantity, bool randomStats, bool showMessage)
-    {
-        return gainItem(id, quantity, randomStats, showMessage, -1);
-    }
-
-    public Item gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires)
-    {
-        return gainItem(id, quantity, randomStats, showMessage, expires, null);
-    }
-
-    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires, Pet? from)
+    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
     {
         Item? item = null;
         Pet evolved;
@@ -769,16 +760,16 @@ public class AbstractPlayerInteraction
             {
                 if (randomStats)
                 {
-                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item), false, petId);
+                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item!), false, petId);
                 }
                 else
                 {
-                    InventoryManipulator.addFromDrop(c, item, false, petId);
+                    InventoryManipulator.addFromDrop(c, item!, false, petId);
                 }
             }
             else
             {
-                InventoryManipulator.addFromDrop(c, item, false, petId);
+                InventoryManipulator.addFromDrop(c, item!, false, petId);
             }
         }
         else
@@ -1130,6 +1121,9 @@ public class AbstractPlayerInteraction
     public void removeEquipFromSlot(short slot)
     {
         var tempItem = c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).getItem(slot);
+        if (tempItem == null)
+            return;
+
         InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, tempItem.getQuantity(), false, false);
     }
 
@@ -1163,7 +1157,7 @@ public class AbstractPlayerInteraction
 
     public void spawnMonster(int id, int x, int y)
     {
-        var monster = LifeFactory.getMonster(id);
+        var monster = LifeFactory.GetMonsterTrust(id) ;
         monster.setPosition(new Point(x, y));
         getPlayer().getMap().spawnMonster(monster);
     }

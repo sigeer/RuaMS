@@ -388,7 +388,7 @@ public class MapFactory
 
     private static AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide)
     {
-        AbstractLifeObject myLife = LifeFactory.getLife(id, type) ?? throw new BusinessResException();
+        AbstractLifeObject myLife = LifeFactory.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
         myLife.setCy(cy);
         myLife.setF(f);
         myLife.setFh(fh);

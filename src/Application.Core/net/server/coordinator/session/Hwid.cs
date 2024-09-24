@@ -30,4 +30,9 @@ public record Hwid(string hwid)
 
         return new Hwid(Split[1]);
     }
+
+    public static Hwid Default()
+    {
+        return new Hwid("");
+    }
 }

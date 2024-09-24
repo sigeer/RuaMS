@@ -88,7 +88,7 @@ namespace Application.Core.Game
         sbyte getGender();
         int getGMLevel();
         sbyte getGReason();
-        Hwid? getHwid();
+        Hwid getHwid();
         int getLanguage();
         long getLastPacket();
         int getLoginState();

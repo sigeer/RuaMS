@@ -98,7 +98,7 @@ public class Disease : EnumClass
 
     public static Disease GetBySkillTrust(MobSkillType? skill)
     {
-        return getBySkill(skill) ?? throw new BusinessResException($"arguments: {skill}");
+        return getBySkill(skill) ?? throw new BusinessResException($"getBySkill({skill})");
     }
 
 }

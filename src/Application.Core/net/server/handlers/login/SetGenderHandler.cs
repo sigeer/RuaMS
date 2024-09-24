@@ -47,7 +47,7 @@ public class SetGenderHandler : AbstractPacketHandler
             }
             else
             {
-                SessionCoordinator.getInstance().closeSession(c, null);
+                SessionCoordinator.getInstance().closeSession(c);
                 c.updateLoginState(Client.LOGIN_NOTLOGGEDIN);
             }
         }

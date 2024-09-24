@@ -40,7 +40,7 @@ public class DeleteCharHandler : AbstractPacketHandler
                 using var dbContext = new DBContext();
                 var charModel = dbContext.Characters.Where(x => x.Id == cid).Select(x => new { x.World, x.GuildId, x.GuildRank, x.FamilyId }).FirstOrDefault();
                 if (charModel == null)
-                    throw new BusinessDataNullException("Character record does not exist.");
+                    throw new BusinessCharacterNotFoundException(cid);
 
                 if (charModel.GuildId != 0 && charModel.GuildRank <= 1)
                 {

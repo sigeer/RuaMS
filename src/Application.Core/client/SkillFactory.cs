@@ -43,7 +43,7 @@ public class SkillFactory
 
     public static Skill GetSkillTrust(int id)
     {
-        return skills.GetValueOrDefault(id) ?? throw new BusinessResException();
+        return skills.GetValueOrDefault(id) ?? throw new BusinessResException($"SkillFactory.getSkill({id})");
     }
 
     public static void loadAllSkills()

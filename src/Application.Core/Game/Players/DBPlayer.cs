@@ -194,7 +194,7 @@ namespace Application.Core.Game.Players
                 using var dbTrans = dbContext.Database.BeginTransaction();
                 var entity = dbContext.Characters.FirstOrDefault(x => x.Id == getId());
                 if (entity == null)
-                    throw new BusinessResException();
+                    throw new BusinessCharacterNotFoundException(getId());
 
                 try
                 {
