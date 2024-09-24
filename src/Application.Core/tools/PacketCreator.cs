@@ -5644,7 +5644,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
-        addAnnounceBox(p, chr.getMiniGame(), amount, type);
+        addAnnounceBox(p, chr.getMiniGame()!, amount, type);
         return p;
     }
 
@@ -5652,7 +5652,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
-        addAnnounceBox(p, chr.getMiniGame(), amount, type);
+        addAnnounceBox(p, chr.getMiniGame()!, amount, type);
         return p;
     }
 

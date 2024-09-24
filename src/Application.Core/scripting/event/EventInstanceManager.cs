@@ -44,7 +44,7 @@ namespace scripting.Event;
  */
 public class EventInstanceManager
 {
-    ILogger log = LogFactory.GetLogger("EventInstanceManger");
+    protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, IPlayer> chars = new();
     private int leaderId = -1;
     private List<Monster> mobs = new();
@@ -814,7 +814,7 @@ public class EventInstanceManager
                 }
                 chars.Clear();
                 mobs.Clear();
-                ess = null;
+                // ess = null;
             }
             finally
             {
@@ -850,16 +850,16 @@ public class EventInstanceManager
             TimerManager.getInstance().schedule(() =>
             {
                 mapManager.dispose();   // issues from instantly disposing some event objects found thanks to MedicOP
-                lockObj.EnterWriteLock();
-                try
-                {
-                    mapManager = null;
-                    em = null;
-                }
-                finally
-                {
-                    lockObj.ExitWriteLock();
-                }
+                //lockObj.EnterWriteLock();
+                //try
+                //{
+                //    mapManager = null;
+                //    em = null;
+                //}
+                //finally
+                //{
+                //    lockObj.ExitWriteLock();
+                //}
             }, TimeSpan.FromMinutes(1));
         }
     }

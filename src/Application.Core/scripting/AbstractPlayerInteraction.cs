@@ -1149,7 +1149,7 @@ public class AbstractPlayerInteraction
             npc.setCy(pos.Y);
             npc.setRx0(pos.X + 50);
             npc.setRx1(pos.X - 50);
-            npc.setFh(map.getFootholds().findBelow(pos).getId());
+            npc.setFh(map.getFootholds()!.findBelow(pos)!.getId());
             map.addMapObject(npc);
             map.broadcastMessage(PacketCreator.spawnNPC(npc));
         }
@@ -1278,9 +1278,9 @@ public class AbstractPlayerInteraction
         return GameConstants.numberWithCommas(number);
     }
 
-    public Pyramid getPyramid()
+    public Pyramid? getPyramid()
     {
-        return (Pyramid)getPlayer().getPartyQuest();
+        return getPlayer().getPartyQuest() as Pyramid;
     }
 
     public int createExpedition(ExpeditionType type, bool silent = false, int minPlayers = 0, int maxPlayers = 0)
@@ -1290,7 +1290,8 @@ public class AbstractPlayerInteraction
 
         int channel = player.getMap().getChannelServer().getId();
         if (!ExpeditionBossLog.attemptBoss(player.getId(), channel, exped, false))
-        {    // thanks Conrad for noticing missing expeditions entry limit
+        {    
+            // thanks Conrad for noticing missing expeditions entry limit
             return 1;
         }
 
@@ -1319,17 +1320,19 @@ public class AbstractPlayerInteraction
     {
         string members = "";
         var exped = getExpedition(type);
-        foreach (string memberName in exped.getMembers().Values)
+        if (exped != null)
         {
-            members += "" + memberName + ", ";
+            foreach (string memberName in exped.getMembers().Values)
+            {
+                members += "" + memberName + ", ";
+            }
         }
         return members;
     }
 
     public bool isLeaderExpedition(ExpeditionType type)
     {
-        Expedition? exped = getExpedition(type);
-        return exped.isLeader(getPlayer());
+        return getExpedition(type)?.isLeader(getPlayer()) ?? false;
     }
 
     public long getJailTimeLeft()

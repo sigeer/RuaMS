@@ -26,6 +26,10 @@ namespace provider;
  */
 public interface DataEntity
 {
+    /// <summary>
+    /// 当前标签的name属性
+    /// </summary>
+    /// <returns></returns>
     string? getName();
     DataEntity? getParent();
 }

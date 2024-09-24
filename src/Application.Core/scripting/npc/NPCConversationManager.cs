@@ -435,7 +435,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             try
             {
-                Skill skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()));
+                Skill skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()!));
                 getPlayer().changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception nfe)
@@ -449,7 +449,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public void doGachapon()
     {
         var item = Gachapon.getInstance().process(npc);
-        Item itemGained = gainItem(item.getId(), (short)(item.getId() / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
+        var itemGained = gainItem(item.getId(), (short)(item.getId() / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
 
         sendNext("You have obtained a #b#t" + item.getId() + "##k.");
 
@@ -794,7 +794,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
             map = cs.getMapFactory().getMap(980000100 + 100 * field);
             mapExit = cs.getMapFactory().getMap(980000000);
-            foreach (var mc in getPlayer().getParty().getMembers())
+            foreach (var mc in getPlayer().getParty()!.getMembers())
             {
                 if (mc != null)
                 {
@@ -821,7 +821,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void cancelCPQLobby()
     {
-        foreach (var mc in getPlayer().getParty().getMembers())
+        foreach (var mc in getPlayer().getParty()!.getMembers())
         {
             mc.clearCpqTimer();
         }
@@ -1095,7 +1095,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
             mapExit = cs.getMapFactory().getMap(980030000);
             map = cs.getMapFactory().getMap(980031000 + 1000 * field);
-            foreach (var mc in c.OnlinedCharacter.getParty().getMembers())
+            foreach (var mc in c.OnlinedCharacter.getParty()!.getMembers())
             {
                 if (mc != null)
                 {
@@ -1168,7 +1168,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
         else
         {
-            sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQLeaderNotFound));
+            sendOk(LanguageConstants.getMessage(getPlayer(), LanguageConstants.CPQLeaderNotFound));
         }
     }
 
@@ -1176,7 +1176,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         IPlayer? leader = null;
         var map = c.getChannelServer().getMapFactory().getMap(980000100 + 100 * field);
-        if (map.getAllPlayer().Count != getPlayer().getParty().getMembers().Count)
+        if (map.getAllPlayer().Count != getPlayer().getParty()!.getMembers().Count)
         {
             sendOk("An unexpected error regarding the other party has occurred.");
             return;
