@@ -236,7 +236,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public Hwid? getHwid()
+        public Hwid getHwid()
         {
             throw new BusinessCharacterOfflineException();
         }

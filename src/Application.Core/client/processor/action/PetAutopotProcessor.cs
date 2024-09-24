@@ -125,7 +125,7 @@ public class PetAutopotProcessor
                         }
                     }
 
-                    stat = ItemInformationProvider.getInstance().getItemEffect(toUse.getItemId()) ?? throw new BusinessResException();
+                    stat = ItemInformationProvider.getInstance().GetItemEffectTrust(toUse.getItemId());
                     hasHpGain = stat.getHp() > 0 || stat.getHpRate() > 0.0;
                     hasMpGain = stat.getMp() > 0 || stat.getMpRate() > 0.0;
 

@@ -198,7 +198,7 @@ public class World : IWorld
         chnLock.EnterReadLock();
         try
         {
-            return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessResException($"Channel {channel} not existed");
+            return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessFatalException($"Channel {channel} not existed");
         }
         finally
         {
