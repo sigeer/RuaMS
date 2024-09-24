@@ -298,14 +298,7 @@ public class CashShop
 
         public static List<Item> getPackage(int itemId)
         {
-            List<Item> cashPackage = new();
-
-            foreach (int sn in packages.GetValueOrDefault(itemId))
-            {
-                cashPackage.Add(GetItemTrust(sn).toItem());
-            }
-
-            return cashPackage;
+            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => GetItemTrust(x).toItem()).ToList();
         }
 
         public static bool isPackage(int itemId)
@@ -402,7 +395,7 @@ public class CashShop
                 isRing = false;
             }
 
-            if ((item.getPetId() > -1 ? item.getPetId() : isRing ? equip.getRingId() : item.getCashId()) == cashId)
+            if ((item.getPetId() > -1 ? item.getPetId() : isRing ? equip!.getRingId() : item.getCashId()) == cashId)
             {
                 return item;
             }

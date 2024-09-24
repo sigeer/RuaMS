@@ -104,8 +104,8 @@ public class ItemInformationProvider
     protected Dictionary<int, KeyValuePair<string, int>?> statUpgradeMakerCache = new();
     protected Dictionary<int, MakerItemFactory.MakerItemCreateEntry> makerItemCache = new();
     protected Dictionary<int, int> makerCatalystCache = new();
-    protected Dictionary<int, Dictionary<string, int>> skillUpgradeCache = new();
-    protected Dictionary<int, Data> skillUpgradeInfoCache = new();
+
+    protected Dictionary<int, ItemSkillDataPair> SkillUpgreadCache = [];
     protected Dictionary<int, KeyValuePair<int, HashSet<int>>?> cashPetFoodCache = new();
     protected Dictionary<int, QuestConsItem?> questItemConsCache = new();
 
@@ -138,35 +138,37 @@ public class ItemInformationProvider
         var itemsData = stringData.getData("Cash.img");
         foreach (Data itemFolder in itemsData.getChildren())
         {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+            //DataTool.getString("name", xxx) : 子标签中的<string name="name">的value值
+
+            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
         itemsData = stringData.getData("Consume.img");
         foreach (Data itemFolder in itemsData.getChildren())
         {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
-        itemsData = stringData.getData("Eqp.img").getChildByPath("Eqp");
+        itemsData = stringData.getData("Eqp.img").getChildByPath("Eqp") ?? throw new BusinessResException("Eqp.img/Epq");
         foreach (Data eqpType in itemsData.getChildren())
         {
             foreach (Data itemFolder in eqpType.getChildren())
             {
-                itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+                itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
             }
         }
-        itemsData = stringData.getData("Etc.img").getChildByPath("Etc");
+        itemsData = stringData.getData("Etc.img").getChildByPath("Etc") ?? throw new BusinessResException("Etc.img/Etc");
         foreach (Data itemFolder in itemsData.getChildren())
         {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
         itemsData = stringData.getData("Ins.img");
         foreach (Data itemFolder in itemsData.getChildren())
         {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
         itemsData = stringData.getData("Pet.img");
         foreach (Data itemFolder in itemsData.getChildren())
         {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
 
         itemNameCache = itemPairs;
@@ -183,10 +185,10 @@ public class ItemInformationProvider
         List<ItemInfoBase> itemPairs = new();
         Data? itemsData;
 
-        itemsData = stringData.getData("Etc.img").getChildByPath("Etc")!;
+        itemsData = stringData.getData("Etc.img").getChildByPath("Etc") ?? throw new BusinessResException("Etc.img/Etc");
         foreach (Data itemFolder in itemsData.getChildren())
         {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
         etcItemCache = itemPairs;
         return itemPairs;
@@ -323,8 +325,12 @@ public class ItemInformationProvider
         return blockMouse;
     }
 
+    Dictionary<int, Data?> itemCache = [];
     private Data? getItemData(int itemId)
     {
+        if (itemCache.ContainsKey(itemId))
+            return itemCache[itemId];
+
         Data? ret = null;
         string idStr = "0" + itemId;
         DataDirectoryEntry root = itemData.getRoot();
@@ -337,14 +343,19 @@ public class ItemInformationProvider
                     ret = itemData.getData(topDir.getName() + "/" + iFile.getName());
                     if (ret == null)
                     {
+                        itemCache[itemId] = null;
                         return null;
                     }
                     ret = ret.getChildByPath(idStr);
+                    itemCache[itemId] = ret;
                     return ret;
                 }
                 else if (iFile.getName() == idStr.Substring(1) + ".img")
                 {
-                    return itemData.getData(topDir.getName() + "/" + iFile.getName());
+                    log.Information("===应该不会被触发");
+                    ret = itemData.getData(topDir.getName() + "/" + iFile.getName());
+                    itemCache[itemId] = ret;
+                    return ret;
                 }
             }
         }
@@ -355,7 +366,9 @@ public class ItemInformationProvider
             {
                 if (iFile.getName() == idStr + ".img")
                 {
-                    return equipData.getData(topDir.getName() + "/" + iFile.getName());
+                    ret = equipData.getData(topDir.getName() + "/" + iFile.getName());
+                    itemCache[itemId] = ret;
+                    return ret;
                 }
             }
         }
@@ -1391,7 +1404,7 @@ public class ItemInformationProvider
 
             if (((nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId))) || assertGM)
             {
-                double prop = stats.GetValueOrDefault("success");
+                double prop = (double)stats.get("success");
 
                 switch (vegaItemId)
                 {
@@ -1847,54 +1860,55 @@ public class ItemInformationProvider
         return bRestricted;
     }
 
-    private KeyValuePair<Dictionary<string, int>, Data?> getSkillStatsInternal(int itemId)
+    private ItemSkillDataPair? getSkillStatsInternal(int itemId)
     {
-        var ret = skillUpgradeCache.GetValueOrDefault(itemId);
-        var retSkill = skillUpgradeInfoCache.GetValueOrDefault(itemId);
+        var cachedData = SkillUpgreadCache.GetValueOrDefault(itemId);
+        if (cachedData != null)
+            return cachedData;
 
-        if (ret != null)
-        {
-            return new(ret, retSkill);
-        }
-
-        retSkill = null;
-        ret = new();
         var item = getItemData(itemId);
         if (item != null)
         {
             var info = item.getChildByPath("info");
             if (info != null)
             {
+                var ret = new Dictionary<string, int>();
+
                 foreach (Data data in info.getChildren())
                 {
-                    if (data.getName() != null && data.getName()!.StartsWith("inc"))
+                    var dataName = data.getName();
+                    if (dataName != null && dataName.StartsWith("inc"))
                     {
-                        ret.Add(data.getName()!.Substring(3), DataTool.getIntConvert(data));
+                        ret.AddOrUpdate("inc", DataTool.getIntConvert(data));
                     }
                 }
                 ret.AddOrUpdate("masterLevel", DataTool.getInt("masterLevel", info, 0));
                 ret.AddOrUpdate("reqSkillLevel", DataTool.getInt("reqSkillLevel", info, 0));
                 ret.AddOrUpdate("success", DataTool.getInt("success", info, 0));
 
-                retSkill = info.getChildByPath("skill");
+                var retSkill = info.getChildByPath("skill") ?? throw new BusinessResException($"itemId = {itemId}, /info/skill"); ;
+
+                var model = new ItemSkillDataPair(retSkill, ret);
+                SkillUpgreadCache.Add(itemId, model);
+                return model;
             }
         }
-
-        skillUpgradeCache.Add(itemId, ret);
-        skillUpgradeInfoCache.Add(itemId, retSkill);
-        return new(ret, retSkill);
+        return null;
     }
 
     public Dictionary<string, int>? getSkillStats(int itemId, double playerJob)
     {
         var retData = getSkillStatsInternal(itemId);
-        if (retData.Key.Count == 0)
+        if (retData == null)
+            return null;
+
+        if (retData.SkillInfo.Count == 0)
         {
             return null;
         }
 
-        Dictionary<string, int> ret = new(retData.Key);
-        Data? skill = retData.Value;
+        Dictionary<string, int> ret = new(retData.SkillInfo);
+        var skill = retData.SkillWzData;
         int curskill;
         for (int i = 0; i < skill.getChildren().Count; i++)
         {
@@ -2921,7 +2935,7 @@ public class ItemInformationProvider
     {
 
         public int questid, exp, grade;
-        public Dictionary<int, int> items;
+        public Dictionary<int, int> items = [];
 
         public int getItemRequirement(int itemid)
         {

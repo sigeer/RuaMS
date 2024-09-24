@@ -2015,7 +2015,7 @@ public class Server
         else
         {
             log.Information("Restarting the server...");
-            instance = null;
+            instance = new Lazy<Server>(new Server());
             await getInstance().Start();//DID I DO EVERYTHING?! D:
         }
     }

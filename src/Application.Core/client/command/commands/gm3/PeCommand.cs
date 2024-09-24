@@ -60,7 +60,7 @@ public class PeCommand : Command
         byte[] packetContent = HexTool.toBytes(packet);
         InPacket inPacket = new ByteBufInPacket(Unpooled.WrappedBuffer(packetContent));
         short packetId = inPacket.readShort();
-        IPacketHandler packetHandler = PacketProcessor.getProcessor(0, c.getChannel()).getHandler(packetId);
+        var packetHandler = PacketProcessor.getProcessor(0, c.getChannel()).getHandler(packetId);
         if (packetHandler != null && packetHandler.ValidateState(c))
         {
             try

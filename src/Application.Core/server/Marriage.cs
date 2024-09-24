@@ -80,8 +80,9 @@ public class Marriage : EventInstanceManager
         {
             return getGiftItems(c, groom).ElementAtOrDefault(idx);
         }
-        catch (IndexOutOfRangeException e)
+        catch (Exception e)
         {
+            log.Error(e.ToString());
             return null;
         }
     }
@@ -121,6 +122,7 @@ public class Marriage : EventInstanceManager
         }
         catch (Exception e)
         {
+            log.Error(e.ToString());
         }
 
         return groom;

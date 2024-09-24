@@ -1017,8 +1017,11 @@ public class World : IWorld
             if (!messengerchar.getName().Equals(namefrom))
             {
                 var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
-                chr.sendPacket(PacketCreator.addMessengerPlayer(namefrom, from, position, (byte)(fromchannel - 1)));
-                from.sendPacket(PacketCreator.addMessengerPlayer(chr.Name, chr, messengerchar.getPosition(), (byte)(messengerchar.getChannel() - 1)));
+                if (from != null)
+                {
+                    chr.sendPacket(PacketCreator.addMessengerPlayer(namefrom, from, position, (byte)(fromchannel - 1)));
+                    from.sendPacket(PacketCreator.addMessengerPlayer(chr.Name, chr, messengerchar.getPosition(), (byte)(messengerchar.getChannel() - 1)));
+                }
             }
             else
             {
@@ -1102,7 +1105,8 @@ public class World : IWorld
                 if (chr != null)
                 {
                     var fromPlayer = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
-                    chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, fromPlayer, position, (byte)(fromchannel - 1)));
+                    if (fromPlayer != null)
+                        chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, fromPlayer, position, (byte)(fromchannel - 1)));
                 }
             }
         }

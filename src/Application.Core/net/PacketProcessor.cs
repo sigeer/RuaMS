@@ -34,7 +34,7 @@ public class PacketProcessor
     private static ILogger log = LogFactory.GetLogger("PacketProcessor");
     private static Dictionary<string, PacketProcessor> instances = new();
 
-    private static ChannelDependencies channelDeps;
+    private static ChannelDependencies? channelDeps;
 
     private IPacketHandler[] handlers;
 
@@ -71,7 +71,7 @@ public class PacketProcessor
         return getProcessor(world, channel);
     }
 
-    public IPacketHandler getHandler(short packetId)
+    public IPacketHandler? getHandler(short packetId)
     {
         if (packetId > handlers.Length)
         {
@@ -174,7 +174,7 @@ public class PacketProcessor
         registerHandler(RecvOpcode.ITEM_SORT, new InventoryMergeHandler());
         registerHandler(RecvOpcode.ITEM_MOVE, new ItemMoveHandler());
         registerHandler(RecvOpcode.MESO_DROP, new MesoDropHandler());
-        registerHandler(RecvOpcode.PLAYER_LOGGEDIN, new PlayerLoggedinHandler(channelDeps.noteService));
+        registerHandler(RecvOpcode.PLAYER_LOGGEDIN, new PlayerLoggedinHandler(channelDeps!.noteService));
         registerHandler(RecvOpcode.CHANGE_MAP, new ChangeMapHandler());
         registerHandler(RecvOpcode.MOVE_LIFE, new MoveLifeHandler());
         registerHandler(RecvOpcode.CLOSE_RANGE_ATTACK, new CloseRangeDamageHandler());
