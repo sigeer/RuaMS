@@ -748,10 +748,7 @@ public class EventInstanceManager
                     kc += inc;
                 }
                 killCount.AddOrUpdate(chr, kc.Value);
-                if (expedition != null)
-                {
-                    expedition.monsterKilled(chr, mob);
-                }
+                expedition?.monsterKilled(chr, mob);
             }
         }
         catch (Exception ex)
@@ -1173,7 +1170,7 @@ public class EventInstanceManager
 
     public Monster getMonster(int mid)
     {
-        return (LifeFactory.getMonster(mid));
+        return (LifeFactory.GetMonsterTrust(mid));
     }
 
     private List<int> convertToIntegerList(List<object> objects)
@@ -1617,7 +1614,7 @@ public class EventInstanceManager
 
     public void showClearEffect(bool hasGate)
     {
-        IPlayer? leader = getLeader();
+        var leader = getLeader();
         if (leader != null)
         {
             showClearEffect(hasGate, leader.getMapId());
@@ -1666,10 +1663,7 @@ public class EventInstanceManager
         lockObj.EnterReadLock();
         try
         {
-            if (openedGates.ContainsKey(thisMapId))
-            {
-                gateData = openedGates.GetValueOrDefault(thisMapId);
-            }
+            gateData = openedGates.GetValueOrDefault(thisMapId);
         }
         finally
         {
@@ -1697,10 +1691,7 @@ public class EventInstanceManager
         em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal("next00");
-        if (portal != null)
-        {
-            portal.setScriptName(eventFamily + thisStage);
-        }
+        portal?.setScriptName(eventFamily + thisStage);
     }
 
     public void linkPortalToScript(int thisStage, string portalName, string scriptName, int thisMapId)
@@ -1711,10 +1702,7 @@ public class EventInstanceManager
         em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal(portalName);
-        if (portal != null)
-        {
-            portal.setScriptName(scriptName);
-        }
+        portal?.setScriptName(scriptName);
     }
 
     // registers a player status in an event

@@ -81,11 +81,7 @@ public class ReactorStats
     public byte getTimeoutState(sbyte state)
     {
         var value = stateInfo.GetValueOrDefault(state);
-        if (value == null)
-        {
-            throw new BusinessException();
-        }
-        return value.Last().getNextState();
+        return value == null ? throw new BusinessException() : value.Last().getNextState();
     }
 
     public byte getStateSize(sbyte state)

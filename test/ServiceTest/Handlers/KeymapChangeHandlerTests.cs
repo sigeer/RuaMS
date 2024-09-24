@@ -13,7 +13,7 @@ namespace ServiceTest.Handlers
             var bytes = bytesString.Split(',').Select(byte.Parse).ToArray();
             var reader = new ByteBufInPacket(Unpooled.WrappedBuffer(bytes));
             reader.readShort(); // get packet handler
-            new KeymapChangeHandler().HandlePacket(reader, GenerateTestClient());
+            new KeymapChangeHandler().HandlePacket(reader, GetOnlinedTestClient());
             Assert.Pass();
         }
 

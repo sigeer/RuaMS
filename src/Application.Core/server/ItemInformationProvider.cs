@@ -658,7 +658,7 @@ public class ItemInformationProvider
         }
         foreach (Data data in info.getChildren())
         {
-            if (data.getName().StartsWith("inc"))
+            if (data.getName()?.StartsWith("inc") ?? false)
                 ret.AddOrUpdate(data.getName()!.Substring(3), DataTool.getIntConvert(data));
         }
         /*else if (data.getName().startsWith("req"))
@@ -1684,11 +1684,8 @@ public class ItemInformationProvider
             {
                 return null;
             }
-            var spec = item.getChildByPath("specEx");
-            if (spec == null)
-            {
-                spec = item.getChildByPath("spec");
-            }
+            var spec = item.getChildByPath("specEx") ?? item.getChildByPath("spec");
+
             ret = StatEffect.loadItemEffectFromData(spec, itemId);
             itemEffects.Add(itemId, ret);
         }
@@ -1963,8 +1960,7 @@ public class ItemInformationProvider
         {
             return isQuestItemCache[itemId];
         }
-        var data = getItemData(itemId);
-        bool questItem = (data != null && DataTool.getIntConvert("info/quest", data, 0) == 1);
+        bool questItem = DataTool.getIntConvert("info/quest", getItemData(itemId), 0) == 1;
         isQuestItemCache.Add(itemId, questItem);
         return questItem;
     }
@@ -1975,8 +1971,7 @@ public class ItemInformationProvider
         {
             return isPartyQuestItemCache[itemId];
         }
-        var data = getItemData(itemId);
-        bool partyquestItem = (data != null && DataTool.getIntConvert("info/pquest", data, 0) == 1);
+        bool partyquestItem = DataTool.getIntConvert("info/pquest", getItemData(itemId), 0) == 1;
         isPartyQuestItemCache.AddOrUpdate(itemId, partyquestItem);
         return partyquestItem;
     }

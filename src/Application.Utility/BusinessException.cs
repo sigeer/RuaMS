@@ -1,12 +1,8 @@
 ﻿namespace Application.Utility.Exceptions
 {
-    public class BusinessException : Exception
+    public class BusinessException(string? message) : Exception(message)
     {
         public BusinessException() : this("内部错误")
-        {
-        }
-
-        public BusinessException(string? message) : base(message)
         {
         }
     }
@@ -16,12 +12,8 @@
     /// 1. wz（或其他）资源未获取到或者不合法 - 用存在的id去获取一个应该存在但实际上不存在的数据
     /// 2. 数据库基础数据未获取到
     /// </summary>
-    public class BusinessResException : BusinessException
+    public class BusinessResException(string? message) : BusinessException($"资源未获取到 - {message}")
     {
-
-        public BusinessResException(string? message) : base($"资源未获取到 - {message}")
-        {
-        }
     }
 
     /// <summary>

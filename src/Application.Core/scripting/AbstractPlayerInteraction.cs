@@ -1283,12 +1283,7 @@ public class AbstractPlayerInteraction
         return (Pyramid)getPlayer().getPartyQuest();
     }
 
-    public int createExpedition(ExpeditionType type)
-    {
-        return createExpedition(type, false, 0, 0);
-    }
-
-    public int createExpedition(ExpeditionType type, bool silent, int minPlayers, int maxPlayers)
+    public int createExpedition(ExpeditionType type, bool silent = false, int minPlayers = 0, int maxPlayers = 0)
     {
         var player = getPlayer();
         Expedition exped = new Expedition(player, type, silent, minPlayers, maxPlayers);
@@ -1381,45 +1376,26 @@ public class AbstractPlayerInteraction
 
         var chr = this.getPlayer();
 
-        switch (jobType)
+        return jobType switch
         {
-            case 1:
-                return chr.getStr() >= 35;
-
-            case 2:
-                return chr.getInt() >= 20;
-
-            case 3:
-            case 4:
-                return chr.getDex() >= 25;
-
-            case 5:
-                return chr.getDex() >= 20;
-
-            default:
-                return true;
-        }
+            1 => chr.getStr() >= 35,
+            2 => chr.getInt() >= 20,
+            3 or 4 => chr.getDex() >= 25,
+            5 => chr.getDex() >= 20,
+            _ => true,
+        };
     }
 
     public string? getFirstJobStatRequirement(int jobType)
     {
-        switch (jobType)
+        return jobType switch
         {
-            case 1:
-                return "STR " + 35;
-
-            case 2:
-                return "INT " + 20;
-
-            case 3:
-            case 4:
-                return "DEX " + 25;
-
-            case 5:
-                return "DEX " + 20;
-        }
-
-        return null;
+            1 => "STR " + 35,
+            2 => "INT " + 20,
+            3 or 4 => "DEX " + 25,
+            5 => "DEX " + 20,
+            _ => null,
+        };
     }
 
     public void npcTalk(int npcid, string message)
