@@ -2,15 +2,11 @@
 {
     public class BusinessException : Exception
     {
-        public BusinessException()
+        public BusinessException() : this("内部错误")
         {
         }
 
         public BusinessException(string? message) : base(message)
-        {
-        }
-
-        public BusinessException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
     }

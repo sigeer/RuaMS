@@ -71,7 +71,7 @@ public class BuddyList
 
     public void put(string group, int characterId, bool visible = true)
     {
-        var entry = Owner.getWorldServer().Players.getCharacterById(characterId) ?? throw new BusinessCharacterNotFoundException();
+        var entry = Owner.getWorldServer().Players.getCharacterById(characterId) ?? throw new BusinessCharacterNotFoundException(characterId);
         buddies.AddOrUpdate(characterId, new BuddylistEntry(entry, group, visible));
     }
 
