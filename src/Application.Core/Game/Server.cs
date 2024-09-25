@@ -64,7 +64,10 @@ public class Server
     private static ChannelDependencies channelDependencies;
 
     private LoginServer loginServer = null!;
-    private List<Dictionary<int, string>> channels = new();
+    /// <summary>
+    /// ChannelId - IP
+    /// </summary>
+    private List<Dictionary<int, string>> channelInfoList = new();
     private List<IWorld> worlds = new();
     private Dictionary<string, string> subnetInfo = new();
 
@@ -247,7 +250,7 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            return new(channels.get(world).Keys);
+            return new(channelInfoList.get(world).Keys);
         }
         finally
         {
@@ -260,7 +263,7 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            return channels.get(world).GetValueOrDefault(channel);
+            return channelInfoList.get(world).GetValueOrDefault(channel);
         }
         finally
         {
@@ -292,7 +295,7 @@ public class Server
         try
         {
             log.Debug("Worlds: {Worlds}", worlds);
-            log.Debug("Channels: {Channels}", channels);
+            log.Debug("Channels: {Channels}", channelInfoList);
             log.Debug("World recommended list: {RecommendedWorlds}", _worldRecommendedList);
             log.Debug("---------------------");
         }
@@ -316,7 +319,7 @@ public class Server
                 return -3;
             }
 
-            channelInfo = channels.get(worldid);
+            channelInfo = channelInfoList.get(worldid);
             if (channelInfo == null)
             {
                 return -3;
@@ -442,7 +445,7 @@ public class Server
             {
                 _worldRecommendedList.Add(new(i, why_am_i_recommended));
                 worlds.Add(world);
-                channels.Insert(i, channelInfo);
+                channelInfoList.Insert(i, channelInfo);
             }
         }
         finally
@@ -489,7 +492,7 @@ public class Server
             wldLock.EnterWriteLock();
             try
             {
-                Dictionary<int, string> m = channels.get(worldid);
+                Dictionary<int, string> m = channelInfoList.get(worldid);
                 if (m != null)
                 {
                     m.Remove(channel);
@@ -541,7 +544,7 @@ public class Server
             if (worldid == worlds.Count - 1)
             {
                 worlds.remove(worldid);
-                channels.remove(worldid);
+                channelInfoList.remove(worldid);
                 _worldRecommendedList.remove(worldid);
             }
         }
@@ -559,7 +562,7 @@ public class Server
         try
         {
             worlds.Clear();
-            channels.Clear();
+            channelInfoList.Clear();
             _worldRecommendedList.Clear();
         }
         finally
