@@ -60,11 +60,13 @@ public class MiniGame : AbstractMapObject
         WIN, LOSS, TIE
     }
 
-    public MiniGame(IPlayer owner, string description, string password)
+    public MiniGame(IPlayer owner, string description, string password, byte gameType, int pieceType)
     {
         this.owner = owner;
         this.description = description;
         this.password = password;
+        setGameType((MiniGameType)gameType);
+        setPieceType(pieceType);
     }
 
     public string getPassword()
@@ -225,7 +227,7 @@ public class MiniGame : AbstractMapObject
         }
         else if (visitorquit)
         {
-            visitor.closeMiniGame(true);
+            visitor?.closeMiniGame(true);
         }
     }
 
@@ -399,19 +401,41 @@ public class MiniGame : AbstractMapObject
 
     public void setPieceType(int type)
     {
-        piecetype = type;
-    }
-
-    public int getPieceType()
-    {
-        return piecetype;
-    }
-
-    public void setGameType(MiniGameType game)
-    {
-        GameType = game;
+        if (GameType == MiniGameType.OMOK)
+        {
+            if (type > 11)
+            {
+                type = 11;
+            }
+            else if (type < 0)
+            {
+                type = 0;
+            }
+        }
         if (GameType == MiniGameType.MATCH_CARD)
         {
+            if (type > 2)
+            {
+                type = 2;
+            }
+            else if (type < 0)
+            {
+                type = 0;
+            }
+
+            if (type == 0)
+            {
+                setMatchesToWin(6);
+            }
+            else if (type == 1)
+            {
+                setMatchesToWin(10);
+            }
+            else if (type == 2)
+            {
+                setMatchesToWin(15);
+            }
+
             if (matchestowin == 6)
             {
                 for (int i = 0; i < 6; i++)
@@ -437,6 +461,17 @@ public class MiniGame : AbstractMapObject
                 }
             }
         }
+        piecetype = type;
+    }
+
+    public int getPieceType()
+    {
+        return piecetype;
+    }
+
+    public void setGameType(MiniGameType game)
+    {
+        GameType = game;
     }
 
     public MiniGameType getGameType()
@@ -509,6 +544,13 @@ public class MiniGame : AbstractMapObject
         broadcast(PacketCreator.getPlayerShopChat(c.OnlinedCharacter, chat, isOwner(c.OnlinedCharacter)));
     }
 
+    public void SendGameInfo(IClient c)
+    {
+        if (GameType == MiniGameType.OMOK)
+            sendOmok(c, piecetype);
+        if (GameType == MiniGameType.MATCH_CARD)
+            sendMatchCard(c, piecetype);
+    }
     public void sendOmok(IClient c, int type)
     {
         c.sendPacket(PacketCreator.getMiniGame(c, this, isOwner(c.OnlinedCharacter), type));
