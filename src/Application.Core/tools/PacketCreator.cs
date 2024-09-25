@@ -5640,6 +5640,14 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet AddMiniGameBox(IPlayer chr, int amount, int type)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
+        p.writeInt(chr.getId());
+        addAnnounceBox(p, chr.getMiniGame()!, amount, type);
+        return p;
+    }
+
     public static Packet addOmokBox(IPlayer chr, int amount, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
