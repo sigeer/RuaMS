@@ -66,7 +66,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        chr.getMap().broadcastMessage(chr, PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.allDamage, attack.speed, attack.direction, attack.display), false, true);
+        chr.getMap().broadcastMessage(chr, PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display), false, true);
         int numFinisherOrbs = 0;
         var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
         if (GameConstants.isFinisherSkill(attack.skill))
@@ -147,7 +147,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         }
         if (attack.numAttacked > 0 && attack.skill == DragonKnight.SACRIFICE)
         {
-            int totDamageToOneMonster = attack.allDamage.Values.FirstOrDefault()?.FirstOrDefault() ?? 0;
+            int totDamageToOneMonster = attack.targets.Values.FirstOrDefault()?.damageLines?.FirstOrDefault() ?? 0;
 
             chr.safeAddHP(-1 * totDamageToOneMonster * attack.getAttackEffect(chr, null).getX() / 100);
         }

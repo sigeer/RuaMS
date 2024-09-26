@@ -54,6 +54,7 @@ using server.movement;
 using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
+using static net.server.channel.handlers.AbstractDealDamageHandler;
 using static net.server.channel.handlers.SummonDamageHandler;
 using static server.CashShop;
 
@@ -1944,7 +1945,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet dropItemFromMapObject(IPlayer player, MapItem drop, Point? dropfrom, Point dropto, byte mod)
+    public static Packet dropItemFromMapObject(IPlayer player, MapItem drop, Point? dropfrom, Point dropto, byte mod, short delay)
     {
         int dropType = drop.getDropType();
         if (drop.hasClientsideOwnership(player) && dropType < 3)
@@ -1965,7 +1966,7 @@ public class PacketCreator
         if (mod != 2)
         {
             p.writePos(dropfrom!.Value);
-            p.writeShort(0);//Fh?
+            p.writeShort(delay);//Fh?
         }
         if (drop.getMeso() == 0)
         {
@@ -2540,9 +2541,9 @@ public class PacketCreator
         p.writeByte(allDamage.Count);
         foreach (SummonAttackEntry attackEntry in allDamage)
         {
-            p.writeInt(attackEntry.getMonsterOid()); // oid
+            p.writeInt(attackEntry.monsterOid); // oid
             p.writeByte(6); // who knows
-            p.writeInt(attackEntry.getDamage()); // damage
+            p.writeInt(attackEntry.damage); // damage
         }
 
         return p;
@@ -2567,14 +2568,14 @@ public class PacketCreator
     }
     */
 
-    public static Packet closeRangeAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, List<int>> damage, int speed, int direction, int display)
+    public static Packet closeRangeAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.CLOSE_RANGE_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, 0, damage, speed, direction, display);
         return p;
     }
 
-    public static Packet rangedAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, List<int>> damage, int speed, int direction, int display)
+    public static Packet rangedAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.RANGED_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, projectile, damage, speed, direction, display);
@@ -2582,7 +2583,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet magicAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, List<int>> damage, int charge, int speed, int direction, int display)
+    public static Packet magicAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int charge, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.MAGIC_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, 0, damage, speed, direction, display);
@@ -2593,7 +2594,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addAttackBody(OutPacket p, IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, List<int>> damage, int speed, int direction, int display)
+    private static void addAttackBody(OutPacket p, IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         p.writeInt(chr.getId());
         p.writeByte(numAttackedAndDamage);
@@ -2609,18 +2610,18 @@ public class PacketCreator
         p.writeByte(speed);
         p.writeByte(0x0A);
         p.writeInt(projectile);
-        foreach (int oned in damage.Keys)
+        foreach (var oned in damage)
         {
-            var onedList = damage.GetValueOrDefault(oned);
+            var onedList = oned.Value;
             if (onedList != null)
             {
-                p.writeInt(oned);
+                p.writeInt(oned.Key);
                 p.writeByte(0x0);
-                if (skill == 4211006)
+                if (skill == ChiefBandit.MESO_EXPLOSION)
                 {
-                    p.writeByte(onedList.Count);
+                    p.writeByte(onedList.damageLines.Count);
                 }
-                foreach (int eachd in onedList)
+                foreach (int eachd in onedList.damageLines)
                 {
                     p.writeInt(eachd);
                 }
@@ -2860,6 +2861,14 @@ public class PacketCreator
                 p.writeByte(slot);
             }
         }
+        return p;
+    }
+    public static Packet removeExplodedMesoFromMap(int mapObjectId, short delay)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.REMOVE_ITEM_FROM_MAP);
+        p.writeByte(4);
+        p.writeInt(mapObjectId);
+        p.writeShort(delay);
         return p;
     }
 

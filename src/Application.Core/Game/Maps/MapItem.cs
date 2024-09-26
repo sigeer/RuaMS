@@ -225,7 +225,7 @@ public class MapItem : AbstractMapObject
             this.lockItem();
             try
             {
-                client.sendPacket(PacketCreator.dropItemFromMapObject(chr, this, null, getPosition(), 2));
+                client.sendPacket(PacketCreator.dropItemFromMapObject(chr, this, null, getPosition(), 2, 0));
             }
             finally
             {

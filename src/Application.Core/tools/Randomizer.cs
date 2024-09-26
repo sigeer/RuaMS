@@ -62,7 +62,7 @@ public class Randomizer
     /// <returns></returns>
     public static int rand(int lbound, int ubound)
     {
-        return (int)((_rand.NextDouble() * (ubound - lbound + 1)) + lbound);
+        return ((int)(_rand.NextDouble() * (ubound - lbound + 1))) + lbound;
     }
 
     public static TItem Select<TItem>(IEnumerable<TItem> list)
