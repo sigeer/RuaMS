@@ -74,7 +74,7 @@ namespace Application.Core.Game.Maps
         int countMonsters();
         int countPlayers();
         int countReactors();
-        bool damageMonster(IPlayer chr, Monster monster, int damage);
+        bool damageMonster(IPlayer chr, Monster monster, int damage, short delay = 0);
         void destroyNPC(int npcid);
         void destroyReactor(int oid);
         void destroyReactors(int first, int last);
@@ -83,10 +83,10 @@ namespace Application.Core.Game.Maps
         void dismissRemoveAfter(Monster monster);
         void dispose();
         void dropFromFriendlyMonster(IPlayer chr, Monster mob);
-        void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid);
-        byte dropGlobalItemsFromMonsterOnMap(List<MonsterGlobalDropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob);
-        void dropItemsFromMonster(List<MonsterDropEntry> list, IPlayer chr, Monster mob);
-        byte dropItemsFromMonsterOnMap(List<MonsterDropEntry> visibleQuestEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob);
+        void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
+        byte dropGlobalItemsFromMonsterOnMap(List<MonsterGlobalDropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
+        void dropItemsFromMonster(List<MonsterDropEntry> list, IPlayer chr, Monster mob, short delay);
+        byte dropItemsFromMonsterOnMap(List<MonsterDropEntry> visibleQuestEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
         void dropMessage(int type, string message);
         bool eventStarted();
         Portal? findClosestPlayerSpawnpoint(Point from);
@@ -206,7 +206,7 @@ namespace Application.Core.Game.Maps
         void killAllMonstersNotFriendly();
         void killFriendlies(Monster mob);
         void killMonster(int mobId);
-        void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1);
+        void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1, short delay = 0);
         void killMonsterWithDrops(int mobId);
         void limitReactor(int rid, int num);
         bool makeDisappearItemFromMap(MapItem mapitem);
@@ -295,10 +295,8 @@ namespace Application.Core.Game.Maps
         void spawnHorntailOnGroundBelow(Point targetPoint);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, byte dropType, bool playerDrop);
-        void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos, bool ffaDrop = true, bool playerDrop = false);
-        void spawnItemDropList(List<int> list, IMapObject dropper, IPlayer owner, Point pos);
         void spawnKite(Kite kite);
-        void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype);
+        void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype, short delay = 0);
         void spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery);
         void spawnMonster(Monster monster);
         void spawnMonster(Monster monster, int difficulty, bool isPq);

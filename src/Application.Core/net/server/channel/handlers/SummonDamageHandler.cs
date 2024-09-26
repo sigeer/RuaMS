@@ -37,29 +37,7 @@ namespace net.server.channel.handlers;
 public class SummonDamageHandler : AbstractDealDamageHandler
 {
 
-    public class SummonAttackEntry
-    {
-
-        private int monsterOid;
-        private int damage;
-
-        public SummonAttackEntry(int monsterOid, int damage)
-        {
-            this.monsterOid = monsterOid;
-            this.damage = damage;
-        }
-
-        public int getMonsterOid()
-        {
-            return monsterOid;
-        }
-
-        public int getDamage()
-        {
-            return damage;
-        }
-
-    }
+    public record SummonAttackEntry(int monsterOid, int damage, short delay);
 
     public override void HandlePacket(InPacket p, IClient c)
     {
@@ -84,9 +62,12 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         for (int x = 0; x < numAttacked; x++)
         {
             int monsterOid = p.readInt(); // attacked oid
-            p.skip(18);
+            p.skip(8);
+            Point curPos = p.readPos();
+            Point nextPos = p.readPos();
+            short delay = p.readShort();
             int damage = p.readInt();
-            allDamage.Add(new SummonAttackEntry(monsterOid, damage));
+            allDamage.Add(new SummonAttackEntry(monsterOid, damage, delay));
         }
         player.getMap().broadcastMessage(player, PacketCreator.summonAttack(player.getId(), summon.getObjectId(), direction, allDamage), summon.getPosition());
 
@@ -99,8 +80,8 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         int maxDmg = calcMaxDamage(summonEffect, player, magic);    // thanks Darter (YungMoozi) for reporting unchecked max dmg
         foreach (SummonAttackEntry attackEntry in allDamage)
         {
-            int damage = attackEntry.getDamage();
-            var target = player.getMap().getMonsterByOid(attackEntry.getMonsterOid());
+            int damage = attackEntry.damage;
+            var target = player.getMap().getMonsterByOid(attackEntry.monsterOid);
             if (target != null)
             {
                 if (damage > maxDmg)
@@ -119,7 +100,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                         target.applyStatus(player, new MonsterStatusEffect(summonEffect.getMonsterStati(), summonSkill), summonEffect.isPoison(), 4000);
                     }
                 }
-                player.getMap().damageMonster(player, target, damage);
+                player.getMap().damageMonster(player, target, damage, attackEntry.delay);
             }
         }
 

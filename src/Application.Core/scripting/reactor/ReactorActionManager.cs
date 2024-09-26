@@ -42,7 +42,6 @@ public class ReactorActionManager : AbstractPlayerInteraction
 {
     private Reactor reactor;
     private IEngine iv;
-    private ScheduledFuture? sprayTask = null;
 
     public ReactorActionManager(IClient c, Reactor reactor, IEngine iv) : base(c)
     {
@@ -212,27 +211,20 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
         else
         {
-            Reactor r = reactor;
-            List<ReactorDropEntry> dropItems = items;
             int worldMesoRate = c.getWorldServer().MesoRate;
 
             dropPos.X -= (12 * items.Count);
+            short delay = 0;
 
-            sprayTask = TimerManager.getInstance().register(() =>
+            foreach (var d in items)
             {
-                if (dropItems.Count == 0)
-                {
-                    sprayTask!.cancel(false);
-                    return;
-                }
-
-                ReactorDropEntry d = dropItems.remove(0);
                 if (d.itemId == 0)
                 {
+                    var map = reactor.getMap();
                     int range = maxMeso - minMeso;
                     int displayDrop = (int)(Randomizer.nextDouble() * range) + minMeso;
                     int mesoDrop = (displayDrop * worldMesoRate);
-                    r.getMap().spawnMesoDrop(mesoDrop, r.getMap().calcDropPos(dropPos, r.getPosition()), r, chr, false, 2);
+                    map.spawnMesoDrop(mesoDrop, map.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, false, 2, delay);
                 }
                 else
                 {
@@ -248,11 +240,14 @@ public class ReactorActionManager : AbstractPlayerInteraction
                         drop = ii.randomizeStats((Equip)ii.getEquipById(d.itemId));
                     }
 
-                    r.getMap().dropFromReactor(getPlayer(), r, drop, dropPos, (short)d.questid);
+                    reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, (short)d.questid, delay);
                 }
 
                 dropPos.X += 25;
-            }, 200);
+                delay += 200;
+            }
+
+
         }
     }
 
