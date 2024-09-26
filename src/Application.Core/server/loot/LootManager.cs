@@ -88,23 +88,9 @@ public class LootManager
             return loots;
         }
 
-        List<LootInventory> playersInv = new();
-        foreach (var chr in players)
-        {
-            LootInventory lootInv = new LootInventory(chr);
-            playersInv.Add(lootInv);
-        }
+        var playersInv = players.Select(x => new LootInventory(x)).ToList();
 
-        List<MonsterDropEntry> effectiveLoot = new();
-        foreach (MonsterDropEntry mde in loots)
-        {
-            if (isRelevantDrop(mde, players, playersInv))
-            {
-                effectiveLoot.Add(mde);
-            }
-        }
-
-        return effectiveLoot;
+        return loots.Where(x => isRelevantDrop(x, players, playersInv)).ToList();
     }
 
 }
