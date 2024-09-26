@@ -646,7 +646,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
     private static void damageMonsterWithSkill(IPlayer attacker, IMap map, Monster monster, int damage, int skillid, int fixedTime)
     {
-        int animationTime = fixedTime == 0 ? SkillFactory.getSkill(skillid).getAnimationTime() : fixedTime;
+        int animationTime = fixedTime == 0 ? SkillFactory.GetSkillTrust(skillid).getAnimationTime() : fixedTime;
 
         if (animationTime > 0)
         {
@@ -965,7 +965,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
             if (ret.skill != 0)
             {
-                var skill = SkillFactory.getSkill(ret.skill);
+                var skill = SkillFactory.GetSkillTrust(ret.skill);
                 if (skill.getElement() != Element.NEUTRAL && chr.getBuffedValue(BuffStat.ELEMENTAL_RESET) == null)
                 {
                     // The skill has an element effect, so we need to factor that in.

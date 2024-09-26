@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Skills;
+using constants.skills;
 using server;
 using server.life;
 
@@ -59,11 +60,11 @@ public class Skill: ISkill
 
     public bool isFourthJob()
     {
-        if (job == 2212)
+        if (job == (int)Job.EVAN4)
         {
             return false;
         }
-        if (id == 22170001 || id == 22171003 || id == 22171004 || id == 22181002 || id == 22181003)
+        if (id == Evan.MAGIC_MASTERY || id == Evan.FLAME_WHEEL || id == Evan.HEROS_WILL || id == Evan.DARK_FOG || id == Evan.SOUL_STONE)
         {
             return true;
         }

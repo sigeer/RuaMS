@@ -15,15 +15,19 @@ namespace Application.Core.Game.Maps
 {
     public interface IMap
     {
+        public int Channel { get; set; }
+        public byte MonsterRate { get; set; }
         AtomicInteger droppedItemCount { get; set; }
         public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }
 
+        public IMap Clone();
+
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
-        void addGuardianSpawnPoint(GuardianSpawnPoint a);
+
         void addMapleArea(Rectangle rec);
         void addMapObject(IMapObject mapobject);
-        void addMobSpawn(int mobId, int spendCP);
+
         void addMonsterSpawn(Monster monster, int mobTime, int team);
         void addPartyMember(IPlayer chr, int partyid);
         void addPlayer(IPlayer chr);
@@ -31,7 +35,6 @@ namespace Application.Core.Game.Maps
         void addPlayerPuppet(IPlayer player);
         void addPortal(Portal myPortal);
         void addSelfDestructive(Monster mob);
-        void addSkillId(int z);
         void allowSummonState(bool b);
         void broadcastBalrogVictory(string leaderName);
         void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null);
@@ -54,13 +57,11 @@ namespace Application.Core.Game.Maps
         void broadcastStringMessage(int type, string message);
         void broadcastUpdateCharLookMessage(IPlayer source, IPlayer player);
         void broadcastZakumVictory();
-        void buffMonsters(int team, CarnivalFactory.MCSkill skill);
         Point calcDropPos(Point initial, Point fallback);
         bool canDeployDoor(Point pos);
         void changeEnvironment(string mapObj, int newState);
         void checkMapOwnerActivity();
         bool claimOwnership(IPlayer chr);
-        void clearBuffList();
         void clearDrops();
         void clearDrops(IPlayer player);
         void clearMapObjects();
@@ -103,14 +104,12 @@ namespace Application.Core.Game.Maps
         IPlayer? getAnyCharacterFromParty(int partyid);
         Rectangle getArea(int index);
         List<Rectangle> getAreas();
-        List<CarnivalFactory.MCSkill> getBlueTeamBuffs();
         IWorldChannel getChannelServer();
         IPlayer? getCharacterById(int id);
         IPlayer? getCharacterByName(string name);
         IReadOnlyCollection<IPlayer> getCharacters();
         Coconut? getCoconut();
         int getCurrentPartyId();
-        int getDeathCP();
         bool getDocked();
         Portal? getDoorPortal(int doorid);
         KeyValuePair<string, int>? getDoorPositionStatus(Point pos);
@@ -138,10 +137,9 @@ namespace Application.Core.Game.Maps
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
         List<IMapObject> getMapObjectsInRect(Rectangle box, List<MapObjectType> types);
         Dictionary<int, IPlayer> getMapPlayers();
-        int getMaxMobs();
-        int getMaxReactors();
+
         short getMobInterval();
-        List<KeyValuePair<int, int>> getMobsToSpawn();
+        
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
         List<IMapObject> getMonsters();
@@ -157,26 +155,20 @@ namespace Application.Core.Game.Maps
         Point? getPointBelow(Point pos);
         Portal? getPortal(int portalid);
         Portal? getPortal(string portalname);
-        GuardianSpawnPoint? getRandomGuardianSpawn(int team);
         Portal getRandomPlayerSpawnpoint();
-        Point? getRandomSP(int team);
         Reactor? getReactorById(int Id);
         Reactor? getReactorByName(string name);
         Reactor? getReactorByOid(int oid);
         List<IMapObject> getReactors();
         List<Reactor> getReactorsByIdRange(int first, int last);
         float getRecovery();
-        List<CarnivalFactory.MCSkill> getRedTeamBuffs();
         IMap getReturnMap();
         int getReturnMapId();
         int getSeats();
-        List<int> getSkillIds();
         Snowball? getSnowball(int team);
         int getSpawnedMonstersOnMap();
         string getStreetName();
         bool getSummonState();
-        int getTimeDefault();
-        int getTimeExpand();
         int getTimeLeft();
         int getTimeLimit();
         KeyValuePair<int, string>? getTimeMob();
@@ -191,6 +183,10 @@ namespace Application.Core.Game.Maps
         bool isBlueCPQMap();
         bool isCPQLobby();
         bool isCPQLoserMap();
+        /// <summary>
+        /// Carnival Party Quest?
+        /// </summary>
+        /// <returns></returns>
         bool isCPQMap();
         bool isCPQMap2();
         bool isCPQWinnerMap();
@@ -246,7 +242,6 @@ namespace Application.Core.Game.Maps
         void setBoat(bool hasBoat);
         void setClock(bool hasClock);
         void setCoconut(Coconut? nut);
-        void setDeathCP(int deathCP);
         void setDocked(bool isDocked);
         void setEventInstance(EventInstanceManager? eim);
         void setEventStarted(bool @event);
@@ -260,8 +255,6 @@ namespace Application.Core.Game.Maps
         void setMapLineBoundings(int vrTop, int vrBottom, int vrLeft, int vrRight);
         void setMapName(string mapName);
         void setMapPointBoundings(int px, int py, int h, int w);
-        void setMaxMobs(int maxMobs);
-        void setMaxReactors(int maxReactors);
         void setMobCapacity(int capacity);
         void setMobInterval(short interval);
         void setMuted(bool mute);
@@ -273,8 +266,7 @@ namespace Application.Core.Game.Maps
         void setSeats(int seats);
         void setSnowball(int team, Snowball? ball);
         void setStreetName(string streetName);
-        void setTimeDefault(int timeDefault);
-        void setTimeExpand(int timeExpand);
+   
         void setTimeLimit(int timeLimit);
         void setTimeMob(int id, string msg);
         void setTown(bool isTown);
@@ -291,7 +283,7 @@ namespace Application.Core.Game.Maps
         void spawnDoor(DoorObject door);
         void spawnFakeMonster(Monster monster);
         void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos);
-        int spawnGuardian(int team, int num);
+ 
         void spawnHorntailOnGroundBelow(Point targetPoint);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, byte dropType, bool playerDrop);
@@ -308,8 +300,7 @@ namespace Application.Core.Game.Maps
         void spawnSummon(Summon summon);
         void startEvent();
         void startEvent(IPlayer chr);
-        void startMapEffect(string msg, int itemId);
-        void startMapEffect(string msg, int itemId, long time);
+        void startMapEffect(string msg, int itemId, long time = 30000);
         void toggleDrops();
         void toggleEnvironment(string ms);
         void toggleHiddenNPC(int id);
