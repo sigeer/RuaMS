@@ -33,10 +33,11 @@ using tools;
 namespace server.maps;
 
 
-/**
- * @author Lerk
- * @author Ronan
- */
+/// <summary>
+/// 箱子之类的地图上可攻击的对象？
+/// @author Lerk
+/// @author Ronan
+/// </summary>
 public class Reactor : AbstractMapObject
 {
     private int rid;

@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Event;
 using Application.Core.Scripting.Infrastructure;
@@ -60,36 +61,12 @@ public class ReactorActionManager : AbstractPlayerInteraction
         reactor.getMap().destroyNPC(npcId);
     }
 
-    private static void sortDropEntries(List<ReactorDropEntry> from, List<ReactorDropEntry> item, List<ReactorDropEntry> visibleQuest, List<ReactorDropEntry> otherQuest, IPlayer chr)
+    private static List<DropEntry> assembleReactorDropEntries(IPlayer chr, List<DropEntry> items)
     {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
-        foreach (ReactorDropEntry mde in from)
-        {
-            if (!ii.isQuestItem(mde.itemId))
-            {
-                item.Add(mde);
-            }
-            else
-            {
-                if (chr.needQuestItem(mde.questid, mde.itemId))
-                {
-                    visibleQuest.Add(mde);
-                }
-                else
-                {
-                    otherQuest.Add(mde);
-                }
-            }
-        }
-    }
-
-    private static List<ReactorDropEntry> assembleReactorDropEntries(IPlayer chr, List<ReactorDropEntry> items)
-    {
-        List<ReactorDropEntry> dropEntry = new();
-        List<ReactorDropEntry> visibleQuestEntry = new();
-        List<ReactorDropEntry> otherQuestEntry = new();
-        sortDropEntries(items, dropEntry, visibleQuestEntry, otherQuestEntry, chr);
+        List<DropEntry> dropEntry = new();
+        List<DropEntry> visibleQuestEntry = new();
+        List<DropEntry> otherQuestEntry = new();
+        DropEntry.ClassifyDropEntries(items, dropEntry, visibleQuestEntry, otherQuestEntry, chr);
 
         Collections.shuffle(dropEntry);
         Collections.shuffle(visibleQuestEntry);
@@ -100,8 +77,8 @@ public class ReactorActionManager : AbstractPlayerInteraction
         items.AddRange(visibleQuestEntry);
         items.AddRange(otherQuestEntry);
 
-        List<ReactorDropEntry> items1 = new(items.Count);
-        List<ReactorDropEntry> items2 = new(items.Count / 2);
+        List<DropEntry> items1 = new(items.Count);
+        List<DropEntry> items2 = new(items.Count / 2);
 
         for (int i = 0; i < items.Count; i++)
         {
@@ -126,12 +103,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         sprayItems(false, 0, 0, 0, 0);
     }
 
-    public void sprayItems(bool meso, int mesoChance, int minMeso, int maxMeso)
-    {
-        sprayItems(meso, mesoChance, minMeso, maxMeso, 0);
-    }
-
-    public void sprayItems(bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
+    public void sprayItems(bool meso, int mesoChance, int minMeso, int maxMeso, int minItems = 0)
     {
         sprayItems(reactor.getPosition().X, reactor.getPosition().Y, meso, mesoChance, minMeso, maxMeso, minItems);
     }
@@ -146,12 +118,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         dropItems(false, 0, 0, 0, 0);
     }
 
-    public void dropItems(bool meso, int mesoChance, int minMeso, int maxMeso)
-    {
-        dropItems(meso, mesoChance, minMeso, maxMeso, 0);
-    }
-
-    public void dropItems(bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
+    public void dropItems(bool meso, int mesoChance, int minMeso, int maxMeso, int minItems = 0)
     {
         dropItems(reactor.getPosition().X, reactor.getPosition().Y, meso, mesoChance, minMeso, maxMeso, minItems);
     }
@@ -169,81 +136,33 @@ public class ReactorActionManager : AbstractPlayerInteraction
             return;
         }
 
-        List<ReactorDropEntry> items = assembleReactorDropEntries(chr, generateDropList(getDropChances(), chr.getDropRate(), meso, mesoChance, minItems));
+        var items = assembleReactorDropEntries(chr, generateDropList(getDropChances(), chr.getDropRate(), meso, mesoChance, minItems));
         if (items.Count % 2 == 0)
         {
             posX -= 12;
         }
         Point dropPos = new Point(posX, posY);
+        int worldMesoRate = c.getWorldServer().MesoRate;
 
         if (!delayed)
         {
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
             byte p = 1;
-            foreach (ReactorDropEntry d in items)
+            foreach (var d in items)
             {
                 dropPos.X = posX + ((p % 2 == 0) ? (25 * ((p + 1) / 2)) : -(25 * (p / 2)));
                 p++;
 
-                if (d.itemId == 0)
-                {
-                    int range = maxMeso - minMeso;
-                    int displayDrop = (int)(Randomizer.nextDouble() * range) + minMeso;
-                    int mesoDrop = (displayDrop * c.getWorldServer().MesoRate);
-                    reactor.getMap().spawnMesoDrop(mesoDrop, reactor.getMap().calcDropPos(dropPos, reactor.getPosition()), reactor, c.OnlinedCharacter, false, 2);
-                }
-                else
-                {
-                    Item drop;
-
-                    if (ItemConstants.getInventoryType(d.itemId) != InventoryType.EQUIP)
-                    {
-                        drop = new Item(d.itemId, 0, 1);
-                    }
-                    else
-                    {
-                        drop = ii.randomizeStats((Equip)ii.getEquipById(d.itemId));
-                    }
-
-                    reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, (short)d.questid);
-                }
+                DropInternal(d, minMeso, maxMeso, worldMesoRate, dropPos, chr, 0);
             }
         }
         else
         {
-            int worldMesoRate = c.getWorldServer().MesoRate;
-
             dropPos.X -= (12 * items.Count);
             short delay = 0;
 
             foreach (var d in items)
             {
-                if (d.itemId == 0)
-                {
-                    var map = reactor.getMap();
-                    int range = maxMeso - minMeso;
-                    int displayDrop = (int)(Randomizer.nextDouble() * range) + minMeso;
-                    int mesoDrop = (displayDrop * worldMesoRate);
-                    map.spawnMesoDrop(mesoDrop, map.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, false, 2, delay);
-                }
-                else
-                {
-                    Item drop;
-
-                    if (ItemConstants.getInventoryType(d.itemId) != InventoryType.EQUIP)
-                    {
-                        drop = new Item(d.itemId, 0, 1);
-                    }
-                    else
-                    {
-                        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                        drop = ii.randomizeStats((Equip)ii.getEquipById(d.itemId));
-                    }
-
-                    reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, (short)d.questid, delay);
-                }
-
+                DropInternal(d, minMeso, maxMeso, worldMesoRate, dropPos, chr, delay);
                 dropPos.X += 25;
                 delay += 200;
             }
@@ -252,22 +171,50 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
     }
 
-    private List<ReactorDropEntry> getDropChances()
+    private void DropInternal(DropEntry d, int minMeso, int maxMeso, int worldMesoRate, Point dropPos, IPlayer chr, short delay)
+    {
+        if (d.ItemId == 0)
+        {
+            var map = reactor.getMap();
+            int baseDrop = d.GetRandomCount(minMeso, maxMeso);
+            int mesoDrop = (baseDrop * worldMesoRate);
+            if (mesoDrop > 0)
+                map.spawnMesoDrop(mesoDrop, map.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, false, 2, delay);
+        }
+        else
+        {
+            Item drop;
+
+            if (ItemConstants.getInventoryType(d.ItemId) != InventoryType.EQUIP)
+            {
+                drop = new Item(d.ItemId, 0, 1);
+            }
+            else
+            {
+                ItemInformationProvider ii = ItemInformationProvider.getInstance();
+                drop = ii.randomizeStats((Equip)ii.getEquipById(d.ItemId));
+            }
+
+            reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, (short)d.QuestId, delay);
+        }
+    }
+
+    private List<DropEntry> getDropChances()
     {
         return ReactorScriptManager.getInstance().getDrops(reactor.getId());
     }
 
-    private List<ReactorDropEntry> generateDropList(List<ReactorDropEntry> drops, int dropRate, bool meso, int mesoChance, int minItems)
+    private List<DropEntry> generateDropList(List<DropEntry> drops, int dropRate, bool meso, int mesoChance, int minItems)
     {
-        List<ReactorDropEntry> items = new();
+        List<DropEntry> items = new();
         if (meso && Randomizer.nextDouble() < (1 / (double)mesoChance))
         {
-            items.Add(new ReactorDropEntry(0, mesoChance, -1));
+            items.Add(new DropEntry(0, mesoChance));
         }
 
-        foreach (ReactorDropEntry mde in drops)
+        foreach (var mde in drops)
         {
-            if (Randomizer.nextDouble() < (dropRate / (double)mde.chance))
+            if (Randomizer.nextDouble() < (dropRate / (double)mde.Chance))
             {
                 items.Add(mde);
             }
@@ -275,7 +222,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
         while (items.Count < minItems)
         {
-            items.Add(new ReactorDropEntry(0, mesoChance, -1));
+            items.Add(new DropEntry(0, mesoChance));
         }
 
         return items;
@@ -315,12 +262,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
     }
 
-    public void killMonster(int id)
-    {
-        killMonster(id, false);
-    }
-
-    public void killMonster(int id, bool withDrops)
+    public void killMonster(int id, bool withDrops = false)
     {
         if (withDrops)
         {

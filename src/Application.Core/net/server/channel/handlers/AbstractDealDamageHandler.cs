@@ -346,11 +346,11 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                         i++;
                                     }
 
-                                    List<MonsterDropEntry> toSteal = new();
+                                    List<DropEntry> toSteal = new();
                                     toSteal.Add(mi.retrieveDrop(monster.getId()).get(i));
 
                                     map.dropItemsFromMonster(toSteal, player, monster, attack.targets[oned]!.delay);
-                                    monster.addStolen(toSteal.get(0).itemId);
+                                    monster.addStolen(toSteal.get(0).ItemId);
                                 }
                             }
                         }

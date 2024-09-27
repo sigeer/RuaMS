@@ -23,7 +23,8 @@ namespace Application.Core
         public MapCopyMapper()
         {
             CreateMap<MapleMap, MapleMap>();
-            CreateMap<MonsterCarnivalMap, MonsterCarnivalMap>();
+            CreateMap<MonsterCarnivalMap, MonsterCarnivalMap>()
+                .ConstructUsing(src => new MonsterCarnivalMap(src));
         }
     }
 }
