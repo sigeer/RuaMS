@@ -30,6 +30,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.scripting.Event;
 using Application.Utility;
+using Application.Utility.Extensions;
 using client;
 using client.autoban;
 using client.inventory;
@@ -5124,6 +5125,6 @@ public class MapleMap : IMap
 
     public virtual IMap Clone()
     {
-        return GlobalTools.Mapper.Map<MapleMap>(this);
+        return this.DeepClone();
     }
 }

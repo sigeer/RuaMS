@@ -41,7 +41,7 @@ public class MonsterCarnival
         p1.setEnemy(p2);
         p2.setEnemy(p1);
         // 是否可以替换成getMap？不可以，任务结束后会关闭地图，getMap不会创建新地图
-        map =(cs.getMapFactory().getMap(mapid).Clone() as ICPQMap)!;
+        map = (cs.getMapFactory().getDisposableMap(mapid) as ICPQMap)!;
         startTime = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds();
         int redPortal = 0;
         int bluePortal = 0;

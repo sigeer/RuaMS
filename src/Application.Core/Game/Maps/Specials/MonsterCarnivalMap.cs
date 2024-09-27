@@ -1,4 +1,5 @@
 ﻿using Application.Core.Game.Life;
+using Application.Utility.Extensions;
 using server.maps;
 using server.partyquest;
 using tools;
@@ -252,7 +253,7 @@ namespace Application.Core.Game.Maps.Specials
 
         public override IMap Clone()
         {
-            return GlobalTools.Mapper.Map<MonsterCarnivalMap>(this);
+            return this.DeepClone(this);
         }
     }
 }
