@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Event;
 using Application.Core.Scripting.Infrastructure;
 using client.inventory;
@@ -384,7 +385,8 @@ public class ReactorActionManager : AbstractPlayerInteraction
     }
 
     public void dispelAllMonsters(int num, int team)
-    { //dispels all mobs, cpq
+    { 
+        //dispels all mobs, cpq
         var skil = CarnivalFactory.getInstance().getGuardian(num);
         if (skil != null)
         {
@@ -396,14 +398,18 @@ public class ReactorActionManager : AbstractPlayerInteraction
                 }
             }
 
-            if (team == 0)
+            if (getPlayer().getMap() is ICPQMap map)
             {
-                getPlayer().getMap().getRedTeamBuffs().Remove(skil);
+                if (team == 0)
+                {
+                    map.getRedTeamBuffs().Remove(skil);
+                }
+                else
+                {
+                    map.getBlueTeamBuffs().Remove(skil);
+                }
             }
-            else
-            {
-                getPlayer().getMap().getBlueTeamBuffs().Remove(skil);
-            }
+
         }
     }
 }

@@ -24,6 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
@@ -4315,9 +4316,9 @@ public partial class Player
 
     private void playerDead()
     {
-        if (this.MapModel.isCPQMap())
+        if (this.MapModel.isCPQMap() && MapModel is ICPQMap cpqMap)
         {
-            int losing = MapModel.getDeathCP();
+            int losing = cpqMap.DeathCP;
             if (getCP() < losing)
             {
                 losing = getCP();

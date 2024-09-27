@@ -146,7 +146,8 @@ public class ReactorFactory
 
                             foreach (Data fknexon in eventData.getChildren())
                             {
-                                if (fknexon.getName().Equals("timeOut", StringComparison.OrdinalIgnoreCase))
+                                var fknexonName = fknexon.getName();
+                                if (fknexonName != null && fknexonName.Equals("timeOut", StringComparison.OrdinalIgnoreCase))
                                 {
                                     timeOut = DataTool.getInt(fknexon);
                                 }

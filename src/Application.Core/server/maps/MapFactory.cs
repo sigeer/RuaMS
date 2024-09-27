@@ -23,6 +23,7 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.Specials;
 using constants.id;
 using provider;
 using provider.wz;
@@ -161,6 +162,11 @@ public class MapFactory
             monsterRate = (float?)mobRate.getData() ?? 0;
         }
         map = new MapleMap(mapid, world, channel, DataTool.getInt("returnMap", infoData), monsterRate);
+
+        var cpqInfo = mapData.getChildByPath("monsterCarnival");
+        if (map.isCPQMap() && cpqInfo != null)
+            map = new MonsterCarnivalMap(map);
+
         map.setEventInstance(evt);
 
         var mapStr = mapid.ToString();
@@ -293,38 +299,34 @@ public class MapFactory
         loadLifeFromWz(map, mapData);
         loadLifeFromDb(map);
 
-        if (map.isCPQMap())
+        if (map is MonsterCarnivalMap cpqMap)
         {
-            var mcData = mapData.getChildByPath("monsterCarnival");
-            if (mcData != null)
+            cpqMap.DeathCP = (DataTool.getIntConvert("deathCP", cpqInfo, 0));
+            cpqMap.MaxMobs = (DataTool.getIntConvert("mobGenMax", cpqInfo, 20));    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
+            cpqMap.TimeDefault = (DataTool.getIntConvert("timeDefault", cpqInfo, 0));
+            cpqMap.TimeExpand = (DataTool.getIntConvert("timeExpand", cpqInfo, 0));
+            cpqMap.MaxReactors = (DataTool.getIntConvert("guardianGenMax", cpqInfo, 16));
+            var guardianGenData = cpqInfo!.getChildByPath("guardianGenPos");
+            foreach (Data node in guardianGenData.getChildren())
             {
-                map.setDeathCP(DataTool.getIntConvert("deathCP", mcData, 0));
-                map.setMaxMobs(DataTool.getIntConvert("mobGenMax", mcData, 20));    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
-                map.setTimeDefault(DataTool.getIntConvert("timeDefault", mcData, 0));
-                map.setTimeExpand(DataTool.getIntConvert("timeExpand", mcData, 0));
-                map.setMaxReactors(DataTool.getIntConvert("guardianGenMax", mcData, 16));
-                var guardianGenData = mcData.getChildByPath("guardianGenPos");
-                foreach (Data node in guardianGenData.getChildren())
+                GuardianSpawnPoint pt = new GuardianSpawnPoint(new Point(DataTool.getIntConvert("x", node), DataTool.getIntConvert("y", node)));
+                pt.setTeam(DataTool.getIntConvert("team", node, -1));
+                pt.setTaken(false);
+                cpqMap.AddGuardianSpawnPoint(pt);
+            }
+            if (cpqInfo.getChildByPath("skill") != null)
+            {
+                foreach (var area in cpqInfo.getChildByPath("skill")!)
                 {
-                    GuardianSpawnPoint pt = new GuardianSpawnPoint(new Point(DataTool.getIntConvert("x", node), DataTool.getIntConvert("y", node)));
-                    pt.setTeam(DataTool.getIntConvert("team", node, -1));
-                    pt.setTaken(false);
-                    map.addGuardianSpawnPoint(pt);
+                    cpqMap.AddSkillId(DataTool.getInt(area));
                 }
-                if (mcData.getChildByPath("skill") != null)
-                {
-                    foreach (var area in mcData.getChildByPath("skill")!)
-                    {
-                        map.addSkillId(DataTool.getInt(area));
-                    }
-                }
+            }
 
-                if (mcData.getChildByPath("mob") != null)
+            if (cpqInfo.getChildByPath("mob") != null)
+            {
+                foreach (var area in cpqInfo.getChildByPath("mob")!)
                 {
-                    foreach (var area in mcData.getChildByPath("mob")!)
-                    {
-                        map.addMobSpawn(DataTool.getInt(area.getChildByPath("id")), DataTool.getInt(area.getChildByPath("spendCP")));
-                    }
+                    cpqMap.AddMobSpawn(DataTool.getInt(area.getChildByPath("id")), DataTool.getInt(area.getChildByPath("spendCP")));
                 }
             }
 

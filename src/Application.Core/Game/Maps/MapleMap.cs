@@ -59,13 +59,13 @@ namespace Application.Core.Game.Maps;
 
 public class MapleMap : IMap
 {
-    private ILogger log;
+    protected ILogger log;
     private static List<MapObjectType> rangedMapobjectTypes = Arrays.asList(MapObjectType.SHOP, MapObjectType.ITEM, MapObjectType.NPC, MapObjectType.MONSTER, MapObjectType.DOOR, MapObjectType.SUMMON, MapObjectType.REACTOR);
     private static Dictionary<int, KeyValuePair<int, int>?> dropBoundsCache = new(100);
 
     private Dictionary<int, IMapObject> mapobjects = new();
     private HashSet<int> selfDestructives = new();
-    private List<SpawnPoint> monsterSpawn = new();
+    protected List<SpawnPoint> monsterSpawn = new();
     private List<SpawnPoint> allMonsterSpawn = new();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
     public AtomicInteger droppedItemCount { get; set; } = new AtomicInteger(0);
@@ -86,10 +86,8 @@ public class MapleMap : IMap
     private int mapid;
     private AtomicInteger runningOid = new AtomicInteger(1000000001);
     private int returnMapId;
-    private int channel;
     private int world;
     private int seats;
-    private byte monsterRate;
     private bool clock;
     private bool boat;
     private bool docked = false;
@@ -132,19 +130,13 @@ public class MapleMap : IMap
     public Coconut? Coconut { get; set; }
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
+    public int Channel { get; set; }
+    public byte MonsterRate { get; set; }
 
-    //CPQ
-    private int maxMobs;
-    private int maxReactors;
-    private int deathCP;
-    private int timeDefault;
-    private int timeExpand;
 
     //locks
     ReaderWriterLockSlim chrLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     ReaderWriterLockSlim objectLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-    private object lootLock = new object();
 
     // due to the nature of loadMapFromWz (synchronized), sole function that calls 'generateMapDropRangeCache', this lock remains optional.
     private static object bndLock = new object();
@@ -152,13 +144,13 @@ public class MapleMap : IMap
     public MapleMap(int mapid, int world, int channel, int returnMapId, float monsterRate)
     {
         this.mapid = mapid;
-        this.channel = channel;
+        this.Channel = channel;
         this.world = world;
         this.returnMapId = returnMapId;
-        this.monsterRate = (byte)Math.Ceiling(monsterRate);
-        if (this.monsterRate == 0)
+        this.MonsterRate = (byte)Math.Ceiling(monsterRate);
+        if (this.MonsterRate == 0)
         {
-            this.monsterRate = 1;
+            this.MonsterRate = 1;
         }
         aggroMonitor = new MonsterAggroCoordinator();
         onFirstUserEnter = mapid.ToString();
@@ -255,7 +247,7 @@ public class MapleMap : IMap
 
     public IWorldChannel getChannelServer()
     {
-        return getWorldServer().getChannel(channel);
+        return getWorldServer().getChannel(Channel);
     }
 
     public IWorld getWorldServer()
@@ -1889,35 +1881,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void shuffleReactors()
-    {
-        List<Point> points = new();
-        objectLock.EnterReadLock();
-        try
-        {
-            foreach (IMapObject o in mapobjects.Values)
-            {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    points.Add(o.getPosition());
-                }
-            }
-            Collections.shuffle(points);
-            foreach (IMapObject o in mapobjects.Values)
-            {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    o.setPosition(points.remove(points.Count - 1));
-                }
-            }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
-    }
-
-    public void shuffleReactors(int first, int last)
+    public void shuffleReactors(int first = 0, int last = int.MaxValue)
     {
         List<Point> points = new();
         var reactors = getReactors();
@@ -2320,12 +2284,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnAllMonsterIdFromMapSpawnList(int id)
-    {
-        spawnAllMonsterIdFromMapSpawnList(id, 1, false);
-    }
-
-    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty, bool isPq)
+    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false)
     {
         foreach (SpawnPoint sp in getAllMonsterSpawn())
         {
@@ -2336,12 +2295,8 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnAllMonstersFromMapSpawnList()
-    {
-        spawnAllMonstersFromMapSpawnList(1, false);
-    }
 
-    public void spawnAllMonstersFromMapSpawnList(int difficulty, bool isPq)
+    public void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false)
     {
         foreach (SpawnPoint sp in getAllMonsterSpawn())
         {
@@ -2349,12 +2304,8 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnMonster(Monster monster)
-    {
-        spawnMonster(monster, 1, false);
-    }
 
-    public void spawnMonster(Monster monster, int difficulty, bool isPq)
+    public void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false)
     {
         if (mobCapacity != -1 && mobCapacity == spawnedMonstersOnMap.get())
         {
@@ -2374,28 +2325,7 @@ public class MapleMap : IMap
         monster.aggroUpdateController();
         updateBossSpawn(monster);
 
-        if ((monster.getTeam() == 1 || monster.getTeam() == 0) && (isCPQMap() || isCPQMap2()))
-        {
-            List<MCSkill>? teamS = null;
-            if (monster.getTeam() == 0)
-            {
-                teamS = redTeamBuffs;
-            }
-            else if (monster.getTeam() == 1)
-            {
-                teamS = blueTeamBuffs;
-            }
-            if (teamS != null)
-            {
-                foreach (MCSkill skil in teamS)
-                {
-                    if (skil != null)
-                    {
-                        skil.getSkill()!.applyEffect(null, monster, false, null);
-                    }
-                }
-            }
-        }
+        SetMonsterInfo(monster);
 
         if (monster.getDropPeriodTime() > 0)
         { //9300102 - Watchhog, 9300061 - Moon Bunny (HPQ), 9300093 - Tylus
@@ -2649,11 +2579,7 @@ public class MapleMap : IMap
         service.registerOverallAction(mapid, r, delay);
     }
 
-    private void registerMapSchedule(Action r, long delay)
-    {
-        OverallService service = (OverallService)this.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
-        service.registerOverallAction(mapid, r, delay);
-    }
+    private void registerMapSchedule(Action r, long delay) => registerMapSchedule(TempRunnable.Parse(r), delay);
 
     private void activateItemReactors(MapItem drop, IClient c)
     {
@@ -2733,12 +2659,8 @@ public class MapleMap : IMap
         broadcastMessage(PacketCreator.environmentChange(mapObj, newState));
     }
 
-    public void startMapEffect(string msg, int itemId)
-    {
-        startMapEffect(msg, itemId, 30000);
-    }
 
-    public void startMapEffect(string msg, int itemId, long time)
+    public void startMapEffect(string msg, int itemId, long time = 30000)
     {
         if (mapEffect != null)
         {
@@ -5105,27 +5027,9 @@ public class MapleMap : IMap
         }
     }
 
-    private List<Point> takenSpawns = new();
-    private List<GuardianSpawnPoint> guardianSpawns = new();
-    private List<MCSkill> blueTeamBuffs = new();
-    private List<MCSkill> redTeamBuffs = new();
-    private List<int> skillIds = new();
-    private List<KeyValuePair<int, int>> mobsToSpawn = new();
-
-    public List<MCSkill> getBlueTeamBuffs()
+    protected virtual void SetMonsterInfo(Monster monster)
     {
-        return blueTeamBuffs;
-    }
 
-    public List<MCSkill> getRedTeamBuffs()
-    {
-        return redTeamBuffs;
-    }
-
-    public void clearBuffList()
-    {
-        redTeamBuffs.Clear();
-        blueTeamBuffs.Clear();
     }
 
     public List<IMapObject> getAllPlayer()
@@ -5206,166 +5110,6 @@ public class MapleMap : IMap
         return false;
     }
 
-    public Point? getRandomSP(int team)
-    {
-        if (takenSpawns.Count > 0)
-        {
-            foreach (SpawnPoint sp in monsterSpawn)
-            {
-                foreach (Point pt in takenSpawns)
-                {
-                    if ((sp.getPosition().X == pt.X && sp.getPosition().Y == pt.Y) || (sp.getTeam() != team && !this.isBlueCPQMap()))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        takenSpawns.Add(pt);
-                        return sp.getPosition();
-                    }
-                }
-            }
-        }
-        else
-        {
-            foreach (SpawnPoint sp in monsterSpawn)
-            {
-                if (sp.getTeam() == team || this.isBlueCPQMap())
-                {
-                    takenSpawns.Add(sp.getPosition());
-                    return sp.getPosition();
-                }
-            }
-        }
-        return null;
-    }
-
-    public GuardianSpawnPoint? getRandomGuardianSpawn(int team)
-    {
-        bool alltaken = false;
-        foreach (GuardianSpawnPoint a in this.guardianSpawns)
-        {
-            if (!a.isTaken())
-            {
-                alltaken = false;
-                break;
-            }
-        }
-        if (alltaken)
-        {
-            return null;
-        }
-        if (this.guardianSpawns.Count > 0)
-        {
-            while (true)
-            {
-                foreach (GuardianSpawnPoint gsp in this.guardianSpawns)
-                {
-                    if (!gsp.isTaken() && Randomizer.nextDouble() < 0.3 && (gsp.getTeam() == -1 || gsp.getTeam() == team))
-                    {
-                        return gsp;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    public void addGuardianSpawnPoint(GuardianSpawnPoint a)
-    {
-        this.guardianSpawns.Add(a);
-    }
-
-    public int spawnGuardian(int team, int num)
-    {
-        try
-        {
-            if (team == 0 && redTeamBuffs.Count >= 4 || team == 1 && blueTeamBuffs.Count >= 4)
-            {
-                return 2;
-            }
-            MCSkill? skill = CarnivalFactory.getInstance().getGuardian(num);
-            if (skill == null)
-                return 0;
-
-            if (team == 0 && redTeamBuffs.Contains(skill))
-            {
-                return 0;
-            }
-            else if (team == 1 && blueTeamBuffs.Contains(skill))
-            {
-                return 0;
-            }
-            var pt = this.getRandomGuardianSpawn(team);
-            if (pt == null)
-            {
-                return -1;
-            }
-            int reactorID = 9980000 + team;
-            Reactor reactor = new Reactor(ReactorFactory.getReactorS(reactorID), reactorID);
-            pt.setTaken(true);
-            reactor.setPosition(pt.getPosition());
-            reactor.setName(team + "" + num); //lol
-            reactor.resetReactorActions(0);
-            this.spawnReactor(reactor);
-            reactor.setGuardian(pt);
-            this.buffMonsters(team, skill);
-            getReactorByOid(reactor.getObjectId())!.hitReactor(((IPlayer)this.getAllPlayer().get(0)).getClient());
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-        return 1;
-    }
-
-    public void buffMonsters(int team, MCSkill skill)
-    {
-        if (skill == null)
-        {
-            return;
-        }
-
-        if (team == 0)
-        {
-            redTeamBuffs.Add(skill);
-        }
-        else if (team == 1)
-        {
-            blueTeamBuffs.Add(skill);
-        }
-        foreach (IMapObject mmo in getMapObjects())
-        {
-            if (mmo.getType() == MapObjectType.MONSTER)
-            {
-                Monster mob = (Monster)mmo;
-                if (mob.getTeam() == team)
-                {
-                    skill.getSkill().applyEffect(null, mob, false, null);
-                }
-            }
-        }
-    }
-
-    public List<int> getSkillIds()
-    {
-        return skillIds;
-    }
-
-    public void addSkillId(int z)
-    {
-        this.skillIds.Add(z);
-    }
-
-    public void addMobSpawn(int mobId, int spendCP)
-    {
-        this.mobsToSpawn.Add(new KeyValuePair<int, int>(mobId, spendCP));
-    }
-
-    public List<KeyValuePair<int, int>> getMobsToSpawn()
-    {
-        return mobsToSpawn;
-    }
 
     public bool isCPQWinnerMap()
     {
@@ -5466,53 +5210,8 @@ public class MapleMap : IMap
         }
     }
 
-    public int getMaxMobs()
+    public virtual IMap Clone()
     {
-        return maxMobs;
-    }
-
-    public void setMaxMobs(int maxMobs)
-    {
-        this.maxMobs = maxMobs;
-    }
-
-    public int getMaxReactors()
-    {
-        return maxReactors;
-    }
-
-    public void setMaxReactors(int maxReactors)
-    {
-        this.maxReactors = maxReactors;
-    }
-
-    public int getDeathCP()
-    {
-        return deathCP;
-    }
-
-    public void setDeathCP(int deathCP)
-    {
-        this.deathCP = deathCP;
-    }
-
-    public int getTimeDefault()
-    {
-        return timeDefault;
-    }
-
-    public void setTimeDefault(int timeDefault)
-    {
-        this.timeDefault = timeDefault;
-    }
-
-    public int getTimeExpand()
-    {
-        return timeExpand;
-    }
-
-    public void setTimeExpand(int timeExpand)
-    {
-        this.timeExpand = timeExpand;
+        return GlobalTools.Mapper.Map<MapleMap>(this);
     }
 }

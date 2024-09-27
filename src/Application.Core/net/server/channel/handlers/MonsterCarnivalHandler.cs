@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Maps.Specials;
 using net.packet;
 using server.life;
 using server.partyquest;
@@ -48,7 +49,9 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                     int neededCP = 0;
                     if (tab == 0)
                     {
-                        var mobs = c.OnlinedCharacter.getMap().getMobsToSpawn();
+                        var map = (c.OnlinedCharacter.getMap() as ICPQMap)!;
+
+                        var mobs = map.getMobsToSpawn();
                         if (num >= mobs.Count || c.OnlinedCharacter.getCP() < mobs.get(num).Value)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
@@ -56,7 +59,7 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                             return;
                         }
 
-                        var mob = LifeFactory.getMonster(mobs.get(num).Key);
+                        var mob = LifeFactory.GetMonsterTrust(mobs.get(num).Key);
                         var mcpq = c.OnlinedCharacter.getMonsterCarnival();
                         if (mcpq != null)
                         {
@@ -76,8 +79,8 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                                 mcpq.summonB();
                             }
 
-                            var spawnPos = c.OnlinedCharacter.getMap().getRandomSP(c.OnlinedCharacter.getTeam());
-                            mob.setPosition(spawnPos.Value);
+                            var spawnPos = map.getRandomSP(c.OnlinedCharacter.getTeam());
+                            mob.setPosition(spawnPos);
 
                             c.OnlinedCharacter.getMap().addMonsterSpawn(mob, 1, c.OnlinedCharacter.getTeam());
                             c.OnlinedCharacter.getMap().addAllMonsterSpawn(mob, 1, c.OnlinedCharacter.getTeam());
@@ -87,8 +90,10 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                         neededCP = mobs.get(num).Value;
                     }
                     else if (tab == 1)
-                    { //debuffs
-                        List<int> skillid = c.OnlinedCharacter.getMap().getSkillIds();
+                    {
+                        var map = (c.OnlinedCharacter.getMap() as ICPQMap)!;
+                        //debuffs
+                        List<int> skillid = map.GetSkillIds();
                         if (num >= skillid.Count)
                         {
                             c.OnlinedCharacter.dropMessage(5, "An unexpected error has occurred.");
@@ -165,7 +170,8 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                                 return;
                             }
 
-                            int success = c.OnlinedCharacter.getMap().spawnGuardian(c.OnlinedCharacter.getTeam(), num);
+                            var map = c.OnlinedCharacter.getMap() as ICPQMap;
+                            int success = map.spawnGuardian(c.OnlinedCharacter.getTeam(), num);
                             if (success != 1)
                             {
                                 switch (success)
