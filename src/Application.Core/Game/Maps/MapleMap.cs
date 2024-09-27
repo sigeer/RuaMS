@@ -1881,35 +1881,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void shuffleReactors()
-    {
-        List<Point> points = new();
-        objectLock.EnterReadLock();
-        try
-        {
-            foreach (IMapObject o in mapobjects.Values)
-            {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    points.Add(o.getPosition());
-                }
-            }
-            Collections.shuffle(points);
-            foreach (IMapObject o in mapobjects.Values)
-            {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    o.setPosition(points.remove(points.Count - 1));
-                }
-            }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
-    }
-
-    public void shuffleReactors(int first, int last)
+    public void shuffleReactors(int first = 0, int last = int.MaxValue)
     {
         List<Point> points = new();
         var reactors = getReactors();
@@ -2312,12 +2284,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnAllMonsterIdFromMapSpawnList(int id)
-    {
-        spawnAllMonsterIdFromMapSpawnList(id, 1, false);
-    }
-
-    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty, bool isPq)
+    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false)
     {
         foreach (SpawnPoint sp in getAllMonsterSpawn())
         {
@@ -2328,12 +2295,8 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnAllMonstersFromMapSpawnList()
-    {
-        spawnAllMonstersFromMapSpawnList(1, false);
-    }
 
-    public void spawnAllMonstersFromMapSpawnList(int difficulty, bool isPq)
+    public void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false)
     {
         foreach (SpawnPoint sp in getAllMonsterSpawn())
         {
@@ -2341,12 +2304,8 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnMonster(Monster monster)
-    {
-        spawnMonster(monster, 1, false);
-    }
 
-    public void spawnMonster(Monster monster, int difficulty, bool isPq)
+    public void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false)
     {
         if (mobCapacity != -1 && mobCapacity == spawnedMonstersOnMap.get())
         {
@@ -5253,6 +5212,6 @@ public class MapleMap : IMap
 
     public virtual IMap Clone()
     {
-        return new MapleMap(getId(), world, Channel, getReturnMapId(), MonsterRate);
+        return GlobalTools.Mapper.Map<MapleMap>(this);
     }
 }

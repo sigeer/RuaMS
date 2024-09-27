@@ -252,7 +252,7 @@ namespace Application.Core.Game.Maps.Specials
 
         public override IMap Clone()
         {
-            return new MonsterCarnivalMap(this);
+            return GlobalTools.Mapper.Map<MonsterCarnivalMap>(this);
         }
     }
 }

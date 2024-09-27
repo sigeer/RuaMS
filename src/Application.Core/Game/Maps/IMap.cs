@@ -270,14 +270,11 @@ namespace Application.Core.Game.Maps
         void setTimeLimit(int timeLimit);
         void setTimeMob(int id, string msg);
         void setTown(bool isTown);
-        void shuffleReactors();
-        void shuffleReactors(int first, int last);
+        void shuffleReactors(int first = 0, int last = int.MaxValue);
         void shuffleReactors(List<object> list);
         void softKillAllMonsters();
-        void spawnAllMonsterIdFromMapSpawnList(int id);
-        void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty, bool isPq);
-        void spawnAllMonstersFromMapSpawnList();
-        void spawnAllMonstersFromMapSpawnList(int difficulty, bool isPq);
+        void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
+        void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
         void spawnCPQMonster(Monster mob, Point pos, int team);
         void spawnDojoMonster(Monster monster);
         void spawnDoor(DoorObject door);
@@ -290,8 +287,7 @@ namespace Application.Core.Game.Maps
         void spawnKite(Kite kite);
         void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype, short delay = 0);
         void spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery);
-        void spawnMonster(Monster monster);
-        void spawnMonster(Monster monster, int difficulty, bool isPq);
+        void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
         void spawnMonsterOnGroundBelow(int id, int x, int y);
         void spawnMonsterOnGroundBelow(Monster? mob, Point pos);
         void spawnMonsterWithEffect(Monster monster, int effect, Point pos);
