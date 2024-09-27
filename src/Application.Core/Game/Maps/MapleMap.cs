@@ -5125,6 +5125,6 @@ public class MapleMap : IMap
 
     public virtual IMap Clone()
     {
-        return this.DeepClone();
+        return this.DeepClone(mapid, world, Channel, returnMapId, MonsterRate);
     }
 }
