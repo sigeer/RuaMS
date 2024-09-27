@@ -74,7 +74,7 @@ namespace ServiceTest.Games
             {
                 var mapModel = MapFactory.loadMapFromWz(mapId, 0, 0, null);
                 var cloned = mapModel.Clone();
-                Assert.That(mapModel.getStreetName() == cloned.getStreetName*();
+                Assert.That(mapModel.getStreetName() == cloned.getStreetName());
             }
         }
     }
