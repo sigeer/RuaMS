@@ -74,7 +74,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                 return null;
             }
             if (display > 80)
-            { //Hmm
+            {
+                //Hmm
                 if (!mySkill.getAction())
                 {
                     AutobanFactory.FAST_ATTACK.autoban(chr, "WZ Edit; adding action to a skill: " + display);
@@ -125,7 +126,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     if (player.isAlive())
                     {
                         if (attack.skill == Aran.BODY_PRESSURE || attack.skill == Marauder.ENERGY_CHARGE || attack.skill == ThunderBreaker.ENERGY_CHARGE)
-                        {  // thanks IxianMace for noticing Energy Charge skills refreshing on touch
+                        {
+                            // thanks IxianMace for noticing Energy Charge skills refreshing on touch
                             // prevent touch dmg skills refreshing
                         }
                         else if (attack.skill == DawnWarrior.FINAL_ATTACK || attack.skill == WindArcher.FINAL_ATTACK)
@@ -134,21 +136,30 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             mobCount = 15;
                         }
                         else if (attack.skill == NightWalker.POISON_BOMB)
-                        {// Poison Bomb
+                        {
+                            // Poison Bomb
                             attackEffect.applyTo(player, new Point(attack.position.X, attack.position.Y));
                         }
                         else
                         {
                             attackEffect.applyTo(player);
 
-                            if (attack.skill == Page.FINAL_ATTACK_BW || attack.skill == Page.FINAL_ATTACK_SWORD || attack.skill == Fighter.FINAL_ATTACK_SWORD
-                                    || attack.skill == Fighter.FINAL_ATTACK_AXE || attack.skill == Spearman.FINAL_ATTACK_SPEAR || attack.skill == Spearman.FINAL_ATTACK_POLEARM
-                                    || attack.skill == Hunter.FINAL_ATTACK || attack.skill == Crossbowman.FINAL_ATTACK)
+                            if (attack.skill == Page.FINAL_ATTACK_BW
+                                || attack.skill == Page.FINAL_ATTACK_SWORD
+                                || attack.skill == Fighter.FINAL_ATTACK_SWORD
+                                || attack.skill == Fighter.FINAL_ATTACK_AXE
+                                || attack.skill == Spearman.FINAL_ATTACK_SPEAR
+                                || attack.skill == Spearman.FINAL_ATTACK_POLEARM
+                                || attack.skill == Hunter.FINAL_ATTACK
+                                || attack.skill == Crossbowman.FINAL_ATTACK)
                             {
 
                                 mobCount = 15;//:(
                             }
-                            else if (attack.skill == Aran.HIDDEN_FULL_DOUBLE || attack.skill == Aran.HIDDEN_FULL_TRIPLE || attack.skill == Aran.HIDDEN_OVER_DOUBLE || attack.skill == Aran.HIDDEN_OVER_TRIPLE)
+                            else if (attack.skill == Aran.HIDDEN_FULL_DOUBLE
+                                || attack.skill == Aran.HIDDEN_FULL_TRIPLE
+                                || attack.skill == Aran.HIDDEN_OVER_DOUBLE
+                                || attack.skill == Aran.HIDDEN_OVER_TRIPLE)
                             {
                                 mobCount = 12;
                             }
@@ -524,7 +535,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
                     if (attack.skill != 0)
                     {
-                        if (attackEffect.getFixDamage() != -1)
+                        if (attackEffect!.getFixDamage() != -1)
                         {
                             if (totDamageToOneMonster != attackEffect.getFixDamage() && totDamageToOneMonster != 0)
                             {
@@ -903,7 +914,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
         if (ret.skill != 0)
         {
-            int fixedValue = ret.getAttackEffect(chr, SkillFactory.getSkill(ret.skill)).getFixDamage();
+            int fixedValue = ret.getAttackEffect(chr, SkillFactory.getSkill(ret.skill))?.getFixDamage() ?? 0;
             if (fixedValue > 0)
             {
                 calcDmgMax = fixedValue;
@@ -1094,7 +1105,11 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
                 damageLines.Add(damage);
             }
-            if (ret.skill != Corsair.RAPID_FIRE || ret.skill != Aran.HIDDEN_FULL_DOUBLE || ret.skill != Aran.HIDDEN_FULL_TRIPLE || ret.skill != Aran.HIDDEN_OVER_DOUBLE || ret.skill != Aran.HIDDEN_OVER_TRIPLE)
+            if (ret.skill != Corsair.RAPID_FIRE
+                || ret.skill != Aran.HIDDEN_FULL_DOUBLE
+                || ret.skill != Aran.HIDDEN_FULL_TRIPLE
+                || ret.skill != Aran.HIDDEN_OVER_DOUBLE
+                || ret.skill != Aran.HIDDEN_OVER_TRIPLE)
             {
                 p.skip(4);
             }

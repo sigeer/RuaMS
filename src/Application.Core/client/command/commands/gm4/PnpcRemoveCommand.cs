@@ -22,6 +22,8 @@
    @Author: Ronan
 */
 
+using Application.Core.constants.game;
+
 namespace client.command.commands.gm4;
 
 
@@ -46,7 +48,7 @@ public class PnpcRemoveCommand : Command
         try
         {
             using var dbContext = new DBContext();
-            var preSearch = dbContext.Plives.Where(x => x.World == player.getWorld() && x.Map == mapId && x.Type == "n");
+            var preSearch = dbContext.Plives.Where(x => x.World == player.getWorld() && x.Map == mapId && x.Type == LifeType.NPC);
 
             if (npcId > -1)
             {

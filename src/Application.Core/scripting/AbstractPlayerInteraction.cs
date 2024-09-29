@@ -709,7 +709,7 @@ public class AbstractPlayerInteraction
                     evolved.Tameness = from.Tameness;
                     evolved.Fullness = from.Fullness;
                     evolved.Level = from.Level;
-                    evolved.setExpiration(DateTimeOffset.Now.AddMicroseconds(expires).ToUnixTimeMilliseconds());
+                    evolved.setExpiration(DateTimeOffset.Now.AddMilliseconds(expires).ToUnixTimeMilliseconds());
                     evolved.saveToDb();
                 }
 

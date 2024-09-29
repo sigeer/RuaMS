@@ -946,7 +946,7 @@ public class Monster : AbstractLifeObject
 
                     foreach (int mid in toSpawn)
                     {
-                        var mob = LifeFactory.getMonster(mid);
+                        var mob = LifeFactory.GetMonsterTrust(mid);
                         mob.setPosition(getPosition());
                         mob.setFh(getFh());
                         mob.setParentMobOid(getObjectId());
@@ -1366,21 +1366,16 @@ public class Monster : AbstractLifeObject
 
     private int broadcastStatusEffect(MonsterStatusEffect status)
     {
-        int animationTime = status.getSkill().getAnimationTime();
+        int animationTime = status.getSkill()!.getAnimationTime();
         Packet packet = PacketCreator.applyMonsterStatus(getObjectId(), status, null);
         broadcastMonsterStatusMessage(packet);
 
         return animationTime;
     }
 
-    public bool applyStatus(IPlayer from, MonsterStatusEffect status, bool poison, long duration)
+    public bool applyStatus(IPlayer from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
     {
-        return applyStatus(from, status, poison, duration, false);
-    }
-
-    public bool applyStatus(IPlayer from, MonsterStatusEffect status, bool poison, long duration, bool venom)
-    {
-        var effectSkill = status.getSkill();
+        var effectSkill = status.getSkill()!;
         switch (getMonsterEffectiveness(effectSkill.getElement()))
         {
             case ElementalEffectiveness.IMMUNE:
@@ -1392,13 +1387,14 @@ public class Monster : AbstractLifeObject
                 break;
             default:
                 {
-                    log.Warning("Unknown elemental effectiveness: {MonsterEffectiveness}", getMonsterEffectiveness(status.getSkill().getElement()));
+                    log.Warning("Unknown elemental effectiveness: {MonsterEffectiveness}", getMonsterEffectiveness(effectSkill.getElement()));
                     return false;
                 }
         }
 
         if (effectSkill.getId() == FPMage.ELEMENT_COMPOSITION)
-        { // fp compo
+        { 
+            // fp compo
             ElementalEffectiveness effectiveness = getMonsterEffectiveness(Element.POISON);
             if (effectiveness == ElementalEffectiveness.IMMUNE || effectiveness == ElementalEffectiveness.STRONG)
             {
@@ -1406,7 +1402,8 @@ public class Monster : AbstractLifeObject
             }
         }
         else if (effectSkill.getId() == ILMage.ELEMENT_COMPOSITION)
-        { // il compo
+        { 
+            // il compo
             ElementalEffectiveness effectiveness = getMonsterEffectiveness(Element.ICE);
             if (effectiveness == ElementalEffectiveness.IMMUNE || effectiveness == ElementalEffectiveness.STRONG)
             {
@@ -1414,7 +1411,8 @@ public class Monster : AbstractLifeObject
             }
         }
         else if (effectSkill.getId() == NightLord.VENOMOUS_STAR || effectSkill.getId() == Shadower.VENOMOUS_STAB || effectSkill.getId() == NightWalker.VENOM)
-        {// venom
+        {
+            // venom
             if (getMonsterEffectiveness(Element.POISON) == ElementalEffectiveness.WEAK)
             {
                 return false;

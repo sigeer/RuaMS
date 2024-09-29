@@ -53,7 +53,7 @@ public class QuestScriptManager : AbstractScriptManager
             engine = getInvocableScriptEngine(GetQuestScriptPath("medalQuest"), c);   // start generic medal quest
         }
 
-        return engine;
+        return engine!;
     }
 
     public void start(IClient c, short questid, int npc)
