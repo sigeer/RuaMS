@@ -20,9 +20,6 @@ namespace Application.Core.Game.Maps
         AtomicInteger droppedItemCount { get; set; }
         public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }
-
-        public IMap Clone();
-
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
 
         void addMapleArea(Rectangle rec);

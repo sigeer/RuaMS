@@ -1,5 +1,4 @@
 ﻿using Application.Core.Game.Life;
-using Application.Utility.Extensions;
 using server.maps;
 using server.partyquest;
 using tools;
@@ -249,11 +248,6 @@ namespace Application.Core.Game.Maps.Specials
                     }
                 }
             }
-        }
-
-        public override IMap Clone()
-        {
-            return this.DeepClone(this);
         }
     }
 }

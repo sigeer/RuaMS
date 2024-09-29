@@ -30,7 +30,6 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.scripting.Event;
 using Application.Utility;
-using Application.Utility.Extensions;
 using client;
 using client.autoban;
 using client.inventory;
@@ -49,11 +48,9 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
-using server.partyquest;
 using System.Collections.ObjectModel;
 using System.Text;
 using tools;
-using static server.partyquest.CarnivalFactory;
 
 
 namespace Application.Core.Game.Maps;
@@ -4960,6 +4957,7 @@ public class MapleMap : IMap
             case 980000401:
             case 980000501:
             case 980000601:
+
             case 980031100:
             case 980032100:
             case 980033100:
@@ -5121,10 +5119,5 @@ public class MapleMap : IMap
         {
             chrLock.ExitWriteLock();
         }
-    }
-
-    public virtual IMap Clone()
-    {
-        return this.DeepClone(mapid, world, Channel, returnMapId, MonsterRate);
     }
 }
