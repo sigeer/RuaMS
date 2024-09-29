@@ -885,10 +885,15 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public List<MonsterDropEntry> retrieveRelevantDrops()
+    /// <summary>
+    /// 只生成击杀玩家可收集的道具
+    /// </summary>
+    /// <returns></returns>
+    public List<DropEntry> retrieveRelevantDrops()
     {
         if (this.getStats().isFriendly())
-        {     // thanks Conrad for noticing friendly mobs not spawning loots after a recent update
+        {
+            // thanks Conrad for noticing friendly mobs not spawning loots after a recent update
             return MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId());
         }
 
@@ -1544,7 +1549,7 @@ public class Monster : AbstractLifeObject
             */
         }
         else if (effectSkill.getId() == 4121004 || effectSkill.getId() == 4221004)
-        { 
+        {
             // Ninja Ambush
             var skill = SkillFactory.GetSkillTrust(effectSkill.getId());
             var level = from.getSkillLevel(skill);
@@ -1587,7 +1592,7 @@ public class Monster : AbstractLifeObject
         {
             MonsterStatusEffect mse = effects.Value;
             if (mse.getMobSkill()?.getType() == skill.getType())
-            { 
+            {
                 //not checking for level.
                 toCancel.Add(effects.Key);
             }

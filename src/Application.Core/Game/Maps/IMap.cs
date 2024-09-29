@@ -20,9 +20,6 @@ namespace Application.Core.Game.Maps
         AtomicInteger droppedItemCount { get; set; }
         public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }
-
-        public IMap Clone();
-
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
 
         void addMapleArea(Rectangle rec);
@@ -85,9 +82,9 @@ namespace Application.Core.Game.Maps
         void dispose();
         void dropFromFriendlyMonster(IPlayer chr, Monster mob);
         void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
-        byte dropGlobalItemsFromMonsterOnMap(List<MonsterGlobalDropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
-        void dropItemsFromMonster(List<MonsterDropEntry> list, IPlayer chr, Monster mob, short delay);
-        byte dropItemsFromMonsterOnMap(List<MonsterDropEntry> visibleQuestEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
+        byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
+        void dropItemsFromMonster(List<DropEntry> list, IPlayer chr, Monster mob, short delay);
+        byte dropItemsFromMonsterOnMap(List<DropEntry> visibleQuestEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
         void dropMessage(int type, string message);
         bool eventStarted();
         Portal? findClosestPlayerSpawnpoint(Point from);

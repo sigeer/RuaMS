@@ -48,11 +48,9 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
-using server.partyquest;
 using System.Collections.ObjectModel;
 using System.Text;
 using tools;
-using static server.partyquest.CarnivalFactory;
 
 
 namespace Application.Core.Game.Maps;
@@ -715,31 +713,7 @@ public class MapleMap : IMap
         return new(getRoundedCoordinate(angle), (int)distn);
     }
 
-    private static void sortDropEntries(List<MonsterDropEntry> from, List<MonsterDropEntry> item, List<MonsterDropEntry> visibleQuest, List<MonsterDropEntry> otherQuest, IPlayer chr)
-    {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
-        foreach (MonsterDropEntry mde in from)
-        {
-            if (!ii.isQuestItem(mde.itemId))
-            {
-                item.Add(mde);
-            }
-            else
-            {
-                if (chr.needQuestItem(mde.questid, mde.itemId))
-                {
-                    visibleQuest.Add(mde);
-                }
-                else
-                {
-                    otherQuest.Add(mde);
-                }
-            }
-        }
-    }
-
-    public byte dropItemsFromMonsterOnMap(List<MonsterDropEntry> dropEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
+    public byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
     {
         if (dropEntry.Count == 0)
         {
@@ -751,26 +725,18 @@ public class MapleMap : IMap
         Item idrop;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        foreach (MonsterDropEntry de in dropEntry)
+        foreach (var de in dropEntry)
         {
-            float cardRate = chr.getCardRate(de.itemId);
-            int dropChance = (int)Math.Min((float)de.chance * chRate * cardRate, int.MaxValue);
+            float cardRate = chr.getCardRate(de.ItemId);
+            int dropChance = (int)Math.Min((float)de.Chance * chRate * cardRate, int.MaxValue);
 
-            if (Randomizer.nextInt(999999) < dropChance)
+            if (de.CanDrop(dropChance))
             {
-                if (droptype == 3)
+                pos.X = de.GetDropPosX(droptype, mobpos, d);
+                if (de.ItemId == 0)
                 {
-                    pos.X = mobpos + ((d % 2 == 0) ? (40 * ((d + 1) / 2)) : -(40 * (d / 2)));
-                }
-                else
-                {
-                    pos.X = mobpos + ((d % 2 == 0) ? (25 * ((d + 1) / 2)) : -(25 * (d / 2)));
-                }
-                if (de.itemId == 0)
-                { 
                     // meso
-                    int mesos = Randomizer.nextInt(de.Maximum - de.Minimum) + de.Minimum;
-
+                    int mesos = de.GetRandomCount();
                     if (mesos > 0)
                     {
                         if (chr.getBuffedValue(BuffStat.MESOUP) != null)
@@ -789,15 +755,15 @@ public class MapleMap : IMap
                 }
                 else
                 {
-                    if (ItemConstants.getInventoryType(de.itemId) == InventoryType.EQUIP)
+                    if (ItemConstants.getInventoryType(de.ItemId) == InventoryType.EQUIP)
                     {
-                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.itemId));
+                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.ItemId));
                     }
                     else
                     {
-                        idrop = new Item(de.itemId, 0, (short)(de.Maximum != 1 ? Randomizer.nextInt(de.Maximum - de.Minimum) + de.Minimum : 1));
+                        idrop = new Item(de.ItemId, 0, (short)de.GetRandomCount());
                     }
-                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.questid, delay);
+                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, delay);
                 }
                 d++;
             }
@@ -806,36 +772,29 @@ public class MapleMap : IMap
         return d;
     }
 
-    public byte dropGlobalItemsFromMonsterOnMap(List<MonsterGlobalDropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
+    public byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
     {
         Collections.shuffle(globalEntry);
 
         Item idrop;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        foreach (MonsterGlobalDropEntry de in globalEntry)
+        foreach (var de in globalEntry)
         {
-            if (Randomizer.nextInt(999999) < de.chance)
+            if (de.CanDrop())
             {
-                if (droptype == 3)
+                pos.X = de.GetDropPosX(droptype, mobpos, d);
+                if (de.ItemId != 0)
                 {
-                    pos.X = mobpos + (d % 2 == 0 ? (40 * (d + 1) / 2) : -(40 * (d / 2)));
-                }
-                else
-                {
-                    pos.X = mobpos + ((d % 2 == 0) ? (25 * (d + 1) / 2) : -(25 * (d / 2)));
-                }
-                if (de.itemId != 0)
-                {
-                    if (ItemConstants.getInventoryType(de.itemId) == InventoryType.EQUIP)
+                    if (ItemConstants.getInventoryType(de.ItemId) == InventoryType.EQUIP)
                     {
-                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.itemId));
+                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.ItemId));
                     }
                     else
                     {
-                        idrop = new Item(de.itemId, 0, (short)(de.Maximum != 1 ? Randomizer.nextInt(de.Maximum - de.Minimum) + de.Minimum : 1));
+                        idrop = new Item(de.ItemId, 0, (short)de.GetRandomCount());
                     }
-                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.questid, delay);
+                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, delay);
                     d++;
                 }
             }
@@ -868,14 +827,14 @@ public class MapleMap : IMap
         }
 
         MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
-        List<MonsterGlobalDropEntry> globalEntry = mi.getRelevantGlobalDrops(this.getId());
+        List<DropEntry> globalEntry = mi.getRelevantGlobalDrops(this.getId());
 
-        List<MonsterDropEntry> dropEntry = new();
-        List<MonsterDropEntry> visibleQuestEntry = new();
-        List<MonsterDropEntry> otherQuestEntry = new();
+        List<DropEntry> dropEntry = new();
+        List<DropEntry> visibleQuestEntry = new();
+        List<DropEntry> otherQuestEntry = new();
 
-        List<MonsterDropEntry> lootEntry = YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? mob.retrieveRelevantDrops() : mi.retrieveEffectiveDrop(mob.getId());
-        sortDropEntries(lootEntry, dropEntry, visibleQuestEntry, otherQuestEntry, chr);     // thanks Articuno, Limit, Rohenn for noticing quest loots not showing up in only-quest item drops scenario
+        List<DropEntry> lootEntry = YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? mob.retrieveRelevantDrops() : mi.retrieveEffectiveDrop(mob.getId());
+        DropEntry.ClassifyDropEntries(lootEntry, dropEntry, visibleQuestEntry, otherQuestEntry, chr);     // thanks Articuno, Limit, Rohenn for noticing quest loots not showing up in only-quest item drops scenario
 
         if (lootEntry.Count == 0)
         {   // thanks resinate
@@ -892,7 +851,7 @@ public class MapleMap : IMap
         dropItemsFromMonsterOnMap(otherQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, delay);
     }
 
-    public void dropItemsFromMonster(List<MonsterDropEntry> list, IPlayer chr, Monster mob, short delay)
+    public void dropItemsFromMonster(List<DropEntry> list, IPlayer chr, Monster mob, short delay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
@@ -1432,7 +1391,7 @@ public class MapleMap : IMap
 
     public int countPlayers()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER)).Count;
+        return getPlayers().Count;
     }
 
     public List<IMapObject> getPlayers()
@@ -3091,77 +3050,28 @@ public class MapleMap : IMap
 
     public Portal getRandomPlayerSpawnpoint()
     {
-        List<Portal> spawnPoints = new();
-        foreach (Portal localPortal in portals.Values)
-        {
-            if (localPortal.getType() >= 0 && localPortal.getType() <= 1 && localPortal.getTargetMapId() == MapId.NONE)
-            {
-                spawnPoints.Add(localPortal);
-            }
-        }
-        var portal = spawnPoints.get(Randomizer.nextInt(spawnPoints.Count));
+        var portal = Randomizer.Select(portals.Values.Where(x => x.getType() >= 0 && x.getType() <= 1 && x.getTargetMapId() == MapId.NONE));
         return portal ?? getPortal(0)!;
     }
 
     public Portal? findClosestTeleportPortal(Point from)
     {
-        Portal? closest = null;
-        double shortestDistance = double.PositiveInfinity;
-        foreach (Portal portal in portals.Values)
-        {
-            double distance = portal.getPosition().distanceSq(from);
-            if (portal.getType() == PortalConstants.TELEPORT_PORTAL && distance < shortestDistance && portal.getTargetMapId() != MapId.NONE)
-            {
-                closest = portal;
-                shortestDistance = distance;
-            }
-        }
-        return closest;
+        return portals.Values.OrderBy(x => x.getPosition().distanceSq(from)).Where(x => x.getType() == PortalConstants.TELEPORT_PORTAL && x.getTargetMapId() != MapId.NONE).FirstOrDefault();
     }
 
     public Portal? findClosestPlayerSpawnpoint(Point from)
     {
-        Portal? closest = null;
-        double shortestDistance = double.PositiveInfinity;
-        foreach (Portal portal in portals.Values)
-        {
-            double distance = portal.getPosition().distanceSq(from);
-            if (portal.getType() >= 0 && portal.getType() <= 1 && distance < shortestDistance && portal.getTargetMapId() == MapId.NONE)
-            {
-                closest = portal;
-                shortestDistance = distance;
-            }
-        }
-        return closest;
+        return portals.Values.OrderBy(x => x.getPosition().distanceSq(from)).Where(x => x.getType() >= 0 && x.getType() <= 1 && x.getTargetMapId() == MapId.NONE).FirstOrDefault();
     }
 
     public Portal? findClosestPortal(Point from)
     {
-        Portal? closest = null;
-        double shortestDistance = double.PositiveInfinity;
-        foreach (Portal portal in portals.Values)
-        {
-            double distance = portal.getPosition().distanceSq(from);
-            if (distance < shortestDistance)
-            {
-                closest = portal;
-                shortestDistance = distance;
-            }
-        }
-        return closest;
+        return portals.Values.OrderBy(x => x.getPosition().distanceSq(from)).FirstOrDefault();
     }
 
     public Portal? findMarketPortal()
     {
-        foreach (Portal portal in portals.Values)
-        {
-            var ptScript = portal.getScriptName();
-            if (ptScript != null && ptScript.Contains("market"))
-            {
-                return portal;
-            }
-        }
-        return null;
+        return portals.Values.FirstOrDefault(x => x.getScriptName()?.Contains("market") == true);
     }
 
     /*
@@ -4060,52 +3970,52 @@ public class MapleMap : IMap
         return false;
     }
 
-    public class MobLootEntry : AbstractRunnable
-    {
+    //public class MobLootEntry : AbstractRunnable
+    //{
 
-        private byte droptype;
-        private int mobpos;
-        private int chRate;
-        private Point pos;
-        short delay;
-        private List<MonsterDropEntry> dropEntry;
-        private List<MonsterDropEntry> visibleQuestEntry;
-        private List<MonsterDropEntry> otherQuestEntry;
-        private List<MonsterGlobalDropEntry> globalEntry;
-        private IPlayer chr;
-        private Monster mob;
-        IMap _map;
-        public MobLootEntry(IMap map, byte droptype, int mobpos, int chRate, Point pos, short delay, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, IPlayer chr, Monster mob)
-        {
-            _map = map;
-            this.droptype = droptype;
-            this.mobpos = mobpos;
-            this.chRate = chRate;
-            this.pos = pos;
-            this.delay = delay;
-            this.dropEntry = dropEntry;
-            this.visibleQuestEntry = visibleQuestEntry;
-            this.otherQuestEntry = otherQuestEntry;
-            this.globalEntry = globalEntry;
-            this.chr = chr;
-            this.mob = mob;
-        }
+    //    private byte droptype;
+    //    private int mobpos;
+    //    private int chRate;
+    //    private Point pos;
+    //    short delay;
+    //    private List<MonsterDropEntry> dropEntry;
+    //    private List<MonsterDropEntry> visibleQuestEntry;
+    //    private List<MonsterDropEntry> otherQuestEntry;
+    //    private List<MonsterGlobalDropEntry> globalEntry;
+    //    private IPlayer chr;
+    //    private Monster mob;
+    //    IMap _map;
+    //    public MobLootEntry(IMap map, byte droptype, int mobpos, int chRate, Point pos, short delay, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, IPlayer chr, Monster mob)
+    //    {
+    //        _map = map;
+    //        this.droptype = droptype;
+    //        this.mobpos = mobpos;
+    //        this.chRate = chRate;
+    //        this.pos = pos;
+    //        this.delay = delay;
+    //        this.dropEntry = dropEntry;
+    //        this.visibleQuestEntry = visibleQuestEntry;
+    //        this.otherQuestEntry = otherQuestEntry;
+    //        this.globalEntry = globalEntry;
+    //        this.chr = chr;
+    //        this.mob = mob;
+    //    }
 
-        public override void HandleRun()
-        {
-            byte d = 1;
+    //    public override void HandleRun()
+    //    {
+    //        byte d = 1;
 
-            // Normal Drops
-            d = _map.dropItemsFromMonsterOnMap(dropEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
+    //        // Normal Drops
+    //        d = _map.dropItemsFromMonsterOnMap(dropEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
 
-            // Global Drops
-            d = _map.dropGlobalItemsFromMonsterOnMap(globalEntry, pos, d, droptype, mobpos, chr, mob, delay);
+    //        // Global Drops
+    //        d = _map.dropGlobalItemsFromMonsterOnMap(globalEntry, pos, d, droptype, mobpos, chr, mob, delay);
 
-            // Quest Drops
-            d = _map.dropItemsFromMonsterOnMap(visibleQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
-            _map.dropItemsFromMonsterOnMap(otherQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
-        }
-    }
+    //        // Quest Drops
+    //        d = _map.dropItemsFromMonsterOnMap(visibleQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
+    //        _map.dropItemsFromMonsterOnMap(otherQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
+    //    }
+    //}
 
     private class ActivateItemReactor : AbstractRunnable
     {
@@ -5047,6 +4957,7 @@ public class MapleMap : IMap
             case 980000401:
             case 980000501:
             case 980000601:
+
             case 980031100:
             case 980032100:
             case 980033100:
@@ -5208,10 +5119,5 @@ public class MapleMap : IMap
         {
             chrLock.ExitWriteLock();
         }
-    }
-
-    public virtual IMap Clone()
-    {
-        return GlobalTools.Mapper.Map<MapleMap>(this);
     }
 }

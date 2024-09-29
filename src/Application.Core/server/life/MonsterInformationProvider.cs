@@ -20,6 +20,7 @@
  */
 
 
+using Application.Core.Game.Life;
 using constants.inventory;
 using provider;
 using provider.wz;
@@ -41,19 +42,19 @@ public class MonsterInformationProvider
         return instance;
     }
 
-    private List<MonsterGlobalDropEntry> globaldrops = new();
+    private List<DropEntry> globaldrops = new();
 
     private HashSet<int> hasNoMultiEquipDrops = new();
 
-    private ConcurrentDictionary<int, List<MonsterGlobalDropEntry>> continentdrops = new();
-    private ConcurrentDictionary<int, List<MonsterDropEntry>> extraMultiEquipDrops = new();
+    private ConcurrentDictionary<int, List<DropEntry>> continentdrops = new();
+    private ConcurrentDictionary<int, List<DropEntry>> extraMultiEquipDrops = new();
 
     private ConcurrentDictionary<KeyValuePair<int, int>, int> mobAttackAnimationTime = new();
     private ConcurrentDictionary<MobSkill, int> mobSkillAnimationTime = new();
 
     private ConcurrentDictionary<int, KeyValuePair<int, int>> mobAttackInfo = new();
 
-    private Dictionary<int, List<MonsterDropEntry>> drops = new();
+    private Dictionary<int, List<DropEntry>> drops = new();
     private Dictionary<int, List<int>> dropsChancePool = new();    // thanks to ronan
     private Dictionary<int, bool> mobBossCache = new();
     private Dictionary<int, string> mobNameCache = new();
@@ -63,7 +64,7 @@ public class MonsterInformationProvider
         retrieveGlobal();
     }
 
-    public List<MonsterGlobalDropEntry> getRelevantGlobalDrops(int mapid)
+    public List<DropEntry> getRelevantGlobalDrops(int mapid)
     {
         int continentid = mapid / 100000000;
 
@@ -71,7 +72,7 @@ public class MonsterInformationProvider
         if (contiItems == null)
         {   
             // continent separated global drops found thanks to marcuswoon
-            contiItems = globaldrops.Where(e => e.continentid < 0 || e.continentid == continentid).ToList();
+            contiItems = globaldrops.Where(e => e.ContinentId < 0 || e.ContinentId == continentid).ToList();
 
             continentdrops.AddOrUpdate(continentid, contiItems);
         }
@@ -85,7 +86,7 @@ public class MonsterInformationProvider
         {
             using var dbContext = new DBContext();
             globaldrops = dbContext.DropDataGlobals.Where(x => x.Chance > 0).ToList()
-                .Select(x => new MonsterGlobalDropEntry(x.Itemid, x.Chance, x.Continent, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
+                .Select(x => new DropEntry(x.Continent, x.Itemid, x.Chance,  x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
         }
         catch (Exception e)
         {
@@ -93,29 +94,29 @@ public class MonsterInformationProvider
         }
     }
 
-    public List<MonsterDropEntry> retrieveEffectiveDrop(int monsterId)
+    public List<DropEntry> retrieveEffectiveDrop(int monsterId)
     {
         // this reads the drop entries searching for multi-equip, properly processing them
 
-        List<MonsterDropEntry> list = retrieveDrop(monsterId);
-        if (hasNoMultiEquipDrops.Contains(monsterId) || !YamlConfig.config.server.USE_MULTIPLE_SAME_EQUIP_DROP)
+        List<DropEntry> list = retrieveDrop(monsterId);
+        if (!YamlConfig.config.server.USE_MULTIPLE_SAME_EQUIP_DROP || hasNoMultiEquipDrops.Contains(monsterId))
         {
             return list;
         }
 
         var multiDrops = extraMultiEquipDrops.GetValueOrDefault(monsterId);
-        List<MonsterDropEntry> extra = new();
+        List<DropEntry> extra = new();
         if (multiDrops == null)
         {
             multiDrops = new();
 
-            foreach (MonsterDropEntry mde in list)
+            foreach (var mde in list)
             {
-                if (ItemConstants.isEquipment(mde.itemId) && mde.Maximum > 1)
+                if (ItemConstants.isEquipment(mde.ItemId) && mde.MaxCount > 1)
                 {
                     multiDrops.Add(mde);
 
-                    int rnd = Randomizer.rand(mde.Minimum, mde.Maximum);
+                    int rnd = mde.GetRandomCount();
                     for (int i = 0; i < rnd - 1; i++)
                     {
                         extra.Add(mde);   // this passes copies of the equips' MDE with min/max quantity > 1, but idc on equips they are unused anyways
@@ -134,9 +135,9 @@ public class MonsterInformationProvider
         }
         else
         {
-            foreach (MonsterDropEntry mde in multiDrops)
+            foreach (var mde in multiDrops)
             {
-                int rnd = Randomizer.rand(mde.Minimum, mde.Maximum);
+                int rnd = mde.GetRandomCount();
                 for (int i = 0; i < rnd - 1; i++)
                 {
                     extra.Add(mde);
@@ -144,25 +145,25 @@ public class MonsterInformationProvider
             }
         }
 
-        List<MonsterDropEntry> ret = new(list);
+        List<DropEntry> ret = new(list);
         ret.AddRange(extra);
 
         return ret;
     }
 
-    public List<MonsterDropEntry> retrieveDrop(int monsterId)
+    public List<DropEntry> retrieveDrop(int monsterId)
     {
         if (drops.ContainsKey(monsterId))
         {
             return drops[monsterId];
         }
-        List<MonsterDropEntry> ret = new();
+        List<DropEntry> ret = new();
 
         try
         {
             using var dbContext = new DBContext();
             var ds = dbContext.DropData.Where(x => x.Dropperid == monsterId).Select(x => new { x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid }).ToList();
-            ret = ds.Select(x => new MonsterDropEntry(x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
+            ret = ds.Select(x => new DropEntry(x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
 
         }
         catch (Exception e)
@@ -185,15 +186,15 @@ public class MonsterInformationProvider
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        List<MonsterDropEntry> dropList = retrieveDrop(monsterId);
+        var dropList = retrieveDrop(monsterId);
         List<int> ret = new();
 
         int accProp = 0;
-        foreach (MonsterDropEntry mde in dropList)
+        foreach (var mde in dropList)
         {
-            if (!ii.isQuestItem(mde.itemId) && !ii.isPartyQuestItem(mde.itemId))
+            if (!ii.isQuestItem(mde.ItemId) && !ii.isPartyQuestItem(mde.ItemId))
             {
-                accProp += mde.chance;
+                accProp += mde.Chance;
             }
 
             ret.Add(accProp);

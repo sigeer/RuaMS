@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Game.Life;
 using server.life;
 using server.quest;
 
@@ -30,14 +31,14 @@ namespace server.loot;
 public class LootManager
 {
 
-    private static bool isRelevantDrop(MonsterDropEntry dropEntry, List<IPlayer> players, List<LootInventory> playersInv)
+    private static bool isRelevantDrop(DropEntry dropEntry, List<IPlayer> players, List<LootInventory> playersInv)
     {
         int qStartAmount = 0, qCompleteAmount = 0;
-        Quest quest = Quest.getInstance(dropEntry.questid);
+        Quest quest = Quest.getInstance(dropEntry.QuestId);
         if (quest != null)
         {
-            qStartAmount = quest.getStartItemAmountNeeded(dropEntry.itemId);
-            qCompleteAmount = quest.getCompleteItemAmountNeeded(dropEntry.itemId);
+            qStartAmount = quest.getStartItemAmountNeeded(dropEntry.ItemId);
+            qCompleteAmount = quest.getCompleteItemAmountNeeded(dropEntry.ItemId);
         }
 
         //bool restricted = ItemInformationProvider.getInstance().isPickupRestricted(dropEntry.itemId);
@@ -45,9 +46,9 @@ public class LootManager
         {
             LootInventory chrInv = playersInv.get(i);
 
-            if (dropEntry.questid > 0)
+            if (dropEntry.QuestId > 0)
             {
-                int qItemAmount, chrQuestStatus = players.get(i).getQuestStatus(dropEntry.questid);
+                int qItemAmount, chrQuestStatus = players.get(i).getQuestStatus(dropEntry.QuestId);
                 if (chrQuestStatus == 0)
                 {
                     qItemAmount = qStartAmount;
@@ -63,7 +64,7 @@ public class LootManager
 
                 // thanks kvmba for noticing quest items with no required amount failing to be detected as such
 
-                int qItemStatus = chrInv.hasItem(dropEntry.itemId, qItemAmount);
+                int qItemStatus = chrInv.hasItem(dropEntry.ItemId, qItemAmount);
                 if (qItemStatus == 2)
                 {
                     continue;
@@ -80,9 +81,9 @@ public class LootManager
         return false;
     }
 
-    public static List<MonsterDropEntry> retrieveRelevantDrops(int monsterId, List<IPlayer> players)
+    public static List<DropEntry> retrieveRelevantDrops(int monsterId, List<IPlayer> players)
     {
-        List<MonsterDropEntry> loots = MonsterInformationProvider.getInstance().retrieveEffectiveDrop(monsterId);
+        List<DropEntry> loots = MonsterInformationProvider.getInstance().retrieveEffectiveDrop(monsterId);
         if (loots.Count == 0)
         {
             return loots;
