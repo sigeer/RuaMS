@@ -1337,9 +1337,8 @@ public class MapleMap : IMap
     public int countMonster(int minid, int maxid)
     {
         int count = 0;
-        foreach (IMapObject m in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var mob in getAllMonsters())
         {
-            Monster mob = (Monster)m;
             if (mob.getId() >= minid && mob.getId() <= maxid)
             {
                 count++;
@@ -1348,10 +1347,7 @@ public class MapleMap : IMap
         return count;
     }
 
-    public int countMonsters()
-    {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)).Count;
-    }
+    public int countMonsters() => getMonsters().Count;
 
     public int countReactors()
     {
@@ -1717,9 +1713,8 @@ public class MapleMap : IMap
     {
         closeMapSpawnPoints();
 
-        foreach (IMapObject monstermo in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var monster in getAllMonsters())
         {
-            Monster monster = (Monster)monstermo;
             if (monster.getStats().isFriendly())
             {
                 continue;
@@ -1736,9 +1731,8 @@ public class MapleMap : IMap
     {
         closeMapSpawnPoints();
 
-        foreach (IMapObject monstermo in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var monster in getAllMonsters())
         {
-            Monster monster = (Monster)monstermo;
             if (monster.getStats().isFriendly())
             {
                 continue;
@@ -1752,10 +1746,8 @@ public class MapleMap : IMap
     {
         closeMapSpawnPoints();
 
-        foreach (IMapObject monstermo in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var monster in getAllMonsters())
         {
-            Monster monster = (Monster)monstermo;
-
             killMonster(monster, null, false, 1);
         }
     }
