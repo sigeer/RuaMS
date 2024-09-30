@@ -20,7 +20,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace client;
+using Application.Core.Game.TheWorld;
+
+namespace Application.Core.Game.Relation;
 
 
 /**
@@ -34,14 +36,17 @@ public class Ring : IComparable<Ring>
     private int itemId;
     private string partnerName;
     private bool _equipped = false;
+    public int PartnerRingId => ringId2;
+    private IPlayer? _partner;
+    public IPlayer Partner => _partner ??= AllPlayerStorage.GetOrAddCharacterByIdOrThrow(partnerId) ;
 
     public Ring(int id, int id2, int partnerId, int itemid, string partnername)
     {
-        this.ringId = id;
-        this.ringId2 = id2;
+        ringId = id;
+        ringId2 = id2;
         this.partnerId = partnerId;
-        this.itemId = itemid;
-        this.partnerName = partnername;
+        itemId = itemid;
+        partnerName = partnername;
     }
 
     public int getRingId()
@@ -76,12 +81,12 @@ public class Ring : IComparable<Ring>
 
     public void equip()
     {
-        this._equipped = true;
+        _equipped = true;
     }
 
     public void unequip()
     {
-        this._equipped = false;
+        _equipped = false;
     }
 
     public override bool Equals(object? o)
@@ -92,7 +97,7 @@ public class Ring : IComparable<Ring>
     public override int GetHashCode()
     {
         int hash = 5;
-        hash = 53 * hash + this.ringId;
+        hash = 53 * hash + ringId;
         return hash;
     }
 

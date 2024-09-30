@@ -51,3 +51,5 @@ TimeSpan.FromSeconds($1)
 	`Channel` -> `WorldChannel`
 	`Character` -> `CharacterManager`
 	`Wedding` -> `WeddingPackets`
+- 一些静态方法进行了移动
+	`RingActionHandler`中的静态方法移动到了`RingManager`
