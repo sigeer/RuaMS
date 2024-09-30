@@ -1,6 +1,7 @@
 
 
 using DotNetty.Buffers;
+using System.Buffers;
 using System.Text;
 
 namespace net.packet;
@@ -61,9 +62,16 @@ public class ByteBufInPacket : InPacket
     public string readString()
     {
         short length = readShort();
-        byte[] stringBytes = new byte[length];
-        byteBuf.ReadBytes(stringBytes);
-        return Encoding.UTF8.GetString(stringBytes);
+        var stringBytes = ArrayPool<byte>.Shared.Rent(length);
+        try
+        {
+            byteBuf.ReadBytes(stringBytes, 0, length);
+            return Encoding.UTF8.GetString(stringBytes, 0, length);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(stringBytes);
+        }
     }
 
     public byte[] readBytes(int numberOfBytes)
