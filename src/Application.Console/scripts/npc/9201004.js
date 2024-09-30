@@ -127,7 +127,7 @@ function action(mode, type, selection) {
             }
 
             cm.gainMeso(-divorceFee);
-            RingActionHandler.breakMarriageRing(cm.getPlayer(), ringObj.getItemId());
+            RingManager.BreakMarriageRing(cm.getPlayer(), ringObj.getItemId());
             cm.gainItem(ringObj.getItemId(), -1);
 
             cm.sendOk("You have divorced from your partner.");

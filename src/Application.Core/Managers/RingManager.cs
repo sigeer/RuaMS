@@ -1,9 +1,10 @@
-﻿using Application.Core.model;
-using client;
+﻿using Application.Core.Game.Relation;
+using Application.Core.model;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.EntityFrameworkCore;
 using server;
+using tools.packets;
 
 namespace Application.Core.Managers
 {
@@ -89,6 +90,176 @@ namespace Application.Core.Managers
             partner.addMarriageRing(LoadFromDb(rings.PartnerRingId));
             InventoryManipulator.addFromDrop(partner.getClient(), ringEqp, false, -1);
             partner.broadcastMarriageMessage();
+        }
+
+        public static void BreakMarriageRing(IPlayer chr, int wItemId)
+        {
+            InventoryType type = InventoryTypeUtils.getByType((sbyte)(wItemId / 1000000));
+            var wItem = chr.getInventory(type).findById(wItemId);
+            bool weddingToken = (wItem != null && type == InventoryType.ETC && wItemId / 10000 == 403);
+            bool weddingRing = (wItem != null && wItemId / 10 == 111280);
+
+            if (weddingRing)
+            {
+                if (chr.getPartnerId() > 0)
+                {
+                    BreakMarriage(chr);
+                }
+
+                chr.getMap().disappearingItemDrop(chr, chr, wItem!, chr.getPosition());
+            }
+            else if (weddingToken)
+            {
+                if (chr.getPartnerId() > 0)
+                {
+                    BreakEngagement(chr);
+                }
+
+                chr.getMap().disappearingItemDrop(chr, chr, wItem!, chr.getPosition());
+            }
+        }
+
+        static object breakMarriageLock = new object();
+        private static void BreakMarriage(IPlayer chr)
+        {
+            lock (breakMarriageLock)
+            {
+                int partnerid = chr.getPartnerId();
+                if (partnerid <= 0)
+                {
+                    return;
+                }
+
+                chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
+                RingManager.RemoveRing(chr.getMarriageRing());
+
+                var partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
+                if (partner == null || !partner.IsOnlined)
+                {
+                    EraseEngagementOffline(partnerid);
+                }
+                else
+                {
+                    partner.dropMessage(5, chr.getName() + " has decided to break up the marriage.");
+
+                    //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
+                    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                    ResetRingId(partner);
+                    partner.setPartnerId(-1);
+                    partner.setMarriageItemId(-1);
+                    partner.addMarriageRing(null);
+                }
+
+                chr.dropMessage(5, "You have successfully break the marriage with " + CharacterManager.getNameById(partnerid) + ".");
+
+                //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
+                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                ResetRingId(chr);
+                chr.setPartnerId(-1);
+                chr.setMarriageItemId(-1);
+                chr.addMarriageRing(null);
+            }
+        }
+
+        private static void ResetRingId(IPlayer player)
+        {
+            int ringitemid = player.getMarriageRing()!.getItemId();
+
+            var it = player.getInventory(InventoryType.EQUIP).findById(ringitemid) ?? player.getInventory(InventoryType.EQUIPPED).findById(ringitemid);
+            if (it != null)
+            {
+                Equip eqp = (Equip)it;
+                eqp.setRingId(-1);
+            }
+        }
+
+        static object breakEngagementLock = new object();
+        private static void BreakEngagement(IPlayer chr)
+        {
+            lock (breakEngagementLock)
+            {
+
+
+                int partnerid = chr.getPartnerId();
+                int marriageitemid = chr.getMarriageItemId();
+
+                chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
+
+                var partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
+                if (partner == null || !partner.IsOnlined)
+                {
+                    breakEngagementOffline(partnerid);
+                }
+                else
+                {
+                    partner.dropMessage(5, chr.getName() + " has decided to break up the engagement.");
+
+                    int partnerMarriageitemid = marriageitemid + ((chr.getGender() == 0) ? 1 : -1);
+                    if (partner.haveItem(partnerMarriageitemid))
+                    {
+                        InventoryManipulator.removeById(partner.getClient(), InventoryType.ETC, partnerMarriageitemid, 1, false, false);
+                    }
+
+                    //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
+                    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                    partner.setPartnerId(-1);
+                    partner.setMarriageItemId(-1);
+                }
+
+                if (chr.haveItem(marriageitemid))
+                {
+                    InventoryManipulator.removeById(chr.getClient(), InventoryType.ETC, marriageitemid, 1, false, false);
+                }
+                chr.dropMessage(5, "You have successfully break the engagement with " + CharacterManager.getNameById(partnerid) + ".");
+
+                //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
+                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                chr.setPartnerId(-1);
+                chr.setMarriageItemId(-1);
+            }
+        }
+
+        private static void EraseEngagementOffline(int characterId)
+        {
+            try
+            {
+                using var dbContext = new DBContext();
+                EraseEngagementOffline(characterId, dbContext);
+            }
+            catch (Exception e)
+            {
+                Log.Logger.Error(e.ToString());
+            }
+        }
+
+        private static void EraseEngagementOffline(int characterId, DBContext dbContext)
+        {
+            dbContext.Characters.Where(x => x.Id == characterId).ExecuteUpdate(x => x.SetProperty(y => y.MarriageItemId, -1).SetProperty(y => y.PartnerId, -1));
+        }
+
+        private static void breakEngagementOffline(int characterId)
+        {
+            try
+            {
+                using var dbContext = new DBContext();
+                var dataItem = dbContext.Characters.Where(x => x.Id == characterId).Select(x => new { x.MarriageItemId }).FirstOrDefault();
+                if (dataItem != null)
+                {
+                    int marriageItemId = dataItem.MarriageItemId;
+
+                    if (marriageItemId > 0)
+                    {
+                        dbContext.Inventoryitems.Where(x => x.Itemid == marriageItemId && x.Characterid == characterId)
+                                .ExecuteUpdate(x => x.SetProperty(y => y.Expiration, 0));
+                    }
+                }
+
+                EraseEngagementOffline(characterId, dbContext);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error("Error updating offline breakup " + ex.Message);
+            }
         }
     }
 }
