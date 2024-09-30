@@ -21,6 +21,9 @@
 */
 namespace server.life;
 
+/// <summary>
+/// 元素（克制？）,物理，火毒冰雷圣暗
+/// </summary>
 public class Element : EnumClass
 {
     public readonly static Element NEUTRAL = new(0);

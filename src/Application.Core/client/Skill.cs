@@ -41,6 +41,7 @@ public class Skill: ISkill
     {
         this.id = id;
         this.job = id / 10000;
+        element = Element.NEUTRAL;
     }
 
     public int getId()
@@ -50,7 +51,7 @@ public class Skill: ISkill
 
     public StatEffect getEffect(int level)
     {
-        return effects.get(level - 1);
+        return effects.ElementAtOrDefault(level - 1) ?? throw new BusinessResException($"Skill Id = {id}, Level = {level}");
     }
 
     public int getMaxLevel()

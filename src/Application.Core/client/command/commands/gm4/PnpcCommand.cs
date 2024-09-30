@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.constants.game;
 using server.life;
 using tools;
 
@@ -63,14 +64,14 @@ public class PnpcCommand : Command
         var checkpos = player.getMap().getGroundBelow(player.getPosition());
         int xpos = checkpos.X;
         int ypos = checkpos.Y;
-        int fh = player.getMap().getFootholds().findBelow(checkpos).getId();
+        int fh = player.getMap().getFootholds()!.findBelow(checkpos)!.getId();
 
         if (npc != null && !npc.getName().Equals("MISSINGNO"))
         {
             try
             {
                 using var dbContext = new DBContext();
-                var model = new Plife(player.getWorld(), mapId, npcId, -1, xpos, ypos, fh, "n");
+                var model = new Plife(player.getWorld(), mapId, npcId, -1, xpos, ypos, fh, LifeType.NPC);
                 dbContext.Plives.Add(model);
                 dbContext.SaveChanges();
 

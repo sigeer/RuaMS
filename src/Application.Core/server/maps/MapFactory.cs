@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.constants.game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
@@ -51,11 +52,10 @@ public class MapFactory
     {
         foreach (var life in mapData.getChildByPath("life"))
         {
-            life.getName();
             var id = DataTool.getString(life.getChildByPath("id")) ?? "0";
             var type = DataTool.getString(life.getChildByPath("type"));
             int team = DataTool.getInt("team", life, -1);
-            if (map.isCPQMap2() && type == "m")
+            if (map.isCPQMap2() && type == LifeType.Monster)
             {
                 if ((int.Parse(life.getName()) % 2) == 0)
                 {

@@ -2550,8 +2550,8 @@ public class MapleMap : IMap
 
             if (react.getReactorType() == 100)
             {
-                var reactItem = react.getReactItem(react.getEventState()).GetValueOrDefault();
-                if (reactItem.Key == item.getItemId() && reactItem.Value == item.getQuantity())
+                var reactItem = react.getReactItem(react.getEventState())!;
+                if (reactItem.ItemId == item.getItemId() && reactItem.Quantity == item.getQuantity())
                 {
 
                     if (react.getArea().Contains(drop.getPosition()))
@@ -2568,8 +2568,8 @@ public class MapleMap : IMap
     {
         if (react.getReactorType() == 100)
         {
-            var reactProp = react.getReactItem(react.getEventState()).GetValueOrDefault();
-            int reactItem = reactProp.Key, reactQty = reactProp.Value;
+            var reactProp = react.getReactItem(react.getEventState())!;
+            int reactItem = reactProp.ItemId, reactQty = reactProp.Quantity;
             Rectangle reactArea = react.getArea();
 
             List<MapItem> list;

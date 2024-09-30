@@ -129,77 +129,42 @@ public class NPCConversationManager : AbstractPlayerInteraction
         getClient().sendPacket(PacketCreator.enableActions());
     }
 
-    public void sendNext(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", 0));
-    }
-
-    public void sendPrev(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", 0));
-    }
-
-    public void sendNextPrev(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", 0));
-    }
-
-    public void sendOk(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", 0));
-    }
-
     public void sendDefault()
     {
         sendOk(getDefaultTalk(npc));
     }
 
-    public void sendYesNo(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", 0));
-    }
-
-    public void sendAcceptDecline(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", 0));
-    }
-
-    public void sendSimple(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", 0));
-    }
-
-    public void sendNext(string text, byte speaker)
+    public void sendNext(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker));
     }
 
-    public void sendPrev(string text, byte speaker)
+    public void sendPrev(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker));
     }
 
-    public void sendNextPrev(string text, byte speaker)
+    public void sendNextPrev(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker));
     }
 
-    public void sendOk(string text, byte speaker)
+    public void sendOk(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker));
     }
 
-    public void sendYesNo(string text, byte speaker)
+    public void sendYesNo(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker));
     }
 
-    public void sendAcceptDecline(string text, byte speaker)
+    public void sendAcceptDecline(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker));
     }
 
-    public void sendSimple(string text, byte speaker)
+    public void sendSimple(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker));
     }

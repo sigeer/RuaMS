@@ -21,6 +21,7 @@
 */
 
 
+using client.inventory;
 using provider;
 using provider.wz;
 using tools;
@@ -40,7 +41,7 @@ public class ReactorFactory
         if (stats == null)
         {
             int infoId = rid;
-            Data reactorData = data.getData(StringUtil.getLeftPaddedStr(infoId + ".img", '0', 11));
+            var reactorData = data.getData(StringUtil.getLeftPaddedStr(infoId + ".img", '0', 11));
             var link = reactorData.getChildByPath("info/link");
             if (link != null)
             {
@@ -69,13 +70,15 @@ public class ReactorFactory
                     if (reactorInfoData_ != null && reactorInfoData_.getChildByPath("0") != null)
                     {
                         var reactorInfoData = reactorInfoData_.getChildByPath("0");
-                        KeyValuePair<int, int>? reactItem = null;
+                        ItemQuantity? reactItem = null;
                         int type = DataTool.getIntConvert("type", reactorInfoData);
                         if (type == 100)
-                        { //reactor waits for item
+                        {
+                            //reactor waits for item
                             reactItem = new(DataTool.getIntConvert("0", reactorInfoData), DataTool.getIntConvert("1", reactorInfoData, 1));
                             if (!areaSet)
-                            { //only set area of effect for item-triggered reactors once
+                            {
+                                //only set area of effect for item-triggered reactors once
                                 stats.setTL(DataTool.getPoint("lt", reactorInfoData) ?? Point.Empty);
                                 stats.setBR(DataTool.getPoint("rb", reactorInfoData) ?? Point.Empty);
                                 areaSet = true;
@@ -153,13 +156,15 @@ public class ReactorFactory
                                 }
                                 else
                                 {
-                                    KeyValuePair<int, int>? reactItem = null;
+                                    ItemQuantity? reactItem = null;
                                     int type = DataTool.getIntConvert("type", fknexon);
                                     if (type == 100)
-                                    { //reactor waits for item
+                                    { 
+                                        //reactor waits for item
                                         reactItem = new(DataTool.getIntConvert("0", fknexon), DataTool.getIntConvert("1", fknexon));
                                         if (!areaSet || loadArea)
-                                        { //only set area of effect for item-triggered reactors once
+                                        { 
+                                            //only set area of effect for item-triggered reactors once
                                             stats.setTL(DataTool.getPoint("lt", fknexon) ?? Point.Empty);
                                             stats.setBR(DataTool.getPoint("rb", fknexon) ?? Point.Empty);
                                             areaSet = true;

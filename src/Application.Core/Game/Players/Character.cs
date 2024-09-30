@@ -2013,15 +2013,9 @@ public partial class Player
 
     public void forceUpdateItem(Item item)
     {
-        List<ModifyInventory> mods = new();
-        mods.Add(new ModifyInventory(3, item));
-        mods.Add(new ModifyInventory(0, item));
+        List<ModifyInventory> mods = [new ModifyInventory(3, item), new ModifyInventory(0, item)];
         sendPacket(PacketCreator.modifyInventory(true, mods));
     }
-
-
-
-
 
     private KeyValuePair<int, int> applyFame(int delta)
     {
@@ -3439,7 +3433,8 @@ public partial class Player
         var combo = SkillFactory.GetSkillTrust(skillid);
         var stat = new BuffStatValue(BuffStat.COMBO, 1);
         setBuffedValue(BuffStat.COMBO, 1);
-        sendPacket(PacketCreator.giveBuff(skillid,
+        sendPacket(PacketCreator.giveBuff(
+            skillid,
             combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.Now.ToUnixTimeMilliseconds()),
             stat));
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
@@ -3603,7 +3598,8 @@ public partial class Player
     }
 
     public bool isGuildLeader()
-    {    // true on guild master or jr. master
+    {
+        // true on guild master or jr. master
         return GuildId > 0 && GuildRank < 3;
     }
 
