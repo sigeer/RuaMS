@@ -13,6 +13,8 @@
             var objType = list.GetType();
             if (objType.IsGenericType && objType.GetGenericTypeDefinition() == typeof(List<>))
                 return (int)objType.GetProperty("Count")!.GetValue(list)!;
+            if (objType.IsArray && list is Array arr)
+                return arr.Length;
             return 0;
         }
 
@@ -30,6 +32,10 @@
                         return indexer.GetValue(list, new object[] { index });
                     }
                 }
+            }
+            if (objType.IsArray && list is Array arr)
+            {
+                return arr.GetValue(index);
             }
             return null;
         }
