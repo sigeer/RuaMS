@@ -70,19 +70,7 @@ namespace Application.Core.Game.Players;
 
 public partial class Player
 {
-    private ITeam? teamModel;
-    public ITeam? TeamModel
-    {
-        get
-        {
-            return teamModel;
-        }
-        private set
-        {
-            teamModel = value;
-            Party = teamModel?.getId() ?? 0;
-        }
-    }
+
     public IGuild? GuildModel => getGuild();
     public IAlliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
@@ -231,7 +219,7 @@ public partial class Player
     private bool blockCashShop = false;
     private bool allowExpGain = true;
     private byte pendantExp = 0, lastmobcount = 0;
-    sbyte doorSlot = -1;
+
 
     public Dictionary<string, Events> Events { get; set; }
 
@@ -1188,173 +1176,6 @@ public partial class Player
 
         return lastVisited;
     }
-
-    public void partyOperationUpdate(ITeam party, List<IPlayer>? exPartyMembers)
-    {
-        List<WeakReference<IMap>> mapids;
-
-        Monitor.Enter(petLock);
-        try
-        {
-            mapids = new(lastVisitedMaps);
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
-        }
-
-        List<IPlayer> partyMembers = new();
-        foreach (var mc in (exPartyMembers != null) ? exPartyMembers : this.getPartyMembersOnline())
-        {
-            if (mc.isLoggedinWorld())
-            {
-                partyMembers.Add(mc);
-            }
-        }
-
-        IPlayer? partyLeaver = null;
-        if (exPartyMembers != null)
-        {
-            partyMembers.Remove(this);
-            partyLeaver = this;
-        }
-
-        IMap map = MapModel;
-        List<MapItem>? partyItems = null;
-
-        int partyId = exPartyMembers != null ? -1 : this.getPartyId();
-        foreach (var mapRef in mapids)
-        {
-            if (mapRef.TryGetTarget(out var mapObj))
-            {
-                List<MapItem> partyMapItems = mapObj.updatePlayerItemDropsToParty(partyId, Id, partyMembers, partyLeaver);
-                if (MapModel.GetHashCode() == mapObj.GetHashCode())
-                {
-                    partyItems = partyMapItems;
-                }
-            }
-        }
-
-        if (partyItems != null && exPartyMembers == null)
-        {
-            MapModel.updatePartyItemDropsToNewcomer(this, partyItems);
-        }
-
-        updatePartyTownDoors(party, this, partyLeaver, partyMembers);
-    }
-
-    private static void addPartyPlayerDoor(IPlayer target)
-    {
-        var targetDoor = target.getPlayerDoor();
-        if (targetDoor != null)
-        {
-            target.applyPartyDoor(targetDoor, true);
-        }
-    }
-
-    private static void removePartyPlayerDoor(ITeam party, IPlayer target)
-    {
-        target.removePartyDoor(party);
-    }
-
-
-    private static void updatePartyTownDoors(ITeam party, IPlayer target, IPlayer? partyLeaver, List<IPlayer> partyMembers)
-    {
-        if (partyLeaver != null)
-        {
-            removePartyPlayerDoor(party, target);
-        }
-        else
-        {
-            addPartyPlayerDoor(target);
-        }
-
-        Dictionary<int, Door>? partyDoors = null;
-        if (partyMembers.Count > 0)
-        {
-            partyDoors = party.getDoors();
-
-            foreach (IPlayer pchr in partyMembers)
-            {
-                Door? door = partyDoors.GetValueOrDefault(pchr.getId());
-                if (door != null)
-                {
-                    door.updateDoorPortal(pchr);
-                }
-            }
-
-            foreach (Door door in partyDoors.Values)
-            {
-                foreach (IPlayer pchar in partyMembers)
-                {
-                    DoorObject mdo = door.getTownDoor();
-                    mdo.sendDestroyData(pchar.Client, true);
-                    pchar.removeVisibleMapObject(mdo);
-                }
-            }
-
-            if (partyLeaver != null)
-            {
-                var leaverDoors = partyLeaver.getDoors();
-                foreach (Door door in leaverDoors)
-                {
-                    foreach (IPlayer pchar in partyMembers)
-                    {
-                        DoorObject mdo = door.getTownDoor();
-                        mdo.sendDestroyData(pchar.Client, true);
-                        pchar.removeVisibleMapObject(mdo);
-                    }
-                }
-            }
-
-            List<int> histMembers = party.getMembersSortedByHistory();
-            foreach (int chrid in histMembers)
-            {
-                Door? door = partyDoors.GetValueOrDefault(chrid);
-                if (door != null)
-                {
-                    foreach (IPlayer pchar in partyMembers)
-                    {
-                        DoorObject mdo = door.getTownDoor();
-                        mdo.sendSpawnData(pchar.Client);
-                        pchar.addVisibleMapObject(mdo);
-                    }
-                }
-            }
-        }
-
-        if (partyLeaver != null)
-        {
-            var leaverDoors = partyLeaver.getDoors();
-
-            if (partyDoors != null)
-            {
-                foreach (Door door in partyDoors.Values)
-                {
-                    DoorObject mdo = door.getTownDoor();
-                    mdo.sendDestroyData(partyLeaver.Client, true);
-                    partyLeaver.removeVisibleMapObject(mdo);
-                }
-            }
-
-            foreach (Door door in leaverDoors)
-            {
-                DoorObject mdo = door.getTownDoor();
-                mdo.sendDestroyData(partyLeaver.Client, true);
-                partyLeaver.removeVisibleMapObject(mdo);
-            }
-
-            foreach (Door door in leaverDoors)
-            {
-                door.updateDoorPortal(partyLeaver);
-
-                DoorObject mdo = door.getTownDoor();
-                mdo.sendSpawnData(partyLeaver.Client);
-                partyLeaver.addVisibleMapObject(mdo);
-            }
-        }
-    }
-
 
 
     public void notifyMapTransferToPartner(int mapid)
@@ -2344,64 +2165,7 @@ public partial class Player
         return null;
     }
 
-    public void applyPartyDoor(Door door, bool partyUpdate)
-    {
-        ITeam? chrParty;
-        Monitor.Enter(prtLock);
-        try
-        {
-            if (!partyUpdate)
-            {
-                pdoor = door;
-            }
-
-            chrParty = getParty();
-            if (chrParty != null)
-            {
-                chrParty.addDoor(Id, door);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-
-        silentPartyUpdateInternal(chrParty);
-    }
-
-    public Door? removePartyDoor(bool partyUpdate)
-    {
-        Door? ret = null;
-        ITeam? chrParty;
-
-        Monitor.Enter(prtLock);
-        try
-        {
-            chrParty = getParty();
-            if (chrParty != null)
-            {
-                chrParty.removeDoor(Id);
-            }
-
-            if (!partyUpdate)
-            {
-                ret = pdoor;
-                pdoor = null;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-
-        silentPartyUpdateInternal(chrParty);
-        return ret;
-    }
-
-    public void removePartyDoor(ITeam formerParty)
-    {    // player is no longer registered at this party
-        formerParty.removeDoor(Id);
-    }
+   
 
     public int getEnergyBar()
     {
@@ -3489,19 +3253,6 @@ public partial class Player
         return visibleMapObjects.ContainsKey(mo);
     }
 
-    public bool isPartyLeader()
-    {
-        Monitor.Enter(prtLock);
-        try
-        {
-            return TeamModel?.getLeaderId() == getId();
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-    }
-
     public bool isGuildLeader()
     {
         // true on guild master or jr. master
@@ -3882,37 +3633,7 @@ public partial class Player
         }
     }
 
-    public bool leaveParty()
-    {
-        ITeam? party;
-        bool partyLeader;
 
-        Monitor.Enter(prtLock);
-        try
-        {
-            party = getParty();
-            partyLeader = isPartyLeader();
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-
-        if (party != null)
-        {
-            if (partyLeader)
-            {
-                party.AssignNewLeader();
-            }
-            TeamManager.LeaveParty(party, this);
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
     public void setPlayerRates()
     {
         this.expRate *= GameConstants.getPlayerBonusExpRate(this.Level / 20);
@@ -5252,31 +4973,6 @@ public partial class Player
     public void setName(string name)
     {
         this.Name = name;
-    }
-
-
-
-    public int getDoorSlot()
-    {
-        if (doorSlot != -1)
-        {
-            return doorSlot;
-        }
-        return fetchDoorSlot();
-    }
-
-    public int fetchDoorSlot()
-    {
-        Monitor.Enter(prtLock);
-        try
-        {
-            doorSlot = TeamModel?.getPartyDoor(this.getId()) ?? 0;
-            return doorSlot;
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
     }
 
     public void setPlayerShop(PlayerShop? playerShop)

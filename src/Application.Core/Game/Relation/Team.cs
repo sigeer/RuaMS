@@ -156,17 +156,7 @@ namespace Application.Core.Game.Relation
         public sbyte getPartyDoor(int cid)
         {
             List<int> histList = getMembersSortedByHistory();
-            sbyte slot = 0;
-            foreach (int e in histList)
-            {
-                // !!？
-                if (e == cid)
-                {
-                    break;
-                }
-                slot++;
-            }
-            return slot;
+            return (sbyte)histList.IndexOf(cid);
         }
 
         public void addDoor(int owner, Door door)
