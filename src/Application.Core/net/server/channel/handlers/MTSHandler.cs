@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;
@@ -111,7 +112,7 @@ public class MTSHandler : AbstractPacketHandler
                             return;
                         }
                         InventoryType invType = ItemConstants.getInventoryType(itemid);
-                        var i = c.OnlinedCharacter.getInventory(invType).getItem(slot).copy();
+                        var i = c.OnlinedCharacter.getInventory(invType).getItem(slot)?.copy();
                         if (i != null && c.OnlinedCharacter.getMeso() >= 5000)
                         {
                             try
@@ -197,7 +198,8 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 6:
-                    { //search
+                    { 
+                        //search
                         int tab = p.readInt();
                         int type = p.readInt();
                         p.readInt();
@@ -216,18 +218,10 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 7:
-                    { //cancel sale
+                    { 
+                        //cancel sale
                         int id = p.readInt(); // id of the item
-                        try
-                        {
-                            using var dbContext = new DBContext();
-                            dbContext.MtsItems.Where(x => x.Id == id && x.Seller == c.OnlinedCharacter.getId()).ExecuteUpdate(x => x.SetProperty(y => y.Transfer, 1));
-                            dbContext.MtsItems.Where(x => x.Itemid == id).ExecuteDelete();
-                        }
-                        catch (Exception e)
-                        {
-                            log.Error(e.ToString());
-                        }
+                        MTSManager.CancelMtsSale(id, c.OnlinedCharacter);
                         c.enableCSActions();
                         c.sendPacket(getMTS(c.OnlinedCharacter.getCurrentTab(), c.OnlinedCharacter.getCurrentType(),
                                 c.OnlinedCharacter.getCurrentPage()));
@@ -236,7 +230,8 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 8:
-                    { // transfer item from transfer inv.
+                    { 
+                        // transfer item from transfer inv.
                         int id = p.readInt(); // id of the item
                         try
                         {
@@ -281,29 +276,10 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 9:
-                    { //add to cart
+                    { 
+                        //add to cart
                         int id = p.readInt(); // id of the item
-                        try
-                        {
-                            using var dbContext = new DBContext();
-                            var dbModel = dbContext.MtsItems.Where(x => x.Id == id && x.Seller != c.OnlinedCharacter.getId()).Select(x => new { x.Id }).FirstOrDefault();
-                            if (dbModel != null)
-                            {
-                                var hasData = dbContext.MtsCarts.Where(x => x.Cid == c.OnlinedCharacter.getId() && x.Itemid == id).Select(x => new { x.Cid }).FirstOrDefault();
-                                if (hasData == null)
-                                {
-                                    dbContext.MtsCarts.Add(new MtsCart { Cid = c.OnlinedCharacter.getId(), Itemid = id });
-                                    dbContext.SaveChanges();
-                                }
-
-                            }
-
-
-                        }
-                        catch (Exception e)
-                        {
-                            log.Error(e.ToString());
-                        }
+                        MTSManager.AddToCart(id, c.OnlinedCharacter);
                         c.sendPacket(getMTS(c.OnlinedCharacter.getCurrentTab(), c.OnlinedCharacter.getCurrentType(), c.OnlinedCharacter.getCurrentPage()));
                         c.enableCSActions();
                         c.sendPacket(PacketCreator.enableActions());
@@ -312,17 +288,10 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 10:
-                    { //delete from cart
+                    { 
+                        //delete from cart
                         int id = p.readInt(); // id of the item
-                        try
-                        {
-                            using var dbContext = new DBContext();
-                            dbContext.MtsCarts.Where(x => x.Cid == c.OnlinedCharacter.getId() && x.Itemid == id).ExecuteDelete();
-                        }
-                        catch (Exception e)
-                        {
-                            log.Error(e.ToString());
-                        }
+                        MTSManager.DeleteCart(id, c.OnlinedCharacter);
                         c.sendPacket(getCart(c.OnlinedCharacter.getId()));
                         c.enableCSActions();
                         c.sendPacket(PacketCreator.transferInventory(getTransfer(c.OnlinedCharacter.getId())));
