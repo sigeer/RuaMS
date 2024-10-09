@@ -21,6 +21,7 @@
 */
 
 
+using Application.Utility;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
 using net.server;
@@ -34,7 +35,7 @@ namespace Application.Core.Game.Relation;
  */
 public class Alliance : IAlliance
 {
-    static ILogger log = LogFactory.GetLogger("Alliance");
+    ILogger log;
     private List<int> guilds = new();
 
 
@@ -50,6 +51,8 @@ public class Alliance : IAlliance
         AllianceId = id;
         RankTitles = new string[5] { "Master", "Jr. Master", "Member", "Member", "Member" };
         Notice = string.Empty;
+
+        log = LogFactory.GetLogger($"Alliance/{new RangeNumberGenerator(AllianceId, 1000)}");
     }
 
 
@@ -76,7 +79,7 @@ public class Alliance : IAlliance
         dbTrans.Commit();
     }
 
-    private static void removeGuildFromAllianceOnDb(int guildId)
+    private void removeGuildFromAllianceOnDb(int guildId)
     {
         try
         {
@@ -122,14 +125,7 @@ public class Alliance : IAlliance
     {
         lock (guilds)
         {
-            int index = getGuildIndex(gid);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            guilds.Remove(index);
-            return true;
+            return guilds.Remove(gid);
         }
     }
 
@@ -151,14 +147,7 @@ public class Alliance : IAlliance
     {
         lock (guilds)
         {
-            for (int i = 0; i < guilds.Count; i++)
-            {
-                if (guilds.get(i) == gid)
-                {
-                    return i;
-                }
-            }
-            return -1;
+            return guilds.IndexOf(gid);
         }
     }
 
@@ -176,15 +165,7 @@ public class Alliance : IAlliance
     {
         lock (guilds)
         {
-            List<int> guilds_ = new();
-            foreach (int guild in guilds)
-            {
-                if (guild != -1)
-                {
-                    guilds_.Add(guild);
-                }
-            }
-            return guilds_;
+            return guilds.Where(x => x != -1).ToList();
         }
     }
 

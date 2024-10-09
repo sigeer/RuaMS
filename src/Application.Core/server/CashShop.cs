@@ -445,23 +445,11 @@ public class CashShop
         wishList.Add(sn);
     }
 
-    public void gift(int recipient, string from, string message, int sn)
-    {
-        gift(recipient, from, message, sn, -1);
-    }
-
-    public void gift(int recipient, string from, string message, int sn, int ringid)
+    public void gift(int recipient, string from, string message, int sn, int ringid = -1)
     {
         try
         {
-            var giftModel = new Gift()
-            {
-                From = from,
-                Message = message,
-                Sn = sn,
-                Ringid = ringid,
-                To = recipient
-            };
+            var giftModel = new Gift(recipient, from, message, sn, ringid);
             using var dbContext = new DBContext();
             dbContext.Gifts.Add(giftModel);
             dbContext.SaveChanges();
@@ -472,10 +460,9 @@ public class CashShop
         }
     }
 
-    public List<KeyValuePair<Item, string>> loadGifts()
+    public List<ItemMessagePair> loadGifts()
     {
-        List<KeyValuePair<Item, string>> gifts = new();
-
+        List<ItemMessagePair> gifts = new();
         try
         {
             using var dbContext = new DBContext();
@@ -493,7 +480,7 @@ public class CashShop
                 {
                     equip = (Equip)item;
                     equip.setRingId(rs.Ringid);
-                    gifts.Add(new KeyValuePair<Item, string>(equip, rs.Message));
+                    gifts.Add(new ItemMessagePair(equip, rs.Message));
                 }
                 else
                 {
@@ -501,7 +488,8 @@ public class CashShop
                 }
 
                 if (CashItemFactory.isPackage(cItem.getItemId()))
-                { //Packages never contains a ring
+                { 
+                    //Packages never contains a ring
                     foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId()))
                     {
                         packageItem.setGiftFrom(rs.From);

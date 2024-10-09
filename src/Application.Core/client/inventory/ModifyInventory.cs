@@ -13,6 +13,12 @@ public class ModifyInventory
     private Item item;
     private short oldPos;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mode">0: add, 1: update, 2: move, 3: remove</param>
+    /// <param name="item"></param>
+    /// <param name="oldPos"></param>
     public ModifyInventory(int mode, Item item, short oldPos = 0)
     {
         this.mode = mode;

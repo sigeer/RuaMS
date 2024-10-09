@@ -891,7 +891,7 @@ public class WorldChannel : IWorldChannel
 
                 for (int i = 0; i < cathedralReservationQueue.Count; i++)
                 {
-                    if (weddingId.Equals(cathedralReservationQueue.get(i)))
+                    if (weddingId == cathedralReservationQueue[i])
                     {
                         return i + 1;
                     }
@@ -906,7 +906,7 @@ public class WorldChannel : IWorldChannel
 
                 for (int i = 0; i < chapelReservationQueue.Count; i++)
                 {
-                    if (weddingId.Equals(chapelReservationQueue.get(i)))
+                    if (weddingId == chapelReservationQueue[i])
                     {
                         return i + 1;
                     }

@@ -354,7 +354,7 @@ public class PlayerNPC : AbstractMapObject
 
             for (int i = availables.Count - 1; i >= 0; i--)
             {
-                list.Add(availables.get(i));
+                list.Add(availables[i]);
             }
         }
         catch (Exception sqle)

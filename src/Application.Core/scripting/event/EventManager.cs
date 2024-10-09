@@ -285,7 +285,7 @@ public class EventManager
         Monitor.Enter(lobbyLock);
         try
         {
-            openedLobbys.set(lobbyId, lockObj);
+            openedLobbys[lobbyId] =  lockObj;
         }
         finally
         {
@@ -309,7 +309,7 @@ public class EventManager
 
             if (!openedLobbys.get(lobbyId))
             {
-                openedLobbys.set(lobbyId, true);
+                openedLobbys[lobbyId] = true;
                 return true;
             }
 
@@ -927,7 +927,7 @@ public class EventManager
         string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                 + " and is currently on the " + GameConstants.ordinal(place) + " place on the waiting queue.";
 
-        mg.dropMessage(6, callout);
+        mg?.dropMessage(6, callout);
     }
 
     private List<int>? getNextGuildQueue()

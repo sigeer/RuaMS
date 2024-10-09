@@ -59,7 +59,8 @@ public class Item : IComparable<Item>
     public Item(int id, short position, short quantity, int petid) : this(id, position, quantity)
     {
         if (petid > -1)
-        {   // issue with null "pet" having petid > -1 found thanks to MedicOP
+        {   
+            // issue with null "pet" having petid > -1 found thanks to MedicOP
             this.pet = ItemManager.loadFromDb(id, position, petid);
             if (this.pet == null)
             {

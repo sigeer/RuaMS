@@ -26,6 +26,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
+using MySqlX.XDevAPI;
 using net.packet;
 using net.server.coordinator.session;
 using scripting;
@@ -43,6 +44,7 @@ namespace Application.Core.Game
         public IPlayer? Character { get; }
         public bool IsGameOnlined => Character != null;
         public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
+        public string ClientInfo { get; }
         bool acceptToS();
         void addVotePoints(int points);
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);

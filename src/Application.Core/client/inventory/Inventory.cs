@@ -615,7 +615,7 @@ public class Inventory : IEnumerable<Item>
             {
                 if (!ItemConstants.isEquipment(itemId) && !ItemConstants.isRechargeable(itemId))
                 {
-                    qty.set(0, qty.get(0) + item.Item.getQuantity());
+                    qty[0] += item.Item.getQuantity();
                 }
                 else
                 {
@@ -640,7 +640,7 @@ public class Inventory : IEnumerable<Item>
                 {
                     return false;
                 }
-                typesSlotsUsed.set(itemType, (result >> 1));
+                typesSlotsUsed[itemType] = (result >> 1);
             }
         }
 
@@ -734,7 +734,7 @@ public class Inventory : IEnumerable<Item>
                 {
                     return false;
                 }
-                typesSlotsUsed.set(itemType, (result >> 1));
+                typesSlotsUsed[itemType] = (result >> 1);
             }
         }
 
