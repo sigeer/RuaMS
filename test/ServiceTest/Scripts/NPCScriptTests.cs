@@ -12,7 +12,7 @@ namespace ServiceTest.Scripts
         [Test]
         public void Script_2100_Test()
         {
-            NPCScriptManager.getInstance().start(GenerateTestClient(), 2100, null);
+            NPCScriptManager.getInstance().start(GetOnlinedTestClient(), 2100, null);
             Assert.Pass();
         }
     }

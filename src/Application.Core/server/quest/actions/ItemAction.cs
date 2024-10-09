@@ -233,7 +233,7 @@ public class ItemAction : AbstractQuestAction
                     else
                     {
                         int idx = type.getType() - 1;   // more slots available from the given items!
-                        allSlotUsed.set(idx, allSlotUsed.get(idx) - freeSlotCount);
+                        allSlotUsed[idx] -= freeSlotCount;
                     }
                 }
             }
@@ -261,7 +261,7 @@ public class ItemAction : AbstractQuestAction
                     return false;
                 }
 
-                allSlotUsed.set(idx, Math.Max(allSlotUsed.get(idx), result >> 1));
+                allSlotUsed[idx] = Math.Max(allSlotUsed[idx], result >> 1);
             }
         }
 

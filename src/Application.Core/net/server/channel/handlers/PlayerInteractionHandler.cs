@@ -131,18 +131,22 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             if (mode == Action.CREATE.getCode())
             {
                 if (!chr.isAlive())
-                {    // thanks GabrielSin for pointing this
+                {    
+                    // thanks GabrielSin for pointing this
                     chr.sendPacket(PacketCreator.getMiniRoomError(4));
                     return;
                 }
 
                 byte createType = p.readByte();
                 if (createType == 3)
-                {  // trade
+                {  
+                    // trade
                     Trade.startTrade(chr);
                 }
-                else if (createType == 1)
-                { // omok mini game
+                else if (createType == 1 || createType == 2)
+                {
+                    // 1. omok mini game
+                    // 2. matchcard
                     int status = establishMiniroomStatus(chr, true);
                     if (status > 0)
                     {
@@ -162,84 +166,25 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                         pw = "";
                     }
 
-                    int type = p.readByte();
-                    if (type > 11)
-                    {
-                        type = 11;
-                    }
-                    else if (type < 0)
-                    {
-                        type = 0;
-                    }
-                    if (!chr.haveItem(ItemId.MINI_GAME_BASE + type))
+                    int type = p.ReadSByte();
+                    if (createType == 1 && !chr.haveItem(ItemId.MINI_GAME_BASE + type))
                     {
                         chr.sendPacket(PacketCreator.getMiniRoomError(6));
                         return;
                     }
 
-                    MiniGame game = new MiniGame(chr, desc, pw);
-                    chr.setMiniGame(game);
-                    game.setPieceType(type);
-                    game.setGameType(MiniGameType.OMOK);
-                    chr.getMap().addMapObject(game);
-                    chr.getMap().broadcastMessage(PacketCreator.addOmokBox(chr, 1, 0));
-                    game.sendOmok(c, type);
-                }
-                else if (createType == 2)
-                { // matchcard
-                    int status = establishMiniroomStatus(chr, true);
-                    if (status > 0)
-                    {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(status));
-                        return;
-                    }
-
-                    string desc = p.readString();
-                    string pw;
-
-                    if (p.readByte() != 0)
-                    {
-                        pw = p.readString();
-                    }
-                    else
-                    {
-                        pw = "";
-                    }
-
-                    int type = p.readByte();
-                    if (type > 2)
-                    {
-                        type = 2;
-                    }
-                    else if (type < 0)
-                    {
-                        type = 0;
-                    }
-                    if (!chr.haveItem(ItemId.MATCH_CARDS))
+                    if (createType == 2 && !chr.haveItem(ItemId.MATCH_CARDS))
                     {
                         chr.sendPacket(PacketCreator.getMiniRoomError(6));
                         return;
                     }
 
-                    MiniGame game = new MiniGame(chr, desc, pw);
-                    game.setPieceType(type);
-                    if (type == 0)
-                    {
-                        game.setMatchesToWin(6);
-                    }
-                    else if (type == 1)
-                    {
-                        game.setMatchesToWin(10);
-                    }
-                    else if (type == 2)
-                    {
-                        game.setMatchesToWin(15);
-                    }
-                    game.setGameType(MiniGameType.MATCH_CARD);
+
+                    MiniGame game = new MiniGame(chr, desc, pw, createType, type);
                     chr.setMiniGame(game);
                     chr.getMap().addMapObject(game);
-                    chr.getMap().broadcastMessage(PacketCreator.addMatchCardBox(chr, 1, 0));
-                    game.sendMatchCard(c, type);
+                    chr.getMap().broadcastMessage(PacketCreator.AddMiniGameBox(chr, 1, 0));
+                    game.SendGameInfo(c);
                 }
                 else if (createType == 4 || createType == 5)
                 { // shop

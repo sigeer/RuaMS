@@ -160,7 +160,7 @@ namespace Application.Core.Managers
             {
                 if (player.Equals(party.getLeader()))
                 {
-                    IPlayer emc = party.getMemberById(expelCid);
+                    var emc = party.getMemberById(expelCid);
 
                     if (emc != null)
                     {

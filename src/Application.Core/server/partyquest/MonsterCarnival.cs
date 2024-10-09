@@ -1,6 +1,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Relation;
 using Application.Core.scripting.Event;
 using constants.String;
@@ -21,7 +22,7 @@ public class MonsterCarnival
     public static int A = 0;
 
     private ITeam p1, p2;
-    private IMap map;
+    private ICPQMap map;
     private ScheduledFuture? timer, effectTimer, respawnTask;
     private long startTime = 0;
     private int summonsR = 0, summonsB = 0, room = 0;
@@ -40,7 +41,7 @@ public class MonsterCarnival
         p1.setEnemy(p2);
         p2.setEnemy(p1);
         // 是否可以替换成getMap？不可以，任务结束后会关闭地图，getMap不会创建新地图
-        map = cs.getMapFactory().getDisposableMap(mapid);
+        map = (cs.getMapFactory().getDisposableMap(mapid) as ICPQMap)!;
         startTime = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds();
         int redPortal = 0;
         int bluePortal = 0;
@@ -97,8 +98,8 @@ public class MonsterCarnival
 
         // thanks Atoot, Vcoc for noting double CPQ functional being sent to players in CPQ start
 
-        timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.getTimeDefault())); // thanks Atoot for noticing an irregular "event extended" issue here
-        effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.getTimeDefault() - 10));
+        timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.TimeDefault)); // thanks Atoot for noticing an irregular "event extended" issue here
+        effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
         respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
 
         cs.initMonsterCarnival(cpq1, room);
@@ -164,7 +165,7 @@ public class MonsterCarnival
 
     public bool canSummonR()
     {
-        return summonsR < map.getMaxMobs();
+        return summonsR < map.MaxReactors;
     }
 
     public void summonR()
@@ -174,7 +175,7 @@ public class MonsterCarnival
 
     public bool canSummonB()
     {
-        return summonsB < map.getMaxMobs();
+        return summonsB < map.MaxMobs;
     }
 
     public void summonB()
@@ -193,7 +194,7 @@ public class MonsterCarnival
             }
         }
 
-        return teamReactors < map.getMaxReactors();
+        return teamReactors < map.MaxReactors;
     }
 
     public bool canGuardianB()
@@ -207,7 +208,7 @@ public class MonsterCarnival
             }
         }
 
-        return teamReactors < map.getMaxReactors();
+        return teamReactors < map.MaxReactors;
     }
 
     protected void dispose(bool warpout)
@@ -414,8 +415,8 @@ public class MonsterCarnival
 
         map.broadcastMessage(PacketCreator.getClock(3 * 60));
 
-        timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.getTimeExpand()));
-        effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.getTimeExpand() - 10)); // thanks Vcoc for noticing a time set issue here
+        timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.TimeExpand));
+        effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.TimeExpand - 10)); // thanks Vcoc for noticing a time set issue here
     }
 
     public void complete()
@@ -519,14 +520,12 @@ public class MonsterCarnival
 
     public IPlayer getEnemyLeader(int team)
     {
-        switch (team)
+        return team switch
         {
-            case 0:
-                return leader2;
-            case 1:
-                return leader1;
-        }
-        throw new BusinessException();
+            0 => leader2,
+            1 => leader1,
+            _ => throw new BusinessException(),
+        };
     }
 
     public int getBlueCP()

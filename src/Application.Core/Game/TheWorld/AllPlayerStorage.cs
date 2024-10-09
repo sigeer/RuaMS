@@ -34,6 +34,8 @@ namespace Application.Core.Game.TheWorld
             return player;
         }
 
+        public static IPlayer GetOrAddCharacterByIdOrThrow(int id, int level = 0) => GetOrAddCharacterById(id, level) ?? throw new BusinessCharacterNotFoundException(id);
+
         public static List<IPlayer> GetPlayersByIds(IEnumerable<int> idList, int level = 0)
         {
             List<IPlayer> list = new();

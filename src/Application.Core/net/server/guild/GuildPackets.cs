@@ -1,4 +1,5 @@
 using Application.Core.Game.Relation;
+using Application.Core.model;
 using net.opcodes;
 using net.packet;
 using tools;
@@ -336,7 +337,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet showPlayerRanks(int npcid, List<KeyValuePair<string, int>> worldRanking)
+    public static Packet showPlayerRanks(int npcid, List<NameLevelPair> worldRanking)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x49);
@@ -349,8 +350,8 @@ public class GuildPackets
         p.writeInt(worldRanking.Count);
         foreach (var wr in worldRanking)
         {
-            p.writeString(wr.Key);
-            p.writeInt(wr.Value);
+            p.writeString(wr.Name);
+            p.writeInt(wr.Level);
             p.writeInt(0);
             p.writeInt(0);
             p.writeInt(0);

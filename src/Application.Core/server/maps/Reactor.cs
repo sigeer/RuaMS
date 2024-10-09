@@ -23,6 +23,7 @@
 
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Event;
+using client.inventory;
 using net.packet;
 using net.server.services.task.channel;
 using net.server.services.type;
@@ -33,10 +34,11 @@ using tools;
 namespace server.maps;
 
 
-/**
- * @author Lerk
- * @author Ronan
- */
+/// <summary>
+/// 箱子之类的地图上可攻击的对象？
+/// @author Lerk
+/// @author Ronan
+/// </summary>
 public class Reactor : AbstractMapObject
 {
     private int rid;
@@ -151,7 +153,7 @@ public class Reactor : AbstractMapObject
         return attackHit;
     }
 
-    public KeyValuePair<int, int>? getReactItem(byte index)
+    public ItemQuantity? getReactItem(byte index)
     {
         return stats.getReactItem(state, index);
     }

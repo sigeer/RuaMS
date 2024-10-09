@@ -59,7 +59,7 @@ public class Ola
         this.timeStarted = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         this.time = 360000;
 
-        chr.getMap().getPortal("join00").setPortalStatus(true);
+        chr.getMap().getPortal("join00")!.setPortalStatus(true);
         chr.sendPacket(PacketCreator.serverNotice(0, "The portal has now opened. Press the up arrow key at the portal to enter."));
     }
 

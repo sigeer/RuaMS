@@ -39,7 +39,7 @@ public class EventRecallCoordinator
 
     private ConcurrentDictionary<int, EventInstanceManager> eventHistory = new();
 
-    private static bool isRecallableEvent(EventInstanceManager eim)
+    private static bool isRecallableEvent(EventInstanceManager? eim)
     {
         return eim != null && !eim.isEventDisposed() && !eim.isEventCleared();
     }

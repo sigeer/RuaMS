@@ -53,18 +53,14 @@ public static class StatUtils
     }
     public static Stat getBy5ByteEncoding(int encoded)
     {
-        switch (encoded)
+        return encoded switch
         {
-            case 64:
-                return Stat.STR;
-            case 128:
-                return Stat.DEX;
-            case 256:
-                return Stat.INT;
-            case 512:
-                return Stat.LUK;
-        }
-        throw new BusinessException();
+            64 => Stat.STR,
+            128 => Stat.DEX,
+            256 => Stat.INT,
+            512 => Stat.LUK,
+            _ => throw new BusinessException(),
+        };
     }
 
     public static Stat? getByString(string type)

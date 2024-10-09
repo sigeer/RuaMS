@@ -39,7 +39,7 @@ namespace Application.Core.Game.Players
             int index = TrockMaps.IndexOf(MapId.NONE);
             if (index != -1)
             {
-                TrockMaps.set(index, getMapId());
+                TrockMaps[index] = getMapId();
             }
         }
 
@@ -75,7 +75,7 @@ namespace Application.Core.Game.Players
             int index = VipTrockMaps.IndexOf(MapId.NONE);
             if (index != -1)
             {
-                VipTrockMaps.set(index, getMapId());
+                VipTrockMaps[index] = getMapId();
             }
         }
 

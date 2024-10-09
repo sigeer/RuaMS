@@ -179,7 +179,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
                     }
                     int victimid = p.readInt();
                     var player = c.getWorldServer().getPlayerStorage().getCharacterById(victimid);
-                    if (player == null || player.AllianceRank != 2)
+                    if (player == null || !player.IsOnlined || player.AllianceRank != 2)
                     {
                         return;
                     }

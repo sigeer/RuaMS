@@ -50,6 +50,7 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
             }
             catch (EmptyMovementException e)
             {
+                log.Error(e.ToString());
             }
         }
     }

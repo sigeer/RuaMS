@@ -20,12 +20,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using client.inventory;
+
 namespace server.maps;
-
-
-
-
-
 
 
 /**
@@ -66,7 +63,7 @@ public class ReactorStats
             timeoutInfo.AddOrUpdate(state, timeOut);
     }
 
-    public void addState(sbyte state, int type, KeyValuePair<int, int>? reactItem, byte nextState, int timeOut, byte canTouch)
+    public void addState(sbyte state, int type, ItemQuantity? reactItem, byte nextState, int timeOut, byte canTouch)
     {
         List<StateData> data = new();
         data.Add(new StateData(type, reactItem, null, nextState));
@@ -81,11 +78,7 @@ public class ReactorStats
     public byte getTimeoutState(sbyte state)
     {
         var value = stateInfo.GetValueOrDefault(state);
-        if (value == null)
-        {
-            throw new BusinessException();
-        }
-        return value.Last().getNextState();
+        return value == null ? throw new BusinessException() : value.Last().getNextState();
     }
 
     public byte getStateSize(sbyte state)
@@ -136,7 +129,7 @@ public class ReactorStats
         }
     }
 
-    public KeyValuePair<int, int>? getReactItem(sbyte state, byte index)
+    public ItemQuantity? getReactItem(sbyte state, byte index)
     {
         StateData? nextState = stateInfo.GetValueOrDefault(state)?.ElementAtOrDefault(index);
         if (nextState != null)
@@ -153,11 +146,11 @@ public class ReactorStats
     public class StateData
     {
         private int type;
-        private KeyValuePair<int, int>? reactItem;
+        private ItemQuantity? reactItem;
         private List<int>? activeSkills;
         private byte nextState;
 
-        public StateData(int type, KeyValuePair<int, int>? reactItem, List<int>? activeSkills, byte nextState)
+        public StateData(int type, ItemQuantity? reactItem, List<int>? activeSkills, byte nextState)
         {
             this.type = type;
             this.reactItem = reactItem;
@@ -175,7 +168,7 @@ public class ReactorStats
             return nextState;
         }
 
-        public KeyValuePair<int, int>? getReactItem()
+        public ItemQuantity? getReactItem()
         {
             return reactItem;
         }

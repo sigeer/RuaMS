@@ -235,7 +235,7 @@ public class StatEffect
         fatigue = DataTool.getInt("incFatigue", source, 0);
         repeatEffect = DataTool.getInt("repeatEffect", source, 0) > 0;
 
-        var mdd = source.getChildByPath("0");
+        var mdd = source?.getChildByPath("0");
         if (mdd != null && mdd.getChildren().Count > 0)
         {
             mobSkill = (short)DataTool.getInt("mobSkill", mdd, 0);
@@ -249,10 +249,10 @@ public class StatEffect
             target = 0;
         }
 
-        var mdds = source.getChildByPath("mob");
+        var mdds = source?.getChildByPath("mob");
         if (mdds != null)
         {
-            if (mdds.getChildren() != null && mdds.getChildren().Count > 0)
+            if (mdds.getChildren().Count > 0)
             {
                 mob = DataTool.getInt("mob", mdds, 0);
             }
@@ -352,7 +352,7 @@ public class StatEffect
                     List<KeyValuePair<int, int>>? areas = null;
                     bool inParty = false;
 
-                    var con = source.getChildByPath("con");
+                    var con = source?.getChildByPath("con");
                     if (con != null)
                     {
                         areas = new(3);
@@ -461,11 +461,11 @@ public class StatEffect
             addBuffStatPairToListIfNotZero(statups, BuffStat.JUMP, jump);
         }
 
-        var ltd = source.getChildByPath("lt");
+        var ltd = source?.getChildByPath("lt");
         if (ltd != null)
         {
             lt = (Point)ltd.getData()!;
-            rb = (Point)source.getChildByPath("rb").getData()!;
+            rb = (Point)source!.getChildByPath("rb")!.getData()!;
 
             if (YamlConfig.config.server.USE_MAXRANGE_ECHO_OF_HERO && (sourceid == Beginner.ECHO_OF_HERO || sourceid == Noblesse.ECHO_OF_HERO || sourceid == Legend.ECHO_OF_HERO || sourceid == Evan.ECHO_OF_HERO))
             {
@@ -1101,9 +1101,9 @@ public class StatEffect
             }
         }
 
-        if (this.getFatigue() != 0)
+        if (applyto.MountModel != null && this.getFatigue() != 0)
         {
-            applyto.getMount().setTiredness(applyto.getMount().getTiredness() + this.getFatigue());
+            applyto.MountModel.setTiredness(applyto.MountModel.getTiredness() + this.getFatigue());
         }
 
         if (summonMovementType != null && pos != null)
@@ -1224,7 +1224,7 @@ public class StatEffect
         {
             MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkill);
             MobSkill ms = MobSkillFactory.getMobSkillOrThrow(mobSkillType, mobSkillLevel);
-            var dis = Disease.getBySkill(mobSkillType);
+            var dis = Disease.GetBySkillTrust(mobSkillType);
 
             if (target > 0)
             {
@@ -1256,7 +1256,7 @@ public class StatEffect
             foreach (var affectedmo in affecteds)
             {
                 IPlayer affected = (IPlayer)affectedmo;
-                if (affected != applyfrom && (isGmBuff() || applyfrom.getParty().Equals(affected.getParty())))
+                if (affected != applyfrom && (isGmBuff() || (applyfrom.getParty()?.Equals(affected.getParty()) ?? false)))
                 {
                     if (!isResurrection())
                     {

@@ -22,6 +22,7 @@
 using client.inventory;
 using client.inventory.manipulator;
 using scripting.Event;
+using Serilog;
 
 namespace server;
 /**
@@ -79,8 +80,9 @@ public class Marriage : EventInstanceManager
         {
             return getGiftItems(c, groom).ElementAtOrDefault(idx);
         }
-        catch (IndexOutOfRangeException e)
+        catch (Exception e)
         {
+            log.Error(e.ToString());
             return null;
         }
     }
@@ -118,8 +120,9 @@ public class Marriage : EventInstanceManager
                 groom = false;
             }
         }
-        catch (Exception nfe)
+        catch (Exception e)
         {
+            log.Error(e.ToString());
         }
 
         return groom;

@@ -335,7 +335,7 @@ public class CashOperationHandler : AbstractPacketHandler
                         {
                             if (equip.getRingId() >= 0)
                             {
-                                var ring = Ring.loadFromDb(equip.getRingId());
+                                var ring = RingManager.LoadFromDb(equip.getRingId());
                                 chr.addPlayerRing(ring);
                             }
                         }
@@ -404,13 +404,13 @@ public class CashOperationHandler : AbstractPacketHandler
 
                             if (itemRing?.toItem() is Equip eqp)
                             {
-                                var rings = Ring.createRing(itemRing.getItemId(), chr, partner);
+                                var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
                                 cs.addToInventory(eqp);
                                 c.sendPacket(PacketCreator.showBoughtCashItem(eqp, c.getAccID()));
                                 cs.gainCash(toCharge, itemRing, chr.getWorld());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
-                                chr.addCrushRing(Ring.loadFromDb(rings.MyRingId));
+                                chr.addCrushRing(RingManager.LoadFromDb(rings.MyRingId)!);
                                 noteService.sendWithFame(text, chr.getName(), partner.getName());
                                 noteService.show(partner);
                             }
@@ -479,13 +479,13 @@ public class CashOperationHandler : AbstractPacketHandler
                             // Need to check to make sure its actually an equip and the right SN...
                             if (itemRing?.toItem() is Equip eqp)
                             {
-                                var rings = Ring.createRing(itemRing.getItemId(), chr, partner);
+                                var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
                                 cs.addToInventory(eqp);
                                 c.sendPacket(PacketCreator.showBoughtCashRing(eqp, partner.getName(), c.getAccID()));
                                 cs.gainCash(payment, -itemRing.getPrice());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
-                                chr.addFriendshipRing(Ring.loadFromDb(rings.MyRingId));
+                                chr.addFriendshipRing(RingManager.LoadFromDb(rings.MyRingId)!);
                                 noteService.sendWithFame(text, chr.getName(), partner.getName());
                                 noteService.show(partner);
                             }

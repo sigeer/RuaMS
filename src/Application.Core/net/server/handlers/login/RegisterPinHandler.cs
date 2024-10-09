@@ -37,7 +37,7 @@ public class RegisterPinHandler : AbstractPacketHandler
         byte c2 = p.readByte();
         if (c2 == 0)
         {
-            SessionCoordinator.getInstance().closeSession(c, null);
+            SessionCoordinator.getInstance().closeSession(c);
             c.updateLoginState(Client.LOGIN_NOTLOGGEDIN);
         }
         else
@@ -48,7 +48,7 @@ public class RegisterPinHandler : AbstractPacketHandler
                 c.setPin(pin);
                 c.sendPacket(PacketCreator.pinRegistered());
 
-                SessionCoordinator.getInstance().closeSession(c, null);
+                SessionCoordinator.getInstance().closeSession(c);
                 c.updateLoginState(Client.LOGIN_NOTLOGGEDIN);
             }
         }

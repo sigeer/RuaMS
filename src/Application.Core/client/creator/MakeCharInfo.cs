@@ -145,13 +145,13 @@ public class MakeCharInfo
         Job characterJob = character.getJob();
         if (characterJob == Job.BEGINNER || characterJob == Job.NOBLESSE || characterJob == Job.LEGEND)
         {
-            if (!verifyTopId(character.getInventory(InventoryType.EQUIPPED).getItem(-5).getItemId()))
+            if (!verifyTopId(character.getInventory(InventoryType.EQUIPPED).getItem(-5)!.getItemId()))
                 return false;
-            if (!verifyBottomId(character.getInventory(InventoryType.EQUIPPED).getItem(-6).getItemId()))
+            if (!verifyBottomId(character.getInventory(InventoryType.EQUIPPED).getItem(-6)!.getItemId()))
                 return false;
-            if (!verifyShoeId(character.getInventory(InventoryType.EQUIPPED).getItem(-7).getItemId()))
+            if (!verifyShoeId(character.getInventory(InventoryType.EQUIPPED).getItem(-7)!.getItemId()))
                 return false;
-            if (!verifyWeaponId(character.getInventory(InventoryType.EQUIPPED).getItem(-11).getItemId()))
+            if (!verifyWeaponId(character.getInventory(InventoryType.EQUIPPED).getItem(-11)!.getItemId()))
                 return false;
         }
 

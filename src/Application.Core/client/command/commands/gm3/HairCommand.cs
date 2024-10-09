@@ -83,6 +83,7 @@ public class HairCommand : Command
         }
         catch (Exception e)
         {
+            log.Error(e.ToString());
         }
     }
 }

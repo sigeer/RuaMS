@@ -650,7 +650,7 @@ namespace Application.Core.Game.Players
         void setOwnedMap(IMap? map);
         void setPartnerId(int partnerid);
         void setParty(ITeam? p);
-        void setPartyQuest(PartyQuest pq);
+        void setPartyQuest(PartyQuest? pq);
         void setPartyQuestItemObtained(string partyquestchar);
         void setPlayerAggro(int mobHash);
         void setPlayerRates();

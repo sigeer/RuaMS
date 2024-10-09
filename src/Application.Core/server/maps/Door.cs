@@ -35,15 +35,15 @@ namespace server.maps;
 public class Door
 {
     private int ownerId;
-    private IMap town;
+    private IMap? town;
     private Portal? townPortal;
     private IMap target;
     private KeyValuePair<string, int>? posStatus = null;
     private long deployTime;
     private bool active;
 
-    private DoorObject townDoor;
-    private DoorObject areaDoor;
+    private DoorObject? townDoor;
+    private DoorObject? areaDoor;
 
     public Door(IPlayer owner, Point targetPosition)
     {
@@ -167,7 +167,7 @@ public class Door
 
     private Portal? getTownDoorPortal(int doorid)
     {
-        return town.getDoorPortal(doorid);
+        return town?.getDoorPortal(doorid);
     }
 
     public int getOwnerId()

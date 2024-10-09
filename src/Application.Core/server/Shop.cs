@@ -232,6 +232,9 @@ public class Shop
         }
 
         var item = c.OnlinedCharacter.getInventory(type).getItem(slot);
+        if (item == null)
+            return;
+
         if (canSell(item, quantity))
         {
             quantity = getSellingQuantity(item, quantity);

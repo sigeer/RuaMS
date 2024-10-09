@@ -40,7 +40,7 @@ public class FieldEnterRequirement : AbstractQuestRequirement
 
     public override void processData(Data data)
     {
-        Data zeroField = data.getChildByPath("0");
+        var zeroField = data.getChildByPath("0");
         if (zeroField != null)
         {
             mapId = DataTool.getInt(zeroField);

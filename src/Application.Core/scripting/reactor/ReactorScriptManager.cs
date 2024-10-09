@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
 using server.maps;
 
@@ -34,7 +35,7 @@ public class ReactorScriptManager : AbstractScriptManager
 {
     private static ReactorScriptManager instance = new ReactorScriptManager();
 
-    private Dictionary<int, List<ReactorDropEntry>> drops = new();
+    private Dictionary<int, List<DropEntry>> drops = new();
 
     public static ReactorScriptManager getInstance()
     {
@@ -77,7 +78,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
     }
 
-    public List<ReactorDropEntry> getDrops(int reactorId)
+    public List<DropEntry> getDrops(int reactorId)
     {
         var ret = drops.GetValueOrDefault(reactorId);
         if (ret == null)
@@ -89,7 +90,7 @@ public class ReactorScriptManager : AbstractScriptManager
                 ret = dbContext.Reactordrops.Where(x => x.Reactorid == reactorId && x.Chance >= 0)
                     .Select(x => new { x.Itemid, x.Chance, x.Questid })
                     .ToList()
-                    .Select(x => new ReactorDropEntry(x.Itemid, x.Chance, x.Questid))
+                    .Select(x => new DropEntry(x.Itemid, x.Chance, (short)x.Questid))
                     .ToList();
             }
             catch (Exception e)

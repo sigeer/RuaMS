@@ -33,7 +33,7 @@ namespace client;
 
 public class SkillFactory
 {
-    private static volatile Dictionary<int, Skill> skills = new();
+    private static volatile Dictionary<int, Skill> skills = [];
     private static DataProvider datasource = DataProviderFactory.getDataProvider(WZFiles.SKILL);
 
     public static Skill? getSkill(int id)
@@ -43,12 +43,12 @@ public class SkillFactory
 
     public static Skill GetSkillTrust(int id)
     {
-        return skills.GetValueOrDefault(id) ?? throw new BusinessResException();
+        return skills.GetValueOrDefault(id) ?? throw new BusinessResException($"SkillFactory.getSkill({id})");
     }
 
     public static void loadAllSkills()
     {
-        Dictionary<int, Skill> loadedSkills = new();
+        Dictionary<int, Skill> loadedSkills = [];
         DataDirectoryEntry root = datasource.getRoot();
         foreach (DataFileEntry topDir in root.getFiles())
         {

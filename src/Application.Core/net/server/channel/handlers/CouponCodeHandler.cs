@@ -250,14 +250,7 @@ public class CouponCodeHandler : AbstractPacketHandler
                     }
                     if (cashItems.Count > 255)
                     {
-                        List<Item> oldList = cashItems;
-                        cashItems = Arrays.asList(new Item[255]);
-                        int index = 0;
-                        foreach (Item item in oldList)
-                        {
-                            cashItems.set(index, item);
-                            index++;
-                        }
+                        cashItems = cashItems.Take(255).ToList();
                     }
                     if (nxCredit != 0 || nxPrepaid != 0)
                     { //coupon packet can only show maple points (afaik)

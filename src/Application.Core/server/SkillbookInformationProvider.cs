@@ -19,11 +19,15 @@
 */
 
 
+using Application.Core.Tools;
 using client;
 using provider;
 using provider.wz;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 
 namespace server;
 
@@ -36,7 +40,7 @@ namespace server;
  */
 public class SkillbookInformationProvider
 {
-    private static ILogger log = LogFactory.GetLogger("SkillbookInformationProvider");
+    private static ILogger log = LogFactory.ResLogger;
     private static volatile Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     public enum SkillBookEntry
@@ -49,8 +53,8 @@ public class SkillbookInformationProvider
         SCRIPT
     }
 
-    private static int SKILLBOOK_MIN_ITEMID = 2280000;
-    private static int SKILLBOOK_MAX_ITEMID = 2300000;  // exclusively
+    private const int SKILLBOOK_MIN_ITEMID = 2280000;
+    private const int SKILLBOOK_MAX_ITEMID = 2300000;  // exclusively
 
     public static void loadAllSkillbookInformation()
     {
@@ -196,7 +200,7 @@ public class SkillbookInformationProvider
 
             foreach (var item in dataList)
             {
-                foundSkillbooks.TryAdd(item, SkillBookEntry.REACTOR);
+                loadedSkillbooks.TryAdd(item, SkillBookEntry.REACTOR);
             }
         }
         catch (Exception sqle)
@@ -256,23 +260,24 @@ public class SkillbookInformationProvider
 
     private static Dictionary<int, SkillBookEntry> fetchSkillbooksFromScripts()
     {
-        Dictionary<int, SkillBookEntry> scriptSkillbooks = new();
-
-        foreach (var file in listFilesFromDirectoryRecursively("./scripts"))
+        return FileCache.GetOrCreate("skillbookinformation_script", () =>
         {
-            if (file.Name.EndsWith(".js"))
-            {
-                scriptSkillbooks.putAll(fileSearchMatchingData(file));
-            }
-        }
+            Dictionary<int, SkillBookEntry> scriptSkillbooks = new();
 
-        return scriptSkillbooks;
+            foreach (var file in listFilesFromDirectoryRecursively("./scripts"))
+            {
+                if (file.Name.EndsWith(".js"))
+                {
+                    scriptSkillbooks.putAll(fileSearchMatchingData(file));
+                }
+            }
+            return scriptSkillbooks;
+        }) ?? [];
     }
 
     public static SkillBookEntry getSkillbookAvailability(int itemId)
     {
-        var sbe = foundSkillbooks.get(itemId);
-        return sbe ?? SkillBookEntry.UNAVAILABLE;
+        return foundSkillbooks.GetValueOrDefault(itemId, SkillBookEntry.UNAVAILABLE);
     }
 
     public static List<int> getTeachableSkills(IPlayer chr)

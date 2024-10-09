@@ -72,24 +72,28 @@ public class Snowball
         hittable = true;
         TimerManager.getInstance().schedule(() =>
         {
-            if (map.getSnowball(team).getPosition() > map.getSnowball(team == 0 ? 1 : 0).getPosition())
+            var ball0 = map.getSnowball(0)!;
+            var ball1 = map.getSnowball(1)!;
+            var teamBall = team == 0 ? ball0 : ball1;
+            var anotherTeamBall = team == 0 ? ball0 : ball1;
+            if (teamBall.getPosition() > anotherTeamBall.getPosition())
             {
                 foreach (var chr in characters)
                 {
                     if (chr != null)
                     {
-                        chr.sendPacket(PacketCreator.rollSnowBall(false, 3, map.getSnowball(0), map.getSnowball(0)));
+                        chr.sendPacket(PacketCreator.rollSnowBall(false, 3, ball0, ball0));
                     }
                 }
                 winner = true;
             }
-            else if (map.getSnowball(team == 0 ? 1 : 0).getPosition() > map.getSnowball(team).getPosition())
+            else if (anotherTeamBall.getPosition() > teamBall.getPosition())
             {
                 foreach (var chr in characters)
                 {
                     if (chr != null)
                     {
-                        chr.sendPacket(PacketCreator.rollSnowBall(false, 4, map.getSnowball(0), map.getSnowball(0)));
+                        chr.sendPacket(PacketCreator.rollSnowBall(false, 4, ball0, ball0));
                     }
                 }
                 winner = true;
@@ -126,6 +130,8 @@ public class Snowball
 
     public void hit(int what, int damage)
     {
+        var ball0 = map.getSnowball(0)!;
+        var ball1 = map.getSnowball(1)!;
         if (what < 2)
         {
             if (damage > 0)
@@ -148,7 +154,7 @@ public class Snowball
                 {
                     this.snowmanhp -= damage;
                 }
-                map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, map.getSnowball(0), map.getSnowball(1)));
+                map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, ball0, ball1));
             }
         }
 
@@ -158,19 +164,19 @@ public class Snowball
             switch (this.position)
             {
                 case 45:
-                    map.getSnowball(team == 0 ? 1 : 0).message(1);
+                    (team == 0 ? ball1 : ball0).message(1);
                     break;
                 case 290:
-                    map.getSnowball(team == 0 ? 1 : 0).message(2);
+                    (team == 0 ? ball1 : ball0).message(2);
                     break;
                 case 560:
-                    map.getSnowball(team == 0 ? 1 : 0).message(3);
+                    (team == 0 ? ball1 : ball0).message(3);
                     break;
             }
 
             this.hits = 3;
-            map.broadcastMessage(PacketCreator.rollSnowBall(false, 0, map.getSnowball(0), map.getSnowball(1)));
-            map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, map.getSnowball(0), map.getSnowball(1)));
+            map.broadcastMessage(PacketCreator.rollSnowBall(false, 0, ball0, ball1));
+            map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, ball0, ball1));
         }
         map.broadcastMessage(PacketCreator.hitSnowBall(what, damage));
     }

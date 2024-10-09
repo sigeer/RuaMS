@@ -1,37 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Utility.Exceptions
+﻿namespace Application.Utility.Exceptions
 {
-    public class BusinessException : Exception
+    public class BusinessException(string? message) : Exception(message)
     {
-        public BusinessException()
-        {
-        }
-
-        public BusinessException(string? message) : base(message)
-        {
-        }
-
-        public BusinessException(string? message, Exception? innerException) : base(message, innerException)
-        {
-        }
-    }
-
-    public class BusinessDataNullException : BusinessException
-    {
-        public BusinessDataNullException() : base("此处的变量不应该为null")
-        {
-        }
-
-        public BusinessDataNullException(string? message) : base(message)
-        {
-        }
-
-        public BusinessDataNullException(string? message, Exception? innerException) : base(message, innerException)
+        public BusinessException() : this("内部错误")
         {
         }
     }
@@ -41,19 +12,8 @@ namespace Application.Utility.Exceptions
     /// 1. wz（或其他）资源未获取到或者不合法 - 用存在的id去获取一个应该存在但实际上不存在的数据
     /// 2. 数据库基础数据未获取到
     /// </summary>
-    public class BusinessResException : BusinessDataNullException
+    public class BusinessResException(string? message) : BusinessException($"资源未获取到 - {message}")
     {
-        public BusinessResException(): base()
-        {
-        }
-
-        public BusinessResException(string? message) : base(message)
-        {
-        }
-
-        public BusinessResException(string? message, Exception? innerException) : base(message, innerException)
-        {
-        }
     }
 
     /// <summary>
@@ -61,14 +21,29 @@ namespace Application.Utility.Exceptions
     /// </summary>
     public class BusinessCharacterOfflineException : BusinessException
     {
-        public BusinessCharacterOfflineException():base("Client not onlined")
+        public BusinessCharacterOfflineException() : base("角色不在线")
         {
         }
     }
 
     public class BusinessCharacterNotFoundException : BusinessException
     {
-        public BusinessCharacterNotFoundException() : base("Client not found")
+        public BusinessCharacterNotFoundException(int characterId) : base($"角色 Id={characterId} 不存在")
+        {
+        }
+
+        public BusinessCharacterNotFoundException(string characterName) : base($"角色 Name={characterName} 不存在")
+        {
+        }
+    }
+
+    public class BusinessFatalException : BusinessException
+    {
+        public BusinessFatalException() : base()
+        {
+        }
+
+        public BusinessFatalException(string message) : base(message)
         {
         }
     }

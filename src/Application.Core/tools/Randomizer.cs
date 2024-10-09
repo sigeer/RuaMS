@@ -24,6 +24,17 @@ public class Randomizer
         return _rand.Next(arg0);
     }
 
+    /// <summary>
+    /// [min, max) 包含最小值，但不包含最大值
+    /// </summary>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    public static int NextInt(int min, int max)
+    {
+        return _rand.Next(min, max);
+    }
+
     public static short NextShort()
     {
         return (short)_rand.Next(short.MaxValue);
@@ -55,14 +66,14 @@ public class Randomizer
     }
 
     /// <summary>
-    /// [lbound, ubound]
+    /// [lbound, ubound]，包含最小值和最大值
     /// </summary>
     /// <param name="lbound"></param>
     /// <param name="ubound"></param>
     /// <returns></returns>
     public static int rand(int lbound, int ubound)
     {
-        return (int)((_rand.NextDouble() * (ubound - lbound + 1)) + lbound);
+        return ((int)(_rand.NextDouble() * (ubound - lbound + 1))) + lbound;
     }
 
     public static TItem Select<TItem>(IEnumerable<TItem> list)

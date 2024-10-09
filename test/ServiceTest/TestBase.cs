@@ -10,11 +10,11 @@ namespace ServiceTest
         {
             Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
         }
-        protected static IClient GenerateTestClient()
+        protected static IClient GetOnlinedTestClient(int charId = 1)
         {
             Server.getInstance().forceUpdateCurrentTime();
             var mockClient = Client.createMock();
-            mockClient.setPlayer(CharacterManager.GetPlayerById(1));
+            mockClient.setPlayer(CharacterManager.GetPlayerById(charId));
             return mockClient;
         }
     }

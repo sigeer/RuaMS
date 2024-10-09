@@ -352,7 +352,7 @@ public class SessionCoordinator
         return fakeClient;
     }
 
-    public void closeSession(IClient? client, bool? immediately)
+    public void closeSession(IClient? client, bool immediately = false)
     {
         if (client == null)
         {
@@ -384,7 +384,7 @@ public class SessionCoordinator
             }
         }
 
-        if (immediately == true)
+        if (immediately)
         {
             client.closeSession();
         }

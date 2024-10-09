@@ -22,6 +22,7 @@
 
 
 using constants.game;
+using Serilog;
 using server.life;
 using tools;
 
@@ -77,8 +78,9 @@ public class Disease : EnumClass
         {
             return GetValues<Disease>()[ord];
         }
-        catch (IndexOutOfRangeException io)
+        catch (IndexOutOfRangeException e)
         {
+            Log.Logger.Error(e.ToString());
             return NULL;
         }
     }
@@ -92,6 +94,11 @@ public class Disease : EnumClass
     public static Disease? getBySkill(MobSkillType? skill)
     {
         return GetValues<Disease>().FirstOrDefault(x => x.mobSkillType == skill);
+    }
+
+    public static Disease GetBySkillTrust(MobSkillType? skill)
+    {
+        return getBySkill(skill) ?? throw new BusinessResException($"getBySkill({skill})");
     }
 
 }

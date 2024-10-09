@@ -83,11 +83,10 @@ public class Expedition
     private ConcurrentDictionary<int, string> members = new();
     private List<int> banned = new();
     private long startTime;
-    private Dictionary<string, string> props = new();
+    private ConcurrentDictionary<string, string> props = new();
     private bool silent;
     private int minSize;
     private int maxSize;
-    private object pL = new();
 
     public Expedition(IPlayer player, ExpeditionType met, bool sil, int minPlayers, int maxPlayers)
     {
@@ -335,28 +334,12 @@ public class Expedition
 
     public void setProperty(string key, string value)
     {
-        Monitor.Enter(pL);
-        try
-        {
-            props.AddOrUpdate(key, value);
-        }
-        finally
-        {
-            Monitor.Exit(pL);
-        }
+        props.AddOrUpdate(key, value);
     }
 
-    public string getProperty(string key)
+    public string? getProperty(string key)
     {
-        Monitor.Enter(pL);
-        try
-        {
-            return props.GetValueOrDefault(key);
-        }
-        finally
-        {
-            Monitor.Exit(pL);
-        }
+        return props.GetValueOrDefault(key);
     }
 
     public ExpeditionType getType()

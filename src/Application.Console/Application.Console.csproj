@@ -30,5 +30,12 @@
 	  </None>
 	</ItemGroup>
 
+	<ItemGroup>
+		<FilesToDelete Include="$(OutputPath)cache\**" />
+	</ItemGroup>
+	<Target Name="DeleteFile" BeforeTargets="Clean">
+		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
+		<Delete Files="@(FilesToDelete)" />
+	</Target>
 
 </Project>

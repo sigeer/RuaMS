@@ -42,7 +42,7 @@ public class Pet : Item
     private int stance;
     private int petAttribute = 0;
 
-    public string? Name { get; set; }
+    public string Name { get; set; } = null!;
     public int Fullness { get; set; } = MaxFullness;
     public int Tameness { get; set; }
     public byte Level { get; set; } = 1;
@@ -79,12 +79,12 @@ public class Pet : Item
         }
     }
 
-    public string? getName()
+    public string getName()
     {
         return Name;
     }
 
-    public void setName(string? name)
+    public void setName(string name)
     {
         Name = name;
     }

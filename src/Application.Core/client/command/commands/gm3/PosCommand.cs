@@ -36,7 +36,7 @@ public class PosCommand : Command
         var player = c.OnlinedCharacter;
         float xpos = player.getPosition().X;
         float ypos = player.getPosition().Y;
-        float fh = player.getMap().getFootholds().findBelow(player.getPosition()).getId();
+        float fh = player.getMap().getFootholds().findBelow(player.getPosition())!.getId();
         player.dropMessage(6, "Position: (" + xpos + ", " + ypos + ")");
         player.dropMessage(6, "Foothold ID: " + fh);
     }

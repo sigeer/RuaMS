@@ -41,15 +41,19 @@ namespace net.server.channel.handlers;
 
 public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 {
+    private const int EXPLODED_MESO_SPREAD_DELAY = 100;
+    private const int EXPLODED_MESO_MAX_DELAY = 1000;
 
     public class AttackInfo
     {
 
         public int numAttacked, numDamage, numAttackedAndDamage, skill, skilllevel, stance, direction, rangedirection, charge, display;
-        public Dictionary<int, List<int>> allDamage = new();
+        public Dictionary<int, AttackTarget?> targets = new();
         public bool ranged, magic;
         public int speed = 4;
         public Point position = new Point();
+        public List<int> explodedMesos = [];
+        public short attackDelay;
 
         public StatEffect? getAttackEffect(IPlayer chr, Skill? theSkill)
         {
@@ -70,7 +74,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                 return null;
             }
             if (display > 80)
-            { //Hmm
+            {
+                //Hmm
                 if (!mySkill.getAction())
                 {
                     AutobanFactory.FAST_ATTACK.autoban(chr, "WZ Edit; adding action to a skill: " + display);
@@ -80,6 +85,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             return mySkill.getEffect(skillLevel);
         }
     }
+
+    public record AttackTarget(short delay, List<int> damageLines);
 
     protected void applyAttack(AttackInfo attack, IPlayer player, int attackCount)
     {
@@ -119,7 +126,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     if (player.isAlive())
                     {
                         if (attack.skill == Aran.BODY_PRESSURE || attack.skill == Marauder.ENERGY_CHARGE || attack.skill == ThunderBreaker.ENERGY_CHARGE)
-                        {  // thanks IxianMace for noticing Energy Charge skills refreshing on touch
+                        {
+                            // thanks IxianMace for noticing Energy Charge skills refreshing on touch
                             // prevent touch dmg skills refreshing
                         }
                         else if (attack.skill == DawnWarrior.FINAL_ATTACK || attack.skill == WindArcher.FINAL_ATTACK)
@@ -128,21 +136,30 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             mobCount = 15;
                         }
                         else if (attack.skill == NightWalker.POISON_BOMB)
-                        {// Poison Bomb
+                        {
+                            // Poison Bomb
                             attackEffect.applyTo(player, new Point(attack.position.X, attack.position.Y));
                         }
                         else
                         {
                             attackEffect.applyTo(player);
 
-                            if (attack.skill == Page.FINAL_ATTACK_BW || attack.skill == Page.FINAL_ATTACK_SWORD || attack.skill == Fighter.FINAL_ATTACK_SWORD
-                                    || attack.skill == Fighter.FINAL_ATTACK_AXE || attack.skill == Spearman.FINAL_ATTACK_SPEAR || attack.skill == Spearman.FINAL_ATTACK_POLEARM
-                                    || attack.skill == Hunter.FINAL_ATTACK || attack.skill == Crossbowman.FINAL_ATTACK)
+                            if (attack.skill == Page.FINAL_ATTACK_BW
+                                || attack.skill == Page.FINAL_ATTACK_SWORD
+                                || attack.skill == Fighter.FINAL_ATTACK_SWORD
+                                || attack.skill == Fighter.FINAL_ATTACK_AXE
+                                || attack.skill == Spearman.FINAL_ATTACK_SPEAR
+                                || attack.skill == Spearman.FINAL_ATTACK_POLEARM
+                                || attack.skill == Hunter.FINAL_ATTACK
+                                || attack.skill == Crossbowman.FINAL_ATTACK)
                             {
 
                                 mobCount = 15;//:(
                             }
-                            else if (attack.skill == Aran.HIDDEN_FULL_DOUBLE || attack.skill == Aran.HIDDEN_FULL_TRIPLE || attack.skill == Aran.HIDDEN_OVER_DOUBLE || attack.skill == Aran.HIDDEN_OVER_TRIPLE)
+                            else if (attack.skill == Aran.HIDDEN_FULL_DOUBLE
+                                || attack.skill == Aran.HIDDEN_FULL_TRIPLE
+                                || attack.skill == Aran.HIDDEN_OVER_DOUBLE
+                                || attack.skill == Aran.HIDDEN_OVER_TRIPLE)
                             {
                                 mobCount = 12;
                             }
@@ -174,55 +191,9 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
             if (attack.skill == ChiefBandit.MESO_EXPLOSION)
             {
-                int delay = 0;
-                foreach (int oned in attack.allDamage.Keys)
-                {
-                    var mapobject = map.getMapObject(oned);
-                    if (mapobject != null && mapobject.getType() == MapObjectType.ITEM)
-                    {
-                        MapItem mapitem = (MapItem)mapobject;
-                        if (mapitem.getMeso() == 0)
-                        { //Maybe it is possible some how?
-                            return;
-                        }
-
-                        mapitem.lockItem();
-                        try
-                        {
-                            if (mapitem.isPickedUp())
-                            {
-                                return;
-                            }
-                            TimerManager.getInstance().schedule(() =>
-                            {
-                                mapitem.lockItem();
-                                try
-                                {
-                                    if (mapitem.isPickedUp())
-                                    {
-                                        return;
-                                    }
-                                    map.pickItemDrop(PacketCreator.removeItemFromMap(mapitem.getObjectId(), 4, 0), mapitem);
-                                }
-                                finally
-                                {
-                                    mapitem.unlockItem();
-                                }
-                            }, delay);
-                            delay += 100;
-                        }
-                        finally
-                        {
-                            mapitem.unlockItem();
-                        }
-                    }
-                    else if (mapobject != null && mapobject.getType() != MapObjectType.MONSTER)
-                    {
-                        return;
-                    }
-                }
+                removeExplodedMesos(map, attack);
             }
-            foreach (int oned in attack.allDamage.Keys)
+            foreach (int oned in attack.targets.Keys)
             {
                 var monster = map.getMonsterByOid(oned);
                 if (monster != null)
@@ -273,7 +244,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
 
                     int totDamageToOneMonster = 0;
-                    List<int> onedList = attack.allDamage.GetValueOrDefault(oned, new List<int>());
+                    var onedList = attack.targets.GetValueOrDefault(oned)?.damageLines ?? [];
 
                     if (attack.magic)
                     { // thanks BHB, Alex (CanIGetaPR) for noticing no immunity status check here
@@ -349,7 +320,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                             monster,
                                             player,
                                             true,
-                                            2), delay);
+                                            2,
+                                            (short)delay), delay);
                                     delay += 100;
                                 }
                             }
@@ -367,7 +339,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     {
                         var steal = SkillFactory.GetSkillTrust(Bandit.STEAL);
                         if (monster.getStolen().Count < 1)
-                        { 
+                        {
                             // One steal per mob <3
                             if (steal.getEffect(player.getSkillLevel(steal)).makeChanceResult())
                             {
@@ -385,11 +357,11 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                         i++;
                                     }
 
-                                    List<MonsterDropEntry> toSteal = new();
+                                    List<DropEntry> toSteal = new();
                                     toSteal.Add(mi.retrieveDrop(monster.getId()).get(i));
 
-                                    map.dropItemsFromMonster(toSteal, player, monster);
-                                    monster.addStolen(toSteal.get(0).itemId);
+                                    map.dropItemsFromMonster(toSteal, player, monster, attack.targets[oned]!.delay);
+                                    monster.addStolen(toSteal.get(0).ItemId);
                                 }
                             }
                         }
@@ -563,7 +535,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
                     if (attack.skill != 0)
                     {
-                        if (attackEffect.getFixDamage() != -1)
+                        if (attackEffect!.getFixDamage() != -1)
                         {
                             if (totDamageToOneMonster != attackEffect.getFixDamage() && totDamageToOneMonster != 0)
                             {
@@ -685,7 +657,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
     private static void damageMonsterWithSkill(IPlayer attacker, IMap map, Monster monster, int damage, int skillid, int fixedTime)
     {
-        int animationTime = fixedTime == 0 ? SkillFactory.getSkill(skillid).getAnimationTime() : fixedTime;
+        int animationTime = fixedTime == 0 ? SkillFactory.GetSkillTrust(skillid).getAnimationTime() : fixedTime;
 
         if (animationTime > 0)
         {
@@ -711,7 +683,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         ret.numAttackedAndDamage = p.readByte();
         ret.numAttacked = (int)((uint)ret.numAttackedAndDamage >> 4) & 0xF;
         ret.numDamage = ret.numAttackedAndDamage & 0xF;
-        ret.allDamage = new();
+        ret.targets = new();
         ret.skill = p.readInt();
         ret.ranged = ranged;
         ret.magic = magic;
@@ -740,50 +712,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         ret.stance = p.readByte();
         if (ret.skill == ChiefBandit.MESO_EXPLOSION)
         {
-            if (ret.numAttackedAndDamage == 0)
-            {
-                p.skip(10);
-                int bullets = p.readByte();
-                for (int j = 0; j < bullets; j++)
-                {
-                    int mesoid = p.readInt();
-                    p.skip(1);
-                    ret.allDamage.AddOrUpdate(mesoid, []);
-                }
-                return ret;
-            }
-            else
-            {
-                p.skip(6);
-            }
-            for (int i = 0; i < ret.numAttacked + 1; i++)
-            {
-                int oid = p.readInt();
-                if (i < ret.numAttacked)
-                {
-                    p.skip(12);
-                    int bullets = p.readByte();
-                    List<int> allDamageNumbers = new();
-                    for (int j = 0; j < bullets; j++)
-                    {
-                        int damage = p.readInt();
-                        allDamageNumbers.Add(damage);
-                    }
-                    ret.allDamage.AddOrUpdate(oid, allDamageNumbers);
-                    p.skip(4);
-                }
-                else
-                {
-                    int bullets = p.readByte();
-                    for (int j = 0; j < bullets; j++)
-                    {
-                        int mesoid = p.readInt();
-                        p.skip(1);
-                        ret.allDamage.AddOrUpdate(mesoid, []);
-                    }
-                }
-            }
-            return ret;
+            return parseMesoExplosion(p, ret);
         }
         if (ranged)
         {
@@ -985,7 +914,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
         if (ret.skill != 0)
         {
-            int fixedValue = ret.getAttackEffect(chr, SkillFactory.getSkill(ret.skill)).getFixDamage();
+            int fixedValue = ret.getAttackEffect(chr, SkillFactory.getSkill(ret.skill))?.getFixDamage() ?? 0;
             if (fixedValue > 0)
             {
                 calcDmgMax = fixedValue;
@@ -994,8 +923,11 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         for (int i = 0; i < ret.numAttacked; i++)
         {
             int oid = p.readInt();
-            p.skip(14);
-            List<int> allDamageNumbers = new();
+            p.skip(4);
+            Point curPos = p.readPos();
+            Point nextPos = p.readPos();
+            short delay = p.readShort();
+            List<int> damageLines = [];
             var monster = chr.getMap().getMonsterByOid(oid);
 
             if (chr.getBuffEffect(BuffStat.WK_CHARGE) != null)
@@ -1044,7 +976,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
             if (ret.skill != 0)
             {
-                var skill = SkillFactory.getSkill(ret.skill);
+                var skill = SkillFactory.GetSkillTrust(ret.skill);
                 if (skill.getElement() != Element.NEUTRAL && chr.getBuffedValue(BuffStat.ELEMENTAL_RESET) == null)
                 {
                     // The skill has an element effect, so we need to factor that in.
@@ -1171,13 +1103,17 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
                 }
 
-                allDamageNumbers.Add(damage);
+                damageLines.Add(damage);
             }
-            if (ret.skill != Corsair.RAPID_FIRE || ret.skill != Aran.HIDDEN_FULL_DOUBLE || ret.skill != Aran.HIDDEN_FULL_TRIPLE || ret.skill != Aran.HIDDEN_OVER_DOUBLE || ret.skill != Aran.HIDDEN_OVER_TRIPLE)
+            if (ret.skill != Corsair.RAPID_FIRE
+                || ret.skill != Aran.HIDDEN_FULL_DOUBLE
+                || ret.skill != Aran.HIDDEN_FULL_TRIPLE
+                || ret.skill != Aran.HIDDEN_OVER_DOUBLE
+                || ret.skill != Aran.HIDDEN_OVER_TRIPLE)
             {
                 p.skip(4);
             }
-            ret.allDamage.AddOrUpdate(oid, allDamageNumbers);
+            ret.targets.AddOrUpdate(oid, new(delay, damageLines));
         }
         if (ret.skill == NightWalker.POISON_BOMB)
         {
@@ -1191,5 +1127,78 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
     private static int rand(int l, int u)
     {
         return (int)((Randomizer.nextDouble() * (u - l + 1)) + l);
+    }
+
+    private AttackInfo parseMesoExplosion(InPacket p, AttackInfo attackInfo)
+    {
+        p.skip(6);
+        Dictionary<int, List<int>> targetDamage = new();
+        for (int i = 0; i < attackInfo.numAttacked; i++)
+        {
+            int mobOid = p.readInt();
+            p.skip(4);
+            Point curPos = p.readPos();
+            Point nextPos = p.readPos();
+            int damageLines = p.readByte();
+            List<int> allDamageNumbers = [];
+            for (int j = 0; j < damageLines; j++)
+            {
+                int damage = p.readInt();
+                allDamageNumbers.Add(damage);
+            }
+            p.skip(4);
+            targetDamage.AddOrUpdate(mobOid, allDamageNumbers);
+        }
+        p.skip(4);
+        List<int> explodedMesos = [];
+        int explodedMesoCount = p.readByte();
+        for (int j = 0; j < explodedMesoCount; j++)
+        {
+            int mesoOid = p.readInt();
+            p.skip(1);
+            explodedMesos.Add(mesoOid);
+        }
+        attackInfo.explodedMesos = explodedMesos;
+        short attackDelay = p.readShort();
+        attackInfo.attackDelay = attackDelay;
+        Dictionary<int, AttackTarget?> targets = [];
+        foreach (var item in targetDamage)
+        {
+            targets.AddOrUpdate(item.Key, new AttackTarget(attackDelay, item.Value));
+        }
+        attackInfo.targets = targets;
+        return attackInfo;
+    }
+
+    private void removeExplodedMesos(IMap map, AttackInfo attack)
+    {
+        int index = 0;
+        foreach (var mesoId in attack.explodedMesos)
+        {
+            var mapobject = map.getMapObject(mesoId);
+            if (mapobject is not MapItem mapItem)
+            {
+                return;
+            }
+            if (mapItem.getMeso() == 0)
+            {
+                return;
+            }
+            mapItem.lockItem();
+            try
+            {
+                if (mapItem.isPickedUp())
+                {
+                    return;
+                }
+                int delay = attack.attackDelay + (index++ % 5) * EXPLODED_MESO_SPREAD_DELAY;
+                delay = Math.Min(delay, EXPLODED_MESO_MAX_DELAY);
+                map.pickItemDrop(PacketCreator.removeExplodedMesoFromMap(mapItem.getObjectId(), (short)delay), mapItem);
+            }
+            finally
+            {
+                mapItem.unlockItem();
+            }
+        }
     }
 }

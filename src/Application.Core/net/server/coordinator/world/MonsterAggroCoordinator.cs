@@ -43,9 +43,9 @@ public class MonsterAggroCoordinator
 
     private HashSet<int> mapPuppetEntries = new();
 
-    private class PlayerAggroEntry
+    private class PlayerAggroEntry(int cid)
     {
-        public int cid;
+        public int cid = cid;
         public int averageDamage = 0;
         public int currentDamageInstances = 0;
         public long accumulatedDamage = 0;
@@ -54,11 +54,6 @@ public class MonsterAggroCoordinator
         public int updateStreak = 0;
         public int toNextUpdate = 0;
         public int entryRank = -1;
-
-        public PlayerAggroEntry(int cid)
-        {
-            this.cid = cid;
-        }
     }
 
     public void stopAggroCoordinator()

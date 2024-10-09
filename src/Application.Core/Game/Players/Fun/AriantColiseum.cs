@@ -27,16 +27,6 @@ namespace Application.Core.Game.Players
             return this.ariantPoints;
         }
 
-        public static string getAriantRoomLeaderName(int room)
-        {
-            return ariantroomleader[room];
-        }
-
-        public static int getAriantSlotsRoom(int room)
-        {
-            return ariantroomslot[room];
-        }
-
         public void updateAriantScore()
         {
             updateAriantScore(0);
@@ -44,7 +34,7 @@ namespace Application.Core.Game.Players
 
         public void updateAriantScore(int dropQty)
         {
-            AriantColiseum arena = this.getAriantColiseum();
+            var arena = this.getAriantColiseum();
             if (arena != null)
             {
                 arena.updateAriantScore(this, countItem(ItemId.ARPQ_SPIRIT_JEWEL));

@@ -48,24 +48,22 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
-using server.partyquest;
 using System.Collections.ObjectModel;
 using System.Text;
 using tools;
-using static server.partyquest.CarnivalFactory;
 
 
 namespace Application.Core.Game.Maps;
 
 public class MapleMap : IMap
 {
-    private ILogger log;
+    protected ILogger log;
     private static List<MapObjectType> rangedMapobjectTypes = Arrays.asList(MapObjectType.SHOP, MapObjectType.ITEM, MapObjectType.NPC, MapObjectType.MONSTER, MapObjectType.DOOR, MapObjectType.SUMMON, MapObjectType.REACTOR);
     private static Dictionary<int, KeyValuePair<int, int>?> dropBoundsCache = new(100);
 
     private Dictionary<int, IMapObject> mapobjects = new();
     private HashSet<int> selfDestructives = new();
-    private List<SpawnPoint> monsterSpawn = new();
+    protected List<SpawnPoint> monsterSpawn = new();
     private List<SpawnPoint> allMonsterSpawn = new();
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
     public AtomicInteger droppedItemCount { get; set; } = new AtomicInteger(0);
@@ -78,7 +76,6 @@ public class MapleMap : IMap
     private Dictionary<string, int> environment = new();
     private Dictionary<MapItem, long> droppedItems = new();
     private List<WeakReference<IMapObject>> registeredDrops = new();
-    private Dictionary<MobLootEntry, long> mobLootEntries = new(20);
     private List<Action> statUpdateRunnables = new(50);
     private List<Rectangle> areas = new();
     private FootholdTree? footholds = null;
@@ -87,10 +84,8 @@ public class MapleMap : IMap
     private int mapid;
     private AtomicInteger runningOid = new AtomicInteger(1000000001);
     private int returnMapId;
-    private int channel;
     private int world;
     private int seats;
-    private byte monsterRate;
     private bool clock;
     private bool boat;
     private bool docked = false;
@@ -117,7 +112,6 @@ public class MapleMap : IMap
     private MonsterAggroCoordinator aggroMonitor;   // aggroMonitor activity in sync with itemMonitor
     private ScheduledFuture? itemMonitor = null;
     private ScheduledFuture? expireItemsTask = null;
-    private ScheduledFuture? mobSpawnLootTask = null;
     private ScheduledFuture? characterStatUpdateTask = null;
     private short itemMonitorTimeout;
     private KeyValuePair<int, string>? timeMob = null;
@@ -134,19 +128,13 @@ public class MapleMap : IMap
     public Coconut? Coconut { get; set; }
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
+    public int Channel { get; set; }
+    public byte MonsterRate { get; set; }
 
-    //CPQ
-    private int maxMobs;
-    private int maxReactors;
-    private int deathCP;
-    private int timeDefault;
-    private int timeExpand;
 
     //locks
     ReaderWriterLockSlim chrLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     ReaderWriterLockSlim objectLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-    private object lootLock = new object();
 
     // due to the nature of loadMapFromWz (synchronized), sole function that calls 'generateMapDropRangeCache', this lock remains optional.
     private static object bndLock = new object();
@@ -154,13 +142,13 @@ public class MapleMap : IMap
     public MapleMap(int mapid, int world, int channel, int returnMapId, float monsterRate)
     {
         this.mapid = mapid;
-        this.channel = channel;
+        this.Channel = channel;
         this.world = world;
         this.returnMapId = returnMapId;
-        this.monsterRate = (byte)Math.Ceiling(monsterRate);
-        if (this.monsterRate == 0)
+        this.MonsterRate = (byte)Math.Ceiling(monsterRate);
+        if (this.MonsterRate == 0)
         {
-            this.monsterRate = 1;
+            this.MonsterRate = 1;
         }
         aggroMonitor = new MonsterAggroCoordinator();
         onFirstUserEnter = mapid.ToString();
@@ -257,7 +245,7 @@ public class MapleMap : IMap
 
     public IWorldChannel getChannelServer()
     {
-        return getWorldServer().getChannel(channel);
+        return getWorldServer().getChannel(Channel);
     }
 
     public IWorld getWorldServer()
@@ -725,31 +713,7 @@ public class MapleMap : IMap
         return new(getRoundedCoordinate(angle), (int)distn);
     }
 
-    private static void sortDropEntries(List<MonsterDropEntry> from, List<MonsterDropEntry> item, List<MonsterDropEntry> visibleQuest, List<MonsterDropEntry> otherQuest, IPlayer chr)
-    {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
-        foreach (MonsterDropEntry mde in from)
-        {
-            if (!ii.isQuestItem(mde.itemId))
-            {
-                item.Add(mde);
-            }
-            else
-            {
-                if (chr.needQuestItem(mde.questid, mde.itemId))
-                {
-                    visibleQuest.Add(mde);
-                }
-                else
-                {
-                    otherQuest.Add(mde);
-                }
-            }
-        }
-    }
-
-    public byte dropItemsFromMonsterOnMap(List<MonsterDropEntry> dropEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob)
+    public byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
     {
         if (dropEntry.Count == 0)
         {
@@ -761,25 +725,18 @@ public class MapleMap : IMap
         Item idrop;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        foreach (MonsterDropEntry de in dropEntry)
+        foreach (var de in dropEntry)
         {
-            float cardRate = chr.getCardRate(de.itemId);
-            int dropChance = (int)Math.Min((float)de.chance * chRate * cardRate, int.MaxValue);
+            float cardRate = chr.getCardRate(de.ItemId);
+            int dropChance = (int)Math.Min((float)de.Chance * chRate * cardRate, int.MaxValue);
 
-            if (Randomizer.nextInt(999999) < dropChance)
+            if (de.CanDrop(dropChance))
             {
-                if (droptype == 3)
+                pos.X = de.GetDropPosX(droptype, mobpos, d);
+                if (de.ItemId == 0)
                 {
-                    pos.X = mobpos + ((d % 2 == 0) ? (40 * ((d + 1) / 2)) : -(40 * (d / 2)));
-                }
-                else
-                {
-                    pos.X = mobpos + ((d % 2 == 0) ? (25 * ((d + 1) / 2)) : -(25 * (d / 2)));
-                }
-                if (de.itemId == 0)
-                { // meso
-                    int mesos = Randomizer.nextInt(de.Maximum - de.Minimum) + de.Minimum;
-
+                    // meso
+                    int mesos = de.GetRandomCount();
                     if (mesos > 0)
                     {
                         if (chr.getBuffedValue(BuffStat.MESOUP) != null)
@@ -789,23 +746,24 @@ public class MapleMap : IMap
                         mesos = mesos * chr.getMesoRate();
                         if (mesos <= 0)
                         {
+                            log.Warning("Character {CharacterName}, Id = {CharacterId}, MesoRate {MesoRate}", chr, chr.Id, chr.getMesoRate());
                             mesos = int.MaxValue;
                         }
 
-                        spawnMesoDrop(mesos, calcDropPos(pos, mob.getPosition()), mob, chr, false, droptype);
+                        spawnMesoDrop(mesos, calcDropPos(pos, mob.getPosition()), mob, chr, false, droptype, delay);
                     }
                 }
                 else
                 {
-                    if (ItemConstants.getInventoryType(de.itemId) == InventoryType.EQUIP)
+                    if (ItemConstants.getInventoryType(de.ItemId) == InventoryType.EQUIP)
                     {
-                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.itemId));
+                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.ItemId));
                     }
                     else
                     {
-                        idrop = new Item(de.itemId, 0, (short)(de.Maximum != 1 ? Randomizer.nextInt(de.Maximum - de.Minimum) + de.Minimum : 1));
+                        idrop = new Item(de.ItemId, 0, (short)de.GetRandomCount());
                     }
-                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.questid);
+                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, delay);
                 }
                 d++;
             }
@@ -814,36 +772,29 @@ public class MapleMap : IMap
         return d;
     }
 
-    public byte dropGlobalItemsFromMonsterOnMap(List<MonsterGlobalDropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob)
+    public byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
     {
         Collections.shuffle(globalEntry);
 
         Item idrop;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-        foreach (MonsterGlobalDropEntry de in globalEntry)
+        foreach (var de in globalEntry)
         {
-            if (Randomizer.nextInt(999999) < de.chance)
+            if (de.CanDrop())
             {
-                if (droptype == 3)
+                pos.X = de.GetDropPosX(droptype, mobpos, d);
+                if (de.ItemId != 0)
                 {
-                    pos.X = mobpos + (d % 2 == 0 ? (40 * (d + 1) / 2) : -(40 * (d / 2)));
-                }
-                else
-                {
-                    pos.X = mobpos + ((d % 2 == 0) ? (25 * (d + 1) / 2) : -(25 * (d / 2)));
-                }
-                if (de.itemId != 0)
-                {
-                    if (ItemConstants.getInventoryType(de.itemId) == InventoryType.EQUIP)
+                    if (ItemConstants.getInventoryType(de.ItemId) == InventoryType.EQUIP)
                     {
-                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.itemId));
+                        idrop = ii.randomizeStats((Equip)ii.getEquipById(de.ItemId));
                     }
                     else
                     {
-                        idrop = new Item(de.itemId, 0, (short)(de.Maximum != 1 ? Randomizer.nextInt(de.Maximum - de.Minimum) + de.Minimum : 1));
+                        idrop = new Item(de.ItemId, 0, (short)de.GetRandomCount());
                     }
-                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.questid);
+                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, delay);
                     d++;
                 }
             }
@@ -852,7 +803,7 @@ public class MapleMap : IMap
         return d;
     }
 
-    private void dropFromMonster(IPlayer chr, Monster mob, bool useBaseRate)
+    private void dropFromMonster(IPlayer chr, Monster mob, bool useBaseRate, short delay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
@@ -876,24 +827,31 @@ public class MapleMap : IMap
         }
 
         MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
-        List<MonsterGlobalDropEntry> globalEntry = mi.getRelevantGlobalDrops(this.getId());
+        List<DropEntry> globalEntry = mi.getRelevantGlobalDrops(this.getId());
 
-        List<MonsterDropEntry> dropEntry = new();
-        List<MonsterDropEntry> visibleQuestEntry = new();
-        List<MonsterDropEntry> otherQuestEntry = new();
+        List<DropEntry> dropEntry = new();
+        List<DropEntry> visibleQuestEntry = new();
+        List<DropEntry> otherQuestEntry = new();
 
-        List<MonsterDropEntry> lootEntry = YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? mob.retrieveRelevantDrops() : mi.retrieveEffectiveDrop(mob.getId());
-        sortDropEntries(lootEntry, dropEntry, visibleQuestEntry, otherQuestEntry, chr);     // thanks Articuno, Limit, Rohenn for noticing quest loots not showing up in only-quest item drops scenario
+        List<DropEntry> lootEntry = YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? mob.retrieveRelevantDrops() : mi.retrieveEffectiveDrop(mob.getId());
+        DropEntry.ClassifyDropEntries(lootEntry, dropEntry, visibleQuestEntry, otherQuestEntry, chr);     // thanks Articuno, Limit, Rohenn for noticing quest loots not showing up in only-quest item drops scenario
 
         if (lootEntry.Count == 0)
         {   // thanks resinate
             return;
         }
 
-        registerMobItemDrops(droptype, mobpos, chRate, pos, dropEntry, visibleQuestEntry, otherQuestEntry, globalEntry, chr, mob);
+        byte index = 1;
+        // Normal Drops
+        index = dropItemsFromMonsterOnMap(dropEntry, pos, index, chRate, droptype, mobpos, chr, mob, delay);
+        // Global Drops
+        index = dropGlobalItemsFromMonsterOnMap(globalEntry, pos, index, droptype, mobpos, chr, mob, delay);
+        // Quest Drops
+        index = dropItemsFromMonsterOnMap(visibleQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, delay);
+        dropItemsFromMonsterOnMap(otherQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, delay);
     }
 
-    public void dropItemsFromMonster(List<MonsterDropEntry> list, IPlayer chr, Monster mob)
+    public void dropItemsFromMonster(List<DropEntry> list, IPlayer chr, Monster mob, short delay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
@@ -906,17 +864,17 @@ public class MapleMap : IMap
         byte d = 1;
         Point pos = new Point(0, mob.getPosition().Y);
 
-        dropItemsFromMonsterOnMap(list, pos, d, chRate, droptype, mobpos, chr, mob);
+        dropItemsFromMonsterOnMap(list, pos, d, chRate, droptype, mobpos, chr, mob, delay);
     }
 
     public void dropFromFriendlyMonster(IPlayer chr, Monster mob)
     {
-        dropFromMonster(chr, mob, true);
+        dropFromMonster(chr, mob, true, 0);
     }
 
-    public void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid)
+    public void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0)
     {
-        spawnDrop(drop, this.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, (byte)(chr.getParty() != null ? 1 : 0), questid);
+        spawnDrop(drop, this.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, (byte)(chr.getParty() != null ? 1 : 0), questid, delay);
     }
 
     private void stopItemMonitor()
@@ -926,12 +884,6 @@ public class MapleMap : IMap
 
         expireItemsTask?.cancel(false);
         expireItemsTask = null;
-
-        if (YamlConfig.config.server.USE_SPAWN_LOOT_ON_ANIMATION)
-        {
-            mobSpawnLootTask?.cancel(false);
-            mobSpawnLootTask = null;
-        }
 
         characterStatUpdateTask?.cancel(false);
         characterStatUpdateTask = null;
@@ -1010,21 +962,6 @@ public class MapleMap : IMap
             }, YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
             expireItemsTask = TimerManager.getInstance().register(() => { makeDisappearExpiredItemDrops(); }, YamlConfig.config.server.ITEM_EXPIRE_CHECK, YamlConfig.config.server.ITEM_EXPIRE_CHECK);
-
-            if (YamlConfig.config.server.USE_SPAWN_LOOT_ON_ANIMATION)
-            {
-                Monitor.Enter(lootLock);
-                try
-                {
-                    mobLootEntries.Clear();
-                }
-                finally
-                {
-                    Monitor.Exit(lootLock);
-                }
-
-                mobSpawnLootTask = TimerManager.getInstance().register(() => spawnMobItemDrops(), 200, 200);
-            }
 
             characterStatUpdateTask = TimerManager.getInstance().register(runCharacterStatUpdate, 200, 200);
 
@@ -1158,83 +1095,6 @@ public class MapleMap : IMap
             objectLock.ExitWriteLock();
         }
     }
-
-    private void registerMobItemDrops(byte droptype, int mobpos, int chRate, Point pos, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, IPlayer chr, Monster mob)
-    {
-        MobLootEntry mle = new MobLootEntry(this, droptype, mobpos, chRate, pos, dropEntry, visibleQuestEntry, otherQuestEntry, globalEntry, chr, mob);
-
-        if (YamlConfig.config.server.USE_SPAWN_LOOT_ON_ANIMATION)
-        {
-            int animationTime = mob.getAnimationTime("die1");
-
-            Monitor.Enter(lootLock);
-            try
-            {
-                long timeNow = Server.getInstance().getCurrentTime();
-                mobLootEntries.AddOrUpdate(mle, timeNow + ((long)(0.42 * animationTime)));
-            }
-            finally
-            {
-                Monitor.Exit(lootLock);
-            }
-        }
-        else
-        {
-            mle.run();
-        }
-    }
-
-    private void spawnMobItemDrops()
-    {
-        HashSet<KeyValuePair<MobLootEntry, long>> mleList;
-
-        Monitor.Enter(lootLock);
-        try
-        {
-            mleList = new(mobLootEntries);
-        }
-        finally
-        {
-            Monitor.Exit(lootLock);
-        }
-
-        long timeNow = Server.getInstance().getCurrentTime();
-        List<MobLootEntry> toRemove = new();
-        foreach (var mlee in mleList)
-        {
-            if (mlee.Value < timeNow)
-            {
-                toRemove.Add(mlee.Key);
-            }
-        }
-
-        if (toRemove.Count > 0)
-        {
-            List<MobLootEntry> toSpawnLoot = new();
-
-            Monitor.Enter(lootLock);
-            try
-            {
-                foreach (MobLootEntry mle in toRemove)
-                {
-                    if (mobLootEntries.Remove(mle, out var mler))
-                    {
-                        toSpawnLoot.Add(mle);
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(lootLock);
-            }
-
-            foreach (MobLootEntry mle in toSpawnLoot)
-            {
-                mle.run();
-            }
-        }
-    }
-
     private List<MapItem> getDroppedItems()
     {
         objectLock.EnterReadLock();
@@ -1368,7 +1228,7 @@ public class MapleMap : IMap
         }
     }
 
-    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, byte droptype, short questid)
+    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, byte droptype, short questid, short delay)
     {
         MapItem mdrop = new MapItem(idrop, dropPos, dropper, chr, droptype, false, questid);
         mdrop.setDropTime(Server.getInstance().getCurrentTime());
@@ -1381,7 +1241,7 @@ public class MapleMap : IMap
                 mdrop.lockItem();
                 try
                 {
-                    c.sendPacket(PacketCreator.dropItemFromMapObject(chr1, mdrop, dropper.getPosition(), dropPos, 1));
+                    c.sendPacket(PacketCreator.dropItemFromMapObject(chr1, mdrop, dropper.getPosition(), dropPos, 1, delay));
                 }
                 finally
                 {
@@ -1394,7 +1254,7 @@ public class MapleMap : IMap
         activateItemReactors(mdrop, chr.getClient());
     }
 
-    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype)
+    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype, short delay = 0)
     {
         Point droppos = calcDropPos(position, position);
         MapItem mdrop = new MapItem(meso, droppos, dropper, owner, droptype, playerDrop);
@@ -1405,7 +1265,7 @@ public class MapleMap : IMap
             mdrop.lockItem();
             try
             {
-                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1));
+                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1, delay));
             }
             finally
             {
@@ -1424,7 +1284,7 @@ public class MapleMap : IMap
         mdrop.lockItem();
         try
         {
-            broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, mdrop.getPosition());
+            broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
         }
         finally
         {
@@ -1440,7 +1300,7 @@ public class MapleMap : IMap
         mdrop.lockItem();
         try
         {
-            broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, mdrop.getPosition());
+            broadcastItemDropMessage(mdrop, dropper.getPosition(), droppos, 3, rangedFrom: mdrop.getPosition());
         }
         finally
         {
@@ -1477,9 +1337,8 @@ public class MapleMap : IMap
     public int countMonster(int minid, int maxid)
     {
         int count = 0;
-        foreach (IMapObject m in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var mob in getAllMonsters())
         {
-            Monster mob = (Monster)m;
             if (mob.getId() >= minid && mob.getId() <= maxid)
             {
                 count++;
@@ -1488,10 +1347,7 @@ public class MapleMap : IMap
         return count;
     }
 
-    public int countMonsters()
-    {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)).Count;
-    }
+    public int countMonsters() => getMonsters().Count;
 
     public int countReactors()
     {
@@ -1531,7 +1387,7 @@ public class MapleMap : IMap
 
     public int countPlayers()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER)).Count;
+        return getPlayers().Count;
     }
 
     public List<IMapObject> getPlayers()
@@ -1598,7 +1454,7 @@ public class MapleMap : IMap
         return getAllMonsters().Count(x => x.isBoss());
     }
 
-    public bool damageMonster(IPlayer chr, Monster monster, int damage)
+    public bool damageMonster(IPlayer chr, Monster monster, int damage, short delay = 0)
     {
         if (monster.getId() == MobId.ZAKUM_1)
         {
@@ -1630,7 +1486,7 @@ public class MapleMap : IMap
             }
             if (killed)
             {
-                killMonster(monster, chr, true);
+                killMonster(monster, chr, true, delay);
             }
             return true;
         }
@@ -1684,7 +1540,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1)
+    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1, short dropDelay = 0)
     {
         if (monster == null)
         {
@@ -1782,7 +1638,7 @@ public class MapleMap : IMap
                         {
                             dropOwner = chr;
                         }
-                        dropFromMonster(dropOwner, monster, false);
+                        dropFromMonster(dropOwner, monster, false, dropDelay);
                     }
 
                     if (monster.hasBossHPBar())
@@ -1857,9 +1713,8 @@ public class MapleMap : IMap
     {
         closeMapSpawnPoints();
 
-        foreach (IMapObject monstermo in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var monster in getAllMonsters())
         {
-            Monster monster = (Monster)monstermo;
             if (monster.getStats().isFriendly())
             {
                 continue;
@@ -1876,9 +1731,8 @@ public class MapleMap : IMap
     {
         closeMapSpawnPoints();
 
-        foreach (IMapObject monstermo in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var monster in getAllMonsters())
         {
-            Monster monster = (Monster)monstermo;
             if (monster.getStats().isFriendly())
             {
                 continue;
@@ -1892,10 +1746,8 @@ public class MapleMap : IMap
     {
         closeMapSpawnPoints();
 
-        foreach (IMapObject monstermo in getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER)))
+        foreach (var monster in getAllMonsters())
         {
-            Monster monster = (Monster)monstermo;
-
             killMonster(monster, null, false, 1);
         }
     }
@@ -1980,35 +1832,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void shuffleReactors()
-    {
-        List<Point> points = new();
-        objectLock.EnterReadLock();
-        try
-        {
-            foreach (IMapObject o in mapobjects.Values)
-            {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    points.Add(o.getPosition());
-                }
-            }
-            Collections.shuffle(points);
-            foreach (IMapObject o in mapobjects.Values)
-            {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    o.setPosition(points.remove(points.Count - 1));
-                }
-            }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
-    }
-
-    public void shuffleReactors(int first, int last)
+    public void shuffleReactors(int first = 0, int last = int.MaxValue)
     {
         List<Point> points = new();
         var reactors = getReactors();
@@ -2411,12 +2235,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnAllMonsterIdFromMapSpawnList(int id)
-    {
-        spawnAllMonsterIdFromMapSpawnList(id, 1, false);
-    }
-
-    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty, bool isPq)
+    public void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false)
     {
         foreach (SpawnPoint sp in getAllMonsterSpawn())
         {
@@ -2427,12 +2246,8 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnAllMonstersFromMapSpawnList()
-    {
-        spawnAllMonstersFromMapSpawnList(1, false);
-    }
 
-    public void spawnAllMonstersFromMapSpawnList(int difficulty, bool isPq)
+    public void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false)
     {
         foreach (SpawnPoint sp in getAllMonsterSpawn())
         {
@@ -2440,12 +2255,8 @@ public class MapleMap : IMap
         }
     }
 
-    public void spawnMonster(Monster monster)
-    {
-        spawnMonster(monster, 1, false);
-    }
 
-    public void spawnMonster(Monster monster, int difficulty, bool isPq)
+    public void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false)
     {
         if (mobCapacity != -1 && mobCapacity == spawnedMonstersOnMap.get())
         {
@@ -2465,28 +2276,7 @@ public class MapleMap : IMap
         monster.aggroUpdateController();
         updateBossSpawn(monster);
 
-        if ((monster.getTeam() == 1 || monster.getTeam() == 0) && (isCPQMap() || isCPQMap2()))
-        {
-            List<MCSkill>? teamS = null;
-            if (monster.getTeam() == 0)
-            {
-                teamS = redTeamBuffs;
-            }
-            else if (monster.getTeam() == 1)
-            {
-                teamS = blueTeamBuffs;
-            }
-            if (teamS != null)
-            {
-                foreach (MCSkill skil in teamS)
-                {
-                    if (skil != null)
-                    {
-                        skil.getSkill()!.applyEffect(null, monster, false, null);
-                    }
-                }
-            }
-        }
+        SetMonsterInfo(monster);
 
         if (monster.getDropPeriodTime() > 0)
         { //9300102 - Watchhog, 9300061 - Moon Bunny (HPQ), 9300093 - Tylus
@@ -2712,7 +2502,7 @@ public class MapleMap : IMap
             mdrop.lockItem();
             try
             {
-                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1));
+                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1, 0));
             }
             finally
             {
@@ -2734,66 +2524,13 @@ public class MapleMap : IMap
         activateItemReactors(mdrop, owner.getClient());
     }
 
-    public void spawnItemDropList(List<int> list, IMapObject dropper, IPlayer owner, Point pos)
-    {
-        spawnItemDropList(list, 1, 1, dropper, owner, pos, true, false);
-    }
-
-    // spawns item instances of all defined item ids on a list
-    public void spawnItemDropList(List<int> list, int minCopies, int maxCopies, IMapObject dropper, IPlayer owner, Point pos, bool ffaDrop = true, bool playerDrop = false)
-    {
-        int copies = (maxCopies - minCopies) + 1;
-        if (copies < 1)
-        {
-            return;
-        }
-
-        Collections.shuffle(list);
-
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        Random rnd = new Random();
-
-        Point dropPos = pos;
-        dropPos.X -= (12 * list.Count);
-
-        for (int i = 0; i < list.Count; i++)
-        {
-            if (list[i] == 0)
-            {
-                spawnMesoDrop(10 * owner.getMesoRate(), calcDropPos(dropPos, pos), dropper, owner, playerDrop, (byte)(ffaDrop ? 2 : 0));
-            }
-            else
-            {
-                Item drop;
-                int randomedId = list[i];
-
-                if (ItemConstants.getInventoryType(randomedId) != InventoryType.EQUIP)
-                {
-                    drop = new Item(randomedId, 0, (short)(rnd.Next(copies) + minCopies));
-                }
-                else
-                {
-                    drop = ii.randomizeStats((Equip)ii.getEquipById(randomedId));
-                }
-
-                spawnItemDrop(dropper, owner, drop, calcDropPos(dropPos, pos), ffaDrop, playerDrop);
-            }
-
-            dropPos.X += 25;
-        }
-    }
-
     private void registerMapSchedule(AbstractRunnable r, long delay)
     {
         OverallService service = (OverallService)this.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
         service.registerOverallAction(mapid, r, delay);
     }
 
-    private void registerMapSchedule(Action r, long delay)
-    {
-        OverallService service = (OverallService)this.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
-        service.registerOverallAction(mapid, r, delay);
-    }
+    private void registerMapSchedule(Action r, long delay) => registerMapSchedule(TempRunnable.Parse(r), delay);
 
     private void activateItemReactors(MapItem drop, IClient c)
     {
@@ -2805,8 +2542,8 @@ public class MapleMap : IMap
 
             if (react.getReactorType() == 100)
             {
-                var reactItem = react.getReactItem(react.getEventState()).GetValueOrDefault();
-                if (reactItem.Key == item.getItemId() && reactItem.Value == item.getQuantity())
+                var reactItem = react.getReactItem(react.getEventState())!;
+                if (reactItem.ItemId == item.getItemId() && reactItem.Quantity == item.getQuantity())
                 {
 
                     if (react.getArea().Contains(drop.getPosition()))
@@ -2823,8 +2560,8 @@ public class MapleMap : IMap
     {
         if (react.getReactorType() == 100)
         {
-            var reactProp = react.getReactItem(react.getEventState()).GetValueOrDefault();
-            int reactItem = reactProp.Key, reactQty = reactProp.Value;
+            var reactProp = react.getReactItem(react.getEventState())!;
+            int reactItem = reactProp.ItemId, reactQty = reactProp.Quantity;
             Rectangle reactArea = react.getArea();
 
             List<MapItem> list;
@@ -2873,12 +2610,8 @@ public class MapleMap : IMap
         broadcastMessage(PacketCreator.environmentChange(mapObj, newState));
     }
 
-    public void startMapEffect(string msg, int itemId)
-    {
-        startMapEffect(msg, itemId, 30000);
-    }
 
-    public void startMapEffect(string msg, int itemId, long time)
+    public void startMapEffect(string msg, int itemId, long time = 30000)
     {
         if (mapEffect != null)
         {
@@ -3309,77 +3042,28 @@ public class MapleMap : IMap
 
     public Portal getRandomPlayerSpawnpoint()
     {
-        List<Portal> spawnPoints = new();
-        foreach (Portal localPortal in portals.Values)
-        {
-            if (localPortal.getType() >= 0 && localPortal.getType() <= 1 && localPortal.getTargetMapId() == MapId.NONE)
-            {
-                spawnPoints.Add(localPortal);
-            }
-        }
-        var portal = spawnPoints.get(Randomizer.nextInt(spawnPoints.Count));
+        var portal = Randomizer.Select(portals.Values.Where(x => x.getType() >= 0 && x.getType() <= 1 && x.getTargetMapId() == MapId.NONE));
         return portal ?? getPortal(0)!;
     }
 
     public Portal? findClosestTeleportPortal(Point from)
     {
-        Portal? closest = null;
-        double shortestDistance = double.PositiveInfinity;
-        foreach (Portal portal in portals.Values)
-        {
-            double distance = portal.getPosition().distanceSq(from);
-            if (portal.getType() == PortalConstants.TELEPORT_PORTAL && distance < shortestDistance && portal.getTargetMapId() != MapId.NONE)
-            {
-                closest = portal;
-                shortestDistance = distance;
-            }
-        }
-        return closest;
+        return portals.Values.OrderBy(x => x.getPosition().distanceSq(from)).Where(x => x.getType() == PortalConstants.TELEPORT_PORTAL && x.getTargetMapId() != MapId.NONE).FirstOrDefault();
     }
 
     public Portal? findClosestPlayerSpawnpoint(Point from)
     {
-        Portal? closest = null;
-        double shortestDistance = double.PositiveInfinity;
-        foreach (Portal portal in portals.Values)
-        {
-            double distance = portal.getPosition().distanceSq(from);
-            if (portal.getType() >= 0 && portal.getType() <= 1 && distance < shortestDistance && portal.getTargetMapId() == MapId.NONE)
-            {
-                closest = portal;
-                shortestDistance = distance;
-            }
-        }
-        return closest;
+        return portals.Values.OrderBy(x => x.getPosition().distanceSq(from)).Where(x => x.getType() >= 0 && x.getType() <= 1 && x.getTargetMapId() == MapId.NONE).FirstOrDefault();
     }
 
     public Portal? findClosestPortal(Point from)
     {
-        Portal? closest = null;
-        double shortestDistance = double.PositiveInfinity;
-        foreach (Portal portal in portals.Values)
-        {
-            double distance = portal.getPosition().distanceSq(from);
-            if (distance < shortestDistance)
-            {
-                closest = portal;
-                shortestDistance = distance;
-            }
-        }
-        return closest;
+        return portals.Values.OrderBy(x => x.getPosition().distanceSq(from)).FirstOrDefault();
     }
 
     public Portal? findMarketPortal()
     {
-        foreach (Portal portal in portals.Values)
-        {
-            string ptScript = portal.getScriptName();
-            if (ptScript != null && ptScript.Contains("market"))
-            {
-                return portal;
-            }
-        }
-        return null;
+        return portals.Values.FirstOrDefault(x => x.getScriptName()?.Contains("market") == true);
     }
 
     /*
@@ -3605,24 +3289,14 @@ public class MapleMap : IMap
         }
     }
 
-    private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, Point? rangedFrom)
-    {
-        broadcastItemDropMessage(mdrop, dropperPos, dropPos, mod, getRangedDistance(), rangedFrom);
-    }
-
-    private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod)
-    {
-        broadcastItemDropMessage(mdrop, dropperPos, dropPos, mod, double.PositiveInfinity, null);
-    }
-
-    private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, double rangeSq, Point? rangedFrom)
+    private void broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, double rangeSq = double.PositiveInfinity, Point? rangedFrom = null, short dropDelay = 0)
     {
         chrLock.EnterReadLock();
         try
         {
             foreach (IPlayer chr in characters)
             {
-                Packet packet = PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod);
+                Packet packet = PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod, dropDelay);
 
                 if (rangeSq < double.PositiveInfinity)
                 {
@@ -4288,50 +3962,52 @@ public class MapleMap : IMap
         return false;
     }
 
-    public class MobLootEntry : AbstractRunnable
-    {
+    //public class MobLootEntry : AbstractRunnable
+    //{
 
-        private byte droptype;
-        private int mobpos;
-        private int chRate;
-        private Point pos;
-        private List<MonsterDropEntry> dropEntry;
-        private List<MonsterDropEntry> visibleQuestEntry;
-        private List<MonsterDropEntry> otherQuestEntry;
-        private List<MonsterGlobalDropEntry> globalEntry;
-        private IPlayer chr;
-        private Monster mob;
-        IMap _map;
-        public MobLootEntry(IMap map, byte droptype, int mobpos, int chRate, Point pos, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, IPlayer chr, Monster mob)
-        {
-            _map = map;
-            this.droptype = droptype;
-            this.mobpos = mobpos;
-            this.chRate = chRate;
-            this.pos = pos;
-            this.dropEntry = dropEntry;
-            this.visibleQuestEntry = visibleQuestEntry;
-            this.otherQuestEntry = otherQuestEntry;
-            this.globalEntry = globalEntry;
-            this.chr = chr;
-            this.mob = mob;
-        }
+    //    private byte droptype;
+    //    private int mobpos;
+    //    private int chRate;
+    //    private Point pos;
+    //    short delay;
+    //    private List<MonsterDropEntry> dropEntry;
+    //    private List<MonsterDropEntry> visibleQuestEntry;
+    //    private List<MonsterDropEntry> otherQuestEntry;
+    //    private List<MonsterGlobalDropEntry> globalEntry;
+    //    private IPlayer chr;
+    //    private Monster mob;
+    //    IMap _map;
+    //    public MobLootEntry(IMap map, byte droptype, int mobpos, int chRate, Point pos, short delay, List<MonsterDropEntry> dropEntry, List<MonsterDropEntry> visibleQuestEntry, List<MonsterDropEntry> otherQuestEntry, List<MonsterGlobalDropEntry> globalEntry, IPlayer chr, Monster mob)
+    //    {
+    //        _map = map;
+    //        this.droptype = droptype;
+    //        this.mobpos = mobpos;
+    //        this.chRate = chRate;
+    //        this.pos = pos;
+    //        this.delay = delay;
+    //        this.dropEntry = dropEntry;
+    //        this.visibleQuestEntry = visibleQuestEntry;
+    //        this.otherQuestEntry = otherQuestEntry;
+    //        this.globalEntry = globalEntry;
+    //        this.chr = chr;
+    //        this.mob = mob;
+    //    }
 
-        public override void HandleRun()
-        {
-            byte d = 1;
+    //    public override void HandleRun()
+    //    {
+    //        byte d = 1;
 
-            // Normal Drops
-            d = _map.dropItemsFromMonsterOnMap(dropEntry, pos, d, chRate, droptype, mobpos, chr, mob);
+    //        // Normal Drops
+    //        d = _map.dropItemsFromMonsterOnMap(dropEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
 
-            // Global Drops
-            d = _map.dropGlobalItemsFromMonsterOnMap(globalEntry, pos, d, droptype, mobpos, chr, mob);
+    //        // Global Drops
+    //        d = _map.dropGlobalItemsFromMonsterOnMap(globalEntry, pos, d, droptype, mobpos, chr, mob, delay);
 
-            // Quest Drops
-            d = _map.dropItemsFromMonsterOnMap(visibleQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob);
-            _map.dropItemsFromMonsterOnMap(otherQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob);
-        }
-    }
+    //        // Quest Drops
+    //        d = _map.dropItemsFromMonsterOnMap(visibleQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
+    //        _map.dropItemsFromMonsterOnMap(otherQuestEntry, pos, d, chRate, droptype, mobpos, chr, mob, delay);
+    //    }
+    //}
 
     private class ActivateItemReactor : AbstractRunnable
     {
@@ -5253,27 +4929,9 @@ public class MapleMap : IMap
         }
     }
 
-    private List<Point> takenSpawns = new();
-    private List<GuardianSpawnPoint> guardianSpawns = new();
-    private List<MCSkill> blueTeamBuffs = new();
-    private List<MCSkill> redTeamBuffs = new();
-    private List<int> skillIds = new();
-    private List<KeyValuePair<int, int>> mobsToSpawn = new();
-
-    public List<MCSkill> getBlueTeamBuffs()
+    protected virtual void SetMonsterInfo(Monster monster)
     {
-        return blueTeamBuffs;
-    }
 
-    public List<MCSkill> getRedTeamBuffs()
-    {
-        return redTeamBuffs;
-    }
-
-    public void clearBuffList()
-    {
-        redTeamBuffs.Clear();
-        blueTeamBuffs.Clear();
     }
 
     public List<IMapObject> getAllPlayer()
@@ -5291,6 +4949,7 @@ public class MapleMap : IMap
             case 980000401:
             case 980000501:
             case 980000601:
+
             case 980031100:
             case 980032100:
             case 980033100:
@@ -5354,166 +5013,6 @@ public class MapleMap : IMap
         return false;
     }
 
-    public Point? getRandomSP(int team)
-    {
-        if (takenSpawns.Count > 0)
-        {
-            foreach (SpawnPoint sp in monsterSpawn)
-            {
-                foreach (Point pt in takenSpawns)
-                {
-                    if ((sp.getPosition().X == pt.X && sp.getPosition().Y == pt.Y) || (sp.getTeam() != team && !this.isBlueCPQMap()))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        takenSpawns.Add(pt);
-                        return sp.getPosition();
-                    }
-                }
-            }
-        }
-        else
-        {
-            foreach (SpawnPoint sp in monsterSpawn)
-            {
-                if (sp.getTeam() == team || this.isBlueCPQMap())
-                {
-                    takenSpawns.Add(sp.getPosition());
-                    return sp.getPosition();
-                }
-            }
-        }
-        return null;
-    }
-
-    public GuardianSpawnPoint? getRandomGuardianSpawn(int team)
-    {
-        bool alltaken = false;
-        foreach (GuardianSpawnPoint a in this.guardianSpawns)
-        {
-            if (!a.isTaken())
-            {
-                alltaken = false;
-                break;
-            }
-        }
-        if (alltaken)
-        {
-            return null;
-        }
-        if (this.guardianSpawns.Count > 0)
-        {
-            while (true)
-            {
-                foreach (GuardianSpawnPoint gsp in this.guardianSpawns)
-                {
-                    if (!gsp.isTaken() && Randomizer.nextDouble() < 0.3 && (gsp.getTeam() == -1 || gsp.getTeam() == team))
-                    {
-                        return gsp;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    public void addGuardianSpawnPoint(GuardianSpawnPoint a)
-    {
-        this.guardianSpawns.Add(a);
-    }
-
-    public int spawnGuardian(int team, int num)
-    {
-        try
-        {
-            if (team == 0 && redTeamBuffs.Count >= 4 || team == 1 && blueTeamBuffs.Count >= 4)
-            {
-                return 2;
-            }
-            MCSkill? skill = CarnivalFactory.getInstance().getGuardian(num);
-            if (skill == null)
-                return 0;
-
-            if (team == 0 && redTeamBuffs.Contains(skill))
-            {
-                return 0;
-            }
-            else if (team == 1 && blueTeamBuffs.Contains(skill))
-            {
-                return 0;
-            }
-            var pt = this.getRandomGuardianSpawn(team);
-            if (pt == null)
-            {
-                return -1;
-            }
-            int reactorID = 9980000 + team;
-            Reactor reactor = new Reactor(ReactorFactory.getReactorS(reactorID), reactorID);
-            pt.setTaken(true);
-            reactor.setPosition(pt.getPosition());
-            reactor.setName(team + "" + num); //lol
-            reactor.resetReactorActions(0);
-            this.spawnReactor(reactor);
-            reactor.setGuardian(pt);
-            this.buffMonsters(team, skill);
-            getReactorByOid(reactor.getObjectId())!.hitReactor(((IPlayer)this.getAllPlayer().get(0)).getClient());
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-        return 1;
-    }
-
-    public void buffMonsters(int team, MCSkill skill)
-    {
-        if (skill == null)
-        {
-            return;
-        }
-
-        if (team == 0)
-        {
-            redTeamBuffs.Add(skill);
-        }
-        else if (team == 1)
-        {
-            blueTeamBuffs.Add(skill);
-        }
-        foreach (IMapObject mmo in getMapObjects())
-        {
-            if (mmo.getType() == MapObjectType.MONSTER)
-            {
-                Monster mob = (Monster)mmo;
-                if (mob.getTeam() == team)
-                {
-                    skill.getSkill().applyEffect(null, mob, false, null);
-                }
-            }
-        }
-    }
-
-    public List<int> getSkillIds()
-    {
-        return skillIds;
-    }
-
-    public void addSkillId(int z)
-    {
-        this.skillIds.Add(z);
-    }
-
-    public void addMobSpawn(int mobId, int spendCP)
-    {
-        this.mobsToSpawn.Add(new KeyValuePair<int, int>(mobId, spendCP));
-    }
-
-    public List<KeyValuePair<int, int>> getMobsToSpawn()
-    {
-        return mobsToSpawn;
-    }
 
     public bool isCPQWinnerMap()
     {
@@ -5602,12 +5101,6 @@ public class MapleMap : IMap
                 expireItemsTask = null;
             }
 
-            if (mobSpawnLootTask != null)
-            {
-                mobSpawnLootTask.cancel(false);
-                mobSpawnLootTask = null;
-            }
-
             if (characterStatUpdateTask != null)
             {
                 characterStatUpdateTask.cancel(false);
@@ -5618,55 +5111,5 @@ public class MapleMap : IMap
         {
             chrLock.ExitWriteLock();
         }
-    }
-
-    public int getMaxMobs()
-    {
-        return maxMobs;
-    }
-
-    public void setMaxMobs(int maxMobs)
-    {
-        this.maxMobs = maxMobs;
-    }
-
-    public int getMaxReactors()
-    {
-        return maxReactors;
-    }
-
-    public void setMaxReactors(int maxReactors)
-    {
-        this.maxReactors = maxReactors;
-    }
-
-    public int getDeathCP()
-    {
-        return deathCP;
-    }
-
-    public void setDeathCP(int deathCP)
-    {
-        this.deathCP = deathCP;
-    }
-
-    public int getTimeDefault()
-    {
-        return timeDefault;
-    }
-
-    public void setTimeDefault(int timeDefault)
-    {
-        this.timeDefault = timeDefault;
-    }
-
-    public int getTimeExpand()
-    {
-        return timeExpand;
-    }
-
-    public void setTimeExpand(int timeExpand)
-    {
-        this.timeExpand = timeExpand;
     }
 }

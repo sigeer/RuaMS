@@ -44,8 +44,9 @@ public class Client : ChannelHandlerAdapter, IClient
     private long sessionId;
     private PacketProcessor packetProcessor;
 
-    private Hwid? _hwid;
+    private Hwid _hwid = Hwid.Default();
     private string remoteAddress;
+    public string ClientInfo => $"{remoteAddress}_{sessionId}";
 
 
     private IChannel ioChannel = null!;
@@ -159,7 +160,7 @@ public class Client : ChannelHandlerAdapter, IClient
         }
 
         short opcode = packet.readShort();
-        IPacketHandler handler = packetProcessor.getHandler(opcode);
+        var handler = packetProcessor.getHandler(opcode);
 
         if (YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_PACKET && !LoggingUtil.isIgnoredRecvPacket(opcode))
         {
@@ -195,10 +196,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public override void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
     {
-        if (Character != null)
-        {
-            log.Warning(cause, "Exception caught by {CharacterName}", Character);
-        }
+        log.Error(cause, "Exception caught by {ClientInfo}, Character: {CharacterName}", ClientInfo, Character);
 
         if (cause is InvalidPacketHeaderException)
         {
@@ -210,7 +208,12 @@ public class Client : ChannelHandlerAdapter, IClient
         }
         else if (cause is BusinessException)
         {
-            //
+            if (cause is BusinessFatalException)
+                closeMapleSession();
+            else if (cause is BusinessResException)
+                sendPacket(PacketCreator.serverNotice(1, "wz数据不一致"));
+            else
+                sendPacket(PacketCreator.serverNotice(1, cause.Message));
         }
     }
 
@@ -227,7 +230,7 @@ public class Client : ChannelHandlerAdapter, IClient
                 SessionCoordinator.getInstance().closeLoginSession(this);
                 break;
             case Type.CHANNEL:
-                SessionCoordinator.getInstance().closeSession(this, null);
+                SessionCoordinator.getInstance().closeSession(this);
                 break;
             default:
                 break;
@@ -271,14 +274,14 @@ public class Client : ChannelHandlerAdapter, IClient
         ioChannel.DisconnectAsync().Wait();
     }
 
-    public Hwid? getHwid()
+    public Hwid getHwid()
     {
         return _hwid;
     }
 
     public void setHwid(Hwid? hwid)
     {
-        this._hwid = hwid;
+        this._hwid = hwid ?? Hwid.Default();
     }
 
     public string getRemoteAddress()
@@ -402,7 +405,8 @@ public class Client : ChannelHandlerAdapter, IClient
         if (_hwid == null)
         {
             using var _dbContext = new DBContext();
-            _hwid = new Hwid(_dbContext.Accounts.Where(x => x.Id == accId).Select(x => x.Hwid).FirstOrDefault());
+            var hwidStr = _dbContext.Accounts.Where(x => x.Id == accId).Select(x => new { x.Hwid }).FirstOrDefault()?.Hwid;
+            _hwid = string.IsNullOrEmpty(hwidStr) ? Hwid.Default() : new Hwid(hwidStr);
         }
     }
 
@@ -871,15 +875,9 @@ public class Client : ChannelHandlerAdapter, IClient
                     eim.playerDisconnected(player);
                 }
 
-                if (player.getMonsterCarnival() != null)
-                {
-                    player.getMonsterCarnival()!.playerDisconnected(player.Id);
-                }
+                player.getMonsterCarnival()?.playerDisconnected(player.Id);
 
-                if (player.getAriantColiseum() != null)
-                {
-                    player.getAriantColiseum()!.playerDisconnected(player);
-                }
+                player.getAriantColiseum()?.playerDisconnected(player);
             }
 
             if (player.getMap() != null)
@@ -1058,7 +1056,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
         this.accountName = null;
         this.macs.Clear();
-        this._hwid = null;
+        this._hwid = Hwid.Default();
         this.birthday = null;
         this._engines.Clear();
         this.Character = null;
@@ -1095,10 +1093,11 @@ public class Client : ChannelHandlerAdapter, IClient
     {
         try
         {
-            var chr = CharacterManager.LoadPlayerFromDB(cid, this, false);
+            var chr = AllPlayerStorage.GetOrAddCharacterById(cid);
             if (chr == null)
                 return false;
 
+            chr.setClient(this);
             this.setPlayer(chr);
 
             if (chr.Party > 0)
@@ -1120,7 +1119,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public string getAccountName()
     {
-        return accountName;
+        return accountName!;
     }
 
     public void setAccountName(string a)
@@ -1205,12 +1204,12 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public NPCConversationManager getCM()
     {
-        return NPCScriptManager.getInstance().getCM(this);
+        return NPCScriptManager.getInstance().getCM(this) ?? throw new BusinessFatalException();
     }
 
     public QuestActionManager getQM()
     {
-        return QuestScriptManager.getInstance().getQM(this);
+        return QuestScriptManager.getInstance().getQM(this) ?? throw new BusinessFatalException();
     }
 
     public bool acceptToS()
@@ -1631,5 +1630,10 @@ public class Client : ChannelHandlerAdapter, IClient
     public void setLanguage(int lingua)
     {
         this.lang = lingua;
+    }
+
+    public override string ToString()
+    {
+        return ClientInfo;
     }
 }

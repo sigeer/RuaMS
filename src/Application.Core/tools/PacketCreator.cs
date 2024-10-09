@@ -54,6 +54,7 @@ using server.movement;
 using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
+using static net.server.channel.handlers.AbstractDealDamageHandler;
 using static net.server.channel.handlers.SummonDamageHandler;
 using static server.CashShop;
 
@@ -241,11 +242,11 @@ public class PacketCreator
         List<int> viptele = chr.getVipTrockMaps();
         for (int i = 0; i < 5; i++)
         {
-            p.writeInt(tele.get(i));
+            p.writeInt(tele[i]);
         }
         for (int i = 0; i < 10; i++)
         {
-            p.writeInt(viptele.get(i));
+            p.writeInt(viptele[i]);
         }
     }
 
@@ -1038,13 +1039,14 @@ public class PacketCreator
         }
         for (int i = 0; i < messages.Count; i++)
         {
-            if (i == 4 && messages.get(4).Length > 15)
+            var messageItem = messages[i];
+            if (i == 4 && messageItem.Length > 15)
             {
-                p.writeString(messages.get(4).Substring(0, 15));
+                p.writeString(messageItem.Substring(0, 15));
             }
             else
             {
-                p.writeString(messages.get(i));
+                p.writeString(messageItem);
             }
         }
         p.writeInt(1337); // time limit shit lol 'Your thing still start in blah blah seconds'
@@ -1944,7 +1946,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet dropItemFromMapObject(IPlayer player, MapItem drop, Point? dropfrom, Point dropto, byte mod)
+    public static Packet dropItemFromMapObject(IPlayer player, MapItem drop, Point? dropfrom, Point dropto, byte mod, short delay)
     {
         int dropType = drop.getDropType();
         if (drop.hasClientsideOwnership(player) && dropType < 3)
@@ -1965,7 +1967,7 @@ public class PacketCreator
         if (mod != 2)
         {
             p.writePos(dropfrom!.Value);
-            p.writeShort(0);//Fh?
+            p.writeShort(delay);//Fh?
         }
         if (drop.getMeso() == 0)
         {
@@ -2540,9 +2542,9 @@ public class PacketCreator
         p.writeByte(allDamage.Count);
         foreach (SummonAttackEntry attackEntry in allDamage)
         {
-            p.writeInt(attackEntry.getMonsterOid()); // oid
+            p.writeInt(attackEntry.monsterOid); // oid
             p.writeByte(6); // who knows
-            p.writeInt(attackEntry.getDamage()); // damage
+            p.writeInt(attackEntry.damage); // damage
         }
 
         return p;
@@ -2567,14 +2569,14 @@ public class PacketCreator
     }
     */
 
-    public static Packet closeRangeAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, List<int>> damage, int speed, int direction, int display)
+    public static Packet closeRangeAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.CLOSE_RANGE_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, 0, damage, speed, direction, display);
         return p;
     }
 
-    public static Packet rangedAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, List<int>> damage, int speed, int direction, int display)
+    public static Packet rangedAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.RANGED_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, projectile, damage, speed, direction, display);
@@ -2582,7 +2584,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet magicAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, List<int>> damage, int charge, int speed, int direction, int display)
+    public static Packet magicAttack(IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int charge, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.MAGIC_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, 0, damage, speed, direction, display);
@@ -2593,7 +2595,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addAttackBody(OutPacket p, IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, List<int>> damage, int speed, int direction, int display)
+    private static void addAttackBody(OutPacket p, IPlayer chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         p.writeInt(chr.getId());
         p.writeByte(numAttackedAndDamage);
@@ -2609,18 +2611,18 @@ public class PacketCreator
         p.writeByte(speed);
         p.writeByte(0x0A);
         p.writeInt(projectile);
-        foreach (int oned in damage.Keys)
+        foreach (var oned in damage)
         {
-            var onedList = damage.GetValueOrDefault(oned);
+            var onedList = oned.Value;
             if (onedList != null)
             {
-                p.writeInt(oned);
+                p.writeInt(oned.Key);
                 p.writeByte(0x0);
-                if (skill == 4211006)
+                if (skill == ChiefBandit.MESO_EXPLOSION)
                 {
-                    p.writeByte(onedList.Count);
+                    p.writeByte(onedList.damageLines.Count);
                 }
-                foreach (int eachd in onedList)
+                foreach (int eachd in onedList.damageLines)
                 {
                     p.writeInt(eachd);
                 }
@@ -2758,7 +2760,8 @@ public class PacketCreator
     }
 
     public static Packet getScrollEffect(int chr, ScrollResult scrollSuccess, bool legendarySpirit, bool whiteScroll)
-    {   // thanks to Rien dev team
+    {   
+        // thanks to Rien dev team
         OutPacket p = OutPacket.create(SendOpcode.SHOW_SCROLL_EFFECT);
         p.writeInt(chr);
         p.writeBool(scrollSuccess == ScrollResult.SUCCESS);
@@ -2860,6 +2863,14 @@ public class PacketCreator
                 p.writeByte(slot);
             }
         }
+        return p;
+    }
+    public static Packet removeExplodedMesoFromMap(int mapObjectId, short delay)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.REMOVE_ITEM_FROM_MAP);
+        p.writeByte(4);
+        p.writeInt(mapObjectId);
+        p.writeShort(delay);
         return p;
     }
 
@@ -3692,16 +3703,19 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Possible values for <code>operation</code>:<br> 2: Trade cancelled, by the
-     * other character<br> 7: Trade successful<br> 8: Trade unsuccessful<br>
-     * 9: Cannot carry more one-of-a-kind items<br> 12: Cannot trade on different maps<br>
-     * 13: Cannot trade, game files damaged<br>
-     *
-     * @param number
-     * @param operation
-     * @return
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="number"></param>
+    /// <param name="operation">
+    /// <para>2: Trade cancelled, by the other character</para>
+    /// <para>7: Trade successful</para>
+    /// <para>8: Trade unsuccessful</para>
+    /// <para>9: Cannot carry more one-of-a-kind items</para>
+    /// <para>12: Cannot trade on different maps</para>
+    /// <para>13: Cannot trade, game files damaged</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet getTradeResult(byte number, byte operation)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
@@ -3711,18 +3725,20 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Possible values for <code>speaker</code>:<br> 0: Npc talking (left)<br>
-     * 1: Npc talking (right)<br> 2: Player talking (left)<br> 3: Player talking
-     * (left)<br>
-     *
-     * @param npc      Npcid
-     * @param msgType
-     * @param talk
-     * @param endBytes
-     * @param speaker
-     * @return
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="npc">Npcid</param>
+    /// <param name="msgType"></param>
+    /// <param name="talk"></param>
+    /// <param name="endBytes"></param>
+    /// <param name="speaker">
+    /// <para>0: Npc talking (left)</para>
+    /// <para>1: Npc talking (right)</para>
+    /// <para>2: Player talking (left)</para>
+    /// <para>3: Player talking (left)£¿£¿</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet getNPCTalk(int npc, byte msgType, string talk, string endBytes, byte speaker)
     {
         OutPacket p = OutPacket.create(SendOpcode.NPC_TALK);
@@ -5640,11 +5656,19 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet AddMiniGameBox(IPlayer chr, int amount, int type)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
+        p.writeInt(chr.getId());
+        addAnnounceBox(p, chr.getMiniGame()!, amount, type);
+        return p;
+    }
+
     public static Packet addOmokBox(IPlayer chr, int amount, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
-        addAnnounceBox(p, chr.getMiniGame(), amount, type);
+        addAnnounceBox(p, chr.getMiniGame()!, amount, type);
         return p;
     }
 
@@ -5652,7 +5676,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
         p.writeInt(chr.getId());
-        addAnnounceBox(p, chr.getMiniGame(), amount, type);
+        addAnnounceBox(p, chr.getMiniGame()!, amount, type);
         return p;
     }
 
@@ -5842,14 +5866,14 @@ public class PacketCreator
             p.writeShort(0);
             p.writeShort(hm.getTimeOpen());
             p.writeByte(firstTime ? 1 : 0);
-            List<HiredMerchant.SoldItem> sold = hm.getSold();
+            var sold = hm.getSold();
             p.writeByte(sold.Count);
-            foreach (HiredMerchant.SoldItem s in sold)
+            foreach (var s in sold)
             {
-                p.writeInt(s.getItemId());
-                p.writeShort(s.getQuantity());
-                p.writeInt(s.getMesos());
-                p.writeString(s.getBuyer());
+                p.writeInt(s.itemid);
+                p.writeShort(s.quantity);
+                p.writeInt(s.mesos);
+                p.writeString(s.buyer);
             }
             p.writeInt(chr.getMerchantMeso());//:D?
         }
@@ -6209,7 +6233,7 @@ public class PacketCreator
             List<int> map = chr.getVipTrockMaps();
             for (int i = 0; i < 10; i++)
             {
-                p.writeInt(map.get(i));
+                p.writeInt(map[i]);
             }
         }
         else
@@ -6218,7 +6242,7 @@ public class PacketCreator
             List<int> map = chr.getTrockMaps();
             for (int i = 0; i < 5; i++)
             {
-                p.writeInt(map.get(i));
+                p.writeInt(map[i]);
             }
         }
         return p;
@@ -7894,7 +7918,7 @@ public class PacketCreator
             equip = (Equip)item;
             isRing = equip.getRingId() > -1;
         }
-        p.writeLong(item.getPetId() > -1 ? item.getPetId() : isRing ? equip.getRingId() : item.getCashId());
+        p.writeLong(item.getPetId() > -1 ? item.getPetId() : isRing ? equip!.getRingId() : item.getCashId());
         if (!isGift)
         {
             p.writeInt(accountId);
@@ -8041,7 +8065,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showGifts(List<KeyValuePair<Item, string>> gifts)
+    public static Packet showGifts(List<ItemMessagePair> gifts)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
@@ -8050,7 +8074,7 @@ public class PacketCreator
 
         foreach (var gift in gifts)
         {
-            addCashItemInformation(p, gift.Key, 0, gift.Value);
+            addCashItemInformation(p, gift.Item, 0, gift.Message);
         }
 
         return p;

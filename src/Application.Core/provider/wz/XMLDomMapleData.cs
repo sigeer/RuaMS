@@ -89,11 +89,14 @@ public class XMLDomMapleData : Data
 
     }
 
+    List<Data>? cachedChildren = null;
     public List<Data> getChildren()
     {
-        BlockingCollection<Data> ret = new();
+        if (cachedChildren != null)
+            return cachedChildren;
 
         XmlNodeList childNodes = node.ChildNodes;
+        BlockingCollection<Data> ret = new();
         Parallel.For(0, childNodes.Count, i =>
         {
             XmlNode? childNode = childNodes.Item(i);
@@ -105,7 +108,7 @@ public class XMLDomMapleData : Data
                     ret.Add(child);
             }
         });
-        return ret.ToList();
+        return cachedChildren = ret.ToList();
     }
     object? cachedData;
     public object? getData()

@@ -56,16 +56,16 @@ public class WhatDropsFromCommand : Command
             int mobId = data.Key;
             string mobName = data.Value;
             output += mobName + " drops the following items:\r\n\r\n";
-            foreach (MonsterDropEntry drop in MonsterInformationProvider.getInstance().retrieveDrop(mobId))
+            foreach (var drop in MonsterInformationProvider.getInstance().retrieveDrop(mobId))
             {
                 try
                 {
-                    var name = ItemInformationProvider.getInstance().getName(drop.itemId);
-                    if (name == null || name.Equals("null") || drop.chance == 0)
+                    var name = ItemInformationProvider.getInstance().getName(drop.ItemId);
+                    if (name == null || name.Equals("null") || drop.Chance == 0)
                     {
                         continue;
                     }
-                    float chance = Math.Max(1000000 / drop.chance / (!MonsterInformationProvider.getInstance().isBoss(mobId) ? player.getDropRate() : player.getBossDropRate()), 1);
+                    float chance = Math.Max(1000000 / drop.Chance / (!MonsterInformationProvider.getInstance().isBoss(mobId) ? player.getDropRate() : player.getBossDropRate()), 1);
                     output += "- " + name + " (1/" + (int)chance + ")\r\n";
                 }
                 catch (Exception ex)

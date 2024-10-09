@@ -66,7 +66,7 @@ public class GiveMesosCommand : Command
                 mesos_ = int.MinValue;
             }
         }
-        catch (FormatException nfe)
+        catch (FormatException)
         {
             if (value_ == ("max"))
             {  // "max" descriptor suggestion thanks to Vcoc

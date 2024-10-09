@@ -285,14 +285,8 @@ public class CashShop
                 return null;
             }
 
-            var list = items.Values.Where(x => x.isOnSale() && !!ItemId.isCashPackage(x.getItemId())).ToList();
-            int rnd = Randomizer.nextInt(list.Count);
-            return list.ElementAtOrDefault(rnd);
-        }
-
-        private static CashItem getRandomItem(List<CashItem> items)
-        {
-            return items.get(new Random().Next(items.Count));
+            var list = items.Values.Where(x => x.isOnSale() && !ItemId.isCashPackage(x.getItemId())).ToList();
+            return Randomizer.Select(list);
         }
 
         public static CashItem? getItem(int sn)
@@ -300,16 +294,11 @@ public class CashShop
             return items.GetValueOrDefault(sn);
         }
 
+        public static CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
+
         public static List<Item> getPackage(int itemId)
         {
-            List<Item> cashPackage = new();
-
-            foreach (int sn in packages.GetValueOrDefault(itemId))
-            {
-                cashPackage.Add(getItem(sn).toItem());
-            }
-
-            return cashPackage;
+            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => GetItemTrust(x).toItem()).ToList();
         }
 
         public static bool isPackage(int itemId)
@@ -406,7 +395,7 @@ public class CashShop
                 isRing = false;
             }
 
-            if ((item.getPetId() > -1 ? item.getPetId() : isRing ? equip.getRingId() : item.getCashId()) == cashId)
+            if ((item.getPetId() > -1 ? item.getPetId() : isRing ? equip!.getRingId() : item.getCashId()) == cashId)
             {
                 return item;
             }
@@ -456,23 +445,11 @@ public class CashShop
         wishList.Add(sn);
     }
 
-    public void gift(int recipient, string from, string message, int sn)
-    {
-        gift(recipient, from, message, sn, -1);
-    }
-
-    public void gift(int recipient, string from, string message, int sn, int ringid)
+    public void gift(int recipient, string from, string message, int sn, int ringid = -1)
     {
         try
         {
-            var giftModel = new Gift()
-            {
-                From = from,
-                Message = message,
-                Sn = sn,
-                Ringid = ringid,
-                To = recipient
-            };
+            var giftModel = new Gift(recipient, from, message, sn, ringid);
             using var dbContext = new DBContext();
             dbContext.Gifts.Add(giftModel);
             dbContext.SaveChanges();
@@ -483,10 +460,9 @@ public class CashShop
         }
     }
 
-    public List<KeyValuePair<Item, string>> loadGifts()
+    public List<ItemMessagePair> loadGifts()
     {
-        List<KeyValuePair<Item, string>> gifts = new();
-
+        List<ItemMessagePair> gifts = new();
         try
         {
             using var dbContext = new DBContext();
@@ -496,7 +472,7 @@ public class CashShop
             foreach (var rs in dataList)
             {
                 notes++;
-                var cItem = CashItemFactory.getItem(rs.Sn);
+                var cItem = CashItemFactory.GetItemTrust(rs.Sn);
                 Item item = cItem.toItem();
                 Equip? equip = null;
                 item.setGiftFrom(rs.From);
@@ -504,7 +480,7 @@ public class CashShop
                 {
                     equip = (Equip)item;
                     equip.setRingId(rs.Ringid);
-                    gifts.Add(new KeyValuePair<Item, string>(equip, rs.Message));
+                    gifts.Add(new ItemMessagePair(equip, rs.Message));
                 }
                 else
                 {
@@ -512,7 +488,8 @@ public class CashShop
                 }
 
                 if (CashItemFactory.isPackage(cItem.getItemId()))
-                { //Packages never contains a ring
+                { 
+                    //Packages never contains a ring
                     foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId()))
                     {
                         packageItem.setGiftFrom(rs.From);

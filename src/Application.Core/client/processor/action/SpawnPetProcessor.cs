@@ -102,7 +102,7 @@ public class SpawnPetProcessor
                     pet.setSummoned(true);
                     pet.saveToDb();
                     chr.addPet(pet);
-                    chr.getMap().broadcastMessage(c.getPlayer(), PacketCreator.showPet(chr, pet, false, false), true);
+                    chr.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showPet(chr, pet, false, false), true);
                     c.sendPacket(PacketCreator.petStatUpdate(chr));
                     c.sendPacket(PacketCreator.enableActions());
 

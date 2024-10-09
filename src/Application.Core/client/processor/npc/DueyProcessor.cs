@@ -107,7 +107,7 @@ public class DueyProcessor
 
             if (dueyItems.Count > 0)
             {
-                rs.Item = dueyItems.get(0).Item;
+                rs.Item = dueyItems[0].Item;
             }
             rs.UpdateSentTime();
         }

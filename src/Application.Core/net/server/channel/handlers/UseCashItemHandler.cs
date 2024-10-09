@@ -677,7 +677,7 @@ public class UseCashItemHandler : AbstractPacketHandler
             int curlevel = toScroll.getLevel();
             c.sendPacket(PacketCreator.sendVegaScroll(0x40));
 
-            Equip scrolled = (Equip)ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM());
+            Equip scrolled = (Equip)ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
             c.sendPacket(PacketCreator.sendVegaScroll(scrolled.getLevel() > curlevel ? 0x41 : 0x43));
             //opcodes 0x42, 0x44: "this item cannot be used"; 0x39, 0x45: crashes
 

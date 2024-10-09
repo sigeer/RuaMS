@@ -490,7 +490,7 @@ namespace Application.Core.Game.Players
         public void cancelEffect(int itemId)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            cancelEffect(ii.getItemEffect(itemId), false, -1);
+            cancelEffect(ii.GetItemEffectTrust(itemId), false, -1);
         }
 
         public bool cancelEffect(StatEffect effect, bool overwrite, long startTime)
@@ -671,7 +671,7 @@ namespace Application.Core.Game.Players
             if (effect.isMonsterRiding())
             {
                 this.getClient().getWorldServer().unregisterMountHunger(this);
-                this.getMount().setActive(false);
+                this.getMount()?.setActive(false);
             }
 
             if (!overwrite)
@@ -846,13 +846,13 @@ namespace Application.Core.Game.Players
 
                     if (it.Value >= (!uniqueBuff ? YamlConfig.config.server.MAX_MONITORED_BUFFSTATS : 1) && effectStatups.Contains(it.Key))
                     {
-                        BuffStatValueHolder? mbsvh = minStatBuffs.GetValueOrDefault(it.Key)!;
+                        var mbsvh = minStatBuffs.GetValueOrDefault(it.Key)!;
 
-                        Dictionary<BuffStat, BuffStatValueHolder>? lpbe = buffEffects.GetValueOrDefault(mbsvh.effect.getBuffSourceId());
-                        lpbe.Remove(it.Key);
+                        var lpbe = buffEffects.GetValueOrDefault(mbsvh.effect.getBuffSourceId());
+                        lpbe?.Remove(it.Key);
                         buffEffectsCount.AddOrUpdate(it.Key, (sbyte)(buffEffectsCount.GetValueOrDefault(it.Key) - 1));
 
-                        if (lpbe.Count == 0)
+                        if (lpbe == null || lpbe.Count == 0)
                         {
                             buffEffects.Remove(mbsvh.effect.getBuffSourceId());
                         }
@@ -1084,7 +1084,7 @@ namespace Application.Core.Game.Players
                 return;
             }
 
-            Dictionary<BuffStat, KeyValuePair<int, StatEffect>?> maxBuffValue = new();
+            Dictionary<BuffStat, KeyValuePair<int, StatEffect?>?> maxBuffValue = new();
             foreach (BuffStat mbs in retrievedStats)
             {
                 BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(mbs);
@@ -1141,7 +1141,7 @@ namespace Application.Core.Game.Players
 
                         if (mbv.Value.Key < st.Value)
                         {
-                            StatEffect msbe = mbv.Value.Value;
+                            var msbe = mbv.Value.Value;
                             if (msbe != null)
                             {
                                 recalcMseList.Add(msbe);

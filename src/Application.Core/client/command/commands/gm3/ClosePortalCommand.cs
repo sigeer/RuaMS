@@ -39,6 +39,12 @@ public class ClosePortalCommand : Command
             player.yellowMessage("Syntax: !closeportal <portalid>");
             return;
         }
-        player.getMap().getPortal(paramsValue[0]).setPortalState(false);
+        var portal = player.getMap().getPortal(paramsValue[0]);
+        if (portal == null)
+        {
+            player.yellowMessage("invalid portalid");
+            return;
+        }
+        portal.setPortalState(false);
     }
 }

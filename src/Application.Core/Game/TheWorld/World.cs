@@ -198,7 +198,7 @@ public class World : IWorld
         chnLock.EnterReadLock();
         try
         {
-            return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessResException($"Channel {channel} not existed");
+            return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessFatalException($"Channel {channel} not existed");
         }
         finally
         {
@@ -458,10 +458,7 @@ public class World : IWorld
     {
         lock (families)
         {
-            if (!families.ContainsKey(id))
-            {
-                families.Add(id, f);
-            }
+            families.TryAdd(id, f);
         }
     }
 
@@ -824,11 +821,7 @@ public class World : IWorld
 
     public void updateParty(int partyid, PartyOperation operation, IPlayer target)
     {
-        ITeam? party = getParty(partyid);
-        if (party == null)
-        {
-            throw new ArgumentException("no party with the specified partyid exists");
-        }
+        ITeam? party = getParty(partyid) ?? throw new ArgumentException("no party with the specified partyid exists");
         switch (operation)
         {
             case PartyOperation.JOIN:
@@ -958,6 +951,14 @@ public class World : IWorld
         return foundsChars.ToArray();
     }
 
+    public Messenger createMessenger(MessengerCharacter chrfor)
+    {
+        int messengerid = runningMessengerId.getAndIncrement();
+        Messenger messenger = new Messenger(messengerid, chrfor);
+        messengers.AddOrUpdate(messenger.getId(), messenger);
+        return messenger;
+    }
+
     public Messenger? getMessenger(int messengerid)
     {
         return messengers.GetValueOrDefault(messengerid);
@@ -965,11 +966,7 @@ public class World : IWorld
 
     public void leaveMessenger(int messengerid, MessengerCharacter target)
     {
-        var messenger = getMessenger(messengerid);
-        if (messenger == null)
-        {
-            throw new ArgumentException("No messenger with the specified messengerid exists");
-        }
+        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
         int position = messenger.getPositionByName(target.getName());
         messenger.removeMember(target);
         removeMessengerPlayer(messenger, position);
@@ -1020,8 +1017,11 @@ public class World : IWorld
             if (!messengerchar.getName().Equals(namefrom))
             {
                 var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
-                chr.sendPacket(PacketCreator.addMessengerPlayer(namefrom, from, position, (byte)(fromchannel - 1)));
-                from.sendPacket(PacketCreator.addMessengerPlayer(chr.Name, chr, messengerchar.getPosition(), (byte)(messengerchar.getChannel() - 1)));
+                if (from != null)
+                {
+                    chr.sendPacket(PacketCreator.addMessengerPlayer(namefrom, from, position, (byte)(fromchannel - 1)));
+                    from.sendPacket(PacketCreator.addMessengerPlayer(chr.Name, chr, messengerchar.getPosition(), (byte)(messengerchar.getChannel() - 1)));
+                }
             }
             else
             {
@@ -1105,7 +1105,8 @@ public class World : IWorld
                 if (chr != null)
                 {
                     var fromPlayer = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
-                    chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, fromPlayer, position, (byte)(fromchannel - 1)));
+                    if (fromPlayer != null)
+                        chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, fromPlayer, position, (byte)(fromchannel - 1)));
                 }
             }
         }
@@ -1113,42 +1114,24 @@ public class World : IWorld
 
     public void silentLeaveMessenger(int messengerid, MessengerCharacter target)
     {
-        var messenger = getMessenger(messengerid);
-        if (messenger == null)
-        {
-            throw new ArgumentException("No messenger with the specified messengerid exists");
-        }
+        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
         messenger.addMember(target, target.getPosition());
     }
 
     public void joinMessenger(int messengerid, MessengerCharacter target, string from, int fromchannel)
     {
-        var messenger = getMessenger(messengerid);
-        if (messenger == null)
-        {
-            throw new ArgumentException("No messenger with the specified messengerid exists");
-        }
+        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
         messenger.addMember(target, target.getPosition());
         addMessengerPlayer(messenger, from, fromchannel, target.getPosition());
     }
 
     public void silentJoinMessenger(int messengerid, MessengerCharacter target, int position)
     {
-        var messenger = getMessenger(messengerid);
-        if (messenger == null)
-        {
-            throw new ArgumentException("No messenger with the specified messengerid exists");
-        }
+        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
         messenger.addMember(target, position);
     }
 
-    public Messenger createMessenger(MessengerCharacter chrfor)
-    {
-        int messengerid = runningMessengerId.getAndIncrement();
-        Messenger messenger = new Messenger(messengerid, chrfor);
-        messengers.AddOrUpdate(messenger.getId(), messenger);
-        return messenger;
-    }
+
 
     public bool isConnected(string charName)
     {

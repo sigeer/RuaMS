@@ -298,7 +298,7 @@ public class PlayerNPC : AbstractMapObject
         RX0 = newPos.X + 50;
         RX1 = newPos.X - 50;
         CY = newPos.Y;
-        FH = map.getFootholds().findBelow(newPos).getId();
+        FH = map.getFootholds().findBelow(newPos)!.getId();
 
         try
         {
@@ -354,7 +354,7 @@ public class PlayerNPC : AbstractMapObject
 
             for (int i = availables.Count - 1; i >= 0; i--)
             {
-                list.Add(availables.get(i));
+                list.Add(availables[i]);
             }
         }
         catch (Exception sqle)

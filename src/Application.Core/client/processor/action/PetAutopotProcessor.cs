@@ -36,12 +36,12 @@ namespace client.processor.action;
 public class PetAutopotProcessor
 {
 
-    private class AutopotAction
+    private class AutopotAction(IClient c, short slot, int itemId)
     {
 
-        private IClient c;
-        private short slot;
-        private int itemId;
+        private IClient c = c;
+        private short slot = slot;
+        private int itemId = itemId;
 
         private Item? toUse;
         private List<Item>? toUseList;
@@ -72,13 +72,6 @@ public class PetAutopotProcessor
             }
 
             return false;
-        }
-
-        public AutopotAction(IClient c, short slot, int itemId)
-        {
-            this.c = c;
-            this.slot = slot;
-            this.itemId = itemId;
         }
 
         public void run()
@@ -125,7 +118,7 @@ public class PetAutopotProcessor
                         }
                     }
 
-                    stat = ItemInformationProvider.getInstance().getItemEffect(toUse.getItemId()) ?? throw new BusinessResException();
+                    stat = ItemInformationProvider.getInstance().GetItemEffectTrust(toUse.getItemId());
                     hasHpGain = stat.getHp() > 0 || stat.getHpRate() > 0.0;
                     hasMpGain = stat.getMp() > 0 || stat.getMpRate() > 0.0;
 

@@ -89,7 +89,6 @@ public class ServerConfig
     public bool USE_ENFORCE_MERCHANT_SAVE;
     public bool USE_ENFORCE_MDOOR_POSITION;
     public bool USE_SPAWN_CLEAN_MDOOR;
-    public bool USE_SPAWN_LOOT_ON_ANIMATION;
     public bool USE_SPAWN_RELEVANT_LOOT;
     public bool USE_ERASE_PERMIT_ON_OPENSHOP;
     public bool USE_ERASE_UNTRADEABLE_DROP;

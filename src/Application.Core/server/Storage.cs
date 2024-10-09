@@ -243,7 +243,7 @@ public class Storage
             List<Item> storageItems = getItems();
             foreach (Item item in storageItems)
             {
-                if (item == typeItems.GetValueOrDefault(type)?.get(slot))
+                if (item == typeItems.GetValueOrDefault(type)?.ElementAtOrDefault(slot))
                 {
                     return ret;
                 }

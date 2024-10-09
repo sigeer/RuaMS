@@ -18,19 +18,5 @@
         {
             return list[index];
         }
-
-
-
-        /// <summary>
-        /// 兼容js
-        /// 不使用ToArray的原因：传入到js用的List，统一使用List
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public static List<T> toArray<T>(this List<T> list)
-        {
-            return list.ToList();
-        }
     }
 }

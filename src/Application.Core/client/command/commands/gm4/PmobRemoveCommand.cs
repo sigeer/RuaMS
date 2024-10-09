@@ -22,6 +22,8 @@
    @Author: Ronan
 */
 
+using Application.Core.constants.game;
+
 namespace client.command.commands.gm4;
 
 public class PmobRemoveCommand : Command
@@ -45,7 +47,7 @@ public class PmobRemoveCommand : Command
         try
         {
             using var dbContext = new DBContext();
-            var preSearch = dbContext.Plives.Where(x => x.World == player.getWorld() && x.Map == mapId && x.Type == "m");
+            var preSearch = dbContext.Plives.Where(x => x.World == player.getWorld() && x.Map == mapId && x.Type == LifeType.Monster);
             if (mobId > -1)
             {
                 preSearch = preSearch.Where(x => x.Life == mobId);

@@ -44,7 +44,7 @@ namespace scripting.Event;
  */
 public class EventInstanceManager
 {
-    ILogger log = LogFactory.GetLogger("EventInstanceManger");
+    protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     private Dictionary<int, IPlayer> chars = new();
     private int leaderId = -1;
     private List<Monster> mobs = new();
@@ -748,10 +748,7 @@ public class EventInstanceManager
                     kc += inc;
                 }
                 killCount.AddOrUpdate(chr, kc.Value);
-                if (expedition != null)
-                {
-                    expedition.monsterKilled(chr, mob);
-                }
+                expedition?.monsterKilled(chr, mob);
             }
         }
         catch (Exception ex)
@@ -817,7 +814,7 @@ public class EventInstanceManager
                 }
                 chars.Clear();
                 mobs.Clear();
-                ess = null;
+                // ess = null;
             }
             finally
             {
@@ -853,16 +850,16 @@ public class EventInstanceManager
             TimerManager.getInstance().schedule(() =>
             {
                 mapManager.dispose();   // issues from instantly disposing some event objects found thanks to MedicOP
-                lockObj.EnterWriteLock();
-                try
-                {
-                    mapManager = null;
-                    em = null;
-                }
-                finally
-                {
-                    lockObj.ExitWriteLock();
-                }
+                //lockObj.EnterWriteLock();
+                //try
+                //{
+                //    mapManager = null;
+                //    em = null;
+                //}
+                //finally
+                //{
+                //    lockObj.ExitWriteLock();
+                //}
             }, TimeSpan.FromMinutes(1));
         }
     }
@@ -1121,7 +1118,7 @@ public class EventInstanceManager
                     unregisterPlayer(chr);
                     if (towarp > 0)
                     {
-                        chr.changeMap(map, map.getPortal(0));
+                        chr.changeMap(map!, map!.getPortal(0));
                     }
                 }
 
@@ -1173,7 +1170,7 @@ public class EventInstanceManager
 
     public Monster getMonster(int mid)
     {
-        return (LifeFactory.getMonster(mid));
+        return (LifeFactory.GetMonsterTrust(mid));
     }
 
     private List<int> convertToIntegerList(List<object> objects)
@@ -1210,7 +1207,7 @@ public class EventInstanceManager
         {
             return 0;
         }
-        return onMapClearMeso.get(stage - 1);
+        return onMapClearMeso.ElementAt(stage - 1);
     }
 
     public List<int> getClearStageBonus(int stage)
@@ -1617,7 +1614,7 @@ public class EventInstanceManager
 
     public void showClearEffect(bool hasGate)
     {
-        IPlayer? leader = getLeader();
+        var leader = getLeader();
         if (leader != null)
         {
             showClearEffect(hasGate, leader.getMapId());
@@ -1666,10 +1663,7 @@ public class EventInstanceManager
         lockObj.EnterReadLock();
         try
         {
-            if (openedGates.ContainsKey(thisMapId))
-            {
-                gateData = openedGates.GetValueOrDefault(thisMapId);
-            }
+            gateData = openedGates.GetValueOrDefault(thisMapId);
         }
         finally
         {
@@ -1697,10 +1691,7 @@ public class EventInstanceManager
         em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal("next00");
-        if (portal != null)
-        {
-            portal.setScriptName(eventFamily + thisStage);
-        }
+        portal?.setScriptName(eventFamily + thisStage);
     }
 
     public void linkPortalToScript(int thisStage, string portalName, string scriptName, int thisMapId)
@@ -1711,10 +1702,7 @@ public class EventInstanceManager
         em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal(portalName);
-        if (portal != null)
-        {
-            portal.setScriptName(scriptName);
-        }
+        portal?.setScriptName(scriptName);
     }
 
     // registers a player status in an event

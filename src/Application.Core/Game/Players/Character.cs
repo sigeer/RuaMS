@@ -24,6 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
@@ -214,11 +215,13 @@ public partial class Player
 
     private object prtLock = new object();
 
+    /// <summary>
+    /// PetId -> ItemId
+    /// </summary>
     private Dictionary<int, HashSet<int>> excluded = new();
     private HashSet<int> excludedItems = new();
     private HashSet<int> disabledPartySearchInvites = new();
-    private static string[] ariantroomleader = new string[3];
-    private static int[] ariantroomslot = new int[3];
+
     private long portaldelay = 0, lastcombo = 0;
     private short combocounter = 0;
     private List<string> blockedPortals = new();
@@ -1408,10 +1411,8 @@ public partial class Player
 
     public void checkBerserk(bool isHidden)
     {
-        if (berserkSchedule != null)
-        {
-            berserkSchedule.cancel(false);
-        }
+        berserkSchedule?.cancel(false);
+
         IPlayerStats chr = this;
         if (JobModel.Equals(Job.DARKKNIGHT))
         {
@@ -1550,7 +1551,8 @@ public partial class Player
     {
         // yes, one picks the IMapObject, not the MapItem
         if (ob == null)
-        {                                               // pet index refers to the one picking up the item
+        {
+            // pet index refers to the one picking up the item
             return;
         }
 
@@ -2012,15 +2014,9 @@ public partial class Player
 
     public void forceUpdateItem(Item item)
     {
-        List<ModifyInventory> mods = new();
-        mods.Add(new ModifyInventory(3, item));
-        mods.Add(new ModifyInventory(0, item));
+        List<ModifyInventory> mods = [new ModifyInventory(3, item), new ModifyInventory(0, item)];
         sendPacket(PacketCreator.modifyInventory(true, mods));
     }
-
-
-
-
 
     private KeyValuePair<int, int> applyFame(int delta)
     {
@@ -2079,7 +2075,8 @@ public partial class Player
     }
 
     public bool canHoldMeso(int gain)
-    {  // thanks lucasziron for pointing out a need to check space availability for mesos on player transactions
+    {
+        // thanks lucasziron for pointing out a need to check space availability for mesos on player transactions
         long nextMeso = (long)MesoValue.get() + gain;
         return nextMeso <= int.MaxValue;
     }
@@ -3438,7 +3435,8 @@ public partial class Player
         var combo = SkillFactory.GetSkillTrust(skillid);
         var stat = new BuffStatValue(BuffStat.COMBO, 1);
         setBuffedValue(BuffStat.COMBO, 1);
-        sendPacket(PacketCreator.giveBuff(skillid,
+        sendPacket(PacketCreator.giveBuff(
+            skillid,
             combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.Now.ToUnixTimeMilliseconds()),
             stat));
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
@@ -3602,7 +3600,8 @@ public partial class Player
     }
 
     public bool isGuildLeader()
-    {    // true on guild master or jr. master
+    {
+        // true on guild master or jr. master
         return GuildId > 0 && GuildRank < 3;
     }
 
@@ -4315,9 +4314,9 @@ public partial class Player
 
     private void playerDead()
     {
-        if (this.MapModel.isCPQMap())
+        if (this.MapModel.isCPQMap() && MapModel is ICPQMap cpqMap)
         {
-            int losing = MapModel.getDeathCP();
+            int losing = cpqMap.DeathCP;
             if (getCP() < losing)
             {
                 losing = getCP();
@@ -4730,14 +4729,6 @@ public partial class Player
         }
     }
 
-
-
-    public static void removeAriantRoom(int room)
-    {
-        ariantroomleader[room] = "";
-        ariantroomslot[room] = 0;
-    }
-
     public void removeVisibleMapObject(IMapObject mo)
     {
         visibleMapObjects.Remove(mo);
@@ -4807,6 +4798,11 @@ public partial class Player
                 Monitor.Exit(effLock);
             }
         }
+    }
+
+    public void setBattleshipHp(int battleshipHp)
+    {
+        this.battleshipHp = battleshipHp;
     }
 
     public void resetBattleshipHp()
@@ -5046,22 +5042,6 @@ public partial class Player
         // send quickslots to user
         var pQuickslotKeyMapped = this.QuickSlotKeyMapped ?? new QuickslotBinding(QuickslotBinding.DEFAULT_QUICKSLOTS);
         this.sendPacket(PacketCreator.QuickslotMappedInit(pQuickslotKeyMapped));
-    }
-
-
-    public static void setAriantRoomLeader(int room, string charname)
-    {
-        ariantroomleader[room] = charname;
-    }
-
-    public static void setAriantSlotRoom(int room, int slot)
-    {
-        ariantroomslot[room] = slot;
-    }
-
-    public void setBattleshipHp(int battleshipHp)
-    {
-        this.battleshipHp = battleshipHp;
     }
 
     public void setBuddyCapacity(int capacity)

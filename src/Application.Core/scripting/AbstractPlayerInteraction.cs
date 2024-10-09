@@ -666,7 +666,8 @@ public class AbstractPlayerInteraction
     }
 
     public void gainItem(int id, short quantity, bool show)
-    {//this will fk randomStats equip :P
+    {
+        //this will fk randomStats equip :P
         gainItem(id, quantity, false, show);
     }
 
@@ -680,17 +681,7 @@ public class AbstractPlayerInteraction
         gainItem(id, 1, false, true);
     }
 
-    public Item gainItem(int id, short quantity, bool randomStats, bool showMessage)
-    {
-        return gainItem(id, quantity, randomStats, showMessage, -1);
-    }
-
-    public Item gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires)
-    {
-        return gainItem(id, quantity, randomStats, showMessage, expires, null);
-    }
-
-    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires, Pet? from)
+    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
     {
         Item? item = null;
         Pet evolved;
@@ -718,7 +709,7 @@ public class AbstractPlayerInteraction
                     evolved.Tameness = from.Tameness;
                     evolved.Fullness = from.Fullness;
                     evolved.Level = from.Level;
-                    evolved.setExpiration(DateTimeOffset.Now.AddMicroseconds(expires).ToUnixTimeMilliseconds());
+                    evolved.setExpiration(DateTimeOffset.Now.AddMilliseconds(expires).ToUnixTimeMilliseconds());
                     evolved.saveToDb();
                 }
 
@@ -769,16 +760,16 @@ public class AbstractPlayerInteraction
             {
                 if (randomStats)
                 {
-                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item), false, petId);
+                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item!), false, petId);
                 }
                 else
                 {
-                    InventoryManipulator.addFromDrop(c, item, false, petId);
+                    InventoryManipulator.addFromDrop(c, item!, false, petId);
                 }
             }
             else
             {
-                InventoryManipulator.addFromDrop(c, item, false, petId);
+                InventoryManipulator.addFromDrop(c, item!, false, petId);
             }
         }
         else
@@ -1093,13 +1084,13 @@ public class AbstractPlayerInteraction
 
     public void useItem(int id)
     {
-        ItemInformationProvider.getInstance().getItemEffect(id).applyTo(c.OnlinedCharacter);
+        ItemInformationProvider.getInstance().GetItemEffectTrust(id).applyTo(c.OnlinedCharacter);
         c.sendPacket(PacketCreator.getItemMessage(id));//Useful shet :3
     }
 
     public void cancelItem(int id)
     {
-        getPlayer().cancelEffect(ItemInformationProvider.getInstance().getItemEffect(id), false, -1);
+        getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false, -1);
     }
 
     public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration)
@@ -1130,6 +1121,9 @@ public class AbstractPlayerInteraction
     public void removeEquipFromSlot(short slot)
     {
         var tempItem = c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).getItem(slot);
+        if (tempItem == null)
+            return;
+
         InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, tempItem.getQuantity(), false, false);
     }
 
@@ -1155,7 +1149,7 @@ public class AbstractPlayerInteraction
             npc.setCy(pos.Y);
             npc.setRx0(pos.X + 50);
             npc.setRx1(pos.X - 50);
-            npc.setFh(map.getFootholds().findBelow(pos).getId());
+            npc.setFh(map.getFootholds()!.findBelow(pos)!.getId());
             map.addMapObject(npc);
             map.broadcastMessage(PacketCreator.spawnNPC(npc));
         }
@@ -1163,7 +1157,7 @@ public class AbstractPlayerInteraction
 
     public void spawnMonster(int id, int x, int y)
     {
-        var monster = LifeFactory.getMonster(id);
+        var monster = LifeFactory.GetMonsterTrust(id) ;
         monster.setPosition(new Point(x, y));
         getPlayer().getMap().spawnMonster(monster);
     }
@@ -1284,24 +1278,20 @@ public class AbstractPlayerInteraction
         return GameConstants.numberWithCommas(number);
     }
 
-    public Pyramid getPyramid()
+    public Pyramid? getPyramid()
     {
-        return (Pyramid)getPlayer().getPartyQuest();
+        return getPlayer().getPartyQuest() as Pyramid;
     }
 
-    public int createExpedition(ExpeditionType type)
-    {
-        return createExpedition(type, false, 0, 0);
-    }
-
-    public int createExpedition(ExpeditionType type, bool silent, int minPlayers, int maxPlayers)
+    public int createExpedition(ExpeditionType type, bool silent = false, int minPlayers = 0, int maxPlayers = 0)
     {
         var player = getPlayer();
         Expedition exped = new Expedition(player, type, silent, minPlayers, maxPlayers);
 
         int channel = player.getMap().getChannelServer().getId();
         if (!ExpeditionBossLog.attemptBoss(player.getId(), channel, exped, false))
-        {    // thanks Conrad for noticing missing expeditions entry limit
+        {    
+            // thanks Conrad for noticing missing expeditions entry limit
             return 1;
         }
 
@@ -1329,18 +1319,20 @@ public class AbstractPlayerInteraction
     public string getExpeditionMemberNames(ExpeditionType type)
     {
         string members = "";
-        Expedition? exped = getExpedition(type);
-        foreach (string memberName in exped.getMembers().Values)
+        var exped = getExpedition(type);
+        if (exped != null)
         {
-            members += "" + memberName + ", ";
+            foreach (string memberName in exped.getMembers().Values)
+            {
+                members += "" + memberName + ", ";
+            }
         }
         return members;
     }
 
     public bool isLeaderExpedition(ExpeditionType type)
     {
-        Expedition? exped = getExpedition(type);
-        return exped.isLeader(getPlayer());
+        return getExpedition(type)?.isLeader(getPlayer()) ?? false;
     }
 
     public long getJailTimeLeft()
@@ -1387,45 +1379,26 @@ public class AbstractPlayerInteraction
 
         var chr = this.getPlayer();
 
-        switch (jobType)
+        return jobType switch
         {
-            case 1:
-                return chr.getStr() >= 35;
-
-            case 2:
-                return chr.getInt() >= 20;
-
-            case 3:
-            case 4:
-                return chr.getDex() >= 25;
-
-            case 5:
-                return chr.getDex() >= 20;
-
-            default:
-                return true;
-        }
+            1 => chr.getStr() >= 35,
+            2 => chr.getInt() >= 20,
+            3 or 4 => chr.getDex() >= 25,
+            5 => chr.getDex() >= 20,
+            _ => true,
+        };
     }
 
     public string? getFirstJobStatRequirement(int jobType)
     {
-        switch (jobType)
+        return jobType switch
         {
-            case 1:
-                return "STR " + 35;
-
-            case 2:
-                return "INT " + 20;
-
-            case 3:
-            case 4:
-                return "DEX " + 25;
-
-            case 5:
-                return "DEX " + 20;
-        }
-
-        return null;
+            1 => "STR " + 35,
+            2 => "INT " + 20,
+            3 or 4 => "DEX " + 25,
+            5 => "DEX " + 20,
+            _ => null,
+        };
     }
 
     public void npcTalk(int npcid, string message)

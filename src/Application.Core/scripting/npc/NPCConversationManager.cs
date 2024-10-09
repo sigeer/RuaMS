@@ -129,77 +129,42 @@ public class NPCConversationManager : AbstractPlayerInteraction
         getClient().sendPacket(PacketCreator.enableActions());
     }
 
-    public void sendNext(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", 0));
-    }
-
-    public void sendPrev(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", 0));
-    }
-
-    public void sendNextPrev(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", 0));
-    }
-
-    public void sendOk(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", 0));
-    }
-
     public void sendDefault()
     {
         sendOk(getDefaultTalk(npc));
     }
 
-    public void sendYesNo(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", 0));
-    }
-
-    public void sendAcceptDecline(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", 0));
-    }
-
-    public void sendSimple(string text)
-    {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", 0));
-    }
-
-    public void sendNext(string text, byte speaker)
+    public void sendNext(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker));
     }
 
-    public void sendPrev(string text, byte speaker)
+    public void sendPrev(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker));
     }
 
-    public void sendNextPrev(string text, byte speaker)
+    public void sendNextPrev(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker));
     }
 
-    public void sendOk(string text, byte speaker)
+    public void sendOk(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker));
     }
 
-    public void sendYesNo(string text, byte speaker)
+    public void sendYesNo(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker));
     }
 
-    public void sendAcceptDecline(string text, byte speaker)
+    public void sendAcceptDecline(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0x0C, text, "", speaker));
     }
 
-    public void sendSimple(string text, byte speaker)
+    public void sendSimple(string text, byte speaker = 0)
     {
         getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker));
     }
@@ -211,7 +176,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
             getClient().sendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
         }
         else
-        {    // thanks Conrad for noticing empty styles crashing players
+        {    
+            // thanks Conrad for noticing empty styles crashing players
             sendOk("Sorry, there are no options of cosmetics available for you here at the moment.");
             dispose();
         }
@@ -391,7 +357,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void changeJobById(int a)
     {
-        getPlayer().changeJob(JobUtils.getById(a));
+        changeJob(JobUtils.getById(a));
     }
 
     public void changeJob(Job job)
@@ -418,15 +384,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         var shop = ShopFactory.getInstance().getShop(id);
 
-        if (shop != null)
+        if (shop == null)
         {
-            shop.sendShop(c);
-        }
-        else
-        {    // check for missing shopids thanks to resinate
+            // check for missing shopids thanks to resinate
             log.Warning("Shop ID: {ShopId} is missing from database.", id);
-            ShopFactory.getInstance().getShop(11000)?.sendShop(c);
+            shop = ShopFactory.getInstance().getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
         }
+        shop.sendShop(c);
     }
 
     public void maxMastery()
@@ -435,7 +399,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             try
             {
-                Skill skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()));
+                Skill skill = SkillFactory.GetSkillTrust(int.Parse(skill_.getName()!));
                 getPlayer().changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception nfe)
@@ -449,7 +413,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public void doGachapon()
     {
         var item = Gachapon.getInstance().process(npc);
-        Item itemGained = gainItem(item.getId(), (short)(item.getId() / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
+        var itemGained = gainItem(item.getId(), (short)(item.getId() / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
 
         sendNext("You have obtained a #b#t" + item.getId() + "##k.");
 
@@ -539,15 +503,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public int partyMembersInMap()
     {
-        int inMap = 0;
-        foreach (var char2 in getPlayer().getMap().getCharacters())
-        {
-            if (char2.getParty() == getPlayer().getParty())
-            {
-                inMap++;
-            }
-        }
-        return inMap;
+        return getPlayer().getMap().getCharacters().Count(x => x.getParty() == getPlayer().getParty());
     }
 
     public server.events.gm.Event getEvent()
@@ -794,7 +750,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
             map = cs.getMapFactory().getMap(980000100 + 100 * field);
             mapExit = cs.getMapFactory().getMap(980000000);
-            foreach (var mc in getPlayer().getParty().getMembers())
+            foreach (var mc in getPlayer().getParty()!.getMembers())
             {
                 if (mc != null)
                 {
@@ -821,7 +777,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void cancelCPQLobby()
     {
-        foreach (var mc in getPlayer().getParty().getMembers())
+        foreach (var mc in getPlayer().getParty()!.getMembers())
         {
             mc.clearCpqTimer();
         }
@@ -1095,7 +1051,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
             mapExit = cs.getMapFactory().getMap(980030000);
             map = cs.getMapFactory().getMap(980031000 + 1000 * field);
-            foreach (var mc in c.OnlinedCharacter.getParty().getMembers())
+            foreach (var mc in c.OnlinedCharacter.getParty()!.getMembers())
             {
                 if (mc != null)
                 {
@@ -1168,7 +1124,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
         else
         {
-            sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQLeaderNotFound));
+            sendOk(LanguageConstants.getMessage(getPlayer(), LanguageConstants.CPQLeaderNotFound));
         }
     }
 
@@ -1176,7 +1132,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         IPlayer? leader = null;
         var map = c.getChannelServer().getMapFactory().getMap(980000100 + 100 * field);
-        if (map.getAllPlayer().Count != getPlayer().getParty().getMembers().Count)
+        if (map.getAllPlayer().Count != getPlayer().getParty()!.getMembers().Count)
         {
             sendOk("An unexpected error regarding the other party has occurred.");
             return;
