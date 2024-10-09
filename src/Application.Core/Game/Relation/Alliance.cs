@@ -52,7 +52,7 @@ public class Alliance : IAlliance
         RankTitles = new string[5] { "Master", "Jr. Master", "Member", "Member", "Member" };
         Notice = string.Empty;
 
-        log = LogFactory.GetLogger($"Alliance/{new RangeNumberGenerator(AllianceId, 1000)}");
+        log = LogFactory.GetLogger($"Alliance/{new RangeNumberGenerator(AllianceId, 1000)}/AllianceId_{AllianceId}");
     }
 
 
