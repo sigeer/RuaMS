@@ -27,16 +27,6 @@ namespace Application.Core.Game.Players
             return this.ariantPoints;
         }
 
-        public static string getAriantRoomLeaderName(int room)
-        {
-            return ariantroomleader[room];
-        }
-
-        public static int getAriantSlotsRoom(int room)
-        {
-            return ariantroomslot[room];
-        }
-
         public void updateAriantScore()
         {
             updateAriantScore(0);

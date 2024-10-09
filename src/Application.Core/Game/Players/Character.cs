@@ -3999,9 +3999,9 @@ public partial class Player
         {
             if (partyLeader)
             {
-                party.AssignNewLeader();
+                party.assignNewLeader(Client);
             }
-            TeamManager.LeaveParty(party, this);
+            TeamManager.leaveParty(party, Client);
 
             return true;
         }
