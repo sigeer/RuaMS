@@ -3999,9 +3999,9 @@ public partial class Player
         {
             if (partyLeader)
             {
-                party.assignNewLeader(Client);
+                party.AssignNewLeader();
             }
-            TeamManager.leaveParty(party, Client);
+            TeamManager.LeaveParty(party, this);
 
             return true;
         }
@@ -4798,6 +4798,11 @@ public partial class Player
                 Monitor.Exit(effLock);
             }
         }
+    }
+
+    public void setBattleshipHp(int battleshipHp)
+    {
+        this.battleshipHp = battleshipHp;
     }
 
     public void resetBattleshipHp()
