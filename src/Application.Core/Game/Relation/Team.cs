@@ -1,4 +1,6 @@
-﻿using net.server.world;
+﻿using Application.Core.Game.TheWorld;
+using net.server;
+using net.server.world;
 using server.maps;
 using System.Collections.Concurrent;
 using tools;
@@ -13,16 +15,21 @@ namespace Application.Core.Game.Relation
         private ConcurrentDictionary<int, IPlayer> members = new();
         private List<IPlayer> pqMembers = new List<IPlayer>();
 
+        /// <summary>
+        /// 队伍中所有历史成员？
+        /// </summary>
         private Dictionary<int, int> histMembers = new();
         private int nextEntry = 0;
 
         private ConcurrentDictionary<int, Door> doors = new();
 
         private object lockObj = new object();
-
+        public int World { get; }
+        public IWorld WorldServer => Server.getInstance().getWorld(World);
         public Team(int id, IPlayer chrfor)
         {
             this.leaderId = chrfor.getId();
+            World = chrfor.getWorld();
             this.id = id;
         }
 
@@ -177,13 +184,12 @@ namespace Application.Core.Game.Relation
             return new Dictionary<int, Door>(doors);
         }
 
-        public void assignNewLeader(IClient c)
+        public void AssignNewLeader()
         {
-            var world = c.getWorldServer();
             var newLeadr = getMembers().Where(x => x.Id != leaderId).OrderByDescending(x => x.Level).FirstOrDefault();
             if (newLeadr != null)
             {
-                world.updateParty(this.getId(), PartyOperation.CHANGE_LEADER, newLeadr);
+                WorldServer.updateParty(this.getId(), PartyOperation.CHANGE_LEADER, newLeadr);
             }
         }
 

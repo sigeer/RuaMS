@@ -934,7 +934,7 @@ public class AbstractPlayerInteraction
         }
         foreach (var chr in getParty()!.getMembers())
         {
-            if (chr != null && chr.getClient() != null)
+            if (chr != null && chr.IsOnlined)
             {
                 removeAll(id, chr.getClient());
             }
