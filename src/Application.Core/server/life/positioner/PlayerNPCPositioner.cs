@@ -126,7 +126,7 @@ public class PlayerNPCPositioner
                             return searchPos;
                         }
 
-                        PlayerNPC pn = pnpcs.get(i);
+                        PlayerNPC pn = pnpcs[i];
                         i++;
 
                         pn.updatePlayerNPCPosition(map, searchPos.Value);

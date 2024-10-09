@@ -55,15 +55,13 @@ namespace Application.Core.Managers
                 }
             }
 
-            if (mcl.Count > 0 && !mcl.get(0).isPartyLeader())
+            if (mcl.Count > 0 && !mcl[0].isPartyLeader())
             {
                 for (int i = 1; i < mcl.Count; i++)
                 {
-                    if (mcl.get(i).isPartyLeader())
+                    if (mcl[i].isPartyLeader())
                     {
-                        var temp = mcl.get(0);
-                        mcl.set(0, mcl.get(i));
-                        mcl.set(i, temp);
+                        (mcl[0], mcl[i]) = (mcl[i], mcl[0]);
                     }
                 }
             }
@@ -98,10 +96,10 @@ namespace Application.Core.Managers
                 {
                     for (int i = 0; i < guildMasters.Count; i++)
                     {
-                        Server.getInstance().setGuildAllianceId(guilds.get(i), id);
-                        Server.getInstance().resetAllianceGuildPlayersRank(guilds.get(i));
+                        Server.getInstance().setGuildAllianceId(guilds[i], id);
+                        Server.getInstance().resetAllianceGuildPlayersRank(guilds[i]);
 
-                        var chr = guildMasters.get(i);
+                        var chr = guildMasters[i];
                         chr.AllianceRank = (i == 0) ? 1 : 2;
                         chr.saveGuildStatus();
                     }

@@ -1,7 +1,18 @@
 ﻿namespace Application.EF.Entities;
 
-public partial class Gift
+public class Gift
 {
+    public Gift(int to, string from, string message, int sn, int ringid)
+    {
+        To = to;
+        From = from;
+        Message = message;
+        Sn = sn;
+        Ringid = ringid;
+    }
+
+    private Gift() { }
+
     public int Id { get; set; }
 
     public int To { get; set; }

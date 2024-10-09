@@ -14,6 +14,7 @@ namespace Application.Core.Game
 {
     public class OfflineClient : IClient
     {
+        public string ClientInfo => $"OfflineClient";
         public IPlayer? Character => null;
 
         public bool acceptToS()
@@ -539,6 +540,11 @@ namespace Application.Core.Game
         public void useVotePoints(int points)
         {
             throw new BusinessCharacterOfflineException();
+        }
+
+        public override string ToString()
+        {
+            return ClientInfo;
         }
     }
 }

@@ -46,6 +46,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     private Hwid _hwid = Hwid.Default();
     private string remoteAddress;
+    public string ClientInfo => $"{remoteAddress}_{sessionId}";
 
 
     private IChannel ioChannel = null!;
@@ -159,7 +160,7 @@ public class Client : ChannelHandlerAdapter, IClient
         }
 
         short opcode = packet.readShort();
-        IPacketHandler handler = packetProcessor.getHandler(opcode);
+        var handler = packetProcessor.getHandler(opcode);
 
         if (YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_PACKET && !LoggingUtil.isIgnoredRecvPacket(opcode))
         {
@@ -195,8 +196,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public override void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
     {
-        if (Character != null)
-            log.Warning(cause, "Exception caught by {CharacterName}", Character);
+        log.Error(cause, "Exception caught by {ClientInfo}, Character: {CharacterName}", ClientInfo, Character);
 
         if (cause is InvalidPacketHeaderException)
         {
@@ -211,7 +211,7 @@ public class Client : ChannelHandlerAdapter, IClient
             if (cause is BusinessFatalException)
                 closeMapleSession();
             else if (cause is BusinessResException)
-                sendPacket(PacketCreator.serverNotice(1, "基础数据缺失"));
+                sendPacket(PacketCreator.serverNotice(1, "wz数据不一致"));
             else
                 sendPacket(PacketCreator.serverNotice(1, cause.Message));
         }
@@ -875,15 +875,9 @@ public class Client : ChannelHandlerAdapter, IClient
                     eim.playerDisconnected(player);
                 }
 
-                if (player.getMonsterCarnival() != null)
-                {
-                    player.getMonsterCarnival()!.playerDisconnected(player.Id);
-                }
+                player.getMonsterCarnival()?.playerDisconnected(player.Id);
 
-                if (player.getAriantColiseum() != null)
-                {
-                    player.getAriantColiseum()!.playerDisconnected(player);
-                }
+                player.getAriantColiseum()?.playerDisconnected(player);
             }
 
             if (player.getMap() != null)
@@ -1099,10 +1093,11 @@ public class Client : ChannelHandlerAdapter, IClient
     {
         try
         {
-            var chr = CharacterManager.LoadPlayerFromDB(cid, this, false);
+            var chr = AllPlayerStorage.GetOrAddCharacterById(cid);
             if (chr == null)
                 return false;
 
+            chr.setClient(this);
             this.setPlayer(chr);
 
             if (chr.Party > 0)
@@ -1635,5 +1630,10 @@ public class Client : ChannelHandlerAdapter, IClient
     public void setLanguage(int lingua)
     {
         this.lang = lingua;
+    }
+
+    public override string ToString()
+    {
+        return ClientInfo;
     }
 }

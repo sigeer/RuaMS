@@ -472,7 +472,8 @@ public class Guild : IGuild
             }
             for (int i = members.Count - 1; i >= 0; i--)
             {
-                if (members.get(i).getGuildRank() < 5 || members.get(i).getName().CompareTo(chr.Name) < 0)
+                var member = members[i];
+                if (member.getGuildRank() < 5 || member.getName().CompareTo(chr.Name) < 0)
                 {
                     members.Insert(i + 1, chr);
                     bDirty = true;

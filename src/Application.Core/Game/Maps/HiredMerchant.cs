@@ -267,7 +267,7 @@ public class HiredMerchant : AbstractMapObject
     {
         lock (items)
         {
-            PlayerShopItem shopItem = items.get(slot);
+            var shopItem = items[slot];
             if (shopItem.isExist())
             {
                 if (shopItem.getBundles() > 0)
@@ -297,7 +297,8 @@ public class HiredMerchant : AbstractMapObject
     }
 
     private static bool canBuy(IClient c, Item newItem)
-    {    // thanks xiaokelvin (Conrad) for noticing a leaked test code here
+    {
+        // thanks xiaokelvin (Conrad) for noticing a leaked test code here
         return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && InventoryManipulator.addFromDrop(c, newItem, false);
     }
 
@@ -961,44 +962,10 @@ public class HiredMerchant : AbstractMapObject
     {
         client.sendPacket(PacketCreator.spawnHiredMerchantBox(this));
     }
-
-    public class SoldItem
-    {
-
-        int itemid, mesos;
-        short quantity;
-        string buyer;
-
-        public SoldItem(string buyer, int itemid, short quantity, int mesos)
-        {
-            this.buyer = buyer;
-            this.itemid = itemid;
-            this.quantity = quantity;
-            this.mesos = mesos;
-        }
-
-        public string getBuyer()
-        {
-            return buyer;
-        }
-
-        public int getItemId()
-        {
-            return itemid;
-        }
-
-        public short getQuantity()
-        {
-            return quantity;
-        }
-
-        public int getMesos()
-        {
-            return mesos;
-        }
-    }
 }
 
 public record Visitor(IPlayer chr, DateTimeOffset enteredAt) { }
 
 public record PastVisitor(string chrName, TimeSpan visitDuration) { }
+
+public record SoldItem(string buyer, int itemid, short quantity, int mesos);

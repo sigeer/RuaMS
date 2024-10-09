@@ -176,7 +176,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
             getClient().sendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
         }
         else
-        {    // thanks Conrad for noticing empty styles crashing players
+        {    
+            // thanks Conrad for noticing empty styles crashing players
             sendOk("Sorry, there are no options of cosmetics available for you here at the moment.");
             dispose();
         }
@@ -356,7 +357,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void changeJobById(int a)
     {
-        getPlayer().changeJob(JobUtils.getById(a));
+        changeJob(JobUtils.getById(a));
     }
 
     public void changeJob(Job job)
@@ -383,15 +384,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         var shop = ShopFactory.getInstance().getShop(id);
 
-        if (shop != null)
+        if (shop == null)
         {
-            shop.sendShop(c);
-        }
-        else
-        {    // check for missing shopids thanks to resinate
+            // check for missing shopids thanks to resinate
             log.Warning("Shop ID: {ShopId} is missing from database.", id);
-            ShopFactory.getInstance().getShop(11000)?.sendShop(c);
+            shop = ShopFactory.getInstance().getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
         }
+        shop.sendShop(c);
     }
 
     public void maxMastery()
@@ -504,15 +503,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public int partyMembersInMap()
     {
-        int inMap = 0;
-        foreach (var char2 in getPlayer().getMap().getCharacters())
-        {
-            if (char2.getParty() == getPlayer().getParty())
-            {
-                inMap++;
-            }
-        }
-        return inMap;
+        return getPlayer().getMap().getCharacters().Count(x => x.getParty() == getPlayer().getParty());
     }
 
     public server.events.gm.Event getEvent()

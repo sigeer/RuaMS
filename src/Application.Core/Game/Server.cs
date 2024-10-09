@@ -87,7 +87,7 @@ public class Server
     private List<IClient> processDiseaseAnnouncePlayers = new();
     private List<IClient> registeredDiseaseAnnouncePlayers = new();
 
-    private List<List<KeyValuePair<string, int>>> playerRanking = new();
+    private List<List<NameLevelPair>> playerRanking = new();
 
     private object srvLock = new object();
     private object disLock = new object();
@@ -406,17 +406,18 @@ public class Server
 
         log.Information("Starting world {WorldId}", i);
 
-        int exprate = YamlConfig.config.worlds.get(i).exp_rate;
-        int mesorate = YamlConfig.config.worlds.get(i).meso_rate;
-        int droprate = YamlConfig.config.worlds.get(i).drop_rate;
-        int bossdroprate = YamlConfig.config.worlds.get(i).boss_drop_rate;
-        int questrate = YamlConfig.config.worlds.get(i).quest_rate;
-        int travelrate = YamlConfig.config.worlds.get(i).travel_rate;
-        int fishingrate = YamlConfig.config.worlds.get(i).fishing_rate;
+        var worldConfig = YamlConfig.config.worlds[i];
+        int exprate = worldConfig.exp_rate;
+        int mesorate = worldConfig.meso_rate;
+        int droprate = worldConfig.drop_rate;
+        int bossdroprate = worldConfig.boss_drop_rate;
+        int questrate = worldConfig.quest_rate;
+        int travelrate = worldConfig.travel_rate;
+        int fishingrate = worldConfig.fishing_rate;
 
-        int flag = YamlConfig.config.worlds.get(i).flag;
-        string event_message = YamlConfig.config.worlds.get(i).event_message;
-        string why_am_i_recommended = YamlConfig.config.worlds.get(i).why_am_i_recommended;
+        int flag = worldConfig.flag;
+        string event_message = worldConfig.event_message;
+        string why_am_i_recommended = worldConfig.why_am_i_recommended;
 
         var world = new World(i,
                 flag,
@@ -426,7 +427,7 @@ public class Server
         // world id从0开始 channel id从1开始
         Dictionary<int, string> channelInfo = new();
         long bootTime = getCurrentTime();
-        for (int j = 1; j <= YamlConfig.config.worlds.get(i).channels; j++)
+        for (int j = 1; j <= worldConfig.channels; j++)
         {
             int channelid = j;
             var channel = new WorldChannel(world, channelid, bootTime);
@@ -455,7 +456,7 @@ public class Server
 
         if (canDeploy)
         {
-            world.setServerMessage(YamlConfig.config.worlds.get(i).server_message);
+            world.setServerMessage(worldConfig.server_message);
 
             log.Information("Finished loading world {WorldId}", i);
             return i;
@@ -470,7 +471,7 @@ public class Server
 
     public bool removeChannel(int worldid)
     {   //lol don't!
-        IWorld world;
+        IWorld? world;
 
         wldLock.EnterReadLock();
         try
@@ -479,7 +480,7 @@ public class Server
             {
                 return false;
             }
-            world = worlds.get(worldid);
+            world = worlds.ElementAtOrDefault(worldid);
         }
         finally
         {
@@ -510,8 +511,9 @@ public class Server
     }
 
     public bool removeWorld()
-    {   //lol don't!
-        IWorld w;
+    {
+        //lol don't!
+        IWorld? w;
         int worldid;
 
         wldLock.EnterReadLock();
@@ -523,7 +525,7 @@ public class Server
                 return false;
             }
 
-            w = worlds.get(worldid);
+            w = worlds.ElementAtOrDefault(worldid);
         }
         finally
         {
@@ -729,7 +731,7 @@ public class Server
         }
     }
 
-    public List<KeyValuePair<string, int>> getWorldPlayerRanking(int worldid)
+    public List<NameLevelPair> getWorldPlayerRanking(int worldid)
     {
         wldLock.EnterReadLock();
         try
@@ -757,7 +759,7 @@ public class Server
                         playerRanking.Add(new(0));
                     }
 
-                    playerRanking.Insert(worldid, ranking.get(0).Value);
+                    playerRanking.Insert(worldid, ranking.ElementAt(0).Value);
                 }
                 else
                 {
@@ -826,12 +828,12 @@ public class Server
 
                 foreach (var wranks in rankUpdates)
                 {
-                    playerRanking.set(wranks.Key, wranks.Value);
+                    playerRanking[wranks.Key] = wranks.Value;
                 }
             }
             else
             {
-                playerRanking.set(0, rankUpdates.get(0).Value);
+                playerRanking[0] = rankUpdates[0].Value;
             }
         }
         finally
@@ -859,10 +861,10 @@ public class Server
         updateWorldPlayerRanking();
     }
 
-    private static List<KeyValuePair<int, List<KeyValuePair<string, int>>>> loadPlayerRankingFromDB(int worldid)
+    private static List<KeyValuePair<int, List<NameLevelPair>>> loadPlayerRankingFromDB(int worldid)
     {
-        List<KeyValuePair<int, List<KeyValuePair<string, int>>>> rankSystem = new List<KeyValuePair<int, List<KeyValuePair<string, int>>>>();
-        List<KeyValuePair<string, int>> rankUpdate = new List<KeyValuePair<string, int>>(0);
+        List<KeyValuePair<int, List<NameLevelPair>>> rankSystem = new();
+        List<NameLevelPair> rankUpdate = new(0);
 
         try
         {
@@ -902,7 +904,7 @@ public class Server
                     if (currentWorld < x.World)
                     {
                         currentWorld = x.World;
-                        rankUpdate = new List<KeyValuePair<string, int>>(50);
+                        rankUpdate = new(50);
                         rankSystem.Add(new(x.World, rankUpdate));
                     }
                     rankUpdate.Add(new(x.Name, x.Level));

@@ -215,11 +215,13 @@ public partial class Player
 
     private object prtLock = new object();
 
+    /// <summary>
+    /// PetId -> ItemId
+    /// </summary>
     private Dictionary<int, HashSet<int>> excluded = new();
     private HashSet<int> excludedItems = new();
     private HashSet<int> disabledPartySearchInvites = new();
-    private static string[] ariantroomleader = new string[3];
-    private static int[] ariantroomslot = new int[3];
+
     private long portaldelay = 0, lastcombo = 0;
     private short combocounter = 0;
     private List<string> blockedPortals = new();
@@ -1409,10 +1411,8 @@ public partial class Player
 
     public void checkBerserk(bool isHidden)
     {
-        if (berserkSchedule != null)
-        {
-            berserkSchedule.cancel(false);
-        }
+        berserkSchedule?.cancel(false);
+
         IPlayerStats chr = this;
         if (JobModel.Equals(Job.DARKKNIGHT))
         {
@@ -1551,7 +1551,8 @@ public partial class Player
     {
         // yes, one picks the IMapObject, not the MapItem
         if (ob == null)
-        {                                               // pet index refers to the one picking up the item
+        {
+            // pet index refers to the one picking up the item
             return;
         }
 
@@ -2074,7 +2075,8 @@ public partial class Player
     }
 
     public bool canHoldMeso(int gain)
-    {  // thanks lucasziron for pointing out a need to check space availability for mesos on player transactions
+    {
+        // thanks lucasziron for pointing out a need to check space availability for mesos on player transactions
         long nextMeso = (long)MesoValue.get() + gain;
         return nextMeso <= int.MaxValue;
     }
@@ -4727,14 +4729,6 @@ public partial class Player
         }
     }
 
-
-
-    public static void removeAriantRoom(int room)
-    {
-        ariantroomleader[room] = "";
-        ariantroomslot[room] = 0;
-    }
-
     public void removeVisibleMapObject(IMapObject mo)
     {
         visibleMapObjects.Remove(mo);
@@ -4804,6 +4798,11 @@ public partial class Player
                 Monitor.Exit(effLock);
             }
         }
+    }
+
+    public void setBattleshipHp(int battleshipHp)
+    {
+        this.battleshipHp = battleshipHp;
     }
 
     public void resetBattleshipHp()
@@ -5043,22 +5042,6 @@ public partial class Player
         // send quickslots to user
         var pQuickslotKeyMapped = this.QuickSlotKeyMapped ?? new QuickslotBinding(QuickslotBinding.DEFAULT_QUICKSLOTS);
         this.sendPacket(PacketCreator.QuickslotMappedInit(pQuickslotKeyMapped));
-    }
-
-
-    public static void setAriantRoomLeader(int room, string charname)
-    {
-        ariantroomleader[room] = charname;
-    }
-
-    public static void setAriantSlotRoom(int room, int slot)
-    {
-        ariantroomslot[room] = slot;
-    }
-
-    public void setBattleshipHp(int battleshipHp)
-    {
-        this.battleshipHp = battleshipHp;
     }
 
     public void setBuddyCapacity(int capacity)

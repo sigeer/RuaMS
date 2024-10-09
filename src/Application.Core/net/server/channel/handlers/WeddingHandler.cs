@@ -190,7 +190,8 @@ public class WeddingHandler : AbstractPacketHandler
                     }
                 }
                 else if (mode == 8)
-                { // out of Wedding Registry
+                {
+                    // out of Wedding Registry
                     c.sendPacket(PacketCreator.enableActions());
                 }
                 else
