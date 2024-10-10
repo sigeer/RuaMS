@@ -17,9 +17,9 @@ public class CommandExecutor
         return instance;
     }
 
-    public List<CommandInfo> getGmCommands()
+    public List<List<CommandInfo>> getGmCommands()
     {
-        return registeredCommands.Select(x => new CommandInfo(x.Key, x.Value.Description)).ToList();
+        return registeredCommands.OrderBy(x => x.Value.Rank).GroupBy(x => x.Value.Rank).Select(x => x.Select(y => new CommandInfo(y.Key, y.Value.Description)).ToList()).ToList();
     }
 
     public static bool isCommand(IClient client, string content)

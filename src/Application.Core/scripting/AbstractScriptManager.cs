@@ -30,6 +30,7 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using constants.id;
+using Microsoft.JSInterop.Implementation;
 using net.server;
 using net.server.channel;
 using server;
@@ -74,7 +75,7 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("Rectangle", typeof(Rectangle));
             engine.AddHostedType("RingManager", typeof(RingManager));
             engine.AddHostedType("Channel", typeof(WorldChannel));
-            engine.AddHostedType("CommandsExecutor", typeof(CommandExecutor));
+            engine.AddHostedType("CommandExecutor", typeof(CommandExecutor));
             engine.AddHostedType("CharacterManager", typeof(CharacterManager));
             engine.AddHostedType("Gachapon", typeof(Gachapon));
             engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
