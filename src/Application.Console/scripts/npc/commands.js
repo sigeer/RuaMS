@@ -15,7 +15,7 @@ var levels = ["Common", "Donator", "JrGM", "GM", "SuperGM", "Developer", "Admin"
 var commands;
 
 function writeHeavenMSCommands() {
-    commands = CommandsExecutor.getInstance().getGmCommands();
+    commands = CommandExecutor.getInstance().getGmCommands();
 }
 
 function start() {
@@ -54,8 +54,8 @@ function action(mode, type, selection) {
                 selection = 0;
             }
 
-            lvComm = commands.get(selection).getLeft();
-            lvDesc = commands.get(selection).getRight();
+            lvComm = commands.get(selection).Name;
+            lvDesc = commands.get(selection).Description;
 
             var sendStr = "The following commands are available for #b" + levels[selection] + "#k:\r\n\r\n";
             for (var i = 0; i < lvComm.size(); i++) {
