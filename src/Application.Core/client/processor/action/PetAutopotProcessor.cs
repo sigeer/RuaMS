@@ -54,7 +54,7 @@ public class PetAutopotProcessor
         {
             if (toUseList == null)
             {
-                toUseList = chr.getInventory(InventoryType.USE).linkedListById(itemId);
+                toUseList = chr.getInventory(InventoryType.USE).listById(itemId);
             }
 
             toUse = null;

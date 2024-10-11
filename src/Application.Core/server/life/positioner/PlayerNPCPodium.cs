@@ -86,16 +86,7 @@ public class PlayerNPCPodium
                 log.Debug("Re-organizing pnpc map, step {Step}", newStep);
             }
 
-            List<PlayerNPC> playerNpcs = new(mmoList.Count);
-            foreach (var mmo in mmoList)
-            {
-                playerNpcs.Add((PlayerNPC)mmo);
-            }
-
-            playerNpcs.Sort((p1, p2) =>
-            {
-                return p1.getScriptId() - p2.getScriptId(); // scriptid as playernpc history
-            });
+            List<PlayerNPC> playerNpcs = mmoList.OfType<PlayerNPC>().OrderBy(x => x.getScriptId()).ToList();
 
             foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
             {

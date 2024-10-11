@@ -83,17 +83,7 @@ public class PartySearchStorage
         Dictionary<int, IPlayer> curStorage = fetchRemainingPlayers();
         curStorage.putAll(newcomers);
 
-        List<PartySearchCharacter> pscList = new(curStorage.Count);
-        foreach (IPlayer chr in curStorage.Values)
-        {
-            pscList.Add(new PartySearchCharacter(chr));
-        }
-
-        pscList.Sort((c1, c2) =>
-        {
-            int levelP1 = c1.getLevel(), levelP2 = c2.getLevel();
-            return levelP1 > levelP2 ? 1 : (levelP1 == levelP2 ? 0 : -1);
-        });
+        List<PartySearchCharacter> pscList = curStorage.Values.Select(x => new PartySearchCharacter(x)).OrderBy(x => x.getLevel()).ToList();
 
         psLock.EnterWriteLock();
         try
