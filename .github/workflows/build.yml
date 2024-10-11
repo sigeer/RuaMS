@@ -11,6 +11,7 @@ on:
       - 'src/Application.Console/Program.cs'
       - 'src/Application.Core/**'
       - 'src/Application.Utility/**'
+      - 'test/ServiceTest/**'
 
 jobs:
   build:
