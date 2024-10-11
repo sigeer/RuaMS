@@ -13,20 +13,16 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Jint" Version="4.0.2" />
-		<PackageReference Include="MediatR" Version="12.4.0" />
-		<PackageReference Include="Quartz" Version="3.9.0" />
+		<PackageReference Include="Jint" Version="4.0.3" />
+		<PackageReference Include="Quartz" Version="3.13.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-		<PackageReference Include="AutoMapper" Version="12.0.1" />
+		<PackageReference Include="AutoMapper" Version="13.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.2" />
-		<PackageReference Include="System.Text.Json" Version="8.0.4" />
+		<PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.5" />
+		<PackageReference Include="System.Text.Json" Version="8.0.5" />
 	</ItemGroup>
 
 
@@ -36,10 +32,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Serilog.Sinks.Map" Version="2.0.0" />
-		<PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
-		<PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
-		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
-		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+		<PackageReference Include="Serilog.Sinks.Async" Version="2.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -48,7 +43,6 @@
 		<PackageReference Include="DotNetty.Common" Version="0.7.6" />
 		<PackageReference Include="DotNetty.Handlers" Version="0.7.6" />
 		<PackageReference Include="DotNetty.Transport" Version="0.7.6" />
-		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
 	</ItemGroup>
 	
 </Project>

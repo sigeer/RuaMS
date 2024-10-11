@@ -19,13 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Application.Core\Application.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="config.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\..\src\Application.Console\Application.Console.csproj" />
   </ItemGroup>
 
 </Project>
