@@ -168,6 +168,12 @@ namespace ServiceTest.Infrastructure
             var d = (_engine.CallFunction("check_return_array") as object[]).OfType<Point>().ToList();
             Assert.That(d.Count, Is.EqualTo(3));
         }
+
+        [OneTimeTearDown]
+        public void Dispose()
+        {
+            _engine.Dispose();
+        }
     }
 
     public class ScriptTestCase
