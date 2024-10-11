@@ -24,6 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Skills;
 using client;
 using client.autoban;
 using client.status;

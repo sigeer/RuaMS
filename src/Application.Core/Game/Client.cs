@@ -933,6 +933,11 @@ public class Client : ChannelHandlerAdapter, IClient
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="shutdown"></param>
+    /// <param name="cashshop">从 拍卖/商城 断开连接？</param>
     private void disconnectInternal(bool shutdown, bool cashshop)
     {
         //once per Client instance
@@ -940,7 +945,6 @@ public class Client : ChannelHandlerAdapter, IClient
         {
             int messengerid = Character.getMessenger()?.getId() ?? 0;
             //int fid = OnlinedCharacter.getFamilyId();
-            BuddyList bl = Character.BuddyList;
             MessengerCharacter chrm = new MessengerCharacter(Character, 0);
 
             var guild = Character.GuildModel;
@@ -973,7 +977,7 @@ public class Client : ChannelHandlerAdapter, IClient
                                 server.setGuildMemberOnline(Character, false, Character.getClient().getChannel());
                                 Character.sendPacket(GuildPackets.showGuildInfo(Character));
                             }
-                            if (bl != null)
+                            if (Character.BuddyList.Count > 0)
                             {
                                 wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
                             }
@@ -984,7 +988,7 @@ public class Client : ChannelHandlerAdapter, IClient
                         if (!this.serverTransition)
                         {
                             // if dc inside of cash shop.
-                            if (bl != null)
+                            if (Character.BuddyList.Count > 0)
                             {
                                 wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
                             }
@@ -1465,7 +1469,10 @@ public class Client : ChannelHandlerAdapter, IClient
     public void sendPacket(Packet packet)
     {
         if (type == Type.Mock)
+        {
+            log.Debug("Packet: {Packet}", packet);
             return;
+        }
 
         Monitor.Enter(announcerLock);
         try

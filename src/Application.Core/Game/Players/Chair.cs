@@ -1,4 +1,5 @@
-﻿using Application.Core.model;
+﻿using Application.Core.Game.Skills;
+using Application.Core.model;
 using Application.Core.scripting.Event;
 using client;
 using constants.inventory;

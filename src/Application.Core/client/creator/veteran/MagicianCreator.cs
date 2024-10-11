@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Game.Skills;
 using client.inventory;
 using constants.id;
 using constants.skills;

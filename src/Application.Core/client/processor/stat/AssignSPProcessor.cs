@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Game.Skills;
 using client.autoban;
 using constants.game;
 using constants.skills;
@@ -57,6 +58,12 @@ public class AssignSPProcessor
         return true;
     }
 
+    /// <summary>
+    /// 从<paramref name="SPFrom"/>洗点加到<paramref name="SPTo"/>上
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="SPTo"></param>
+    /// <param name="SPFrom"></param>
     public static void ResetSkill(IPlayer player, int SPTo, int SPFrom)
     {
         var skillSPTo = SkillFactory.GetSkillTrust(SPTo);
@@ -78,7 +85,7 @@ public class AssignSPProcessor
             if ((curLevelSPFrom - 1) == 0)
             {
                 bool updated = false;
-                foreach (var macro in player.getMacros())
+                foreach (var macro in player.SkillMacros)
                 {
                     if (macro == null)
                     {
@@ -86,25 +93,25 @@ public class AssignSPProcessor
                     }
 
                     bool update = false;// cleaner?
-                    if (macro.getSkill1() == SPFrom)
+                    if (macro.Skill1 == SPFrom)
                     {
                         update = true;
-                        macro.setSkill1(0);
+                        macro.Skill1 = 0;
                     }
-                    if (macro.getSkill2() == SPFrom)
+                    if (macro.Skill2 == SPFrom)
                     {
                         update = true;
-                        macro.setSkill2(0);
+                        macro.Skill2  = 0;
                     }
-                    if (macro.getSkill3() == SPFrom)
+                    if (macro.Skill3 == SPFrom)
                     {
                         update = true;
-                        macro.setSkill3(0);
+                        macro.Skill3 = 0;
                     }
                     if (update)
                     {
                         updated = true;
-                        player.updateMacros(macro.getPosition(), macro);
+                        player.updateMacros(macro.Position, macro);
                     }
                 }
                 if (updated)

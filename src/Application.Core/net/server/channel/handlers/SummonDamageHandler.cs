@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Life.Monsters;
-using client;
+using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
 using client.status;

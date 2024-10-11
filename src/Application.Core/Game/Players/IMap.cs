@@ -11,8 +11,7 @@ namespace Application.Core.Game.Players
         void changeMap(int map, int portal);
         void changeMap(int map, Portal portal);
         void changeMap(int map, string portal);
-        void changeMap(IMap to);
-        void changeMap(IMap to, int portal);
+        void changeMap(IMap to, int portal = 0);
         void changeMap(IMap target, Point pos);
         void changeMap(IMap target, Portal? pto);
 

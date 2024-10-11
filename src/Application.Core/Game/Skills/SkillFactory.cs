@@ -28,7 +28,7 @@ using server;
 using server.life;
 using System.Text;
 
-namespace client;
+namespace Application.Core.Game.Skills;
 
 
 public class SkillFactory
@@ -57,12 +57,12 @@ public class SkillFactory
             if (topDirName?.Length <= 8)
             {
                 foreach (var data in datasource.getData(topDirName))
-                { 
+                {
                     // Loop thru each jobs
                     if (data.getName() == "skill")
                     {
                         foreach (Data data2 in data)
-                        { 
+                        {
                             // Loop thru each jobs
                             if (data2 != null)
                             {

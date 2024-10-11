@@ -22,6 +22,7 @@ public class BuddyList
     public int Capacity { get; set; }
     private ConcurrentDictionary<int, BuddylistEntry> buddies = new();
     private ConcurrentQueue<CharacterNameAndId> _pendingRequests = new();
+    public int Count => buddies.Count;
 
     public BuddyList(IPlayer owner, int capacity)
     {

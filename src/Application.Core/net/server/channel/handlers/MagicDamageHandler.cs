@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Skills;
 using client;
 using constants.id;
 using constants.skills;

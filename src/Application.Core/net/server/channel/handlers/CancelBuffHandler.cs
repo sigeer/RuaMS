@@ -21,7 +21,7 @@
 */
 
 
-using client;
+using Application.Core.Game.Skills;
 using constants.skills;
 using net.packet;
 using tools;

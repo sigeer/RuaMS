@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
 using constants.skills;

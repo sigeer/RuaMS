@@ -5,7 +5,7 @@
 
 
 
-using client;
+using Application.Core.Game.Skills;
 
 namespace server.events;
 

@@ -21,7 +21,7 @@
 */
 
 
-using client;
+using Application.Core.Game.Skills;
 using client.autoban;
 using net.packet;
 
