@@ -5174,11 +5174,11 @@ public class PacketCreator
             var macro = macros[i];
             if (macro != null)
             {
-                p.writeString(macro.getName());
-                p.writeByte(macro.getShout());
-                p.writeInt(macro.getSkill1());
-                p.writeInt(macro.getSkill2());
-                p.writeInt(macro.getSkill3());
+                p.writeString(macro.Name);
+                p.writeByte(macro.Shout);
+                p.writeInt(macro.Skill1);
+                p.writeInt(macro.Skill2);
+                p.writeInt(macro.Skill3);
             }
         }
         return p;

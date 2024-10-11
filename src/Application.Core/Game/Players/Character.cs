@@ -1528,12 +1528,7 @@ public partial class Player
         return false;
     }
 
-    public void pickupItem(IMapObject ob)
-    {
-        pickupItem(ob, -1);
-    }
-
-    public void pickupItem(IMapObject ob, int petIndex)
+    public void pickupItem(IMapObject ob, int petIndex = -1)
     {
         // yes, one picks the IMapObject, not the MapItem
         if (ob == null)

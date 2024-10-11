@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Skills;
 using Application.Core.model;
 using client;
 using client.autoban;

@@ -21,7 +21,7 @@
  */
 
 
-using client;
+using Application.Core.Game.Skills;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;

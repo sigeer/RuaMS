@@ -21,14 +21,14 @@
 */
 
 
-using Application.Core.Game.Skills;
+using client;
 using constants.skills;
 using server;
 using server.life;
 
-namespace client;
+namespace Application.Core.Game.Skills;
 
-public class Skill: ISkill
+public class Skill : ISkill
 {
     private int id;
     private List<StatEffect> effects = new();
@@ -40,7 +40,7 @@ public class Skill: ISkill
     public Skill(int id)
     {
         this.id = id;
-        this.job = id / 10000;
+        job = id / 10000;
         element = Element.NEUTRAL;
     }
 

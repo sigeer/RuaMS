@@ -24,6 +24,7 @@
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;

@@ -30,6 +30,8 @@ namespace client;
 
 public class MonsterBook
 {
+    public const int CardMaxCount = 5;
+
     private int specialCard = 0;
     private int normalCard = 0;
     private int bookLevel = 1;
@@ -53,24 +55,19 @@ public class MonsterBook
     {
         c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showForeignCardEffect(c.OnlinedCharacter.Id), false);
 
-        int? qty;
+        int qty;
         Monitor.Enter(lockObj);
         try
         {
-            qty = cards.get(cardid);
+            qty = cards.GetValueOrDefault(cardid);
 
-            if (qty != null)
+            if (qty < CardMaxCount)
             {
-                if (qty < 5)
-                {
-                    cards.AddOrUpdate(cardid, qty.Value + 1);
-                }
+                cards.AddOrUpdate(cardid, qty + 1);
             }
-            else
-            {
-                cards.AddOrUpdate(cardid, 1);
-                qty = 0;
 
+            if (qty == 0)
+            {
                 if (cardid / 1000 >= 2388)
                 {
                     specialCard++;
@@ -86,19 +83,20 @@ public class MonsterBook
             Monitor.Exit(lockObj);
         }
 
-        if (qty < 5)
+        if (qty < CardMaxCount)
         {
             if (qty == 0)
-            {     // leveling system only accounts unique cards
+            {
+                // leveling system only accounts unique cards
                 calculateLevel();
             }
 
-            c.sendPacket(PacketCreator.addCard(false, cardid, qty.Value + 1));
+            c.sendPacket(PacketCreator.addCard(false, cardid, qty + 1));
             c.sendPacket(PacketCreator.showGainCard());
         }
         else
         {
-            c.sendPacket(PacketCreator.addCard(true, cardid, 5));
+            c.sendPacket(PacketCreator.addCard(true, cardid, CardMaxCount));
         }
     }
 
@@ -194,7 +192,7 @@ public class MonsterBook
         Monitor.Enter(lockObj);
         try
         {
-            var dataList = dbContext.Monsterbooks.Where(x => x.Charid == charid).OrderBy(x => x.Cardid).Select(x => new { x.Cardid, x.Level });
+            var dataList = dbContext.Monsterbooks.Where(x => x.Charid == charid).OrderBy(x => x.Cardid).Select(x => new { x.Cardid, x.Level }).ToList();
             foreach (var item in dataList)
             {
                 var cardid = item.Cardid;

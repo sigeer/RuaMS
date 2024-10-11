@@ -1,6 +1,5 @@
 ﻿using Application.Core.Game.Skills;
 using Application.Core.scripting.Event;
-using client;
 using net.server;
 using server;
 using tools;
@@ -10,6 +9,9 @@ namespace Application.Core.Game.Players
     public partial class Player
     {
         public Dictionary<Skill, SkillEntry> Skills { get; set; }
+        /// <summary>
+        /// skillId - Cooldown
+        /// </summary>
         private Dictionary<int, CooldownValueHolder> coolDowns = new();
         public Dictionary<Skill, SkillEntry> getSkills()
         {

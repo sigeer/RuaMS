@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using client;
 using client.inventory;

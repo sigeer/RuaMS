@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Game.Skills;
 using client.inventory;
 
 namespace client.creator;

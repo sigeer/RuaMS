@@ -25,6 +25,7 @@ using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Skills;
 using Application.Core.scripting.Event;
 using Application.Utility;
 using client;
