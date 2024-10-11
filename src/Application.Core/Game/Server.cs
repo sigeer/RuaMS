@@ -35,7 +35,6 @@ using constants.game;
 using constants.inventory;
 using constants.net;
 using database.note;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using net.netty;
 using net.packet;

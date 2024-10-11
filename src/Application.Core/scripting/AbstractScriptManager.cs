@@ -30,7 +30,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using constants.id;
-using Microsoft.JSInterop.Implementation;
 using net.server;
 using net.server.channel;
 using server;

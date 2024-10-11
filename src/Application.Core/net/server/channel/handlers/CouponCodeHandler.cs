@@ -25,7 +25,6 @@
 
 using client.inventory;
 using client.inventory.manipulator;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
 using server;
