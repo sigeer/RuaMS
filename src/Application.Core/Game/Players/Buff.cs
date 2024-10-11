@@ -205,35 +205,30 @@ namespace Application.Core.Game.Players
 
         public void debugListAllBuffs()
         {
-            //Monitor.Enter(effLock);
-            //chLock.EnterReadLock();
-            //try
-            //{
-            //    log.debug("-------------------");
-            //    log.debug("CACHED BUFF COUNT: {}", buffEffectsCount.stream()
-            //            .map(entry->entry.Key + ": " + entry.getValue())
-            //            .collect(Collectors.joining(", "))
-            //    );
+            Monitor.Enter(effLock);
+            chLock.EnterReadLock();
+            try
+            {
+                Log.Debug("-------------------");
+                Log.Debug("CACHED BUFF COUNT: {CachedBuffCount}", string.Join(", ", buffEffectsCount
+                        .Select(entry => entry.Key + ": " + entry.Value)));
 
-            //    log.debug("-------------------");
-            //    log.debug("CACHED BUFFS: {}", buffEffects.stream()
-            //            .map(entry->entry.Key + ": (" + entry.getValue().stream()
-            //                    .map(innerEntry->innerEntry.Key.name() + innerEntry.getValue().value)
-            //                    .collect(Collectors.joining(", ")) + ")")
-            //            .collect(Collectors.joining(", "))
-            //    );
+                Log.Debug("-------------------");
+                Log.Debug("CACHED BUFFS: {CachedBuff}", string.Join(", ", buffEffects
+                        .Select(entry => entry.Key + ": (" + string.Join(", ", entry.Value
+                                .Select(innerEntry => innerEntry.Key.name() + innerEntry.Value.value)) + ")"))
+                );
 
-            //    log.debug("-------------------");
-            //    log.debug("IN ACTION: {}", effects.stream()
-            //            .map(entry->entry.Key.name() + " -> " + ItemInformationProvider.getInstance().getName(entry.getValue().effect.getSourceId()))
-            //            .collect(Collectors.joining(", "))
-            //    );
-            //}
-            //finally
-            //{
-            //    chLock.ExitReadLock();
-            //    Monitor.Exit(effLock);
-            //}
+                Log.Debug("-------------------");
+                Log.Debug("IN ACTION: {InAction}", string.Join(", ", effects
+                        .Select(entry => entry.Key.name() + " -> " + ItemInformationProvider.getInstance().getName(entry.Value.effect.getSourceId())))
+                );
+            }
+            finally
+            {
+                chLock.ExitReadLock();
+                Monitor.Exit(effLock);
+            }
         }
 
         public void debugListAllBuffsCount()
@@ -243,7 +238,7 @@ namespace Application.Core.Game.Players
             try
             {
                 Log.Debug("ALL BUFFS COUNT: {Buffs}", string.Join(", ", buffEffectsCount.Select(entry => entry.Key.name() + " -> " + entry.Value))
-                ); ;
+                );
             }
             finally
             {
