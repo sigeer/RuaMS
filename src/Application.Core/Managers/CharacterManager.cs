@@ -20,6 +20,7 @@ using server.events;
 using server.life;
 using server.maps;
 using server.quest;
+using System.Text;
 using System.Text.RegularExpressions;
 using tools;
 
@@ -44,10 +45,17 @@ namespace Application.Core.Managers
             "negro", "fuk", "fuc", "penis", "pussy", "asshole", "gay", "nigger", "homo", "suck", "cum", "shit", "shitty", "condom", "security", "official", "rape", "nigga",
             "sex", "tit", "boner", "orgy", "clit", "asshole", "fatass", "bitch", "support", "gamemaster", "cock", "gaay", "gm", "operate", "master",
             "sysop", "party", "GameMaster", "community", "message", "event", "test", "meso", "Scania", "yata", "AsiaSoft", "henesys"};
+
+        [GeneratedRegex("^[a-zA-Z0-9\\u4e00-\\u9fa5]+$")]
+        private static partial Regex CheckNameReg();
         public static bool CheckCharacterName(string name)
         {
             // 禁用名
             if (BLOCKED_NAMES.Any(x => x.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                return false;
+
+            var bLength = Encoding.UTF8.GetBytes(name).Length;
+            if (bLength < 3 || bLength > 12)
                 return false;
 
             if (!CheckNameReg().IsMatch(name))
@@ -1254,7 +1262,6 @@ namespace Application.Core.Managers
             player.GuildRank = 5;
         }
 
-        [GeneratedRegex("[a-zA-Z0-9]{3,12}")]
-        private static partial Regex CheckNameReg();
+
     }
 }

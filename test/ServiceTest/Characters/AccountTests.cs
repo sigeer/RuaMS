@@ -23,6 +23,30 @@ namespace ServiceTest.Characters
                 Assert.That(CharacterManager.DeleteCharacterFromDB(newChar.getId()));
         }
 
+
+        [TestCase("   ", ExpectedResult = false)]
+        [TestCase("1   2", ExpectedResult = false)]
+        [TestCase("12", ExpectedResult = false)]
+        [TestCase("12??", ExpectedResult = false)]
+        [TestCase("1234567", ExpectedResult = true)]
+        [TestCase("1234567??", ExpectedResult = false)]
+        [TestCase("12345671234567", ExpectedResult = false)]
+        [TestCase("qw", ExpectedResult = false)]
+        [TestCase("qwertyu", ExpectedResult = true)]
+        [TestCase("qwertyuqwertyu", ExpectedResult = false)]
+        [TestCase("张三", ExpectedResult = true)]
+        [TestCase("张三李四", ExpectedResult = true)]
+        [TestCase("张三李四1", ExpectedResult = false)]
+        [TestCase("张三李四王五", ExpectedResult = false)]
+        [TestCase("张三李4", ExpectedResult = true)]
+        [TestCase("张三李45", ExpectedResult = true)]
+        [TestCase("😄😄", ExpectedResult = false)]
+        [Test]
+        public bool CheckCharacterName_Test(string name)
+        {
+            return CharacterManager.CheckCharacterName(name);
+        }
+
         //[Test]
         //public void CharacterGMCheck_Test()
         //{
