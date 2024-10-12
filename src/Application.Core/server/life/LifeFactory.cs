@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.constants.game;
 using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters;
 using Application.Core.model;
 using provider;
 using provider.wz;
@@ -87,7 +88,7 @@ public class LifeFactory
         }
     }
 
-    private static KeyValuePair<MonsterStats, List<MobAttackInfoHolder>>? getMonsterStats(int mid)
+    private static MonsterCore? getMonsterStats(int mid)
     {
         var monsterData = data.getData(StringUtil.getLeftPaddedStr(mid + ".img", '0', 11));
         if (monsterData == null)
@@ -109,7 +110,7 @@ public class LifeFactory
             }
 
             // thanks resinate for noticing non-propagable infos such as revives getting retrieved
-            attackInfos.AddRange(linkStats.Value.Value);
+            attackInfos.AddRange(linkStats.AttackInfo);
         }
 
         stats.setHp(DataTool.getIntConvert("maxHP", monsterInfoData));
@@ -276,9 +277,12 @@ public class LifeFactory
             var stats = monsterStats.GetValueOrDefault(mid);
             if (stats == null)
             {
-                var mobStats = getMonsterStats(mid).GetValueOrDefault();
-                stats = mobStats.Key;
-                setMonsterAttackInfo(mid, mobStats.Value);
+                var mobStats = getMonsterStats(mid);
+                if (mobStats == null)
+                    return null;
+
+                stats = mobStats.Stats;
+                setMonsterAttackInfo(mid, mobStats.AttackInfo);
 
                 monsterStats.AddOrUpdate(mid, stats);
             }

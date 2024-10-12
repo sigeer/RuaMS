@@ -32,7 +32,7 @@ namespace server.life;
 
 public class MonsterInformationProvider
 {
-    private static ILogger log = LogFactory.GetLogger("MonsterInformationProvider");
+    private ILogger log = LogFactory.GetLogger("MonsterInformationProvider");
     // Author : LightPepsi
 
     private static MonsterInformationProvider instance = new MonsterInformationProvider();
