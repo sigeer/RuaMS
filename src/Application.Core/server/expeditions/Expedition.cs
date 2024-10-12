@@ -40,7 +40,7 @@ namespace server.expeditions;
  */
 public class Expedition
 {
-    private static ILogger _log = LogFactory.GetLogger(LogType.Expedition);
+    private ILogger _log = LogFactory.GetLogger(LogType.Expedition);
 
     private static int[] EXPEDITION_BOSSES = {
             MobId.ZAKUM_1,
@@ -182,7 +182,7 @@ public class Expedition
     {
         long duration = DateTimeOffset.Now.ToUnixTimeMilliseconds() - then;
         var d = TimeSpan.FromMilliseconds(duration);
-        return d.Milliseconds + " Minutes and " + d.Seconds + " Seconds";
+        return d.Minutes + " Minutes and " + d.Seconds + " Seconds";
     }
 
     public void finishRegistration()
@@ -291,9 +291,9 @@ public class Expedition
         return false;
     }
 
-    public void ban(KeyValuePair<int, string> chr)
+    public void ban(CharacterIdNamePair chr)
     {
-        int cid = chr.Key;
+        int cid = chr.Id;
         if (!banned.Contains(cid))
         {
             banned.Add(cid);
@@ -301,7 +301,7 @@ public class Expedition
 
             if (!silent)
             {
-                broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Value + " has been banned from the expedition."));
+                broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
             }
 
             var player = startMap.getWorldServer().getPlayerStorage().getCharacterById(cid);
