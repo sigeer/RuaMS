@@ -220,40 +220,7 @@ public class Inventory : IEnumerable<Item>
 
     public List<Item> listById(int itemId)
     {
-        List<Item> ret = new();
-        foreach (Item item in list())
-        {
-            if (item.getItemId() == itemId)
-            {
-                ret.Add(item);
-            }
-        }
-
-        if (ret.Count > 1)
-        {
-            ret.Sort((i1, i2) => i1.getPosition() - i2.getPosition());
-        }
-
-        return ret;
-    }
-
-    public List<Item> linkedListById(int itemId)
-    {
-        List<Item> ret = new();
-        foreach (Item item in list())
-        {
-            if (item.getItemId() == itemId)
-            {
-                ret.Add(item);
-            }
-        }
-
-        if (ret.Count > 1)
-        {
-            ret.Sort((i1, i2) => i1.getPosition() - i2.getPosition());
-        }
-
-        return ret;
+        return list().Where(x => x.getItemId() == itemId).OrderBy(x => x.getPosition()).ToList();
     }
 
     public short addItem(Item item)

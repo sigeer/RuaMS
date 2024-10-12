@@ -494,16 +494,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
     private List<KeyValuePair<long, PlayerBuffValueHolder>> getLocalStartTimes(List<PlayerBuffValueHolder> lpbvl)
     {
-        List<KeyValuePair<long, PlayerBuffValueHolder>> timedBuffs = new();
         long curtime = currentServerTime();
-
-        foreach (PlayerBuffValueHolder pb in lpbvl)
-        {
-            timedBuffs.Add(new(curtime - pb.usedTime, pb));
-        }
-
-        timedBuffs.Sort((p1, p2) => p1.Key.CompareTo(p2.Key));
-
-        return timedBuffs;
+        return lpbvl.Select(x => new KeyValuePair<long, PlayerBuffValueHolder>(curtime - x.usedTime, x)).OrderBy(x => x.Key).ToList();
     }
 }
