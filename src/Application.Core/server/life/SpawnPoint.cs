@@ -84,7 +84,7 @@ public class SpawnPoint
 
     public Monster getMonster()
     {
-        Monster mob = new Monster(LifeFactory.getMonster(monster));
+        var mob = LifeFactory.GetMonsterTrust(monster);
         mob.setPosition(pos);
         mob.setTeam(team);
         mob.setFh(fh);

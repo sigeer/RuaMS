@@ -12,27 +12,27 @@ public class SpawnCommand : CommandBase
     public override void Execute(IClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        if (paramsValue.Length < 1)
+        if (paramsValue.Length < 1 || paramsValue.Length > 2)
         {
             player.yellowMessage("Syntax: !spawn <mobid> [<mobqty>]");
             return;
         }
 
-        var monster = LifeFactory.getMonster(int.Parse(paramsValue[0]));
-        if (monster == null)
+        if (!int.TryParse(paramsValue[0], out var mobId))
+        {
+            player.yellowMessage("Syntax: <mobid> invalid");
+            return;
+        }
+
+        int monsterCount = paramsValue.Length != 2 ? 1 : (int.TryParse(paramsValue[1], out var d) ? d : 1);
+        if (monsterCount < 1)
         {
             return;
         }
-        if (paramsValue.Length == 2)
+
+        for (int i = 0; i < monsterCount; i++)
         {
-            for (int i = 0; i < int.Parse(paramsValue[1]); i++)
-            {
-                player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition());
-            }
-        }
-        else
-        {
-            player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition());
+            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(mobId), player.getPosition());
         }
     }
 }
