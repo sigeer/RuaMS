@@ -3557,12 +3557,18 @@ public class MapleMap : IMap
 
     public void setMapPointBoundings(int px, int py, int h, int w)
     {
-        mapArea.setBounds(px, py, w, h);
+        mapArea.X = px;
+        mapArea.Y = py;
+        mapArea.Width = w;
+        mapArea.Height = h;
     }
 
     public void setMapLineBoundings(int vrTop, int vrBottom, int vrLeft, int vrRight)
     {
-        mapArea.setBounds(vrLeft, vrTop, vrRight - vrLeft, vrBottom - vrTop);
+        mapArea.X = vrLeft;
+        mapArea.Y = vrTop;
+        mapArea.Width = vrRight - vrLeft;
+        mapArea.Height = vrBottom - vrTop;
     }
 
     public MonsterAggroCoordinator getAggroCoordinator()
