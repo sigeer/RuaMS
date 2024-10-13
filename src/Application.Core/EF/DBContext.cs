@@ -1538,8 +1538,8 @@ public partial class DBContext : DbContext
 
         modelBuilder.Entity<Monsterbook>(entity =>
         {
+            entity.HasKey(e => new { e.Cardid, e.Charid });
             entity
-                .HasNoKey()
                 .ToTable("monsterbook");
 
             entity.Property(e => e.Cardid)
