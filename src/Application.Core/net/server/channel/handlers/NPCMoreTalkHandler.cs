@@ -43,8 +43,8 @@ public class NPCMoreTalkHandler : AbstractPacketHandler
                 string returnText = p.readString();
                 if (c.getQM() != null)
                 {
-                    c.getQM().setGetText(returnText);
-                    if (c.getQM().isStart())
+                    c.getQM()!.setGetText(returnText);
+                    if (c.getQM()!.isStart())
                     {
                         QuestScriptManager.getInstance().start(c, action, lastMsg, -1);
                     }
@@ -55,17 +55,17 @@ public class NPCMoreTalkHandler : AbstractPacketHandler
                 }
                 else
                 {
-                    c.getCM().setGetText(returnText);
+                    c.getCM()!.setGetText(returnText);
                     NPCScriptManager.getInstance().action(c, action, lastMsg, -1);
                 }
             }
             else if (c.getQM() != null)
             {
-                c.getQM().dispose();
+                c.getQM()!.dispose();
             }
             else
             {
-                c.getCM().dispose();
+                c.getCM()!.dispose();
             }
         }
         else

@@ -138,9 +138,9 @@ public class Mount : IMount
 
     public void empty()
     {
-        if (owner != null)
+        if (owner != null && owner.IsOnlined)
         {
-            owner.getClient().getWorldServer().unregisterMountHunger(owner);
+            owner.Client.getWorldServer().unregisterMountHunger(owner);
         }
     }
 }

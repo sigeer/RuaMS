@@ -7,6 +7,8 @@ namespace Application.Core.Tools
         public const string CacheDir = "cache";
         private static string GetPath(string key)
         {
+            if (!Directory.Exists(CacheDir))
+                Directory.CreateDirectory(CacheDir);
             return Path.Combine(CacheDir, $"x_{key}.x");
         }
         public static void Save<TModel>(string key, TModel obj)
