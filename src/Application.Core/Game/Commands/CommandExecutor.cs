@@ -106,7 +106,7 @@ public class CommandExecutor
         }
 
         command.Execute(client, paramsValue);
-        log.Information("Chr {CharacterName} used command {Command}", client.OnlinedCharacter.getName(), command.GetType().Name);
+        log.Information("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }
 }
 
