@@ -17,6 +17,11 @@ public class PacketDecoder : ReplayingDecoder<DecodingState>
 
     protected override void Decode(IChannelHandlerContext context, IByteBuffer inValue, List<object> outs)
     {
+        if (inValue.ReadableBytes < 4)
+        {
+            RequestReplay();
+            return;
+        }
         int header = inValue.ReadInt();
 
         if (!receiveCypher.CheckPacketHeader(header))

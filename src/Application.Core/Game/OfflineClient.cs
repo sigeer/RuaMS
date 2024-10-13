@@ -212,7 +212,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public NPCConversationManager getCM()
+        public NPCConversationManager? getCM()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -277,7 +277,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public QuestActionManager getQM()
+        public QuestActionManager? getQM()
         {
             throw new BusinessCharacterOfflineException();
         }

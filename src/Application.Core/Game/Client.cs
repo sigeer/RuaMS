@@ -1206,14 +1206,14 @@ public class Client : ChannelHandlerAdapter, IClient
         _engines.Remove(name);
     }
 
-    public NPCConversationManager getCM()
+    public NPCConversationManager? getCM()
     {
-        return NPCScriptManager.getInstance().getCM(this) ?? throw new BusinessFatalException();
+        return NPCScriptManager.getInstance().getCM(this);
     }
 
-    public QuestActionManager getQM()
+    public QuestActionManager? getQM()
     {
-        return QuestScriptManager.getInstance().getQM(this) ?? throw new BusinessFatalException();
+        return QuestScriptManager.getInstance().getQM(this);
     }
 
     public bool acceptToS()

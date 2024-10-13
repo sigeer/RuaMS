@@ -85,7 +85,7 @@ namespace Application.Core.Game
         IWorldChannel getChannelServer();
         IWorldChannel getChannelServer(byte channel);
         short getCharacterSlots();
-        NPCConversationManager getCM();
+        NPCConversationManager? getCM();
         EventManager getEventManager(string evt);
         sbyte getGender();
         int getGMLevel();
@@ -98,7 +98,7 @@ namespace Application.Core.Game
         string getPic();
         string getPin();
         IPlayer? getPlayer();
-        QuestActionManager getQM();
+        QuestActionManager? getQM();
         string getRemoteAddress();
         IEngine? getScriptEngine(string name);
         long getSessionId();

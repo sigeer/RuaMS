@@ -48,11 +48,11 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
 
             if (message == ("cpq1"))
             {
-                ldr.getClient().getCM().startCPQ(chr, ldr.getMapId() + 1);
+                ldr.getClient().getCM()?.startCPQ(chr, ldr.getMapId() + 1);
             }
             else
             {
-                ldr.getClient().getCM().startCPQ2(chr, ldr.getMapId() + 1);
+                ldr.getClient().getCM()?.startCPQ2(chr, ldr.getMapId() + 1);
             }
 
             ldr.getParty().setEnemy(chr.getParty());
