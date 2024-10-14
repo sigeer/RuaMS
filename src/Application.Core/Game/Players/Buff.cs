@@ -144,15 +144,7 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                List<BuffStatValueHolder> ret = new();
-                foreach (Dictionary<BuffStat, BuffStatValueHolder> bel in buffEffects.Values)
-                {
-                    foreach (BuffStatValueHolder mbsvh in bel.Values)
-                    {
-                        ret.Add(mbsvh);
-                    }
-                }
-                return ret;
+                return buffEffects.Values.SelectMany(x => x.Values).ToList();
             }
             finally
             {
@@ -162,7 +154,8 @@ namespace Application.Core.Game.Players
         }
 
         public List<PlayerBuffValueHolder> getAllBuffs()
-        {  // buff values will be stored in an arbitrary order
+        {
+            // buff values will be stored in an arbitrary order
             Monitor.Enter(effLock);
             chLock.EnterReadLock();
             try

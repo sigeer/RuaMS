@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Packets;
 using client;
 using provider;
 using tools;
@@ -49,6 +50,6 @@ public class NextQuestAction : AbstractQuestAction
     public override void run(IPlayer chr, int? extSelection)
     {
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
-        chr.sendPacket(PacketCreator.updateQuestFinish((short)questID, status.getNpc(), (short)nextQuest));
+        chr.sendPacket(QuestPacket.UpdateQuestFinish((short)questID, status.getNpc(), (short)nextQuest));
     }
 }

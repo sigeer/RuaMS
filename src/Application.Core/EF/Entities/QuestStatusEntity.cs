@@ -1,12 +1,12 @@
 ﻿namespace Application.EF.Entities;
 
-public partial class Queststatus
+public partial class QuestStatusEntity
 {
-    private Queststatus()
+    private QuestStatusEntity()
     {
     }
 
-    public Queststatus(int characterid, int quest, int status, int time, long expires, int forfeited, int completed)
+    public QuestStatusEntity(int characterid, int quest, int status, int time, long expires, int forfeited, int completed)
     {
         Characterid = characterid;
         Quest = quest;

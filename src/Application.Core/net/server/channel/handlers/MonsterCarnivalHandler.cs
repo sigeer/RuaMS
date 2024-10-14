@@ -52,14 +52,14 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                         var map = (c.OnlinedCharacter.getMap() as ICPQMap)!;
 
                         var mobs = map.getMobsToSpawn();
-                        if (num >= mobs.Count || c.OnlinedCharacter.getCP() < mobs.get(num).Value)
+                        if (num >= mobs.Count || c.OnlinedCharacter.getCP() < mobs[num].Value)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        var mob = LifeFactory.GetMonsterTrust(mobs.get(num).Key);
+                        var mob = LifeFactory.GetMonsterTrust(mobs[num].Key);
                         var mcpq = c.OnlinedCharacter.getMonsterCarnival();
                         if (mcpq != null)
                         {

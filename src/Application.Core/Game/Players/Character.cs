@@ -1725,12 +1725,7 @@ public partial class Player
         return Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
     }
 
-    public bool canHold(int itemid)
-    {
-        return canHold(itemid, 1);
-    }
-
-    public bool canHold(int itemid, int quantity)
+    public bool canHold(int itemid, int quantity = 1)
     {
         return Client.getAbstractPlayerInteraction().canHold(itemid, quantity);
     }

@@ -258,6 +258,27 @@ namespace Application.Core.Managers
             dbContext.Queststatuses.Where(x => x.Characterid == cid).ExecuteDelete();
         }
 
+        public static void SavePlayerQuestInfo(DBContext dbContext, IPlayer player)
+        {
+            foreach (var qs in player.getQuests())
+            {
+                var questStatus = new QuestStatusEntity(player.Id, qs.getQuestID(), (int)qs.getStatus(), (int)(qs.getCompletionTime() / 1000), qs.getExpirationTime(),
+                   qs.getForfeited(), qs.getCompleted());
+                dbContext.Queststatuses.Add(questStatus);
+                dbContext.SaveChanges();
+
+                foreach (int mob in qs.getProgress().Keys)
+                {
+                    dbContext.Questprogresses.Add(new Questprogress(player.Id, questStatus.Queststatusid, mob, qs.getProgress(mob)));
+                }
+                foreach (var item in qs.getMedalMaps())
+                {
+                    dbContext.Medalmaps.Add(new Medalmap(player.Id, questStatus.Queststatusid, item));
+                }
+            }
+            dbContext.SaveChanges();
+        }
+
 
         public static IPlayer NewPlayer(int world, int accountId)
         {
@@ -282,6 +303,7 @@ namespace Application.Core.Managers
         {
             using var dbContext = new DBContext();
 
+            // IP的正则？
             if (Regex.IsMatch(id, "/[0-9]{1,3}\\..*"))
             {
                 dbContext.Ipbans.Add(new Ipban { Ip = id });
@@ -1160,7 +1182,7 @@ namespace Application.Core.Managers
                     dbContext.Trocklocations.Where(x => x.Characterid == player.getId()).ExecuteDelete();
                     for (int i = 0; i < player.getTrockSize(); i++)
                     {
-                        if (player.TrockMaps[i] != 999999999)
+                        if (player.TrockMaps[i] != MapId.NONE)
                         {
                             dbContext.Trocklocations.Add(new Trocklocation(player.getId(), player.TrockMaps[i], 0));
                         }
@@ -1193,26 +1215,9 @@ namespace Application.Core.Managers
                     dbContext.Eventstats.AddRange(player.Events.Select(x => new Eventstat(player.getId(), x.Key, x.Value.getInfo())));
                     dbContext.SaveChanges();
 
-                    CharacterManager.deleteQuestProgressWhereCharacterId(dbContext, player.Id);
+                    deleteQuestProgressWhereCharacterId(dbContext, player.Id);
 
-
-                    foreach (var qs in player.getQuests())
-                    {
-                        var questStatus = new Queststatus(player.getId(), qs.getQuest().getId(), (int)qs.getStatus(), (int)(qs.getCompletionTime() / 1000), qs.getExpirationTime(),
-                           qs.getForfeited(), qs.getCompleted());
-                        dbContext.Queststatuses.Add(questStatus);
-                        dbContext.SaveChanges();
-
-                        foreach (int mob in qs.getProgress().Keys)
-                        {
-                            dbContext.Questprogresses.Add(new Questprogress(player.getId(), questStatus.Queststatusid, mob, qs.getProgress(mob)));
-                        }
-                        foreach (var item in qs.getMedalMaps())
-                        {
-                            dbContext.Medalmaps.Add(new Medalmap(player.getId(), questStatus.Queststatusid, item));
-                        }
-                    }
-                    dbContext.SaveChanges();
+                    SavePlayerQuestInfo(dbContext, player);
 
                     var familyEntry = player.getFamilyEntry(); //save family rep
                     if (familyEntry != null)

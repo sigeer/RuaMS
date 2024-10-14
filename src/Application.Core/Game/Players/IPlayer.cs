@@ -133,8 +133,7 @@ namespace Application.Core.Game.Players
         bool canDoor();
         bool canGainSlots(int type, int slots);
         FameStatus canGiveFame(IPlayer from);
-        bool canHold(int itemid);
-        bool canHold(int itemid, int quantity);
+        bool canHold(int itemid, int quantity = 1);
         bool canHoldMeso(int gain);
         bool canHoldUniques(List<int> itemids);
         bool cannotEnterCashShop();

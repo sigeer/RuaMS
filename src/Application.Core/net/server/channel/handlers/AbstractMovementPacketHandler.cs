@@ -158,7 +158,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
     protected void updatePosition(InPacket p, IAnimatedMapObject target, int yOffset)
     {
 
-        byte numCommands = p.readByte();
+        var numCommands = p.ReadSByte();
         if (numCommands < 1)
         {
             throw new EmptyMovementException(p);

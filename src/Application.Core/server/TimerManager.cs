@@ -135,30 +135,6 @@ public class TimerManager
         return schedule(TempRunnable.Parse(r), time - DateTimeOffset.Now);
     }
 
-    public long getActiveCount()
-    {
-        throw new NotImplementedException();
-        //return ses.getActiveCount();
-    }
-
-    public long getCompletedTaskCount()
-    {
-        throw new NotImplementedException();
-        //return ses.getCompletedTaskCount();
-    }
-
-    public int getQueuedTasks()
-    {
-        throw new NotImplementedException();
-        //return ses.getQueue().toArray().length;
-    }
-
-    public long getTaskCount()
-    {
-        throw new NotImplementedException();
-        //return _scheduler.GetCurrentlyExecutingJobs().Result.Count;
-    }
-
     public bool isShutdown()
     {
         return _scheduler.IsShutdown;

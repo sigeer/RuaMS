@@ -27,6 +27,7 @@ using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
+using Application.Core.Game.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
@@ -216,7 +217,7 @@ public class PacketCreator
         p.writeInt(chr.getMeso());
         addInventoryInfo(p, chr);
         addSkillInfo(p, chr);
-        addQuestInfo(p, chr);
+        QuestPacket.AddQuestInfo(p, chr);
         addMiniGameInfo(p, chr);
         addRingInfo(p, chr);
         addTeleportInfo(p, chr);
@@ -355,52 +356,12 @@ public class PacketCreator
         p.writeInt(chr.getJobRankMove()); // move (negative is downwards)
     }
 
-    private static void addQuestInfo(OutPacket p, IPlayer chr)
-    {
-        List<QuestStatus> started = chr.getStartedQuests();
-        int startedSize = 0;
-        foreach (QuestStatus qs in started)
-        {
-            if (qs.getInfoNumber() > 0)
-            {
-                startedSize++;
-            }
-            startedSize++;
-        }
-        p.writeShort(startedSize);
-        foreach (QuestStatus qs in started)
-        {
-            p.writeShort(qs.getQuest().getId());
-            p.writeString(qs.getProgressData());
-
-            short infoNumber = qs.getInfoNumber();
-            if (infoNumber > 0)
-            {
-                QuestStatus iqs = chr.getQuest(infoNumber);
-                p.writeShort(infoNumber);
-                p.writeString(iqs.getProgressData());
-            }
-        }
-        List<QuestStatus> completed = chr.getCompletedQuests();
-        p.writeShort(completed.Count);
-        foreach (QuestStatus qs in completed)
-        {
-            p.writeShort(qs.getQuest().getId());
-            p.writeLong(getTime(qs.getCompletionTime()));
-        }
-    }
-
     private static void addExpirationTime(OutPacket p, long time)
     {
         p.writeLong(getTime(time)); // offset expiration time issue found thanks to Thora
     }
 
-    private static void addItemInfo(OutPacket p, Item item)
-    {
-        addItemInfo(p, item, false);
-    }
-
-    protected static void addItemInfo(OutPacket p, Item item, bool zeroPosition)
+    protected static void addItemInfo(OutPacket p, Item item, bool zeroPosition = false)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         bool isCash = ii.isCash(item.getItemId());
@@ -3098,17 +3059,8 @@ public class PacketCreator
         {
             p.writeInt(0);
         }
-        List<short> medalQuests = new();
-        List<QuestStatus> completed = chr.getCompletedQuests();
-        foreach (QuestStatus qs in completed)
-        {
-            if (qs.getQuest().getId() >= 29000)
-            { // && q.getQuest().getId() <= 29923
-                medalQuests.Add(qs.getQuest().getId());
-            }
-        }
 
-        medalQuests.Sort();
+        var medalQuests = chr.getCompletedQuests().Where(x => x.getQuestID() >= 29000).Select(x => x.getQuestID()).OrderBy(x => x).ToList();
         p.writeShort(medalQuests.Count);
         foreach (short s in medalQuests)
         {
@@ -3185,93 +3137,6 @@ public class PacketCreator
          }
          p.writeShort(0);
          p.writeByte(0);*/
-
-    /**
-     * @param c
-     * @param quest
-     * @return
-     */
-    public static Packet forfeitQuest(short quest)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
-        p.writeByte(1);
-        p.writeShort(quest);
-        p.writeByte(0);
-        return p;
-    }
-
-    /**
-     * @param c
-     * @param quest
-     * @return
-     */
-    public static Packet completeQuest(short quest, long time)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
-        p.writeByte(1);
-        p.writeShort(quest);
-        p.writeByte(2);
-        p.writeLong(getTime(time));
-        return p;
-    }
-
-    /**
-     * @param c
-     * @param quest
-     * @param npc
-     * @param progress
-     * @return
-     */
-
-    public static Packet updateQuestInfo(short quest, int npc)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO);
-        p.writeByte(8); //0x0A in v95
-        p.writeShort(quest);
-        p.writeInt(npc);
-        p.writeInt(0);
-        return p;
-    }
-
-    public static Packet addQuestTimeLimit(short quest, int time)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO);
-        p.writeByte(6);
-        p.writeShort(1);//Size but meh, when will there be 2 at the same time? And it won't even replace the old one :)
-        p.writeShort(quest);
-        p.writeInt(time);
-        return p;
-    }
-
-    public static Packet removeQuestTimeLimit(short quest)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO);
-        p.writeByte(7);
-        p.writeShort(1);//Position
-        p.writeShort(quest);
-        return p;
-    }
-
-    public static Packet updateQuest(IPlayer chr, QuestStatus qs, bool infoUpdate)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
-        p.writeByte(1);
-        if (infoUpdate)
-        {
-            QuestStatus iqs = chr.getQuest(qs.getInfoNumber());
-            p.writeShort(iqs.getQuestID());
-            p.writeByte(1);
-            p.writeString(iqs.getProgressData());
-        }
-        else
-        {
-            p.writeShort(qs.getQuest().getId());
-            p.writeByte((int)qs.getStatus());
-            p.writeString(qs.getProgressData());
-        }
-        p.skip(5);
-        return p;
-    }
 
     private static void writeLongMaskD(OutPacket p, List<KeyValuePair<Disease, int>> statups)
     {
@@ -6930,19 +6795,32 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Sends a UI utility. 0x01 - Equipment Inventory. 0x02 - Stat Window. 0x03
-     * - Skill Window. 0x05 - Keyboard Settings. 0x06 - Quest window. 0x09 -
-     * Monsterbook Window. 0x0A - Char Info 0x0B - Guild BBS 0x12 - NewMonster
-     * Carnival Window 0x16 - Party Search. 0x17 - Item Creation Window. 0x1A -
-     * My Ranking O.O 0x1B - Family Window 0x1C - Family Pedigree 0x1D - GM
-     * Story Board /funny shet 0x1E - Envelop saying you got mail from an admin.
-     * lmfao 0x1F - Medal Window 0x20 - Maple Event (???) 0x21 - Invalid Pointer
-     * Crash
-     *
-     * @param ui
-     * @return
-     */
+
+    /// <summary>
+    /// Sends a UI utility.
+    /// </summary>
+    /// <param name="ui">
+    /// <para>0x01 - Equipment Inventory</para>
+    /// <para>0x02 - Stat Window.</para>
+    /// <para>0x03 - Skill Window.</para>
+    /// <para>0x05 - Keyboard Settings.</para>
+    /// <para>0x06 - Quest window.</para>
+    /// <para>0x09 - Monsterbook Window.</para>
+    /// <para>0x0A - Char Info</para>
+    /// <para>0x0B - Guild BBS</para>
+    /// <para>0x12 - NewMonster Carnival Window</para>
+    /// <para>0x16 - Party Search.</para>
+    /// <para>0x17 - Item Creation Window.</para>
+    /// <para>0x1A - My Ranking O.O</para>
+    /// <para>0x1B - Family Window</para>
+    /// <para>0x1C - Family Pedigree</para>
+    /// <para>0x1D - GM Story Board /funny shet</para>
+    /// <para>0x1E - Envelop saying you got mail from an admin.</para>
+    /// <para>0x1F - Medal Window</para>
+    /// <para>0x20 - Maple Event (???)</para>
+    /// <para>0x21 - Invalid Pointer Crash</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet openUI(byte ui)
     {
         OutPacket p = OutPacket.create(SendOpcode.OPEN_UI);
@@ -7054,16 +6932,26 @@ public class PacketCreator
         return showSpecialEffect(15);
     }
 
-    /**
-     * 0 = Levelup 6 = Exp did not drop (Safety Charms) 7 = Enter portal sound
-     * 8 = Job change 9 = Quest complete 10 = Recovery 11 = Buff effect
-     * 14 = NewMonster book pickup 15 = Equipment levelup 16 = Maker Skill Success
-     * 17 = Buff effect w/ sfx 19 = Exp card [500, 200, 50] 21 = Wheel of destiny
-     * 26 = Spirit Stone
-     *
-     * @param effect
-     * @return
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="effect">
+    /// <para>0 = Levelup</para>
+    /// <para>6 = Exp did not drop (Safety Charms)</para>
+    /// <para>7 = Enter portal sound</para>
+    /// <para>8 = Job change</para>
+    /// <para>9 = Quest complete</para>
+    /// <para>10 = Recovery</para>
+    /// <para>11 = Buff effect</para>
+    /// <para>14 = NewMonster book pickup</para>
+    /// <para>15 = Equipment levelup</para>
+    /// <para>16 = Maker Skill Success</para>
+    /// <para>17 = Buff effect w/ sfx</para>
+    /// <para>19 = Exp card [500, 200, 50]</para>
+    /// <para>21 = Wheel of destiny</para>
+    /// <para>26 = Spirit Stone</para>
+    /// </param>
+    /// <returns></returns>
     public static Packet showSpecialEffect(int effect)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
@@ -7126,44 +7014,11 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateQuestFinish(short quest, int npc, short nextquest)
-    { //Check
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO); //0xF2 in v95
-        p.writeByte(8);//0x0A in v95
-        p.writeShort(quest);
-        p.writeInt(npc);
-        p.writeShort(nextquest);
-        return p;
-    }
-
     public static Packet showInfoText(string text)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
         p.writeByte(9);
         p.writeString(text);
-        return p;
-    }
-
-    public static Packet questError(short quest)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO);
-        p.writeByte(0x0A);
-        p.writeShort(quest);
-        return p;
-    }
-
-    public static Packet questFailure(byte type)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO);
-        p.writeByte(type);//0x0B = No meso, 0x0D = Worn by character, 0x0E = Not having the item ?
-        return p;
-    }
-
-    public static Packet questExpire(short quest)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO);
-        p.writeByte(0x0F);
-        p.writeShort(quest);
         return p;
     }
 
