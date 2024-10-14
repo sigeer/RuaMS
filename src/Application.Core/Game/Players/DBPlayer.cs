@@ -324,7 +324,7 @@ namespace Application.Core.Game.Players
                     dbContext.Savedlocations.AddRange(
                         Enum.GetValues<SavedLocationType>()
                         .Where(x => SavedLocations[(int)x] != null)
-                        .Select(x => new Savedlocation(SavedLocations[(int)x]!.getMapId(), SavedLocations[(int)x]!.getPortal()))
+                        .Select(x => new SavedLocationEntity(Id, SavedLocations[(int)x]!, x))
                         );
                     dbContext.SaveChanges();
 

@@ -939,7 +939,7 @@ public class StatEffect
         return applyTo(chr, chr, true, null, useMaxRange, 1);
     }
 
-    public bool applyTo(IPlayer chr, Point pos)
+    public bool applyTo(IPlayer chr, Point? pos)
     {
         return applyTo(chr, chr, true, pos, false, 1);
     }

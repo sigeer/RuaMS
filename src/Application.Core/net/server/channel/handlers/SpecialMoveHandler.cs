@@ -143,7 +143,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
             {
                 if (skill.getId() % 10000000 != 1005)
                 {
-                    skill.getEffect(skillLevel).applyTo(chr, pos.Value);
+                    skill.getEffect(skillLevel).applyTo(chr, pos);
                 }
                 else
                 {
@@ -159,7 +159,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
                         if (chr.canDoor())
                         {
                             chr.cancelMagicDoor();
-                            skill.getEffect(skillLevel).applyTo(chr, pos.Value);
+                            skill.getEffect(skillLevel).applyTo(chr, pos);
                         }
                         else
                         {
