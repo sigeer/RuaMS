@@ -44,6 +44,9 @@ public enum QuestActionType
     PETTAMENESS = 14, 
     PETSPEED = 15, 
     INFO = 16, 
+    /// <summary>
+    /// 原版这里也是16，但是C#不支持，标记观察
+    /// </summary>
     ZERO = 17
 }
 
