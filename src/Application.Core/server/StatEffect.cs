@@ -1457,7 +1457,7 @@ public class StatEffect
 
             // thanks inhyuk for noticing some skill mounts not acting properly for other players when changing maps
             givemount = applyto.mount(ridingMountId, sourceid);
-            applyto.getClient().getWorldServer().registerMountHunger(applyto);
+            givemount.WorldServer.registerMountHunger(applyto);
 
             localDuration = sourceid;
             localsourceid = ridingMountId;
