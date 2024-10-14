@@ -40,7 +40,7 @@ public class QuestStatus
     private int npc;
     private long completionTime, expirationTime;
     private int forfeited = 0, completed = 0;
-    private string customData;
+    private string? customData;
 
     public QuestStatus(Quest quest, Status status)
     {
@@ -274,12 +274,12 @@ public class QuestStatus
         }
     }
 
-    public void setCustomData(string customData)
+    public void setCustomData(string? customData)
     {
         this.customData = customData;
     }
 
-    public string getCustomData()
+    public string? getCustomData()
     {
         return customData;
     }

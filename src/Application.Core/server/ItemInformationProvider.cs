@@ -309,9 +309,9 @@ public class ItemInformationProvider
 
     public bool noCancelMouse(int itemId)
     {
-        if (noCancelMouseCache.ContainsKey(itemId))
+        if (noCancelMouseCache.TryGetValue(itemId, out var value))
         {
-            return noCancelMouseCache[itemId];
+            return value;
         }
 
         var item = getItemData(itemId);
@@ -329,8 +329,8 @@ public class ItemInformationProvider
     Dictionary<int, Data?> itemCache = [];
     private Data? getItemData(int itemId)
     {
-        if (itemCache.ContainsKey(itemId))
-            return itemCache[itemId];
+        if (itemCache.TryGetValue(itemId, out var value))
+            return value;
 
         Data? ret = null;
         string idStr = "0" + itemId;
@@ -464,9 +464,9 @@ public class ItemInformationProvider
 
     public int getMeso(int itemId)
     {
-        if (getMesoCache.ContainsKey(itemId))
+        if (getMesoCache.TryGetValue(itemId, out var value))
         {
-            return getMesoCache[itemId];
+            return value;
         }
         var item = getItemData(itemId);
         if (item == null)
@@ -569,9 +569,9 @@ public class ItemInformationProvider
 
     public int getWholePrice(int itemId)
     {
-        if (wholePriceCache.ContainsKey(itemId))
+        if (wholePriceCache.TryGetValue(itemId, out var value))
         {
-            return wholePriceCache[itemId];
+            return value;
         }
 
         return getItemPriceData(itemId).Key;
@@ -579,9 +579,9 @@ public class ItemInformationProvider
 
     public double getUnitPrice(int itemId)
     {
-        if (unitPriceCache.ContainsKey(itemId))
+        if (unitPriceCache.TryGetValue(itemId, out var value))
         {
-            return unitPriceCache[itemId];
+            return value;
         }
 
         return getItemPriceData(itemId).Value;
@@ -608,10 +608,11 @@ public class ItemInformationProvider
     }
 
     public ItemMessage getReplaceOnExpire(int itemId)
-    {   // thanks to GabrielSin
-        if (replaceOnExpireCache.ContainsKey(itemId))
+    {
+        // thanks to GabrielSin
+        if (replaceOnExpireCache.TryGetValue(itemId, out var value))
         {
-            return replaceOnExpireCache[itemId];
+            return value;
         }
 
         var data = getItemData(itemId);
@@ -626,9 +627,9 @@ public class ItemInformationProvider
 
     protected string? getEquipmentSlot(int itemId)
     {
-        if (equipmentSlotCache.ContainsKey(itemId))
+        if (equipmentSlotCache.TryGetValue(itemId, out var value))
         {
-            return equipmentSlotCache[itemId];
+            return value;
         }
 
         string ret = "";
@@ -655,9 +656,9 @@ public class ItemInformationProvider
 
     public Dictionary<string, int>? getEquipStats(int itemId)
     {
-        if (equipStatsCache.ContainsKey(itemId))
+        if (equipStatsCache.TryGetValue(itemId, out var value))
         {
-            return equipStatsCache[itemId];
+            return value;
         }
         Dictionary<string, int> ret = new();
         var item = getItemData(itemId);
@@ -696,9 +697,9 @@ public class ItemInformationProvider
 
     public int getEquipLevelReq(int itemId)
     {
-        if (equipLevelReqCache.ContainsKey(itemId))
+        if (equipLevelReqCache.TryGetValue(itemId,out var value))
         {
-            return equipLevelReqCache[itemId];
+            return value;
         }
 
         int ret = 0;
@@ -718,9 +719,9 @@ public class ItemInformationProvider
 
     public List<int> getScrollReqs(int itemId)
     {
-        if (scrollReqsCache.ContainsKey(itemId))
+        if (scrollReqsCache.TryGetValue(itemId, out var value))
         {
-            return scrollReqsCache[itemId];
+            return value;
         }
 
         List<int> ret = new();
@@ -1723,22 +1724,20 @@ public class ItemInformationProvider
 
     public int getWatkForProjectile(int itemId)
     {
-        var atk = projectileWatkCache.get(itemId);
-        if (atk != null)
-        {
-            return atk.Value;
-        }
+        if (projectileWatkCache.TryGetValue(itemId, out var atk))
+            return atk;
+
         var data = getItemData(itemId);
         atk = DataTool.getInt("info/incPAD", data, 0);
-        projectileWatkCache.Add(itemId, atk.Value);
-        return atk.Value;
+        projectileWatkCache.Add(itemId, atk);
+        return atk;
     }
 
     public string? getName(int itemId)
     {
-        if (nameCache.ContainsKey(itemId))
+        if (nameCache.TryGetValue(itemId, out var value))
         {
-            return nameCache[itemId];
+            return value;
         }
 
         var strings = getStringData(itemId);
@@ -1753,9 +1752,9 @@ public class ItemInformationProvider
 
     public string? getMsg(int itemId)
     {
-        if (msgCache.ContainsKey(itemId))
+        if (msgCache.TryGetValue(itemId, out var value))
         {
-            return msgCache[itemId];
+            return value;
         }
 
         var strings = getStringData(itemId);
@@ -1770,9 +1769,9 @@ public class ItemInformationProvider
 
     public bool isUntradeableRestricted(int itemId)
     {
-        if (untradeableCache.ContainsKey(itemId))
+        if (untradeableCache.TryGetValue(itemId, out var value))
         {
-            return untradeableCache[itemId];
+            return value;
         }
 
         bool bRestricted = false;
@@ -1791,9 +1790,9 @@ public class ItemInformationProvider
 
     public bool isAccountRestricted(int itemId)
     {
-        if (accountItemRestrictionCache.ContainsKey(itemId))
+        if (accountItemRestrictionCache.TryGetValue(itemId, out var value))
         {
-            return accountItemRestrictionCache[itemId];
+            return value;
         }
 
         bool bRestricted = false;
@@ -1812,9 +1811,9 @@ public class ItemInformationProvider
 
     public bool isLootRestricted(int itemId)
     {
-        if (dropRestrictionCache.ContainsKey(itemId))
+        if (dropRestrictionCache.TryGetValue(itemId, out var value))
         {
-            return dropRestrictionCache[itemId];
+            return value;
         }
 
         bool bRestricted = false;
@@ -1842,9 +1841,9 @@ public class ItemInformationProvider
 
     public bool isPickupRestricted(int itemId)
     {
-        if (pickupRestrictionCache.ContainsKey(itemId))
+        if (pickupRestrictionCache.TryGetValue(itemId, out var value))
         {
-            return pickupRestrictionCache[itemId];
+            return value;
         }
 
         bool bRestricted = false;
@@ -1971,9 +1970,9 @@ public class ItemInformationProvider
 
     public bool isQuestItem(int itemId)
     {
-        if (isQuestItemCache.ContainsKey(itemId))
+        if (isQuestItemCache.TryGetValue(itemId, out var value))
         {
-            return isQuestItemCache[itemId];
+            return value;
         }
         bool questItem = DataTool.getIntConvert("info/quest", getItemData(itemId), 0) == 1;
         isQuestItemCache.Add(itemId, questItem);
@@ -1982,9 +1981,9 @@ public class ItemInformationProvider
 
     public bool isPartyQuestItem(int itemId)
     {
-        if (isPartyQuestItemCache.ContainsKey(itemId))
+        if (isPartyQuestItemCache.TryGetValue(itemId, out var value))
         {
-            return isPartyQuestItemCache[itemId];
+            return value;
         }
         bool partyquestItem = DataTool.getIntConvert("info/pquest", getItemData(itemId), 0) == 1;
         isPartyQuestItemCache.AddOrUpdate(itemId, partyquestItem);
@@ -2015,9 +2014,9 @@ public class ItemInformationProvider
 
     public bool isUntradeableOnEquip(int itemId)
     {
-        if (onEquipUntradeableCache.ContainsKey(itemId))
+        if (onEquipUntradeableCache.TryGetValue(itemId, out var value))
         {
-            return onEquipUntradeableCache[itemId];
+            return value;
         }
         bool untradeableOnEquip = DataTool.getIntConvert("info/equipTradeBlock", getItemData(itemId), 0) > 0;
         onEquipUntradeableCache.AddOrUpdate(itemId, untradeableOnEquip);
@@ -2026,9 +2025,9 @@ public class ItemInformationProvider
 
     public ScriptedItem? getScriptedItemInfo(int itemId)
     {
-        if (scriptedItemCache.ContainsKey(itemId))
+        if (scriptedItemCache.TryGetValue(itemId, out var value))
         {
-            return scriptedItemCache[itemId];
+            return value;
         }
         if ((itemId / 10000) != 243)
         {
@@ -2044,9 +2043,9 @@ public class ItemInformationProvider
 
     public bool isKarmaAble(int itemId)
     {
-        if (karmaCache.ContainsKey(itemId))
+        if (karmaCache.TryGetValue(itemId, out var value))
         {
-            return karmaCache[itemId];
+            return value;
         }
         bool bRestricted = DataTool.getIntConvert("info/tradeAvailable", getItemData(itemId), 0) > 0;
         karmaCache.Add(itemId, bRestricted);
@@ -2055,9 +2054,9 @@ public class ItemInformationProvider
 
     public int getStateChangeItem(int itemId)
     {
-        if (triggerItemCache.ContainsKey(itemId))
+        if (triggerItemCache.TryGetValue(itemId, out var value))
         {
-            return triggerItemCache[itemId];
+            return value;
         }
         else
         {
@@ -2069,9 +2068,9 @@ public class ItemInformationProvider
 
     public int getCreateItem(int itemId)
     {
-        if (createItemCache.ContainsKey(itemId))
+        if (createItemCache.TryGetValue(itemId, out var value))
         {
-            return createItemCache[itemId];
+            return value;
         }
         else
         {
@@ -2083,9 +2082,9 @@ public class ItemInformationProvider
 
     public int getMobItem(int itemId)
     {
-        if (mobItemCache.ContainsKey(itemId))
+        if (mobItemCache.TryGetValue(itemId, out var value))
         {
-            return mobItemCache[itemId];
+            return value;
         }
         else
         {
@@ -2097,9 +2096,9 @@ public class ItemInformationProvider
 
     public int getUseDelay(int itemId)
     {
-        if (useDelayCache.ContainsKey(itemId))
+        if (useDelayCache.TryGetValue(itemId, out var value))
         {
-            return useDelayCache[itemId];
+            return value;
         }
         else
         {
@@ -2111,9 +2110,9 @@ public class ItemInformationProvider
 
     public int getMobHP(int itemId)
     {
-        if (mobHPCache.ContainsKey(itemId))
+        if (mobHPCache.TryGetValue(itemId, out var value))
         {
-            return mobHPCache[itemId];
+            return value;
         }
         else
         {
@@ -2125,9 +2124,9 @@ public class ItemInformationProvider
 
     public int getExpById(int itemId)
     {
-        if (expCache.ContainsKey(itemId))
+        if (expCache.TryGetValue(itemId, out var value))
         {
-            return expCache[itemId];
+            return value;
         }
         else
         {
@@ -2139,9 +2138,9 @@ public class ItemInformationProvider
 
     public int getMaxLevelById(int itemId)
     {
-        if (levelCache.ContainsKey(itemId))
+        if (levelCache.TryGetValue(itemId, out var value))
         {
-            return levelCache[itemId];
+            return value;
         }
         else
         {
@@ -2154,9 +2153,9 @@ public class ItemInformationProvider
     public KeyValuePair<int, List<RewardItem>> getItemReward(int itemId)
     {
         //Thanks Celino - used some stuffs :)
-        if (rewardCache.ContainsKey(itemId))
+        if (rewardCache.TryGetValue(itemId, out var value))
         {
-            return rewardCache[itemId];
+            return value;
         }
         int totalprob = 0;
         List<RewardItem> rewards = new();
@@ -2181,9 +2180,9 @@ public class ItemInformationProvider
 
     public bool isConsumeOnPickup(int itemId)
     {
-        if (consumeOnPickupCache.ContainsKey(itemId))
+        if (consumeOnPickupCache.TryGetValue(itemId, out var value))
         {
-            return consumeOnPickupCache[itemId];
+            return value;
         }
         var data = getItemData(itemId);
         bool consume = DataTool.getIntConvert("spec/consumeOnPickup", data, 0) == 1 || DataTool.getIntConvert("specEx/consumeOnPickup", data, 0) == 1;
@@ -2436,28 +2435,21 @@ public class ItemInformationProvider
 
     private Data? getEquipLevelInfo(int itemId)
     {
-        var equipLevelData = equipLevelInfoCache.GetValueOrDefault(itemId);
-        if (equipLevelData == null)
+        if (equipLevelInfoCache.TryGetValue(itemId, out var value) && value != null)
+            return value;
+
+        var iData = getItemData(itemId);
+        if (iData != null)
         {
-            if (equipLevelInfoCache.ContainsKey(itemId))
+            var data = iData.getChildByPath("info/level");
+            if (data != null)
             {
-                return null;
+                value = data.getChildByPath("info");
             }
-
-            var iData = getItemData(itemId);
-            if (iData != null)
-            {
-                var data = iData.getChildByPath("info/level");
-                if (data != null)
-                {
-                    equipLevelData = data.getChildByPath("info");
-                }
-            }
-
-            equipLevelInfoCache.Add(itemId, equipLevelData);
         }
 
-        return equipLevelData;
+        equipLevelInfoCache.Add(itemId, value);
+        return value;
     }
 
     public int getEquipLevel(int itemId, bool getMaxLevel)
@@ -2610,16 +2602,8 @@ public class ItemInformationProvider
     {
         try
         {
-            var statUpgd = statUpgradeMakerCache.GetValueOrDefault(itemId);
-            if (statUpgd != null)
-            {
-                return statUpgd.Value;
-            }
-            else if (statUpgradeMakerCache.ContainsKey(itemId))
-            {
-                return null;
-            }
-
+            if (statUpgradeMakerCache.TryGetValue(itemId, out var statUpgd) && statUpgd != null)
+                return statUpgd;
 
             using var dbContext = new DBContext();
             var dbModel = dbContext.Makerreagentdata.Where(x => x.Itemid == itemId).Select(x => new { x.Stat, x.Value }).FirstOrDefault();
@@ -2860,9 +2844,9 @@ public class ItemInformationProvider
 
     public QuestConsItem? getQuestConsumablesInfo(int itemId)
     {
-        if (questItemConsCache.ContainsKey(itemId))
+        if (questItemConsCache.TryGetValue(itemId, out var value))
         {
-            return questItemConsCache[itemId];
+            return value;
         }
         var data = getItemData(itemId);
         QuestConsItem? qcItem = null;
