@@ -194,9 +194,9 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             {
                 removeExplodedMesos(map, attack);
             }
-            foreach (int oned in attack.targets.Keys)
+            foreach (var target in attack.targets)
             {
-                var monster = map.getMonsterByOid(oned);
+                var monster = map.getMonsterByOid(target.Key);
                 if (monster != null)
                 {
                     double distance = player.getPosition().distanceSq(monster.getPosition());
@@ -245,7 +245,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
 
                     int totDamageToOneMonster = 0;
-                    var onedList = attack.targets.GetValueOrDefault(oned)?.damageLines ?? [];
+                    var onedList = target.Value?.damageLines ?? [];
 
                     if (attack.magic)
                     { // thanks BHB, Alex (CanIGetaPR) for noticing no immunity status check here
@@ -361,7 +361,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                     List<DropEntry> toSteal = new();
                                     toSteal.Add(mi.retrieveDrop(monster.getId()).get(i));
 
-                                    map.dropItemsFromMonster(toSteal, player, monster, attack.targets[oned]!.delay);
+                                    map.dropItemsFromMonster(toSteal, player, monster, target.Value!.delay);
                                     monster.addStolen(toSteal.get(0).ItemId);
                                 }
                             }
@@ -479,12 +479,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
                     else if (player.getBuffedValue(BuffStat.COMBO_DRAIN) != null)
                     {
-                        Skill skill;
-                        if (player.getBuffedValue(BuffStat.COMBO_DRAIN) != null)
-                        {
-                            skill = SkillFactory.GetSkillTrust(21100005);
-                            player.addHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
-                        }
+                        Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
+                        player.addHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
                     }
                     else if (job == 412 || job == 422 || job == 1411)
                     {
@@ -528,7 +524,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                 {
                                     if (Randomizer.rand(1, 100) <= mortal.getY())
                                     {
-                                        map.damageMonster(player, monster, int.MaxValue);  // thanks Conrad for noticing reduced EXP gain from skill kill
+                                        map.damageMonster(player, monster, int.MaxValue, target.Value!.delay);  // thanks Conrad for noticing reduced EXP gain from skill kill
                                     }
                                 }
                             }
@@ -598,7 +594,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         }
                         else
                         {
-                            int HHDmg = (player.calculateMaxBaseDamage(player.getTotalWatk()) * (SkillFactory.GetSkillTrust(Paladin.HEAVENS_HAMMER).getEffect(player.getSkillLevel(SkillFactory.GetSkillTrust(Paladin.HEAVENS_HAMMER))).getDamage() / 100));
+                            var skill = SkillFactory.GetSkillTrust(Paladin.HEAVENS_HAMMER);
+                            int HHDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100);
                             damageMonsterWithSkill(player, map, monster, (int)(Math.Floor(Randomizer.nextDouble() * (HHDmg / 5) + HHDmg * .8)), attack.skill, 1777);
                         }
                     }
@@ -610,7 +607,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         }
                         else
                         {
-                            int TmpDmg = (player.calculateMaxBaseDamage(player.getTotalWatk()) * (SkillFactory.GetSkillTrust(Aran.COMBO_TEMPEST).getEffect(player.getSkillLevel(SkillFactory.GetSkillTrust(Aran.COMBO_TEMPEST))).getDamage() / 100));
+                            var skill = SkillFactory.GetSkillTrust(Aran.COMBO_TEMPEST);
+                            int TmpDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100);
                             damageMonsterWithSkill(player, map, monster, (int)(Math.Floor(Randomizer.nextDouble() * (TmpDmg / 5) + TmpDmg * .8)), attack.skill, 0);
                         }
                     }
@@ -621,7 +619,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             map.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
                         }
 
-                        map.damageMonster(player, monster, totDamageToOneMonster);
+                        map.damageMonster(player, monster, totDamageToOneMonster, target.Value!.delay);
                     }
                     if (monster.isBuffed(MonsterStatus.WEAPON_REFLECT) && !attack.magic)
                     {
@@ -681,7 +679,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         //2C 00 00 01 91 A1 12 00 A5 57 62 FC E2 75 99 10 00 47 80 01 04 01 C6 CC 02 DD FF 5F 00
         AttackInfo ret = new AttackInfo();
         p.readByte();
-        ret.numAttackedAndDamage = p.readByte();
+        ret.numAttackedAndDamage = p.ReadSByte();
         ret.numAttacked = (int)((uint)ret.numAttackedAndDamage >> 4) & 0xF;
         ret.numDamage = ret.numAttackedAndDamage & 0xF;
         ret.targets = new();
@@ -708,9 +706,9 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         }
 
         p.skip(8);
-        ret.display = p.readByte();
-        ret.direction = p.readByte();
-        ret.stance = p.readByte();
+        ret.display = p.ReadSByte();
+        ret.direction = p.ReadSByte();
+        ret.stance = p.ReadSByte();
         if (ret.skill == ChiefBandit.MESO_EXPLOSION)
         {
             return parseMesoExplosion(p, ret);
@@ -718,9 +716,9 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         if (ranged)
         {
             p.readByte();
-            ret.speed = p.readByte();
+            ret.speed = p.ReadSByte();
             p.readByte();
-            ret.rangedirection = p.readByte();
+            ret.rangedirection = p.ReadSByte();
             p.skip(7);
             if (ret.skill == Bowmaster.HURRICANE || ret.skill == Marksman.PIERCING_ARROW || ret.skill == Corsair.RAPID_FIRE || ret.skill == WindArcher.HURRICANE)
             {
@@ -730,7 +728,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         else
         {
             p.readByte();
-            ret.speed = p.readByte();
+            ret.speed = p.ReadSByte();
             p.skip(4);
         }
 
@@ -1140,7 +1138,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             p.skip(4);
             Point curPos = p.readPos();
             Point nextPos = p.readPos();
-            int damageLines = p.readByte();
+            int damageLines = p.ReadSByte();
             List<int> allDamageNumbers = [];
             for (int j = 0; j < damageLines; j++)
             {
@@ -1152,7 +1150,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         }
         p.skip(4);
         List<int> explodedMesos = [];
-        int explodedMesoCount = p.readByte();
+        int explodedMesoCount = p.ReadSByte();
         for (int j = 0; j < explodedMesoCount; j++)
         {
             int mesoOid = p.readInt();
