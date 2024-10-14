@@ -130,7 +130,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Questrequirement> Questrequirements { get; set; }
 
-    public virtual DbSet<Queststatus> Queststatuses { get; set; }
+    public virtual DbSet<QuestStatusEntity> Queststatuses { get; set; }
 
     public virtual DbSet<Quickslotkeymapped> Quickslotkeymappeds { get; set; }
 
@@ -2225,7 +2225,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("status");
         });
 
-        modelBuilder.Entity<Queststatus>(entity =>
+        modelBuilder.Entity<QuestStatusEntity>(entity =>
         {
             entity.HasKey(e => e.Queststatusid).HasName("PRIMARY");
 

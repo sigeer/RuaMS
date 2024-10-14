@@ -63,10 +63,8 @@ public class AutobanFactory : EnumClass
 
     }
 
-    AutobanFactory(int points)
+    AutobanFactory(int points): this(points, -1)
     {
-        this.points = points;
-        this.expiretime = -1;
     }
 
     AutobanFactory(int points, long expire)
@@ -111,8 +109,8 @@ public class AutobanFactory : EnumClass
     {
         if (YamlConfig.config.server.USE_AUTOBAN)
         {
-            chr.autoban("Autobanned foreach(" + this.name() + " in " + value + ")");
-            //chr.sendPolice("You will be disconnected foreach(" + this.name() + " in " + value + ")");
+            chr.autoban("Autobanned for (" + this.name() + " : " + value + ")");
+            //chr.sendPolice("You will be disconnected for(" + this.name() + " : " + value + ")");
         }
     }
 

@@ -40,6 +40,7 @@ namespace ServiceTest.Characters
         [TestCase("张三李四王五", ExpectedResult = false)]
         [TestCase("张三李4", ExpectedResult = true)]
         [TestCase("张三李45", ExpectedResult = true)]
+        [TestCase("哟", ExpectedResult = true)]
         [TestCase("😄😄", ExpectedResult = false)]
         [Test]
         public bool CheckCharacterName_Test(string name)

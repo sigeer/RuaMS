@@ -1,4 +1,5 @@
-﻿using Application.Core.scripting.Event;
+﻿using Application.Core.Game.Packets;
+using Application.Core.scripting.Event;
 using client;
 using constants.id;
 using net.server;
@@ -220,20 +221,20 @@ namespace Application.Core.Game.Players
             switch (questUpdate.Key)
             {
                 case DelayedQuestUpdate.UPDATE:
-                    sendPacket(PacketCreator.updateQuest(chr, (QuestStatus)objs[0], (bool)objs[1]));
+                    sendPacket(QuestPacket.UpdateQuest(chr, (QuestStatus)objs[0], (bool)objs[1]));
                     break;
 
                 case DelayedQuestUpdate.FORFEIT:
-                    sendPacket(PacketCreator.forfeitQuest((short)objs[0]));
+                    sendPacket(QuestPacket.ForfeitQuest((short)objs[0]));
                     break;
 
                 case DelayedQuestUpdate.COMPLETE:
-                    sendPacket(PacketCreator.completeQuest((short)objs[0], (long)objs[1]));
+                    sendPacket(QuestPacket.CompleteQuest((short)objs[0], (long)objs[1]));
                     break;
 
                 case DelayedQuestUpdate.INFO:
                     QuestStatus qs = (QuestStatus)objs[0];
-                    sendPacket(PacketCreator.updateQuestInfo(qs.getQuest().getId(), qs.getNpc()));
+                    sendPacket(QuestPacket.UpdateQuestInfo(qs.getQuest().getId(), qs.getNpc()));
                     break;
             }
         }
@@ -314,7 +315,7 @@ namespace Application.Core.Game.Players
         {
             if (quest.forfeit(this))
             {
-                sendPacket(PacketCreator.questExpire(quest.getId()));
+                sendPacket(QuestPacket.QuestExpire(quest.getId()));
             }
         }
 
@@ -438,7 +439,7 @@ namespace Application.Core.Game.Players
         public void questTimeLimit(Quest quest, int seconds)
         {
             registerQuestExpire(quest, TimeSpan.FromSeconds(seconds));
-            sendPacket(PacketCreator.addQuestTimeLimit(quest.getId(), seconds * 1000));
+            sendPacket(QuestPacket.AddQuestTimeLimit(quest.getId(), seconds * 1000));
         }
 
         public void questTimeLimit2(Quest quest, long expires)

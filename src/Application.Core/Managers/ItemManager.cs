@@ -58,7 +58,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void deleteFromDb(IPlayer owner, int petid)
+        public static void DeleteFromDb(IPlayer owner, int petid)
         {
             try
             {

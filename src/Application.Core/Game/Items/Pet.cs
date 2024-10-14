@@ -114,12 +114,7 @@ public class Pet : Item
         return Level;
     }
 
-    public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type)
-    {
-        gainTamenessFullness(owner, incTameness, incFullness, type, false);
-    }
-
-    public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type, bool forceEnjoy)
+    public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type, bool forceEnjoy = false)
     {
         sbyte slot = owner.getPetIndex(this);
         bool enjoyed;
@@ -252,7 +247,7 @@ public class Pet : Item
         petAttribute |= (int)flag;
         saveToDb();
 
-        Item? petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
+        var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
         if (petz != null)
         {
             owner.forceUpdateItem(petz);
@@ -264,7 +259,7 @@ public class Pet : Item
         petAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
         saveToDb();
 
-        Item? petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
+        var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
         if (petz != null)
         {
             owner.forceUpdateItem(petz);
@@ -280,13 +275,13 @@ public class Pet : Item
     {
         foreach (LifeMovementFragment move in movement)
         {
-            if (move is LifeMovement)
+            if (move is LifeMovement lifeMovement)
             {
                 if (move is AbsoluteLifeMovement)
                 {
                     setPos(move.getPosition());
                 }
-                setStance(((LifeMovement)move).getNewstate());
+                setStance(lifeMovement.getNewstate());
             }
         }
     }

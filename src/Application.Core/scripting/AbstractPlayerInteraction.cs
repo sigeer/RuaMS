@@ -393,12 +393,12 @@ public class AbstractPlayerInteraction
 
     //---- \/ \/ \/ \/ \/ \/ \/  NOT TESTED  \/ \/ \/ \/ \/ \/ \/ \/ \/ ----
 
-    public QuestStatus getQuestRecord(int id)
+    public QuestStatus? getQuestRecord(int id)
     {
         return c.OnlinedCharacter.getQuestNAdd(Quest.getInstance(id));
     }
 
-    public QuestStatus getQuestNoRecord(int id)
+    public QuestStatus? getQuestNoRecord(int id)
     {
         return c.OnlinedCharacter.getQuestNoAdd(Quest.getInstance(id));
     }

@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Packets;
 using client;
 using provider;
 using provider.wz;
@@ -378,7 +379,7 @@ public class Quest
         }
         if (timeLimit > 0)
         {
-            chr.sendPacket(PacketCreator.removeQuestTimeLimit(id));
+            chr.sendPacket(QuestPacket.RemoveQuestTimeLimit(id));
         }
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.NOT_STARTED);
         newStatus.setForfeited(chr.getQuest(this).getForfeited() + 1);
@@ -433,7 +434,7 @@ public class Quest
     {
         if (timeLimit > 0)
         {
-            chr.sendPacket(PacketCreator.removeQuestTimeLimit(id));
+            chr.sendPacket(QuestPacket.RemoveQuestTimeLimit(id));
         }
 
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.COMPLETED, npc);

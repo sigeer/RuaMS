@@ -10,7 +10,7 @@ namespace Application.Core.Game.Commands.Gm5;
 
 public class DebugCommand : CommandBase
 {
-    private static string[] debugTypes = { "monster", "packet", "portal", "spawnpoint", "pos", "map", "mobsp", "event", "areas", "reactors", "servercoupons", "playercoupons", "timer", "marriage", "buff", "" };
+    private static string[] debugTypes = { "monster", "packet", "portal", "spawnpoint", "pos", "map", "mobsp", "event", "areas", "reactors", "servercoupons", "playercoupons", "marriage", "buff", "" };
 
     public DebugCommand() : base(5, "debug")
     {
@@ -142,11 +142,6 @@ public class DebugCommand : CommandBase
                 }
 
                 player.dropMessage(6, st);
-                break;
-
-            case "timer":
-                TimerManager tMan = TimerManager.getInstance();
-                player.dropMessage(6, "Total Task: " + tMan.getTaskCount() + " Current Task: " + tMan.getQueuedTasks() + " Active Task: " + tMan.getActiveCount() + " Completed Task: " + tMan.getCompletedTaskCount());
                 break;
 
             case "marriage":

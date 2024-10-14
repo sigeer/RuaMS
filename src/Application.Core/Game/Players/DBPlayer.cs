@@ -365,25 +365,7 @@ namespace Application.Core.Game.Players
                     dbContext.SaveChanges();
 
                     CharacterManager.deleteQuestProgressWhereCharacterId(dbContext, Id);
-
-
-                    foreach (var qs in getQuests())
-                    {
-                        var questStatus = new Queststatus(getId(), qs.getQuest().getId(), (int)qs.getStatus(), (int)(qs.getCompletionTime() / 1000), qs.getExpirationTime(),
-                           qs.getForfeited(), qs.getCompleted());
-                        dbContext.Queststatuses.Add(questStatus);
-                        dbContext.SaveChanges();
-
-                        foreach (int mob in qs.getProgress().Keys)
-                        {
-                            dbContext.Questprogresses.Add(new Questprogress(getId(), questStatus.Queststatusid, mob, qs.getProgress(mob)));
-                        }
-                        foreach (var item in qs.getMedalMaps())
-                        {
-                            dbContext.Medalmaps.Add(new Medalmap(getId(), questStatus.Queststatusid, item));
-                        }
-                    }
-                    dbContext.SaveChanges();
+                    CharacterManager.SavePlayerQuestInfo(dbContext, this);
 
                     var familyEntry = getFamilyEntry(); //save family rep
                     if (familyEntry != null)

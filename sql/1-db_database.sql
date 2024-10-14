@@ -16558,7 +16558,7 @@ CREATE TABLE IF NOT EXISTS `questprogress` (
   `characterid` int(11) NOT NULL,
   `queststatusid` int(10) unsigned NOT NULL DEFAULT '0',
   `progressid` int(11) NOT NULL DEFAULT '0',
-  `progress` varchar(15) CHARACTER SET utf8mb4 COLLATE latin1_german1_ci NOT NULL DEFAULT '',
+  `progress` varchar(15) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;
 
