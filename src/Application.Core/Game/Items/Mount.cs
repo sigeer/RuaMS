@@ -19,6 +19,9 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Application.Core.Game.TheWorld;
+using net.server;
+
 namespace Application.Core.Game.Items;
 
 /**
@@ -33,6 +36,8 @@ public class Mount : IMount
     private int level;
     private IPlayer owner;
     private bool active;
+
+    public IWorld WorldServer => Server.getInstance().getWorld(owner.World);
 
     public Mount(IPlayer owner, int id)
     {
@@ -140,7 +145,7 @@ public class Mount : IMount
     {
         if (owner != null && owner.IsOnlined)
         {
-            owner.Client.getWorldServer().unregisterMountHunger(owner);
+            WorldServer.unregisterMountHunger(owner);
         }
     }
 }
