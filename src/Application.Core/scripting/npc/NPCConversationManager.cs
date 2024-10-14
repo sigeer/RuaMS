@@ -811,7 +811,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             cpqMaxLvl = 70;
         }
 
-        var partyMembers = party.getPartyMembers();
+        var partyMembers = party.getMembers();
         foreach (var pchr in partyMembers)
         {
             if (pchr.getLevel() >= cpqMinLvl && pchr.getLevel() <= cpqMaxLvl)

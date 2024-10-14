@@ -935,7 +935,7 @@ public class AbstractPlayerInteraction
         }
         foreach (var chr in getParty()!.getMembers())
         {
-            if (chr != null && chr.getClient() != null)
+            if (chr != null && chr.IsOnlined)
             {
                 removeAll(id, chr.getClient());
             }
@@ -1094,12 +1094,7 @@ public class AbstractPlayerInteraction
         getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false, -1);
     }
 
-    public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration)
-    {
-        teachSkill(skillid, level, masterLevel, expiration, false);
-    }
-
-    public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration, bool force)
+    public void teachSkill(int skillid, sbyte level, byte masterLevel, long expiration, bool force = false)
     {
         var skill = SkillFactory.GetSkillTrust(skillid);
         var skillEntry = getPlayer().getSkills().GetValueOrDefault(skill);
