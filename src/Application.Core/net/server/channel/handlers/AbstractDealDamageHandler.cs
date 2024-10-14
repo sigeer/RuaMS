@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
@@ -35,7 +36,6 @@ using net.packet;
 using scripting;
 using server;
 using server.life;
-using server.maps;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -44,50 +44,6 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 {
     private const int EXPLODED_MESO_SPREAD_DELAY = 100;
     private const int EXPLODED_MESO_MAX_DELAY = 1000;
-
-    public class AttackInfo
-    {
-
-        public int numAttacked, numDamage, numAttackedAndDamage, skill, skilllevel, stance, direction, rangedirection, charge, display;
-        public Dictionary<int, AttackTarget?> targets = new();
-        public bool ranged, magic;
-        public int speed = 4;
-        public Point position = new Point();
-        public List<int> explodedMesos = [];
-        public short attackDelay;
-
-        public StatEffect? getAttackEffect(IPlayer chr, Skill? theSkill)
-        {
-            var mySkill = theSkill ?? SkillFactory.getSkill(skill);
-            if (mySkill == null)
-            {
-                return null;
-            }
-
-            int skillLevel = chr.getSkillLevel(mySkill);
-            if (skillLevel == 0 && GameConstants.isPqSkillMap(chr.getMapId()) && GameConstants.isPqSkill(mySkill.getId()))
-            {
-                skillLevel = 1;
-            }
-
-            if (skillLevel == 0)
-            {
-                return null;
-            }
-            if (display > 80)
-            {
-                //Hmm
-                if (!mySkill.getAction())
-                {
-                    AutobanFactory.FAST_ATTACK.autoban(chr, "WZ Edit; adding action to a skill: " + display);
-                    return null;
-                }
-            }
-            return mySkill.getEffect(skillLevel);
-        }
-    }
-
-    public record AttackTarget(short delay, List<int> damageLines);
 
     protected void applyAttack(AttackInfo attack, IPlayer player, int attackCount)
     {
@@ -299,12 +255,11 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         int picklv = (player.isGM()) ? pickpocket.getMaxLevel() : player.getSkillLevel(pickpocket);
                         if (picklv > 0)
                         {
-                            int delay = 0;
+                            short delay = 0;
                             var maxmeso = player.getBuffedValue(BuffStat.PICKPOCKET) ?? 0;
                             foreach (int eachd in onedList)
                             {
-                                int tempInt = eachd;
-                                tempInt += int.MaxValue;
+                                int tempInt = eachd + int.MaxValue;
 
                                 if (pickpocket.getEffect(picklv).makeChanceResult())
                                 {
@@ -314,15 +269,9 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                     else
                                         eachdf = tempInt;
 
-                                    TimerManager.getInstance().schedule(() =>
-                                        map.spawnMesoDrop(
-                                            Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso),
-                                            new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y),
-                                            monster,
-                                            player,
-                                            true,
-                                            2,
-                                            (short)delay), delay);
+                                    int meso = Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso);
+                                    Point position = new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y);
+                                    map.spawnMesoDrop(meso, position, monster, player, true, 2, delay);
                                     delay += 100;
                                 }
                             }
@@ -482,7 +431,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
                         player.addHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
                     }
-                    else if (job == 412 || job == 422 || job == 1411)
+                    else if (job == (int)Job.NIGHTLORD || job == (int)Job.SHADOWER || job == (int)Job.NIGHTWALKER3)
                     {
                         Skill type = SkillFactory.GetSkillTrust(player.getJob().getId() == 412 ? 4120005 : (player.getJob().getId() == 1411 ? 14110004 : 4220005));
                         if (player.getSkillLevel(type) > 0)
@@ -658,19 +607,19 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
     {
         int animationTime = fixedTime == 0 ? SkillFactory.GetSkillTrust(skillid).getAnimationTime() : fixedTime;
 
-        if (animationTime > 0)
-        {
-            // be sure to only use LIMITED ATTACKS with animation time here
-            TimerManager.getInstance().schedule(() =>
-            {
-                map.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), damage), monster.getPosition());
-                map.damageMonster(attacker, monster, damage);
-            }, animationTime);
-        }
-        else
+        var damageCore = () =>
         {
             map.broadcastMessage(PacketCreator.damageMonster(monster.getObjectId(), damage), monster.getPosition());
             map.damageMonster(attacker, monster, damage);
+        };
+        if (animationTime > 0)
+        {
+            // be sure to only use LIMITED ATTACKS with animation time here
+            TimerManager.getInstance().schedule(damageCore, animationTime);
+        }
+        else
+        {
+            damageCore.Invoke();
         }
     }
 
@@ -740,7 +689,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         {   // thanks onechord for noticing a few false positives stemming from maxdmg as 0
             calcDmgMax = (long)(Math.Ceiling((chr.getTotalMagic() * Math.Ceiling(chr.getTotalMagic() / 1000.0) + chr.getTotalMagic()) / 30.0) + Math.Ceiling(chr.getTotalInt() / 200.0));
         }
-        else if (ret.skill == 4001344 || ret.skill == NightWalker.LUCKY_SEVEN || ret.skill == NightLord.TRIPLE_THROW)
+        else if (ret.skill == Rogue.LUCKY_SEVEN || ret.skill == NightWalker.LUCKY_SEVEN || ret.skill == NightLord.TRIPLE_THROW)
         {
             calcDmgMax = (long)((chr.getTotalLuk() * 5) * Math.Ceiling(chr.getTotalWatk() / 100.0));
         }
@@ -1121,11 +1070,6 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             ret.position.setLocation(p.readShort(), p.readShort());
         }
         return ret;
-    }
-
-    private static int rand(int l, int u)
-    {
-        return (int)((Randomizer.nextDouble() * (u - l + 1)) + l);
     }
 
     private AttackInfo parseMesoExplosion(InPacket p, AttackInfo attackInfo)

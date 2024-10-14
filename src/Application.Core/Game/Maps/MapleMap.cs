@@ -713,7 +713,7 @@ public class MapleMap : IMap
         return new(getRoundedCoordinate(angle), (int)distn);
     }
 
-    public byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
+    public byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short dropDelay)
     {
         if (dropEntry.Count == 0)
         {
@@ -750,7 +750,7 @@ public class MapleMap : IMap
                             mesos = int.MaxValue;
                         }
 
-                        spawnMesoDrop(mesos, calcDropPos(pos, mob.getPosition()), mob, chr, false, droptype, delay);
+                        spawnMesoDrop(mesos, calcDropPos(pos, mob.getPosition()), mob, chr, false, droptype, dropDelay);
                     }
                 }
                 else
@@ -763,7 +763,7 @@ public class MapleMap : IMap
                     {
                         idrop = new Item(de.ItemId, 0, (short)de.GetRandomCount());
                     }
-                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, delay);
+                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, dropDelay);
                 }
                 d++;
             }
@@ -772,7 +772,7 @@ public class MapleMap : IMap
         return d;
     }
 
-    public byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay)
+    public byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short dropDelay)
     {
         Collections.shuffle(globalEntry);
 
@@ -794,7 +794,7 @@ public class MapleMap : IMap
                     {
                         idrop = new Item(de.ItemId, 0, (short)de.GetRandomCount());
                     }
-                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, delay);
+                    spawnDrop(idrop, calcDropPos(pos, mob.getPosition()), mob, chr, droptype, de.QuestId, dropDelay);
                     d++;
                 }
             }
@@ -803,7 +803,7 @@ public class MapleMap : IMap
         return d;
     }
 
-    private void dropFromMonster(IPlayer chr, Monster mob, bool useBaseRate, short delay)
+    private void dropFromMonster(IPlayer chr, Monster mob, bool useBaseRate, short dropDelay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
@@ -843,15 +843,15 @@ public class MapleMap : IMap
 
         byte index = 1;
         // Normal Drops
-        index = dropItemsFromMonsterOnMap(dropEntry, pos, index, chRate, droptype, mobpos, chr, mob, delay);
+        index = dropItemsFromMonsterOnMap(dropEntry, pos, index, chRate, droptype, mobpos, chr, mob, dropDelay);
         // Global Drops
-        index = dropGlobalItemsFromMonsterOnMap(globalEntry, pos, index, droptype, mobpos, chr, mob, delay);
+        index = dropGlobalItemsFromMonsterOnMap(globalEntry, pos, index, droptype, mobpos, chr, mob, dropDelay);
         // Quest Drops
-        index = dropItemsFromMonsterOnMap(visibleQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, delay);
-        dropItemsFromMonsterOnMap(otherQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, delay);
+        index = dropItemsFromMonsterOnMap(visibleQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, dropDelay);
+        dropItemsFromMonsterOnMap(otherQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, dropDelay);
     }
 
-    public void dropItemsFromMonster(List<DropEntry> list, IPlayer chr, Monster mob, short delay)
+    public void dropItemsFromMonster(List<DropEntry> list, IPlayer chr, Monster mob, short dropDelay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
@@ -864,7 +864,7 @@ public class MapleMap : IMap
         byte d = 1;
         Point pos = new Point(0, mob.getPosition().Y);
 
-        dropItemsFromMonsterOnMap(list, pos, d, chRate, droptype, mobpos, chr, mob, delay);
+        dropItemsFromMonsterOnMap(list, pos, d, chRate, droptype, mobpos, chr, mob, dropDelay);
     }
 
     public void dropFromFriendlyMonster(IPlayer chr, Monster mob)
@@ -872,9 +872,9 @@ public class MapleMap : IMap
         dropFromMonster(chr, mob, true, 0);
     }
 
-    public void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0)
+    public void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short dropDelay = 0)
     {
-        spawnDrop(drop, this.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, (byte)(chr.getParty() != null ? 1 : 0), questid, delay);
+        spawnDrop(drop, this.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, (byte)(chr.getParty() != null ? 1 : 0), questid, dropDelay);
     }
 
     private void stopItemMonitor()
@@ -1228,7 +1228,7 @@ public class MapleMap : IMap
         }
     }
 
-    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, byte droptype, short questid, short delay)
+    private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, byte droptype, short questid, short dropDelay)
     {
         MapItem mdrop = new MapItem(idrop, dropPos, dropper, chr, droptype, false, questid);
         mdrop.setDropTime(Server.getInstance().getCurrentTime());
@@ -1241,7 +1241,7 @@ public class MapleMap : IMap
                 mdrop.lockItem();
                 try
                 {
-                    c.sendPacket(PacketCreator.dropItemFromMapObject(chr1, mdrop, dropper.getPosition(), dropPos, 1, delay));
+                    c.sendPacket(PacketCreator.dropItemFromMapObject(chr1, mdrop, dropper.getPosition(), dropPos, 1, dropDelay));
                 }
                 finally
                 {
@@ -1254,7 +1254,7 @@ public class MapleMap : IMap
         activateItemReactors(mdrop, chr.getClient());
     }
 
-    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype, short delay = 0)
+    public void spawnMesoDrop(int meso, Point position, IMapObject dropper, IPlayer owner, bool playerDrop, byte droptype, short dropDelay = 0)
     {
         Point droppos = calcDropPos(position, position);
         MapItem mdrop = new MapItem(meso, droppos, dropper, owner, droptype, playerDrop);
@@ -1265,7 +1265,7 @@ public class MapleMap : IMap
             mdrop.lockItem();
             try
             {
-                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1, delay));
+                c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mdrop, dropper.getPosition(), droppos, 1, dropDelay));
             }
             finally
             {
@@ -1454,7 +1454,7 @@ public class MapleMap : IMap
         return getAllMonsters().Count(x => x.isBoss());
     }
 
-    public bool damageMonster(IPlayer chr, Monster monster, int damage, short delay = 0)
+    public bool damageMonster(IPlayer chr, Monster monster, int damage, short dropDelay = 0)
     {
         if (monster.getId() == MobId.ZAKUM_1)
         {
@@ -1486,7 +1486,7 @@ public class MapleMap : IMap
             }
             if (killed)
             {
-                killMonster(monster, chr, true, delay);
+                killMonster(monster, chr, true, dropDelay);
             }
             return true;
         }
@@ -1539,8 +1539,8 @@ public class MapleMap : IMap
             monster.unlockMonster();
         }
     }
-
-    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1, short dropDelay = 0)
+    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, short dropDelay = 0) => killMonster(monster, chr, withDrops, 1, dropDelay);
+    public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation, short dropDelay)
     {
         if (monster == null)
         {

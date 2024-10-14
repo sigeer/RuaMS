@@ -199,7 +199,8 @@ namespace Application.Core.Game.Maps
         void killAllMonstersNotFriendly();
         void killFriendlies(Monster mob);
         void killMonster(int mobId);
-        void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation = 1, short delay = 0);
+        public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, short dropDelay = 0);
+        void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation, short dropDelay);
         void killMonsterWithDrops(int mobId);
         void limitReactor(int rid, int num);
         bool makeDisappearItemFromMap(MapItem mapitem);

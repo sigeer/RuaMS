@@ -43,7 +43,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
 		}
 		chr.getAutobanManager().spam(8);*/
 
-        AttackInfo attack = parseDamage(p, chr, false, true);
+        var attack = parseDamage(p, chr, false, true);
 
         if (chr.getBuffEffect(BuffStat.MORPH) != null)
         {
