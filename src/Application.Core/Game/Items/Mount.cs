@@ -143,7 +143,7 @@ public class Mount : IMount
 
     public void empty()
     {
-        if (owner != null && owner.IsOnlined)
+        if (owner != null)
         {
             WorldServer.unregisterMountHunger(owner);
         }
