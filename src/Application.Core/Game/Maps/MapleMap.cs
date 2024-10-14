@@ -1738,7 +1738,7 @@ public class MapleMap : IMap
                 continue;
             }
 
-            killMonster(monster, null, false, 1);
+            killMonster(monster, null, false);
         }
     }
 
@@ -1748,7 +1748,7 @@ public class MapleMap : IMap
 
         foreach (var monster in getAllMonsters())
         {
-            killMonster(monster, null, false, 1);
+            killMonster(monster, null, false);
         }
     }
 
