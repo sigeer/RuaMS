@@ -45,7 +45,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         }
         chr.getAutobanManager().spam(8);*/
 
-        AttackInfo attack = parseDamage(p, chr, false, false);
+        var attack = parseDamage(p, chr, false, false);
         if (chr.getBuffEffect(BuffStat.MORPH) != null)
         {
             if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())

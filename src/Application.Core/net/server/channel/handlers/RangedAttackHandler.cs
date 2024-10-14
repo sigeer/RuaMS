@@ -48,7 +48,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
         }
         chr.getAutobanManager().spam(8);*/
 
-        AttackInfo attack = parseDamage(p, chr, true, false);
+        var attack = parseDamage(p, chr, true, false);
 
         if (chr.getBuffEffect(BuffStat.MORPH) != null)
         {
