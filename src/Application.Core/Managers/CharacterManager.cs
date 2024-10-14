@@ -1,4 +1,5 @@
 ﻿using Application.Core.Game.Items;
+using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
@@ -1175,7 +1176,7 @@ namespace Application.Core.Managers
                     dbContext.Savedlocations.AddRange(
                         Enum.GetValues<SavedLocationType>()
                         .Where(x => player.SavedLocations[(int)x] != null)
-                        .Select(x => new Savedlocation(player.SavedLocations[(int)x]!.getMapId(), player.SavedLocations[(int)x]!.getPortal()))
+                        .Select(x => new SavedLocationEntity(player.Id, player.SavedLocations[(int)x]!, x))
                         );
                     dbContext.SaveChanges();
 

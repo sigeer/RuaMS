@@ -142,7 +142,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Ring_Entity> Rings { get; set; }
 
-    public virtual DbSet<Savedlocation> Savedlocations { get; set; }
+    public virtual DbSet<SavedLocationEntity> Savedlocations { get; set; }
 
     public virtual DbSet<ServerQueue> ServerQueues { get; set; }
 
@@ -2375,7 +2375,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("partnername");
         });
 
-        modelBuilder.Entity<Savedlocation>(entity =>
+        modelBuilder.Entity<SavedLocationEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
