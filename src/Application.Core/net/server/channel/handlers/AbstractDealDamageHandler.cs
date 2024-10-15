@@ -388,7 +388,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             monster.applyStatus(player, monsterStatusEffect, false, duration);
                         }
                     }
-                    if (job == 121 || job == 122)
+                    if (job == (int)Job.WHITEKNIGHT || job == (int)Job.PALADIN)
                     {
                         for (int charge = 1211005; charge < 1211007; charge++)
                         {
@@ -410,7 +410,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                 }
                             }
                         }
-                        if (job == 122)
+                        if (job == (int)Job.PALADIN)
                         {
                             for (int charge = 1221003; charge < 1221004; charge++)
                             {

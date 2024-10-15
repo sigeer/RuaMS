@@ -34,7 +34,7 @@ public class MapManager
 
     private ConcurrentDictionary<int, IMap> maps = new();
 
-    public MapManager(EventInstanceManager eim, int world, int channel)
+    public MapManager(EventInstanceManager? eim, int world, int channel)
     {
         this.world = world;
         this.channel = channel;

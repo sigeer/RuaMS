@@ -15,6 +15,11 @@ namespace ServiceTest.Games
 {
     internal class SkillTests: TestBase
     {
+        public SkillTests()
+        {
+            SkillFactory.LoadAllSkills();
+        }
+
         [TestCase(2290000)]
         [Test]
         public void GetSkillStatsTest(int skillBookItemId)
@@ -26,9 +31,7 @@ namespace ServiceTest.Games
         [Test]
         public void Buff_ApplyMAGIC_ARMOR()
         {
-            var player = GetOnlinedTestClient().OnlinedCharacter;
-
-            SkillFactory.LoadAllSkills();
+            var player = MockClient.OnlinedCharacter;
             var skill = SkillFactory.GetSkillTrust(Magician.MAGIC_ARMOR);
 
             skill.getEffect(20).applyTo(player);

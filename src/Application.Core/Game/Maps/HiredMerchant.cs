@@ -341,7 +341,7 @@ public class HiredMerchant : AbstractMapObject
 
             KarmaManipulator.toggleKarmaFlagToUntradeable(newItem);
 
-            int price = (int)Math.Min((float)pItem.getPrice() * quantity, int.MaxValue);
+            int price = Math.Min(pItem.getPrice() * quantity, int.MaxValue);
             if (c.OnlinedCharacter.getMeso() >= price)
             {
                 if (canBuy(c, newItem))

@@ -35,7 +35,10 @@ namespace client.inventory;
  */
 public class Inventory : IEnumerable<Item>
 {
-    ILogger log = LogFactory.GetLogger("Inventory");
+    readonly ILogger log;
+    /// <summary>
+    /// Slot - Item
+    /// </summary>
     protected Dictionary<short, Item> inventory;
     protected InventoryType type;
     protected object lockObj = new object();
@@ -50,6 +53,7 @@ public class Inventory : IEnumerable<Item>
         this.inventory = new();
         this.type = type;
         this.slotLimit = slotLimit;
+        log = mc.Log;
     }
 
     public bool isExtendableInventory()
@@ -145,15 +149,7 @@ public class Inventory : IEnumerable<Item>
 
     public int countById(int itemId)
     {
-        int qty = 0;
-        foreach (Item item in list())
-        {
-            if (item.getItemId() == itemId)
-            {
-                qty += item.getQuantity();
-            }
-        }
-        return qty;
+        return list().Where(x => x.getItemId() == itemId).Sum(x => x.getQuantity());
     }
 
     public int countNotOwnedById(int itemId)
@@ -527,28 +523,13 @@ public class Inventory : IEnumerable<Item>
 
     public static bool checkSpot(IPlayer chr, List<Item> items)
     {
-        List<ItemInventoryType> listItems = new();
-        foreach (Item item in items)
-        {
-            listItems.Add(new(item, item.getInventoryType()));
-        }
-
-        return checkSpotsAndOwnership(chr, listItems);
+        return checkSpotsAndOwnership(chr, items.Select(x => new ItemInventoryType(x, x.getInventoryType())).ToList());
     }
 
-    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items)
-    {
-        return checkSpots(chr, items, false);
-    }
 
-    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, bool useProofInv)
+    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, bool useProofInv = false)
     {
-        int invTypesSize = Enum.GetValues<InventoryType>().Length;
-        List<int> zeroedList = new(invTypesSize);
-        for (byte i = 0; i < invTypesSize; i++)
-        {
-            zeroedList.Add(0);
-        }
+        List<int> zeroedList = Enumerable.Repeat(0, Enum.GetValues<InventoryType>().Length).ToList();
 
         return checkSpots(chr, items, zeroedList, useProofInv);
     }
@@ -635,12 +616,8 @@ public class Inventory : IEnumerable<Item>
         return (itemId << 32) + fnvHash32(owner);
     }
 
-    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items)
-    {
-        return checkSpotsAndOwnership(chr, items, false);
-    }
 
-    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, bool useProofInv)
+    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, bool useProofInv = false)
     {
         List<int> zeroedList = Enumerable.Repeat(0, 5).ToList();
 
