@@ -16,7 +16,7 @@ namespace ServiceTest
         {
             Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
         }
-        protected static IClient GetOnlinedTestClient(int charId = 1)
+        protected IClient GetOnlinedTestClient(int charId = 1)
         {
             var factory = new StdSchedulerFactory();
             SchedulerManage.Scheduler = factory.GetScheduler().Result;
@@ -28,7 +28,7 @@ namespace ServiceTest
             return mockClient;
         }
 
-        protected static IPlayer GetMockPlayer(IClient client, int charId = 1)
+        protected IPlayer GetMockPlayer(IClient client, int charId = 1)
         {
             var player = CharacterManager.GetPlayerById(charId)!;
             client.setPlayer(player);

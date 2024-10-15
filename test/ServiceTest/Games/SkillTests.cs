@@ -24,12 +24,12 @@ namespace ServiceTest.Games
         }
 
         [Test]
-        public void Buff_ApplyMagicianGuard()
+        public void Buff_ApplyMAGIC_ARMOR()
         {
             var player = GetOnlinedTestClient().OnlinedCharacter;
 
             SkillFactory.LoadAllSkills();
-            var skill = SkillFactory.GetSkillTrust(Magician.MAGIC_GUARD);
+            var skill = SkillFactory.GetSkillTrust(Magician.MAGIC_ARMOR);
 
             skill.getEffect(20).applyTo(player);
             Assert.That(player.getBuffedValue(BuffStat.SLOW) == null);
