@@ -98,7 +98,7 @@ public class Shop
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (item.getPrice() > 0)
         {
-            int amount = (int)Math.Min((float)item.getPrice() * quantity, int.MaxValue);
+            int amount = Math.Min(item.getPrice() * quantity, int.MaxValue);
             if (c.OnlinedCharacter.getMeso() >= amount)
             {
                 if (InventoryManipulator.checkSpace(c, itemId, quantity, ""))
@@ -131,7 +131,7 @@ public class Shop
         }
         else if (item.getPitch() > 0)
         {
-            int amount = (int)Math.Min((float)item.getPitch() * quantity, int.MaxValue);
+            int amount = Math.Min(item.getPitch() * quantity, int.MaxValue);
 
             if (c.OnlinedCharacter.getInventory(InventoryType.ETC).countById(ItemId.PERFECT_PITCH) >= amount)
             {
@@ -196,7 +196,8 @@ public class Shop
     private static bool canSell(Item item, short quantity)
     {
         if (item == null)
-        { //Basic check
+        { 
+            //Basic check
             return false;
         }
 

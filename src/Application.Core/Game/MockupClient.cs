@@ -336,7 +336,7 @@ namespace Application.Core.Game
             return _world;
         }
 
-        IWorld _worldServer;
+        IWorld? _worldServer;
         public IWorld getWorldServer()
         {
             return _worldServer ??= new World(_world, 0, "", 1, 1, 1, 1, 1, 1, 1);

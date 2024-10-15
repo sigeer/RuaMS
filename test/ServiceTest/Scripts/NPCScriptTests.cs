@@ -7,13 +7,13 @@ namespace ServiceTest.Scripts
         [Test]
         public void Script_2100_Test()
         {
-            Assert.That(NPCScriptManager.getInstance().start(GetOnlinedTestClient(), 2100, null));
+            Assert.That(NPCScriptManager.getInstance().start(MockClient, 2100, null));
         }
 
         [Test]
         public void Script_CommandJs_Test()
         {
-            var client = GetOnlinedTestClient();
+            var client = MockClient;
             Assert.That(NPCScriptManager.getInstance().start(client, 0, "commands", null));
             NPCScriptManager.getInstance().action(client, 1, 1, 2);
             Assert.Pass();

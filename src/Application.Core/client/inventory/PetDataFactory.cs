@@ -38,46 +38,36 @@ public class PetDataFactory
 
     public static PetCommand getPetCommand(int petId, int skillId)
     {
-        var ret = petCommands.GetValueOrDefault(petId + "" + skillId);
-        if (ret != null)
-        {
+        var commandKey = $"{petId}{skillId}";
+        if (petCommands.TryGetValue(commandKey, out var ret) && ret != null)
             return ret;
-        }
+
         lock (petCommands)
         {
-            ret = petCommands.GetValueOrDefault(petId + "" + skillId);
-            if (ret == null)
+            var skillData = dataRoot.getData("Pet/" + petId + ".img");
+            int prob = 0;
+            int inc = 0;
+            if (skillData != null)
             {
-                Data skillData = dataRoot.getData("Pet/" + petId + ".img");
-                int prob = 0;
-                int inc = 0;
-                if (skillData != null)
-                {
-                    prob = DataTool.getInt("interact/" + skillId + "/prob", skillData, 0);
-                    inc = DataTool.getInt("interact/" + skillId + "/inc", skillData, 0);
-                }
-                ret = new PetCommand(petId, skillId, prob, inc);
-                petCommands.AddOrUpdate(petId + "" + skillId, ret);
+                prob = DataTool.getInt("interact/" + skillId + "/prob", skillData, 0);
+                inc = DataTool.getInt("interact/" + skillId + "/inc", skillData, 0);
             }
+            ret = new PetCommand(petId, skillId, prob, inc);
+            petCommands.AddOrUpdate(commandKey, ret);
             return ret;
         }
     }
 
     public static int getHunger(int petId)
     {
-        var ret = petHunger.get(petId);
-        if (ret != null)
-        {
-            return ret.Value;
-        }
+        if (petHunger.TryGetValue(petId, out var ret))
+            return ret;
+
         lock (petHunger)
         {
-            ret = petHunger.get(petId);
-            if (ret == null)
-            {
-                ret = DataTool.getInt(dataRoot.getData("Pet/" + petId + ".img").getChildByPath("info/hungry"), 1);
-            }
-            return ret.Value;
+            ret = DataTool.getInt(dataRoot.getData("Pet/" + petId + ".img").getChildByPath("info/hungry"), 1);
+            petHunger.AddOrUpdate(petId, ret);
+            return ret;
         }
     }
 }
