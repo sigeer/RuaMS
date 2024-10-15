@@ -945,7 +945,7 @@ public class Server
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            SkillFactory.loadAllSkills();
+            SkillFactory.LoadAllSkills();
             sw.Stop();
             log.Debug("Skills loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
