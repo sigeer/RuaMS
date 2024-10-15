@@ -46,7 +46,7 @@ public class SkillFactory
         return skills.GetValueOrDefault(id) ?? throw new BusinessResException($"SkillFactory.getSkill({id})");
     }
 
-    public static void loadAllSkills()
+    public static void LoadAllSkills()
     {
         Dictionary<int, Skill> loadedSkills = [];
         DataDirectoryEntry root = datasource.getRoot();
