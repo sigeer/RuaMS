@@ -126,16 +126,10 @@ public class BuffStat : EnumClass
     private long i;
     private bool isFirst;
 
-    BuffStat(long i, bool isFirst)
+    BuffStat(long i, bool isFirst = false)
     {
         this.i = i;
         this.isFirst = isFirst;
-    }
-
-    BuffStat(long i)
-    {
-        this.i = i;
-        this.isFirst = false;
     }
 
     public long getValue()
@@ -149,39 +143,6 @@ public class BuffStat : EnumClass
     public override string ToString()
     {
         return name();
-    }
-    public override bool Equals(object? obj)
-    {
-        if (obj is BuffStat m)
-            return this.i == m.i;
-        return false;
-    }
-
-    public static bool operator ==(BuffStat? obj1, BuffStat? obj2)
-    {
-        if (obj1 is null && obj2 is null)
-            return true;
-
-        if (obj1 is null)
-            return false;
-
-        return obj1.Equals(obj2);
-    }
-
-    public static bool operator !=(BuffStat? obj1, BuffStat? obj2)
-    {
-        return !(obj1 == obj2);
-    }
-
-
-    public override int GetHashCode()
-    {
-        // 将ulong拆分成高32位和低32位
-        uint lower = (uint)(i & 0xFFFFFFFF);
-        uint upper = (uint)(i >> 32);
-
-        // 组合高32位和低32位
-        return (int)(lower ^ upper);
     }
 
     public int CompareTo(BuffStat? other)
