@@ -645,7 +645,15 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             }
         }
 
-        if (ret.skill == Evan.ICE_BREATH || ret.skill == Evan.FIRE_BREATH || ret.skill == FPArchMage.BIG_BANG || ret.skill == ILArchMage.BIG_BANG || ret.skill == Bishop.BIG_BANG || ret.skill == Gunslinger.GRENADE || ret.skill == Brawler.CORKSCREW_BLOW || ret.skill == ThunderBreaker.CORKSCREW_BLOW || ret.skill == NightWalker.POISON_BOMB)
+        if (ret.skill == Evan.ICE_BREATH
+            || ret.skill == Evan.FIRE_BREATH
+            || ret.skill == FPArchMage.BIG_BANG
+            || ret.skill == ILArchMage.BIG_BANG
+            || ret.skill == Bishop.BIG_BANG
+            || ret.skill == Gunslinger.GRENADE
+            || ret.skill == Brawler.CORKSCREW_BLOW
+            || ret.skill == ThunderBreaker.CORKSCREW_BLOW
+            || ret.skill == NightWalker.POISON_BOMB)
         {
             ret.charge = p.readInt();
         }
@@ -686,7 +694,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         long calcDmgMax;
 
         if (magic && ret.skill != 0)
-        {   // thanks onechord for noticing a few false positives stemming from maxdmg as 0
+        {
+            // thanks onechord for noticing a few false positives stemming from maxdmg as 0
             calcDmgMax = (long)(Math.Ceiling((chr.getTotalMagic() * Math.Ceiling(chr.getTotalMagic() / 1000.0) + chr.getTotalMagic()) / 30.0) + Math.Ceiling(chr.getTotalInt() / 200.0));
         }
         else if (ret.skill == Rogue.LUCKY_SEVEN || ret.skill == NightWalker.LUCKY_SEVEN || ret.skill == NightLord.TRIPLE_THROW)

@@ -10,7 +10,7 @@ namespace Application.Core.scripting.Event
         }
 
         public string JobId { get; set; }
-        public async Task<bool> cancelAsync(bool immediately)
+        public async Task<bool> CancelAsync(bool immediately)
         {
             var jobKey = JobKey.Create(JobId);
             if (immediately)
@@ -21,7 +21,7 @@ namespace Application.Core.scripting.Event
 
         public bool cancel(bool immediately)
         {
-            return cancelAsync(immediately).Result;
+            return CancelAsync(immediately).Result;
         }
     }
 }

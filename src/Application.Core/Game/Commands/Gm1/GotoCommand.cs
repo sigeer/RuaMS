@@ -12,8 +12,7 @@ public class GotoCommand : CommandBase
     {
         Description = "Warp to a predefined map.";
 
-        var towns = GameConstants.GOTO_TOWNS.ToList();
-        sortGotoEntries(towns);
+        var towns = GameConstants.GOTO_TOWNS.OrderBy(x => x.Value).ToList();
 
         try
         {
@@ -24,8 +23,7 @@ public class GotoCommand : CommandBase
                 GOTO_TOWNS_INFO += ("'" + e.Key + "' - #b" + (MapFactory.loadPlaceName(e.Value)) + "#k\r\n");
             }
 
-            List<KeyValuePair<string, int>> areas = new(GameConstants.GOTO_AREAS);
-            sortGotoEntries(areas);
+            var areas = GameConstants.GOTO_AREAS.OrderBy(x => x.Value).ToArray();
             foreach (var e in areas)
             {
                 GOTO_AREAS_INFO += ("'" + e.Key + "' - #b" + (MapFactory.loadPlaceName(e.Value)) + "#k\r\n");
@@ -41,13 +39,8 @@ public class GotoCommand : CommandBase
 
     }
 
-    public static string GOTO_TOWNS_INFO = "";
-    public static string GOTO_AREAS_INFO = "";
-
-    private static void sortGotoEntries(List<KeyValuePair<string, int>> listEntries)
-    {
-        listEntries.Sort((e1, e2) => e1.Value.CompareTo(e2.Value));
-    }
+    public string GOTO_TOWNS_INFO = "";
+    public string GOTO_AREAS_INFO = "";
 
     public override void Execute(IClient c, string[] paramsValue)
     {
@@ -90,9 +83,9 @@ public class GotoCommand : CommandBase
             gotomaps = GameConstants.GOTO_TOWNS;
         }
 
-        if (gotomaps.ContainsKey(paramsValue[0]))
+        if (gotomaps.TryGetValue(paramsValue[0], out var map))
         {
-            var target = c.getChannelServer().getMapFactory().getMap(gotomaps[paramsValue[0]]);
+            var target = c.getChannelServer().getMapFactory().getMap(map);
 
             // expedition issue with this command detected thanks to Masterrulax
             Portal targetPortal = target.getRandomPlayerSpawnpoint();

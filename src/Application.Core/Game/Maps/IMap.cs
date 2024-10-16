@@ -225,8 +225,7 @@ namespace Application.Core.Game.Maps
         void resetFully();
         void resetMapObjects();
         void resetMapObjects(int difficulty, bool isPq);
-        void resetPQ();
-        void resetPQ(int difficulty);
+        void resetPQ(int difficulty = 1);
         void resetReactors();
         void resetReactors(List<Reactor> list);
         void respawn();

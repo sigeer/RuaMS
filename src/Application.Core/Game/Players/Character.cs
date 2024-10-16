@@ -2400,6 +2400,18 @@ public partial class Player
         return energybar;
     }
 
+    public void setEventInstance(EventInstanceManager? eventInstance)
+    {
+        Monitor.Enter(evtLock);
+        try
+        {
+            this.eventInstance = eventInstance;
+        }
+        finally
+        {
+            Monitor.Exit(evtLock);
+        }
+    }
     public EventInstanceManager? getEventInstance()
     {
         Monitor.Enter(evtLock);
@@ -5067,18 +5079,7 @@ public partial class Player
         energybar = set;
     }
 
-    public void setEventInstance(EventInstanceManager? eventInstance)
-    {
-        Monitor.Enter(evtLock);
-        try
-        {
-            this.eventInstance = eventInstance;
-        }
-        finally
-        {
-            Monitor.Exit(evtLock);
-        }
-    }
+
 
     public void setExp(int amount)
     {
