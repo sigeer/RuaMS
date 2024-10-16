@@ -1688,8 +1688,6 @@ public class EventInstanceManager
     {
         giveEventPlayersStageReward(thisStage);
         thisStage--;    //stages counts from ONE, scripts from ZERO
-        // 修改js中的全局变量
-        em.getIv().Evaluate("thisStage--");
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal("next00");
         portal?.setScriptName(eventFamily + thisStage);
@@ -1698,9 +1696,7 @@ public class EventInstanceManager
     public void linkPortalToScript(int thisStage, string portalName, string scriptName, int thisMapId)
     {
         giveEventPlayersStageReward(thisStage);
-        thisStage--;    //stages counts from ONE, scripts from ZERO
-        // 修改js中的全局变量thisStage
-        em.getIv().Evaluate("thisStage--");
+        // thisStage--;    //stages counts from ONE, scripts from ZERO
         IMap nextStage = getMapInstance(thisMapId);
         var portal = nextStage.getPortal(portalName);
         portal?.setScriptName(scriptName);
@@ -1795,6 +1791,14 @@ public class EventInstanceManager
         }
 
         return true;
+    }
+
+    public void PassStage(int currentStg, int currentMap, string eventFamily)
+    {
+        setProperty(currentStg + "stageclear", "true");
+        showClearEffect(true);
+
+        linkToNextStage(currentStg, eventFamily, currentMap);  //opens the portal to the next map
     }
 }
 
