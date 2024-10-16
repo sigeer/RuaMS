@@ -29,9 +29,9 @@ namespace server.partyquest;
 /**
  * @author kevintjuh93
  */
-public class PartyQuest
+public abstract class PartyQuest
 {
-    private static ILogger log = LogFactory.GetLogger("PartyQuest");
+    protected static ILogger log = LogFactory.GetLogger("PartyQuest");
 
     int channel, world;
     ITeam party;

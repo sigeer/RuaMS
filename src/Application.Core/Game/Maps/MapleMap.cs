@@ -425,12 +425,7 @@ public class MapleMap : IMap
         return this.selfDestructives.Remove(mapobjectid);
     }
 
-    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IClient>? packetbakery)
-    {
-        spawnAndAddRangedMapObject(mapobject, packetbakery, null);
-    }
-
-    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IClient>? packetbakery, Func<IPlayer, bool>? condition)
+    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IClient>? packetbakery, Func<IPlayer, bool>? condition = null)
     {
         List<IPlayer> inRangeCharacters = new();
         int curOID = getUsableOID();
@@ -3021,14 +3016,7 @@ public class MapleMap : IMap
         }
         if (hasBoat() > 0)
         {
-            if (hasBoat() == 1)
-            {
-                chr.sendPacket((PacketCreator.boatPacket(true)));
-            }
-            else
-            {
-                chr.sendPacket(PacketCreator.boatPacket(false));
-            }
+            chr.sendPacket(PacketCreator.boatPacket(hasBoat() == 1));
         }
 
         chr.receivePartyMemberHP();
@@ -4653,7 +4641,7 @@ public class MapleMap : IMap
 
     public void startEvent()
     {
-        this.eventstarted = true;
+        setEventStarted(true);
     }
 
     public void setEventStarted(bool @event)
@@ -4764,19 +4752,15 @@ public class MapleMap : IMap
         resetMapObjects();
     }
 
+
+    public void resetPQ(int difficulty = 1)
+    {
+        resetMapObjects(difficulty, true);
+    }
+
     public void resetMapObjects()
     {
         resetMapObjects(1, false);
-    }
-
-    public void resetPQ()
-    {
-        resetPQ(1);
-    }
-
-    public void resetPQ(int difficulty)
-    {
-        resetMapObjects(difficulty, true);
     }
 
     public void resetMapObjects(int difficulty, bool isPq)

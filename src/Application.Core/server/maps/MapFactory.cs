@@ -369,7 +369,8 @@ public class MapFactory
         try
         {
             foreach (var layer in mapData.getChildByPath("back"))
-            { // yolo
+            { 
+                // yolo
                 int layerNum = int.Parse(layer.getName());
                 int btype = DataTool.getInt(layer.getChildByPath("type"), 0);
 

@@ -15,15 +15,15 @@ namespace ServiceTest
         public TestBase()
         {
             Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
+
+            var factory = new StdSchedulerFactory();
+            SchedulerManage.Scheduler = factory.GetScheduler().Result;
         }
 
         private IClient? _client;
         protected IClient MockClient => _client ??= GetOnlinedTestClient();
         private IClient GetOnlinedTestClient(int charId = 1)
         {
-            var factory = new StdSchedulerFactory();
-            SchedulerManage.Scheduler = factory.GetScheduler().Result;
-
             Server.getInstance().forceUpdateCurrentTime();
             var mockClient = new MockupClient();
             GetMockPlayer(mockClient, charId);
