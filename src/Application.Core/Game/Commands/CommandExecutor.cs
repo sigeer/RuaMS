@@ -40,7 +40,7 @@ public class CommandExecutor
         foreach (var item in commands)
         {
             var obj = (Activator.CreateInstance(item) as CommandBase)!;
-            foreach (var sytax in obj.Syntax)
+            foreach (var sytax in obj.AllSupportedCommand)
             {
                 registeredCommands.Add(sytax, obj);
             }
@@ -105,6 +105,7 @@ public class CommandExecutor
             paramsValue = new string[] { };
         }
 
+        command.CurrentCommand = commandName;
         command.Execute(client, paramsValue);
         log.Information("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }

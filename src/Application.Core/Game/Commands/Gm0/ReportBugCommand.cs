@@ -17,7 +17,7 @@ public class ReportBugCommand : CommandBase
 
         if (paramsValue.Length < 1)
         {
-            player.dropMessage(5, $"Message too short and not sent. Please do {Syntax[0]} <bug>");
+            player.dropMessage(5, $"Message too short and not sent. Please do {CurrentCommand} <bug>");
             return;
         }
         string message = player.getLastCommandMessage();

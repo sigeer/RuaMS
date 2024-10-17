@@ -14,7 +14,7 @@ public class SummonCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage($"Syntax: !{Syntax[0]} <playername>");
+            player.yellowMessage($"Syntax: !{CurrentCommand} <playername>");
             return;
         }
 
