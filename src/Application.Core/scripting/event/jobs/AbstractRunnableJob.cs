@@ -10,9 +10,12 @@ namespace Application.Core.scripting.Event.jobs
             var type = context.JobDetail.JobDataMap[JobDataKeys.Data];
 
             if (type is AbstractRunnable r)
+            {
+                Log.Logger.Debug($"TaskJob  {type.GetType().Name}.{r.Name}");
                 r.run();
+            }
             else
-                Log.Logger.Debug($"TaskJob  {(type == null ? "null" : type.GetType().Name)}");
+                Log.Logger.Error($"TaskJob Invalid, {(type == null ? "null" : type.GetType().Name)}");
             return Task.CompletedTask;
         }
     }
