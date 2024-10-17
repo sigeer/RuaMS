@@ -29,6 +29,28 @@
             set => _currentCommand = value;
         }
 
+        public virtual void Run(IClient client, string[] values)
+        {
+            try
+            {
+                if (!CheckArguments(values))
+                {
+                    client.OnlinedCharacter.yellowMessage($"命令语法错误：{ValidSytax}");
+                    return;
+                }
+
+                Execute(client, values);
+            }
+            catch (CommandArgumentException ex)
+            {
+                client.OnlinedCharacter.yellowMessage($"命令语法错误：{ValidSytax}, {ex.Message}");
+                return;
+            }
+        }
+        public virtual bool CheckArguments(string[] values)
+        {
+            return true;
+        }
         public abstract void Execute(IClient client, string[] values);
         protected string joinStringFrom(string[] arr, int start)
         {

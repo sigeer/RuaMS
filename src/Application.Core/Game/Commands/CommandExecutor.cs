@@ -82,7 +82,7 @@ public class CommandExecutor
         var command = registeredCommands.GetValueOrDefault(commandName);
         if (command == null)
         {
-            client.OnlinedCharacter.yellowMessage("Command '" + commandName + "' is not available. See @commands for a list of available commands.");
+            client.OnlinedCharacter.yellowMessage("Command '" + commandName + "' is not available. See !commands for a list of available commands.");
             return;
         }
         if (client.OnlinedCharacter.gmLevel() < command.Rank)
@@ -101,7 +101,7 @@ public class CommandExecutor
         }
 
         command.CurrentCommand = commandName;
-        command.Execute(client, paramsValue);
+        command.Run(client, paramsValue);
         log.Information("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }
 }

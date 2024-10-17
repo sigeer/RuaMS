@@ -1,8 +1,8 @@
 namespace Application.Core.Game.Commands.Gm2;
 
-public class LevelProCommand : CommandBase
+public class LevelProCommand : ParamsCommandBase
 {
-    public LevelProCommand() : base(2, "levelpro")
+    public LevelProCommand() : base(["<newlevel>"], 2, "levelpro")
     {
         Description = "Set your level, one by one.";
     }
@@ -10,19 +10,9 @@ public class LevelProCommand : CommandBase
     public override void Execute(IClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        if (paramsValue.Length < 1)
-        {
-            player.yellowMessage("Syntax: !levelpro <newlevel>");
-            return;
-        }
 
-        if (!int.TryParse(paramsValue[0], out var newlevel))
-        {
-            player.yellowMessage("Syntax: <newlevel> invalid");
-            return;
-        }
-
-        var targetLevel = Math.Min(player.getMaxClassLevel(), newlevel);
+        var newLevel = GetIntParam("newlevel");
+        var targetLevel = Math.Min(player.getMaxClassLevel(), newLevel);
         while (player.getLevel() < targetLevel)
         {
             player.levelUp(false);

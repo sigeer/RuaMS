@@ -2,9 +2,9 @@ using server.maps;
 
 namespace Application.Core.Game.Commands.Gm2;
 
-public class WarpCommand : CommandBase
+public class WarpCommand : ParamsCommandBase
 {
-    public WarpCommand() : base(2, "warp")
+    public WarpCommand() : base(["<mapid>"], 2, "warp")
     {
         Description = "Warp to a map.";
     }
@@ -12,15 +12,10 @@ public class WarpCommand : CommandBase
     public override void Execute(IClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        if (paramsValue.Length < 1)
-        {
-            player.yellowMessage("Syntax: !warp <mapid>");
-            return;
-        }
 
         try
         {
-            var target = c.getChannelServer().getMapFactory().getMap(int.Parse(paramsValue[0]));
+            var target = c.getChannelServer().getMapFactory().getMap(GetIntParam("mapid"));
             if (target == null)
             {
                 player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
