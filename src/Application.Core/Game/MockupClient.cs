@@ -231,7 +231,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public EventManager getEventManager(string evt)
+        public EventManager? getEventManager(string evt)
         {
             throw new NotImplementedException();
         }
