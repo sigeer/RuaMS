@@ -6,8 +6,7 @@ namespace Application.Core.Game.Commands;
 public class CommandExecutor
 {
     private ILogger log = LogFactory.GetLogger("Command");
-    private static char USER_HEADING = '@';
-    private static char GM_HEADING = '!';
+    private static char COMMAND_HEADING = '!';
 
     private Dictionary<string, CommandBase> registeredCommands = new();
 
@@ -22,14 +21,10 @@ public class CommandExecutor
         return registeredCommands.OrderBy(x => x.Value.Rank).GroupBy(x => x.Value.Rank).Select(x => x.Select(y => new CommandInfo(y.Key, y.Value.Description)).ToList()).ToList();
     }
 
-    public static bool isCommand(IClient client, string content)
+    public static bool isCommand(string content)
     {
         char heading = content.ElementAt(0);
-        if (client.OnlinedCharacter.isGM())
-        {
-            return heading == USER_HEADING || heading == GM_HEADING;
-        }
-        return heading == USER_HEADING;
+        return heading == COMMAND_HEADING;
     }
 
     private CommandExecutor()
@@ -40,7 +35,7 @@ public class CommandExecutor
         foreach (var item in commands)
         {
             var obj = (Activator.CreateInstance(item) as CommandBase)!;
-            foreach (var sytax in obj.Syntax)
+            foreach (var sytax in obj.AllSupportedCommand)
             {
                 registeredCommands.Add(sytax, obj);
             }
@@ -105,6 +100,7 @@ public class CommandExecutor
             paramsValue = new string[] { };
         }
 
+        command.CurrentCommand = commandName;
         command.Execute(client, paramsValue);
         log.Information("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }

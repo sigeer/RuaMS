@@ -48,7 +48,7 @@ public class GeneralChatHandler : AbstractPacketHandler
             return;
         }
         char heading = s.ElementAt(0);
-        if (CommandExecutor.isCommand(c, s))
+        if (CommandExecutor.isCommand(s))
         {
             CommandExecutor.getInstance().handle(c, s);
         }
