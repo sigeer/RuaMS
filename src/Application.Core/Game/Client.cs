@@ -294,7 +294,7 @@ public class Client : ChannelHandlerAdapter, IClient
         return inTransition;
     }
 
-    public EventManager getEventManager(string evt)
+    public EventManager? getEventManager(string evt)
     {
         return getChannelServer().getEventSM().getEventManager(evt);
     }

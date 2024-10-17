@@ -86,7 +86,7 @@ namespace Application.Core.Game
         IWorldChannel getChannelServer(byte channel);
         short getCharacterSlots();
         NPCConversationManager? getCM();
-        EventManager getEventManager(string evt);
+        EventManager? getEventManager(string evt);
         sbyte getGender();
         int getGMLevel();
         sbyte getGReason();

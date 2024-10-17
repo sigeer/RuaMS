@@ -217,7 +217,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public EventManager getEventManager(string evt)
+        public EventManager? getEventManager(string evt)
         {
             throw new BusinessCharacterOfflineException();
         }

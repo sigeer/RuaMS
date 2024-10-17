@@ -202,7 +202,7 @@ public class AbstractPlayerInteraction
         getWarpMap(mapid).resetMapObjects();
     }
 
-    public EventManager getEventManager(string @event)
+    public EventManager? getEventManager(string @event)
     {
         return getClient().getEventManager(@event);
     }

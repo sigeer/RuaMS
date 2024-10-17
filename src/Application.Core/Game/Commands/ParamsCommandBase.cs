@@ -1,5 +1,8 @@
 ﻿namespace Application.Core.Game.Commands
 {
+    /// <summary>
+    /// 带参命令，大小写敏感
+    /// </summary>
     public abstract class ParamsCommandBase : CommandBase
     {
         protected string[][] ValidArguments { get; set; }
