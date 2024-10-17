@@ -31,7 +31,7 @@ public class CommandExecutor
     {
         var commandBase = typeof(CommandBase);
         var assembly = Assembly.GetAssembly(commandBase)!;
-        var commands = assembly.GetTypes().Where(x => x.IsSubclassOf(commandBase));
+        var commands = assembly.GetTypes().Where(x => x.IsSubclassOf(commandBase) && !x.IsAbstract);
         foreach (var item in commands)
         {
             var obj = (Activator.CreateInstance(item) as CommandBase)!;
