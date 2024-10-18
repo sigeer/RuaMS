@@ -25,6 +25,7 @@ using scripting.npc;
 using scripting.quest;
 using server;
 using server.maps;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text.RegularExpressions;
 using tools;
@@ -96,6 +97,8 @@ public class Client : ChannelHandlerAdapter, IClient
         CHANNEL
     }
 
+    ConcurrentQueue<Packet> packetQueue;
+    bool _isProcessing = true;
     public Client(Type type, long sessionId, string remoteAddress, PacketProcessor packetProcessor, int world, int channel)
     {
         this.type = type;
@@ -104,6 +107,18 @@ public class Client : ChannelHandlerAdapter, IClient
         this.packetProcessor = packetProcessor;
         this.world = world;
         this.channel = channel;
+
+        packetQueue = new ConcurrentQueue<Packet>();
+        Task.Run(async () =>
+        {
+            while (_isProcessing)
+            {
+                if (packetQueue.TryDequeue(out var p))
+                    await ioChannel.WriteAndFlushAsync(p);
+                else
+                    await Task.Delay(10);
+            }
+        });
     }
 
     public static Client createLoginClient(long sessionId, string remoteAddress, PacketProcessor packetProcessor,
@@ -1064,6 +1079,7 @@ public class Client : ChannelHandlerAdapter, IClient
         this.birthday = null;
         this._engines.Clear();
         this.Character = null;
+        _isProcessing = false;
     }
 
     public void setCharacterOnSessionTransitionState(int cid)
@@ -1474,15 +1490,16 @@ public class Client : ChannelHandlerAdapter, IClient
             return;
         }
 
-        Monitor.Enter(announcerLock);
-        try
-        {
-            ioChannel.WriteAndFlushAsync(packet).Wait();
-        }
-        finally
-        {
-            Monitor.Exit(announcerLock);
-        }
+        packetQueue.Enqueue(packet);
+        //Monitor.Enter(announcerLock);
+        //try
+        //{
+        //    ioChannel.WriteAndFlushAsync(packet).Wait();
+        //}
+        //finally
+        //{
+        //    Monitor.Exit(announcerLock);
+        //}
     }
 
     public void announceHint(string msg, int length)
