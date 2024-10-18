@@ -48,8 +48,8 @@ namespace Application.Core.Compatible.Extensions
 
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> createFunc) where TKey : notnull
         {
-            if (dictionary.ContainsKey(key))
-                return dictionary[key];
+            if (dictionary.TryGetValue(key, out TValue? value))
+                return value;
             else
             {
                 var newVal = createFunc(key);

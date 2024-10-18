@@ -12,7 +12,7 @@ namespace Application.Core.scripting.Event.jobs
             if (type is AbstractRunnable r)
                 r.run();
             else
-                Log.Logger.Debug($"TaskJob  {(type == null ? "null" : type.GetType().Name)}");
+                Log.Logger.Error($"TaskJob Invalid, {(type == null ? "null" : type.GetType().Name)}");
             return Task.CompletedTask;
         }
     }
