@@ -2,7 +2,7 @@
 {
     public class KerningPQ : PlayerPartyQuestBase
     {
-        public KerningPQ(IPlayer player) : base("KerningPQ", "lpq", player)
+        public KerningPQ(IPlayer player) : base("KerningPQ", "kpq", player)
         {
             EntryNpcId = 9020000;
         }

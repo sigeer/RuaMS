@@ -1,4 +1,5 @@
-﻿using Application.Core.Game.GameEvents.PartyQuest;
+﻿using Application.Core.Game;
+using Application.Core.Game.GameEvents.PartyQuest;
 using Application.Core.Managers;
 
 namespace ServiceTest.Games
@@ -8,6 +9,8 @@ namespace ServiceTest.Games
         [Test]
         public void KerningPQTest()
         {
+            MockClient.getChannelServer().reloadEventScriptManager();
+
             var pq = new KerningPQ(MockClient.OnlinedCharacter);
             MockClient.OnlinedCharacter.Level = 10;
             pq.MinLevel = 1;
