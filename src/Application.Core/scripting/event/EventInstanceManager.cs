@@ -1167,7 +1167,7 @@ public class EventInstanceManager
 
     private List<int> convertToIntegerList(List<object> objects)
     {
-        return objects.Select(x => (int)x).ToList();
+        return objects.Select(x => Convert.ToInt32(x)).ToList();
     }
 
     public void setEventClearStageExp(List<object> gain)
@@ -1782,14 +1782,6 @@ public class EventInstanceManager
         }
 
         return true;
-    }
-
-    public void PassStage(int currentStg, int currentMap, string eventFamily)
-    {
-        setProperty(currentStg + "stageclear", "true");
-        showClearEffect(true);
-
-        linkToNextStage(currentStg, eventFamily, currentMap);  //opens the portal to the next map
     }
 }
 

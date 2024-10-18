@@ -108,15 +108,8 @@ public class WorldChannel : IWorldChannel
             this.channelServer = initServer(port, this.world, channel);
             expedType.AddRange(Arrays.asList(ExpeditionType.values<ExpeditionType>()));
 
-            if (Server.getInstance().isOnline())
-            {  // postpone event loading to improve boot time... thanks Riizade, daronhudson for noticing slow startup times
-                eventSM = new EventScriptManager(this, getEvents());
-                eventSM.init();
-            }
-            else
-            {
-                eventSM = new EventScriptManager(this, ["0_EXAMPLE"]);
-            }
+            eventSM = new EventScriptManager(this, getEvents());
+            eventSM.init();
 
             dojoStage = new int[20];
             dojoFinishTime = new long[20];
