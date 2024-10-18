@@ -1,15 +1,5 @@
 ﻿using Application.Core.constants.game;
-using Application.Core.Game.Life;
-using Application.Core.Game.Players;
-using constants.id;
-using Google.Protobuf.WellKnownTypes;
 using server.life;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Managers

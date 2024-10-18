@@ -164,12 +164,7 @@ public class EventInstanceManager
         }
     }
 
-    public void giveEventPlayersExp(int gain)
-    {
-        giveEventPlayersExp(gain, -1);
-    }
-
-    public void giveEventPlayersExp(int gain, int mapId)
+    public void giveEventPlayersExp(int gain, int mapId = -1)
     {
         if (gain == 0)
         {
@@ -197,12 +192,8 @@ public class EventInstanceManager
         }
     }
 
-    public void giveEventPlayersMeso(int gain)
-    {
-        giveEventPlayersMeso(gain, -1);
-    }
 
-    public void giveEventPlayersMeso(int gain, int mapId)
+    public void giveEventPlayersMeso(int gain, int mapId = -1)
     {
         if (gain == 0)
         {

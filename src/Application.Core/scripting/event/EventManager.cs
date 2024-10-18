@@ -182,23 +182,27 @@ public class EventManager
         return new EventScheduledFuture(r, ess);
     }
 
-    public EventScheduledFuture scheduleAtTimestamp(string methodName, long timestamp)
-    {
-        var r = () =>
-        {
-            try
-            {
-                iv.CallFunction(methodName);
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Event script scheduleAtTimestamp, Script: {Script}", name);
-            }
-        };
+    /// <summary>
+    /// js调用的代码已注释
+    /// </summary>
+    /// <returns></returns>
+    //public EventScheduledFuture scheduleAtTimestamp(string methodName, long timestamp)
+    //{
+    //    var r = () =>
+    //    {
+    //        try
+    //        {
+    //            iv.CallFunction(methodName);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            log.Error(ex, "Event script scheduleAtTimestamp, Script: {Script}", name);
+    //        }
+    //    };
 
-        ess.registerEntry(r, timestamp - server.getCurrentTime());
-        return new EventScheduledFuture(r, ess);
-    }
+    //    ess.registerEntry(r, timestamp - server.getCurrentTime());
+    //    return new EventScheduledFuture(r, ess);
+    //}
 
     public IWorld getWorldServer()
     {
