@@ -105,7 +105,7 @@ public static class HexTool
             }
         }
 
-        return Encoding.UTF8.GetString(filteredBytes);
+        return GlobalTools.Encoding.GetString(filteredBytes);
     }
 
     private static bool isSpecialCharacter(byte asciiCode)
