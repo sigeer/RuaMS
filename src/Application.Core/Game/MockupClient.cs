@@ -23,10 +23,16 @@ namespace Application.Core.Game
         int _world;
         int _channel;
 
+        public int World { get; set; }
+        public int Channel { get; set; }
+
         public MockupClient(int world, int channel)
         {
             _world = world;
             _channel = channel;
+
+            World = world;
+            Channel = channel;
         }
 
         public MockupClient() : this(0, 1) { }

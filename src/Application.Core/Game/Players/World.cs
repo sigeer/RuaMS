@@ -34,7 +34,6 @@ namespace Application.Core.Game.Players
             {
                 Client.getChannelServer().removePlayerAway(Id);
             }
-            Channel = null;
         }
         public bool isLoggedinWorld()
         {
@@ -50,7 +49,6 @@ namespace Application.Core.Game.Players
         {
             awayFromWorld.Set(false);
             Client.getChannelServer().removePlayerAway(Id);
-            Channel = channel;
 
             if (PartySearch)
             {

@@ -15,7 +15,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : AbstractAnimatedMapObject, IPlayer
     {
-        public int? Channel { get; set; }
+        public int Channel => awayFromWorld ? -1 : Client.Channel;
 
         public IClient Client { get; private set; }
         public bool IsOnlined => Client.IsGameOnlined;

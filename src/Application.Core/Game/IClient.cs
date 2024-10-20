@@ -45,6 +45,8 @@ namespace Application.Core.Game
         public bool IsGameOnlined => Character != null;
         public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
         public string ClientInfo { get; }
+        public int World { get; set; }
+        public int Channel { get; set; }
         bool acceptToS();
         void addVotePoints(int points);
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);

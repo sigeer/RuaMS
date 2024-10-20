@@ -41,6 +41,9 @@ public class Client : ChannelHandlerAdapter, IClient
     public const int LOGIN_SERVER_TRANSITION = 1;
     public const int LOGIN_LOGGEDIN = 2;
 
+    public int World { get; set; }
+    public int Channel { get; set; }
+
     private Type type;
     private long sessionId;
     private PacketProcessor packetProcessor;
@@ -107,6 +110,9 @@ public class Client : ChannelHandlerAdapter, IClient
         this.packetProcessor = packetProcessor;
         this.world = world;
         this.channel = channel;
+
+        World = world;
+        Channel = channel;
 
         packetQueue = new ConcurrentQueue<Packet>();
         Task.Run(async () =>

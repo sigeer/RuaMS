@@ -13,7 +13,7 @@ public class BuddylistEntry
         Visible = visible;
     }
 
-    public int getChannel() => Player.Channel ?? -1;
+    public int getChannel() => Player.Channel;
 
     public bool isOnline() => Player.IsOnlined;
     public string getName() => Player.Name;
