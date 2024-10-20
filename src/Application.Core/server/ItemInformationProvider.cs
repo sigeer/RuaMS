@@ -1702,7 +1702,7 @@ public class ItemInformationProvider
             var spec = item.getChildByPath("specEx") ?? item.getChildByPath("spec");
 
             ret = StatEffect.loadItemEffectFromData(spec, itemId);
-            itemEffects.Add(itemId, ret);
+            itemEffects.AddOrUpdate(itemId, ret);
         }
         return ret;
     }
@@ -1962,7 +1962,7 @@ public class ItemInformationProvider
             }
 
             foodData = new(inc, pets);
-            cashPetFoodCache.Add(itemId, foodData);
+            cashPetFoodCache.AddOrUpdate(itemId, foodData);
         }
 
         return new(foodData.Value.Key, foodData.Value.Value.Contains(petId));
@@ -2448,7 +2448,7 @@ public class ItemInformationProvider
             }
         }
 
-        equipLevelInfoCache.Add(itemId, value);
+        equipLevelInfoCache.AddOrUpdate(itemId, value);
         return value;
     }
 
@@ -2613,7 +2613,7 @@ public class ItemInformationProvider
                 return null;
 
 
-            statUpgradeMakerCache.Add(itemId, statUpgd);
+            statUpgradeMakerCache.AddOrUpdate(itemId, statUpgd);
             return statUpgd;
 
 
@@ -2629,11 +2629,8 @@ public class ItemInformationProvider
     {
         try
         {
-            var itemid = mobCrystalMakerCache.get(leftoverId);
-            if (itemid != null)
-            {
-                return itemid.Value;
-            }
+            if (mobCrystalMakerCache.TryGetValue(leftoverId, out var itemid))
+                return itemid;
 
             itemid = -1;
 
@@ -2642,8 +2639,8 @@ public class ItemInformationProvider
             if (dbModel != null)
                 itemid = getCrystalForLevel(LifeFactory.getMonsterLevel(dbModel.Dropperid) - 1);
 
-            mobCrystalMakerCache.Add(leftoverId, itemid.Value);
-            return itemid.Value;
+            mobCrystalMakerCache.Add(leftoverId, itemid);
+            return itemid;
         }
         catch (Exception e)
         {
@@ -2679,7 +2676,7 @@ public class ItemInformationProvider
                 {
                     makerEntry.addReqItem(x.ReqItem, x.Count);
                 });
-                makerItemCache.Add(toCreate, new MakerItemCreateEntry(makerEntry));
+                makerItemCache.AddOrUpdate(toCreate, new MakerItemCreateEntry(makerEntry));
             }
             catch (Exception e)
             {
@@ -2756,12 +2753,9 @@ public class ItemInformationProvider
     }
 
     public int getMakerStimulant(int itemId)
-    {  // thanks to Arnah
-        var itemid = makerCatalystCache.get(itemId);
-        if (itemid != null)
-        {
-            return itemid.Value;
-        }
+    {
+        if (makerCatalystCache.TryGetValue(itemId, out var itemid))
+            return itemid;
 
         itemid = -1;
         foreach (Data md in etcData.getData("ItemMake.img").getChildren())
@@ -2774,8 +2768,8 @@ public class ItemInformationProvider
             }
         }
 
-        makerCatalystCache.Add(itemId, itemid.Value);
-        return itemid.Value;
+        makerCatalystCache.Add(itemId, itemid);
+        return itemid;
     }
 
     public HashSet<string> getWhoDrops(int itemId)
