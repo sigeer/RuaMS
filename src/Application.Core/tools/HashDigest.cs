@@ -27,7 +27,7 @@ namespace Application.Core.tools
                     default:
                         throw new ArgumentException("Unsupported hash type");
                 }
-                return hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(str));
+                return hashAlgorithm.ComputeHash(GlobalTools.Encoding.GetBytes(str));
             }
             finally
             {

@@ -768,7 +768,7 @@ public class BCrypt
      */
     private static sbyte[] stringToBytes(string plaintext)
     {
-        return Encoding.UTF8.GetBytes(plaintext).ToSBytes();
+        return GlobalTools.Encoding.GetBytes(plaintext).ToSBytes();
     }
 
     /**
@@ -988,8 +988,8 @@ public class BCrypt
         try
         {
             string try_pw = hashpw(plaintext, hashed);
-            hashed_bytes = Encoding.UTF8.GetBytes(hashed).ToSBytes();
-            try_bytes = Encoding.UTF8.GetBytes(try_pw).ToSBytes();
+            hashed_bytes = GlobalTools.Encoding.GetBytes(hashed).ToSBytes();
+            try_bytes = GlobalTools.Encoding.GetBytes(try_pw).ToSBytes();
         }
         catch (EncoderFallbackException uee)
         {

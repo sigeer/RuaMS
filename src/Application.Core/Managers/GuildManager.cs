@@ -63,7 +63,7 @@ namespace Application.Core.Managers
         {
             var sender = c.OnlinedCharacter;
 
-            var mc = Server.getInstance().getChannel(sender.World, sender.Channel!.Value)!.getPlayerStorage().getCharacterByName(targetName);
+            var mc = sender.getChannelServer().getPlayerStorage().getCharacterByName(targetName);
             if (mc == null)
             {
                 return GuildResponse.NOT_IN_CHANNEL;

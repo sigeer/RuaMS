@@ -1,4 +1,5 @@
-﻿using constants.net;
+﻿using Application.Core;
+using constants.net;
 using DotNetty.Buffers;
 using net.encryption;
 using Serilog;
@@ -27,7 +28,7 @@ namespace ServiceTest.Infrastructure
         {
             var senderCypher = new MapleAESOFB(InitializationVector.generateSend(), ServerConstants.VERSION);
 
-            var bytes = Encoding.UTF8.GetBytes(inputString);
+            var bytes = GlobalTools.Encoding.GetBytes(inputString);
             Console.WriteLine(string.Join(',', bytes));
 
             MapleCustomEncryption.encryptData(bytes);

@@ -1,9 +1,14 @@
-﻿using Application.Core.Compatible;
+﻿using Application.Core;
+using Application.Core.Compatible;
 using Application.Core.scripting.Event.jobs;
 using net.server;
 using Quartz.Impl;
 using Serilog;
 using Serilog.Events;
+using System.Text;
+
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+GlobalTools.Encoding = Encoding.GetEncoding("GBK");
 
 var factory = new StdSchedulerFactory();
 SchedulerManage.Scheduler = await factory.GetScheduler();

@@ -1,5 +1,6 @@
 
 
+using Application.Core;
 using DotNetty.Buffers;
 using net.opcodes;
 using System.Buffers;
@@ -86,14 +87,14 @@ public class ByteBufOutPacket : OutPacket
 
     public void writeString(string value)
     {
-        byte[] bytes = Encoding.UTF8.GetBytes(value);
+        byte[] bytes = GlobalTools.Encoding.GetBytes(value);
         writeShort(bytes.Length);
         writeBytes(bytes);
     }
 
     public void writeFixedString(string value, int fix = 13)
     {
-        var bytes = Encoding.UTF8.GetBytes(value ?? string.Empty);
+        var bytes = GlobalTools.Encoding.GetBytes(value ?? string.Empty);
         var fixedBytes = new byte[fix];
         var actualLength = fix > bytes.Length ? bytes.Length : fix;
         Buffer.BlockCopy(bytes, 0, fixedBytes, 0, actualLength);

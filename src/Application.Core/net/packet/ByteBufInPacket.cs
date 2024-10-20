@@ -1,5 +1,6 @@
 
 
+using Application.Core;
 using DotNetty.Buffers;
 using System.Buffers;
 using System.Text;
@@ -66,7 +67,7 @@ public class ByteBufInPacket : InPacket
         try
         {
             byteBuf.ReadBytes(stringBytes, 0, length);
-            return Encoding.UTF8.GetString(stringBytes, 0, length);
+            return GlobalTools.Encoding.GetString(stringBytes, 0, length);
         }
         finally
         {

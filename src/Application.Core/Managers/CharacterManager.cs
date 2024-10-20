@@ -55,7 +55,7 @@ namespace Application.Core.Managers
             if (BLOCKED_NAMES.Any(x => x.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 return false;
 
-            var bLength = Encoding.UTF8.GetBytes(name).Length;
+            var bLength = GlobalTools.Encoding.GetBytes(name).Length;
             if (bLength < 3 || bLength > 12)
                 return false;
 

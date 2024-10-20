@@ -4158,7 +4158,7 @@ public class PacketCreator
         {
             if (partychar.IsOnlined)
             {
-                p.writeInt(partychar.Channel!.Value - 1);
+                p.writeInt((partychar.Channel ?? -1) - 1);
             }
             else
             {

@@ -3,6 +3,7 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using AutoMapper;
+using System.Text;
 
 namespace Application.Core
 {
@@ -16,6 +17,8 @@ namespace Application.Core
             cfg.AddProfile<AllianceMapper>();
             cfg.AddProfile<ItemMapper>();
         }).CreateMapper();
+
+        public static Encoding Encoding { get; set; } = null!;
     }
 
     public class MapCopyMapper: Profile

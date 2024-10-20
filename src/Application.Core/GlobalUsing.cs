@@ -13,3 +13,4 @@ global using Application.Utility.Exceptions;
 global using Serilog;
 global using System;
 global using System.Drawing;
+global using Application.Core;
