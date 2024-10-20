@@ -37,6 +37,7 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 pq.MinCount = 1;
                 pq.MinLevel = 1;
+                pq.MaxLevel = 200;
                 pq.StartQuest();
             }
             else
