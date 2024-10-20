@@ -222,22 +222,13 @@ public class AbstractPlayerInteraction
         return getPlayer().getInventory(type);
     }
 
-    public bool hasItem(int itemid)
-    {
-        return haveItem(itemid, 1);
-    }
-
-    public bool hasItem(int itemid, int quantity)
+    public bool hasItem(int itemid, int quantity = 1)
     {
         return haveItem(itemid, quantity);
     }
 
-    public bool haveItem(int itemid)
-    {
-        return haveItem(itemid, 1);
-    }
 
-    public bool haveItem(int itemid, int quantity)
+    public bool haveItem(int itemid, int quantity = 1)
     {
         return getPlayer().getItemQuantity(itemid, false) >= quantity;
     }
@@ -247,22 +238,14 @@ public class AbstractPlayerInteraction
         return getPlayer().getItemQuantity(itemid, false);
     }
 
-    public bool haveItemWithId(int itemid)
-    {
-        return haveItemWithId(itemid, false);
-    }
 
-    public bool haveItemWithId(int itemid, bool checkEquipped)
+    public bool haveItemWithId(int itemid, bool checkEquipped = false)
     {
         return getPlayer().haveItemWithId(itemid, checkEquipped);
     }
 
-    public bool canHold(int itemid)
-    {
-        return canHold(itemid, 1);
-    }
 
-    public bool canHold(int itemid, int quantity)
+    public bool canHold(int itemid, int quantity = 1)
     {
         return canHoldAll(Collections.singletonList(itemid), Collections.singletonList(quantity), true);
     }
@@ -661,12 +644,8 @@ public class AbstractPlayerInteraction
         return evolved;
     }
 
-    public void gainItem(int id, short quantity)
-    {
-        gainItem(id, quantity, false, true);
-    }
 
-    public void gainItem(int id, short quantity, bool show)
+    public void gainItem(int id, short quantity, bool show = true)
     {
         //this will fk randomStats equip :P
         gainItem(id, quantity, false, show);

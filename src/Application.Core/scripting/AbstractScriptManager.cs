@@ -125,7 +125,7 @@ public abstract class AbstractScriptManager
 
     protected void resetContext(string path, IClient c)
     {
-        c.removeScriptEngine("scripts/" + path);
+        c.removeScriptEngine(path);
     }
 
     protected string GetFullScriptPath(string relativePath)

@@ -356,6 +356,7 @@ namespace Application.Core.Game.Players
         IMap? getOwnedMap();
         int getPartnerId();
         ITeam? getParty();
+        public bool isLeader();
         /// <summary>
         /// 不存在队伍时为 -1
         /// </summary>
