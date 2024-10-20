@@ -14,6 +14,8 @@ namespace Application.Core.Game
 {
     public class OfflineClient : IClient
     {
+        public int World { get; set; } = -1;
+        public int Channel { get; set; } = -1;
         public string ClientInfo => $"OfflineClient";
         public IPlayer? Character => null;
 

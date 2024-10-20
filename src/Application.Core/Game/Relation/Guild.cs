@@ -123,7 +123,7 @@ public class Guild : IGuild
                 List<int>? chl;
                 lock (notifications)
                 {
-                    chl = notifications.GetValueOrDefault(mgc.Channel!.Value);
+                    chl = notifications.GetValueOrDefault(mgc.Channel);
                 }
                 if (chl != null)
                 {

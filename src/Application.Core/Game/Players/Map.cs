@@ -17,6 +17,32 @@ namespace Application.Core.Game.Players
         private int newWarpMap = -1;
         private bool canWarpMap = true;  //only one "warp" must be used per call, and this will define the right one.
         private int canWarpCounter = 0;     //counts how many times "inner warps" have been called.
+
+        /// <summary>
+        /// js在调用
+        /// </summary>
+        /// <param name="PmapId"></param>
+        public void setMap(int PmapId)
+        {
+            this.Map = PmapId;
+            if (IsOnlined)
+                base.setMap(MapManager.getMap(Map));
+        }
+
+        public void setMapId(int mapid)
+        {
+            this.Map = mapid;
+            if (IsOnlined)
+                base.setMap(MapManager.getMap(Map));
+        }
+
+        public override void setMap(IMap map)
+        {
+            this.Map = map.getId();
+            base.setMap(map);
+        }
+
+
         public IMap getWarpMap(int map)
         {
             IMap warpMap;

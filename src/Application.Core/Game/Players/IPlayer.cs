@@ -33,7 +33,7 @@ namespace Application.Core.Game.Players
     public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer
     {
         public IClient Client { get; }
-        public int? Channel { get; set; }
+        public int Channel { get; }
         public bool IsOnlined => Client.IsGameOnlined;
         public BuddyList BuddyList { get; set; }
         public PlayerBag Bag { get; set; }

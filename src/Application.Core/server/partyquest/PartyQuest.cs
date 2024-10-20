@@ -41,7 +41,7 @@ public abstract class PartyQuest
     {
         this.party = party;
         var leader = party.getLeader();
-        channel = leader.Channel!.Value;
+        channel = leader.Channel;
         world = leader.getWorld();
         int mapid = leader.getMapId();
         foreach (var pchr in party.getMembers())

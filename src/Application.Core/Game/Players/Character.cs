@@ -588,7 +588,6 @@ public partial class Player
     {
         c.setAccountName(this.Client.getAccountName());//No null's for accountName
         this.setClient(c);
-        setMap(c.getChannelServer().getMapFactory().getMap(getMapId()));
         var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;
         this.setPosition(portal.getPosition());
         this.InitialSpawnPoint = portal.getId();
@@ -6157,29 +6156,6 @@ public partial class Player
         return IsOnlined;
     }
 
-    /// <summary>
-    /// js在调用
-    /// </summary>
-    /// <param name="PmapId"></param>
-    public void setMap(int PmapId)
-    {
-        this.Map = PmapId;
-        if (IsOnlined)
-            base.setMap(MapManager.getMap(Map));
-    }
-
-    public void setMapId(int mapid)
-    {
-        this.Map = mapid;
-        if (IsOnlined)
-            base.setMap(MapManager.getMap(Map));
-    }
-
-    public override void setMap(IMap map)
-    {
-        this.Map = map.getId();
-        base.setMap(map);
-    }
 
     public bool getWhiteChat()
     {
