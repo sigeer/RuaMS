@@ -9,14 +9,12 @@ using constants.game;
 using constants.id;
 using server.events;
 using server.maps;
-using System.Numerics;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player : AbstractAnimatedMapObject, IPlayer
     {
         public int Channel => awayFromWorld ? -1 : Client.Channel;
-
         public IClient Client { get; private set; }
         public bool IsOnlined => Client.IsGameOnlined;
 
@@ -46,7 +44,7 @@ namespace Application.Core.Game.Players
             Dex = dex;
             Int = @int;
             Luk = luk;
-            JobId = (int)job;
+            JobModel = job;
             Level = level;
         }
 
