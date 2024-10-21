@@ -90,7 +90,8 @@ public class QuestActionManager : NPCConversationManager
     }
 
     public string? getMedalName()
-    {  // usable only for medal quests (id 299XX)
+    {
+        // usable only for medal quests (id 299XX)
         Quest q = Quest.getInstance(quest);
         return ItemInformationProvider.getInstance().getName(q.getMedalRequirement());
     }

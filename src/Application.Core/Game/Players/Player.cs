@@ -1,12 +1,10 @@
 ﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using client;
 using client.autoban;
 using client.inventory;
-using client.keybind;
-using constants.game;
-using constants.id;
 using server.events;
 using server.maps;
 
@@ -21,9 +19,8 @@ namespace Application.Core.Game.Players
         public PlayerBag Bag { get; set; }
         public BuddyList BuddyList { get; set; }
 
-        public List<int> TrockMaps { get; set; }
-        public List<int> VipTrockMaps { get; set; }
-        public Dictionary<int, KeyBinding> KeyMap { get; set; }
+
+        public PlayerKeyMap KeyMap { get; set; }
         public MapManager MapManager => Client.getChannelServer().getMapFactory();
 
         public object SaveToDBLock { get; set; } = new object();
@@ -53,7 +50,7 @@ namespace Application.Core.Game.Players
             Client = client;
 
             AutobanManager = new AutobanManager(this);
-            Skills = new Dictionary<Skill, SkillEntry>();
+            Skills = new(this);
             SkillMacros = new SkillMacro[5];
 
             MesoValue = new AtomicInteger();
@@ -63,14 +60,12 @@ namespace Application.Core.Game.Players
             BuddyList = new BuddyList(this, 20);
             LastFameCIds = new List<int>();
 
-            KeyMap = new Dictionary<int, KeyBinding>();
-            LoadKeyMapDefault();
+            KeyMap = new(this);
 
-            TrockMaps = Enumerable.Range(0, 5).Select(x => MapId.NONE).ToList();
-            VipTrockMaps = Enumerable.Range(0, 10).Select(x => MapId.NONE).ToList();
+            PlayerTrockLocation = new(this, 5, 10);
 
             Events = new Dictionary<string, Events>();
-            SavedLocations = new SavedLocation[Enum.GetValues<SavedLocationType>().Length];
+            SavedLocations = new(this);
 
             Bag = new PlayerBag(this);
             Monsterbook = new MonsterBook();
@@ -99,17 +94,6 @@ namespace Application.Core.Game.Players
             Bag[InventoryType.CASH].setSlotLimit(PlayerBag.DEFAULT_CASH_BAG_SIZE);
         }
 
-        public void LoadKeyMapDefault()
-        {
-            KeyMap.Clear();
-            var selectedKey = GameConstants.getCustomKey(YamlConfig.config.server.USE_CUSTOM_KEYSET);
-            var selectedType = GameConstants.getCustomType(YamlConfig.config.server.USE_CUSTOM_KEYSET);
-            var selectedAction = GameConstants.getCustomAction(YamlConfig.config.server.USE_CUSTOM_KEYSET);
-            for (int i = 0; i < selectedKey.Length; i++)
-            {
-                KeyMap.AddOrUpdate(selectedKey[i], new KeyBinding(selectedType[i], selectedAction[i]));
-            }
-        }
 
         public void StartPlayerTask()
         {

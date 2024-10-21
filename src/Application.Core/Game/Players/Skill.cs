@@ -1,4 +1,5 @@
-﻿using Application.Core.Game.Skills;
+﻿using Application.Core.Game.Players.PlayerProps;
+using Application.Core.Game.Skills;
 using Application.Core.scripting.Event;
 using net.server;
 using server;
@@ -8,14 +9,14 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public Dictionary<Skill, SkillEntry> Skills { get; set; }
+        public PlayerSkill Skills { get; set; }
         /// <summary>
         /// skillId - Cooldown
         /// </summary>
         private Dictionary<int, CooldownValueHolder> coolDowns = new();
         public Dictionary<Skill, SkillEntry> getSkills()
         {
-            return new Dictionary<Skill, SkillEntry>(Skills);
+            return Skills.GetDataSource();
         }
 
         public int getSkillLevel(int skill)
@@ -25,7 +26,7 @@ namespace Application.Core.Game.Players
 
         public sbyte getSkillLevel(Skill? skill)
         {
-            return skill == null ? (sbyte)0 : (Skills.GetValueOrDefault(skill)?.skillevel ?? 0);
+            return skill == null ? (sbyte)0 : (Skills.GetSkill(skill)?.skillevel ?? 0);
         }
 
         public int getMasterLevel(int skill)
@@ -43,7 +44,7 @@ namespace Application.Core.Game.Players
             if (skill == null)
                 return 0;
 
-            var characterSkill = Skills.GetValueOrDefault(skill);
+            var characterSkill = Skills.GetSkill(skill);
             if (characterSkill == null)
             {
                 return 0;
@@ -61,7 +62,7 @@ namespace Application.Core.Game.Players
 
         public long getSkillExpiration(Skill? skill)
         {
-            return skill == null ? -1 : (Skills.GetValueOrDefault(skill)?.expiration ?? -1);
+            return skill == null ? -1 : (Skills.GetSkill(skill)?.expiration ?? -1);
         }
 
 

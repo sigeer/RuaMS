@@ -250,7 +250,6 @@ namespace Application.Core.Game.Players
                     entity.Mounttiredness = MountModel?.getTiredness() ?? 0;
 
                     Monsterbook.saveCards(dbContext, getId());
-                    dbContext.SaveChanges();
 
                     Monitor.Enter(petLock);
                     try
@@ -275,9 +274,7 @@ namespace Application.Core.Game.Players
                     dbContext.SaveChanges();
 
 
-                    dbContext.Keymaps.Where(x => x.Characterid == getId()).ExecuteDelete();
-                    dbContext.Keymaps.AddRange(KeyMap.Select(x => new Keymap() { Characterid = Id, Key = x.Key, Type = x.Value.getType(), Action = x.Value.getAction() }));
-                    dbContext.SaveChanges();
+                    KeyMap.SaveData(dbContext);
 
                     // No quickslots, or no change.
                     CharacterManager.SaveQuickSlotMapped(dbContext, this);
@@ -305,56 +302,13 @@ namespace Application.Core.Game.Players
 
                     ItemFactory.INVENTORY.saveItems(itemsWithType, Id, dbContext);
 
-                    var characterSkills = dbContext.Skills.Where(x => x.Characterid == getId()).ToList();
-                    foreach (var skill in Skills)
-                    {
-                        var dbSkill = characterSkills.FirstOrDefault(x => x.Skillid == skill.Key.getId());
-                        if (dbSkill == null)
-                        {
-                            dbSkill = new SkillEntity() { Characterid = getId(), Skillid = skill.Key.getId() };
-                            dbContext.Skills.Add(dbSkill);
-                        }
-                        dbSkill.Skilllevel = skill.Value.skillevel;
-                        dbSkill.Masterlevel = skill.Value.masterlevel;
-                        dbSkill.Expiration = skill.Value.expiration;
-                    }
-                    dbContext.SaveChanges();
+                    Skills.SaveData(dbContext);
 
-                    dbContext.Savedlocations.Where(x => x.Characterid == getId()).ExecuteDelete();
-                    dbContext.Savedlocations.AddRange(
-                        Enum.GetValues<SavedLocationType>()
-                        .Where(x => SavedLocations[(int)x] != null)
-                        .Select(x => new SavedLocationEntity(Id, SavedLocations[(int)x]!, x))
-                        );
-                    dbContext.SaveChanges();
+                    SavedLocations.SaveData(dbContext);
 
-                    dbContext.Trocklocations.Where(x => x.Characterid == Id).ExecuteDelete();
-                    for (int i = 0; i < getTrockSize(); i++)
-                    {
-                        if (TrockMaps[i] != 999999999)
-                        {
-                            dbContext.Trocklocations.Add(new Trocklocation(Id, TrockMaps[i], 0));
-                        }
-                    }
+                    PlayerTrockLocation.SaveData(dbContext);
 
-                    for (int i = 0; i < getVipTrockSize(); i++)
-                    {
-                        if (VipTrockMaps[i] != 999999999)
-                        {
-                            dbContext.Trocklocations.Add(new Trocklocation(Id, VipTrockMaps[i], 1));
-                        }
-                    }
-                    dbContext.SaveChanges();
-
-                    dbContext.Buddies.Where(x => x.CharacterId == getId() && x.Pending == 0).ExecuteDelete();
-                    foreach (var entry in BuddyList.getBuddies())
-                    {
-                        if (entry.Visible)
-                        {
-                            dbContext.Buddies.Add(new Buddy(getId(), entry.getCharacterId(), 0, entry.Group));
-                        }
-                    }
-                    dbContext.SaveChanges();
+                    BuddyList.Save(dbContext);
 
                     dbContext.AreaInfos.Where(x => x.Charid == getId()).ExecuteDelete();
                     dbContext.AreaInfos.AddRange(AreaInfo.Select(x => new AreaInfo(getId(), x.Key, x.Value)));

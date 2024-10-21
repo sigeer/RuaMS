@@ -26,6 +26,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Players.Models;
+using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
@@ -179,7 +180,7 @@ public partial class Player
 
     CashShop? _cashShop = null;
     public CashShop CashShopModel => _cashShop ?? (_cashShop = new CashShop(AccountId, Id, getJobType()));
-    public SavedLocation?[] SavedLocations { get; set; }
+    public PlayerSavedLocation SavedLocations { get; set; }
 
     private List<WeakReference<IMap>> lastVisitedMaps = new();
     private WeakReference<IMap?> ownedMap = new WeakReference<IMap?>(null);
@@ -2791,7 +2792,7 @@ public partial class Player
 
     public Dictionary<int, KeyBinding> getKeymap()
     {
-        return KeyMap;
+        return KeyMap.GetDataSource();
     }
 
     public long getLastHealed()
@@ -3138,12 +3139,12 @@ public partial class Player
 
     public void clearSavedLocation(SavedLocationType type)
     {
-        SavedLocations[(int)type] = null;
+        SavedLocations.AddOrUpdate(type, null);
     }
 
     public int peekSavedLocation(string type)
     {
-        SavedLocation? sl = SavedLocations[(int)SavedLocationTypeUtils.fromString(type)];
+        var sl = SavedLocations.GetData(type);
         if (sl == null)
         {
             return -1;
@@ -4716,19 +4717,13 @@ public partial class Player
         Portal? closest = MapModel.findClosestPortal(getPosition());
         int curMapid = getMapId();
 
-        for (int i = 0; i < SavedLocations.Length; i++)
-        {
-            if (SavedLocations[i] == null)
-            {
-                SavedLocations[i] = new SavedLocation(curMapid, closest?.getId() ?? 0);
-            }
-        }
+        SavedLocations.FillData(new SavedLocation(curMapid, closest?.getId() ?? 0));
     }
 
     public void saveLocation(string type)
     {
         Portal? closest = MapModel.findClosestPortal(getPosition());
-        SavedLocations[(int)SavedLocationTypeUtils.fromString(type)] = new SavedLocation(getMapId(), closest?.getId() ?? 0);
+        SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));
     }
 
     public bool insertNewChar(CharacterFactoryRecipe recipe)
@@ -4795,14 +4790,7 @@ public partial class Player
             this.Id = dbModel.Id;
 
             // Select a keybinding method
-            dbContext.Keymaps.AddRange(KeyMap.Select(x => new Keymap()
-            {
-                Characterid = dbModel.Id,
-                Key = x.Key,
-                Type = x.Value.getType(),
-                Action = x.Value.getAction()
-            }));
-            dbContext.SaveChanges();
+            KeyMap.SaveData(dbContext);
 
             // No quickslots, or no change.
             CharacterManager.SaveQuickSlotMapped(dbContext, this);
@@ -4818,13 +4806,7 @@ public partial class Player
 
             ItemFactory.INVENTORY.saveItems(itemsWithType, Id, dbContext);
 
-            if (Skills.Count > 0)
-            {
-                // Skills
-                dbContext.Skills.AddRange(Skills.Select(x => new SkillEntity { Characterid = dbModel.Id, Skillid = x.Key.getId(), Skilllevel = x.Value.skillevel, Masterlevel = x.Value.masterlevel, Expiration = x.Value.expiration }));
-                dbContext.SaveChanges();
-            }
-
+            Skills.SaveData(dbContext);
 
             dbTrans.Commit();
             return true;
@@ -4871,7 +4853,7 @@ public partial class Player
 
     public void sendKeymap()
     {
-        sendPacket(PacketCreator.getKeymap(KeyMap));
+        sendPacket(PacketCreator.getKeymap(KeyMap.GetDataSource()));
     }
 
     public void sendQuickmap()
@@ -5097,7 +5079,7 @@ public partial class Player
         // autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
         if (hpchange < 0)
         {
-            KeyBinding? autohpPot = this.getKeymap().GetValueOrDefault(91);
+            KeyBinding? autohpPot = this.KeyMap.GetData(91);
             if (autohpPot != null)
             {
                 int autohpItemid = autohpPot.getAction();
@@ -5116,7 +5098,7 @@ public partial class Player
 
         if (mpchange < 0)
         {
-            KeyBinding? autompPot = this.getKeymap().GetValueOrDefault(92);
+            KeyBinding? autompPot = this.KeyMap.GetData(92);
             if (autompPot != null)
             {
                 int autompItemid = autompPot.getAction();

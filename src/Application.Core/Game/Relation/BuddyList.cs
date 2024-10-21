@@ -1,3 +1,4 @@
+using Application.Core.Game.Players;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
@@ -115,9 +116,8 @@ public class BuddyList
         }
     }
 
-    public void LoadFromDb()
+    public void LoadFromDb(DBContext dbContext)
     {
-        using var dbContext = new DBContext();
         var dbList = (from a in dbContext.Buddies
                       join b in dbContext.Characters on a.BuddyId equals b.Id
                       where a.CharacterId == Owner.Id
@@ -136,6 +136,19 @@ public class BuddyList
             }
         });
         dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 1).ExecuteDelete();
+    }
+
+    public void Save(DBContext dbContext)
+    {
+        dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 0).ExecuteDelete();
+        foreach (var entry in getBuddies())
+        {
+            if (entry.Visible)
+            {
+                dbContext.Buddies.Add(new Buddy(Owner.Id, entry.getCharacterId(), 0, entry.Group));
+            }
+        }
+        dbContext.SaveChanges();
     }
 
     public CharacterNameAndId? pollPendingRequest()

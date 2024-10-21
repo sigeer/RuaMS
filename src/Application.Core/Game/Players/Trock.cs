@@ -1,88 +1,40 @@
-﻿using constants.id;
+﻿using Application.Core.Game.Players.PlayerProps;
+using constants.id;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public List<int> getTrockMaps()
+        public PlayerTrockLocation PlayerTrockLocation { get; set; }
+        public int[] getTrockMaps()
         {
-            return TrockMaps;
+            return PlayerTrockLocation.GetTrockMaps();
         }
 
-        public List<int> getVipTrockMaps()
+        public int[] getVipTrockMaps()
         {
-            return VipTrockMaps;
+            return PlayerTrockLocation.GetVipTrockMaps();
         }
 
-        public int getTrockSize()
-        {
-            int ret = TrockMaps.IndexOf(MapId.NONE);
-            if (ret == -1)
-            {
-                ret = 5;
-            }
-
-            return ret;
-        }
 
         public void deleteFromTrocks(int map)
         {
-            TrockMaps.Remove(map);
-            while (TrockMaps.Count < 10)
-            {
-                TrockMaps.Add(MapId.NONE);
-            }
+            PlayerTrockLocation.Delete(map);
         }
 
         public void addTrockMap()
         {
-            int index = TrockMaps.IndexOf(MapId.NONE);
-            if (index != -1)
-            {
-                TrockMaps[index] = getMapId();
-            }
-        }
-
-        public bool isTrockMap(int id)
-        {
-            int index = TrockMaps.IndexOf(id);
-            return index != -1;
-        }
-
-        public int getVipTrockSize()
-        {
-            int ret = VipTrockMaps.IndexOf(MapId.NONE);
-
-            if (ret == -1)
-            {
-                ret = 10;
-            }
-
-            return ret;
+            PlayerTrockLocation.AddTrockMap(getMapId());
         }
 
         public void deleteFromVipTrocks(int map)
         {
-            VipTrockMaps.Remove(map);
-            while (VipTrockMaps.Count < 10)
-            {
-                VipTrockMaps.Add(MapId.NONE);
-            }
+            PlayerTrockLocation.DeleteVip(map);
         }
 
         public void addVipTrockMap()
         {
-            int index = VipTrockMaps.IndexOf(MapId.NONE);
-            if (index != -1)
-            {
-                VipTrockMaps[index] = getMapId();
-            }
-        }
-
-        public bool isVipTrockMap(int id)
-        {
-            int index = VipTrockMaps.IndexOf(id);
-            return index != -1;
+            PlayerTrockLocation.AddVipTrockMap(getMapId());
         }
 
     }

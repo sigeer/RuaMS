@@ -463,34 +463,7 @@ namespace Application.Core.Managers
                 }
 
 
-                var trockLocList = dbContext.Trocklocations.Where(x => x.Characterid == ret.Id).Select(x => new { x.Vip, x.Mapid }).Take(15).ToList();
-
-                byte vip = 0;
-                byte reg = 0;
-                foreach (var item in trockLocList)
-                {
-                    if (item.Vip == 1)
-                    {
-                        ret.VipTrockMaps.Add(item.Mapid);
-                        vip++;
-                    }
-                    else
-                    {
-                        ret.TrockMaps.Add(item.Mapid);
-                        reg++;
-                    }
-                }
-
-                while (vip < 10)
-                {
-                    ret.VipTrockMaps.Add(MapId.NONE);
-                    vip++;
-                }
-                while (reg < 5)
-                {
-                    ret.TrockMaps.Add(MapId.NONE);
-                    reg++;
-                }
+                ret.PlayerTrockLocation.LoadData(dbContext);
 
                 var accountFromDB = dbContext.Accounts.Where(x => x.Id == ret.AccountId).Select(x => new { x.Name, x.Characterslots, x.Language }).FirstOrDefault();
                 if (accountFromDB != null)
@@ -571,15 +544,7 @@ namespace Application.Core.Managers
                     loadedQuestStatus.Clear();
 
                     // Skills
-                    var skillInfoFromDB = dbContext.Skills.Where(x => x.Characterid == charid).ToList();
-                    foreach (var item in skillInfoFromDB)
-                    {
-                        var pSkill = SkillFactory.getSkill(item.Skillid);
-                        if (pSkill != null)  // edit reported by Shavit (=＾● ⋏ ●＾=), thanks Zein for noticing an NPE here
-                        {
-                            ret.Skills.AddOrUpdate(pSkill, new SkillEntry((sbyte)item.Skilllevel, item.Masterlevel, item.Expiration));
-                        }
-                    }
+                    ret.Skills.LoadData(dbContext);
 
                     // Cooldowns (load)
                     var cdFromDB = dbContext.Cooldowns.Where(x => x.Charid == ret.getId()).ToList();
@@ -636,18 +601,9 @@ namespace Application.Core.Managers
                     });
 
                     // Key config
-                    ret.KeyMap.Clear();
-                    var keyMapFromDB = dbContext.Keymaps.Where(x => x.Characterid == ret.Id).Select(x => new { x.Key, x.Type, x.Action }).ToList();
-                    foreach (var item in keyMapFromDB)
-                    {
-                        ret.KeyMap.AddOrUpdate(item.Key, new KeyBinding(item.Type, item.Action));
-                    }
+                    ret.KeyMap.LoadData(dbContext);
 
-                    var savedLocFromDB = dbContext.Savedlocations.Where(x => x.Characterid == ret.Id).Select(x => new { x.Locationtype, x.Map, x.Portal }).ToList();
-                    foreach (var item in savedLocFromDB)
-                    {
-                        ret.SavedLocations[(int)Enum.Parse<SavedLocationType>(item.Locationtype)] = new SavedLocation(item.Map, item.Portal);
-                    }
+                    ret.SavedLocations.LoadData(dbContext);
 
                     // Fame history
                     var now = DateTimeOffset.Now;
@@ -658,12 +614,11 @@ namespace Application.Core.Managers
                         ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
                     }
 
-                    ret.BuddyList.LoadFromDb();
+                    ret.BuddyList.LoadFromDb(dbContext);
                     ret.Storage = wserv.getAccountStorage(ret.AccountId);
 
-                    int startHp = ret.Hp, startMp = ret.Mp;
                     ret.reapplyLocalStats();
-                    ret.changeHpMp(startHp, startMp, true);
+                    ret.changeHpMp(ret.Hp, ret.Mp, true);
                     //ret.resetBattleshipHp();
                 }
 
@@ -1113,7 +1068,6 @@ namespace Application.Core.Managers
                     entity.Mounttiredness = player.MountModel?.getTiredness() ?? 0;
 
                     player.Monsterbook.saveCards(dbContext, player.getId());
-                    dbContext.SaveChanges();
 
                     var pets = player.getPets();
                     foreach (var pet in pets)
@@ -1127,9 +1081,7 @@ namespace Application.Core.Managers
                     dbContext.SaveChanges();
 
 
-                    dbContext.Keymaps.Where(x => x.Characterid == player.getId()).ExecuteDelete();
-                    dbContext.Keymaps.AddRange(player.KeyMap.Select(x => new Keymap() { Characterid = player.Id, Key = x.Key, Type = x.Value.getType(), Action = x.Value.getAction() }));
-                    dbContext.SaveChanges();
+                    player.KeyMap.SaveData(dbContext);
 
                     // No quickslots, or no change.
                     CharacterManager.SaveQuickSlotMapped(dbContext, player);
@@ -1157,56 +1109,13 @@ namespace Application.Core.Managers
 
                     ItemFactory.INVENTORY.saveItems(itemsWithType, player.Id, dbContext);
 
-                    var characterSkills = dbContext.Skills.Where(x => x.Characterid == player.getId()).ToList();
-                    foreach (var skill in player.Skills)
-                    {
-                        var dbSkill = characterSkills.FirstOrDefault(x => x.Skillid == skill.Key.getId());
-                        if (dbSkill == null)
-                        {
-                            dbSkill = new SkillEntity() { Characterid = player.getId(), Skillid = skill.Key.getId() };
-                            dbContext.Skills.Add(dbSkill);
-                        }
-                        dbSkill.Skilllevel = skill.Value.skillevel;
-                        dbSkill.Masterlevel = skill.Value.masterlevel;
-                        dbSkill.Expiration = skill.Value.expiration;
-                    }
-                    dbContext.SaveChanges();
+                    player.Skills.SaveData(dbContext);
 
-                    dbContext.Savedlocations.Where(x => x.Characterid == player.getId()).ExecuteDelete();
-                    dbContext.Savedlocations.AddRange(
-                        Enum.GetValues<SavedLocationType>()
-                        .Where(x => player.SavedLocations[(int)x] != null)
-                        .Select(x => new SavedLocationEntity(player.Id, player.SavedLocations[(int)x]!, x))
-                        );
-                    dbContext.SaveChanges();
+                    player.SavedLocations.SaveData(dbContext);
 
-                    dbContext.Trocklocations.Where(x => x.Characterid == player.getId()).ExecuteDelete();
-                    for (int i = 0; i < player.getTrockSize(); i++)
-                    {
-                        if (player.TrockMaps[i] != MapId.NONE)
-                        {
-                            dbContext.Trocklocations.Add(new Trocklocation(player.getId(), player.TrockMaps[i], 0));
-                        }
-                    }
+                    player.PlayerTrockLocation.SaveData(dbContext);
 
-                    for (int i = 0; i < player.getVipTrockSize(); i++)
-                    {
-                        if (player.VipTrockMaps[i] != 999999999)
-                        {
-                            dbContext.Trocklocations.Add(new Trocklocation(player.getId(), player.VipTrockMaps[i], 1));
-                        }
-                    }
-                    dbContext.SaveChanges();
-
-                    dbContext.Buddies.Where(x => x.CharacterId == player.getId() && x.Pending == 0).ExecuteDelete();
-                    foreach (var entry in player.BuddyList.getBuddies())
-                    {
-                        if (entry.Visible)
-                        {
-                            dbContext.Buddies.Add(new Buddy(player.getId(), entry.getCharacterId(), 0, entry.Group));
-                        }
-                    }
-                    dbContext.SaveChanges();
+                    player.BuddyList.Save(dbContext);
 
                     dbContext.AreaInfos.Where(x => x.Charid == player.getId()).ExecuteDelete();
                     dbContext.AreaInfos.AddRange(player.AreaInfo.Select(x => new AreaInfo(player.getId(), x.Key, x.Value)));

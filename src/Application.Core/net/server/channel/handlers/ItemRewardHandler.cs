@@ -78,8 +78,8 @@ public class ItemRewardHandler : AbstractPacketHandler
                 if (reward.worldmsg != null)
                 {
                     string msg = reward.worldmsg;
-                    msg.Replace("/name", c.OnlinedCharacter.getName());
-                    msg.Replace("/item", ii.getName(reward.itemid));
+                    msg = msg.Replace("/name", c.OnlinedCharacter.getName());
+                    msg = msg.Replace("/item", ii.getName(reward.itemid));
                     Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, msg));
                 }
                 break;
