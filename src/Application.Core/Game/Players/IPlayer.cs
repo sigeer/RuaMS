@@ -301,6 +301,7 @@ namespace Application.Core.Game.Players
         int getItemQuantity(int itemid, bool checkEquipped);
         long getJailExpirationTimeLeft();
         Job getJob();
+        int getJobId();
         int getJobRank();
         int getJobRankMove();
         Job getJobStyle();
@@ -440,7 +441,7 @@ namespace Application.Core.Game.Players
         bool hasBuffFromSourceid(int sourceid);
         bool hasDisabledPartySearchInvite(int fromLeaderid);
         bool hasDisease(Disease dis);
-        bool hasEmptySlot(int itemId);
+        bool HasEmptySlotByItem(int itemId);
         bool hasEmptySlot(sbyte invType);
         bool hasEntered(string script);
         bool hasEntered(string script, int mapId);

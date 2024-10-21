@@ -1290,7 +1290,7 @@ public class EventInstanceManager
         byte listReq = getRewardListRequirements(eventLevel);   //gets all types of items present in the event reward list
 
         //iterating over all valid inventory types
-        for (byte type = 1; type <= 5; type++)
+        for (sbyte type = 1; type <= 5; type++)
         {
             if ((listReq >> type) % 2 == 1 && !player.hasEmptySlot(type))
             {
@@ -1301,13 +1301,9 @@ public class EventInstanceManager
         return true;
     }
 
-    public bool giveEventReward(IPlayer player)
-    {
-        return giveEventReward(player, 1);
-    }
 
     //gives out EXP & a random item in a similar fashion of when clearing KPQ, LPQ, etc.
-    public bool giveEventReward(IPlayer player, int eventLevel)
+    public bool giveEventReward(IPlayer player, int eventLevel = 1)
     {
         List<int>? rewardsSet, rewardsQty;
         int rewardExp;

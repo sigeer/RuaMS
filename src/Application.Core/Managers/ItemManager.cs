@@ -5,6 +5,7 @@ using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using server;
+using static client.inventory.Equip;
 
 namespace Application.Core.Managers
 {
@@ -121,5 +122,34 @@ namespace Application.Core.Managers
             flag |= ItemConstants.UNTRADEABLE;
             equip.setFlag(flag);
         }
+
+        public static bool HasMergeFlag(Item item)
+        {
+            return (item.getFlag() & ItemConstants.MERGE_UNTRADEABLE) == ItemConstants.MERGE_UNTRADEABLE;
+        }
+
+        public static void SetMergeFlag(Item item)
+        {
+            short flag = item.getFlag();
+            flag |= ItemConstants.MERGE_UNTRADEABLE;
+            flag |= ItemConstants.UNTRADEABLE;
+            item.setFlag(flag);
+        }
+
+        public static List<Equip> GetEquipsWithStat(List<KeyValuePair<Equip, Dictionary<StatUpgrade, int>>> equipped, StatUpgrade stat)
+        {
+            List<Equip> equippedWithStat = new();
+
+            foreach (var eq in equipped)
+            {
+                if (eq.Value.ContainsKey(stat))
+                {
+                    equippedWithStat.Add(eq.Key);
+                }
+            }
+
+            return equippedWithStat;
+        }
+
     }
 }

@@ -723,7 +723,7 @@ public partial class Player
         {
             return FameStatus.OK;
         }
-        else if (LastFameTime >= DateTimeOffset.Now.ToUnixTimeMilliseconds() - 3600000 * 24)
+        else if (LastFameTime >= DateTimeOffset.Now.AddDays(-1).ToUnixTimeMilliseconds())
         {
             return FameStatus.NOT_TODAY;
         }
@@ -1567,11 +1567,14 @@ public partial class Player
                 Item mItem = mapitem.getItem();
                 bool hasSpaceInventory = true;
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                if (ItemId.isNxCard(mapitem.getItemId()) || mapitem.getMeso() > 0 || ii.isConsumeOnPickup(mapitem.getItemId()) || (hasSpaceInventory = InventoryManipulator.checkSpace(Client, mapitem.getItemId(), mItem.getQuantity(), mItem.getOwner())))
+                if (ItemId.isNxCard(mapitem.getItemId())
+                    || mapitem.getMeso() > 0
+                    || ii.isConsumeOnPickup(mapitem.getItemId())
+                    || (hasSpaceInventory = InventoryManipulator.checkSpace(Client, mapitem.getItemId(), mItem.getQuantity(), mItem.getOwner())))
                 {
                     int mapId = this.getMapId();
 
-                    if ((MapId.isSelfLootableOnly(mapId)))
+                    if (MapId.isSelfLootableOnly(mapId))
                     {
                         //happyville trees and guild PQ
                         if (!mapitem.isPlayerDrop() || mapitem.getDropper().getObjectId() == Client.OnlinedCharacter.getObjectId())
@@ -2324,15 +2327,7 @@ public partial class Player
 
     public Door? getMainTownDoor()
     {
-        foreach (Door door in getDoors())
-        {
-            if (door.getTownPortal().getId() == 0x80)
-            {
-                return door;
-            }
-        }
-
-        return null;
+        return getDoors().FirstOrDefault(x => x.getTownPortal().getId() == 0x80);
     }
 
     public void applyPartyDoor(Door door, bool partyUpdate)
@@ -2772,6 +2767,11 @@ public partial class Player
     public Job getJob()
     {
         return JobModel;
+    }
+
+    public int getJobId()
+    {
+        return JobId;
     }
 
     public int getJobRank()
@@ -3398,7 +3398,7 @@ public partial class Player
         return getCleanItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
     }
 
-    public bool hasEmptySlot(int itemId)
+    public bool HasEmptySlotByItem(int itemId)
     {
         return getInventory(ItemConstants.getInventoryType(itemId)).getNextFreeSlot() > -1;
     }
@@ -3496,19 +3496,6 @@ public partial class Player
         return visibleMapObjects.ContainsKey(mo);
     }
 
-    public bool isPartyLeader()
-    {
-        Monitor.Enter(prtLock);
-        try
-        {
-            return TeamModel?.getLeaderId() == getId();
-        }
-        finally
-        {
-            Monitor.Exit(prtLock);
-        }
-    }
-
     public bool isGuildLeader()
     {
         // true on guild master or jr. master
@@ -3555,26 +3542,13 @@ public partial class Player
 
     private int getUsedSp(Job job)
     {
-        int jobId = JobId;
-        int spUsed = 0;
-
-        foreach (var s in this.getSkills())
-        {
-            Skill skill = s.Key;
-            if (GameConstants.isInJobTree(skill.getId(), jobId) && !skill.isBeginnerSkill())
-            {
-                spUsed += s.Value.skillevel;
-            }
-        }
-
-        return spUsed;
+        int jobId = job.getId();
+        return getSkills().Where(x => GameConstants.isInJobTree(x.Key.getId(), jobId) && !x.Key.isBeginnerSkill()).Sum(x => x.Value.skillevel);
     }
-
-
 
     private int getJobRemainingSp(Job job)
     {
-        int skillBook = GameConstants.getSkillBook(JobId);
+        int skillBook = GameConstants.getSkillBook(job.getId());
 
         int ret = 0;
         for (int i = 0; i <= skillBook; i++)
@@ -5349,48 +5323,13 @@ public partial class Player
         }
     }
 
-    private static bool hasMergeFlag(Item item)
-    {
-        return (item.getFlag() & ItemConstants.MERGE_UNTRADEABLE) == ItemConstants.MERGE_UNTRADEABLE;
-    }
-
-    private static void setMergeFlag(Item item)
-    {
-        short flag = item.getFlag();
-        flag |= ItemConstants.MERGE_UNTRADEABLE;
-        flag |= ItemConstants.UNTRADEABLE;
-        item.setFlag(flag);
-    }
 
     private List<Equip> getUpgradeableEquipped()
     {
         List<Equip> list = new();
 
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        foreach (Item item in getInventory(InventoryType.EQUIPPED))
-        {
-            if (ii.isUpgradeable(item.getItemId()))
-            {
-                list.Add((Equip)item);
-            }
-        }
-
-        return list;
-    }
-
-    private static List<Equip> getEquipsWithStat(List<KeyValuePair<Equip, Dictionary<StatUpgrade, int>>> equipped, StatUpgrade stat)
-    {
-        List<Equip> equippedWithStat = new();
-
-        foreach (var eq in equipped)
-        {
-            if (eq.Value.ContainsKey(stat))
-            {
-                equippedWithStat.Add(eq.Key);
-            }
-        }
-
-        return equippedWithStat;
+        var ii = ItemInformationProvider.getInstance();
+        return Bag[InventoryType.EQUIPPED].OfType<Equip>().Where(x => ii.isUpgradeable(x.getItemId())).ToList();
     }
 
     public bool mergeAllItemsFromName(string name)
@@ -5429,7 +5368,7 @@ public partial class Player
                 double ev = Math.Sqrt(e.Value);
 
                 HashSet<Equip> extraEquipped = new(equipUpgrades.Keys);
-                List<Equip> statEquipped = getEquipsWithStat(upgradeableEquipped, e.Key);
+                List<Equip> statEquipped = ItemManager.GetEquipsWithStat(upgradeableEquipped, e.Key);
                 float extraRate = (float)(0.2 * Randomizer.nextDouble());
 
                 if (statEquipped.Count > 0)
@@ -5464,7 +5403,7 @@ public partial class Player
                 if (eqpStatups.Count > 0)
                 {
                     Equip eqp = eqpUpg.Key;
-                    setMergeFlag(eqp);
+                    ItemManager.SetMergeFlag(eqp);
 
                     string showStr = " '" + ItemInformationProvider.getInstance().getName(eqp.getItemId()) + "': ";
                     string upgdStr = eqp.gainStats(eqpStatups).Key;
@@ -5505,7 +5444,7 @@ public partial class Player
     {
         short quantity;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (item == null || (quantity = item.getQuantity()) < 1 || ii.isCash(item.getItemId()) || !ii.isUpgradeable(item.getItemId()) || hasMergeFlag(item))
+        if (item == null || (quantity = item.getQuantity()) < 1 || ii.isCash(item.getItemId()) || !ii.isUpgradeable(item.getItemId()) || ItemManager.HasMergeFlag(item))
         {
             return;
         }
@@ -5916,23 +5855,14 @@ public partial class Player
 
     private ICollection<Item> getUpgradeableEquipList()
     {
-        ICollection<Item> fullList = getInventory(InventoryType.EQUIPPED).list();
+        var fullList = getInventory(InventoryType.EQUIPPED).list();
         if (YamlConfig.config.server.USE_EQUIPMNT_LVLUP_CASH)
         {
             return fullList;
         }
 
-        Collection<Item> eqpList = new();
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        foreach (Item it in fullList)
-        {
-            if (!ii.isCash(it.getItemId()))
-            {
-                eqpList.Add(it);
-            }
-        }
-
-        return eqpList;
+        return fullList.Where(x => !ii.isCash(x.getItemId())).ToList();
     }
 
     public void increaseEquipExp(int expGain)

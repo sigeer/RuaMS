@@ -55,8 +55,21 @@ namespace Application.Core.Game.Players
         }
         public bool isLeader()
         {
-            return TeamModel?.getLeaderId() == Id;
+            return isPartyLeader();
         }
+        public bool isPartyLeader()
+        {
+            Monitor.Enter(prtLock);
+            try
+            {
+                return TeamModel?.getLeaderId() == getId();
+            }
+            finally
+            {
+                Monitor.Exit(prtLock);
+            }
+        }
+
 
         public ITeam? getParty()
         {
