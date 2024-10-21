@@ -7,7 +7,7 @@
             EntryNpcId = 2040034;
         }
 
-        public override int GetStageFromMap(int mapId) => ((mapId - 922010100) / 100) + 1;
+        public override int GetStageFromMap(int mapId) => ((mapId - FirstMapId) / 100) + 1;
         public override int ClearMapId => 922010900;
     }
 }
