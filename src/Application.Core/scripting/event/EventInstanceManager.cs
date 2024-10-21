@@ -731,16 +731,8 @@ public class EventInstanceManager
 
             if (inc != 0)
             {
-                var kc = killCount.get(chr);
-                if (kc == null)
-                {
-                    kc = inc;
-                }
-                else
-                {
-                    kc += inc;
-                }
-                killCount.AddOrUpdate(chr, kc.Value);
+                var kc = killCount.GetValueOrDefault(chr) + inc;
+                killCount.AddOrUpdate(chr, kc);
                 expedition?.monsterKilled(chr, mob);
             }
         }
@@ -1190,7 +1182,7 @@ public class EventInstanceManager
         {
             return 0;
         }
-        return onMapClearExp.get(stage - 1);
+        return onMapClearExp.ElementAt(stage - 1);
     }
 
     public int getClearStageMeso(int stage)
@@ -1425,15 +1417,7 @@ public class EventInstanceManager
 
     private bool isEventTeamLeaderOn()
     {
-        foreach (IPlayer chr in getPlayers())
-        {
-            if (chr.getId() == getLeaderId())
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return getPlayers().Any(x => x.getId() == getLeaderId());
     }
 
     public bool checkEventTeamLacking(bool leavingEventMap, int minPlayers)
@@ -1586,7 +1570,12 @@ public class EventInstanceManager
 
     public void showWrongEffect()
     {
-        showWrongEffect(getLeader().getMapId());
+        var leader = getLeader();
+        if (leader != null)
+        {
+            showWrongEffect(leader.getMapId());
+        }
+
     }
 
     public void showWrongEffect(int mapId)

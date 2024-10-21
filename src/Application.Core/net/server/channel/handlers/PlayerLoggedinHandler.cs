@@ -253,10 +253,10 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             player.sendMacros();
 
             // pot bindings being passed through other characters on the account detected thanks to Croosade dev team
-            var autohpPot = player.getKeymap().GetValueOrDefault(91)!;
+            var autohpPot = player.KeyMap.GetData(91)!;
             player.sendPacket(PacketCreator.sendAutoHpPot(autohpPot != null ? autohpPot.getAction() : 0));
 
-            var autompPot = player.getKeymap().GetValueOrDefault(92)!;
+            var autompPot = player.KeyMap.GetData(92)!;
             player.sendPacket(PacketCreator.sendAutoMpPot(autompPot != null ? autompPot.getAction() : 0));
 
             player.getMap().addPlayer(player);

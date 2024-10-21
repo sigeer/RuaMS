@@ -3,6 +3,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
@@ -39,9 +40,9 @@ namespace Application.Core.Game.Players
         public PlayerBag Bag { get; set; }
         public Storage Storage { get; set; }
         public CashShop CashShopModel { get; }
-        public SavedLocation?[] SavedLocations { get; set; }
-        public Dictionary<int, KeyBinding> KeyMap { get; set; }
-        public Dictionary<Skill, SkillEntry> Skills { get; set; }
+        public PlayerSavedLocation SavedLocations { get; set; }
+        public PlayerKeyMap KeyMap { get; set; }
+        public PlayerSkill Skills { get; set; }
         public SkillMacro?[] SkillMacros { get; set; }
 
         public ITeam? TeamModel { get; }
@@ -56,8 +57,7 @@ namespace Application.Core.Game.Players
         public Job JobModel { get; set; }
         public SkinColor SkinColorModel { get; set; }
 
-        public List<int> TrockMaps { get; set; }
-        public List<int> VipTrockMaps { get; set; }
+        public PlayerTrockLocation PlayerTrockLocation { get; set; }
         public Dictionary<string, Events> Events { get; set; }
 
         public byte[]? QuickSlotLoaded { get; set; }
@@ -420,12 +420,10 @@ namespace Application.Core.Game.Players
         int getTotalStr();
         int getTotalWatk();
         Trade? getTrade();
-        List<int> getTrockMaps();
-        int getTrockSize();
+        int[] getTrockMaps();
         int getVanquisherKills();
         int getVanquisherStage();
-        List<int> getVipTrockMaps();
-        int getVipTrockSize();
+        int[] getVipTrockMaps();
         IMapObject[] getVisibleMapObjects();
         IMap getWarpMap(int map);
         bool getWhiteChat();
@@ -501,8 +499,6 @@ namespace Application.Core.Game.Players
         bool isRecvPartySearchInviteEnabled();
         bool isRidingBattleship();
         bool isSummonsEmpty();
-        bool isTrockMap(int id);
-        bool isVipTrockMap(int id);
         void leaveMap();
         bool leaveParty();
         void levelUp(bool takeexp);

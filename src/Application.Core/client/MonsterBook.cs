@@ -227,6 +227,7 @@ public class MonsterBook
                 Charid = chrId,
                 Level = x.Value
             }));
+            dbContext.SaveChanges();
         }
         catch (Exception e)
         {

@@ -65,9 +65,9 @@ public class MapScriptManager : AbstractScriptManager
                 iv.CallFunction("start", new MapScriptMethods(c));
                 return true;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                log.Error(e.ToString());
+                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "start", mapScriptPath);
             }
         }
 

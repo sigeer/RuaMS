@@ -240,8 +240,8 @@ public class PacketCreator
 
     private static void addTeleportInfo(OutPacket p, IPlayer chr)
     {
-        List<int> tele = chr.getTrockMaps();
-        List<int> viptele = chr.getVipTrockMaps();
+        var tele = chr.getTrockMaps();
+        var viptele = chr.getVipTrockMaps();
         for (int i = 0; i < 5; i++)
         {
             p.writeInt(tele[i]);
@@ -6096,7 +6096,7 @@ public class PacketCreator
         if (vip)
         {
             p.writeByte(1);
-            List<int> map = chr.getVipTrockMaps();
+            var map = chr.getVipTrockMaps();
             for (int i = 0; i < 10; i++)
             {
                 p.writeInt(map[i]);
@@ -6105,7 +6105,7 @@ public class PacketCreator
         else
         {
             p.writeByte(0);
-            List<int> map = chr.getTrockMaps();
+            var map = chr.getTrockMaps();
             for (int i = 0; i < 5; i++)
             {
                 p.writeInt(map[i]);
