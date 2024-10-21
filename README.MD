@@ -2,7 +2,7 @@
 ### 项目介绍
 
 基于 Cosmic的C#版。
-截至 [Commit: 5fabbaf7abe7fbdf06973dcfecf7d76a2844bdbc](https://github.com/P0nk/Cosmic/commit/5fabbaf7abe7fbdf06973dcfecf7d76a2844bdbc)
+截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
 初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。
 

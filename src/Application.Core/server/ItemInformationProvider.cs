@@ -2637,7 +2637,7 @@ public class ItemInformationProvider
             using var dbContext = new DBContext();
             var dbModel = dbContext.DropData.Where(x => x.Itemid == leftoverId).OrderBy(x => x.Dropperid).Select(x => new { x.Dropperid }).FirstOrDefault();
             if (dbModel != null)
-                itemid = getCrystalForLevel(LifeFactory.getMonsterLevel(dbModel.Dropperid) - 1);
+                itemid = getCrystalForLevel(LifeFactory.getMonsterLevel(dbModel.Dropperid));
 
             mobCrystalMakerCache.Add(leftoverId, itemid);
             return itemid;
