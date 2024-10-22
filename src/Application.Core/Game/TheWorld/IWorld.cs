@@ -1,5 +1,6 @@
 ﻿using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Trades;
 using Application.Core.model;
 using client;
 using net.packet;
@@ -10,7 +11,6 @@ using net.server.services;
 using net.server.services.type;
 using net.server.world;
 using server;
-using server.maps;
 
 namespace Application.Core.Game.TheWorld
 {

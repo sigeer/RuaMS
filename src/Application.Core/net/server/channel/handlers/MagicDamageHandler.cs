@@ -61,14 +61,19 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        int charge = (attack.skill == Evan.FIRE_BREATH || attack.skill == Evan.ICE_BREATH || attack.skill == FPArchMage.BIG_BANG || attack.skill == ILArchMage.BIG_BANG || attack.skill == Bishop.BIG_BANG) ? attack.charge : -1;
+        int charge = (attack.skill == Evan.FIRE_BREATH 
+            || attack.skill == Evan.ICE_BREATH 
+            || attack.skill == FPArchMage.BIG_BANG 
+            || attack.skill == ILArchMage.BIG_BANG 
+            || attack.skill == Bishop.BIG_BANG) ? attack.charge : -1;
+
         Packet packet = PacketCreator.magicAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, charge, attack.speed, attack.direction, attack.display);
 
         chr.getMap().broadcastMessage(chr, packet, false, true);
         var effect = attack.getAttackEffect(chr, null);
-        var skill = SkillFactory.getSkill(attack.skill);
-        var effect_ = skill?.getEffect(chr.getSkillLevel(skill));
-        if (effect_?.getCooldown() > 0)
+        var skill = SkillFactory.GetSkillTrust(attack.skill);
+        var effect_ = skill.getEffect(chr.getSkillLevel(skill));
+        if (effect_.getCooldown() > 0)
         {
             if (chr.skillIsCooling(attack.skill))
             {

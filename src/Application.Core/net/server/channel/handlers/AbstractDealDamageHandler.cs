@@ -781,7 +781,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         }
 
         var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
-        if (comboBuff != null && comboBuff > 0)
+        if (comboBuff > 0)
         {
             int oid = chr.isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
             int advcomboid = chr.isCygnus() ? DawnWarrior.ADVANCED_COMBO : Hero.ADVANCED_COMBO;
@@ -789,8 +789,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             if (comboBuff > 6)
             {
                 // Advanced Combo
-                StatEffect ceffect = SkillFactory.GetSkillTrust(advcomboid).getEffect(chr.getSkillLevel(advcomboid));
-                calcDmgMax = (long)Math.Floor(calcDmgMax * (ceffect.getDamage() + 50) / 100 + 0.20 + (comboBuff.Value - 5) * 0.04);
+                StatEffect skillEfect = chr.GetPlayerSkillEffect(advcomboid);
+                calcDmgMax = (long)Math.Floor(calcDmgMax * (skillEfect.getDamage() + 50) / 100 + 0.20 + (comboBuff.Value - 5) * 0.04);
             }
             else
             {
@@ -834,7 +834,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         if (chr.getEnergyBar() == 15000)
         {
             int energycharge = chr.isCygnus() ? ThunderBreaker.ENERGY_CHARGE : Marauder.ENERGY_CHARGE;
-            StatEffect ceffect = SkillFactory.GetSkillTrust(energycharge).getEffect(chr.getSkillLevel(energycharge));
+            StatEffect ceffect = chr.GetPlayerSkillEffect(energycharge);
             calcDmgMax *= (100 + ceffect.getDamage()) / 100;
         }
 
@@ -856,9 +856,16 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             calcDmgMax += 80000; // Aran Tutorial.
         }
 
-        bool canCrit = chr.getJob().isA((Job.BOWMAN)) || chr.getJob().isA(Job.THIEF) || chr.getJob().isA(Job.NIGHTWALKER1) || chr.getJob().isA(Job.WINDARCHER1) || chr.getJob() == Job.ARAN3 || chr.getJob() == Job.ARAN4 || chr.getJob() == Job.MARAUDER || chr.getJob() == Job.BUCCANEER;
+        bool canCrit = chr.getJob().isA((Job.BOWMAN)) 
+            || chr.getJob().isA(Job.THIEF) 
+            || chr.getJob().isA(Job.NIGHTWALKER1) 
+            || chr.getJob().isA(Job.WINDARCHER1) 
+            || chr.getJob() == Job.ARAN3 
+            || chr.getJob() == Job.ARAN4 
+            || chr.getJob() == Job.MARAUDER 
+            || chr.getJob() == Job.BUCCANEER;
 
-        if (chr.getBuffEffect(BuffStat.SHARP_EYES) != null)
+        if (chr.HasBuff(BuffStat.SHARP_EYES))
         {
             // Any class that has sharp eyes can crit. Also, since it stacks with normal crit go ahead
             // and calc it in.

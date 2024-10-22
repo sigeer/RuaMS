@@ -7,6 +7,7 @@ using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
+using Application.Core.Game.Trades;
 using Application.Core.scripting.Event;
 using client;
 using client.autoban;
@@ -242,6 +243,7 @@ namespace Application.Core.Game.Players
         long? getBuffedStarttime(BuffStat effect);
         int? getBuffedValue(BuffStat effect);
         StatEffect? getBuffEffect(BuffStat stat);
+        bool HasBuff(BuffStat stat);
         int getBuffSource(BuffStat stat);
         float getCardRate(int itemid);
         CashShop getCashShop();
@@ -400,9 +402,10 @@ namespace Application.Core.Game.Players
         long getSkillExpiration(Skill? skill);
         int getSkillLevel(int skill);
         sbyte getSkillLevel(Skill? skill);
+        StatEffect GetPlayerSkillEffect(int skillId);
+        StatEffect GetPlayerSkillEffect(Skill skill);
         Dictionary<Skill, SkillEntry> getSkills();
         SkinColor getSkinColor();
-        int getSlot();
         byte getSlots(int type);
         List<QuestStatus> getStartedQuests();
         StatEffect? getStatForBuff(BuffStat effect);
@@ -659,7 +662,7 @@ namespace Application.Core.Game.Players
         void setSessionTransitionState();
         void setShop(Shop? shop);
         void setSkinColor(SkinColor skinColor);
-        void setSlot(int slotid);
+
         void setTargetHpBarHash(int mobHash);
         void setTargetHpBarTime(long timeNow);
         void setTeam(int team);

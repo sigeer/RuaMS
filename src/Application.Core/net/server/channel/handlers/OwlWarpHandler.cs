@@ -19,7 +19,7 @@
 */
 
 
-using Application.Core.Game.Maps;
+using Application.Core.Game.Trades;
 using constants.game;
 using net.packet;
 using tools;

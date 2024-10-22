@@ -29,6 +29,20 @@ namespace Application.Core.Game.Players
             return skill == null ? (sbyte)0 : (Skills.GetSkill(skill)?.skillevel ?? 0);
         }
 
+        public StatEffect GetPlayerSkillEffect(int skillId)
+        {
+            var skillObj = SkillFactory.GetSkillTrust(skillId);
+            return GetPlayerSkillEffect(skillObj);
+        }
+
+        public StatEffect GetPlayerSkillEffect(Skill skill)
+        {
+            var skillLevel = getSkillLevel(skill);
+            if (skillLevel == 0)
+                throw new BusinessResException($"Id = {Id} Name = {Name}, SkillId = {skill.getId()}, PlayerSkillLevel = 0");
+            return skill.getEffect(skillLevel);
+        }
+
         public int getMasterLevel(int skill)
         {
             var skillData = SkillFactory.getSkill(skill);

@@ -30,6 +30,7 @@ using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
+using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.scripting.Event;
 using client;
@@ -94,8 +95,6 @@ public partial class Player
     public int InitialSpawnPoint { get; set; }
     private int currentPage, currentType = 0, currentTab = 1;
 
-
-    private int slots = 0;
     private int energybar;
 
     private int ci = 0;
@@ -3177,12 +3176,6 @@ public partial class Player
         return SkinColorModel;
     }
 
-    public int getSlot()
-    {
-        return slots;
-    }
-
-
 
     public StatEffect? getStatForBuff(BuffStat effect)
     {
@@ -5465,11 +5458,6 @@ public partial class Player
     public void setShop(Shop? shop)
     {
         this.shop = shop;
-    }
-
-    public void setSlot(int slotid)
-    {
-        slots = slotid;
     }
 
     public void setTrade(Trade? trade)

@@ -23,7 +23,7 @@
 
 using client.inventory;
 
-namespace server.maps;
+namespace Application.Core.Game.Trades;
 
 /**
  * @author Matze
@@ -40,12 +40,12 @@ public class PlayerShopItem
         this.item = item;
         this.bundles = bundles;
         this.price = price;
-        this.doesExist = true;
+        doesExist = true;
     }
 
     public void setDoesExist(bool tf)
     {
-        this.doesExist = tf;
+        doesExist = tf;
     }
 
     public bool isExist()

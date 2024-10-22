@@ -123,6 +123,21 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public bool HasBuff(BuffStat stat)
+        {
+            Monitor.Enter(effLock);
+            chLock.EnterReadLock();
+            try
+            {
+                return effects.ContainsKey(stat);
+            }
+            finally
+            {
+                chLock.ExitReadLock();
+                Monitor.Exit(effLock);
+            }
+        }
+
         public HashSet<int> getAvailableBuffs()
         {
             Monitor.Enter(effLock);
