@@ -461,7 +461,8 @@ public class AssignAPProcessor
     }
 
     private static int getNthHighestStat(List<int> statList, short rank)
-    {    // ranks from 0
+    {
+        // ranks from 0
         return (statList.Count <= rank ? 0 : statList.get(rank));
     }
 
@@ -476,56 +477,16 @@ public class AssignAPProcessor
         switch (type)
         {
             case Stat.STR:
-                newVal = statUpdate[0] + gain;
-                if (newVal > YamlConfig.config.server.MAX_AP)
-                {
-                    statGain[0] += (gain - (newVal - YamlConfig.config.server.MAX_AP));
-                    statUpdate[0] = YamlConfig.config.server.MAX_AP;
-                }
-                else
-                {
-                    statGain[0] += gain;
-                    statUpdate[0] = newVal;
-                }
+                newVal = GainStatInternal(statGain, statUpdate, 0, gain);
                 break;
             case Stat.INT:
-                newVal = statUpdate[3] + gain;
-                if (newVal > YamlConfig.config.server.MAX_AP)
-                {
-                    statGain[3] += (gain - (newVal - YamlConfig.config.server.MAX_AP));
-                    statUpdate[3] = YamlConfig.config.server.MAX_AP;
-                }
-                else
-                {
-                    statGain[3] += gain;
-                    statUpdate[3] = newVal;
-                }
+                newVal = GainStatInternal(statGain, statUpdate, 3, gain);
                 break;
             case Stat.LUK:
-                newVal = statUpdate[2] + gain;
-                if (newVal > YamlConfig.config.server.MAX_AP)
-                {
-                    statGain[2] += (gain - (newVal - YamlConfig.config.server.MAX_AP));
-                    statUpdate[2] = YamlConfig.config.server.MAX_AP;
-                }
-                else
-                {
-                    statGain[2] += gain;
-                    statUpdate[2] = newVal;
-                }
+                newVal = GainStatInternal(statGain, statUpdate, 2, gain);
                 break;
             case Stat.DEX:
-                newVal = statUpdate[1] + gain;
-                if (newVal > YamlConfig.config.server.MAX_AP)
-                {
-                    statGain[1] += (gain - (newVal - YamlConfig.config.server.MAX_AP));
-                    statUpdate[1] = YamlConfig.config.server.MAX_AP;
-                }
-                else
-                {
-                    statGain[1] += gain;
-                    statUpdate[1] = newVal;
-                }
+                newVal = GainStatInternal(statGain, statUpdate, 1, gain);
                 break;
         }
 
@@ -534,6 +495,22 @@ public class AssignAPProcessor
             return newVal - YamlConfig.config.server.MAX_AP;
         }
         return 0;
+    }
+
+    private static int GainStatInternal(int[] statGain, int[] statUpdate, int index, int gain)
+    {
+        var newVal = statUpdate[index] + gain;
+        if (newVal > YamlConfig.config.server.MAX_AP)
+        {
+            statGain[index] += (gain - (newVal - YamlConfig.config.server.MAX_AP));
+            statUpdate[index] = YamlConfig.config.server.MAX_AP;
+        }
+        else
+        {
+            statGain[index] += gain;
+            statUpdate[index] = newVal;
+        }
+        return newVal;
     }
 
     private static Stat getQuaternaryStat(Job stance)

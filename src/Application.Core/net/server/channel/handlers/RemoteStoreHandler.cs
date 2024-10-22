@@ -22,7 +22,7 @@
 
 
 
-using Application.Core.Game.Maps;
+using Application.Core.Game.Trades;
 using net.packet;
 using tools;
 

@@ -21,14 +21,16 @@
 */
 
 
+using Application.Core.Game.Maps;
 using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
 using server;
 using server.maps;
+using System.Numerics;
 using tools;
 
-namespace Application.Core.Game.Maps;
+namespace Application.Core.Game.Trades;
 
 /**
  * @author Matze
@@ -83,17 +85,22 @@ public class PlayerShop : AbstractMapObject
         open.Set(openShop);
     }
 
-    public bool hasFreeSlot()
+    public int GetFreeSlot()
     {
         Monitor.Enter(visitorLock);
         try
         {
-            return visitors[0] == null || visitors[1] == null || visitors[2] == null;
+            return Array.IndexOf(visitors, null);
         }
         finally
         {
             Monitor.Exit(visitorLock);
         }
+    }
+
+    public bool hasFreeSlot()
+    {
+        return GetFreeSlot() != -1;
     }
 
     public byte[] getShopRoomInfo()
@@ -117,17 +124,13 @@ public class PlayerShop : AbstractMapObject
 
     private void addVisitor(IPlayer visitor)
     {
-        for (int i = 0; i < 3; i++)
+        var freeSlot = GetFreeSlot();
+        if (freeSlot != -1)
         {
-            if (visitors[i] == null)
-            {
-                visitors[i] = visitor;
-                visitor.setSlot(i);
+            visitors[freeSlot] = visitor;
 
-                broadcast(PacketCreator.getPlayerShopNewVisitor(visitor, i + 1));
-                owner.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(this));
-                break;
-            }
+            broadcast(PacketCreator.getPlayerShopNewVisitor(visitor, freeSlot + 1));
+            owner.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(this));
         }
     }
 
@@ -148,7 +151,6 @@ public class PlayerShop : AbstractMapObject
                 {
                     visitors[i]!.setPlayerShop(null);
                     visitors[i] = null;
-                    visitor.setSlot(-1);
 
                     broadcast(PacketCreator.getPlayerShopRemoveVisitor(i + 1));
                     owner.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(this));
@@ -178,8 +180,6 @@ public class PlayerShop : AbstractMapObject
                 {
                     if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
                     {
-                        visitor.setSlot(-1);    //absolutely cant remove player slot for late players without dc'ing them... heh
-
                         for (int j = i; j < 2; j++)
                         {
                             if (visitors[j] != null)
@@ -187,17 +187,13 @@ public class PlayerShop : AbstractMapObject
                                 owner.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(j + 1));
                             }
                             visitors[j] = visitors[j + 1];
-                            if (visitors[j] != null)
-                            {
-                                visitors[j]!.setSlot(j);
-                            }
                         }
                         visitors[2] = null;
                         for (int j = i; j < 2; j++)
                         {
                             if (visitors[j] != null)
                             {
-                                owner.sendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j], j + 1));
+                                owner.sendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j]!, j + 1));
                             }
                         }
 
@@ -221,7 +217,7 @@ public class PlayerShop : AbstractMapObject
         Monitor.Enter(visitorLock);
         try
         {
-            return visitors[0] == visitor || visitors[1] == visitor || visitors[2] == visitor;
+            return visitors.Contains(visitor);
         }
         finally
         {
@@ -385,13 +381,7 @@ public class PlayerShop : AbstractMapObject
         Monitor.Enter(visitorLock);
         try
         {
-            for (int i = 0; i < 3; i++)
-            {
-                if (visitors[i] != null)
-                {
-                    visitors[i]!.sendPacket(packet);
-                }
-            }
+            InvokeAllVisitor(x => x.sendPacket(packet));
         }
         finally
         {
@@ -404,27 +394,36 @@ public class PlayerShop : AbstractMapObject
         Monitor.Enter(visitorLock);
         try
         {
-            for (int i = 0; i < 3; i++)
-            {
-                if (visitors[i] != null)
-                {
-                    visitors[i]!.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(i + 1));
-                }
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                if (visitors[i] != null)
-                {
-                    visitors[i]!.sendPacket(PacketCreator.getPlayerShop(this, false));
-                }
-            }
+            InvokeAllVisitor((visitor, i) => visitor.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(i + 1)));
+            InvokeAllVisitor(visitor => visitor.sendPacket(PacketCreator.getPlayerShop(this, false)));
 
             recoverChatLog();
         }
         finally
         {
             Monitor.Exit(visitorLock);
+        }
+    }
+
+    private void InvokeAllVisitor(Action<IPlayer> action)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (visitors[i] != null)
+            {
+                action(visitors[i]!);
+            }
+        }
+    }
+
+    private void InvokeAllVisitor(Action<IPlayer, int> action)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (visitors[i] != null)
+            {
+                action(visitors[i]!, i);
+            }
         }
     }
 
@@ -437,14 +436,11 @@ public class PlayerShop : AbstractMapObject
         {
             try
             {
-                for (int i = 0; i < 3; i++)
+                InvokeAllVisitor(visitor =>
                 {
-                    if (visitors[i] != null)
-                    {
-                        visitors[i]!.sendPacket(PacketCreator.shopErrorMessage(10, 1));
-                        visitorList.Add(visitors[i]!);
-                    }
-                }
+                    visitor.sendPacket(PacketCreator.shopErrorMessage(10, 1));
+                    visitorList.Add(visitor);
+                });
             }
             catch (Exception e)
             {
@@ -478,24 +474,7 @@ public class PlayerShop : AbstractMapObject
 
     private byte getVisitorSlot(IPlayer chr)
     {
-        byte s = 0;
-        foreach (var mc in getVisitors())
-        {
-            s++;
-            if (mc != null)
-            {
-                if (mc.getName().Equals(chr.getName(), StringComparison.OrdinalIgnoreCase))
-                {
-                    break;
-                }
-            }
-            else if (s == 3)
-            {
-                s = 0;
-            }
-        }
-
-        return s;
+        return (byte)(Array.FindIndex(getVisitors(), x => x?.Id == chr.Id) + 1);
     }
 
     public void chat(IClient c, string chat)
@@ -567,9 +546,7 @@ public class PlayerShop : AbstractMapObject
         Monitor.Enter(visitorLock);
         try
         {
-            IPlayer?[] copy = new IPlayer[3];
-            Array.ConstrainedCopy(visitors, 0, copy, 0, 3);
-            return copy;
+            return visitors.ToArray();
         }
         finally
         {
@@ -587,15 +564,7 @@ public class PlayerShop : AbstractMapObject
 
     public bool hasItem(int itemid)
     {
-        foreach (PlayerShopItem mpsi in getItems())
-        {
-            if (mpsi.getItem().getItemId() == itemid && mpsi.isExist() && mpsi.getBundles() > 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return getItems().Any(x => x.getItem().getItemId() == itemid && x.isExist() && x.getBundles() > 0);
     }
 
     public string getDescription()
@@ -619,14 +588,7 @@ public class PlayerShop : AbstractMapObject
         Monitor.Enter(visitorLock);
         try
         {
-            for (int i = 0; i < 3; i++)
-            {
-                if (visitors[i] != null && visitors[i]!.getName().Equals(name))
-                {
-                    target = visitors[i];
-                    break;
-                }
-            }
+            target = visitors.FirstOrDefault(x => x?.Name == name);
         }
         finally
         {
@@ -648,16 +610,16 @@ public class PlayerShop : AbstractMapObject
     // synchronized
     public bool visitShop(IPlayer chr)
     {
-        if (isBanned(chr.getName()))
-        {
-            chr.dropMessage(1, "You have been banned from this store.");
-            return false;
-        }
-
         Monitor.Enter(visitorLock);
         try
         {
-            if (!open.Get())
+            if (isBanned(chr.getName()))
+            {
+                chr.dropMessage(1, "You have been banned from this store.");
+                return false;
+            }
+
+            if (!isOpen())
             {
                 chr.dropMessage(1, "This store is not yet open.");
                 return false;
@@ -683,22 +645,10 @@ public class PlayerShop : AbstractMapObject
 
     public List<PlayerShopItem> sendAvailableBundles(int itemid)
     {
-        List<PlayerShopItem> list = new();
-        List<PlayerShopItem> all = new();
-
         lock (items)
         {
-            all.AddRange(items);
+            return items.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
         }
-
-        foreach (PlayerShopItem mpsi in all)
-        {
-            if (mpsi.getItem().getItemId() == itemid && mpsi.getBundles() > 0 && mpsi.isExist())
-            {
-                list.Add(mpsi);
-            }
-        }
-        return list;
     }
 
     public List<SoldItem> getSold()
@@ -722,41 +672,5 @@ public class PlayerShop : AbstractMapObject
     public override MapObjectType getType()
     {
         return MapObjectType.SHOP;
-    }
-
-    public class SoldItem
-    {
-
-        int itemid, mesos;
-        short quantity;
-        string buyer;
-
-        public SoldItem(string buyer, int itemid, short quantity, int mesos)
-        {
-            this.buyer = buyer;
-            this.itemid = itemid;
-            this.quantity = quantity;
-            this.mesos = mesos;
-        }
-
-        public string getBuyer()
-        {
-            return buyer;
-        }
-
-        public int getItemId()
-        {
-            return itemid;
-        }
-
-        public short getQuantity()
-        {
-            return quantity;
-        }
-
-        public int getMesos()
-        {
-            return mesos;
-        }
     }
 }

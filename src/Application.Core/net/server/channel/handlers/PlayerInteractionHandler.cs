@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Game.Trades;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;

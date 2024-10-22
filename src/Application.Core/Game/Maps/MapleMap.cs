@@ -516,12 +516,12 @@ public class MapleMap : IMap
         }
     }
 
-    public void removeMapObject(int num)
+    public void removeMapObject(int objectId)
     {
         objectLock.EnterWriteLock();
         try
         {
-            this.mapobjects.Remove(num);
+            this.mapobjects.Remove(objectId);
         }
         finally
         {

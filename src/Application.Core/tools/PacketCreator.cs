@@ -31,6 +31,7 @@ using Application.Core.Game.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
+using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using client;
@@ -3471,13 +3472,13 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getPlayerShopOwnerUpdate(PlayerShop.SoldItem item, int position)
+    public static Packet getPlayerShopOwnerUpdate(SoldItem item, int position)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInteractionHandler.Action.UPDATE_PLAYERSHOP.getCode());
         p.writeByte(position);
-        p.writeShort(item.getQuantity());
-        p.writeString(item.getBuyer());
+        p.writeShort(item.quantity);
+        p.writeString(item.buyer);
 
         return p;
     }
@@ -3498,14 +3499,14 @@ public class PacketCreator
 
         if (owner)
         {
-            List<PlayerShop.SoldItem> sold = shop.getSold();
+            List<SoldItem> sold = shop.getSold();
             p.writeByte(sold.Count);
-            foreach (PlayerShop.SoldItem s in sold)
+            foreach (SoldItem s in sold)
             {
-                p.writeInt(s.getItemId());
-                p.writeShort(s.getQuantity());
-                p.writeInt(s.getMesos());
-                p.writeString(s.getBuyer());
+                p.writeInt(s.itemid);
+                p.writeShort(s.quantity);
+                p.writeInt(s.mesos);
+                p.writeString(s.buyer);
             }
         }
         else

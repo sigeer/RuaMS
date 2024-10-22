@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Maps;
+﻿using Application.Core.Game.Trades;
 using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 

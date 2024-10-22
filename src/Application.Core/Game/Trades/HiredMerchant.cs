@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Maps;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
@@ -31,7 +32,7 @@ using server;
 using server.maps;
 using tools;
 
-namespace Application.Core.Game.Maps;
+namespace Application.Core.Game.Trades;
 
 
 
@@ -41,8 +42,8 @@ namespace Application.Core.Game.Maps;
  */
 public class HiredMerchant : AbstractMapObject
 {
-    private static int VISITOR_HISTORY_LIMIT = 10;
-    private static int BLACKLIST_LIMIT = 20;
+    private const int VISITOR_HISTORY_LIMIT = 10;
+    private const int BLACKLIST_LIMIT = 20;
 
     private int ownerId;
     private int itemId;
@@ -60,15 +61,16 @@ public class HiredMerchant : AbstractMapObject
 
     private Visitor?[] visitors = new Visitor[3];
     private List<PastVisitor> visitorHistory = new();
-    private List<string> blacklist = new(); // case-sensitive character names
+    private HashSet<string> blacklist = new(); // case-sensitive character names
     private object visitorLock = new object();
 
-
+    public IPlayer Owner { get; set; }
 
     public HiredMerchant(IPlayer owner, string desc, int itemId)
     {
         setPosition(owner.getPosition());
         start = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        Owner = owner;
         ownerId = owner.getId();
         channel = owner.getClient().getChannel();
         world = owner.getWorld();
@@ -161,7 +163,8 @@ public class HiredMerchant : AbstractMapObject
         {
             int slot = getVisitorSlot(chr);
             if (slot < 0)
-            { //Not found
+            {
+                //Not found
                 return;
             }
 
@@ -205,14 +208,7 @@ public class HiredMerchant : AbstractMapObject
 
     private int getVisitorSlot(IPlayer visitor)
     {
-        for (int i = 0; i < 3; i++)
-        {
-            if (visitors[i] != null && visitors[i]!.chr.getId() == visitor.getId())
-            {
-                return i;
-            }
-        }
-        return -1; //Actually 0 because of the +1's.
+        return Array.FindIndex(getVisitorCharacters(), x => x?.Id == visitor.Id);
     }
 
     private void removeAllVisitors()
@@ -558,6 +554,7 @@ public class HiredMerchant : AbstractMapObject
         Server.getInstance().getWorld(world).unregisterHiredMerchant(this);
     }
 
+
     public void visitShop(IPlayer chr)
     {
         Monitor.Enter(visitorLock);
@@ -620,22 +617,12 @@ public class HiredMerchant : AbstractMapObject
         return description;
     }
 
-    public IPlayer[] getVisitorCharacters()
+    public IPlayer?[] getVisitorCharacters()
     {
         Monitor.Enter(visitorLock);
         try
         {
-            IPlayer[] copy = new IPlayer[3];
-            for (int i = 0; i < visitors.Length; i++)
-            {
-                var visitor = visitors[i];
-                if (visitor != null)
-                {
-                    copy[i] = visitor.chr;
-                }
-            }
-
-            return copy;
+            return visitors.Select(x => x?.chr).ToArray();
         }
         finally
         {
@@ -682,13 +669,7 @@ public class HiredMerchant : AbstractMapObject
     {
         lock (items)
         {
-            for (int i = items.Count - 1; i >= 0; i--)
-            {
-                if (!items.get(i).isExist())
-                {
-                    items.RemoveAt(i);
-                }
-            }
+            items = items.Where(x => x.isExist()).ToList();
 
             try
             {
@@ -717,14 +698,7 @@ public class HiredMerchant : AbstractMapObject
 
     private int getFreeSlot()
     {
-        for (int i = 0; i < 3; i++)
-        {
-            if (visitors[i] == null)
-            {
-                return i;
-            }
-        }
-        return -1;
+        return Array.IndexOf(visitors, null);
     }
 
     public void setDescription(string description)
@@ -772,27 +746,15 @@ public class HiredMerchant : AbstractMapObject
 
     public List<PlayerShopItem> sendAvailableBundles(int itemid)
     {
-        List<PlayerShopItem> list = new();
-        List<PlayerShopItem> all = new();
-
         if (!open)
         {
-            return list;
+            return [];
         }
 
         lock (items)
         {
-            all.AddRange(items);
+            return items.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
         }
-
-        foreach (PlayerShopItem mpsi in all)
-        {
-            if (mpsi.getItem().getItemId() == itemid && mpsi.getBundles() > 0 && mpsi.isExist())
-            {
-                list.Add(mpsi);
-            }
-        }
-        return list;
     }
 
     public void saveItems(bool shutdown)
@@ -868,10 +830,7 @@ public class HiredMerchant : AbstractMapObject
     {
         lock (messages)
         {
-            List<KeyValuePair<string, byte>> msgList = new();
-            msgList.AddRange(messages);
-
-            return msgList;
+            return new List<KeyValuePair<string, byte>>(messages);
         }
     }
 
@@ -967,5 +926,3 @@ public class HiredMerchant : AbstractMapObject
 public record Visitor(IPlayer chr, DateTimeOffset enteredAt) { }
 
 public record PastVisitor(string chrName, TimeSpan visitDuration) { }
-
-public record SoldItem(string buyer, int itemid, short quantity, int mesos);
