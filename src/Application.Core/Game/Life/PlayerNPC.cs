@@ -515,6 +515,7 @@ public class PlayerNPC : AbstractMapObject
             try
             {
                 using var dbContext = new DBContext();
+                using var dbTrans = dbContext.Database.BeginTransaction();
                 var queryExpression = dbContext.Playernpcs.Where(x => Microsoft.EntityFrameworkCore.EF.Functions.Like(x.Name, chr.getName()));
                 if (map != null)
                     queryExpression = queryExpression.Where(x => x.Map == map.getId());
@@ -525,6 +526,7 @@ public class PlayerNPC : AbstractMapObject
                 dbContext.Playernpcs.Where(x => npcIdList.Contains(x.Id)).ExecuteDelete();
                 dbContext.PlayernpcsEquips.Where(x => npcIdList.Contains(x.Npcid)).ExecuteDelete();
                 mapids.addAll<int>(dataList.Select(x => x.Map).ToArray());
+                dbTrans.Commit();
 
             }
             catch (Exception e)
@@ -637,6 +639,7 @@ public class PlayerNPC : AbstractMapObject
         try
         {
             using var dbContext = new DBContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
             var dataList = dbContext.Playernpcs.GroupBy(x => new { x.World, x.Map }).ToList().Select(x => x.Key).ToList();
             int wsize = Server.getInstance().getWorldsSize();
             foreach (var item in dataList)
@@ -668,6 +671,7 @@ public class PlayerNPC : AbstractMapObject
             {
                 w.resetPlayerNpcMapData();
             }
+            dbTrans.Commit();
         }
         catch (Exception e)
         {
