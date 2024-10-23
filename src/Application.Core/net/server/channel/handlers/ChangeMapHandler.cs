@@ -21,11 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Trades;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
 using net.packet;
-using server;
 using System.Net;
 using tools;
 
@@ -47,10 +47,8 @@ public class ChangeMapHandler : AbstractPacketHandler
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
-        if (chr.getTrade() != null)
-        {
-            Trade.cancelTrade(chr, TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
-        }
+
+        chr.getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
 
         bool enteringMapFromCashShop = p.available() == 0;
         if (enteringMapFromCashShop)

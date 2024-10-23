@@ -1735,15 +1735,7 @@ public partial class Player
     public bool canHoldUniques(List<int> itemids)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        foreach (int itemid in itemids)
-        {
-            if (ii.isPickupRestricted(itemid) && this.haveItem(itemid))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return !itemids.Any(x => ii.isPickupRestricted(x) && haveItem(x));
     }
 
     public bool isRidingBattleship()
@@ -3028,7 +3020,7 @@ public partial class Player
 
     public void closeTrade()
     {
-        Trade.cancelTrade(this, TradeResult.PARTNER_CANCEL);
+        getTrade()?.CancelTrade(TradeResult.PARTNER_CANCEL);
     }
 
     public void closePlayerShop()

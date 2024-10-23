@@ -343,7 +343,7 @@ public class HiredMerchant : AbstractMapObject
                 if (canBuy(c, newItem))
                 {
                     c.OnlinedCharacter.gainMeso(-price, false);
-                    price -= Trade.getFee(price);  // thanks BHB for pointing out trade fees not applying here
+                    price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
 
                     lock (sold)
                     {

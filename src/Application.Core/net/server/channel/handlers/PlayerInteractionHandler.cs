@@ -142,7 +142,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                 if (createType == 3)
                 {  
                     // trade
-                    Trade.startTrade(chr);
+                    TradeManager.StartTrade(chr);
                 }
                 else if (createType == 1 || createType == 2)
                 {
@@ -244,20 +244,20 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                     return;
                 }
 
-                Trade.inviteTrade(chr, other);
+                TradeManager.inviteTrade(chr, other);
             }
             else if (mode == Action.DECLINE.getCode())
             {
-                Trade.declineTrade(chr);
+                TradeManager.DeclineTrade(chr);
             }
             else if (mode == Action.VISIT.getCode())
             {
                 var tradeObj = chr.getTrade();
-                if (tradeObj != null && tradeObj.getPartner() != null)
+                if (tradeObj != null && tradeObj.PartnerTrade != null)
                 {
-                    if (!tradeObj.isFullTrade() && !tradeObj.getPartner().isFullTrade())
+                    if (!tradeObj.isFullTrade() && !tradeObj.PartnerTrade.isFullTrade())
                     {
-                        Trade.visitTrade(chr, tradeObj.getPartner().getChr());
+                        TradeManager.VisitTrade(chr, tradeObj.PartnerTrade.getChr());
                     }
                     else
                     {
@@ -347,7 +347,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             {
                 if (chr.getTrade() != null)
                 {
-                    Trade.cancelTrade(chr, TradeResult.PARTNER_CANCEL);
+                    TradeManager.CancelTrade(chr, TradeResult.PARTNER_CANCEL);
                 }
                 else
                 {
@@ -650,9 +650,9 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                                 InventoryManipulator.removeFromSlot(c, ivType, item.getPosition(), quantity, true);
 
                                 trade.getChr().sendPacket(PacketCreator.getTradeItemAdd(0, tradeItem));
-                                if (trade.getPartner() != null)
+                                if (trade.PartnerTrade != null)
                                 {
-                                    trade.getPartner().getChr().sendPacket(PacketCreator.getTradeItemAdd(1, tradeItem));
+                                    trade.PartnerTrade.getChr().sendPacket(PacketCreator.getTradeItemAdd(1, tradeItem));
                                 }
                             }
                         }
@@ -669,7 +669,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             }
             else if (mode == Action.CONFIRM.getCode())
             {
-                Trade.completeTrade(chr);
+                TradeManager.CompleteTrade(chr);
             }
             else if (mode == Action.ADD_ITEM.getCode() || mode == Action.PUT_ITEM.getCode())
             {

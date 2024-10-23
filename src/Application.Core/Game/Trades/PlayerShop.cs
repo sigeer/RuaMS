@@ -25,7 +25,6 @@ using Application.Core.Game.Maps;
 using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
-using server;
 using server.maps;
 using System.Numerics;
 using tools;
@@ -324,7 +323,7 @@ public class PlayerShop : AbstractMapObject
                         if (canBuy(c, newItem))
                         {
                             c.OnlinedCharacter.gainMeso(-price, false);
-                            price -= Trade.getFee(price);  // thanks BHB for pointing out trade fees not applying here
+                            price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
                             owner.gainMeso(price, true);
 
                             SoldItem soldItem = new SoldItem(c.OnlinedCharacter.getName(), pItem.getItem().getItemId(), quantity, price);
