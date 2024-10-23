@@ -1,4 +1,5 @@
 ﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Trades;
 using client.inventory;
 using constants.id;
 using net.packet;
@@ -221,7 +222,7 @@ namespace Application.Core.Game.Players
             this.mapTransitioning.Set(true);
 
             this.unregisterChairBuff();
-            Trade.cancelTrade(this, TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
+            getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
             this.closePlayerInteractions();
 
             var k = this.getParty()?.getEnemy();

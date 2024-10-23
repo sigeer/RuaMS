@@ -1,12 +1,13 @@
-﻿using Application.Core.Compatible;
+﻿using Application.Core;
+using Application.Core.Compatible;
 using Application.Core.Game;
 using Application.Core.Game.Players;
 using Application.Core.Managers;
-using Application.Core.scripting.Event.jobs;
 using constants.id;
 using net.server;
 using Quartz.Impl;
 using server.maps;
+using System.Text;
 
 namespace ServiceTest
 {
@@ -16,13 +17,16 @@ namespace ServiceTest
         {
             Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
 
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            GlobalTools.Encoding = Encoding.GetEncoding("GBK");
+
             var factory = new StdSchedulerFactory();
             SchedulerManage.Scheduler = factory.GetScheduler().Result;
         }
 
         private IClient? _client;
         protected IClient MockClient => _client ??= GetOnlinedTestClient();
-        private IClient GetOnlinedTestClient(int charId = 1)
+        protected IClient GetOnlinedTestClient(int charId = 1)
         {
             Server.getInstance().forceUpdateCurrentTime();
             var mockClient = new MockupClient();

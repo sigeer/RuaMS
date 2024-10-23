@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Game.Trades;
 using Application.Core.model;
 using client.autoban;
 using client.inventory;
@@ -252,7 +253,7 @@ public class DueyProcessor
                     return;
                 }
 
-                int fee = Trade.getFee(sendMesos);
+                int fee = TradeManager.GetFee(sendMesos);
                 if (sendMessage != null && sendMessage.Length > 100)
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");

@@ -21,8 +21,8 @@
 */
 
 
+using Application.Core.Game.Trades;
 using net.packet;
-using server;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -45,10 +45,9 @@ public class ChangeMapSpecialHandler : AbstractPacketHandler
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
-        if (c.OnlinedCharacter.getTrade() != null)
-        {
-            Trade.cancelTrade(c.OnlinedCharacter, TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
-        }
+
+        c.OnlinedCharacter.getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
+
         portal.enterPortal(c);
     }
 }

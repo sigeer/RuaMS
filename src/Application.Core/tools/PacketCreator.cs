@@ -3553,8 +3553,8 @@ public class PacketCreator
         if (number == 1)
         {
             p.writeByte(0);
-            addCharLook(p, trade.getPartner().getChr(), false);
-            p.writeString(trade.getPartner().getChr().getName());
+            addCharLook(p, trade.PartnerTrade!.getChr(), false);
+            p.writeString(trade.PartnerTrade!.getChr().getName());
         }
         p.writeByte(number);
         addCharLook(p, c.OnlinedCharacter, false);
