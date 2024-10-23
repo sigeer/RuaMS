@@ -979,9 +979,7 @@ public class EventInstanceManager
         try
         {
             var d = props.GetValueOrDefault(key);
-            if (d == null)
-                return 0;
-            return (int)d;
+            return Convert.ToInt32(d);
         }
         finally
         {
