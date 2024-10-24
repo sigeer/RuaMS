@@ -4003,6 +4003,9 @@ public class MapleMap : IMap
     //    }
     //}
 
+    /// <summary>
+    /// ¶ªµôµÀ¾ß´¥·¢hitReactor
+    /// </summary>
     private class ActivateItemReactor : AbstractRunnable
     {
 
