@@ -48,10 +48,9 @@ public abstract class PartyQuest
         {
             if (pchr.Channel == channel && pchr.getMapId() == mapid)
             {
-                var chr = Server.getInstance().getWorld(world).getChannel(channel).getPlayerStorage().getCharacterById(pchr.getId());
-                if (chr != null)
+                if (pchr.isLoggedinWorld())
                 {
-                    this.participants.Add(chr);
+                    this.participants.Add(pchr);
                 }
             }
         }
