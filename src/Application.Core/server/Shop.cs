@@ -37,7 +37,7 @@ namespace server;
 /// </summary>
 public class Shop
 {
-    private static ILogger log = LogFactory.GetLogger("Shop");
+    private ILogger log;
     private static HashSet<int> rechargeableItems = new();
 
     private int id;
@@ -67,6 +67,8 @@ public class Shop
         this.id = id;
         this.npcId = npcId;
         items = new();
+
+        log = LogFactory.GetLogger($"Shop/Shop_{id}/Npc_{npcId}");
     }
 
     private void addItem(ShopItem item)

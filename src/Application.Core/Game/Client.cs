@@ -201,6 +201,8 @@ public class Client : ChannelHandlerAdapter, IClient
                 log.Warning(t, "Error in packet handler {Handler}. Chr {CharacterName}, account {AccountName}. Packet: {Packet}", handler.GetType().Name,
                         chrInfo, getAccountName(), packet);
                 //client.sendPacket(PacketCreator.enableActions());//bugs sometimes
+
+                throw;
             }
         }
 
@@ -231,8 +233,6 @@ public class Client : ChannelHandlerAdapter, IClient
         {
             if (cause is BusinessFatalException)
                 closeMapleSession();
-            else if (cause is BusinessResException)
-                sendPacket(PacketCreator.serverNotice(1, "wz数据不一致"));
             else
                 sendPacket(PacketCreator.serverNotice(1, cause.Message));
         }

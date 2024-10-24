@@ -455,8 +455,7 @@ namespace Application.Core.Game.Players
         bool haveItemEquipped(int itemid);
         bool haveItemWithId(int itemid, bool checkEquipped);
         bool haveWeddingRing();
-        void Hide(bool hide);
-        void Hide(bool hide, bool login);
+        void Hide(bool hide, bool login = false);
         void increaseEquipExp(int expGain);
         void increaseGuildCapacity();
         bool insertNewChar(CharacterFactoryRecipe recipe);
