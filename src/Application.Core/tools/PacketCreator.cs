@@ -568,9 +568,9 @@ public class PacketCreator
 
     private static void addMonsterBookInfo(OutPacket p, IPlayer chr)
     {
-        p.writeInt(chr.getMonsterBookCover()); // cover
+        p.writeInt(chr.Monsterbookcover); // cover
         p.writeByte(0);
-        Dictionary<int, int> cards = chr.getMonsterBook().getCards();
+        Dictionary<int, int> cards = chr.Monsterbook.getCards();
         p.writeShort(cards.Count);
         foreach (var all in cards)
         {
@@ -3045,12 +3045,12 @@ public class PacketCreator
             p.writeInt(sn);
         }
 
-        MonsterBook book = chr.getMonsterBook();
+        MonsterBook book = chr.Monsterbook;
         p.writeInt(book.getBookLevel());
         p.writeInt(book.getNormalCard());
         p.writeInt(book.getSpecialCard());
         p.writeInt(book.getTotalCards());
-        p.writeInt(chr.getMonsterBookCover() > 0 ? ItemInformationProvider.getInstance().getCardMobId(chr.getMonsterBookCover()) : 0);
+        p.writeInt(chr.Monsterbookcover > 0 ? ItemInformationProvider.getInstance().getCardMobId(chr.Monsterbookcover) : 0);
         var medal = chr.getInventory(InventoryType.EQUIPPED).getItem(-49);
         if (medal != null)
         {
@@ -4292,14 +4292,13 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * mode: 0 buddychat; 1 partychat; 2 guildchat
-     *
-     * @param name
-     * @param chattext
-     * @param mode
-     * @return
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="chattext"></param>
+    /// <param name="mode">mode: 0 buddychat; 1 partychat; 2 guildchat</param>
+    /// <returns></returns>
     public static Packet multiChat(string name, string chattext, int mode)
     {
         OutPacket p = OutPacket.create(SendOpcode.MULTICHAT);

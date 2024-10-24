@@ -403,10 +403,9 @@ public class HiredMerchant : AbstractMapObject
     {
         string qtyStr = item.getQuantity() > 1 ? " x " + item.getQuantity() : "";
 
-        var player = Server.getInstance().getWorld(world).getPlayerStorage().getCharacterById(ownerId);
-        if (player != null && player.isLoggedinWorld())
+        if (Owner.isLoggedinWorld())
         {
-            player.dropMessage(6, "[Hired Merchant] Item '" + ItemInformationProvider.getInstance().getName(item.getItemId()) + "'" + qtyStr + " has been sold for " + mesos + " mesos. (" + inStore + " left)");
+            Owner.dropMessage(6, "[Hired Merchant] Item '" + ItemInformationProvider.getInstance().getName(item.getItemId()) + "'" + qtyStr + " has been sold for " + mesos + " mesos. (" + inStore + " left)");
         }
     }
 
@@ -416,17 +415,15 @@ public class HiredMerchant : AbstractMapObject
         MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(getOwnerId()));
         MapModel.removeMapObject(this);
 
-        var owner = Server.getInstance().getWorld(world).getPlayerStorage().getCharacterById(ownerId);
-
         Monitor.Enter(visitorLock);
         try
         {
             setOpen(false);
             removeAllVisitors();
 
-            if (owner != null && owner.isLoggedinWorld() && this == owner.getHiredMerchant())
+            if (Owner.isLoggedinWorld() && this == Owner.getHiredMerchant())
             {
-                closeOwnerMerchant(owner);
+                closeOwnerMerchant(Owner);
             }
         }
         finally
@@ -449,10 +446,9 @@ public class HiredMerchant : AbstractMapObject
             Log.Logger.Error(ex.ToString());
         }
 
-        var player = Server.getInstance().getWorld(world).getPlayerStorage().getCharacterById(ownerId);
-        if (player != null && player.IsOnlined)
+        if (Owner.IsOnlined)
         {
-            player.setHasMerchant(false);
+            Owner.setHasMerchant(false);
         }
         else
         {
@@ -522,11 +518,9 @@ public class HiredMerchant : AbstractMapObject
                 Log.Logger.Error(e.ToString());
             }
 
-            // thanks Rohenn for noticing a possible dupe scenario on closing shop
-            var player = c.getWorldServer().getPlayerStorage().getCharacterById(ownerId);
-            if (player != null && player.IsOnlined)
+            if (Owner.IsOnlined)
             {
-                player.setHasMerchant(false);
+                Owner.setHasMerchant(false);
             }
             else
             {
@@ -640,15 +634,7 @@ public class HiredMerchant : AbstractMapObject
 
     public bool hasItem(int itemid)
     {
-        foreach (PlayerShopItem mpsi in getItems())
-        {
-            if (mpsi.getItem().getItemId() == itemid && mpsi.isExist() && mpsi.getBundles() > 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return getItems().Any(x => x.getItem().getItemId() == itemid && x.isExist() && x.getBundles() > 0);
     }
 
     public bool addItem(PlayerShopItem item)

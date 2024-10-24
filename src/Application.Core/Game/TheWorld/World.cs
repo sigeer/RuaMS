@@ -71,8 +71,6 @@ public class World : IWorld
     private Dictionary<int, KeyValuePair<KeyValuePair<bool, bool>, CoupleIdPair>> queuedMarriages = new();
     private ConcurrentDictionary<int, HashSet<int>> marriageGuests = new();
 
-    private Dictionary<int, int> partyChars = new();
-
     private AtomicInteger runningPartyId = new AtomicInteger();
     private object partyLock = new object();
 
@@ -95,6 +93,9 @@ public class World : IWorld
     private long mountUpdate;
 
     private object activePlayerShopsLock = new object();
+    /// <summary>
+    /// PlayerId - PlayerShop
+    /// </summary>
     private Dictionary<int, PlayerShop> activePlayerShops = new();
 
     private object activeMerchantsLock = new object();
@@ -790,29 +791,20 @@ public class World : IWorld
 
         foreach (var partychar in partyMembers)
         {
-            var chr = getPlayerStorage().getCharacterById(partychar.getId());
-            if (chr != null && chr.IsOnlined)
+            partychar.setParty(operation == PartyOperation.DISBAND ? null : party);
+            if (partychar.IsOnlined)
             {
-                if (operation == PartyOperation.DISBAND)
-                {
-                    chr.setParty(null);
-                }
-                else
-                {
-                    chr.setParty(party);
-                }
-                chr.sendPacket(PacketCreator.updateParty(chr.getClient().getChannel(), party, operation, target));
+                partychar.sendPacket(PacketCreator.updateParty(partychar.getClient().getChannel(), party, operation, target));
             }
         }
         switch (operation)
         {
             case PartyOperation.LEAVE:
             case PartyOperation.EXPEL:
-                var chr = getPlayerStorage().getCharacterById(target.getId());
-                if (chr != null && chr.IsOnlined)
+                target.setParty(null);
+                if (target.IsOnlined)
                 {
-                    chr.sendPacket(PacketCreator.updateParty(chr.getClient().getChannel(), party, operation, target));
-                    chr.setParty(null);
+                    target.sendPacket(PacketCreator.updateParty(target.Client.getChannel(), party, operation, target));
                 }
                 break;
             default:
@@ -822,7 +814,7 @@ public class World : IWorld
 
     public void updateParty(int partyid, PartyOperation operation, IPlayer target)
     {
-        ITeam? party = getParty(partyid) ?? throw new ArgumentException("no party with the specified partyid exists");
+        var party = getParty(partyid) ?? throw new ArgumentException("no party with the specified partyid exists");
         switch (operation)
         {
             case PartyOperation.JOIN:
@@ -912,12 +904,11 @@ public class World : IWorld
     {
         foreach (IPlayer partychar in party.getMembers())
         {
-            if (!(partychar.getName().Equals(namefrom)))
+            if (!partychar.getName().Equals(namefrom))
             {
-                var chr = getPlayerStorage().getCharacterByName(partychar.getName());
-                if (chr != null && chr.IsOnlined)
+                if (partychar.IsOnlined)
                 {
-                    chr.sendPacket(PacketCreator.multiChat(namefrom, chattext, 1));
+                    partychar.sendPacket(PacketCreator.multiChat(namefrom, chattext, 1));
                 }
             }
         }
@@ -951,6 +942,8 @@ public class World : IWorld
         }
         return foundsChars.ToArray();
     }
+
+    #region Messenger
 
     public Messenger createMessenger(MessengerCharacter chrfor)
     {
@@ -1132,7 +1125,7 @@ public class World : IWorld
         messenger.addMember(target, position);
     }
 
-
+    #endregion
 
     public bool isConnected(string charName)
     {
@@ -1275,7 +1268,7 @@ public class World : IWorld
         {
             Dictionary<int, int> tabItemBought = cashItemBought[snid / 10000000];
 
-            var cur = tabItemBought.get(snid) ?? 0;
+            var cur = tabItemBought.GetValueOrDefault(snid);
             tabItemBought.AddOrUpdate(snid, cur + 1);
         }
         finally
