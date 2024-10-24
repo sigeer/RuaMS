@@ -46,6 +46,6 @@ public class MonsterBookCountRequirement : AbstractQuestRequirement
 
     public override bool check(IPlayer chr, int? npcid)
     {
-        return chr.getMonsterBook().getTotalCards() >= reqCards;
+        return chr.Monsterbook.getTotalCards() >= reqCards;
     }
 }
