@@ -58,7 +58,7 @@ namespace ServiceTest.Games
         }
 
         [Test]
-        public void LudiStage3_HitReactorTest()
+        public void LudiStage2_HitReactorTest()
         {
             var mapId = 922010200;
             var map = MapFactory.loadMapFromWz(mapId, 0, 1, null);
