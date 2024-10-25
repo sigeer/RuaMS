@@ -2739,7 +2739,7 @@ public class MapleMap : IMap
             chrLock.ExitWriteLock();
         }
 
-        chr.setMapId(mapid);
+        chr.setMap(this);
         chr.updateActiveEffects();
 
         if (this.getHPDec() > 0)

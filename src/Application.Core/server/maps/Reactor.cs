@@ -329,8 +329,7 @@ public class Reactor : AbstractMapObject
                                     if (reactorType < 100)
                                     {
                                         //reactor broken
-                                        // delay > 0：延迟重生，delay < 0：不重生 delay = 0 无法销毁
-                                        if (delay != 0)
+                                        if (delay > 0)
                                         {
                                             MapModel.destroyReactor(getObjectId());
                                         }
@@ -433,7 +432,7 @@ public class Reactor : AbstractMapObject
         }
 
         MapModel.broadcastMessage(PacketCreator.destroyReactor(this));
-        return this.getDelay() < 0;
+        return false;
     }
 
     private void respawn()
