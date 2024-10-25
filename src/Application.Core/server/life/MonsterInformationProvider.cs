@@ -87,6 +87,13 @@ public class MonsterInformationProvider
             using var dbContext = new DBContext();
             globaldrops = dbContext.DropDataGlobals.Where(x => x.Chance > 0).ToList()
                 .Select(x => new DropEntry(x.Continent, x.Itemid, x.Chance,  x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
+
+            drops = dbContext.DropData
+                .Select(x => new { x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid, x.Dropperid })
+                .ToList()
+                .GroupBy(x => x.Dropperid)
+                .Select(x => new KeyValuePair<int, List<DropEntry>>(x.Key, x.Select(y => new DropEntry(y.Itemid, y.Chance, y.MinimumQuantity, y.MaximumQuantity, (short)y.Questid)).ToList()))
+                .ToDictionary();
         }
         catch (Exception e)
         {
@@ -153,10 +160,9 @@ public class MonsterInformationProvider
 
     public List<DropEntry> retrieveDrop(int monsterId)
     {
-        if (drops.ContainsKey(monsterId))
-        {
-            return drops[monsterId];
-        }
+        if (drops.TryGetValue(monsterId, out var value))
+            return value;
+
         List<DropEntry> ret = new();
 
         try

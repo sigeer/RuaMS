@@ -134,7 +134,7 @@ namespace Application.Core.Game
 
         public void closePlayerScriptInteractions()
         {
-            throw new NotImplementedException();
+            return;
         }
 
         public void closeSession()
@@ -149,7 +149,7 @@ namespace Application.Core.Game
 
         public void disconnect(bool shutdown, bool cashshop)
         {
-            throw new NotImplementedException();
+            return;
         }
 
         public void disconnectSession()
@@ -306,9 +306,10 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
+        readonly EngineStorage _engines = new EngineStorage();
         public IEngine? getScriptEngine(string name)
         {
-            throw new NotImplementedException();
+            return _engines[name];
         }
 
         public long getSessionId()
@@ -502,7 +503,7 @@ namespace Application.Core.Game
 
         public void setScriptEngine(string name, IEngine e)
         {
-            throw new NotImplementedException();
+            _engines[name] = e;
         }
 
         public void setWorld(int world)

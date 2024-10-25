@@ -44,7 +44,7 @@ public class Reactor : AbstractMapObject
     private int rid;
     private ReactorStats stats;
     private sbyte state;
-    private byte evstate;
+    private sbyte evstate;
     private int delay;
 
     private string name;
@@ -54,7 +54,7 @@ public class Reactor : AbstractMapObject
     private ScheduledFuture? timeoutTask = null;
     private Action? delayedRespawnRun = null;
     private GuardianSpawnPoint? guardian = null;
-    private byte facingDirection = 0;
+    private sbyte facingDirection = 0;
     private object reactorLock = new object();
     private object hitLock = new object();
 
@@ -108,12 +108,12 @@ public class Reactor : AbstractMapObject
         return state;
     }
 
-    public void setEventState(byte substate)
+    public void setEventState(sbyte substate)
     {
         this.evstate = substate;
     }
 
-    public byte getEventState()
+    public sbyte getEventState()
     {
         return evstate;
     }
@@ -153,7 +153,7 @@ public class Reactor : AbstractMapObject
         return attackHit;
     }
 
-    public ItemQuantity? getReactItem(byte index)
+    public ItemQuantity? getReactItem(sbyte index)
     {
         return stats.getReactItem(state, index);
     }
@@ -209,7 +209,7 @@ public class Reactor : AbstractMapObject
         }
     }
 
-    public void forceHitReactor(byte newState)
+    public void forceHitReactor(sbyte newState)
     {
         this.lockReactor();
         try
@@ -223,7 +223,7 @@ public class Reactor : AbstractMapObject
         }
     }
 
-    private void tryForceHitReactor(byte newState)
+    private void tryForceHitReactor(sbyte newState)
     {  // weak hit state signal, if already changed reactor state before timeout then drop this
         if (!Monitor.TryEnter(reactorLock))
         {
@@ -255,7 +255,7 @@ public class Reactor : AbstractMapObject
         int timeOut = stats.getTimeout(state);
         if (timeOut > -1)
         {
-            byte nextState = stats.getTimeoutState(state);
+            sbyte nextState = stats.getTimeoutState(state);
 
             timeoutTask = TimerManager.getInstance().schedule(() =>
             {
@@ -398,6 +398,10 @@ public class Reactor : AbstractMapObject
         }
     }
 
+    /// <summary>
+    /// 只要箱子能重生，就不会从地图上移除，只是看不见
+    /// </summary>
+    /// <returns></returns>
     public bool destroy()
     {
         if (Monitor.TryEnter(reactorLock))
@@ -418,7 +422,7 @@ public class Reactor : AbstractMapObject
                 }
                 else
                 {
-                    return !this.inDelayedRespawn();
+                    return delayedRespawnRun == null;
                 }
             }
             finally
@@ -475,11 +479,6 @@ public class Reactor : AbstractMapObject
         }
     }
 
-    public bool inDelayedRespawn()
-    {
-        return delayedRespawnRun != null;
-    }
-
     public Rectangle getArea()
     {
         return new Rectangle(getPosition().X + stats.getTL().X, getPosition().Y + stats.getTL().Y, stats.getBR().X - stats.getTL().X, stats.getBR().Y - stats.getTL().Y);
@@ -505,12 +504,12 @@ public class Reactor : AbstractMapObject
         this.guardian = guardian;
     }
 
-    public void setFacingDirection(byte facingDirection)
+    public void setFacingDirection(sbyte facingDirection)
     {
         this.facingDirection = facingDirection;
     }
 
-    public byte getFacingDirection()
+    public sbyte getFacingDirection()
     {
         return facingDirection;
     }
