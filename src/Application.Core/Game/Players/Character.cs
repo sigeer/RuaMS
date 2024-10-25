@@ -357,20 +357,7 @@ public partial class Player
         return owlSearch;
     }
 
-    public void addCooldown(int skillId, long startTime, long length)
-    {
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        try
-        {
-            this.coolDowns.AddOrUpdate(skillId, new CooldownValueHolder(skillId, startTime, length));
-        }
-        finally
-        {
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
-    }
+
 
     public void addCrushRing(Ring r)
     {
@@ -555,7 +542,8 @@ public partial class Player
     }
 
     public int getLastMobCount()
-    { //Used for skills that have mobCount at 1. (a/b)
+    {
+        //Used for skills that have mobCount at 1. (a/b)
         return lastmobcount;
     }
 
@@ -599,7 +587,7 @@ public partial class Player
         return medalItem == null ? "" : "<" + ItemInformationProvider.getInstance().getName(medalItem.getItemId()) + "> ";
     }
 
-    public void Hide(bool hide, bool login)
+    public void Hide(bool hide, bool login = false)
     {
         if (isGM() && hide != this.hidden)
         {
@@ -637,11 +625,6 @@ public partial class Player
         }
     }
 
-    public void Hide(bool hide)
-    {
-        Hide(hide, false);
-    }
-
     public void toggleHide(bool login)
     {
         Hide(!hidden);
@@ -662,7 +645,7 @@ public partial class Player
 
     private void cancelPlayerBuffs(List<BuffStat> buffstats)
     {
-        if (Client.getChannelServer().getPlayerStorage().getCharacterById(getId()) != null)
+        if (isLoggedinWorld())
         {
             updateLocalStats();
             sendPacket(PacketCreator.cancelBuff(buffstats));
@@ -1351,8 +1334,6 @@ public partial class Player
         }
     }
 
-
-
     public void notifyMapTransferToPartner(int mapid)
     {
         if (partnerId > 0)
@@ -1369,30 +1350,6 @@ public partial class Player
     {
         InviteCoordinator.removePlayerIncomingInvites(Id);
     }
-
-
-
-
-    public void changeSkillLevel(Skill skill, sbyte newLevel, int newMasterlevel, long expiration)
-    {
-        if (newLevel > -1)
-        {
-            Skills.AddOrUpdate(skill, new SkillEntry(newLevel, newMasterlevel, expiration));
-            if (!GameConstants.isHiddenSkills(skill.getId()))
-            {
-                sendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, expiration));
-            }
-        }
-        else
-        {
-            Skills.Remove(skill);
-            sendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, -1)); //Shouldn't use expiration anymore :)
-            using DBContext dbContext = new DBContext();
-            dbContext.Skills.Where(x => x.Skillid == skill.getId() && x.Characterid == Id).ExecuteDelete();
-        }
-    }
-
-
 
     public void checkBerserk(bool isHidden)
     {
@@ -1486,7 +1443,7 @@ public partial class Player
                         {
                             foreach (IPlayer mc in partyMembers)
                             {
-                                if (mc is IPlayerStats stats && stats.isAlive())
+                                if (mc.isAlive())
                                 {
                                     mse?.applyTo(mc);
                                 }
@@ -1519,7 +1476,7 @@ public partial class Player
 
                 if (itemId / 10000 == 238)
                 {
-                    this.getMonsterBook().addCard(Client, itemId);
+                    this.Monsterbook.addCard(Client, itemId);
                 }
                 return true;
             }
@@ -3058,10 +3015,6 @@ public partial class Player
         this.setPlayerShop(null);
     }
 
-
-
-
-
     public void closePlayerMessenger()
     {
         Messenger? m = this.getMessenger();
@@ -3083,8 +3036,6 @@ public partial class Player
     {
         return possibleReports;
     }
-
-
 
     public bool needQuestItem(int questid, int itemid)
     {
@@ -3243,21 +3194,6 @@ public partial class Player
     public IWorld getWorldServer()
     {
         return Server.getInstance().getWorld(World);
-    }
-
-    public void giveCoolDowns(int skillid, long starttime, long length)
-    {
-        if (skillid == 5221999)
-        {
-            this.battleshipHp = (int)length;
-            addCooldown(skillid, 0, length);
-        }
-        else
-        {
-            long timeNow = Server.getInstance().getCurrentTime();
-            int time = (int)((length + starttime) - timeNow);
-            addCooldown(skillid, timeNow, time);
-        }
     }
 
     public int gmLevel()
@@ -4655,34 +4591,7 @@ public partial class Player
         }
     }
 
-    object saveCdLock = new object();
-    public void saveCooldowns()
-    {
-        lock (saveCdLock)
-        {
-            List<PlayerCoolDownValueHolder> listcd = getAllCooldowns();
-
-            using var dbContext = new DBContext();
-            if (listcd.Count > 0)
-            {
-
-
-                dbContext.Cooldowns.Where(x => x.Charid == getId()).ExecuteDelete();
-                dbContext.Cooldowns.AddRange(listcd.Select(x => new Cooldown(getId(), x.skillId, x.length, x.startTime)));
-            }
-            var listds = getAllDiseases();
-            if (listds.Count != 0)
-            {
-                dbContext.Playerdiseases.Where(x => x.Charid == getId()).ExecuteDelete();
-                dbContext.Playerdiseases.AddRange(listds.Select(x =>
-                {
-                    var ms = x.Value.MobSkill.getId();
-                    return new Playerdisease(getId(), x.Key.ordinal(), (int)ms.type, ms.level, (int)x.Value.LeftTime);
-                }));
-            }
-        }
-    }
-
+ 
     public void saveGuildStatus()
     {
         try

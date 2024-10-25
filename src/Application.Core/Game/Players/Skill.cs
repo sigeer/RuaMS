@@ -1,6 +1,8 @@
 ﻿using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Event;
+using constants.game;
+using Microsoft.EntityFrameworkCore;
 using net.server;
 using server;
 using tools;
@@ -43,6 +45,25 @@ namespace Application.Core.Game.Players
             return skill.getEffect(skillLevel);
         }
 
+        public void changeSkillLevel(Skill skill, sbyte newLevel, int newMasterlevel, long expiration)
+        {
+            if (newLevel > -1)
+            {
+                Skills.AddOrUpdate(skill, new SkillEntry(newLevel, newMasterlevel, expiration));
+                if (!GameConstants.isHiddenSkills(skill.getId()))
+                {
+                    sendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, expiration));
+                }
+            }
+            else
+            {
+                Skills.Remove(skill);
+                sendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, -1)); //Shouldn't use expiration anymore :)
+                using DBContext dbContext = new DBContext();
+                dbContext.Skills.Where(x => x.Skillid == skill.getId() && x.Characterid == Id).ExecuteDelete();
+            }
+        }
+
         public int getMasterLevel(int skill)
         {
             var skillData = SkillFactory.getSkill(skill);
@@ -79,7 +100,26 @@ namespace Application.Core.Game.Players
             return skill == null ? -1 : (Skills.GetSkill(skill)?.expiration ?? -1);
         }
 
+        #region skill macro
+        public SkillMacro?[] SkillMacros { get; set; }
+        public void sendMacros()
+        {
+            // Always send the macro packet to fix a Client side bug when switching characters.
+            sendPacket(PacketCreator.getMacros(SkillMacros));
+        }
 
+        public SkillMacro?[] getMacros()
+        {
+            return SkillMacros;
+        }
+
+        public void updateMacros(int position, SkillMacro? updateMacro)
+        {
+            SkillMacros[position] = updateMacro;
+        }
+        #endregion
+
+        #region skill cooldown
         private ScheduledFuture? _skillCooldownTask = null;
         public List<PlayerCoolDownValueHolder> getAllCooldowns()
         {
@@ -200,24 +240,62 @@ namespace Application.Core.Game.Players
                 Monitor.Exit(effLock);
             }
         }
-
-        #region skill macro
-        public SkillMacro?[] SkillMacros { get; set; }
-        public void sendMacros()
+        public void addCooldown(int skillId, long startTime, long length)
         {
-            // Always send the macro packet to fix a Client side bug when switching characters.
-            sendPacket(PacketCreator.getMacros(SkillMacros));
+            Monitor.Enter(effLock);
+            chLock.EnterReadLock();
+            try
+            {
+                this.coolDowns.AddOrUpdate(skillId, new CooldownValueHolder(skillId, startTime, length));
+            }
+            finally
+            {
+                chLock.ExitReadLock();
+                Monitor.Exit(effLock);
+            }
+        }
+        public void giveCoolDowns(int skillid, long starttime, long length)
+        {
+            if (skillid == 5221999)
+            {
+                this.battleshipHp = (int)length;
+                addCooldown(skillid, 0, length);
+            }
+            else
+            {
+                long timeNow = Server.getInstance().getCurrentTime();
+                int time = (int)((length + starttime) - timeNow);
+                addCooldown(skillid, timeNow, time);
+            }
         }
 
-        public SkillMacro?[] getMacros()
+        object saveCdLock = new object();
+        public void saveCooldowns()
         {
-            return SkillMacros;
+            lock (saveCdLock)
+            {
+                List<PlayerCoolDownValueHolder> listcd = getAllCooldowns();
+
+                using var dbContext = new DBContext();
+                if (listcd.Count > 0)
+                {
+                    dbContext.Cooldowns.Where(x => x.Charid == getId()).ExecuteDelete();
+                    dbContext.Cooldowns.AddRange(listcd.Select(x => new Cooldown(getId(), x.skillId, x.length, x.startTime)));
+                }
+                var listds = getAllDiseases();
+                if (listds.Count != 0)
+                {
+                    dbContext.Playerdiseases.Where(x => x.Charid == getId()).ExecuteDelete();
+                    dbContext.Playerdiseases.AddRange(listds.Select(x =>
+                    {
+                        var ms = x.Value.MobSkill.getId();
+                        return new Playerdisease(getId(), x.Key.ordinal(), (int)ms.type, ms.level, (int)x.Value.LeftTime);
+                    }));
+                }
+                dbContext.SaveChanges();
+            }
         }
 
-        public void updateMacros(int position, SkillMacro? updateMacro)
-        {
-            SkillMacros[position] = updateMacro;
-        }
         #endregion
     }
 }

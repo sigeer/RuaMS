@@ -90,12 +90,21 @@ public class ItemConstants
         int useType = itemId / 1000;
         return useType == 2022 || useType == 2010 || useType == 2020;
     }
-
+    /// <summary>
+    /// 药水或食物
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
     public static bool isConsumable(int itemId)
     {
         return isPotion(itemId) || isFood(itemId);
     }
 
+    /// <summary>
+    /// 可补充的，子弹、飞镖
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
     public static bool isRechargeable(int itemId)
     {
         return isThrowingStar(itemId) || isBullet(itemId);

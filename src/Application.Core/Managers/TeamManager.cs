@@ -151,14 +151,14 @@ namespace Application.Core.Managers
             return false;
         }
 
-        public static void expelFromParty(ITeam party, IClient c, int expelCid)
+        public static void expelFromParty(ITeam? party, IClient c, int expelCid)
         {
             var world = c.getWorldServer();
-            var player = c.getPlayer();
+            var player = c.OnlinedCharacter;
 
             if (party != null && player != null)
             {
-                if (player.Equals(party.getLeader()))
+                if (player.isPartyLeader())
                 {
                     var emc = party.getMemberById(expelCid);
 

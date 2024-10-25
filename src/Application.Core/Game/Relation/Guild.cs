@@ -268,11 +268,8 @@ public class Guild : IGuild
 
     public void broadcastNameChanged()
     {
-        var ps = GetWorldModel().getPlayerStorage();
-
-        foreach (var mgc in getMembers())
+        foreach (var chr in getMembers())
         {
-            var chr = ps.getCharacterById(mgc.getId());
             if (chr == null || !chr.isLoggedinWorld())
             {
                 continue;
@@ -285,11 +282,8 @@ public class Guild : IGuild
 
     public void broadcastEmblemChanged()
     {
-        var ps = GetWorldModel().getPlayerStorage();
-
-        foreach (var mgc in getMembers())
+        foreach (var chr in getMembers())
         {
-            var chr = ps.getCharacterById(mgc.getId());
             if (chr == null || !chr.isLoggedinWorld())
             {
                 continue;
@@ -302,11 +296,8 @@ public class Guild : IGuild
 
     public void broadcastInfoChanged()
     {
-        var ps = GetWorldModel().getPlayerStorage();
-
-        foreach (var mgc in getMembers())
+        foreach (var chr in getMembers())
         {
-            var chr = ps.getCharacterById(mgc.getId());
             if (chr == null || !chr.isLoggedinWorld())
             {
                 continue;

@@ -22,7 +22,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             {
                 AdminManager.KillAllMonster(Player);
             }
-            // 第2关放4个道具，传送点过关 party6_stage
+            // 第2关，在reactor=3009000 放4个道具 4001162 * 4 ，传送点过关 party6_stage
             if (curMapId == 930000200)
             {
                 var mapSpine = Player.getMap().getReactorByName("spine");
@@ -39,14 +39,15 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             // 第5关跳跳，NPC对话过关 2133004 需要道具 4001163 * 1
             if (curMapId == 930000500)
             {
-                // 4001163
                 InventoryManipulator.addFromDrop(Player.Client, new Item(4001163, 0, 1));
             }
-            // 第6关BOSS击杀
+            // 第6关放置物品后，触发reactor=3001000，召唤BOSS并击杀，传送点过关 party6_out
             if (curMapId == 930000600)
             {
-                AdminManager.KillAllMonster(Player);
+                // 正常来说需要击杀怪物monsterKilled，然后触发clearPQ，此处由于ClearMapId强制调用了clearPQ
             }
+            // 930000700：？
+            // 930000800：任务完成的奖励地图 
             eim.showClearEffect(curMapId);
         }
     }
