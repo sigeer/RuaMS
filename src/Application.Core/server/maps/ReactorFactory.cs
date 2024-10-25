@@ -88,13 +88,13 @@ public class ReactorFactory
                         stats.addState(i,
                             type,
                             reactItem,
-                            (byte)DataTool.getIntConvert("state", reactorInfoData),
+                            (sbyte)DataTool.getIntConvert("state", reactorInfoData),
                             DataTool.getIntConvert("timeOut", reactorInfoData_, -1),
                             (byte)(canTouch ? 2 : (DataTool.getIntConvert("2", reactorInfoData, 0) > 0 || reactorInfoData?.getChildByPath("clickArea") != null || type == 9 ? 1 : 0)));
                     }
                     else
                     {
-                        stats.addState(i, 999, null, (byte)(foundState ? -1 : (i + 1)), 0, 0);
+                        stats.addState(i, 999, null, (sbyte)(foundState ? -1 : (i + 1)), 0, 0);
                     }
                 }
                 reactorStats.AddOrUpdate(infoId, stats);
@@ -180,7 +180,7 @@ public class ReactorFactory
                                             skillids.Add(DataTool.getInt(skill));
                                         }
                                     }
-                                    byte nextState = (byte)DataTool.getIntConvert("state", fknexon);
+                                    sbyte nextState = (sbyte)DataTool.getIntConvert("state", fknexon);
                                     statedatas.Add(new StateData(type, reactItem, skillids, nextState));
                                 }
                             }

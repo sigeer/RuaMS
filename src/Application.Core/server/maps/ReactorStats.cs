@@ -63,11 +63,9 @@ public class ReactorStats
             timeoutInfo.AddOrUpdate(state, timeOut);
     }
 
-    public void addState(sbyte state, int type, ItemQuantity? reactItem, byte nextState, int timeOut, byte canTouch)
+    public void addState(sbyte state, int type, ItemQuantity? reactItem, sbyte nextState, int timeOut, byte canTouch)
     {
-        List<StateData> data = new();
-        data.Add(new StateData(type, reactItem, null, nextState));
-        stateInfo.AddOrUpdate(state, data);
+        stateInfo.AddOrUpdate(state, [new StateData(type, reactItem, null, nextState)]);
     }
 
     public int getTimeout(sbyte state)
@@ -75,7 +73,7 @@ public class ReactorStats
         return timeoutInfo.GetValueOrDefault(state, -1);
     }
 
-    public byte getTimeoutState(sbyte state)
+    public sbyte getTimeoutState(sbyte state)
     {
         var value = stateInfo.GetValueOrDefault(state);
         return value == null ? throw new BusinessException() : value.Last().getNextState();
@@ -88,58 +86,22 @@ public class ReactorStats
 
     public sbyte getNextState(sbyte state, byte index)
     {
-        var info = stateInfo.GetValueOrDefault(state);
-        if (info == null || info.Count < (index + 1))
-            return -1;
-
-        StateData? nextState = info.ElementAtOrDefault(index);
-        if (nextState != null)
-        {
-            return (sbyte)nextState.getNextState();
-        }
-        else
-        {
-            return -1;
-        }
+        return stateInfo.GetValueOrDefault(state)?.ElementAtOrDefault(index)?.getNextState() ?? -1;
     }
 
     public List<int>? getActiveSkills(sbyte state, byte index)
     {
-        StateData? nextState = stateInfo.GetValueOrDefault(state)?.ElementAtOrDefault(index);
-        if (nextState != null)
-        {
-            return nextState.getActiveSkills();
-        }
-        else
-        {
-            return null;
-        }
+        return stateInfo.GetValueOrDefault(state)?.ElementAtOrDefault(index)?.getActiveSkills();
     }
 
     public int getType(sbyte state)
     {
-        List<StateData>? list = stateInfo.GetValueOrDefault(state);
-        if (list != null)
-        {
-            return list[0].getType();
-        }
-        else
-        {
-            return -1;
-        }
+        return stateInfo.GetValueOrDefault(state)?.ElementAtOrDefault(0)?.getType() ?? -1;
     }
 
-    public ItemQuantity? getReactItem(sbyte state, byte index)
+    public ItemQuantity? getReactItem(sbyte state, sbyte index)
     {
-        StateData? nextState = stateInfo.GetValueOrDefault(state)?.ElementAtOrDefault(index);
-        if (nextState != null)
-        {
-            return nextState.getReactItem();
-        }
-        else
-        {
-            return null;
-        }
+        return stateInfo.GetValueOrDefault(state)?.ElementAtOrDefault(index)?.getReactItem();
     }
 
 
@@ -148,9 +110,9 @@ public class ReactorStats
         private int type;
         private ItemQuantity? reactItem;
         private List<int>? activeSkills;
-        private byte nextState;
+        private sbyte nextState;
 
-        public StateData(int type, ItemQuantity? reactItem, List<int>? activeSkills, byte nextState)
+        public StateData(int type, ItemQuantity? reactItem, List<int>? activeSkills, sbyte nextState)
         {
             this.type = type;
             this.reactItem = reactItem;
@@ -163,7 +125,7 @@ public class ReactorStats
             return type;
         }
 
-        public byte getNextState()
+        public sbyte getNextState()
         {
             return nextState;
         }
