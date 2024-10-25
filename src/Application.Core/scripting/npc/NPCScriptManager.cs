@@ -190,7 +190,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
     }
 
-    public void action(IClient c, byte mode, byte type, int selection)
+    public void action(IClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)

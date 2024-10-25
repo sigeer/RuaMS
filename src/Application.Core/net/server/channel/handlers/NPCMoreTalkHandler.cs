@@ -34,8 +34,8 @@ public class NPCMoreTalkHandler : AbstractPacketHandler
 {
     public override void HandlePacket(InPacket p, IClient c)
     {
-        byte lastMsg = p.readByte(); // 00 (last msg type I think)
-        byte action = p.readByte(); // 00 = end chat, 01 == follow
+        sbyte lastMsg = p.ReadSByte(); // 00 (last msg type I think)
+        sbyte action = p.ReadSByte(); // 00 = end chat, 01 == follow
         if (lastMsg == 2)
         {
             if (action != 0)
