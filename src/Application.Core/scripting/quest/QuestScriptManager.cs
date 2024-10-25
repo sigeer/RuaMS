@@ -99,7 +99,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void start(IClient c, byte mode, byte type, int selection)
+    public void start(IClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -165,7 +165,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void end(IClient c, byte mode, byte type, int selection)
+    public void end(IClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
