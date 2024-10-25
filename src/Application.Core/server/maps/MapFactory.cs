@@ -339,7 +339,7 @@ public class MapFactory
                 var id = DataTool.getString(reactor.getChildByPath("id"));
                 if (id != null)
                 {
-                    Reactor newReactor = loadReactor(reactor, id, (byte)DataTool.getInt(reactor.getChildByPath("f"), 0));
+                    Reactor newReactor = loadReactor(reactor, id, (sbyte)DataTool.getInt(reactor.getChildByPath("f"), 0));
                     map.spawnReactor(newReactor);
                 }
             }
@@ -405,15 +405,16 @@ public class MapFactory
         return myLife;
     }
 
-    private static Reactor loadReactor(Data reactor, string id, byte FacingDirection)
+    private static Reactor loadReactor(Data mapReactor, string id, sbyte FacingDirection)
     {
-        Reactor myReactor = new Reactor(ReactorFactory.getReactor(int.Parse(id)), int.Parse(id));
-        int x = DataTool.getInt(reactor.getChildByPath("x"));
-        int y = DataTool.getInt(reactor.getChildByPath("y"));
+        var reactorId = int.Parse(id);
+        Reactor myReactor = new Reactor(ReactorFactory.getReactor(reactorId), reactorId);
+        int x = DataTool.getInt(mapReactor.getChildByPath("x"));
+        int y = DataTool.getInt(mapReactor.getChildByPath("y"));
         myReactor.setFacingDirection(FacingDirection);
         myReactor.setPosition(new Point(x, y));
-        myReactor.setDelay((DataTool.getInt(reactor.getChildByPath("reactorTime"))) * 1000);
-        myReactor.setName(DataTool.getString(reactor.getChildByPath("name")) ?? "");
+        myReactor.setDelay((DataTool.getInt(mapReactor.getChildByPath("reactorTime"))) * 1000);
+        myReactor.setName(DataTool.getString(mapReactor.getChildByPath("name")) ?? "");
         myReactor.resetReactorActions(0);
         return myReactor;
     }

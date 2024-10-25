@@ -36,6 +36,10 @@ public class ReactorScriptManager : AbstractScriptManager
     private static ReactorScriptManager instance = new ReactorScriptManager();
 
     private Dictionary<int, List<DropEntry>> drops = new();
+    private ReactorScriptManager()
+    {
+        LoadAllReactorDrops();
+    }
 
     public static ReactorScriptManager getInstance()
     {
@@ -100,6 +104,17 @@ public class ReactorScriptManager : AbstractScriptManager
             drops.AddOrUpdate(reactorId, ret);
         }
         return ret;
+    }
+
+    public void LoadAllReactorDrops()
+    {
+        using var dbContext = new DBContext();
+        drops = dbContext.Reactordrops.Where(x => x.Chance >= 0)
+            .Select(x => new { x.Itemid, x.Chance, x.Questid, x.Reactorid })
+            .ToList()
+            .GroupBy(x => x.Reactorid)
+            .Select(x => new KeyValuePair<int, List<DropEntry>>(x.Key, x.Select(y => new DropEntry(y.Itemid, y.Chance, (short)y.Questid)).ToList()))
+            .ToDictionary();
     }
 
     public void clearDrops()
