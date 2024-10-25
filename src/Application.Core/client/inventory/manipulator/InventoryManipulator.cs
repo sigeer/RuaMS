@@ -67,7 +67,6 @@ public class InventoryManipulator
             {
                 if (existing.Count > 0)
                 { // first update all existing slots to slotMax
-                    var i = existing.GetEnumerator();
                     foreach (var eItem in existing)
                     {
                         if (quantity <= 0)
@@ -84,7 +83,6 @@ public class InventoryManipulator
                         }
                     }
                 }
-                bool sandboxItem = (flag & ItemConstants.SANDBOX) == ItemConstants.SANDBOX;
                 while (quantity > 0)
                 {
                     short newQ = Math.Min(quantity, slotMax);
@@ -106,7 +104,7 @@ public class InventoryManipulator
                             nItem.setOwner(owner);
                         }
                         c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
-                        if (sandboxItem)
+                        if (isSandboxItem(flag))
                         {
                             chr.setHasSandboxItem();
                         }
@@ -986,8 +984,10 @@ public class InventoryManipulator
         return YamlConfig.config.server.USE_ERASE_UNTRADEABLE_DROP && it.isUntradeable();
     }
 
-    public static bool isSandboxItem(Item it)
+    public static bool isSandboxItem(Item it) => isSandboxItem(it.getFlag());
+
+    public static bool isSandboxItem(short itFlag)
     {
-        return (it.getFlag() & ItemConstants.SANDBOX) == ItemConstants.SANDBOX;
+        return (itFlag & ItemConstants.SANDBOX) == ItemConstants.SANDBOX;
     }
 }
