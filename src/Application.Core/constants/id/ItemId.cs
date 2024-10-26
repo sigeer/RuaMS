@@ -75,29 +75,29 @@ public class ItemId
     }
 
     // Throwing star
-    public static int SUBI_THROWING_STARS = 2070000;
-    public static int HWABI_THROWING_STARS = 2070007;
-    public static int BALANCED_FURY = 2070018;
-    public static int CRYSTAL_ILBI_THROWING_STARS = 2070016;
+    public const int SUBI_THROWING_STARS = 2070000;
+    public const int HWABI_THROWING_STARS = 2070007;
+    public const int BALANCED_FURY = 2070018;
+    public const int CRYSTAL_ILBI_THROWING_STARS = 2070016;
     private static int THROWING_STAR_MIN = SUBI_THROWING_STARS;
-    private static int THROWING_STAR_MAX = 2070016;
-    public static int DEVIL_RAIN_THROWING_STAR = 2070014;
+    private const int THROWING_STAR_MAX = 2070016;
+    public const int DEVIL_RAIN_THROWING_STAR = 2070014;
 
     public static int[] allThrowingStarIds()
     {
-        return Enumerable.Range(THROWING_STAR_MIN, THROWING_STAR_MAX + 1).ToArray();
+        return Enumerable.Range(THROWING_STAR_MIN, THROWING_STAR_MAX - THROWING_STAR_MIN + 1).ToArray();
     }
 
     // Bullet
-    public static int BULLET = 2330000;
-    private static int BULLET_MIN = BULLET;
-    private static int BULLET_MAX = 2330005;
-    public static int BLAZE_CAPSULE = 2331000;
-    public static int GLAZE_CAPSULE = 2332000;
+    public const int BULLET = 2330000;
+    private const int BULLET_MIN = BULLET;
+    private const int BULLET_MAX = 2330005;
+    public const int BLAZE_CAPSULE = 2331000;
+    public const int GLAZE_CAPSULE = 2332000;
 
     public static int[] allBulletIds()
     {
-        return Enumerable.Range(BULLET_MIN, BULLET_MAX + 1).ToArray();
+        return Enumerable.Range(BULLET_MIN, BULLET_MAX - BULLET_MIN + 1).ToArray();
     }
 
     // Starter

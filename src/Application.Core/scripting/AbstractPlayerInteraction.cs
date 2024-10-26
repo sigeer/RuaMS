@@ -257,14 +257,7 @@ public class AbstractPlayerInteraction
 
     private List<int> convertToIntegerList(List<object> objects)
     {
-        List<int> intList = new();
-
-        foreach (object obj in objects)
-        {
-            intList.Add((int)obj);
-        }
-
-        return intList;
+        return objects.Select(x => Convert.ToInt32(x)).ToList();
     }
 
     public bool canHoldAll(List<object> itemids)
