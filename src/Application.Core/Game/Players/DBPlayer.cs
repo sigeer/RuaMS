@@ -210,7 +210,7 @@ namespace Application.Core.Game.Players
                         Monitor.Exit(effLock);
                     }
 
-                    if (base.MapModel == null || (CashShopModel != null && CashShopModel.isOpened()))
+                    if (base.MapModel == null || CashShopModel.isOpened())
                     {
                         entity.Map = Map;
                     }

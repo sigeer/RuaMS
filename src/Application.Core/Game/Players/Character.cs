@@ -1105,7 +1105,7 @@ public partial class Player
 
     private bool buffMapProtection()
     {
-        int thisMapid = Map;
+        int thisMapid = getMapId();
         int returnMapid = Client.getChannelServer().getMapFactory().getMap(thisMapid).getReturnMapId();
 
         Monitor.Enter(effLock);
@@ -2587,7 +2587,7 @@ public partial class Player
             StatEffect? mseMeso = getBuffEffect(BuffStat.MESO_UP_BY_ITEM);
             if (mseMeso != null)
             {
-                rate += mseMeso.getCardRate(Map, itemid);
+                rate += mseMeso.getCardRate(getMapId(), itemid);
             }
         }
         else
@@ -2595,7 +2595,7 @@ public partial class Player
             StatEffect? mseItem = getBuffEffect(BuffStat.ITEM_UP_BY_ITEM);
             if (mseItem != null)
             {
-                rate += mseItem.getCardRate(Map, itemid);
+                rate += mseItem.getCardRate(getMapId(), itemid);
             }
         }
 
@@ -3426,7 +3426,7 @@ public partial class Player
 
     public bool attemptCatchFish(int baitLevel)
     {
-        return YamlConfig.config.server.USE_FISHING_SYSTEM && MapId.isFishingArea(Map) &&
+        return YamlConfig.config.server.USE_FISHING_SYSTEM && MapId.isFishingArea(getMapId()) &&
                 this.getPosition().Y > 0 &&
                 ItemConstants.isFishingChair(chair.get()) &&
                 this.getWorldServer().registerFisherPlayer(this, baitLevel);
@@ -4630,10 +4630,8 @@ public partial class Player
         setMaxMp(recipe.getMaxMp());
         Hp = Maxhp;
         Mp = Maxmp;
-        Level = recipe.getLevel();
         Ap = recipe.getRemainingAp();
         RemainingSp[GameConstants.getSkillBook(JobId)] = recipe.getRemainingSp();
-        Map = recipe.getMap();
         MesoValue.set(recipe.getMeso());
 
         List<KeyValuePair<Skill, int>> startingSkills = recipe.getStartingSkillLevel();
@@ -4656,24 +4654,7 @@ public partial class Player
         {
             using var dbContext = new DBContext();
             using var dbTrans = dbContext.Database.BeginTransaction();
-
-            var dbModel = new CharacterEntity(
-                AccountId,
-                World,
-                Name,
-                Level,
-                ExpValue,
-                GachaExpValue,
-                Str, Dex, Luk, Int, Hp, Mp, Maxhp, Maxmp,
-                Math.Abs(MesoValue.get()),
-                getJob().getId(),
-                (int)SkinColorModel,
-                Gender, Hair, Face,
-                Map,
-                0,
-                Gm,
-                Ap,
-                string.Join(',', RemainingSp));
+            var dbModel = GlobalTools.Mapper.Map<IPlayer, CharacterEntity>(this);
             dbContext.Characters.Add(dbModel);
             int updateRows = dbContext.SaveChanges();
             if (updateRows < 1)
