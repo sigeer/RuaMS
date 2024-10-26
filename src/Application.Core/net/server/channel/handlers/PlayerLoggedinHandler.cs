@@ -435,8 +435,8 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
                 if (partner != null && partner.isLoggedinWorld())
                 {
-                    player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.Map));
-                    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.Map));
+                    player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.getMapId()));
+                    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
                 }
             }
 

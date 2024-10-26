@@ -628,7 +628,6 @@ namespace Application.Core.Game.Players
         void setLevel(int level);
         void setLoginTime(DateTimeOffset time);
         void setMap(int PmapId);
-        void setMapId(int mapid);
         void setMapTransitionComplete();
         void setMarriageItemId(int itemid);
         void setMasteries(int jobId);

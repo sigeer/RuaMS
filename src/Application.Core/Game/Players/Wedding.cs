@@ -102,8 +102,9 @@ namespace Application.Core.Game.Players
 
                 if (prop != null)
                 {
+                    var curMapId = getMapId();
                     return (int.Parse(prop) == Id || eim.getIntProperty("brideId") == Id) &&
-                            (Map == MapId.CHAPEL_WEDDING_ALTAR || Map == MapId.CATHEDRAL_WEDDING_ALTAR);
+                            (curMapId == MapId.CHAPEL_WEDDING_ALTAR || curMapId == MapId.CATHEDRAL_WEDDING_ALTAR);
                 }
             }
 

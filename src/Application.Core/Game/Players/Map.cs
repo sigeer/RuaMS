@@ -25,16 +25,11 @@ namespace Application.Core.Game.Players
         /// <param name="PmapId"></param>
         public void setMap(int PmapId)
         {
-            this.Map = PmapId;
-            if (IsOnlined)
-                base.setMap(MapManager.getMap(Map));
-        }
-
-        public void setMapId(int mapid)
-        {
-            this.Map = mapid;
-            if (IsOnlined)
-                base.setMap(MapManager.getMap(Map));
+            // this.Map = PmapId;
+            if (PmapId != getMapId())
+            {
+                Log.Fatal("MapId 不一致, {MapId}, {MapModelId}", PmapId, getMapId());
+            }
         }
 
         public override void setMap(IMap map)
@@ -94,7 +89,7 @@ namespace Application.Core.Game.Players
                 dropMessage(5, banishInfo.msg);
             }
 
-            IMap map_ = getWarpMap(Map);
+            IMap map_ = getWarpMap(getMapId());
             var portal_ = map_.getPortal(banishInfo.portal);
             changeMap(map_, portal_ != null ? portal_ : map_.getRandomPlayerSpawnpoint());
         }
