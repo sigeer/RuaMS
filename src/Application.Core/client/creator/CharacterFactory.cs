@@ -50,17 +50,17 @@ public abstract class CharacterFactory
     /// <param name="recipe"></param>
     /// <param name="newchar"></param>
     /// <returns>0=³É¹¦</returns>
-    public static int CreateCharacter(int world, int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newchar)
+    public static int CreateCharacter(int world, int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
     {
         lock (createNewLock)
         {
-            newchar = null;
+            newCharacter = null;
             if (!CharacterManager.CheckCharacterName(name))
             {
                 return CreateCharResult.NameInvalid;
             }
 
-            var newCharacter = CharacterManager.NewPlayer(world, accountId);
+            newCharacter = CharacterManager.NewPlayer(world, accountId);
             newCharacter.setSkinColor(SkinColorUtils.getById(skin));
             newCharacter.setGender(gender);
             newCharacter.setName(name);
