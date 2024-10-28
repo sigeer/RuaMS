@@ -59,7 +59,7 @@ namespace Application.Core.Scripting.Infrastructure
             return _engine.Evaluate(code);
         }
 
-        public object GetValue(string variable)
+        public object? GetValue(string variable)
         {
             return _engine.GetValue(variable).ToObject();
         }

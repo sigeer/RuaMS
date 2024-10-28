@@ -22,8 +22,7 @@ namespace Application.Core.Game.Players
         void visitMap(IMap map);
         void warpAhead(int map);
 
-        void startMapEffect(string msg, int itemId);
-        void startMapEffect(string msg, int itemId, int duration);
+        void startMapEffect(string msg, int itemId, int duration = 30000);
 
         void showMapOwnershipInfo(IPlayer mapOwner);
     }

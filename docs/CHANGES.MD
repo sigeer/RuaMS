@@ -1,5 +1,6 @@
-2024年8月28日
-
+- 由于EFCore会将`tiny(1)` 视作`bool`，现将脚本中非bool类型却使用`tiny(1)`的字段的数据类型改为`tiny`。
+- `async/await` 的处理，如果使用`async/await`，js脚本部分也要进行相应的调整，需要大量修改。改为同步调用
+- Java中的byte，对应C#中的sbyte，在网络请求中，byte与sbyte没有区别。但是作为数值参与计算时，两者有区别。
 - 移除`GuildSummary`
 - 角色在线功能的判定：原先的`lodgeIn`字段被移除，通过`Client`的实现来判断
 - 通过分部类将`Character`按功能拆分 （未完成）
@@ -10,8 +11,3 @@
 	- 修改了机制，之前PlayerStorage中只会存放在线的角色。现在改为存放所有关联到的角色，所有角色都从`WorldStorage`中获取。所以之前通过null判断在线的，还需要进行在线判断
 - 移除`GuildCharacter`、`PartyCharacter`
 	- 还有一些Party.members循环的null判断，但是并没有看到为null的情况（下线不会置null）
-
-
-2024.9.6
-
-- Storage 从Player 移到 Account

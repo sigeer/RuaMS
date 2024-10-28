@@ -23,9 +23,11 @@ using constants.inventory;
 
 namespace client.inventory.manipulator;
 
-/**
- * @author RonanLana
- */
+
+/// <summary>
+/// @author RonanLana
+/// --不知道什么功能
+/// </summary>
 public class KarmaManipulator
 {
     private static short getKarmaFlag(Item item)

@@ -22,6 +22,7 @@ public class MapItem : AbstractMapObject
         setPosition(position);
         this.item = item;
         this.dropper = dropper;
+        this.setMap(dropper.getMap());
         this.character_ownerid = owner.getId();
         this.party_ownerid = owner.getPartyId();
         this.ownerClient = owner.getClient();
@@ -37,7 +38,7 @@ public class MapItem : AbstractMapObject
     /// <param name="position"></param>
     /// <param name="dropper"></param>
     /// <param name="owner"></param>
-    /// <param name="type"></param>
+    /// <param name="type">0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA</param>
     /// <param name="playerDrop"></param>
     /// <param name="questid"></param>
     public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop, int questid)
@@ -51,6 +52,7 @@ public class MapItem : AbstractMapObject
         setPosition(position);
         this.item = null;
         this.dropper = dropper;
+        this.setMap(dropper.getMap());
         this.character_ownerid = owner.getId();
         this.party_ownerid = owner.getPartyId();
         this.ownerClient = owner.getClient();
@@ -99,7 +101,7 @@ public class MapItem : AbstractMapObject
     }
 
     public int getClientsideOwnerId()
-    {   
+    {
         // thanks nozphex (RedHat) for noting an issue with collecting party items
         if (IsPartyDrop)
         {
