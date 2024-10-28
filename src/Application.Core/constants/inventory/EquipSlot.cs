@@ -1,3 +1,5 @@
+using client.inventory;
+
 namespace constants.inventory;
 
 /**
@@ -5,6 +7,9 @@ namespace constants.inventory;
  */
 public class EquipSlot : EnumClass
 {
+    public const int Medal = -49;
+    public const int Weapon = -11;
+    public const int Mount = -18;
 
     public static readonly EquipSlot HAT = new EquipSlot("Cp", -1);
     public static readonly EquipSlot SPECIAL_HAT = new EquipSlot("HrCp", -1);

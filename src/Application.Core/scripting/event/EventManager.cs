@@ -1071,7 +1071,7 @@ public class EventManager
         }
     }
 
-    public int getTransportationTime(int travelTime)
+    public int getTransportationTime(double travelTime)
     {
         return this.getWorldServer().getTransportationTime(travelTime);
     }

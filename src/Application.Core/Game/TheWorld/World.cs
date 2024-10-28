@@ -354,9 +354,9 @@ public class World : IWorld
         }
     }
 
-    public int getTransportationTime(int travelTime)
+    public int getTransportationTime(double travelTime)
     {
-        return (int)Math.Ceiling((double)travelTime / TravelRate);
+        return (int)Math.Ceiling(travelTime / TravelRate);
     }
 
 

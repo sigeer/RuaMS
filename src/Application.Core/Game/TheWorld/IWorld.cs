@@ -89,7 +89,7 @@ namespace Application.Core.Game.TheWorld
         CoupleIdPair? getRelationshipCouple(int relationshipId);
         int getRelationshipId(int playerId);
         BaseService getServiceAccess(WorldServices sv);
-        int getTransportationTime(int travelTime);
+        int getTransportationTime(double travelTime);
         CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral);
         int getWorldCapacityStatus();
         bool isConnected(string charName);

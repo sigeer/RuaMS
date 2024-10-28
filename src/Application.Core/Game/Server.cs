@@ -1751,7 +1751,7 @@ public class Server
     {
         if (endWorldId == -1)
         {
-            endWorldId = this.getWorlds().Count;
+            endWorldId = this.getWorlds().Count - 1;
         }
 
         lgnLock.EnterWriteLock();
@@ -1767,7 +1767,7 @@ public class Server
                     return;
             }
 
-            var playerIdList = AccountManager.LoadAccountWorldPlayers(accId, Enumerable.Range(fromWorldid, endWorldId - fromWorldid));
+            var playerIdList = AccountManager.LoadAccountWorldPlayers(accId, Enumerable.Range(fromWorldid, endWorldId - fromWorldid + 1));
             foreach (var cid in playerIdList)
             {
                 AccountCharacterCache[accId].Add(cid);

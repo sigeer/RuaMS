@@ -29,6 +29,10 @@ namespace Application.Core.Game.GameEvents.PartyQuest
                 mapSpine?.setState(4);
             }
             // 第3关迷宫传送
+            if (curMapId == 930000300)
+            {
+                Player.changeMap(930000300, "16st");
+            }
             // 第4关抓20个怪，NPC过关 2133001 需要道具 4001169 * 20
             if (curMapId == 930000400)
             {
@@ -48,7 +52,6 @@ namespace Application.Core.Game.GameEvents.PartyQuest
             }
             // 930000700：？
             // 930000800：任务完成的奖励地图 
-            eim.showClearEffect(curMapId);
         }
     }
 }

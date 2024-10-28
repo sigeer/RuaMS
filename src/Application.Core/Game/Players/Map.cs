@@ -2,6 +2,7 @@
 using Application.Core.Game.Trades;
 using client.inventory;
 using constants.id;
+using constants.inventory;
 using net.packet;
 using net.server;
 using net.server.world;
@@ -401,12 +402,7 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public void startMapEffect(string msg, int itemId)
-        {
-            startMapEffect(msg, itemId, 30000);
-        }
-
-        public void startMapEffect(string msg, int itemId, int duration)
+        public void startMapEffect(string msg, int itemId, int duration = 30000)
         {
             MapEffect mapEffect = new MapEffect(msg, itemId);
             sendPacket(mapEffect.makeStartData());
@@ -425,7 +421,7 @@ namespace Application.Core.Game.Players
                 nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds); // show underlevel info again after 1 minute
 
                 string medal = "";
-                Item? medalItem = mapOwner.getInventory(InventoryType.EQUIPPED).getItem(-49);
+                Item? medalItem = mapOwner.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Medal);
                 if (medalItem != null)
                 {
                     medal = "<" + ItemInformationProvider.getInstance().getName(medalItem.getItemId()) + "> ";
