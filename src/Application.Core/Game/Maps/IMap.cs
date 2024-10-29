@@ -248,9 +248,8 @@ namespace Application.Core.Game.Maps
         void setForcedReturnMap(int map);
         void setHPDec(int delta);
         void setHPDecProtect(int delta);
-        void setMapLineBoundings(int vrTop, int vrBottom, int vrLeft, int vrRight);
+        void SetMapArea(Rectangle rect);
         void setMapName(string mapName);
-        void setMapPointBoundings(int px, int py, int h, int w);
         void setMobCapacity(int capacity);
         void setMobInterval(short interval);
         void setMuted(bool mute);

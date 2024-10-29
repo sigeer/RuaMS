@@ -121,7 +121,11 @@ public class DataTool
         return getIntConvert(d, def);
     }
 
-
+    public static bool GetIntBool(string path, Data? data)
+    {
+        var d = data?.getChildByPath(path);
+        return getIntConvert(d, 0) != 0;
+    }
 
 
     public static Point? getPoint(Data? data)

@@ -20,6 +20,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using XmlWzReader.WzEntity;
+
 namespace server.maps;
 
 
@@ -33,34 +35,29 @@ public class PortalFactory
         nextDoorPortal = 0x80;
     }
 
-    public Portal makePortal(int type, Data portal)
+    public Portal makePortal(MapPortalWz portal)
     {
         GenericPortal? ret = null;
-        if (type == PortalConstants.MAP_PORTAL)
+        if (portal.Pt == PortalConstants.MAP_PORTAL)
         {
             ret = new MapPortal();
         }
         else
         {
-            ret = new GenericPortal(type);
+            ret = new GenericPortal(portal.Pt);
         }
         loadPortal(ret, portal);
         return ret;
     }
 
-    private void loadPortal(GenericPortal myPortal, Data portal)
+    private void loadPortal(GenericPortal myPortal, MapPortalWz portal)
     {
-        myPortal.setName(DataTool.getString(portal.getChildByPath("pn")));
-        myPortal.setTarget(DataTool.getString(portal.getChildByPath("tn")));
-        myPortal.setTargetMapId(DataTool.getInt(portal.getChildByPath("tm")));
-        int x = DataTool.getInt(portal.getChildByPath("x"));
-        int y = DataTool.getInt(portal.getChildByPath("y"));
-        myPortal.setPosition(new Point(x, y));
-        string? script = DataTool.getString("script", portal);
-        if (string.IsNullOrEmpty(script))
-            script = null;
+        myPortal.setName(portal.Pn);
+        myPortal.setTarget(portal.Tn);
+        myPortal.setTargetMapId(portal.Tm);
+        myPortal.setPosition(new Point(portal.X, portal.Y));
+        myPortal.setScriptName(portal.Script);
 
-        myPortal.setScriptName(script);
         if (myPortal.getType() == PortalConstants.DOOR_PORTAL)
         {
             myPortal.setId(nextDoorPortal);
@@ -68,7 +65,7 @@ public class PortalFactory
         }
         else
         {
-            myPortal.setId(int.Parse(portal.getName()));
+            myPortal.setId(portal.PortalId);
         }
     }
 }
