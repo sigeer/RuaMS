@@ -39,7 +39,7 @@ namespace server.life;
 /**
  * @author Danny (Leifde)
  */
-public class MobSkill: ISkill
+public class MobSkill : ISkill
 {
     private static ILogger log = LogFactory.GetLogger("MobSkill");
 

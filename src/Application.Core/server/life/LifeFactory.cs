@@ -25,8 +25,6 @@ using Application.Core.constants.game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.model;
-using provider;
-using provider.wz;
 using System.Collections.Concurrent;
 using tools;
 

@@ -1,8 +1,6 @@
 
 
 using client;
-using provider;
-using provider.wz;
 using server.life;
 using tools;
 

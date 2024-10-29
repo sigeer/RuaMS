@@ -2,7 +2,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class ReadPointsCommand : CommandBase
 {
-    public ReadPointsCommand(): base(0, "points")
+    public ReadPointsCommand() : base(0, "points")
     {
         Description = "Show point total.";
     }

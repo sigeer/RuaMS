@@ -20,50 +20,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace provider.wz;
+
+using XmlWzReader.wz;
+using System.Collections.Concurrent;
+
+namespace XmlWzReader;
 
 
 
-public class WZDirectoryEntry : WZEntry, DataDirectoryEntry
+public class DataProviderFactory
 {
-    private List<DataDirectoryEntry> subdirs = new();
-    private List<DataFileEntry> files = new();
-    private Dictionary<string, DataEntry> entries = new();
-
-    public WZDirectoryEntry(string name, int size, int checksum, DataEntity? parent) : base(name, size, checksum, parent)
+    static ConcurrentDictionary<string, XMLWZFileProvider> cached = new();
+    private static DataProvider getWZ(string inValue)
     {
-
+        return cached.GetOrAdd(inValue, (key) => new XMLWZFileProvider(key));
     }
 
-    public WZDirectoryEntry() : base(null, 0, 0, null)
+    public static DataProvider getDataProvider(WZFiles inValue)
     {
-
-    }
-
-    public void addDirectory(DataDirectoryEntry dir)
-    {
-        subdirs.Add(dir);
-        entries.AddOrUpdate(dir.getName()!, dir);
-    }
-
-    public void addFile(DataFileEntry fileEntry)
-    {
-        files.Add(fileEntry);
-        entries.AddOrUpdate(fileEntry.getName()!, fileEntry);
-    }
-
-    public List<DataDirectoryEntry> getSubdirectories()
-    {
-        return new List<DataDirectoryEntry>(subdirs);
-    }
-
-    public List<DataFileEntry> getFiles()
-    {
-        return new(files);
-    }
-
-    public DataEntry getEntry(string name)
-    {
-        return entries[name];
+        return getWZ(inValue.getFile());
     }
 }

@@ -1,4 +1,4 @@
-namespace provider.wz;
+namespace XmlWzReader.wz;
 
 public class WZFiles
 {

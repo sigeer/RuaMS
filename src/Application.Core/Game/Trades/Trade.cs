@@ -25,8 +25,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using net.server.coordinator.world;
-using server;
-using System.Text;
 using tools;
 
 namespace Application.Core.Game.Trades;

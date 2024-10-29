@@ -1130,7 +1130,7 @@ public class AbstractPlayerInteraction
 
     public void spawnMonster(int id, int x, int y)
     {
-        var monster = LifeFactory.GetMonsterTrust(id) ;
+        var monster = LifeFactory.GetMonsterTrust(id);
         monster.setPosition(new Point(x, y));
         getPlayer().getMap().spawnMonster(monster);
     }
@@ -1263,7 +1263,7 @@ public class AbstractPlayerInteraction
 
         int channel = player.getMap().getChannelServer().getId();
         if (!ExpeditionBossLog.attemptBoss(player.getId(), channel, exped, false))
-        {    
+        {
             // thanks Conrad for noticing missing expeditions entry limit
             return 1;
         }

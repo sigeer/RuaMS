@@ -1,5 +1,4 @@
-﻿using Application.Core.Game.Maps;
-using constants.id;
+﻿using constants.id;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players.PlayerProps

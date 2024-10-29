@@ -1,12 +1,7 @@
 ﻿using Application.Core.Managers;
-using client;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
-using net.server;
-using net.server.services.task.world;
-using net.server.services.type;
 using server;
-using server.maps;
 
 namespace Application.Core.Game.Players
 {

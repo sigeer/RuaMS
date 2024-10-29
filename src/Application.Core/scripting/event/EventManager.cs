@@ -289,7 +289,7 @@ public class EventManager
         Monitor.Enter(lobbyLock);
         try
         {
-            openedLobbys[lobbyId] =  lockObj;
+            openedLobbys[lobbyId] = lockObj;
         }
         finally
         {

@@ -1,4 +1,3 @@
-using Application.Core.Game.Players;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;

@@ -2,7 +2,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class LeaveEventCommand : CommandBase
 {
-    public LeaveEventCommand(): base(0, "leaveevent")
+    public LeaveEventCommand() : base(0, "leaveevent")
     {
         Description = "Leave active event.";
     }

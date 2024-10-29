@@ -19,25 +19,17 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+namespace XmlWzReader;
 
-namespace provider.wz;
-
-public class WZFileEntry : WZEntry, DataFileEntry
+/**
+ * @author Matze
+ */
+public interface DataEntity
 {
-    private int offset;
-
-    public WZFileEntry(string name, int size, int checksum, DataEntity parent) : base(name, size, checksum, parent)
-    {
-
-    }
-
-    public override int getOffset()
-    {
-        return offset;
-    }
-
-    public void setOffset(int offset)
-    {
-        this.offset = offset;
-    }
+    /// <summary>
+    /// 当前标签的name属性
+    /// </summary>
+    /// <returns></returns>
+    string? getName();
+    DataEntity? getParent();
 }

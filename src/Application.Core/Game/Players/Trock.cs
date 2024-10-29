@@ -1,5 +1,4 @@
 ﻿using Application.Core.Game.Players.PlayerProps;
-using constants.id;
 
 namespace Application.Core.Game.Players
 {

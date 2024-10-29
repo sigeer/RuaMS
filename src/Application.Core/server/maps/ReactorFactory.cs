@@ -22,8 +22,6 @@
 
 
 using client.inventory;
-using provider;
-using provider.wz;
 using tools;
 using static server.maps.ReactorStats;
 
@@ -159,11 +157,11 @@ public class ReactorFactory
                                     ItemQuantity? reactItem = null;
                                     int type = DataTool.getIntConvert("type", fknexon);
                                     if (type == 100)
-                                    { 
+                                    {
                                         //reactor waits for item
                                         reactItem = new(DataTool.getIntConvert("0", fknexon), DataTool.getIntConvert("1", fknexon));
                                         if (!areaSet || loadArea)
-                                        { 
+                                        {
                                             //only set area of effect for item-triggered reactors once
                                             stats.setTL(DataTool.getPoint("lt", fknexon) ?? Point.Empty);
                                             stats.setBR(DataTool.getPoint("rb", fknexon) ?? Point.Empty);

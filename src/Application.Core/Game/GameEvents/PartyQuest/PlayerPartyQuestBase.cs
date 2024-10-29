@@ -1,5 +1,4 @@
 ﻿using scripting.Event;
-using YamlDotNet.Core;
 
 namespace Application.Core.Game.GameEvents.PartyQuest
 {

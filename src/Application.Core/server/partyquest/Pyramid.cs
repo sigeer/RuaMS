@@ -43,7 +43,7 @@ public class Pyramid : PartyQuest
     int _kill = 0, _miss = 0, _cool = 0, _exp = 0, map, count;
     byte coolAdd = 5, missSub = 4, decrease = 1;//hmmm
     short gauge;
-    byte rank, skill = 0,  buffcount = 0;//buffcount includes buffs + skills
+    byte rank, skill = 0, buffcount = 0;//buffcount includes buffs + skills
     sbyte stage = 0;
     PyramidMode mode;
 

@@ -8,7 +8,7 @@ namespace Application.Core.Game.TheWorld
     /// </summary>
     public class AllPlayerStorage
     {
-        private static ConcurrentDictionary<int, DataLevel> CachedData { get; set; } = new ();
+        private static ConcurrentDictionary<int, DataLevel> CachedData { get; set; } = new();
         private static ConcurrentDictionary<string, DataLevel> NamedCacheData { get; set; } = new();
         public static List<IPlayer> GetAllOnlinedPlayers()
         {

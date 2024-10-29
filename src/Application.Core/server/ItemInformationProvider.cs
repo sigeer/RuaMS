@@ -30,8 +30,6 @@ using constants.id;
 using constants.inventory;
 using constants.skills;
 using net.server;
-using provider;
-using provider.wz;
 using server.life;
 using tools;
 using static server.MakerItemFactory;
@@ -697,7 +695,7 @@ public class ItemInformationProvider
 
     public int getEquipLevelReq(int itemId)
     {
-        if (equipLevelReqCache.TryGetValue(itemId,out var value))
+        if (equipLevelReqCache.TryGetValue(itemId, out var value))
         {
             return value;
         }

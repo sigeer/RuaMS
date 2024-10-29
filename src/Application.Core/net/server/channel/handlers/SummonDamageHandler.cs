@@ -25,7 +25,6 @@ using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
-using client.status;
 using constants.skills;
 using net.packet;
 using server;

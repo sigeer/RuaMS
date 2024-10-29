@@ -26,7 +26,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
 using server.maps;
-using System.Numerics;
 using tools;
 
 namespace Application.Core.Game.Trades;

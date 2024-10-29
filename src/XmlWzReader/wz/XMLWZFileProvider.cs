@@ -20,15 +20,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace provider.wz;
+namespace XmlWzReader.wz;
 
-public class XMLWZFile : DataProvider
+public class XMLWZFileProvider : DataProvider
 {
-    private static ILogger log = LogFactory.GetLogger("DataProvider");
     private string root;
     private WZDirectoryEntry rootForNavigation;
 
-    public XMLWZFile(string fileIn)
+    public XMLWZFileProvider(string fileIn)
     {
         root = fileIn;
         rootForNavigation = new WZDirectoryEntry(Path.GetFileName(fileIn), 0, 0, null);
@@ -60,7 +59,7 @@ public class XMLWZFile : DataProvider
         }
         catch (IOException e)
         {
-            log.Warning(e, "Can not open file/directory at " + Path.GetFullPath(lroot));
+            throw new Exception("Can not open file/directory at " + Path.GetFullPath(lroot), e);
         }
     }
 

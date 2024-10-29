@@ -329,7 +329,7 @@ public class SessionCoordinator
     {
         Hwid hwid = SessionCoordinator.getInstance().getGameSessionHwid(client);
         if (hwid == null)
-        {   
+        {
             // maybe this session was currently in-transition?
             return null;
         }

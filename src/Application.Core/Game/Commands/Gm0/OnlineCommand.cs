@@ -5,7 +5,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class OnlineCommand : CommandBase
 {
-    public OnlineCommand(): base(0, "online")
+    public OnlineCommand() : base(0, "online")
     {
         Description = "Show all online players.";
     }

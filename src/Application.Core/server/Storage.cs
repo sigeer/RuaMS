@@ -21,8 +21,6 @@
 using client.inventory;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
-using provider;
-using provider.wz;
 using tools;
 
 namespace server;

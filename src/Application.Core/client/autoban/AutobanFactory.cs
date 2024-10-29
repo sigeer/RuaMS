@@ -63,7 +63,7 @@ public class AutobanFactory : EnumClass
 
     }
 
-    AutobanFactory(int points): this(points, -1)
+    AutobanFactory(int points) : this(points, -1)
     {
     }
 

@@ -18,10 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using provider;
-using provider.wz;
-
 namespace server.life;
 
 /**

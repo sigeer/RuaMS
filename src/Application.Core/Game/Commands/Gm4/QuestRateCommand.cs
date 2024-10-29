@@ -21,7 +21,7 @@ public class QuestRateCommand : CommandBase
             return;
 
         int questrate = Math.Max(d, 1);
-        c.getWorldServer().QuestRate  = questrate;
+        c.getWorldServer().QuestRate = questrate;
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Quest Rate has been changed to " + questrate + "x."));
 
     }

@@ -1,6 +1,4 @@
 using constants.id;
-using provider;
-using provider.wz;
 using server;
 using server.quest;
 using System.Text;

@@ -23,7 +23,6 @@
 
 using client.inventory;
 using constants.inventory;
-using provider;
 
 namespace server.quest.requirements;
 

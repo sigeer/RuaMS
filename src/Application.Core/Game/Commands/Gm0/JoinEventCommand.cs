@@ -5,7 +5,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class JoinEventCommand : CommandBase
 {
-    public JoinEventCommand(): base(0, "joinevent")
+    public JoinEventCommand() : base(0, "joinevent")
     {
         Description = "Join active event.";
     }

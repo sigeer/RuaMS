@@ -1,7 +1,5 @@
 using Application.Core.Game.Skills;
 using client;
-using provider;
-using provider.wz;
 
 namespace Application.Core.Game.Commands.Gm2;
 

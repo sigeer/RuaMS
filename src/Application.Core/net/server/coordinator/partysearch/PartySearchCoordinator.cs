@@ -22,8 +22,6 @@
 using client;
 using constants.id;
 using net.server.coordinator.world;
-using provider;
-using provider.wz;
 using tools;
 
 namespace net.server.coordinator.partysearch;

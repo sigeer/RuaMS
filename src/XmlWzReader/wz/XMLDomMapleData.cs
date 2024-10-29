@@ -23,9 +23,10 @@
 
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Drawing;
 using System.Xml;
 
-namespace provider.wz;
+namespace XmlWzReader.wz;
 
 
 public class XMLDomMapleData : Data

@@ -6,7 +6,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class RanksCommand : CommandBase
 {
-    public RanksCommand(): base(0, "ranks")
+    public RanksCommand() : base(0, "ranks")
     {
         Description = "Show player rankings.";
     }

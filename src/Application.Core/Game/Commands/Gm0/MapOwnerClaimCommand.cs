@@ -2,7 +2,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class MapOwnerClaimCommand : CommandBase
 {
-    public MapOwnerClaimCommand(): base(0, "mylawn")
+    public MapOwnerClaimCommand() : base(0, "mylawn")
     {
         Description = "Claim ownership of the current map.";
     }

@@ -2,7 +2,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class StatDexCommand : CommandBase
 {
-    public StatDexCommand(): base(0, "dex")
+    public StatDexCommand() : base(0, "dex")
     {
         Description = "Assign AP into DEX.";
     }

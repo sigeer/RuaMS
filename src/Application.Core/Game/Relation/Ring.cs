@@ -38,7 +38,7 @@ public class Ring : IComparable<Ring>
     private bool _equipped = false;
     public int PartnerRingId => ringId2;
     private IPlayer? _partner;
-    public IPlayer Partner => _partner ??= AllPlayerStorage.GetOrAddCharacterByIdOrThrow(partnerId) ;
+    public IPlayer Partner => _partner ??= AllPlayerStorage.GetOrAddCharacterByIdOrThrow(partnerId);
 
     public Ring(int id, int id2, int partnerId, int itemid, string partnername)
     {

@@ -4,8 +4,6 @@ using Application.Core.Game.Maps;
 using client;
 using constants.id;
 using constants.skills;
-using provider;
-using provider.wz;
 using server.maps;
 using server.quest;
 using System.Globalization;

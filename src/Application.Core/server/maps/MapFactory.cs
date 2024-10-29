@@ -26,8 +26,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using constants.id;
-using provider;
-using provider.wz;
 using scripting.Event;
 using server.life;
 using server.partyquest;
@@ -369,7 +367,7 @@ public class MapFactory
         try
         {
             foreach (var layer in mapData.getChildByPath("back"))
-            { 
+            {
                 // yolo
                 int layerNum = int.Parse(layer.getName());
                 int btype = DataTool.getInt(layer.getChildByPath("type"), 0);

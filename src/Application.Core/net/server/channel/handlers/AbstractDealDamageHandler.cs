@@ -856,13 +856,13 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             calcDmgMax += 80000; // Aran Tutorial.
         }
 
-        bool canCrit = chr.getJob().isA((Job.BOWMAN)) 
-            || chr.getJob().isA(Job.THIEF) 
-            || chr.getJob().isA(Job.NIGHTWALKER1) 
-            || chr.getJob().isA(Job.WINDARCHER1) 
-            || chr.getJob() == Job.ARAN3 
-            || chr.getJob() == Job.ARAN4 
-            || chr.getJob() == Job.MARAUDER 
+        bool canCrit = chr.getJob().isA((Job.BOWMAN))
+            || chr.getJob().isA(Job.THIEF)
+            || chr.getJob().isA(Job.NIGHTWALKER1)
+            || chr.getJob().isA(Job.WINDARCHER1)
+            || chr.getJob() == Job.ARAN3
+            || chr.getJob() == Job.ARAN4
+            || chr.getJob() == Job.MARAUDER
             || chr.getJob() == Job.BUCCANEER;
 
         if (chr.HasBuff(BuffStat.SHARP_EYES))

@@ -26,7 +26,6 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
-using MySqlX.XDevAPI;
 using net.packet;
 using net.server.coordinator.session;
 using scripting;

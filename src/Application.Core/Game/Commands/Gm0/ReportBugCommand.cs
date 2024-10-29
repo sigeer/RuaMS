@@ -6,7 +6,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class ReportBugCommand : CommandBase
 {
-    public ReportBugCommand(): base(0, "bug", "reportbug")
+    public ReportBugCommand() : base(0, "bug", "reportbug")
     {
         Description = "Send in a bug report.";
     }

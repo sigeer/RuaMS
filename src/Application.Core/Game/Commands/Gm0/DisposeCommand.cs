@@ -6,7 +6,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class DisposeCommand : CommandBase
 {
-    public DisposeCommand(): base(0, "dispose")
+    public DisposeCommand() : base(0, "dispose")
     {
 
     }

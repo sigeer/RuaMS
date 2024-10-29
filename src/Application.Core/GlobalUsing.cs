@@ -1,4 +1,5 @@
-﻿global using Application.Core.Addon;
+﻿global using Application.Core;
+global using Application.Core.Addon;
 global using Application.Core.Compatible;
 global using Application.Core.Compatible.Atomics;
 global using Application.Core.Compatible.Extensions;
@@ -13,4 +14,5 @@ global using Application.Utility.Exceptions;
 global using Serilog;
 global using System;
 global using System.Drawing;
-global using Application.Core;
+global using XmlWzReader;
+global using XmlWzReader.wz;

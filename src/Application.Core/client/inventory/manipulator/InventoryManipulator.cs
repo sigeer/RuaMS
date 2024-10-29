@@ -844,7 +844,7 @@ public class InventoryManipulator
         var source = inv.getItem(src);
 
         if (chr.getTrade() != null || chr.getMiniGame() != null || source == null)
-        { 
+        {
             //Only check needed would prob be merchants (to see if the player is in one)
             return;
         }

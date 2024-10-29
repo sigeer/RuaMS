@@ -158,7 +158,7 @@ public static class JobExtensions
     }
 
     public static bool isA(this Job thisJob, Job basejob)
-    {  
+    {
         // thanks Steve (kaito1410) for pointing out an improvement here
         int basebranch = basejob.getId() / 10;
         return (thisJob.getId() / 10 == basebranch && thisJob.getId() >= basejob.getId()) || (basebranch % 10 == 0 && thisJob.getId() / 100 == basejob.getId() / 100);

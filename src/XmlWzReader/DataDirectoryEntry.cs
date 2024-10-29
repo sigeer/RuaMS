@@ -19,12 +19,16 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace provider;
+namespace XmlWzReader;
+
+
 
 /**
  * @author Matze
  */
-public interface DataFileEntry : DataEntry
+public interface DataDirectoryEntry : DataEntry
 {
-    void setOffset(int offset);
+    List<DataDirectoryEntry> getSubdirectories();
+    List<DataFileEntry> getFiles();
+    DataEntry getEntry(string name);
 }

@@ -28,6 +28,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Application.Utility\Application.Utility.csproj" />
+		<ProjectReference Include="..\XmlWzReader\XmlWzReader.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -19,17 +19,47 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace provider;
 
-/**
- * @author Matze
- */
-public interface DataEntity
+namespace XmlWzReader.wz;
+
+public class WZEntry : DataEntry
 {
-    /// <summary>
-    /// 当前标签的name属性
-    /// </summary>
-    /// <returns></returns>
-    string? getName();
-    DataEntity? getParent();
+    private string name;
+    private int size;
+    private int checksum;
+    private int offset;
+    private DataEntity? parent;
+
+    public WZEntry(string name, int size, int checksum, DataEntity? parent) : base()
+    {
+        this.name = name;
+        this.size = size;
+        this.checksum = checksum;
+        this.parent = parent;
+    }
+
+    public string getName()
+    {
+        return name;
+    }
+
+    public int getSize()
+    {
+        return size;
+    }
+
+    public int getChecksum()
+    {
+        return checksum;
+    }
+
+    public virtual int getOffset()
+    {
+        return offset;
+    }
+
+    public DataEntity? getParent()
+    {
+        return parent;
+    }
 }

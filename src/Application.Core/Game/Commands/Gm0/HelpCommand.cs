@@ -4,7 +4,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class HelpCommand : CommandBase
 {
-    public HelpCommand(): base(0, "help", "commands")
+    public HelpCommand() : base(0, "help", "commands")
     {
         Description = "Show available commands.";
     }

@@ -72,7 +72,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
         BuddyList buddylist = player.getBuddylist();
         using var dbContext = new DBContext();
         if (mode == 1)
-        { 
+        {
             // add
             string addName = p.readString();
             string group = p.readString();
@@ -152,7 +152,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
                                 });
                                 dbContext.SaveChanges();
                             }
-                            buddylist.put(group ,charWithId.id);
+                            buddylist.put(group, charWithId.id);
                             c.sendPacket(PacketCreator.updateBuddylist(buddylist.getBuddies()));
                         }
                     }
@@ -173,7 +173,7 @@ public class BuddylistModifyHandler : AbstractPacketHandler
             }
         }
         else if (mode == 2)
-        { 
+        {
             // accept buddy
             int otherCid = p.readInt();
             if (!buddylist.isFull())

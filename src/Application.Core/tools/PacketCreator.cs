@@ -57,7 +57,6 @@ using server.movement;
 using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
-using static net.server.channel.handlers.AbstractDealDamageHandler;
 using static net.server.channel.handlers.SummonDamageHandler;
 using static server.CashShop;
 
@@ -2723,7 +2722,7 @@ public class PacketCreator
     }
 
     public static Packet getScrollEffect(int chr, ScrollResult scrollSuccess, bool legendarySpirit, bool whiteScroll)
-    {   
+    {
         // thanks to Rien dev team
         OutPacket p = OutPacket.create(SendOpcode.SHOW_SCROLL_EFFECT);
         p.writeInt(chr);
@@ -2742,7 +2741,7 @@ public class PacketCreator
     }
 
     public static Packet catchMessage(int message)
-    { 
+    {
         // not done, I guess
         OutPacket p = OutPacket.create(SendOpcode.BRIDLE_MOB_CATCH_FAIL);
         p.writeByte(message); // 1 = too strong, 2 = Elemental Rock
@@ -2761,7 +2760,7 @@ public class PacketCreator
     }
 
     public static Packet showAriantScoreBoard()
-    {   
+    {
         // thanks lrenex for pointing match's end scoreboard packet
         return OutPacket.create(SendOpcode.ARIANT_ARENA_SHOW_RESULT);
     }
@@ -3026,8 +3025,8 @@ public class PacketCreator
 
 
         Item? mount;     //mounts can potentially crash the client if the player's level is not properly checked
-        if (chr.MountModel != null 
-            && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(-18)) != null 
+        if (chr.MountModel != null
+            && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(-18)) != null
             && ItemInformationProvider.getInstance().getEquipLevelReq(mount.getItemId()) <= chr.getLevel())
         {
             p.writeByte(chr.MountModel.getId()); //mount
@@ -6461,7 +6460,7 @@ public class PacketCreator
     }
 
     public static Packet enableReport()
-    { 
+    {
         // thanks to snow
         OutPacket p = OutPacket.create(SendOpcode.CLAIM_STATUS_CHANGED);
         p.writeByte(1);
@@ -6469,7 +6468,7 @@ public class PacketCreator
     }
 
     public static Packet giveFinalAttack(int skillid, int time)
-    { 
+    {
         // packets found thanks to lailainoob
         OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
         p.writeLong(0);
@@ -6637,7 +6636,7 @@ public class PacketCreator
         }
         addPedigreeEntry(p, entry);
         if (hasOtherJunior)
-        { 
+        {
             //must be sent after own entry
             var otherJunior = entry.getSenior()?.getOtherJunior(entry);
             if (otherJunior != null)
@@ -6696,7 +6695,7 @@ public class PacketCreator
         p.writeInt(entry.getRepsToSenior()); //reps recorded to senior
         p.writeInt(entry.getTodaysRep());
         p.writeInt(isOnline ? ((chr!.isAwayFromWorld() || chr.getCashShop().isOpened()) ? -1 : chr.getClient().getChannel() - 1) : 0);
-        p.writeInt(isOnline ? (int)(chr!.getLoggedInTime().Minutes) : 0); //time online in minutes
+        p.writeInt(isOnline ? chr!.getLoggedInTime().Minutes : 0); //time online in minutes
         p.writeString(entry.getName()); //name
     }
 
