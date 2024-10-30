@@ -56,7 +56,6 @@ using scripting.item;
 using server;
 using server.events;
 using server.events.gm;
-using server.life;
 using server.maps;
 using server.partyquest;
 using server.quest;

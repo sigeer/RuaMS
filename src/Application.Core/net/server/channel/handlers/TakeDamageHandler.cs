@@ -34,7 +34,6 @@ using constants.skills;
 using net.packet;
 using server.life;
 using tools;
-using static server.life.LifeFactory;
 
 namespace net.server.channel.handlers;
 

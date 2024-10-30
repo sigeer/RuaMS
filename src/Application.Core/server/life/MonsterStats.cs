@@ -20,9 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using static server.life.LifeFactory;
-
 namespace server.life;
 
 

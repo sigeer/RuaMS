@@ -7,7 +7,6 @@ using net.packet;
 using net.server;
 using net.server.world;
 using server;
-using server.life;
 using server.maps;
 using tools;
 
