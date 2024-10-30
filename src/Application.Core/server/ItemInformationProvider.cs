@@ -2027,7 +2027,7 @@ public class ItemInformationProvider
         {
             return value;
         }
-        if ((itemId / 10000) != 243)
+        if (!ItemId.HasScript(itemId))
         {
             return null;
         }

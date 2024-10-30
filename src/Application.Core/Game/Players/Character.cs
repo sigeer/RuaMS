@@ -1472,7 +1472,7 @@ public partial class Player
                     ii.getItemEffect(itemId)?.applyTo(this);
                 }
 
-                if (itemId / 10000 == 238)
+                if (ItemId.isMonsterCard(itemId))
                 {
                     this.Monsterbook.addCard(Client, itemId);
                 }

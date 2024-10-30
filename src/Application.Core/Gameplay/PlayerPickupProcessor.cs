@@ -65,7 +65,7 @@ namespace Application.Core.Gameplay
                 }
 
                 // 有物品脚本 或者 会被使用的特殊道具
-                if (mapItem.getItemId() / 10000 == 243 || (mapItem.getItemId() / 1000000 == 2 && ItemInformationProvider.getInstance().isConsumeOnPickup(mapItem.getItemId())))
+                if (ItemId.HasScript(mapItem.getItemId()) || (mapItem.getItemId() / 1000000 == 2 && ItemInformationProvider.getInstance().isConsumeOnPickup(mapItem.getItemId())))
                 {
                     _player.sendPacket(PacketCreator.enableActions());
                     return false;
@@ -143,7 +143,7 @@ namespace Application.Core.Gameplay
                 return true;
             }
 
-            else if (mapItem.getItemId() / 10000 == 243)
+            else if (ItemId.HasScript(mapItem.getItemId()))
             {
                 var info = ItemInformationProvider.getInstance().getScriptedItemInfo(mapItem.getItemId());
                 if (info != null && info.runOnPickup())

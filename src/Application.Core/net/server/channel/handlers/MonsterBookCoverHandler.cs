@@ -21,6 +21,7 @@
 */
 
 
+using constants.id;
 using net.packet;
 using tools;
 
@@ -31,7 +32,7 @@ public class MonsterBookCoverHandler : AbstractPacketHandler
     public override void HandlePacket(InPacket p, IClient c)
     {
         int id = p.readInt();
-        if (id == 0 || id / 10000 == 238)
+        if (id == 0 || ItemId.isMonsterCard(id))
         {
             c.OnlinedCharacter.setMonsterBookCover(id);
             c.sendPacket(PacketCreator.changeCover(id));

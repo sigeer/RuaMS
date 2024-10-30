@@ -38,6 +38,11 @@ public class ItemId
         return itemType == 238;
     }
 
+    public static bool HasScript(int itemId)
+    {
+        return (itemId / 10000) == 243;
+    }
+
     public static bool isPyramidBuff(int itemId)
     {
         return (itemId >= 2022585 && itemId <= 2022588) || (itemId >= 2022616 && itemId <= 2022617);
