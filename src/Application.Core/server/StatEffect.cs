@@ -37,7 +37,6 @@ using constants.inventory;
 using constants.skills;
 using net.packet;
 using net.server;
-using provider;
 using server.life;
 using server.maps;
 using server.partyquest;
@@ -158,12 +157,12 @@ public class StatEffect
 
     public static StatEffect loadSkillEffectFromData(Data? source, int skillid, bool overtime)
     {
-        return new (source, skillid, true, overtime);
+        return new(source, skillid, true, overtime);
     }
 
     public static StatEffect loadItemEffectFromData(Data? source, int itemid)
     {
-        return new (source, itemid, false, false);
+        return new(source, itemid, false, false);
     }
 
     private static void addBuffStatPairToListIfNotZero(List<BuffStatValue> list, BuffStat buffstat, int val)
@@ -190,7 +189,7 @@ public class StatEffect
         }
     }
 
-    private StatEffect (Data? source, int sourceid, bool skill, bool overTime)
+    private StatEffect(Data? source, int sourceid, bool skill, bool overTime)
     {
         duration = DataTool.getIntConvert("time", source, -1);
         hp = (short)DataTool.getInt("hp", source, 0);
@@ -1019,13 +1018,13 @@ public class StatEffect
                 {
                     target = applyto.getClient().getWorldServer().getChannel(applyto.getClient().getChannel()).getMapFactory().getMap(moveTo);
                     int targetid = target.getId() / 10000000;
-                    if (targetid != 60 
-                        && applyto.getMapId() / 10000000 != 61 
-                        && targetid != applyto.getMapId() / 10000000 
-                        && targetid != 21 
-                        && targetid != 20 
-                        && targetid != 12 
-                        && (applyto.getMapId() / 10000000 != 10 
+                    if (targetid != 60
+                        && applyto.getMapId() / 10000000 != 61
+                        && targetid != applyto.getMapId() / 10000000
+                        && targetid != 21
+                        && targetid != 20
+                        && targetid != 12
+                        && (applyto.getMapId() / 10000000 != 10
                         && applyto.getMapId() / 10000000 != 12))
                     {
                         return false;
@@ -1118,7 +1117,7 @@ public class StatEffect
             }
         }
         if (isMagicDoor() && !FieldLimit.DOOR.check(applyto.getMap().getFieldLimit()))
-        { 
+        {
             // Magic Door
             int y = applyto.getFh();
             if (y == 0)
@@ -1382,7 +1381,7 @@ public class StatEffect
     }
 
     public void applyBeaconBuff(IPlayer applyto, int objectid)
-    { 
+    {
         // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
         applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
 
@@ -1678,7 +1677,7 @@ public class StatEffect
                 }
                 else if (applyfrom.getBuffedValue(BuffStat.CONCENTRATE) != null)
                 {
-                    mpchange -= (int)(mpchange * ((applyfrom.getBuffedValue(BuffStat.CONCENTRATE) ?? 0) / 100));
+                    mpchange -= mpchange * ((applyfrom.getBuffedValue(BuffStat.CONCENTRATE) ?? 0) / 100);
                 }
             }
         }
@@ -1906,12 +1905,12 @@ public class StatEffect
 
     private bool isMist()
     {
-        return skill 
-            && 
-            (sourceid == FPMage.POISON_MIST 
-            || sourceid == Shadower.SMOKE_SCREEN 
-            || sourceid == BlazeWizard.FLAME_GEAR 
-            || sourceid == NightWalker.POISON_BOMB 
+        return skill
+            &&
+            (sourceid == FPMage.POISON_MIST
+            || sourceid == Shadower.SMOKE_SCREEN
+            || sourceid == BlazeWizard.FLAME_GEAR
+            || sourceid == NightWalker.POISON_BOMB
             || sourceid == Evan.RECOVERY_AURA);
     }
 

@@ -3,7 +3,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using server;
 using static client.inventory.Equip;
 

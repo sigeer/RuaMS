@@ -22,8 +22,6 @@
 
 
 using Application.Core.Game.Maps;
-using provider;
-using provider.wz;
 using tools;
 
 namespace server.events.gm;
@@ -103,7 +101,7 @@ public class OxQuiz
             {
                 map.broadcastMessage(PacketCreator.serverNotice(6, "The event has ended"));
                 map.getPortal("join00")!.setPortalStatus(true);
-                map.Ox =null;
+                map.Ox = null;
                 map.setOxQuiz(false);
                 //prizes here
                 return;

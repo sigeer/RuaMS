@@ -1393,7 +1393,7 @@ public class Monster : AbstractLifeObject
         }
 
         if (effectSkill.getId() == FPMage.ELEMENT_COMPOSITION)
-        { 
+        {
             // fp compo
             ElementalEffectiveness effectiveness = getMonsterEffectiveness(Element.POISON);
             if (effectiveness == ElementalEffectiveness.IMMUNE || effectiveness == ElementalEffectiveness.STRONG)
@@ -1402,7 +1402,7 @@ public class Monster : AbstractLifeObject
             }
         }
         else if (effectSkill.getId() == ILMage.ELEMENT_COMPOSITION)
-        { 
+        {
             // il compo
             ElementalEffectiveness effectiveness = getMonsterEffectiveness(Element.ICE);
             if (effectiveness == ElementalEffectiveness.IMMUNE || effectiveness == ElementalEffectiveness.STRONG)

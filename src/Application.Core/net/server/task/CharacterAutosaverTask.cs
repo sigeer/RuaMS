@@ -27,7 +27,7 @@ namespace net.server.task;
  * @author Ronan
  */
 public class CharacterAutosaverTask : BaseTask
-{  
+{
     // thanks Alex09 (Alex-0000) for noticing these runnable classes are tasks, "workers" runs them
 
     public override void HandleRun()

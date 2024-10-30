@@ -101,7 +101,7 @@ public class AssignSPProcessor
                     if (macro.Skill2 == SPFrom)
                     {
                         update = true;
-                        macro.Skill2  = 0;
+                        macro.Skill2 = 0;
                     }
                     if (macro.Skill3 == SPFrom)
                     {

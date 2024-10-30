@@ -1,7 +1,5 @@
-﻿using client.keybind;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using server.maps;
-using System.Linq;
 
 namespace Application.Core.Game.Players.PlayerProps
 {

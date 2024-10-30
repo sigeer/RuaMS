@@ -112,7 +112,7 @@ namespace Application.Core.Game.Packets
         }
 
         public static Packet UpdateQuestFinish(short quest, int npc, short nextquest)
-        { 
+        {
             //Check
             OutPacket p = OutPacket.create(SendOpcode.UPDATE_QUEST_INFO); //0xF2 in v95
             p.writeByte(8);//0x0A in v95

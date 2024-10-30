@@ -32,7 +32,6 @@ using net.server.coordinator.session;
 using net.server.coordinator.world;
 using net.server.guild;
 using net.server.world;
-using server.life;
 using service;
 using tools;
 using tools.packets;

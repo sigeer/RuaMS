@@ -35,8 +35,6 @@ using constants.String;
 using net.server;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
-using provider;
-using provider.wz;
 using server;
 using server.expeditions;
 using server.gachapon;
@@ -177,7 +175,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             getClient().sendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
         }
         else
-        {    
+        {
             // thanks Conrad for noticing empty styles crashing players
             sendOk("Sorry, there are no options of cosmetics available for you here at the moment.");
             dispose();

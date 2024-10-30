@@ -23,8 +23,6 @@
 
 using Application.Core.Game.Packets;
 using client;
-using provider;
-using provider.wz;
 using server.quest.actions;
 using server.quest.requirements;
 using tools;
@@ -471,14 +469,14 @@ public class Quest
     {
         var req = completeReqs.GetValueOrDefault(QuestRequirementType.ITEM);
         if (req is ItemRequirement ireq)
-             return ireq.getItemAmountNeeded(itemid, true);
+            return ireq.getItemAmountNeeded(itemid, true);
         return int.MaxValue;
     }
 
     public int getMobAmountNeeded(int mid)
     {
         var req = completeReqs.GetValueOrDefault(QuestRequirementType.MOB);
-        if (req  is MobRequirement mreq)
+        if (req is MobRequirement mreq)
             return mreq.getRequiredMobCount(mid);
         return 0;
     }
@@ -502,7 +500,7 @@ public class Quest
     public List<string> getInfoEx(Status qs)
     {
         bool checkEnd = qs.Equals(Status.STARTED);
-        Dictionary<QuestRequirementType, AbstractQuestRequirement> reqs = !checkEnd ? startReqs : completeReqs; 
+        Dictionary<QuestRequirementType, AbstractQuestRequirement> reqs = !checkEnd ? startReqs : completeReqs;
         var req = reqs.GetValueOrDefault(QuestRequirementType.INFO_EX);
         if (req is InfoExRequirement ixReq)
             return ixReq.getInfo();

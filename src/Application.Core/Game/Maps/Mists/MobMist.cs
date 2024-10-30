@@ -1,21 +1,15 @@
 ﻿using Application.Core.Game.Life;
-using Mysqlx.Crud;
 using net.packet;
 using server.life;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists
 {
-    public class MobMist: Mist
+    public class MobMist : Mist
     {
         private Monster mob;
         private MobSkill skill;
-        public MobMist(Rectangle mistPosition, Monster mob, MobSkill skill): base(mistPosition, 0)
+        public MobMist(Rectangle mistPosition, Monster mob, MobSkill skill) : base(mistPosition, 0)
         {
             this.mob = mob;
             this.skill = skill;

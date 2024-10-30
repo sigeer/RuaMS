@@ -34,7 +34,6 @@ using constants.skills;
 using net.packet;
 using server.life;
 using tools;
-using static server.life.LifeFactory;
 
 namespace net.server.channel.handlers;
 
@@ -80,7 +79,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                         return;
                     }
 
-                    List<loseItem>? loseItems;
+                    List<LoseItem>? loseItems;
                     if (damage > 0)
                     {
                         loseItems = attacker.getStats().loseItem();
@@ -94,12 +93,12 @@ public class TakeDamageHandler : AbstractPacketHandler
                                 Point pos = new Point(0, chr.getPosition().Y);
                                 foreach (var loseItem in loseItems)
                                 {
-                                    type = ItemConstants.getInventoryType(loseItem.getId());
+                                    type = ItemConstants.getInventoryType(loseItem.Id);
 
                                     int dropCount = 0;
-                                    for (byte b = 0; b < loseItem.getX(); b++)
+                                    for (byte b = 0; b < loseItem.X; b++)
                                     {
-                                        if (Randomizer.nextInt(100) < loseItem.getChance())
+                                        if (Randomizer.nextInt(100) < loseItem.Prob)
                                         {
                                             dropCount += 1;
                                         }
@@ -113,15 +112,15 @@ public class TakeDamageHandler : AbstractPacketHandler
                                         inv.lockInventory();
                                         try
                                         {
-                                            qty = Math.Min(chr.countItem(loseItem.getId()), dropCount);
-                                            InventoryManipulator.removeById(c, type, loseItem.getId(), qty, false, false);
+                                            qty = Math.Min(chr.countItem(loseItem.Id), dropCount);
+                                            InventoryManipulator.removeById(c, type, loseItem.Id, qty, false, false);
                                         }
                                         finally
                                         {
                                             inv.unlockInventory();
                                         }
 
-                                        if (loseItem.getId() == 4031868)
+                                        if (loseItem.Id == 4031868)
                                         {
                                             chr.updateAriantScore();
                                         }
@@ -129,7 +128,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                                         for (byte b = 0; b < qty; b++)
                                         {
                                             pos.X = playerpos + ((d % 2 == 0) ? (25 * (d + 1) / 2) : -(25 * (d / 2)));
-                                            map.spawnItemDrop(chr, chr, new Item(loseItem.getId(), 0, 1), map.calcDropPos(pos, chr.getPosition()), true, true);
+                                            map.spawnItemDrop(chr, chr, new Item(loseItem.Id, 0, 1), map.calcDropPos(pos, chr.getPosition()), true, true);
                                             d++;
                                         }
                                     }

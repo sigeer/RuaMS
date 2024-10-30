@@ -1,6 +1,6 @@
 ﻿namespace Application.Core.tools
 {
-    public abstract class DataStorage<TData>: DataStorage<int, TData> where TData : class
+    public abstract class DataStorage<TData> : DataStorage<int, TData> where TData : class
     {
         protected DataStorage() : this(new Dictionary<int, TData?>())
         {

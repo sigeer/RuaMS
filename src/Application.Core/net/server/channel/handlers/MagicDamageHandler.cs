@@ -26,7 +26,6 @@ using client;
 using constants.id;
 using constants.skills;
 using net.packet;
-using server;
 using tools;
 
 namespace net.server.channel.handlers;
@@ -61,10 +60,10 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        int charge = (attack.skill == Evan.FIRE_BREATH 
-            || attack.skill == Evan.ICE_BREATH 
-            || attack.skill == FPArchMage.BIG_BANG 
-            || attack.skill == ILArchMage.BIG_BANG 
+        int charge = (attack.skill == Evan.FIRE_BREATH
+            || attack.skill == Evan.ICE_BREATH
+            || attack.skill == FPArchMage.BIG_BANG
+            || attack.skill == ILArchMage.BIG_BANG
             || attack.skill == Bishop.BIG_BANG) ? attack.charge : -1;
 
         Packet packet = PacketCreator.magicAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, charge, attack.speed, attack.direction, attack.display);

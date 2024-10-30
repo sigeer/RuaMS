@@ -32,7 +32,7 @@ namespace client.inventory;
 public class Item : IComparable<Item>
 {
     private static AtomicInteger runningCashId = new AtomicInteger(777000000);  // pets & rings shares cashid values
-    protected ILogger log ;
+    protected ILogger log;
     private int id;
     private int cashId;
     private int sn;
@@ -59,7 +59,7 @@ public class Item : IComparable<Item>
     public Item(int id, short position, short quantity, int petid) : this(id, position, quantity)
     {
         if (petid > -1)
-        {   
+        {
             // issue with null "pet" having petid > -1 found thanks to MedicOP
             this.pet = ItemManager.loadFromDb(id, position, petid);
             if (this.pet == null)

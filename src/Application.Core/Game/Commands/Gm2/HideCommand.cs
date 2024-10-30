@@ -2,7 +2,7 @@ using Application.Core.Game.Skills;
 
 namespace Application.Core.Game.Commands.Gm2;
 
-public class HideCommand : CommandBase  
+public class HideCommand : CommandBase
 {
     public HideCommand() : base(2, "hide")
     {

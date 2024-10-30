@@ -19,18 +19,10 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+namespace XmlWzReader;
 
-
-using provider.wz;
-
-namespace provider;
-
-
-
-public interface Data : DataEntity, IEnumerable<Data>
+public interface DataProvider
 {
-    DataType? getType();
-    List<Data> getChildren();
-    Data? getChildByPath(string path);
-    object? getData();
+    Data getData(string path);
+    DataDirectoryEntry getRoot();
 }

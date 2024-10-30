@@ -21,9 +21,10 @@
 */
 
 
-using provider.wz;
+using System.Drawing;
+using XmlWzReader.wz;
 
-namespace provider;
+namespace XmlWzReader;
 
 public class DataTool
 {

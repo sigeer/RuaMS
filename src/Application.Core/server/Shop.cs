@@ -198,7 +198,7 @@ public class Shop
     private static bool canSell(Item item, short quantity)
     {
         if (item == null)
-        { 
+        {
             //Basic check
             return false;
         }

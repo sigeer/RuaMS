@@ -2,7 +2,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class ShowRatesCommand : CommandBase
 {
-    public ShowRatesCommand(): base(0, "showrates")
+    public ShowRatesCommand() : base(0, "showrates")
     {
         Description = "Show all world/character rates.";
     }

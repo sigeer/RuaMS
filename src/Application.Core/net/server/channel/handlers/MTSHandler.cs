@@ -198,7 +198,7 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 6:
-                    { 
+                    {
                         //search
                         int tab = p.readInt();
                         int type = p.readInt();
@@ -218,7 +218,7 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 7:
-                    { 
+                    {
                         //cancel sale
                         int id = p.readInt(); // id of the item
                         MTSManager.CancelMtsSale(id, c.OnlinedCharacter);
@@ -230,7 +230,7 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 8:
-                    { 
+                    {
                         // transfer item from transfer inv.
                         int id = p.readInt(); // id of the item
                         try
@@ -276,7 +276,7 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 9:
-                    { 
+                    {
                         //add to cart
                         int id = p.readInt(); // id of the item
                         MTSManager.AddToCart(id, c.OnlinedCharacter);
@@ -288,7 +288,7 @@ public class MTSHandler : AbstractPacketHandler
                         break;
                     }
                 case 10:
-                    { 
+                    {
                         //delete from cart
                         int id = p.readInt(); // id of the item
                         MTSManager.DeleteCart(id, c.OnlinedCharacter);

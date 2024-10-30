@@ -55,7 +55,7 @@ public class QuestStatus
         }
     }
 
-    public QuestStatus(Quest quest, Status status, int npc): this(quest, status)
+    public QuestStatus(Quest quest, Status status, int npc) : this(quest, status)
     {
         this.setNpc(npc);
     }

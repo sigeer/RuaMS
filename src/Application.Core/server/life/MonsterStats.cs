@@ -20,9 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using static server.life.LifeFactory;
-
 namespace server.life;
 
 
@@ -43,8 +40,8 @@ public class MonsterStats
     public HashSet<MobSkillId> skills = new();
     public KeyValuePair<int, int>? cool = null;
     public BanishInfo? banish = null;
-    public List<loseItem>? _loseItem = null;
-    public selfDestruction? _selfDestruction = null;
+    public List<LoseItem>? _loseItem = null;
+    public SelfDestruction? _selfDestruction = null;
     public int fixedStance = 0;
     public bool friendly;
 
@@ -288,12 +285,12 @@ public class MonsterStats
         this.cp = cp;
     }
 
-    public List<loseItem>? loseItem()
+    public List<LoseItem>? loseItem()
     {
         return _loseItem;
     }
 
-    public void addLoseItem(loseItem li)
+    public void addLoseItem(LoseItem li)
     {
         if (_loseItem == null)
         {
@@ -302,12 +299,12 @@ public class MonsterStats
         _loseItem.Add(li);
     }
 
-    public selfDestruction? selfDestruction()
+    public SelfDestruction? selfDestruction()
     {
         return _selfDestruction;
     }
 
-    public void setSelfDestruction(selfDestruction sd)
+    public void setSelfDestruction(SelfDestruction? sd)
     {
         this._selfDestruction = sd;
     }

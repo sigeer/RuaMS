@@ -23,7 +23,6 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.scripting.Event;
 using Application.Core.Scripting.Infrastructure;
 using client.inventory;
 using constants.inventory;
@@ -195,7 +194,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
                 drop = ii.randomizeStats((Equip)ii.getEquipById(d.ItemId));
             }
 
-            reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, (short)d.QuestId, delay);
+            reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
         }
     }
 
@@ -327,7 +326,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
     }
 
     public void dispelAllMonsters(int num, int team)
-    { 
+    {
         //dispels all mobs, cpq
         var skil = CarnivalFactory.getInstance().getGuardian(num);
         if (skil != null)

@@ -132,7 +132,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             if (mode == Action.CREATE.getCode())
             {
                 if (!chr.isAlive())
-                {    
+                {
                     // thanks GabrielSin for pointing this
                     chr.sendPacket(PacketCreator.getMiniRoomError(4));
                     return;
@@ -140,7 +140,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
 
                 byte createType = p.readByte();
                 if (createType == 3)
-                {  
+                {
                     // trade
                     TradeManager.StartTrade(chr);
                 }

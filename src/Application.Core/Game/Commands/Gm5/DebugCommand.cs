@@ -2,7 +2,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using constants.id;
 using net.server;
-using server;
 using server.maps;
 
 namespace Application.Core.Game.Commands.Gm5;

@@ -1,6 +1,4 @@
-﻿using Acornima.Ast;
-
-namespace Application.Core.Compatible.Extensions
+﻿namespace Application.Core.Compatible.Extensions
 {
     public static class JsEngineExtensions
     {

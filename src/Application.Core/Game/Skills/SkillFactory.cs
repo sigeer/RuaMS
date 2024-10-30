@@ -22,8 +22,6 @@
 
 
 using constants.skills;
-using provider;
-using provider.wz;
 using server;
 using server.life;
 using System.Text;

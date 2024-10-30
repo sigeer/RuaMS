@@ -27,8 +27,6 @@ using constants.id;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using net.server;
-using provider;
-using provider.wz;
 using tools;
 
 namespace server;
@@ -488,7 +486,7 @@ public class CashShop
                 }
 
                 if (CashItemFactory.isPackage(cItem.getItemId()))
-                { 
+                {
                     //Packages never contains a ring
                     foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId()))
                     {

@@ -16,7 +16,7 @@ public class SavedLocationEntity
         Locationtype = locationType;
     }
 
-    public SavedLocationEntity(int charId, SavedLocation data, SavedLocationType type): this(data.getMapId(), data.getPortal(), charId, type.ToString())
+    public SavedLocationEntity(int charId, SavedLocation data, SavedLocationType type) : this(data.getMapId(), data.getPortal(), charId, type.ToString())
     {
     }
 

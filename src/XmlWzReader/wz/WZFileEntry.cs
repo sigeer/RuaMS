@@ -19,24 +19,25 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace provider.wz;
 
-public enum DataType
+namespace XmlWzReader.wz;
+
+public class WZFileEntry : WZEntry, DataFileEntry
 {
-    NONE,
-    IMG_0x00,
-    SHORT,
-    INT,
-    FLOAT,
-    DOUBLE,
-    STRING,
-    EXTENDED,
-    PROPERTY,
-    CANVAS,
-    VECTOR,
-    CONVEX,
-    SOUND,
-    UOL,
-    UNKNOWN_TYPE,
-    UNKNOWN_EXTENDED_TYPE
+    private int offset;
+
+    public WZFileEntry(string name, int size, int checksum, DataEntity parent) : base(name, size, checksum, parent)
+    {
+
+    }
+
+    public override int getOffset()
+    {
+        return offset;
+    }
+
+    public void setOffset(int offset)
+    {
+        this.offset = offset;
+    }
 }

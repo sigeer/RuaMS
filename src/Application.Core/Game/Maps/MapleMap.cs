@@ -1470,12 +1470,12 @@ public class MapleMap : IMap
             bool killed = monster.damage(chr, damage, false);
 
             var selfDestr = monster.getStats().selfDestruction();
-            if (selfDestr != null && selfDestr.getHp() > -1)
+            if (selfDestr != null && selfDestr.Hp > -1)
             {
                 // should work ;p
-                if (monster.getHp() <= selfDestr.getHp())
+                if (monster.getHp() <= selfDestr.Hp)
                 {
-                    killMonster(monster, chr, true, selfDestr.getAction());
+                    killMonster(monster, chr, true, selfDestr.Action);
                     return true;
                 }
             }
@@ -2177,7 +2177,7 @@ public class MapleMap : IMap
     private void applyRemoveAfter(Monster monster)
     {
         var selfDestruction = monster.getStats().selfDestruction();
-        if (monster.getStats().removeAfter() > 0 || selfDestruction != null && selfDestruction.getHp() < 0)
+        if (monster.getStats().removeAfter() > 0 || selfDestruction != null && selfDestruction.Hp < 0)
         {
             Action removeAfterAction;
 
@@ -2194,10 +2194,10 @@ public class MapleMap : IMap
             {
                 removeAfterAction = () =>
                 {
-                    killMonster(monster, null, false, selfDestruction.getAction());
+                    killMonster(monster, null, false, selfDestruction.Action);
                 };
 
-                registerMapSchedule(removeAfterAction, selfDestruction.removeAfter() * 1000);
+                registerMapSchedule(removeAfterAction, selfDestruction.RemoveAfter * 1000);
             }
 
             monster.pushRemoveAfterAction(removeAfterAction);

@@ -5,7 +5,6 @@ using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using net.packet;
 using net.server;
-using net.server.channel;
 using net.server.coordinator.session;
 using scripting;
 using scripting.Event;

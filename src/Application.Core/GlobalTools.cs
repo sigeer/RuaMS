@@ -21,7 +21,7 @@ namespace Application.Core
         public static Encoding Encoding { get; set; } = null!;
     }
 
-    public class MapCopyMapper: Profile
+    public class MapCopyMapper : Profile
     {
         public MapCopyMapper()
         {

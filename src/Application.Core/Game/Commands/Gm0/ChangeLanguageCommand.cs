@@ -2,7 +2,7 @@ namespace Application.Core.Game.Commands.Gm0;
 
 public class ChangeLanguageCommand : CommandBase
 {
-    public ChangeLanguageCommand(): base(0, "changel")
+    public ChangeLanguageCommand() : base(0, "changel")
     {
 
     }

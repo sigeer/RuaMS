@@ -1,5 +1,4 @@
-﻿using client;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players
 {

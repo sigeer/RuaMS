@@ -24,9 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.constants.game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
-using Application.Core.model;
-using provider;
-using provider.wz;
 using System.Collections.Concurrent;
 using tools;
 
@@ -145,14 +142,14 @@ public class LifeFactory
         {
             foreach (Data liData in special.getChildren())
             {
-                stats.addLoseItem(new loseItem(DataTool.getInt(liData.getChildByPath("id")), (byte)DataTool.getInt(liData.getChildByPath("prop")), (byte)DataTool.getInt(liData.getChildByPath("x"))));
+                stats.addLoseItem(new LoseItem(DataTool.getInt(liData.getChildByPath("id")), (byte)DataTool.getInt(liData.getChildByPath("prop")), (byte)DataTool.getInt(liData.getChildByPath("x"))));
             }
         }
 
         special = monsterInfoData?.getChildByPath("selfDestruction");
         if (special != null)
         {
-            stats.setSelfDestruction(new selfDestruction((byte)DataTool.getInt(special.getChildByPath("action")), DataTool.getIntConvert("removeAfter", special, -1), DataTool.getIntConvert("hp", special, -1)));
+            stats.setSelfDestruction(new SelfDestruction((byte)DataTool.getInt(special.getChildByPath("action")), DataTool.getIntConvert("removeAfter", special, -1), DataTool.getIntConvert("hp", special, -1)));
         }
 
         var firstAttackData = monsterInfoData?.getChildByPath("firstAttack");
@@ -341,65 +338,5 @@ public class LifeFactory
     public static string getNPCDefaultTalk(int nid)
     {
         return DataTool.getString(nid + "/d0", npcStringData) ?? "(...)";
-    }
-
-    public class loseItem
-    {
-
-        private int id;
-        private byte chance;
-        private byte x;
-
-        public loseItem(int id, byte chance, byte x)
-        {
-            this.id = id;
-            this.chance = chance;
-            this.x = x;
-        }
-
-        public int getId()
-        {
-            return id;
-        }
-
-        public byte getChance()
-        {
-            return chance;
-        }
-
-        public byte getX()
-        {
-            return x;
-        }
-    }
-
-    public class selfDestruction
-    {
-
-        private byte action;
-        private int _removeAfter;
-        private int hp;
-
-        public selfDestruction(byte action, int removeAfter, int hp)
-        {
-            this.action = action;
-            this._removeAfter = removeAfter;
-            this.hp = hp;
-        }
-
-        public int getHp()
-        {
-            return hp;
-        }
-
-        public byte getAction()
-        {
-            return action;
-        }
-
-        public int removeAfter()
-        {
-            return _removeAfter;
-        }
     }
 }

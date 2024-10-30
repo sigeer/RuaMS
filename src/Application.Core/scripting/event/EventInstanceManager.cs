@@ -35,7 +35,6 @@ using server;
 using server.expeditions;
 using server.life;
 using server.maps;
-using System.Reflection;
 using tools;
 
 namespace scripting.Event;

@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Managers;
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
@@ -153,7 +152,7 @@ public class CashOperationHandler : AbstractPacketHandler
                     }
                 }
                 else if (action == 0x05)
-                { 
+                {
                     // Modify wish list
                     cs.clearWishList();
                     for (byte i = 0; i < 10; i++)
@@ -225,7 +224,7 @@ public class CashOperationHandler : AbstractPacketHandler
                     }
                 }
                 else if (action == 0x07)
-                { 
+                {
                     // Increase Storage Slots
                     p.skip(1);
                     int cash = p.readInt();
@@ -287,7 +286,7 @@ public class CashOperationHandler : AbstractPacketHandler
                     }
                 }
                 else if (action == 0x08)
-                { 
+                {
                     // Increase Character Slots
                     p.skip(1);
                     int cash = p.readInt();
@@ -318,7 +317,7 @@ public class CashOperationHandler : AbstractPacketHandler
                     }
                 }
                 else if (action == 0x0D)
-                { 
+                {
                     // Take from Cash Inventory
                     var item = cs.findByCashId(p.readInt());
                     if (item == null)
@@ -378,7 +377,7 @@ public class CashOperationHandler : AbstractPacketHandler
                     c.sendPacket(PacketCreator.putIntoCashInventory(item, c.getAccID()));
                 }
                 else if (action == 0x1D)
-                { 
+                {
                     //crush ring (action 28)
                     int birthday = p.readInt();
                     if (checkBirthday(c, birthday))
@@ -609,10 +608,10 @@ public class CashOperationHandler : AbstractPacketHandler
     {
         if (item != null && item.isOnSale() && item.getPrice() <= cash)
         {
-            log.Debug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}", 
-                chr, 
-                ItemInformationProvider.getInstance().getName(item.getItemId()), 
-                item.getSN(), 
+            log.Debug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}",
+                chr,
+                ItemInformationProvider.getInstance().getName(item.getItemId()),
+                item.getSN(),
                 item.getPrice());
             return true;
         }

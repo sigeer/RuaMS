@@ -99,7 +99,7 @@ public class NPCScriptManager : AbstractScriptManager
                 return;
             }
             engine.AddHostedObject("cm", cm);
-            _scripts[c] =  engine;
+            _scripts[c] = engine;
             try
             {
                 engine.CallFunction("start", chrs);

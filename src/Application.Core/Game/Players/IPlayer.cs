@@ -63,7 +63,7 @@ namespace Application.Core.Game.Players
 
         public byte[]? QuickSlotLoaded { get; set; }
         public QuickslotBinding? QuickSlotKeyMapped { get; set; }
-        public Fitness? Fitness { get ; set ; }
+        public Fitness? Fitness { get; set; }
         public Ola? Ola { get; set; }
 
         public object SaveToDBLock { get; set; }

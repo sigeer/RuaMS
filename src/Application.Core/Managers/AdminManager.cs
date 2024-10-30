@@ -1,5 +1,4 @@
-﻿using Acornima.Ast;
-using Application.Core.Game.Life;
+﻿using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using constants.id;
 using server.maps;

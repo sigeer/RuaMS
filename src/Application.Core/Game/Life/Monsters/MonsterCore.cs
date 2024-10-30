@@ -1,5 +1,4 @@
-﻿using Application.Core.model;
-using server.life;
+﻿using server.life;
 
 namespace Application.Core.Game.Life.Monsters
 {

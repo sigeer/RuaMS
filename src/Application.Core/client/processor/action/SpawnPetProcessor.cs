@@ -24,8 +24,6 @@ using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
-using provider;
-using provider.wz;
 using tools;
 
 namespace client.processor.action;

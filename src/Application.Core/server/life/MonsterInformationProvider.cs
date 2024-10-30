@@ -22,10 +22,7 @@
 
 using Application.Core.Game.Life;
 using constants.inventory;
-using provider;
-using provider.wz;
 using System.Collections.Concurrent;
-using tools;
 
 namespace server.life;
 
@@ -70,7 +67,7 @@ public class MonsterInformationProvider
 
         var contiItems = continentdrops.GetValueOrDefault(continentid);
         if (contiItems == null)
-        {   
+        {
             // continent separated global drops found thanks to marcuswoon
             contiItems = globaldrops.Where(e => e.ContinentId < 0 || e.ContinentId == continentid).ToList();
 
@@ -86,7 +83,7 @@ public class MonsterInformationProvider
         {
             using var dbContext = new DBContext();
             globaldrops = dbContext.DropDataGlobals.Where(x => x.Chance > 0).ToList()
-                .Select(x => new DropEntry(x.Continent, x.Itemid, x.Chance,  x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
+                .Select(x => new DropEntry(x.Continent, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
 
             drops = dbContext.DropData
                 .Select(x => new { x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid, x.Dropperid })
@@ -183,7 +180,7 @@ public class MonsterInformationProvider
     }
 
     public List<int> retrieveDropPool(int monsterId)
-    {  
+    {
         // ignores Quest and Party Quest items
         if (dropsChancePool.ContainsKey(monsterId))
         {

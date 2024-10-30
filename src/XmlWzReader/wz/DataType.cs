@@ -19,25 +19,24 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+namespace XmlWzReader.wz;
 
-
-using provider.wz;
-using System.Collections.Concurrent;
-
-namespace provider;
-
-
-
-public class DataProviderFactory
+public enum DataType
 {
-    static ConcurrentDictionary<string, XMLWZFile> cached = new();
-    private static DataProvider getWZ(string inValue)
-    {
-        return cached.GetOrAdd(inValue, (key) => new XMLWZFile(key));
-    }
-
-    public static DataProvider getDataProvider(WZFiles inValue)
-    {
-        return getWZ(inValue.getFile());
-    }
+    NONE,
+    IMG_0x00,
+    SHORT,
+    INT,
+    FLOAT,
+    DOUBLE,
+    STRING,
+    EXTENDED,
+    PROPERTY,
+    CANVAS,
+    VECTOR,
+    CONVEX,
+    SOUND,
+    UOL,
+    UNKNOWN_TYPE,
+    UNKNOWN_EXTENDED_TYPE
 }

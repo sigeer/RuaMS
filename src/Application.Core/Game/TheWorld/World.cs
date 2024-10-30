@@ -1217,7 +1217,7 @@ public class World : IWorld
     }
 
     private static int getPetKey(IPlayer chr, sbyte petSlot)
-    {    
+    {
         // assuming max 3 pets
         return (chr.getId() << 2) + petSlot;
     }
@@ -1646,7 +1646,7 @@ public class World : IWorld
                 HiredMerchant hm = dm.Value.Key;
 
                 if (timeOn <= 144)
-                {   
+                {
                     // 1440 minutes == 24hrs
                     activeMerchants.AddOrUpdate(hm.getOwnerId(), new(dm.Value.Key, timeOn + 1));
                 }
@@ -1839,7 +1839,7 @@ public class World : IWorld
             {
                 int b = dsm.Value;
                 if (b >= 4)
-                {   
+                {
                     // ~35sec duration, 10sec update
                     toRemove.Add(dsm.Key);
                 }
@@ -2003,7 +2003,7 @@ public class World : IWorld
     private void pushRelationshipCouple(CoupleTotal couple)
     {
         int mid = couple.MarriageId, hid = couple.HusbandId, wid = couple.WifeId;
-        relationshipCouples.AddOrUpdate(mid, new (hid, wid));
+        relationshipCouples.AddOrUpdate(mid, new(hid, wid));
         relationships.AddOrUpdate(hid, mid);
         relationships.AddOrUpdate(wid, mid);
     }
@@ -2021,7 +2021,7 @@ public class World : IWorld
             }
 
             pushRelationshipCouple(couple);
-            rc = new (couple.HusbandId, couple.WifeId);
+            rc = new(couple.HusbandId, couple.WifeId);
         }
 
         return rc;

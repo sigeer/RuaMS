@@ -20,46 +20,50 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace provider.wz;
+namespace XmlWzReader.wz;
 
-public class WZEntry : DataEntry
+
+
+public class WZDirectoryEntry : WZEntry, DataDirectoryEntry
 {
-    private string name;
-    private int size;
-    private int checksum;
-    private int offset;
-    private DataEntity? parent;
+    private List<DataDirectoryEntry> subdirs = new();
+    private List<DataFileEntry> files = new();
+    private Dictionary<string, DataEntry> entries = new();
 
-    public WZEntry(string name, int size, int checksum, DataEntity? parent) : base()
+    public WZDirectoryEntry(string name, int size, int checksum, DataEntity? parent) : base(name, size, checksum, parent)
     {
-        this.name = name;
-        this.size = size;
-        this.checksum = checksum;
-        this.parent = parent;
+
     }
 
-    public string getName()
+    public WZDirectoryEntry() : base(null, 0, 0, null)
     {
-        return name;
+
     }
 
-    public int getSize()
+    public void addDirectory(DataDirectoryEntry dir)
     {
-        return size;
+        subdirs.Add(dir);
+        entries[dir.getName()!] = dir;
     }
 
-    public int getChecksum()
+    public void addFile(DataFileEntry fileEntry)
     {
-        return checksum;
+        files.Add(fileEntry);
+        entries[fileEntry.getName()!] = fileEntry;
     }
 
-    public virtual int getOffset()
+    public List<DataDirectoryEntry> getSubdirectories()
     {
-        return offset;
+        return new List<DataDirectoryEntry>(subdirs);
     }
 
-    public DataEntity? getParent()
+    public List<DataFileEntry> getFiles()
     {
-        return parent;
+        return new(files);
+    }
+
+    public DataEntry getEntry(string name)
+    {
+        return entries[name];
     }
 }

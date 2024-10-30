@@ -9,7 +9,6 @@ using scripting.Event;
 using server.events.gm;
 using server.life;
 using server.maps;
-using server.partyquest;
 
 namespace Application.Core.Game.Maps
 {
@@ -136,7 +135,7 @@ namespace Application.Core.Game.Maps
         Dictionary<int, IPlayer> getMapPlayers();
 
         short getMobInterval();
-        
+
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
         List<IMapObject> getMonsters();
@@ -263,7 +262,7 @@ namespace Application.Core.Game.Maps
         void setSeats(int seats);
         void setSnowball(int team, Snowball? ball);
         void setStreetName(string streetName);
-   
+
         void setTimeLimit(int timeLimit);
         void setTimeMob(int id, string msg);
         void setTown(bool isTown);
@@ -277,7 +276,7 @@ namespace Application.Core.Game.Maps
         void spawnDoor(DoorObject door);
         void spawnFakeMonster(Monster monster);
         void spawnFakeMonsterOnGroundBelow(Monster mob, Point pos);
- 
+
         void spawnHorntailOnGroundBelow(Point targetPoint);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
         void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, byte dropType, bool playerDrop);
