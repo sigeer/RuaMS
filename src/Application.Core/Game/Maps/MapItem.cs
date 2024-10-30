@@ -1,11 +1,15 @@
+using Application.Core.Game.Items;
+using Application.EF.Entities;
 using client.inventory;
+using constants.id;
+using server;
 using server.maps;
 using tools;
 
 
 namespace Application.Core.Game.Maps;
 
-public class MapItem : AbstractMapObject
+public class MapItem : AbstractMapObject, IItemProp
 {
     protected IClient ownerClient;
     protected Item? item;
@@ -16,6 +20,10 @@ public class MapItem : AbstractMapObject
     protected long dropTime;
     private object itemLock = new object();
     public bool IsPartyDrop => this.party_ownerid != -1;
+
+    public bool NeedCheckSpace => getMeso() == 0 
+        && !ItemId.isNxCard(getItemId()) 
+        && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
 
     public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop)
     {

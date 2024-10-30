@@ -7,6 +7,9 @@ using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 
+/// <summary>
+/// 和ItemVacCommand什么区别？
+/// </summary>
 public class ForceVacCommand : CommandBase
 {
     public ForceVacCommand() : base(4, "forcevac")
@@ -21,7 +24,6 @@ public class ForceVacCommand : CommandBase
         foreach (var item in items)
         {
             MapItem mapItem = (MapItem)item;
-
             mapItem.lockItem();
             try
             {
@@ -42,9 +44,9 @@ public class ForceVacCommand : CommandBase
                     // Add NX to account, show effect and make item disappear
                     player.getCashShop().gainCash(1, mapItem.getItemId() == ItemId.NX_CARD_100 ? 100 : 250);
                 }
-                else if (mapItem.getItem().getItemId() >= 5000000 && mapItem.getItem().getItemId() <= 5000100)
+                else if (ItemId.isPet(mapItem.getItemId()))
                 {
-                    int petId = ItemManager.CreatePet(mapItem.getItem().getItemId());
+                    int petId = ItemManager.CreatePet(mapItem.getItemId());
                     if (petId == -1)
                     {
                         continue;
@@ -53,7 +55,7 @@ public class ForceVacCommand : CommandBase
                 }
                 else if (InventoryManipulator.addFromDrop(c, mapItem.getItem(), true))
                 {
-                    if (mapItem.getItemId() == ItemId.NX_CARD_100)
+                    if (mapItem.getItemId() == ItemId.ARPQ_SPIRIT_JEWEL)
                     {
                         player.updateAriantScore();
                     }
