@@ -19,11 +19,9 @@ namespace Application.Core.Gameplay
 
         protected override void Process(MapItem mapItem)
         {
-            var pickupPacket = GetPickupPacket(mapItem);
-
             if (PickupMeso(mapItem) || PickupSpecialItem(mapItem) || PickupItem(mapItem))
             {
-                _player.MapModel.pickItemDrop(pickupPacket, mapItem);
+                _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
             }
             _player.sendPacket(PacketCreator.enableActions());
         }
@@ -125,6 +123,11 @@ namespace Application.Core.Gameplay
             return false;
         }
 
+        /// <summary>
+        /// true：捡取完成，中断
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <returns></returns>
         private bool PickupSpecialItem(MapItem mapItem)
         {
             if (ItemId.isNxCard(mapItem.getItemId()))
@@ -140,26 +143,30 @@ namespace Application.Core.Gameplay
                 return true;
             }
 
-            if (mapItem.getItemId() / 10000 == 243)
+            else if (mapItem.getItemId() / 10000 == 243)
             {
                 var info = ItemInformationProvider.getInstance().getScriptedItemInfo(mapItem.getItemId());
                 if (info != null && info.runOnPickup())
                 {
                     ItemScriptManager.getInstance().runItemScript(_player.Client, info);
+                    return true;
                 }
+                else
+                    return false;
             }
 
-            if (ItemId.isPet(mapItem.getItemId()))
+            else if (ItemId.isPet(mapItem.getItemId()))
             {
                 int petId = ItemManager.CreatePet(mapItem.getItemId());
-                if (petId == -1)
+                if (petId != -1)
                 {
-                    return false;
+                    InventoryManipulator.addById(_player.Client, mapItem.getItem().getItemId(), mapItem.getItem().getQuantity(), null, petId);
                 }
-                return InventoryManipulator.addById(_player.Client, mapItem.getItem().getItemId(), mapItem.getItem().getQuantity(), null, petId);
+                return true;
             }
 
-            return false;
+            else
+                return _player.applyConsumeOnPickup(mapItem.getItemId());
         }
 
         private bool PickupItem(MapItem mapItem)
