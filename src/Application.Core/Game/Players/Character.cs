@@ -34,7 +34,6 @@ using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Core.scripting.Event;
-using Application.EF.Entities;
 using client;
 using client.autoban;
 using client.creator;
@@ -54,7 +53,6 @@ using net.server.guild;
 using net.server.world;
 using scripting;
 using scripting.Event;
-using scripting.item;
 using server;
 using server.events;
 using server.events.gm;
@@ -67,7 +65,6 @@ using System.Collections.ObjectModel;
 using tools;
 using tools.packets;
 using static client.inventory.Equip;
-using static server.ItemInformationProvider;
 
 namespace Application.Core.Game.Players;
 
@@ -1485,7 +1482,7 @@ public partial class Player
         return false;
     }
 
-    public void pickupItem(IMapObject ob, int petIndex = -1)
+    public void pickupItem(IMapObject? ob, int petIndex = -1)
     {
         // yes, one picks the IMapObject, not the MapItem
         if (ob == null)
@@ -1496,32 +1493,16 @@ public partial class Player
 
         if (ob is MapItem mapitem)
         {
-            new PlayerPickupProcessor(this, (sbyte)petIndex).Handle(mapitem);
+            PlayerPickupProcessor processor;
+            if (petIndex > -1)
+                processor = new PlayerPetPickupProcessor(this, petIndex);
+            else
+                processor = new PlayerPickupProcessor(this);
+
+            processor.Handle(mapitem);
         }
     }
 
-    public bool PickupMeso(MapItem mapItem)
-    {
-        var meso = mapItem.getMeso();
-        if (meso > 0)
-        {
-            var mpcs = getPartyMembersOnSameMap();
-            if (mpcs.Count > 0)
-            {
-                int mesosamm = mapItem.getMeso() / mpcs.Count;
-                foreach (IPlayer partymem in mpcs)
-                {
-                    partymem.gainMeso(mesosamm, true, true, false);
-                }
-            }
-            else
-            {
-                this.gainMeso(meso, true, true, false);
-            }
-            return true;
-        }
-        return false;
-    }
 
     public int countItem(int itemid)
     {

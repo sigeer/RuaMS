@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Gameplay;
 using net.packet;
 using tools;
 
@@ -52,44 +53,6 @@ public class PetLootHandler : AbstractPacketHandler
         var ob = chr.getMap().getMapObject(oid)!;
         try
         {
-            MapItem mapitem = (MapItem)ob;
-            if (mapitem.getMeso() > 0)
-            {
-                if (!chr.isEquippedMesoMagnet())
-                {
-                    c.sendPacket(PacketCreator.enableActions());
-                    return;
-                }
-
-                if (chr.isEquippedPetItemIgnore())
-                {
-                    HashSet<int> petIgnore = chr.getExcludedItems();
-                    if (petIgnore.Count > 0 && petIgnore.Contains(int.MaxValue))
-                    {
-                        c.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-                }
-            }
-            else
-            {
-                if (!chr.isEquippedItemPouch())
-                {
-                    c.sendPacket(PacketCreator.enableActions());
-                    return;
-                }
-
-                if (chr.isEquippedPetItemIgnore())
-                {
-                    HashSet<int> petIgnore = chr.getExcludedItems();
-                    if (petIgnore.Count > 0 && petIgnore.Contains(mapitem.getItem().getItemId()))
-                    {
-                        c.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-                }
-            }
-
             chr.pickupItem(ob, petIndex);
         }
         catch (Exception)

@@ -1,5 +1,4 @@
 using Application.Core.Game.Items;
-using Application.EF.Entities;
 using client.inventory;
 using constants.id;
 using server;
@@ -21,8 +20,8 @@ public class MapItem : AbstractMapObject, IItemProp
     private object itemLock = new object();
     public bool IsPartyDrop => this.party_ownerid != -1;
 
-    public bool NeedCheckSpace => getMeso() == 0 
-        && !ItemId.isNxCard(getItemId()) 
+    public bool NeedCheckSpace => getMeso() == 0
+        && !ItemId.isNxCard(getItemId())
         && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
 
     public MapItem(Item item, Point position, IMapObject dropper, IPlayer owner, byte type, bool playerDrop)

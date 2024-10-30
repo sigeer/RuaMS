@@ -1,6 +1,8 @@
 ﻿using Application.Core.Game.Maps;
+using Application.Core.Managers;
 using client.inventory.manipulator;
 using constants.id;
+using net.packet;
 using scripting.item;
 using server;
 using tools;
@@ -9,16 +11,15 @@ namespace Application.Core.Gameplay
 {
     public class PlayerPickupProcessor : PlayerProcessor<MapItem>
     {
-        sbyte _petIndex = -1;
-        bool IsPetPickup => _petIndex > -1;
-        public PlayerPickupProcessor(IPlayer player, sbyte petIndex = -1) : base(player)
+        public PlayerPickupProcessor(IPlayer player) : base(player)
         {
-            _petIndex = petIndex;
         }
+
+        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), 2, _player.Id);
 
         protected override void Process(MapItem mapItem)
         {
-            var pickupPacket = PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? 5 : 2, _player.Id, IsPetPickup, _petIndex);
+            var pickupPacket = GetPickupPacket(mapItem);
 
             if (PickupMeso(mapItem) || PickupSpecialItem(mapItem) || PickupItem(mapItem))
             {
@@ -84,8 +85,11 @@ namespace Application.Core.Gameplay
             return true;
         }
 
-        public override void Handle(MapItem mapItem)
+        public override void Handle(MapItem? mapItem)
         {
+            if (mapItem == null)
+                return;
+
             mapItem.lockItem();
             try
             {
@@ -143,6 +147,16 @@ namespace Application.Core.Gameplay
                 {
                     ItemScriptManager.getInstance().runItemScript(_player.Client, info);
                 }
+            }
+
+            if (ItemId.isPet(mapItem.getItemId()))
+            {
+                int petId = ItemManager.CreatePet(mapItem.getItemId());
+                if (petId == -1)
+                {
+                    return false;
+                }
+                return InventoryManipulator.addById(_player.Client, mapItem.getItem().getItemId(), mapItem.getItem().getQuantity(), null, petId);
             }
 
             return false;
