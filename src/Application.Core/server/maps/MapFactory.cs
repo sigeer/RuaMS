@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.constants.game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
@@ -30,7 +31,6 @@ using server.life;
 using server.partyquest;
 using System.Text;
 using tools;
-using XmlWzReader.WzEntity;
 
 
 namespace server.maps;
@@ -46,11 +46,36 @@ public class MapFactory
         mapSource = DataProviderFactory.getDataProvider(WZFiles.MAP);
     }
 
-    private static void loadLifeFromWz(IMap map, MapWzBase mapData)
+    private static void loadLifeFromWz(IMap map, Data mapData)
     {
-        foreach (var mapLife in mapData.Lives)
+        foreach (var life in mapData.getChildByPath("life"))
         {
-            loadLifeRaw(map, mapLife.LifeId, mapLife.Type, mapLife.Cy, mapLife.F, mapLife.Fh, mapLife.Rx0, mapLife.Rx1, mapLife.X, mapLife.Y, mapLife.Hide, mapLife.MobTime, mapLife.Team);
+            var id = DataTool.getString(life.getChildByPath("id")) ?? "0";
+            var type = DataTool.getString(life.getChildByPath("type"));
+            int team = DataTool.getInt("team", life, -1);
+            if (map.isCPQMap2() && type == LifeType.Monster)
+            {
+                if ((int.Parse(life.getName()) % 2) == 0)
+                {
+                    team = 0;
+                }
+                else
+                {
+                    team = 1;
+                }
+            }
+            int cy = DataTool.getInt(life.getChildByPath("cy"));
+            var dF = life.getChildByPath("f");
+            int f = (dF != null) ? DataTool.getInt(dF) : 0;
+            int fh = DataTool.getInt(life.getChildByPath("fh"));
+            int rx0 = DataTool.getInt(life.getChildByPath("rx0"));
+            int rx1 = DataTool.getInt(life.getChildByPath("rx1"));
+            int x = DataTool.getInt(life.getChildByPath("x"));
+            int y = DataTool.getInt(life.getChildByPath("y"));
+            int hide = DataTool.getInt("hide", life, 0);
+            int mobTime = DataTool.getInt("mobTime", life, 0);
+
+            loadLifeRaw(map, int.Parse(id), type, cy, f, fh, rx0, rx1, x, y, hide, mobTime, team);
         }
     }
 
@@ -76,7 +101,7 @@ public class MapFactory
                 int mobTime = rs.Mobtime;
                 int team = rs.Team;
 
-                loadLifeRaw(map, id, type, cy, f, fh, rx0, rx1, x, y, hide == 1, mobTime, team);
+                loadLifeRaw(map, id, type, cy, f, fh, rx0, rx1, x, y, hide, mobTime, team);
             }
 
         }
@@ -86,7 +111,7 @@ public class MapFactory
         }
     }
 
-    private static void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide, int mobTime, int team)
+    private static void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide, int mobTime, int team)
     {
         AbstractLifeObject myLife = loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide);
         if (myLife is Monster monster)
@@ -128,55 +153,128 @@ public class MapFactory
             mapName = getMapName(int.Parse(link));
             mapData = mapSource.getData(mapName);
         }
+        float monsterRate = 0;
+        var mobRate = infoData?.getChildByPath("mobRate");
+        if (mobRate != null)
+        {
+            monsterRate = (float?)mobRate.getData() ?? 0;
+        }
+        map = new MapleMap(mapid, world, channel, DataTool.getInt("returnMap", infoData), monsterRate);
 
-        var mapModel = new MapWzBase(mapid, mapData);
-        var infoModel = mapModel.MapInfo;
-
-        map = new MapleMap(mapid, world, channel, infoModel.ReturnMap, infoModel.MobRate);
-
-        if (mapModel.CPQInfo != null)
+        var cpqInfo = mapData.getChildByPath("monsterCarnival");
+        if (map.isCPQMap() && cpqInfo != null)
             map = new MonsterCarnivalMap(map);
 
         map.setEventInstance(evt);
 
-        map.setOnFirstUserEnter(infoModel.OnFirstUserEnter);
-        map.setOnUserEnter(infoModel.OnUserEnter);
-        map.setFieldLimit(infoModel.FieldLimit);
-        map.setMobInterval(infoModel.CreateMobInterval);
+        var mapStr = mapid.ToString();
+        string onFirstEnter = DataTool.getString(infoData?.getChildByPath("onFirstUserEnter")) ?? mapStr;
+        map.setOnFirstUserEnter(onFirstEnter.Equals("") ? mapStr : onFirstEnter);
+
+        string onEnter = DataTool.getString(infoData?.getChildByPath("onUserEnter")) ?? mapStr;
+        map.setOnUserEnter(onEnter.Equals("") ? mapStr : onEnter);
+
+        map.setFieldLimit(DataTool.getInt(infoData?.getChildByPath("fieldLimit"), 0));
+        map.setMobInterval((short)DataTool.getInt(infoData?.getChildByPath("createMobInterval"), 5000));
         PortalFactory portalFactory = new PortalFactory();
-        foreach (var portal in mapModel.Portals)
+        foreach (var portal in mapData.getChildByPath("portal"))
         {
-            map.addPortal(portalFactory.makePortal(portal));
+            map.addPortal(portalFactory.makePortal(DataTool.getInt(portal.getChildByPath("pt")), portal));
+        }
+        var timeMob = infoData?.getChildByPath("timeMob");
+        if (timeMob != null)
+        {
+            map.setTimeMob(DataTool.getInt(timeMob.getChildByPath("id")), DataTool.getString(timeMob.getChildByPath("message")));
         }
 
-        if (infoModel.TimeMob != null)
+        int[] bounds = new int[4];
+        bounds[0] = DataTool.getInt(infoData?.getChildByPath("VRTop"));
+        bounds[1] = DataTool.getInt(infoData?.getChildByPath("VRBottom"));
+
+        if (bounds[0] == bounds[1])
+        {    // old-style baked map
+            var minimapData = mapData.getChildByPath("miniMap");
+            if (minimapData != null)
+            {
+                bounds[0] = DataTool.getInt(minimapData.getChildByPath("centerX")) * -1;
+                bounds[1] = DataTool.getInt(minimapData.getChildByPath("centerY")) * -1;
+                bounds[2] = DataTool.getInt(minimapData.getChildByPath("height"));
+                bounds[3] = DataTool.getInt(minimapData.getChildByPath("width"));
+
+                map.setMapPointBoundings(bounds[0], bounds[1], bounds[2], bounds[3]);
+            }
+            else
+            {
+                int dist = (1 << 18);
+                map.setMapPointBoundings(-dist / 2, -dist / 2, dist, dist);
+            }
+        }
+        else
         {
-            map.setTimeMob(infoModel.TimeMob.Id, infoModel.TimeMob.Message);
+            bounds[2] = DataTool.getInt(infoData?.getChildByPath("VRLeft"));
+            bounds[3] = DataTool.getInt(infoData?.getChildByPath("VRRight"));
+
+            map.setMapLineBoundings(bounds[0], bounds[1], bounds[2], bounds[3]);
         }
 
-        map.SetMapArea(mapModel.MapArea);
-
-        FootholdTree fTree = new FootholdTree(new Point(mapModel.FootholdMinX1, mapModel.FootholdMinY1), new Point(mapModel.FootholdMaxX2, mapModel.FootholdMaxY2));
-        var allFootholds = mapModel.Footholds.Select(item =>
+        List<Foothold> allFootholds = new();
+        Point lBound = new Point();
+        Point uBound = new Point();
+        foreach (var footRoot in mapData.getChildByPath("foothold"))
         {
-            var m = new Foothold(new Point(item.X1, item.Y1), new Point(item.X2, item.Y2), item.Index);
-            m.setNext(item.Next);
-            m.setPrev(item.Prev);
-            return m;
-        }).ToList();
+            foreach (Data footCat in footRoot)
+            {
+                foreach (Data footHold in footCat)
+                {
+                    int x1 = DataTool.getInt(footHold.getChildByPath("x1"));
+                    int y1 = DataTool.getInt(footHold.getChildByPath("y1"));
+                    int x2 = DataTool.getInt(footHold.getChildByPath("x2"));
+                    int y2 = DataTool.getInt(footHold.getChildByPath("y2"));
+                    Foothold fh = new Foothold(new Point(x1, y1), new Point(x2, y2), int.Parse(footHold.getName()));
+                    fh.setPrev(DataTool.getInt(footHold.getChildByPath("prev")));
+                    fh.setNext(DataTool.getInt(footHold.getChildByPath("next")));
+                    if (fh.getX1() < lBound.X)
+                    {
+                        lBound.X = fh.getX1();
+                    }
+                    if (fh.getX2() > uBound.X)
+                    {
+                        uBound.X = fh.getX2();
+                    }
+                    if (fh.getY1() < lBound.Y)
+                    {
+                        lBound.Y = fh.getY1();
+                    }
+                    if (fh.getY2() > uBound.Y)
+                    {
+                        uBound.Y = fh.getY2();
+                    }
+                    allFootholds.Add(fh);
+                }
+            }
+        }
+        FootholdTree fTree = new FootholdTree(lBound, uBound);
         foreach (Foothold fh in allFootholds)
         {
             fTree.insert(fh);
         }
         map.setFootholds(fTree);
-
-        foreach (var area in mapModel.Areas)
+        if (mapData.getChildByPath("area") != null)
         {
-            map.addMapleArea(area.Rect);
+            foreach (var area in mapData.getChildByPath("area")!)
+            {
+                int x1 = DataTool.getInt(area.getChildByPath("x1"));
+                int y1 = DataTool.getInt(area.getChildByPath("y1"));
+                int x2 = DataTool.getInt(area.getChildByPath("x2"));
+                int y2 = DataTool.getInt(area.getChildByPath("y2"));
+                map.addMapleArea(new Rectangle(x1, y1, (x2 - x1), (y2 - y1)));
+            }
         }
-
-        map.setSeats(mapModel.SeatCount);
-
+        if (mapData.getChildByPath("seat") != null)
+        {
+            int seats = mapData.getChildByPath("seat")!.getChildren().Count;
+            map.setSeats(seats);
+        }
         if (evt == null)
         {
             try
@@ -196,62 +294,100 @@ public class MapFactory
             }
         }
 
-        loadLifeFromWz(map, mapModel);
+        loadLifeFromWz(map, mapData);
         loadLifeFromDb(map);
 
         if (map is MonsterCarnivalMap cpqMap)
         {
-            cpqMap.DeathCP = mapModel.CPQInfo!.DeathCP;
-            cpqMap.MaxMobs = mapModel.CPQInfo!.MaxMobs;    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
-            cpqMap.TimeDefault = mapModel.CPQInfo!.TimeDefault;
-            cpqMap.TimeExpand = mapModel.CPQInfo!.TimeExpand;
-            cpqMap.MaxReactors = mapModel.CPQInfo!.MaxReactors;
-
-            foreach (var item in mapModel.CPQInfo!.GuardianSpawnPoints)
+            cpqMap.DeathCP = (DataTool.getIntConvert("deathCP", cpqInfo, 0));
+            cpqMap.MaxMobs = (DataTool.getIntConvert("mobGenMax", cpqInfo, 20));    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
+            cpqMap.TimeDefault = (DataTool.getIntConvert("timeDefault", cpqInfo, 0));
+            cpqMap.TimeExpand = (DataTool.getIntConvert("timeExpand", cpqInfo, 0));
+            cpqMap.MaxReactors = (DataTool.getIntConvert("guardianGenMax", cpqInfo, 16));
+            var guardianGenData = cpqInfo!.getChildByPath("guardianGenPos");
+            foreach (Data node in guardianGenData.getChildren())
             {
-                GuardianSpawnPoint pt = new GuardianSpawnPoint(item.Point);
-                pt.setTeam(item.Team);
+                GuardianSpawnPoint pt = new GuardianSpawnPoint(new Point(DataTool.getIntConvert("x", node), DataTool.getIntConvert("y", node)));
+                pt.setTeam(DataTool.getIntConvert("team", node, -1));
                 pt.setTaken(false);
                 cpqMap.AddGuardianSpawnPoint(pt);
             }
-
-            foreach (var area in mapModel.CPQInfo!.Skills)
+            if (cpqInfo.getChildByPath("skill") != null)
             {
-                cpqMap.AddSkillId(area);
+                foreach (var area in cpqInfo.getChildByPath("skill")!)
+                {
+                    cpqMap.AddSkillId(DataTool.getInt(area));
+                }
             }
 
-            foreach (var item in mapModel.CPQInfo!.CPQMobDataList)
+            if (cpqInfo.getChildByPath("mob") != null)
             {
-                cpqMap.AddMobSpawn(item.Id, item.CP);
+                foreach (var area in cpqInfo.getChildByPath("mob")!)
+                {
+                    cpqMap.AddMobSpawn(DataTool.getInt(area.getChildByPath("id")), DataTool.getInt(area.getChildByPath("spendCP")));
+                }
             }
+
         }
 
-        foreach (var item in mapModel.Reactors)
+        if (mapData.getChildByPath("reactor") != null)
         {
-            map.spawnReactor(loadReactor(item));
+            foreach (var reactor in mapData.getChildByPath("reactor")!)
+            {
+                var id = DataTool.getString(reactor.getChildByPath("id"));
+                if (id != null)
+                {
+                    Reactor newReactor = loadReactor(reactor, id, (sbyte)DataTool.getInt(reactor.getChildByPath("f"), 0));
+                    map.spawnReactor(newReactor);
+                }
+            }
         }
 
         map.setMapName(loadPlaceName(mapid));
         map.setStreetName(loadStreetName(mapid));
 
-        map.setClock(mapModel.Clock);
-        map.setEverlast(infoModel.Everlast); // thanks davidlafriniere for noticing value 0 accounting as true
-        map.setTown(infoModel.Town);
-        map.setHPDec(infoModel.DecHP);
-        map.setHPDecProtect(infoModel.ProtectItem);
-        map.setForcedReturnMap(infoModel.ForceReturn);
-        map.setBoat(mapModel.Boat);
-        map.setTimeLimit(infoModel.TimeLimit);
-        map.setFieldType(infoModel.FieldType);
-        map.setMobCapacity(infoModel.FixedMobCapacity);//Is there a map that contains more than 500 mobs?
-        map.setRecovery(infoModel.Recovery);
-        map.setBackgroundTypes(mapModel.Backs.Select(x => new KeyValuePair<int, int>(x.Index, x.Type)).ToDictionary());
+        map.setClock(mapData.getChildByPath("clock") != null);
+        map.setEverlast(DataTool.getIntConvert("everlast", infoData, 0) != 0); // thanks davidlafriniere for noticing value 0 accounting as true
+        map.setTown(DataTool.getIntConvert("town", infoData, 0) != 0);
+        map.setHPDec(DataTool.getIntConvert("decHP", infoData, 0));
+        map.setHPDecProtect(DataTool.getIntConvert("protectItem", infoData, 0));
+        map.setForcedReturnMap(DataTool.getInt(infoData?.getChildByPath("forcedReturn"), MapId.NONE));
+        map.setBoat(mapData.getChildByPath("shipObj") != null);
+        map.setTimeLimit(DataTool.getIntConvert("timeLimit", infoData, -1));
+        map.setFieldType(DataTool.getIntConvert("fieldType", infoData, 0));
+        map.setMobCapacity(DataTool.getIntConvert("fixedMobCapacity", infoData, 500));//Is there a map that contains more than 500 mobs?
+
+        var recData = infoData?.getChildByPath("recovery");
+        if (recData != null)
+        {
+            map.setRecovery(DataTool.getFloat(recData));
+        }
+
+        Dictionary<int, int> backTypes = new();
+        try
+        {
+            foreach (var layer in mapData.getChildByPath("back"))
+            {
+                // yolo
+                int layerNum = int.Parse(layer.getName());
+                int btype = DataTool.getInt(layer.getChildByPath("type"), 0);
+
+                backTypes.AddOrUpdate(layerNum, btype);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Logger.Error(e.ToString());
+            // swallow cause I'm cool
+        }
+
+        map.setBackgroundTypes(backTypes);
         map.generateMapDropRangeCache();
 
         return map;
     }
 
-    private static AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide)
+    private static AbstractLifeObject loadLife(int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide)
     {
         AbstractLifeObject myLife = LifeFactory.getLife(id, type) ?? throw new BusinessResException($"LifeFactory.getLife({id}, {type})");
         myLife.setCy(cy);
@@ -260,17 +396,23 @@ public class MapFactory
         myLife.setRx0(rx0);
         myLife.setRx1(rx1);
         myLife.setPosition(new Point(x, y));
-        myLife.setHide(hide);
+        if (hide == 1)
+        {
+            myLife.setHide(true);
+        }
         return myLife;
     }
 
-    private static Reactor loadReactor(MapReactor mapReactor)
+    private static Reactor loadReactor(Data mapReactor, string id, sbyte FacingDirection)
     {
-        Reactor myReactor = new Reactor(ReactorFactory.getReactor(mapReactor.ReactorId), mapReactor.ReactorId);
-        myReactor.setFacingDirection(mapReactor.FacingDirection);
-        myReactor.setPosition(mapReactor.Point);
-        myReactor.setDelay(mapReactor.ReactorTime);
-        myReactor.setName(mapReactor.Name);
+        var reactorId = int.Parse(id);
+        Reactor myReactor = new Reactor(ReactorFactory.getReactor(reactorId), reactorId);
+        int x = DataTool.getInt(mapReactor.getChildByPath("x"));
+        int y = DataTool.getInt(mapReactor.getChildByPath("y"));
+        myReactor.setFacingDirection(FacingDirection);
+        myReactor.setPosition(new Point(x, y));
+        myReactor.setDelay((DataTool.getInt(mapReactor.getChildByPath("reactorTime"))) * 1000);
+        myReactor.setName(DataTool.getString(mapReactor.getChildByPath("name")) ?? "");
         myReactor.resetReactorActions(0);
         return myReactor;
     }

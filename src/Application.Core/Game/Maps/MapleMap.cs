@@ -3543,9 +3543,20 @@ public class MapleMap : IMap
         return footholds;
     }
 
-    public void SetMapArea(Rectangle rect)
+    public void setMapPointBoundings(int px, int py, int h, int w)
     {
-        mapArea = rect;
+        mapArea.X = px;
+        mapArea.Y = py;
+        mapArea.Width = w;
+        mapArea.Height = h;
+    }
+
+    public void setMapLineBoundings(int vrTop, int vrBottom, int vrLeft, int vrRight)
+    {
+        mapArea.X = vrLeft;
+        mapArea.Y = vrTop;
+        mapArea.Width = vrRight - vrLeft;
+        mapArea.Height = vrBottom - vrTop;
     }
 
     public MonsterAggroCoordinator getAggroCoordinator()
