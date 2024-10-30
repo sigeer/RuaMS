@@ -16,3 +16,4 @@ global using System;
 global using System.Drawing;
 global using XmlWzReader;
 global using XmlWzReader.wz;
+global using Application.Shared;
