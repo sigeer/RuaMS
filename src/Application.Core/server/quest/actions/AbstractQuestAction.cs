@@ -27,6 +27,7 @@ namespace server.quest.actions;
  */
 public abstract class AbstractQuestAction
 {
+    protected ILogger log = LogFactory.GetLogger("Quest/Action");
     private QuestActionType type;
     protected int questID;
 
