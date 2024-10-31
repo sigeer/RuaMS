@@ -27,6 +27,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Event;
+using Application.Shared.WzEntity;
 using Application.Utility;
 using client;
 using client.status;
@@ -926,12 +927,12 @@ public class Monster : AbstractLifeObject
                 reviveMap.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
                 reviveMap.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
             }
-            var timeMob = reviveMap.getTimeMob();
+            var timeMob = reviveMap.TimeMob;
             if (timeMob != null)
             {
-                if (toSpawn.Contains(timeMob.Value.Key))
+                if (toSpawn.Contains(timeMob.MobId))
                 {
-                    reviveMap.broadcastMessage(PacketCreator.serverNotice(6, timeMob.Value.Value));
+                    reviveMap.broadcastMessage(PacketCreator.serverNotice(6, timeMob.Message));
                 }
             }
 

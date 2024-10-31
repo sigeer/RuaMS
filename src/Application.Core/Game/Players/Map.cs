@@ -1,5 +1,6 @@
 ﻿using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
+using Application.Shared.WzEntity;
 using client.inventory;
 using constants.id;
 using constants.inventory;
