@@ -47,6 +47,7 @@ using server.expeditions;
 using server.quest;
 using service;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using static server.CashShop;
 
 namespace net.server;
@@ -935,12 +936,11 @@ public class Server
         sw.Start();
         using var dbContext = new DBContext();
 
-        var canCannect = await dbContext.Database.CanConnectAsync();
         await dbContext.Database.MigrateAsync();
 
-        if (!canCannect)
+        if (!dbContext.Shops.Any())
         {
-            var sqls = Directory.GetFiles("sql").OrderBy(x => x.TrimStart('v'));
+            var sqls = Directory.GetFiles("sql").OrderBy(x => Regex.Match(x, "^v([0-9]+)\\S*\\.sql$").Groups[0].Value);
             foreach (var file in sqls)
             {
                 var sqlStr = File.ReadAllText(file);
