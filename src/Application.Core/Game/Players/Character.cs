@@ -2763,15 +2763,6 @@ public partial class Player
         return MapModel.getFootholds()?.findBelow(pos)?.getY1() ?? 0;
     }
 
-    public int getMapId()
-    {
-        if (base.MapModel != null)
-        {
-            return MapModel.getId();
-        }
-        return Map;
-    }
-
 
     public int getTotalStr()
     {

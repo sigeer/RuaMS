@@ -419,7 +419,7 @@ public class Quest
         }
         if (timeLimit2 > 0)
         {
-            newStatus.setExpirationTime(DateTimeOffset.Now.ToUnixTimeMilliseconds() + timeLimit2);
+            newStatus.setExpirationTime(DateTimeOffset.Now.AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
             chr.questTimeLimit2(this, newStatus.getExpirationTime());
         }
 

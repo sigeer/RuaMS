@@ -39,7 +39,14 @@ namespace Application.Core.Game.Players
             base.setMap(map);
         }
 
-
+        public int getMapId()
+        {
+            if (base.MapModel != null)
+            {
+                return MapModel.getId();
+            }
+            return Map;
+        }
         public IMap getWarpMap(int map)
         {
             IMap warpMap;
