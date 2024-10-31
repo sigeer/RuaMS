@@ -3306,7 +3306,7 @@ public partial class Player
 
     public bool hasMerchant()
     {
-        return HasMerchant ?? false;
+        return HasMerchant;
     }
 
     public bool haveItem(int itemid)

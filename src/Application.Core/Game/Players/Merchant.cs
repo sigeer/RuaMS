@@ -16,22 +16,17 @@ namespace Application.Core.Game.Players
 
         public void addMerchantMesos(int add)
         {
-            int newAmount = (int)Math.Min((long)merchantmeso + add, int.MaxValue);
+            int newAmount = (int)Math.Min((long)MerchantMesos + add, int.MaxValue);
 
-            using var dbContext = new DBContext();
-            dbContext.Characters.Where(x => x.Id == Id).ExecuteUpdate(x => x.SetProperty(y => y.MerchantMesos, newAmount));
-
-
-            merchantmeso = newAmount;
+            setMerchantMeso(newAmount);
         }
 
         public void setMerchantMeso(int set)
         {
-
             using var dbContext = new DBContext();
             dbContext.Characters.Where(x => x.Id == Id).ExecuteUpdate(x => x.SetProperty(y => y.MerchantMesos, set));
 
-            merchantmeso = set;
+            MerchantMesos = set;
         }
 
         object withDrawMerchantLock = new object();
@@ -84,10 +79,10 @@ namespace Application.Core.Game.Players
             this.hiredMerchant = merchant;
         }
 
-        private int merchantmeso;
+
         public int getMerchantMeso()
         {
-            return merchantmeso;
+            return MerchantMesos;
         }
 
         public int getMerchantNetMeso()
@@ -104,7 +99,7 @@ namespace Application.Core.Game.Players
                 elapsedDays = 100;
             }
 
-            long netMeso = merchantmeso; // negative mesos issues found thanks to Flash, Vcoc
+            long netMeso = MerchantMesos; // negative mesos issues found thanks to Flash, Vcoc
             netMeso = (netMeso * (100 - elapsedDays)) / 100;
             return (int)netMeso;
         }
