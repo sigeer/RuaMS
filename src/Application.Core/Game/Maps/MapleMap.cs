@@ -29,6 +29,7 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.scripting.Event;
+using Application.Shared.WzEntity;
 using Application.Utility;
 using client;
 using client.autoban;
@@ -114,7 +115,7 @@ public class MapleMap : IMap
     private ScheduledFuture? expireItemsTask = null;
     private ScheduledFuture? characterStatUpdateTask = null;
     private short itemMonitorTimeout;
-    private KeyValuePair<int, string>? timeMob = null;
+    public TimeMob? TimeMob { get; set; }
     private short mobInterval = 5000;
     private bool _allowSummons = true; // All maps should have this true at the beginning
     private IPlayer? mapOwner = null;
@@ -4693,16 +4694,6 @@ public class MapleMap : IMap
     public bool isEventMap()
     {
         return this.mapid >= MapId.EVENT_FIND_THE_JEWEL && this.mapid < MapId.EVENT_WINNER || this.mapid > MapId.EVENT_EXIT && this.mapid <= 109090000;
-    }
-
-    public void setTimeMob(int id, string msg)
-    {
-        timeMob = new(id, msg);
-    }
-
-    public KeyValuePair<int, string>? getTimeMob()
-    {
-        return timeMob;
     }
 
     public void toggleHiddenNPC(int id)
