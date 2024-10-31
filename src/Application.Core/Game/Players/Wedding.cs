@@ -7,33 +7,31 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private int marriageItemid = -1;
         private Ring? marriageRing = null;
 
-        private int partnerId = -1;
         public int getPartnerId()
         {
-            return partnerId;
+            return PartnerId;
         }
 
         public void setPartnerId(int partnerid)
         {
-            partnerId = partnerid;
+            PartnerId = partnerid;
         }
 
         public int getMarriageItemId()
         {
-            return marriageItemid;
+            return MarriageItemId;
         }
 
         public void setMarriageItemId(int itemid)
         {
-            marriageItemid = itemid;
+            MarriageItemId = itemid;
         }
 
         public bool isMarried()
         {
-            return marriageRing != null && partnerId > 0;
+            return marriageRing != null && PartnerId > 0;
         }
 
         public bool haveWeddingRing()
@@ -52,7 +50,7 @@ namespace Application.Core.Game.Players
         }
         public Ring? getMarriageRing()
         {
-            return partnerId > 0 ? marriageRing : null;
+            return PartnerId > 0 ? marriageRing : null;
         }
 
         public Marriage? getMarriageInstance()

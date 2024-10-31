@@ -1,5 +1,6 @@
 ﻿using Application.Core.Managers;
 using client.inventory;
+using constants.id;
 using Microsoft.EntityFrameworkCore;
 using server;
 
@@ -211,7 +212,7 @@ namespace Application.Core.Game.Players
                     }
                     else
                     {
-                        if (MapModel.getForcedReturnId() != 999999999)
+                        if (MapModel.getForcedReturnId() != MapId.NONE)
                         {
                             entity.Map = MapModel.getForcedReturnId();
                         }
@@ -220,7 +221,7 @@ namespace Application.Core.Game.Players
                             entity.Map = getHp() < 1 ? MapModel.getReturnMapId() : MapModel.getId();
                         }
                     }
-                    if (base.MapModel == null || MapModel.getId() == 610020000 || MapModel.getId() == 610020001)
+                    if (base.MapModel == null || MapModel.getId() == MapId.CRIMSONWOOD_VALLEY_1 || MapModel.getId() == MapId.CRIMSONWOOD_VALLEY_2)
                     {  // reset to first spawnpoint on those maps
                         entity.Spawnpoint = 0;
                     }
@@ -261,7 +262,6 @@ namespace Application.Core.Game.Players
                     {
                         Monitor.Exit(petLock);
                     }
-
 
                     var ignoresPetIds = getExcluded().Select(x => x.Key).ToList();
                     dbContext.Petignores.Where(x => ignoresPetIds.Contains(x.Petid)).ExecuteDelete();
