@@ -928,9 +928,35 @@ public class Server
         return rankSystem;
     }
 
+    private async Task InitialDataBase()
+    {
+        log.Debug("初始化数据库");
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        using var dbContext = new DBContext();
+
+        var canCannect = await dbContext.Database.CanConnectAsync();
+        await dbContext.Database.MigrateAsync();
+
+        if (!canCannect)
+        {
+            var sqls = Directory.GetFiles("sql").OrderBy(x => x.TrimStart('v'));
+            foreach (var file in sqls)
+            {
+                var sqlStr = File.ReadAllText(file);
+                await dbContext.Database.ExecuteSqlRawAsync(sqlStr);
+            }
+        }
+        sw.Stop();
+        log.Debug("初始化数据库====完成，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
+    }
+
     public async Task Start()
     {
         log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
+
+        await InitialDataBase();
+
         Stopwatch totalSw = new Stopwatch();
         totalSw.Start();
 
