@@ -940,7 +940,7 @@ public class Server
 
         if (!dbContext.Shops.Any())
         {
-            var sqls = Directory.GetFiles("sql").OrderBy(x => Regex.Match(x, "^v([0-9]+)\\S*\\.sql$").Groups[0].Value);
+            var sqls = Directory.GetFiles("sql").OrderBy(x => Regex.Match(x, "v([0-9]+)\\S*\\.sql$").Groups[0].Value);
             foreach (var file in sqls)
             {
                 var sqlStr = File.ReadAllText(file);
