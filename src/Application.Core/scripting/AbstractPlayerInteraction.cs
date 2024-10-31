@@ -638,20 +638,10 @@ public class AbstractPlayerInteraction
     }
 
 
-    public void gainItem(int id, short quantity, bool show = true)
+    public void gainItem(int id, short quantity = 1, bool show = true)
     {
         //this will fk randomStats equip :P
         gainItem(id, quantity, false, show);
-    }
-
-    public void gainItem(int id, bool show)
-    {
-        gainItem(id, 1, false, show);
-    }
-
-    public void gainItem(int id)
-    {
-        gainItem(id, 1, false, true);
     }
 
     public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)

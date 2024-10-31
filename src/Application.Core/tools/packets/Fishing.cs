@@ -121,7 +121,7 @@ public class Fishing
 
                     if (chr.canHold(itemid))
                     {
-                        chr.getAbstractPlayerInteraction().gainItem(itemid, true);
+                        chr.getAbstractPlayerInteraction().gainItem(itemid);
                     }
                     else
                     {
