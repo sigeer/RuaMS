@@ -196,7 +196,7 @@ public class MonsterBook
             foreach (var item in dataList)
             {
                 var cardid = item.Cardid;
-                var level = item.Level ?? 0;
+                var level = item.Level;
                 if (cardid / 1000 >= 2388)
                 {
                     specialCard++;

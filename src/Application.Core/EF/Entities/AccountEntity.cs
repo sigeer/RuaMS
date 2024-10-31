@@ -36,7 +36,7 @@ public partial class AccountEntity
 
     public sbyte Gender { get; set; }
 
-    public DateTimeOffset Tempban { get; set; } = DateTimeOffset.Parse("2000-01-01 00:00:00");
+    public DateTimeOffset Tempban { get; set; } = DateTimeOffset.Parse("2005-05-11 00:00:00");
 
     public sbyte Greason { get; set; }
 
