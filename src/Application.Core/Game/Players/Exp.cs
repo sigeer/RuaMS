@@ -115,7 +115,7 @@ namespace Application.Core.Game.Players
                     }
                     else
                     {
-                        lastExpGainTime = DateTimeOffset.Now;
+                        LastExpGainTime = DateTimeOffset.Now;
 
                         if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
                         {
@@ -125,7 +125,7 @@ namespace Application.Core.Game.Players
                                 expCoupon,
                                 totalExpGained,
                                 ExpValue.get(),
-                                lastExpGainTime
+                                LastExpGainTime
                             );
                             ExpLogger.putExpLogRecord(expLogRecord);
                         }
