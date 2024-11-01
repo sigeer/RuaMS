@@ -220,7 +220,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
                     if (MobId.isDojoBoss(monster.getId()))
                     {
-                        if (attack.skill == 1009 || attack.skill == 10001009 || attack.skill == 20001009)
+                        if (attack.skill == Beginner.BAMBOO_RAIN || attack.skill == Noblesse.BAMBOO_RAIN || attack.skill == Legend.BAMBOO_THRUST)
                         {
                             int dmgLimit = (int)Math.Ceiling(0.3 * monster.getMaxHp());
                             List<int> _onedList = new();
@@ -277,7 +277,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             }
                         }
                     }
-                    else if (attack.skill == Marauder.ENERGY_DRAIN || attack.skill == ThunderBreaker.ENERGY_DRAIN || attack.skill == NightWalker.VAMPIRE || attack.skill == Assassin.DRAIN)
+                    else if (attack.skill == Marauder.ENERGY_DRAIN 
+                        || attack.skill == ThunderBreaker.ENERGY_DRAIN 
+                        || attack.skill == NightWalker.VAMPIRE 
+                        || attack.skill == Assassin.DRAIN)
                     {
                         var skillModel = SkillFactory.GetSkillTrust(attack.skill);
                         player.addHP(
@@ -318,17 +321,17 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
                     else if (attack.skill == FPArchMage.FIRE_DEMON)
                     {
-                        long duration = 1000 * (SkillFactory.GetSkillTrust(FPArchMage.FIRE_DEMON).getEffect(player.getSkillLevel(SkillFactory.GetSkillTrust(FPArchMage.FIRE_DEMON))).getDuration());
+                        long duration = 1000 * (player.GetPlayerSkillEffect(attack.skill).getDuration());
                         monster.setTempEffectiveness(Element.ICE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == ILArchMage.ICE_DEMON)
                     {
-                        long duration = 1000 * (SkillFactory.GetSkillTrust(ILArchMage.ICE_DEMON).getEffect(player.getSkillLevel(SkillFactory.GetSkillTrust(ILArchMage.ICE_DEMON))).getDuration());
+                        long duration = 1000 * (player.GetPlayerSkillEffect(attack.skill).getDuration());
                         monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == Outlaw.HOMING_BEACON || attack.skill == Corsair.BULLSEYE)
                     {
-                        StatEffect beacon = SkillFactory.GetSkillTrust(attack.skill).getEffect(player.getSkillLevel(attack.skill));
+                        StatEffect beacon = player.GetPlayerSkillEffect(attack.skill);
                         beacon.applyBeaconBuff(player, monster.getObjectId());
                     }
                     else if (attack.skill == Outlaw.FLAME_THROWER)

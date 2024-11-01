@@ -257,12 +257,12 @@ public class MonsterStats
         resistance.Remove(e);
     }
 
-    public BanishInfo getBanishInfo()
+    public BanishInfo? getBanishInfo()
     {
         return banish;
     }
 
-    public void setBanishInfo(BanishInfo banish)
+    public void setBanishInfo(BanishInfo? banish)
     {
         this.banish = banish;
     }
