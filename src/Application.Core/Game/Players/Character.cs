@@ -624,7 +624,7 @@ public partial class Player
 
     public void toggleHide(bool login)
     {
-        Hide(!hidden);
+        Hide(!hidden, login);
     }
 
     public void cancelMagicDoor()

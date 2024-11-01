@@ -20,6 +20,9 @@ namespace Application.Core.Game.Maps
         AtomicInteger droppedItemCount { get; set; }
         public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }
+        /// <summary>
+        /// 似乎并没有派上用
+        /// </summary>
         public TimeMob? TimeMob { get; set; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
 

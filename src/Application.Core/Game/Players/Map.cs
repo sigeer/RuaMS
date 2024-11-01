@@ -90,8 +90,11 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void changeMapBanish(BanishInfo banishInfo)
+        public void changeMapBanish(BanishInfo? banishInfo)
         {
+            if (banishInfo == null)
+                return;
+
             if (banishInfo.msg != null)
             {
                 dropMessage(5, banishInfo.msg);
