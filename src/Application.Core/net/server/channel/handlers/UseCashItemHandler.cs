@@ -354,7 +354,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                     Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.itemMegaphone(msg, whisper, c.getChannel(), item));
                     break;
                 case 7: //triple megaphone
-                    int lines = p.readByte();
+                    int lines = p.ReadSByte();
                     if (lines < 1 || lines > 3) //hack
                     {
                         return;

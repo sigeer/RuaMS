@@ -15,7 +15,7 @@ namespace client.autoban;
  */
 public class AutobanManager
 {
-    private static ILogger log = LogFactory.GetLogger("AutobanManager");
+    private ILogger log = LogFactory.GetLogger("AutobanManager");
 
     private IPlayer chr;
     private Dictionary<AutobanFactory, int> points = new();

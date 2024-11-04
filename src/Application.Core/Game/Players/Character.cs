@@ -457,7 +457,7 @@ public partial class Player
     public int calculateMaxBaseDamage(int watk)
     {
         int maxbasedamage;
-        Item? weapon_item = getInventory(InventoryType.EQUIPPED).getItem(-11);
+        var weapon_item = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
         if (weapon_item != null)
         {
             maxbasedamage = calculateMaxBaseDamage(watk, ItemInformationProvider.getInstance().getWeaponType(weapon_item.getItemId()));
@@ -580,7 +580,7 @@ public partial class Player
 
     public string getMedalText()
     {
-        var medalItem = getInventory(InventoryType.EQUIPPED).getItem(-49);
+        var medalItem = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Medal);
         return medalItem == null ? "" : "<" + ItemInformationProvider.getInstance().getName(medalItem.getItemId()) + "> ";
     }
 
@@ -4345,7 +4345,7 @@ public partial class Player
 
             if (JobModel.isA(Job.THIEF) || JobModel.isA(Job.BOWMAN) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.NIGHTWALKER1) || JobModel.isA(Job.WINDARCHER1))
             {
-                Item? weapon_item = getInventory(InventoryType.EQUIPPED).getItem(-11);
+                var weapon_item = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
                 if (weapon_item != null)
                 {
                     ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -4360,10 +4360,13 @@ public partial class Player
                         Inventory inv = getInventory(InventoryType.USE);
                         for (short i = 1; i <= inv.getSlotLimit(); i++)
                         {
-                            Item? item = inv.getItem(i);
+                            var item = inv.getItem(i);
                             if (item != null)
                             {
-                                if ((claw && ItemConstants.isThrowingStar(item.getItemId())) || (gun && ItemConstants.isBullet(item.getItemId())) || (bow && ItemConstants.isArrowForBow(item.getItemId())) || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
+                                if ((claw && ItemConstants.isThrowingStar(item.getItemId())) 
+                                    || (gun && ItemConstants.isBullet(item.getItemId())) 
+                                    || (bow && ItemConstants.isArrowForBow(item.getItemId())) 
+                                    || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
                                 {
                                     if (item.getQuantity() > 0)
                                     {

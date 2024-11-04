@@ -44,8 +44,8 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
             {
                 try
                 {
-                    int tab = p.readByte();
-                    int num = p.readByte();
+                    int tab = p.ReadSByte();
+                    int num = p.ReadSByte();
                     int neededCP = 0;
                     if (tab == 0)
                     {

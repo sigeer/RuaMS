@@ -35,7 +35,7 @@ public class PetChatHandler : AbstractPacketHandler
         int petId = p.readInt();
         p.readInt();
         p.readByte();
-        int act = p.readByte();
+        int act = p.ReadSByte();
         sbyte pet = c.OnlinedCharacter.getPetIndex(petId);
         if ((pet < 0 || pet > 3) || (act < 0 || act > 9))
         {

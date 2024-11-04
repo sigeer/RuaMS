@@ -49,7 +49,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
         */
 
         Point? pos = null;
-        int __skillLevel = p.readByte();
+        int __skillLevel = p.ReadSByte();
         var skill = SkillFactory.getSkill(skillid);
         int skillLevel = chr.getSkillLevel(skill);
         if (skillid % 10000000 == 1010 || skillid % 10000000 == 1011)

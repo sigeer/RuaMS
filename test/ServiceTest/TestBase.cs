@@ -40,6 +40,7 @@ namespace ServiceTest
             client.setPlayer(player);
             player.setClient(client);
             player.setMap(new MapManager(null, 0, 1).getMap(MapId.HENESYS));
+            player.setEnteredChannelWorld(1);
             return player;
         }
     }

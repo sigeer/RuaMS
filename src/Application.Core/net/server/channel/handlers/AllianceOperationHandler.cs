@@ -200,7 +200,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
             case 0x09:
                 {
                     int int1 = p.readInt();
-                    byte byte1 = p.readByte();
+                    sbyte byte1 = p.ReadSByte();
 
                     //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeRank(chr.getGuild().getAllianceId(), chr.getId(), int1, byte1), -1, -1);
                     var player = Server.getInstance().getWorld(c.getWorld()).getPlayerStorage().getCharacterById(int1);
