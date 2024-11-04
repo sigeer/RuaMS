@@ -984,7 +984,7 @@ public class PacketCreator
     /// </param>
     /// <param name="partner">The partner shown with chr</param>
     /// <returns>the SEND_TV packet</returns>
-    public static Packet sendTV(IPlayer chr, List<string> messages, int type, IPlayer partner)
+    public static Packet sendTV(IPlayer chr, List<string> messages, int type, IPlayer? partner)
     {
         OutPacket p = OutPacket.create(SendOpcode.SEND_TV);
         p.writeByte(partner != null ? 3 : 1);
@@ -3026,7 +3026,7 @@ public class PacketCreator
 
         Item? mount;     //mounts can potentially crash the client if the player's level is not properly checked
         if (chr.MountModel != null
-            && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(-18)) != null
+            && (mount = chr.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Mount)) != null
             && ItemInformationProvider.getInstance().getEquipLevelReq(mount.getItemId()) <= chr.getLevel())
         {
             p.writeByte(chr.MountModel.getId()); //mount

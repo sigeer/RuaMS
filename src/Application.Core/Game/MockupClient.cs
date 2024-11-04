@@ -48,17 +48,17 @@ namespace Application.Core.Game
 
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"announceBossHpBar: Monster {mm.getName()}");
         }
 
         public void announceHint(string msg, int length)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"announceHint: msg {msg}");
         }
 
         public void announceServerMessage()
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"announceServerMessage");
         }
 
         public bool attemptCsCoupon()
@@ -431,7 +431,6 @@ namespace Application.Core.Game
 
         public void sendPacket(Packet packet)
         {
-            Console.WriteLine("SendPacket");
             return;
         }
 

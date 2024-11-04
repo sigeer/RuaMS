@@ -4,7 +4,7 @@ using net.packet;
 
 namespace ServiceTest.Packets
 {
-    public class PacketTests
+    public class PacketTests: TestBase
     {
         [TestCase("中文测试", ExpectedResult = 13)]
         [TestCase("abc", ExpectedResult = 13)]

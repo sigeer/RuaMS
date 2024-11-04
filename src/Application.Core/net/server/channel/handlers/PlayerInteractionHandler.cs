@@ -517,13 +517,13 @@ public class PlayerInteractionHandler : AbstractPacketHandler
             {
                 int x = p.readInt(); // x point
                 int y = p.readInt(); // y point
-                int type = p.readByte(); // piece ( 1 or 2; Owner has one piece, visitor has another, it switches every game.)
+                int type = p.ReadSByte(); // piece ( 1 or 2; Owner has one piece, visitor has another, it switches every game.)
                 chr.getMiniGame()!.setPiece(x, y, type, chr);
             }
             else if (mode == Action.SELECT_CARD.getCode())
             {
-                int turn = p.readByte(); // 1st turn = 1; 2nd turn = 0
-                int slot = p.readByte(); // slot
+                int turn = p.ReadSByte(); // 1st turn = 1; 2nd turn = 0
+                int slot = p.ReadSByte(); // slot
                 var game = chr.getMiniGame()!;
                 int firstslot = game.getFirstSlot();
                 if (turn == 1)
@@ -571,7 +571,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                 short pos = p.readShort();
                 var item = chr.getInventory(ivType).getItem(pos);
                 short quantity = p.readShort();
-                byte targetSlot = p.readByte();
+                sbyte targetSlot = p.ReadSByte();
 
                 if (targetSlot < 1 || targetSlot > 9)
                 {
@@ -903,7 +903,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                     return;
                 }
 
-                int itemid = p.readByte();
+                int itemid = p.ReadSByte();
                 short quantity = p.readShort();
                 if (quantity < 1)
                 {

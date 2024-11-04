@@ -31,9 +31,9 @@ public class SkillEffectHandler : AbstractPacketHandler
     public override void HandlePacket(InPacket p, IClient c)
     {
         int skillId = p.readInt();
-        int level = p.readByte();
+        int level = p.ReadSByte();
         byte flags = p.readByte();
-        int speed = p.readByte();
+        int speed = p.ReadSByte();
         byte aids = p.readByte();//Mmmk
         switch (skillId)
         {

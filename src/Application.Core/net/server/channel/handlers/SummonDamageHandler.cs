@@ -56,7 +56,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         p.skip(4);
         List<SummonAttackEntry> allDamage = new();
         byte direction = p.readByte();
-        int numAttacked = p.readByte();
+        int numAttacked = p.ReadSByte();
         p.skip(8); // I failed lol (mob x,y and summon x,y), Thanks Gerald
         for (int x = 0; x < numAttacked; x++)
         {

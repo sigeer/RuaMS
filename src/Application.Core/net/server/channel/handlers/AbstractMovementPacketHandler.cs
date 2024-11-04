@@ -54,7 +54,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                         short xwobble = p.readShort();
                         short ywobble = p.readShort();
                         short fh = p.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         short duration = p.readShort();
                         AbsoluteLifeMovement alm = new AbsoluteLifeMovement(command, new Point(xpos, ypos), duration, newstate);
                         alm.setFh(fh);
@@ -75,7 +75,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                     {
                         short xpos = p.readShort();
                         short ypos = p.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         short duration = p.readShort();
                         RelativeLifeMovement rlm = new RelativeLifeMovement(command, new Point(xpos, ypos), duration, newstate);
                         res.Add(rlm);
@@ -93,7 +93,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                         short ypos = p.readShort();
                         short xwobble = p.readShort();
                         short ywobble = p.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         TeleportMovement tm = new TeleportMovement(command, new Point(xpos, ypos), newstate);
                         tm.setPixelsPerSecond(new Point(xwobble, ywobble));
                         res.Add(tm);
@@ -124,7 +124,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                         short ywobble = p.readShort();
                         short fh = p.readShort();
                         short ofh = p.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         short duration = p.readShort();
                         JumpDownMovement jdm = new JumpDownMovement(command, new Point(xpos, ypos), duration, newstate);
                         jdm.setFh(fh);
@@ -177,7 +177,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                         short ypos = p.readShort();
                         target.setPosition(new Point(xpos, ypos + yOffset));
                         p.skip(6); //xwobble = lea.readShort(); ywobble = lea.readShort(); fh = lea.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         target.setStance(newstate);
                         p.readShort(); //duration
                         break;
@@ -195,7 +195,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                     {
                         //Relative movement - server only cares about stance
                         p.skip(4); //xpos = lea.readShort(); ypos = lea.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         target.setStance(newstate);
                         p.readShort(); //duration
                         break;
@@ -210,7 +210,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                         //                case 14: {
                         //Teleport movement - same as above
                         p.skip(8); //xpos = lea.readShort(); ypos = lea.readShort(); xwobble = lea.readShort(); ywobble = lea.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         target.setStance(newstate);
                         break;
                     }
@@ -236,7 +236,7 @@ public abstract class AbstractMovementPacketHandler : AbstractPacketHandler
                     {
                         //Jump down movement - stance only
                         p.skip(12); //short xpos = lea.readShort(); ypos = lea.readShort(); xwobble = lea.readShort(); ywobble = lea.readShort(); fh = lea.readShort(); ofh = lea.readShort();
-                        byte newstate = p.readByte();
+                        sbyte newstate = p.ReadSByte();
                         target.setStance(newstate);
                         p.readShort(); // duration
                         break;
