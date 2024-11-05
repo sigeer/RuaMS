@@ -136,7 +136,6 @@ namespace Application.Core.Game.Maps
         List<IMapObject> getMapObjects();
         List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
-        List<IMapObject> getMapObjectsInRect(Rectangle box, List<MapObjectType> types);
         Dictionary<int, IPlayer> getMapPlayers();
 
         short getMobInterval();
