@@ -1254,7 +1254,7 @@ public class StatEffect
                 ? calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft())
                 : new Rectangle(int.MinValue / 2, int.MinValue / 2, int.MaxValue, int.MaxValue);
 
-            List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.PLAYER));
+            List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.PLAYER));
             List<IPlayer> affectedp = new(affecteds.Count);
             foreach (var affectedmo in affecteds)
             {
@@ -1283,7 +1283,7 @@ public class StatEffect
     private void applyMonsterBuff(IPlayer applyfrom)
     {
         Rectangle bounds = calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft());
-        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.MONSTER));
+        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.MONSTER));
         var skill_ = SkillFactory.GetSkillTrust(sourceid);
         int i = 0;
         foreach (var mo in affected)

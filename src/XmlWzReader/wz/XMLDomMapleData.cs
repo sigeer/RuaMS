@@ -55,10 +55,10 @@ public class XMLDomMapleData : Data
             return ((Data)getParent()).getChildByPath(path.Substring(path.IndexOf("/") + 1));
         }
 
-        if (segments.Count() == 1)
+        if (segments.Length == 1)
         {
-            if (dataCache.ContainsKey(segments[0]))
-                return dataCache[segments[0]];
+            if (dataCache.TryGetValue(segments[0], out Data? value))
+                return value;
 
             XmlNodeList childNodes = node.ChildNodes;
             for (int i = 0; i < childNodes.Count; i++)
@@ -75,8 +75,8 @@ public class XMLDomMapleData : Data
                 }
             }
 
-            if (dataCache.ContainsKey(segments[0]))
-                return dataCache[segments[0]];
+            if (dataCache.TryGetValue(segments[0], out Data? d))
+                return d;
             else
             {
                 dataCache.TryAdd(segments[0], null);

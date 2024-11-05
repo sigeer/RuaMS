@@ -50,6 +50,7 @@ using server.events.gm;
 using server.life;
 using server.maps;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using tools;
 
@@ -59,7 +60,14 @@ namespace Application.Core.Game.Maps;
 public class MapleMap : IMap
 {
     protected ILogger log;
-    private static List<MapObjectType> rangedMapobjectTypes = Arrays.asList(MapObjectType.SHOP, MapObjectType.ITEM, MapObjectType.NPC, MapObjectType.MONSTER, MapObjectType.DOOR, MapObjectType.SUMMON, MapObjectType.REACTOR);
+    private static List<MapObjectType> rangedMapobjectTypes = [
+        MapObjectType.SHOP,
+        MapObjectType.ITEM,
+        MapObjectType.NPC,
+        MapObjectType.MONSTER,
+        MapObjectType.DOOR,
+        MapObjectType.SUMMON,
+        MapObjectType.REACTOR];
     private static Dictionary<int, KeyValuePair<int, int>?> dropBoundsCache = new(100);
 
     private Dictionary<int, IMapObject> mapobjects = new();
@@ -213,30 +221,6 @@ public class MapleMap : IMap
     private static double getRangedDistance()
     {
         return YamlConfig.config.server.USE_MAXRANGE ? double.PositiveInfinity : 722500;
-    }
-
-    public List<IMapObject> getMapObjectsInRect(Rectangle box, List<MapObjectType> types)
-    {
-        objectLock.EnterReadLock();
-        List<IMapObject> ret = new();
-        try
-        {
-            foreach (IMapObject l in mapobjects.Values)
-            {
-                if (types.Contains(l.getType()))
-                {
-                    if (box.Contains(l.getPosition()))
-                    {
-                        ret.Add(l);
-                    }
-                }
-            }
-        }
-        finally
-        {
-            objectLock.ExitReadLock();
-        }
-        return ret;
     }
 
     public int getId()
@@ -3399,80 +3383,72 @@ public class MapleMap : IMap
 
     private void sendObjectPlacement(IClient c)
     {
-        var chr = c.OnlinedCharacter;
+        var allMapObjects = getMapObjects();
 
-        foreach (var o in getMapObjects())
+        var chr = c.OnlinedCharacter;
+        var chrPosition = chr.getPosition();
+        var rangeDistance = getRangedDistance();
+
+        List<int> removedSummonObjects = new List<int>();
+        foreach (var o in allMapObjects)
         {
+            if (o.getType() == MapObjectType.SUMMON)
+            {
+                Summon summon = (Summon)o;
+                if (summon.getOwner() == chr && (chr.isSummonsEmpty() || !chr.containsSummon(summon)))
+                {
+                    removedSummonObjects.Add(o.getObjectId());
+                    continue;
+                }
+            }
+
             if (isNonRangedType(o.getType()))
             {
                 o.sendSpawnData(c);
             }
-            else if (o.getType() == MapObjectType.SUMMON)
-            {
-                Summon summon = (Summon)o;
-                if (summon.getOwner() == chr)
-                {
-                    if (chr.isSummonsEmpty() || !chr.containsSummon(summon))
-                    {
-                        objectLock.EnterWriteLock();
-                        try
-                        {
-                            mapobjects.Remove(o.getObjectId());
-                        }
-                        finally
-                        {
-                            objectLock.ExitWriteLock();
-                        }
 
-                        //continue;
-                    }
-                }
+            // rangedMapobjectTypes 和 NonRangedType都包含了NPC
+            if (IsObjectInRange(o, chrPosition, rangeDistance, rangedMapobjectTypes))
+            {
+                if (o.getType() == MapObjectType.REACTOR && !((Reactor)o).isAlive())
+                    continue;
+
+                o.sendSpawnData(chr.getClient());
+                chr.addVisibleMapObject(o);
+
+                if (o.getType() == MapObjectType.MONSTER)
+                    ((Monster)o).aggroUpdateController();
             }
         }
 
-        if (chr != null)
+        if (removedSummonObjects.Count > 0)
         {
-            foreach (var o in getMapObjectsInRange(chr.getPosition(), getRangedDistance(), rangedMapobjectTypes))
+            objectLock.EnterWriteLock();
+            foreach (var item in removedSummonObjects)
             {
-                if (o.getType() == MapObjectType.REACTOR)
-                {
-                    if (((Reactor)o).isAlive())
-                    {
-                        o.sendSpawnData(chr.getClient());
-                        chr.addVisibleMapObject(o);
-                    }
-                }
-                else
-                {
-                    o.sendSpawnData(chr.getClient());
-                    chr.addVisibleMapObject(o);
-
-                    if (o.getType() == MapObjectType.MONSTER)
-                    {
-                        ((Monster)o).aggroUpdateController();
-                    }
-                }
+                mapobjects.Remove(item);
             }
+            objectLock.ExitWriteLock();
         }
+
+    }
+
+    private static List<IMapObject> getMapObjectsInRange(List<IMapObject> allMapObjects, Point from, double rangeSq, List<MapObjectType> types)
+    {
+        return allMapObjects.Where(x => IsObjectInRange(x, from, rangeSq, types)).ToList();
+    }
+
+    private static bool IsObjectInRange(IMapObject obj, Point from, double rangeSq, List<MapObjectType> types)
+    {
+        return types.Contains(obj.getType()) && from.distanceSq(obj.getPosition()) <= rangeSq;
     }
 
     public List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types)
     {
-        List<IMapObject> ret = new();
         objectLock.EnterReadLock();
         try
         {
-            foreach (IMapObject l in getMapObjects())
-            {
-                if (types.Contains(l.getType()))
-                {
-                    if (from.distanceSq(l.getPosition()) <= rangeSq)
-                    {
-                        ret.Add(l);
-                    }
-                }
-            }
-            return ret;
+            return getMapObjectsInRange(getMapObjects(), from, rangeSq, types);
         }
         finally
         {
