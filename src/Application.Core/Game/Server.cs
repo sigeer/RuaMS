@@ -1058,15 +1058,17 @@ public class Server
         log.Information("Listening on port 8484");
 
         totalSw.Stop();
-        log.Information("Cosmic is now online after {Startup} s.", totalSw.Elapsed.TotalSeconds);
-
-        OpcodeConstants.generateOpcodeNames();
-        CommandExecutor.getInstance();
+        log.Information("Cosmic is now online after {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
 
         foreach (var ch in this.getAllChannels())
         {
             ch.reloadEventScriptManager();
         }
+
+        OpcodeConstants.generateOpcodeNames();
+        CommandExecutor.getInstance();
+        ItemInformationProvider.getInstance();
+
         await Task.Delay(Timeout.Infinite);
     }
 

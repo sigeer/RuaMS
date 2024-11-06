@@ -636,12 +636,13 @@ public class AbstractPlayerInteraction
 
         return evolved;
     }
+    // jsÊ¹ÓÃ
+    public void gainItem(int id, bool show) => gainItem(id, 1, show);
 
-
-    public void gainItem(int id, short quantity = 1, bool show = true)
+    public void gainItem(int id, int quantity = 1, bool show = true)
     {
         //this will fk randomStats equip :P
-        gainItem(id, quantity, false, show);
+        gainItem(id, (short)quantity, false, show);
     }
 
     public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)

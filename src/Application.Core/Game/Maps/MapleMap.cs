@@ -3390,15 +3390,20 @@ public class MapleMap : IMap
         var rangeDistance = getRangedDistance();
 
         List<int> removedSummonObjects = new List<int>();
-        foreach (var o in allMapObjects)
+
+        for (int i = 0; i < allMapObjects.Count; i++)
         {
+            Stopwatch totalSw = new Stopwatch();
+            Stopwatch sw = new Stopwatch();
+            totalSw.Start();
+            var o = allMapObjects[i];
             if (o.getType() == MapObjectType.SUMMON)
             {
                 Summon summon = (Summon)o;
                 if (summon.getOwner() == chr && (chr.isSummonsEmpty() || !chr.containsSummon(summon)))
                 {
                     removedSummonObjects.Add(o.getObjectId());
-                    continue;
+                    return;
                 }
             }
 
@@ -3411,14 +3416,23 @@ public class MapleMap : IMap
             if (IsObjectInRange(o, chrPosition, rangeDistance, rangedMapobjectTypes))
             {
                 if (o.getType() == MapObjectType.REACTOR && !((Reactor)o).isAlive())
-                    continue;
+                    return;
 
+                sw.Start();
                 o.sendSpawnData(chr.getClient());
                 chr.addVisibleMapObject(o);
+                sw.Stop();
+                Console.WriteLine($"sendObjectPlacement loop {i} SendData " + sw.Elapsed.TotalSeconds);
 
+                sw.Restart();
                 if (o.getType() == MapObjectType.MONSTER)
                     ((Monster)o).aggroUpdateController();
+                sw.Stop();
+                Console.WriteLine($"sendObjectPlacement loop {i} ControllMonster " + sw.Elapsed.TotalSeconds);
             }
+
+            totalSw.Stop();
+            Console.WriteLine($"sendObjectPlacement loop {i} Total " + totalSw.Elapsed.TotalSeconds);
         }
 
         if (removedSummonObjects.Count > 0)
