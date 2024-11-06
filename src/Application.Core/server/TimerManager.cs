@@ -63,7 +63,7 @@ public class TimerManager
     }
 
     /// <summary>
-    /// delay微秒之后执行，并且每隔repeatTime微秒之后执行
+    /// delay毫秒之后执行，并且每隔repeatTime毫秒之后执行
     /// </summary>
     /// <param name="r"></param>
     /// <param name="repeatTime"></param>

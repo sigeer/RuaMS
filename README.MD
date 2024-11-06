@@ -32,7 +32,7 @@
 
 ### 运行的准备工作
 
-推荐使用[Comic](https://github.com/P0nk/Cosmic)的wz以及配套的客户端（本项目中的js都是来自Cosmic）
+推荐使用[Comic](https://github.com/P0nk/Cosmic?tab=readme-ov-file#3---client)的wz以及配套的客户端（本项目中的js都是来自Cosmic）
 1. 将 wz 目录放置在根目录，或者配置环境变量`wz-path`，或者使用`Environment.SetEnvironmentVariable("wz-path", "wz目录");`
 2. 设置`config.yaml`中的连接字符串
 

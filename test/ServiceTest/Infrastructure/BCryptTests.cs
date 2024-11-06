@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using tools;
 
 namespace ServiceTest.Infrastructure
@@ -22,7 +23,12 @@ namespace ServiceTest.Infrastructure
             var inputString = "admin";
 
             var r1 = BCrypt.hashpw(inputString, BCrypt.gensalt(12));
-            Assert.That(BCrypt.checkpw(inputString, r1));
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            var checkResult = BCrypt.checkpw(inputString, r1);
+            sw.Stop();
+            Console.WriteLine("BCrypt.checkpw " + sw.Elapsed.TotalSeconds);
+            Assert.That(checkResult);
         }
 
     }
