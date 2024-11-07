@@ -28,8 +28,8 @@ namespace Application.Core.Game.Players
         {
             if (hasDisease(Disease.CURSE))
             {
-                gain *= (int)0.5;
-                party *= (int)0.5;
+                gain = (int)(gain * 0.5);
+                party = (int)(party * 0.5);
             }
 
             if (gain < 0)

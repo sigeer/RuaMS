@@ -798,7 +798,7 @@ public class MapleMap : IMap
         var stati = mob.getStati(MonsterStatus.SHOWDOWN);
         if (stati != null)
         {
-            chRate *= (int)(stati.getStati().get(MonsterStatus.SHOWDOWN)!.Value / 100.0 + 1.0);
+            chRate = (int)(chRate * (stati.getStati().get(MonsterStatus.SHOWDOWN)!.Value / 100.0 + 1.0));
         }
 
         if (useBaseRate)
