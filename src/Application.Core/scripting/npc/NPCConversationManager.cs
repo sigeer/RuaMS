@@ -411,10 +411,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void doGachapon()
     {
-        var item = Gachapon.getInstance().process(npc);
-        var itemGained = gainItem(item.getId(), (short)(item.getId() / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
+        var item = GachaponManager.DoGachapon(npc);
+        var itemGained = gainItem(item.ItemId, (short)(item.ItemId / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
 
-        sendNext("You have obtained a #b#t" + item.getId() + "##k.");
+        sendNext("You have obtained a #b#t" + item.ItemId + "##k.");
 
         int[] maps = {
             MapId.HENESYS,
@@ -433,9 +433,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
             : getNpc() == NpcId.GACHAPON_NLC ? 8 : 9];
         string map = c.getChannelServer().getMapFactory().getMap(mapId).getMapName();
 
-        Gachapon.log(getPlayer(), item.getId(), map);
+        Gachapon.log(getPlayer(), item.ItemId, map);
 
-        if (item.getTier() > 0)
+        if (item.PoolLevel > 0)
         {
             //Uncommon and Rare
             Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.gachaponMessage(itemGained, map, getPlayer()));

@@ -1,3 +1,5 @@
+using Application.Core.EF.Entities.Gachapons;
+using Application.Core.Managers;
 using constants.id;
 using server;
 using server.gachapon;
@@ -13,7 +15,7 @@ public class GachaCommand : CommandBase
 
     public override void Execute(IClient c, string[] paramValues)
     {
-        Gachapon.GachaponType? gacha = null;
+        List<GachaponPool> gacha = [] ;
         string search = c.OnlinedCharacter.getLastCommandMessage();
         string gachaName = "";
         string[] names = { "Henesys", "Ellinia", "Perion", "Kerning City", "Sleepywood", "Mushroom Shrine", "Showa Spa Male", "Showa Spa Female", "New Leaf City", "Nautilus Harbor" };
@@ -34,12 +36,12 @@ public class GachaCommand : CommandBase
             if (search.Equals(names[i], StringComparison.OrdinalIgnoreCase))
             {
                 gachaName = names[i];
-                gacha = Gachapon.GachaponType.getByNpcId(ids[i]);
+                gacha = GachaponManager.GetByNpcId(ids[i]);
                 break;
             }
         }
 
-        if (gacha == null)
+        if (gacha.Count == 0)
         {
             c.OnlinedCharacter.yellowMessage("Please use @gacha <name> where name corresponds to one of the below:");
             foreach (string name in names)
@@ -49,9 +51,9 @@ public class GachaCommand : CommandBase
             return;
         }
         string talkStr = "The #b" + gachaName + "#k Gachapon contains the following items.\r\n\r\n";
-        for (int i = 0; i < 2; i++)
+        foreach(var pool in gacha)
         {
-            foreach (int id in gacha.getItems(i))
+            foreach (int id in GachaponManager.GetItems(pool))
             {
                 talkStr += "-" + ItemInformationProvider.getInstance().getName(id) + "\r\n";
             }
