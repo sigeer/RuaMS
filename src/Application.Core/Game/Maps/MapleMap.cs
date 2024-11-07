@@ -798,7 +798,7 @@ public class MapleMap : IMap
         var stati = mob.getStati(MonsterStatus.SHOWDOWN);
         if (stati != null)
         {
-            chRate *= (int)(stati.getStati().get(MonsterStatus.SHOWDOWN)!.Value / 100.0 + 1.0);
+            chRate = (int)(chRate * (stati.getStati().get(MonsterStatus.SHOWDOWN)!.Value / 100.0 + 1.0));
         }
 
         if (useBaseRate)
@@ -3391,12 +3391,8 @@ public class MapleMap : IMap
 
         List<int> removedSummonObjects = new List<int>();
 
-        for (int i = 0; i < allMapObjects.Count; i++)
+        foreach(var o in allMapObjects)
         {
-            Stopwatch totalSw = new Stopwatch();
-            Stopwatch sw = new Stopwatch();
-            totalSw.Start();
-            var o = allMapObjects[i];
             if (o.getType() == MapObjectType.SUMMON)
             {
                 Summon summon = (Summon)o;
@@ -3418,21 +3414,12 @@ public class MapleMap : IMap
                 if (o.getType() == MapObjectType.REACTOR && !((Reactor)o).isAlive())
                     return;
 
-                sw.Start();
                 o.sendSpawnData(chr.getClient());
                 chr.addVisibleMapObject(o);
-                sw.Stop();
-                Console.WriteLine($"sendObjectPlacement loop {i} SendData " + sw.Elapsed.TotalSeconds);
 
-                sw.Restart();
                 if (o.getType() == MapObjectType.MONSTER)
                     ((Monster)o).aggroUpdateController();
-                sw.Stop();
-                Console.WriteLine($"sendObjectPlacement loop {i} ControllMonster " + sw.Elapsed.TotalSeconds);
             }
-
-            totalSw.Stop();
-            Console.WriteLine($"sendObjectPlacement loop {i} Total " + totalSw.Elapsed.TotalSeconds);
         }
 
         if (removedSummonObjects.Count > 0)
