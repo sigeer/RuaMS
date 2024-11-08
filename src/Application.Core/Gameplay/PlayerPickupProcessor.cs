@@ -14,9 +14,11 @@ namespace Application.Core.Gameplay
 
         int _petIndex = -1;
         bool IsPetPickup => _petIndex > -1;
+        public PickupCheckFlags Flags { get; set; }
         public PlayerPickupProcessor(IPlayer player, int petIdex = -1) : base(player)
         {
             _petIndex = petIdex;
+            Flags = PickupCheckFlags.CoolDown | PickupCheckFlags.Owner;
         }
 
         protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup? 5 : 2, _player.Id, IsPetPickup, _petIndex);
@@ -72,9 +74,15 @@ namespace Application.Core.Gameplay
                 }
             }
 
-            // 捡取cd限制， 所有权限制
-            var canPickup = DateTimeOffset.Now.ToUnixTimeMilliseconds() - mapItem.getDropTime() >= 400 && mapItem.canBePickedBy(_player);
-            if (!canPickup)
+            // 捡取cd限制
+            if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (DateTimeOffset.Now.ToUnixTimeMilliseconds() - mapItem.getDropTime() < 400))
+            {
+                _player.sendPacket(PacketCreator.enableActions());
+                return false;
+            }
+
+            // 所有权限制
+            if (Flags.HasFlag(PickupCheckFlags.Owner) && !mapItem.canBePickedBy(_player))
             {
                 _player.sendPacket(PacketCreator.enableActions());
                 return false;
