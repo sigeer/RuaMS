@@ -54,3 +54,4 @@ TimeSpan.FromSeconds($1)
 - 一些静态方法进行了移动
 	`RingActionHandler`中的静态方法移动到了`RingManager`
 - `commands.js`
+- `Gachapon.GachaponType` -> `GachaponManager` `gachaponInfo.js`

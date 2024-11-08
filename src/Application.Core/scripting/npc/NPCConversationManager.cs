@@ -21,8 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Gachapon;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
@@ -37,7 +39,6 @@ using net.server.coordinator.matchchecker;
 using net.server.guild;
 using server;
 using server.expeditions;
-using server.gachapon;
 using server.life;
 using server.maps;
 using server.partyquest;
@@ -411,10 +412,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void doGachapon()
     {
-        var item = Gachapon.getInstance().process(npc);
-        var itemGained = gainItem(item.getId(), (short)(item.getId() / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
+        var item = GachaponStorage.Instance.DoGachapon(npc);
+        var itemGained = gainItem(item.ItemId, (short)(item.ItemId / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
 
-        sendNext("You have obtained a #b#t" + item.getId() + "##k.");
+        sendNext("You have obtained a #b#t" + item.ItemId + "##k.");
 
         int[] maps = {
             MapId.HENESYS,
@@ -433,9 +434,11 @@ public class NPCConversationManager : AbstractPlayerInteraction
             : getNpc() == NpcId.GACHAPON_NLC ? 8 : 9];
         string map = c.getChannelServer().getMapFactory().getMap(mapId).getMapName();
 
-        Gachapon.log(getPlayer(), item.getId(), map);
+        LogFactory.GetLogger("Gachapon").Information(
+            "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.", 
+            getPlayer().getName(), ItemInformationProvider.getInstance().getName(item.ItemId), item.ItemId, map);
 
-        if (item.getTier() > 0)
+        if (item.Level > 0)
         {
             //Uncommon and Rare
             Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.gachaponMessage(itemGained, map, getPlayer()));

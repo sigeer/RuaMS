@@ -381,12 +381,7 @@ public class AbstractPlayerInteraction
 
     //---- /\ /\ /\ /\ /\ /\ /\  NOT TESTED  /\ /\ /\ /\ /\ /\ /\ /\ /\ ----
 
-    public void openNpc(int npcid)
-    {
-        openNpc(npcid, null);
-    }
-
-    public void openNpc(int npcid, string? script)
+    public void openNpc(int npcid, string? script = null)
     {
         if (c.getCM() != null)
         {
@@ -446,12 +441,12 @@ public class AbstractPlayerInteraction
 
     public void setQuestProgress(int id, int progress)
     {
-        setQuestProgress(id, 0, "" + progress);
+        setQuestProgress(id, 0, progress.ToString());
     }
 
     public void setQuestProgress(int id, int infoNumber, int progress)
     {
-        setQuestProgress(id, infoNumber, "" + progress);
+        setQuestProgress(id, infoNumber, progress.ToString());
     }
 
     public void setQuestProgress(int id, int infoNumber, string progress)
@@ -599,7 +594,7 @@ public class AbstractPlayerInteraction
         Pet? evolved = null;
         Pet? target;
 
-        long period = (long)90 * 24 * 60 * 60 * 1000;    //refreshes expiration date: 90 days
+        long period = (long)TimeSpan.FromDays(90).TotalMilliseconds;    //refreshes expiration date: 90 days
 
 
         target = getPlayer().getPet(slot);
