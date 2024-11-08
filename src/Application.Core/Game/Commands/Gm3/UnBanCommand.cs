@@ -1,4 +1,4 @@
-using Application.Core.Managers;
+﻿using Application.Core.Managers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Commands.Gm3;

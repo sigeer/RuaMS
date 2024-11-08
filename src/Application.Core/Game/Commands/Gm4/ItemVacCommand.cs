@@ -1,4 +1,4 @@
-using server.maps;
+﻿using server.maps;
 
 namespace Application.Core.Game.Commands.Gm4;
 

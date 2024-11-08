@@ -1,4 +1,4 @@
-using net.server;
+﻿using net.server;
 
 namespace Application.Core.Game.Commands.Gm6;
 

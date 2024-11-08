@@ -1,4 +1,4 @@
-using net.server.coordinator.login;
+﻿using net.server.coordinator.login;
 
 namespace Application.Core.Game.Commands.Gm0;
 

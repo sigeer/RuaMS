@@ -74,7 +74,7 @@ namespace Application.Core.Gameplay
                 }
             }
 
-            // 捡取cd限制
+            // 掉落物捡取时间限制
             if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (DateTimeOffset.Now.ToUnixTimeMilliseconds() - mapItem.getDropTime() < 400))
             {
                 _player.sendPacket(PacketCreator.enableActions());

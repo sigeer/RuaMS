@@ -1,4 +1,4 @@
-using constants.id;
+﻿using constants.id;
 using server.maps;
 
 namespace Application.Core.Game.Commands.Gm0;

@@ -1,4 +1,4 @@
-namespace Application.Core.Game.Commands.Gm0;
+﻿namespace Application.Core.Game.Commands.Gm0;
 public class MobHpCommand : CommandBase
 {
     public MobHpCommand() : base(0, "mobhp")

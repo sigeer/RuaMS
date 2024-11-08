@@ -1,4 +1,4 @@
-using Application.Core.Game.Life;
+﻿using Application.Core.Game.Life;
 
 namespace Application.Core.Game.Commands.Gm6;
 

@@ -1,4 +1,4 @@
-using scripting.npc;
+﻿using scripting.npc;
 using scripting.quest;
 using tools;
 

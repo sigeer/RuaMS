@@ -1,4 +1,4 @@
-using Application.Core.Managers;
+﻿using Application.Core.Managers;
 using client.inventory.manipulator;
 using constants.inventory;
 using server;

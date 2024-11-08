@@ -1,4 +1,4 @@
-using client.inventory;
+﻿using client.inventory;
 using constants.inventory;
 using server;
 

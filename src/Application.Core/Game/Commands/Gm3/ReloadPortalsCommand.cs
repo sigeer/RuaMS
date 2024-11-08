@@ -1,4 +1,4 @@
-using scripting.portal;
+﻿using scripting.portal;
 
 namespace Application.Core.Game.Commands.Gm3;
 public class ReloadPortalsCommand : CommandBase

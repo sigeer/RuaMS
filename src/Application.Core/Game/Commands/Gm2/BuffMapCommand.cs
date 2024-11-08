@@ -1,4 +1,4 @@
-using Application.Core.Game.Skills;
+﻿using Application.Core.Game.Skills;
 
 namespace Application.Core.Game.Commands.Gm2;
 

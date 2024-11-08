@@ -1,4 +1,4 @@
-using Application.Core.Managers;
+﻿using Application.Core.Managers;
 using net.packet.logging;
 
 namespace Application.Core.Game.Commands.Gm3;

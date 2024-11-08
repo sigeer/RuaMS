@@ -1,4 +1,4 @@
-using constants.id;
+﻿using constants.id;
 
 namespace Application.Core.Game.Commands.Gm2;
 

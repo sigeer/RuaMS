@@ -1,4 +1,4 @@
-using net.server;
+﻿using net.server;
 using server.expeditions;
 
 namespace Application.Core.Game.Commands.Gm3;

@@ -1,4 +1,4 @@
-using server.life;
+﻿using server.life;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;

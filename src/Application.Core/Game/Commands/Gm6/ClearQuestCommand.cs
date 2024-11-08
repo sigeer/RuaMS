@@ -1,4 +1,4 @@
-using server.quest;
+﻿using server.quest;
 
 namespace Application.Core.Game.Commands.Gm6;
 

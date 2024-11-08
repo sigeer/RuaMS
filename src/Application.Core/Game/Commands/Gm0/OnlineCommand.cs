@@ -1,4 +1,4 @@
-using Application.Core.Managers;
+﻿using Application.Core.Managers;
 using net.server;
 
 namespace Application.Core.Game.Commands.Gm0;

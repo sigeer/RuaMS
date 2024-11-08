@@ -1,4 +1,4 @@
-using client.autoban;
+﻿using client.autoban;
 using net.server;
 using tools;
 
