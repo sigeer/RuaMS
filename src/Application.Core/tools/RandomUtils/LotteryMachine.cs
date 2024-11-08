@@ -1,21 +1,20 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.tools.RandomUtils
 {
     public class LotteryMachine<TKey>
     {
         private List<LotteryMachinItem<TKey>> _items;
-
+        private int _sum;
         public LotteryMachine(IEnumerable<LotteryMachinItem<TKey>> items)
         {
             _items = items.OrderByDescending(x => x.Chance).ToList();
+            _sum = _items.Sum(x => x.Chance);
         }
 
         public TKey GetRandomItem()
         {
-            var sum = _items.Sum(x => x.Chance);
-
-            var value = Randomizer.nextInt(100);
+            var value = Randomizer.nextInt(_sum);
             foreach (var item in _items)
             {
                 if (value < item.Chance)
