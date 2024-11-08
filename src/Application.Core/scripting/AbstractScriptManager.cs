@@ -34,7 +34,6 @@ using net.server;
 using net.server.channel;
 using server;
 using server.expeditions;
-using server.gachapon;
 using server.life;
 using tools;
 using tools.packets;

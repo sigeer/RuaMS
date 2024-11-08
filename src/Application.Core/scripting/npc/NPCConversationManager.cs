@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Gachapon;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
@@ -38,7 +39,6 @@ using net.server.coordinator.matchchecker;
 using net.server.guild;
 using server;
 using server.expeditions;
-using server.gachapon;
 using server.life;
 using server.maps;
 using server.partyquest;
@@ -434,7 +434,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
             : getNpc() == NpcId.GACHAPON_NLC ? 8 : 9];
         string map = c.getChannelServer().getMapFactory().getMap(mapId).getMapName();
 
-        Gachapon.log(getPlayer(), item.ItemId, map);
+        LogFactory.GetLogger("Gachapon").Information(
+            "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.", 
+            getPlayer().getName(), ItemInformationProvider.getInstance().getName(item.ItemId), item.ItemId, map);
 
         if (item.Level > 0)
         {
