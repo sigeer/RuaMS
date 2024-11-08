@@ -22,10 +22,13 @@ namespace ServiceTest
 
             var factory = new StdSchedulerFactory();
             SchedulerManage.Scheduler = factory.GetScheduler().Result;
+
+            Server.getInstance().addWorld();
         }
 
         private IClient? _client;
         protected IClient MockClient => _client ??= GetOnlinedTestClient();
+
         protected IClient GetOnlinedTestClient(int charId = 1)
         {
             Server.getInstance().forceUpdateCurrentTime();
