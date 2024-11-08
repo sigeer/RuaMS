@@ -3,6 +3,7 @@ using System;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Application.Core.EF.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20241107025632_AddGachapon")]
+    partial class AddGachapon
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,11 +67,14 @@ namespace Application.Core.EF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("varchar(50)")
-                        .HasDefaultValueSql("''");
+                    b.Property<string>("Comment")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelChance")
+                        .HasColumnType("int");
 
                     b.Property<int>("NpcId")
                         .HasColumnType("int");
@@ -88,9 +94,6 @@ namespace Application.Core.EF.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
                     b.Property<int>("PoolId")
                         .HasColumnType("int");
 
@@ -98,27 +101,6 @@ namespace Application.Core.EF.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("gachapon_pool_item", (string)null);
-                });
-
-            modelBuilder.Entity("Application.Core.EF.Entities.Gachapons.GachaponPoolLevelChance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("Chance")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PoolId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("gachapon_pool_level_chance", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.DB_Note", b =>
