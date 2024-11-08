@@ -8,7 +8,7 @@ using tools;
 namespace Application.Core.Game.Commands.Gm4;
 
 /// <summary>
-/// 和ItemVacCommand什么区别？
+/// 鍜孖temVacCommand浠�涔堝尯鍒紵
 /// </summary>
 public class ForceVacCommand : CommandBase
 {

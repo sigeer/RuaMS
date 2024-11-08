@@ -1491,13 +1491,7 @@ public partial class Player
 
         if (ob is MapItem mapitem)
         {
-            PlayerPickupProcessor processor;
-            if (petIndex > -1)
-                processor = new PlayerPetPickupProcessor(this, petIndex);
-            else
-                processor = new PlayerPickupProcessor(this);
-
-            processor.Handle(mapitem);
+            new PlayerPickupProcessor(this, petIndex).Handle(mapitem);
         }
     }
 

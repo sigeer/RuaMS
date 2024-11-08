@@ -11,11 +11,15 @@ namespace Application.Core.Gameplay
 {
     public class PlayerPickupProcessor : PlayerProcessor<MapItem>
     {
-        public PlayerPickupProcessor(IPlayer player) : base(player)
+
+        int _petIndex = -1;
+        bool IsPetPickup => _petIndex > -1;
+        public PlayerPickupProcessor(IPlayer player, int petIdex = -1) : base(player)
         {
+            _petIndex = petIdex;
         }
 
-        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), 2, _player.Id);
+        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup? 5 : 2, _player.Id, IsPetPickup, _petIndex);
 
         protected override void Process(MapItem mapItem)
         {
@@ -28,6 +32,46 @@ namespace Application.Core.Gameplay
 
         protected override bool Before(MapItem mapItem)
         {
+            if (IsPetPickup)
+            {
+                if (mapItem.getMeso() > 0)
+                {
+                    if (!_player.isEquippedMesoMagnet())
+                    {
+                        _player.sendPacket(PacketCreator.enableActions());
+                        return false;
+                    }
+
+                    if (_player.isEquippedPetItemIgnore())
+                    {
+                        HashSet<int> petIgnore = _player.getExcludedItems();
+                        if (petIgnore.Count > 0 && petIgnore.Contains(int.MaxValue))
+                        {
+                            _player.sendPacket(PacketCreator.enableActions());
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!_player.isEquippedItemPouch())
+                    {
+                        _player.sendPacket(PacketCreator.enableActions());
+                        return false;
+                    }
+
+                    if (_player.isEquippedPetItemIgnore())
+                    {
+                        HashSet<int> petIgnore = _player.getExcludedItems();
+                        if (petIgnore.Count > 0 && petIgnore.Contains(mapItem.getItemId()))
+                        {
+                            _player.sendPacket(PacketCreator.enableActions());
+                            return false;
+                        }
+                    }
+                }
+            }
+
             // 捡取cd限制， 所有权限制
             var canPickup = DateTimeOffset.Now.ToUnixTimeMilliseconds() - mapItem.getDropTime() >= 400 && mapItem.canBePickedBy(_player);
             if (!canPickup)
