@@ -1,5 +1,6 @@
 ﻿using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
+using Application.Shared.WzEntity;
 using client.inventory;
 using constants.id;
 using constants.inventory;
@@ -38,7 +39,14 @@ namespace Application.Core.Game.Players
             base.setMap(map);
         }
 
-
+        public int getMapId()
+        {
+            if (base.MapModel != null)
+            {
+                return MapModel.getId();
+            }
+            return Map;
+        }
         public IMap getWarpMap(int map)
         {
             IMap warpMap;
@@ -82,8 +90,11 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void changeMapBanish(BanishInfo banishInfo)
+        public void changeMapBanish(BanishInfo? banishInfo)
         {
+            if (banishInfo == null)
+                return;
+
             if (banishInfo.msg != null)
             {
                 dropMessage(5, banishInfo.msg);

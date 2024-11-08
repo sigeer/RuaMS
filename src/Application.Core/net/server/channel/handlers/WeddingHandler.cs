@@ -128,7 +128,7 @@ public class WeddingHandler : AbstractPacketHandler
                 else if (mode == 7)
                 { // take items
                     p.readByte();    // invType
-                    int itemPos = p.readByte();
+                    int itemPos = p.ReadSByte();
 
                     var marriage = chr.getMarriageInstance();
                     if (marriage != null)

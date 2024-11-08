@@ -36,7 +36,6 @@ namespace server.quest.actions;
  */
 public class ItemAction : AbstractQuestAction
 {
-    private static ILogger log = LogFactory.GetLogger("ItemAction");
     List<ItemData> items = new();
 
     public ItemAction(Quest quest, Data data) : base(QuestActionType.ITEM, quest)

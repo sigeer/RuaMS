@@ -36,9 +36,9 @@ public class ReportHandler : AbstractPacketHandler
 {
     public override void HandlePacket(InPacket p, IClient c)
     {
-        int type = p.readByte(); //00 = Illegal program claim, 01 = Conversation claim
+        int type = p.ReadSByte(); //00 = Illegal program claim, 01 = Conversation claim
         string victim = p.readString();
-        int reason = p.readByte();
+        int reason = p.ReadSByte();
         string description = p.readString();
         if (type == 0)
         {

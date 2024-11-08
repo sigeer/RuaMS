@@ -43,10 +43,10 @@ TimeSpan.FromSeconds($1)
 
 ### JS
 
-- 移除 `Java.type`
-- 移除 `Java.to`
+- 移除 `Java.type`  CodeMigration替换，暂不用处理
+- 移除 `Java.to` CodeMigration替换，暂不用处理
 - `iterator()` 用 `for ... of `替换
-- `size()`, `toArray()`, `get()` 目前通过扩展方法适配
+- `size()`, `toArray()`, `get()` 目前通过扩展方法适配，暂不用处理
 - 一些静态方法的类名已经发生修改
 	`Channel` -> `WorldChannel`
 	`Character` -> `CharacterManager`

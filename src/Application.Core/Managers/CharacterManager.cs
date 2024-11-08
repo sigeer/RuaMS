@@ -619,12 +619,16 @@ namespace Application.Core.Managers
                     //ret.resetBattleshipHp();
                 }
 
-                var mountModel = new Mount(ret, ret.Bag[InventoryType.EQUIPPED].getItem(-18)?.getItemId() ?? 0);
-                mountModel.setExp(ret.MountExp);
-                mountModel.setLevel(ret.MountLevel);
-                mountModel.setTiredness(ret.Mounttiredness);
-                mountModel.setActive(false);
-                ret.SetMount(mountModel);
+                var mountItem = ret.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.Mount);
+                if (mountItem != null)
+                {
+                    var mountModel = new Mount(ret, mountItem.getItemId());
+                    mountModel.setExp(ret.MountExp);
+                    mountModel.setLevel(ret.MountLevel);
+                    mountModel.setTiredness(ret.Mounttiredness);
+                    mountModel.setActive(false);
+                    ret.SetMount(mountModel);
+                }
 
                 // Quickslot key config
                 var accKeyMapFromDB = dbContext.Quickslotkeymappeds.Where(x => x.Accountid == ret.getAccountID()).Select(x => (long?)x.Keymap).FirstOrDefault();

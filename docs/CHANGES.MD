@@ -1,4 +1,3 @@
-- 由于EFCore会将`tiny(1)` 视作`bool`，现将脚本中非bool类型却使用`tiny(1)`的字段的数据类型改为`tiny`。
 - `async/await` 的处理，如果使用`async/await`，js脚本部分也要进行相应的调整，需要大量修改。改为同步调用
 - Java中的byte，对应C#中的sbyte，在网络请求中，byte与sbyte没有区别。但是作为数值参与计算时，两者有区别。
 - 移除`GuildSummary`

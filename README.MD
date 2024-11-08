@@ -7,7 +7,10 @@
 初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。
 
 
-## 项目
+### 开发环境
+
+- .Net8
+- Mysql8
 
 ### 项目结构
 
@@ -29,6 +32,16 @@
 
 ### 运行的准备工作
 
-推荐使用[Comic](https://github.com/P0nk/Cosmic)的wz以及配套的客户端（本项目中的js都是来自Cosmic）
+推荐使用[Comic](https://github.com/P0nk/Cosmic?tab=readme-ov-file#3---client)的wz以及配套的客户端（本项目中的js都是来自Cosmic）
 1. 将 wz 目录放置在根目录，或者配置环境变量`wz-path`，或者使用`Environment.SetEnvironmentVariable("wz-path", "wz目录");`
-2. 按顺序执行`/sql`目录下的`sql`，设置`config.yaml`中的连接字符串
+2. 设置`config.yaml`中的连接字符串
+
+
+#### 数据库迁移
+
+```
+// 在 Application.Core 中执行
+dotnet ef migrations add [migration] --output-dir EF/Migrations --startup-project ../Application.Console
+
+dotnet ef database update --startup-project ../Application.Console
+```

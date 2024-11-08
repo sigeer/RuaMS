@@ -28,8 +28,8 @@ namespace Application.Core.Game.Players
         {
             if (hasDisease(Disease.CURSE))
             {
-                gain *= (int)0.5;
-                party *= (int)0.5;
+                gain = (int)(gain * 0.5);
+                party = (int)(party * 0.5);
             }
 
             if (gain < 0)
@@ -115,7 +115,7 @@ namespace Application.Core.Game.Players
                     }
                     else
                     {
-                        lastExpGainTime = DateTimeOffset.Now;
+                        LastExpGainTime = DateTimeOffset.Now;
 
                         if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
                         {
@@ -125,7 +125,7 @@ namespace Application.Core.Game.Players
                                 expCoupon,
                                 totalExpGained,
                                 ExpValue.get(),
-                                lastExpGainTime
+                                LastExpGainTime
                             );
                             ExpLogger.putExpLogRecord(expLogRecord);
                         }

@@ -137,7 +137,7 @@ public class DataTool
     public static string getFullDataPath(Data data)
     {
         string path = "";
-        DataEntity myData = data;
+        DataEntity? myData = data;
         while (myData != null)
         {
             path = myData.getName() + "/" + path;

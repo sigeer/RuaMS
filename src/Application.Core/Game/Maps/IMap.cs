@@ -2,6 +2,7 @@
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.TheWorld;
+using Application.Shared.WzEntity;
 using client.inventory;
 using net.packet;
 using net.server.coordinator.world;
@@ -19,6 +20,10 @@ namespace Application.Core.Game.Maps
         AtomicInteger droppedItemCount { get; set; }
         public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }
+        /// <summary>
+        /// 似乎并没有派上用
+        /// </summary>
+        public TimeMob? TimeMob { get; set; }
         void addAllMonsterSpawn(Monster monster, int mobTime, int team);
 
         void addMapleArea(Rectangle rec);
@@ -131,7 +136,6 @@ namespace Application.Core.Game.Maps
         List<IMapObject> getMapObjects();
         List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
-        List<IMapObject> getMapObjectsInRect(Rectangle box, List<MapObjectType> types);
         Dictionary<int, IPlayer> getMapPlayers();
 
         short getMobInterval();
@@ -167,7 +171,6 @@ namespace Application.Core.Game.Maps
         bool getSummonState();
         int getTimeLeft();
         int getTimeLimit();
-        KeyValuePair<int, string>? getTimeMob();
         int getWorld();
         IWorld getWorldServer();
         bool hasClock();
@@ -264,7 +267,6 @@ namespace Application.Core.Game.Maps
         void setStreetName(string streetName);
 
         void setTimeLimit(int timeLimit);
-        void setTimeMob(int id, string msg);
         void setTown(bool isTown);
         void shuffleReactors(int first = 0, int last = int.MaxValue);
         void shuffleReactors(List<object> list);

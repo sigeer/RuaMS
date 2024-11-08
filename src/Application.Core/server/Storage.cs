@@ -53,9 +53,8 @@ public class Storage
         this.meso = meso;
     }
 
-    private static Storage create(int id, int world)
+    private static Storage create(DBContext dbContext, int id, int world)
     {
-        using var dbContext = new DBContext();
         dbContext.Storages.Add(new DB_Storage()
         {
             Accountid = id,
@@ -85,7 +84,7 @@ public class Storage
             }
             else
             {
-                ret = create(id, world);
+                ret = create(dbContext, id, world);
             }
             return ret;
         }

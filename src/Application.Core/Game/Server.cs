@@ -47,6 +47,7 @@ using server.expeditions;
 using server.quest;
 using service;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using static server.CashShop;
 
 namespace net.server;
@@ -928,9 +929,34 @@ public class Server
         return rankSystem;
     }
 
+    private async Task InitialDataBase()
+    {
+        log.Debug("初始化数据库");
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        using var dbContext = new DBContext();
+
+        await dbContext.Database.MigrateAsync();
+
+        if (!dbContext.Shops.Any())
+        {
+            var sqls = Directory.GetFiles("sql").OrderBy(x => Regex.Match(x, "v([0-9]+)\\S*\\.sql$").Groups[0].Value);
+            foreach (var file in sqls)
+            {
+                var sqlStr = File.ReadAllText(file);
+                await dbContext.Database.ExecuteSqlRawAsync(sqlStr);
+            }
+        }
+        sw.Stop();
+        log.Debug("初始化数据库====完成，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
+    }
+
     public async Task Start()
     {
         log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
+
+        await InitialDataBase();
+
         Stopwatch totalSw = new Stopwatch();
         totalSw.Start();
 
@@ -1032,15 +1058,17 @@ public class Server
         log.Information("Listening on port 8484");
 
         totalSw.Stop();
-        log.Information("Cosmic is now online after {Startup} s.", totalSw.Elapsed.TotalSeconds);
-
-        OpcodeConstants.generateOpcodeNames();
-        CommandExecutor.getInstance();
+        log.Information("Cosmic is now online after {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
 
         foreach (var ch in this.getAllChannels())
         {
             ch.reloadEventScriptManager();
         }
+
+        OpcodeConstants.generateOpcodeNames();
+        CommandExecutor.getInstance();
+        ItemInformationProvider.getInstance();
+
         await Task.Delay(Timeout.Infinite);
     }
 

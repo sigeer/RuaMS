@@ -249,7 +249,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                 var cBarrier = chr.getBuffEffect(BuffStat.COMBO_BARRIER);  // thanks BHB for noticing Combo Barrier buff not working
                 if (cBarrier != null)
                 {
-                    damage *= (int)(cBarrier.getX() / 1000.0);
+                    damage = (int)(damage * (cBarrier.getX() / 1000.0));
                 }
             }
             if (damagefrom != -3 && damagefrom != -4)
@@ -264,14 +264,14 @@ public class TakeDamageHandler : AbstractPacketHandler
                 }
                 if (achilles != 0 && achilles1 != null)
                 {
-                    damage *= (int)(achilles1.getEffect(achilles).getX() / 1000.0);
+                    damage = (int)(damage * (achilles1.getEffect(achilles).getX() / 1000.0));
                 }
 
                 var highDef = SkillFactory.GetSkillTrust(Aran.HIGH_DEFENSE);
                 int hdLevel = chr.getSkillLevel(highDef);
                 if (highDef != null && hdLevel > 0)
                 {
-                    damage *= (int)Math.Ceiling(highDef.getEffect(hdLevel).getX() / 1000.0);
+                    damage = (int)(damage * Math.Ceiling(highDef.getEffect(hdLevel).getX() / 1000.0));
                 }
             }
             var mesoguard = chr.getBuffedValue(BuffStat.MESOGUARD);

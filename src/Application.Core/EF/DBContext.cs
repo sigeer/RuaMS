@@ -198,7 +198,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("text")
                 .HasColumnName("banreason");
             entity.Property(e => e.Birthday)
-                .HasDefaultValueSql("'2000-01-01'")
+                .HasDefaultValueSql("'2005-05-11'")
                 .HasColumnType("date")
                 .HasColumnName("birthday");
             entity.Property(e => e.Characterslots)
@@ -278,7 +278,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("text")
                 .HasColumnName("sitelogged");
             entity.Property(e => e.Tempban)
-                .HasDefaultValueSql("'2000-01-01 00:00:00'")
+                .HasDefaultValueSql("'2005-05-11 00:00:00'")
                 .HasColumnType("timestamp")
                 .HasColumnName("tempban");
             entity.Property(e => e.Tos).HasColumnName("tos");
@@ -597,7 +597,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Hair)
                 .HasColumnType("int(11)")
                 .HasColumnName("hair");
-            entity.Property(e => e.HasMerchant).HasDefaultValueSql("'0'");
+            entity.Property(e => e.HasMerchant).HasDefaultValue(false);
             entity.Property(e => e.Hp)
                 .HasDefaultValueSql("'50'")
                 .HasColumnType("int(11)")
@@ -715,7 +715,8 @@ public partial class DBContext : DbContext
                 .HasColumnName("party");
             entity.Property(e => e.PartySearch)
                 .IsRequired()
-                .HasDefaultValueSql("'1'")
+                .HasDefaultValue(true)
+                .HasSentinel(true)
                 .HasColumnName("partySearch");
             entity.Property(e => e.Pqpoints)
                 .HasColumnType("int(11)")
@@ -893,7 +894,8 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.PackageId).HasColumnType("int(10) unsigned");
             entity.Property(e => e.Checked)
-                .HasDefaultValueSql("'1'")
+                .HasDefaultValue(true)
+                .HasSentinel(true)
                 .HasColumnType("tinyint(1) unsigned");
             entity.Property(e => e.Mesos)
                 .HasDefaultValueSql("'0'")
@@ -905,7 +907,7 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
                 .HasColumnType("timestamp");
             entity.Property(e => e.Type)
-                .HasDefaultValueSql("'0'")
+                .HasDefaultValue(false)
                 .HasColumnType("tinyint(1) unsigned");
             entity.Ignore(e => e.Item);
         });
@@ -2638,34 +2640,34 @@ public partial class DBContext : DbContext
                 .HasColumnName("to");
         });
 
-        //modelBuilder.Entity<ExpLogRecord>(entity =>
-        //{
-        //    entity.ToTable("characterexplogs");
-        //    entity.HasKey(e => e.Id).HasName("PRIMARY");
+        modelBuilder.Entity<ExpLogRecord>(entity =>
+        {
+            entity.ToTable("characterexplogs");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-        //    entity.Property(e => e.Id)
-        //        .HasColumnType("bigint")
-        //        .HasColumnName("id");
-        //    entity.Property(e => e.WorldExpRate)
-        //        .HasColumnType("int")
-        //        .HasColumnName("world_exp_rate");
-        //    entity.Property(e => e.ExpCoupon)
-        //        .HasColumnType("int")
-        //        .HasColumnName("exp_coupon");
-        //    entity.Property(e => e.GainedExp)
-        //        .HasColumnType("bigint")
-        //        .HasColumnName("gained_exp");
-        //    entity.Property(e => e.CurrentExp)
-        //        .HasColumnType("int")
-        //        .HasColumnName("current_exp");
-        //    entity.Property(e => e.ExpGainTime)
-        //        .HasColumnType("timestamp")
-        //        .HasDefaultValueSql("CURRENT_TIMESTAMP")
-        //        .HasColumnName("exp_gain_time");
-        //    entity.Property(e => e.CharId)
-        //        .HasColumnType("int")
-        //        .HasColumnName("charid");
-        //});
+            entity.Property(e => e.Id)
+                .HasColumnType("bigint")
+                .HasColumnName("id");
+            entity.Property(e => e.WorldExpRate)
+                .HasColumnType("int")
+                .HasColumnName("world_exp_rate");
+            entity.Property(e => e.ExpCoupon)
+                .HasColumnType("int")
+                .HasColumnName("exp_coupon");
+            entity.Property(e => e.GainedExp)
+                .HasColumnType("bigint")
+                .HasColumnName("gained_exp");
+            entity.Property(e => e.CurrentExp)
+                .HasColumnType("int")
+                .HasColumnName("current_exp");
+            entity.Property(e => e.ExpGainTime)
+                .HasColumnType("timestamp")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("exp_gain_time");
+            entity.Property(e => e.CharId)
+                .HasColumnType("int")
+                .HasColumnName("charid");
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -32,7 +32,7 @@ public class SkillMacroHandler : AbstractPacketHandler
     public override void HandlePacket(InPacket p, IClient c)
     {
         var chr = c.OnlinedCharacter;
-        int num = p.readByte();
+        int num = p.ReadSByte();
         if (num > 5)
         {
             return;
@@ -48,7 +48,7 @@ public class SkillMacroHandler : AbstractPacketHandler
                 break;
             }
 
-            int shout = p.readByte();
+            int shout = p.ReadSByte();
             int skill1 = p.readInt();
             int skill2 = p.readInt();
             int skill3 = p.readInt();

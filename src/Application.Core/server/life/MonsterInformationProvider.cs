@@ -154,7 +154,11 @@ public class MonsterInformationProvider
 
         return ret;
     }
-
+    /// <summary>
+    /// 怪物所有的掉落物
+    /// </summary>
+    /// <param name="monsterId"></param>
+    /// <returns></returns>
     public List<DropEntry> retrieveDrop(int monsterId)
     {
         if (drops.TryGetValue(monsterId, out var value))
@@ -179,6 +183,11 @@ public class MonsterInformationProvider
         return ret;
     }
 
+    /// <summary>
+    /// 怪物所有非任务道具掉落物及其概率
+    /// </summary>
+    /// <param name="monsterId"></param>
+    /// <returns></returns>
     public List<int> retrieveDropPool(int monsterId)
     {
         // ignores Quest and Party Quest items

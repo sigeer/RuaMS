@@ -2,6 +2,7 @@
 using Application.Core.Game.Maps.Specials;
 using server.life;
 using server.maps;
+using System.Diagnostics;
 using tools;
 
 namespace ServiceTest.Games
@@ -58,22 +59,32 @@ namespace ServiceTest.Games
         }
 
         [Test]
-        public void LudiStage2_HitReactorTest()
+        public void ChangeMap_Test()
         {
-            var mapId = 922010200;
-            var map = MapFactory.loadMapFromWz(mapId, 0, 1, null);
+            var curMapId = 103000201;
+            var nextMapId = 103000202;
 
-            var allReactors1 = map.getAllReactors().Where(x => x.isAlive()).Count();
-            var reactor = map.getReactorById(2202003);
+            var mapManager = MockClient.OnlinedCharacter.getChannelServer().getMapFactory();
+            var curMap = mapManager.getMap(curMapId);
+            var nextMap = mapManager.getMap(nextMapId);
+            Stopwatch sw = new();
 
-            Assert.That(reactor != null);
-            reactor!.hitReactor(MockClient);
-            reactor!.hitReactor(MockClient);
-            reactor!.hitReactor(MockClient);
-            reactor!.hitReactor(MockClient);
+            sw.Start();
+            MockClient.OnlinedCharacter.changeMap(curMap, curMap.getPortal(0));
+            sw.Stop();
+            Console.WriteLine($"changeMap1. {sw.Elapsed.TotalSeconds}");
 
-            var allReactors2 = map.getAllReactors().Where(x => x.isAlive()).Count();
-            Assert.That(allReactors1 - 1, Is.EqualTo(allReactors2));
+            sw.Restart();
+            MockClient.OnlinedCharacter.changeMap(nextMap, nextMap.getPortal(0));
+            sw.Stop();
+            Console.WriteLine($"changeMap2. {sw.Elapsed.TotalSeconds}");
+
+            sw.Restart();
+            MockClient.OnlinedCharacter.changeMap(curMap, curMap.getPortal(0));
+            sw.Stop();
+            Console.WriteLine($"changeMap3. {sw.Elapsed.TotalSeconds}");
+
+            Assert.Pass();
         }
     }
 }

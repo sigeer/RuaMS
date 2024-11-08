@@ -17,23 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{E82E7D8C-3
 		README.MD = README.MD
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql", "sql", "{3575857B-BE85-44C4-84C0-9E6D41D05919}"
-	ProjectSection(SolutionItems) = preProject
-		sql\1-db_database.sql = sql\1-db_database.sql
-		sql\2-db_drops.sql = sql\2-db_drops.sql
-		sql\3-db_shopupdate.sql = sql\3-db_shopupdate.sql
-		sql\4-db-admin.sql = sql\4-db-admin.sql
-		sql\errors.txt = sql\errors.txt
-		sql\readme.txt = sql\readme.txt
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "migration", "migration", "{E7006CBF-B1B4-4AB4-A76D-D0D08A77B14A}"
-	ProjectSection(SolutionItems) = preProject
-		sql\migration\monsterbook.sql = sql\migration\monsterbook.sql
-		sql\migration\README.md = sql\migration\README.md
-		sql\migration\v0.14.0.sql = sql\migration\v0.14.0.sql
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7FE13C3E-9A93-4EE2-8AB4-98F1F5BD7149}"
@@ -53,7 +36,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{BD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlWzReader", "src\XmlWzReader\XmlWzReader.csproj", "{45FF432D-41A4-4F93-9F98-37F50A0D2224}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Shared", "src\Application.Shared\Application.Shared.csproj", "{561EC084-A6EA-4366-BFC7-B5C987D57515}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Shared", "src\Application.Shared\Application.Shared.csproj", "{561EC084-A6EA-4366-BFC7-B5C987D57515}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{0BF5D534-3E6E-48C7-A7DA-F52236CB2A1B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,7 +89,6 @@ Global
 		{D5D08AD1-CA51-47EC-B177-53D58B68B148} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{2AF986EB-2A1B-42E0-9B89-D6285A050413} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{55425983-CD61-447E-8CC3-05D1790BBD13} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
-		{E7006CBF-B1B4-4AB4-A76D-D0D08A77B14A} = {3575857B-BE85-44C4-84C0-9E6D41D05919}
 		{F6C02188-4758-4B58-8872-F9B5954A3EC7} = {7FE13C3E-9A93-4EE2-8AB4-98F1F5BD7149}
 		{0F67A2BB-2A3C-40FF-8568-E46074F468D2} = {DCCF81D5-1F6C-40F8-BE70-D6DD24878D59}
 		{2AA8D5B8-0312-41D6-89DE-6BF1D8D82240} = {DCCF81D5-1F6C-40F8-BE70-D6DD24878D59}

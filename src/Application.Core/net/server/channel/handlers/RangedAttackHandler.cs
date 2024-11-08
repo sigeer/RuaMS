@@ -102,7 +102,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
         }
         else
         {
-            var weapon = chr.getInventory(InventoryType.EQUIPPED).getItem(-11)!;
+            var weapon = chr.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon)!;
             WeaponType type = ItemInformationProvider.getInstance().getWeaponType(weapon.getItemId());
             if (type == WeaponType.NOT_A_WEAPON)
             {
@@ -121,7 +121,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                     c.sendPacket(PacketCreator.skillCooldown(attack.skill, effect.getCooldown()));
                 }
 
-                if (attack.skill == 4111004)
+                if (attack.skill == Hermit.SHADOW_MESO)
                 {   // shadow meso
                     bulletCount = 0;
 
@@ -195,7 +195,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             bool shadowClaw = chr.getBuffedValue(BuffStat.SHADOW_CLAW) != null;
             if (projectile != 0)
             {
-                if (!soulArrow && !shadowClaw && attack.skill != 11101004 && attack.skill != 15111007 && attack.skill != 14101006)
+                if (!soulArrow && !shadowClaw && attack.skill != DawnWarrior.SOUL_BLADE && attack.skill != ThunderBreaker.SHARK_WAVE && attack.skill != NightWalker.VAMPIRE)
                 {
                     short bulletConsume = bulletCount;
 
@@ -215,7 +215,13 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                 }
             }
 
-            if (projectile != 0 || soulArrow || attack.skill == 11101004 || attack.skill == 15111007 || attack.skill == 14101006 || attack.skill == 4111004 || attack.skill == 13101005)
+            if (projectile != 0 
+                || soulArrow 
+                || attack.skill == DawnWarrior.SOUL_BLADE 
+                || attack.skill == ThunderBreaker.SHARK_WAVE
+                || attack.skill == NightWalker.VAMPIRE
+                || attack.skill == Hermit.SHADOW_MESO 
+                || attack.skill == WindArcher.STORM_BREAK)
             {
                 int visProjectile = projectile; //visible projectile sent to players
                 if (ItemConstants.isThrowingStar(projectile))
@@ -234,7 +240,13 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                         }
                     }
                 }
-                else if (soulArrow || attack.skill == 3111004 || attack.skill == 3211004 || attack.skill == 11101004 || attack.skill == 15111007 || attack.skill == 14101006 || attack.skill == 13101005)
+                else if (soulArrow 
+                    || attack.skill == Ranger.ARROW_RAIN 
+                    || attack.skill == Sniper.ARROW_ERUPTION 
+                    || attack.skill == DawnWarrior.SOUL_BLADE 
+                    || attack.skill == ThunderBreaker.SHARK_WAVE 
+                    || attack.skill == NightWalker.VAMPIRE 
+                    || attack.skill == WindArcher.STORM_BREAK)
                 {
                     visProjectile = 0;
                 }
@@ -242,10 +254,10 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                 Packet packet;
                 switch (attack.skill)
                 {
-                    case 3121004: // Hurricane
-                    case 3221001: // Pierce
-                    case 5221004: // Rapid Fire
-                    case 13111002: // KoC Hurricane
+                    case Bowmaster.HURRICANE: // Hurricane
+                    case Marksman.PIERCING_ARROW: // Pierce
+                    case Corsair.RAPID_FIRE: // Rapid Fire
+                    case WindArcher.HURRICANE: // KoC Hurricane
                         packet = PacketCreator.rangedAttack(chr, attack.skill, attack.skilllevel, attack.rangedirection, attack.numAttackedAndDamage, visProjectile, attack.targets, attack.speed, attack.direction, attack.display);
                         break;
                     default:
@@ -258,7 +270,8 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                 {
                     var skill = SkillFactory.GetSkillTrust(attack.skill);
                     StatEffect effect_ = skill.getEffect(chr.getSkillLevel(skill));
-                    if (effect_.getCooldown() > 0)
+                    var effectCooldown = effect_.getCooldown();
+                    if (effectCooldown > 0)
                     {
                         if (chr.skillIsCooling(attack.skill))
                         {
@@ -266,18 +279,23 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                         }
                         else
                         {
-                            c.sendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
-                            chr.addCooldown(attack.skill, currentServerTime(), 1000 * (effect_.getCooldown()));
+                            c.sendPacket(PacketCreator.skillCooldown(attack.skill, effectCooldown));
+                            chr.addCooldown(attack.skill, currentServerTime(), 1000 * effectCooldown);
                         }
                     }
                 }
 
-                if (chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 && chr.getBuffedValue(BuffStat.DARKSIGHT) != null && attack.numAttacked > 0 && chr.getBuffSource(BuffStat.DARKSIGHT) != 9101004)
+                if (chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 
+                    && chr.getBuffedValue(BuffStat.DARKSIGHT) != null 
+                    && attack.numAttacked > 0 
+                    && chr.getBuffSource(BuffStat.DARKSIGHT) != SuperGM.HIDE)
                 {
                     chr.cancelEffectFromBuffStat(BuffStat.DARKSIGHT);
                     chr.cancelBuffStats(BuffStat.DARKSIGHT);
                 }
-                else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0 && chr.getBuffedValue(BuffStat.WIND_WALK) != null && attack.numAttacked > 0)
+                else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0 
+                    && chr.getBuffedValue(BuffStat.WIND_WALK) != null 
+                    && attack.numAttacked > 0)
                 {
                     chr.cancelEffectFromBuffStat(BuffStat.WIND_WALK);
                     chr.cancelBuffStats(BuffStat.WIND_WALK);

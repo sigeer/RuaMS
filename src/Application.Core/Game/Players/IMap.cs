@@ -1,4 +1,5 @@
 ﻿using Application.Core.Game.Maps;
+using Application.Shared.WzEntity;
 using server.maps;
 
 namespace Application.Core.Game.Players

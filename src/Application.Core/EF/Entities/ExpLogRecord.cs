@@ -2,6 +2,7 @@
 {
     public class ExpLogRecord
     {
+        private ExpLogRecord() { }
         public ExpLogRecord(int charId, int worldExpRate, int expCoupon, long gainedExp, int currentExp, DateTimeOffset expGainTime)
         {
             CharId = charId;

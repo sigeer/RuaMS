@@ -6,7 +6,6 @@ namespace Application.Core.Game.Players
     public partial class Player
     {
         public AriantColiseum? ariantColiseum;
-        int ariantPoints;
         public AriantColiseum? getAriantColiseum()
         {
             return ariantColiseum;
@@ -19,12 +18,12 @@ namespace Application.Core.Game.Players
 
         public void gainAriantPoints(int points)
         {
-            this.ariantPoints += points;
+            this.AriantPoints += points;
         }
 
         public int getAriantPoints()
         {
-            return this.ariantPoints;
+            return this.AriantPoints;
         }
 
         public void updateAriantScore()

@@ -56,7 +56,8 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             }
         }
 
-        if (chr.getDojoEnergy() < 10000 && (attack.skill == 1009 || attack.skill == 10001009 || attack.skill == 20001009)) // PE hacking or maybe just lagging
+        if (chr.getDojoEnergy() < 10000 
+            && (attack.skill == Beginner.BAMBOO_RAIN || attack.skill == Noblesse.BAMBOO_RAIN || attack.skill == Legend.BAMBOO_THRUST)) // PE hacking or maybe just lagging
         {
             return;
         }
@@ -66,7 +67,10 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        chr.getMap().broadcastMessage(chr, PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display), false, true);
+        chr.getMap().broadcastMessage(chr, 
+            PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display), 
+            false, 
+            true);
         int numFinisherOrbs = 0;
         var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
         if (GameConstants.isFinisherSkill(attack.skill))
@@ -79,7 +83,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         }
         else if (attack.numAttacked > 0)
         {
-            if (attack.skill != 1111008 && comboBuff != null)
+            if (attack.skill != Crusader.SHOUT && comboBuff != null)
             {
                 var orbcount = chr.getBuffedValue(BuffStat.COMBO);
                 int oid = chr.isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
@@ -137,7 +141,8 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                     }
                 }
             }
-            else if (chr.getSkillLevel(chr.isCygnus() ? SkillFactory.GetSkillTrust(15100004) : SkillFactory.GetSkillTrust(5110001)) > 0 && (chr.getJob().isA(Job.MARAUDER) || chr.getJob().isA(Job.THUNDERBREAKER2)))
+            else if (chr.getSkillLevel(chr.isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE)) > 0 
+                && (chr.getJob().isA(Job.MARAUDER) || chr.getJob().isA(Job.THUNDERBREAKER2)))
             {
                 for (int i = 0; i < attack.numAttacked; i++)
                 {
@@ -151,13 +156,14 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
 
             chr.safeAddHP(-1 * totDamageToOneMonster * attack.getAttackEffect(chr, null).getX() / 100);
         }
-        if (attack.numAttacked > 0 && attack.skill == 1211002)
+        if (attack.numAttacked > 0 && attack.skill == WhiteKnight.CHARGE_BLOW)
         {
             bool advcharge_prob = false;
-            int advcharge_level = chr.getSkillLevel(SkillFactory.GetSkillTrust(1220010));
+            var advchargeSkill = SkillFactory.GetSkillTrust(Paladin.ADVANCED_CHARGE);
+            int advcharge_level = chr.getSkillLevel(advchargeSkill);
             if (advcharge_level > 0)
             {
-                advcharge_prob = SkillFactory.GetSkillTrust(1220010).getEffect(advcharge_level).makeChanceResult();
+                advcharge_prob = advchargeSkill.getEffect(advcharge_level).makeChanceResult();
             }
             if (!advcharge_prob)
             {
@@ -201,7 +207,8 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 }
             }
         }
-        if ((chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 || chr.getSkillLevel(SkillFactory.GetSkillTrust(Rogue.DARK_SIGHT)) > 0) && chr.getBuffedValue(BuffStat.DARKSIGHT) != null)
+        if ((chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 || chr.getSkillLevel(SkillFactory.GetSkillTrust(Rogue.DARK_SIGHT)) > 0) 
+            && chr.getBuffedValue(BuffStat.DARKSIGHT) != null)
         {
             // && chr.getBuffSource(BuffStat.DARKSIGHT) != 9101004
             chr.cancelEffectFromBuffStat(BuffStat.DARKSIGHT);

@@ -100,12 +100,11 @@ public partial class Player
     // 替换Family，搁置
     public ISchool? SchoolModel { get; set; }
     private FamilyEntry? familyEntry;
-    private int familyId;
 
     private int battleshipHp = 0;
     private int mesosTraded = 0;
     private int possibleReports = 10;
-    private int dojoPoints, vanquisherStage, dojoStage, dojoEnergy, vanquisherKills;
+    private int dojoEnergy;
     private int expRate = 1, mesoRate = 1, dropRate = 1, expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
     private int owlSearch;
     private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
@@ -121,7 +120,6 @@ public partial class Player
     public List<int> LastFameCIds { get; set; }
 
     public CharacterLink? Link { get; set; }
-    private bool finishedDojoTutorial;
 
     private string? chalktext = null;
     private string? commandtext = null;
@@ -248,7 +246,7 @@ public partial class Player
     private int targetHpBarHash = 0;
     private long targetHpBarTime = 0;
     private long nextWarningTime = 0;
-    private DateTimeOffset lastExpGainTime;
+
     private bool pendingNameChange; //only used to change name on logout, not to be relied upon elsewhere
     private DateTimeOffset loginTime;
     private bool chasing = false;
@@ -374,14 +372,14 @@ public partial class Player
     public int addDojoPointsByMap(int mapid)
     {
         int pts = 0;
-        if (dojoPoints < 17000)
+        if (DojoPoints < 17000)
         {
             pts = 1 + ((mapid - 1) / 100 % 100) / 6;
             if (!MapId.isPartyDojo(this.getMapId()))
             {
                 pts++;
             }
-            this.dojoPoints += pts;
+            this.DojoPoints += pts;
         }
         return pts;
     }
@@ -458,7 +456,7 @@ public partial class Player
     public int calculateMaxBaseDamage(int watk)
     {
         int maxbasedamage;
-        Item? weapon_item = getInventory(InventoryType.EQUIPPED).getItem(-11);
+        var weapon_item = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
         if (weapon_item != null)
         {
             maxbasedamage = calculateMaxBaseDamage(watk, ItemInformationProvider.getInstance().getWeaponType(weapon_item.getItemId()));
@@ -581,7 +579,7 @@ public partial class Player
 
     public string getMedalText()
     {
-        var medalItem = getInventory(InventoryType.EQUIPPED).getItem(-49);
+        var medalItem = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Medal);
         return medalItem == null ? "" : "<" + ItemInformationProvider.getInstance().getName(medalItem.getItemId()) + "> ";
     }
 
@@ -625,7 +623,7 @@ public partial class Player
 
     public void toggleHide(bool login)
     {
-        Hide(!hidden);
+        Hide(!hidden, login);
     }
 
     public void cancelMagicDoor()
@@ -1334,9 +1332,9 @@ public partial class Player
 
     public void notifyMapTransferToPartner(int mapid)
     {
-        if (partnerId > 0)
+        if (PartnerId > 0)
         {
-            var partner = getWorldServer().getPlayerStorage().getCharacterById(partnerId);
+            var partner = getWorldServer().getPlayerStorage().getCharacterById(PartnerId);
             if (partner != null && partner.isLoggedinWorld())
             {
                 partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(Id, mapid));
@@ -2065,12 +2063,12 @@ public partial class Player
 
     public int getDojoPoints()
     {
-        return dojoPoints;
+        return DojoPoints;
     }
 
     public int getDojoStage()
     {
-        return dojoStage;
+        return LastDojoStage;
     }
 
     public ICollection<Door> getDoors()
@@ -2458,12 +2456,12 @@ public partial class Player
 
     public int getFamilyId()
     {
-        return familyId;
+        return FamilyId;
     }
 
     public bool getFinishedDojoTutorial()
     {
-        return finishedDojoTutorial;
+        return FinishedDojoTutorial;
     }
 
     public List<Ring> getFriendshipRings()
@@ -2589,15 +2587,6 @@ public partial class Player
         pos.Y -= 6;
 
         return MapModel.getFootholds()?.findBelow(pos)?.getY1() ?? 0;
-    }
-
-    public int getMapId()
-    {
-        if (base.MapModel != null)
-        {
-            return MapModel.getId();
-        }
-        return Map;
     }
 
 
@@ -2998,12 +2987,12 @@ public partial class Player
 
     public int getVanquisherKills()
     {
-        return vanquisherKills;
+        return VanquisherKills;
     }
 
     public int getVanquisherStage()
     {
-        return vanquisherStage;
+        return VanquisherStage;
     }
 
     public IMapObject[] getVisibleMapObjects()
@@ -3132,7 +3121,7 @@ public partial class Player
 
     public bool hasMerchant()
     {
-        return HasMerchant ?? false;
+        return HasMerchant;
     }
 
     public bool haveItem(int itemid)
@@ -4182,7 +4171,7 @@ public partial class Player
 
             if (JobModel.isA(Job.THIEF) || JobModel.isA(Job.BOWMAN) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.NIGHTWALKER1) || JobModel.isA(Job.WINDARCHER1))
             {
-                Item? weapon_item = getInventory(InventoryType.EQUIPPED).getItem(-11);
+                var weapon_item = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
                 if (weapon_item != null)
                 {
                     ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -4197,10 +4186,13 @@ public partial class Player
                         Inventory inv = getInventory(InventoryType.USE);
                         for (short i = 1; i <= inv.getSlotLimit(); i++)
                         {
-                            Item? item = inv.getItem(i);
+                            var item = inv.getItem(i);
                             if (item != null)
                             {
-                                if ((claw && ItemConstants.isThrowingStar(item.getItemId())) || (gun && ItemConstants.isBullet(item.getItemId())) || (bow && ItemConstants.isArrowForBow(item.getItemId())) || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
+                                if ((claw && ItemConstants.isThrowingStar(item.getItemId())) 
+                                    || (gun && ItemConstants.isBullet(item.getItemId())) 
+                                    || (bow && ItemConstants.isArrowForBow(item.getItemId())) 
+                                    || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
                                 {
                                     if (item.getQuantity() > 0)
                                     {
@@ -4581,12 +4573,12 @@ public partial class Player
 
     public void setDojoPoints(int x)
     {
-        this.dojoPoints = x;
+        this.DojoPoints = x;
     }
 
     public void setDojoStage(int x)
     {
-        this.dojoStage = x;
+        this.LastDojoStage = x;
     }
 
     public void setEnergyBar(int set)
@@ -4615,12 +4607,12 @@ public partial class Player
 
     public void setFamilyId(int familyId)
     {
-        this.familyId = familyId;
+        this.FamilyId = familyId;
     }
 
     public void setFinishedDojoTutorial()
     {
-        this.finishedDojoTutorial = true;
+        this.FinishedDojoTutorial = true;
     }
 
     public void setGender(int gender)
@@ -4842,6 +4834,7 @@ public partial class Player
     public void setMessenger(Messenger? messenger)
     {
         this.Messenger = messenger;
+        MessengerId = messenger?.getId() ?? 0;
     }
 
     public void setMessengerPosition(int position)
@@ -4858,8 +4851,6 @@ public partial class Player
     {
         this.Name = name;
     }
-
-
 
     public int getDoorSlot()
     {
@@ -5174,12 +5165,12 @@ public partial class Player
 
     public void setVanquisherKills(int x)
     {
-        this.vanquisherKills = x;
+        this.VanquisherKills = x;
     }
 
     public void setVanquisherStage(int x)
     {
-        this.vanquisherStage = x;
+        this.VanquisherStage = x;
     }
 
     public void setWorld(int world)

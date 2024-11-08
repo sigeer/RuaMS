@@ -20,6 +20,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Shared.WzEntity;
+
 namespace server.life;
 
 
@@ -255,12 +257,12 @@ public class MonsterStats
         resistance.Remove(e);
     }
 
-    public BanishInfo getBanishInfo()
+    public BanishInfo? getBanishInfo()
     {
         return banish;
     }
 
-    public void setBanishInfo(BanishInfo banish)
+    public void setBanishInfo(BanishInfo? banish)
     {
         this.banish = banish;
     }

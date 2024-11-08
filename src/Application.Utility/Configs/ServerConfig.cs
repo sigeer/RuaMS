@@ -39,7 +39,6 @@ public class ServerConfig
     public string HOST;
     public string LANHOST;
     public string LOCALHOST;
-    public bool GMSERVER;
 
     //Other configuration
     public bool SHUTDOWNHOOK;

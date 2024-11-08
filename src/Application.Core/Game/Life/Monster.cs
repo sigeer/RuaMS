@@ -27,6 +27,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Event;
+using Application.Shared.WzEntity;
 using Application.Utility;
 using client;
 using client.status;
@@ -107,16 +108,6 @@ public class Monster : AbstractLifeObject
         Monitor.Exit(externalLock);
     }
 
-    private void initWithStats(MonsterStats baseStats)
-    {
-        setStance(5);
-        this.stats = baseStats.copy();
-        hp.set(stats.getHp());
-        mp = stats.getMp();
-
-        maxHpPlusHeal.set(hp.get());
-    }
-
     public void setSpawnEffect(int effect)
     {
         spawnEffect = effect;
@@ -153,42 +144,23 @@ public class Monster : AbstractLifeObject
     }
 
     public int countAvailableMobSummons(int summonsSize, int skillLimit)
-    {    // limit prop for summons has another conotation, found thanks to MedicOP
-        int summonsCount;
-
-        var calledOids = this.calledMobOids;
-        if (calledOids != null)
-        {
-            summonsCount = calledOids.Count;
-        }
-        else
-        {
-            summonsCount = 0;
-        }
-
+    {
+        // limit prop for summons has another conotation, found thanks to MedicOP
+        int summonsCount = this.calledMobOids?.Count ?? 0;
         return Math.Min(summonsSize, skillLimit - summonsCount);
     }
 
     public void addSummonedMob(Monster mob)
     {
-        var calledOids = this.calledMobOids;
-        if (calledOids == null)
-        {
-            calledOids = new HashSet<int>();
-            this.calledMobOids = calledOids;
-        }
+        calledMobOids ??= [];
 
-        calledOids.Add(mob.getObjectId());
+        calledMobOids.Add(mob.getObjectId());
         mob.setSummonerMob(this);
     }
 
     private void removeSummonedMob(int mobOid)
     {
-        HashSet<int>? calledOids = this.calledMobOids;
-        if (calledOids != null)
-        {
-            calledOids.Remove(mobOid);
-        }
+        calledMobOids?.Remove(mobOid);
     }
 
     private void setSummonerMob(Monster mob)
@@ -337,7 +309,8 @@ public class Monster : AbstractLifeObject
     }
 
     public void setHpZero()
-    {     // force HP = 0
+    {
+        // force HP = 0
         applyAndGetHpDamage(int.MaxValue, false);
     }
 
@@ -926,12 +899,12 @@ public class Monster : AbstractLifeObject
                 reviveMap.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
                 reviveMap.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
             }
-            var timeMob = reviveMap.getTimeMob();
+            var timeMob = reviveMap.TimeMob;
             if (timeMob != null)
             {
-                if (toSpawn.Contains(timeMob.Value.Key))
+                if (toSpawn.Contains(timeMob.MobId))
                 {
-                    reviveMap.broadcastMessage(PacketCreator.serverNotice(6, timeMob.Value.Value));
+                    reviveMap.broadcastMessage(PacketCreator.serverNotice(6, timeMob.Message));
                 }
             }
 
@@ -1004,8 +977,7 @@ public class Monster : AbstractLifeObject
             log.Warning("[CRITICAL LOSS] toSpawn is null for {MonsterName}", getName());
         }
 
-        var looter = MapModel.getCharacterById(getHighestDamagerId());
-        return looter != null ? looter : killer;
+        return MapModel.getCharacterById(getHighestDamagerId()) ?? killer;
     }
 
     public void dropFromFriendlyMonster(long delay)
@@ -1973,6 +1945,7 @@ public class Monster : AbstractLifeObject
         {
             return null;
         }
+
         // There is no simple way of getting a random element from a Set. Have to make do with this.
         return skills
                 .Skip(Randomizer.nextInt(skills.Count))
@@ -2120,7 +2093,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public BanishInfo getBanish()
+    public BanishInfo? getBanish()
     {
         return stats.getBanishInfo();
     }
@@ -2189,12 +2162,7 @@ public class Monster : AbstractLifeObject
         this.mp = ostats.getMp();
     }
 
-    public void changeLevel(int newLevel)
-    {
-        changeLevel(newLevel, true);
-    }
-
-    public void changeLevel(int newLevel, bool pqMob)
+    public void changeLevel(int newLevel, bool pqMob = true)
     {
         if (!stats.isChangeable())
         {
@@ -2219,9 +2187,9 @@ public class Monster : AbstractLifeObject
                 return (2.1f);
             case 2:
                 return (1.4f);
+            default:
+                return 1.0f;
         }
-
-        return (1.0f);
     }
 
     private void changeLevelByDifficulty(int difficulty, bool pqMob)

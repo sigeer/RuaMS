@@ -173,7 +173,7 @@ public class CashOperationHandler : AbstractPacketHandler
                     byte mode = p.readByte();
                     if (mode == 0)
                     {
-                        byte type = p.readByte();
+                        sbyte type = p.ReadSByte();
                         if (cs.getCash(cash) < 4000)
                         {
                             c.enableCSActions();

@@ -220,7 +220,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
                     if (MobId.isDojoBoss(monster.getId()))
                     {
-                        if (attack.skill == 1009 || attack.skill == 10001009 || attack.skill == 20001009)
+                        if (attack.skill == Beginner.BAMBOO_RAIN || attack.skill == Noblesse.BAMBOO_RAIN || attack.skill == Legend.BAMBOO_THRUST)
                         {
                             int dmgLimit = (int)Math.Ceiling(0.3 * monster.getMaxHp());
                             List<int> _onedList = new();
@@ -277,7 +277,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             }
                         }
                     }
-                    else if (attack.skill == Marauder.ENERGY_DRAIN || attack.skill == ThunderBreaker.ENERGY_DRAIN || attack.skill == NightWalker.VAMPIRE || attack.skill == Assassin.DRAIN)
+                    else if (attack.skill == Marauder.ENERGY_DRAIN
+                        || attack.skill == ThunderBreaker.ENERGY_DRAIN
+                        || attack.skill == NightWalker.VAMPIRE
+                        || attack.skill == Assassin.DRAIN)
                     {
                         var skillModel = SkillFactory.GetSkillTrust(attack.skill);
                         player.addHP(
@@ -318,17 +321,17 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
                     else if (attack.skill == FPArchMage.FIRE_DEMON)
                     {
-                        long duration = 1000 * (SkillFactory.GetSkillTrust(FPArchMage.FIRE_DEMON).getEffect(player.getSkillLevel(SkillFactory.GetSkillTrust(FPArchMage.FIRE_DEMON))).getDuration());
+                        long duration = 1000 * (player.GetPlayerSkillEffect(attack.skill).getDuration());
                         monster.setTempEffectiveness(Element.ICE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == ILArchMage.ICE_DEMON)
                     {
-                        long duration = 1000 * (SkillFactory.GetSkillTrust(ILArchMage.ICE_DEMON).getEffect(player.getSkillLevel(SkillFactory.GetSkillTrust(ILArchMage.ICE_DEMON))).getDuration());
+                        long duration = 1000 * (player.GetPlayerSkillEffect(attack.skill).getDuration());
                         monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == Outlaw.HOMING_BEACON || attack.skill == Corsair.BULLSEYE)
                     {
-                        StatEffect beacon = SkillFactory.GetSkillTrust(attack.skill).getEffect(player.getSkillLevel(attack.skill));
+                        StatEffect beacon = player.GetPlayerSkillEffect(attack.skill);
                         beacon.applyBeaconBuff(player, monster.getObjectId());
                     }
                     else if (attack.skill == Outlaw.FLAME_THROWER)
@@ -814,11 +817,11 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                 int orbs = comboBuff.Value - 1;
                 if (orbs == 2)
                 {
-                    calcDmgMax *= (long)1.2;
+                    calcDmgMax = (long)(calcDmgMax * 1.2);
                 }
                 else if (orbs == 3)
                 {
-                    calcDmgMax *= (long)1.54;
+                    calcDmgMax = (long)(calcDmgMax * 1.54);
                 }
                 else if (orbs == 4)
                 {
@@ -826,7 +829,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                 }
                 else if (orbs >= 5)
                 {
-                    calcDmgMax *= (long)2.5;
+                    calcDmgMax = (long)(calcDmgMax * 2.5);
                 }
             }
         }
@@ -835,7 +838,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         {
             int energycharge = chr.isCygnus() ? ThunderBreaker.ENERGY_CHARGE : Marauder.ENERGY_CHARGE;
             StatEffect ceffect = chr.GetPlayerSkillEffect(energycharge);
-            calcDmgMax *= (100 + ceffect.getDamage()) / 100;
+            calcDmgMax = (long)(calcDmgMax * ((100 + ceffect.getDamage()) / 100d));
         }
 
         int bonusDmgBuff = 100;
@@ -871,7 +874,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
             // and calc it in.
 
             canCrit = true;
-            calcDmgMax *= (long)1.4;
+            calcDmgMax = (long)(calcDmgMax * 1.4);
         }
 
         bool shadowPartner = chr.getBuffEffect(BuffStat.SHADOWPARTNER) != null;
@@ -905,28 +908,28 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     {
                         if (monster.getStats().getEffectiveness(Element.FIRE) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax *= (long)(1.05 + level * 0.015);
+                            calcDmgMax = (long)(calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == WhiteKnight.BW_ICE_CHARGE || sourceID == WhiteKnight.SWORD_ICE_CHARGE)
                     {
                         if (monster.getStats().getEffectiveness(Element.ICE) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax *= (long)(1.05 + level * 0.015);
+                            calcDmgMax = (long)(calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == WhiteKnight.BW_LIT_CHARGE || sourceID == WhiteKnight.SWORD_LIT_CHARGE)
                     {
                         if (monster.getStats().getEffectiveness(Element.LIGHTING) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax *= (long)(1.05 + level * 0.015);
+                            calcDmgMax = (long)(calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == Paladin.BW_HOLY_CHARGE || sourceID == Paladin.SWORD_HOLY_CHARGE)
                     {
                         if (monster.getStats().getEffectiveness(Element.HOLY) == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax *= (long)(1.2 + level * 0.015);
+                            calcDmgMax = (long)(calcDmgMax * (1.2 + level * 0.015));
                         }
                     }
                 }
@@ -934,7 +937,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                 {
                     // Since we already know the skill has an elemental attribute, but we dont know if the monster is weak or not, lets
                     // take the safe approach and just assume they are weak.
-                    calcDmgMax *= (long)1.5;
+                    calcDmgMax = (long)(calcDmgMax * 1.5);
                 }
             }
 
@@ -949,7 +952,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         ElementalEffectiveness eff = monster.getElementalEffectiveness(skill.getElement());
                         if (eff == ElementalEffectiveness.WEAK)
                         {
-                            calcDmgMax *= (long)1.5;
+                            calcDmgMax = (long)(calcDmgMax * 1.5);
                         }
                         else if (eff == ElementalEffectiveness.STRONG)
                         {
@@ -960,7 +963,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     {
                         // Since we already know the skill has an elemental attribute, but we dont know if the monster is weak or not, lets
                         // take the safe approach and just assume they are weak.
-                        calcDmgMax *= (long)1.5;
+                        calcDmgMax = (long)(calcDmgMax * 1.5);
                     }
                 }
                 if (ret.skill == FPWizard.POISON_BREATH || ret.skill == FPMage.POISON_MIST || ret.skill == FPArchMage.FIRE_DEMON || ret.skill == ILArchMage.ICE_DEMON)
@@ -1015,7 +1018,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     // in for the crit effects.
                     if (j >= ret.numDamage / 2)
                     {
-                        hitDmgMax *= (long)0.5;
+                        hitDmgMax = (long)(hitDmgMax * 0.5);
                     }
                 }
 

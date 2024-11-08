@@ -25,6 +25,7 @@ using Application.Core.constants.game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
+using Application.Shared.WzEntity;
 using constants.id;
 using scripting.Event;
 using server.life;
@@ -184,7 +185,10 @@ public class MapFactory
         var timeMob = infoData?.getChildByPath("timeMob");
         if (timeMob != null)
         {
-            map.setTimeMob(DataTool.getInt(timeMob.getChildByPath("id")), DataTool.getString(timeMob.getChildByPath("message")));
+            map.TimeMob = new TimeMob(DataTool.getInt(timeMob.getChildByPath("id")),
+                DataTool.getString(timeMob.getChildByPath("message")) ?? "",
+                DataTool.getInt(timeMob.getChildByPath("startHour")),
+                DataTool.getInt(timeMob.getChildByPath("endHour")));
         }
 
         int[] bounds = new int[4];

@@ -103,9 +103,9 @@
 
         public int Matchcardties { get; set; }
 
-        public int? MerchantMesos { get; set; }
+        public int MerchantMesos { get; set; }
 
-        public bool? HasMerchant { get; set; }
+        public bool HasMerchant { get; set; }
 
         public int Equipslots { get; set; }
 

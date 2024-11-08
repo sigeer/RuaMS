@@ -1250,27 +1250,20 @@ public class StatEffect
 
         if (isPartyBuff() && (applyfrom.getParty() != null || isGmBuff()))
         {
-            Rectangle bounds = (!useMaxRange) ? calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft()) : new Rectangle(int.MinValue / 2, int.MinValue / 2, int.MaxValue, int.MaxValue);
-            List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.PLAYER));
+            Rectangle bounds = (!useMaxRange)
+                ? calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft())
+                : new Rectangle(int.MinValue / 2, int.MinValue / 2, int.MaxValue, int.MaxValue);
+
+            List<IMapObject> affecteds = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.PLAYER));
             List<IPlayer> affectedp = new(affecteds.Count);
             foreach (var affectedmo in affecteds)
             {
                 IPlayer affected = (IPlayer)affectedmo;
                 if (affected != applyfrom && (isGmBuff() || (applyfrom.getParty()?.Equals(affected.getParty()) ?? false)))
                 {
-                    if (!isResurrection())
+                    if (isResurrection() ^ affected.isAlive())
                     {
-                        if (affected.isAlive())
-                        {
-                            affectedp.Add(affected);
-                        }
-                    }
-                    else
-                    {
-                        if (!affected.isAlive())
-                        {
-                            affectedp.Add(affected);
-                        }
+                        affectedp.Add(affected);
                     }
                 }
             }
@@ -1290,7 +1283,7 @@ public class StatEffect
     private void applyMonsterBuff(IPlayer applyfrom)
     {
         Rectangle bounds = calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft());
-        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInRect(bounds, Arrays.asList(MapObjectType.MONSTER));
+        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInBox(bounds, Arrays.asList(MapObjectType.MONSTER));
         var skill_ = SkillFactory.GetSkillTrust(sourceid);
         int i = 0;
         foreach (var mo in affected)
@@ -1354,7 +1347,7 @@ public class StatEffect
         //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + localDuration) - Server.getInstance().getCurrentTime()));
 
         chr.registerEffect(this, localStartTime, localStartTime + localDuration, true);
-        SummonMovementType? summonMovementType = getSummonMovementType();
+        var summonMovementType = getSummonMovementType();
         if (summonMovementType != null)
         {
             Summon tosummon = new Summon(chr, sourceid, chr.getPosition(), summonMovementType.Value);
