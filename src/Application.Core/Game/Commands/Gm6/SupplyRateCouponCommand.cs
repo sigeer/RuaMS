@@ -1,4 +1,4 @@
-namespace Application.Core.Game.Commands.Gm6;
+﻿namespace Application.Core.Game.Commands.Gm6;
 
 public class SupplyRateCouponCommand : CommandBase
 {

@@ -1,4 +1,4 @@
-using Application.Core.Managers;
+﻿using Application.Core.Managers;
 using net.server;
 using server;
 using System.Text.RegularExpressions;

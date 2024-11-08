@@ -1,4 +1,4 @@
-using Application.Core.Game.Life;
+﻿using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using constants.id;
 using net.server;

@@ -1,4 +1,4 @@
-namespace Application.Core.Game.Commands.Gm2;
+﻿namespace Application.Core.Game.Commands.Gm2;
 
 public class HealCommand : CommandBase
 {

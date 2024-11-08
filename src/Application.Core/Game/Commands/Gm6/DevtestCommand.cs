@@ -1,4 +1,4 @@
-using Application.Core.Scripting.Infrastructure;
+﻿using Application.Core.Scripting.Infrastructure;
 using scripting;
 
 namespace Application.Core.Game.Commands.Gm6;

@@ -31,6 +31,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
+using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Core.scripting.Event;
 using client;
@@ -52,7 +53,6 @@ using net.server.guild;
 using net.server.world;
 using scripting;
 using scripting.Event;
-using scripting.item;
 using server;
 using server.events;
 using server.events.gm;
@@ -65,7 +65,6 @@ using System.Collections.ObjectModel;
 using tools;
 using tools.packets;
 using static client.inventory.Equip;
-using static server.ItemInformationProvider;
 
 namespace Application.Core.Game.Players;
 
@@ -1471,7 +1470,7 @@ public partial class Player
                     ii.getItemEffect(itemId)?.applyTo(this);
                 }
 
-                if (itemId / 10000 == 238)
+                if (ItemId.isMonsterCard(itemId))
                 {
                     this.Monsterbook.addCard(Client, itemId);
                 }
@@ -1481,7 +1480,7 @@ public partial class Player
         return false;
     }
 
-    public void pickupItem(IMapObject ob, int petIndex = -1)
+    public void pickupItem(IMapObject? ob, int petIndex = -1)
     {
         // yes, one picks the IMapObject, not the MapItem
         if (ob == null)
@@ -1492,189 +1491,10 @@ public partial class Player
 
         if (ob is MapItem mapitem)
         {
-            if (DateTimeOffset.Now.ToUnixTimeMilliseconds() - mapitem.getDropTime() < 400 || !mapitem.canBePickedBy(this))
-            {
-                sendPacket(PacketCreator.enableActions());
-                return;
-            }
-
-            List<IPlayer> mpcs = new();
-            if (mapitem.getMeso() > 0 && !mapitem.isPickedUp())
-            {
-                mpcs = getPartyMembersOnSameMap();
-            }
-
-            ScriptedItem? itemScript = null;
-            mapitem.lockItem();
-            try
-            {
-                if (mapitem.isPickedUp())
-                {
-                    sendPacket(PacketCreator.showItemUnavailable());
-                    sendPacket(PacketCreator.enableActions());
-                    return;
-                }
-
-                bool isPet = petIndex > -1;
-                Packet pickupPacket = PacketCreator.removeItemFromMap(mapitem.getObjectId(), (isPet) ? 5 : 2, this.getId(), isPet, petIndex);
-
-                Item mItem = mapitem.getItem();
-                bool hasSpaceInventory = true;
-                ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                if (ItemId.isNxCard(mapitem.getItemId())
-                    || mapitem.getMeso() > 0
-                    || ii.isConsumeOnPickup(mapitem.getItemId())
-                    || (hasSpaceInventory = InventoryManipulator.checkSpace(Client, mapitem.getItemId(), mItem.getQuantity(), mItem.getOwner())))
-                {
-                    int mapId = this.getMapId();
-
-                    if (MapId.isSelfLootableOnly(mapId))
-                    {
-                        //happyville trees and guild PQ
-                        if (!mapitem.isPlayerDrop() || mapitem.getDropper().getObjectId() == Client.OnlinedCharacter.getObjectId())
-                        {
-                            if (mapitem.getMeso() > 0)
-                            {
-                                if (mpcs.Count > 0)
-                                {
-                                    int mesosamm = mapitem.getMeso() / mpcs.Count;
-                                    foreach (IPlayer partymem in mpcs)
-                                    {
-                                        if (partymem.isLoggedinWorld())
-                                        {
-                                            partymem.gainMeso(mesosamm, true, true, false);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    this.gainMeso(mapitem.getMeso(), true, true, false);
-                                }
-
-                                this.MapModel.pickItemDrop(pickupPacket, mapitem);
-                            }
-                            else if (ItemId.isNxCard(mapitem.getItemId()))
-                            {
-                                // Add NX to account, show effect and make item disappear
-                                int nxGain = mapitem.getItemId() == ItemId.NX_CARD_100 ? 100 : 250;
-                                this.getCashShop().gainCash(1, nxGain);
-
-                                if (YamlConfig.config.server.USE_ANNOUNCE_NX_COUPON_LOOT)
-                                {
-                                    showHint("You have earned #e#b" + nxGain + " NX#k#n. (" + this.getCashShop().getCash(CashShop.NX_CREDIT) + " NX)", 300);
-                                }
-
-                                this.MapModel.pickItemDrop(pickupPacket, mapitem);
-                            }
-                            else if (InventoryManipulator.addFromDrop(Client, mItem, true))
-                            {
-                                this.MapModel.pickItemDrop(pickupPacket, mapitem);
-                            }
-                            else
-                            {
-                                sendPacket(PacketCreator.enableActions());
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            sendPacket(PacketCreator.showItemUnavailable());
-                            sendPacket(PacketCreator.enableActions());
-                            return;
-                        }
-                        sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    if (!this.needQuestItem(mapitem.getQuest(), mapitem.getItemId()))
-                    {
-                        sendPacket(PacketCreator.showItemUnavailable());
-                        sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    if (mapitem.getMeso() > 0)
-                    {
-                        if (mpcs.Count > 0)
-                        {
-                            int mesosamm = mapitem.getMeso() / mpcs.Count;
-                            foreach (IPlayer partymem in mpcs)
-                            {
-                                if (partymem.isLoggedinWorld())
-                                {
-                                    partymem.gainMeso(mesosamm, true, true, false);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            this.gainMeso(mapitem.getMeso(), true, true, false);
-                        }
-                    }
-                    else if (mItem.getItemId() / 10000 == 243)
-                    {
-                        var info = ii.getScriptedItemInfo(mItem.getItemId());
-                        if (info != null && info.runOnPickup())
-                        {
-                            itemScript = info;
-                        }
-                        else
-                        {
-                            if (!InventoryManipulator.addFromDrop(Client, mItem, true))
-                            {
-                                sendPacket(PacketCreator.enableActions());
-                                return;
-                            }
-                        }
-                    }
-                    else if (ItemId.isNxCard(mapitem.getItemId()))
-                    {
-                        // Add NX to account, show effect and make item disappear
-                        int nxGain = mapitem.getItemId() == ItemId.NX_CARD_100 ? 100 : 250;
-                        this.getCashShop().gainCash(1, nxGain);
-
-                        if (YamlConfig.config.server.USE_ANNOUNCE_NX_COUPON_LOOT)
-                        {
-                            showHint("You have earned #e#b" + nxGain + " NX#k#n. (" + this.getCashShop().getCash(CashShop.NX_CREDIT) + " NX)", 300);
-                        }
-                    }
-                    else if (applyConsumeOnPickup(mItem.getItemId()))
-                    {
-                    }
-                    else if (InventoryManipulator.addFromDrop(Client, mItem, true))
-                    {
-                        if (mItem.getItemId() == ItemId.ARPQ_SPIRIT_JEWEL)
-                        {
-                            updateAriantScore();
-                        }
-                    }
-                    else
-                    {
-                        sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    this.MapModel.pickItemDrop(pickupPacket, mapitem);
-                }
-                else if (!hasSpaceInventory)
-                {
-                    sendPacket(PacketCreator.getInventoryFull());
-                    sendPacket(PacketCreator.getShowInventoryFull());
-                }
-            }
-            finally
-            {
-                mapitem.unlockItem();
-            }
-
-            if (itemScript != null)
-            {
-                ItemScriptManager ism = ItemScriptManager.getInstance();
-                ism.runItemScript(Client, itemScript);
-            }
+            new PlayerPickupProcessor(this, petIndex).Handle(mapitem);
         }
-        sendPacket(PacketCreator.enableActions());
     }
+
 
     public int countItem(int itemid)
     {

@@ -1,4 +1,4 @@
-namespace Application.Core.Game.Commands.Gm3;
+﻿namespace Application.Core.Game.Commands.Gm3;
 
 public class GiveMesosCommand : CommandBase
 {

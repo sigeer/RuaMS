@@ -1,4 +1,4 @@
-using client.inventory;
+﻿using client.inventory;
 using client.inventory.manipulator;
 
 namespace Application.Core.Game.Commands.Gm2;

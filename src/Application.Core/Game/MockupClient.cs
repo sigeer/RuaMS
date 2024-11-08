@@ -345,7 +345,7 @@ namespace Application.Core.Game
         public IWorld getWorldServer()
         {
             if (_worldServer == null)
-                _worldServer = Server.getInstance().getWorld(Server.getInstance().addWorld());
+                _worldServer = Server.getInstance().getWorld(0);
             return _worldServer;
         }
 

@@ -1,4 +1,4 @@
-using Application.Core.Managers;
+﻿using Application.Core.Managers;
 
 namespace Application.Core.Game.Commands.Gm4;
 

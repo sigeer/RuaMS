@@ -1,4 +1,4 @@
-using server.life;
+﻿using server.life;
 
 namespace Application.Core.Game.Commands.Gm2;
 public class MobSkillCommand : CommandBase

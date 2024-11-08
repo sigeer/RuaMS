@@ -1,4 +1,4 @@
-using server;
+﻿using server;
 
 namespace Application.Core.Game.Commands.Gm2;
 

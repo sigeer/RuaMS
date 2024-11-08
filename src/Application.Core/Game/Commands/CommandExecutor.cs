@@ -1,4 +1,4 @@
-using constants.id;
+﻿using constants.id;
 using System.Reflection;
 
 namespace Application.Core.Game.Commands;

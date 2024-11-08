@@ -1,4 +1,4 @@
-namespace Application.Core.Game.Commands.Gm5;
+﻿namespace Application.Core.Game.Commands.Gm5;
 
 public class ShowPacketsCommand : CommandBase
 {

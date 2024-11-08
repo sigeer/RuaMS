@@ -1,4 +1,4 @@
-namespace Application.Core.Game.Commands.Gm4;
+﻿namespace Application.Core.Game.Commands.Gm4;
 
 public class HorntailCommand : CommandBase
 {

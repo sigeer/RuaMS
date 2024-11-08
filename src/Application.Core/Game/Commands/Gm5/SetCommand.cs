@@ -1,4 +1,4 @@
-using constants.net;
+﻿using constants.net;
 
 namespace Application.Core.Game.Commands.Gm5;
 

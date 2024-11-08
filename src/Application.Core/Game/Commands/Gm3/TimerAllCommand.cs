@@ -1,4 +1,4 @@
-using tools;
+﻿using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
 

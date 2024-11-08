@@ -1,4 +1,4 @@
-using DotNetty.Buffers;
+﻿using DotNetty.Buffers;
 using net;
 using net.packet;
 using System.Text.Json;

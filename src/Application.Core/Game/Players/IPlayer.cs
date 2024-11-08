@@ -516,7 +516,7 @@ namespace Application.Core.Game.Players
         void notifyMapTransferToPartner(int mapid);
         void partyOperationUpdate(ITeam party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
-        void pickupItem(IMapObject ob, int petIndex = -1);
+        void pickupItem(IMapObject? ob, int petIndex = -1);
         long portalDelay();
         void portalDelay(long delay);
         void purgeDebuffs();

@@ -1,4 +1,4 @@
-using net.server.coordinator.session;
+﻿using net.server.coordinator.session;
 
 namespace Application.Core.Game.Commands.Gm5;
 

@@ -1,5 +1,7 @@
 ﻿using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
+using Application.Core.Gameplay;
 using server.life;
 using server.maps;
 using System.Diagnostics;
@@ -42,15 +44,15 @@ namespace ServiceTest.Games
         [Test]
         public void MonsterCarnivalMap_Test()
         {
-            List<int> cpqMaps =  [980000101,
-                           980000201,
-                           980000301,
-                           980000401,
-                           980000501,
-                           980000601,
-                           980031100,
-                           980032100,
-                           980033100];
+            List<int> cpqMaps = [980000101,
+                980000201,
+                980000301,
+                980000401,
+                980000501,
+                980000601,
+                980031100,
+                980032100,
+                980033100];
 
             foreach (var mapId in cpqMaps)
             {
@@ -85,6 +87,68 @@ namespace ServiceTest.Games
             Console.WriteLine($"changeMap3. {sw.Elapsed.TotalSeconds}");
 
             Assert.Pass();
+        }
+
+        [Test]
+        public void PickupItem()
+        {
+            var mapId = 103000201;
+            var mapManager = MockClient.OnlinedCharacter.getChannelServer().getMapFactory();
+            var map = mapManager.getMap(mapId);
+
+            MockClient.OnlinedCharacter.changeMap(map, map.getPortal(0));
+            var monsters = map.getAllMonsters();
+            foreach (var monster in monsters)
+            {
+                // 直接使用killMonster时并没有触发造成伤害，不会掉落
+                map.damageMonster(MockClient.OnlinedCharacter, monster, int.MaxValue);
+            }
+            var items = map.getItems();
+            Assert.That(items.Count > 0);
+
+            var pickProcessor = new PlayerPickupProcessor(MockClient.OnlinedCharacter);
+            foreach (var item in items)
+            {
+                pickProcessor.Handle(item as MapItem);
+            }
+
+            Assert.That(map.getItems().Count == 0);
+        }
+
+        [Test]
+        public void PickupItemByAnother()
+        {
+            var mapId = 103000201;
+            var mapManager = MockClient.OnlinedCharacter.getChannelServer().getMapFactory();
+            var map = mapManager.getMap(mapId);
+
+            MockClient.OnlinedCharacter.changeMap(map, map.getPortal(0));
+            var monsters = map.getAllMonsters();
+            foreach (var monster in monsters)
+            {
+                // 直接使用killMonster时并没有触发造成伤害，不会掉落
+                map.damageMonster(MockClient.OnlinedCharacter, monster, int.MaxValue);
+            }
+            var items = map.getItems();
+            Assert.That(items.Count > 0);
+
+            var client2 = GetOnlinedTestClient(2);
+
+            client2.OnlinedCharacter.changeMap(map, map.getPortal(0));
+            var anotherPicker = new PlayerPickupProcessor(client2.OnlinedCharacter);
+            foreach (var item in items)
+            {
+                anotherPicker.Handle(item as MapItem);
+            }
+
+            Assert.That(map.getItems().Count == items.Count);
+            anotherPicker.Flags = PickupCheckFlags.None;
+
+            foreach (var item in items)
+            {
+                anotherPicker.Handle(item as MapItem);
+            }
+            Assert.That(map.getItems().Count == 0);
         }
     }
 }
