@@ -7,9 +7,6 @@ using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 
-/// <summary>
-/// 和ItemVacCommand什么区别？
-/// </summary>
 public class ForceVacCommand : CommandBase
 {
     public ForceVacCommand() : base(4, "forcevac")
