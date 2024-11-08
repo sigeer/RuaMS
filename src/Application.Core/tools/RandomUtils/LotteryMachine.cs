@@ -13,15 +13,15 @@ namespace Application.Core.tools.RandomUtils
 
         public TKey GetRandomItem()
         {
-            var sum = (double)_items.Sum(x => x.Chance);
+            var sum = _items.Sum(x => x.Chance);
 
-            var value = Randomizer.nextDouble();
+            var value = Randomizer.nextInt(100);
             foreach (var item in _items)
             {
                 if (value < item.Chance)
                     return item.Key;
                 else
-                    value -= item.Chance / sum;
+                    value -= item.Chance;
             }
             return _items.Last().Key;
         }

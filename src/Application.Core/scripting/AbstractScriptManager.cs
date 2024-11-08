@@ -76,7 +76,7 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("Channel", typeof(WorldChannel));
             engine.AddHostedType("CommandExecutor", typeof(CommandExecutor));
             engine.AddHostedType("CharacterManager", typeof(CharacterManager));
-            engine.AddHostedType("Gachapon", typeof(Gachapon));
+            engine.AddHostedType("GachaponManager", typeof(GachaponManager));
             engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
             engine.AddHostedType("MonsterBook", typeof(MonsterBook));
             engine.AddHostedType("ExpTable", typeof(ExpTable));

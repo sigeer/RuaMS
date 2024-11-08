@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Gachapon;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
@@ -411,7 +412,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void doGachapon()
     {
-        var item = GachaponManager.DoGachapon(npc);
+        var item = GachaponStorage.Instance.DoGachapon(npc);
         var itemGained = gainItem(item.ItemId, (short)(item.ItemId / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
 
         sendNext("You have obtained a #b#t" + item.ItemId + "##k.");
@@ -435,7 +436,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         Gachapon.log(getPlayer(), item.ItemId, map);
 
-        if (item.PoolLevel > 0)
+        if (item.Level > 0)
         {
             //Uncommon and Rare
             Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.gachaponMessage(itemGained, map, getPlayer()));

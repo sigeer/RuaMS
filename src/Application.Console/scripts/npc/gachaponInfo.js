@@ -27,8 +27,8 @@ var status;
 var gachaMessages;
 
 function start() {
-    gachaMessages = Gachapon.GachaponType.getLootInfo();
-    gachas = Gachapon.GachaponType.values();
+    gachaMessages = GachaponManager.getLootInfo();
+    gachas = GachaponManager.getGachaponType();
 
     status = -1;
     action(1, 0, 0);
@@ -52,7 +52,7 @@ function action(mode, type, selection) {
             var sendStr = "Hi, #r#p" + cm.getNpc() + "##k here! I'm announcing all obtainable loots from the Gachapons. Which Gachapon machine would you like to look?\r\n\r\n#b" + gachaMessages[0] + "#k";
             cm.sendSimple(sendStr);
         } else if (status == 1) {
-            var sendStr = "Loots from #b" + gachas[selection].name() + "#k:\r\n\r\n" + gachaMessages[selection + 1];
+            var sendStr = "Loots from #b" + gachas[selection].Name + "#k:\r\n\r\n" + gachaMessages[selection + 1];
             cm.sendPrev(sendStr);
         } else if (status == 2) {
             cm.dispose();

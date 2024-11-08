@@ -16,6 +16,7 @@ public partial class DBContext : DbContext
     }
 
     #region Entities
+    public DbSet<GachaponPoolLevelChance> GachaponPoolLevelChances { get; set; }
     public DbSet<GachaponPool> GachaponPools { get; set; }
     public DbSet<GachaponPoolItem> GachaponPoolItems { get; set; }
     public virtual DbSet<ExpLogRecord> ExpLogRecords { get; set; }
@@ -2676,11 +2677,19 @@ public partial class DBContext : DbContext
         {
             entity.ToTable("gachapon_pool");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
+            entity.Property(e => e.Name).HasColumnType("varchar(50)").IsRequired().HasDefaultValueSql("''");
         });
 
         modelBuilder.Entity<GachaponPoolItem>(entity =>
         {
             entity.ToTable("gachapon_pool_item");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+        });
+
+
+        modelBuilder.Entity<GachaponPoolLevelChance>(entity =>
+        {
+            entity.ToTable("gachapon_pool_level_chance");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
         });
 

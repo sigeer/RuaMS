@@ -32,6 +32,7 @@ public class Gachapon
 {
     private static ILogger _log = LogFactory.GetLogger("Gachapon");
 
+
     public static void log(IPlayer player, int itemId, string map)
     {
         string itemName = ItemInformationProvider.getInstance().getName(itemId);

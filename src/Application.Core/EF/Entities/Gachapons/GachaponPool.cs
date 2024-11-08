@@ -7,8 +7,6 @@
         /// -1：全局
         /// </summary>
         public int NpcId { get; set; }
-        public int Level { get; set; }
-        public int LevelChance { get; set; }
-        public string? Comment { get; set; }
+        public string Name { get; set; } = null!;
     }
 }
