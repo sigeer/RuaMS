@@ -152,10 +152,13 @@ public class SpawnPoint
 
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
-        var rate = _monsterMeta.isBoss() ? 1 : _map.MonsterRate;
+        var rate =_map.MonsterRate;
         // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
         if (_map.getEventInstance() == null)
             rate *= _map.getWorldServer().MobRate;
+
+        if (_monsterMeta.isBoss())
+            rate = 1;
 
         while (rate > Randomizer.nextFloat())
         {
