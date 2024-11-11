@@ -48,7 +48,7 @@ public class World : IWorld
             if (value <= 0)
                 _mobRate = 1;
             else
-                _mobRate = value;
+                _mobRate = Math.Min(value, 5);
         }
     }
 

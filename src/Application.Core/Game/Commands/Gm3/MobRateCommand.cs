@@ -11,7 +11,7 @@ namespace Application.Core.Game.Commands.Gm3
             var ws = client.OnlinedCharacter.getWorldServer();
             var p = GetFloatParam("mobrate");
             ws.MobRate = p;
-            client.OnlinedCharacter.dropMessage($"全局的怪物倍率：x " + ws.MobRate);
+            client.OnlinedCharacter.dropMessage($"全局的怪物倍率：x {ws.MobRate}。总倍率：x {ws.MobRate * client.OnlinedCharacter.getMap().MonsterRate}");
         }
     }
 }
