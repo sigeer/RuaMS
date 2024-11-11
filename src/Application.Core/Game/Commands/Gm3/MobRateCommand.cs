@@ -8,10 +8,10 @@ namespace Application.Core.Game.Commands.Gm3
 
         public override void Execute(IClient client, string[] values)
         {
-            var curMap = client.OnlinedCharacter.getMap();
+            var ws = client.OnlinedCharacter.getWorldServer();
             var p = GetFloatParam("mobrate");
-            curMap.MonsterRate = p;
-            client.OnlinedCharacter.dropMessage(1, $"当前地图的怪物倍率：x " + curMap.MonsterRate);
+            ws.MobRate = p;
+            client.OnlinedCharacter.dropMessage($"全局的怪物倍率：x " + ws.MobRate);
         }
     }
 }

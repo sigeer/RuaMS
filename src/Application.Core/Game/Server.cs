@@ -423,9 +423,9 @@ public class Server
         var world = new World(i,
                 flag,
                 event_message,
-                exprate, droprate, bossdroprate, mesorate, questrate, travelrate, fishingrate);
+                exprate, droprate, bossdroprate, mesorate, questrate, travelrate, fishingrate, worldConfig.mob_rate);
 
-        // world id´Ó0¿ªÊ¼ channel id´Ó1¿ªÊ¼
+        // world idä»Ž0å¼€å§‹ channel idä»Ž1å¼€å§‹
         Dictionary<int, string> channelInfo = new();
         long bootTime = getCurrentTime();
         for (int j = 1; j <= worldConfig.channels; j++)
@@ -931,7 +931,7 @@ public class Server
 
     private async Task InitialDataBase()
     {
-        log.Debug("³õÊ¼»¯Êý¾Ý¿â");
+        log.Debug("åˆå§‹åŒ–æ•°æ®åº“");
         Stopwatch sw = new Stopwatch();
         sw.Start();
         using var dbContext = new DBContext();
@@ -948,7 +948,7 @@ public class Server
             }
         }
         sw.Stop();
-        log.Debug("³õÊ¼»¯Êý¾Ý¿â====Íê³É£¬ºÄÊ±{StarupCost}Ãë", sw.Elapsed.TotalSeconds);
+        log.Debug("åˆå§‹åŒ–æ•°æ®åº“====å®Œæˆï¼Œè€—æ—¶{StarupCost}ç§’", sw.Elapsed.TotalSeconds);
     }
 
     public async Task Start()
@@ -1299,7 +1299,7 @@ public class Server
     {
         var g = getGuild(mc.getGuildId(), mc);
         if (g != null)
-            // µ±bOnlineÎªtrueÊ± ÕâÀïÊÇ·ñÓë getGuild ÖÐµÄsetOnline·¢ÉúÁËÖØ¸´µ÷ÓÃ£¿
+            // å½“bOnlineä¸ºtrueæ—¶ è¿™é‡Œæ˜¯å¦ä¸Ž getGuild ä¸­çš„setOnlineå‘ç”Ÿäº†é‡å¤è°ƒç”¨ï¼Ÿ
             g.setOnline(mc.getId(), bOnline, channel);
     }
 
