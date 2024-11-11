@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.model;
@@ -31,6 +31,7 @@ namespace Application.Core.Game.TheWorld
         public int QuestRate { get; set; }
         public int TravelRate { get; set; }
         public int FishingRate { get; set; }
+        public float MobRate { get; set; }
         void addCashItemBought(int snid);
         bool addChannel(IWorldChannel channel);
         void addFamily(int id, Family f);

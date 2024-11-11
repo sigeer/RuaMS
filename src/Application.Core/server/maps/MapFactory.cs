@@ -117,7 +117,6 @@ public class MapFactory
         AbstractLifeObject myLife = loadLife(id, type, cy, f, fh, rx0, rx1, x, y, hide);
         if (myLife is Monster monster)
         {
-
             if (mobTime == -1)
             { //does not respawn, force spawn once
                 map.spawnMonster(monster);

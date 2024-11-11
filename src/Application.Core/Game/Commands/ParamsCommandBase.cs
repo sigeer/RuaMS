@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace Application.Core.Game.Commands
 {
@@ -73,7 +73,14 @@ namespace Application.Core.Game.Commands
             if (!int.TryParse(str, out var d))
                 throw new CommandArgumentException($"{name} 应该是数字");
             return d;
+        }
 
+        protected float GetFloatParam(string name)
+        {
+            var str = GetParam(name);
+            if (!float.TryParse(str, out var d))
+                throw new CommandArgumentException($"{name} 应该是数字");
+            return d;
         }
 
         protected string? GetParamByIndex(int index)

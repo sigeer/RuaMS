@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.TheWorld;
@@ -16,7 +16,10 @@ namespace Application.Core.Game.Maps
     public interface IMap
     {
         public int Channel { get; set; }
-        public byte MonsterRate { get; set; }
+        /// <summary>
+        /// 当存在小数时，则是概率生成
+        /// </summary>
+        public float MonsterRate { get; set; }
         AtomicInteger droppedItemCount { get; set; }
         public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }

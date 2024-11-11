@@ -39,6 +39,18 @@ public class World : IWorld
     public int QuestRate { get; set; }
     public int TravelRate { get; set; }
     public int FishingRate { get; set; }
+    private float _mobRate;
+    public float MobRate
+    {
+        get => _mobRate;
+        set
+        {
+            if (value <= 0)
+                _mobRate = 1;
+            else
+                _mobRate = Math.Min(value, 5);
+        }
+    }
 
     public string EventMessage { get; set; }
 
@@ -119,7 +131,7 @@ public class World : IWorld
     private ScheduledFuture? hpDecSchedule;
 
 
-    public World(int world, int flag, string eventmsg, int exprate, int droprate, int bossdroprate, int mesorate, int questrate, int travelrate, int fishingrate)
+    public World(int world, int flag, string eventmsg, int exprate, int droprate, int bossdroprate, int mesorate, int questrate, int travelrate, int fishingrate, float mobRate)
     {
         this.Id = world;
         this.Flag = flag;
@@ -131,6 +143,7 @@ public class World : IWorld
         this.QuestRate = questrate;
         this.TravelRate = travelrate;
         this.FishingRate = fishingrate;
+        MobRate = mobRate;
 
         log = LogFactory.GetLogger("World_" + Id);
         Channels = new List<IWorldChannel>();
