@@ -50,7 +50,6 @@ using server.events.gm;
 using server.life;
 using server.maps;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Text;
 using tools;
 
@@ -138,7 +137,18 @@ public class MapleMap : IMap
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
     public int Channel { get; set; }
-    public byte MonsterRate { get; set; }
+    private float _monsterRate;
+    public float MonsterRate
+    {
+        get => _monsterRate;
+        set
+        {
+            if (value <= 0)
+                _monsterRate = 1;
+            else
+                _monsterRate = value;
+        }
+    }
 
 
     //locks
@@ -154,11 +164,7 @@ public class MapleMap : IMap
         this.Channel = channel;
         this.world = world;
         this.returnMapId = returnMapId;
-        this.MonsterRate = (byte)Math.Ceiling(monsterRate);
-        if (this.MonsterRate == 0)
-        {
-            this.MonsterRate = 1;
-        }
+        this.MonsterRate = monsterRate;
         aggroMonitor = new MonsterAggroCoordinator();
         onFirstUserEnter = mapid.ToString();
         onUserEnter = mapid.ToString();
@@ -680,6 +686,8 @@ public class MapleMap : IMap
     public KeyValuePair<string, int>? getDoorPositionStatus(Point pos)
     {
         var portal = findClosestPlayerSpawnpoint(pos);
+        if (portal == null)
+            return null;
 
         double angle = getAngle(portal.getPosition(), pos);
         double distn = pos.distanceSq(portal.getPosition());
@@ -1722,6 +1730,9 @@ public class MapleMap : IMap
         }
     }
 
+    /// <summary>
+    /// 直接杀死怪物，不会掉落物品，不会继续重生怪物
+    /// </summary>
     public void killAllMonsters()
     {
         closeMapSpawnPoints();
@@ -2221,7 +2232,7 @@ public class MapleMap : IMap
         {
             if (sp.getMonsterId() == id && sp.shouldForceSpawn())
             {
-                spawnMonster(sp.getMonster(), difficulty, isPq);
+                sp.SpawnMonster(difficulty, isPq);
             }
         }
     }
@@ -2231,7 +2242,7 @@ public class MapleMap : IMap
     {
         foreach (SpawnPoint sp in getAllMonsterSpawn())
         {
-            spawnMonster(sp.getMonster(), difficulty, isPq);
+            sp.SpawnMonster(difficulty, isPq);
         }
     }
 
@@ -3391,7 +3402,7 @@ public class MapleMap : IMap
 
         List<int> removedSummonObjects = new List<int>();
 
-        foreach(var o in allMapObjects)
+        foreach (var o in allMapObjects)
         {
             if (o.getType() == MapObjectType.SUMMON)
             {
@@ -3552,12 +3563,12 @@ public class MapleMap : IMap
     {
         Point newpos = calcPointBelow(monster.getPosition())!.Value;
         newpos.Y -= 1;
-        SpawnPoint sp = new SpawnPoint(monster, newpos, !monster.isMobile(), mobTime, mobInterval, team);
+        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, mobInterval, team);
         monsterSpawn.Add(sp);
         if (sp.shouldSpawn() || mobTime == -1)
         {
             // -1 does not respawn and should not either but force ONE spawn
-            spawnMonster(sp.getMonster());
+            sp.SpawnMonster();
         }
     }
 
@@ -3565,7 +3576,7 @@ public class MapleMap : IMap
     {
         Point newpos = calcPointBelow(monster.getPosition())!.Value;
         newpos.Y -= 1;
-        SpawnPoint sp = new SpawnPoint(monster, newpos, !monster.isMobile(), mobTime, mobInterval, team);
+        SpawnPoint sp = new SpawnPoint(this, monster, newpos, !monster.isMobile(), mobTime, mobInterval, team);
         allMonsterSpawn.Add(sp);
     }
 
@@ -4065,9 +4076,10 @@ public class MapleMap : IMap
     {
         foreach (SpawnPoint spawnPoint in getAllMonsterSpawn())
         {
-            if (spawnPoint.getMobTime() == -1)
-            {   //just those allowed to be spawned only once
-                spawnMonster(spawnPoint.getMonster());
+            if (spawnPoint.shouldSpawn() || spawnPoint.getMobTime() == -1)
+            {
+                //just those allowed to be spawned only once
+                spawnPoint.SpawnMonster();
             }
         }
     }
@@ -4089,7 +4101,7 @@ public class MapleMap : IMap
             {
                 if (spawnPoint.shouldSpawn())
                 {
-                    spawnMonster(spawnPoint.getMonster());
+                    spawnPoint.SpawnMonster();
                     spawned++;
                     if (spawned >= numShouldSpawn)
                     {
@@ -4117,7 +4129,7 @@ public class MapleMap : IMap
             {
                 if (spawnPoint.shouldForceSpawn())
                 {
-                    spawnMonster(spawnPoint.getMonster());
+                    spawnPoint.SpawnMonster();
                     spawned++;
                     if (spawned >= numShouldSpawn)
                     {
@@ -4182,6 +4194,11 @@ public class MapleMap : IMap
         return closest;
     }
 
+    /// <summary>
+    /// 6人在当前地图时，怪才会刷满
+    /// </summary>
+    /// <param name="numPlayers"></param>
+    /// <returns></returns>
     private static double getCurrentSpawnRate(int numPlayers)
     {
         return 0.70 + (0.05 * Math.Min(6, numPlayers));
@@ -4240,7 +4257,7 @@ public class MapleMap : IMap
             {
                 if (spawnPoint.shouldSpawn())
                 {
-                    spawnMonster(spawnPoint.getMonster());
+                    spawnPoint.SpawnMonster();
                     spawned++;
 
                     if (spawned >= numShouldSpawn)
@@ -5044,6 +5061,9 @@ public class MapleMap : IMap
         footholds = null;
         portals.Clear();
         mapEffect = null;
+
+        monsterSpawn.Clear();
+        allMonsterSpawn.Clear();
 
         chrLock.EnterWriteLock();
         try

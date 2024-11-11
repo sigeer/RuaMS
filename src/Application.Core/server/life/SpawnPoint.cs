@@ -22,7 +22,9 @@
 
 
 using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
 using net.server;
+using tools;
 
 namespace server.life;
 
@@ -39,9 +41,14 @@ public class SpawnPoint
     private AtomicInteger spawnedMonsters = new AtomicInteger(0);
     private bool immobile;
     private bool denySpawn = false;
+    readonly Monster _monsterMeta;
+    readonly IMap _map;
 
-    public SpawnPoint(Monster monster, Point pos, bool immobile, int mobTime, int mobInterval, int team)
+    public SpawnPoint(IMap map, Monster monster, Point pos, bool immobile, int mobTime, int mobInterval, int team)
     {
+        _map = map;
+        _monsterMeta = monster;
+
         this.monster = monster.getId();
         this.pos = pos;
         this.mobTime = mobTime;
@@ -141,5 +148,15 @@ public class SpawnPoint
     public int getTeam()
     {
         return team;
+    }
+
+    public void SpawnMonster(int difficulty = 1, bool isPq = false)
+    {
+        var rate = _monsterMeta.isBoss() ? 1 : _map.MonsterRate;
+        while (rate > Randomizer.nextFloat())
+        {
+            _map.spawnMonster(getMonster(), difficulty, isPq);
+            rate -= 1;
+        }
     }
 }

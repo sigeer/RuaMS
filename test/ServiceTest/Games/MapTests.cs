@@ -1,7 +1,8 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Gameplay;
+using net.server;
 using server.life;
 using server.maps;
 using System.Diagnostics;
@@ -23,6 +24,32 @@ namespace ServiceTest.Games
                     Console.WriteLine(PacketCreator.spawnNPC(npc).ToString());
             }
             return objects.Count;
+        }
+
+        [TestCase(103000201, 2)]
+        [Test]
+        public async Task MonsterRate_Test(int mapId, float rate)
+        {
+            var mapManager = MockClient.OnlinedCharacter.getChannelServer().getMapFactory();
+            MockClient.OnlinedCharacter.changeMap(mapId);
+            var map = mapManager.getMap(mapId);
+
+            var originalMonsterCount = map.countMonsters();
+
+            var monsters = map.getAllMonsters();
+            foreach (var monster in monsters)
+            {
+                map.damageMonster(MockClient.OnlinedCharacter, monster, int.MaxValue);
+            }
+
+            map.MonsterRate *= rate;
+
+            await Task.Delay(6000);
+            Server.getInstance().forceUpdateCurrentTime();
+            mapManager.updateMaps();
+
+            // 1个人在地图时只会生成0.75的怪物（每多一个人+0.05）
+            Assert.That(map.countMonsters(), Is.EqualTo(originalMonsterCount * rate * 0.75));
         }
 
         [Test]

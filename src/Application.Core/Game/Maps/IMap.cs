@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.TheWorld;
@@ -16,7 +16,7 @@ namespace Application.Core.Game.Maps
     public interface IMap
     {
         public int Channel { get; set; }
-        public byte MonsterRate { get; set; }
+        public float MonsterRate { get; set; }
         AtomicInteger droppedItemCount { get; set; }
         public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }
