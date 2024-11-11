@@ -3399,7 +3399,7 @@ public class MapleMap : IMap
                 if (summon.getOwner() == chr && (chr.isSummonsEmpty() || !chr.containsSummon(summon)))
                 {
                     removedSummonObjects.Add(o.getObjectId());
-                    return;
+                    continue;
                 }
             }
 
@@ -3408,11 +3408,11 @@ public class MapleMap : IMap
                 o.sendSpawnData(c);
             }
 
-            // rangedMapobjectTypes ºÍ NonRangedType¶¼°üº¬ÁËNPC
+            // rangedMapobjectTypes å’Œ NonRangedTypeéƒ½åŒ…å«äº†NPC
             if (IsObjectInRange(o, chrPosition, rangeDistance, rangedMapobjectTypes))
             {
                 if (o.getType() == MapObjectType.REACTOR && !((Reactor)o).isAlive())
-                    return;
+                    continue;
 
                 o.sendSpawnData(chr.getClient());
                 chr.addVisibleMapObject(o);
@@ -3982,7 +3982,7 @@ public class MapleMap : IMap
     //}
 
     /// <summary>
-    /// ¶ªµôµÀ¾ß´¥·¢hitReactor
+    /// ä¸¢æ‰é“å…·è§¦å‘hitReactor
     /// </summary>
     private class ActivateItemReactor : AbstractRunnable
     {
