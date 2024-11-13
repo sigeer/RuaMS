@@ -308,7 +308,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                     c.sendPacket(GuildPackets.showGuildInfo(player));
                     if (player.AllianceModel != null)
                     {
-                        c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel, c.getWorld()));
+                        c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel));
                         c.sendPacket(GuildPackets.allianceNotice(player.AllianceModel.AllianceId, player.AllianceModel.getNotice()));
 
                         if (newcomer)

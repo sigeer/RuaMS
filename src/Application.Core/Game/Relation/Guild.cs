@@ -665,7 +665,7 @@ public class Guild : IGuild
     {
         if (AllianceModel != null)
         {
-            if (!AllianceModel.RemoveGuildFromAlliance(GuildId, world))
+            if (!AllianceModel.RemoveGuildFromAlliance(GuildId, 1))
             {
                 AllianceModel.Disband();
             }

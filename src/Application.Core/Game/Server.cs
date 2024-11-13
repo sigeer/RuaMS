@@ -70,7 +70,6 @@ public class Server
     /// </summary>
     private List<Dictionary<int, string>> channelInfoList = new();
     private List<IWorld> worlds = new();
-    private Dictionary<string, string> subnetInfo = new();
 
     /// <summary>
     /// AccountId - world - cid
@@ -1122,11 +1121,6 @@ public class Server
         timeLeft = getTimeLeftForNextDay();
         ExpeditionBossLog.resetBossLogTable();
         tMan.register(new BossLogTask(), TimeSpan.FromDays(1), timeLeft);
-    }
-
-    public Dictionary<string, string> getSubnetInfo()
-    {
-        return subnetInfo;
     }
 
     public PlayerBuffStorage getPlayerBuffStorage()

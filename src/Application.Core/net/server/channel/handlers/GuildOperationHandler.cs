@@ -233,7 +233,7 @@ public class GuildOperationHandler : AbstractPacketHandler
 
                 if (mc.AllianceModel != null)
                 {
-                    mc.AllianceModel.broadcastMessage(GuildPackets.getGuildAlliances(mc.AllianceModel, c.getWorld()), -1, -1);
+                    mc.AllianceModel.broadcastMessage(GuildPackets.getGuildAlliances(mc.AllianceModel), -1, -1);
                 }
 
                 mc.gainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);

@@ -64,7 +64,8 @@ public class Alliance : IAlliance
     {
         using var dbContext = new DBContext();
         using var dbTrans = dbContext.Database.BeginTransaction();
-        dbContext.Alliances.Where(x => x.Id == AllianceId).ExecuteUpdate(x => x.SetProperty(y => y.Capacity, this.Capacity)
+        dbContext.Alliances.Where(x => x.Id == AllianceId)
+            .ExecuteUpdate(x => x.SetProperty(y => y.Capacity, this.Capacity)
                     .SetProperty(y => y.Notice, this.Notice)
                     .SetProperty(y => y.Rank1, RankTitles[0])
                     .SetProperty(y => y.Rank2, RankTitles[1])
@@ -84,9 +85,9 @@ public class Alliance : IAlliance
     }
 
 
-    public bool RemoveGuildFromAlliance(int guildId, int worldId)
+    public bool RemoveGuildFromAlliance(int guildId, int method)
     {
-        if (getLeader().getGuildId() == guildId)
+        if (method == 1 && getLeader().getGuildId() == guildId)
         {
             return false;
         }
@@ -94,17 +95,20 @@ public class Alliance : IAlliance
         if (!Guilds.TryGetValue(guildId, out var guild) || guild == null)
             throw new BusinessException($"GuildId {guildId} not found or not in alliance");
 
-        broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild, worldId), -1, -1);
+        broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild), -1, -1);
         removeGuild(guildId);
 
         using var dbContext = new DBContext();
         dbContext.AllianceGuilds.Where(x => x.GuildId == guildId).ExecuteDelete();
 
-        broadcastMessage(GuildPackets.getGuildAlliances(this, worldId), -1, -1);
+        broadcastMessage(GuildPackets.getGuildAlliances(this), -1, -1);
         broadcastMessage(GuildPackets.allianceNotice(getId(), getNotice()), -1, -1);
         guild.broadcast(GuildPackets.disbandAlliance(getId()));
 
-        dropMessage("[" + guild.Name + "] guild has left the union.");
+        if (method == 1)
+            dropMessage("[" + guild.Name + "] guild has left the union.");
+        else if (method == 2)
+            dropMessage("[" + guild.Name + "] guild has been expelled from the union.");
         return true;
     }
 
@@ -112,12 +116,12 @@ public class Alliance : IAlliance
     {
         if (AllianceId > 0)
         {
-            this.broadcastMessage(GuildPackets.updateAllianceInfo(this, chr.getWorld()));
+            this.broadcastMessage(GuildPackets.updateAllianceInfo(this));
             this.broadcastMessage(GuildPackets.allianceNotice(this.getId(), this.getNotice()));
         }
     }
 
-    public bool removeGuild(int gid)
+    private bool removeGuild(int gid)
     {
         var r = Guilds.TryRemove(gid, out var guild);
         if (r && guild != null)
@@ -136,10 +140,13 @@ public class Alliance : IAlliance
         var guild = AllGuildStorage.GetGuildById(gid);
         if (guild != null)
         {
-            Guilds.TryAdd(gid, guild);
-            guild.AllianceId = AllianceId;
+            var r = Guilds.TryAdd(gid, guild);
+            if (r)
+                guild.AllianceId = AllianceId;
+
+            return r;
         }
-        return true;
+        return false;
     }
 
 
@@ -150,9 +157,9 @@ public class Alliance : IAlliance
         dbContext.Alliances.Where(x => x.Id == AllianceId).ExecuteDelete();
         dbContext.AllianceGuilds.Where(x => x.AllianceId == AllianceId).ExecuteDelete();
 
-        Guilds.Clear();
         AllAllianceStorage.Remove(AllianceId);
         AllGuildStorage.Remove(Guilds.Keys.ToArray());
+        Guilds.Clear();
         dbTrans.Commit();
 
         broadcastMessage(GuildPackets.disbandAlliance(AllianceId), -1, -1);

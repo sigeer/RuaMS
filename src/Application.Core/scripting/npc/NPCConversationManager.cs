@@ -452,10 +452,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
         var alliance = c.OnlinedCharacter.AllianceModel!;
         alliance.increaseCapacity(1);
 
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance, c.getWorld()), -1, -1);
+        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
         alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
 
-        c.sendPacket(GuildPackets.updateAllianceInfo(alliance, c.getWorld()));  // thanks Vcoc for finding an alliance update to leader issue
+        c.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue
     }
 
     public void disbandAlliance(IClient c, int allianceId)

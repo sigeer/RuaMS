@@ -112,8 +112,8 @@ namespace Application.Core.Managers
                     AllAllianceStorage.AddOrUpdate(alliance);
 
                     int worldid = guildMasters.get(0).getWorld();
-                    alliance.broadcastMessage(GuildPackets.updateAllianceInfo(alliance, worldid), -1, -1);
-                    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance, worldid), -1, -1);  // thanks Vcoc for noticing guilds from other alliances being visually stacked here due to this not being updated
+                    alliance.broadcastMessage(GuildPackets.updateAllianceInfo(alliance), -1, -1);
+                    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);  // thanks Vcoc for noticing guilds from other alliances being visually stacked here due to this not being updated
                 }
                 catch (Exception e)
                 {

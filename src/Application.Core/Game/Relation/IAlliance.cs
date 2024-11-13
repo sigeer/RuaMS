@@ -48,13 +48,18 @@ namespace Application.Core.Game.Relation
         string getNotice();
         string getRankTitle(int rank);
         void increaseCapacity(int inc);
-        bool removeGuild(int gid);
         void saveToDB();
         void setCapacity(int newCapacity);
         void setNotice(string notice);
         void setRankTitle(string[] ranks);
         void updateAlliancePackets(IPlayer chr);
 
-        bool RemoveGuildFromAlliance(int guildId, int worldId);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="guildId"></param>
+        /// <param name="method">1. 退出 2. 踢出</param>
+        /// <returns>false：无法移除，需要解散联盟</returns>
+        bool RemoveGuildFromAlliance(int guildId, int method);
     }
 }

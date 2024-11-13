@@ -89,7 +89,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
                         return;
                     }
 
-                    chr.AllianceModel.RemoveGuildFromAlliance(chr.GuildId, chr.World);
+                    chr.AllianceModel.RemoveGuildFromAlliance(chr.GuildId, 1);
                     break;
                 }
             case 0x03: // Send Invite
@@ -142,7 +142,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
                     chr.saveGuildStatus();
 
                     alliance.broadcastMessage(GuildPackets.addGuildToAlliance(alliance, chrGuild, c), -1, -1);
-                    alliance.broadcastMessage(GuildPackets.updateAllianceInfo(alliance, c.getWorld()), -1, -1);
+                    alliance.broadcastMessage(GuildPackets.updateAllianceInfo(alliance), -1, -1);
                     alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
                     chrGuild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
 
@@ -158,21 +158,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
                         return;
                     }
 
-                    var targetGuild = AllGuildStorage.GetGuildById(guildid);
-                    if (targetGuild == null)
-                        return;
-
-                    alliance.broadcastMessage(GuildPackets.removeGuildFromAlliance(alliance, targetGuild, c.getWorld()), -1, -1);
-                    alliance.removeGuild(guildid);
-
-                    // 为什么没有调用 removeGuildFromAllianceOnDb ？
-                    // 最后 saveToDB 会更新db
-
-                    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance, c.getWorld()), -1, -1);
-                    alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
-                    chrGuild.broadcast(GuildPackets.disbandAlliance(allianceid));
-
-                    alliance.dropMessage("[" + chrGuild.getName() + "] guild has been expelled from the union.");
+                    alliance!.RemoveGuildFromAlliance(guildid, 2);
                     break;
                 }
             case 0x07:
@@ -237,7 +223,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
         newLeader.setAllianceRank(1);
         newLeader.saveGuildStatus();
 
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance, newLeader.World), -1, -1);
+        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
         alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
     }
 
@@ -252,7 +238,7 @@ public class AllianceOperationHandler : AbstractPacketHandler
         chr.setAllianceRank(newRank);
         chr.saveGuildStatus();
 
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance, chr.getWorld()), -1, -1);
+        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
         alliance.dropMessage("'" + chr.getName() + "' has been reassigned to '" + alliance.getRankTitle(newRank) + "' in this Alliance.");
     }
 

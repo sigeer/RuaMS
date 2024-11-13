@@ -2438,16 +2438,7 @@ public partial class Player
 
     public IAlliance? getAlliance()
     {
-        try
-        {
-            var g = getGuild();
-            return g == null ? null : AllAllianceStorage.GetAllianceById(g.AllianceId);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.ToString());
-            return null;
-        }
+        return getGuild()?.AllianceModel;
     }
 
     public int getGuildId()
@@ -2969,7 +2960,8 @@ public partial class Player
         {
             if (GuildModel != null)
                 GuildModel.memberLevelJobUpdate(this);
-            //NewServer.getInstance().getGuild(guildid, world, mgc).gainGP(40);
+
+            //Server.getInstance().getGuild(guildid, world, mgc).gainGP(40);
             if (AllianceModel != null)
             {
                 AllianceModel.broadcastMessage(GuildPackets.updateAllianceJobLevel(this), Id, -1);

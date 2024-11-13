@@ -424,7 +424,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet updateAllianceInfo(IAlliance alliance, int world)
+    public static Packet updateAllianceInfo(IAlliance alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0F);
@@ -450,7 +450,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet getGuildAlliances(IAlliance alliance, int worldId)
+    public static Packet getGuildAlliances(IAlliance alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0D);
@@ -530,7 +530,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet removeGuildFromAlliance(IAlliance alliance, IGuild expelledGuild, int worldId)
+    public static Packet removeGuildFromAlliance(IAlliance alliance, IGuild expelledGuild)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x10);
