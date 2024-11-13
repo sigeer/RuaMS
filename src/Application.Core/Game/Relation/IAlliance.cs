@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -22,6 +22,7 @@
 
 
 using net.packet;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Game.Relation
 {
@@ -32,10 +33,10 @@ namespace Application.Core.Game.Relation
         public string Name { get; set; }
         public string Notice { get; set; }
         public string[] RankTitles { get; set; }
-
-
-        bool addGuild(int gid);
-        void broadcastMessage(Packet packet);
+        ConcurrentDictionary<int, IGuild> Guilds { get; }
+        void Disband();
+        bool AddGuild(int gid);
+        void broadcastMessage(Packet packet, int exception = -1, int exceptedGuildId = -1);
         void dropMessage(int type, string message);
         void dropMessage(string message);
         string getAllianceNotice();
@@ -54,6 +55,6 @@ namespace Application.Core.Game.Relation
         void setRankTitle(string[] ranks);
         void updateAlliancePackets(IPlayer chr);
 
-        bool removeGuildFromAlliance(int guildId, int worldId);
+        bool RemoveGuildFromAlliance(int guildId, int worldId);
     }
 }

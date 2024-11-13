@@ -27,6 +27,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using client;
 using client.inventory;
@@ -451,15 +452,15 @@ public class NPCConversationManager : AbstractPlayerInteraction
         var alliance = c.OnlinedCharacter.AllianceModel!;
         alliance.increaseCapacity(1);
 
-        Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.getGuildAlliances(alliance, c.getWorld()), -1, -1);
-        Server.getInstance().allianceMessage(alliance.getId(), GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
+        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance, c.getWorld()), -1, -1);
+        alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
 
         c.sendPacket(GuildPackets.updateAllianceInfo(alliance, c.getWorld()));  // thanks Vcoc for finding an alliance update to leader issue
     }
 
     public void disbandAlliance(IClient c, int allianceId)
     {
-        AllianceManager.disbandAlliance(allianceId);
+        AllAllianceStorage.GetAllianceById(allianceId)?.Disband();
     }
 
     public bool canBeUsedAllianceName(string name)

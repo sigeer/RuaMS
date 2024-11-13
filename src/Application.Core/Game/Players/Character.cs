@@ -1640,7 +1640,7 @@ public partial class Player
         }
         try
         {
-            Server.getInstance().disbandGuild(GuildId);
+            GuildModel?.disbandGuild();
         }
         catch (Exception e)
         {
@@ -1818,58 +1818,7 @@ public partial class Player
         }
     }
 
-    public bool canHoldMeso(int gain)
-    {
-        // thanks lucasziron for pointing out a need to check space availability for mesos on player transactions
-        long nextMeso = (long)MesoValue.get() + gain;
-        return nextMeso <= int.MaxValue;
-    }
 
-    public void gainMeso(int gain)
-    {
-        gainMeso(gain, true, false, true);
-    }
-
-    public void gainMeso(int gain, bool show)
-    {
-        gainMeso(gain, show, false, false);
-    }
-
-    public void gainMeso(int gain, bool show, bool enableActions, bool inChat)
-    {
-        long nextMeso;
-        Monitor.Enter(petLock);
-        try
-        {
-            nextMeso = (long)MesoValue.get() + gain;  // thanks Thora for pointing integer overflow here
-            if (nextMeso > int.MaxValue)
-            {
-                gain -= (int)(nextMeso - int.MaxValue);
-            }
-            else if (nextMeso < 0)
-            {
-                gain = -MesoValue.get();
-            }
-            nextMeso = MesoValue.addAndGet(gain);
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
-        }
-
-        if (gain != 0)
-        {
-            updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
-            if (show)
-            {
-                sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
-            }
-        }
-        else
-        {
-            sendPacket(PacketCreator.enableActions());
-        }
-    }
 
     public void genericGuildMessage(int code)
     {
@@ -2478,7 +2427,7 @@ public partial class Player
     {
         try
         {
-            return Server.getInstance().getGuild(GuildId);
+            return AllGuildStorage.GetGuildById(GuildId);
         }
         catch (Exception ex)
         {
@@ -2487,12 +2436,12 @@ public partial class Player
         }
     }
 
-    public Alliance? getAlliance()
+    public IAlliance? getAlliance()
     {
         try
         {
             var g = getGuild();
-            return g == null ? null : Server.getInstance().getAlliance(g.AllianceId);
+            return g == null ? null : AllAllianceStorage.GetAllianceById(g.AllianceId);
         }
         catch (Exception ex)
         {
@@ -3018,11 +2967,12 @@ public partial class Player
 
         try
         {
-            Server.getInstance().memberLevelJobUpdate(this);
+            if (GuildModel != null)
+                GuildModel.memberLevelJobUpdate(this);
             //NewServer.getInstance().getGuild(guildid, world, mgc).gainGP(40);
             if (AllianceModel != null)
             {
-                Server.getInstance().allianceMessage(AllianceModel.AllianceId, GuildPackets.updateAllianceJobLevel(this), Id, -1);
+                AllianceModel.broadcastMessage(GuildPackets.updateAllianceJobLevel(this), Id, -1);
             }
         }
         catch (Exception e)
@@ -3152,7 +3102,7 @@ public partial class Player
             return;
         }
 
-        if (Server.getInstance().increaseGuildCapacity(GuildId))
+        if (guild.increaseCapacity())
         {
             gainMeso(-cost, true, false, true);
         }
@@ -5997,5 +5947,21 @@ public partial class Player
     public IWorldChannel getChannelServer()
     {
         return Client.getChannelServer();
+    }
+
+    public void LeaveGuild()
+    {
+        if (GuildModel == null)
+            return;
+
+        GuildModel.setOnline(Id, false, -1);
+        if (GuildRank > 1)
+        {
+            GuildModel.leaveGuild(this);
+        }
+        else
+        {
+            GuildModel.disbandGuild();
+        }
     }
 }

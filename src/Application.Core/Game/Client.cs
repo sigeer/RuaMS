@@ -54,7 +54,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     private IChannel ioChannel = null!;
     /// <summary>
-    /// Æô¶¯ÁË¿Í»§¶Ë£¬µ«ÊÇ½ÇÉ«¿ÉÄÜ²¢²»ÔÚÏß
+    /// å¯åŠ¨äº†å®¢æˆ·ç«¯ï¼Œä½†æ˜¯è§’è‰²å¯èƒ½å¹¶ä¸åœ¨çº¿
     /// </summary>
     public IPlayer? Character { get; private set; }
     public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
@@ -340,7 +340,7 @@ public class Client : ChannelHandlerAdapter, IClient
     }
 
     /// <summary>
-    /// Ñ¡Ôñ½ÇÉ«Ê±¼ÓÔØµÄ½ÇÉ«
+    /// é€‰æ‹©è§’è‰²æ—¶åŠ è½½çš„è§’è‰²
     /// </summary>
     /// <param name="worldId"></param>
     /// <returns></returns>
@@ -957,7 +957,7 @@ public class Client : ChannelHandlerAdapter, IClient
     /// 
     /// </summary>
     /// <param name="shutdown"></param>
-    /// <param name="cashshop">´Ó ÅÄÂô/ÉÌ³Ç ¶Ï¿ªÁ¬½Ó£¿</param>
+    /// <param name="cashshop">ä» æ‹å–/å•†åŸ æ–­å¼€è¿æ¥ï¼Ÿ</param>
     private void disconnectInternal(bool shutdown, bool cashshop)
     {
         //once per Client instance
@@ -993,8 +993,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
                             if (guild != null)
                             {
-                                var server = Server.getInstance();
-                                server.setGuildMemberOnline(Character, false, Character.getClient().getChannel());
+                                guild.setOnline(Character.Id, false, getChannel());
                                 Character.sendPacket(GuildPackets.showGuildInfo(Character));
                             }
                             if (Character.BuddyList.Count > 0)

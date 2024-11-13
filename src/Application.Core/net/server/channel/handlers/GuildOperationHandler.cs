@@ -151,7 +151,7 @@ public class GuildOperationHandler : AbstractPacketHandler
             case 0x07:
                 cid = p.readInt();
                 string name = p.readString();
-                if (cid != mc.getId() || !name.Equals(mc.getName()) || mc.getGuildId() <= 0)
+                if (cid != mc.getId() || !name.Equals(mc.getName()) || mc.GuildModel == null)
                 {
                     log.Warning("[Hack] Chr {CharacterName} tried to quit guild under the name {GuildName} and current guild id of {GuildId}", mc.getName(), name, mc.getGuildId());
                     return;
@@ -159,7 +159,7 @@ public class GuildOperationHandler : AbstractPacketHandler
 
 
                 c.sendPacket(GuildPackets.updateGP(mc.GuildId, 0));
-                Server.getInstance().leaveGuild(mc);
+                mc.GuildModel!.leaveGuild(mc);
 
                 c.sendPacket(GuildPackets.showGuildInfo(null));
                 if (mc.AllianceModel != null)
@@ -167,8 +167,6 @@ public class GuildOperationHandler : AbstractPacketHandler
                     mc.AllianceModel.updateAlliancePackets(mc);
                 }
 
-                mc.GuildId = 0;
-                mc.GuildRank = 5;
                 mc.saveGuildStatus();
                 mc.getMap().broadcastPacket(mc, GuildPackets.guildNameChanged(mc.getId(), ""));
                 break;
@@ -181,14 +179,15 @@ public class GuildOperationHandler : AbstractPacketHandler
                     return;
                 }
 
-                Server.getInstance().expelMember(mc, name, cid);
+                mc.GuildModel?.expelMember(mc, name, cid, new service.NoteService(new database.note.NoteDao()));
+
                 if (mc.AllianceModel != null)
                 {
                     mc.AllianceModel!.updateAlliancePackets(mc);
                 }
                 break;
             case 0x0d:
-                if (mc.getGuildId() <= 0 || mc.getGuildRank() != 1)
+                if (mc.GuildModel == null || mc.getGuildRank() != 1)
                 {
                     log.Warning("[Hack] Chr {CharacterName} tried to change guild rank titles when s/he does not have permission", mc.getName());
                     return;
@@ -199,12 +198,12 @@ public class GuildOperationHandler : AbstractPacketHandler
                     ranks[i] = p.readString();
                 }
 
-                Server.getInstance().changeRankTitle(mc.getGuildId(), ranks);
+                mc.GuildModel.changeRankTitle(ranks);
                 break;
             case 0x0e:
                 cid = p.readInt();
                 byte newRank = p.readByte();
-                if (mc.getGuildRank() > 2 || (newRank <= 2 && mc.getGuildRank() != 1) || mc.getGuildId() <= 0)
+                if (mc.getGuildRank() > 2 || (newRank <= 2 && mc.getGuildRank() != 1) || mc.GuildModel == null)
                 {
                     log.Warning("[Hack] Chr {CharacterName} is trying to change rank outside of his/her permissions.", mc.getName());
                     return;
@@ -213,10 +212,10 @@ public class GuildOperationHandler : AbstractPacketHandler
                 {
                     return;
                 }
-                Server.getInstance().changeRank(mc.GuildId, cid, newRank);
+                mc.GuildModel.changeRank(cid, newRank);
                 break;
             case 0x0f:
-                if (mc.GuildId <= 0 || mc.GuildRank != 1 || mc.getMapId() != MapId.GUILD_HQ)
+                if (mc.GuildModel == null || mc.GuildRank != 1 || mc.getMapId() != MapId.GUILD_HQ)
                 {
                     log.Warning("[Hack] Chr {CharacterName} tried to change guild emblem without being the guild leader", mc.getName());
                     return;
@@ -230,11 +229,11 @@ public class GuildOperationHandler : AbstractPacketHandler
                 byte bgcolor = p.readByte();
                 short logo = p.readShort();
                 byte logocolor = p.readByte();
-                Server.getInstance().setGuildEmblem(mc.GuildId, bg, bgcolor, logo, logocolor);
+                mc.GuildModel.setGuildEmblem(bg, bgcolor, logo, logocolor);
 
                 if (mc.AllianceModel != null)
                 {
-                    Server.getInstance().allianceMessage(mc.AllianceModel.AllianceId, GuildPackets.getGuildAlliances(mc.AllianceModel, c.getWorld()), -1, -1);
+                    mc.AllianceModel.broadcastMessage(GuildPackets.getGuildAlliances(mc.AllianceModel, c.getWorld()), -1, -1);
                 }
 
                 mc.gainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);
@@ -242,9 +241,9 @@ public class GuildOperationHandler : AbstractPacketHandler
                 mc.GuildModel!.broadcastNameChanged();
                 break;
             case 0x10:
-                if (mc.GuildId <= 0 || mc.GuildRank > 2)
+                if (mc.GuildModel == null || mc.GuildRank > 2)
                 {
-                    if (mc.GuildId <= 0)
+                    if (mc.GuildModel == null)
                     {
                         log.Warning("[Hack] Chr {CharacterName} tried to change guild notice while not in a guild", mc.Name);
                     }
@@ -255,7 +254,7 @@ public class GuildOperationHandler : AbstractPacketHandler
                 {
                     return;
                 }
-                Server.getInstance().setGuildNotice(mc.GuildId, notice);
+                mc.GuildModel.setGuildNotice(notice);
                 break;
             case 0x1E:
                 p.readInt();

@@ -1,9 +1,9 @@
-Ö÷Ìå´úÂëÍ¨¹ý×Ö·û´®Ìæ»»´¦Àí
+ä¸»ä½“ä»£ç é€šè¿‡å­—ç¬¦ä¸²æ›¿æ¢å¤„ç†
 
 ### C#
 
 ```
-// ²¿·Ö¶à²ÎÊýÃ¶¾ÙÌæ»»
+// éƒ¨åˆ†å¤šå‚æ•°æžšä¸¾æ›¿æ¢
 (\S*?)\((.*?)\),
 public static readonly ItemFactory $1 = new ItemFactory($2);
 
@@ -43,15 +43,16 @@ TimeSpan.FromSeconds($1)
 
 ### JS
 
-- ÒÆ³ý `Java.type`  CodeMigrationÌæ»»£¬ÔÝ²»ÓÃ´¦Àí
-- ÒÆ³ý `Java.to` CodeMigrationÌæ»»£¬ÔÝ²»ÓÃ´¦Àí
-- `iterator()` ÓÃ `for ... of `Ìæ»»
-- `size()`, `toArray()`, `get()` Ä¿Ç°Í¨¹ýÀ©Õ¹·½·¨ÊÊÅä£¬ÔÝ²»ÓÃ´¦Àí
-- Ò»Ð©¾²Ì¬·½·¨µÄÀàÃûÒÑ¾­·¢ÉúÐÞ¸Ä
+- ç§»é™¤ `Java.type`  CodeMigrationæ›¿æ¢ï¼Œæš‚ä¸ç”¨å¤„ç†
+- ç§»é™¤ `Java.to` CodeMigrationæ›¿æ¢ï¼Œæš‚ä¸ç”¨å¤„ç†
+- `iterator()` ç”¨ `for ... of `æ›¿æ¢
+- `size()`, `toArray()`, `get()` ç›®å‰é€šè¿‡æ‰©å±•æ–¹æ³•é€‚é…ï¼Œæš‚ä¸ç”¨å¤„ç†
+- ä¸€äº›é™æ€æ–¹æ³•çš„ç±»åå·²ç»å‘ç”Ÿä¿®æ”¹
 	`Channel` -> `WorldChannel`
 	`Character` -> `CharacterManager`
 	`Wedding` -> `WeddingPackets`
-- Ò»Ð©¾²Ì¬·½·¨½øÐÐÁËÒÆ¶¯
-	`RingActionHandler`ÖÐµÄ¾²Ì¬·½·¨ÒÆ¶¯µ½ÁË`RingManager`
+- ä¸€äº›é™æ€æ–¹æ³•è¿›è¡Œäº†ç§»åŠ¨
+	`RingActionHandler`ä¸­çš„é™æ€æ–¹æ³•ç§»åŠ¨åˆ°äº†`RingManager`
 - `commands.js`
-- `Gachapon.GachaponType` -> `GachaponManager` `gachaponInfo.js`
+- `gachaponInfo.js`: `Gachapon.GachaponType` -> `GachaponManager` 
+- `2xEvent.js`: `Server.getInstance().getWorld(em.getChannelServer().getWorld());` -> `em.getWorldServer();`

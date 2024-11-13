@@ -21,11 +21,14 @@
 */
 
 
+using Application.Core.Game.TheWorld;
 using Application.Utility;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
 using net.server;
 using net.server.guild;
+using System;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Game.Relation;
 
@@ -36,7 +39,7 @@ namespace Application.Core.Game.Relation;
 public class Alliance : IAlliance
 {
     ILogger log;
-    private List<int> guilds = new();
+    public ConcurrentDictionary<int, IGuild> Guilds { get; }
 
 
     public int AllianceId { get; set; }
@@ -45,13 +48,14 @@ public class Alliance : IAlliance
     public string Notice { get; set; }
     public string[] RankTitles { get; set; }
 
-    public Alliance(string name, int id)
+    public Alliance(int id, string name)
     {
         Name = name;
         AllianceId = id;
         RankTitles = new string[5] { "Master", "Jr. Master", "Member", "Member", "Member" };
         Notice = string.Empty;
 
+        Guilds = [];
         log = LogFactory.GetLogger($"Alliance/{new RangeNumberGenerator(AllianceId, 1000)}/AllianceId_{AllianceId}");
     }
 
@@ -70,7 +74,7 @@ public class Alliance : IAlliance
 
 
         dbContext.AllianceGuilds.Where(x => x.AllianceId == AllianceId).ExecuteDelete();
-        dbContext.AllianceGuilds.AddRange(guilds.Select(x => new Allianceguild()
+        dbContext.AllianceGuilds.AddRange(Guilds.Keys.Select(x => new Allianceguild()
         {
             AllianceId = AllianceId,
             GuildId = x
@@ -79,36 +83,28 @@ public class Alliance : IAlliance
         dbTrans.Commit();
     }
 
-    private void removeGuildFromAllianceOnDb(int guildId)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            dbContext.AllianceGuilds.Where(x => x.GuildId == guildId).ExecuteDelete();
-        }
-        catch (Exception sqle)
-        {
-            log.Error(sqle.ToString());
-        }
-    }
 
-    public bool removeGuildFromAlliance(int guildId, int worldId)
+    public bool RemoveGuildFromAlliance(int guildId, int worldId)
     {
-        Server srv = Server.getInstance();
         if (getLeader().getGuildId() == guildId)
         {
             return false;
         }
 
-        srv.allianceMessage(getId(), GuildPackets.removeGuildFromAlliance(this, guildId, worldId), -1, -1);
-        srv.removeGuildFromAlliance(getId(), guildId);
-        removeGuildFromAllianceOnDb(guildId);
+        if (!Guilds.TryGetValue(guildId, out var guild) || guild == null)
+            throw new BusinessException($"GuildId {guildId} not found or not in alliance");
 
-        srv.allianceMessage(getId(), GuildPackets.getGuildAlliances(this, worldId), -1, -1);
-        srv.allianceMessage(getId(), GuildPackets.allianceNotice(getId(), getNotice()), -1, -1);
-        srv.guildMessage(guildId, GuildPackets.disbandAlliance(getId()));
+        broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild, worldId), -1, -1);
+        removeGuild(guildId);
 
-        dropMessage("[" + srv.getGuild(guildId).getName() + "] guild has left the union.");
+        using var dbContext = new DBContext();
+        dbContext.AllianceGuilds.Where(x => x.GuildId == guildId).ExecuteDelete();
+
+        broadcastMessage(GuildPackets.getGuildAlliances(this, worldId), -1, -1);
+        broadcastMessage(GuildPackets.allianceNotice(getId(), getNotice()), -1, -1);
+        guild.broadcast(GuildPackets.disbandAlliance(getId()));
+
+        dropMessage("[" + guild.Name + "] guild has left the union.");
         return true;
     }
 
@@ -123,32 +119,43 @@ public class Alliance : IAlliance
 
     public bool removeGuild(int gid)
     {
-        lock (guilds)
-        {
-            return guilds.Remove(gid);
-        }
+        var r = Guilds.TryRemove(gid, out var guild);
+        if (r && guild != null)
+            guild.AllianceId = 0;
+        return r;
     }
 
-    public bool addGuild(int gid)
-    {
-        lock (guilds)
-        {
-            if (guilds.Count == Capacity || getGuildIndex(gid) > -1)
-            {
-                return false;
-            }
 
-            guilds.Add(gid);
-            return true;
+    public bool AddGuild(int gid)
+    {
+        if (Guilds.Count == Capacity || Guilds.ContainsKey(gid))
+        {
+            return false;
         }
+
+        var guild = AllGuildStorage.GetGuildById(gid);
+        if (guild != null)
+        {
+            Guilds.TryAdd(gid, guild);
+            guild.AllianceId = AllianceId;
+        }
+        return true;
     }
 
-    private int getGuildIndex(int gid)
+
+    public void Disband()
     {
-        lock (guilds)
-        {
-            return guilds.IndexOf(gid);
-        }
+        using var dbContext = new DBContext();
+        using var dbTrans = dbContext.Database.BeginTransaction();
+        dbContext.Alliances.Where(x => x.Id == AllianceId).ExecuteDelete();
+        dbContext.AllianceGuilds.Where(x => x.AllianceId == AllianceId).ExecuteDelete();
+
+        Guilds.Clear();
+        AllAllianceStorage.Remove(AllianceId);
+        AllGuildStorage.Remove(Guilds.Keys.ToArray());
+        dbTrans.Commit();
+
+        broadcastMessage(GuildPackets.disbandAlliance(AllianceId), -1, -1);
     }
 
     public void setRankTitle(string[] ranks)
@@ -163,10 +170,7 @@ public class Alliance : IAlliance
 
     public List<int> getGuilds()
     {
-        lock (guilds)
-        {
-            return guilds.Where(x => x != -1).ToList();
-        }
+        return Guilds.Keys.ToList();
     }
 
     public string getAllianceNotice()
@@ -214,18 +218,7 @@ public class Alliance : IAlliance
     {
         lock (getLeaderLock)
         {
-            foreach (int gId in guilds)
-            {
-                var guild = Server.getInstance().getGuild(gId)!;
-                var mgc = guild.getMGC(guild.getLeaderId());
-
-                if (mgc?.AllianceRank == 1)
-                {
-                    return mgc;
-                }
-            }
-
-            throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found");
+            return Guilds.Values.Select(x => x.getMGC(x.Leader)).FirstOrDefault(x => x?.AllianceRank == 1) ?? throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
         }
     }
 
@@ -236,20 +229,18 @@ public class Alliance : IAlliance
 
     public void dropMessage(int type, string message)
     {
-        lock (guilds)
+        foreach (var guild in Guilds.Values)
         {
-            foreach (int gId in guilds)
-            {
-                var guild = Server.getInstance().getGuild(gId);
-                guild?.dropMessage(type, message);
-            }
+            guild.dropMessage(type, message);
         }
     }
 
-    public void broadcastMessage(Packet packet)
+    public void broadcastMessage(Packet packet, int exception = -1, int exceptedGuildId = -1)
     {
-        Server.getInstance().allianceMessage(AllianceId, packet, -1, -1);
+        foreach (var guild in Guilds.Values)
+        {
+            if (guild.GuildId != exceptedGuildId)
+                guild.broadcast(packet, exception);
+        }
     }
-
-
 }

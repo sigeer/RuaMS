@@ -57,7 +57,7 @@ public class World : IWorld
     public List<IWorldChannel> Channels { get; }
     WorldPlayerStorage? _players;
     public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
-    public WorldGuildStorage GuildStorage => new WorldGuildStorage();
+    public WorldGuildStorage GuildStorage { get; }
     public Dictionary<int, ITeam> TeamStorage { get; }
 
     private Dictionary<int, byte> pnpcStep = new();
@@ -180,6 +180,8 @@ public class World : IWorld
             FamilyManager.resetEntitlementUsage(this);
             tman.register(new FamilyDailyResetTask(this), TimeSpan.FromDays(1), timeLeft);
         }
+
+        GuildStorage = new WorldGuildStorage();
     }
 
     public int getChannelsSize()
@@ -508,8 +510,7 @@ public class World : IWorld
             return null;
         }
 
-        int gid = mgc.getGuildId();
-        return Server.getInstance().getGuild(gid, mgc);
+        return mgc.GuildModel;
     }
 
     public bool isWorldCapacityFull()
@@ -586,7 +587,7 @@ public class World : IWorld
         {
             if (mc.isLoggedinWorld())
             {
-                var guild = Server.getInstance().getGuild(guildid);
+                var guild = AllGuildStorage.GetGuildById(guildid);
                 if (guild != null)
                 {
                     mc.getMap().broadcastPacket(mc, GuildPackets.guildNameChanged(cid, guild.getName()));

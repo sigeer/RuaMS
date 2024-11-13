@@ -1,4 +1,5 @@
-﻿using Application.Core.scripting.Event;
+using Application.Core.scripting.Event;
+using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;
@@ -228,6 +229,52 @@ namespace Application.Core.Game.Players
         {
             return itemEffect;
         }
+
+
+        #region meso
+        public bool canHoldMeso(int gain)
+        {
+            // thanks lucasziron for pointing out a need to check space availability for mesos on player transactions
+            long nextMeso = (long)MesoValue.get() + gain;
+            return nextMeso <= int.MaxValue;
+        }
+
+        public void gainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false)
+        {
+            long nextMeso;
+            Monitor.Enter(petLock);
+            try
+            {
+                nextMeso = (long)MesoValue.get() + gain;  // thanks Thora for pointing integer overflow here
+                if (nextMeso > int.MaxValue)
+                {
+                    gain -= (int)(nextMeso - int.MaxValue);
+                }
+                else if (nextMeso < 0)
+                {
+                    gain = -MesoValue.get();
+                }
+                nextMeso = MesoValue.addAndGet(gain);
+            }
+            finally
+            {
+                Monitor.Exit(petLock);
+            }
+
+            if (gain != 0)
+            {
+                updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
+                if (show)
+                {
+                    sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
+                }
+            }
+            else
+            {
+                sendPacket(PacketCreator.enableActions());
+            }
+        }
+        #endregion
 
     }
 }

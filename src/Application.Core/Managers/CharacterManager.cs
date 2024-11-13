@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Items;
+using Application.Core.Game.Items;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
@@ -188,10 +188,7 @@ namespace Application.Core.Managers
                 dbContext.BbsReplies.Where(x => threadIdList.Contains(x.Threadid)).ExecuteDelete();
                 dbContext.BbsThreads.Where(x => x.Postercid == cid).ExecuteDelete();
 
-
-                var rs = dbContext.Characters.FirstOrDefault(x => x.Id == cid && x.AccountId == accId) ?? throw new BusinessCharacterNotFoundException(cid);
-                Server.getInstance().deleteGuildCharacter(player);
-
+                player.LeaveGuild();
                 dbContext.Wishlists.Where(x => x.CharId == cid).ExecuteDelete();
                 dbContext.Cooldowns.Where(x => x.Charid == cid).ExecuteDelete();
                 dbContext.Playerdiseases.Where(x => x.Charid == cid).ExecuteDelete();

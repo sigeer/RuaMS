@@ -48,7 +48,8 @@ public class Guild : IGuild
 
 
     private static ILogger log = LogFactory.GetLogger(LogType.Guild);
-    public IAlliance? AllianceModel => Server.getInstance().getAlliance(AllianceId);
+    public IAlliance? AllianceModel => AllAllianceStorage.GetAllianceById(AllianceId);
+    public bool IsValid => members.Count > 0;
 
     public enum BCOp
     {
@@ -408,7 +409,7 @@ public class Guild : IGuild
 
     public void broadcastMessage(Packet packet)
     {
-        Server.getInstance().guildMessage(GuildId, packet);
+        broadcast(packet);
     }
 
     public void setOnline(int cid, bool online, int channel)
@@ -489,6 +490,9 @@ public class Guild : IGuild
             this.broadcast(GuildPackets.memberLeft(mgc, false));
             members.Remove(mgc);
             bDirty = true;
+
+            mgc.GuildId = 0;
+            mgc.GuildRank = 5;
         }
         finally
         {
@@ -527,7 +531,7 @@ public class Guild : IGuild
                     return;
                 }
             }
-            log.Warning("Unable to find member with name {GuildName} and id {CharacterId}", name, cid);
+            log.Warning("Unable to find member with name {Name} and id {CharacterId}", name, cid);
         }
         finally
         {
@@ -659,18 +663,19 @@ public class Guild : IGuild
 
     public void disbandGuild()
     {
-        var alliance = AllianceModel;
-        if (alliance != null)
+        if (AllianceModel != null)
         {
-            if (!alliance.removeGuildFromAlliance(GuildId, world))
+            if (!AllianceModel.RemoveGuildFromAlliance(GuildId, world))
             {
-                AllianceManager.disbandAlliance(AllianceId);
+                AllianceModel.Disband();
             }
         }
 
         Monitor.Enter(membersLock);
         try
         {
+            members.Clear();
+            AllGuildStorage.Remove(GuildId);
             this.writeToDB(true);
             this.broadcast(null, -1, BCOp.DISBAND);
         }
