@@ -55,7 +55,7 @@ namespace scripting.npc;
  */
 public class NPCConversationManager : AbstractPlayerInteraction
 {
-    private static ILogger log = LogFactory.GetLogger("NPCConversationManager");
+    private ILogger log = LogFactory.GetLogger("NPCConversationManager");
 
     private int npc;
     private int npcOid;
@@ -413,7 +413,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public void doGachapon()
     {
         var item = GachaponStorage.Instance.DoGachapon(npc);
-        var itemGained = gainItem(item.ItemId, (short)(item.ItemId / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
+
+        var itemGained = gainItem(item.ItemId, (short)(ItemConstants.isPotion(item.ItemId) ? 100 : 1), true, true); // For normal potions, make it give 100.
 
         sendNext("You have obtained a #b#t" + item.ItemId + "##k.");
 

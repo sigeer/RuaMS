@@ -40,7 +40,7 @@ public class MonsterCarnival
         var cs = p2.getLeader().getChannelServer();
         p1.setEnemy(p2);
         p2.setEnemy(p1);
-        // ÊÇ·ñ¿ÉÒÔÌæ»»³ÉgetMap£¿²»¿ÉÒÔ£¬ÈÎÎñ½áÊøºó»á¹Ø±ÕµØÍ¼£¬getMap²»»á´´½¨ĞÂµØÍ¼
+        // æ˜¯å¦å¯ä»¥æ›¿æ¢æˆgetMapï¼Ÿä¸å¯ä»¥ï¼Œä»»åŠ¡ç»“æŸåä¼šå…³é—­åœ°å›¾ï¼ŒgetMapä¸ä¼šåˆ›å»ºæ–°åœ°å›¾
         map = (cs.getMapFactory().getDisposableMap(mapid) as ICPQMap)!;
         startTime = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds();
         int redPortal = 0;
@@ -185,30 +185,12 @@ public class MonsterCarnival
 
     public bool canGuardianR()
     {
-        int teamReactors = 0;
-        foreach (Reactor react in map.getAllReactors())
-        {
-            if (react.getName().Substring(0, 1) == ("0"))
-            {
-                teamReactors += 1;
-            }
-        }
-
-        return teamReactors < map.MaxReactors;
+        return map.getAllReactors().Count(x => x.getName().Substring(0, 1) == "0") < map.MaxReactors;
     }
 
     public bool canGuardianB()
     {
-        int teamReactors = 0;
-        foreach (Reactor react in map.getAllReactors())
-        {
-            if (react.getName().Substring(0, 1) == ("1"))
-            {
-                teamReactors += 1;
-            }
-        }
-
-        return teamReactors < map.MaxReactors;
+        return map.getAllReactors().Count(x => x.getName().Substring(0, 1) == "1") < map.MaxReactors;
     }
 
     protected void dispose(bool warpout)

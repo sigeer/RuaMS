@@ -4,6 +4,7 @@ namespace Application.Core.Game.Commands.Gm3
     {
         public MobRateCommand() : base(["<mobrate>"], 3, "mobrate")
         {
+            Description = "设置全局怪物倍率，范围：(0, 5]";
         }
 
         public override void Execute(IClient client, string[] values)
