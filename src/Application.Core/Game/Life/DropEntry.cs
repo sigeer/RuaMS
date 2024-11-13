@@ -1,4 +1,4 @@
-﻿using server;
+using server;
 using tools;
 
 namespace Application.Core.Game.Life
@@ -37,7 +37,7 @@ namespace Application.Core.Game.Life
         }
         public int ItemId { get; set; }
         /// <summary>
-        /// 物品基础爆率，（非Reacotr）最大值：1000000
+        /// 物品基础爆率，（非Reactor）最大值：1000000，每个物品单独计算是否掉落
         /// </summary>
         public int Chance { get; set; }
         public short QuestId { get; set; } = -1;

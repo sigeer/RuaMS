@@ -1,4 +1,4 @@
-﻿using Application.Core.EF.Entities.Gachapons;
+using Application.Core.EF.Entities.Gachapons;
 using Application.Core.tools.RandomUtils;
 using Microsoft.EntityFrameworkCore;
 using tools;
@@ -8,7 +8,7 @@ namespace Application.Core.Game.Gachapon
     public class GachaponStorage
     {
         /// <summary>
-        /// level - poolId
+        /// poolId
         /// </summary>
         private List<int> _globalPoolIdList;
         private GachaponStorage()
