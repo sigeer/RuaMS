@@ -4,6 +4,7 @@
 worlds:
     #Properties for Scania 0
   - flag: 0
+    name: Scania
     server_message: Welcome to Scania!
     event_message: Scania!
     why_am_i_recommended: Welcome to Scania!
@@ -19,6 +20,7 @@ worlds:
 
     #Properties for Bera 1
   - flag: 0
+    name: Bera
     server_message: Welcome to Bera!
     event_message: Bera!
     why_am_i_recommended: Welcome to Bera!
@@ -26,6 +28,7 @@ worlds:
 
     #Properties for Broa 2
   - flag: 0
+    name: Broa
     server_message: Welcome to Broa!
     event_message: Broa!
     why_am_i_recommended: Welcome to Broa!
@@ -33,6 +36,7 @@ worlds:
 
     #Properties for Windia 3
   - flag: 0
+    name: Windia
     server_message: Welcome to Windia!
     event_message: Windia!
     why_am_i_recommended: Welcome to Windia!
@@ -40,6 +44,7 @@ worlds:
 
     #Properties for Khaini 4
   - flag: 0
+    name: Khaini
     server_message: Welcome to Khaini!
     event_message: Khaini!
     why_am_i_recommended: Welcome to Khaini!
@@ -47,6 +52,7 @@ worlds:
 
     #Properties for Bellocan 5
   - flag: 0
+    name: Bellocan
     server_message: Welcome to Bellocan!
     event_message: Bellocan!
     why_am_i_recommended: Welcome to Bellocan!
@@ -54,6 +60,7 @@ worlds:
 
     #Properties for Mardia 6
   - flag: 0
+    name: Mardia
     server_message: Welcome to Mardia!
     event_message: Mardia!
     why_am_i_recommended: Welcome to Mardia!
@@ -61,6 +68,7 @@ worlds:
 
     #Properties for Kradia 7
   - flag: 0
+    name: Kradia
     server_message: Welcome to Kradia!
     event_message: Kradia!
     why_am_i_recommended: Welcome to Kradia!
@@ -68,6 +76,7 @@ worlds:
 
     #Properties for Yellonde 8
   - flag: 0
+    name: Yellonde
     server_message: Welcome to Yellonde!
     event_message: Yellonde!
     why_am_i_recommended: Welcome to Yellonde!
@@ -75,6 +84,7 @@ worlds:
 
     #Properties for Demethos 9
   - flag: 0
+    name: Demethos
     server_message: Welcome to Demethos!
     event_message: Demethos!
     why_am_i_recommended: Welcome to Demethos!
@@ -82,6 +92,7 @@ worlds:
 
     #Properties for Galicia 10
   - flag: 0
+    name: Galicia
     server_message: Welcome to Galicia!
     event_message: Galicia!
     why_am_i_recommended: Welcome to Galicia!
@@ -89,6 +100,7 @@ worlds:
 
     #Properties for Kastia 11
   - flag: 0
+    name: Kastia
     server_message: Welcome to Kastia!
     event_message: Kastia!
     why_am_i_recommended: Welcome to Kastia!
@@ -96,6 +108,7 @@ worlds:
 
     #Properties for Judis 12
   - flag: 0
+    name: Judis
     server_message: Welcome to Judis!
     event_message: Judis!
     why_am_i_recommended: Welcome to Judis!
@@ -103,6 +116,7 @@ worlds:
 
     #Properties for Arcenia 13
   - flag: 0
+    name: Arcenia
     server_message: Welcome to Arcenia!
     event_message: Arcenia!
     why_am_i_recommended: Welcome to Arcenia!
@@ -110,6 +124,7 @@ worlds:
 
     #Properties for Plana 14
   - flag: 0
+    name: Plana
     server_message: Welcome to Plana!
     event_message: Plana!
     why_am_i_recommended: Welcome to Plana!
@@ -117,6 +132,7 @@ worlds:
 
     #Properties for El Nido 15
   - flag: 0
+    name: El Nido
     server_message: Welcome to El Nido!
     event_message: El Nido!
     why_am_i_recommended: Welcome to El Nido!
@@ -124,6 +140,7 @@ worlds:
 
     #Properties for Kalluna 16
   - flag: 0
+    name: Kalluna
     server_message: Welcome to Kalluna!
     event_message: Kalluna!
     why_am_i_recommended: Welcome to Kalluna!
@@ -131,6 +148,7 @@ worlds:
 
     #Properties for Stius 17
   - flag: 0
+    name: Stius
     server_message: Welcome to Stius!
     event_message: Stius!
     why_am_i_recommended: Welcome to Stius!
@@ -138,6 +156,7 @@ worlds:
 
     #Properties for Croa 18
   - flag: 0
+    name: Croa
     server_message: Welcome to Croa!
     event_message: Croa!
     why_am_i_recommended: Welcome to Croa!
@@ -145,6 +164,7 @@ worlds:
 
     #Properties for Zenith 19
   - flag: 0
+    name: Zenith
     server_message: Welcome to Zenith!
     event_message: Zenith!
     why_am_i_recommended: Welcome to Zenith!
@@ -152,6 +172,7 @@ worlds:
 
     #Properties for Medere 20
   - flag: 0
+    name: Medere
     server_message: Welcome to Medere!
     event_message: Medere!
     why_am_i_recommended: Welcome to Medere!

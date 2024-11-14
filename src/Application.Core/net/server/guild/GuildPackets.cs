@@ -337,7 +337,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet showPlayerRanks(int npcid, List<NameLevelPair> worldRanking)
+    public static Packet showPlayerRanks(int npcid, List<RankedCharacterInfo> worldRanking)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x49);
@@ -350,8 +350,8 @@ public class GuildPackets
         p.writeInt(worldRanking.Count);
         foreach (var wr in worldRanking)
         {
-            p.writeString(wr.Name);
-            p.writeInt(wr.Level);
+            p.writeString(wr.CharacterName);
+            p.writeInt(wr.CharacterLevel);
             p.writeInt(0);
             p.writeInt(0);
             p.writeInt(0);

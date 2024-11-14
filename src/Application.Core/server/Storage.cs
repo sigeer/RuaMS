@@ -53,19 +53,6 @@ public class Storage
         this.meso = meso;
     }
 
-    private static Storage create(DBContext dbContext, int id, int world)
-    {
-        dbContext.Storages.Add(new DB_Storage()
-        {
-            Accountid = id,
-            World = world,
-            Slots = 4,
-            Meso = 0
-        });
-        dbContext.SaveChanges();
-
-        return loadOrCreateFromDB(id, world);
-    }
 
     public static Storage loadOrCreateFromDB(int id, int world)
     {
@@ -73,25 +60,31 @@ public class Storage
         try
         {
             using var dbContext = new DBContext();
-            var accountStorage = dbContext.Storages.Where(x => x.Accountid == id && x.World == world).Select(x => new { x.Storageid, x.Slots, x.Meso }).FirstOrDefault();
-            if (accountStorage != null)
+            var accountStorage = dbContext.Storages.Where(x => x.Accountid == id && x.World == world).FirstOrDefault();
+            if (accountStorage == null)
             {
-                ret = new Storage(accountStorage.Storageid, (byte)accountStorage.Slots, accountStorage.Meso);
-                foreach (var item in ItemFactory.STORAGE.loadItems(ret.id, false))
+                accountStorage = new DB_Storage()
                 {
-                    ret.items.Add(item.Item);
-                }
+                    Accountid = id,
+                    World = world,
+                    Slots = 4,
+                    Meso = 0
+                };
+                dbContext.Storages.Add(accountStorage);
+                dbContext.SaveChanges();
             }
-            else
+
+            ret = new Storage(accountStorage.Storageid, (byte)accountStorage.Slots, accountStorage.Meso);
+            foreach (var item in ItemFactory.STORAGE.loadItems(ret.id, false))
             {
-                ret = create(dbContext, id, world);
+                ret.items.Add(item.Item);
             }
             return ret;
         }
         catch (Exception ex)
         {
             // exceptions leading to deploy null storages found thanks to Jefe
-            Log.Logger.Error(ex, "SQL error occurred when trying to load storage for accId {AccountId}, world {WorldId}", id, GameConstants.WORLD_NAMES[world]);
+            Log.Logger.Error(ex, "SQL error occurred when trying to load storage for accId {AccountId}, world {WorldId}", id, world);
             throw;
         }
     }

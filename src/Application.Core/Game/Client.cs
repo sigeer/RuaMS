@@ -1270,7 +1270,7 @@ public class Client : ChannelHandlerAdapter, IClient
             {
                 if (accid == chr.getAccountID())
                 {
-                    log.Warning("Chr {CharacterName} has been removed from world {WorldName}. Possible Dupe attempt.", chr.getName(), GameConstants.WORLD_NAMES[w.getId()]);
+                    log.Warning("Chr {CharacterName} has been removed from world {WorldName}. Possible Dupe attempt.", chr.getName(), w.Name);
                     chr.getClient().forceDisconnect();
                 }
             }

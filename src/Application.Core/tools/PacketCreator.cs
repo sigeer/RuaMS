@@ -2963,14 +2963,14 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet sendRecommended(List<KeyValuePair<int, string>> worlds)
+    public static Packet sendRecommended(List<IWorld> worlds)
     {
         OutPacket p = OutPacket.create(SendOpcode.RECOMMENDED_WORLD_MESSAGE);
         p.writeByte(worlds.Count);//size
         foreach (var world in worlds)
         {
-            p.writeInt(world.Key);
-            p.writeString(world.Value);
+            p.writeInt(world.Id);
+            p.writeString(world.WhyAmIRecommended);
         }
         return p;
     }
@@ -3602,7 +3602,7 @@ public class PacketCreator
     /// <para>0: Npc talking (left)</para>
     /// <para>1: Npc talking (right)</para>
     /// <para>2: Player talking (left)</para>
-    /// <para>3: Player talking (left)£¿£¿</para>
+    /// <para>3: Player talking (left)ï¼Ÿï¼Ÿ</para>
     /// </param>
     /// <returns></returns>
     public static Packet getNPCTalk(int npc, byte msgType, string talk, string endBytes, byte speaker)
@@ -6142,7 +6142,7 @@ public class PacketCreator
             p.writeInt(worlds.Count);
             foreach (var world in worlds)
             {
-                p.writeString(GameConstants.WORLD_NAMES[world.getId()]);
+                p.writeString(world.Name);
             }
         }
         return p;

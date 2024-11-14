@@ -23,6 +23,9 @@ namespace Application.Core.Game.TheWorld
 
         public int Id { get; set; }
         public int Flag { get; set; }
+        public string Name { get; set; }
+        public string WhyAmIRecommended { get; set; }
+        public string ServerMessage { get; set; }
         public string EventMessage { get; set; }
         public int ExpRate { get; set; }
         public int DropRate { get; set; }

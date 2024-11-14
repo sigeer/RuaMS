@@ -4,6 +4,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Core.scripting.Event;
+using Application.Utility;
 using client;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,8 @@ public class World : IWorld
 {
     private ILogger log;
     public int Id { get; set; }
+    public string Name { get; set; }
+    public string WhyAmIRecommended { get; set; }
     public int Flag { get; set; }
     public int ExpRate { get; set; }
     public int DropRate { get; set; }
@@ -52,6 +55,7 @@ public class World : IWorld
         }
     }
 
+    public string ServerMessage { get; set; }
     public string EventMessage { get; set; }
 
     public List<IWorldChannel> Channels { get; }
@@ -131,19 +135,22 @@ public class World : IWorld
     private ScheduledFuture? hpDecSchedule;
 
 
-    public World(int world, int flag, string eventmsg, int exprate, int droprate, int bossdroprate, int mesorate, int questrate, int travelrate, int fishingrate, float mobRate)
+    public World(int world, WorldConfig config)
     {
         this.Id = world;
-        this.Flag = flag;
-        this.EventMessage = eventmsg;
-        this.ExpRate = exprate;
-        this.DropRate = droprate;
-        this.BossDropRate = bossdroprate;
-        this.MesoRate = mesorate;
-        this.QuestRate = questrate;
-        this.TravelRate = travelrate;
-        this.FishingRate = fishingrate;
-        MobRate = mobRate;
+        this.Flag = config.flag;
+        Name = config.name;
+        WhyAmIRecommended = config.why_am_i_recommended;
+        ServerMessage = config.server_message;
+        this.EventMessage = config.event_message;
+        this.ExpRate = config.exp_rate;
+        this.DropRate = config.drop_rate;
+        this.BossDropRate = config.boss_drop_rate;
+        this.MesoRate = config.meso_rate;
+        this.QuestRate = config.quest_rate;
+        this.TravelRate = config.travel_rate;
+        this.FishingRate = config.fishing_rate;
+        MobRate = config.mob_rate;
 
         log = LogFactory.GetLogger("World_" + Id);
         Channels = new List<IWorldChannel>();
@@ -176,7 +183,7 @@ public class World : IWorld
 
         if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
-            var timeLeft = Server.getTimeLeftForNextDay();
+            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
             FamilyManager.resetEntitlementUsage(this);
             tman.register(new FamilyDailyResetTask(this), TimeSpan.FromDays(1), timeLeft);
         }
@@ -1973,6 +1980,7 @@ public class World : IWorld
 
     public void setServerMessage(string msg)
     {
+        ServerMessage = msg;
         foreach (var ch in getChannels())
         {
             ch.setServerMessage(msg);

@@ -28,11 +28,14 @@ namespace net.server.task;
 
 
 
-/**
- * @author Matze
- * @author Quit
- * @author Ronan
- */
+
+/// <summary>
+/// 整点执行，间隔 <see cref="YamlConfig.config.server.RANKING_INTERVAL"/>
+/// <para></para>
+/// @author Matze
+/// @author Quit
+/// @author Ronan
+/// </summary>
 public class RankingLoginTask : AbstractRunnable
 {
     private DateTimeOffset lastUpdate = DateTimeOffset.Now;

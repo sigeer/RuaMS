@@ -28,7 +28,7 @@ using tools;
 namespace client;
 public class Disease : EnumClass
 {
-    // 定义静态的常量实例
+    // 瀹氫箟闈欐�佺殑甯搁噺瀹炰緥
     public static readonly Disease NULL = new(0x0);
     public static readonly Disease SLOW = new(0x1, MobSkillType.SLOW);
     public static readonly Disease SEDUCE = new(0x80, MobSkillType.SEDUCE);
@@ -86,8 +86,7 @@ public class Disease : EnumClass
 
     public static Disease getRandom()
     {
-        Disease[] diseases = GameConstants.CPQ_DISEASES;
-        return diseases[(int)(Randomizer.nextDouble() * diseases.Length)];
+        return Randomizer.Select(GameConstants.CPQ_DISEASES);
     }
 
     public static Disease? getBySkill(MobSkillType? skill)

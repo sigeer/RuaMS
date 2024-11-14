@@ -370,13 +370,10 @@ public class Guild : IGuild
         {
             foreach (var mgc in members)
             {
-                foreach (var cs in Server.getInstance().getChannelsFromWorld(world))
+                if (mgc.isLoggedinWorld())
                 {
-                    if (cs.getPlayerStorage().getCharacterById(mgc.getId()) != null)
-                    {
-                        cs.getPlayerStorage().getCharacterById(mgc.getId())!.sendPacket(serverNotice);
-                        break;
-                    }
+                    mgc.sendPacket(serverNotice);
+                    break;
                 }
             }
         }
@@ -663,11 +660,12 @@ public class Guild : IGuild
 
     public void disbandGuild()
     {
-        if (AllianceModel != null)
+        var allianceModel = AllianceModel;
+        if (allianceModel != null)
         {
-            if (!AllianceModel.RemoveGuildFromAlliance(GuildId, 1))
+            if (!allianceModel.RemoveGuildFromAlliance(GuildId, 1))
             {
-                AllianceModel.Disband();
+                allianceModel.Disband();
             }
         }
 

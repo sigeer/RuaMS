@@ -23,16 +23,15 @@
 
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
-using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
+using Application.Utility;
 using client;
 using client.inventory.manipulator;
 using client.newyear;
 using client.processor.npc;
-using constants.game;
 using constants.inventory;
 using constants.net;
 using database.note;
@@ -60,26 +59,23 @@ public class Server
     public static Server getInstance() => instance.Value;
 
     private static HashSet<int> activeFly = new();
+
     private static Dictionary<int, int> couponRates = new(30);
     private static List<int> activeCoupons = new();
+
     private static ChannelDependencies channelDependencies;
 
     private LoginServer loginServer = null!;
-    /// <summary>
-    /// ChannelId - IP
-    /// </summary>
-    private List<Dictionary<int, string>> channelInfoList = new();
     private List<IWorld> worlds = new();
 
     /// <summary>
-    /// AccountId - world - cid
+    /// AccountId - cid
     /// </summary>
     private Dictionary<int, HashSet<int>> AccountCharacterCache = new();
 
     private Dictionary<string, int> transitioningChars = new();
-    private List<KeyValuePair<int, string>> _worldRecommendedList = new();
 
-    private Dictionary<IClient, long> inLoginState = new(100);
+    private Dictionary<IClient, DateTimeOffset> inLoginState = new(100);
 
     private PlayerBuffStorage buffStorage = new PlayerBuffStorage();
 
@@ -87,7 +83,10 @@ public class Server
     private List<IClient> processDiseaseAnnouncePlayers = new();
     private List<IClient> registeredDiseaseAnnouncePlayers = new();
 
-    private List<List<NameLevelPair>> playerRanking = new();
+    /// <summary>
+    /// World - Data
+    /// </summary>
+    private Dictionary<int, List<RankedCharacterInfo>> playerRanking = new();
 
     private object srvLock = new object();
     private object disLock = new object();
@@ -131,11 +130,6 @@ public class Server
     public bool isOnline()
     {
         return online;
-    }
-
-    public List<KeyValuePair<int, string>> worldRecommendedList()
-    {
-        return _worldRecommendedList;
     }
 
     public void setNewYearCard(NewYearCardRecord nyc)
@@ -232,12 +226,7 @@ public class Server
     {
         try
         {
-            List<IWorldChannel> channelz = new();
-            foreach (var world in this.getWorlds())
-            {
-                channelz.AddRange(world.getChannels());
-            }
-            return channelz;
+            return worlds.SelectMany(x => x.Channels).ToList();
         }
         catch (NullReferenceException)
         {
@@ -250,7 +239,7 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            return new(channelInfoList.get(world).Keys);
+            return getWorld(world).getChannels().Select(x => x.getId()).ToHashSet();
         }
         finally
         {
@@ -263,7 +252,7 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            return channelInfoList.get(world).GetValueOrDefault(channel);
+            return getWorld(world).getChannel(channel).getIP();
         }
         finally
         {
@@ -288,44 +277,23 @@ public class Server
         return hostAddress;
     }
 
-
-    private void dumpData()
-    {
-        wldLock.EnterReadLock();
-        try
-        {
-            log.Debug("Worlds: {Worlds}", worlds);
-            log.Debug("Channels: {Channels}", channelInfoList);
-            log.Debug("World recommended list: {RecommendedWorlds}", _worldRecommendedList);
-            log.Debug("---------------------");
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
-    }
-
     public int addChannel(int worldid)
     {
         IWorld? world;
-        Dictionary<int, string> channelInfo;
         int channelid;
 
         wldLock.EnterReadLock();
         try
         {
+            world = this.getWorld(worldid);
+
             if (worldid >= worlds.Count)
             {
                 return -3;
             }
 
-            channelInfo = channelInfoList.get(worldid);
-            if (channelInfo == null)
-            {
-                return -3;
-            }
 
-            channelid = channelInfo.Count;
+            channelid = world.Channels.Count;
             if (channelid >= YamlConfig.config.server.CHANNEL_SIZE)
             {
                 return -2;
@@ -340,21 +308,9 @@ public class Server
         }
 
         IWorldChannel channel = new WorldChannel(world, channelid, getCurrentTime());
-        channel.setServerMessage(YamlConfig.config.worlds.get(worldid).why_am_i_recommended);
+        channel.setServerMessage(world.ServerMessage);
 
-        if (world.addChannel(channel))
-        {
-            wldLock.EnterWriteLock();
-            try
-            {
-                channelInfo.AddOrUpdate(channelid, channel.getIP());
-            }
-            finally
-            {
-                wldLock.ExitWriteLock();
-            }
-        }
-
+        world.addChannel(channel);
         return channelid;
     }
 
@@ -363,7 +319,7 @@ public class Server
         int newWorld = initWorld();
         if (newWorld > -1)
         {
-            installWorldPlayerRanking(newWorld);
+            LoadPlayerRanking();
 
             HashSet<int> accounts;
             lgnLock.EnterReadLock();
@@ -407,25 +363,10 @@ public class Server
         log.Information("Starting world {WorldId}", i);
 
         var worldConfig = YamlConfig.config.worlds[i];
-        int exprate = worldConfig.exp_rate;
-        int mesorate = worldConfig.meso_rate;
-        int droprate = worldConfig.drop_rate;
-        int bossdroprate = worldConfig.boss_drop_rate;
-        int questrate = worldConfig.quest_rate;
-        int travelrate = worldConfig.travel_rate;
-        int fishingrate = worldConfig.fishing_rate;
 
-        int flag = worldConfig.flag;
-        string event_message = worldConfig.event_message;
-        string why_am_i_recommended = worldConfig.why_am_i_recommended;
-
-        var world = new World(i,
-                flag,
-                event_message,
-                exprate, droprate, bossdroprate, mesorate, questrate, travelrate, fishingrate, worldConfig.mob_rate);
+        var world = new World(i, worldConfig);
 
         // world id从0开始 channel id从1开始
-        Dictionary<int, string> channelInfo = new();
         long bootTime = getCurrentTime();
         for (int j = 1; j <= worldConfig.channels; j++)
         {
@@ -433,7 +374,6 @@ public class Server
             var channel = new WorldChannel(world, channelid, bootTime);
 
             world.addChannel(channel);
-            channelInfo.AddOrUpdate(channelid, channel.getIP());
         }
 
         bool canDeploy;
@@ -444,9 +384,7 @@ public class Server
             canDeploy = world.getId() == worlds.Count;
             if (canDeploy)
             {
-                _worldRecommendedList.Add(new(i, why_am_i_recommended));
                 worlds.Add(world);
-                channelInfoList.Insert(i, channelInfo);
             }
         }
         finally
@@ -470,7 +408,8 @@ public class Server
     }
 
     public bool removeChannel(int worldid)
-    {   //lol don't!
+    {
+        //lol don't!
         IWorld? world;
 
         wldLock.EnterReadLock();
@@ -490,20 +429,6 @@ public class Server
         if (world != null)
         {
             int channel = world.removeChannel();
-            wldLock.EnterWriteLock();
-            try
-            {
-                Dictionary<int, string> m = channelInfoList.get(worldid);
-                if (m != null)
-                {
-                    m.Remove(channel);
-                }
-            }
-            finally
-            {
-                wldLock.ExitWriteLock();
-            }
-
             return channel > -1;
         }
 
@@ -537,7 +462,7 @@ public class Server
             return false;
         }
 
-        removeWorldPlayerRanking();
+        LoadPlayerRanking();
         w.shutdown();
 
         wldLock.EnterWriteLock();
@@ -546,8 +471,6 @@ public class Server
             if (worldid == worlds.Count - 1)
             {
                 worlds.remove(worldid);
-                channelInfoList.remove(worldid);
-                _worldRecommendedList.remove(worldid);
             }
         }
         finally
@@ -559,13 +482,12 @@ public class Server
     }
 
     private void resetServerWorlds()
-    {  // thanks maple006 for noticing proprietary lists assigned to null
+    {
+        // thanks maple006 for noticing proprietary lists assigned to null
         wldLock.EnterWriteLock();
         try
         {
             worlds.Clear();
-            channelInfoList.Clear();
-            _worldRecommendedList.Clear();
         }
         finally
         {
@@ -573,17 +495,7 @@ public class Server
         }
     }
 
-    private static TimeSpan getTimeLeftForNextHour()
-    {
-        var nextHour = DateTimeOffset.Now.Date.AddHours(DateTimeOffset.Now.Hour + 1);
-        return (nextHour - DateTimeOffset.Now);
-    }
-
-    public static TimeSpan getTimeLeftForNextDay()
-    {
-        return (DateTimeOffset.Now.AddDays(1).Date - DateTimeOffset.Now);
-    }
-
+    #region coupon
     public Dictionary<int, int> getCouponRates()
     {
         return couponRates;
@@ -676,7 +588,7 @@ public class Server
 
         }
     }
-
+    #endregion
     public void runAnnouncePlayerDiseasesSchedule()
     {
         List<IClient> processDiseaseAnnounceClients;
@@ -731,12 +643,16 @@ public class Server
         }
     }
 
-    public List<NameLevelPair> getWorldPlayerRanking(int worldid)
+    public List<RankedCharacterInfo> getWorldPlayerRanking(int worldId)
     {
         wldLock.EnterReadLock();
         try
         {
-            return new(playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldid : 0));
+            var filteredWorldId = YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? -1 : worldId;
+            if (playerRanking.TryGetValue(filteredWorldId, out var value))
+                return value;
+
+            return [];
         }
         finally
         {
@@ -744,189 +660,11 @@ public class Server
         }
     }
 
-    private void installWorldPlayerRanking(int worldid)
+    public Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRanking()
     {
-        var ranking = loadPlayerRankingFromDB(worldid);
-        if (ranking.Count > 0)
-        {
-            wldLock.EnterWriteLock();
-            try
-            {
-                if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING)
-                {
-                    for (int i = playerRanking.Count; i <= worldid; i++)
-                    {
-                        playerRanking.Add(new(0));
-                    }
-
-                    playerRanking.Insert(worldid, ranking.ElementAt(0).Value);
-                }
-                else
-                {
-                    playerRanking.Insert(0, ranking.get(0).Value);
-                }
-            }
-            finally
-            {
-                wldLock.ExitWriteLock();
-            }
-        }
+        return playerRanking = RankManager.LoadPlayerRankingFromDB();
     }
 
-    private void removeWorldPlayerRanking()
-    {
-        if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING)
-        {
-            wldLock.EnterWriteLock();
-            try
-            {
-                if (playerRanking.Count < worlds.Count)
-                {
-                    return;
-                }
-
-                playerRanking.RemoveAt(playerRanking.Count - 1);
-            }
-            finally
-            {
-                wldLock.ExitWriteLock();
-            }
-        }
-        else
-        {
-            var ranking = loadPlayerRankingFromDB(-1 * (this.getWorldsSize() - 2));  // update ranking list
-
-            wldLock.EnterWriteLock();
-            try
-            {
-                playerRanking.Insert(0, ranking.get(0).Value);
-            }
-            finally
-            {
-                wldLock.ExitWriteLock();
-            }
-        }
-    }
-
-    public void updateWorldPlayerRanking()
-    {
-        var rankUpdates = loadPlayerRankingFromDB(-1 * (this.getWorldsSize() - 1));
-        if (rankUpdates.Count == 0)
-        {
-            return;
-        }
-
-        wldLock.EnterWriteLock();
-        try
-        {
-            if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING)
-            {
-                for (int i = playerRanking.Count; i <= rankUpdates.get(rankUpdates.Count - 1).Key; i++)
-                {
-                    playerRanking.Add(new(0));
-                }
-
-                foreach (var wranks in rankUpdates)
-                {
-                    playerRanking[wranks.Key] = wranks.Value;
-                }
-            }
-            else
-            {
-                playerRanking[0] = rankUpdates[0].Value;
-            }
-        }
-        finally
-        {
-            wldLock.ExitWriteLock();
-        }
-
-    }
-
-    private void initWorldPlayerRanking()
-    {
-        if (YamlConfig.config.server.USE_WHOLE_SERVER_RANKING)
-        {
-            wldLock.EnterWriteLock();
-            try
-            {
-                playerRanking.Add(new(0));
-            }
-            finally
-            {
-                wldLock.ExitWriteLock();
-            }
-        }
-
-        updateWorldPlayerRanking();
-    }
-
-    private static List<KeyValuePair<int, List<NameLevelPair>>> loadPlayerRankingFromDB(int worldid)
-    {
-        List<KeyValuePair<int, List<NameLevelPair>>> rankSystem = new();
-        List<NameLevelPair> rankUpdate = new(0);
-
-        try
-        {
-            using var dbContext = new DBContext();
-            var query = from a in dbContext.Characters
-                        join b in dbContext.Accounts on a.AccountId equals b.Id
-                        where a.Gm < 2 && b.Banned != 1
-                        select a;
-
-            if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING)
-            {
-                if (worldid >= 0)
-                {
-                    query = query.Where(x => x.World == worldid);
-                }
-                else
-                {
-                    query = query.Where(x => x.World >= 0 && x.World <= -worldid);
-                }
-                query = query.OrderBy(x => x.World);
-            }
-            else
-            {
-                var absWorldId = Math.Abs(worldid);
-                query = query.Where(x => x.World >= 0 && x.World <= absWorldId);
-            }
-            var list = (from a in query
-                        orderby a.World, a.Level descending, a.Exp descending, a.LastExpGainTime
-                        select new { a.Name, a.Level, a.World, }).Take(50).ToList();
-
-
-            if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING)
-            {
-                int currentWorld = -1;
-                list.ForEach(x =>
-                {
-                    if (currentWorld < x.World)
-                    {
-                        currentWorld = x.World;
-                        rankUpdate = new(50);
-                        rankSystem.Add(new(x.World, rankUpdate));
-                    }
-                    rankUpdate.Add(new(x.Name, x.Level));
-                });
-            }
-            else
-            {
-                rankUpdate = new(50);
-                rankSystem.Add(new(0, rankUpdate));
-                list.ForEach(x =>
-                {
-                    rankUpdate.Add(new(x.Name, x.Level));
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex.ToString());
-        }
-
-        return rankSystem;
-    }
 
     private async Task InitialDataBase()
     {
@@ -1003,7 +741,7 @@ public class Server
         });
 
 
-        int worldCount = Math.Min(GameConstants.WORLD_NAMES.Length, YamlConfig.config.server.WORLDS);
+        int worldCount = Math.Min(YamlConfig.config.worlds.Count, YamlConfig.config.server.WORLDS);
 
         try
         {
@@ -1033,7 +771,7 @@ public class Server
             {
                 initWorld();
             }
-            initWorldPlayerRanking();
+            LoadPlayerRanking();
 
             loadPlayerNpcMapStepFromDb();
 
@@ -1106,7 +844,7 @@ public class Server
         tMan.register(tMan.purge, YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
         disconnectIdlesOnLoginTask();
 
-        var timeLeft = getTimeLeftForNextHour();
+        var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
         tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
         tMan.register(new RankingCommandTask(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
@@ -1118,7 +856,7 @@ public class Server
         tMan.register(new InvitationTask(), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         tMan.register(new RespawnTask(), YamlConfig.config.server.RESPAWN_INTERVAL, YamlConfig.config.server.RESPAWN_INTERVAL);
 
-        timeLeft = getTimeLeftForNextDay();
+        timeLeft = TimeUtils.GetTimeLeftForNextDay();
         ExpeditionBossLog.resetBossLogTable();
         tMan.register(new BossLogTask(), TimeSpan.FromDays(1), timeLeft);
     }
@@ -1567,7 +1305,7 @@ public class Server
         Monitor.Enter(srvLock);
         try
         {
-            inLoginState.AddOrUpdate(c, DateTimeOffset.Now.AddMinutes(1).ToUnixTimeMilliseconds());
+            inLoginState.AddOrUpdate(c, DateTimeOffset.Now.AddMinutes(10));
         }
         finally
         {
@@ -1595,7 +1333,7 @@ public class Server
         Monitor.Enter(srvLock);
         try
         {
-            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            var timeNow = DateTimeOffset.Now;
 
             foreach (var mc in inLoginState)
             {
@@ -1616,7 +1354,8 @@ public class Server
         }
 
         foreach (IClient c in toDisconnect)
-        {    // thanks Lei for pointing a deadlock issue with srvLock
+        {
+            // thanks Lei for pointing a deadlock issue with srvLock
             if (c.isLoggedIn())
             {
                 c.disconnect(false, false);

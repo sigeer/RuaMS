@@ -38,10 +38,10 @@ public class ServerlistRequestHandler : AbstractPacketHandler
 
         foreach (var world in worlds)
         {
-            c.sendPacket(PacketCreator.getServerList(world.Id, GameConstants.WORLD_NAMES[world.Id], world.Flag, world.EventMessage, world.Channels));
+            c.sendPacket(PacketCreator.getServerList(world.Id, world.Name, world.Flag, world.EventMessage, world.Channels));
         }
         c.sendPacket(PacketCreator.getEndOfServerList());
         c.sendPacket(PacketCreator.selectWorld(0));//too lazy to make a check lol
-        c.sendPacket(PacketCreator.sendRecommended(server.worldRecommendedList()));
+        c.sendPacket(PacketCreator.sendRecommended(worlds));
     }
 }

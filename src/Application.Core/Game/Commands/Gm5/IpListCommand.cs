@@ -1,4 +1,4 @@
-﻿using constants.game;
+using constants.game;
 using net.server;
 
 namespace Application.Core.Game.Commands.Gm5;
@@ -25,7 +25,7 @@ public class IpListCommand : CommandBase
 
             if (chars.Count > 0)
             {
-                str += "\r\n" + GameConstants.WORLD_NAMES[w.getId()] + "\r\n";
+                str += $"\r\n{w.Name}\r\n";
 
                 foreach (var chr in chars)
                 {
