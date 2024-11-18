@@ -1,4 +1,4 @@
-﻿using constants.id;
+using constants.id;
 using net.server;
 using net.server.guild;
 

@@ -3,6 +3,7 @@ namespace Application.Utility.Configs;
 public class WorldConfig
 {
     public int flag = 0;
+    public string name = "World";
     public string server_message = "Welcome!";
     public string event_message = "";
     public string why_am_i_recommended = "";

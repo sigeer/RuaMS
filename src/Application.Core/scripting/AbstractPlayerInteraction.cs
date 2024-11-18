@@ -631,7 +631,7 @@ public class AbstractPlayerInteraction
 
         return evolved;
     }
-    // jsÊ¹ÓÃ
+    // jsä½¿ç”¨
     public void gainItem(int id, bool show) => gainItem(id, 1, show);
 
     public void gainItem(int id, int quantity = 1, bool show = true)
@@ -818,7 +818,7 @@ public class AbstractPlayerInteraction
     {
         try
         {
-            return Server.getInstance().getGuild(getPlayer().getGuildId(), null);
+            return getPlayer().getGuild();
         }
         catch (Exception e)
         {

@@ -31,7 +31,6 @@ namespace server;
 
 public class TimerManager
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.TimerManager);
     private static Lazy<TimerManager> instance = new Lazy<TimerManager>(new TimerManager(SchedulerManage.Scheduler));
 
     public static TimerManager getInstance()
@@ -63,7 +62,7 @@ public class TimerManager
     }
 
     /// <summary>
-    /// delayºÁÃëÖ®ºóÖ´ĞĞ£¬²¢ÇÒÃ¿¸ôrepeatTimeºÁÃëÖ®ºóÖ´ĞĞ
+    /// delayæ¯«ç§’ä¹‹åæ‰§è¡Œï¼Œå¹¶ä¸”æ¯éš”repeatTimeæ¯«ç§’ä¹‹åæ‰§è¡Œ
     /// </summary>
     /// <param name="r"></param>
     /// <param name="repeatTime"></param>
@@ -88,8 +87,8 @@ public class TimerManager
 
         var trigger = builder
                         .WithSimpleSchedule(x => x
-                            .WithInterval(repeatTime) // ÉèÖÃ¼ä¸ôÎª1Ãë
-                            .RepeatForever()) // Ò»Ö±ÖØ¸´Ö´ĞĞ
+                            .WithInterval(repeatTime) // è®¾ç½®é—´éš”ä¸º1ç§’
+                            .RepeatForever()) // ä¸€ç›´é‡å¤æ‰§è¡Œ
                         .Build();
 
         _scheduler.ScheduleJob(job, trigger).Wait();

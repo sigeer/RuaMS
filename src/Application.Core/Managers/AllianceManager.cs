@@ -1,4 +1,5 @@
-﻿using Application.Core.Game.Relation;
+using Application.Core.Game.Relation;
+using Application.Core.Game.TheWorld;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.coordinator.world;
@@ -36,7 +37,7 @@ namespace Application.Core.Managers
             }));
             dbContext.SaveChanges();
             dbTrans.Commit();
-            return new Alliance(name, id);
+            return new Alliance(id, name);
         }
 
         private static List<IPlayer> getPartyGuildMasters(ITeam party)
@@ -88,7 +89,7 @@ namespace Application.Core.Managers
                 alliance.setCapacity(guilds.Count);
                 foreach (int g in guilds)
                 {
-                    alliance.addGuild(g);
+                    alliance.AddGuild(g);
                 }
 
                 int id = alliance.getId();
@@ -96,19 +97,23 @@ namespace Application.Core.Managers
                 {
                     for (int i = 0; i < guildMasters.Count; i++)
                     {
-                        Server.getInstance().setGuildAllianceId(guilds[i], id);
-                        Server.getInstance().resetAllianceGuildPlayersRank(guilds[i]);
+                        var guild = AllGuildStorage.GetGuildById(guilds[i]);
+                        if (guild != null)
+                        {
+                            guild.setAllianceId(id);
+                            guild.resetAllianceGuildPlayersRank();
+                        }
 
                         var chr = guildMasters[i];
                         chr.AllianceRank = (i == 0) ? 1 : 2;
                         chr.saveGuildStatus();
                     }
 
-                    Server.getInstance().addAlliance(id, alliance);
+                    AllAllianceStorage.AddOrUpdate(alliance);
 
                     int worldid = guildMasters.get(0).getWorld();
-                    Server.getInstance().allianceMessage(id, GuildPackets.updateAllianceInfo(alliance, worldid), -1, -1);
-                    Server.getInstance().allianceMessage(id, GuildPackets.getGuildAlliances(alliance, worldid), -1, -1);  // thanks Vcoc for noticing guilds from other alliances being visually stacked here due to this not being updated
+                    alliance.broadcastMessage(GuildPackets.updateAllianceInfo(alliance), -1, -1);
+                    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);  // thanks Vcoc for noticing guilds from other alliances being visually stacked here due to this not being updated
                 }
                 catch (Exception e)
                 {
@@ -120,22 +125,6 @@ namespace Application.Core.Managers
             return alliance;
         }
 
-        public static void disbandAlliance(int allianceId)
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                dbContext.Alliances.Where(x => x.Id == allianceId).ExecuteDelete();
-                dbContext.AllianceGuilds.Where(x => x.AllianceId == allianceId).ExecuteDelete();
-
-                Server.getInstance().allianceMessage(allianceId, GuildPackets.disbandAlliance(allianceId), -1, -1);
-                Server.getInstance().disbandAlliance(allianceId);
-            }
-            catch (Exception sqle)
-            {
-                log.Error(sqle.ToString());
-            }
-        }
 
         public static Alliance? loadAlliance(int id)
         {
@@ -143,7 +132,7 @@ namespace Application.Core.Managers
             {
                 return null;
             }
-            Alliance alliance = new Alliance("", -1);
+            Alliance alliance = new Alliance(-1, "");
             try
             {
 
@@ -157,7 +146,7 @@ namespace Application.Core.Managers
                 var guilds = dbContext.AllianceGuilds.Where(x => x.AllianceId == dbModel.Id).Select(x => x.GuildId).ToList();
                 guilds.ForEach(x =>
                 {
-                    alliance.addGuild(x);
+                    alliance.AddGuild(x);
                 });
             }
             catch (Exception e)
@@ -169,7 +158,7 @@ namespace Application.Core.Managers
         }
         public static void sendInvitation(IClient c, string targetGuildName, int allianceId)
         {
-            var mg = Server.getInstance().getGuildByName(targetGuildName);
+            var mg = AllGuildStorage.GetGuildByName(targetGuildName);
             if (mg == null)
             {
                 c.OnlinedCharacter.dropMessage(5, "The entered guild does not exist.");

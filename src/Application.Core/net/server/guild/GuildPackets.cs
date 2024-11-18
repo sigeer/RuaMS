@@ -337,7 +337,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet showPlayerRanks(int npcid, List<NameLevelPair> worldRanking)
+    public static Packet showPlayerRanks(int npcid, List<RankedCharacterInfo> worldRanking)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x49);
@@ -350,8 +350,8 @@ public class GuildPackets
         p.writeInt(worldRanking.Count);
         foreach (var wr in worldRanking)
         {
-            p.writeString(wr.Name);
-            p.writeInt(wr.Level);
+            p.writeString(wr.CharacterName);
+            p.writeInt(wr.CharacterLevel);
             p.writeInt(0);
             p.writeInt(0);
             p.writeInt(0);
@@ -424,7 +424,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet updateAllianceInfo(IAlliance alliance, int world)
+    public static Packet updateAllianceInfo(IAlliance alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0F);
@@ -441,26 +441,30 @@ public class GuildPackets
         }
         p.writeInt(alliance.getCapacity()); // probably capacity
         p.writeShort(0);
-        foreach (int guildid in alliance.getGuilds())
+
+        var allianceGuilds = alliance.Guilds;
+        foreach (var guild in allianceGuilds)
         {
-            getGuildInfo(p, Server.getInstance().getGuild(guildid)!);
+            getGuildInfo(p, guild.Value);
         }
         return p;
     }
 
-    public static Packet getGuildAlliances(IAlliance alliance, int worldId)
+    public static Packet getGuildAlliances(IAlliance alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0D);
-        p.writeInt(alliance.getGuilds().Count);
-        foreach (int guild in alliance.getGuilds())
+
+        var allianceGuilds = alliance.Guilds;
+        p.writeInt(allianceGuilds.Count);
+        foreach (var guild in allianceGuilds)
         {
-            getGuildInfo(p, Server.getInstance().getGuild(guild)!);
+            getGuildInfo(p, guild.Value);
         }
         return p;
     }
 
-    public static Packet addGuildToAlliance(IAlliance alliance, int newGuild, IClient c)
+    public static Packet addGuildToAlliance(IAlliance alliance, IGuild newGuild, IClient c)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x12);
@@ -477,8 +481,8 @@ public class GuildPackets
         }
         p.writeInt(alliance.getCapacity());
         p.writeString(alliance.getNotice());
-        p.writeInt(newGuild);
-        getGuildInfo(p, Server.getInstance().getGuild(newGuild, null));
+        p.writeInt(newGuild.GuildId);
+        getGuildInfo(p, newGuild);
         return p;
     }
 
@@ -526,7 +530,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet removeGuildFromAlliance(IAlliance alliance, int expelledGuild, int worldId)
+    public static Packet removeGuildFromAlliance(IAlliance alliance, IGuild expelledGuild)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x10);
@@ -536,6 +540,7 @@ public class GuildPackets
         {
             p.writeString(alliance.getRankTitle(i));
         }
+
         p.writeByte(alliance.getGuilds().Count);
         foreach (int guild in alliance.getGuilds())
         {
@@ -543,8 +548,8 @@ public class GuildPackets
         }
         p.writeInt(alliance.getCapacity());
         p.writeString(alliance.getNotice());
-        p.writeInt(expelledGuild);
-        getGuildInfo(p, Server.getInstance().getGuild(expelledGuild));
+        p.writeInt(expelledGuild.GuildId);
+        getGuildInfo(p, expelledGuild);
         p.writeByte(0x01);
         return p;
     }

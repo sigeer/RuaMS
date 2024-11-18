@@ -1,4 +1,4 @@
-﻿using net.packet;
+using net.packet;
 using service;
 
 namespace Application.Core.Game.Relation
@@ -8,6 +8,7 @@ namespace Application.Core.Game.Relation
     /// </summary>
     public interface IGuild : IDB_Guild
     {
+        public bool IsValid { get; }
         public IAlliance? AllianceModel { get; }
         int addGuildMember(IPlayer chr);
         void broadcast(Packet packet);

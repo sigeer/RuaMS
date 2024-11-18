@@ -28,6 +28,6 @@ public class RankingCommandTask : AbstractRunnable
 
     public override void HandleRun()
     {
-        Server.getInstance().updateWorldPlayerRanking();
+        Server.getInstance().LoadPlayerRanking();
     }
 }

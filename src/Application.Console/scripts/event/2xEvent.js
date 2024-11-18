@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -60,13 +60,13 @@ function cancelSchedule() {
 }
 
 function start() {
-    var world = Server.getInstance().getWorld(em.getChannelServer().getWorld());
+    var world = em.getWorldServer();
     world.setExpRate(8);
     world.broadcastPacket(PacketCreator.serverNotice(6, "The Bunny Onslaught Survival Scanner (BOSS) has detected an Easter Bunny onslaught soon! The GM team has activated the Emergency XP Pool (EXP) that doubles experience gained for the next two hours!"));
 }
 
 function stop() {
-    var world = Server.getInstance().getWorld(em.getChannelServer().getWorld());
+    var world = em.getWorldServer();
     world.setExpRate(4);
     world.broadcastPacket(PacketCreator.serverNotice(6, "Unfortunately the Emergency XP Pool (EXP) has run out of juice for now and needs to recharge causing the EXP rate to go back to normal."));
 }

@@ -64,17 +64,16 @@ public class MultiChatHandler : AbstractPacketHandler
             world.partyChat(player.getParty()!, chattext, player.getName());
             ChatLogger.log(c, "Party", chattext);
         }
-        else if (type == 2 && player.getGuildId() > 0)
+        else if (type == 2 && player.GuildModel != null)
         {
-            Server.getInstance().guildChat(player.getGuildId(), player.getName(), player.getId(), chattext);
+            player.GuildModel.guildChat(player.getName(), player.getId(), chattext);
             ChatLogger.log(c, "Guild", chattext);
         }
         else if (type == 3 && player.getGuild() != null)
         {
-            int allianceId = player.getGuild()!.getAllianceId();
-            if (allianceId > 0)
+            if (player.AllianceModel != null)
             {
-                Server.getInstance().allianceMessage(allianceId, PacketCreator.multiChat(player.getName(), chattext, 3), player.getId(), -1);
+                player.AllianceModel?.broadcastMessage(PacketCreator.multiChat(player.getName(), chattext, 3), player.getId(), -1);
                 ChatLogger.log(c, "Ally", chattext);
             }
         }

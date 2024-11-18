@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using constants.game;
 using constants.id;
 using net.packet;
@@ -79,7 +79,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 return;
             }
 
-            int gid = Server.getInstance().createGuild(leader.getId(), message);
+            int gid = GuildManager.CreateGuild(message, leader.getId());
             if (gid == 0)
             {
                 leader.sendPacket(GuildPackets.genericGuildMessage(0x23));
@@ -89,8 +89,8 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
 
             leader.setGuildId(gid);
-            var guild = Server.getInstance().getGuild(leader.getGuildId(), leader);  // initialize guild structure
-            Server.getInstance().changeRank(gid, leader.getId(), 1);
+
+            leader.GuildModel!.changeRank(leader.Id, 1);
 
             leader.sendPacket(GuildPackets.showGuildInfo(leader));
             leader.dropMessage(1, "You have successfully created a Guild.");
@@ -122,8 +122,8 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 chr.saveGuildStatus(); // update database
             }
 
-            guild.broadcastNameChanged();
-            guild.broadcastEmblemChanged();
+            leader.GuildModel.broadcastNameChanged();
+            leader.GuildModel.broadcastEmblemChanged();
         }
 
         public override void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)

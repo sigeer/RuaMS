@@ -1,4 +1,4 @@
-﻿using Application.Core.client.Characters;
+using Application.Core.client.Characters;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -73,7 +73,7 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnLodgedUpdate;
 
         public ILogger Log { get; }
-
+        void LeaveGuild();
         void StartPlayerTask();
         void StopPlayerTask();
         void addCooldown(int skillId, long startTime, long length);
@@ -211,9 +211,7 @@ namespace Application.Core.Game.Players
         bool gainFame(int delta, IPlayer? fromPlayer, int mode);
         void gainFestivalPoints(int gain);
         void gainGachaExp();
-        void gainMeso(int gain);
-        void gainMeso(int gain, bool show);
-        void gainMeso(int gain, bool show, bool enableActions, bool inChat);
+        void gainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false);
         bool gainSlots(int type, int slots);
         bool gainSlots(int type, int slots, bool update);
 
@@ -225,7 +223,7 @@ namespace Application.Core.Game.Players
         List<PlayerBuffValueHolder> getAllBuffs();
         List<PlayerCoolDownValueHolder> getAllCooldowns();
         Dictionary<Disease, DiseaseExpiration> getAllDiseases();
-        Alliance? getAlliance();
+        IAlliance? getAlliance();
         int getAllianceRank();
         string? getAreaInfo(int area);
         Dictionary<short, string> getAreaInfos();

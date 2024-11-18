@@ -214,7 +214,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 return;
             }
 
-            // »»Ïß£¬Àë¿ªÉÌ³ÇÅÄÂô»Øµ½Ö÷ÊÀ½ç
+            // æ¢çº¿ï¼Œç¦»å¼€å•†åŸŽæ‹å–å›žåˆ°ä¸»ä¸–ç•Œ
             if (!newcomer)
             {
                 c.setLanguage(player.getClient().getLanguage());
@@ -298,28 +298,27 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
 
             if (player.GuildId > 0)
             {
-                var playerGuild = server.getGuild(player.GuildId, player);
-                if (playerGuild == null)
+                if (player.GuildModel == null)
                 {
                     CharacterManager.deleteGuild(player);
                 }
                 else
                 {
-                    server.setGuildMemberOnline(player, true, c.getChannel());
+                    player.GuildModel.setOnline(player.Id, true, c.Channel);
                     c.sendPacket(GuildPackets.showGuildInfo(player));
                     if (player.AllianceModel != null)
                     {
-                        c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel, c.getWorld()));
+                        c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel));
                         c.sendPacket(GuildPackets.allianceNotice(player.AllianceModel.AllianceId, player.AllianceModel.getNotice()));
 
                         if (newcomer)
                         {
-                            server.allianceMessage(player.AllianceModel.AllianceId, GuildPackets.allianceMemberOnline(player, true), player.getId(), -1);
+                            player.AllianceModel.broadcastMessage(GuildPackets.allianceMemberOnline(player, true), player.getId(), -1);
                         }
                     }
                     else
                     {
-                        playerGuild.AllianceId = 0;
+                        player.GuildModel.AllianceId = 0;
                     }
                 }
             }

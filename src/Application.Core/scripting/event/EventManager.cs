@@ -61,7 +61,7 @@ public class EventManager
     private int readyId = 0, onLoadInstances = 0;
     private Dictionary<string, string> props = new Dictionary<string, string>();
     /// <summary>
-    /// ½Å±¾Ãû
+    /// è„šæœ¬å
     /// </summary>
     private string name;
 
@@ -183,7 +183,7 @@ public class EventManager
     }
 
     /// <summary>
-    /// jsµ÷ÓÃµÄ´úÂëÒÑ×¢ÊÍ
+    /// jsè°ƒç”¨çš„ä»£ç å·²æ³¨é‡Š
     /// </summary>
     /// <returns></returns>
     //public EventScheduledFuture scheduleAtTimestamp(string methodName, long timestamp)
@@ -914,7 +914,7 @@ public class EventManager
 
     private void exportReadyGuild(int guildId)
     {
-        var mg = server.getGuild(guildId);
+        var mg = AllGuildStorage.GetGuildById(guildId);
         if (mg != null)
         {
             string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
@@ -927,7 +927,7 @@ public class EventManager
 
     private void exportMovedQueueToGuild(int guildId, int place)
     {
-        var mg = server.getGuild(guildId);
+        var mg = AllGuildStorage.GetGuildById(guildId);
         string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                 + " and is currently on the " + GameConstants.ordinal(place) + " place on the waiting queue.";
 

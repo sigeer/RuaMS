@@ -3016,12 +3016,7 @@ public class MapleMap : IMap
         }
 
         chr.receivePartyMemberHP();
-        announcePlayerDiseases(chr.getClient());
-    }
-
-    private static void announcePlayerDiseases(IClient c)
-    {
-        Server.getInstance().registerAnnouncePlayerDiseases(c);
+        Server.getInstance().registerAnnouncePlayerDiseases(chr.getClient());
     }
 
     public Portal getRandomPlayerSpawnpoint()
