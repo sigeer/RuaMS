@@ -8,32 +8,59 @@ namespace Application.Core.Game.Life
     /// </summary>
     public class DropEntry
     {
-        public DropEntry(int itemId, int chance) : this(itemId, chance, -1) { }
-        public DropEntry(int itemId, int chance, short questId) : this(itemId, chance, 1, 1, questId) { }
+        private DropEntry() { }
 
-
-        public DropEntry(int itemId, int chance, int min, int max, short questId) : this(null, itemId, chance, min, max, questId)
+        public static DropEntry Global(int continentId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)
         {
-
+            return new DropEntry
+            {
+                ContinentId = continentId,
+                ItemId = itemId,
+                Chance = chance,
+                MinCount = itemMinCount,
+                MaxCount = itemMaxCount,
+                QuestId = questId,
+                Type = DropType.GlobalDrop
+            };
+        }
+        public static DropEntry MobDrop(int mobId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)
+        {
+            return new DropEntry
+            {
+                DropperId = mobId,
+                ItemId = itemId,
+                Chance = chance,
+                MinCount = itemMinCount,
+                MaxCount = itemMaxCount,
+                QuestId = questId,
+                Type = DropType.MonsterDrop
+            };
         }
 
-        /// <summary>
-        /// Global
-        /// </summary>
-        /// <param name="continentId"></param>
-        /// <param name="itemId"></param>
-        /// <param name="chance"></param>
-        /// <param name="itemMinCount"></param>
-        /// <param name="itemMaxCount"></param>
-        /// <param name="questId"></param>
-        public DropEntry(int? continentId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)
+        public static DropEntry ReactorDrop(int reactorId, int itemId, int chance, short questId)
         {
-            ItemId = itemId;
-            Chance = chance;
-            QuestId = questId;
-            ContinentId = continentId;
-            MinCount = itemMinCount;
-            MaxCount = itemMaxCount;
+            return new DropEntry
+            {
+                DropperId = reactorId,
+                ItemId = itemId,
+                Chance = chance,
+                MinCount = 1,
+                MaxCount = 1,
+                QuestId = questId,
+                Type = DropType.ReactorDrop
+            };
+        }
+
+        public static DropEntry ReactorDropMeso(int chance)
+        {
+            return new DropEntry
+            {
+                ItemId = 0,
+                Chance = chance,
+                MinCount = 1,
+                MaxCount = 1,
+                Type = DropType.ReactorDrop
+            };
         }
         public int ItemId { get; set; }
         /// <summary>
@@ -48,6 +75,8 @@ namespace Application.Core.Game.Life
         /// </summary>
         public int MinCount { get; set; }
         public int MaxCount { get; set; }
+        public DropType Type { get; set; }
+        public int DropperId { get; set; }
 
         public int GetRandomCount(int min, int max)
         {
@@ -75,8 +104,12 @@ namespace Application.Core.Game.Life
             return Randomizer.nextInt(1000000) < Chance;
         }
 
-        public static void ClassifyDropEntries(List<DropEntry> allData, List<DropEntry> item, List<DropEntry> visibleQuest, List<DropEntry> otherQuest, IPlayer chr)
+        public static void ClassifyDropEntries(List<DropEntry> allData,out List<DropEntry> item, out List<DropEntry> visibleQuest, out List<DropEntry> otherQuest, IPlayer chr)
         {
+            item = [];
+            visibleQuest = [];
+            otherQuest = [];
+
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
             foreach (var mde in allData)
@@ -98,5 +131,12 @@ namespace Application.Core.Game.Life
                 }
             }
         }
+    }
+
+    public enum DropType
+    {
+        GlobalDrop,
+        MonsterDrop,
+        ReactorDrop
     }
 }

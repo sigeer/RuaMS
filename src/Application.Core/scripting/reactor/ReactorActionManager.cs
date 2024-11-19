@@ -62,10 +62,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     private static List<DropEntry> assembleReactorDropEntries(IPlayer chr, List<DropEntry> items)
     {
-        List<DropEntry> dropEntry = new();
-        List<DropEntry> visibleQuestEntry = new();
-        List<DropEntry> otherQuestEntry = new();
-        DropEntry.ClassifyDropEntries(items, dropEntry, visibleQuestEntry, otherQuestEntry, chr);
+        DropEntry.ClassifyDropEntries(items,out var dropEntry, out var visibleQuestEntry,out var otherQuestEntry, chr);
 
         Collections.shuffle(dropEntry);
         Collections.shuffle(visibleQuestEntry);
@@ -208,7 +205,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         List<DropEntry> items = new();
         if (meso && Randomizer.nextDouble() < (1 / (double)mesoChance))
         {
-            items.Add(new DropEntry(0, mesoChance));
+            items.Add(DropEntry.ReactorDropMeso(mesoChance));
         }
 
         foreach (var mde in drops)
@@ -221,7 +218,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
         while (items.Count < minItems)
         {
-            items.Add(new DropEntry(0, mesoChance));
+            items.Add(DropEntry.ReactorDropMeso(mesoChance));
         }
 
         return items;
