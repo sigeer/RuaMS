@@ -129,10 +129,7 @@ public abstract class AbstractScriptManager
 
     protected string GetFullScriptPath(string relativePath)
     {
-        if (relativePath.StartsWith("scripts"))
-            return relativePath;
-
-        return "scripts/" + relativePath;
+        return ScriptResFactory.GetScriptFullPath(relativePath);
     }
 
     protected string GetScriptPath(string type, string path)

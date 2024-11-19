@@ -805,8 +805,6 @@ public class Server
         OpcodeConstants.generateOpcodeNames();
         CommandExecutor.getInstance();
         ItemInformationProvider.getInstance();
-
-        await Task.Delay(Timeout.Infinite);
     }
 
     private ChannelDependencies registerChannelDependencies()
