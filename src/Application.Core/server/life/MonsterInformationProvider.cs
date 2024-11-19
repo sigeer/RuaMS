@@ -54,7 +54,6 @@ public class MonsterInformationProvider
     private Dictionary<int, List<DropEntry>> drops = new();
     private Dictionary<int, List<int>> dropsChancePool = new();    // thanks to ronan
     private Dictionary<int, bool> mobBossCache = new();
-    private Dictionary<int, string> mobNameCache = new();
 
     protected MonsterInformationProvider()
     {
@@ -83,13 +82,15 @@ public class MonsterInformationProvider
         {
             using var dbContext = new DBContext();
             globaldrops = dbContext.DropDataGlobals.Where(x => x.Chance > 0).ToList()
-                .Select(x => new DropEntry(x.Continent, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
+                .Select(x => DropEntry.Global(x.Continent, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
 
             drops = dbContext.DropData
                 .Select(x => new { x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid, x.Dropperid })
                 .ToList()
                 .GroupBy(x => x.Dropperid)
-                .Select(x => new KeyValuePair<int, List<DropEntry>>(x.Key, x.Select(y => new DropEntry(y.Itemid, y.Chance, y.MinimumQuantity, y.MaximumQuantity, (short)y.Questid)).ToList()))
+                .Select(x => new KeyValuePair<int, List<DropEntry>>(
+                    x.Key, 
+                    x.Select(y => DropEntry.MobDrop(y.Dropperid, y.Itemid, y.Chance, y.MinimumQuantity, y.MaximumQuantity, (short)y.Questid)).ToList()))
                 .ToDictionary();
         }
         catch (Exception e)
@@ -155,7 +156,7 @@ public class MonsterInformationProvider
         return ret;
     }
     /// <summary>
-    /// ¹ÖÎïËùÓĞµÄµôÂäÎï
+    /// æ€ªç‰©æ‰€æœ‰çš„æ‰è½ç‰©
     /// </summary>
     /// <param name="monsterId"></param>
     /// <returns></returns>
@@ -169,8 +170,8 @@ public class MonsterInformationProvider
         try
         {
             using var dbContext = new DBContext();
-            var ds = dbContext.DropData.Where(x => x.Dropperid == monsterId).Select(x => new { x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid }).ToList();
-            ret = ds.Select(x => new DropEntry(x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
+            var ds = dbContext.DropData.Where(x => x.Dropperid == monsterId).Select(x => new { x.Dropperid, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid }).ToList();
+            ret = ds.Select(x => DropEntry.MobDrop(x.Dropperid, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
 
         }
         catch (Exception e)
@@ -184,7 +185,7 @@ public class MonsterInformationProvider
     }
 
     /// <summary>
-    /// ¹ÖÎïËùÓĞ·ÇÈÎÎñµÀ¾ßµôÂäÎï¼°Æä¸ÅÂÊ
+    /// æ€ªç‰©æ‰€æœ‰éä»»åŠ¡é“å…·æ‰è½ç‰©åŠå…¶æ¦‚ç‡
     /// </summary>
     /// <param name="monsterId"></param>
     /// <returns></returns>
@@ -254,26 +255,31 @@ public class MonsterInformationProvider
         return mobAttackInfo.GetValueOrDefault((monsterId << 3) + attackPos);
     }
 
-    public static List<KeyValuePair<int, string>> getMobsIDsFromName(string search)
+    Dictionary<int, string> allMobNameCache = [];
+    private void LoadAllMobNameCache()
     {
-        DataProvider dataProvider = DataProviderFactory.getDataProvider(WZFiles.STRING);
-        List<KeyValuePair<int, string>> retMobs = new();
-        var data = dataProvider.getData("Mob.img");
-        List<KeyValuePair<int, string>> mobPairList = new();
-        foreach (var mobIdData in data.getChildren())
+        if (allMobNameCache.Count == 0)
         {
-            int mobIdFromData = int.Parse(mobIdData.getName());
-            string mobNameFromData = DataTool.getString(mobIdData.getChildByPath("name")) ?? "NO-NAME";
-            mobPairList.Add(new(mobIdFromData, mobNameFromData));
-        }
-        foreach (var mobPair in mobPairList)
-        {
-            if (mobPair.Value.ToLower().Contains(search.ToLower()))
+            DataProvider dataProvider = DataProviderFactory.getDataProvider(WZFiles.STRING);
+            var data = dataProvider.getData("Mob.img");
+            List<KeyValuePair<int, string>> mobPairList = new();
+            foreach (var mobIdData in data.getChildren())
             {
-                retMobs.Add(mobPair);
+                if (int.TryParse(mobIdData.getName(), out var mobIdFromData))
+                {
+                    string mobNameFromData = DataTool.getString(mobIdData.getChildByPath("name")) ?? "NO-NAME";
+                    mobPairList.Add(new(mobIdFromData, mobNameFromData));
+
+                    allMobNameCache[mobIdFromData] = mobNameFromData;
+                }
             }
         }
-        return retMobs;
+    }
+    public List<KeyValuePair<int, string>> getMobsIDsFromName(string search)
+    {
+        LoadAllMobNameCache();
+        var searchKw = search.ToLower();
+        return allMobNameCache.Where(x => x.Value.ToLower().Contains(searchKw)).ToList();
     }
 
     public bool isBoss(int id)
@@ -300,14 +306,16 @@ public class MonsterInformationProvider
 
     public string getMobNameFromId(int id)
     {
-        var mobName = mobNameCache.GetValueOrDefault(id);
+        LoadAllMobNameCache();
+
+        var mobName = allMobNameCache.GetValueOrDefault(id);
         if (mobName == null)
         {
             DataProvider dataProvider = DataProviderFactory.getDataProvider(WZFiles.STRING);
             var mobData = dataProvider.getData("Mob.img");
 
             mobName = DataTool.getString(mobData.getChildByPath(id + "/name")) ?? "";
-            mobNameCache.AddOrUpdate(id, mobName);
+            allMobNameCache.AddOrUpdate(id, mobName);
         }
 
         return mobName;

@@ -817,12 +817,8 @@ public class MapleMap : IMap
         MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
         List<DropEntry> globalEntry = mi.getRelevantGlobalDrops(this.getId());
 
-        List<DropEntry> dropEntry = new();
-        List<DropEntry> visibleQuestEntry = new();
-        List<DropEntry> otherQuestEntry = new();
-
         List<DropEntry> lootEntry = YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? mob.retrieveRelevantDrops() : mi.retrieveEffectiveDrop(mob.getId());
-        DropEntry.ClassifyDropEntries(lootEntry, dropEntry, visibleQuestEntry, otherQuestEntry, chr);     // thanks Articuno, Limit, Rohenn for noticing quest loots not showing up in only-quest item drops scenario
+        DropEntry.ClassifyDropEntries(lootEntry, out var dropEntry, out var visibleQuestEntry, out var otherQuestEntry, chr);     // thanks Articuno, Limit, Rohenn for noticing quest loots not showing up in only-quest item drops scenario
 
         if (lootEntry.Count == 0)
         {   // thanks resinate

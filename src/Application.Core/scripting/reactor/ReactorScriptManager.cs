@@ -92,9 +92,9 @@ public class ReactorScriptManager : AbstractScriptManager
             {
                 using var dbContext = new DBContext();
                 ret = dbContext.Reactordrops.Where(x => x.Reactorid == reactorId && x.Chance >= 0)
-                    .Select(x => new { x.Itemid, x.Chance, x.Questid })
+                    .Select(x => new { x.Itemid, x.Chance, x.Questid, x.Reactorid })
                     .ToList()
-                    .Select(x => new DropEntry(x.Itemid, x.Chance, (short)x.Questid))
+                    .Select(x => DropEntry.ReactorDrop(x.Reactorid, x.Itemid, x.Chance, (short)x.Questid))
                     .ToList();
             }
             catch (Exception e)
@@ -113,7 +113,7 @@ public class ReactorScriptManager : AbstractScriptManager
             .Select(x => new { x.Itemid, x.Chance, x.Questid, x.Reactorid })
             .ToList()
             .GroupBy(x => x.Reactorid)
-            .Select(x => new KeyValuePair<int, List<DropEntry>>(x.Key, x.Select(y => new DropEntry(y.Itemid, y.Chance, (short)y.Questid)).ToList()))
+            .Select(x => new KeyValuePair<int, List<DropEntry>>(x.Key, x.Select(y => DropEntry.ReactorDrop(y.Reactorid, y.Itemid, y.Chance, (short)y.Questid)).ToList()))
             .ToDictionary();
     }
 

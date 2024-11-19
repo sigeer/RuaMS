@@ -1,4 +1,4 @@
-﻿using constants.id;
+using constants.id;
 using server;
 using server.life;
 
@@ -21,7 +21,7 @@ public class WhatDropsFromCommand : CommandBase
         string monsterName = player.getLastCommandMessage();
         string output = "";
         int limit = 3;
-        var dataList = MonsterInformationProvider.getMobsIDsFromName(monsterName).Take(limit);
+        var dataList = MonsterInformationProvider.getInstance().getMobsIDsFromName(monsterName).Take(limit);
         foreach (var data in dataList)
         {
 
