@@ -1,15 +1,17 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Application.Core.Tools
 {
     public class FileCache
     {
         public const string CacheDir = "cache";
+        private static string GetCachDirPath() => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CacheDir);
         private static string GetPath(string key)
         {
-            if (!Directory.Exists(CacheDir))
-                Directory.CreateDirectory(CacheDir);
-            return Path.Combine(CacheDir, $"x_{key}.x");
+            var cacheDir = GetCachDirPath();
+            if (!Directory.Exists(cacheDir))
+                Directory.CreateDirectory(cacheDir);
+            return Path.Combine(cacheDir, $"x_{key}.x");
         }
         public static void Save<TModel>(string key, TModel obj)
         {

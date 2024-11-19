@@ -352,3 +352,5 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/src/Application.Host/cache
+/src/Application.Host/logs

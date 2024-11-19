@@ -1,47 +1,47 @@
 
-### ÏîÄ¿½éÉÜ
+### é¡¹ç›®ä»‹ç»
 
-»ùÓÚ Cosmic µÄC#°æ¡£
-½ØÖÁ [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
+åŸºäº Cosmic çš„C#ç‰ˆã€‚
+æˆªè‡³ [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
-³õÆÚ´úÂëÀ´×Ô×Ö·û´®Ìæ»»£¬¿ÉÄÜ´æÔÚ´óÁ¿bug£¬²»½¨Òé´î½¨ÓÎÍæ¡£
+åˆæœŸä»£ç æ¥è‡ªå­—ç¬¦ä¸²æ›¿æ¢ï¼Œå¯èƒ½å­˜åœ¨å¤§é‡bugï¼Œä¸å»ºè®®æ­å»ºæ¸¸ç©ã€‚
 
 
-### ¿ª·¢»·¾³
+### å¼€å‘ç¯å¢ƒ
 
 - .Net8
 - Mysql8
 
-### ÏîÄ¿½á¹¹
+### é¡¹ç›®ç»“æ„
 
 #### src
 
-- Application.Console Èë¿ÚÓ¦ÓÃ
-- Application.Core ºËĞÄ¹¦ÄÜ£¬Ä¿Â¼½á¹¹ÓëCosmicÔ´ÂëÀàËÆ£¬²¿·Ö¾­¹ı½Ï´óÕûÀí»òÕßÖØ¹¹£¬ÒÆµ½ÁËGameÄ¿Â¼
-- Application.Utility ¹¤¾ßÀà
+- Application.Console å…¥å£åº”ç”¨
+- Application.Core æ ¸å¿ƒåŠŸèƒ½ï¼Œç›®å½•ç»“æ„ä¸Cosmicæºç ç±»ä¼¼ï¼Œéƒ¨åˆ†ç»è¿‡è¾ƒå¤§æ•´ç†æˆ–è€…é‡æ„ï¼Œç§»åˆ°äº†Gameç›®å½•
+- Application.Utility å·¥å…·ç±»
 
 #### tools
 
-- CodeMigration£º×ª»»´úÂëµÄÇ¨ÒÆ¹¤¾ß
-	- ReplaceJsContentÀà£ºÓÃÓÚÌæ»»js½Å±¾ÖĞµÄJava´úÂë
+- CodeMigrationï¼šè½¬æ¢ä»£ç çš„è¿ç§»å·¥å…·
+	- ReplaceJsContentç±»ï¼šç”¨äºæ›¿æ¢jsè„šæœ¬ä¸­çš„Javaä»£ç 
 
 #### test
 
-- ServiceTest ²âÊÔ
+- ServiceTest æµ‹è¯•
 
 
-### ÔËĞĞµÄ×¼±¸¹¤×÷
+### è¿è¡Œçš„å‡†å¤‡å·¥ä½œ
 
-ÍÆ¼öÊ¹ÓÃ[Comic](https://github.com/P0nk/Cosmic?tab=readme-ov-file#3---client)µÄwzÒÔ¼°ÅäÌ×µÄ¿Í»§¶Ë£¨±¾ÏîÄ¿ÖĞµÄjs¶¼ÊÇÀ´×ÔCosmic£©
-1. ½« wz Ä¿Â¼·ÅÖÃÔÚ¸ùÄ¿Â¼£¬»òÕßÅäÖÃ»·¾³±äÁ¿`wz-path`£¬»òÕßÊ¹ÓÃ`Environment.SetEnvironmentVariable("wz-path", "wzÄ¿Â¼");`
-2. ÉèÖÃ`config.yaml`ÖĞµÄÁ¬½Ó×Ö·û´®
+æ¨èä½¿ç”¨[Comic](https://github.com/P0nk/Cosmic?tab=readme-ov-file#3---client)çš„wzä»¥åŠé…å¥—çš„å®¢æˆ·ç«¯ï¼ˆæœ¬é¡¹ç›®ä¸­çš„jséƒ½æ˜¯æ¥è‡ªCosmicï¼‰
+1. å°† wz ç›®å½•æ”¾ç½®åœ¨æ ¹ç›®å½•ï¼Œæˆ–è€…é…ç½®ç¯å¢ƒå˜é‡`wz-path`ï¼Œæˆ–è€…ä½¿ç”¨`Environment.SetEnvironmentVariable("wz-path", "wzç›®å½•");`
+2. è®¾ç½®`config.yaml`ä¸­çš„è¿æ¥å­—ç¬¦ä¸²
 
 
-#### Êı¾İ¿âÇ¨ÒÆ
+#### æ•°æ®åº“è¿ç§»
 
 ```
-// ÔÚ Application.Core ÖĞÖ´ĞĞ
-dotnet ef migrations add [migration] --output-dir EF/Migrations --startup-project ../Application.Console
+// åœ¨ Application.Core ä¸­æ‰§è¡Œ
+dotnet ef migrations add [migration] --output-dir EF/Migrations --startup-project ../Application.Host
 
-dotnet ef database update --startup-project ../Application.Console
+dotnet ef database update --startup-project ../Application.Host
 ```

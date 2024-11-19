@@ -508,7 +508,7 @@ public class WorldChannel : IWorldChannel
 
     private static string[] getEvents()
     {
-        return Directory.GetFiles(Path.Combine("scripts", "event")).Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
+        return Directory.GetFiles(ScriptResFactory.GetScriptFullPath("event")).Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
     }
 
     public int getStoredVar(int key)

@@ -206,10 +206,6 @@ public class SkillbookInformationProvider
         return loadedSkillbooks;
     }
 
-    private static List<FileInfo> listFilesFromDirectoryRecursively(string directory)
-    {
-        return new DirectoryInfo(directory).GetFiles("*", SearchOption.AllDirectories).ToList();
-    }
 
     private static HashSet<int> findMatchingSkillbookIdsOnFile(string fileContent)
     {
@@ -259,7 +255,7 @@ public class SkillbookInformationProvider
         {
             Dictionary<int, SkillBookEntry> scriptSkillbooks = new();
 
-            foreach (var file in listFilesFromDirectoryRecursively("./scripts"))
+            foreach (var file in ScriptResFactory.LoadAllScript())
             {
                 if (file.Name.EndsWith(".js"))
                 {
