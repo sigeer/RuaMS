@@ -2,8 +2,9 @@ namespace Application.Core.Game
 {
     public class ScriptResFactory
     {
-        public static readonly string ScriptsParentDir = AppDomain.CurrentDomain.BaseDirectory;
+        public static string ScriptsParentDir = AppDomain.CurrentDomain.BaseDirectory;
         public const string ScriptDirName = "scripts";
+
         public static string GetScriptFullPath(string relativePath)
         {
             if (relativePath.StartsWith(ScriptResFactory.ScriptDirName))

@@ -67,7 +67,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

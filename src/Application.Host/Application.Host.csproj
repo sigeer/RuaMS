@@ -10,6 +10,10 @@
   <ItemGroup>
     <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.13.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.5">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +48,14 @@
 	  <None Remove="cache\**" />
 	  <None Remove="logs\**" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<FilesToDelete Include="$(OutputPath)cache\**" />
+	</ItemGroup>
+	<Target Name="DeleteFile" BeforeTargets="Clean">
+		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
+		<Delete Files="@(FilesToDelete)" />
+	</Target>
 	
   <ItemGroup>
     <None Update="config.yaml">
