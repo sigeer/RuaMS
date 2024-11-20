@@ -360,6 +360,7 @@ public class Server
         {
             int channelid = j;
             var channel = new WorldChannel(world, channelid, bootTime);
+            channel.setServerMessage(world.ServerMessage);
 
             world.addChannel(channel);
         }

@@ -506,7 +506,7 @@ public class WorldChannel : IWorldChannel
     {
         this.serverMessage = message;
         broadcastPacket(PacketCreator.serverMessage(message));
-        getWorldServer().resetDisabledServerMessages();
+        WorldModel.resetDisabledServerMessages();
     }
 
     private static string[] getEvents()
