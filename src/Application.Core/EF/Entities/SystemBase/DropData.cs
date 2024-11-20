@@ -1,6 +1,6 @@
 ﻿namespace Application.EF.Entities;
 
-public partial class DropDatum
+public partial class DropData
 {
     public long Id { get; set; }
 

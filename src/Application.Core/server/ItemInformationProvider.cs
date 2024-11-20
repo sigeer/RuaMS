@@ -137,7 +137,7 @@ public class ItemInformationProvider
         var itemsData = stringData.getData("Cash.img");
         foreach (Data itemFolder in itemsData.getChildren())
         {
-            //DataTool.getString("name", xxx) : ◊”±Í«©÷–µƒ<string name="name">µƒvalue÷µ
+            //DataTool.getString("name", xxx) : Â≠êÊ†áÁ≠æ‰∏≠ÁöÑ<string name="name">ÁöÑvalueÂÄº
 
             itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
         }
@@ -174,24 +174,24 @@ public class ItemInformationProvider
         return itemPairs;
     }
 
-    public List<ItemInfoBase> getAllEtcItems()
-    {
-        if (etcItemCache.Count > 0)
-        {
-            return etcItemCache;
-        }
+    //public List<ItemInfoBase> getAllEtcItems()
+    //{
+    //    if (etcItemCache.Count > 0)
+    //    {
+    //        return etcItemCache;
+    //    }
 
-        List<ItemInfoBase> itemPairs = new();
-        Data? itemsData;
+    //    List<ItemInfoBase> itemPairs = new();
+    //    Data? itemsData;
 
-        itemsData = stringData.getData("Etc.img").getChildByPath("Etc") ?? throw new BusinessResException("Etc.img/Etc");
-        foreach (Data itemFolder in itemsData.getChildren())
-        {
-            itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
-        }
-        etcItemCache = itemPairs;
-        return itemPairs;
-    }
+    //    itemsData = stringData.getData("Etc.img").getChildByPath("Etc") ?? throw new BusinessResException("Etc.img/Etc");
+    //    foreach (Data itemFolder in itemsData.getChildren())
+    //    {
+    //        itemPairs.Add(new(int.Parse(itemFolder.getName()!), DataTool.getString("name", itemFolder) ?? "NO-NAME"));
+    //    }
+    //    etcItemCache = itemPairs;
+    //    return itemPairs;
+    //}
 
     private Data? getStringData(int itemId)
     {
@@ -351,7 +351,7 @@ public class ItemInformationProvider
                 }
                 else if (iFile.getName() == idStr.Substring(1) + ".img")
                 {
-                    log.Information("===”¶∏√≤ªª·±ª¥•∑¢");
+                    log.Information("===Â∫îËØ•‰∏ç‰ºöË¢´Ëß¶Âèë");
                     ret = itemData.getData(topDir.getName() + "/" + iFile.getName());
                     itemCache[itemId] = ret;
                     return ret;

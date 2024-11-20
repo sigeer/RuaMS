@@ -1,4 +1,5 @@
 using Application.EF.Entities;
+using Application.Utility.Configs;
 using AutoMapper;
 using server;
 using server.life;
@@ -12,11 +13,19 @@ namespace Application.Host.Models
         {
             CreateMap(typeof(PagedData<>), typeof(PagedData<>));
 
-            CreateMap<DropDatum, DropDataDto>().ForMember(a => a.QuestId, b => b.MapFrom(x => x.Questid))
+            CreateMap<DropData, DropDataDto>().ForMember(a => a.QuestId, b => b.MapFrom(x => x.Questid))
                 .ForMember(a => a.ItemId, b => b.MapFrom(x => x.Itemid))
                 .ForMember(a => a.DropperId, b => b.MapFrom(x => x.Dropperid))
                 .ForMember(a => a.ItemName, b => b.MapFrom(x => ItemInformationProvider.getInstance().getName(x.Itemid)))
                 .ForMember(a => a.DropperName, b => b.MapFrom(x => MonsterInformationProvider.getInstance().getMobNameFromId(x.Dropperid)))
+                .ForMember(a => a.QuestName, b => b.MapFrom(x => Quest.getInstance(x.Questid).getName()))
+                .ReverseMap();
+
+            CreateMap<DropDataGlobal, DropDataDto>().ForMember(a => a.QuestId, b => b.MapFrom(x => x.Questid))
+                .ForMember(a => a.ItemId, b => b.MapFrom(x => x.Itemid))
+                .ForMember(a => a.ContinentId, b => b.MapFrom(x => x.Continent))
+                .ForMember(a => a.ItemName, b => b.MapFrom(x => ItemInformationProvider.getInstance().getName(x.Itemid)))
+                .ForMember(a => a.ContinentName, b => b.MapFrom(x => x.Continent < 0 ? "-" : YamlConfig.config.worlds[x.Continent].name))
                 .ForMember(a => a.QuestName, b => b.MapFrom(x => Quest.getInstance(x.Questid).getName()))
                 .ReverseMap();
         }

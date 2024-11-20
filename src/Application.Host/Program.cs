@@ -55,6 +55,7 @@ SchedulerManage.Scheduler.ListenerManager.AddJobListener(new JobCompleteListener
 builder.Services.AddHostedService<GameHost>();
 
 builder.Services.AddScoped<DropdataService>();
+builder.Services.AddScoped<DataService>();
 builder.Services.AddAutoMapper(typeof(DtoMapper).Assembly);
 // Api
 builder.Services.AddControllers(o =>

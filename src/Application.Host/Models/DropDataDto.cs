@@ -16,6 +16,9 @@ namespace Application.Host.Models
         public int QuestId { get; set; }
         public string? QuestName { get; set; }
 
+        public int ContinentId { get; set; }
+        public string? ContinentName { get; set; }
+
         public int Chance { get; set; }
     }
 }

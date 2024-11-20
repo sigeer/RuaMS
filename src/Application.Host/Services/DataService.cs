@@ -1,4 +1,6 @@
 using Application.EF;
+using Application.Utility.Configs;
+using server;
 using server.life;
 
 namespace Application.Host.Services
@@ -12,9 +14,27 @@ namespace Application.Host.Services
             _dbContext = dbContext;
         }
 
-        public List<KeyValuePair<int, string>> FilterMonster(string mobName)
+        public List<KeyValuePair<int, string>> FilterMonster(string? mobName)
         {
+            if (string.IsNullOrWhiteSpace(mobName))
+                return [];
+
             return MonsterInformationProvider.getInstance().getMobsIDsFromName(mobName);
+        }
+
+        public List<KeyValuePair<int, string>> FilterItem(string? itemName)
+        {
+            if (string.IsNullOrWhiteSpace(itemName))
+                return [];
+
+            return ItemInformationProvider.getInstance().getAllItems()
+                .Where(x => x.Name.Contains(itemName, StringComparison.OrdinalIgnoreCase))
+                .Select(x => new KeyValuePair<int, string>(x.Id, x.Name)).ToList();
+        }
+
+        public List<KeyValuePair<int, string>> GetWorldsData()
+        {
+            return YamlConfig.config.worlds.Select((x, index) => new KeyValuePair<int, string>(index, x.name)).ToList();
         }
     }
 }
