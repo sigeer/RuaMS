@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Game.Skills;
@@ -66,7 +67,7 @@ public class Server
     private static ChannelDependencies channelDependencies;
 
     private LoginServer loginServer = null!;
-    private List<IWorld> worlds = new();
+    public Dictionary<int, IWorld> RunningWorlds { get; set; } = new();
 
     /// <summary>
     /// AccountId - cid
@@ -178,7 +179,7 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            return worlds.ElementAtOrDefault(id) ?? throw new BusinessException($"World {id} not exsited");
+            return RunningWorlds.GetValueOrDefault(id) ?? throw new BusinessException($"World {id} not exsited");
         }
         finally
         {
@@ -191,7 +192,7 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            return worlds.ToList();
+            return RunningWorlds.Values.ToList();
         }
         finally
         {
@@ -204,7 +205,7 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            return worlds.Count;
+            return RunningWorlds.Count;
         }
         finally
         {
@@ -226,7 +227,7 @@ public class Server
     {
         try
         {
-            return worlds.SelectMany(x => x.Channels).ToList();
+            return RunningWorlds.Values.SelectMany(x => x.Channels).ToList();
         }
         catch (NullReferenceException)
         {
@@ -287,7 +288,7 @@ public class Server
         {
             world = this.getWorld(worldid);
 
-            if (worldid >= worlds.Count)
+            if (worldid >= RunningWorlds.Count)
             {
                 return -3;
             }
@@ -314,13 +315,10 @@ public class Server
         return channelid;
     }
 
-    public int addWorld()
+    public bool AddWorld(WorldConfigEntity worldConfig)
     {
-        int newWorld = initWorld();
-        if (newWorld > -1)
+        if (InitWorld(worldConfig))
         {
-            LoadPlayerRanking();
-
             HashSet<int> accounts;
             lgnLock.EnterReadLock();
             try
@@ -334,77 +332,50 @@ public class Server
 
             foreach (int accId in accounts)
             {
-                LoadAccountCharactersView(accId, newWorld);
+                LoadAccountCharactersView(accId);
             }
+            return true;
         }
 
-        return newWorld;
+        return false;
     }
 
-    private int initWorld()
+    public bool InitWorld(WorldConfigEntity worldConfig)
     {
-        int i;
-
-        wldLock.EnterReadLock();
-        try
+        if (!worldConfig.CanDeploy)
         {
-            i = worlds.Count;
-
-            if (i >= YamlConfig.config.server.WLDLIST_SIZE)
-            {
-                return -1;
-            }
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
+            log.Information("初始化 {WorldId} 失败: 未启用 或者 未设置端口", worldConfig.Id);
+            return false;
         }
 
-        log.Information("Starting world {WorldId}", i);
+        if (RunningWorlds.ContainsKey(worldConfig.Id))
+            return false;
 
-        var worldConfig = YamlConfig.config.worlds[i];
+        log.Information("Starting world {WorldId}", worldConfig.Id);
 
-        var world = new World(i, worldConfig);
+        var world = new World(worldConfig);
 
-        // world id从0开始 channel id从1开始
         long bootTime = getCurrentTime();
-        for (int j = 1; j <= worldConfig.channels; j++)
+        for (int j = 1; j <= worldConfig.ChannelCount; j++)
         {
             int channelid = j;
             var channel = new WorldChannel(world, channelid, bootTime);
+            channel.setServerMessage(world.ServerMessage);
 
             world.addChannel(channel);
         }
 
-        bool canDeploy;
-
         wldLock.EnterWriteLock();    // thanks Ashen for noticing a deadlock issue when trying to deploy a channel
         try
         {
-            canDeploy = world.getId() == worlds.Count;
-            if (canDeploy)
-            {
-                worlds.Add(world);
-            }
+            RunningWorlds[worldConfig.Id] = world;
         }
         finally
         {
             wldLock.ExitWriteLock();
         }
-
-        if (canDeploy)
-        {
-            world.setServerMessage(worldConfig.server_message);
-
-            log.Information("Finished loading world {WorldId}", i);
-            return i;
-        }
-        else
-        {
-            log.Error("Could not load world {WorldId}...", i);
-            world.shutdown();
-            return -2;
-        }
+        log.Information("Finished loading world {WorldId}", world.Id);
+        return true;
     }
 
     public bool removeChannel(int worldid)
@@ -415,11 +386,11 @@ public class Server
         wldLock.EnterReadLock();
         try
         {
-            if (worldid >= worlds.Count)
+            if (worldid >= RunningWorlds.Count)
             {
                 return false;
             }
-            world = worlds.ElementAtOrDefault(worldid);
+            world = RunningWorlds.GetValueOrDefault(worldid);
         }
         finally
         {
@@ -435,22 +406,14 @@ public class Server
         return false;
     }
 
-    public bool removeWorld()
+    public bool RemoveWorld(int worldId)
     {
         //lol don't!
         IWorld? w;
-        int worldid;
-
         wldLock.EnterReadLock();
         try
         {
-            worldid = worlds.Count - 1;
-            if (worldid < 0)
-            {
-                return false;
-            }
-
-            w = worlds.ElementAtOrDefault(worldid);
+            w = RunningWorlds.GetValueOrDefault(worldId);
         }
         finally
         {
@@ -468,10 +431,7 @@ public class Server
         wldLock.EnterWriteLock();
         try
         {
-            if (worldid == worlds.Count - 1)
-            {
-                worlds.remove(worldid);
-            }
+            RunningWorlds.Remove(worldId);
         }
         finally
         {
@@ -487,7 +447,7 @@ public class Server
         wldLock.EnterWriteLock();
         try
         {
-            worlds.Clear();
+            RunningWorlds.Clear();
         }
         finally
         {
@@ -740,9 +700,6 @@ public class Server
             log.Debug("Skillbook loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
-
-        int worldCount = Math.Min(YamlConfig.config.worlds.Count, YamlConfig.config.server.WORLDS);
-
         try
         {
             using var dbContext = new DBContext();
@@ -755,7 +712,7 @@ public class Server
             CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             applyAllWorldTransfers(dbContext);
-            PlayerNPC.loadRunningRankData(dbContext, worldCount);
+            PlayerNPC.loadRunningRankData(dbContext);
         }
         catch (Exception sqle)
         {
@@ -767,9 +724,10 @@ public class Server
 
         try
         {
-            for (int i = 0; i < worldCount; i++)
+            var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
+            foreach (var worldConfig in worlds)
             {
-                initWorld();
+                InitWorld(worldConfig);
             }
             LoadPlayerRanking();
 
@@ -1038,7 +996,7 @@ public class Server
     /// <returns></returns>
     public SortedDictionary<int, List<IPlayer>> LoadAccountCharList(int accountId, int visibleWorlds)
     {
-        LoadAccountCharactersView(accountId, 0, visibleWorlds);
+        LoadAccountCharactersView(accountId);
 
         var accountData = getAccountCharacterEntries(accountId, 1);
         SortedDictionary<int, List<IPlayer>> worldChrs = new();
@@ -1069,7 +1027,7 @@ public class Server
         var list = new List<IPlayer>();
         idList.ForEach(accountId =>
         {
-            LoadAccountCharactersView(accountId, 0, force: false);
+            LoadAccountCharactersView(accountId, force: false);
             list.AddRange(getAccountCharacterEntries(accountId));
         });
 
@@ -1161,18 +1119,23 @@ public class Server
     public void loadAccountCharacters(IClient c)
     {
         int accId = c.getAccID();
-        LoadAccountCharactersView(accId, 0);
+        LoadAccountCharactersView(accId);
 
         var accData = getAccountCharacterEntries(accId);
         int gmLevel = accData.Count == 0 ? 0 : accData.Max(x => x.gmLevel());
         c.setGMLevel(gmLevel);
     }
 
-    private void LoadAccountCharactersView(int accId, int fromWorldid, int endWorldId = -1, bool force = true)
+    private void LoadAccountCharactersView(int accId, int worldId = -1, bool force = true)
     {
-        if (endWorldId == -1)
+        var filterWorlds = new List<int>();
+        if (worldId == -1)
         {
-            endWorldId = this.getWorlds().Count - 1;
+            filterWorlds = RunningWorlds.Keys.ToList();
+        }
+        else
+        {
+            filterWorlds.Add(worldId);
         }
 
         lgnLock.EnterWriteLock();
@@ -1188,7 +1151,7 @@ public class Server
                     return;
             }
 
-            var playerIdList = AccountManager.LoadAccountWorldPlayers(accId, Enumerable.Range(fromWorldid, endWorldId - fromWorldid + 1));
+            var playerIdList = AccountManager.LoadAccountWorldPlayers(accId, filterWorlds);
             foreach (var cid in playerIdList)
             {
                 AccountCharacterCache[accId].Add(cid);

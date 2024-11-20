@@ -138,7 +138,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
             posX -= 12;
         }
         Point dropPos = new Point(posX, posY);
-        int worldMesoRate = c.getWorldServer().MesoRate;
+        var worldMesoRate = c.getWorldServer().MesoRate;
 
         if (!delayed)
         {
@@ -167,13 +167,13 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
     }
 
-    private void DropInternal(DropEntry d, int minMeso, int maxMeso, int worldMesoRate, Point dropPos, IPlayer chr, short delay)
+    private void DropInternal(DropEntry d, int minMeso, int maxMeso, float worldMesoRate, Point dropPos, IPlayer chr, short delay)
     {
         if (d.ItemId == 0)
         {
             var map = reactor.getMap();
             int baseDrop = d.GetRandomCount(minMeso, maxMeso);
-            int mesoDrop = (baseDrop * worldMesoRate);
+            int mesoDrop = (int)(baseDrop * worldMesoRate);
             if (mesoDrop > 0)
                 map.spawnMesoDrop(mesoDrop, map.calcDropPos(dropPos, reactor.getPosition()), reactor, chr, false, 2, delay);
         }
@@ -200,7 +200,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         return ReactorScriptManager.getInstance().getDrops(reactor.getId());
     }
 
-    private List<DropEntry> generateDropList(List<DropEntry> drops, int dropRate, bool meso, int mesoChance, int minItems)
+    private List<DropEntry> generateDropList(List<DropEntry> drops, float dropRate, bool meso, int mesoChance, int minItems)
     {
         List<DropEntry> items = new();
         if (meso && Randomizer.nextDouble() < (1 / (double)mesoChance))

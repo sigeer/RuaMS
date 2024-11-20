@@ -4,7 +4,7 @@ namespace Application.Host.Models
 {
     public class PagedData<TData>
     {
-        public List<TData> Data { get; set; }
+        public List<TData> Data { get; set; } = [];
         public int Total { get; set; }
     }
 

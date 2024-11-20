@@ -1,3 +1,5 @@
+using Application.Core.EF.Entities.SystemBase;
+using Application.Core.Managers;
 using Application.EF.Entities;
 using Application.Utility.Configs;
 using AutoMapper;
@@ -25,9 +27,19 @@ namespace Application.Host.Models
                 .ForMember(a => a.ItemId, b => b.MapFrom(x => x.Itemid))
                 .ForMember(a => a.ContinentId, b => b.MapFrom(x => x.Continent))
                 .ForMember(a => a.ItemName, b => b.MapFrom(x => ItemInformationProvider.getInstance().getName(x.Itemid)))
-                .ForMember(a => a.ContinentName, b => b.MapFrom(x => x.Continent < 0 ? "-" : YamlConfig.config.worlds[x.Continent].name))
+                .ForMember(a => a.ContinentName, b => b.MapFrom(x => x.Continent < 0 ? "-" : GetContinentName(x.Continent)))
                 .ForMember(a => a.QuestName, b => b.MapFrom(x => Quest.getInstance(x.Questid).getName()))
                 .ReverseMap();
+
+            CreateMap<WorldServerDto, WorldConfigEntity>().ReverseMap();
+        }
+
+        private string GetContinentName(int id)
+        {
+            if (id == -1)
+                return "全部";
+
+            return ServerManager.GetWorld(id)?.Name ?? $"未知 (Id: {id}) ";
         }
     }
 }

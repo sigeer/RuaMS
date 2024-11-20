@@ -1,8 +1,9 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Core.Compatible;
 using Application.Core.Game;
 using Application.Core.Game.Players;
 using Application.Core.Managers;
+using Application.EF;
 using constants.id;
 using net.server;
 using Quartz.Impl;
@@ -23,7 +24,15 @@ namespace ServiceTest
             var factory = new StdSchedulerFactory();
             SchedulerManage.Scheduler = factory.GetScheduler().Result;
 
-            Server.getInstance().addWorld();
+            LoadTestWorld();
+        }
+
+        private void LoadTestWorld()
+        {
+            using var dbContext = new DBContext();
+            var testWorldConfig = dbContext.WorldConfigs.FirstOrDefault();
+            if (testWorldConfig != null)
+                Server.getInstance().InitWorld(testWorldConfig);
         }
 
         private IClient? _client;

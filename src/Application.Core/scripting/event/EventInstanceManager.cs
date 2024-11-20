@@ -177,7 +177,7 @@ public class EventInstanceManager
         {
             foreach (IPlayer mc in players)
             {
-                mc.gainExp(gain * mc.getExpRate(), true, true);
+                mc.gainExp((int)(gain * mc.getExpRate()), true, true);
             }
         }
         else
@@ -186,7 +186,7 @@ public class EventInstanceManager
             {
                 if (mc.getMapId() == mapId)
                 {
-                    mc.gainExp(gain * mc.getExpRate(), true, true);
+                    mc.gainExp((int)(gain * mc.getExpRate()), true, true);
                 }
             }
         }
@@ -206,7 +206,7 @@ public class EventInstanceManager
         {
             foreach (IPlayer mc in players)
             {
-                mc.gainMeso(gain * mc.getMesoRate());
+                mc.gainMeso((int)(gain * mc.getMesoRate()));
             }
         }
         else
@@ -215,7 +215,7 @@ public class EventInstanceManager
             {
                 if (mc.getMapId() == mapId)
                 {
-                    mc.gainMeso(gain * mc.getMesoRate());
+                    mc.gainMeso((int)(gain * mc.getMesoRate()));
                 }
             }
         }

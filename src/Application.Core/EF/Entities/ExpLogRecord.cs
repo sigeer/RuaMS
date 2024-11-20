@@ -1,9 +1,9 @@
-﻿namespace Application.Core.EF.Entities
+namespace Application.Core.EF.Entities
 {
     public class ExpLogRecord
     {
         private ExpLogRecord() { }
-        public ExpLogRecord(int charId, int worldExpRate, int expCoupon, long gainedExp, int currentExp, DateTimeOffset expGainTime)
+        public ExpLogRecord(int charId, float worldExpRate, float expCoupon, long gainedExp, int currentExp, DateTimeOffset expGainTime)
         {
             CharId = charId;
             WorldExpRate = worldExpRate;
@@ -15,8 +15,8 @@
         public long Id { get; set; }
 
         public int CharId { get; set; }
-        public int WorldExpRate { get; set; }
-        public int ExpCoupon { get; set; }
+        public float WorldExpRate { get; set; }
+        public float ExpCoupon { get; set; }
         public long GainedExp { get; set; }
 
         public int CurrentExp { get; set; }

@@ -48,13 +48,11 @@ public class ExpAction : AbstractQuestAction
 
     public static void runAction(IPlayer chr, int gain)
     {
-        if (!YamlConfig.config.server.USE_QUEST_RATE)
+        var expGain = gain * chr.getExpRate();
+        if (YamlConfig.config.server.USE_QUEST_RATE)
         {
-            chr.gainExp(gain * chr.getExpRate(), true, true);
+            expGain = gain * chr.getQuestExpRate();
         }
-        else
-        {
-            chr.gainExp(gain * chr.getQuestExpRate(), true, true);
-        }
+        chr.gainExp((int)expGain, true, true);
     }
 }

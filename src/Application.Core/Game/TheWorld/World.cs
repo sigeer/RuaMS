@@ -1,3 +1,4 @@
+using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
@@ -35,13 +36,13 @@ public class World : IWorld
     public string Name { get; set; }
     public string WhyAmIRecommended { get; set; }
     public int Flag { get; set; }
-    public int ExpRate { get; set; }
-    public int DropRate { get; set; }
-    public int BossDropRate { get; set; }
-    public int MesoRate { get; set; }
-    public int QuestRate { get; set; }
-    public int TravelRate { get; set; }
-    public int FishingRate { get; set; }
+    public float ExpRate { get; set; }
+    public float DropRate { get; set; }
+    public float BossDropRate { get; set; }
+    public float MesoRate { get; set; }
+    public float QuestRate { get; set; }
+    public float TravelRate { get; set; }
+    public float FishingRate { get; set; }
     private float _mobRate;
     public float MobRate
     {
@@ -134,23 +135,25 @@ public class World : IWorld
     private ScheduledFuture? timeoutSchedule;
     private ScheduledFuture? hpDecSchedule;
 
+    public WorldConfigEntity Configs { get; set; }
 
-    public World(int world, WorldConfig config)
+    public World(WorldConfigEntity config)
     {
-        this.Id = world;
-        this.Flag = config.flag;
-        Name = config.name;
-        WhyAmIRecommended = config.why_am_i_recommended;
-        ServerMessage = config.server_message;
-        this.EventMessage = config.event_message;
-        this.ExpRate = config.exp_rate;
-        this.DropRate = config.drop_rate;
-        this.BossDropRate = config.boss_drop_rate;
-        this.MesoRate = config.meso_rate;
-        this.QuestRate = config.quest_rate;
-        this.TravelRate = config.travel_rate;
-        this.FishingRate = config.fishing_rate;
-        MobRate = config.mob_rate;
+        Configs = config;
+        this.Id = config.Id;
+        this.Flag = config.Flag;
+        Name = config.Name;
+        WhyAmIRecommended = config.RecommendMessage;
+        ServerMessage = config.ServerMessage;
+        this.EventMessage = config.EventMessage;
+        this.ExpRate = config.ExpRate;
+        this.DropRate = config.DropRate;
+        this.BossDropRate = config.BossDropRate;
+        this.MesoRate = config.MesoRate;
+        this.QuestRate = config.QuestRate;
+        this.TravelRate = config.TravelRate;
+        this.FishingRate = config.FishingRate;
+        MobRate = config.MobRate;
 
         log = LogFactory.GetLogger("World_" + Id);
         Channels = new List<IWorldChannel>();

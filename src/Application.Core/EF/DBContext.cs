@@ -1,6 +1,8 @@
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
+using Application.Core.EF.Entities.SystemBase;
 using Microsoft.EntityFrameworkCore;
+using MySql.EntityFrameworkCore.Extensions;
 
 namespace Application.EF;
 
@@ -16,6 +18,7 @@ public partial class DBContext : DbContext
     }
 
     #region Entities
+    public DbSet<WorldConfigEntity> WorldConfigs { get; set; }
     public DbSet<GachaponPoolLevelChance> GachaponPoolLevelChances { get; set; }
     public DbSet<GachaponPool> GachaponPools { get; set; }
     public DbSet<GachaponPoolItem> GachaponPoolItems { get; set; }
@@ -2693,8 +2696,57 @@ public partial class DBContext : DbContext
             entity.HasKey(e => e.Id).HasName("PRIMARY");
         });
 
+        ConfigWorldConfig(modelBuilder);
+
         OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+    private void ConfigWorldConfig(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<WorldConfigEntity>(entity =>
+        {
+            entity.ToTable("sys_world_config");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Name).HasColumnType("varchar(50)").IsRequired().HasDefaultValue("");
+            entity.Property(e => e.ServerMessage).HasColumnType("varchar(200)").IsRequired().HasDefaultValue("Welcome");
+            entity.Property(e => e.EventMessage).HasColumnType("varchar(200)").IsRequired().HasDefaultValue("");
+            entity.Property(e => e.RecommendMessage).HasColumnType("varchar(200)").IsRequired().HasDefaultValue("");
+            entity.Property(e => e.MesoRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.ExpRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.DropRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.FishingRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.TravelRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.BossDropRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.MobRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.QuestRate).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.ChannelCount).IsRequired().HasDefaultValue(3);
+            entity.Property(e => e.StartPort).IsRequired();
+
+            entity.HasData(new WorldConfigEntity(0, "Scania")
+            {
+                Enable = true,
+                ServerMessage = "Welcome to Scania!",
+                EventMessage = "Scania!",
+                RecommendMessage = "Welcome to Scania!",
+                ExpRate = 10,
+                DropRate = 10,
+                MobRate = 1,
+                TravelRate = 10,
+                QuestRate = 5,
+                FishingRate = 10,
+                BossDropRate = 10,
+                MesoRate = 10,
+                StartPort = 7575
+            }, new WorldConfigEntity(1, "Bera"), new WorldConfigEntity(2, "Broa"), new WorldConfigEntity(3, "Windia")
+            , new WorldConfigEntity(4, "Khaini"), new WorldConfigEntity(5, "Bellocan"), new WorldConfigEntity(6, "Mardia")
+            , new WorldConfigEntity(7, "Kradia"), new WorldConfigEntity(8, "Yellonde"), new WorldConfigEntity(9, "Demethos")
+            , new WorldConfigEntity(10, "Galicia"), new WorldConfigEntity(11, "El Nido"), new WorldConfigEntity(12, "Zenith")
+            , new WorldConfigEntity(13, "Arcenia"), new WorldConfigEntity(14, "Kastia"), new WorldConfigEntity(15, "Judis")
+            , new WorldConfigEntity(16, "Plana"), new WorldConfigEntity(17, "Kalluna"), new WorldConfigEntity(18, "Stius")
+            , new WorldConfigEntity(19, "Croa"), new WorldConfigEntity(20, "Medere"));
+        });
+    }
 }

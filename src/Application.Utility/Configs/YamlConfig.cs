@@ -7,7 +7,6 @@ public class YamlConfig
     public const string CONFIG_FILE_NAME = "config.yaml";
     public static YamlConfig config = fromFile(CONFIG_FILE_NAME);
 
-    public List<WorldConfig> worlds;
     public ServerConfig server;
 
     public static YamlConfig fromFile(string filename)

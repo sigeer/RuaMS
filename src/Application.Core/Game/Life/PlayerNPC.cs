@@ -116,10 +116,10 @@ public class PlayerNPC : AbstractMapObject
         }
     }
 
-    public static void loadRunningRankData(DBContext dbContext, int worlds)
+    public static void loadRunningRankData(DBContext dbContext)
     {
         getRunningOverallRanks(dbContext);
-        getRunningWorldRanks(dbContext, worlds);
+        getRunningWorldRanks(dbContext);
         getRunningWorldJobRanks(dbContext);
     }
 
@@ -231,7 +231,7 @@ public class PlayerNPC : AbstractMapObject
         runningOverallRank.set(value + 1);
     }
 
-    private static void getRunningWorldRanks(DBContext dbContext, int worlds)
+    private static void getRunningWorldRanks(DBContext dbContext)
     {
         int numWorlds = Server.getInstance().getWorldsSize();
         for (int i = 0; i < numWorlds; i++)

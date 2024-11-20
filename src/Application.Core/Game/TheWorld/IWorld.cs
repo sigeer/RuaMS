@@ -1,3 +1,4 @@
+using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
@@ -16,6 +17,7 @@ namespace Application.Core.Game.TheWorld
 {
     public interface IWorld
     {
+        WorldConfigEntity Configs { get; set; }
         public List<IWorldChannel> Channels { get; }
         WorldGuildStorage GuildStorage { get; }
         WorldPlayerStorage Players { get; }
@@ -27,13 +29,13 @@ namespace Application.Core.Game.TheWorld
         public string WhyAmIRecommended { get; set; }
         public string ServerMessage { get; set; }
         public string EventMessage { get; set; }
-        public int ExpRate { get; set; }
-        public int DropRate { get; set; }
-        public int BossDropRate { get; set; }
-        public int MesoRate { get; set; }
-        public int QuestRate { get; set; }
-        public int TravelRate { get; set; }
-        public int FishingRate { get; set; }
+        public float ExpRate { get; set; }
+        public float DropRate { get; set; }
+        public float BossDropRate { get; set; }
+        public float MesoRate { get; set; }
+        public float QuestRate { get; set; }
+        public float TravelRate { get; set; }
+        public float FishingRate { get; set; }
         public float MobRate { get; set; }
         void addCashItemBought(int snid);
         bool addChannel(IWorldChannel channel);
