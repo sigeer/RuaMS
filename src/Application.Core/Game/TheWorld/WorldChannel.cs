@@ -46,9 +46,9 @@ namespace net.server.channel;
 public class WorldChannel : IWorldChannel
 {
     private ILogger log;
-    private static int BASE_PORT = 7575;
+    public bool IsRunning { get; set; }
 
-    private int port;
+    public int Port { get; set; }
     private string ip;
     private int world;
     private int channel;
@@ -101,12 +101,12 @@ public class WorldChannel : IWorldChannel
         Players = new ChannelPlayerStorage(this.world, channel);
         this.ongoingStartTime = startTime + 10000;  // rude approach to a world's last channel boot time, placeholder for the 1st wedding reservation ever
         this.mapManager = new MapManager(null, this.world, channel);
-        this.port = BASE_PORT + (this.channel - 1) + (this.world * 100);
-        this.ip = YamlConfig.config.server.HOST + ":" + port;
+        this.Port = world.Configs.StartPort + (this.channel - 1);
+        this.ip = YamlConfig.config.server.HOST + ":" + Port;
         log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
         try
         {
-            this.channelServer = initServer(port, this.world, channel);
+            this.channelServer = initServer(Port, this.world, channel);
             expedType.AddRange(Arrays.asList(ExpeditionType.values<ExpeditionType>()));
 
             if (Server.getInstance().isOnline())
@@ -132,7 +132,7 @@ public class WorldChannel : IWorldChannel
 
             services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
 
-            log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), port);
+            log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), Port);
         }
         catch (Exception e)
         {
@@ -144,6 +144,7 @@ public class WorldChannel : IWorldChannel
     {
         ChannelServer channelServer = new ChannelServer(port, world, channel);
         channelServer.Start().Wait();
+        IsRunning = true;
         return channelServer;
     }
 
@@ -189,6 +190,8 @@ public class WorldChannel : IWorldChannel
                 closeChannelSchedules();
 
                 channelServer.Stop().Wait();
+
+                IsRunning = false;
 
                 _finishedShutdown = true;
                 log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);

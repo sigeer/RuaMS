@@ -902,7 +902,7 @@ public class AbstractPlayerInteraction
 
     public void giveCharacterExp(int amount, IPlayer chr)
     {
-        chr.gainExp((amount * chr.getExpRate()), true, true);
+        chr.gainExp((int)(amount * chr.getExpRate()), true, true);
     }
 
     public void givePartyExp(int amount, List<IPlayer> party)

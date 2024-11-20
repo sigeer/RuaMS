@@ -55,14 +55,13 @@ public class MesoAction : AbstractQuestAction
         }
         else
         {
-            if (!YamlConfig.config.server.USE_QUEST_RATE)
+            var mesoGain = gain * chr.getMesoRate();
+            if (YamlConfig.config.server.USE_QUEST_RATE)
             {
-                chr.gainMeso(gain * chr.getMesoRate(), true, false, true);
+                mesoGain *= chr.getQuestMesoRate();
             }
-            else
-            {
-                chr.gainMeso(gain * chr.getQuestMesoRate(), true, false, true);
-            }
+
+            chr.gainMeso((int)mesoGain, true, false, true);
         }
     }
 }

@@ -10,11 +10,12 @@ namespace Application.Host.Controllers
     {
         readonly DropdataService _dropService;
         readonly DataService _dataService;
-
-        public GameController(DropdataService dropService, DataService dataService)
+        readonly ServerService _serverService;
+        public GameController(DropdataService dropService, DataService dataService, ServerService serverService)
         {
             _dropService = dropService;
             _dataService = dataService;
+            _serverService = serverService;
         }
 
         [HttpPut]
@@ -80,6 +81,12 @@ namespace Application.Host.Controllers
         public List<KeyValuePair<int, string>> LoadWorlds()
         {
             return _dataService.GetWorldsData();
+        }
+
+        [HttpGet]
+        public List<WorldServerDto> GetWorldServerList()
+        {
+            return _serverService.GetWorldServerList();
         }
     }
 }

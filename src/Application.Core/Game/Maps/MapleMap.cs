@@ -701,7 +701,7 @@ public class MapleMap : IMap
         return new(getRoundedCoordinate(angle), (int)distn);
     }
 
-    public byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, Point pos, byte d, int chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short dropDelay)
+    private byte dropItemsFromMonsterOnMap(List<DropEntry> dropEntry, Point pos, byte d, float chRate, byte droptype, int mobpos, IPlayer chr, Monster mob, short dropDelay)
     {
         if (dropEntry.Count == 0)
         {
@@ -724,12 +724,12 @@ public class MapleMap : IMap
                 if (de.ItemId == 0)
                 {
                     // meso
-                    int mesos = de.GetRandomCount();
+                    float mesos = de.GetRandomCount();
                     if (mesos > 0)
                     {
                         if (chr.getBuffedValue(BuffStat.MESOUP) != null)
                         {
-                            mesos = (int)(mesos * chr.getBuffedValue(BuffStat.MESOUP)!.Value / 100.0);
+                            mesos = (mesos * chr.getBuffedValue(BuffStat.MESOUP)!.Value / 100f);
                         }
                         mesos = mesos * chr.getMesoRate();
                         if (mesos <= 0)
@@ -738,7 +738,7 @@ public class MapleMap : IMap
                             mesos = int.MaxValue;
                         }
 
-                        spawnMesoDrop(mesos, calcDropPos(pos, mob.getPosition()), mob, chr, false, droptype, dropDelay);
+                        spawnMesoDrop((int)mesos, calcDropPos(pos, mob.getPosition()), mob, chr, false, droptype, dropDelay);
                     }
                 }
                 else
@@ -800,7 +800,7 @@ public class MapleMap : IMap
 
         byte droptype = (byte)(mob.getStats().isExplosiveReward() ? 3 : mob.getStats().isFfaLoot() ? 2 : chr.getParty() != null ? 1 : 0);
         int mobpos = mob.getPosition().X;
-        int chRate = !mob.isBoss() ? chr.getDropRate() : chr.getBossDropRate();
+        var chRate = !mob.isBoss() ? chr.getDropRate() : chr.getBossDropRate();
         Point pos = new Point(0, mob.getPosition().Y);
 
         var stati = mob.getStati(MonsterStatus.SHOWDOWN);

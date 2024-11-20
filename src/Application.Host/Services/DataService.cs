@@ -1,3 +1,4 @@
+using Application.Core.Managers;
 using Application.EF;
 using Application.Utility.Configs;
 using server;
@@ -34,7 +35,7 @@ namespace Application.Host.Services
 
         public List<KeyValuePair<int, string>> GetWorldsData()
         {
-            return YamlConfig.config.worlds.Select((x, index) => new KeyValuePair<int, string>(index, x.name)).ToList();
+            return ServerManager.LoadAllWorld().Select((x, index) => new KeyValuePair<int, string>(index, x.Name)).ToList();
         }
     }
 }

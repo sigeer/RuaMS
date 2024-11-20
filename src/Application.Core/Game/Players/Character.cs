@@ -105,7 +105,7 @@ public partial class Player
     private int mesosTraded = 0;
     private int possibleReports = 10;
     private int dojoEnergy;
-    private int expRate = 1, mesoRate = 1, dropRate = 1, expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
+    private float expRate = 1, mesoRate = 1, dropRate = 1, expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
     private int owlSearch;
     private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
@@ -2271,7 +2271,7 @@ public partial class Player
         return YamlConfig.config.server.USE_ENFORCE_NOVICE_EXPRATE && isBeginnerJob() && Level < 11;
     }
 
-    public int getExpRate()
+    public float getExpRate()
     {
         if (hasNoviceExpRate())
         {   // base exp rate 1x for early levels idea thanks to Vcoc
@@ -2281,53 +2281,53 @@ public partial class Player
         return expRate;
     }
 
-    public int getCouponExpRate()
+    public float getCouponExpRate()
     {
         return expCoupon;
     }
 
-    public int getRawExpRate()
+    public float getRawExpRate()
     {
         return expRate / (expCoupon * getWorldServer().ExpRate);
     }
 
-    public int getDropRate()
+    public float getDropRate()
     {
         return dropRate;
     }
 
-    public int getCouponDropRate()
+    public float getCouponDropRate()
     {
         return dropCoupon;
     }
 
-    public int getRawDropRate()
+    public float getRawDropRate()
     {
         return dropRate / (dropCoupon * getWorldServer().DropRate);
     }
 
-    public int getBossDropRate()
+    public float getBossDropRate()
     {
         var w = getWorldServer();
         return (dropRate / w.DropRate) * w.BossDropRate;
     }
 
-    public int getMesoRate()
+    public float getMesoRate()
     {
         return mesoRate;
     }
 
-    public int getCouponMesoRate()
+    public float getCouponMesoRate()
     {
         return mesoCoupon;
     }
 
-    public int getRawMesoRate()
+    public float getRawMesoRate()
     {
         return mesoRate / (mesoCoupon * getWorldServer().MesoRate);
     }
 
-    public int getQuestExpRate()
+    public float getQuestExpRate()
     {
         if (hasNoviceExpRate())
         {
@@ -2338,7 +2338,7 @@ public partial class Player
         return w.ExpRate * w.QuestRate;
     }
 
-    public int getQuestMesoRate()
+    public float getQuestMesoRate()
     {
         var w = getWorldServer();
         return w.MesoRate * w.QuestRate;
