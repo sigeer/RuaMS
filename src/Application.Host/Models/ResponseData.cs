@@ -2,6 +2,7 @@ namespace Application.Host.Models
 {
     public class ResponseData<TData>
     {
+        private ResponseData() { }
         public ResponseData(TData? data)
         {
             Data = data;

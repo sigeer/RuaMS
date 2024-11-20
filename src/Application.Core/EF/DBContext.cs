@@ -1,4 +1,4 @@
-﻿using Application.Core.EF.Entities;
+using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,7 +44,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<DropDataGlobal> DropDataGlobals { get; set; }
 
-    public virtual DbSet<DropDatum> DropData { get; set; }
+    public virtual DbSet<DropData> DropData { get; set; }
 
     public virtual DbSet<Dueyitem> Dueyitems { get; set; }
 
@@ -830,7 +830,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("questid");
         });
 
-        modelBuilder.Entity<DropDatum>(entity =>
+        modelBuilder.Entity<DropData>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
