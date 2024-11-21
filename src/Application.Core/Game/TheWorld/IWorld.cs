@@ -148,9 +148,9 @@ namespace Application.Core.Game.TheWorld
         void runPlayerHpDecreaseSchedule();
         void runTimedMapObjectSchedule();
         void sendPacket(List<int> targetIds, Packet packet, int exception);
-        void setDropRate(int drop);
-        void setExpRate(int exp);
-        void setMesoRate(int meso);
+        void setDropRate(float drop);
+        void setExpRate(float exp);
+        void setMesoRate(float meso);
         void setGuildAndRank(int cid, int guildid, int rank);
         void setGuildAndRank(List<int> cids, int guildid, int rank, int exception);
 

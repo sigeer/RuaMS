@@ -285,7 +285,7 @@ public class World : IWorld
     }
 
 
-    public void setExpRate(int exp)
+    public void setExpRate(float exp)
     {
         var list = getPlayerStorage().GetAllOnlinedPlayers();
 
@@ -309,7 +309,7 @@ public class World : IWorld
     }
 
 
-    public void setDropRate(int drop)
+    public void setDropRate(float drop)
     {
         var list = getPlayerStorage().GetAllOnlinedPlayers();
 
@@ -331,7 +331,7 @@ public class World : IWorld
             chr.setWorldRates();
         }
     }
-    public void setMesoRate(int meso)
+    public void setMesoRate(float meso)
     {
         var list = getPlayerStorage().GetAllOnlinedPlayers();
 

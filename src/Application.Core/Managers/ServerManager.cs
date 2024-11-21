@@ -40,13 +40,12 @@ namespace Application.Core.Managers
                 {
                     // 更新世界设置
                     runningWorldSrv.Name = worldConfig.Name;
-                    runningWorldSrv.ExpRate = worldConfig.ExpRate;
-                    runningWorldSrv.MesoRate = worldConfig.MesoRate;
-                    runningWorldSrv.DropRate = worldConfig.DropRate;
+                    runningWorldSrv.setExpRate(worldConfig.ExpRate);
+                    runningWorldSrv.setMesoRate(worldConfig.MesoRate);
+                    runningWorldSrv.setDropRate(worldConfig.DropRate);
                     runningWorldSrv.BossDropRate = worldConfig.BossDropRate;
                     runningWorldSrv.FishingRate = worldConfig.FishingRate;
                     runningWorldSrv.TravelRate = worldConfig.TravelRate;
-                    runningWorldSrv.BossDropRate = worldConfig.BossDropRate;
                     runningWorldSrv.QuestRate = worldConfig.QuestRate;
 
                     runningWorldSrv.EventMessage = worldConfig.EventMessage;
