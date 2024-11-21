@@ -37,8 +37,16 @@ namespace Application.Core.Game.TheWorld
         public float TravelRate { get; set; }
         public float FishingRate { get; set; }
         public float MobRate { get; set; }
+
+        /// <summary>
+        /// 调整频道数量
+        /// </summary>
+        /// <param name="channelSize"></param>
+        Task ResizeChannel(int channelSize);
+
         void addCashItemBought(int snid);
         bool addChannel(IWorldChannel channel);
+        Task<int> removeChannel();
         void addFamily(int id, Family f);
         bool addMarriageGuest(int marriageId, int playerId);
         void addMessengerPlayer(Messenger messenger, string namefrom, int fromchannel, int position);
@@ -121,7 +129,6 @@ namespace Application.Core.Game.TheWorld
         void registerPetHunger(IPlayer chr, sbyte petSlot);
         void registerPlayerShop(PlayerShop ps);
         void registerTimedMapObject(Action r, long duration);
-        int removeChannel();
         void removeFamily(int id);
         void removeGuildQueued(int guildId);
         void removeMapPartyMembers(int partyid);
@@ -151,8 +158,7 @@ namespace Application.Core.Game.TheWorld
         void setPlayerNpcMapData(int mapid, int step, int podium);
         void setPlayerNpcMapPodiumData(int mapid, int podium);
         void setPlayerNpcMapStep(int mapid, int step);
-        void setServerMessage(string msg);
-        void shutdown();
+        Task Shutdown();
         void silentJoinMessenger(int messengerid, MessengerCharacter target, int position);
         void silentLeaveMessenger(int messengerid, MessengerCharacter target);
         void unregisterAccountStorage(int accountId);

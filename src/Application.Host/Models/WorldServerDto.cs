@@ -1,10 +1,32 @@
 namespace Application.Host.Models
 {
+    public class ServerInfoDto
+    {
+        public bool IsOnline { get; set; }
+        public int RunningWorldCount { get; set; }
+    }
     public class WorldServerDto
     {
         public int Id { get; set; }
-        public string Name { get; set; } = null!;
+
         public bool Enable { get; set; }
+        public int StartPort { get; set; }
+        public List<WorldChannelServerDto> Channels { get; set; } = [];
+
+        /// <summary>
+        /// 运行时有值
+        /// </summary>
+        public WorldServerConfig? ActualConfig { get; set; }
+        /// <summary>
+        /// 数据库设定值
+        /// </summary>
+        public WorldServerConfig Config { get; set; } = null!;
+    }
+
+    public class WorldServerConfig
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
         public string EventMessage { get; set; } = "";
         public string ServerMessage { get; set; } = "Welcome";
         public string RecommendMessage { get; set; } = "";
@@ -16,7 +38,7 @@ namespace Application.Host.Models
         public float MobRate { get; set; } = 1;
         public float FishingRate { get; set; } = 1;
         public float TravelRate { get; set; } = 1;
-        public List<WorldChannelServerDto> Channels { get; set; } = [];
+        public int ChannelCount { get; set; }
     }
 
     public class WorldChannelServerDto

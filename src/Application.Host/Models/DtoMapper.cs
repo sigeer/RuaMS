@@ -31,6 +31,7 @@ namespace Application.Host.Models
                 .ForMember(a => a.QuestName, b => b.MapFrom(x => Quest.getInstance(x.Questid).getName()))
                 .ReverseMap();
 
+            CreateMap<WorldServerConfig, WorldConfigEntity>().ReverseMap();
             CreateMap<WorldServerDto, WorldConfigEntity>().ReverseMap();
         }
 
@@ -39,7 +40,7 @@ namespace Application.Host.Models
             if (id == -1)
                 return "全部";
 
-            return ServerManager.GetWorld(id)?.Name ?? $"未知 (Id: {id}) ";
+            return ServerManager.GetWorldName(id) ?? $"未知 (Id: {id}) ";
         }
     }
 }

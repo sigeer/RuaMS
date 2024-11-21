@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm4;
+namespace Application.Core.Game.Commands.Gm4;
 
 public class ServerMessageCommand : CommandBase
 {
@@ -10,6 +10,6 @@ public class ServerMessageCommand : CommandBase
     public override void Execute(IClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        c.getWorldServer().setServerMessage(player.getLastCommandMessage());
+        c.getWorldServer().ServerMessage = player.getLastCommandMessage();
     }
 }

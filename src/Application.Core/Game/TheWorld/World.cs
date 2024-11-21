@@ -56,7 +56,27 @@ public class World : IWorld
         }
     }
 
-    public string ServerMessage { get; set; }
+    string _serverMessage;
+    public string ServerMessage
+    {
+        get
+        {
+            return _serverMessage;
+        }
+        set
+        {
+            if (_serverMessage != value)
+            {
+                _serverMessage = value;
+
+                foreach (var ch in getChannels())
+                {
+                    ch.setServerMessage(_serverMessage);
+                }
+            }
+        }
+    }
+
     public string EventMessage { get; set; }
 
     public List<IWorldChannel> Channels { get; }
@@ -78,8 +98,6 @@ public class World : IWorld
     private ServicesManager<WorldServices> services = new ServicesManager<WorldServices>(WorldServices.SAVE_CHARACTER);
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
     private PartySearchCoordinator partySearch = new PartySearchCoordinator();
-
-    private ReaderWriterLockSlim chnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
     private Dictionary<int, Storage> accountStorages = new();
     private object accountCharsLock = new object();
@@ -139,6 +157,20 @@ public class World : IWorld
 
     public World(WorldConfigEntity config)
     {
+        log = LogFactory.GetLogger("World_" + Id);
+        Channels = new List<IWorldChannel>();
+        TeamStorage = new Dictionary<int, ITeam>();
+        runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
+        runningMessengerId.set(1);
+        petUpdate = Server.getInstance().getCurrentTime();
+        mountUpdate = petUpdate;
+        GuildStorage = new WorldGuildStorage();
+
+        for (int i = 0; i < 9; i++)
+        {
+            cashItemBought.Add(new());
+        }
+
         Configs = config;
         this.Id = config.Id;
         this.Flag = config.Flag;
@@ -154,21 +186,6 @@ public class World : IWorld
         this.TravelRate = config.TravelRate;
         this.FishingRate = config.FishingRate;
         MobRate = config.MobRate;
-
-        log = LogFactory.GetLogger("World_" + Id);
-        Channels = new List<IWorldChannel>();
-        TeamStorage = new Dictionary<int, ITeam>();
-
-        runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
-        runningMessengerId.set(1);
-
-        petUpdate = Server.getInstance().getCurrentTime();
-        mountUpdate = petUpdate;
-
-        for (int i = 0; i < 9; i++)
-        {
-            cashItemBought.Add(new());
-        }
 
         TimerManager tman = TimerManager.getInstance();
         petsSchedule = tman.register(new PetFullnessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
@@ -190,116 +207,70 @@ public class World : IWorld
             FamilyManager.resetEntitlementUsage(this);
             tman.register(new FamilyDailyResetTask(this), TimeSpan.FromDays(1), timeLeft);
         }
-
-        GuildStorage = new WorldGuildStorage();
     }
 
     public int getChannelsSize()
     {
-        chnLock.EnterReadLock();
-        try
-        {
-            return Channels.Count;
-        }
-        finally
-        {
-            chnLock.ExitReadLock();
-        }
+        return Channels.Count;
     }
 
     public List<IWorldChannel> getChannels()
     {
-        chnLock.EnterReadLock();
-        try
-        {
-            return new(Channels);
-        }
-        finally
-        {
-            chnLock.ExitReadLock();
-        }
+        return new(Channels);
     }
 
     public IWorldChannel getChannel(int channel)
     {
-        chnLock.EnterReadLock();
-        try
-        {
-            return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessFatalException($"Channel {channel} not existed");
-        }
-        finally
-        {
-            chnLock.ExitReadLock();
-        }
+        return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessFatalException($"Channel {channel} not existed");
     }
 
     public bool addChannel(IWorldChannel channel)
     {
-        chnLock.EnterWriteLock();
-        try
+        if (channel.getId() == Channels.Count + 1)
         {
-            if (channel.getId() == Channels.Count + 1)
-            {
-                Channels.Add(channel);
-                Players.RelateChannel(channel.getId(), channel.Players);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            Channels.Add(channel);
+            Players.RelateChannel(channel.getId(), channel.Players);
+            return true;
         }
-        finally
+        else
         {
-            chnLock.ExitWriteLock();
+            return false;
         }
     }
 
-    public int removeChannel()
+    public async Task<int> removeChannel()
     {
-        IWorldChannel? ch;
-        int chIdx;
-
-        chnLock.EnterReadLock();
-        try
+       var  chIdx = Channels.Count - 1;
+        if (chIdx < 0)
         {
-            chIdx = Channels.Count - 1;
-            if (chIdx < 0)
-            {
-                return -1;
-            }
-
-            ch = Channels.ElementAtOrDefault(chIdx);
-        }
-        finally
-        {
-            chnLock.ExitReadLock();
+            return -1;
         }
 
+       var  ch = Channels.ElementAtOrDefault(chIdx);
         if (ch == null || !ch.canUninstall())
         {
             return -1;
         }
 
-        chnLock.EnterWriteLock();
-        try
-        {
-            if (chIdx == Channels.Count - 1)
-            {
-                Channels.RemoveAt(chIdx);
-            }
-            else
-            {
-                return -1;
-            }
-        }
-        finally
-        {
-            chnLock.ExitWriteLock();
-        }
+        await ch.Shutdown();
+        Channels.RemoveAt(chIdx);
 
-        ch.shutdown();
         return ch.getId();
+    }
+
+    public async Task ResizeChannel(int channelSize)
+    {
+        if (Channels.Count == channelSize)
+            return;
+
+        var srv = Server.getInstance();
+        while (Channels.Count != channelSize)
+        {
+            if (Channels.Count > channelSize)
+                await srv.RemoveWorldChannel(Id);
+            else
+                srv.AddWorldChannel(Id);
+        }
     }
 
     public bool canUninstall()
@@ -1981,15 +1952,6 @@ public class World : IWorld
         pnpcPodium.Clear();
     }
 
-    public void setServerMessage(string msg)
-    {
-        ServerMessage = msg;
-        foreach (var ch in getChannels())
-        {
-            ch.setServerMessage(msg);
-        }
-    }
-
     public void broadcastPacket(Packet packet)
     {
         foreach (IPlayer chr in Players.GetAllOnlinedPlayers())
@@ -2235,84 +2197,85 @@ public class World : IWorld
         closeWorldServices();
     }
 
-    public void shutdown()
+    public async Task Shutdown()
     {
         foreach (var ch in getChannels())
         {
-            ch.shutdown();
+            await ch.Shutdown();
         }
 
         if (petsSchedule != null)
         {
-            petsSchedule.cancel(false);
+            await petsSchedule.CancelAsync(false);
             petsSchedule = null;
         }
 
         if (srvMessagesSchedule != null)
         {
-            srvMessagesSchedule.cancel(false);
+            await srvMessagesSchedule.CancelAsync(false);
             srvMessagesSchedule = null;
         }
 
         if (mountsSchedule != null)
         {
-            mountsSchedule.cancel(false);
+           await  mountsSchedule.CancelAsync(false);
             mountsSchedule = null;
         }
 
         if (merchantSchedule != null)
         {
-            merchantSchedule.cancel(false);
+            await merchantSchedule.CancelAsync(false);
             merchantSchedule = null;
         }
 
         if (timedMapObjectsSchedule != null)
         {
-            timedMapObjectsSchedule.cancel(false);
+            await timedMapObjectsSchedule.CancelAsync(false);
             timedMapObjectsSchedule = null;
         }
 
         if (charactersSchedule != null)
         {
-            charactersSchedule.cancel(false);
+            await charactersSchedule.CancelAsync(false);
             charactersSchedule = null;
         }
 
         if (marriagesSchedule != null)
         {
-            marriagesSchedule.cancel(false);
+            await marriagesSchedule.CancelAsync(false);
             marriagesSchedule = null;
         }
 
         if (mapOwnershipSchedule != null)
         {
-            mapOwnershipSchedule.cancel(false);
+            await mapOwnershipSchedule.CancelAsync(false);
             mapOwnershipSchedule = null;
         }
 
         if (fishingSchedule != null)
         {
-            fishingSchedule.cancel(false);
+            await fishingSchedule.CancelAsync(false);
             fishingSchedule = null;
         }
 
         if (partySearchSchedule != null)
         {
-            partySearchSchedule.cancel(false);
+            await partySearchSchedule.CancelAsync(false);
             partySearchSchedule = null;
         }
 
         if (timeoutSchedule != null)
         {
-            timeoutSchedule.cancel(false);
+            await timeoutSchedule.CancelAsync(false);
             timeoutSchedule = null;
         }
 
         if (hpDecSchedule != null)
         {
-            hpDecSchedule.cancel(false);
+            await hpDecSchedule.CancelAsync(false);
             hpDecSchedule = null;
         }
+        await SchedulerManage.Scheduler.Clear();
 
         Players.disconnectAll();
 

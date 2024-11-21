@@ -16,7 +16,7 @@
 
 #### src
 
-- Application.Console 入口应用
+- Application.Host 入口应用
 - Application.Core 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
 - Application.Utility 工具类
 

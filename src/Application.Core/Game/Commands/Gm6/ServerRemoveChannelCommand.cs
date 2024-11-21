@@ -1,4 +1,4 @@
-﻿using net.server;
+using net.server;
 using server;
 
 namespace Application.Core.Game.Commands.Gm6;
@@ -23,7 +23,7 @@ public class ServerRemoveChannelCommand : CommandBase
         int worldId = int.Parse(paramsValue[0]);
         ThreadManager.getInstance().newTask(() =>
         {
-            if (Server.getInstance().removeChannel(worldId))
+            if (Server.getInstance().RemoveWorldChannel(worldId).Result)
             {
                 if (player.isLoggedinWorld())
                 {

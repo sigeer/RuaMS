@@ -1,4 +1,4 @@
-﻿using net.server;
+using net.server;
 using server;
 
 namespace Application.Core.Game.Commands.Gm6;
@@ -24,7 +24,7 @@ public class ServerAddChannelCommand : CommandBase
 
         ThreadManager.getInstance().newTask(() =>
         {
-            int chid = Server.getInstance().addChannel(worldid);
+            int chid = Server.getInstance().AddWorldChannel(worldid);
             if (player.isLoggedinWorld())
             {
                 if (chid >= 0)

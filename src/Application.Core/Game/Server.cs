@@ -28,6 +28,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
+using Application.Core.scripting.Event.jobs;
 using Application.Utility;
 using client;
 using client.inventory.manipulator;
@@ -42,6 +43,7 @@ using net.packet;
 using net.server.channel;
 using net.server.coordinator.session;
 using net.server.task;
+using Quartz.Impl;
 using server;
 using server.expeditions;
 using server.quest;
@@ -96,9 +98,8 @@ public class Server
     private long serverCurrentTime = 0;
 
     private volatile bool availableDeveloperRoom = false;
-    private bool online = false;
+    public bool IsOnline { get; set; }
     public static DateTimeOffset uptime = DateTimeOffset.Now;
-    ReaderWriterLockSlim wldLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     ReaderWriterLockSlim lgnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     private Server()
     {
@@ -130,7 +131,7 @@ public class Server
 
     public bool isOnline()
     {
-        return online;
+        return IsOnline;
     }
 
     public void setNewYearCard(NewYearCardRecord nyc)
@@ -176,41 +177,17 @@ public class Server
 
     public IWorld getWorld(int id)
     {
-        wldLock.EnterReadLock();
-        try
-        {
-            return RunningWorlds.GetValueOrDefault(id) ?? throw new BusinessException($"World {id} not exsited");
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        return RunningWorlds.GetValueOrDefault(id) ?? throw new BusinessException($"World {id} not exsited");
     }
 
     public List<IWorld> getWorlds()
     {
-        wldLock.EnterReadLock();
-        try
-        {
-            return RunningWorlds.Values.ToList();
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        return RunningWorlds.Values.ToList();
     }
 
     public int getWorldsSize()
     {
-        wldLock.EnterReadLock();
-        try
-        {
-            return RunningWorlds.Count;
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        return RunningWorlds.Count;
     }
 
     public IWorldChannel getChannel(int world, int channel)
@@ -237,28 +214,12 @@ public class Server
 
     public HashSet<int> getOpenChannels(int world)
     {
-        wldLock.EnterReadLock();
-        try
-        {
-            return getWorld(world).getChannels().Select(x => x.getId()).ToHashSet();
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        return getWorld(world).getChannels().Select(x => x.getId()).ToHashSet();
     }
 
     private string? getIP(int world, int channel)
     {
-        wldLock.EnterReadLock();
-        try
-        {
-            return getWorld(world).getChannel(channel).getIP();
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        return getWorld(world).getChannel(channel).getIP();
     }
 
     public string[] getInetSocket(IClient client, int world, int channel)
@@ -278,38 +239,26 @@ public class Server
         return hostAddress;
     }
 
-    public int addChannel(int worldid)
+    public int AddWorldChannel(int worldid)
     {
-        IWorld? world;
-        int channelid;
 
-        wldLock.EnterReadLock();
-        try
+        var world = this.getWorld(worldid);
+
+        if (world == null)
         {
-            world = this.getWorld(worldid);
-
-            if (worldid >= RunningWorlds.Count)
-            {
-                return -3;
-            }
-
-
-            channelid = world.Channels.Count;
-            if (channelid >= YamlConfig.config.server.CHANNEL_SIZE)
-            {
-                return -2;
-            }
-
-            channelid++;
-            world = this.getWorld(worldid);
+            return -3;
         }
-        finally
+
+
+        var channelid = world.Channels.Count;
+        if (channelid >= YamlConfig.config.server.CHANNEL_SIZE)
         {
-            wldLock.ExitReadLock();
+            return -2;
         }
+
+        channelid++;
 
         IWorldChannel channel = new WorldChannel(world, channelid, getCurrentTime());
-        channel.setServerMessage(world.ServerMessage);
 
         world.addChannel(channel);
         return channelid;
@@ -360,65 +309,31 @@ public class Server
         {
             int channelid = j;
             var channel = new WorldChannel(world, channelid, bootTime);
-            channel.setServerMessage(world.ServerMessage);
 
             world.addChannel(channel);
         }
 
-        wldLock.EnterWriteLock();    // thanks Ashen for noticing a deadlock issue when trying to deploy a channel
-        try
-        {
-            RunningWorlds[worldConfig.Id] = world;
-        }
-        finally
-        {
-            wldLock.ExitWriteLock();
-        }
+        RunningWorlds[worldConfig.Id] = world;
         log.Information("Finished loading world {WorldId}", world.Id);
         return true;
     }
 
-    public bool removeChannel(int worldid)
+    public async Task<bool> RemoveWorldChannel(int worldid)
     {
-        //lol don't!
-        IWorld? world;
-
-        wldLock.EnterReadLock();
-        try
-        {
-            if (worldid >= RunningWorlds.Count)
-            {
-                return false;
-            }
-            world = RunningWorlds.GetValueOrDefault(worldid);
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        var world = RunningWorlds.GetValueOrDefault(worldid);
 
         if (world != null)
         {
-            int channel = world.removeChannel();
+            int channel = await world.removeChannel();
             return channel > -1;
         }
 
         return false;
     }
 
-    public bool RemoveWorld(int worldId)
+    public async Task<bool> RemoveWorld(int worldId)
     {
-        //lol don't!
-        IWorld? w;
-        wldLock.EnterReadLock();
-        try
-        {
-            w = RunningWorlds.GetValueOrDefault(worldId);
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        var w = RunningWorlds.GetValueOrDefault(worldId);
 
         if (w == null || !w.canUninstall())
         {
@@ -426,33 +341,16 @@ public class Server
         }
 
         LoadPlayerRanking();
-        w.shutdown();
+        await w.Shutdown();
 
-        wldLock.EnterWriteLock();
-        try
-        {
-            RunningWorlds.Remove(worldId);
-        }
-        finally
-        {
-            wldLock.ExitWriteLock();
-        }
+        RunningWorlds.Remove(worldId);
 
         return true;
     }
 
     private void resetServerWorlds()
     {
-        // thanks maple006 for noticing proprietary lists assigned to null
-        wldLock.EnterWriteLock();
-        try
-        {
-            RunningWorlds.Clear();
-        }
-        finally
-        {
-            wldLock.ExitWriteLock();
-        }
+        RunningWorlds.Clear();
     }
 
     #region coupon
@@ -605,19 +503,11 @@ public class Server
 
     public List<RankedCharacterInfo> getWorldPlayerRanking(int worldId)
     {
-        wldLock.EnterReadLock();
-        try
-        {
-            var filteredWorldId = YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? -1 : worldId;
-            if (playerRanking.TryGetValue(filteredWorldId, out var value))
-                return value;
+        var filteredWorldId = YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? -1 : worldId;
+        if (playerRanking.TryGetValue(filteredWorldId, out var value))
+            return value;
 
-            return [];
-        }
-        finally
-        {
-            wldLock.ExitReadLock();
-        }
+        return [];
     }
 
     public Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRanking()
@@ -648,8 +538,14 @@ public class Server
         log.Debug("初始化数据库====完成，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
     }
 
+
+    bool isStarting = false;
     public async Task Start()
     {
+        if (isStarting || IsOnline)
+            return;
+
+        isStarting = true;
         log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
 
         await InitialDataBase();
@@ -742,27 +638,22 @@ public class Server
         catch (Exception e)
         {
             log.Error(e, "[SEVERE] Syntax error in 'world.ini'."); //For those who get errors
-            Environment.Exit(0);
         }
 
         // Wait on all async tasks to complete
 
         loginServer = await initLoginServer(8484);
-        online = true;
+        IsOnline = true;
 
         log.Information("Listening on port 8484");
 
         totalSw.Stop();
         log.Information("Cosmic is now online after {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
 
-        foreach (var ch in this.getAllChannels())
-        {
-            ch.reloadEventScriptManager();
-        }
-
         OpcodeConstants.generateOpcodeNames();
         CommandExecutor.getInstance();
         ItemInformationProvider.getInstance();
+        isStarting = false;
     }
 
     private ChannelDependencies registerChannelDependencies()
@@ -795,6 +686,7 @@ public class Server
 
     private async Task initializeTimelyTasks(ChannelDependencies channelDependencies)
     {
+        await TimerManager.Initialize();
         TimerManager tMan = TimerManager.getInstance();
         await tMan.start();
         tMan.register(tMan.purge, YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
@@ -1343,67 +1235,26 @@ public class Server
     public async Task Stop(bool restart)
     {
         log.Information("{0} the server!", restart ? "Restarting" : "Shutting down");
-        if (getWorlds() == null)
+        var runningWorlds = getWorlds();
+        if (runningWorlds.Count == 0)
         {
             return;//already shutdown
         }
-        foreach (World w in getWorlds())
+        foreach (World w in runningWorlds)
         {
-            w.shutdown();
-        }
-
-        /*foreach(World w in getWorlds()) {
-            while (w.getPlayerStorage().getAllCharacters().Count > 0) {
-                try {
-                    Thread.sleep(1000);
-                } catch (ThreadInterruptedException ie) {
-                    System.err.println("FUCK MY LIFE");
-                }
-            }
-        }
-        foreach(Channel ch in getAllChannels()) {
-            while (ch.getConnectedClients() > 0) {
-                try {
-                    Thread.sleep(1000);
-                } catch (ThreadInterruptedException ie) {
-                    System.err.println("FUCK MY LIFE");
-                }
-            }
-        }*/
-
-        var allChannels = getAllChannels();
-
-        foreach (var ch in allChannels)
-        {
-            while (!ch.finishedShutdown())
-            {
-                try
-                {
-                    Thread.Sleep(1000);
-                }
-                catch (ThreadInterruptedException ie)
-                {
-                    log.Error(ie, "Error during shutdown sleep");
-                }
-            }
+            await w.Shutdown();
         }
 
         resetServerWorlds();
 
         ThreadManager.getInstance().stop();
         TimerManager.getInstance().purge();
-        TimerManager.getInstance().stop();
+        await TimerManager.getInstance().Stop();
 
-        log.Information("Worlds and channels are offline.");
         await loginServer.Stop();
-        if (!restart)
-        {  // shutdown hook deadlocks if System.exit() method is used within its body chores, thanks MIKE for pointing that out
-            // We disabled log4j's shutdown hook in the config file, so we have to manually shut it down here,
-            // after our last log statement.
-            await Log.CloseAndFlushAsync();
-            new Thread(() => Environment.Exit(0)).Start();
-        }
-        else
+        IsOnline = false; 
+        log.Information("Worlds and channels are offline.");
+        if (restart)
         {
             log.Information("Restarting the server...");
             instance = new Lazy<Server>(new Server());

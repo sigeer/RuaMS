@@ -1,6 +1,4 @@
 using Application.Core;
-using Application.Core.Compatible;
-using Application.Core.scripting.Event.jobs;
 using Application.EF;
 using Application.Host;
 using Application.Host.Middlewares;
@@ -8,7 +6,6 @@ using Application.Host.Models;
 using Application.Host.Services;
 using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
-using Quartz.Impl;
 using Serilog;
 using Serilog.Events;
 using System.Text;
@@ -45,13 +42,12 @@ builder.Services.AddLogging(o => o.AddSerilog());
 // 数据库配置
 builder.Services.AddDbContext<DBContext>(o => o.UseMySQL(YamlConfig.config.server.DB_CONNECTIONSTRING));
 
-var factory = new StdSchedulerFactory();
-SchedulerManage.Scheduler = await factory.GetScheduler();
-SchedulerManage.Scheduler.ListenerManager.AddJobListener(new JobCompleteListener());
+
 //builder.Services.AddQuartz(o => o.AddJobListener(new JobCompleteListener()));
 //builder.Services.AddSingleton<TimerManager>();
 
 // 游戏服务
+builder.Services.AddSingleton<GameHost>();
 builder.Services.AddHostedService<GameHost>();
 
 builder.Services.AddScoped<DropdataService>();
