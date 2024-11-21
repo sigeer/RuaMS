@@ -538,27 +538,13 @@ public class Server
         log.Debug("初始化数据库====完成，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
     }
 
-
-    bool isStarting = false;
-    public async Task Start()
+    bool basedCached = false;
+    private async Task PreCheck(bool ignoreCache = false)
     {
-        if (isStarting || IsOnline)
+        if (!ignoreCache && basedCached)
             return;
 
-        isStarting = true;
-        log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
-
         await InitialDataBase();
-
-        Stopwatch totalSw = new Stopwatch();
-        totalSw.Start();
-
-        if (YamlConfig.config.server.SHUTDOWNHOOK)
-        {
-            AppDomain.CurrentDomain.ProcessExit += (obj, evt) => shutdown(false);
-        }
-
-        channelDependencies = registerChannelDependencies();
 
         _ = Task.Run(() =>
         {
@@ -595,6 +581,35 @@ public class Server
             sw.Stop();
             log.Debug("Skillbook loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
+
+        OpcodeConstants.generateOpcodeNames();
+        CommandExecutor.getInstance();
+        ItemInformationProvider.getInstance();
+
+        basedCached = true;
+    }
+
+
+    bool isStarting = false;
+    public async Task Start(bool ignoreCache = false)
+    {
+        if (isStarting || IsOnline)
+            return;
+
+        isStarting = true;
+        log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
+
+        Stopwatch totalSw = new Stopwatch();
+        totalSw.Start();
+
+        await PreCheck(ignoreCache);
+
+        if (YamlConfig.config.server.SHUTDOWNHOOK)
+        {
+            AppDomain.CurrentDomain.ProcessExit += (obj, evt) => shutdown(false);
+        }
+
+        channelDependencies = registerChannelDependencies();
 
         try
         {
@@ -650,9 +665,6 @@ public class Server
         totalSw.Stop();
         log.Information("Cosmic is now online after {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
 
-        OpcodeConstants.generateOpcodeNames();
-        CommandExecutor.getInstance();
-        ItemInformationProvider.getInstance();
         isStarting = false;
     }
 
@@ -1232,7 +1244,7 @@ public class Server
     }
 
     //synchronized
-    public async Task Stop(bool restart)
+    public async Task Stop(bool restart, bool force = false)
     {
         log.Information("{0} the server!", restart ? "Restarting" : "Shutting down");
         var runningWorlds = getWorlds();
@@ -1252,7 +1264,10 @@ public class Server
         await TimerManager.getInstance().Stop();
 
         await loginServer.Stop();
-        IsOnline = false; 
+        IsOnline = false;
+        if (force)
+            basedCached = false;
+
         log.Information("Worlds and channels are offline.");
         if (restart)
         {

@@ -25,9 +25,9 @@ namespace Application.Host.Controllers
         }
 
         [HttpPost]
-        public async Task<bool> StartServer()
+        public async Task<bool> StartServer(bool ignoreCache = false)
         {
-           await  _serverHost.StartNow();
+            await _serverHost.StartNow(ignoreCache);
             return true;
         }
 

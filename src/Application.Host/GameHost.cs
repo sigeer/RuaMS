@@ -15,9 +15,9 @@ namespace Application.Host
             return Task.CompletedTask ;
         }
 
-        public async Task StartNow()
+        public async Task StartNow(bool ignoreCache)
         {
-            await Server.getInstance().Start();
+            await Server.getInstance().Start(ignoreCache);
         }
 
         public async Task StopNow()

@@ -29,11 +29,6 @@ namespace Application.Core.Managers
             return LoadAllWorld().FirstOrDefault(x => x.Id == worldId)?.Name;
         }
 
-        public static async Task StartServer()
-        {
-            await Server.getInstance().Start();
-        }
-
         public static async Task ApplyWorldServer(WorldConfigEntity worldConfig)
         {
             var srv = Server.getInstance();

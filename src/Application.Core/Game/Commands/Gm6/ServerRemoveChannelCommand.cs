@@ -21,9 +21,9 @@ public class ServerRemoveChannelCommand : CommandBase
         }
 
         int worldId = int.Parse(paramsValue[0]);
-        ThreadManager.getInstance().newTask(() =>
+        ThreadManager.getInstance().newTask(async () =>
         {
-            if (Server.getInstance().RemoveWorldChannel(worldId).Result)
+            if (await Server.getInstance().RemoveWorldChannel(worldId))
             {
                 if (player.isLoggedinWorld())
                 {

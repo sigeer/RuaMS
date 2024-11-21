@@ -194,12 +194,16 @@ public class World : IWorld
         merchantSchedule = tman.register(new HiredMerchantTask(this), 10 * TimeSpan.FromMinutes(1), 10 * TimeSpan.FromMinutes(1));
         timedMapObjectsSchedule = tman.register(new TimedMapObjectTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
-        marriagesSchedule = tman.register(new WeddingReservationTask(this), TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL), TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
+        marriagesSchedule = tman.register(new WeddingReservationTask(this), 
+            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL), 
+            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
         mapOwnershipSchedule = tman.register(new MapOwnershipTask(this), TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
         fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         partySearchSchedule = tman.register(new PartySearchTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        hpDecSchedule = tman.register(new CharacterHpDecreaseTask(this), YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL, YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
+        hpDecSchedule = tman.register(new CharacterHpDecreaseTask(this), 
+            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL, 
+            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
 
         if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
@@ -240,13 +244,13 @@ public class World : IWorld
 
     public async Task<int> removeChannel()
     {
-       var  chIdx = Channels.Count - 1;
+        var chIdx = Channels.Count - 1;
         if (chIdx < 0)
         {
             return -1;
         }
 
-       var  ch = Channels.ElementAtOrDefault(chIdx);
+        var ch = Channels.ElementAtOrDefault(chIdx);
         if (ch == null || !ch.canUninstall())
         {
             return -1;
@@ -2183,16 +2187,7 @@ public class World : IWorld
 
     private void clearWorldData()
     {
-        List<ITeam> pList;
-        Monitor.Enter(partyLock);
-        try
-        {
-            pList = new(TeamStorage.Values);
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
+        TeamStorage.Clear();
 
         closeWorldServices();
     }
@@ -2218,7 +2213,7 @@ public class World : IWorld
 
         if (mountsSchedule != null)
         {
-           await  mountsSchedule.CancelAsync(false);
+            await mountsSchedule.CancelAsync(false);
             mountsSchedule = null;
         }
 
