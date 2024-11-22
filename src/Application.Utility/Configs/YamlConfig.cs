@@ -5,7 +5,7 @@ namespace Application.Utility.Configs;
 public class YamlConfig
 {
     public const string CONFIG_FILE_NAME = "config.yaml";
-    public static YamlConfig config = fromFile(CONFIG_FILE_NAME);
+    public static YamlConfig config = fromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CONFIG_FILE_NAME));
 
     public ServerConfig server;
 
