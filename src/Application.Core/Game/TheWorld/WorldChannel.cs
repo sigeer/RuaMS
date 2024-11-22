@@ -167,6 +167,8 @@ public class WorldChannel : IWorldChannel
             isShuttingDown = true;
             log.Information("Shutting down channel {ChannelId} in world {WorldId}", channel, world);
 
+            await channelServer.Stop();
+
             closeAllMerchants();
             disconnectAwayPlayers();
             Players.disconnectAll();
@@ -176,8 +178,6 @@ public class WorldChannel : IWorldChannel
             mapManager.dispose();
 
             await closeChannelSchedules();
-
-            await channelServer.Stop();
 
             IsRunning = false;
             log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);

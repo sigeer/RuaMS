@@ -4,6 +4,10 @@ namespace Application.Host.Models
     {
         public bool IsOnline { get; set; }
         public int RunningWorldCount { get; set; }
+        /// <summary>
+        /// 0. 未运行  1. 启动中 2. 运行中
+        /// </summary>
+        public int State { get; set; }
     }
     public class WorldServerDto
     {

@@ -1866,7 +1866,7 @@ public class World : IWorld
 
                 if (chr != null && chr.isLoggedinWorld())
                 {
-                    chr.sendPacket(PacketCreator.serverMessage(chr.getClient().getChannelServer().getServerMessage()));
+                    chr.sendPacket(PacketCreator.serverMessage(ServerMessage));
                 }
             }
         }

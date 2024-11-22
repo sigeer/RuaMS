@@ -1,21 +1,38 @@
 using Application.Host.Models;
 using Application.Host.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Host.Controllers
 {
+    [Authorize]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class ServerController : ControllerBase
     {
+        readonly AuthService _authService;
         readonly DataService _dataService;
         readonly ServerService _serverService;
         readonly GameHost _serverHost;
-        public ServerController(GameHost gameHost, DataService dataService, ServerService serverService)
+        public ServerController(AuthService authService, GameHost gameHost, DataService dataService, ServerService serverService)
         {
+            _authService = authService;
             _serverHost = gameHost;
             _dataService = dataService;
             _serverService = serverService;
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public string Auth([FromBody] AuthModel model)
+        {
+            return _authService.CheckAuth(model.Password);
+        }
+
+        [HttpGet]
+        public string Refresh()
+        {
+            return _authService.GenerateToken();
         }
 
         [HttpGet]

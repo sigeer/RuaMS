@@ -591,13 +591,13 @@ public class Server
     }
 
 
-    bool isStarting = false;
+    public bool IsStarting { get; set; }
     public async Task Start(bool ignoreCache = false)
     {
-        if (isStarting || IsOnline)
+        if (IsStarting || IsOnline)
             return;
 
-        isStarting = true;
+        IsStarting = true;
         log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
 
         Stopwatch totalSw = new Stopwatch();
@@ -666,7 +666,7 @@ public class Server
         totalSw.Stop();
         log.Information("Cosmic is now online after {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
 
-        isStarting = false;
+        IsStarting = false;
     }
 
     private ChannelDependencies registerChannelDependencies()
