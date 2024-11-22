@@ -239,7 +239,7 @@ public class Server
         return hostAddress;
     }
 
-    public int AddWorldChannel(int worldid)
+    public async Task<int> AddWorldChannel(int worldid)
     {
 
         var world = this.getWorld(worldid);
@@ -259,14 +259,15 @@ public class Server
         channelid++;
 
         IWorldChannel channel = new WorldChannel(world, channelid, getCurrentTime());
+        await channel.StartServer();
 
         world.addChannel(channel);
         return channelid;
     }
 
-    public bool AddWorld(WorldConfigEntity worldConfig)
+    public async Task<bool> AddWorld(WorldConfigEntity worldConfig)
     {
-        if (InitWorld(worldConfig))
+        if (await InitWorld(worldConfig))
         {
             HashSet<int> accounts;
             lgnLock.EnterReadLock();
@@ -289,7 +290,7 @@ public class Server
         return false;
     }
 
-    public bool InitWorld(WorldConfigEntity worldConfig)
+    public async Task<bool> InitWorld(WorldConfigEntity worldConfig)
     {
         if (!worldConfig.CanDeploy)
         {
@@ -309,11 +310,12 @@ public class Server
         {
             int channelid = j;
             var channel = new WorldChannel(world, channelid, bootTime);
-
+            await channel.StartServer();
             world.addChannel(channel);
         }
 
         RunningWorlds[worldConfig.Id] = world;
+        world.ChannelInitialize();
         log.Information("Finished loading world {WorldId}", world.Id);
         return true;
     }
@@ -638,7 +640,7 @@ public class Server
             var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
             foreach (var worldConfig in worlds)
             {
-                InitWorld(worldConfig);
+                await InitWorld(worldConfig);
             }
             LoadPlayerRanking();
 

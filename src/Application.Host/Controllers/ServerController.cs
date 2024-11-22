@@ -61,5 +61,17 @@ namespace Application.Host.Controllers
         {
             return _serverService.GetWorldServerList();
         }
+
+        [HttpPut]
+        public async Task<bool> PutWorldConfig([FromBody]WorldServerConfig data)
+        {
+            return await _serverService.UpdateConfig(data);
+        }
+
+        [HttpPut]
+        public async Task<bool> ToggleWorldState([FromBody]WorldServerState data)
+        {
+            return await _serverService.ToggleWorldServerState(data);
+        }
     }
 }

@@ -42,6 +42,8 @@ namespace Application.Core.Game.TheWorld
         public bool IsRunning { get; }
         public int Port { get; set; }
 
+        Task StartServer();
+
         bool acceptOngoingWedding(bool cathedral);
         bool addExpedition(Expedition exped);
         void addHiredMerchant(int chrid, HiredMerchant hm);

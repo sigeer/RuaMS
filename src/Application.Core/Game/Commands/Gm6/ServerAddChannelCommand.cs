@@ -22,9 +22,9 @@ public class ServerAddChannelCommand : CommandBase
 
         int worldid = int.Parse(paramsValue[0]);
 
-        ThreadManager.getInstance().newTask(() =>
+        ThreadManager.getInstance().newTask(async () =>
         {
-            int chid = Server.getInstance().AddWorldChannel(worldid);
+            int chid = await Server.getInstance().AddWorldChannel(worldid);
             if (player.isLoggedinWorld())
             {
                 if (chid >= 0)

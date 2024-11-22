@@ -10,7 +10,7 @@ namespace Application.Host.Models
         public int Id { get; set; }
 
         public bool Enable { get; set; }
-        public int StartPort { get; set; }
+
         public List<WorldChannelServerDto> Channels { get; set; } = [];
 
         /// <summary>
@@ -27,6 +27,7 @@ namespace Application.Host.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
+        public int StartPort { get; set; }
         public string EventMessage { get; set; } = "";
         public string ServerMessage { get; set; } = "Welcome";
         public string RecommendMessage { get; set; } = "";
@@ -46,5 +47,11 @@ namespace Application.Host.Models
         public int Id { get; set; }
         public int Port { get; set; }
         public bool IsRunning { get; set; }
+    }
+
+    public class WorldServerState
+    {
+        public int Id { get; set; }
+        public bool Enable { get; set; }
     }
 }

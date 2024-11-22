@@ -1,7 +1,9 @@
+using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Managers;
 using Application.EF;
 using Application.Host.Models;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using net.server;
 
 namespace Application.Host.Services
@@ -44,6 +46,7 @@ namespace Application.Host.Services
                     w.ActualConfig = new WorldServerConfig
                     {
                         Id = world.Id,
+                        StartPort = world.Channels.FirstOrDefault()?.Port ?? 0,
                         Name = world.Name,
                         ExpRate = world.ExpRate,
                         BossDropRate = world.BossDropRate,
@@ -67,6 +70,22 @@ namespace Application.Host.Services
                 }
             });
             return allDto;
+        }
+
+        public async Task<bool> ToggleWorldServerState(WorldServerState data)
+        {
+            return (await _dbContext.WorldConfigs.Where(x => x.Id == data.Id).ExecuteUpdateAsync(x => x.SetProperty(y => y.Enable, data.Enable))) > 0;
+        }
+
+        public async Task<bool> UpdateConfig(WorldServerConfig data)
+        {
+            var dbModel = await _dbContext.WorldConfigs.FirstOrDefaultAsync(x => x.Id == data.Id);
+            if (dbModel == null)
+                return false;
+
+            dbModel = _mapper.Map(data, dbModel);
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> Apply()

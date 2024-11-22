@@ -43,6 +43,7 @@ namespace Application.Core.Game.TheWorld
         /// </summary>
         /// <param name="channelSize"></param>
         Task ResizeChannel(int channelSize);
+        void ChannelInitialize();
 
         void addCashItemBought(int snid);
         bool addChannel(IWorldChannel channel);

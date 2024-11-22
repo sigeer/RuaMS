@@ -104,13 +104,11 @@ public class WorldChannel : IWorldChannel
         this.ip = YamlConfig.config.server.HOST + ":" + Port;
         log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
         expedType.AddRange(Arrays.asList(ExpeditionType.values<ExpeditionType>()));
-
+        setServerMessage(WorldModel.ServerMessage);
         try
         {
-            this.channelServer = initServer(Port, this.world, channel);
-
-            if (Server.getInstance().IsOnline)
-            {  
+            if (Server.getInstance().RunningWorlds.ContainsKey(this.world))
+            {
                 // postpone event loading to improve boot time... thanks Riizade, daronhudson for noticing slow startup times
                 eventSM = new EventScriptManager(this, getEvents());
             }
@@ -130,10 +128,6 @@ public class WorldChannel : IWorldChannel
             }
 
             services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
-
-            setServerMessage(WorldModel.ServerMessage);
-            IsRunning = true;
-            log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), Port);
         }
         catch (Exception e)
         {
@@ -162,7 +156,16 @@ public class WorldChannel : IWorldChannel
             eventSM.dispose();
             eventSM = new EventScriptManager(this, getEvents());
         }
+    }
 
+    public async Task StartServer()
+    {
+        channelServer = new ChannelServer(Port, world, channel);
+        await channelServer.Start();
+
+        IsRunning = true;
+
+        log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), Port);
     }
 
     bool isShuttingDown = false;
@@ -268,7 +271,7 @@ public class WorldChannel : IWorldChannel
 
     public IWorld getWorldServer()
     {
-        return Server.getInstance().getWorld(world)!;
+        return WorldModel;
     }
 
     public void addPlayer(IPlayer chr)

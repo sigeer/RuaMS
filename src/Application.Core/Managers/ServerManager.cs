@@ -57,7 +57,7 @@ namespace Application.Core.Managers
             }
             else
             {
-                srv.AddWorld(worldConfig);
+                await srv.AddWorld(worldConfig);
             }
 
         }
