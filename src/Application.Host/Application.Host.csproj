@@ -39,11 +39,4 @@
 		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
 		<Delete Files="@(FilesToDelete)" />
 	</Target>
-	
-  <ItemGroup>
-    <None Update="config.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
