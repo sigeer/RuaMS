@@ -315,7 +315,6 @@ public class Server
         }
 
         RunningWorlds[worldConfig.Id] = world;
-        world.ChannelInitialize();
         log.Information("Finished loading world {WorldId}", world.Id);
         return true;
     }

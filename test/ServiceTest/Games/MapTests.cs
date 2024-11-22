@@ -3,6 +3,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Gameplay;
 using net.server;
+using net.server.channel;
 using server.life;
 using server.maps;
 using System.Diagnostics;
@@ -12,11 +13,17 @@ namespace ServiceTest.Games
 {
     public class MapTests : TestBase
     {
+        private IMap LoadMap(int mapId)
+        {
+            var channel1 = Server.getInstance().getChannel(0, 1);
+            return MapFactory.loadMapFromWz(mapId, channel1, null);
+        }
+
         [Test]
         [TestCase(10000, ExpectedResult = 3)]
         public int SpawnNpc_Test(int mapId)
         {
-            var map = MapFactory.loadMapFromWz(mapId, 0, 0, null);
+            var map = LoadMap(mapId);
             var objects = map.getMapObjects();
             foreach (var obj in objects)
             {
@@ -65,7 +72,7 @@ namespace ServiceTest.Games
         [TestCase(10000)]
         public void LoadMapFromWZ_Test(int mapId)
         {
-            Assert.DoesNotThrow(() => MapFactory.loadMapFromWz(mapId, 0, 0, null));
+            Assert.DoesNotThrow(() => LoadMap(mapId));
         }
 
         [Test]
@@ -83,7 +90,7 @@ namespace ServiceTest.Games
 
             foreach (var mapId in cpqMaps)
             {
-                Assert.That(MapFactory.loadMapFromWz(mapId, 0, 0, null) is ICPQMap);
+                Assert.That(LoadMap(mapId) is ICPQMap);
             }
         }
 

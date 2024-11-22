@@ -92,7 +92,7 @@ public class MapleMap : IMap
     private int mapid;
     private AtomicInteger runningOid = new AtomicInteger(1000000001);
     private int returnMapId;
-    private int world;
+
     private int seats;
     private bool clock;
     private bool boat;
@@ -136,7 +136,6 @@ public class MapleMap : IMap
     public Coconut? Coconut { get; set; }
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
-    public int Channel { get; set; }
     private float _monsterRate;
     public float MonsterRate
     {
@@ -158,11 +157,11 @@ public class MapleMap : IMap
     // due to the nature of loadMapFromWz (synchronized), sole function that calls 'generateMapDropRangeCache', this lock remains optional.
     private static object bndLock = new object();
 
-    public MapleMap(int mapid, int world, int channel, int returnMapId, float monsterRate)
+    public IWorldChannel ChannelServer { get; }
+    public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId, float monsterRate)
     {
         this.mapid = mapid;
-        this.Channel = channel;
-        this.world = world;
+        ChannelServer = worldChannel;
         this.returnMapId = returnMapId;
         this.MonsterRate = monsterRate;
         aggroMonitor = new MonsterAggroCoordinator();
@@ -192,7 +191,7 @@ public class MapleMap : IMap
 
     public int getWorld()
     {
-        return world;
+        return ChannelServer.getWorld();
     }
 
     public void broadcastPacket(IPlayer source, Packet packet)
@@ -236,12 +235,12 @@ public class MapleMap : IMap
 
     public IWorldChannel getChannelServer()
     {
-        return getWorldServer().getChannel(Channel);
+        return ChannelServer;
     }
 
     public IWorld getWorldServer()
     {
-        return Server.getInstance().getWorld(world)!;
+        return ChannelServer.WorldModel;
     }
 
     public IMap getReturnMap()

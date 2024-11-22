@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 using server.maps;
 using server.partyquest;
 using tools;
@@ -45,7 +45,7 @@ namespace Application.Core.Game.Maps.Specials
         public int TimeDefault { get; set; }
         public int TimeExpand { get; set; }
 
-        public MonsterCarnivalMap(IMap map) : base(map.getId(), map.getWorld(), map.Channel, map.getReturnMapId(), map.MonsterRate)
+        public MonsterCarnivalMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId(), map.MonsterRate)
         {
         }
 

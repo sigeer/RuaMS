@@ -213,14 +213,6 @@ public class World : IWorld
         }
     }
 
-    public void ChannelInitialize()
-    {
-        foreach (var channel in Channels)
-        {
-            channel.reloadEventScriptManager();
-        }
-    }
-
     public int getChannelsSize()
     {
         return Channels.Count;

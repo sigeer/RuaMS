@@ -15,7 +15,7 @@ namespace Application.Core.Game.Maps
 {
     public interface IMap
     {
-        public int Channel { get; set; }
+        public IWorldChannel ChannelServer { get; }
         /// <summary>
         /// 当存在小数时，则是概率生成
         /// </summary>

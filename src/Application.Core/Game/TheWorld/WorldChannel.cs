@@ -99,7 +99,7 @@ public class WorldChannel : IWorldChannel
         this.channel = channel;
         Players = new ChannelPlayerStorage(this.world, channel);
         this.ongoingStartTime = startTime + 10000;  // rude approach to a world's last channel boot time, placeholder for the 1st wedding reservation ever
-        this.mapManager = new MapManager(null, this.world, channel);
+        this.mapManager = new MapManager(null, this);
         this.Port = world.Configs.StartPort + (this.channel - 1);
         this.ip = YamlConfig.config.server.HOST + ":" + Port;
         log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
@@ -107,16 +107,6 @@ public class WorldChannel : IWorldChannel
         setServerMessage(WorldModel.ServerMessage);
         try
         {
-            if (Server.getInstance().RunningWorlds.ContainsKey(this.world))
-            {
-                // postpone event loading to improve boot time... thanks Riizade, daronhudson for noticing slow startup times
-                eventSM = new EventScriptManager(this, getEvents());
-            }
-            else
-            {
-                eventSM = new EventScriptManager(this, ["0_EXAMPLE"]);
-            }
-
             dojoStage = new int[20];
             dojoFinishTime = new long[20];
             dojoTask = new ScheduledFuture[20];
@@ -128,6 +118,8 @@ public class WorldChannel : IWorldChannel
             }
 
             services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
+
+            eventSM = new EventScriptManager(this, getEvents());
         }
         catch (Exception e)
         {
@@ -135,12 +127,6 @@ public class WorldChannel : IWorldChannel
         }
     }
 
-    private ChannelServer initServer(int port, int world, int channel)
-    {
-        ChannelServer channelServer = new ChannelServer(port, world, channel);
-        channelServer.Start().Wait();
-        return channelServer;
-    }
 
     object loadEvetScriptLock = new object();
     public void reloadEventScriptManager()

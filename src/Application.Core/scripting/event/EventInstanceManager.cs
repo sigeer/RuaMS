@@ -92,7 +92,7 @@ public class EventInstanceManager
         this.em = em;
         this.name = name;
         this.ess = new EventScriptScheduler();
-        this.mapManager = new MapManager(this, em.getWorldServer().getId(), em.getChannelServer().getId());
+        this.mapManager = new MapManager(this, em.getChannelServer());
     }
 
     public void setName(string name)
