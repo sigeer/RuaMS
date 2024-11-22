@@ -18,25 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
+    <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Content Include="scripts\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="sql\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="handbook\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
 
 	<ItemGroup>
 	  <Compile Remove="cache\**" />
@@ -56,11 +39,4 @@
 		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
 		<Delete Files="@(FilesToDelete)" />
 	</Target>
-	
-  <ItemGroup>
-    <None Update="config.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
