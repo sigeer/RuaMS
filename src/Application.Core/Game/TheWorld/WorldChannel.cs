@@ -46,7 +46,7 @@ namespace net.server.channel;
 public class WorldChannel : IWorldChannel
 {
     private ILogger log;
-    public bool IsRunning { get; set; }
+    public bool IsRunning { get; private set; }
 
     public int Port { get; set; }
     private string ip;
@@ -67,7 +67,6 @@ public class WorldChannel : IWorldChannel
     private List<ExpeditionType> expedType = new();
     private HashSet<IMap> ownedMaps = new();
     private Event @event;
-    private bool _finishedShutdown = false;
     private HashSet<int> usedMC = new();
 
     private int usedDojo = 0;
@@ -100,26 +99,14 @@ public class WorldChannel : IWorldChannel
         this.channel = channel;
         Players = new ChannelPlayerStorage(this.world, channel);
         this.ongoingStartTime = startTime + 10000;  // rude approach to a world's last channel boot time, placeholder for the 1st wedding reservation ever
-        this.mapManager = new MapManager(null, this.world, channel);
+        this.mapManager = new MapManager(null, this);
         this.Port = world.Configs.StartPort + (this.channel - 1);
         this.ip = YamlConfig.config.server.HOST + ":" + Port;
         log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
+        expedType.AddRange(Arrays.asList(ExpeditionType.values<ExpeditionType>()));
+        setServerMessage(WorldModel.ServerMessage);
         try
         {
-            this.channelServer = initServer(Port, this.world, channel);
-            expedType.AddRange(Arrays.asList(ExpeditionType.values<ExpeditionType>()));
-
-            if (Server.getInstance().isOnline())
-            {  // postpone event loading to improve boot time... thanks Riizade, daronhudson for noticing slow startup times
-                eventSM = new EventScriptManager(this, getEvents());
-                eventSM.init();
-            }
-            else
-            {
-                eventSM = new EventScriptManager(this, ["0_EXAMPLE"]);
-            }
-
-
             dojoStage = new int[20];
             dojoFinishTime = new long[20];
             dojoTask = new ScheduledFuture[20];
@@ -132,7 +119,7 @@ public class WorldChannel : IWorldChannel
 
             services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
 
-            log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), Port);
+            eventSM = new EventScriptManager(this, getEvents());
         }
         catch (Exception e)
         {
@@ -140,20 +127,13 @@ public class WorldChannel : IWorldChannel
         }
     }
 
-    private ChannelServer initServer(int port, int world, int channel)
-    {
-        ChannelServer channelServer = new ChannelServer(port, world, channel);
-        channelServer.Start().Wait();
-        IsRunning = true;
-        return channelServer;
-    }
 
     object loadEvetScriptLock = new object();
     public void reloadEventScriptManager()
     {
         lock (loadEvetScriptLock)
         {
-            if (_finishedShutdown)
+            if (!IsRunning)
             {
                 return;
             }
@@ -162,44 +142,53 @@ public class WorldChannel : IWorldChannel
             eventSM.dispose();
             eventSM = new EventScriptManager(this, getEvents());
         }
-
     }
 
-    object shudownLock = new object();
-    public void shutdown()
+    public async Task StartServer()
     {
-        lock (shudownLock)
+        channelServer = new ChannelServer(Port, world, channel);
+        await channelServer.Start();
+
+        IsRunning = true;
+
+        log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), Port);
+    }
+
+    bool isShuttingDown = false;
+    public async Task Shutdown()
+    {
+        try
         {
-            try
+            if (isShuttingDown || !IsRunning)
             {
-                if (_finishedShutdown)
-                {
-                    return;
-                }
-
-                log.Information("Shutting down channel {ChannelId} in world {WorldId}", channel, world);
-
-                closeAllMerchants();
-                disconnectAwayPlayers();
-                Players.disconnectAll();
-
-                eventSM.dispose();
-
-                mapManager.dispose();
-
-                closeChannelSchedules();
-
-                channelServer.Stop().Wait();
-
-                IsRunning = false;
-
-                _finishedShutdown = true;
-                log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);
+                return;
             }
-            catch (Exception e)
-            {
-                log.Error(e, "Error while shutting down channel {ChannelId} in world {WorldId}", channel, world);
-            }
+
+            isShuttingDown = true;
+            log.Information("Shutting down channel {ChannelId} in world {WorldId}", channel, world);
+
+            await channelServer.Stop();
+
+            closeAllMerchants();
+            disconnectAwayPlayers();
+            Players.disconnectAll();
+
+            eventSM.dispose();
+
+            mapManager.dispose();
+
+            await closeChannelSchedules();
+
+            IsRunning = false;
+            log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);
+        }
+        catch (Exception e)
+        {
+            log.Error(e, "Error while shutting down channel {ChannelId} in world {WorldId}", channel, world);
+        }
+        finally
+        {
+            isShuttingDown = false;
         }
     }
 
@@ -208,24 +197,17 @@ public class WorldChannel : IWorldChannel
         services.shutdown();
     }
 
-    private void closeChannelSchedules()
+    private async Task closeChannelSchedules()
     {
-        Monitor.Enter(lockObj);
-        try
+        for (int i = 0; i < dojoTask.Length; i++)
         {
-            for (int i = 0; i < dojoTask.Length; i++)
+            if (dojoTask[i] != null)
             {
-                if (dojoTask[i] != null)
-                {
-                    dojoTask[i]!.cancel(false);
-                    dojoTask[i] = null;
-                }
+                await dojoTask[i]!.CancelAsync(false);
+                dojoTask[i] = null;
             }
         }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        await SchedulerManage.Scheduler.Clear();
 
         closeChannelServices();
     }
@@ -275,7 +257,7 @@ public class WorldChannel : IWorldChannel
 
     public IWorld getWorldServer()
     {
-        return Server.getInstance().getWorld(world)!;
+        return WorldModel;
     }
 
     public void addPlayer(IPlayer chr)
@@ -495,11 +477,6 @@ public class WorldChannel : IWorldChannel
     {
         EventScriptManager esm = this.getEventSM();
         return esm != null && esm.isActive();
-    }
-
-    public bool finishedShutdown()
-    {
-        return _finishedShutdown;
     }
 
     public void setServerMessage(string message)

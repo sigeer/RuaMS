@@ -4,11 +4,11 @@ using client;
 
 namespace net.server.task;
 
-public class FamilyDailyResetTask : AbstractRunnable
+public class FamilyDailyResetTask : BaseTask
 {
     private IWorld world;
 
-    public FamilyDailyResetTask(IWorld world)
+    public FamilyDailyResetTask(IWorld world): base(world)
     {
         this.world = world;
     }

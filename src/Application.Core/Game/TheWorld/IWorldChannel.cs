@@ -39,8 +39,10 @@ namespace Application.Core.Game.TheWorld
     {
         ChannelPlayerStorage Players { get; }
         IWorld WorldModel { get; set; }
-        public bool IsRunning { get; set; }
+        public bool IsRunning { get; }
         public int Port { get; set; }
+
+        Task StartServer();
 
         bool acceptOngoingWedding(bool cathedral);
         bool addExpedition(Expedition exped);
@@ -55,7 +57,6 @@ namespace Application.Core.Game.TheWorld
         void debugMarriageStatus();
         void dismissDojoSchedule(int dojoMapId, ITeam party);
         void dropMessage(int type, string message);
-        bool finishedShutdown();
         void finishMonsterCarnival(bool cpq1, int field);
         void freeDojoSectionIfEmpty(int dojoMapId);
         int getChannelCapacity();
@@ -107,7 +108,7 @@ namespace Application.Core.Game.TheWorld
         void setOngoingWedding(bool cathedral, bool? premium, int? weddingId, HashSet<int>? guests);
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
-        void shutdown();
+        Task Shutdown();
         void unregisterOwnedMap(IMap map);
     }
 }

@@ -32,5 +32,6 @@ public abstract class BaseTask : AbstractRunnable
     public BaseTask(IWorld world)
     {
         wserv = world;
+        Name = $"World_{world.Id}_{Name}";
     }
 }

@@ -21,6 +21,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Game.TheWorld;
 using scripting.Event;
 using System.Collections.Concurrent;
 
@@ -28,16 +29,14 @@ namespace server.maps;
 
 public class MapManager
 {
-    private int channel;
-    private int world;
     private EventInstanceManager? evt;
+    readonly IWorldChannel _channelServer;
 
     private ConcurrentDictionary<int, IMap> maps = new();
 
-    public MapManager(EventInstanceManager? eim, int world, int channel)
+    public MapManager(EventInstanceManager? eim, IWorldChannel worldChannel)
     {
-        this.world = world;
-        this.channel = channel;
+        _channelServer = worldChannel;
         this.evt = eim;
     }
 
@@ -65,7 +64,7 @@ public class MapManager
                 }
             }
 
-            map = MapFactory.loadMapFromWz(mapid, world, channel, evt);
+            map = MapFactory.loadMapFromWz(mapid, _channelServer, evt);
 
             if (cache)
             {

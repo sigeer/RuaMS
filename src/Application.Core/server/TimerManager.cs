@@ -26,22 +26,32 @@ using Application.Core.scripting.Event;
 using Application.Core.scripting.Event.jobs;
 using net.server;
 using Quartz;
+using Quartz.Impl;
 
 namespace server;
 
 public class TimerManager
 {
-    private static Lazy<TimerManager> instance = new Lazy<TimerManager>(new TimerManager(SchedulerManage.Scheduler));
+    private static Lazy<TimerManager>? instance = null;
 
     public static TimerManager getInstance()
     {
-        return instance.Value;
+        return instance!.Value;
     }
 
-    readonly IScheduler _scheduler;
+    IScheduler _scheduler;
     private TimerManager(IScheduler scheduler)
     {
         _scheduler = scheduler;
+    }
+
+    public static async Task Initialize()
+    {
+        var factory = new StdSchedulerFactory();
+        SchedulerManage.Scheduler = await factory.GetScheduler();
+        SchedulerManage.Scheduler.ListenerManager.AddJobListener(new JobCompleteListener());
+
+        instance = new Lazy<TimerManager>(new TimerManager(SchedulerManage.Scheduler));
     }
 
     public async Task start()
@@ -50,14 +60,15 @@ public class TimerManager
             await _scheduler.Start();
     }
 
-    public void stop()
+    public async Task Stop()
     {
         if (!_scheduler.IsShutdown)
-            _scheduler.Shutdown();
+            await _scheduler.Shutdown();
     }
 
     public void purge()
-    {//Yay?
+    {
+        //Yay?
         Server.getInstance().forceUpdateCurrentTime();
     }
 

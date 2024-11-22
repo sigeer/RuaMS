@@ -7,6 +7,7 @@ using Application.EF;
 using constants.id;
 using net.server;
 using Quartz.Impl;
+using server;
 using server.maps;
 using System.Text;
 
@@ -21,18 +22,19 @@ namespace ServiceTest
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             GlobalTools.Encoding = Encoding.GetEncoding("GBK");
 
-            var factory = new StdSchedulerFactory();
-            SchedulerManage.Scheduler = factory.GetScheduler().Result;
+            TimerManager.Initialize().Wait();
 
             LoadTestWorld();
         }
+
+
 
         private void LoadTestWorld()
         {
             using var dbContext = new DBContext();
             var testWorldConfig = dbContext.WorldConfigs.FirstOrDefault();
             if (testWorldConfig != null)
-                Server.getInstance().InitWorld(testWorldConfig);
+                Server.getInstance().InitWorld(testWorldConfig).Wait();
         }
 
         private IClient? _client;
@@ -51,7 +53,7 @@ namespace ServiceTest
             var player = CharacterManager.GetPlayerById(charId)!;
             client.setPlayer(player);
             player.setClient(client);
-            player.setMap(new MapManager(null, 0, 1).getMap(MapId.HENESYS));
+            player.setMap(Server.getInstance().getChannel(0, 1).getMapFactory().getMap(MapId.HENESYS));
             player.setEnteredChannelWorld(1);
             return player;
         }

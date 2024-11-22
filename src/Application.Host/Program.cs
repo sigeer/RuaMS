@@ -1,14 +1,13 @@
 using Application.Core;
-using Application.Core.Compatible;
-using Application.Core.scripting.Event.jobs;
 using Application.EF;
 using Application.Host;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
 using Application.Utility.Configs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Quartz.Impl;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using System.Text;
@@ -45,19 +44,54 @@ builder.Services.AddLogging(o => o.AddSerilog());
 // 数据库配置
 builder.Services.AddDbContext<DBContext>(o => o.UseMySQL(YamlConfig.config.server.DB_CONNECTIONSTRING));
 
-var factory = new StdSchedulerFactory();
-SchedulerManage.Scheduler = await factory.GetScheduler();
-SchedulerManage.Scheduler.ListenerManager.AddJobListener(new JobCompleteListener());
+
 //builder.Services.AddQuartz(o => o.AddJobListener(new JobCompleteListener()));
 //builder.Services.AddSingleton<TimerManager>();
 
 // 游戏服务
+builder.Services.AddSingleton<GameHost>();
 builder.Services.AddHostedService<GameHost>();
 
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<DropdataService>();
 builder.Services.AddScoped<DataService>();
 builder.Services.AddScoped<ServerService>();
 builder.Services.AddAutoMapper(typeof(DtoMapper).Assembly);
+
+builder.Services.AddAuthentication(s =>
+{
+    s.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    s.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    s.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromSeconds(30),
+        ValidateIssuer = true,
+        ValidIssuer = "cosmic_dotnet",
+
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.SecretKey)),
+
+        ValidateAudience = false
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            //Token expired
+            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+            {
+                context.Response.Headers["Token-Expired"] = "true";
+            }
+
+            return Task.CompletedTask;
+        },
+    };
+});
+
 // Api
 builder.Services.AddControllers(o =>
     o.Filters.Add<DataWrapperFilter>()
@@ -69,6 +103,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+var authCode = AuthService.GetAuthCode();
+Log.Logger.Information("授权码>>：[" + authCode + "]");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -76,6 +113,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();

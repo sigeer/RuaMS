@@ -25,6 +25,7 @@ using Application.Core.constants.game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
+using Application.Core.Game.TheWorld;
 using Application.Shared.WzEntity;
 using constants.id;
 using scripting.Event;
@@ -135,7 +136,7 @@ public class MapFactory
         }
     }
 
-    public static IMap loadMapFromWz(int mapid, int world, int channel, EventInstanceManager? evt)
+    public static IMap loadMapFromWz(int mapid, IWorldChannel worldChannel, EventInstanceManager? evt)
     {
         IMap map;
 
@@ -159,7 +160,7 @@ public class MapFactory
         {
             monsterRate = (float?)mobRate.getData() ?? 0;
         }
-        map = new MapleMap(mapid, world, channel, DataTool.getInt("returnMap", infoData), monsterRate);
+        map = new MapleMap(mapid, worldChannel, DataTool.getInt("returnMap", infoData), monsterRate);
 
         var cpqInfo = mapData.getChildByPath("monsterCarnival");
         if (map.isCPQMap() && cpqInfo != null)
@@ -283,7 +284,7 @@ public class MapFactory
             try
             {
                 using var dbContext = new DBContext();
-                var dataList = dbContext.Playernpcs.Where(x => x.Map == mapid && x.World == world).ToList();
+                var dataList = dbContext.Playernpcs.Where(x => x.Map == mapid && x.World == worldChannel.getWorld()).ToList();
 
                 foreach (var item in dataList)
                 {
