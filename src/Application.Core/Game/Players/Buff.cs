@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Core.scripting.Event;
 using client;
@@ -819,9 +819,8 @@ namespace Application.Core.Game.Players
                     foreach (var mbsvhe in mbsvhi.Value)
                     {
                         BuffStat mbs = mbsvhe.Key;
-                        var b = stats.get(mbs);
 
-                        if (b != null)
+                        if (stats.TryGetValue(mbs, out var b))
                         {
                             stats.AddOrUpdate(mbs, (byte)(b + 1));
                             if (mbsvhe.Value.value < (minStatBuffs.GetValueOrDefault(mbs)?.value ?? 0))
@@ -1211,15 +1210,7 @@ namespace Application.Core.Game.Players
 
         private static BuffStat? getSingletonStatupFromEffect(StatEffect mse)
         {
-            foreach (var mbs in mse.getStatups())
-            {
-                if (isSingletonStatup(mbs.BuffState))
-                {
-                    return mbs.BuffState;
-                }
-            }
-
-            return null;
+            return mse.getStatups().FirstOrDefault(x => isSingletonStatup(x.BuffState))?.BuffState;
         }
 
         private List<BuffStatValue> getActiveStatupsFromSourceid(int sourceid)
@@ -1269,27 +1260,27 @@ namespace Application.Core.Game.Players
         {
             var list = new BuffStat[]
             {
-            BuffStat.COUPON_EXP1,
-            BuffStat.COUPON_EXP2,
-            BuffStat.COUPON_EXP3,
-            BuffStat.COUPON_EXP4,
-            BuffStat.COUPON_DRP1,
-            BuffStat.COUPON_DRP2,
-            BuffStat.COUPON_DRP3,
-            BuffStat.MESO_UP_BY_ITEM,
-            BuffStat.ITEM_UP_BY_ITEM,
-            BuffStat.RESPECT_PIMMUNE,
-            BuffStat.RESPECT_MIMMUNE,
-            BuffStat.DEFENSE_ATT,
-            BuffStat.DEFENSE_STATE,
-            BuffStat.WATK,
-            BuffStat.WDEF,
-            BuffStat.MATK,
-            BuffStat.MDEF,
-            BuffStat.ACC,
-            BuffStat.AVOID,
-            BuffStat.SPEED,
-            BuffStat.JUMP
+                BuffStat.COUPON_EXP1,
+                BuffStat.COUPON_EXP2,
+                BuffStat.COUPON_EXP3,
+                BuffStat.COUPON_EXP4,
+                BuffStat.COUPON_DRP1,
+                BuffStat.COUPON_DRP2,
+                BuffStat.COUPON_DRP3,
+                BuffStat.MESO_UP_BY_ITEM,
+                BuffStat.ITEM_UP_BY_ITEM,
+                BuffStat.RESPECT_PIMMUNE,
+                BuffStat.RESPECT_MIMMUNE,
+                BuffStat.DEFENSE_ATT,
+                BuffStat.DEFENSE_STATE,
+                BuffStat.WATK,
+                BuffStat.WDEF,
+                BuffStat.MATK,
+                BuffStat.MDEF,
+                BuffStat.ACC,
+                BuffStat.AVOID,
+                BuffStat.SPEED,
+                BuffStat.JUMP
             };
             return !list.Contains(mbs);
         }

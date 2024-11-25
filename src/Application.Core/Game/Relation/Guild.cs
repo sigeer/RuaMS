@@ -512,12 +512,12 @@ public class Guild : IGuild
                     {
                         if (mgc.IsOnlined)
                         {
-                            Server.getInstance().getWorld(mgc.getWorld()).setGuildAndRank(cid, 0, 5);
+                            mgc.getWorldServer().setGuildAndRank(cid, 0, 5);
                         }
                         else
                         {
                             noteService.sendNormal("You have been expelled from the guild.", initiator.getName(), mgc.getName());
-                            Server.getInstance().getWorld(mgc.getWorld()).setOfflineGuildStatus(0, 5, cid);
+                            mgc.getWorldServer().setOfflineGuildStatus(0, 5, cid);
                         }
                     }
                     catch (Exception re)
@@ -562,12 +562,12 @@ public class Guild : IGuild
         {
             if (mgc.IsOnlined)
             {
-                Server.getInstance().getWorld(mgc.getWorld()).setGuildAndRank(mgc.Id, GuildId, newRank);
+                mgc.getWorldServer().setGuildAndRank(mgc.Id, GuildId, newRank);
                 mgc.setGuildRank(newRank);
             }
             else
             {
-                Server.getInstance().getWorld(mgc.getWorld()).setOfflineGuildStatus((short)GuildId, (byte)newRank, mgc.Id);
+                mgc.getWorldServer().setOfflineGuildStatus((short)GuildId, (byte)newRank, mgc.Id);
                 mgc.setGuildRank(newRank);
             }
         }

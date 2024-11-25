@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Relation;
+using Application.Core.Game.Relation;
 using Application.Core.model;
 using client.inventory;
 using client.inventory.manipulator;
@@ -25,6 +25,7 @@ namespace Application.Core.Managers
             try
             {
                 using var dbContext = new DBContext();
+                using var dbTrans = dbContext.Database.BeginTransaction();
                 dbContext.Rings.Where(x => x.Id == ring.getRingId() || x.Id == ring.getPartnerRingId()).ExecuteDelete();
 
                 CashIdGenerator.freeCashId(ring.getRingId());
@@ -32,6 +33,7 @@ namespace Application.Core.Managers
 
                 dbContext.Inventoryequipments.Where(x => x.RingId == ring.getRingId()).ExecuteUpdate(x => x.SetProperty(y => y.RingId, -1));
                 dbContext.Inventoryequipments.Where(x => x.RingId == ring.getPartnerRingId()).ExecuteUpdate(x => x.SetProperty(y => y.RingId, -1));
+                dbTrans.Commit();
             }
             catch (Exception ex)
             {
@@ -130,10 +132,10 @@ namespace Application.Core.Managers
                     return;
                 }
 
-                chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
+                chr.getWorldServer().deleteRelationship(chr.getId(), partnerid);
                 RingManager.RemoveRing(chr.getMarriageRing());
 
-                var partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
+                var partner = chr.getWorldServer().getPlayerStorage().getCharacterById(partnerid);
                 if (partner == null || !partner.IsOnlined)
                 {
                     EraseEngagementOffline(partnerid);
@@ -183,9 +185,9 @@ namespace Application.Core.Managers
                 int partnerid = chr.getPartnerId();
                 int marriageitemid = chr.getMarriageItemId();
 
-                chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
+                chr.getWorldServer().deleteRelationship(chr.getId(), partnerid);
 
-                var partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
+                var partner = chr.getWorldServer().getPlayerStorage().getCharacterById(partnerid);
                 if (partner == null || !partner.IsOnlined)
                 {
                     breakEngagementOffline(partnerid);

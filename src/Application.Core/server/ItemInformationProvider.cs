@@ -429,11 +429,9 @@ public class ItemInformationProvider
 
     public short getSlotMax(IClient c, int itemId)
     {
-        var slotMax = slotMaxCache.get(itemId);
-        if (slotMax != null)
-        {
+        if (slotMaxCache.TryGetValue(itemId, out var slotMax))
             return (short)(slotMax + getExtraSlotMaxFromPlayer(c, itemId));
-        }
+
         short ret = 0;
         var item = getItemData(itemId);
         if (item != null)
@@ -1383,7 +1381,7 @@ public class ItemInformationProvider
     public bool canUseCleanSlate(Equip equip)
     {
         var eqStats = getEquipStats(equip.getItemId());
-        if (eqStats == null || eqStats.get("tuc") == 0)
+        if (eqStats == null || eqStats.GetValueOrDefault("tuc") == 0)
         {
             return false;
         }
@@ -1404,7 +1402,7 @@ public class ItemInformationProvider
 
             if (((nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId))) || assertGM)
             {
-                double prop = (double)stats.get("success");
+                double prop = stats.GetValueOrDefault("success");
 
                 switch (vegaItemId)
                 {
@@ -1472,7 +1470,7 @@ public class ItemInformationProvider
                     {
                         nEquip.setUpgradeSlots((byte)(nEquip.getUpgradeSlots() - 1));
                     }
-                    if (Randomizer.nextInt(100) < stats.get("cursed"))
+                    if (Randomizer.nextInt(100) < stats.GetValueOrDefault("cursed"))
                     {
                         return null;
                     }
@@ -1618,7 +1616,7 @@ public class ItemInformationProvider
                     flag |= ItemConstants.UNTRADEABLE;
                     nEquip.setFlag(flag);
                 }
-                else if (stats.get("fs") > 0)
+                else if (stats.GetValueOrDefault("fs") > 0)
                 {
                     short flag = nEquip.getFlag();
                     flag |= ItemConstants.SPIKES;
@@ -1921,7 +1919,7 @@ public class ItemInformationProvider
                 break;
             }
         }
-        if (ret.get("skillid") == null)
+        if (!ret.ContainsKey("skillid"))
         {
             ret.AddOrUpdate("skillid", 0);
         }
@@ -2216,7 +2214,7 @@ public class ItemInformationProvider
         }
 
         var eqpStats = getEquipStats(itemId);
-        return eqpStats != null && eqpStats.get("cash") == 1;
+        return eqpStats != null && eqpStats.GetValueOrDefault("cash") == 1;
     }
 
     public bool isUpgradeable(int itemId)
@@ -2305,23 +2303,23 @@ public class ItemInformationProvider
             {
                 continue;
             }
-            else if (equipState?.get("reqDEX") > tdex)
+            else if (equipState?.GetValueOrDefault("reqDEX") > tdex)
             {
                 continue;
             }
-            else if (equipState?.get("reqSTR") > tstr)
+            else if (equipState?.GetValueOrDefault("reqSTR") > tstr)
             {
                 continue;
             }
-            else if (equipState?.get("reqLUK") > tluk)
+            else if (equipState?.GetValueOrDefault("reqLUK") > tluk)
             {
                 continue;
             }
-            else if (equipState?.get("reqINT") > tint)
+            else if (equipState?.GetValueOrDefault("reqINT") > tint)
             {
                 continue;
             }
-            var reqPOP = equipState?.get("reqPOP");
+            var reqPOP = equipState?.GetValueOrDefault("reqPOP");
             if (reqPOP > 0)
             {
                 if (reqPOP > fame)
@@ -2391,23 +2389,23 @@ public class ItemInformationProvider
         {
             i++;
         }
-        else if (equipState?.get("reqDEX") > chr.getTotalDex())
+        else if (equipState?.GetValueOrDefault("reqDEX") > chr.getTotalDex())
         {
             i++;
         }
-        else if (equipState?.get("reqSTR") > chr.getTotalStr())
+        else if (equipState?.GetValueOrDefault("reqSTR") > chr.getTotalStr())
         {
             i++;
         }
-        else if (equipState?.get("reqLUK") > chr.getTotalLuk())
+        else if (equipState?.GetValueOrDefault("reqLUK") > chr.getTotalLuk())
         {
             i++;
         }
-        else if (equipState?.get("reqINT") > chr.getTotalInt())
+        else if (equipState?.GetValueOrDefault("reqINT") > chr.getTotalInt())
         {
             i++;
         }
-        var reqPOP = equipState?.get("reqPOP");
+        var reqPOP = equipState?.GetValueOrDefault("reqPOP");
         if (reqPOP > 0)
         {
             if (reqPOP > chr.getFame())
@@ -2452,8 +2450,7 @@ public class ItemInformationProvider
 
     public int getEquipLevel(int itemId, bool getMaxLevel)
     {
-        var eqLevel = equipMaxLevelCache.get(itemId);
-        if (eqLevel == null)
+        if (!equipMaxLevelCache.TryGetValue(itemId, out var eqLevel))
         {
             eqLevel = 1;    // greater than 1 means that it was supposed to levelup on GMS
 
@@ -2470,7 +2467,7 @@ public class ItemInformationProvider
                         if (data2 == null || data2.getChildren().Count <= 1)
                         {
                             eqLevel = curLevel;
-                            equipMaxLevelCache.Add(itemId, eqLevel.Value);
+                            equipMaxLevelCache.Add(itemId, eqLevel);
                             break;
                         }
 
@@ -2488,7 +2485,7 @@ public class ItemInformationProvider
             }
         }
 
-        return eqLevel.Value;
+        return eqLevel;
     }
 
     public List<KeyValuePair<string, int>> getItemLevelupStats(int itemId, int level)
@@ -2797,13 +2794,14 @@ public class ItemInformationProvider
     private bool canUseSkillBook(IPlayer player, int skillBookId)
     {
         var skilldata = getSkillStats(skillBookId, player.getJob().getId());
-        if (skilldata == null || skilldata.get("skillid") == 0)
+        if (skilldata == null || skilldata.GetValueOrDefault("skillid") == 0)
         {
             return false;
         }
 
         var skill2 = SkillFactory.getSkill(skilldata.GetValueOrDefault("skillid"));
-        return (skilldata.get("skillid") != 0 && ((player.getSkillLevel(skill2) >= skilldata.get("reqSkillLevel") || skilldata.get("reqSkillLevel") == 0) && player.getMasterLevel(skill2) < skilldata.get("masterLevel")));
+        return (player.getSkillLevel(skill2) >= skilldata.GetValueOrDefault("reqSkillLevel") || skilldata.GetValueOrDefault("reqSkillLevel") == 0) 
+            && player.getMasterLevel(skill2) < skilldata.GetValueOrDefault("masterLevel");
     }
 
     public List<int> usableMasteryBooks(IPlayer player)

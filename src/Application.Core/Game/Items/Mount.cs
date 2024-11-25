@@ -37,7 +37,7 @@ public class Mount : IMount
     private IPlayer owner;
     private bool active;
 
-    public IWorld WorldServer => Server.getInstance().getWorld(owner.World);
+    public IWorld WorldServer => owner.getWorldServer();
 
     public Mount(IPlayer owner, int id)
     {

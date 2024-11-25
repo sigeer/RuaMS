@@ -42,9 +42,9 @@ public class AutobanManager
                 return;
             }
 
-            if (lastTime.ContainsKey(fac))
+            if (lastTime.TryGetValue(fac, out var value))
             {
-                if (lastTime.get(fac) < (Server.getInstance().getCurrentTime() - fac.getExpire()))
+                if (value < (Server.getInstance().getCurrentTime() - fac.getExpire()))
                 {
                     points.AddOrUpdate(fac, points.GetValueOrDefault(fac) / 2); //So the points are not completely gone.
                 }
@@ -56,7 +56,7 @@ public class AutobanManager
 
             points.AddOrUpdate(fac, points.GetValueOrDefault(fac) + 1);
 
-            if (points.get(fac) >= fac.getMaximum())
+            if (points[fac] >= fac.getMaximum())
             {
                 chr.autoban(reason);
             }

@@ -12,7 +12,7 @@ namespace Application.Core.Managers
         static readonly ILogger log = LogFactory.GetLogger(LogType.Alliance);
         public static bool canBeUsedAllianceName(string name)
         {
-            if (name.Contains(" ") || name.Length > 12)
+            if (string.IsNullOrWhiteSpace(name) || name.Contains(" ") || name.Length > 12)
             {
                 return false;
             }
@@ -20,24 +20,31 @@ namespace Application.Core.Managers
             using var dbContext = new DBContext();
             return dbContext.Alliances.Any(x => x.Name == name);
         }
-        public static Alliance createAllianceOnDb(List<int> guilds, string name)
+        public static Alliance? createAllianceOnDb(List<int> guilds, string name)
         {
             // will create an alliance, where the first guild listed is the leader and the alliance name MUST BE already checked for unicity.
 
-            int id = -1;
-            using var dbContext = new DBContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-            var newModel = new AllianceEntity(name);
-            dbContext.Alliances.Add(newModel);
-            dbContext.SaveChanges();
-            dbContext.AllianceGuilds.AddRange(guilds.Select(x => new Allianceguild
+            try
             {
-                AllianceId = newModel.Id,
-                GuildId = x
-            }));
-            dbContext.SaveChanges();
-            dbTrans.Commit();
-            return new Alliance(id, name);
+                using var dbContext = new DBContext();
+                using var dbTrans = dbContext.Database.BeginTransaction();
+                var newModel = new AllianceEntity(name);
+                dbContext.Alliances.Add(newModel);
+                dbContext.SaveChanges();
+                dbContext.AllianceGuilds.AddRange(guilds.Select(x => new Allianceguild
+                {
+                    AllianceId = newModel.Id,
+                    GuildId = x
+                }));
+                dbContext.SaveChanges();
+                dbTrans.Commit();
+                return new Alliance(newModel.Id, name);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "创建联盟失败");
+                return null;
+            }
         }
 
         private static List<IPlayer> getPartyGuildMasters(ITeam party)

@@ -50,7 +50,7 @@ public class HiredMerchant : AbstractMapObject
     private int mesos = 0;
     private int channel;
     private int world;
-    private long start;
+    private DateTimeOffset start;
     private string ownerName = "";
     private string description = "";
     private List<PlayerShopItem> items = new();
@@ -69,7 +69,7 @@ public class HiredMerchant : AbstractMapObject
     public HiredMerchant(IPlayer owner, string desc, int itemId)
     {
         setPosition(owner.getPosition());
-        start = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        start = DateTimeOffset.Now;
         Owner = owner;
         ownerId = owner.getId();
         channel = owner.getClient().getChannel();
@@ -431,7 +431,7 @@ public class HiredMerchant : AbstractMapObject
             Monitor.Exit(visitorLock);
         }
 
-        Server.getInstance().getWorld(world).unregisterHiredMerchant(this);
+        Owner.getWorldServer().unregisterHiredMerchant(this);
 
         try
         {
@@ -545,7 +545,7 @@ public class HiredMerchant : AbstractMapObject
             Log.Logger.Error(e.ToString());
         }
 
-        Server.getInstance().getWorld(world).unregisterHiredMerchant(this);
+        Owner.getWorldServer().unregisterHiredMerchant(this);
     }
 
 
@@ -797,7 +797,7 @@ public class HiredMerchant : AbstractMapObject
 
     public int getTimeOpen()
     {
-        double openTime = (DateTimeOffset.Now.ToUnixTimeMilliseconds() - start) / 60000;
+        double openTime = (DateTimeOffset.Now - start).TotalMinutes;
         openTime /= 1440;   // heuristics since engineered method to count time here is unknown
         openTime *= 1318;
 

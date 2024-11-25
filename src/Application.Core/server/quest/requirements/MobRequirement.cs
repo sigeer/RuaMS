@@ -62,7 +62,6 @@ public class MobRequirement : AbstractQuestRequirement
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
         foreach (int mobID in mobs.Keys)
         {
-            var countReq = mobs.get(mobID);
             int progress;
 
             try
@@ -75,7 +74,7 @@ public class MobRequirement : AbstractQuestRequirement
                 return false;
             }
 
-            if (progress < countReq)
+            if (progress < mobs[mobID])
             {
                 return false;
             }

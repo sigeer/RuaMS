@@ -284,20 +284,21 @@ public class PacketCreator
         foreach (Item item in ii)
         {
             short pos = (byte)(item.getPosition() * -1);
-            if (pos < 100 && myEquip.get(pos) == null)
+            if (pos < 100 && !myEquip.ContainsKey(pos))
             {
                 myEquip.AddOrUpdate(pos, item.getItemId());
             }
             else if (pos > 100 && pos != 111)
-            { // don't ask. o.o
+            { 
+                // don't ask. o.o
                 pos -= 100;
-                if (myEquip.get(pos) != null)
+                if (myEquip.TryGetValue(pos, out var d))
                 {
-                    maskedEquip.AddOrUpdate(pos, myEquip.GetValueOrDefault(pos));
+                    maskedEquip.AddOrUpdate(pos, d);
                 }
                 myEquip.AddOrUpdate(pos, item.getItemId());
             }
-            else if (myEquip.get(pos) != null)
+            else if (myEquip.ContainsKey(pos))
             {
                 maskedEquip.AddOrUpdate(pos, item.getItemId());
             }
@@ -5932,21 +5933,21 @@ public class PacketCreator
         Dictionary<short, int> maskedEquip = new();
         foreach (short position in equip.Keys)
         {
-            short pos = (byte)(position * -1);
-            if (pos < 100 && myEquip.get(pos) == null)
+            short pos = (short)(position * -1);
+            if (pos < 100 && !myEquip.ContainsKey(pos))
             {
                 myEquip.AddOrUpdate(pos, equip.GetValueOrDefault(position));
             }
             else if ((pos > 100 && pos != 111) || pos == -128)
             { // don't ask. o.o
                 pos -= 100;
-                if (myEquip.get(pos) != null)
+                if (myEquip.TryGetValue(pos, out var d))
                 {
-                    maskedEquip.AddOrUpdate(pos, myEquip.GetValueOrDefault(pos));
+                    maskedEquip.AddOrUpdate(pos, d);
                 }
                 myEquip.AddOrUpdate(pos, equip.GetValueOrDefault(position));
             }
-            else if (myEquip.get(pos) != null)
+            else if (myEquip.ContainsKey(pos))
             {
                 maskedEquip.AddOrUpdate(pos, equip.GetValueOrDefault(position));
             }
@@ -5963,7 +5964,7 @@ public class PacketCreator
             p.writeInt(entry.Value);
         }
         p.writeByte(0xFF);
-        p.writeInt(equip.get((short)-111) ?? 0);
+        p.writeInt(equip.GetValueOrDefault((short)-111));
         for (int i = 0; i < 3; i++)
         {
             p.writeInt(0);

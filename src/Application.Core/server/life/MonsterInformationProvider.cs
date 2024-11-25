@@ -284,8 +284,7 @@ public class MonsterInformationProvider
 
     public bool isBoss(int id)
     {
-        var boss = mobBossCache.get(id);
-        if (boss == null)
+        if (!mobBossCache.TryGetValue(id, out var boss))
         {
             try
             {
@@ -298,10 +297,10 @@ public class MonsterInformationProvider
                 log.Warning(e, "Non-existent mob id {MobId}", id);
             }
 
-            mobBossCache.AddOrUpdate(id, boss ?? false);
+            mobBossCache.AddOrUpdate(id, boss);
         }
 
-        return boss ?? false;
+        return boss;
     }
 
     public string getMobNameFromId(int id)

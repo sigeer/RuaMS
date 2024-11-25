@@ -44,8 +44,10 @@ public class LootInventory
 
     public int hasItem(int itemid, int quantity)
     {
-        int? itemQty = items.get(itemid);
-        return itemQty == null ? 0 : itemQty >= quantity ? 2 : itemQty > 0 ? 1 : 0;
+        if (!items.TryGetValue(itemid, out var itemQty))
+            return 0;
+
+        return itemQty >= quantity ? 2 : (itemQty > 0 ? 1 : 0);
     }
 
 }
