@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Managers
 {
@@ -25,11 +25,11 @@ namespace Application.Core.Managers
             try
             {
                 using var dbContext = new DBContext();
-                var dbModel = dbContext.MtsItems.Where(x => x.Id == itemId && x.Seller != player.Id).Select(x => new { x.Id }).FirstOrDefault();
-                if (dbModel != null)
+                var hasItem = dbContext.MtsItems.Any(x => x.Id == itemId && x.Seller != player.Id);
+                if (hasItem)
                 {
-                    var hasData = dbContext.MtsCarts.Where(x => x.Cid == player.Id && x.Itemid == itemId).Select(x => new { x.Cid }).FirstOrDefault();
-                    if (hasData == null)
+                    var hasCart = dbContext.MtsCarts.Any(x => x.Cid == player.Id && x.Itemid == itemId);
+                    if (!hasCart)
                     {
                         dbContext.MtsCarts.Add(new MtsCart { Cid = player.Id, Itemid = itemId });
                         dbContext.SaveChanges();

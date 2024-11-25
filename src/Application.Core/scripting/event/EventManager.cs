@@ -942,7 +942,7 @@ public class EventManager
                 return null;
 
             wserv.removeGuildQueued(guildId);
-            var leaderId = queuedGuildLeaders.remove(guildId) ?? 0;
+            var leaderId = queuedGuildLeaders.Remove(guildId, out var d) ? d : 0;
 
             int place = 1;
             foreach (int i in queuedGuilds)

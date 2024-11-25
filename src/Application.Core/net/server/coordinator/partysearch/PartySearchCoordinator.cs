@@ -165,10 +165,9 @@ public class PartySearchCoordinator
             {
                 if (jobsSelected % 2 == 1)
                 {
-                    var job = jobTable.get(i);
-                    if (job != null)
+                    if (jobTable.TryGetValue(i, out var job))
                     {
-                        searchedJobs.Add(job.Value);
+                        searchedJobs.Add(job);
                     }
                 }
 

@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Relation;
+using Application.Core.Game.Relation;
 using net.server.coordinator.matchchecker;
 using net.server.world;
 using tools;
@@ -55,7 +55,7 @@ namespace Application.Core.Managers
             {
                 if (player.Id == party.getLeaderId())
                 {
-                    c.getWorldServer().removeMapPartyMembers(party.getId());
+                    world.removeMapPartyMembers(party.getId());
 
                     var mcpq = player.getMonsterCarnival();
                     if (mcpq != null)

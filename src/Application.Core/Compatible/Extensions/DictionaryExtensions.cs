@@ -1,22 +1,9 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Compatible.Extensions
 {
     public static class DictionaryExtensions
     {
-        public static TValue? get<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue? defaultValue = default) where TValue : struct where TKey : notnull
-        {
-            return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
-        }
-
-        public static TValue? remove<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) where TKey : notnull where TValue : struct
-        {
-            if (dictionary.Remove(key, out var v))
-                return v;
-
-            return null;
-        }
-
         public static void putAll<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Dictionary<TKey, TValue> otherDic) where TKey : notnull
         {
             foreach (var item in otherDic)

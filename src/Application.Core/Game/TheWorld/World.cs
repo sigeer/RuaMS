@@ -134,7 +134,7 @@ public class World : IWorld
     private Dictionary<int, PlayerShop> activePlayerShops = new();
 
     private object activeMerchantsLock = new object();
-    private Dictionary<int, KeyValuePair<HiredMerchant, int>> activeMerchants = new();
+    private Dictionary<int, MerchantOperation> activeMerchants = new();
     private ScheduledFuture? merchantSchedule;
     private long merchantUpdate;
 
@@ -191,7 +191,7 @@ public class World : IWorld
         petsSchedule = tman.register(new PetFullnessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         srvMessagesSchedule = tman.register(new ServerMessageTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         mountsSchedule = tman.register(new MountTirednessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        merchantSchedule = tman.register(new HiredMerchantTask(this), 10 * TimeSpan.FromMinutes(1), 10 * TimeSpan.FromMinutes(1));
+        merchantSchedule = tman.register(new HiredMerchantTask(this), TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
         timedMapObjectsSchedule = tman.register(new TimedMapObjectTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
         marriagesSchedule = tman.register(new WeddingReservationTask(this), 
@@ -273,7 +273,7 @@ public class World : IWorld
             if (Channels.Count > channelSize)
                 await srv.RemoveWorldChannel(Id);
             else
-                srv.AddWorldChannel(Id);
+                await srv.AddWorldChannel(Id);
         }
     }
 
@@ -631,14 +631,12 @@ public class World : IWorld
 
     public KeyValuePair<bool, bool>? getMarriageQueuedLocation(int marriageId)
     {
-        var qm = queuedMarriages.get(marriageId);
-        return (qm != null) ? qm.Value.Key : null;
+        return queuedMarriages.TryGetValue(marriageId, out var qm) ? qm.Key : null;
     }
 
     public CoupleIdPair? getMarriageQueuedCouple(int marriageId)
     {
-        var qm = queuedMarriages.get(marriageId);
-        return (qm != null) ? qm.Value.Value : null;
+        return queuedMarriages.TryGetValue(marriageId, out var qm) ? qm.Value : null;
     }
 
     public void putMarriageQueued(int marriageId, bool cathedral, bool premium, int groomId, int brideId)
@@ -1226,7 +1224,7 @@ public class World : IWorld
         suggestLock.EnterWriteLock();
         try
         {
-            var cur = owlSearched.get(itemid) ?? 0;
+            var cur = owlSearched.GetValueOrDefault(itemid);
             owlSearched.AddOrUpdate(itemid, cur + 1);
         }
         finally
@@ -1632,7 +1630,7 @@ public class World : IWorld
 
     public void runHiredMerchantSchedule()
     {
-        Dictionary<int, KeyValuePair<HiredMerchant, int>> deployedMerchants;
+        Dictionary<int, MerchantOperation> deployedMerchants;
         Monitor.Enter(activeMerchantsLock);
         try
         {
@@ -1641,13 +1639,13 @@ public class World : IWorld
 
             foreach (var dm in deployedMerchants)
             {
-                int timeOn = dm.Value.Value;
-                HiredMerchant hm = dm.Value.Key;
+                int timeOn = dm.Value.TimeWorked;
+                HiredMerchant hm = dm.Value.HiredMerchant;
 
                 if (timeOn <= 144)
                 {
                     // 1440 minutes == 24hrs
-                    activeMerchants.AddOrUpdate(hm.getOwnerId(), new(dm.Value.Key, timeOn + 1));
+                    activeMerchants.AddOrUpdate(hm.getOwnerId(), new(hm, timeOn + 1));
                 }
                 else
                 {
@@ -1666,20 +1664,10 @@ public class World : IWorld
 
     public List<HiredMerchant> getActiveMerchants()
     {
-        List<HiredMerchant> hmList = new();
         Monitor.Enter(activeMerchantsLock);
         try
         {
-            foreach (KeyValuePair<HiredMerchant, int> hmp in activeMerchants.Values)
-            {
-                HiredMerchant hm = hmp.Key;
-                if (hm.isOpen())
-                {
-                    hmList.Add(hm);
-                }
-            }
-
-            return hmList;
+            return activeMerchants.Where(x => x.Value.HiredMerchant.isOpen()).Select(x => x.Value.HiredMerchant).ToList();
         }
         finally
         {
@@ -1692,12 +1680,7 @@ public class World : IWorld
         Monitor.Enter(activeMerchantsLock);
         try
         {
-            if (activeMerchants.ContainsKey(ownerid))
-            {
-                return activeMerchants[ownerid].Key;
-            }
-
-            return null;
+            return activeMerchants.TryGetValue(ownerid, out var value) ? value.HiredMerchant : null;
         }
         finally
         {
@@ -2001,9 +1984,7 @@ public class World : IWorld
 
     public CoupleIdPair? getRelationshipCouple(int relationshipId)
     {
-        var rc = relationshipCouples.GetValueOrDefault(relationshipId);
-
-        if (rc == null)
+        if (!relationshipCouples.TryGetValue(relationshipId, out var rc))
         {
             var couple = getRelationshipCoupleFromDb(relationshipId, true);
             if (couple == null)
@@ -2020,7 +2001,7 @@ public class World : IWorld
 
     public int getRelationshipId(int playerId)
     {
-        if (!relationships.ContainsKey(playerId))
+        if (!relationships.TryGetValue(playerId, out var value))
         {
             var couple = getRelationshipCoupleFromDb(playerId, false);
             if (couple == null)
@@ -2032,7 +2013,7 @@ public class World : IWorld
             return couple.MarriageId;
         }
 
-        return relationships[playerId];
+        return value;
     }
 
     private CoupleTotal? getRelationshipCoupleFromDb(int id, bool usingMarriageId)

@@ -67,11 +67,11 @@ public class SkillBookHandler : AbstractPacketHandler
                     return;
                 }
                 var skill2 = SkillFactory.GetSkillTrust(skilldata.GetValueOrDefault("skillid"));
-                if (skilldata.get("skillid") == 0)
+                if (skilldata.GetValueOrDefault("skillid") == 0)
                 {
                     canuse = false;
                 }
-                else if ((player.getSkillLevel(skill2) >= skilldata.get("reqSkillLevel") || skilldata.get("reqSkillLevel") == 0) && player.getMasterLevel(skill2) < skilldata.get("masterLevel"))
+                else if ((player.getSkillLevel(skill2) >= skilldata.GetValueOrDefault("reqSkillLevel") || skilldata.GetValueOrDefault("reqSkillLevel") == 0) && player.getMasterLevel(skill2) < skilldata.GetValueOrDefault("masterLevel"))
                 {
                     inv.lockInventory();
                     try

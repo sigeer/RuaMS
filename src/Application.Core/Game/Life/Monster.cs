@@ -551,13 +551,7 @@ public class Monster : AbstractLifeObject
 
     private static bool isWhiteExpGain(IPlayer chr, Dictionary<int, float> personalRatio, double sdevRatio)
     {
-        var pr = personalRatio.get(chr.getId());
-        if (pr == null)
-        {
-            return false;
-        }
-
-        return pr >= sdevRatio;
+        return personalRatio.TryGetValue(chr.getId(), out var pr) && pr >= sdevRatio;
     }
 
     private static double calcExperienceStandDevThreshold(List<float> entryExpRatio, int totalEntries)
@@ -859,7 +853,7 @@ public class Monster : AbstractLifeObject
     }
 
     /// <summary>
-    /// 只生成击杀玩家可收集的道具
+    /// 鍙敓鎴愬嚮鏉�鐜╁鍙敹闆嗙殑閬撳叿
     /// </summary>
     /// <returns></returns>
     public List<DropEntry> retrieveRelevantDrops()
@@ -1406,7 +1400,6 @@ public class Monster : AbstractLifeObject
             }
         }
 
-        var ch = MapModel.getChannelServer();
         int mapid = MapModel.getId();
         if (statis.Count > 0)
         {
@@ -1518,7 +1511,7 @@ public class Monster : AbstractLifeObject
             overtimeDelay = 3500;
             */
         }
-        else if (effectSkill.getId() == 4121004 || effectSkill.getId() == 4221004)
+        else if (effectSkill.getId() == NightLord.NINJA_AMBUSH || effectSkill.getId() == Shadower.NINJA_AMBUSH)
         {
             // Ninja Ambush
             var skill = SkillFactory.GetSkillTrust(effectSkill.getId());
@@ -1628,7 +1621,8 @@ public class Monster : AbstractLifeObject
         aggroRemoveController();
 
         setPosition(newPoint);
-        MapModel.broadcastMessage(PacketCreator.moveMonster(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.getIdleMovement(), AbstractAnimatedMapObject.IDLE_MOVEMENT_PACKET_LENGTH));
+        MapModel.broadcastMessage(
+            PacketCreator.moveMonster(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.getIdleMovement(), AbstractAnimatedMapObject.IDLE_MOVEMENT_PACKET_LENGTH));
         MapModel.moveMonster(this, this.getPosition());
 
         aggroUpdateController();
@@ -1947,9 +1941,7 @@ public class Monster : AbstractLifeObject
         }
 
         // There is no simple way of getting a random element from a Set. Have to make do with this.
-        return skills
-                .Skip(Randomizer.nextInt(skills.Count))
-                .FirstOrDefault();
+        return Randomizer.Select(skills);
     }
 
     public bool isFirstAttack()
@@ -2320,7 +2312,8 @@ public class Monster : AbstractLifeObject
         }
 
         if (chrController != null)
-        { // this can/should only happen when a hidden gm attacks the monster
+        {
+            // this can/should only happen when a hidden gm attacks the monster
             if (!this.isFake())
             {
                 chrController.sendPacket(PacketCreator.stopControllingMonster(this.getObjectId()));
@@ -2409,7 +2402,8 @@ public class Monster : AbstractLifeObject
 
         IPlayer? newController = getNextControllerCandidate();
         if (newController == null)
-        {    // was a new controller found? (if not no one is on the map)
+        {
+            // was a new controller found? (if not no one is on the map)
             return;
         }
 
@@ -2534,7 +2528,8 @@ public class Monster : AbstractLifeObject
         {
             this.setControllerHasAggro(true);
             if (!YamlConfig.config.server.USE_AUTOAGGRO_NEARBY)
-            {   // thanks Lichtmager for noticing autoaggro not updating the player properly
+            {   
+                // thanks Lichtmager for noticing autoaggro not updating the player properly
                 aggroMonsterControl(player.getClient(), this, true);
             }
         }
@@ -2605,7 +2600,8 @@ public class Monster : AbstractLifeObject
 
         var c = chrController.getClient();
         foreach (Monster mob in puppetControlled)
-        { // thanks BHB for noticing puppets disrupting mobstatuses for bowmans
+        { 
+            // thanks BHB for noticing puppets disrupting mobstatuses for bowmans
             aggroMonsterControl(c, mob, mob.isControllerKnowsAboutAggro());
         }
         chrController.sendPacket(PacketCreator.spawnSummon(puppet, false));

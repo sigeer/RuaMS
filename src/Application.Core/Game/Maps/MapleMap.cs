@@ -319,22 +319,17 @@ public class MapleMap : IMap
         foreach (IMapObject obj in getReactors())
         {
             Reactor mr = (Reactor)obj;
-            if (contained.ContainsKey(mr.getId()))
+            if (contained.TryGetValue(mr.getId(), out var containedData))
             {
-                var containedData = contained.get(mr.getId());
-                if (containedData != null)
-                {
                     if (containedData >= num)
                     {
                         toDestroy.Add(mr);
                     }
                     else
                     {
-                        contained.AddOrUpdate(mr.getId(), containedData.Value + 1);
+                    contained.AddOrUpdate(mr.getId(), containedData + 1);
                     }
                 }
-
-            }
             else
             {
                 contained.AddOrUpdate(mr.getId(), 1);
@@ -805,7 +800,7 @@ public class MapleMap : IMap
         var stati = mob.getStati(MonsterStatus.SHOWDOWN);
         if (stati != null)
         {
-            chRate = (int)(chRate * (stati.getStati().get(MonsterStatus.SHOWDOWN)!.Value / 100.0 + 1.0));
+            chRate = (int)(chRate * (stati.getStati().GetValueOrDefault(MonsterStatus.SHOWDOWN) / 100.0 + 1.0));
         }
 
         if (useBaseRate)
@@ -2265,7 +2260,8 @@ public class MapleMap : IMap
         SetMonsterInfo(monster);
 
         if (monster.getDropPeriodTime() > 0)
-        { //9300102 - Watchhog, 9300061 - Moon Bunny (HPQ), 9300093 - Tylus
+        {
+            //9300102 - Watchhog, 9300061 - Moon Bunny (HPQ), 9300093 - Tylus
             if (monster.getId() == MobId.WATCH_HOG)
             {
                 monsterItemDrop(monster, monster.getDropPeriodTime());

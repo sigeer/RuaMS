@@ -115,7 +115,7 @@ public class MakerProcessor
                             int reagentid = p.readInt();
                             if (ItemConstants.isMakerReagent(reagentid))
                             {
-                                var rs = reagentids.get(reagentid) ?? 0;
+                                var rs = reagentids.GetValueOrDefault(reagentid);
                                 reagentids.AddOrUpdate(reagentid, (short)(rs + 1));
                             }
                         }
@@ -297,13 +297,11 @@ public class MakerProcessor
             }
             else
             {
-                var tableRid = reagentType.get(type);
-
-                if (tableRid != null)
+                if (reagentType.TryGetValue(type, out var tableRid))
                 {
                     if (tableRid < curRid)
                     {
-                        toRemove.Add(tableRid.Value);
+                        toRemove.Add(tableRid);
                         reagentType.AddOrUpdate(type, curRid);
                     }
                     else
@@ -513,7 +511,7 @@ public class MakerProcessor
                                     break;
                             }
 
-                            var d = stats.get(stat) ?? 0;
+                            var d = stats.GetValueOrDefault(stat);
                             stats.AddOrUpdate(stat, d + (reagentBuff.Value.Value * r.Value));
                         }
                     }

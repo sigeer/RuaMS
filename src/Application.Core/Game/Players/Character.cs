@@ -1489,9 +1489,10 @@ public partial class Player
             return;
         }
 
+        var pickerProcessor = new PlayerPickupProcessor(this, petIndex);
         if (ob is MapItem mapitem)
         {
-            new PlayerPickupProcessor(this, petIndex).Handle(mapitem);
+            pickerProcessor.Handle(mapitem);
         }
     }
 
@@ -3746,11 +3747,9 @@ public partial class Player
         {
             if (ItemConstants.isRateCoupon(it.getItemId()) && active.Contains(it.getItemId()))
             {
-                int? count = activeCoupons.get(it.getItemId());
-
-                if (count != null)
+                if (activeCoupons.TryGetValue(it.getItemId(), out var count))
                 {
-                    activeCoupons.AddOrUpdate(it.getItemId(), count.Value + 1);
+                    activeCoupons.AddOrUpdate(it.getItemId(), count + 1);
                 }
                 else
                 {
@@ -5061,8 +5060,6 @@ public partial class Player
         Equip e = (Equip)item;
         foreach (var s in e.getStats())
         {
-            float? newVal = statups.get(s.Key);
-
             float incVal = s.Value;
             switch (s.Key)
             {
@@ -5073,8 +5070,8 @@ public partial class Player
                     incVal = (float)Math.Log(incVal);
                     break;
             }
-
-            if (newVal != null)
+            
+            if (statups.TryGetValue(s.Key, out var newVal))
             {
                 newVal += incVal;
             }
@@ -5083,7 +5080,7 @@ public partial class Player
                 newVal = incVal;
             }
 
-            statups.AddOrUpdate(s.Key, newVal ?? 0);
+            statups.AddOrUpdate(s.Key, newVal);
         }
 
         InventoryManipulator.removeFromSlot(c, type, (byte)slot, quantity, false);

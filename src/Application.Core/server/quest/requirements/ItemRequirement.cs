@@ -105,10 +105,9 @@ public class ItemRequirement : AbstractQuestRequirement
 
     public int getItemAmountNeeded(int itemid, bool complete)
     {
-        var amount = items.get(itemid);
-        if (amount != null)
+        if (items.TryGetValue(itemid, out var amount))
         {
-            return amount.Value;
+            return amount;
         }
         else
         {

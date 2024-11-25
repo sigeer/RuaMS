@@ -22,9 +22,11 @@ using Application.Core.Game.TheWorld;
 
 namespace net.server.task;
 
-/**
- * @author Ronan
- */
+
+/// <summary>
+/// 执行间隔：10分钟
+/// @author Ronan
+/// </summary>
 public class HiredMerchantTask : BaseTask
 {
 

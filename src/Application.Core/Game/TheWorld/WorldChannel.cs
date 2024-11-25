@@ -508,7 +508,7 @@ public class WorldChannel : IWorldChannel
             return -1;
         }
 
-        return dojoParty.get(party.GetHashCode()) ?? -1;
+        return dojoParty.GetValueOrDefault(party.GetHashCode(), -1);
     }
 
     public int ingressDojo(bool isPartyDojo, int fromStage)
@@ -588,7 +588,7 @@ public class WorldChannel : IWorldChannel
 
         if (party != null)
         {
-            if (dojoParty.remove(party.GetHashCode()) != null)
+            if (dojoParty.Remove(party.GetHashCode(), out var _))
             {
                 return;
             }

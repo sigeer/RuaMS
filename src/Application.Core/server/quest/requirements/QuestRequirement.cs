@@ -55,7 +55,7 @@ public class QuestRequirement : AbstractQuestRequirement
     {
         foreach (int questID in quests.Keys)
         {
-            var stateReq = quests.get(questID);
+            var stateReq = quests[questID];
             QuestStatus qs = chr.getQuest(Quest.getInstance(questID));
 
             if (qs == null && stateReq == (int)QuestStatus.Status.NOT_STARTED)

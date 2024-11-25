@@ -230,7 +230,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                         HiredMerchant merchant = new HiredMerchant(chr, desc, itemId);
                         chr.setHiredMerchant(merchant);
                         c.getWorldServer().registerHiredMerchant(merchant);
-                        chr.getClient().getChannelServer().addHiredMerchant(chr.getId(), merchant);
+                        c.getChannelServer().addHiredMerchant(chr.getId(), merchant);
                         chr.sendPacket(PacketCreator.getHiredMerchant(chr, merchant, true));
                     }
                 }

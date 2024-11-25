@@ -359,8 +359,7 @@ public class Storage
     {
         // thanks to GabrielSin
         int npcId = currentNpcid;
-        int? fee = trunkPutCache.get(npcId);
-        if (fee == null)
+        if (!trunkPutCache.TryGetValue(npcId, out var fee))
         {
             fee = 100;
 
@@ -371,17 +370,16 @@ public class Storage
                 fee = DataTool.getIntConvert("info/trunkPut", npcData, 100);
             }
 
-            trunkPutCache.AddOrUpdate(npcId, fee.Value);
+            trunkPutCache.AddOrUpdate(npcId, fee);
         }
 
-        return fee.Value;
+        return fee;
     }
 
     public int getTakeOutFee()
     {
         int npcId = currentNpcid;
-        int? fee = trunkGetCache.get(npcId);
-        if (fee == null)
+        if (!trunkGetCache.TryGetValue(npcId, out var fee))
         {
             fee = 0;
 
@@ -392,10 +390,10 @@ public class Storage
                 fee = DataTool.getIntConvert("info/trunkGet", npcData, 0);
             }
 
-            trunkGetCache.AddOrUpdate(npcId, fee.Value);
+            trunkGetCache.AddOrUpdate(npcId, fee);
         }
 
-        return fee.Value;
+        return fee;
     }
 
     public bool isFull()

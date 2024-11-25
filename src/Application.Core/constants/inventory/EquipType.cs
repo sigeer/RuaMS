@@ -77,19 +77,19 @@ public static class EquipTypeUtils
     }
     public static EquipType getEquipTypeById(int itemid)
     {
-        EquipType? ret;
         int val = itemid / 100000;
 
+        int valType = 0;
         if (val == 13 || val == 14)
         {
-            ret = map.get(itemid / 1000);
+            valType = itemid / 1000;
         }
         else
         {
-            ret = map.get(itemid / 10000);
+            valType = itemid / 10000;
         }
 
-        return (ret != null) ? ret.Value : EquipType.UNDEFINED;
+        return map.TryGetValue(valType, out var ret) ? ret : EquipType.UNDEFINED;
     }
 
     public static int getValue(this EquipType i)
