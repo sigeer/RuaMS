@@ -152,7 +152,7 @@ namespace ServiceTest.Games
         [Test]
         public void PickupItemByAnother()
         {
-            var mapId = 103000201;
+            var mapId = 103000202;
             var mapManager = MockClient.OnlinedCharacter.getChannelServer().getMapFactory();
             var map = mapManager.getMap(mapId);
 

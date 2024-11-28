@@ -41,7 +41,7 @@ public class Client : ChannelHandlerAdapter, IClient
     public const int LOGIN_LOGGEDIN = 2;
 
     public int World { get; set; }
-    public int Channel { get; set; }
+    public int Channel { get; set; } = 1;
 
     private Type type;
     private long sessionId;
@@ -58,7 +58,7 @@ public class Client : ChannelHandlerAdapter, IClient
     /// </summary>
     public IPlayer? Character { get; private set; }
     public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
-    private int channel = 1;
+
     private int accId = -4;
     private bool loggedIn = false;
 
@@ -66,7 +66,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private bool serverTransition = false;
     private DateTime? birthday = null;
     private string? accountName = null;
-    private int world;
+
     private long lastPong;
     private int gmlevel;
     private HashSet<string> macs = new();
@@ -107,8 +107,6 @@ public class Client : ChannelHandlerAdapter, IClient
         this.sessionId = sessionId;
         this.remoteAddress = remoteAddress;
         this.packetProcessor = packetProcessor;
-        this.world = world;
-        this.channel = channel;
 
         World = world;
         Channel = channel;
@@ -976,7 +974,7 @@ public class Client : ChannelHandlerAdapter, IClient
             {
                 removePlayer(Character, wserv, this.serverTransition);
 
-                if (!(channel == -1 || shutdown))
+                if (!(Channel == -1 || shutdown))
                 {
                     if (!cashshop)
                     {
@@ -998,7 +996,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             }
                             if (Character.BuddyList.Count > 0)
                             {
-                                wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, Channel, Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -1009,7 +1007,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             // if dc inside of cash shop.
                             if (Character.BuddyList.Count > 0)
                             {
-                                wserv.loggedOff(Character.Name, Character.Id, channel, Character.BuddyList.getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, Channel, Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -1095,22 +1093,22 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public int getChannel()
     {
-        return channel;
+        return Channel;
     }
 
     public IWorldChannel getChannelServer()
     {
-        return Server.getInstance().getChannel(world, channel);
+        return Server.getInstance().getChannel(World, Channel);
     }
 
     public IWorld getWorldServer()
     {
-        return Server.getInstance().getWorld(world);
+        return Server.getInstance().getWorld(World);
     }
 
     public IWorldChannel getChannelServer(byte channel)
     {
-        return Server.getInstance().getChannel(world, channel);
+        return Server.getInstance().getChannel(World, channel);
     }
 
     public bool deleteCharacter(int cid, int senderAccId)
@@ -1153,17 +1151,17 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public void setChannel(int channel)
     {
-        this.channel = channel;
+        this.Channel = channel;
     }
 
     public int getWorld()
     {
-        return world;
+        return World;
     }
 
     public void setWorld(int world)
     {
-        this.world = world;
+        this.World = world;
     }
 
     public void pongReceived()
@@ -1384,7 +1382,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public short getAvailableCharacterWorldSlots()
     {
-        return getAvailableCharacterWorldSlots(world);
+        return getAvailableCharacterWorldSlots(World);
     }
 
     public short getAvailableCharacterWorldSlots(int world)

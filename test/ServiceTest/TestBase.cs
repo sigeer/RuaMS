@@ -1,14 +1,11 @@
 using Application.Core;
-using Application.Core.Compatible;
 using Application.Core.Game;
 using Application.Core.Game.Players;
 using Application.Core.Managers;
 using Application.EF;
 using constants.id;
 using net.server;
-using Quartz.Impl;
 using server;
-using server.maps;
 using System.Text;
 
 namespace ServiceTest
@@ -43,7 +40,9 @@ namespace ServiceTest
         protected IClient GetOnlinedTestClient(int charId = 1)
         {
             Server.getInstance().forceUpdateCurrentTime();
-            var mockClient = new MockupClient();
+            var mockClient = Client.createMock();
+            mockClient.World = 0;
+            mockClient.Channel = 1;
             GetMockPlayer(mockClient, charId);
             return mockClient;
         }

@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using DotNetty.Handlers.Timeout;
@@ -13,6 +13,7 @@ using scripting.quest;
 
 namespace Application.Core.Game
 {
+    [Obsolete]
     public class MockupClient : IClient
     {
         IPlayer? mockPlayer;
