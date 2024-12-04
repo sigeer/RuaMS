@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using client.creator;
 using client.creator.novice;
 
@@ -36,11 +36,12 @@ namespace ServiceTest.Characters
         [TestCase("qwertyuqwertyu", ExpectedResult = false)]
         [TestCase("张三", ExpectedResult = true)]
         [TestCase("张三李四", ExpectedResult = true)]
-        [TestCase("张三李四1", ExpectedResult = false)]
-        [TestCase("张三李四王五", ExpectedResult = false)]
+        [TestCase("张三李四1", ExpectedResult = true)]
+        [TestCase("张三李四王五", ExpectedResult = true)]
+        [TestCase("张三李四王五1", ExpectedResult = false)]
         [TestCase("张三李4", ExpectedResult = true)]
         [TestCase("张三李45", ExpectedResult = true)]
-        [TestCase("哟", ExpectedResult = true)]
+        [TestCase("哟", ExpectedResult = false)]
         [TestCase("😄😄", ExpectedResult = false)]
         [Test]
         public bool CheckCharacterName_Test(string name)

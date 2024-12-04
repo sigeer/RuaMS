@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -13,20 +13,20 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Jint" Version="4.0.3" />
+		<PackageReference Include="Jint" Version="4.1.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.5">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Quartz" Version="3.13.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0" />
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.5" />
-		<PackageReference Include="System.Text.Json" Version="8.0.5" />
+		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 	</ItemGroup>
 
 
