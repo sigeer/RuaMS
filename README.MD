@@ -19,6 +19,9 @@
 - Application.Host 入口应用
 - Application.Core 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
 - Application.Utility 工具类
+- Application.Resource 资源：js、初始化数据sql、配置文件
+- Application.Shared 一些公用数据结构、类型
+- XmlWzReader xml格式的wz读取工具
 
 #### tools
 
@@ -29,19 +32,17 @@
 
 - ServiceTest 测试
 
-
-### 运行的准备工作
-
-推荐使用[Comic](https://github.com/P0nk/Cosmic?tab=readme-ov-file#3---client)的wz以及配套的客户端（本项目中的js都是来自Cosmic）
-1. 将 wz 目录放置在根目录，或者配置环境变量`wz-path`，或者使用`Environment.SetEnvironmentVariable("wz-path", "wz目录");`
-2. 设置`config.yaml`中的连接字符串
-
-
-#### 数据库迁移
+### 数据库迁移
 
 ```
 // 在 Application.Core 中执行
-dotnet ef migrations add [migration] --output-dir EF/Migrations --startup-project ../Application.Host
+dotnet ef migrations add [migration_name] --output-dir EF/Migrations --startup-project ../Application.Host
 
 dotnet ef database update --startup-project ../Application.Host
 ```
+
+### 运行的准备工作
+
+推荐使用[Cosmic](https://github.com/P0nk/Cosmic?tab=readme-ov-file#3---client)的wz以及配套的客户端（本项目中的js都是来自Cosmic）
+1. 将 wz 目录放置在根目录，或者配置环境变量`wz-path`，或者使用`Environment.SetEnvironmentVariable("wz-path", "wz目录");`
+2. 设置`config.yaml`中的连接字符串
