@@ -1,3 +1,4 @@
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
@@ -15,6 +16,7 @@ namespace Application.Core.Game.Maps
 {
     public interface IMap
     {
+        XiGuai? XiGuai { get; set; }
         public IWorldChannel ChannelServer { get; }
         /// <summary>
         /// 当存在小数时，则是概率生成
