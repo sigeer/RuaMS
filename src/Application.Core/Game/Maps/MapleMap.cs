@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
@@ -158,6 +159,7 @@ public class MapleMap : IMap
     private static object bndLock = new object();
 
     public IWorldChannel ChannelServer { get; }
+    public XiGuai? XiGuai { get; set; }
     public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId, float monsterRate)
     {
         this.mapid = mapid;
@@ -321,15 +323,15 @@ public class MapleMap : IMap
             Reactor mr = (Reactor)obj;
             if (contained.TryGetValue(mr.getId(), out var containedData))
             {
-                    if (containedData >= num)
-                    {
-                        toDestroy.Add(mr);
-                    }
-                    else
-                    {
-                    contained.AddOrUpdate(mr.getId(), containedData + 1);
-                    }
+                if (containedData >= num)
+                {
+                    toDestroy.Add(mr);
                 }
+                else
+                {
+                    contained.AddOrUpdate(mr.getId(), containedData + 1);
+                }
+            }
             else
             {
                 contained.AddOrUpdate(mr.getId(), 1);
@@ -2285,6 +2287,7 @@ public class MapleMap : IMap
         }
 
         spawnedMonstersOnMap.incrementAndGet();
+        XiGuai?.ApplyMonster(monster);
         addSelfDestructive(monster);
         applyRemoveAfter(monster);  // thanks LightRyuzaki for pointing issues with spawned CWKPQ mobs not applying this
     }
@@ -2321,6 +2324,7 @@ public class MapleMap : IMap
         updateBossSpawn(monster);
 
         spawnedMonstersOnMap.incrementAndGet();
+        XiGuai?.ApplyMonster(monster);
         addSelfDestructive(monster);
         applyRemoveAfter(monster);
     }
@@ -2332,6 +2336,7 @@ public class MapleMap : IMap
         spawnAndAddRangedMapObject(monster, c => c.sendPacket(PacketCreator.spawnFakeMonster(monster, 0)));
 
         spawnedMonstersOnMap.incrementAndGet();
+        XiGuai?.ApplyMonster(monster);
         addSelfDestructive(monster);
     }
 
@@ -3073,6 +3078,8 @@ public class MapleMap : IMap
             }
 
             characters.Remove(chr);
+            if (XiGuai?.Controller == chr)
+                XiGuai = null;
         }
         finally
         {

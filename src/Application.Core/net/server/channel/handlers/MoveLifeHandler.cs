@@ -48,6 +48,8 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         {  // thanks Lame for noticing mob movement shuffle (mob OID on different maps) happening on map transitions
             return;
         }
+        if (map.XiGuai != null)
+            return;
 
         int objectid = p.readInt();
         short moveid = p.readShort();
