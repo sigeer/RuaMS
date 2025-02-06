@@ -1,4 +1,5 @@
-﻿using Application.Core.Scripting.Infrastructure;
+using Application.Core.Scripting.Infrastructure;
+using Jint;
 using System.Drawing;
 
 namespace ServiceTest.Infrastructure
@@ -174,6 +175,18 @@ namespace ServiceTest.Infrastructure
         {
             _engine.Dispose();
         }
+
+        [Test]
+        public void CheckOptional()
+        {
+            _engine.Evaluate("""
+                function CheckNumberBool(p) {
+                    return p.Method1(1, 100);
+                }
+                """);
+            var d = _engine.CallFunction("CheckNumberBool", _testModel)?.ToString();
+            Assert.That(d, Is.EqualTo("1")); 
+        }
     }
 
     public class ScriptTestCase
@@ -203,6 +216,18 @@ namespace ServiceTest.Infrastructure
         {
             return d.ToString();
         }
+
+        public string Method1(int i, short s, bool b = true)
+        {
+            return "1";
+        }
+
+        public string Method1(int i, bool b)
+        {
+            return "2";
+        }
+
+
     }
 
     public enum TestEnum

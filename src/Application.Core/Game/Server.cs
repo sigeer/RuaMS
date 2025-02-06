@@ -519,24 +519,35 @@ public class Server
 
     private async Task InitialDataBase()
     {
-        log.Debug("初始化数据库");
+        log.Information("初始化数据库...");
         Stopwatch sw = new Stopwatch();
         sw.Start();
         using var dbContext = new DBContext();
 
-        await dbContext.Database.MigrateAsync();
-
-        if (!dbContext.Shops.Any())
+        try
         {
-            var sqls = Directory.GetFiles("sql").OrderBy(x => Regex.Match(x, "v([0-9]+)\\S*\\.sql$").Groups[0].Value);
-            foreach (var file in sqls)
+            log.Information("数据库迁移...");
+            await dbContext.Database.MigrateAsync();
+            log.Information("数据库迁移成功");
+
+            if (!dbContext.Shops.Any())
             {
-                var sqlStr = File.ReadAllText(file);
-                await dbContext.Database.ExecuteSqlRawAsync(sqlStr);
+                var sqls = Directory.GetFiles("sql").OrderBy(x => Regex.Match(x, "v([0-9]+)\\S*\\.sql$").Groups[0].Value);
+                foreach (var file in sqls)
+                {
+                    var sqlStr = File.ReadAllText(file);
+                    await dbContext.Database.ExecuteSqlRawAsync(sqlStr);
+                }
             }
+
+            sw.Stop();
+            log.Information("初始化数据库成功，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
         }
-        sw.Stop();
-        log.Debug("初始化数据库====完成，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
+        catch (Exception ex)
+        {
+            log.Error(ex, "初始化数据库失败");
+            throw;
+        }
     }
 
     bool basedCached = false;
