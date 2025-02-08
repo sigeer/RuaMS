@@ -64,13 +64,13 @@ function action(mode, type, selection) {
                 }
             }
             if (counter == 99) {
-                cm.sendOk("#b#h ##k has not returned a single storybook yet.");
+                cm.sendOk("#b#h##k还没有归还一本故事书。");
                 cm.dispose();
             } else {
-                cm.sendNext("Let's see.. #b#h ##k have returned a total of #b" + counter + "#k books. The list of returned books is as follows:" + books);
+                cm.sendNext("让我看看.. #b#h ##k 一共归还了 #b" + counter + "#k 本书。归还的书目如下：" + books);
             }
         } else if (status == 1) {
-            cm.sendNextPrev("The library is settling down now thanks chiefly to you, #b#h ##k's immense help. If the story gets mixed up once again, then I'll be counting on you to fix it once more.");
+            cm.sendNextPrev("图书馆现在已经安定下来，这主要要归功于你，#b#h ##k的巨大帮助。如果故事再次混乱，那么我会指望你再次来修复它。");
         } else if (status == 2) {
             cm.dispose();
         }

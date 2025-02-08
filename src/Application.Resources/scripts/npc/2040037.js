@@ -63,27 +63,27 @@ function action(mode, type, selection) {
         var eim = cm.getPlayer().getEventInstance();
 
         if (eim.getProperty(stage.toString() + "stageclear") != null) {
-            cm.sendNext("Hurry, goto the next stage, the portal is open!");
+            cm.sendNext("快点，去下一个阶段，传送门已经打开了！");
         } else {
             if (eim.isEventLeader(cm.getPlayer())) {
                 var state = eim.getIntProperty("statusStg" + stage);
 
                 if (state == -1) {           // preamble
-                    cm.sendOk("Hi. Welcome to the #bstage " + stage + "#k. Collect 15 #t4001022#'s scattered across the map, then talk to me.");
+                    cm.sendOk("嗨。欢迎来到 #bstage#k。收集地图上散落的 15 个 #t4001022#，然后和我交谈。");
                     eim.setProperty("statusStg" + stage, 0);
                 } else {       // check stage completion
                     if (cm.haveItem(4001022, 15)) {
-                        cm.sendOk("Good job! You have collected all 15 #b#t4001022#'s.#k");
+                        cm.sendOk("干得好！你已经收集了所有15个#b#t4001022#。#k");
                         cm.gainItem(4001022, -15);
 
                         eim.setProperty("statusStg" + stage, 1);
                         clearStage(stage, eim, curMap);
                     } else {
-                        cm.sendNext("Sorry you don't have all 15 #b#t4001022#'s.#k");
+                        cm.sendNext("抱歉，你没有全部15个#b#t4001022#。#k");
                     }
                 }
             } else {
-                cm.sendNext("Please tell your #bParty-Leader#k to come talk to me.");
+                cm.sendNext("请告诉你的#b队伍领袖#k来找我谈话。");
             }
         }
 

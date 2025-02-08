@@ -43,16 +43,16 @@ TimeSpan.FromSeconds($1)
 
 ### JS
 
-- 移除 `Java.type`  CodeMigration替换，暂不用处理
-- 移除 `Java.to` CodeMigration替换，暂不用处理
-- `iterator()` 用 `for ... of `替换
-- `size()`, `toArray()`, `get()` 目前通过扩展方法适配，暂不用处理
-- 一些静态方法的类名已经发生修改
-	`Channel` -> `WorldChannel`
-	`Character` -> `CharacterManager`
-	`Wedding` -> `WeddingPackets`
-- 一些静态方法进行了移动
-	`RingActionHandler`中的静态方法移动到了`RingManager`
-- `commands.js`
-- `gachaponInfo.js`: `Gachapon.GachaponType` -> `GachaponManager` 
-- `2xEvent.js`: `Server.getInstance().getWorld(em.getChannelServer().getWorld());` -> `em.getWorldServer();`
+| 范围| 待处理的代码 | 需要处理 | 备注 |
+| -----------| ----------- | ----------- |----------- |
+| - | `Java.type`      | - | CodeMigration替换 |
+| - | `Java.to`      | - | CodeMigration替换 |
+| - | `iterator()`      | ❗ | 需要手动处理 |
+| - | `size()`, `toArray()`, `get()` | - | 目前通过扩展方法适配，暂不用处理 |
+| - | `Channel` -> `WorldChannel` | - | jint保持了相同的别名，暂不用处理 |
+| - | `Character` -> `CharacterManager` | ❗ | 静态方法移动 |
+| - | `Wedding` -> `WeddingPackets` | - | jint保持了相同的别名，暂不用处理 |
+| - | `RingActionHandler` -> `RingManager` | ❗ | 静态方法移动 |
+| `commands.js` | - | ❗ | 需要重写 |
+| `gachaponInfo.js` | `Gachapon.GachaponType` -> `GachaponManager`| ❗ |  |
+| `2xEvent.js` | `Server.getInstance().getWorld(em.getChannelServer().getWorld());` -> `em.getWorldServer();` | - | CodeMigration替换 |

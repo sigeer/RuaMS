@@ -52,10 +52,10 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (!cm.haveItem(4220153)) {
-                cm.sendOk("(Scratch scratch...)");
+                cm.sendOk("(抓抓抓...)");
                 cm.dispose();
             } else {
-                cm.sendYesNo("Hey, nice #bTreasure Map#k you have there? #rCan I keep it#k for the Nautilus crew, if you don't need it any longer?");
+                cm.sendYesNo("嘿，你那张不错的#b藏宝图#k是从哪里得到的？如果你不需要了，我可以替诺特勒斯船员保管吗？");
             }
         } else if (status == 1) {
             cm.gainItem(4220153, -1);

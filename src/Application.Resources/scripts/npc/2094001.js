@@ -45,9 +45,9 @@ function action(mode, type, selection) {
         if (cm.getMapId() == 925100500) {
             if (status == 0) {
                 if (cm.isEventLeader()) {
-                    cm.sendOk("I have been saved thanks to your efforts! Thank you, guys!");
+                    cm.sendOk("多亏了你们的努力，我得救了！谢谢，伙计们！");
                 } else {
-                    cm.sendOk("I have been saved thanks to your efforts! Thank you, guys! Let your party leader talk to me first before I give you your rewards...");
+                    cm.sendOk("多亏了你们的努力，我得救了！谢谢你们！在我给你们奖励之前，让你们的队长先和我说话...");
                     cm.dispose();
                 }
             } else {
@@ -56,11 +56,11 @@ function action(mode, type, selection) {
             }
         } else {
             if (status == 0) {
-                cm.sendSimple("Thank you for saving me! How can I help you?\r\n#b#L0#Get me out of here.\r\n#L1#Give me Pirate Hat.");
+                cm.sendSimple("谢谢你救了我！我能帮你什么忙吗？\r\n#b#L0#带我离开这里。\r\n#L1#给我海盗帽子。");
             } else if (status == 1) {
                 if (selection == 0) {
                     if (!cm.canHold(4001158, 1)) {
-                        cm.sendOk("Please make room in ETC.");
+                        cm.sendOk("请在杂项栏中腾出空间。");
                         cm.dispose();
                         return;
                     }
@@ -68,19 +68,19 @@ function action(mode, type, selection) {
                     cm.warp(251010404, 0);
                 } else {
                     if (cm.haveItem(1003267, 1)) {
-                        cm.sendOk("You have the best hat.");
+                        cm.sendOk("你有最好的帽子。");
                     } else if (cm.haveItem(1002573, 1)) {
                         if (cm.haveItem(4001158, 20)) {
                             if (cm.canHold(1003267, 1)) {
                                 cm.gainItem(1002573, -1);
                                 cm.gainItem(4001158, -20);
                                 cm.gainItem(1003267, 1);
-                                cm.sendOk("I have given you the hat.");
+                                cm.sendOk("我已经给你帽子了。");
                             } else {
-                                cm.sendOk("Please make room in your EQUIP inventory before receiving the hat.");
+                                cm.sendOk("在收到帽子之前，请在您的装备物品栏中腾出空间。");
                             }
                         } else {
-                            cm.sendOk("You need 20 #t4001158# to get the next hat.");
+                            cm.sendOk("你需要20个#t4001158#来获得下一个帽子。");
                         }
                     } else if (cm.haveItem(1002572, 1)) {
                         if (cm.haveItem(4001158, 20)) {
@@ -88,24 +88,24 @@ function action(mode, type, selection) {
                                 cm.gainItem(1002572, -1);
                                 cm.gainItem(4001158, -20);
                                 cm.gainItem(1002573, 1);
-                                cm.sendOk("I have given you the hat.");
+                                cm.sendOk("我已经给你帽子了。");
                             } else {
-                                cm.sendOk("Please make room in your EQUIP inventory before receiving the hat.");
+                                cm.sendOk("在收到帽子之前，请在您的装备物品栏中腾出空间。");
                             }
                         } else {
-                            cm.sendOk("You need 20 #t4001158# to get the next hat.");
+                            cm.sendOk("你需要20个#t4001158#来获得下一个帽子。");
                         }
                     } else {
                         if (cm.haveItem(4001158, 20)) {
                             if (cm.canHold(1002572, 1)) {
                                 cm.gainItem(4001158, -20);
                                 cm.gainItem(1002572, 1);
-                                cm.sendOk("I have given you the hat.");
+                                cm.sendOk("我已经给你帽子了。");
                             } else {
-                                cm.sendOk("Please make room in your EQUIP inventory before receiving the hat.");
+                                cm.sendOk("在收到帽子之前，请在您的装备物品栏中腾出空间。");
                             }
                         } else {
-                            cm.sendOk("You need 20 #t4001158# to get the next hat.");
+                            cm.sendOk("你需要20个#t4001158#来获得下一个帽子。");
                         }
                     }
                 }

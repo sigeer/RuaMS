@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("Make it clear of your position! Are you Zenumist or Alcadno?");
+    cm.sendOk("搞清楚你的立场！你是泽纳米斯特还是阿尔卡德诺？");
     cm.dispose();
 }

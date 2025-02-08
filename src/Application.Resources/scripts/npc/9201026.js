@@ -67,13 +67,13 @@ function processNanaQuest() {
             cm.gainItem(questItems[nanaLoc], -50);
             cm.gainItem(4031367 + nanaLoc, 1);
 
-            cm.sendOk("Kyaaaa~ Thank you a lot, here get the #b#t4031367##k.");
+            cm.sendOk("咿呀~ 非常感谢，这里拿着 #b#t4031367##k。");
             return true;
         } else {
-            cm.sendOk("Please have a free ETC slot available to hold the token of love.");
+            cm.sendOk("请确保有一个空余的杂项栏位来存放爱之令。");
         }
     } else {
-        cm.sendOk("Please gather to me #b50 #t" + questItems[nanaLoc] + "##k.");
+        cm.sendOk("请聚集到我这里，带着 #b50 #t" + questItems[nanaLoc] + "##k。");
     }
 
     return false;
@@ -100,14 +100,14 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (!cm.isQuestStarted(100400)) {
-                cm.sendOk("Hello #b#h0##k, I'm #p9201026# the fairy of Love.");
+                cm.sendOk("你好 #b#h0##k，我是爱之仙子 #p9201026#。");
                 cm.dispose();
                 return;
             }
 
             nanaLoc = getNanaLocation(cm.getPlayer());
             if (nanaLoc == -1) {
-                cm.sendOk("Hello #b#h0##k, I'm #p9201026# the fairy of Love.");
+                cm.sendOk("你好 #b#h0##k，我是爱之仙子 #p9201026#。");
                 cm.dispose();
                 return;
             }
@@ -128,14 +128,14 @@ function action(mode, type, selection) {
                     cm.sendAcceptDecline("Are you searching for #k#t4031367#'s#k? I can share one with you, but you must do a favor for me, is that ok?");
                 }
             } else {
-                cm.sendOk("Hey there. Did you get the #t4031367# from the other Nana's already?");
+                cm.sendOk("嘿，你好。你已经从其他娜娜那里得到了#t4031367#了吗？");
                 cm.dispose();
             }
         } else if (status == 1) {
             if (state == 0) {
                 cm.startQuest(100401 + nanaLoc);
 
-                cm.sendOk("I need you to collect #r50 #t" + questItems[nanaLoc] + "##k.");
+                cm.sendOk("我需要你收集 #r50 #t" + questItems[nanaLoc] + "##k.");
                 cm.dispose();
             } else {
                 processNanaQuest();

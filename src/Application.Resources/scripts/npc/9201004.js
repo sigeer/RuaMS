@@ -76,21 +76,21 @@ function action(mode, type, selection) {
                 questionStr.push("I wanna remove my old wedding ring...");
             }
 
-            cm.sendSimple("Hello, welcome to #bAmoria#k, a beautiful land where maplers can find love and, if inspired enough, even marry. Do you have any questions about Amoria? Talk it to me.#b\r\n\r\n" + generateSelectionMenu(questionStr));
+            cm.sendSimple("你好，欢迎来到#b阿莫利亚#k，这是一个美丽的地方，枫叶冒险家可以在这里找到爱情，甚至如果足够激动人心，还可以结婚。你对阿莫利亚有任何问题吗？跟我说说吧。#b\r\n\r\n" + "生成选择菜单("+questionStr+")");
         } else if (status == 1) {
             switch (selection) {
                 case 0:
-                    cm.sendOk("The #bengagement process#k is as straightforward as it can be. Starting from a prequest from the #bring maker, #p9201000##k, gather #b#t4031367#'s#k thoughout the Maple world.\r\n\r\nCompleting it, you will be able to craft an engagement ring. With one in hands, declare yourself to someone you become fond of, and hope that person feels the same way.");
+                    cm.sendOk("订婚流程非常简单。从#bring maker, #p9201000#那里接受一个预请求，然后在整个冒险岛世界中收集#b#t4031367#。完成后，你就可以制作一枚订婚戒指。拿着戒指向你喜欢的人表白，希望对方也有同样的感觉。");
                     cm.dispose();
                     break;
 
                 case 1:
-                    cm.sendOk("For the #bmarriage process#k you must be already engaged. The loving couple must choose a venue they want to hold their marriage. Amoria offers two: the #rCathedral#k and the #rChapel#k.\r\nThen, one of the partners must buy a #bWedding Ticket#k, available through the Cash Shop, and book their ceremony with the Wedding Assistant. Each partner will receive #rguest tickets#k to be distributed to their acquaintances.");
+                    cm.sendOk("在#b结婚流程#k中，你必须已经订婚。恋人必须选择他们想举行婚礼的场所。阿莫利亚提供两个选择：#r大教堂#k和#r小教堂#k。\r\n然后，其中一位伴侣必须购买一张#b婚礼门票#k，可以通过现金商店购买，并与婚礼助手预订他们的仪式。每位伴侣将收到#r客人门票#k，可以分发给他们的熟人。");
                     cm.dispose();
                     break;
 
                 case 2:
-                    cm.sendOk("Unfortunately the love of long may fizzle someday. Well, I hope that's not the case for any loving couple that once married, is marrying today or is going to do so tomorrow. But, if that ever happens, I myself will be at service to make a safe divorce, by the fee of #r" + divorceFee + "#k mesos.");
+                    cm.sendOk("很遗憾，长久的爱有一天可能会消退。嗯，我希望对于任何一对曾经结婚、正在结婚或者将要结婚的恋人来说，情况并非如此。但是，如果真的发生了，我愿意以#r" + divorceFee + "#k金币的费用来提供安全的离婚服务。");
                     cm.dispose();
                     break;
 
@@ -100,37 +100,37 @@ function action(mode, type, selection) {
                         var itemid = getWeddingRingItemId(cm.getPlayer());
 
                         if (itemid != null) {
-                            cm.sendOk("There you go, I've removed your old wedding ring.");
+                            cm.sendOk("好了，我已经把你的旧结婚戒指取下来了。");
                             cm.gainItem(itemid, -1);
                         } else if (hasEquippedWeddingRing(cm.getPlayer())) {
-                            cm.sendOk("If you want your old wedding ring removed, please unequip it before talking to me.");
+                            cm.sendOk("如果你想要移除你的旧婚戒，请在和我对话之前先将它卸下。");
                         } else {
-                            cm.sendOk("You're not married to require a divorce from it.");
+                            cm.sendOk("你不需要离婚才能要求离婚。");
                         }
 
                         cm.dispose();
                         return;
                     }
 
-                    cm.sendYesNo("So, you want to divorce from your partner? Be sure, this process #bcannot be rollbacked#k by any means, it's supposed to be an ultimatum from which your ring will be destroyed as consequence. That said, do you #rreally want to divorce#k?");
+                    cm.sendYesNo("所以，你想和你的伴侣离婚？请确保，这个过程无论如何都无法回滚，这应该是一个最后通牒，你的戒指将被摧毁作为后果。也就是说，你真的想离婚吗？");
                     break;
             }
         } else if (status == 2) {
             if (cm.getMeso() < divorceFee) {
-                cm.sendOk("You don't have the required amount of #r" + divorceFee + " mesos#k for the divorce fee.");
+                cm.sendOk("你没有足够的#r" + divorceFee + "金币#k来支付离婚费用。");
                 cm.dispose();
                 return;
             } else if (ringObj.equipped()) {
-                cm.sendOk("Please unequip your ring before trying to divorce.");
+                cm.sendOk("请在尝试离婚之前卸下你的戒指。");
                 cm.dispose();
                 return;
             }
 
             cm.gainMeso(-divorceFee);
-            RingManager.BreakMarriageRing(cm.getPlayer(), ringObj.getItemId());
+            RingManager.breakMarriageRing(cm.getPlayer(), ringObj.getItemId());
             cm.gainItem(ringObj.getItemId(), -1);
 
-            cm.sendOk("You have divorced from your partner.");
+            cm.sendOk("你已经和你的伴侣离婚。");
             cm.dispose();
         }
     }

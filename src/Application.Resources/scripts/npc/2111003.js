@@ -36,7 +36,7 @@ function start() {
         cm.warp(926120300, "out00");
         cm.dispose();
     } else {
-        cm.sendOk("Emotion that I feel is real? Or just illusion coming from mechanical error?");
+        cm.sendOk("我感受到的情感是真实的吗？还是只是机械错误带来的幻觉？");
         cm.dispose();
     }
 }

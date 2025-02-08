@@ -29,9 +29,9 @@ status = -1;
 
 function start() {
     if (cm.getPlayer().getMapId() == 100000000) {
-        cm.sendYesNo("I can take you to the Amoria Village. Are you ready to go?");
+        cm.sendYesNo("我可以带你去阿莫利亚村。你准备好了吗？");
     } else {
-        cm.sendYesNo("I can take you back to Henesys. Are you ready to go?");
+        cm.sendYesNo("我可以带你回到明斯特。你准备好了吗？");
     }
 }
 
@@ -39,13 +39,13 @@ function action(mode, type, selection) {
     status++;
     if (mode != 1) {
         if (mode == 0) {
-            cm.sendOk("Ok, feel free to hang around until you're ready to go!");
+            cm.sendOk("好的，随时可以在这里等到你准备好走！");
         }
         cm.dispose();
         return;
     }
     if (status == 0) {
-        cm.sendNext("I hope you had a great time! See you around!");
+        cm.sendNext("希望你玩得开心！再见！");
     } else if (status == 1) {
         if (cm.getPlayer().getMapId() == 100000000) {
             cm.warp(680000000, 0);

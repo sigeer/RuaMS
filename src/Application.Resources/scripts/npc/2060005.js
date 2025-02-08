@@ -29,25 +29,25 @@
 
 function start() {
     if (cm.isQuestCompleted(6002)) {
-        cm.sendOk("Thanks for saving the pork.");
+        cm.sendOk("谢谢你救了那只猪。");
     } else if (cm.isQuestStarted(6002)) {
         if (cm.haveItem(4031507, 5) && cm.haveItem(4031508, 5)) {
-            cm.sendOk("Thanks for saving the pork.");
+            cm.sendOk("谢谢你救了那只猪。");
         } else {
             var em = cm.getEventManager("3rdJob_mount");
             if (em == null) {
-                cm.sendOk("Sorry, but 3rd job advancement (mount) is closed.");
+                cm.sendOk("抱歉，但是三转职业（骑宠）已关闭。");
             } else {
                 if (em.startInstance(cm.getPlayer())) {
                     cm.removeAll(4031507);
                     cm.removeAll(4031508);
                 } else {
-                    cm.sendOk("There is currently someone in this map, come back later.");
+                    cm.sendOk("当前地图上有其他玩家，稍后再来吧。");
                 }
             }
         }
     } else {
-        cm.sendOk("Only few adventurers, from a selected public, are eligible to protect the Watch Hog.");
+        cm.sendOk("只有少数来自特定公众的冒险者有资格保护守望者猪。");
     }
 
     cm.dispose();

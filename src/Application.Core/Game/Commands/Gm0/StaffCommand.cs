@@ -1,4 +1,4 @@
-﻿using constants.id;
+using constants.id;
 
 namespace Application.Core.Game.Commands.Gm0;
 
@@ -11,6 +11,6 @@ public class StaffCommand : CommandBase
 
     public override void Execute(IClient c, string[] paramsValue)
     {
-        c.getAbstractPlayerInteraction().openNpc(NpcId.HERACLE, "credits");
+        c.OpenNpc(NpcId.HERACLE, "credits");
     }
 }

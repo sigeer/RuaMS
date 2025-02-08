@@ -31,7 +31,7 @@ status = -1;
 
 function start() {
     if ((cm.getPlayer().getLevel() < 19 || cm.getPlayer().getLevel() > 30) && !cm.getPlayer().isGM()) {
-        cm.sendNext("You're not between level 20 and 30. Sorry, you may not participate.");
+        cm.sendNext("你的等级不在20级到30级之间。抱歉，你不能参加。");
         cm.dispose();
         return;
     }
@@ -54,12 +54,12 @@ function action(mode, type, selection) {
         }
     }
     if (status == 0) {
-        cm.sendNext("I have prepared a huge festival here at Ariant for the great fighters of MapleStory. It's called #bThe Ariant Coliseum Challenge#k.");
+        cm.sendNext("我已经在阿里安特为冒险岛的伟大战士们准备了一个盛大的节日。它被称为#b阿里安特角斗场挑战#k。");
     } else if (status == 1) {
-        cm.sendNextPrev("The Ariant Coliseum Challenge is a competition that matches the skills of monster combat against others. In this competition, your object isn't to hunt the monster;  rather, you need to #beliminate a set amount of HP from the monster, followed by absorbing it with a jewel#k. #bThe fighter that ends up with the most jewels will win the competition.#k");
+        cm.sendNextPrev("阿里安特角斗场挑战是一项比赛，将怪物战斗技能与其他人进行比拼。在这项比赛中，你的目标不是猎杀怪物；相反，你需要从怪物身上消耗一定量的HP，然后用宝石吸收它。最终拥有最多宝石的战士将赢得比赛。");
     } else if (status == 2) {
-        cm.sendSimple("If you are a strong and brave warrior from #bPerion#k, training under Dances With Balrogs, then are you interested in participating in The Ariant Coliseum Challenge?!\r\n#b#L0# I'd love to participate in this great competition.#l");
+        cm.sendSimple("如果你是来自#b佩里安#k，在巴尔洛克舞者指导下训练的强大勇士，那么你对参加阿里安竞技场挑战感兴趣吗？！\r\n#b#L0# 我很想参加这场盛大的比赛。#l");
     } else if (status == 3) {
-        cm.sendNext("Okay, now I'll send you to the battle arena. I'd like to see you emerge victorious!");
+        cm.sendNext("好的，现在我会把你送到战斗竞技场。我希望看到你取得胜利！");
     }
 }

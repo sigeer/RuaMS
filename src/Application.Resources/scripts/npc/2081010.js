@@ -40,7 +40,7 @@ function action(mode, type, selection) {
 
     status++;
     if (status == 0) {
-        cm.sendYesNo("Do you want to exit the area? If you quit, you will need to start this task from the scratch.");
+        cm.sendYesNo("你想要退出这个区域吗？如果你退出，你将需要从头开始这个任务。");
     } else if (status == 1) {
         cm.warp(exitMap, "st00");
         cm.dispose();

@@ -46,9 +46,9 @@ function action(mode, type, selection) {
             } else if (mapid == 930000400) {
                 if (cm.haveItem(4001169, 20)) {
                     if (cm.isEventLeader()) {
-                        cm.sendNext("Oh you have brought them! We can now continue, shall we proceed?");
+                        cm.sendNext("哦，你带来了它们！我们现在可以继续了，我们要继续吗？");
                     } else {
-                        cm.sendOk("You have brought them, but you're not the leader! Please let the leader hand me the marbles...");
+                        cm.sendOk("你已经带来了他们，但你不是队长！请让队长把弹珠给我……");
                         cm.dispose();
 
                     }
@@ -65,11 +65,11 @@ function action(mode, type, selection) {
                             if (!cm.haveItem(2270004)) {
                                 if (cm.canHold(2270004, 10)) {
                                     cm.gainItem(2270004, 10);
-                                    cm.sendOk("Take 10 #t2270004#. First, #rweaken the #o9300174##k and, once it gets low health, use the item I gave you to capture them.");
+                                    cm.sendOk("拿10个#t2270004#。首先，#r削弱#o9300174#的力量，一旦它的生命值降低，使用我给你的物品来捕捉它们。");
                                     cm.dispose();
 
                                 } else {
-                                    cm.sendOk("Please make space on your USE inventory before receiving the purifiers!");
+                                    cm.sendOk("在领取净化器之前，请确保你的使用物品栏有足够的空间！");
                                     cm.dispose();
 
                                 }
@@ -77,7 +77,7 @@ function action(mode, type, selection) {
                                 cm.sendYesNo(ellinStr + "\r\n\r\nIt may be you are #rwilling to quit#k? Please double-think it, maybe your partners are still trying this instance.");
                             }
                         } else {
-                            cm.sendYesNo("You guys caught all the #o9300174#. Let the party leader hand all #b20 #t4001169##k to me to proceed." + "\r\n\r\nIt may be you are #rwilling to quit#k? Please double-think it, maybe your partners are still trying this instance.");
+                            cm.sendYesNo("你们已经捕捉到了所有的 #o9300174#。让队长把所有的 #b20 #t4001169##k 给我，然后我们继续。" + "\r\n\r\n也许你是 #rwilling to quit#k？请三思，也许你的队友还在努力尝试这个副本。");
                         }
                     }
                 }

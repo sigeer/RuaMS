@@ -48,14 +48,14 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("The hook behind the frame was unhooked, revealing a secret space within the frame. There inside, a silver pendant was found. After carefully removing the pendant, the frame was closed and placed back onto the table.");
+            cm.sendOk("挂在画框后面的钩子被解开，揭示了画框内部的一个秘密空间。在那里，发现了一枚银色吊坠。小心地取下吊坠后，画框被合上，放回桌子上。");
         }
         else if (status == 1) {
             if (cm.canHold(4031697, 1)) {
                 cm.gainItem(4031697);
             }
             else {
-                cm.sendNext("Your inventory is full, please make sure you have an ETC slot available.");
+                cm.sendNext("您的背包已满，请确保您有一个杂项槽可用。");
             }
         }
         else {

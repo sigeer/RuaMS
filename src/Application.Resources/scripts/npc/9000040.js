@@ -49,7 +49,7 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT) {
-                cm.sendOk("The medal ranking system is currently unavailable...");
+                cm.sendOk("勋章排名系统目前不可用。");
                 cm.dispose();
                 return;
             }
@@ -76,9 +76,9 @@ function action(mode, type, selection) {
 
             if (cm.getPlayer().mergeAllItemsFromName(name)) {
                 cm.gainMeso(-mergeFee);
-                cm.sendOk("Merging complete! Thanks for using the service and enjoy your new equipment stats.");
+                cm.sendOk("合并完成！感谢您使用本服务，祝您享受新的装备属性。");
             } else {
-                cm.sendOk("There is no #b'" + name + "'#k in your #bEQUIP#k inventory!");
+                cm.sendOk("你的#b装备#k库中没有#b'" + name + "'#k！");
             }
 
             cm.dispose();

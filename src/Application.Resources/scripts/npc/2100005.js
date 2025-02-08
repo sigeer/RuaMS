@@ -26,7 +26,7 @@ function start() {
 function action(mode, type, selection) {
     if (mode < 1) {  // disposing issue with stylishs found thanks to Vcoc
         if (type == 7) {
-            cm.sendNext("I guess you aren't ready to make the change yet. Let me know when you are!");
+            cm.sendNext("我猜你还不准备做出改变。等你准备好了再告诉我吧！");
         }
 
         cm.dispose();
@@ -37,7 +37,7 @@ function action(mode, type, selection) {
             status--;
         }
         if (status == 0) {
-            cm.sendSimple("Hey there! I'm Shatti, and I'm Mazra's apprentice. If you have #bAriant hair style coupon(REG)#k or #bAriant hair color coupon(REG)#k with you, how about allowing me to work on your hair? \r\n#L0#Haircut: #i5150026##t5150026##l\r\n#L1#Dye your hair: #i5151021##t5151021##l");
+            cm.sendSimple("嘿！我是沙提，是马兹拉的学徒。如果你有 #b阿里安特发型券(REG)#k 或 #b阿里安特染发券(REG)#k，你愿意让我给你做头发吗？\r\n#L0#理发：#i5150026##t5150026##l\r\n#L1#染发：#i5151021##t5151021##l");
         } else if (status == 1) {
             if (selection == 0) {
                 beauty = 1;
@@ -54,7 +54,7 @@ function action(mode, type, selection) {
                             % 10));
                     }
                 }
-                cm.sendYesNo("If you use the REG coupon, your hairstyle will be changed to a random new look. You'll also have access to new hairstyles I worked on that's not available for VIP coupons. Would you like to use #bAriant hair style coupon(REG)#k for a fabulous new look?");
+                cm.sendYesNo("如果您使用REG优惠券，您的发型将会被随机更换成全新的造型。您还将获得我设计的一些全新发型，这些发型是VIP优惠券无法获得的。您想要使用#b阿里安特发型优惠券(REG)#k来获得一个华丽的新造型吗？");
             } else if (selection == 1) {
                 beauty = 2;
                 haircolor = Array();
@@ -63,7 +63,7 @@ function action(mode, type, selection) {
                 for (var i = 0; i < 8; i++) {
                     pushIfItemExists(haircolor, current + i);
                 }
-                cm.sendYesNo("If you use the regular coupon, your hair color will change to a random new color. Are you sure you want to use #b#t5151021##k and randomly change your hair color?");
+                cm.sendYesNo("如果您使用普通的优惠券，您的发色将会随机变成一种新的颜色。您确定要使用 #b#t5151021##k 并随机改变您的发色吗？");
             }
         } else if (status == 2) {
             cm.dispose();
@@ -71,18 +71,18 @@ function action(mode, type, selection) {
                 if (cm.haveItem(5150026) == true) {
                     cm.gainItem(5150026, -1);
                     cm.setHair(hairnew[Math.floor(Math.random() * hairnew.length)]);
-                    cm.sendOk("Enjoy your new and improved hairstyle!");
+                    cm.sendOk("享受你的新发型吧！");
                 } else {
-                    cm.sendNext("I can only change your hairstyle if you bring me the coupon. You didn't forget that, did you?");
+                    cm.sendNext("只有你带来了优惠券，我才能帮你改变发型。你不会忘了吧？");
                 }
             }
             if (beauty == 2) {
                 if (cm.haveItem(5151021) == true) {
                     cm.gainItem(5151021, -1);
                     cm.setHair(haircolor[Math.floor(Math.random() * haircolor.length)]);
-                    cm.sendOk("Enjoy your new and improved haircolor!");
+                    cm.sendOk("享受你的新发色吧！");
                 } else {
-                    cm.sendNext("I can only change your hairstyle if you bring me the coupon. You didn't forget that, did you?");
+                    cm.sendNext("只有你拿来了发型券，我才能帮你换发型。你不会忘了那个吧？");
                 }
             }
         }

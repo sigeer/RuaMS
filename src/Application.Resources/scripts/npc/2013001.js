@@ -54,7 +54,7 @@ function action(mode, type, selection) {
                 return;
             }
 
-            cm.sendOk("I only wish to speak to your leader!");
+            cm.sendOk("我只想和你们的领导谈话！");
             cm.dispose();
             return;
         }
@@ -68,7 +68,7 @@ function action(mode, type, selection) {
                     eim.giveEventPlayersExp(3500);
                     clearStage(0, eim);
 
-                    cm.sendNext("Please save Minerva, She've been trapped in the seal by Papa Pixie, the terror of our tower! He misplaced all of our Minerva Statue's parts and we have to get it all back! Oh pardon me, I am the tower's Chamberlain, Eak. I am Minerva's royal servant.");
+                    cm.sendNext("请救救米内尔娃，她被波波皮希困在封印中，他是我们塔楼的恐怖存在！他把米内尔娃雕像的所有部分都弄丢了，我们必须把它们全部找回来！哦，请原谅我，我是塔楼的管家伊克。我是米内尔娃的皇家仆人。");
                 } else {
                     cm.warp(920010000, 2);
                 }
@@ -79,19 +79,19 @@ function action(mode, type, selection) {
                     if (eim.getIntProperty("statusStg7") == -1) {
                         eim.warpEventTeam(920010800);
                     } else if (eim.getIntProperty("statusStg8") == -1) {
-                        cm.sendOk("Oh! You brought the #t4001055#! Please, drop it at the base of the statue to bring Minerva back!");
+                        cm.sendOk("哦！你带来了#t4001055#！请把它放在雕像的底座上，让米涅瓦重生！");
                     } else {
-                        cm.sendOk("Thank you for saving Minerva! Please, talk to her...");
+                        cm.sendOk("谢谢你救了米内尔瓦！请和她交谈…");
                     }
                 } else {
-                    cm.sendOk("Please, save Minerva! Gather the six pieces of her statue and then talk to me to retrieve the final piece!");
+                    cm.sendOk("请拯救米内尔娃！收集她雕像的六块碎片，然后与我交谈以取回最后一块碎片！");
                 }
                 break;
             case 920010200: //walkway
                 if (!cm.haveItem(4001050, 30)) {
-                    cm.sendOk("Gather the 30 Statue Pieces from the monsters in this stage, and please bring them to me so I can put them together!");
+                    cm.sendOk("收集这个阶段怪物身上的30个雕像碎片，然后请把它们带给我，这样我就可以把它们拼在一起！");
                 } else {
-                    cm.sendOk("You got them all! Here, the 1st statue piece.");
+                    cm.sendOk("你已经找到了它们！这里是第一块雕像碎片。");
                     cm.removeAll(4001050);
                     cm.gainItem(4001044, 1); //first piece
                     eim.giveEventPlayersExp(3500);
@@ -102,34 +102,34 @@ function action(mode, type, selection) {
                 if (eim.getIntProperty("statusStg2") != 1) {
                     if (cm.getMap().countMonsters() == 0 && cm.getMap().countItems() == 0) {
                         if (cm.canHold(4001045)) {
-                            cm.sendOk("Oh, I've found the 2nd Piece of Statue. Here, take it.");
+                            cm.sendOk("哦，我找到了第二块雕像碎片。拿去吧。");
                             cm.gainItem(4001045, 1);
                             eim.giveEventPlayersExp(3500);
                             clearStage(2, eim);
                             eim.setProperty("statusStg2", "1");
                         } else {
-                            cm.sendOk("I've found the 2nd Piece of Statue. Get a slot available on your inventory to take it.");
+                            cm.sendOk("我已经找到了第二块雕像碎片。在你的背包中腾出一个空位来拿它。");
                         }
                     } else {
-                        cm.sendOk("Find the 2nd Piece of Statue that is hidden in this room.");
+                        cm.sendOk("在这个房间里找到隐藏的第二块雕像碎片。");
                     }
                 } else {
-                    cm.sendOk("Well done. Go find the other statue pieces.");
+                    cm.sendOk("干得好。去找其他雕像碎片。");
                 }
 
                 break;
             case 920010400: //lobby
                 if (eim.getIntProperty("statusStg3") == -1) {
-                    cm.sendOk("Please, find the LP for the current day of week and place it on the music player.\r\n#v4001056# Sunday\r\n#v4001057# Monday\r\n#v4001058# Tuesday\r\n#v4001059# Wednesday\r\n#v4001060# Thursday\r\n#v4001061# Friday\r\n#v4001062# Saturday\r\n");
+                    cm.sendOk("请找到本周的LP，并将其放在音乐播放器上。\r\n#v4001056# 星期日\r\n#v4001057# 星期一\r\n#v4001058# 星期二\r\n#v4001059# 星期三\r\n#v4001060# 星期四\r\n#v4001061# 星期五\r\n#v4001062# 星期六");
                 } else if (eim.getIntProperty("statusStg3") == 0) {
                     cm.getMap().getReactorByName("stone3").forceHitReactor(1);
-                    cm.sendOk("Ooh, the music... It sounds so fitting with the ambient. Nicely done, a box has appeared on the field. Retrieve the statue part from it!");
+                    cm.sendOk("哦，这音乐... 它和环境非常搭配。做得好，一个箱子出现在场地上。从中取出雕像的一部分！");
                     eim.giveEventPlayersExp(3500);
                     clearStage(3, eim);
                     eim.setProperty("statusStg3", "2");
 
                 } else {
-                    cm.sendOk("Thank you so much!");
+                    cm.sendOk("非常感谢你！");
                 }
                 break;
             case 920010500: //sealed
@@ -154,7 +154,7 @@ function action(mode, type, selection) {
                         total += z;
                     }
                     if (total != 3) {
-                        cm.sendOk("There needs to be exactly 3 players on these platforms.");
+                        cm.sendOk("这些平台上需要有确切的3名玩家。");
                     } else {
                         var num_correct = 0;
                         for (var i = 0; i < 3; i++) {
@@ -163,30 +163,30 @@ function action(mode, type, selection) {
                             }
                         }
                         if (num_correct == 3) {
-                            cm.sendOk("You found the right combination! A box has appeared on the top of this map, go retrieve the statue piece from it!");
+                            cm.sendOk("你找到了正确的组合！地图顶部出现了一个宝箱，去拿取里面的雕像碎片吧！");
                             cm.getMap().getReactorByName("stone4").forceHitReactor(1);
                             eim.giveEventPlayersExp(3500);
                             clearStage(4, eim);
                         } else {
                             eim.showWrongEffect();
                             if (num_correct > 0) {
-                                cm.sendOk("One of the platforms has the right number of players.");
+                                cm.sendOk("一个平台上有正确数量的玩家。");
                             } else {
-                                cm.sendOk("All of the platforms have the wrong amount of players.");
+                                cm.sendOk("所有的平台上都有错误的玩家数量。");
                             }
                         }
                     }
                 } else {
-                    cm.sendOk("Well done! Please, go fetch the other pieces and save Minerva!");
+                    cm.sendOk("干得好！请去找其他碎片，拯救米内尔瓦！");
                 }
                 cm.dispose();
                 break;
             case 920010600: //lounge
                 if (eim.getIntProperty("statusStg5") == -1) {
                     if (!cm.haveItem(4001052, 40)) {
-                        cm.sendOk("Gather the 40 Statue Pieces from the monsters in this stage, and please bring them to me so I can put them together!");
+                        cm.sendOk("在这个阶段从怪物身上收集40个雕像碎片，然后请把它们带给我，这样我就可以把它们拼在一起！");
                     } else {
-                        cm.sendOk("You got them all! Here, the 5th statue piece.");
+                        cm.sendOk("你已经找到了它们！这里是第五块雕像碎片。");
                         cm.removeAll(4001052);
                         cm.gainItem(4001048, 1); //fifth piece
                         eim.giveEventPlayersExp(3500);
@@ -194,7 +194,7 @@ function action(mode, type, selection) {
                         eim.setIntProperty("statusStg5", 1);
                     }
                 } else {
-                    cm.sendOk("You got them all here. Go search the others rooms of the tower.");
+                    cm.sendOk("你已经找到了所有的东西。去搜索塔的其他房间吧。");
                 }
                 break;
             case 920010700: //on the way up
@@ -245,7 +245,7 @@ function action(mode, type, selection) {
                     }
 
                     if (total != 2) {
-                        cm.sendOk("There needs to be exactly 2 levers at the top of the map pushed on.");
+                        cm.sendOk("地图顶部需要精确地推动两个杠杆。");
                     } else {
                         var num_correct = 0;
                         var psh_correct = 0;
@@ -258,36 +258,36 @@ function action(mode, type, selection) {
                             }
                         }
                         if (num_correct == 5) {
-                            cm.sendOk("You found the right combination! Retrieve the statue piece from inside it!");
+                            cm.sendOk("你找到了正确的组合！从里面取出雕像碎片！");
                             cm.getMap().getReactorByName("stone6").forceHitReactor(1);
                             eim.giveEventPlayersExp(3500);
                             clearStage(6, eim);
                         } else {
                             eim.showWrongEffect();
                             if (psh_correct >= 1) {
-                                cm.sendOk("One of the pushed levers is correct.");
+                                cm.sendOk("其中一个推动的杠杆是正确的。");
                             } else {
-                                cm.sendOk("Both of the pushed levers are wrong.");
+                                cm.sendOk("两个推杆都是错误的。");
                             }
                         }
                     }
                 } else {
-                    cm.sendOk("Nicely done!! Go check out the rest of the pieces.");
+                    cm.sendOk("干得漂亮！去看看其他的部分吧。");
                 }
                 break;
             case 920010800:
-                cm.sendNext("Please, find a way to defeat Papa Pixie! Once you've found the Dark Nependeath by placing seeds, you've found Papa Pixie! Defeat it, and get the Root of Life to save Minerva!!!");
+                cm.sendNext("请找到一种方法来打败波波精灵！一旦你通过种植种子找到了黑暗尼芬死亡，你就找到了波波精灵！打败它，拿到生命之根来拯救米内尔瓦！！");
                 break;
             case 920010900:
                 if (eim.getProperty("statusStg8") == "1") {
-                    cm.sendNext("This is the jail of the tower. You may find some goodies here, just be sure to clear the puzzles ahead as fast as possible.");
+                    cm.sendNext("这是塔的监狱。你可能会在这里找到一些好东西，只要确保尽快解决前面的谜题。");
                 } else {
-                    cm.sendNext("Down there you will not find any statue pieces. Go up the ladder to return to the center tower and search elsewhere. You can come back here to get the goodies that lies down there once you have saved Minerva.");
+                    cm.sendNext("在那里你找不到任何雕像碎片。爬上梯子返回中心塔，然后到其他地方去搜索。一旦你救了米涅瓦，你可以回到这里拿下面的好东西。");
                 }
                 break;
             case 920011000:
                 if (cm.getMap().countMonsters() > 0) {
-                    cm.sendNext("This is the hidden room of the tower. After eliminating all monsters on this room, talk to me to gain access to the treasure room, leaving the center tower access behind.");
+                    cm.sendNext("这是塔楼的隐藏房间。在清除了这个房间上的所有怪物之后，与我交谈以获得进入宝藏房间的权限，留下中央塔楼的通道。");
                 } else {
                     cm.warp(920011100, "st00");
                 }

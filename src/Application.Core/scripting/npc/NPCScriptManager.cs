@@ -198,7 +198,22 @@ public class NPCScriptManager : AbstractScriptManager
             try
             {
                 c.setClickedNPC();
-                iv.CallFunction("action", mode, type, selection);
+
+                var nextLevelContext = c.getCM()?.NextLevelContext;
+                if (nextLevelContext?.LevelType != null)
+                {
+                    if (nextLevelContext.TryGetInvokeFunction(c, mode, type, selection, out var function) && function != null)
+                    {
+                        iv.CallFunction(function.Name, function.Params);
+                    }
+                    else
+                    {
+                        dispose(c);
+                        return;
+                    }
+                }
+                else
+                    iv.CallFunction("action", mode, type, selection);
             }
             catch (Exception t)
             {
@@ -237,7 +252,7 @@ public class NPCScriptManager : AbstractScriptManager
         var cm = cms.GetValueOrDefault(c);
         if (cm != null)
         {
-            dispose(cm);
+            cm.dispose();
         }
     }
 

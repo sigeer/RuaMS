@@ -59,23 +59,23 @@ function action(mode, type, selection) {
         return;
     }
     if (mode == 0) {
-        cm.sendNext("Not enough materials, huh? No worries. Just come see me once you gather up the necessary items. There are numerous ways to obtain them, whether it be hunting or purchasing it from others, so keep going.");
+        cm.sendNext("材料不够，是吗？别担心。收集到必要的物品后，来找我就行了。无论是打猎还是从他人那里购买，都有很多方法可以获取这些物品，所以继续努力吧。");
         cm.dispose();
     }
     if (mode == 1) {
         status++;
     }
     if (status == 0) {
-        cm.sendNext("Alright, mix up the frog's tongue with the squirrel's tooth and ... oh yeah! Forgot to put in the sparkling white powder!! Man, that could have been really bad ... Whoa!! How long have you been standing there? I maaaay have been a little carried away with my work ... hehe.");
+        cm.sendNext("好的，把青蛙的舌头和松鼠的牙齿混合在一起，哦对了！忘了放闪闪发光的白色粉末！！天哪，那本来可能会很糟糕……哇！！你站在那里多久了？我可能有点沉迷于我的工作……嘿嘿。");
     } else if (status == 1) {
-        cm.sendSimple("As you can see, I'm just a traveling alchemist. I may be in training, but I can still make a few things that you may need. Do you want to take a look?\r\n\r\n#L0##bMake Magic Rock#k#l\r\n#L1##bMake The Summoning Rock#k#l");
+        cm.sendSimple("正如你所看到的，我只是一个旅行的炼金术士。我可能还在训练中，但我仍然可以制作一些你可能需要的东西。你想看看吗？\r\n\r\n#L0##b制作魔法石#k#l\r\n#L1##b制作召唤石#k#l");
     } else if (status == 2) {
         set = selection;
         makeitem = makeditem[set];
         for (i = 0; i < reqset[set].length; i++) {
             menu += "\r\n#L" + i + "##bMake it using #t" + reqset[set][i][0][0] + "# and #t" + reqset[set][i][1][0] + "##k#l";
         }
-        cm.sendSimple("Haha... #b#t" + makeitem + "##k is a mystical rock that only I can make. Many travelers seems to need this for most powerful skills that require more than just MP and HP. There are 5 ways to make #t" + makeitem + "#. Which way do you want to make it?" + menu);
+        cm.sendSimple("哈哈... #b#t" + makeitem + "##k 是一种神秘的岩石，只有我才能制造。许多旅行者似乎需要它来获得比魔法值和生命值更强大的技能。有5种方法可以制作 #t" + makeitem + "#。你想用哪种方法制作？" + menu);
     } else if (status == 3) {
         set = reqset[set][selection];
         reqitem[0] = [set[0][0], set[0][1]];
@@ -86,7 +86,7 @@ function action(mode, type, selection) {
             menu += "\r\n#v" + reqitem[i][0] + "# #b" + reqitem[i][1] + " #t" + reqitem[i][0] + "#s#k";
         }
         menu += "\r\n#i4031138# #b" + cost + " mesos#k";
-        cm.sendYesNo("To make #b5 #t" + makeitem + "##k, I'll need the following items. Most of them can be obtained through hunting, so it won't be terriblt difficult for you to get them. What do you think? Do you want some?\r\n" + menu);
+        cm.sendYesNo("为了制作#b5 #t" + makeitem + "##k，我需要以下物品。其中大部分可以通过打猎获得，所以对你来说并不是非常困难。你觉得怎么样？你想要一些吗？\r\n" + menu);
     } else if (status == 4) {
         for (i = 0; i < reqitem.length; i++) {
             if (!cm.haveItem(reqitem[i][0], reqitem[i][1])) {
@@ -94,9 +94,9 @@ function action(mode, type, selection) {
             }
         }
         if (access == false || !cm.canHold(makeitem) || cm.getMeso() < cost) {
-            cm.sendNext("Please check and see if you have all the items needed, or if your etc. inventory is full or not");
+            cm.sendNext("请检查并查看您是否拥有所有所需的物品，或者您的杂项物品栏是否已满。");
         } else {
-            cm.sendOk("Here, take the 5 pieces of #b#t" + makeitem + "##k. Even I have to admit, this is a masterpiece. Alright, if you need my help down the road, by all means come back and talk to me!");
+            cm.sendOk("拿着这5块#b#t" + makeitem + "##k。即使是我也得承认，这是一件杰作。好吧，如果你需要我的帮助，尽管回来找我谈谈！");
             cm.gainItem(reqitem[0][0], -reqitem[0][1]);
             cm.gainItem(reqitem[1][0], -reqitem[1][1]);
             cm.gainItem(reqitem[2][0], -reqitem[2][1]);

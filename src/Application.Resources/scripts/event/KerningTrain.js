@@ -33,7 +33,7 @@ function playerEntry(eim, player) {
     onRide = eim.getMapFactory().getMap(trainRide[myRide]);
     player.changeMap(onRide, onRide.getPortal(0));
     player.sendPacket(PacketCreator.getClock(rideTime / 1000));
-    player.sendPacket(PacketCreator.earnTitleMessage("The next stop is at Kerning " + (myRide == 0 ? "Square" : "Subway") + " Station. The exit is to your left."));
+    player.sendPacket(PacketCreator.earnTitleMessage("下一站停靠 " + (myRide == 0 ? "废都广场" : "废弃都市") + " 站。请走左侧门。"));
     eim.schedule("timeOut", rideTime);
 }
 

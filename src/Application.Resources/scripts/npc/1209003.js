@@ -6,6 +6,6 @@ function start() {
 }
 
 function action(mode, type, selection) {
-    cm.sendOk("We are departing to #bVictoria Island#k briefly. I've heard the #rBlack Mage#k himself cannot take that place on his grasp yet, thanks to #bthe seal that has been casted on that area#k. We pray for their safety, but if fortune does not favor the Heroes, at least we will be safe once we reach the continent.");
+    cm.sendOk("我们将暂时前往#b金银岛#k。我听说#r黑魔法师#k本人还不能夺取那个地方，多亏了#b被施加在那个地区的封印#k。我们为他们的安全祈祷，但如果命运不眷顾英雄们，至少我们一旦抵达大陆就会安全了。");
     cm.dispose();
 }

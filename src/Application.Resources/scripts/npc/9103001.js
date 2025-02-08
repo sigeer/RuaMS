@@ -54,7 +54,7 @@ function action(mode, type, selection) {
         if (status == 0) {
             em = cm.getEventManager("LudiMazePQ");
             if (em == null) {
-                cm.sendOk("The Ludibrium Maze PQ has encountered an error.");
+                cm.sendOk("鲁迪布里安迷宫组队任务遇到了一个错误。");
                 cm.dispose();
                 return;
             } else if (cm.isUsingOldPqNpcStyle()) {
@@ -62,33 +62,33 @@ function action(mode, type, selection) {
                 return;
             }
 
-            cm.sendSimple("#e#b<Party Quest: Ludibrium Maze>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nThis is the entrance to the Ludibrium Maze. Enjoy!\r\n#b#L0#Enter the Lubidrium Maze#l\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#What is the Ludibrium Maze?");
+            cm.sendSimple("#e#b<组队任务：鲁塔比迷宫>\r\n#k#n" + em.getProperty("party") + "\r\n\r\n这是通往鲁塔比迷宫的入口。尽情享受吧！\r\n#b#L0#进入鲁塔比迷宫#l\r\n#L1#我想要" + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "禁用" : "启用") + "组队搜索。\r\n#L2#什么是鲁塔比迷宫？");
         } else if (status == 1) {
             if (selection == 0) {
                 if (cm.getParty() == null) {
-                    cm.sendOk("Try taking on the Maze Quest with your party.");
+                    cm.sendOk("尝试与你的队伍一起挑战迷宫任务。");
                     cm.dispose();
                 } else if (!cm.isLeader()) {
-                    cm.sendOk("If you DO decide to tackle it, please have your Party Leader notify me!");
+                    cm.sendOk("如果你决定去挑战它，请让你的队长通知我！");
                     cm.dispose();
                 } else {
                     var eli = em.getEligibleParty(cm.getParty());
                     if (eli.size() > 0) {
                         if (!em.startInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
-                            cm.sendOk("Another party has already entered the #rParty Quest#k in this channel. Please try another channel, or wait for the current party to finish.");
+                            cm.sendOk("另一个队伍已经进入了该频道的#r组队任务#k。请尝试其他频道，或者等待当前队伍完成。");
                         }
                     } else {
-                        cm.sendOk("Your party needs to consist of at least 3 members in order to tackle this maze.");
+                        cm.sendOk("你的队伍至少需要有3名成员才能应对这个迷宫。");
                     }
 
                     cm.dispose();
                 }
             } else if (selection == 1) {
                 var psState = cm.getPlayer().toggleRecvPartySearchInvite();
-                cm.sendOk("Your Party Search status is now: #b" + (psState ? "enabled" : "disabled") + "#k. Talk to me whenever you want to change it back.");
+                cm.sendOk("你的组队搜索状态现在是：#b" + (psState ? "enabled" : "disabled") + "#k。想要改变状态时随时找我。");
                 cm.dispose();
             } else {
-                cm.sendOk("#e#b<Party Quest: Ludibrium Maze>#k#n\r\nThis maze is available to all parties of 3 or more members, and all participants must be between Level 51~70.  You will be given 15 minutes to escape the maze.  At the center of the room, there will be a Warp Portal set up to transport you to a different room.  These portals will transport you to other rooms where you'll (hopefully) find the exit.  Pietri will be waiting at the exit, so all you need to do is talk to him, and he'll let you out.  Break all the boxes located in the room, and a monster inside the box will drop a coupon.  After escaping the maze, you will be awarded with EXP based on the coupons collected.  Additionally, if the leader possesses at least 30 coupons, then a special gift will be presented to the party.  If you cannot escape the maze within the allotted 15 minutes, you will receive 0 EXP for your time in the maze.  If you decide to log off while you're in the maze, you will be automatically kicked out of the maze.  Even if the members of the party leave in the middle of the quest, the remaining members will be able to continue on with the quest, except if they run out of the minimum amount of party members in the maze.  If you are in critical condition and unable to hunt down the monsters, you may avoid them to save yourself.  Your fighting spirit and wits will be tested!  Good luck!");
+                cm.sendOk("#e#b<组队任务：鲁塔比迷宫>#k#n\r\n这个迷宫适用于所有3人或更多成员的队伍，所有参与者必须在51级至70级之间。你将有15分钟的时间来逃离迷宫。在房间的中心，将设置一个传送门，将你传送到另一个房间。这些传送门将把你传送到其他房间，你会（希望）找到出口。皮埃特里将在出口处等待，所以你只需要和他交谈，他就会放你出去。打破房间里的所有箱子，箱子里的怪物会掉落一个优惠券。逃离迷宫后，你将根据收集的优惠券获得经验奖励。此外，如果队长拥有至少30张优惠券，那么将为队伍提供特别的礼物。如果你无法在规定的15分钟内逃离迷宫，你将在迷宫中获得0经验。如果你决定在迷宫中下线，你将被自动踢出迷宫。即使队伍成员在任务中途离开，剩下的成员仍然可以继续进行任务，除非他们在迷宫中没有达到最低队伍成员数量。如果你处于危急状态，无法猎杀怪物，你可以避开它们来保护自己。你的战斗精神和智慧将受到考验！祝你好运！");
                 cm.dispose();
             }
         }

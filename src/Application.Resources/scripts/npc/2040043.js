@@ -92,13 +92,13 @@ function action(mode, type, selection) {
         var eim = cm.getPlayer().getEventInstance();
 
         if (eim.getProperty(stage.toString() + "stageclear") != null) {
-            cm.sendNext("Hurry, goto the next stage, the portal is open!");
+            cm.sendNext("快点，去下一个阶段，传送门已经打开了！");
         } else {
             if (eim.isEventLeader(cm.getPlayer())) {
                 var state = eim.getIntProperty("statusStg" + stage);
 
                 if (state == -1) {           // preamble
-                    cm.sendOk("Hi. Welcome to the #bstage " + stage + "#k. In this stage, line up 5 member of your party above those boxes in order to form the right combination to unlock the next stage. Only one player should stay above a box desired to pertain the combination.");
+                    cm.sendOk("嗨。欢迎来到 #bstage " + stage + "#k。在这个阶段，让你的队伍中的5名成员站在那些箱子上，以形成正确的组合来解锁下一个阶段。只有一个玩家应该留在所需的箱子上以确定组合。");
 
                     var st = (debug) ? 2 : 0;
                     eim.setProperty("statusStg" + stage, st);
@@ -149,12 +149,12 @@ function action(mode, type, selection) {
                             cm.dispose();
                         }
                     } else {
-                        cm.sendNext("It looks like you haven't found the 5 boxes just yet. Please think of a different combination of boxes. Only 5 are allowed to stand on boxes, and if you move it may not count as an answer, so please keep that in mind. Keep going!");
+                        cm.sendNext("看起来你还没有找到5个箱子。请考虑不同的箱子组合。只允许站在箱子上的数量为5个，如果你移动箱子可能不算作答案，请记住这一点。继续加油！");
                         cm.dispose();
                     }
                 }
             } else {
-                cm.sendNext("Please tell your #bParty-Leader#k to come talk to me.");
+                cm.sendNext("请告诉你的#b队伍领袖#k来找我谈话。");
             }
         }
 

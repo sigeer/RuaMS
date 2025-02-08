@@ -17,9 +17,9 @@ function action(mode, type, selection) {
 
 
     if (status == 0) {
-        cm.sendNext("...a black shadowy figure came out and attacked you? How can this take place at #b#p1032001##k's house? This sounds like one big conspiracy here...");
+        cm.sendNext("一个黑色的阴影人物出现并攻击了你？这怎么可能发生在#b#p1032001##k的家里？这听起来像是一个大阴谋……");
     } else if (status == 1) {
-        cm.sendNextPrev("I'll have to sort this all out in my mind. Talk to me in a bit.");
+        cm.sendNextPrev("我得在脑子里整理一下这一切。等一会儿再和我说话。");
     } else if (status == 2) {
         cm.dispose();
     }

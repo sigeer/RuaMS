@@ -7,9 +7,9 @@
 function start() {
     if (cm.getPlayer().isCygnus() && GameConstants.getJobBranch(cm.getJob()) > 2) {
         cm.useItem(2022458);
-        cm.sendOk("Let me cast you my blessings, my Knight. Please protect the world of Maple....");
+        cm.sendOk("让我为你祈福，我的骑士。请保护冒险岛的世界……");
     } else {
-        cm.sendOk("Don't stop training. Every ounce of your energy is required to protect the world of Maple....");
+        cm.sendOk("不要停止训练。你的每一分能量都需要用来保护冒险岛的世界……");
     }
 
     cm.dispose();

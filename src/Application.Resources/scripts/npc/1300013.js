@@ -31,7 +31,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendSimple("#L0#Enter to fight #bKing Pepe#k and #bYeti Brothers#k.#l\r\n#L1#Enter to fight #bPrime Minister#k.#l");
+            cm.sendSimple("#L0#进入战斗 #b帕比国王#k 和 #b雪人兄弟#k。#l\r\n#L1#进入战斗 #b总理#k。#l");
         } else if (status == 1) {
             if (selection == 0) {
                 var pepe = cm.getEventManager("KingPepeAndYetis");
@@ -45,11 +45,11 @@ function action(mode, type, selection) {
                 var party = cm.getPlayer().getParty();
                 if (party != null) {
                     if (!em.startInstance(party, cm.getMap(), 1)) {
-                        cm.sendOk("Another party is already challenging the boss in this channel.");
+                        cm.sendOk("另一个队伍已经在这个频道挑战boss了。");
                     }
                 } else {
                     if (!em.startInstance(cm.getPlayer())) {
-                        cm.sendOk("Another party is already challenging the boss in this channel.");
+                        cm.sendOk("另一个队伍已经在这个频道挑战boss了。");
                     }
                 }
 
@@ -65,7 +65,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendSimple("#L1#Enter to fight #bKing Pepe#k and #bYeti Brothers#k.#l");
+            cm.sendSimple("#L1#进入挑战 #b帕普王#k 和 #b雪人兄弟#k。#l");
         } else if (status == 1) {
             if (selection == 1) {
                 var pepe = cm.getEventManager("KingPepeAndYetis");

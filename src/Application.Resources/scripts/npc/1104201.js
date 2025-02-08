@@ -41,10 +41,10 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (!(cm.isQuestCompleted(20407) || cm.isQuestStarted(20407) && cm.getQuestProgressInt(20407, 9001010) != 0) && cm.getMap().countMonster(9001010) == 0 && cm.getMap().getNPCById(1104002) == null) {
-                cm.sendOk("... Hnngh... #b#h0##k, is that you...? #r#p1104002##k... She's already here... #b#h0##k, I'm truly sorry I can't help you right now in this state, just when a bigger threat appeared I could do nothing for my people.... Please I beg you, please defeat her, #b#h0##k!! ....");
+                cm.sendOk("...嗯... #b#h0##k，是你吗...？#r#p1104002##k...她已经到了... #b#h0##k，我真的很抱歉，我现在无法在这种状态下帮助你，就在一个更大的威胁出现时，我对我的人民束手无策... 请，我请求你，请打败她，#b#h0##k！！....");
                 cm.spawnNpc(1104002, new Point(850, 0), cm.getMap());
             } else {
-                cm.sendOk("...");
+                cm.sendOk("抱歉，我无法完成你的要求。");
             }
 
             cm.dispose();

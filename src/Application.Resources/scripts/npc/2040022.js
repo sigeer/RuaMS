@@ -188,11 +188,11 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (!cm.canHold(item, 1)) {
-            cm.sendOk("Verify for a slot in your inventory first.");
+            cm.sendOk("首先在你的背包中确认是否有空位。");
             cm.dispose();
             return;
         } else if (cm.getMeso() < cost) {
-            cm.sendOk("I'm afraid my fees are non-negotiable.");
+            cm.sendOk("恐怕我的费用是不可商议的。");
             cm.dispose();
             return;
         } else {
@@ -222,7 +222,7 @@ function action(mode, type, selection) {
         }
 
         if (!complete) {
-            cm.sendOk("Sorry, but you're missing a required item. Possibly a manual? Or one of the ores?");
+            cm.sendOk("抱歉，但是你缺少一个必需的物品。可能是一个手册？或者其中一种矿石？");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; i < mats.length; i++) {
@@ -238,14 +238,14 @@ function action(mode, type, selection) {
                 var deleted = Math.floor(Math.random() * 10);
                 if (deleted != 0) {
                     cm.gainItem(item, 1, true, true);
-                    cm.sendOk("Heeere you go! What do you think? Marvellous, isn't it?");
+                    cm.sendOk("给你！你觉得怎么样？不错，是吧？");
                 } else {
-                    cm.sendOk("...ACK! My attention wandered, and before I knew it... Uh, sorry, but there's nothing I can do for you now.");
+                    cm.sendOk("“啊！我的注意力不知不觉就被吸引走了……抱歉，现在我无能为力。”");
                 }
             } else //just give basic item
             {
                 cm.gainItem(item, 1);
-                cm.sendOk("Heeere you go! What do you think? Marvellous, isn't it?");
+                cm.sendOk("给你！你觉得怎么样？不错，是吧？");
             }
         }
         cm.dispose();

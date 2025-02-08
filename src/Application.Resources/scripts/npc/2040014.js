@@ -90,7 +90,7 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (cm.getMeso() < (cost * qty)) {
-            cm.sendOk("See, I need to specify my wages to support my career, that cannot be bypassed. I will gladly help you once you've got the money.");
+            cm.sendOk("看，我需要明确我的工资来支持我的职业生涯，这是不能绕过的。一旦你有了钱，我会很乐意帮助你。");
             cm.dispose();
             return;
         } else {
@@ -105,7 +105,7 @@ function action(mode, type, selection) {
             }
         }
         if (!complete) {
-            cm.sendOk("You are lacking some items for the set you want to make. Please provide them so that we can assemble the game set.");
+            cm.sendOk("您缺少了一些用于制作套装的物品。请提供它们，以便我们可以组装游戏套装。");
         } else {
             if (cm.canHold(item, qty)) {
                 if (mats instanceof Array) {
@@ -118,9 +118,9 @@ function action(mode, type, selection) {
                 cm.gainMeso(-(cost * qty));
 
                 cm.gainItem(item, qty);
-                cm.sendOk("There is your game set. Have fun!");
+                cm.sendOk("这是你的游戏设置。玩得开心！");
             } else {
-                cm.sendOk("I can't make a set for you if there's no room in your ETC inventory for it. Please free a space first and then talk to me.");
+                cm.sendOk("如果你的杂项物品栏没有空间，我就无法为你制作套装。请先腾出空间，然后再和我交谈。");
             }
         }
 

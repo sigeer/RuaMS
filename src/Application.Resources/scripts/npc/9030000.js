@@ -43,10 +43,10 @@ function action(mode, type, selection) {
             cm.dispose();
         } else {
             if (cm.hasMerchant()) {
-                cm.sendOk("You have a Merchant open.");
+                cm.sendOk("你有一个商人窗口打开。");
                 cm.dispose();
             } else {
-                cm.sendOk("You don't have any items or mesos to be retrieved.");
+                cm.sendOk("你没有任何物品或金币可以取回。");
                 cm.dispose();
             }
         }

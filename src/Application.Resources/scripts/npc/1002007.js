@@ -6,9 +6,9 @@ var mesos;
 
 function start() {
     if (cm.hasItem(4032313, 1)) {
-        cm.sendNext("I see that you have a coupon to go to Henesys. One moment, I'll bring you there right over!");
+        cm.sendNext("我看到你有一张去射手村的优惠券。稍等，我会立刻带你过去！");
     } else {
-        cm.sendNext("Hello, I drive the Regular Cab. If you want to go from town to town safely and fast, then ride our cab. We'll glady take you to your destination with an affordable price.");
+        cm.sendNext("你好，我开着普通出租车。如果你想安全快速地从一个城镇到另一个城镇，那就乘坐我们的出租车吧。我们很乐意以实惠的价格带你到达目的地。");
     }
 }
 
@@ -20,7 +20,7 @@ function action(mode, type, selection) {
             cm.dispose();
             return;
         } else if (status >= 2 && mode == 0) {
-            cm.sendNext("There's a lot to see in this town, too. Come back and find us when you need to go to a different town.");
+            cm.sendNext("这个城镇有很多值得一看的地方。当你需要去另一个城镇的时候，回来找我们吧。");
             cm.dispose();
             return;
         }
@@ -39,15 +39,15 @@ function action(mode, type, selection) {
 
             var selStr = "";
             if (cm.getJobId() == 0) {
-                selStr += "We have a special 90% discount for beginners.";
+                selStr += "我们对新手有特别九折优惠。";
             }
-            selStr += "Choose your destination, for fees will change from place to place.#b";
+            selStr += "选择您的目的地，因为费用将因地点而异。#b";
             for (var i = 0; i < maps.length; i++) {
-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " mesos)#l";
+                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " 金币)#l";
             }
             cm.sendSimple(selStr);
         } else if (status == 2) {
-            cm.sendYesNo("You don't have anything else to do here, huh? Do you really want to go to #b#m" + maps[selection] + "##k? It'll cost you #b" + (cm.getJobId() == 0 ? cost[selection] / 10 : cost[selection]) + " mesos#k.");
+            cm.sendYesNo("你在这里没有其他事情要做了，是吗？你真的想去#b#m" + maps[selection] + "##k吗？这将花费你#b" + (cm.getJobId() == 0 ? cost[selection] / 10 : cost[selection]) + "金币#k。");
             selectedMap = selection;
         } else if (status == 3) {
             if (cm.getJobId() == 0) {
@@ -57,7 +57,7 @@ function action(mode, type, selection) {
             }
 
             if (cm.getMeso() < mesos) {
-                cm.sendNext("You don't have enough mesos. Sorry to say this, but without them, you won't be able to ride the cab.");
+                cm.sendNext("你没有足够的金币。很抱歉要这么说，但没有金币的话，你将无法搭乘出租车。");
                 cm.dispose();
                 return;
             }

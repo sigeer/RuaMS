@@ -6,6 +6,6 @@ function start() {
 }
 
 function action(mode, type, selection) {
-    cm.sendOk("Please calm down, uncle. We are embarking to #bVictoria Island#k, we will be safe once we reach there. So, come on!");
+    cm.sendOk("叔叔，请冷静一点。我们正在启程前往金银岛，一旦到达那里我们就会安全了。所以，加油！");
     cm.dispose();
 }

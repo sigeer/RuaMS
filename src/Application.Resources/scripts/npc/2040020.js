@@ -41,7 +41,7 @@ var stimID = 4130000;
 function start() {
     cm.getPlayer().setCS(true);
 
-    var selStr = "Hello, and welcome to the Ludibrium Glove Store. How can I help you today?#b"
+    var selStr = "你好，欢迎来到卢比克姆手套店。今天有什么可以帮您的吗？#b"
     var options = ["What's a stimulator?", "Create a Warrior glove", "Create a Bowman glove", "Create a Magician glove", "Create a Thief glove",
         "Create a Warrior glove with a Stimulator", "Create a Bowman glove with a Stimulator", "Create a Magician glove with a Stimulator", "Create a Thief glove with a Stimulator"];
     for (var i = 0; i < options.length; i++) {
@@ -223,11 +223,11 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (!cm.canHold(item, 1)) {
-            cm.sendOk("Check your inventory for a free slot first.");
+            cm.sendOk("首先检查你的物品栏是否有空位。");
             cm.dispose();
             return;
         } else if (cm.getMeso() < cost) {
-            cm.sendOk("Sorry, we only accept meso.");
+            cm.sendOk("抱歉，我们只接受黄金币。");
             cm.dispose();
             return;
         } else {
@@ -247,7 +247,7 @@ function action(mode, type, selection) {
             }
         }
         if (!complete) {
-            cm.sendOk("Sorry, but I have to have those items to get this exactly right. Perhaps next time.");
+            cm.sendOk("抱歉，但我必须拥有这些物品才能做到完美。也许下次吧。");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; i < mats.length; i++) {
@@ -262,13 +262,13 @@ function action(mode, type, selection) {
                 var deleted = Math.floor(Math.random() * 10);
                 if (deleted != 0) {
                     cm.gainRandomItem(newItem);
-                    cm.sendOk("There, the gloves are ready. Be careful, they're still hot.");
+                    cm.sendOk("手套已经准备好了。小心，它们还很烫。");
                 } else {
-                    cm.sendOk("Eek! I think I accidently added too much stimulator and, well, the whole thing is unusable now... Sorry, but I can't offer a refund.");
+                    cm.sendOk("哎呀！我想我不小心加了太多的刺激剂，嗯，整个东西现在都不能用了……抱歉，但我不能退款。");
                 }
             } else {
                 cm.gainItem(item, 1);
-                cm.sendOk("There, the gloves are ready. Be careful, they're still hot.");
+                cm.sendOk("手套已经准备好了。小心，它们还很烫。");
             }
         }
         cm.dispose();

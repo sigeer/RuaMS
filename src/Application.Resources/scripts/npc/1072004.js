@@ -44,10 +44,10 @@ function action(mode, type, selection) {
         if (status == 0) {
             if (cm.haveItem(4031013, 30)) {
                 completed = true;
-                cm.sendNext("Ohhhhh.. you collected all 30 Dark Marbles!! It should have been difficult... just incredible! Alright. You've passed the test and for that, I'll reward you #bThe Proof of a Hero#k. Take that and go back to Perion.");
+                cm.sendNext("哦哦哦.. 你收集了所有30个黑暗弹珠！！这应该很困难... 简直不可思议！好吧。你通过了测试，为此，我会奖励你 #b英雄的证明#k。拿着它回佩里安去吧。");
             } else {
                 completed = false;
-                cm.sendSimple("You will have to collect me #b30 #t4031013##k. Good luck. \r\n#b#L1#I would like to leave#l");
+                cm.sendSimple("你需要收集 #b30 个 #t4031013##k。祝你好运。\r\n#b#L1#我想离开#l");
             }
         } else if (status == 1) {
             if (completed) {

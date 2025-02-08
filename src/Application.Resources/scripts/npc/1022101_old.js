@@ -62,7 +62,7 @@ function action(mode, type, selection) {
         }
         if (status == 0 && mode == 1) {
             if (cm.getPlayer().getLevel() < 20) {
-                cm.sendOk("Hello, I am the Vote Point exchanger for #rMapleSolaxia#k!\r\n\r\nI am sorry, but I can only exchange Vote Points for players #blevel 20 or over#k.");
+                cm.sendOk("你好，我是#r枫之谷索拉希亚#k的投票点兑换商！很抱歉，我只能为#b20级或以上#k的玩家兑换投票点。");
                 cm.dispose();
                 return;
             }
@@ -80,7 +80,7 @@ function action(mode, type, selection) {
 
             if (selection > 0) {
                 if (!cm.haveItem(itemToUse) && vp == 0) {
-                    cm.sendOk("I'm sorry, but you don't have any #t" + itemToUse + " or Vote Points.");
+                    cm.sendOk("对不起，您没有任何 #t" + itemToUse + " 或投票点数。");
                     cm.dispose();
                     return;
                 }
@@ -89,26 +89,26 @@ function action(mode, type, selection) {
             if (selection == 0) {
                 // Exchange VP for leaves
                 if (vp <= 0) {
-                    cm.sendOk("I'm sorry, but you don't have any Vote Points to exchange!");
+                    cm.sendOk("对不起，您没有任何投票点可以兑换！");
                     cm.dispose();
                     return;
                 }
-                cm.sendYesNo("Would you like to exchange " + vp + " Vote Point" + (vp > 0 ? "s" : "") + " for " + vp + " #t" + itemToUse + "# " + (vp > 0 ? "s" : "") + "?");
+                cm.sendYesNo("你想要交换 " + vp + " 票数" + (vp > 0 ? "s" : "") + " 以换取 " + vp + " #t" + itemToUse + "# " + (vp > 0 ? "s" : "") + "？");
             } else if (selection == 1) {
                 // Exchange 1 Leaf for Cash
-                cm.sendYesNo("Would you like to exchange 1 #t" + itemToUse + "# for " + nxAmount + " NX Cash?");
+                cm.sendYesNo("您想用 1 个 #t" + itemToUse + "# 交换 " + nxAmount + " NX 现金吗？");
             } else if (selection == 2) {
                 // Exchange 1 Leaf for Chair
-                cm.sendYesNo("Would you like to exchange 1 #t" + itemToUse + "# for " + chairAmount + " Random Chair" + (chairAmount > 1 ? "s" : "") + "?");
+                cm.sendYesNo("你想要用1个#t" + itemToUse + "#来交换" + chairAmount + "张随机椅子" + (chairAmount > 1 ? "s" : "") + "吗？");
             } else if (selection == 3) {
                 // Exchange 1 Leaf for Maple Weapons
-                cm.sendYesNo("Would you like to exchange 1 #t" + itemToUse + "# for " + weaponAmount + " Random Maple Weapons?");
+                cm.sendYesNo("你想用1个#t" + itemToUse + "#来交换" + weaponAmount + "个随机冒险岛武器吗？");
             } else if (selection == 4) {
                 // Exchange 1 Leaf for Apples/Cheese
-                cm.sendYesNo("Would you like to exchange 1 #t" + itemToUse + "# for " + buffAmount + " #t" + buff1ID + "# and #t" + buff2ID + "#?");
+                cm.sendYesNo("你想用 1 个 #t" + itemToUse + "# 交换 " + buffAmount + " 个 #t" + buff1ID + "# 和 #t" + buff2ID + "# 吗？");
             } else if (selection == 5) {
                 // Echange 1 Leaf for Merchant
-                cm.sendYesNo("Would you like to exchange 1 #t" + itemToUse + "# for a " + hiredMerchantLength + " Day Hired Merchant?");
+                cm.sendYesNo("您想用 1 个 #t" + itemToUse + "# 换取一个 " + hiredMerchantLength + " 天的雇佣商人吗？");
             } else {
                 cm.dispose();
             }
@@ -120,7 +120,7 @@ function action(mode, type, selection) {
             if (choice == 0) {
                 // VP Exchange
                 if (!cm.canHold(itemToUse)) {
-                    cm.sendOk("It looks like you don't have enough space in your #rETC#k inventory to hold the #t" + itemToUse + "#" + (vp > 0 ? "s" : "") + ".");
+                    cm.sendOk("看起来你的 #rETC#k 物品栏没有足够的空间来存放 #t" + itemToUse + "#" + (vp > 0 ? "s" : "") + "。");
                     cm.dispose();
                     return;
                 }
@@ -159,7 +159,7 @@ function action(mode, type, selection) {
                     cm.logLeaf("Chair ID: " + chairStr);
                     cm.dispose();
                 } else {
-                    cm.sendOk("Please make sure you have enough space to hold the items!");
+                    cm.sendOk("请确保您有足够的空间来存放物品！");
                 }
             } else if (choice == 3) {
                 if (!cm.getPlayer().getInventory(InventoryType.EQUIP).isFull(weaponAmount)) {
@@ -180,7 +180,7 @@ function action(mode, type, selection) {
                     cm.logLeaf("Maple Weapon IDs: " + weaponStr);
                     cm.dispose();
                 } else {
-                    cm.sendOk("Please make sure you have enough space to hold the items!");
+                    cm.sendOk("请确保您有足够的空间来存放物品！");
                 }
             } else if (choice == 4) {
                 if (!cm.getPlayer().getInventory(InventoryType.USE).isFull(2)) {
@@ -190,7 +190,7 @@ function action(mode, type, selection) {
                     cm.logLeaf(buffAmount + " cheeses and apples");
                     cm.dispose();
                 } else {
-                    cm.sendOk("Please make sure you have enough space to hold the items!");
+                    cm.sendOk("请确保您有足够的空间来存放物品！");
                 }
             } else if (choice == 5) {
                 if (!cm.haveItem(5030000, 1)) {
@@ -206,10 +206,10 @@ function action(mode, type, selection) {
                         cm.logLeaf(hiredMerchantLength + " day hired merchant");
                         cm.dispose();
                     } else {
-                        cm.sendOk("Please make sure you have enough space to hold these items!");
+                        cm.sendOk("请确保你有足够的空间来存放这些物品！");
                     }
                 } else {
-                    cm.sendOk("I can't give you a merchant if you already have one!");
+                    cm.sendOk("如果你已经有了一个商人，我就不能再给你一个了！");
                 }
             }
         } else {

@@ -45,14 +45,14 @@ function action(mode, type, selection) {
     if (mode == 1) {
         status++;
     } else {
-        cm.sendOk("Oh, ok... Talk back to us when you want to make business.");
+        cm.sendOk("哦，好吧... 你想做生意的时候再来找我们吧。");
         cm.dispose();
         return;
     }
 
     if (status == 0) {
         if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT) {
-            cm.sendOk("Hi, I'm #b#p" + cm.getNpc() + "##k.");
+            cm.sendOk("嗨，我是 #b#p" + cm.getNpc() + "##k。");
             cm.dispose();
             return;
         }
@@ -106,9 +106,9 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (cm.getMeso() < cost * qty) {
-            cm.sendOk("Come on! We're not here doing you a favor! We all need money to live properly, so bring the cash so we make deal and start the synthesis.");
+            cm.sendOk("快点！我们不是来帮你的忙的！我们都需要钱来过好生活，所以拿钱来让我们做成交并开始合成。");
         } else if (!cm.canHold(item, qty)) {
-            cm.sendOk("You didn't check if you got a slot to spare on your inventory before our business, no?");
+            cm.sendOk("在我们交易之前，你没有检查一下你的背包里是否有空位吗？");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; complete && i < mats.length; i++) {
@@ -123,7 +123,7 @@ function action(mode, type, selection) {
             }
 
             if (!complete) {
-                cm.sendOk("You kidding, right? We won't be able to start the process without all the ingredients at hands. Go get all of them and then talk to us!");
+                cm.sendOk("你在开玩笑吧？没有所有的材料在手，我们将无法启动这个过程。去把它们都拿来，然后再来找我们谈！");
             } else {
                 if (mats instanceof Array) {
                     for (var i = 0; i < mats.length; i++) {
@@ -134,7 +134,7 @@ function action(mode, type, selection) {
                 }
                 cm.gainMeso(-cost * qty);
                 cm.gainItem(item, qty);
-                cm.sendOk("Wow... can't believe it worked! To think for a moment that it could f... Ahem. Of course it worked, all work of ours are very efficient! Nice doing business with you.");
+                cm.sendOk("哇... 真不敢相信它起作用了！想想一会儿它竟然能够... 咳咳。当然它起作用了，我们所有的工作都非常高效！很高兴和你做生意。");
             }
         }
         cm.dispose();

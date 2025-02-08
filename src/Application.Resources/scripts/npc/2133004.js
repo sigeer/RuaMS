@@ -20,9 +20,9 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (!cm.haveItem(4001163) || !cm.isEventLeader()) {
-                cm.sendYesNo("Let your party leader show me the Purple Stone of Magic from here.\r\n\r\nOr maybe you want to #rleave this forest#k? Leaving now means to abandon your partners here, take that in mind.");
+                cm.sendYesNo("让你的队长在这里给我看魔法紫石。\r\n\r\n或者你想要#r离开这片森林#k吗？现在离开意味着抛弃你的伙伴，记住这一点。");
             } else {
-                cm.sendNext("Great, you have the Purple Stone of Magic. I shall show you guys #bthe path leading to the Stone Altar#k. Come this way.");
+                cm.sendNext("太好了，你有了紫色魔法石。我会带你们去通往石头祭坛的路。跟我来吧。");
             }
         } else if (status == 1) {
             if (!cm.haveItem(4001163)) {

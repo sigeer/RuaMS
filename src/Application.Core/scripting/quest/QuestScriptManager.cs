@@ -232,7 +232,7 @@ public class QuestScriptManager : AbstractScriptManager
         var qm = qms.GetValueOrDefault(c);
         if (qm != null)
         {
-            dispose(qm, c);
+            qm.dispose();
         }
     }
 

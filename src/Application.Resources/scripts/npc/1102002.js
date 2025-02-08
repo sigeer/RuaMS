@@ -30,6 +30,6 @@
  **/
 
 function start() {
-    cm.sendOk("Yo. I am #p1102002#, in charge of mount raising and training for the Cygnus Knights' of Ereve!");
+    cm.sendOk("嘿，我是#p1102002#，负责埃雷沃的皇家骑士团的坐骑培养和训练！");
     cm.dispose();
 }

@@ -31,6 +31,6 @@ public class UseWaterOfLifeHandler : AbstractPacketHandler
 
     public override void HandlePacket(InPacket p, IClient c)
     {
-        c.getAbstractPlayerInteraction().openNpc(NpcId.MAR_THE_FAIRY, "waterOfLife");
+        c.OpenNpc(NpcId.MAR_THE_FAIRY, "waterOfLife");
     }
 }

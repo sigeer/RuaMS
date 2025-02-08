@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("Hm... Don't doubt it because I'm a back street broker. Dealing with me is trust... I keep up my credit.");
+    cm.sendOk("“嗯...不要怀疑，因为我是一个街头经纪人。和我打交道就是信任...我保持我的信用。”");
     cm.dispose();
 }

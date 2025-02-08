@@ -14,7 +14,7 @@ function action(mode, type, selection) {
         cm.dispose();
     } else {
         if (mode == 0) {
-            cm.sendOk("Talk to me again when you want to.");
+            cm.sendOk("当你想要的时候再和我说话。");
             cm.dispose();
         }
         if (mode == 1) {
@@ -25,13 +25,13 @@ function action(mode, type, selection) {
 
         if (status == 1) {
             if (cm.getChar().getMapId() == 209000000) {
-                cm.sendYesNo("Do you wish to head to where the #bSnow Sprinkler#k is?");
+                cm.sendYesNo("你想前往 #b雪花洒#k 的地方吗？");
                 status = 9;
             } else if (cm.getChar().getMapId() == 209080000) {
-                cm.sendYesNo("Do you wish to return to Happyville?");
+                cm.sendYesNo("你希望回到快乐村吗？");
                 status = 19;
             } else {
-                cm.sendOk("You alright?");
+                cm.sendOk("你还好吗？");
                 cm.dispose();
             }
         } else if (status == 10) {
@@ -41,7 +41,7 @@ function action(mode, type, selection) {
             cm.warp(209000000, 0);
             cm.dispose();
         } else {
-            cm.sendOk("You alrighty?");
+            cm.sendOk("你还好吗？");
             cm.dispose();
         }
     }

@@ -78,7 +78,7 @@ function action(mode, type, selection) {
         cm.dispose();
         return;
     } else if (mode == 0) {
-        cm.sendNext("You know where to come if you need a ride!");
+        cm.sendNext("如果你需要搭车，你知道该来找我了！");
         cm.dispose();
         return;
     } else {
@@ -105,13 +105,13 @@ function action(mode, type, selection) {
         }
 
         if (travelCost > 0) {
-            cm.sendYesNo("Would you like to travel to #b#m" + travelMap + "##k? To head over to #b#m" + travelMap + "##k, it'll cost you #r" + cm.numberWithCommas(travelCost) + " mesos#k. Would you like to go right now?");
+            cm.sendYesNo("您想前往#b#m" + travelMap + "##k吗？前往#b#m" + travelMap + "##k需要花费#r" + cm.numberWithCommas(travelCost) + "金币#k。您现在要前往吗？");
         } else {
-            cm.sendNext("Had a great time in #rMalaysia#k? I hope so, have a safe travel back!");
+            cm.sendNext("在#r马来西亚#k度过了愉快的时光吗？希望是的，一路平安！");
         }
     } else if (status == 2) {
         if (cm.getMeso() < travelCost) {
-            cm.sendNext("You do not seem to have enough mesos.");
+            cm.sendNext("你似乎没有足够的金币。");
         } else {
             if (travelCost > 0) {
                 cm.gainMeso(-travelCost);

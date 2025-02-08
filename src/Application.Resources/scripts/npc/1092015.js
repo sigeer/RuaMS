@@ -41,7 +41,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("I'm bored! Someone come play with me!");
+            cm.sendOk("我无聊！有人来和我玩吗？");
             cm.dispose();
         }
     }

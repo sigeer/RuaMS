@@ -48,15 +48,15 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (cm.getLevel() < 120 || Math.floor(cm.getJobId() / 100) != 5) {
-                cm.sendOk("Please don't bother me right now, I am trying to concentrate.");
+                cm.sendOk("请不要现在打扰我，我正在集中精力。");
                 cm.dispose();
             } else if (!cm.isQuestCompleted(6944)) {
-                cm.sendOk("You have not yet passed my trials. I can not advance you until you do so.");
+                cm.sendOk("你还没有通过我的考验。在你通过考验之前，我无法提升你的等级。");
                 cm.dispose();
             } else if (cm.getJobId() % 100 % 10 != 2) {
-                cm.sendYesNo("You did a marvellous job passing my test. Are you ready to advance to your 4th job?");
+                cm.sendYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？");
             } else {
-                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#Teach me the skills of my class.#l");
+                cm.sendSimple("如果必要的话，我可以教你你的职业技能。\r\n#b#L0#教我我的职业技能。#l");
                 //cm.dispose();
             }
         } else if (status == 1) {
@@ -76,7 +76,7 @@ function action(mode, type, selection) {
                     }
                     cm.gainItem(2280003, 1);
                 } else {
-                    cm.sendOk("Please have one slot available on #bUSE#k inventory to receive a skill book.");
+                    cm.sendOk("请在#b使用#k的物品栏中留出一个空位，以便接收技能书。");
                 }
             } else if (mode >= 1 && cm.getJobId() % 100 % 10 == 2) {
                 if (cm.getJobId() == 512) {
@@ -109,7 +109,7 @@ function action(mode, type, selection) {
                         cm.teachSkill(5221003, 0, 10, -1);
                     }
                 }
-                cm.sendOk("It is done. Leave me now.");
+                cm.sendOk("事情已经完成。现在离开我。");
             }
 
             cm.dispose();

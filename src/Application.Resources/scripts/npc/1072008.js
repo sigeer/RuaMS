@@ -28,20 +28,20 @@ function action(mode, type, selection) {
         if (status == 0) {
             if (cm.getMapId() == 108000502) {
                 if (!(cm.haveItem(4031856, 15))) {
-                    cm.sendSimple("You haven't brought me all the crystals yet. I'm looking forward for your progress, mate! \r\n#b#L1#I would like to leave#l");
+                    cm.sendSimple("你还没有给我带来所有的水晶。我期待你的进展，伙计！\r\n#b#L1#我想离开#l");
                 } else {
                     status++;
-                    cm.sendNext("Wow, you have brought me 15 #b#t4031856##k! Congratulations. Let me warp you out now.");
+                    cm.sendNext("哇，你给我带来了15个#b#t4031856##k！恭喜你。让我现在把你传送出去。");
                 }
             } else if (cm.getMapId() == 108000501) {
                 if (!(cm.haveItem(4031857, 15))) {
-                    cm.sendSimple("You haven't brought me all the crystals yet. I'm looking forward for your progress, mate! \r\n#b#L1#I would like to leave#l");
+                    cm.sendSimple("你还没有给我带来所有的水晶。我期待你的进展，伙计！\r\n#b#L1#我想离开#l");
                 } else {
                     status++;
-                    cm.sendNext("Wow, you have brought me 15 #b#t4031857##k! Congratulations. Let me warp you out now.");
+                    cm.sendNext("哇，你给我带来了15个#b#t4031857##k！恭喜你。让我现在把你传送出去。");
                 }
             } else {
-                cm.sendNext("Error. Please report this.");
+                cm.sendNext("错误，请报告此问题。");
                 cm.dispose();
             }
         } else if (status == 1) {   // thanks Lame for noticing players getting stuck in area in certain scenarios

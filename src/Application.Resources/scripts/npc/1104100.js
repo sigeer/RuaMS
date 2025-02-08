@@ -43,12 +43,12 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (Math.floor(cm.getJobId() / 100) != baseJob) {
-                cm.sendOk("Hello there, #h0#. Are you helping us finding the intruder? He is not in this area, I've already searched here.");
+                cm.sendOk("你好，#h0#。你能帮我们找到入侵者吗？他不在这个区域，我已经在这里搜索过了。");
                 cm.dispose();
                 return;
             }
 
-            cm.sendOk("Darn, you found me! Then, there's only one way out! Let's fight, like #rBlack Wings#k should!");
+            cm.sendOk("该死，你找到我了！那么，只有一条出路！让我们战斗，就像#r黑之翼#k应该的那样！");
         } else if (status == 1) {
             var mapobj = cm.getMap();
             var npcpos = mapobj.getMapObject(cm.getNpcObjectId()).getPosition();

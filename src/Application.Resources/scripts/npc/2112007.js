@@ -34,24 +34,24 @@ function start() {
 
         if (res == 0) {  // mesos
             var mgain = 500 * cm.getPlayer().getMesoRate();
-            cm.sendNext("Earned " + mgain + " mesos!");
+            cm.sendNext("获得了" + mgain + "金币！");
             cm.gainMeso(mgain);
         } else if (res == 1) {  // exp
             var egain = 500 * cm.getPlayer().getExpRate();
-            cm.sendNext("Earned " + egain + " exp!");
+            cm.sendNext("获得了 " + egain + " 经验值！");
             cm.gainExp(egain);
         } else if (res == 2) {  // letter
             var letter = 4001131;
             if (!cm.canHold(letter)) {
-                cm.sendOk("You got a letter, however it didn't fit on your inventory, so you put it back.");
+                cm.sendOk("你收到了一封信，但是你的背包已经满了，所以你把它放了回去。");
                 cm.dispose();
                 return;
             }
 
             cm.gainItem(letter, 1);
-            cm.sendNext("You found a letter, strategically placed here as it seems.");
+            cm.sendNext("你找到了一封信，看起来是有意放在这里的。");
         } else if (res == 3) {  // pass
-            cm.sendNext("You found the trigger to the next stage.");
+            cm.sendNext("你找到了通往下一阶段的触发器。");
 
             var eim = cm.getEventInstance();
             eim.showClearEffect();
@@ -61,7 +61,7 @@ function start() {
             cm.getMap().getReactorByName("d00").hitReactor(cm.getClient());
         }
     } else {
-        cm.sendNext("There is nothing here.");
+        cm.sendNext("这里什么都没有。");
     }
 
     cm.dispose();

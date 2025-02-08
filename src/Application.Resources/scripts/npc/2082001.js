@@ -2,20 +2,20 @@
     if (cm.haveItem(4031045)) {
         var em = cm.getEventManager("Cabin");
         if (em.getProperty("entry") == "true") {
-            cm.sendYesNo("Do you wish to board the flight?");
+            cm.sendYesNo("你希望登上这班航班吗？");
         } else {
-            cm.sendOk("The flight has not arrived yet. Come back soon.");
+            cm.sendOk("飞机还没有到达。请尽快回来。");
             cm.dispose();
         }
     } else {
-        cm.sendOk("Make sure you got an Orbis ticket to travel in this flight. Check your inventory.");
+        cm.sendOk("确保你有一张飞往奥比斯的机票。检查你的物品栏。");
         cm.dispose();
     }
 }
 
 function action(mode, type, selection) {
     if (mode <= 0) {
-        cm.sendOk("Okay, talk to me if you change your mind!");
+        cm.sendOk("好的，如果你改变主意，就跟我说话！");
         cm.dispose();
         return;
     }
@@ -24,7 +24,7 @@ function action(mode, type, selection) {
         cm.warp(240000111);
         cm.gainItem(4031045, -1);
     } else {
-        cm.sendOk("The flight has not arrived yet. Come back soon.");
+        cm.sendOk("飞机还没有到达。请尽快回来。");
     }
     cm.dispose();
 }

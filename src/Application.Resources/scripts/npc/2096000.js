@@ -46,7 +46,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("Amateurs train on this map. Adepts train on the next. Professionals train on the last, where the boss will be awaiting.");
+            cm.sendOk("新手在这张地图上训练。 精通者在下一个地图上训练。 专业人士在最后一个地图上训练，那里会有boss等待。");
             cm.dispose();
         }
     }

@@ -4,7 +4,7 @@ var status = 0;
 function start() {
     arena = cm.getPlayer().getAriantColiseum();
     if (arena == null) {
-        cm.sendOk("Hey, I did not see you on the field during the battle in the arena! What are you doing here?");
+        cm.sendOk("嘿，我在竞技场的战斗中没看到你！你在这里做什么？");
         cm.dispose();
         return;
     }
@@ -29,10 +29,10 @@ function action(mode, type, selection) {
         if (status == 0) {
             copns = arena.getAriantScore(cm.getPlayer());
             if (copns < 1 && !cm.getPlayer().isGM()) {
-                cm.sendOk("Too bad, you did not get any jewelry!");
+                cm.sendOk("太糟糕了，你没有得到任何珠宝！");
                 cm.dispose();
             } else {
-                cm.sendNext("Ok, let's see... You did very well and you brought #b" + copns + "#k jewelry that I love. Since you have completed the match, I will reward you with a Battle Arena score of #b" + arena.getAriantRewardTier(cm.getPlayer()) + " points#k. If you want to know more about the Battle Arena score, then talk to #b#p2101015##k.");
+                cm.sendNext("好的，让我看看……你做得非常好，而且你带来了我喜欢的#b" + copns + "#k珠宝。由于你完成了比赛，我将奖励你#b" + arena.getAriantRewardTier(cm.getPlayer()) + "点#k战斗竞技场分数。如果你想了解更多关于战斗竞技场分数的信息，那就去找#b#p2101015##k谈谈吧。");
             }
         } else if (status == 1) {
             //cm.warp(980010020, 0);
@@ -43,7 +43,7 @@ function action(mode, type, selection) {
 
             cm.getPlayer().gainExp(92.7 * cm.getPlayer().getExpRate() * copns, true, true);
             cm.getPlayer().gainAriantPoints(copns);
-            cm.sendOk("Alright! Make me more jewels next time! Ahahahahah!");
+            cm.sendOk("好的！下次再给我更多的宝石！啊哈哈哈哈哈！");
             cm.dispose();
         }
     }

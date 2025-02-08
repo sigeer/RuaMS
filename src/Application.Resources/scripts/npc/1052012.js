@@ -48,10 +48,10 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendYesNo("So, are you going to use the Internet Cafe? There is a fee to use the spaces there, that is #b5,000 mesos#k. Are you going to enter the Cafe?");
+            cm.sendYesNo("那么，你打算使用网吧吗？在那里使用空间是需要付费的，费用是#b5,000金币#k。你要进入网吧吗？");
         } else if (status == 1) {
             if (cm.getMeso() < 5000) {
-                cm.sendOk("Oh, you don't have the money, right? Sorry, I can't let you in.");
+                cm.sendOk("哦，你没有钱，对吧？抱歉，我不能让你进去。");
             } else {
                 cm.gainMeso(-5000);
                 cm.warp(193000000, "out00");

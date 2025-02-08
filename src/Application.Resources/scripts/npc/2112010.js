@@ -41,7 +41,6 @@ function playersTooClose() {
             return true;
         }
     }
-
     return false;
 }
 
@@ -66,18 +65,18 @@ function action(mode, type, selection) {
                 var state = eim.getIntProperty("yuleteTalked");
 
                 if (state == -1) {
-                    cm.sendOk("Heh, it seems you guys have company. Have fun with them, as I politely request my leave.");
+                    cm.sendOk("“嘿，看来你们有了新伙伴。祝你们和他们玩得开心，我先礼貌地告辞了。”");
 
                 } else if (playersTooClose()) {
-                    cm.sendOk("Oh, hello there. I have been #bmonitoring your moves#k since you guys entered this perimeter. Quite the feat reaching here, I commend all of you. Now, now, look at the time, I've got an appointment right now, I'm afraid I will need to request my leave. But worry not, my #raccessors#k will deal with all of you. Now, if you permit me, I'm leaving now.");
+                    cm.sendOk("哦，你好。自从你们进入这个范围以来，我一直在监视你们的行动。能够到达这里真是了不起，我对你们表示赞赏。现在看看时间，我现在有一个约会，恐怕我需要离开了。但不用担心，我的助手们会处理你们所有的事情。现在，如果你们允许的话，我就走了。");
 
                     eim.setIntProperty("yuleteTalked", -1);
                 } else if (eim.getIntProperty("npcShocked") == 0) {
-                    cm.sendOk("Ho~ Aren't you quite the sneaky one? Well, it matters not. I have been #bmonitoring your moves#k since you guys entered this perimeter. Quite the feat reaching here, I commend all of you. Now, now, look at the time, I've got an appointment right now, I'm afraid I will need to request my leave. But worry not, my #raccessors#k will deal with all of you. Now, if you permit me, I'm leaving now.");
+                    cm.sendOk("嗯~ 你可真是个狡猾的家伙？不过无所谓。自从你们进入这个范围以来，我一直在#b监视你们的行动#k。能到达这里真是了不起，我对你们都表示赞赏。现在看看时间，我现在有个约会，恐怕我得离开了。但别担心，我的#r助手们#k会处理你们所有人。现在，如果你允许的话，我就走了。");
 
                     eim.setIntProperty("yuleteTalked", -1);
                 } else {
-                    cm.sendOk("... Hah! What, wh-- How did you get here?! I though I had sealed all paths here! No matter, this situation will be resolved soon. Guys: DEPLOY the #rmaster weapon#k!! You! Yes, you. Don't you think this ends here, look back at your companions, they need some help! I'll be retreating for now.");
+                    cm.sendOk("“哈哈！什么，怎么--你是怎么到这里来的？！我以为我已经封闭了所有的路径！不管，这种情况很快就会解决。伙计们：部署#rmaster武器#k！！你！是的，就是你。你难道不觉得这就此结束了吗，回头看看你的同伴，他们需要一些帮助！我现在就撤退。”");
 
                     eim.setIntProperty("yuleteTalked", 1);
                 }
@@ -87,13 +86,13 @@ function action(mode, type, selection) {
         } else {
             if (status == 0) {
                 if (eim.isEventCleared()) {
-                    cm.sendOk("Nooooo... I have been beated? But how? Everything I did was for the sake of the development of a greater alchemy! You can't jail me, I did what everybody standing in a place like mine would do! But no, they simply decided to damp up the progress of the science JUST BECAUSE it was deemed dangerous??? Oh, come on!");
+                    cm.sendOk("不要啊... 我被打败了？但是为什么？我所做的一切都是为了更伟大的炼金术的发展！你们不能把我关起来，我所做的只是站在我这样的位置上每个人都会做的事情！但是不，他们就因为觉得危险就决定阻碍科学的进步？哦，得了吧！");
                 } else {
                     var state = eim.getIntProperty("yuletePassed");
                     if (state == -1) {
-                        cm.sendOk("Behold! The pinnacle of Magatia's alchemy studies! Hahahahahahaha...");
+                        cm.sendOk("瞧！这就是马加提亚炼金术研究的顶峰！哈哈哈哈哈……");
                     } else if (state == 0) {
-                        cm.sendOk("You guys are such a pain, geez. Very well, I present you my newest weapon, brought by the finest alchemy, #rFrankenroid#k.");
+                        cm.sendOk("你们真是一群讨厌的家伙，哎。好吧，我向你们展示我的最新武器，由最优秀的炼金术带来，#r弗兰肯罗伊德#k。");
                         eim.dropMessage(5, "Yulete: I present you my newest weapon, brought by the finest alchemy, Frankenroid!");
 
                         var mapobj = eim.getMapInstance(926110401);
@@ -103,7 +102,7 @@ function action(mode, type, selection) {
                         eim.setIntProperty("statusStg7", 1);
                         eim.setIntProperty("yuletePassed", -1);
                     } else {
-                        cm.sendOk("You guys are such a pain, geez. Very well, I present you my newest weapon, brought by the finest combined alchemy of Alcadno's and Zenumist's, those that the boring people of Magatia societies have banned to bring along, the #rmighty Frankenroid#k!");
+                        cm.sendOk("你们真是一群讨厌的家伙，唉。好吧，我向你们展示我的最新武器，由阿尔卡德诺和泽尼米斯特最精湛的炼金术结合而成，那些令马加提亚社会中无聊的人们禁止携带的东西，#rmighty Frankenroid#k！");
                         eim.dropMessage(5, "Yulete: I present you my newest weapon, brought by the finest combined alchemy of Alcadno's and Zenumist's, those that the boring people of Magatia societies have banned to bring along, the mighty Frankenroid!!");
 
                         var mapobj = eim.getMapInstance(926110401);

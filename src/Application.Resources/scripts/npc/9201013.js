@@ -25,6 +25,6 @@
  */
 
 function start() {
-    cm.sendOk("Welcome to the Cathedral.\r\n\r\n#bCouples#k wanting to marry on the Cathedral should first #barrange a reservation#k with #r#p9201005##k. When the arranged time comes #bboth#k must show up here, on the same channel from the reservation, and start the ceremony (there is a 10-minutes fault policy to this) by talking to #r#p9201002##k. Once arranged, both can #bdistribute tickets#k to friends or acquainteds to become the guests for the marriage.\r\n\r\nThe ceremony will start accepting #bguests#k after the groom and the bride has entered the building. Show the #b#t4000313##k to #r#p9201005##k to access the inner rooms. No one without a ticket is allowed to enter the stage!");
+    cm.sendOk("欢迎来到大教堂。\r\n想在大教堂结婚的#b情侣#k应该首先与#r#p9201005##k#b预约#k。在预约的时间到来时，#b双方#k必须在同一频道出现在这里，并通过与#r#p9201002##k交谈开始仪式（有一个10分钟的容错政策）。一旦预约成功，双方可以#b分发门票#k给朋友或熟人成为婚礼的客人。\r\n在新郎和新娘进入建筑物后，仪式将开始接受#b客人#k。向#r#p9201005##k展示#b#t4000313##k以进入内部房间。没有门票的人不允许进入舞台！");
     cm.dispose();
 }

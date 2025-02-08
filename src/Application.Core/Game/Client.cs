@@ -1665,4 +1665,16 @@ public class Client : ChannelHandlerAdapter, IClient
     {
         return ClientInfo;
     }
+
+    public void OpenNpc(int npcid, string? script = null)
+    {
+        if (getCM() != null)
+        {
+            return;
+        }
+
+        removeClickedNPC();
+        NPCScriptManager.getInstance().dispose(this);
+        NPCScriptManager.getInstance().start(this, npcid, script, Character);
+    }
 }

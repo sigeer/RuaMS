@@ -118,7 +118,7 @@ function action(mode, type, selection) {
             } else if (status == 1) {
                 switch (selection) {
                     case 0:
-                        cm.sendOk("Firstly you need to be #bengaged#k to someone. #p9201000# makes the engagement ring. Once attained the engagement status, purchase a #b#t" + weddingEntryTicketCommon + "##k.\r\nShow me your engagement ring and a wedding ticket, and I will book a reservation for you along with #r15 Wedding Tickets#k. Use them to invite your guests into the wedding. They need 1 each to enter.");
+                        cm.sendOk("首先，你需要和某人订婚。#p9201000# 制作订婚戒指。一旦获得订婚状态，购买一张#b#t" + weddingEntryTicketCommon + "##k。\r\n给我看你的订婚戒指和婚礼门票，我会为你预订并提供#r15张婚礼门票#k。使用它们邀请你的婚礼客人。他们每人需要一张门票才能进入。");
                         cm.dispose();
                         break;
 
@@ -131,35 +131,35 @@ function action(mode, type, selection) {
                             if (weddingId > 0) {
                                 if (cserv.isWeddingReserved(weddingId)) {    // registration check
                                     var placeTime = cserv.getWeddingReservationTimeLeft(weddingId);
-                                    cm.sendOk("Your wedding is set to start at the #r" + placeTime + "#k. Get a cool attire and don't be late!");
+                                    cm.sendOk("你的婚礼定于#r" + placeTime + "#k开始。穿上漂亮的服装，不要迟到！");
                                 } else {
                                     var partner = wserv.getPlayerStorage().getCharacterById(cm.getPlayer().getPartnerId());
                                     if (partner == null) {
-                                        cm.sendOk("Your partner seems to be offline right now... Make sure to get both gathered here when the time comes!");
+                                        cm.sendOk("你的伙伴目前似乎不在线... 确保在时机成熟时把两个人都聚集在这里！");
                                         cm.dispose();
                                         return;
                                     }
 
                                     if (hasWeddingRing(cm.getPlayer()) || hasWeddingRing(partner)) {
-                                        cm.sendOk("Either you or your partner already has a marriage ring.");
+                                        cm.sendOk("你或者你的伴侣已经有了结婚戒指。");
                                         cm.dispose();
                                         return;
                                     }
 
                                     if (!cm.getMap().equals(partner.getMap())) {
-                                        cm.sendOk("Please let your partner come here as well to register the reservation.");
+                                        cm.sendOk("请让您的伙伴也来这里注册预订。");
                                         cm.dispose();
                                         return;
                                     }
 
                                     if (!cm.canHold(weddingSendTicket, 15) || !partner.canHold(weddingSendTicket, 15)) {
-                                        cm.sendOk("Either you or your partner doesn't have a free ETC slot for the Wedding tickets! Please make some room before trying to register a reservation.");
+                                        cm.sendOk("你或者你的伴侣没有空余的ETC槽位来放置婚礼门票！请在尝试注册预订之前腾出一些空间。");
                                         cm.dispose();
                                         return;
                                     }
 
                                     if (!cm.getUnclaimedMarriageGifts().isEmpty() || !partner.getAbstractPlayerInteraction().getUnclaimedMarriageGifts().isEmpty()) {
-                                        cm.sendOk("Eerhm... I'm sorry, something doesn't seem right according to the Amoria's Wedding Gift Registry reserve. Please check in the situation with #b#p9201014##k.");
+                                        cm.sendOk("额，抱歉，根据阿莫利亚婚礼礼品登记簿的记录，似乎有些不对劲。请向 #b#p9201014##k 了解情况。");
                                         cm.dispose();
                                         return;
                                     }
@@ -182,7 +182,7 @@ function action(mode, type, selection) {
                                             var placeTime = cserv.getWeddingReservationTimeLeft(weddingId);
 
                                             var wedType = weddingType ? "Premium" : "Regular";
-                                            cm.sendOk("You both have received 15 Wedding Tickets, to be given to your guests. #bDouble-click the ticket#k to send it to someone. Invitations can only be sent #rbefore the wedding start time#k. Your #b" + wedType + " wedding#k is set to start at the #r" + placeTime + "#k. Get a cool attire and don't be late!");
+                                            cm.sendOk("你们两个都收到了15张婚礼邀请函，可以送给你们的客人。#b双击邀请函#k 将其发送给某人。邀请只能在婚礼开始时间之前发送。你们的#b" + wedType + " 婚礼#k 定于#r" + placeTime + "#k 开始。穿上漂亮的服装，不要迟到！");
 
                                             player.dropMessage(6, "Wedding Assistant: You both have received 15 Wedding Tickets. Invitations can only be sent before the wedding start time. Your " + wedType + " wedding is set to start at the " + placeTime + ". Get dressed and don't be late!");
                                             partner.dropMessage(6, "Wedding Assistant: You both have received 15 Wedding Tickets. Invitations can only be sent before the wedding start time. Your " + wedType + " wedding is set to start at the " + placeTime + ". Get dressed and don't be late!");
@@ -195,19 +195,19 @@ function action(mode, type, selection) {
                                                 partner.dropMessage(5, "Wedding Assistant: Please purchase a wedding garment before showing up for the ceremony. One can be bought at the Wedding Shop left-most Amoria.");
                                             }
                                         } else {
-                                            cm.sendOk("Your wedding reservation must have been processed recently. Please try again later.");
+                                            cm.sendOk("您的婚礼预订可能最近已经处理。请稍后再试。");
                                         }
                                     } else {
-                                        cm.sendOk("Please have a #b#t" + weddingEntryTicketCommon + "##k available on your CASH inventory before trying to register a reservation.");
+                                        cm.sendOk("在尝试注册预约之前，请确保您的现金库存中有一张#b#t" + weddingEntryTicketCommon + "##k。");
                                     }
                                 }
                             } else {
-                                cm.sendOk("Wedding reservation encountered an error, try again later.");
+                                cm.sendOk("婚礼预订遇到了一个错误，请稍后再试。");
                             }
 
                             cm.dispose();
                         } else {
-                            cm.sendOk("You do not have an engagement ring.");
+                            cm.sendOk("你没有订婚戒指。");
                             cm.dispose();
                         }
                         break;
@@ -221,21 +221,21 @@ function action(mode, type, selection) {
                                 if (cserv.isOngoingWeddingGuest(cathedralWedding, cm.getPlayer().getId())) {
                                     var eim = getMarriageInstance(wid);
                                     if (eim != null) {
-                                        cm.sendOk("Enjoy the wedding. Don't drop your Gold Maple Leaf or you won't be able to finish the whole wedding.");
+                                        cm.sendOk("享受婚礼。不要掉落你的金枫叶，否则你将无法完成整个婚礼。");
                                     } else {
-                                        cm.sendOk("Please wait a moment while the couple get ready to enter the Chapel.");
+                                        cm.sendOk("请稍等片刻，当这对夫妇准备好进入教堂时。");
                                         cm.dispose();
                                     }
                                 } else {
-                                    cm.sendOk("Sorry, but you have not been invited for this wedding.");
+                                    cm.sendOk("抱歉，但是你并未被邀请参加这场婚礼。");
                                     cm.dispose();
                                 }
                             } else {
-                                cm.sendOk("There is no wedding booked right now.");
+                                cm.sendOk("现在没有预订婚礼。");
                                 cm.dispose();
                             }
                         } else {
-                            cm.sendOk("You do not have a #b#t" + weddingGuestTicket + "##k.");
+                            cm.sendOk("你没有#b#t婚礼宾客券##k。");
                             cm.dispose();
                         }
                         break;
@@ -252,10 +252,10 @@ function action(mode, type, selection) {
                                 var expirationTime = Channel.getRelativeWeddingTicketExpireTime(resStatus);
                                 cm.gainItem(weddingSendTicket, 3, false, true, expirationTime);
                             } else {
-                                cm.sendOk("Please have a free ETC slot available to get more invitations.");
+                                cm.sendOk("请确保有一个空余的ETC槽位以获取更多的邀请。");
                             }
                         } else {
-                            cm.sendOk("You're not currently booked on the Chapel to make additional invitations.");
+                            cm.sendOk("您目前没有预订在教堂制作额外的邀请函。");
                         }
 
                         cm.dispose();
@@ -267,7 +267,7 @@ function action(mode, type, selection) {
                     cm.gainItem(weddingGuestTicket, -1);
                     eim.registerPlayer(cm.getPlayer());     //cm.warp(680000210, 0);
                 } else {
-                    cm.sendOk("The marriage event could not be found.");
+                    cm.sendOk("婚礼活动未找到。");
                 }
 
                 cm.dispose();
@@ -285,14 +285,14 @@ function action(mode, type, selection) {
 
                 if (eim.getIntProperty("weddingStage") == 0) {
                     if (!isMarrying) {
-                        cm.sendOk("Welcome to the #b#m" + cm.getMapId() + "##k. Please hang around with the groom and bride while the other guests are gathering here.\r\n\r\nWhen the timer reach it's end the couple will head to the altar, at that time you will be allowed to root over them from the #bguests area#k.");
+                        cm.sendOk("欢迎来到#b#m" + cm.getMapId() + "##k。请在其他客人聚集在这里的时候和新郎新娘一起逗留。\r\n\r\n当计时器结束时，夫妇将前往祭坛，在那时你将被允许从#bguests area#k上方观看。");
                     } else {
-                        cm.sendOk("Welcome to the #b#m" + cm.getMapId() + "##k. Please greet the guests that are already here while the others are coming. When the timer reach it's end the couple will head to the altar.");
+                        cm.sendOk("欢迎来到 #b#m" + cm.getMapId() + "##k。请在其他人到来之前，先和已经在场的客人打个招呼。当计时器结束时，新人将前往祭坛。");
                     }
 
                     cm.dispose();
                 } else {
-                    cm.sendYesNo("The #bbride and groom#k are already on their way to the altar. Would you like to join them now?");
+                    cm.sendYesNo("新娘和新郎已经在去教堂的路上了。你想现在就加入他们吗？");
                 }
             } else if (status == 1) {
                 cm.warp(weddingAltarMapid, "sp");

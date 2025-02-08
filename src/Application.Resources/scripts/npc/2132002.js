@@ -3,6 +3,6 @@
 }
 
 function action(mode, type, selection) {
-    cm.sendNext("The magic of this forest is amazing...");
+    cm.sendNext("这片森林的魔力太神奇了……");
     cm.dispose();
 }

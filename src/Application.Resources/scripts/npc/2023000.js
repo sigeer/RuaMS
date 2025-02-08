@@ -35,7 +35,7 @@ function action(mode, type, selection) {
         cm.dispose();
     } else {
         if (mode == 0 && type > 0) {
-            cm.sendNext("Hmm, please think this over. It's not cheap, but you will NOT be disappointed with our premier service!");
+            cm.sendNext("嗯，请仔细考虑一下。这不便宜，但您绝对不会对我们的顶级服务感到失望！");
             cm.dispose();
             return;
         }
@@ -52,12 +52,12 @@ function action(mode, type, selection) {
                     break;
                 }
             }
-            cm.sendNext("Hello there! This taxi will take you to dangerous places in Ossyria faster than an arrow! We go from #m" + inMap[location] + "# to #b#m" + toMap[location] + "##k on this Ossyria Continent! It'll cost you #b" + cost[location] + " meso#k. I know it's a bit expensive, but it's well worth passing all the dangerous areas!");
+            cm.sendNext("你好！这辆出租车会比箭头飞得更快，把你带到奥西里亚的危险地方！我们从#m" + inMap[location] + "#到奥西里亚大陆上的#b#m" + toMap[location] + "##k去！费用是#b" + cost[location] + " 枚金币#k。我知道有点贵，但能避开所有危险区域，绝对物有所值！");
         } else if (status == 1) {
-            cm.sendYesNo("Would you like to pay #b" + cost[location] + " mesos#k to travel to the #b#m" + toMap[location] + "##k?");
+            cm.sendYesNo("你想支付 #b" + cost[location] + " 冒险币#k 前往 #b#m" + toMap[location] + "##k 吗？");
         } else if (status == 2) {
             if (cm.getMeso() < cost[location]) {
-                cm.sendNext("You don't seem to have enough mesos. I am terribly sorry, but I cannot help you unless you pay up. Bring in the mesos by hunting more and come back when you have enough.");
+                cm.sendNext("你似乎没有足够的金币。非常抱歉，除非你付款，否则我无法帮助你。多打怪赚更多金币，等你有足够的金币再回来吧。");
             } else {
                 cm.warp(toMap[location], location != 1 ? 0 : 1);
                 cm.gainMeso(-cost[location]);

@@ -38,7 +38,7 @@ function pushIfItemExists(array, itemid) {
 }
 
 function start() {
-    cm.sendSimple("Well, hello! Welcome to the New Leaf City Plastic Surgery! Would you like to transform your face into something new? With a #b#t5152034##k, you can let us take care of the rest and have the face you've always wanted~!\r\n#L2#Plastic Surgery: #i5152034##t5152034##l");
+    cm.sendSimple("嗨，你好！欢迎来到新叶城整形外科！你想把你的脸变成全新的样子吗？使用 #b#t5152034##k，你可以让我们来照顾剩下的事情，拥有你一直想要的脸~！\r\n#L2#整形外科：#i5152034##t5152034##l");
 }
 
 function action(mode, type, selection) {
@@ -70,9 +70,9 @@ function action(mode, type, selection) {
             if (cm.haveItem(5152034)) {
                 cm.gainItem(5152034, -1);
                 cm.setFace(facenew[selection]);
-                cm.sendOk("Enjoy your new and improved face!");
+                cm.sendOk("享受你的新面容吧！");
             } else {
-                cm.sendOk("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
+                cm.sendOk("嗯...看起来你没有这个地方专门的优惠券。很抱歉要说这个，但没有优惠券，你就不能进行整形手术了...");
             }
 
             cm.dispose();

@@ -1,4 +1,4 @@
 ﻿function start() {
-    cm.sendNext("It looks like there's nothing suspecious in the area.");
+    cm.sendNext("看起来这个地区没有什么可疑的东西。");
     cm.dispose();
 }

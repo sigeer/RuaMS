@@ -47,14 +47,14 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (!cm.isQuestStarted(20407)) {
-                cm.sendOk("... Knight, you still #bseem unsure to face this fight#k, don't you? There's no grace in challenging someone when they are still not mentally ready for the battle. Talk your peace to that big clumsy bird of yours, maybe it'll put some guts on you.");
+                cm.sendOk("“... 骑士，你似乎还不确定要面对这场战斗，是吗？挑战一个人的时候，如果他们还没有心理准备进行战斗，那就没有什么优雅可言。和你那只笨拙的大鸟说说你的想法，也许它会给你一些勇气。”");
                 cm.dispose();
                 return;
             }
 
             cm.sendAcceptDecline("Hahahahaha! This place's Empress is already under my domain, that's surely a great advance on the #bBlack Wings#k' overthrow towards Maple World... And you, there? Still wants to face us? Or, better yet, since you seem strong enough to be quite a supplementary reinforcement at our service, #rwill you meet our expectations and fancy joining us#k since there's nothing more you can do?");
         } else if (status == 1) {
-            cm.sendOk("Heh, cowards have no place on the #rBlack Mage's#k army. Begone!");
+            cm.sendOk("“哈，懦夫在#r黑魔法师#k的军队中没有立足之地。滚吧！”");
             cm.dispose();
         }
     }

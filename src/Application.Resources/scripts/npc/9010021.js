@@ -25,6 +25,6 @@
     @author wejrox
 */
 function start() {
-    cm.sendOk("... I came from distant planes to assist the fight against the #rBlack Magician#k. Right now I search my master, have you seen him?");
+    cm.sendOk("……我来自遥远的位面，来协助对抗#r黑魔法师#k的战斗。现在我在寻找我的主人，你见过他吗？");
     cm.dispose();
 }

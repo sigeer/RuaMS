@@ -47,10 +47,10 @@ function action(mode, type, selection) {
         }
         if (status == 0 && mode == 1) {
             if (cm.isQuestCompleted(4911)) {
-                cm.sendNext("Good job! You've solved all of my questions about NLC. Enjoy your trip!");
+                cm.sendNext("干得好！你解决了我关于NLC的所有问题。祝你旅途愉快！");
                 cm.dispose();
             } else if (cm.isQuestCompleted(4900) || cm.isQuestStarted(4900)) {  // thanks imbee for pointing out the quiz leak
-                cm.sendNext("Hey, pay attention, I'm trying to quiz you on another question, fam!");
+                cm.sendNext("嘿，注意一下，我要考你另一个问题，伙计！");
                 cm.dispose();
             } else {
                 var selStr = "What up! Name's Icebyrd Slimm, mayor of New Leaf City! Happy to see you accepted my invite. So, what can I do for you?#b"
@@ -63,51 +63,51 @@ function action(mode, type, selection) {
         } else if (status == 1) {
             switch (selection) {
                 case 0:
-                    cm.sendNext("I've always dreamed of building a city. Not just any city, but one where everyone was welcome. I used to live in Kerning City, so I decided to see if I could create a city. As I went along in finding the means to do so, I encountered many people, some of whom I've come to regard as friends. Like Professor Foxwit-he's our resident genius; saved him from a group of man-eating plants. Jack Masque is an old hunting buddy from Amoria-almost too smooth of a talker for his own good. Lita and I are old friends from Kerning City-she's saved me a few times with that weapon of hers; so I figured she was a perfect choice for Town Sheriff. It took a bit of persuasion, but she came to believe her destiny lies here. About our resident explorer, Barricade came searching for something; he agreed to bring whatever he found to the museum. I'd heard stories about him and his brother when I was still in Kerning City. And Elpam...well, let's just say he's not from around here. At all. We've spoken before, and he seems to mean well, so I've allowed him to stay. I just realized that I've rambled quite a bit! What else would you like to know?");
+                    cm.sendNext("我一直梦想建造一座城市。不是普通的城市，而是一个每个人都受欢迎的城市。我曾经住在废弃都市，所以我决定看看我是否能创建一个城市。在寻找实现这一目标的途径时，我遇到了许多人，其中一些我已经视为朋友。比如福克斯维特教授-他是我们的天才；我救他脱离了一群吃人植物。杰克·马斯克是我在阿莫利亚的老猎友-说话太圆滑了，对自己不利。莉塔和我是废弃都市的老朋友-她用她的武器救过我几次；所以我觉得她是镇长的完美选择。需要一些说服，但她最终相信她的命运在这里。至于我们的探险家，巴里卡德来寻找某样东西；他同意把他找到的东西带到博物馆。我在废弃都市的时候就听说过他和他的兄弟的故事。至于埃尔帕姆……嗯，我们就说他不是这里的人。完全不是。我们之前交谈过，他似乎心地善良，所以我允许他留下。我刚意识到我说了很多废话！你还想知道什么？");
                     status -= 2;
                     break;
                 case 1:
-                    cm.sendNext("A pretty spry guy for being 97. He's a time-traveller I ran into outside the city one day. Old guy had a bit of trouble with some jungle creatures-like they tried to eat him. In return for me saving him, he agreed to build a time museum. I get the feeling that he's come here for another reason, as he's mentioned more than a few times that New Leaf City has an interesting role to play in the future. Maybe you can find out a bit more...");
+                    cm.sendNext("一个97岁的老家伙，动作还挺敏捷。有一天我在城外遇到了他，他是个时空旅行者。这个老家伙在丛林里遇到了一些麻烦，好像有些丛林生物想要吃掉他。作为我救了他的回报，他答应建造一个时空博物馆。我感觉他来这里有其他目的，因为他多次提到新叶城在未来将扮演一个有趣的角色。也许你可以多了解一些……");
                     status -= 2;
                     break;
                 case 2:
-                    cm.sendNext("Heh, I asked the same thing when I saw the Professor building them. They're warp points. Pressing Up will warp you to another location. I recommend getting the hang of them, they're our transport system.");
+                    cm.sendNext("“嘿，当我看到教授在建造它们时，我也问了同样的问题。它们是传送点。按上键会将你传送到另一个位置。我建议你熟悉它们，它们是我们的交通系统。”");
                     status -= 2;
                     break;
                 case 3:
-                    cm.sendNext("The MesoGears are beneath Bigger Ben. It's a monster-infested section of Bigger Ben that Barricade discovered. It seems to reside in a separate section of the tower-quite strange if you ask me. I hear he needs a bit of help exploring it, you should see him. Be careful though, the Wolf Spiders in there are no joke.");
+                    cm.sendNext("MesoGears位于比格本塔下方。这是巴里卡德发现的一个充满怪物的区域。看起来它似乎位于塔的一个独立部分，如果你问我，这相当奇怪。我听说他需要一点帮助来探索它，你应该去看看他。不过要小心，那里的狼蜘蛛可不是闹着玩的。");
                     status -= 2;
                     break;
                 case 4:
-                    cm.sendNext("Ah...well. The Krakian Jungle is located on the outskirts of New Leaf City. Many new and powerful creatures roam those areas, so you'd better be prepared to fight if you head out there. It's at the right end of town. Rumors abound that the Jungle leads to a lost city, but we haven't found anything yet.");
+                    cm.sendNext("“啊...嗯。克拉基亚丛林位于新叶城的郊外。许多新的、强大的生物在那些地区漫游，所以如果你要去那里，最好做好战斗的准备。它位于城镇的右端。有传言说丛林通向一个失落的城市，但我们还没有找到任何东西。”");
                     status -= 2;
                     break;
                 case 5:
-                    cm.sendNext("Well, when John found himself in the MesoGears portion of Bigger Ben, he stood on one and went to another location. However, he could only head back and forth-they don't cycle through like the Foxwit Door. Ancient tech for you.");
+                    cm.sendNext("嗯，当约翰发现自己在大本钟的迷思齿轮部分时，他站在一个上，然后去了另一个地方。然而，他只能来回走动，它们不像狐狡之门那样循环。这就是古老的科技。");
                     status -= 2;
                     break;
                 case 6:
-                    cm.sendNext("Well, you'll see them just about everywhere. They're areas under construction. The Red lights mean it's not finished, but the Green lights mean it's open. Check back often, we're always building!");
+                    cm.sendNext("嗯，你几乎可以在任何地方看到它们。它们是正在施工的区域。红灯表示还没完工，但绿灯表示已经开放。经常回来看看，我们一直在建设中！");
                     status -= 2;
                     break;
                 case 7:
-                    cm.sendNext("Ah, Jack. You know those guys that are too cool for school? The ones who always seem to get away with everything? AND get the girl? Well, that's Jack, but without the girl. He thinks he blew his chance, and began wearing that mask to hide his true identity. My lips are sealed about who he is, but he's from Amoria. He might tell you a bit more if you ask him.");
+                    cm.sendNext("啊，杰克。你知道那些自以为很酷、总是能逃脱一切惩罚的家伙吗？还能追到女孩？嗯，那就是杰克，只是没有女孩。他觉得自己错失了机会，于是开始戴上面具隐藏真实身份。我对他的真实身份守口如瓶，但他来自阿莫利亚。如果你问他，他可能会告诉你更多。");
                     status -= 2;
                     break;
                 case 8:
-                    cm.sendNext("I've known Lita for a while, though we've just recently rekindled our friendship. I didn't see her for quite a bit, but I understand why. She trained for a very, very long time as a Thief. Matter of fact, that's how we first met! I was besieged by a group of wayward Mushrooms, and she jumped in to help. When it was time to pick a sheriff, it was a no-brainer. She's made a promise to help others in their training and protect the city, so if you're interested in a bit of civic duty, speak with her.");
+                    cm.sendNext("我认识莉塔有一段时间了，虽然我们最近才重新燃起友谊。我有一段时间没见到她，但我理解为什么。她作为一个盗贼进行了非常非常长时间的训练。事实上，那就是我们第一次见面的方式！我被一群迷失的蘑菇围攻，她跳了出来帮忙。当选举警长的时候，毫无疑问是她。她承诺要帮助其他人进行训练并保护城市，所以如果你对公民义务感兴趣，可以和她交谈一下。");
                     status -= 2;
                     break;
                 case 9:
-                    cm.sendNext("Soon, my friend. Even though you can't see them, the city developers are hard at work. When they're ready, we'll open them. I know you're looking forward to it and so am I!");
+                    cm.sendNext("很快，我的朋友。虽然你看不到他们，但城市开发者们正在努力工作。当他们准备好了，我们就会打开它们。我知道你期待着这一刻，我也是！");
                     status -= 2;
                     break;
                 case 10:
                     if (cm.getLevel() >= minlevel) {
-                        cm.sendNext("No problem. I'll give you something nice if you answer them correctly!");
+                        cm.sendNext("没问题。如果你回答正确，我会给你一些好东西！");
                         cm.startQuest(4900);
                     } else {
-                        cm.sendNext("Eager, are we? How about you explore a bit more before I let you take the quiz?");
+                        cm.sendNext("急切了吗？在我让你参加测验之前，你想再多探索一下吗？");
                     }
 
                     cm.dispose();

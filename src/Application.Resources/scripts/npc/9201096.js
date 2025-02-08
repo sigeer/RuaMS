@@ -42,7 +42,7 @@ function action(mode, type, selection) {
     if (mode == 1) {
         status++;
     } else {
-        cm.sendOk("Very well, see you around.");
+        cm.sendOk("好的，再见。");
         cm.dispose();
         return;
     }
@@ -97,9 +97,9 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (cm.getMeso() < cost * qty) {
-            cm.sendOk("Well, I DID say I would be needing some funds to craft it, wasn't it?");
+            cm.sendOk("嗯，我确实说过我需要一些资金来制作它，不是吗？");
         } else if (!cm.canHold(item, qty)) {
-            cm.sendOk("You didn't check if you got a slot to spare on your inventory before crafting, right?");
+            cm.sendOk("你在制作之前没有检查你的背包是否有空余的槽位，对吗？");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; complete && i < mats.length; i++) {
@@ -114,7 +114,7 @@ function action(mode, type, selection) {
             }
 
             if (!complete) {
-                cm.sendOk("There are not enough resources on your inventory. Please check it again.");
+                cm.sendOk("您的库存中资源不足。请再次检查。");
             } else {
                 if (mats instanceof Array) {
                     for (var i = 0; i < mats.length; i++) {
@@ -125,7 +125,7 @@ function action(mode, type, selection) {
                 }
                 cm.gainMeso(-cost * qty);
                 cm.gainItem(item, qty);
-                cm.sendOk("There it is! Thanks for your cooperation.");
+                cm.sendOk("就是这样！谢谢你的合作。");
             }
         }
         cm.dispose();

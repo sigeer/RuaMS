@@ -40,7 +40,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("I came from far-away places looking for people powerful enough to join my expedition against the evil that lays waste on this land. Are you, by any chance, one of those people?");
+            cm.sendOk("我来自遥远的地方，寻找足够强大的人加入我的远征队，对抗肆虐这片土地的邪恶。你，碰巧是其中之一吗？");
             cm.dispose();
         }
     }

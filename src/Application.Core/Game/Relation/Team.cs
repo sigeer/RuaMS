@@ -1,4 +1,4 @@
-﻿using net.server.world;
+using net.server.world;
 using server.maps;
 
 namespace Application.Core.Game.Relation

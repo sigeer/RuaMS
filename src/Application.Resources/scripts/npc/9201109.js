@@ -3,10 +3,10 @@
 
 function start() {
     if (cm.getPlayer().getMapId() == 610030500) {
-        cm.sendOk("As a powerful Elite Mage, Ridly knew the value of intelligence, the hallmark quality of a wizard. Thus, the Mage Chamber is a twisting maze of devious conception--the Teleport skill is the only skill you can use inside to get around, and Magic Claw is the only skill that will break the statues. You must also kill numerous monsters within. After you solve the maze and defeat all the foes within it, deduce which Mage Statue hides the Staff of First Magic and break it open to claim it! Good luck!");
+        cm.sendOk("作为一名强大的精英法师，里德利知道智慧的价值，这是巫师的标志品质。因此，法师之间是一个扭曲的阴谋迷宫——传送技能是你唯一能在里面使用的技能，魔法爪是唯一能打破雕像的技能。你还必须在其中杀死许多怪物。解决迷宫并打败其中所有的敌人后，推断出哪个法师雕像隐藏了第一魔法之杖，然后打破它来获取！祝你好运！");
         cm.dispose();
     } else if (cm.getPlayer().getMap().getId() == 610030000) {
-        cm.sendOk("A name forever remembered, Rafael was an exceptionally skilled sorcerer, and the foremost master of mental magic powers, telekinesis and telepathy. In addition to that, he was one of the 'Elite Mages' who mastered all the elements. He was last seen looking for the 'Temple of the Elementals' to turn the tide against the invading Krakian Army...");
+        cm.sendOk("一个永远被铭记的名字，拉斐尔是一个非常有技巧的巫师，也是心灵魔法、念力和心灵感应的首席大师。除此之外，他还是掌握所有元素的“精英法师”之一。他最后被看到是在寻找“元素神殿”，以扭转克拉克军队的入侵潮流……");
         cm.dispose();
     } else if (cm.getPlayer().getMapId() == 610030521) {
         if (cm.getPlayer().getMap().countMonsters() == 0) {
@@ -17,25 +17,25 @@ function start() {
             if ((stgStatus >> jobNiche) % 2 == 0) {
                 if (cm.canHold(4001257, 1)) {
                     cm.gainItem(4001257, 1);
-                    cm.sendOk("Good job.");
+                    cm.sendOk("干得好。");
 
                     stgStatus += (1 << jobNiche);
                     eim.setIntProperty("glpq5_room", stgStatus);
                 } else {
-                    cm.sendOk("Make room on your ETC inventory first.");
+                    cm.sendOk("先在你的杂项物品栏腾出空间。");
                 }
             } else {
-                cm.sendOk("The weapon inside this room has already been retrieved.");
+                cm.sendOk("这个房间里的武器已经被取走了。");
             }
         } else {
-            cm.sendOk("Eliminate all monsters.");
+            cm.sendOk("消灭所有怪物。");
         }
         cm.dispose();
     } /* else if (cm.getPlayer().getMapId() == 610030522) {
                 if (cm.getPlayer().getMap().countMonsters() == 0) {
                         cm.warp(610030522,0);
                 } else {
-                        cm.sendOk("Eliminate all monsters.");
+                        cm.sendOk("消灭所有怪物。");
                 }
                 cm.dispose();
         }

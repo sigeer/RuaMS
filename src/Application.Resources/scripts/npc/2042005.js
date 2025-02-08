@@ -31,10 +31,10 @@ function action(mode, type, selection) {
         if (status == 0) {
             if (cm.getParty() == null) {
                 status = 10;
-                cm.sendOk("You need to create a party before you can participate in Monster Carnival!");
+                cm.sendOk("在参加怪物嘉年华之前，你需要创建一个队伍！");
             } else if (!cm.isLeader()) {
                 status = 10;
-                cm.sendOk("If you want to start the battle, let the #bleader#k come and speak to me.");
+                cm.sendOk("如果你想开始战斗，让#组队队长#来找我谈谈。");
             } else {
                 var leaderMapid = cm.getMapId();
                 var party = cm.getParty().getMembers();
@@ -53,16 +53,16 @@ function action(mode, type, selection) {
 
                 if (party >= 1) {
                     status = 10;
-                    cm.sendOk("You do not have enough people in your party. You need a party with #b" + cpqMinAmt + "#k - #r" + cpqMaxAmt + "#k members and they should be on the map with you.");
+                    cm.sendOk("你的队伍人数不够。你需要一个有 #b" + cpqMinAmt + "#k - #r" + cpqMaxAmt + "#k 名成员的队伍，并且他们应该和你在同一地图上。");
                 } else if (lvlOk != inMap) {
                     status = 10;
-                    cm.sendOk("Make sure everyone in your party is among the correct levels (" + cpqMinLvl + "~" + cpqMaxLvl + ")!");
+                    cm.sendOk("确保你的队伍中的每个人都处于正确的等级范围内（" + cpqMinLvl + "~" + cpqMaxLvl + "）！");
                 } else if (isOutMap > 0) {
                     status = 10;
-                    cm.sendOk("There are some of the party members that is not on the map!");
+                    cm.sendOk("有一些队员不在地图上！");
                 } else {
                     if (!cm.sendCPQMapLists2()) {
-                        cm.sendOk("All Monster Carnival fields are currently in use! Try again later.");
+                        cm.sendOk("所有的怪物嘉年华场地目前都在使用中！请稍后再试。");
                         cm.dispose();
                     }
                 }
@@ -73,15 +73,15 @@ function action(mode, type, selection) {
                     cm.challengeParty2(selection);
                     cm.dispose();
                 } else {
-                    cm.sendOk("The room is currently full.");
+                    cm.sendOk("房间目前已满。");
                     cm.dispose();
                 }
             } else {
                 var party = cm.getParty().getMembers();
                 if ((selection === 0 || selection === 1) && party.size() < (YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : 2)) {
-                    cm.sendOk("You need at least 2 players to participate in the battle!");
+                    cm.sendOk("你至少需要2名玩家才能参与战斗！");
                 } else if ((selection === 2) && party.size() < (YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : 3)) {
-                    cm.sendOk("You need at least 3 players to participate in the battle!");
+                    cm.sendOk("你至少需要3名玩家参与战斗！");
                 } else {
                     cm.cpqLobby2(selection);
                 }

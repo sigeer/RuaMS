@@ -3,6 +3,6 @@
 }
 
 function action(mode, type, selection) {
-    cm.sendNext("Zzzzz...");
+    cm.sendNext("呼呼...");
     cm.dispose();
 }

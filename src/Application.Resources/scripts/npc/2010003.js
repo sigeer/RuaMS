@@ -150,11 +150,11 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (!cm.canHold(item, 1)) {
-            cm.sendOk("Check your inventory for a free slot first.");
+            cm.sendOk("首先检查你的物品栏是否有空位。");
             cm.dispose();
             return;
         } else if (cm.getMeso() < cost) {
-            cm.sendOk("I'm afraid you cannot afford my services.");
+            cm.sendOk("恐怕你支付不起我的服务费。");
             cm.dispose();
             return;
         } else {
@@ -170,7 +170,7 @@ function action(mode, type, selection) {
         }
 
         if (!complete) {
-            cm.sendOk("I'm afraid that substitute items are unacceptable, if you want your gloves made properly.");
+            cm.sendOk("如果你想要你的手套做得好，替代物品是不可接受的，我很抱歉。");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; i < mats.length; i++) {
@@ -182,7 +182,7 @@ function action(mode, type, selection) {
 
             cm.gainMeso(-cost);
             cm.gainItem(item, 1);
-            cm.sendOk("Done. If you need anything else, just ask again.");
+            cm.sendOk("完成。如果你需要其他的东西，再问一次就好。");
         }
         cm.dispose();
     }

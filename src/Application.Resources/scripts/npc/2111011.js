@@ -29,11 +29,11 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendYesNo("Amidst the throng of spider webs, there's a wall behind it that seems to have something written on it. Perhaps you should take a closer look at the wall?");
+            cm.sendYesNo("在一片蜘蛛网的拥挤中，有一堵墙后面似乎写着什么东西。也许你应该仔细看看墙？");
         }
         else if (status == 1) {
             cm.setQuestProgress(3311, 5);
-            cm.sendOk("On a wall full of graffiti, there seems to be a phrase that really stands out above the rest. #bIt's in a form of a pendant...#k What does that mean?");
+            cm.sendOk("在一面满是涂鸦的墙上，似乎有一句话格外显眼。#b它是以一种吊坠的形式出现……#k 这是什么意思？");
         }
         else {
             cm.dispose();

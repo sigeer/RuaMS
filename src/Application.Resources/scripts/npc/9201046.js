@@ -63,21 +63,21 @@ function action(mode, type, selection) {
                     var rnd = Math.floor(Math.random() * 3);
                     cm.gainItem(baseId + rnd);
 
-                    cm.sendNext("Bravo! You are the first to claim the prize for fetching 35 #t4031597#. Take this cape as merit for your feat.");
+                    cm.sendNext("太棒了！你是第一个领取35个#t4031597#奖励的人。拿着这件披风作为你的功绩奖赏吧。");
                     cm.gainItem(4031597, -35);
                     cm.gainExp(4000 * cm.getPlayer().getExpRate());
                 } else if (eim.getIntProperty("marriedGroup") == 0) {
-                    cm.sendNext("Check if you have a slot available before talking about receiving prizes!");
+                    cm.sendNext("在谈论领取奖品之前，请检查您是否有可用的槽位！");
                 } else {
-                    cm.sendNext("35 #t4031597#. Nicely done, too bad someone took the prize first. Hurry up to get the last moments of the bonus stage!");
+                    cm.sendNext("35 #t4031597#。做得很好，可惜有人先拿走了奖品。赶紧去抓住奖励阶段的最后时刻！");
                     cm.gainItem(4031597, -35);
                     cm.gainExp(4000 * cm.getPlayer().getExpRate());
                 }
             } else {
-                cm.sendNext("To claim a prize here, get to me 35 #t4031597# from the mobs spawned from the boxes. Only the #rfirst player can claim the big prize#k, although others can still claim an EXP boost from this feat. Alternatively, one can choose to #bskip this bonus stage#k and go for the usual one by passing #bthrough the portals#k.");
+                cm.sendNext("要在这里领取奖品，从生成的怪物身上收集35个#t4031597#给我。只有#r第一个玩家可以领取大奖#k，尽管其他人仍然可以从这个壮举中获得经验加成。或者，你可以选择#b跳过这个奖励阶段#k，通过#b传送门#k继续进行通常的游戏。");
             }
         } else {
-            cm.sendNext("Hurry up to get the last moments of the bonus stage!");
+            cm.sendNext("赶紧去抓住奖励阶段的最后时刻！");
         }
 
         cm.dispose();

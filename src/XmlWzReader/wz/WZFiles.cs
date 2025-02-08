@@ -37,8 +37,7 @@ public class WZFiles
 
     private static string getWzDirectory()
     {
-        // Either provide a custom directory path through the "wz-path" property when launching the .jar, or don't provide one to use the default "wz" directory
-        var propertyPath = Environment.GetEnvironmentVariable("wz-path");
+        var propertyPath = Environment.GetEnvironmentVariable("ms-wz");
         if (propertyPath != null && Directory.Exists(propertyPath))
         {
             return propertyPath;

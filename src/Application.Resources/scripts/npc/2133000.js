@@ -50,7 +50,7 @@ function action(mode, type, selection) {
         if (status == 0) {
             em = cm.getEventManager("EllinPQ");
             if (em == null) {
-                cm.sendOk("The Ellin PQ has encountered an error.");
+                cm.sendOk("艾琳组队任务遇到了一个错误。");
                 cm.dispose();
                 return;
             } else if (cm.isUsingOldPqNpcStyle()) {
@@ -58,36 +58,36 @@ function action(mode, type, selection) {
                 return;
             }
 
-            cm.sendSimple("#e#b<Party Quest: Forest of Poison Haze>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble or join a team to solve the puzzles of the #bForest of Poison Haze#k? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.\r\n#L3#I would like to reclaim a prize.");
+            cm.sendSimple("#e#b<组队任务：毒雾森林>\r\n#k#n" + em.getProperty("party") + "\r\n\r\n你想要组建或加入一个队伍来解决#b毒雾森林#k的谜题吗？让你的#b队伍领袖#k和我交谈或者自己组建一个队伍。#b\r\n#L0#我想参加组队任务。\r\n#L1#我想" + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "禁用" : "启用") + "组队搜索。\r\n#L2#我想了解更多细节。\r\n#L3#我想要领取奖励。");
         } else if (status == 1) {
             if (selection == 0) {
                 if (cm.getParty() == null) {
-                    cm.sendOk("You can participate in the party quest only if you are in a party.");
+                    cm.sendOk("只有当你加入一个队伍时，才能参加派对任务。");
                     cm.dispose();
                 } else if (!cm.isLeader()) {
-                    cm.sendOk("Your party leader must talk to me to start this party quest.");
+                    cm.sendOk("你的队长必须与我交谈才能开始这个组队任务。");
                     cm.dispose();
                 } else {
                     var eli = em.getEligibleParty(cm.getParty());
                     if (eli.size() > 0) {
                         if (!em.startInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
-                            cm.sendOk("Another party has already entered the #rParty Quest#k in this channel. Please try another channel, or wait for the current party to finish.");
+                            cm.sendOk("另一个队伍已经进入了该频道的#r组队任务#k。请尝试其他频道，或者等待当前队伍完成。");
                         }
                     } else {
-                        cm.sendOk("You cannot start this party quest yet, because either your party is not in the range size, some of your party members are not eligible to attempt it or they are not in this map. If you're having trouble finding party members, try Party Search.");
+                        cm.sendOk("你目前无法开始这个组队任务，因为你的队伍可能不符合人数要求，有些队员可能不符合尝试条件，或者他们不在这张地图上。如果你找不到队员，可以尝试使用组队搜索功能。");
                     }
 
                     cm.dispose();
                 }
             } else if (selection == 1) {
                 var psState = cm.getPlayer().toggleRecvPartySearchInvite();
-                cm.sendOk("Your Party Search status is now: #b" + (psState ? "enabled" : "disabled") + "#k. Talk to me whenever you want to change it back.");
+                cm.sendOk("你的组队搜索状态现在是：#b" + (psState ? "启用" : "禁用") + "#k。想要改变状态时随时找我谈谈。");
                 cm.dispose();
             } else if (selection == 2) {
-                cm.sendOk("#e#b<Party Quest: Forest of Poison Haze>#k#n\r\nIn this PQ, your mission is to progressively make your way through the woods, taking on all baddies in your path, solving many puzzles you encounter and rallying yourselves to take the best of teamwork to overcome time limits and powerful creatures. Clearing the final boss, your team have a chance to obtain a marble that, #bwhen dropped by the fountain at the exit map#k, will guarantee the team extra prizes. Good luck.");
+                cm.sendOk("#e#b<组队任务：毒雾森林>#k#n\r\n在这个组队任务中，你的任务是逐步穿越森林，对抗路上的所有坏家伙，解决你遇到的许多谜题，并团结一致，充分发挥团队合作的优势，以克服时间限制和强大的生物。击败最终BOSS后，你的团队有机会获得一个大理石，#b当它被喷泉在出口地图上掉落时#k，将会确保团队获得额外的奖励。祝你好运。");
                 cm.dispose();
             } else {
-                cm.sendSimple("So, what prize do you want to obtain?\r\n#b#L0#Give me Altaire Earrings.\r\n#L1#Give me Glittering Altaire Earrings.\r\n#L2#Give me Brilliant Altaire Earrings");
+                cm.sendSimple("那么，你想要获得什么奖品？\r\n#b#L0#给我阿尔泰耳环。\r\n#L1#给我闪亮的阿尔泰耳环。\r\n#L2#给我闪耀的阿尔泰耳环。");
             }
         } else if (status == 2) {
             if (selection == 0) {
@@ -96,7 +96,7 @@ function action(mode, type, selection) {
                     cm.gainItem(4001198, -10);
                     cm.dispose();
                 } else {
-                    cm.sendOk("You either have Altair Earrings already or you do not have 10 Altair Fragments.");
+                    cm.sendOk("你要么已经有了阿尔泰耳环，要么没有10个阿尔泰碎片。");
                     cm.dispose();
                 }
             } else if (selection == 1) {
@@ -106,7 +106,7 @@ function action(mode, type, selection) {
                     cm.gainItem(4001198, -10);
                     cm.dispose();
                 } else {
-                    cm.sendOk("You either don't have Altair Earrings already or you do not have 10 Altair Fragments.");
+                    cm.sendOk("你要么还没有阿尔泰耳环，要么没有10个阿尔泰碎片。");
                     cm.dispose();
                 }
             } else if (selection == 2) {
@@ -116,7 +116,7 @@ function action(mode, type, selection) {
                     cm.gainItem(4001198, -10);
                     cm.dispose();
                 } else {
-                    cm.sendOk("You either don't have Glittering Altair Earrings already or you do not have 10 Altair Fragments.");
+                    cm.sendOk("你要么还没有闪耀的阿尔泰尔耳环，要么没有10个阿尔泰尔碎片。");
                     cm.dispose();
                 }
             }

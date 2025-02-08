@@ -76,7 +76,7 @@ function start() {
 
 function action(mode, type, selection) {
     if (mode <= 0) {
-        cm.sendOk("Hmmm...it shouldn't be a bad deal for you. Come see me at the right time and you may get a much better item to be offered. Anyway, let me know if you have a change of mind.");
+        cm.sendOk("嗯...这对你来说不应该是个坏交易。在合适的时间来找我，你可能会得到一个更好的物品。无论如何，如果你改变主意了，就让我知道。");
         cm.dispose();
         return;
     }
@@ -84,14 +84,14 @@ function action(mode, type, selection) {
     status++;
     if (status == 0) { // first interaction with NPC
         if (cm.getQuestStatus(8225) != 2) {
-            cm.sendNext("Hey, I'm not a bandit, ok?");
+            cm.sendNext("嘿，我不是强盗，好吗？");
             cm.dispose();
             return;
         }
 
-        cm.sendNext("Hey, got a little bit of time? Well, my job is to collect items here and sell them elsewhere, but these days the monsters have become much more hostile so it have been difficult to get good items... What do you think? Do you want to do some business with me?");
+        cm.sendNext("嘿，有点时间吗？我的工作是在这里收集物品然后在其他地方出售，但最近怪物变得更加敌对，所以很难得到好的物品... 你觉得呢？想和我做点生意吗？");
     } else if (status == 1) {
-        cm.sendYesNo("The deal is simple. You get me something I need, I get you something you need. The problem is, I deal with a whole bunch of people, so the items I have to offer may change every time you see me. What do you think? Still want to do it?");
+        cm.sendYesNo("这个交易很简单。你给我我需要的东西，我给你你需要的东西。问题是，我和很多人打交道，所以我能提供的物品可能每次见到我的时候都会改变。你觉得怎么样？还想做吗？");
     } else if (status == 2) {
         var eQuestChoice = makeChoices(eQuestChoices);
         cm.sendSimple(eQuestChoice);
@@ -105,24 +105,24 @@ function action(mode, type, selection) {
             qnt = 25;
         }
 
-        cm.sendYesNo("Let's see, you want to trade your #b" + qnt + " #t" + requiredItem + "##k with my stuff, right? Before trading make sure you have an empty slot available on your use or etc. inventory. Now, do you want to trade with me?");
+        cm.sendYesNo("让我看看，你想用我的东西交换你的 #b" + qnt + " #t" + requiredItem + "##k，对吧？在交易之前，请确保你的消耗品或其他物品栏有空位。现在，你想和我交易吗？");
     } else if (status == 4) {
         itemSet = (Math.floor(Math.random() * eQuestPrizes[lastSelection].length));
         reward = eQuestPrizes[lastSelection];
         prizeItem = reward[itemSet][0];
         prizeQuantity = reward[itemSet][1];
         if (!cm.haveItem(requiredItem, qnt)) {
-            cm.sendOk("Hmmm... are you sure you have #b" + qnt + " #t" + requiredItem + "##k? If so, then please check and see if your item inventory is full or not.");
+            cm.sendOk("“嗯... 你确定你有 #b" + qnt + " #t" + requiredItem + "##k 吗？如果是的话，请检查一下你的物品栏是否已满。”");
         } else if (prizeItem == 0) {
             cm.gainItem(requiredItem, -qnt);
             cm.gainMeso(prizeQuantity);
-            cm.sendOk("For your #b" + qnt + " #t" + requiredItem + "##k, here's #b" + prizeQuantity + " mesos#k. What do you think? Did you like the items I gave you in return? I plan on being here for awhile, so if you gather up more items, I'm always open for a trade...");
+            cm.sendOk("对于你的 #b" + qnt + " #t" + requiredItem + "##k，这里有 #b" + prizeQuantity + " 金币#k。你觉得怎么样？你喜欢我给你的物品吗？我打算在这里待一段时间，所以如果你收集更多物品，我随时可以交易…");
         } else if (!cm.canHold(prizeItem)) {
-            cm.sendOk("Your use and etc. inventory seems to be full. You need the free spaces to trade with me! Make room, and then find me.");
+            cm.sendOk("你的使用等等物品栏似乎已经满了。你需要腾出空间才能和我交易！清理一下，然后找到我。");
         } else {
             cm.gainItem(requiredItem, -qnt);
             cm.gainItem(prizeItem, prizeQuantity);
-            cm.sendOk("For your #b" + qnt + " #t" + requiredItem + "##k, here's my #b" + prizeQuantity + " #t" + prizeItem + "##k. What do you think? Did you like the items I gave you in return? I plan on being here for awhile, so if you gather up more items, I'm always open for a trade...");
+            cm.sendOk("对于你的 #b" + qnt + " #t" + requiredItem + "##k，这是我的 #b" + prizeQuantity + " #t" + prizeItem + "##k。你觉得怎么样？你喜欢我给你的回报物品吗？我打算在这里待一段时间，所以如果你收集到更多物品，我随时可以交易…");
         }
         cm.dispose();
     }

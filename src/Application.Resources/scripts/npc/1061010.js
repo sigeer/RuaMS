@@ -22,7 +22,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendYesNo("Would you like to leave?");
+            cm.sendYesNo("你想离开吗？");
         } else if (status == 1) {
             var mapid = cm.getMapId(), exitid = mapid;
             if (mapid == 108010101) {

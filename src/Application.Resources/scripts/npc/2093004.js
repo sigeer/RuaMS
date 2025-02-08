@@ -24,7 +24,7 @@ var menu;
 var cost = 10000;
 
 function start() {
-    cm.sendYesNo("Will you move to #b#m230000000##k now? The price is #b" + cost + " mesos#k.");
+    cm.sendYesNo("你现在要移动到 #b#m230000000##k 吗？价格是 #b" + cost + " 冒险币#k。");
 }
 
 function action(mode, type, selection) {
@@ -32,7 +32,7 @@ function action(mode, type, selection) {
         cm.dispose();
     } else {
         if (mode == 0) {
-            cm.sendNext("Hmmm ... too busy to do it right now? If you feel like doing it, though, come back and find me.");
+            cm.sendNext("嗯...现在太忙了？如果你想做的话，回来找我吧。");
             cm.dispose();
             return;
         }
@@ -43,7 +43,7 @@ function action(mode, type, selection) {
         }
         if (status == 1) {
             if (cm.getPlayer().getMeso() < cost) {
-                cm.sendOk("I don't think you have enough money...");
+                cm.sendOk("我认为你没有足够的钱……");
             } else {
                 cm.gainMeso(-cost);
                 cm.warp(230000000);

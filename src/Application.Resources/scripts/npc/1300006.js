@@ -40,7 +40,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("Hey guys, what's going on? I'm already getting married at this age? But I'm only a child!!! How comes?");
+            cm.sendOk("嘿，伙计们，怎么回事？我这么小就结婚了？可我还是个孩子啊！怎么会这样？");
             cm.dispose();
         }
     }

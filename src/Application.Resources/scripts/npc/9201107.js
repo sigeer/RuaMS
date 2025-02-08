@@ -3,10 +3,10 @@
 
 function start() {
     if (cm.getPlayer().getMapId() == 610030500) {
-        cm.sendOk("Unbelievable strength and power, anyone can be achieve. But what makes a warrior special is their iron will. No matter the odds, a true warrior pushes through until victory is assured. Thus, the Warrior Chamber is a brutal road where the room itself is against you, as well as the ultra-strong monsters within. Use your skills to shake off the effects and defeat the monsters within to reach the Warrior Statue and claim the Master Sword. Good luck!");
+        cm.sendOk("难以置信的力量和能力，任何人都可以实现。但是让一个战士特别的是他们的铁一般意志。无论面对多大的困难，真正的战士都会坚持到胜利确保为止。因此，战士之厅是一条残酷的道路，房间本身和其中的超强怪物都在与你对抗。利用你的技能摆脱影响，打败其中的怪物，到达战士雕像并夺取圣剑。祝你好运！");
         cm.dispose();
     } else if (cm.getPlayer().getMap().getId() == 610030000) {
-        cm.sendOk("A legendary family of heroes, the de Vrisiens are the original founders of the Stormcasters. The family is unique, as each son or daughter inherits the full fighting techniques of their ancestors. This ability has proven to be immensely useful; as it allows for nearly unlimited strategy, improvisation and tactics to defeat all enemies. A true family for the generations.");
+        cm.sendOk("一支传奇英雄家族，德弗里西恩家族是风暴法师的创始人。这个家族很特别，因为每个儿子或女儿都继承了他们祖先的全部战斗技巧。这种能力被证明非常有用；因为它几乎可以无限制地运用战略、即兴和战术来打败所有的敌人。一个真正的代代相传的家族。");
         cm.dispose();
     } else if (cm.getPlayer().getMapId() == 610030510) {
         if (cm.getPlayer().getMap().countMonsters() == 0) {
@@ -17,18 +17,18 @@ function start() {
             if ((stgStatus >> jobNiche) % 2 == 0) {
                 if (cm.canHold(4001259, 1)) {
                     cm.gainItem(4001259, 1);
-                    cm.sendOk("Good job.");
+                    cm.sendOk("干得好。");
 
                     stgStatus += (1 << jobNiche);
                     eim.setIntProperty("glpq5_room", stgStatus);
                 } else {
-                    cm.sendOk("Make room on your ETC inventory first.");
+                    cm.sendOk("先在你的杂项物品栏腾出空间。");
                 }
             } else {
-                cm.sendOk("The weapon inside this room has already been retrieved.");
+                cm.sendOk("这个房间里的武器已经被取走了。");
             }
         } else {
-            cm.sendOk("Eliminate all Crimson Guardians.");
+"Eliminate all Crimson Guardians."
         }
         cm.dispose();
     }

@@ -559,5 +559,10 @@ namespace Application.Core.Game
         {
             throw new NotImplementedException();
         }
+
+        public void OpenNpc(int npcid, string? script = null)
+        {
+            throw new BusinessCharacterOfflineException();
+        }
     }
 }

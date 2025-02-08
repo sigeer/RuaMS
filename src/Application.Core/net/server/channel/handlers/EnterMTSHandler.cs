@@ -21,6 +21,7 @@
 */
 
 
+using constants.id;
 using net.packet;
 using server;
 using server.maps;
@@ -37,7 +38,7 @@ public class EnterMTSHandler : AbstractPacketHandler
 
         if (!YamlConfig.config.server.USE_MTS)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            c.OpenNpc(NpcId.BEI_DOU_NPC_BASE);
             return;
         }
 

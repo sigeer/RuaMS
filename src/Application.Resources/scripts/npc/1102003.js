@@ -43,7 +43,7 @@ function start() {
 
         cm.sendYesNo(sendStr);
     } else {
-        cm.sendOk("Welcome to the Knights Chamber.");
+        cm.sendOk("欢迎来到骑士之间。");
         cm.dispose();
     }
 }
@@ -60,15 +60,15 @@ function action(mode, type, selection) {
         if (spawnPnpc) {
             if (mode > 0) {
                 if (cm.getMeso() < spawnPnpcFee) {
-                    cm.sendOk("Sorry, you don't have enough mesos to purchase your place on the Hall of Fame.");
+                    cm.sendOk("抱歉，您没有足够的冒险币购买在名人堂上的位置。");
                     cm.dispose();
                     return;
                 }
                 if (PlayerNPC.spawnPlayerNPC(GameConstants.getHallOfFameMapid(cm.getJob()), cm.getPlayer())) {
-                    cm.sendOk("There you go! Hope you will like it.");
+                    cm.sendOk("给你了！希望你会喜欢它。");
                     cm.gainMeso(-spawnPnpcFee);
                 } else {
-                    cm.sendOk("Sorry, the Hall of Fame is currently full...");
+                    cm.sendOk("抱歉，名人堂目前已满...");
                 }
             }
 

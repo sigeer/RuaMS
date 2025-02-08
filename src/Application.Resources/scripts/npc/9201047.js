@@ -50,7 +50,7 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (cm.getMapId() != 670010200) {
-                cm.sendYesNo("So, are you going to leave this place?");
+                cm.sendYesNo("那么，你打算离开这个地方吗？");
             } else {
                 if (cm.isEventLeader()) {
                     var eim = cm.getEventInstance();
@@ -60,7 +60,7 @@ function action(mode, type, selection) {
                         cm.gainItem(4031595, -1);
                         eim.setIntProperty("statusStg" + stage, 1);
 
-                        cm.sendOk("You retrieved the #t4031595#, splendid! You may report to Amos about your success on this task.");
+                        cm.sendOk("你已经找到了#t4031595#，太棒了！你可以向阿莫斯报告你在这个任务中的成功。");
                     } else if (st < 1 && cm.getMap().countMonsters() == 0) {
                         eim.setIntProperty("statusStg" + stage, 1);
 
@@ -69,16 +69,16 @@ function action(mode, type, selection) {
                         var mobObj = LifeFactory.getMonster(9400518);
                         mapObj.spawnMonsterOnGroundBelow(mobObj, new Point(-245, 810));
 
-                        cm.sendOk("The fierry appeared! Defeat it to get the #b#t4031596##k!");
+                        cm.sendOk("烈焰魔出现了！打败它就能获得#b#t4031596##k！");
                     } else {
                         if (st < 1) {
-                            cm.sendOk("Your task is to recover a shard of the Magik Mirror. To do so, you will need a #b#t4031596##k, that drops on a fierry that appears when all other mobs are killed. To access the rooms the mobs are, pick the portal corresponding to your gender and kill all mobs there. Ladies take the left side, gentlemen the right side.");
+                            cm.sendOk("你的任务是恢复魔镜的碎片。为此，你需要一枚#b#t4031596##k，这枚物品会在其他怪物全部被杀死后出现的火焰怪身上掉落。要进入怪物所在的房间，选择与你性别对应的传送门，然后消灭那里的所有怪物。女士们走左边，先生们走右边。");
                         } else {
-                            cm.sendOk("Your task is to recover a shard of the Magik Mirror. Defeat the fierry to get the #b#t4031596##k.");
+                            cm.sendOk("你的任务是找回魔镜碎片。打败火焰精灵就能得到#b#t4031596##k。");
                         }
                     }
                 } else {
-                    cm.sendOk("Your task is to recover a shard of the Magik Mirror. To do so, you will need a #b#t4031596##k, that drops on a fierry that appears when all other mobs are killed. To access the rooms the mobs are, pick the portal corresponding to your gender and kill all mobs there. Ladies take the left side, gentlemen the right side. #bYour leader#k must bring the #b#t4031595##k to have my pass.");
+                    cm.sendOk("你的任务是找回魔镜的碎片。为此，你需要一枚#b#t4031596##k，这个物品会在其他怪物全部被消灭后出现的火焰怪身上掉落。要进入怪物所在的房间，选择与你性别对应的传送门，然后消灭那里的所有怪物。女士们走左边，先生们走右边。#b你们的领袖#k必须携带#b#t4031595##k才能获得我的通行证。");
                 }
 
                 cm.dispose();

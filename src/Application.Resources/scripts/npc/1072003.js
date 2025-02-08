@@ -47,23 +47,23 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (cm.isQuestCompleted(100010)) {
-                cm.sendOk("You're truly a hero!");
+                cm.sendOk("你真是一个真正的英雄！");
                 cm.dispose();
             } else if (cm.isQuestCompleted(100009)) {
-                cm.sendNext("Alright I'll let you in! Defeat the monsters inside, collect 30 Dark Marbles, then strike up a conversation with a colleague of mine inside. He'll give you #bThe Proof of a Hero#k, the proof that you've passed the test. Best of luck to you.");
+                cm.sendNext("好的，我会让你进去！打败里面的怪物，收集30个黑暗弹珠，然后和我同事里面的一个同事交谈。他会给你#b英雄的证明#k，这是你通过测试的证明。祝你好运。");
                 status = 3;
             } else if (cm.isQuestStarted(100009)) {
-                cm.sendNext("Oh, isn't this a letter from the #bDark Lord#k?");
+                cm.sendNext("哦，这不是来自#b黑暗领主#k的一封信吗？");
             } else {
-                cm.sendOk("I can show you the way once your ready for it.");
+                cm.sendOk("一旦你准备好了，我可以告诉你路线。");
                 cm.dispose();
             }
         } else if (status == 1) {
-            cm.sendNextPrev("So you want to prove your skills? Very well...");
+            cm.sendNextPrev("所以你想证明你的技能？好吧...");
         } else if (status == 2) {
             cm.sendAcceptDecline("I will give you a chance if you're ready.");
         } else if (status == 3) {
-            cm.sendOk("You will have to collect me #b30 #t4031013##k. Good luck.");
+            cm.sendOk("你需要收集 #b30 个 #t4031013#。祝你好运。");
             cm.completeQuest(100009);
             cm.startQuest(100010);
             cm.gainItem(4031011, -1);

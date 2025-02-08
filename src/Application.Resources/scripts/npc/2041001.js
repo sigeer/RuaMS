@@ -31,14 +31,14 @@ function start() {
 
 function action(mode, type, selection) {
     if (status == 0) {
-        cm.sendYesNo("Do you wish to leave the train?");
+        cm.sendYesNo("你想要离开火车吗？");
         status++;
     } else {
         if ((status == 1 && type == 1 && selection == -1 && mode == 0) || mode == -1) {
             cm.dispose();
         } else {
             if (status == 1) {
-                cm.sendNext("Alright, see you next time. Take care.");
+                cm.sendNext("好的，下次见。保重。");
                 status++;
             } else if (status == 2) {
                 if (cm.getPlayer().getMapId() == 200000122) {

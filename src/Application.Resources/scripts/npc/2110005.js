@@ -40,7 +40,7 @@ function start() {
 function action(mode, type, selection) {
     if (mode == 1) {
         if (cm.getMeso() < 1500) {
-            cm.sendNext("I am sorry, but I think you are short on mesos. I am afraid I can't let you ride this if you do not have enough money to do so. Please come back when you have enough money to use this.");
+            cm.sendNext("对不起，但我觉得你的金币不够。恐怕如果你没有足够的钱，我不能让你骑这个。请等你有足够的钱再来使用。");
             cm.dispose();
         } else {
             cm.warp(cm.getPlayer().getMapId() == 260020000 ? 261000000 : 260000000, 0);
@@ -48,7 +48,7 @@ function action(mode, type, selection) {
             cm.dispose();
         }
     } else if (mode == 0) {
-        cm.sendNext("Hmmm... too busy to do it right now? If you feel like doing it, though, come back and find me.");
+        cm.sendNext("嗯...现在太忙了？如果你想做的话，回来找我吧。");
     }
     cm.dispose();
 }

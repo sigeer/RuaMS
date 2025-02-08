@@ -43,19 +43,19 @@ function action(mode, type, selection) {
 
 
         if (status == 0) {
-            cm.sendSimple("Well, hello! Welcome to the Henesys Skin-Care! Would you like to have a firm, tight, healthy looking skin like mine?  With a #b#t5153000##k, you can let us take care of the rest and have the kind of skin you've always wanted~!\r\n#L1#Skin Care: #i5153000##t5153000##l");
+            cm.sendSimple("嗨，你好！欢迎来到明斯皮肤护理中心！你想要像我一样拥有紧致健康的皮肤吗？使用 #b#t5153000##k，你可以让我们来照顾剩下的事情，拥有你一直想要的肌肤~！\r\n#L1#皮肤护理：#i5153000##t5153000##l");
         } else if (status == 1) {
             if (cm.haveItem(5153000)) {
-                cm.sendStyle("With our specialized machine, you can see yourself after the treatment in advance. What kind of skin-treatment would you like to do? Choose the style of your liking.", skin);
+                cm.sendStyle("使用我们的专业机器，您可以提前看到治疗后的自己。您想做什么样的皮肤护理？选择您喜欢的风格。", skin);
             } else {
-                cm.sendOk("Um... you don't have the skin-care coupon you need to receive the treatment. Sorry, but I am afraid we can't do it for you...");
+                cm.sendOk("嗯...你没有你需要接受治疗的护肤券。抱歉，恐怕我们不能为你做这个...");
                 cm.dispose();
 
             }
         } else {
             cm.gainItem(5153000, -1);
             cm.setSkin(selection);
-            cm.sendOk("Enjoy your new and improved skin!");
+            cm.sendOk("享受你的新肤色吧！");
             cm.dispose();
         }
     }

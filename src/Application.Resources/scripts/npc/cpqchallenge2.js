@@ -55,7 +55,7 @@ function action(mode, type, selection) {
             } else {
                 cm.answerCPQChallenge(false);
                 cm.getChar().setChallenged(false);
-                cm.sendOk("The number of players between the teams is not the same.");
+                cm.sendOk("队伍之间的玩家数量不相同。");
             }
             cm.dispose();
         }

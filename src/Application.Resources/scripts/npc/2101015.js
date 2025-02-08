@@ -4,7 +4,7 @@ var status = 0;
 function start() {
     arena = cm.getPlayer().getAriantColiseum();
     if (arena == null) {
-        cm.sendOk("Hey, I did not see you on the field during the battle in the arena! What are you doing here?");
+        cm.sendOk("嘿，我在竞技场的战斗中没看到你！你在这里做什么？");
         cm.dispose();
         return;
     }
@@ -28,21 +28,21 @@ function action(mode, type, selection) {
         }
         if (status == 0) {
             menuStr = generateSelectionMenu(["I would like to check my battle points! / I would like to exchange (1) Palm Tree Beach Chair", "I would like to know more about the points of the Battle Arena."]);
-            cm.sendSimple("Hello, what I can do for you?\r\n\r\n" + menuStr);
+            cm.sendSimple("你好，我能为你做些什么？");
         } else if (status == 1) {
             if (selection == 0) {
                 apqpoints = cm.getPlayer().getAriantPoints();
                 if (apqpoints >= 100) {
-                    cm.sendNext("Wow, it looks like you got the #b100#k points ready to trade, let's trade?!");
+                    cm.sendNext("哇，看起来你已经准备好要交易的#b100#k点数了，我们来交易吧！");
                 } else if (apqpoints + arena.getAriantRewardTier(cm.getPlayer()) >= 100) {
-                    cm.sendOk("Your Battle Arena score: #b" + apqpoints + "#k points and you pratically already have that score! Talk to my wife, #p2101016# to get them and then re-chat with me!");
+                    cm.sendOk("你的战斗竞技场分数：#b" + apqpoints + "#k 点，你几乎已经达到了这个分数！和我的妻子#p2101016#交谈，获取这些分数，然后再和我交谈！");
                     cm.dispose();
                 } else {
-                    cm.sendOk("Your Battle Arena score: #b" + apqpoints + "#k points. You need to surpass #b100 points#k so that I can give you the #bPalm Tree Beach Chair#k. Talk to me again when you have enough points.");
+                    cm.sendOk("你的战斗竞技场分数：#b" + apqpoints + "#k 点。你需要超过#b100点#k，这样我才能给你#b棕榈树沙滩椅#k。当你有足够的分数时再和我交谈。");
                     cm.dispose();
                 }
             } else if (selection == 1) {
-                cm.sendOk("The main objective of the Battle Arena is to allow the player to accumulate points so that they can be traded honorably for the highest prize: the #bPalm Tree Beach Chair#k. Collect points during the battles and talk to me when it's time to get the prize. In each battle, the player is given the opportunity to score points based on the amount of jewelry that the player has at the end. But be careful! If your points distance from other players #ris too high#k, this will have been all for nothing and you will earn mere #r1 point#k only.");
+                cm.sendOk("主要目标是让玩家在战斗竞技场中积累点数，以便兑换最高奖品：#b椰树沙滩椅#k。在战斗中积累点数，当时机成熟时与我交谈以获取奖品。在每场战斗中，玩家有机会根据最终拥有的珠宝数量来获得积分。但要小心！如果你的积分与其他玩家的差距#ris too high#k，那一切都将化为乌有，你只能获得微薄的#r1 point#k。");
                 cm.dispose();
             }
         } else if (status == 2) {

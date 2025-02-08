@@ -29,15 +29,15 @@ function action(mode, type, selection) {
                 if (!cm.hasItem(4032136)) {
                     if (cm.canHold(4032136)) {
                         cm.gainItem(4032136, 1);
-                        cm.sendNext("You have found a #b#t4032136##k in the trash can!   #i4032136#");
+                        cm.sendNext("你在垃圾桶里找到了一个#b#t4032136##k！ #i4032136#");
                     } else {
-                        cm.sendOk("#i4032136# Not enough space in your ETC inventory.");
+                        cm.sendOk("#i4032136# 您的杂项物品栏空间不足。");
                     }
                 } else {
-                    cm.sendOk("Just a trash can sitting there.");
+                    cm.sendOk("只是一个垃圾桶就坐在那里。");
                 }
             } else {
-                cm.sendOk("Just a trash can sitting there.");
+                cm.sendOk("只是一个垃圾桶就坐在那里。");
             }
         } else if (status == 1) {
             cm.dispose();

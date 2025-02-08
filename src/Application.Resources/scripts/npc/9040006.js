@@ -15,7 +15,7 @@ function clearStage(stage, eim) {
 
 function start() {
     if (cm.getPlayer().getMap().getReactorByName("watergate").getState() > 0) {
-        cm.sendOk("Excellent work. You may proceed to the next stage.");
+        cm.sendOk("干得好。你可以继续进行下一阶段了。");
         cm.dispose();
         return;
     }
@@ -31,7 +31,7 @@ function start() {
                 eim.setProperty("stage3combo", newCombo);
                 //cm.playerMessage("Debug: " + newCombo);
                 eim.setProperty("stage3attempt", "1");
-                cm.sendOk("This fountain guards the secret passage to the throne room. Offer items in the area to the vassals to proceed. The vassals shall tell you whether your offerings are accepted, and if not, which vassals are displeased. You have seven attempts. Good luck.");
+                cm.sendOk("这个喷泉守护着通往王座房间的秘密通道。在这个区域里向家臣们献上物品以继续前行。家臣们会告诉你你的献礼是否被接受，如果没有，哪些家臣感到不满。你有七次尝试的机会。祝你好运。");
             } else {
                 var attempt = parseInt(eim.getProperty("stage3attempt"));
                 var combo = parseInt(currentCombo);
@@ -43,7 +43,7 @@ function start() {
                         cm.getGuild().gainGP(25);
 
                         removeGroundItems();
-                        cm.sendOk("Excellent work. You may proceed to the next stage.");
+                        cm.sendOk("干得好。你可以继续进行下一阶段了。");
                     } else {
                         if (attempt < 7) {
                             var comboItems = [0, 0, 0, 0];
@@ -120,7 +120,7 @@ function start() {
                         } else {
                             //reset the combo and mass spawn monsters
                             eim.setProperty("stage3combo", "reset");
-                            cm.sendOk("You have failed the test. Please compose yourselves and try again later.");
+                            cm.sendOk("你已经失败了测试。请冷静下来，稍后再试。");
 
                             for (var i = 0; i < 6; i++) {
                                 //keep getting new monsters, lest we spawn the same monster five times o.o!
@@ -132,11 +132,11 @@ function start() {
                         eim.showWrongEffect();
                     }
                 } else {
-                    cm.sendOk("Please make sure your attempt is properly set in front of the vassals and talk to me again.");
+                    cm.sendOk("请确保你的尝试已经正确地放置在家臣面前，然后再和我交谈。");
                 }
             }
         } else {
-            cm.sendOk("Please have your leader speak to me.");
+            cm.sendOk("请让你们的领袖和我交谈。");
         }
     }
 

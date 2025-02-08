@@ -3646,13 +3646,13 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getNPCTalkNum(int npc, string talk, int def, int min, int max)
+    public static Packet getNPCTalkNum(int npc, string talk, int def, int min, int max, byte speaker = 0)
     {
         OutPacket p = OutPacket.create(SendOpcode.NPC_TALK);
         p.writeByte(4); // ?
         p.writeInt(npc);
         p.writeByte(3);
-        p.writeByte(0); //speaker
+        p.writeByte(speaker); //speaker
         p.writeString(talk);
         p.writeInt(def);
         p.writeInt(min);
@@ -3661,13 +3661,13 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getNPCTalkText(int npc, string talk, string def)
+    public static Packet getNPCTalkText(int npc, string talk, string def, byte speaker = 0)
     {
         OutPacket p = OutPacket.create(SendOpcode.NPC_TALK);
         p.writeByte(4); // Doesn't matter
         p.writeInt(npc);
         p.writeByte(2);
-        p.writeByte(0); //speaker
+        p.writeByte(speaker); //speaker
         p.writeString(talk);
         p.writeString(def);//:D
         p.writeInt(0);

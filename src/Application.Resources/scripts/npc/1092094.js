@@ -23,9 +23,9 @@ status = -1;
 
 function start() {
     if (cm.haveItem(4031847)) {
-        cm.sendNext("The hungry calf is drinking all the milk! The bottle remains empty...");
+        cm.sendNext("小牛饿了，正在喝光所有的牛奶！奶瓶里一滴奶都没有了……");
     } else if (cm.haveItem(4031848) || cm.haveItem(4031849) || cm.haveItem(4031850)) {
-        cm.sendNext("The hungry calf is drinking all the milk! The bottle is now empty.");
+        cm.sendNext("小牛很饿，正在喝光所有的牛奶！奶瓶现在空了。");
         if (cm.haveItem(4031848)) {
             cm.gainItem(4031848, -1);
         } else if (cm.haveItem(4031849)) {

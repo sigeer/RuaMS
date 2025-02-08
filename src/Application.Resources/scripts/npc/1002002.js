@@ -27,7 +27,7 @@
 var status = 0;
 
 function start() {
-    cm.sendSimple("Have you heard of the beach with a spectacular view of the ocean called #bFlorina Beach#k, located near Lith Harbor? I can take you there right now for either #b1500 mesos#k, or if you have a #bVIP Ticket to Florina Beach#k with you, in which case you'll be there for free.\r\n\r\n#L0##b I'll pay 1500 mesos.#l\r\n#L1# I have a VIP Ticket to Florina Beach.#l\r\n#L2# What is a VIP Ticket to Florina Beach#k?#l");
+    cm.sendSimple("你听说过位于立石港附近，能够欣赏到壮观海景的海滩#b黄金海滩#k吗？我可以带你去那里，只需#b1500金币#k，或者如果你有#b黄金海滩VIP门票#k的话，那就可以免费进入。\r\n#L0##b 我支付1500金币。#l\r\n#L1# 我有黄金海滩VIP门票。#l\r\n#L2# 什么是黄金海滩VIP门票？#l");
 }
 
 function action(mode, type, selection) {
@@ -35,7 +35,7 @@ function action(mode, type, selection) {
     if (mode != 1) {
         if ((mode == 0 && type == 1) || mode == -1 || (mode == 0 && status == 1)) {
             if (type == 1) {
-                cm.sendNext("You must have some business to take care of here. You must be tired from all that traveling and hunting. Go take some rest, and if you feel like changing your mind, then come talk to me.");
+                cm.sendNext("你一定有一些事情要处理。你一定因为旅行和打猎而感到疲倦。去休息一下，如果你改变主意了，再来找我谈谈吧。");
             }
             cm.dispose();
             return;
@@ -48,19 +48,19 @@ function action(mode, type, selection) {
     }
     if (status == 1) {
         if (selection == 1) {
-            cm.sendYesNo("So you have a #bVIP Ticket to Florina Beach#k? You can always head over to Florina Beach with that. Alright then, but just be aware that you may be running into some monsters there too. Okay, would you like to head over to Florina Beach right now?");
+            cm.sendYesNo("所以你有一张#b黄金海滩VIP门票#k吗？你可以随时用它前往黄金海滩。好的，但要注意可能会遇到一些怪物。好的，你现在想前往黄金海滩吗？");
         } else if (selection == 2) {
-            cm.sendNext("You must be curious about a #bVIP Ticket to Florina Beach#k. Haha, that's very understandable. A VIP Ticket to Florina Beach is an item where as long as you have in possession, you may make your way to Florina Beach for free. It's such a rare item that even we had to buy those, but unfortunately I lost mine a few weeks ago during my precious summer break.");
+            cm.sendNext("你一定对#b黄金海滩的VIP门票#k很感兴趣。哈哈，这很可以理解。黄金海滩的VIP门票是一种物品，只要你拥有它，就可以免费前往黄金海滩。这是一种非常稀有的物品，甚至我们也不得不购买，但不幸的是，我在几周前在我珍贵的暑假期间丢失了我的。");
         }
     } else if (status == 2) {
         if (type != 1 && selection != 0) {
-            cm.sendNextPrev("I came back without it, and it just feels awful not having it. Hopefully someone picked it up and put it somewhere safe. Anyway, this is my story and who knows, you may be able to pick it up and put it to good use. If you have any questions, feel free to ask.");
+            cm.sendNextPrev("我回来的时候没有带着它，感觉很糟糕没有它。希望有人捡到了它并把它放在安全的地方。不管怎样，这就是我的故事，谁知道呢，也许你能捡到它并好好利用。如果你有任何问题，随时问我。");
             cm.dispose();
         } else {
             if (cm.getMeso() < 1500 && selection == 0) {
-                cm.sendNext("I think you're lacking mesos. There are many ways to gather up some money, you know, like... selling your armor... defeating monsters... doing quests... you know what I'm talking about.");
+                cm.sendNext("我觉得你缺少冒险币。有很多方法可以赚钱，比如...卖掉你的盔甲...打败怪物...做任务...你知道我在说什么。");
             } else if (!cm.haveItem(4031134) && selection != 0) {
-                cm.sendNext("Hmmm, so where exactly is your #bVIP Ticket to Florina\r\nBeach#k? Are you sure you have one? Please double-check.");
+                cm.sendNext("嗯，你的 #bVIP通行证#k 到黄金海滩到底在哪里？你确定你有吗？请再检查一遍。");
             } else {
                 if (selection == 0) {
                     cm.gainMeso(-1500);

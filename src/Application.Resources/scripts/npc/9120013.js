@@ -46,9 +46,9 @@ function action(mode, type, selection) {
         }
         if (status == 0 && mode == 1) {
             if (cm.isQuestStarted(8012) && !cm.haveItem(4031064)) { //quest in progress
-                cm.sendYesNo("Did you get them all? Are you going to try to answer all of my questions?");
+                cm.sendYesNo("你都找到了吗？你打算尝试回答我所有的问题吗？");
             } else { //quest not started or already completed
-                //cm.sendOk("Meeeoooowww!");//lol what's this?
+                //cm.sendOk("喵喵喵！");//lol what's this?
                 cm.dispose();
             }
         } else if (status == 1 && mode == 1) {
@@ -57,11 +57,11 @@ function action(mode, type, selection) {
                 hasChicken = false;
             }
             if (!hasChicken) {
-                cm.sendOk("What? No! 300! THREE. HUNDRED. No less. Hand over more if you want, but I need at least 300. Not all of us can be as big and as fed as you...");
+                cm.sendOk("什么？不行！300！三百。不少。如果你想要更多，就给我，但我至少需要300。我们不是所有人都像你一样又大又饱满…");
                 cm.dispose();
             } else {
                 cm.gainItem(2020001, -300)
-                cm.sendNext("Good job! Now hold on a sec... Hey look! I got some food here! Help yourselves. Okay, now it's time for me to ask you some questions. I'm sure you're aware of this, but remember, if you're wrong, it's over. It's all or nothing!");
+                cm.sendNext("干得好！现在等一下……嘿，看这里！我这里有些食物！自己拿吧。好了，现在是时候问你们一些问题了。我相信你们已经意识到了，但记住，如果你们答错了，一切都结束了。要么全赢，要么全输！");
             }
         } else if (status == 7 && mode == 1) { //2-6 are the questions
             if (selection != correctAnswer.pop()) {
@@ -72,7 +72,7 @@ function action(mode, type, selection) {
             }
         } else if (status == 8 && mode == 1) { //gain marble
             cm.gainItem(4031064, 1);
-            cm.sendOk("Our business is concluded, thank you very much! You can leave now!");
+            cm.sendOk("我们的交易已经结束，非常感谢！你可以离开了！");
             cm.dispose();
         } else if (status >= 2 && status <= 6 && mode == 1) {//questions
             var cont = true;

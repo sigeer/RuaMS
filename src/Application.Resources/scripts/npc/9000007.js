@@ -41,7 +41,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("Just a kid... Don't talk to me...");
+            cm.sendOk("只是个孩子...别跟我说话...");
             cm.dispose();
         }
     }

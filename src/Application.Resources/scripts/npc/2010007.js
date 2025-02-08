@@ -24,7 +24,7 @@ var status = 0;
 var sel;
 
 function start() {
-    cm.sendSimple("What would you like to do?\r\n#b#L0#Create a Guild#l\r\n#L1#Disband your Guild#l\r\n#L2#Increase your Guild's capacity#l#k");
+    cm.sendSimple("欢迎来到家族公馆，你现在想做什么呢?\r\n#b#L0#创建家族#l\r\n#L1#解散家族#l\r\n#L2#增加家族成员人数上限#l#k");
 }
 
 function action(mode, type, selection) {
@@ -44,24 +44,24 @@ function action(mode, type, selection) {
             sel = selection;
             if (selection == 0) {
                 if (cm.getPlayer().getGuildId() > 0) {
-                    cm.sendOk("You may not create a new Guild while you are in one.");
+                    cm.sendOk("你已经拥有家族了，不能再创建家族。");
                     cm.dispose();
                 } else {
-                    cm.sendYesNo("Creating a Guild costs #b 1500000 mesos#k, are you sure you want to continue?");
+                    cm.sendYesNo("创建一个新的家族需要 #b 1500000 金币#k，你确定继续创建一个新的家族吗？");
                 }
             } else if (selection == 1) {
                 if (cm.getPlayer().getGuildId() < 1 || cm.getPlayer().getGuildRank() != 1) {
-                    cm.sendOk("You can only disband a Guild if you are the leader of that Guild.");
+                    cm.sendOk("你还没有家族！或者\r 你不是族长，因此你不能解散该家族.");
                     cm.dispose();
                 } else {
-                    cm.sendYesNo("Are you sure you want to disband your Guild? You will not be able to recover it afterward and all your GP will be gone.");
+                    cm.sendYesNo("你确定真的要解散你的家族？当解散后你将不能恢复所有家族相关资料以及GP的数值，是否继续？");
                 }
             } else if (selection == 2) {
                 if (cm.getPlayer().getGuildId() < 1 || cm.getPlayer().getGuildRank() != 1) {
-                    cm.sendOk("You can only increase your Guild's capacity if you are the leader.");
+                    cm.sendOk("你不是族长，因此你将不能增加家族成员的人数上限.");
                     cm.dispose();
-                } else {  // thanks Conrad for noticing an issue due to call on a static method here
-                    cm.sendYesNo("Increasing your Guild capacity by #b5#k costs #b " + Guild.getIncreaseGuildCost(cm.getPlayer().getGuild().getCapacity()) + " mesos#k, are you sure you want to continue?");
+                } else {
+                    cm.sendYesNo("家族成员人数每增加 #b5#k 位需要支付#b " + Guild.getIncreaseGuildCost(cm.getPlayer().getGuild().getCapacity()) + "金币#k，你确定要继续吗？");
                 }
             }
         } else if (status == 2) {

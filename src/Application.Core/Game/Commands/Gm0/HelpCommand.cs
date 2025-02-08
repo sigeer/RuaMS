@@ -1,4 +1,4 @@
-﻿using constants.id;
+using constants.id;
 
 namespace Application.Core.Game.Commands.Gm0;
 
@@ -11,6 +11,6 @@ public class HelpCommand : CommandBase
 
     public override void Execute(IClient client, string[] paramsValue)
     {
-        client.getAbstractPlayerInteraction().openNpc(NpcId.STEWARD, "commands");
+        client.OpenNpc(NpcId.STEWARD, "commands");
     }
 }

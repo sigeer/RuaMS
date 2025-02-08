@@ -51,7 +51,7 @@ function action(mode, type, selection) {
         cm.dispose();
     } else {
         if (mode == 0 && status == 0) {
-            cm.sendOk("Really? Let me know if you ever change your mind.");
+            cm.sendOk("真的吗？如果你改变主意了，记得告诉我。");
             cm.dispose();
             return;
         }
@@ -63,7 +63,7 @@ function action(mode, type, selection) {
             status++;
         }
         if (status == 0) {
-            cm.sendYesNo("If you're looking for someone that can pinpoint the characteristics of various items, you're looking at one right now. I'm currently looking for something. Would you like to hear my story?");
+            cm.sendYesNo("如果你正在寻找一个能够准确描述各种物品特征的人，那么你现在就找到了。我目前正在寻找一样东西。你想听听我的故事吗？");
         } else if (status == 1) {
             var eQuestChoice = makeChoices(eQuestChoices);
             cm.sendSimple(eQuestChoice);
@@ -74,13 +74,13 @@ function action(mode, type, selection) {
             prizeItem = reward[itemSet][0];
             prizeQuantity = reward[itemSet][1];
             if (!cm.canHold(prizeItem)) {
-                cm.sendNext("I can't give you the reward if your equip, use, or etc. inventory is full. Please go take a look right now.");
+                cm.sendNext("如果你的装备、使用或其他物品栏已满，我无法给你奖励。请立即去看一下。");
             } else if (cm.hasItem(requiredItem, 100)) {   // check they have >= 100 in Inventory
                 cm.gainItem(requiredItem, -100);
                 cm.gainItem(prizeItem, prizeQuantity);
-                cm.sendOk("Hmmm ... if not for this minor scratch ... sigh. I'm afraid I can only deem this a standard-quality item. Well, here's \r\n#t" + prizeItem + "# for you.");
+                cm.sendOk("嗯...如果不是这个小小的划痕...唉。恐怕我只能认定这是一个标准品质的物品。好吧，这是给你的#t" + prizeItem + "#。");
             } else {
-                cm.sendOk("Hey, what do you think you're doing? Go lie to someone that DOESN'T know what he's talking about. Not me!");
+                cm.sendOk("嘿，你以为你在干什么？去欺骗那些不懂得在说什么的人。不要来骗我！");
             }
             cm.dispose();
         }

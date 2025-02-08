@@ -29,7 +29,7 @@ function action(mode, type, selection) {
 
 
     if (status == 0) {
-        cm.sendOk("A mysterious black figure appeared and summoned a lot of angry monsters!");
+        cm.sendOk("一个神秘的黑色身影出现并召唤了许多愤怒的怪物！");
     } else if (status == 1) {
         var player = cm.getPlayer();
         var map = player.getMap();

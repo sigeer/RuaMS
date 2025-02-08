@@ -29,9 +29,9 @@ var map;
 
 function start() {
     if (cm.haveItem(4001020)) {
-        cm.sendSimple("You can use #bEos Rock Scroll#k to activate #bThird Eos Rock#k. Which of these rocks would you like to teleport to?#b\r\n#L0#Second Eos Rock (71st Floor)#l\r\n#L1#Fourth Eos Rock (1st Floor)#l");
+        cm.sendSimple("你可以使用#b伊欧斯之石卷轴#k来激活#b第三个伊欧斯之石#k。你想要传送到这些石头中的哪一个？#b\r\n#L0#第二个伊欧斯之石（71楼）#l\r\n#L1#第四个伊欧斯之石（1楼）#l");
     } else {
-        cm.sendOk("There's a rock that will enable you to teleport to #bSecond Eos Rock or Fourth Eos Rock#k, but it cannot be activated without the scroll.");
+        cm.sendOk("有一块岩石可以让你传送到#b第二个伊欧斯岩石或第四个伊欧斯岩石#k，但如果没有卷轴是无法激活它的。");
         cm.dispose();
     }
 }
@@ -43,10 +43,10 @@ function action(mode, type, selection) {
         status++;
         if (status == 1) {
             if (selection == 0) {
-                cm.sendYesNo("You can use #bEos Rock Scroll#k to activate #bThird Eos Rock#k. Will you teleport to #bSecond Eos Rock#k at the 71st Floor?");
+                cm.sendYesNo("您可以使用#b伊欧斯之石卷轴#k来激活#b第三个伊欧斯之石#k。您要传送到第71层的#b第二个伊欧斯之石#k吗？");
                 map = 221022900;
             } else {
-                cm.sendYesNo("You can use #bEos Rock Scroll#k to activate #bThird Eos Rock#k. Will you teleport to #bFourth Eos Rock#k at the 1st Floor?");
+                cm.sendYesNo("您可以使用#b伊欧斯之石卷轴#k来激活#b第三个伊欧斯之石#k。您要传送到一楼的#b第四个伊欧斯之石#k吗？");
                 map = 221020000;
             }
         } else if (status == 2) {

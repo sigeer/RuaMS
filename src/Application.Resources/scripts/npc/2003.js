@@ -30,7 +30,7 @@ var sel;
 function start() {
     status = -1;
     sel = -1;
-    cm.sendSimple("Now...ask me any questions you may have on traveling!!\r\n#L0##bHow do I move?#l\r\n#L1#How do I take down the monsters?#l\r\n#L2#How can I pick up an item?#l\r\n#L3#What happens when I die?#l\r\n#L4#When can I choose a job?#l\r\n#L5#Tell me more about this island!#l\r\n#L6#What should I do to become a Warrior?#l\r\n#L7#What should I do to become a Bowman?#l\r\n#L8#What should I do to become a Magician?#l\r\n#L9#What should I do to become a Thief?#l\r\n#L10#How do I raise the character stats? (S)#l\r\n#L11#How do I check the items that I just picked up?#l\r\n#L12#How do I put on an item?#l\r\n#L13#How do I check out the items that I'm wearing?#l\r\n#L14#What are skills? (K)#l\r\n#L15#How do I get to Victoria Island?#l\r\n#L16#What are mesos?#l#k");
+    cm.sendSimple("现在...问我任何你可能对旅行有的问题！\r\n#L0##b我该怎么移动？#l\r\n#L1#我怎么打倒怪物？#l\r\n#L2#我怎么捡起物品？#l\r\n#L3#我死后会发生什么？#l\r\n#L4#我什么时候可以选择一个职业？#l\r\n#L5#告诉我更多关于这个岛！#l\r\n#L6#我应该怎么做才能成为一个战士？#l\r\n#L7#我应该怎么做才能成为一个弓箭手？#l\r\n#L8#我应该怎么做才能成为一个魔法师？#l\r\n#L9#我应该怎么做才能成为一个盗贼？#l\r\n#L10#我怎么提升角色属性？(S)#l\r\n#L11#我怎么查看刚刚捡起的物品？#l\r\n#L12#我怎么穿上物品？#l\r\n#L13#我怎么查看我穿着的物品？#l\r\n#L14#什么是技能？(K)#l\r\n#L15#我怎么去维多利亚岛？#l\r\n#L16#什么是黄金币？#l#k");
 }
 
 function action(mode, type, selection) {
@@ -48,59 +48,59 @@ function action(mode, type, selection) {
             sel = selection;
         }
         if (sel == 0) {
-            cm.sendNext("Alright this is how you move. Use #bleft, right arrow#k to move around the flatland and slanted roads, and press #bAlt#k to jump. A select number of shoes improve your speed and jumping abilities.");
+            cm.sendNext("好的，这是你移动的方法。使用#bleft, right arrow#k在平地和斜坡上移动，并按#bAlt#k跳跃。一些特定的鞋子可以提高你的速度和跳跃能力。");
         } else if (sel == 1) {
-            cm.sendNext("Here's how to take down a monster. Every monster possesses an HP of its own and you'll take them down by attacking with either a weapon or through spells. Of course the stronger they are, the harder it is to take them down.");
+            cm.sendNext("这里是如何击败怪物的方法。每个怪物都有自己的生命值，你可以用武器或法术来攻击它们。当然，它们越强大，就越难击败。");
         } else if (sel == 2) {
-            cm.sendNext("This is how you gather up an item. Once you take down a monster, an item will be dropped to the ground. When that happens, stand in front of the item and press #bZ#k or #b0 on the NumPad#k to acquire the item.");
+            cm.sendNext("这就是你收集物品的方法。一旦你打倒一个怪物，一个物品就会掉到地上。当这种情况发生时，站在物品前面，按#bZ#k或#b小键盘上的0#k来获取物品。");
         } else if (sel == 3) {
-            cm.sendNext("Curious to find out what happens when you die? You'll become a ghost when your HP reaches 0. There will be a tombstone in that place and you won't be able to move, although you still will be able to chat.");
+            cm.sendNext("当你死亡时，你会变成一个幽灵。当你的生命值降到0时，会在那个地方出现一块墓碑，你将无法移动，但仍然可以进行聊天。");
         } else if (sel == 4) {
-            cm.sendNext("When do you get to choose your job? Hahaha, take it easy, my friend. Each job has a requirement set for you to meet. Normally a level between 8 and 10 will do, so work hard.");
+            cm.sendNext("想知道什么时候能转职？哈哈~！你真性急。每个职业都有固有的转职条件。一般8~10级你就可以选择职业。努力啊！");
         } else if (sel == 5) {
-            cm.sendNext("Want to know about this island? It's called Maple Island and it floats in the air. It's been floating in the sky for a while so the nasty monsters aren't really around. It's a very peaceful island, perfect for beginners!");
+            cm.sendNext("想知道这个岛的情况？这里是叫彩虹岛的空中浮动岛。从远古就在天空上飞行了，因此这里很少出现凶猛的怪物。所以是相对安全的岛，是新手练习的好地方。");
         } else if (sel == 6) {
-            cm.sendNext("You want to become a #bWarrior#k? Hmmm, then I suggest you head over to Victoria Island. Head over to a warrior-town called #rPerion#k and see #bDances with Balrog#k. He'll teach you all about becoming a true warrior. Ohh, and one VERY important thing: You'll need to be at least level 10 in order to become a warrior!!");
+            cm.sendNext("你想当#b战士#k吗？嗯。。。那么你必须要去金银岛。金银岛北部有战士之村，叫#r勇士部落#k。去那里找#b武术教练#k后收下他的培训，你就会当战士。但要当战士你的等级必需达到10级.");
         } else if (sel == 7) {
-            cm.sendNext("You want to become a #bBowman#k? You'll need to go to Victoria Island to make the job advancement. Head over to a bowman-town called #rHenesys#k and talk to the beautiful #bAthena Pierce#k and learn the in's and out's of being a bowman. Ohh, and one VERY important thing: You'll need to be at least level 10 in order to become a bowman!!");
+            cm.sendNext("你想当弓箭手吗？在金银岛你会当弓箭手。在金银岛南部有弓箭手的村落，射手村。在那里赫丽娜会告诉你当弓箭手的方法。但关键是要当弓箭手你的等级应该是10级。");
         } else if (sel == 8) {
-            cm.sendNext("You want to become a #bMagician#k? For you to do that, you'll have to head over to Victoria Island. Head over to a magician-town called #rEllinia#k, and at the very top lies the Magic Library. Inside, you'll meet the head of all wizards, #bGrendel the Really Old#k, who'll teach you everything about becoming a wizard.");
+            cm.sendNext("你想当魔法师是吗？那你要去金银岛东部的魔法密林。在那里你会见到很多魔法师。而且在那里你要见汉斯。他就会让你当魔法师。");
         } else if (sel == 9) {
-            cm.sendNext("You want to become a #bThief#k? In order to become one, you'll have to head over to Victoria Island. Head over to a thief-town called #rKerning City#k, and on the shadier side of town, you'll see a thief's hideaway. There, you'll meet #bDark Lord#k who'll teach you everything about being a thief. Ohh, and one VERY important thing: You'll need to be at least level 10 in order to become a thief!!");
+            cm.sendNext("你你想当飞侠吗？那你要去金银岛西部的废弃都市。废都的达克鲁就会告诉你当飞侠的办法。关键的是为了当飞侠，你的等级应该是10级。");
         } else if (sel == 10) {
-            cm.sendNext("You want to know how to raise your character's ability stats? First press #bS#k to check out the ability window. Every time you level up, you'll be awarded 5 ability points aka AP's. Assign those AP's to the ability of your choice. It's that simple.");
+            cm.sendNext("你想知道如何提升你角色的能力属性吗？首先按下#bS#k来查看能力窗口。每次升级时，你会获得5个能力点，也就是AP。将这些AP分配到你选择的能力上。就是这么简单。");
         } else if (sel == 11) {
-            cm.sendNext("You want to know how to check out the items you've picked up, huh? When you defeat a monster, it'll drop an item on the ground, and you may press #bZ#k to pick up the item. That item will then be stored in your item inventory, and you can take a look at it by simply pressing #bI#k.");
+            cm.sendNext("你想知道如何查看你捡起的物品，是吗？当你打败一个怪物时，它会掉落一个物品在地上，你可以按#bZ#k来捡起这个物品。这个物品将被存储在你的物品库存中，你可以通过简单地按#bI#k来查看它。");
         } else if (sel == 12) {
-            cm.sendNext("You want to know how to wear the items, right? Press #bI#k to check out your item inventory. Place your mouse cursor on top of an item and double-click on it to put it on your character. If you find yourself unable to wear the item, chances are your character does not meet the level & stat requirements. You can also put on the item by opening the equipment inventory (#bE#k) and dragging the item into it. To take off an item, double-click on the item at the equipment inventory.");
+            cm.sendNext("你想知道如何穿戴物品，对吧？按下#bI#k来查看你的物品库存。将鼠标光标放在物品上，双击它就可以穿在你的角色身上。如果你发现自己无法穿戴该物品，很可能是你的角色不符合等级和属性要求。你也可以通过打开装备库存(#bE#k)并将物品拖入其中来穿戴物品。要脱下物品，双击装备库存中的物品。");
         } else if (sel == 13) {
-            cm.sendNext("You want to check on the equipped items, right? Press #bE#k to open the equipment inventory, where you'll see exactly what you are wearing right at the moment. To take off an item, double-click on the item. The item will then be sent to the item inventory.");
+            cm.sendNext("你想要检查已装备的物品，对吧？按下#bE#k打开装备栏，你会看到你当前穿着的物品。要脱下一个物品，双击该物品。该物品将被发送到物品栏。");
         } else if (sel == 14) {
-            cm.sendNext("The special 'abilities' you get after acquiring a job are called skills. You'll acquire skills that are specifically for that job. You're not at that stage yet, so you don't have any skills yet, but just remember that to check on your skills, press #bK#k to open the skill book. It'll help you down the road.");
+            cm.sendNext("获得职业后获得的特殊“能力”被称为技能。你将获得专门针对该职业的技能。你现在还没有达到那个阶段，所以还没有任何技能，但记住，要查看你的技能，请按#bK#k打开技能书。这将在日后帮助你。");
         } else if (sel == 15) {
-            cm.sendNext("How do you get to Victoria Island? On the east of this island there's a harbor called Southperry. There, you'll find a ship that flies in the air. In front of the ship stands the captain. Ask him about it.");
+            cm.sendNext("你如何到达金银岛？在这个岛的东部有一个叫做南港的港口。在那里，你会找到一艘在空中飞行的船。船前站着船长。问他关于这件事。");
         } else if (sel == 16) {
-            cm.sendNext("It's the currency used in MapleStory. You may purchase items through mesos. To earn them, you may either defeat the monsters, sell items at the store, or complete quests...");
+            cm.sendNext("这是冒险岛中使用的货币。你可以通过冒险币购买物品。要赚取冒险币，你可以击败怪物，将物品出售给商店，或者完成任务...");
         }
     } else if (status == 1) {
         if (sel == 0) {
-            cm.sendNextPrev("In order to attack the monsters, you'll need to be equipped with a weapon. When equipped, press #bCtrl#k to use the weapon. With the right timing, you'll be able to easily take down the monsters.");
+            cm.sendNextPrev("为了攻击怪物，你需要装备武器。装备后，按下#bCtrl#k来使用武器。在正确的时机，你就能轻松地击败怪物。");
         } else if (sel == 1) {
-            cm.sendNextPrev("Once you make the job advancement, you'll acquire different kinds of skills, and you can assign them to HotKeys for easier access. If it's an attacking skill, you don't need to press Ctrl to attack, just press the button assigned as a HotKey.");
+            cm.sendNextPrev("一旦你进行职业转职，你将获得不同类型的技能，你可以将它们分配到快捷键上以便更容易地使用。如果是攻击技能，你不需要按下Ctrl键来攻击，只需按下分配为快捷键的按钮。");
         } else if (sel == 2) {
-            cm.sendNextPrev("Remember, though, that if your item inventory is full, you won't be able to acquire more. So if you have an item you don't need, sell it so you can make something out of it. The inventory may expand once you make the job advancement.");
+            cm.sendNextPrev("请记住，如果你的物品栏已满，你将无法获得更多物品。因此，如果你有一件不需要的物品，就卖掉它，这样你就可以从中获利。当你进行职业转职后，物品栏可能会扩展。");
         } else if (sel == 3) {
-            cm.sendNextPrev("There isn't much to lose when you die if you are just a beginner. Once you have a job, however, it's a different story. You'll lose a portion of your EXP when you die, so make sure you avoid danger and death at all cost.");
+            cm.sendNextPrev("如果你只是一个新手，死亡并不会让你失去太多。但一旦你有了职业，情况就不一样了。当你死亡时，你会失去一部分经验，所以一定要尽量避免危险和死亡。");
         } else if (sel == 4) {
-            cm.sendNextPrev("Level isn't the only thing that determines the advancement, though. You also need to boost up the levels of a particular ability based on the occupation. For example, to be a warrior, your STR has to be over 35, and so forth, you know what I'm saying? Make sure you boost up the abilities that has direct implications to your job.");
+            cm.sendNextPrev("等级并不是唯一决定进步的因素。你还需要根据职业提升特定能力的等级。例如，要成为一名战士，你的力量属性必须超过35，你知道我在说什么吗？确保提升与你的职业直接相关的能力。");
         } else if (sel == 5) {
-            cm.sendNextPrev("But, if you want to be a powerful player, better not think about staying here for too long. You won't be able to get a job anyway. Underneath this island lies an enormous island called Victoria Island. That place is so much bigger than here, it's not even funny.");
+            cm.sendNextPrev("但是，如果你想成为一个强大的玩家，最好不要考虑在这里呆太久。你也不会找到工作。这个岛屿下面有一个叫做金银岛的巨大岛屿。那个地方比这里大得多，甚至有些荒谬。");
         } else if (sel == 8) {
-            cm.sendNextPrev("Oh by the way, unlike other jobs, to become a magician you only need to be at level 8. What comes with making the job advancement early also comes with the fact that it takes a lot to become a true powerful mage. Think long and carefully before choosing your path.");
+            cm.sendNextPrev("哦，顺便说一下，与其他职业不同，要成为一个魔法师，你只需要达到8级。提前进行职业转职所带来的好处也伴随着成为一名真正强大的法师所需付出的艰辛。在选择你的道路之前，请仔细考虑。");
         } else if (sel == 10) {
-            cm.sendNextPrev("Place your mouse cursor on top of all abilities for a brief explanation. For example, STR for warriors, DEX for bowman, INT for magician, and LUK for thief. That itself isn't everything you need to know, so you'll need to think long and hard on how to emphasize your character's strengths through assigning the points.");
+            cm.sendNextPrev("将鼠标光标放在所有技能上方，以获得简要解释。例如，战士的STR，弓箭手的DEX，魔法师的INT，以及盗贼的LUK。但这并不是你需要了解的全部，所以你需要仔细思考如何通过分配点数来强调你角色的优势。");
         } else if (sel == 15) {
-            cm.sendNextPrev("Oh yeah! One last piece of information before I go. If you are not sure where you are, always press #bW#k. The world map will pop up with the locator showing where you stand. You won't have to worry about getting lost with that.");
+            cm.sendNextPrev("哦，是的！在我离开之前，还有一条信息要告诉你。如果你不确定自己在哪里，记得按下#bW#k。世界地图会弹出来，显示你所在的位置。有了这个，你就不用担心迷路了。");
         } else {
             start();
         }
