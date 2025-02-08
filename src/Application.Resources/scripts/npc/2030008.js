@@ -61,9 +61,9 @@ function action(mode, type, selection) {
 
         if (!(cm.isQuestStarted(100200) || cm.isQuestCompleted(100200))) {   // thanks Vcoc for finding out a need of reapproval from the masters for Zakum expeditions
             if (cm.getPlayer().getLevel() >= 50) {  // thanks Z1peR for noticing not-so-clear unmet requirements message here.
-                cm.sendOk("Beware, for the power of olde has not been forgotten... If you seek to defeat #rZakum#k someday, earn the #bChief's Residence Council#k approval foremost and then #bface the trials#k, only then you will become eligible to fight.");
+                cm.sendOk("小心，古老的力量并未被遗忘……如果你希望有朝一日击败#r扎昆#k，首先要获得#b首领之家议会#k的批准，然后#b面对考验#k，只有这样你才有资格进行战斗。");
             } else {
-                cm.sendOk("Beware, for the power of olde has not been forgotten...");
+                cm.sendOk("小心，古老的力量并未被遗忘……");
             }
 
             cm.dispose();
@@ -72,49 +72,48 @@ function action(mode, type, selection) {
 
         em = cm.getEventManager("ZakumPQ");
         if (em == null) {
-            cm.sendOk("The Zakum PQ has encountered an error.");
+            cm.sendOk("扎昆组队任务遇到了一个错误。");
             cm.dispose();
             return;
         }
 
         if (status == 0) {
-            cm.sendSimple("#e#b<Party Quest: Zakum Campaign>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nBeware, for the power of olde has not been forgotten... #b\r\n#L0#Enter the Unknown Dead Mine (Stage 1)#l\r\n#L1#Face the Breath of Lava (Stage 2)#l\r\n#L2#Forging the Eyes of Fire (Stage 3)#l");
+            cm.sendSimple("#e#b<组队任务：扎昆战役>\r\n#k#n" + em.getProperty("party") + "\r\n\r\n小心，古老的力量并未被遗忘... #b\r\n#L0#进入未知的死亡矿井（第1阶段）#l\r\n#L1#面对熔岩之息（第2阶段）#l\r\n#L2#锻造火眼（第3阶段）#l");
         } else if (status == 1) {
             if (selection == 0) {
                 if (cm.getParty() == null) {
-                    cm.sendOk("You can participate in the party quest only if you are in a party.");
+                    cm.sendOk("只有当你加入一个队伍时，你才能参加派对任务。");
                     cm.dispose();
                 } else if (!cm.isLeader()) {
-                    cm.sendOk("Your party leader must talk to me to start this party quest.");
+                    cm.sendOk("你的队长必须与我交谈才能开始这个组队任务。");
                     cm.dispose();
                 } else {
                     var eli = em.getEligibleParty(cm.getParty());
                     if (eli.size() > 0) {
                         if (!em.startInstance(cm.getParty(), cm.getPlayer().getMap(), 1)) {
-                            cm.sendOk("Another party has already entered the #rParty Quest#k in this channel. Please try another channel, or wait for the current party to finish.");
+                            cm.sendOk("另一个队伍已经进入了该频道的#r组队任务#k。请尝试其他频道，或者等待当前队伍完成。");
                         }
                     } else {
-                        cm.sendOk("You cannot start this party quest yet, because either your party is not in the range size, some of your party members are not eligible to attempt it or they are not in this map. If you're having trouble finding party members, try Party Search.");
+                        cm.sendOk("你目前无法开始这个组队任务，因为你的队伍可能不符合人数要求，有些队员可能不符合参与条件，或者他们不在这张地图上。如果你找不到队员，可以尝试使用组队搜索功能。");
                     }
 
                     cm.dispose();
                 }
             } else if (selection == 1) {
                 if (cm.haveItem(4031061) && !cm.haveItem(4031062)) {
-                    cm.sendYesNo("Would you like to attempt the #bBreath of Lava#k?  If you fail, there is a very real chance you will die.");
+                    cm.sendYesNo("你已经成功通过了第一阶段。你还有很长的路才能到达扎昆的祭台。所以，你想好挑战下一个阶段了吗？");
                 } else {
                     if (cm.haveItem(4031062)) {
-                        cm.sendNext("You've already got the #bBreath of Lava#k, you don't need to do this stage.");
+                        cm.sendNext("你已经得到了#b熔岩之息#k，你不需要完成这个阶段。");
                     } else {
-                        cm.sendNext("Please complete the earlier trials first.");
+                        cm.sendNext("请先完成之前的试炼。");
                     }
-
                     cm.dispose();
                 }
             } else {
                 if (cm.haveItem(4031061) && cm.haveItem(4031062)) {
                     if (!cm.haveItem(4000082, 30)) {
-                        cm.sendOk("You have completed the trials, however there's still the need of #b30 #t4000082##k to forge 5 #t4001017#.");
+                        cm.sendOk("你已经完成了试炼，但是还需要 #b#v4000082##t4000082# * 30#k 来锻造 #b5 个 #v4001017##t4001017##k。");
                     } else {
                         cm.completeQuest(100201);
                         cm.gainItem(4031061, -1);
@@ -122,12 +121,12 @@ function action(mode, type, selection) {
                         cm.gainItem(4000082, -30);
 
                         cm.gainItem(4001017, 5);
-                        cm.sendNext("You #rhave completed the trials#k, from now on having my approval to challenge Zakum.");
+                        cm.sendNext("你 #r已经完成了试炼#k，从现在开始我批准你挑战扎昆。");
                     }
 
                     cm.dispose();
                 } else {
-                    cm.sendOk("You lack some of the required items to forge the #b#t4001017##k.");
+                    cm.sendOk("你缺少一些必要的物品\r\n#b#v4031061##t4031061# * 1#k\r\n#b#v4031062##t4031062# * 1#k\r\n来锻造#b#v4001017##t4001017##k。");
                     cm.dispose();
                 }
             }

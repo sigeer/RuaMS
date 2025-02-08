@@ -20,7 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 function start() {
-    cm.sendYesNo("Would you like to exit the Guild Quest?");
+    cm.sendYesNo("你想退出公会任务吗？");
 }
 
 function action(mode, type, selection) {

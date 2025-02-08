@@ -75,7 +75,7 @@ function action(mode, type, selection) {
         advance = true;
 
         if (status == 0) {
-            cm.sendNext("Hi there, how is it going? Since you're passing by Amoria, have you heard about the instance my brother Amos is hosting? It is the #bAmorian Challenge#k, an instance for everyone above level 40.\r\n\r\nThere, you may find the #i4031543# #i4031544# #i4031545# #bWish Tickets#k that can be brought here to redeem prizes.");
+            cm.sendNext("嗨，你好吗？既然你路过阿莫利亚，你听说过我哥哥阿莫斯主持的副本吗？这就是 #b阿莫利亚挑战#k，一个供40级以上玩家参与的副本。\r\n\r\n在那里，你可以找到 #i4031543# #i4031544# #i4031545# #b祝愿券#k，可以带到这里兑换奖品。");
         } else if (status == 1) {
             var listStr = "";
             for (var i = 0; i < wishPrizes.length; i++) {
@@ -84,7 +84,7 @@ function action(mode, type, selection) {
                 listStr += "#l\r\n";
             }
 
-            cm.sendSimple("You currently have #b" + amntTicket + " #i" + slctTicket + "# #t" + slctTicket + "##k.\r\n\r\nPurchase a prize:\r\n\r\n" + listStr);
+            cm.sendSimple("您目前拥有#b" + amntTicket + " #i" + slctTicket + "# #t" + slctTicket + "##k。\r\n\r\n购买奖品：\r\n\r\n" + listStr);
         } else if (status == 2) {
             sel = selection;
 
@@ -92,16 +92,16 @@ function action(mode, type, selection) {
                 cm.sendPrev("You will need #b" + wishPrizesCst[selection] + " #t" + slctTicket + "##k to purchase that! If you want this, come back another time when you have all the tickets at hand.");
                 advance = false;
             } else {
-                cm.sendYesNo("You have selected #b" + wishPrizesQty[selection] + " #z" + wishPrizes[selection] + "##k, that will require #b" + wishPrizesCst[selection] + " #t" + slctTicket + "##k. Will you purchase it?");
+                cm.sendYesNo("您已选择#b" + wishPrizesQty[selection] + " #z" + wishPrizes[selection] + "##k，这将需要#b" + wishPrizesCst[selection] + " #t" + slctTicket + "##k。您要购买吗？");
             }
         } else {
             if (cm.canHold(wishPrizes[sel], wishPrizesQty[sel])) {
                 cm.gainItem(wishPrizes[sel], wishPrizesQty[sel]);
                 cm.gainItem(slctTicket, -wishPrizesCst[sel]);
 
-                cm.sendOk("There you go, have a good day!");
+                cm.sendOk("祝你一天愉快！");
             } else {
-                cm.sendOk("Please have a slot available on your inventory before claiming the item.");
+                cm.sendOk("领取物品前，请确保您的背包有足够的空位。");
             }
 
             cm.dispose();

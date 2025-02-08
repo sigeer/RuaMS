@@ -63,23 +63,23 @@ function action(mode, type, selection) {
         } else if (status == 1) {
             selectedOption = selection;
             if (selectedOption == 0) {
-                cm.sendNext("Sharenian was a literate civilization from the past that had control over every area of the Victoria Island. The Temple of Golem, the Shrine in the deep part of the Dungeon, and other old architectural constructions where no one knows who built it are indeed made during the Sharenian times.");
+                cm.sendNext("莎莲尼亚是过去一个有控制金银岛每个地区的文明。魔像神殿，地牢深处的神殿，以及其他无人知晓建造者的古老建筑都是在莎莲尼亚时期建造的。");
             } else if (selectedOption == 1) {
-                cm.sendNext("#t4001024# is a legendary jewel that brings eternal youth to the one that possesses it. Ironically, it seems like everyone that had #t4001024# ended up downtrodden, which should explain the downfall of Sharenian.");
+                cm.sendNext("#t4001024# 是一颗传奇宝石，拥有它的人将获得永恒的青春。讽刺的是，似乎每个拥有 #t4001024# 的人最终都沦为了落魄之人，这或许可以解释夏雷尼安的衰落。");
                 status = -1;
             } else if (selectedOption == 2) {
-                cm.sendNext("I've sent groups of explorers to Sharenian before, but none of them ever came back, which prompted us to start the Guild Quest. We've been waiting for guilds that are strong enough to take on tough challenges, guilds like yours.");
+                cm.sendNext("我之前曾经派遣过一些探险者前往夏利安，但他们没有一个回来，这促使我们开始公会任务。我们一直在等待足够强大的公会来应对艰难的挑战，像你们这样的公会。");
             } else if (selectedOption == 3) {
-                cm.sendOk("Really? If you have anything else to ask, please feel free to talk to me.");
+                cm.sendOk("真的吗？如果你还有其他问题要问，随时都可以和我交谈。");
                 cm.dispose();
             } else {
                 cm.dispose();
             }
         } else if (status == 2) { //should only be available for options 0 and 2
             if (selectedOption == 0) {
-                cm.sendNextPrev("The last king of Sharenian was a gentleman named Sharen III, and apparently he was a very wise and compassionate king. But one day, the whole kingdom collapsed, and there was no explanation made for it.");
+                cm.sendNextPrev("莎蕾尼安的最后一位国王是一位名叫莎蕾尼三世的绅士，显然他是一位非常睿智和富有同情心的国王。但有一天，整个王国崩溃了，对此没有任何解释。");
             } else if (selectedOption == 2) {
-                cm.sendNextPrev("The ultimate goal of this Guild Quest is to explore Sharenian and find #t4001024#. This is not a task where power solves everything. Teamwork is more important here.");
+                cm.sendNextPrev("这个公会任务的最终目标是探索夏雷尼安并找到#t4001024#。这不是一个靠力量解决一切的任务。团队合作在这里更加重要。");
             } else {
                 cm.dispose();
             }

@@ -25,7 +25,7 @@
  **/
 
 function start() {
-    cm.sendYesNo("Do you want to get out of Happyville?");
+    cm.sendYesNo("你想离开快乐村吗？");
 }
 
 function action(mode, type, selection) {

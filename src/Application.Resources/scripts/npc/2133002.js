@@ -14,7 +14,7 @@ function action(mode, type, selection) {
         status--;
     }
     if (status == 0) {
-        cm.sendYesNo("Would you like to exit this instance? Your party members may have to abandon it as well, so take that in mind.");
+        cm.sendYesNo("你想要退出这个副本吗？你的队友可能也需要放弃，所以要考虑一下。");
     } else if (status == 1) {
         cm.removeAll(4001163);
         cm.removeAll(4001169);

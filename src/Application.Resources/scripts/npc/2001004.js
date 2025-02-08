@@ -41,7 +41,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendYesNo("So, are you ready to head out of here?");
+            cm.sendYesNo("那么，你准备好离开这里了吗？");
         } else if (status == 1) {
             cm.warp(209000000, 3);
             cm.dispose();

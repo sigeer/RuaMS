@@ -39,7 +39,7 @@ function start() {
     if (returnmap == -1) {
         returnmap = 104000000;
     }
-    cm.sendNext("So you want to leave #b#m110000000##k? If you want, I can take you back to #b#m" + returnmap + "##k.");
+    cm.sendNext("所以你想离开 #b#m110000000##k 吗？如果你想的话，我可以带你回到 #b#m" + returnmap + "##k。");
 }
 
 function action(mode, type, selection) {
@@ -47,7 +47,7 @@ function action(mode, type, selection) {
         cm.dispose();
 
     } else if (mode == 0) {
-        cm.sendNext("You must have some business to take care of here. It's not a bad idea to take some rest at #m" + returnmap + "# Look at me; I love it here so much that I wound up living here. Hahaha anyway, talk to me when you feel like going back.");
+        cm.sendNext("你一定有一些事情要在这里处理。在#m" + returnmap + "#休息一下也不错。看看我，我是如此喜欢这里，结果我最终在这里定居了。哈哈哈，无论如何，当你想回去的时候再来找我说话。");
         cm.dispose();
 
     } else if (mode == 1) {

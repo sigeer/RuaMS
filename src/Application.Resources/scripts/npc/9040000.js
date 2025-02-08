@@ -65,21 +65,21 @@ function action(mode, type, selection) {
         if (status == 0) {
             em = cm.getEventManager("GuildQuest");
             if (em == null) {
-                cm.sendOk("The Guild Quest has encountered an error.");
+                cm.sendOk("公会任务遇到了一个错误。");
                 cm.dispose();
                 return;
             }
 
-            cm.sendSimple("#e#b<Guild Quest: Sharenian Ruins>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nThe path to Sharenian starts here. What would you like to do? #b\r\n#L0#Register your guild for Guild Quest#l\r\n#L1#Join your guild's Guild Quest#l\r\n#L2#I would like to hear more details.#l");
+            cm.sendSimple("#e#b<公会任务：沙连尼安遗迹>\r\n#k#n" + em.getProperty("party") + "\r\n\r\n通往沙连尼安的道路就在这里。你想做什么？#b\r\n#L0#注册公会进行公会任务#l\r\n#L1#加入你的公会的公会任务#l\r\n#L2#我想了解更多细节。#l");
         } else if (status == 1) {
             sel = selection;
             if (selection == 0) {
                 if (!cm.isGuildLeader()) {
-                    cm.sendOk("Your guild master/jr.master must talk to me to register the guild for the guild quest.");
+                    cm.sendOk("你的公会会长/副会长必须与我交谈，以注册公会参加公会任务。");
                     cm.dispose();
                 } else {
                     if (em.isQueueFull()) {
-                        cm.sendOk("The queue on this channel is already full. Please be patient and try again after a while, or try on another channel.");
+                        cm.sendOk("这个频道的队列已经满了。请耐心等待一会儿，然后再试一次，或者尝试在另一个频道。");
                         cm.dispose();
                     } else {
                         var qsize = em.getQueueSize();
@@ -90,7 +90,7 @@ function action(mode, type, selection) {
                 if (cm.getPlayer().getGuildId() > 0) {
                     var eim = findLobby(cm.getPlayer().getGuildId());
                     if (eim == null) {
-                        cm.sendOk("Your guild is not currently on strategy time on this channel. Check again if your guild is currently planning a Guild Quest or, if so, the channel they are allotted on.");
+                        cm.sendOk("你的公会目前不在此频道上进行战略时间。请再次检查你的公会是否正在计划公会任务，如果是的话，请确认他们分配的频道。");
                     } else {
                         if (cm.isLeader()) {
                             em.getEligibleParty(cm.getParty());
@@ -100,7 +100,7 @@ function action(mode, type, selection) {
                         }
                     }
                 } else {
-                    cm.sendOk("You can't participate in the guild quest if you don't pertain on a guild yourself!");
+                    cm.sendOk("如果你没有加入公会，就无法参与公会任务！");
                 }
 
                 cm.dispose();
@@ -113,18 +113,18 @@ function action(mode, type, selection) {
                 reqStr += "     - 1 team member who is a #rlong ranged attacker#k like Bowman, Assassin, or Gunslinger.\r\n";
                 reqStr += "     - 1 team member with #rgood jumping skills#k like Assassin with maxed Flash Jump or Gunslinger with Wings.\r\n";
 
-                cm.sendOk("#e#b<Guild Quest: Sharenian Ruins>#k#n\r\n Team up with your guild members in an auspicious attempt to recover the Rubian from the skeleton's grasp, with teamwork overcoming many puzzles and challenges awaiting inside the Sharenian tombs. Great rewards can be obtained upon the instance completion, and Guild Points can be racked up for your Guild." + reqStr);
+                cm.sendOk("#e#b<公会任务：沙连尼安遗迹>#k#n\r\n与你的公会成员一起合作，试图从骷髅的掌控中夺回鲁比安，通过团队合作克服沙连尼安墓穴内等待的许多谜题和挑战。完成任务实例后可以获得丰厚的奖励，并为你的公会积累公会点数。");
                 cm.dispose();
             }
         } else if (status == 2) {
             if (sel == 0) {
                 var entry = em.addGuildToQueue(cm.getPlayer().getGuildId(), cm.getPlayer().getId());
                 if (entry > 0) {
-                    cm.sendOk("Your guild has been registered successfully. A message will pop on your chat keeping your guild aware about the registration status.\r\n\r\nNow, #rimportant#k: as the leader of this instance, #ryou must already be present on this channel#k the right moment your guild is called for the strategy time. #bThe missubmission of this action will void#k your guild registration as a whole, and the next guild will be called immediately. Must be noted also that if you, leader of this instance, become absent from the end of the strategy time to any point on the duration of the instance, it will render the mission interrupted, and your guild will be moved out instantly, moving again the queue.");
+                    cm.sendOk("您的公会已成功注册。一条消息将在您的聊天窗口中弹出，让您的公会了解注册状态。\r\n现在，#r重要#k：作为这个实例的领导者，#r在公会被召集进行策略时，您必须已经在该频道上#k。#b未能完成此操作将使#k您的公会注册作废，并立即召集下一个公会。还必须注意的是，如果您，作为这个实例的领导者，从策略时间结束到实例持续时间的任何时刻都不在场，将使任务中断，并立即将您的公会移出队列。");
                 } else if (entry == 0) {
-                    cm.sendOk("The queue on this channel is already full. Please be patient and try again after a while, or try on another channel.");
+                    cm.sendOk("这个频道的队列已经满了。请耐心等待一会儿，然后再试一次，或者尝试在另一个频道。");
                 } else {
-                    cm.sendOk("Your guild is already queued on a channel. Please wait for your guild's turn.");
+                    cm.sendOk("您的公会已经在一个频道排队了。请等待您的公会轮到。");
                 }
             }
 

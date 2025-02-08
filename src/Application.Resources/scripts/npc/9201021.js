@@ -23,15 +23,15 @@ var status = 0;
 
 function start() {
     if (cm.getMapId() != 680000401) {
-        cm.sendSimple("Hello, where would you like to go?\r\n#b" + ((cm.getMapId() != 680000400) ? "#L0#Untamed Hearts Hunting Ground#l\r\n" : "") + ((cm.getMapId() == 680000400) ? "#L1#I have 7 keys. Bring me to smash boxes#l\r\n" : "") + "#L2#Please warp me out.#l#k");
+        cm.sendSimple("你好，你想去哪里？\r\n#b" + ((cm.getMapId() != 680000400) ? "#L0#未开发的心脏狩猎场#l\r\n" : "") + ((cm.getMapId() == 680000400) ? "#L1#我有7把钥匙。带我去打破箱子#l\r\n" : "") + "#L2#请将我传送出去。#l#k");
     } else {
-        cm.sendSimple("Hello, do you want to go back now? Returning here again will cost you #rother 7 keys#k.\r\n#b#L2#Please warp me back to the training grounds.#l#k");
+        cm.sendSimple("你好，你现在想回去吗？再次返回这里将花费你 #r另外7把钥匙#k。\r\n#b#L2#请将我传送回训练场。#l#k");
     }
 }
 
 function action(mode, type, selection) {
     if (mode < 1) {
-        cm.sendOk("Goodbye then.");
+        cm.sendOk("再见。");
         cm.dispose();
         return;
     }
@@ -43,7 +43,7 @@ function action(mode, type, selection) {
     if (status == 1) {
         if (selection < 1) {
             if (!cm.haveItem(4000313, 1)) {
-                cm.sendOk("It seems like you lost your #b#t4000313##k. I'm sorry, but I can't let you proceed to the hunting grounds without that.");
+                cm.sendOk("看起来你丢失了你的 #b#t4000313##k。很抱歉，但是没有那个物品我不能让你前往狩猎场地。");
                 cm.dispose();
                 return;
             }
@@ -54,12 +54,12 @@ function action(mode, type, selection) {
                 cm.gainItem(4031217, -7);
                 cm.warp(680000401, 0);
             } else {
-                cm.sendOk("It seems like you don't have 7 Keys. Kill the cakes and candles in the Untamed Heart Hunting Ground to get keys.");
+                cm.sendOk("看起来你没有7把钥匙。在未驯化之心狩猎地杀死蛋糕和蜡烛以获取钥匙。");
             }
         } else if (selection > 1) {
             if (cm.getMapId() != 680000401) {
                 cm.warp(680000500, 0);
-                cm.sendOk("Goodbye. I hope you enjoyed the wedding!");
+                cm.sendOk("再见。希望你喜欢这场婚礼！");
             } else {
                 cm.warp(680000400, 0);
             }

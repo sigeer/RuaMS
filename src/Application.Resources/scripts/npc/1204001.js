@@ -21,9 +21,9 @@ function action(mode, type, selection) {
         status--;
     }
     if (status == 0) {
-        cm.sendNext("I'm Francis, the Puppeteer of the Black Wings. How dare you disturb my puppets... It really upsets me, but I'll let it slide this time. If I catch you doing it again though, I swear in the name of the Black Mage, I will make you pay for it.", 9);
+        cm.sendNext("我是黑翼的傀儡师弗朗西斯。你竟敢打扰我的木偶……这真的让我很生气，但这一次我会放过你。但如果我再发现你这样做，我发誓以黑魔法师的名义让你付出代价。");
     } else if (status == 1) {
-        cm.sendNextPrev("#b(The Black Wings? Huh? Who are they? And how is all this related to the Black Mage? Hm, maybe you should report this info to Tru.)#k", 3);
+        cm.sendNextPrev("#b(黑翼？嗯？他们是谁？这一切与黑魔法师有什么关系？嗯，也许你应该把这些信息报告给特鲁。)#k");
     } else if (status == 2) {
         cm.completeQuest(21719);
         cm.warp(105040200, 10);//104000004 

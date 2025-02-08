@@ -48,20 +48,20 @@ function action(mode, type, selection) {
         var eim = cm.getEventInstance();
         if (!eim.isEventCleared()) {
             if (status == 0) {
-                cm.sendYesNo("If you leave now, you won't be able to return. Are you sure you want to leave?");
+                cm.sendYesNo("如果你现在离开，就无法返回了。你确定要离开吗？");
             } else if (status == 1) {
                 cm.warp(801040004, 1);
                 cm.dispose();
             }
         } else {
             if (status == 0) {
-                cm.sendNext("You guys did it, great job! Now our city is free from the tyranny of their mobs! As representative of the city, please accept this as a prize for your efforts, as I get you back to town.");
+                cm.sendNext("你们做到了，干得漂亮！现在我们的城市摆脱了那些暴徒的暴政！作为城市的代表，请接受这份奖励，作为对你们努力的认可，我会把你们带回城里。");
             }
 
             if (status == 1) {
                 var eim = cm.getEventInstance();
                 if (!eim.giveEventReward(cm.getPlayer())) {
-                    cm.sendNext("Please make room on your inventory first...");
+                    cm.sendNext("请先在您的物品栏腾出空间…");
                 } else {
                     cm.warp(801040101);
                 }

@@ -48,17 +48,17 @@ function action(mode, type, selection) {
         var eim = cm.getEventInstance();
         if (!eim.isEventCleared()) {
             if (status == 0) {
-                cm.sendYesNo("If you leave now, you won't be able to return. Are you sure you want to leave?");
+                cm.sendYesNo("如果你现在离开，就无法返回了。你确定要离开吗？");
             } else if (status == 1) {
                 cm.warp(551030100, 2);
                 cm.dispose();
             }
         } else {
             if (status == 0) {
-                cm.sendNext("You guys defeated both Scarlion and Targa! Wonderful! Take this memento as a prize for your bravery.");
+                cm.sendNext("你们打败了斯卡利昂和塔加！太棒了！把这个纪念品当作你们勇敢的奖励。");
             } else if (status == 1) {
                 if (!eim.giveEventReward(cm.getPlayer())) {
-                    cm.sendNext("Please make room on your inventory first!");
+                    cm.sendNext("请先在你的背包里腾出空间！");
                 } else {
                     cm.warp(551030100, 2);
                 }

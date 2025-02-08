@@ -48,7 +48,7 @@ function action(mode, type, selection) {
             expedMembers = expedicao.getMemberList();
             if (status == 0) {
                 if (cm.isLeaderExpedition(exped)) {
-                    cm.sendSimple("What would you like to do? #b\r\n#L1#View current members#l\r\n#L2#Ban members#l\r\n#L3#Start the battle#l\r\n#L4#Leave the arena#l");
+                    cm.sendSimple("你想做什么？#b\r\n#L1#查看当前成员#l\r\n#L2#禁止成员#l\r\n#L3#开始战斗#l\r\n#L4#离开竞技场#l");
                     status = 1;
                 } else {
                     var toSend = "Current members inside this arena:\r\n#b";
@@ -65,24 +65,24 @@ function action(mode, type, selection) {
                 } else if (selection == 2) {
                     var size = expedMembers.size();
                     if (size == 1) {
-                        cm.sendOk("You are the only member of the expedition.");
+                        cm.sendOk("你是探险队中唯一的成员。");
                         cm.dispose();
                         return;
                     }
-                    var text = "The following members make up your expedition (Click on them to expel them):\r\n";
+                    var text = "以下成员组成了你的探险队（点击成员名字可以将其踢出探险队）：\r\n";
                     text += "\r\n\t\t1." + expedicao.getLeader().getName();
                     for (var i = 1; i < size; i++) {
-                        text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers.get(i).Name + "#l\n";
+                        text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers.get(i).getValue() + "#l\n";
                     }
                     cm.sendSimple(text);
                     status = 6;
                 } else if (selection == 3) {
                     if (expedicao.getMembers().size() < 1) {
-                        cm.sendOk("Need one more players to start the battle.");
+                        cm.sendOk("需要一个玩家来开始战斗。");
                         cm.dispose();
                     } else {
                         if (cm.getParty() != null) {
-                            cm.sendOk("You cannot enter the battle as a party group.");
+                            cm.sendOk("你不能以团队形式进入战斗。");
                             cm.dispose();
                             return;
                         }
@@ -104,7 +104,7 @@ function action(mode, type, selection) {
                 if (selection > 0) {
                     var banned = expedMembers.get(selection - 1);
                     expedicao.ban(banned);
-                    cm.sendOk("You have banned " + banned.Name + " from the expedition.");
+                    cm.sendOk("你已经从远征中禁止了 " + banned.getValue() + "。");
                     cm.dispose();
                 } else {
                     cm.sendSimple(list);
@@ -125,21 +125,21 @@ function action(mode, type, selection) {
             if (status == 0) {
                 var gotTheBombs = expedicao.getProperty("gotBomb" + cm.getChar().getId());
                 if (gotTheBombs != null) {
-                    cm.sendOk("I already gave you the bomb, please kill the #bScorpio#k now!");
+                    cm.sendOk("我已经给了你炸弹，请立刻击败 #b天蝎座#k！");
                     cm.dispose();
                 } else if (cm.canHoldAll([2270002, 2100067], [50, 5])) {
-                    cm.sendOk("I have given you (5) #b#eBombs#k#n and (50) #b#eElement Rock#k#n.\r\nUse the Elementary Rocks to capture the scorpions for #r#eSpirit Jewels#k#n!");
+                    cm.sendOk("我已经给了你(5) #b#e炸弹#k#n和(50) #b#e元素岩石#k#n。\r\n使用元素岩石来捕捉蝎子，以获取#r#e灵魂宝石#k#n！");
                     expedicao.setProperty("gotBomb" + cm.getChar().getId(), "1");
                     cm.gainItem(2270002, 50);
                     cm.gainItem(2100067, 5);
                     cm.dispose();
                 } else {
-                    cm.sendOk("It seems that your inventory is full.");
+                    cm.sendOk("你的背包好像已经满了。");
                     cm.dispose();
                 }
             }
         } else {
-            cm.sendOk("Hi there, have you heard of the Ariant Coliseum Battle Arena, it's a competitive event available to players between level 20 to 30!");
+            cm.sendOk("嗨，你听说过阿里安特角斗场战斗竞技场吗？这是一个供20级到30级玩家参与的竞争活动！");
             cm.dispose();
         }
     }

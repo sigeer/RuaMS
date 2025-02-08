@@ -40,7 +40,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("...");
+            cm.sendOk("抱歉，我无法完成你的要求。");
             cm.dispose();
         }
     }

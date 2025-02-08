@@ -40,7 +40,7 @@ var maxEqp = 0;
 
 function start() {
     if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT) {
-        cm.sendOk("Hi, I'm #b#p" + cm.getNpc() + "##k.");
+        cm.sendOk("嗨，我是 #b#p" + cm.getNpc() + "##k。");
         cm.dispose();
         return;
     }
@@ -186,7 +186,7 @@ function action(mode, type, selection) {
         cm.sendYesNo(prompt);
     } else if (status == 2) {
         if (cm.getMeso() < (cost * qty)) {
-            cm.sendOk("This is the fee I charge to make my items! No credit.");
+            cm.sendOk("这是我制作物品所收取的费用！不接受信用。");
         } else {
             var complete = true;
             if (mats instanceof Array) {
@@ -200,7 +200,7 @@ function action(mode, type, selection) {
             }
 
             if (!complete) {
-                cm.sendOk("Are you sure you got all the items required? Double check it!");
+                cm.sendOk("你确定你拿齐了所有需要的物品吗？再检查一遍！");
             } else {
                 if (cm.canHold(item, qty)) {
                     if (mats instanceof Array) {
@@ -213,9 +213,9 @@ function action(mode, type, selection) {
                     cm.gainMeso(-(cost * qty));
 
                     cm.gainItem(item, qty);
-                    cm.sendOk("The item is done! Take and try this piece of art yourself.");
+                    cm.sendOk("物品已经完成了！拿去试试这件艺术品吧。");
                 } else {
-                    cm.sendOk("You got no free slot on your inventory.");
+                    cm.sendOk("你的库存中没有空闲的插槽。");
                 }
             }
         }

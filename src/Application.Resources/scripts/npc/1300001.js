@@ -40,7 +40,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("Let the ceremony begins, we cannot let the masses waiting! Hem~hem~heeh~~");
+            cm.sendOk("让仪式开始吧，我们不能让大家等待！嘿咳~嘿咳~嘿~~");
             cm.dispose();
         }
     }

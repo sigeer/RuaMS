@@ -3,6 +3,6 @@
 }
 
 function action(mode, type, selection) {
-    cm.sendNext("Being young doesn't mean I'm any different from those guys. I'll show them!");
+    cm.sendNext("年轻并不意味着我和那些家伙有什么不同。我会向他们展示！");
     cm.dispose();
 }

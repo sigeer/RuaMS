@@ -154,11 +154,11 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (!cm.canHold(item, 1)) {
-            cm.sendOk("Check your inventory for a free slot first.");
+            cm.sendOk("首先检查你的物品栏是否有空位。");
             cm.dispose();
             return;
         } else if (cm.getMeso() < cost) {
-            cm.sendOk("I'm afraid you cannot afford my services.");
+            cm.sendOk("恐怕你支付不起我的服务费。");
             cm.dispose();
             return;
         } else {
@@ -173,7 +173,7 @@ function action(mode, type, selection) {
             }
         }
         if (!complete) {
-            cm.sendOk("I only make quality goods, which I cannot do without the proper materials.");
+            cm.sendOk("我只生产高质量的商品，而这是离不开合适的材料的。");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; i < mats.length; i++) {
@@ -184,7 +184,7 @@ function action(mode, type, selection) {
             }
             cm.gainMeso(-cost);
             cm.gainItem(item, 1);
-            cm.sendOk("All done. Stay warm!");
+            cm.sendOk("都完成了。保持温暖！");
         }
         cm.dispose();
     }

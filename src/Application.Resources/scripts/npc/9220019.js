@@ -42,16 +42,16 @@ function action(mode, type, selection) {
         if (status == 0) {
             var mapid = cm.getMapId();
             if (mapid == 674030100) {
-                cm.sendNext("Hi, I'm #p9220019#.");
+                cm.sendNext("嗨，我是 #p9220019#。");
                 cm.dispose();
                 return;
             } else if (mapid == 674030300) {
-                cm.sendNext("Hi there, #h0#. This is the MV's treasure room. Use the time you have here to do whatever you want, there are a lot of things to uncover here, actually. Or else you can use the portal here to #rgo back#k to the entrance.");
+                cm.sendNext("嗨，#h0#。这里是MV的宝藏房间。利用你在这里的时间做任何你想做的事情，实际上这里有很多东西等着你去发现。或者你可以使用这里的传送门 #rgo back#k 返回入口处。");
                 cm.dispose();
                 return;
             }
 
-            cm.sendYesNo("Are you sure you want to return? By returning now you are leaving your partners behind, do you really want to do it?");
+            cm.sendYesNo("你确定要返回吗？现在返回意味着你要把你的伙伴们留在这里，你真的想这样做吗？");
         } else if (status == 1) {
             cm.warp(674030100);
             cm.dispose();

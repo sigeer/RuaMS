@@ -50,7 +50,7 @@ function action(mode, type, selection) {
                 cm.gainItem(ticketId, -1);
                 cm.doGachapon();
             } else {
-                cm.sendOk("Please have at least one slot in your #rEQUIP, USE, SET-UP, #kand #rETC#k inventories free.");
+                cm.sendOk("请确保你的#r装备、消耗、设置#k和#r其他#k物品栏中至少有一个空位。");
             }
         } else {
             cm.dispose();

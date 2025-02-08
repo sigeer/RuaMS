@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 
 /**
  * @author Ronan
@@ -12,6 +12,6 @@ public class GachaListCommand : CommandBase
 
     public override void Execute(IClient c, string[] paramsValue)
     {
-        c.getAbstractPlayerInteraction().openNpc(10000, "gachaponInfo");
+        c.OpenNpc(10000, "gachaponInfo");
     }
 }

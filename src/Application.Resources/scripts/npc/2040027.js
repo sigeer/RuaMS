@@ -28,9 +28,9 @@
 
 function start() {
     if (cm.haveItem(4001020)) {
-        cm.sendYesNo("You can use #bEos Rock Scroll#k to activate #bFourth Eos Rock#k. Will you head over to #bThird Eos Rock#k at the 41st floor?");
+        cm.sendYesNo("您可以使用#b伊欧斯之石卷轴#k来激活#b第四个伊欧斯之石#k。您要前往第41层的#b第三个伊欧斯之石#k吗？");
     } else {
-        cm.sendOk("There's a rock that will enable you to teleport to #bThird Eos Rock#k, but it cannot be activated without the scroll.");
+        cm.sendOk("有一块岩石可以让你传送到#b第三个伊欧斯岩石#k，但如果没有卷轴就无法激活。");
         cm.dispose();
     }
 }

@@ -67,7 +67,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendNext("This is the MapleTV Scroll Generator broadcast. Place your supplies or mesos earned throughout your adventure to redeem a prize! You can place #bany amount of supplies#k, however take note that placing #rdifferent supplies#k with #rbigger shots of any of them#k will improve the reward possibilities!");
+            cm.sendNext("这是冒险岛电视卷轴生成器广播。将你在冒险中获得的物品或金币放入其中，以兑换奖励！你可以放入#b任意数量的物品#k，但请注意，放入#r不同的物品#k，其中#r任何一种物品的数量更多#k，将提高奖励的可能性！");
         } else if (status == 1) {
             var sendStr;
 
@@ -427,14 +427,14 @@ function generateRandomScroll() {
         var itemid = getRandomScroll(calculateScrollTiers());
         if (itemid != -1) {
             if (performExchange(itemid, 1)) {
-                cm.sendNext("Transaction accepted! You have received a #r#t" + itemid + "##k.");
+                cm.sendNext("交易已接受！你已经收到了一个 #r#t" + itemid + "##k。");
             } else {
-                cm.sendOk("Oh, it looks like some items are missing... Please double-check provided items in your inventory before trying to exchange.");
+                cm.sendOk("哦，看起来有些物品不见了... 在尝试交换之前，请仔细检查你的库存中提供的物品。");
             }
         } else {
-            cm.sendOk("Sorry for the inconvenience, but it seems there are no scrolls on store right now... Try again later.");
+            cm.sendOk("抱歉给您带来不便，但目前商店里似乎没有卷轴……请稍后再试。");
         }
     } else {
-        cm.sendOk("Please look out for a slot available on your USE inventory before trying for a scroll.");
+        cm.sendOk("请在尝试卷轴之前，先查看您的美国东部服务器库存中是否有空位。");
     }
 }

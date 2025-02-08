@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using DotNetty.Handlers.Timeout;
@@ -547,6 +547,11 @@ namespace Application.Core.Game
         public override string ToString()
         {
             return ClientInfo;
+        }
+
+        public void OpenNpc(int npcid, string? script = null)
+        {
+            throw new BusinessCharacterOfflineException();
         }
     }
 }

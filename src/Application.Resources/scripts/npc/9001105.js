@@ -11,7 +11,7 @@ function action(mode, type, selection) {
     } else {
         if (mode == 0 && type > 0) {
             if (cm.getPlayer().getMapId() == 922240200) {
-                cm.sendOk("That's a shame, come back when your ready.");
+                cm.sendOk("真遗憾，等你准备好了再回来吧。");
             }
 
             cm.dispose();
@@ -25,9 +25,9 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (cm.getMapId() == 922240200) {
-                cm.sendSimple("Did you have something to say...? #b\b\r\n#L0#I want to rescue Gaga.#l\r\n");    //#L1#I want to go to the Space Mine.#l
+                cm.sendSimple("你有什么要说的吗...? #b\b\r\n#L0#我想要救出嘎嘎。#l\r\n");    //#L1#I want to go to the Space Mine.#l
             } else if (cm.getMapId() >= 922240000 && cm.getMapId() <= 922240019) {
-                cm.sendYesNo("Don't worry if you fail. You'll have 3 chances. Do you still want to give up?");
+                cm.sendYesNo("如果你失败了也不要担心。你还有3次机会。你还想放弃吗？");
             } else if (cm.getMapId() >= 922240100 && cm.getMapId() <= 922240119) {
                 var text = "You went through so much trouble to rescue Gaga, but it looks like we're back to square one. ";
                 var rgaga = cm.getPlayer().getEvents().get("rescueGaga");
@@ -45,24 +45,24 @@ function action(mode, type, selection) {
                 if (status == 1) {
                     if (selection == 0) {
                         selected = 1;
-                        cm.sendNext("Welcome! I heard what happened from Baby Moon Bunny I'm glad you came since I was Planning on requesting some help. Gaga is a friend of mine who has helped me before and often stops by to say hello. Unfortunately, he was kidnapped by aliens.");
+                        cm.sendNext("欢迎！我从小月兔那里听说了发生的事情，很高兴你来了，因为我正打算请求一些帮助。Gaga是我的朋友，以前帮过我，经常过来打个招呼。不幸的是，他被外星人绑架了。");
                     } else {
                         selected = 2;
-                        cm.sendYesNo("At the Space Mine, you can find special ores called #bKrypto Crystals#k that contains the mysterious power of space. #bKrypto Crystals#l are usually emerald in color, but will turn brown if hit with the Spaceship's #bSpace Beam#k. Remember, in order to thwart this alien conspracy, #b10 Brown Krypto Crystal's and 10 Emerald Krypto Crystal's are needed. But since even #b1 Krypto Crystal#k can be of help, brign me as many as possible. Oh, and one more thing! The Space Mines are protected by the Space Mateons. They are extemely strong due to the power of the #Krypto Crystals#k, so don't try to defeat them. Simply concentrate on quickly collecting the crystals.");
+                        cm.sendYesNo("在太空矿场，你可以找到一种特殊的矿石，叫做#bKrypto Crystals#k，它含有太空的神秘力量。#bKrypto Crystals#l通常呈翡翠绿色，但如果被太空飞船的#bSpace Beam#k击中，就会变成褐色。记住，为了阻止外星人的阴谋，需要#b10个褐色Krypto Crystal#和10个翡翠Krypto Crystal#。但即使#b1个Krypto Crystal#也能帮上忙，尽可能多地带给我。哦，还有一件事！太空矿场受到太空Mateons的保护。由于#Krypto Crystals#k的力量，它们非常强大，所以不要试图打败它们。只需专注于迅速收集水晶。");
                     }
                 } else if (status == 2) {
                     if (selected == 1) {
-                        cm.sendYesNo("If we just leave Gaga with the aliens, something terrible will happen to him! I'll let you borrow a spaceship that the Moon Bunnies use for traveling so that you can rescue Gaga.#b Although he might appear a bit indecisive, slow, and immature at times#k, he's really a nice young man. Do you want to go rescue him now?");
+                        cm.sendYesNo("如果我们把嘎嘎留给外星人，他会遭遇可怕的事情！我会让你借用一艘月兔用来旅行的太空飞船，这样你就可以救出嘎嘎。虽然他有时看起来有点犹豫不决、慢吞吞和不成熟，但他其实是一个很好的年轻人。你现在想去救他吗？");
                     } else if (selected == 2) {
-                        cm.sendOk("Not coded yet, f4.");
+                        cm.sendOk("尚未编码，f4。");
                         cm.dispose();
                     }
                 } else if (status == 3) {
                     var em = cm.getEventManager("RescueGaga");
                     if (em == null) {
-                        cm.sendOk("This event is currently unavailable.");
+                        cm.sendOk("此活动目前不可用。");
                     } else if (!em.startInstance(cm.getPlayer())) {
-                        cm.sendOk("There is currently someone in this map, come back later.");
+                        cm.sendOk("当前地图上有其他玩家，稍后再来吧。");
                     }
 
                     cm.dispose();

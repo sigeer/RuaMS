@@ -30,6 +30,6 @@
 */
 
 function start() {
-    cm.sendOk("Definitely Alcadno is excluded.....Huhuhuhu.....Stupid people....cannot see the real important things..");
+    cm.sendOk("绝对不包括阿尔卡德诺.....呼呼呼呼.....愚蠢的人....看不到真正重要的事情.....");
     cm.dispose();
 }

@@ -29,13 +29,13 @@ function start() {
     if (cm.getPlayer().gotPartyQuestItem("JBQ") && !cm.haveItem(4031058)) {
         if (cm.haveItem(4005004)) {
             if (!cm.canHold(4031058)) {
-                cm.sendNext("Have a free ETC slot available before accepting this trial.");
+                cm.sendNext("接受此试炼前，请确保有一个空闲的ETC槽位。");
             } else {
-                cm.sendNext("Alright... I'll be testing out your wisdom here. Answer all the questions correctly, and you will pass the test BUT, if you even lie to me once, then you'll have to start over again ok, here we go.");
+                cm.sendNext("好的...我将在这里测试你的智慧。回答所有问题正确，你就会通过测试，但是，如果你有一次说谎，那么你就得重新开始，好吗，我们开始吧。");
                 return;
             }
         } else {
-            cm.sendNext("Bring me a #b#t4005004##k to proceed with the questions.");
+            cm.sendNext("给我一个 #b#t4005004##k 以便继续问题。");
         }
     }
     cm.dispose();
@@ -52,7 +52,7 @@ function action(mode, type, selection) {
     }
     if (status > 0) {
         if (selection != ans[rand]) {
-            cm.sendNext("You have failed the question.");
+            cm.sendNext("你已经失败了这个问题。");
             cm.dispose();
             return;
         }
@@ -61,10 +61,10 @@ function action(mode, type, selection) {
         rand = parseInt(Math.random() * quest.length);
     }
     if (status <= 4) {
-        cm.sendSimple("Here's the " + (status + 1) + (status == 0 ? "st" : status == 1 ? "nd" : status == 2 ? "rd" : "th") + " question. " + quest[rand]);
+        cm.sendSimple("这是第" + (status + 1) + (status == 0 ? "st" : status == 1 ? "nd" : status == 2 ? "rd" : "th") + "个问题。" + quest[rand]);
         quest[rand] = "";
     } else {
-        cm.sendOk("Alright. All your answers have been proven as the truth. Your wisdom has been proven.\r\nTake this necklace and go back.");
+        cm.sendOk("好的。你的所有答案都被证明是真实的。你的智慧得到了验证。拿着这条项链回去吧。");
         cm.gainItem(4031058, 1);
         cm.dispose();
     }

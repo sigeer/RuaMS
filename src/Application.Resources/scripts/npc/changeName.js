@@ -40,7 +40,7 @@ function action(mode, type, selection) {
         }
         if (status == 0 && mode == 1) {
             if (cm.haveItem(2430026)) {
-                cm.sendYesNo("I can change your name for you if you would like?", 1);
+                cm.sendYesNo("如果你愿意的话，我可以帮你更改你的名字。");
             } else {
                 cm.dispose();
             }
@@ -48,13 +48,13 @@ function action(mode, type, selection) {
             cm.sendGetText("Please input your desired name below.");
         } else if (status == 2) {
             var text = cm.getText();
-            var canCreate = CharacterManager.CheckCharacterName(text);
+            var canCreate = CharacterManager.canCreateChar(text);
             if (canCreate) {
                 cm.getPlayer().setName(text);
-                cm.sendOk("Your name has been changed to #b" + text + "#k. You will have to login again for this to take effect.", 1);
+                cm.sendOk("您的名称已更改为#b" + text + "#k。您需要重新登录才能生效。");
                 cm.gainItem(2430026, -1);
             } else {
-                cm.sendNext("I'm afraid you can't use the name #b" + text + "#k or it is already taken.", 1);
+                cm.sendNext("很抱歉，您不能使用名称 #b" + text + "#k，或者该名称已经被使用。");
             }
         } else if (status == 3) {
             cm.dispose();

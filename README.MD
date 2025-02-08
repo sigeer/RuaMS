@@ -41,8 +41,16 @@ dotnet ef migrations add [migration_name] --output-dir EF/Migrations --startup-p
 dotnet ef database update --startup-project ../Application.Host
 ```
 
-### 运行的准备工作
+### 运行
 
-推荐使用[Cosmic](https://github.com/P0nk/Cosmic?tab=readme-ov-file#3---client)的wz以及配套的客户端（本项目中的js都是来自Cosmic）
-1. 将 wz 目录放置在根目录，或者配置环境变量`wz-path`，或者使用`Environment.SetEnvironmentVariable("wz-path", "wz目录");`
-2. 设置`config.yaml`中的连接字符串
+#### 需要安装的软件
+
+1. Mysql 8
+
+#### 步骤
+
+1. 配置 config.yaml，主要是连接字符串、IP
+2. v83客户端（wz） 、服务端wz、服务端Js需要配套。 
+项目中的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，
+可以使用该项目中的wz、以及客户端。
+如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/Cosmic_DotNet/blob/master/docs/CodeMigration.MD#js)对js进行处理

@@ -37,16 +37,16 @@ function action(mode, type, selection) {
     status++;
     if (status == 0) {
         if (cm.isQuestStarted(6180) && cm.getQuestProgressInt(6180, 9300096) < 200) {
-            cm.sendYesNo("Pay attention: during the time you stay inside the training ground make sure you #bhave equipped your #t1092041##k, it is of the utmost importance. Are you ready to proceed to the training area?");
+            cm.sendYesNo("请注意：在你待在训练场内的时候，确保你已经装备了#t1092041#，这非常重要。你准备好去训练区了吗？");
         } else {
-            cm.sendOk("Only assigned personnel can access the training ground.");
+            cm.sendOk("只有指定人员才能进入训练场地。");
             cm.dispose();
         }
     } else if (status == 1) {
         if (cm.getPlayer().haveItemEquipped(1092041)) {
-            cm.sendNext("Have your shield equipped until the end of the quest, or else you will need to start all over again!");
+            cm.sendNext("直到任务结束前都要装备好你的盾牌，否则你就得重新开始了！");
         } else {
-            cm.sendOk("Please equip the #r#t1092041##k before entering the training ground.");
+            cm.sendOk("请在进入训练场之前装备#r#t1092041##k。");
             cm.dispose();
         }
     } else {

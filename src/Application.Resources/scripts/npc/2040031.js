@@ -45,7 +45,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("A document roll on the ground.");
+            cm.sendOk("地上有一个文件卷。");
             cm.dispose();
         }
     }

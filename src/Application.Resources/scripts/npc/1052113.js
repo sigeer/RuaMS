@@ -19,7 +19,7 @@ function action(mode, type, selection) {
     }
     if (status == 0) {
         if (cm.getLevel() >= 20) {
-            cm.sendOk("This training ground is available only for those under level 20.");
+            cm.sendOk("这个训练场只对20级以下的玩家开放。");
             cm.dispose();
             return;
         }
@@ -33,7 +33,7 @@ function action(mode, type, selection) {
         if (selection < 0 || selection >= num) {
             cm.dispose();
         } else if (cm.getPlayerCount(map + selection) >= maxp) {
-            cm.sendNext("This training center is full.");
+            cm.sendNext("这个培训中心已经满了。");
             status = -1;
         } else {
             cm.warp(map + selection, 0);

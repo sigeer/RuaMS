@@ -30,19 +30,19 @@
  **/
 
 function start() {
-    cm.sendYesNo("This is the road where you can go take a walk with your pet. You can walk around with it, or you can train your pet to go through obstacles here. If you aren't too close with your pet yet, that may present a problem and he will not follow your command as much... So, what do you think? Wanna train your pet?");
+    cm.sendYesNo("这是你可以带宠物散步的道路。你可以和它一起四处走动，或者在这里训练它通过障碍物。如果你和宠物还不够亲近，可能会出现问题，它就不会像你命令的那样跟着你走了……那么，你觉得呢？想要训练你的宠物吗？");
 }
 
 function action(mode, type, selection) {
     if (mode == -1) {
     } else if (mode == 0) {
-        cm.sendNext("Hmmm ... too busy to do it right now? If you feel like doing it, though, come back and find me.");
+        cm.sendNext("嗯...现在太忙了？如果你想做的话，回来找我吧。");
     } else if (mode == 1) {
         if (cm.haveItem(4031128)) {
-            cm.sendNext("Get that letter, jump over obstacles with your pet, and take that letter to my brother Trainer Frod. Give him the letter and something good is going to happen to your pet.");
+            cm.sendNext("拿到那封信，和你的宠物一起跳过障碍物，把那封信带给我的兄弟弗罗德训练师。把信交给他，你的宠物会有好事发生。");
         } else {
             cm.gainItem(4031128, 1);
-            cm.sendOk("Ok, here's the letter. He wouldn't know I sent you if you just went there straight, so go through the obstacles with your pet, go to the very top, and then talk to Trainer Frod to give him the letter. It won't be hard if you pay attention to your pet while going through obstacles. Good luck!");
+            cm.sendOk("好的，这是信。如果你直接去那里，他不会知道我派你去的，所以带着你的宠物通过障碍，到达顶部，然后和弗罗德训练师交谈，把信交给他。如果你在通过障碍时注意你的宠物，这并不难。祝你好运！");
         }
     }
     cm.dispose();

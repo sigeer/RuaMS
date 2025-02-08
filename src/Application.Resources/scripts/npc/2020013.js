@@ -35,7 +35,7 @@ function start() {
             return;
         }
 
-        cm.sendNext("Hi there.");
+        cm.sendNext("你好。");
         cm.dispose();
         return;
     }
@@ -44,7 +44,7 @@ function start() {
     } else if (cm.haveItem(4031057)) {
         actionx["Physical"] = true;
     }
-    cm.sendSimple("Can I help you?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#I want to make the 3th job advancement." : "") + "\r\n#L1#Please allow me to do the Zakum Dungeon Quest.");
+    cm.sendSimple("我可以帮你吗？#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#我想进行第三次职业转职。" : "") + "\r\n#L1#请允许我进行扎昆地牢任务。");
 }
 
 function action(mode, type, selection) {
@@ -53,20 +53,20 @@ function action(mode, type, selection) {
         status -= 2;
     } else if (mode != 1 || (status > 2 && !actionx["Mental"]) || status > 3) {
         if (mode == 0 && type == 1) {
-            cm.sendNext("Make up your mind.");
+            cm.sendNext("下定决心。");
         }
         cm.dispose();
         return;
     }
     if (actionx["Mental"]) {
         if (status == 0) {
-            cm.sendNext("Great job completing the mental part of the test. You have wisely answered all the questions correctly. I must say, I am quite impressed with the level of wisdom you have displayed there. Please hand me the necklace first, before we take on the next step.");
+            cm.sendNext("做得好，完成了测试的思维部分。你明智地回答了所有的问题。我必须说，你展现出的智慧水平让我印象深刻。在我们进行下一步之前，请先把项链交给我。");
         } else if (status == 1) {
-            cm.sendYesNo("Okay! Now, you'll be transformed into a much more powerful pirate through me. Before doing that, though, please make sure your SP has been thoroughly used, You'll need to use up at least all of SP's gained until level 70 to make the 3rd job advancement. Oh, and since you have already chosen your path of the occupation by the 2nd job adv., you won't have to choose again for the 3rd job adv. Do you want to do it right now?");
+            cm.sendYesNo("好的！现在，通过我，你将变成一个更强大的海盗。在这之前，请确保你的SP已经被充分使用了，你需要至少使用到70级之前获得的所有SP来进行第三次职业转职。哦，还有，由于你已经在第二次职业转职时选择了你的职业方向，所以在第三次职业转职时就不需要再次选择了。你现在要进行转职吗？");
         } else if (status == 2) {
             if (cm.getPlayer().getRemainingSp() > 0) {
                 if (cm.getPlayer().getRemainingSp() > (cm.getLevel() - 70) * 3) {
-                    cm.sendNext("Please, use all your SP before continuing.");
+                    cm.sendNext("请在继续之前使用你所有的SP。");
                     cm.dispose();
                     return;
                 }
@@ -78,30 +78,30 @@ function action(mode, type, selection) {
             }
 
             if (Math.floor(cm.getJobId() / 10) == 51) {
-                cm.sendNext("Great! You are now a #bMarauder#k. As a Marauder, you will learn some of the most sophisticated skills related to melee-based attacks. #bEnergy Charge#k is a skill that allows you to store your power and the damage you receive into a special form of energy. Once this ball of energy is charged, you may use #bEnergy Blast#k to apply maximum damage against your enemies, and also use #bEnergy Drain#k to steal your enemy's HP to recover your own. #bTransformation#k will allow you to transform into a superhuman being with devastating melee attacks, and while transformed, you can use #bShockwave#k to cause a mini-earthquake and inflict massive damage to your enemies.");
+                cm.sendNext("太棒了！你现在是一个#b掠夺者#k。作为一个掠夺者，你将学习一些与近战攻击相关的最复杂的技能。#b能量充能#k是一种技能，它允许你将你的力量和受到的伤害储存到一种特殊形式的能量中。一旦这团能量充满了，你可以使用#b能量爆发#k对敌人造成最大的伤害，也可以使用#b能量吸取#k来偷取敌人的生命值来恢复自己的生命。#b变身#k将允许你变身为一个具有毁灭性近战攻击的超人类存在，而在变身状态下，你可以使用#b冲击波#k来引发一次小型地震并对敌人造成巨大的伤害。");
             } else {
-                cm.sendNext("Great! You have now become an #bOutlaw#k. As an Outlaw, you will become a true pistolero, a master of every known Gun attack, as well as a few other skills to help you vanquish evil. #bBurst Fire#k is a more powerful version of Double Shot, shooting more bullets and causing more damage at the same time. You also now have the ability to summon a loyal #bOctopus#k and the swooping #bGaviota#k as your trusty allies, while attacking your enemies using #bBullseye#k. You can also use element-based attacks using #bFlamethrower#k and #bIce Splitter#k.");
+                cm.sendNext("太棒了！你现在成为了一个#bOutlaw#k。作为一个Outlaw，你将成为一个真正的枪手，掌握所有已知的枪支攻击技能，以及一些其他技能来帮助你消灭邪恶。#bBurst Fire#k 是Double Shot的更强大版本，可以同时射出更多子弹，造成更多伤害。你现在还可以召唤一只忠诚的#bOctopus#k 和一只俯冲的#bGaviota#k 作为你的忠实盟友，同时使用#bBullseye#k 攻击你的敌人。你还可以使用基于元素的攻击，比如#bFlamethrower#k 和#bIce Splitter#k。");
             }
         } else if (status == 3) {
-            cm.sendNextPrev("I've also given you some SP and AP, which will help you get started. You have now become a powerful, powerful pirate, indeed. Remember, though, that the real world will be awaiting your arrival with even tougher obstacles to overcome. Once you feel like you cannot train yourself to reach a higher place, then, and only then, come see me. I'll be here waiting.");
+            cm.sendNextPrev("我也给了你一些SP和AP，这将帮助你开始。你现在确实成为了一个强大的海盗。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得自己无法训练自己达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着你。");
         }
     } else if (actionx["Physical"]) {
         if (status == 0) {
-            cm.sendNext("Great job completing the physical part of the test. I knew you could do it. Now that you have passed the first half of the test, here's the second half. Please give me the necklace first.");
+            cm.sendNext("完成了测试的体能部分，做得很棒。我知道你能做到。现在你已经通过了测试的前半部分，接下来是后半部分。请先把项链给我。");
         } else if (status == 1) {
             if (cm.haveItem(4031057)) {
                 cm.gainItem(4031057, -1);
                 cm.getPlayer().setPartyQuestItemObtained("JBQ");
             }
-            cm.sendNextPrev("Here's the 2nd half of the test. This test will determine whether you are smart enough to take the next step towards greatness. There is a dark, snow-covered area called the Holy Ground at the snowfield in Ossyria, where even the monsters can't reach. On the center of the area lies a huge stone called the Holy Stone. You'll need to offer a special item as the sacrifice, then the Holy Stone will test your wisdom right there on the spot.");
+            cm.sendNextPrev("这是测试的第二部分。这个测试将决定你是否足够聪明，可以迈向伟大的下一步。在Ossyria的雪地上有一个被雪覆盖的黑暗区域，被称为圣地，甚至怪物也无法到达。在这个区域的中心，有一块被称为圣石的巨大石头。你需要献上一件特殊的物品作为祭品，然后圣石将在当场测试你的智慧。");
         } else if (status == 2) {
-            cm.sendNextPrev("You'll need to answer each and every question given to you with honesty and conviction. If you correctly answer all the questions, then the Holy Stone will formally accept you and hand you #b#t4031058##k. Bring back the necklace, and I will help you to the next step forward. Good luck.");
+            cm.sendNextPrev("你需要诚实而坚定地回答每一个问题。如果你能正确回答所有问题，那么圣石将正式接受你，并交给你#b#t4031058##k。把项链带回来，我会帮助你迈向下一步。祝你好运。");
         }
     } else if (cm.getPlayer().gotPartyQuestItem("JB3") && selection == 0) {
-        cm.sendNext("Go, talk with #b#p1090000##k and bring me #b#t4031057##k.");
+        cm.sendNext("去，和#b#p1090000# #k交谈，然后给我带来#b#t4031057##k。");
         cm.dispose();
     } else if (cm.getPlayer().gotPartyQuestItem("JBQ") && selection == 0) {
-        cm.sendNext("Go, talk with #b#p2030006##k and bring me #b#t4031058##k.");
+        cm.sendNext("去，和#b#p2030006#对话#k，然后给我带来#b#t4031058##k。");
         cm.dispose();
     } else {
         if (sel == undefined) {
@@ -110,17 +110,17 @@ function action(mode, type, selection) {
         if (sel == 0) {
             if (cm.getPlayer().getLevel() >= 70 && cm.getJobId() % 10 == 0) {
                 if (status == 0) {
-                    cm.sendYesNo("Welcome. I'm #b#p2020013##k, the chief of all pirates, in charge of bringing out the best in each and every pirate that needs my guidance. You seem like the kind of pirate that wants to make the leap forward, the one ready to take on the challenges of the 3th job advancement. But I've seen countless pirates eager to make the jump just like you, only to see them fail. What about you? Are you ready to be tested and make the 3th job advancement?");
+                    cm.sendYesNo("欢迎。我是#b#p2020013##k，所有海盗的首领，负责引导每一个需要帮助的海盗发挥出最好的潜力。你看起来像是那种想要迈出进步的海盗，准备迎接第三职业转职挑战的人。但我见过无数渴望像你一样迈出这一步的海盗，最终却失败了。你呢？你准备好接受考验，进行第三职业转职了吗？");
                 } else if (status == 1) {
                     cm.getPlayer().setPartyQuestItemObtained("JB3");
-                    cm.sendNext("Good. You will be tested on two important aspects of the pirate: strength and wisdom. I'll now explain to you the physical half of the test. Remember #b#p1090000##k from Nautilus Harbor? Go see him, and he'll give you the details on the first half of the test. Please complete the mission, and get #b#t4031057##k from #p1090000#.");
+                    cm.sendNext("好的。你将在海盗的两个重要方面进行测试：力量和智慧。我现在会向你解释测试的身体部分。还记得来自诺特勒斯港的#b#p1090000##k吗？去找他，他会告诉你测试的第一部分的详细信息。请完成任务，并从#p1090000#那里获得#b#t4031057##k。");
                 } else if (status == 2) {
-                    cm.sendNextPrev("The mental half of the test can only start after you pass the physical part of the test. #b#t4031057##k will be the proof that you have indeed passed the test. I'll let #b#p1022000##k in advance that you're making your way there, so get ready. It won't be easy, but I have the utmost faith in you. Good luck.");
+                    cm.sendNextPrev("测试的心理部分只能在你通过了测试的身体部分之后才能开始。#b#t4031057##k 将证明你确实通过了测试。我会提前告诉#b#p1022000##k你要前往那里，所以做好准备。这不会很容易，但我对你有着最大的信心。祝你好运。");
                 }
             }
         } else {
             if (cm.getPlayer().getLevel() >= 50) {
-                cm.sendOk("The Chief's Residence Council grants you #bconcession#k to make part of the #rcounteroffensive team against Zakum#k. Good luck on your journey ahead.");
+                cm.sendOk("首领居住委员会授予你#b特许#k，成为#r反击扎昆团队#k的一部分。祝你前程似锦。");
                 if (!(cm.isQuestStarted(100200) || cm.isQuestCompleted(100200))) {
                     cm.startQuest(100200);
                 }
@@ -128,7 +128,7 @@ function action(mode, type, selection) {
                     cm.completeQuest(100201);
                 }
             } else {
-                cm.sendOk("You're way too weak to make part of the #rcounteroffensive team against Zakum#k. Reach at least #blevel 50#k, then talk to me.");
+                cm.sendOk("你太弱了，无法成为#rcounteroffensive团队对抗扎昆#k的一部分。至少达到#blevel 50#k，然后再和我说话。");
             }
             cm.dispose();
         }

@@ -54,11 +54,11 @@ function action(mode, type, selection) {
         if (status == 0) {
             if ((cm.getPlayer().getLevel() < minLevel)) {
                 cm.warp(211042300);
-                cm.sendOk("Please come back when you're prepared for the battle. You should not be here yet.");
+                cm.sendOk("请在你准备好战斗的时候再回来。你现在不应该在这里。");
                 cm.dispose();
                 return;
             }
-            cm.sendSimple("The battle to defeat Zakum begins here. What would you like to do? #b\r\n#L0#Start a new Zakum Battle#l\r\n#L1#Join your group's Zakum Battle#l");
+            cm.sendSimple("开始打败扎昆的战斗就在这里。你想做什么？#b\r\n#L0#开始新的扎昆战斗#l\r\n#L1#加入你的团队的扎昆战斗#l");
         } else if (status == 1) {
             state = selection;
             if (selection == 0) {
@@ -71,15 +71,15 @@ function action(mode, type, selection) {
             var em = cm.getEventManager("ZakumBattle");
             var passwd = cm.getText();
             if (em == null) {
-                cm.sendOk("This trial is currently under construction.");
+                cm.sendOk("这个试炼目前正在建设中。");
             } else {
                 if (state == 0) { // Leader
                     if (getEimForString(em, passwd) != null) {
-                        cm.sendOk("You may not use that password.");
+                        cm.sendOk("你不能使用那个密码。");
                     } else { // start Zakum Battle
                         //var em = cm.getEventManager("Zakum" + passwd);
                         if (!em.startInstance(cm.getPlayer())) {
-                            cm.sendOk("A party is already registered in this instance.");
+                            cm.sendOk("该副本中已经有一个队伍注册了。");
                         }
 
                         cm.dispose();
@@ -89,16 +89,16 @@ function action(mode, type, selection) {
                 if (state == 1) { // Member
                     var eim = getEimForString(em, passwd);
                     if (eim == null) {
-                        cm.sendOk("There is currently no battle registered under that name.");
+                        cm.sendOk("当前没有以该名称注册的战斗。");
                     } else {
                         if (eim.getProperty("canEnter").toLowerCase() == "true") {
                             if (eim.getPlayers().size() < maxPlayers) {
                                 eim.registerPlayer(cm.getPlayer());
                             } else {
-                                cm.sendOk("I'm sorry, but that battle is currently full.  Please wait to join another one.");
+                                cm.sendOk("对不起，这场战斗目前已经满员。请等待加入另一场战斗。");
                             }
                         } else {
-                            cm.sendOk("I'm sorry, but that battle is currently in progress.  Please return later.");
+                            cm.sendOk("对不起，这场战斗目前正在进行中。请稍后再来。");
                         }
                     }
                 }

@@ -13,10 +13,10 @@ function action(mode, type, selection) {
         return;
     }
     if (status == 0) {
-        cm.sendSimple("My name is #p2131001#, I am the strongest magician around these parts.#b\r\n#L0#Hey, take these rubbles. You can perform your magic on them.#l");
+        cm.sendSimple("我的名字是#p2131001#，我是这个地方最强大的魔法师。#b\r\n#L0#嘿，拿着这些碎石。你可以用你的魔法对它们施展。#l");
     } else if (status == 1) {
         if (!cm.haveItem(exchangeItem, 100)) {
-            cm.sendNext("You don't have enough... I need at least 100.");
+            cm.sendNext("你没有足够的... 我至少需要100个。");
             cm.dispose();
         } else {
             // thanks yuxaij for noticing a few methods having parameters not matching the expected Math library function parameter types
@@ -25,11 +25,11 @@ function action(mode, type, selection) {
     } else if (status == 2) {
         if (selection >= 1 && selection <= cm.itemQuantity(exchangeItem) / 100) {
             if (!cm.canHold(4310000, selection)) {
-                cm.sendOk("Please make some space in ETC tab.");
+                cm.sendOk("请在杂项标签页中腾出一些空间。");
             } else {
                 cm.gainItem(4310000, selection);
                 cm.gainItem(exchangeItem, -(selection * 100));
-                cm.sendOk("Thanks!");
+                cm.sendOk("谢谢！");
             }
         }
         cm.dispose();

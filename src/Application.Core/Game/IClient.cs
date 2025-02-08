@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file is part of the OdinMS Maple Story Server
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 Matthias Butz <matze@odinms.de>
@@ -151,5 +151,7 @@ namespace Application.Core.Game
         void updateMacs(string macData);
         void UserEventTriggered(IChannelHandlerContext ctx, object evt);
         void useVotePoints(int points);
+
+        void OpenNpc(int npcid, string? script = null);
     }
 }

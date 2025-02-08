@@ -22,6 +22,6 @@
 var status = -1;
 
 function start() {
-    cm.sendOk("Young one, you seem very proud of yourself, don't you? Can you face the real nightmare that is this place? If you think you can do it, then go ahead, ehehehehehe.");
+    cm.sendOk("年轻人，你似乎对自己很自豪，是吗？你能面对这个真正的噩梦之地吗？如果你认为你能做到，那就继续吧，嘿嘿嘿嘿嘿。");
     cm.dispose();
 }

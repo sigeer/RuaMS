@@ -39,7 +39,7 @@ var qty;
 
 function start() {
     if (cm.getQuestStatus(8225) != 2) {
-        cm.sendOk("Step aside, novice, we're doing business here.");
+        cm.sendOk("让开，新手，我们这里在做生意。");
         cm.dispose();
         return;
     }
@@ -136,11 +136,11 @@ function action(mode, type, selection) {
         recvQty = qty;
 
         if (!cm.canHold(recvItem, recvQty)) {
-            cm.sendOk("Check your inventory for a free slot first.");
+            cm.sendOk("首先检查你的物品栏是否有空位。");
             cm.dispose();
             return;
         } else if (cm.getMeso() < cost * qty) {
-            cm.sendOk("I am afraid you don't have enough to pay me, partner. Please check this out first, ok?");
+            cm.sendOk("恐怕你没有足够的钱来付我，伙计。请先检查一下，好吗？");
             cm.dispose();
             return;
         } else {
@@ -156,7 +156,7 @@ function action(mode, type, selection) {
         }
 
         if (!complete) {
-            cm.sendOk("Hey, I need those items to craft properly, you know?");
+            cm.sendOk("“嘿，我需要这些物品来正确制作，你知道吗？”");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; i < mats.length; i++) {
@@ -170,7 +170,7 @@ function action(mode, type, selection) {
             }
 
             cm.gainItem(recvItem, recvQty);
-            cm.sendOk("All done. If you need anything else... Well, I'm not going anywhere.");
+            cm.sendOk("都搞定了。如果你还需要什么……嗯，我不会走开的。");
         }
         cm.dispose();
     }

@@ -1,5 +1,5 @@
 ﻿function start() {
-    cm.sendNext("You did a great job back there, " + cm.getPlayer().getName() + ", well done. Now I will transport you back to El Nath. Have the pendant in your possession and talk to me when you feel ready to receive the new skill.");
+    cm.sendNext("你在那里做得很好，" + cm.getPlayer().getName() + "，干得漂亮。现在我会把你送回埃尔奈斯。当你准备好学习新技能时，带着护身符和我交谈。");
 }
 
 function action(mode, type, selection) {

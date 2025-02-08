@@ -76,7 +76,7 @@ function action(mode, type, selection) {
         var eim = cm.getPlayer().getEventInstance();
         if (eim.getProperty(stage.toString() + "stageclear") != null) {
             if (stage < 5) {
-                cm.sendNext("The portal is already open, advance for the trials that awaits you there.");
+                cm.sendNext("传送门已经打开，前往那里等待你的考验。");
             } else if (stage == 5) {
                 eim.warpEventTeamToMapSpawnPoint(670010700, 0);
             } else {
@@ -91,7 +91,7 @@ function action(mode, type, selection) {
                         eim.warpEventTeamToMapSpawnPoint(670010750, 1);
                     }
                 } else {
-                    cm.sendNext("Wait for the leader's command to start the bonus phase.");
+                    cm.sendNext("等待队长的指令开始奖励阶段。");
                 }
             }
         } else {
@@ -101,9 +101,9 @@ function action(mode, type, selection) {
 
                     if (state == -1) {           // preamble
                         if (stage == 4) {
-                            cm.sendOk("Hi. Welcome to the #bstage " + stage + "#k of the Amorian Challenge. In this stage, collect me #b50 #t4031597##k from the mobs around here.");
+                            cm.sendOk("嗨。欢迎来到阿莫利亚挑战的#b舞台#k。在这个阶段，从这里周围的怪物身上收集#b50个#t4031597##k。");
                         } else if (stage == 5) {
-                            cm.sendOk("Hi. Welcome to the #bstage " + stage + "#k of the Amorian Challenge. That was quite the run to reach here, eh? Well, that was your task this stage here, anyway: survival! Firstly, have anyone alive gathered here before challenging the boss.");
+                            cm.sendOk("嗨。欢迎来到阿莫利亚挑战的#b舞台#k。要到达这里可是一场不小的奔跑，是吧？好吧，无论如何，这个阶段的任务就是生存！首先，确保有人活着聚集在这里，然后再挑战boss。");
                         }
 
                         var st = (debug) ? 2 : 0;
@@ -119,11 +119,11 @@ function action(mode, type, selection) {
                                     eim.restartEventTimer(4 * 60 * 1000);
                                 }
 
-                                cm.sendNext("Well done! Let me open the gate for you now.");
+                                cm.sendNext("干得好！现在让我为你打开大门。");
                                 cm.mapMessage(5, "Amos: The time runs short now. Your objective is to open the gates and gather together on the other side of the next map. Good luck!");
                                 clearStage(stage, eim, curMap);
                             } else {
-                                cm.sendNext("Hey, didn't you pay heed? I demand #r50 #t4031597##k for the success of this trial.");
+                                cm.sendNext("嘿，你没听清楚吗？我要求 #r50 #t4031597##k 作为这次试炼的成功报酬。");
                             }
 
                         } else if (stage == 5) {
@@ -155,20 +155,20 @@ function action(mode, type, selection) {
                                         eim.restartEventTimer(tl - (4 * 60 * 1000 - tr));
                                     }
 
-                                    cm.sendNext("Okay, your team is already gathered. Talk to me when you guys feel ready to fight the #rGeist Balrog#k.");
+                                    cm.sendNext("好的，你的团队已经集合好了。当你们感觉准备好与 #rGeist Balrog#k 战斗时，和我交谈。");
 
                                     cm.mapMessage(5, "Amos: Now only the boss fight remains! Once inside, talk to me only if you want to join the boss fight, you will be transported to action immediately.");
                                     clearStage(stage, eim, curMap);
                                 } else {
-                                    cm.sendNext("You guys reached here by teleporting, eh? I can tell it. This is a shame, all gates needs to be open to fulfill this stage. If you still have the time, backtrack your steps and take down those gates.");
+                                    cm.sendNext("你们是通过传送到达这里的，是吗？我能感觉到。真是遗憾，所有的门都必须打开才能完成这个阶段。如果你们还有时间的话，回头走一遍你们的路，把那些门都关掉。");
                                 }
                             } else {
-                                cm.sendNext("Your team has not gathered nearby yet. Give them some time to reach here.");
+                                cm.sendNext("你的团队还没有聚集在附近。给他们一些时间到达这里。");
                             }
                         }
                     }
                 } else {
-                    cm.sendNext("Please tell your #bParty-Leader#k to come talk to me.");
+                    cm.sendNext("请告诉你的#b队长#k来找我谈话。");
                 }
             } else {
                 var area = cm.getMap().getArea(0);
@@ -176,13 +176,13 @@ function action(mode, type, selection) {
                     if (cm.getPlayer().isAlive()) {
                         cm.warp(670010700, "st01");
                     } else {
-                        cm.sendNext("Oy stand back... You are already dead.");
+                        cm.sendNext("喂，退后一点……你已经死了。");
                     }
                 } else {
                     if (cm.isEventLeader()) {
                         if (cm.haveItem(4031594, 1)) {
                             cm.gainItem(4031594, -1);
-                            cm.sendNext("Congratulations! Your party defeated the Geist Balrog, thus #bcompleting the Amorian Challenge#k! Talk to me again to start the bonus stage.");
+                            cm.sendNext("恭喜！你的队伍打败了鬼魂巴尔洛格，因此#b完成了阿莫利亚挑战#k！再次与我交谈以开始奖励阶段。");
 
                             clearStage(stage, eim, curMap);
                             eim.clearPQ();
@@ -190,7 +190,7 @@ function action(mode, type, selection) {
                             cm.sendNext("How is it? Are you going to retrieve me the #b#t4031594##k? That's your last trial, hold on!")
                         }
                     } else {
-                        cm.sendNext("Please tell your #bParty-Leader#k to come talk to me.");
+                        cm.sendNext("请告诉你的#b队长#k来找我谈话。");
                     }
                 }
             }

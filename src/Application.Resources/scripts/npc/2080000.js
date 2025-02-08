@@ -184,11 +184,11 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (!cm.canHold(item, 1)) {
-            cm.sendOk("Check your inventory for a free slot first.");
+            cm.sendOk("首先检查你的物品栏是否有空位。");
             cm.dispose();
             return;
         } else if (cm.getMeso() < cost) {
-            cm.sendOk("My fee is for the good of all of Leafre. If you cannot pay it, then begone.");
+            cm.sendOk("我的费用是为了利益所有的利弗尔人。如果你付不起，那就滚吧。");
             cm.dispose();
             return;
         } else {
@@ -208,7 +208,7 @@ function action(mode, type, selection) {
             }
         }
         if (!complete) {
-            cm.sendOk("I'm afraid that without the correct items, the dragon's essence would... not make for a very reliable weapon. Please bring the correct items next time.");
+            cm.sendOk("恐怕没有正确的物品，龙之精华就不能成为一个非常可靠的武器。下次请带来正确的物品。");
         } else {
             if (mats instanceof Array) {
                 for (var i = 0; i < mats.length; i++) {
@@ -223,13 +223,13 @@ function action(mode, type, selection) {
                 var deleted = Math.floor(Math.random() * 10);
                 if (deleted != 0) {
                     cm.gainItem(item, 1, true, true);
-                    cm.sendOk("The process is complete. Treat your weapon well, lest you bring the wrath of the dragons upon you.");
+                    cm.sendOk("过程已经完成。好好对待你的武器，免得招惹龙的愤怒。");
                 } else {
-                    cm.sendOk("Unfortunately, the dragon's essence has... conflicted with your weapon. My apologies for your loss.");
+                    cm.sendOk("不幸的是，龙的精华与你的武器产生了冲突。对你的损失我深感抱歉。");
                 }
             } else {//just give basic item
                 cm.gainItem(item, 1);
-                cm.sendOk("The process is complete. Treat your weapon well, lest you bring the wrath of the dragons upon you.");
+                cm.sendOk("过程已经完成。好好对待你的武器，免得招惹龙的愤怒。");
             }
         }
         cm.dispose();

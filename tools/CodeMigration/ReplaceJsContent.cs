@@ -1,5 +1,6 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.RegularExpressions;
+using Application.Utility.Configs;
 
 namespace JSMigration
 {
@@ -24,19 +25,40 @@ namespace JSMigration
         Dictionary<string, List<string>> javaTypes = new Dictionary<string, List<string>>();
         Dictionary<string, List<string>> javaTos = new Dictionary<string, List<string>>();
 
-        Regex javaType = new Regex("[\\r\\s]*((const)|(var))\\s*.*?\\s*=\\s*Java\\.type\\((.*?)\\);?");
+        //[\\r\\s]*((const)|(var))\\s*.*?\\s*=\\s*Java\\.type\\((.*?)\\);?
+        Regex javaType = new Regex("([\\r\\s]*)((const)|(var))?\\s*(.*?)\\s*=\\s*Java\\.type\\((.*?)\\)(.*)");
         Regex javaTo = new Regex("Java\\.to\\((.*?),.*\\);?");
 
         string RemoveJavaType(string file, string jsContent)
         {
-            return javaType.Replace(jsContent, e =>
+            Dictionary<string, string> typePair = new Dictionary<string, string>();
+            var m = javaType.Replace(jsContent, e =>
             {
-                // AbstractScriptManager engine.AddHostType
-                if (!javaTypes.ContainsKey(e.Groups[4].Value))
-                    javaTypes[e.Groups[4].Value] = new List<string>();
-                javaTypes[e.Groups[4].Value].Add(file);
-                return "";
+                var typeName = e.Groups[6].Value;
+
+                if (!javaTypes.ContainsKey(typeName))
+                    javaTypes[typeName] = new List<string>();
+                javaTypes[typeName].Add(file);
+
+                var realTypeName = typeName.Split('.').LastOrDefault()!;
+                realTypeName = realTypeName.Substring(0, realTypeName.Length - 1);
+                if (jsContent[e.Groups[6].Index + e.Groups[6].Value.Length + 1] == '[')
+                {
+                    return $"{e.Groups[1].Value}{e.Groups[4].Value} {e.Groups[5].Value} = {realTypeName}{e.Groups[7].Value}";
+                }
+                else
+                {
+                    typePair[e.Groups[5].Value] = realTypeName;
+                    return "";
+                }
             });
+
+            foreach (var k in typePair)
+            {
+                m = Regex.Replace(m, $"((var)|(let))\\s*{k.Key};?$", "");
+                m = m.Replace($"{k.Key}.", $"{k.Value}.");
+            }
+            return m;
         }
 
         string RemoveJavaTo(string file, string jsContent)
@@ -50,11 +72,51 @@ namespace JSMigration
             });
         }
 
+        Dictionary<string, List<string>> gameConfigList = new Dictionary<string, List<string>>();
+        Regex gameConfigRegex = new Regex("GameConfig\\.\\S*?\\(\"(.*?)\"\\)");
+
+        List<string>? configProps;
+        List<string> GetConfigProps()
+        {
+            return configProps ??= typeof(ServerConfig).GetFields().Select(x => x.Name).ToList();
+        }
+        string RemoveGameConfig(string file, string jsContent)
+        {
+            var allProps = GetConfigProps();
+            return gameConfigRegex.Replace(jsContent, e =>
+            {
+                var prop = e.Groups[1].Value;
+
+                var mapValue = prop.Replace("_", "").ToLower();
+                var findResult = allProps.FirstOrDefault(x => x.Replace("_", "").ToLower() == mapValue);
+                if (findResult != null)
+                {
+                    return "YamlConfig.config.server." + findResult;
+                }
+                else
+                {
+                    if (!gameConfigList.ContainsKey(prop))
+                        gameConfigList[prop] = new List<string>();
+                    gameConfigList[prop].Add(file);
+                    return prop;
+                }
+            });
+        }
+
         string ReplaceSpecial(string file, string jsContent)
         {
             jsContent = jsContent.Replace("java.awt.Point", "Point");
-
+            jsContent = jsContent.Replace("Server.getInstance().getWorld(em.getChannelServer().getWorld());", "em.getWorldServer();");
             return jsContent;
+        }
+
+        HashSet<string> FindIteratorResult = new HashSet<string>();
+        void FindIterator(string file, string jsContent)
+        {
+            if (jsContent.Contains("iterator"))
+            {
+                FindIteratorResult.Add(file);
+            }
         }
 
         /// <summary>
@@ -86,15 +148,20 @@ namespace JSMigration
 
         public void Run()
         {
+            if (Directory.Exists("ns"))
+                Directory.Delete("ns", true);
+
             var files = Directory.GetFiles(jsDir, "*.js", SearchOption.AllDirectories);
             foreach (var file in files)
             {
                 var jsContent = File.ReadAllText(file);
 
+                FindIterator(file, jsContent);
                 // 移除Java.type()
                 jsContent = RemoveJavaType(file, jsContent);
                 // 移除Java.to()
                 jsContent = RemoveJavaTo(file, jsContent);
+                jsContent = RemoveGameConfig(file, jsContent);
                 jsContent = ReplaceSpecial(file, jsContent);
                 var newFilePath = Path.Combine("ns", Path.GetRelativePath(jsDir, file));
                 var dir = Path.GetDirectoryName(newFilePath);
@@ -118,6 +185,12 @@ namespace JSMigration
 
             var javaToPath = Path.Combine(dir, "JavaTo.txt");
             File.WriteAllLines(javaToPath, javaTos.SelectMany(x => x.Value.Select(y => $"Type: {x.Key} -- File: {y}")));
+
+            var gameConfigListPath = Path.Combine(dir, "JavaGameConfig.txt");
+            File.WriteAllLines(gameConfigListPath, gameConfigList.SelectMany(x => x.Value.Select(y => $"Type: {x.Key} -- File: {y}")));
+
+            var findIteratorResultPath = Path.Combine(dir, "Iterator.txt");
+            File.WriteAllLines(findIteratorResultPath, FindIteratorResult);
         }
     }
 }

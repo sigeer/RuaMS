@@ -38,7 +38,7 @@ function start() {
 
 function action(mode, type, selection) {
     if (mode == -1 || mode == 0) {
-        cm.sendOk("Goodbye then.");
+        cm.sendOk("再见。");
         cm.dispose();
         return;
     } else if (mode == 1) {
@@ -68,26 +68,26 @@ function action(mode, type, selection) {
 
             if (cm.haveItem(4000313) && isMarrying) {
                 if (eim.getIntProperty("weddingStage") == 3) {
-                    cm.sendOk("Congratulations on your wedding. Please talk to #b#p9201007##k to start the afterparty.");
+                    cm.sendOk("恭喜你们的婚礼。请与#b#p9201007##k交谈，开始婚礼后的派对。");
                     cm.dispose();
                 } else if (hasEngagement) {
                     if (!cm.createMarriageWishlist()) {
-                        cm.sendOk("You have already sent your wishlist...");
+                        cm.sendOk("您已经发送了您的愿望清单...");
                     }
                     cm.dispose();
                 } else {
-                    cm.sendOk("You do not have the required item to continue through this wedding. Unfortunately, it's over...");
+                    cm.sendOk("你没有所需的物品来继续参加这场婚礼。很遗憾，这就结束了…");
                 }
             } else {
                 if (eim.getIntProperty("weddingStage") == 3) {
                     if (!isMarrying) {
-                        cm.sendYesNo("The couple #rhas just married#k, and soon #bthey will start the afterparty#k. You should wait here for them. Are you really ready to #rquit this wedding#k and return to #bAmoria#k?");
+                        cm.sendYesNo("这对夫妇刚刚结婚，很快他们就会开始婚礼后的派对。你应该在这里等他们。你真的准备好退出这场婚礼，回到阿莫利亚了吗？");
                     } else {
-                        cm.sendOk("Congratulations on your wedding. Please talk to #b#p9201007##k to start the afterparty.");
+                        cm.sendOk("恭喜你们的婚礼。请与#b#p9201007##k交谈，开始婚礼后的派对。");
                         cm.dispose();
                     }
                 } else {
-                    cm.sendYesNo("Are you sure you want to #rquit this wedding#k and return to #bAmoria#k?");
+                    cm.sendYesNo("你确定要#r退出这场婚礼#k并返回#b阿莫利亚#k吗？");
                 }
             }
             break;

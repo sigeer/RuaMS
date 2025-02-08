@@ -22,7 +22,7 @@
 var status = 0;
 
 function start() {
-    cm.sendYesNo("Here you are, right in front of the hideout! What? You want to\r\nreturn to #m801000000#?");
+    cm.sendYesNo("你就在藏身处前面！什么？你想返回#m801000000#？");
 }
 
 function action(mode, type, selection) {
@@ -30,7 +30,7 @@ function action(mode, type, selection) {
         cm.dispose();
     } else {
         if (mode == 0) {
-            cm.sendOk("If you want to return to #m801000000#, then talk to me.");
+            cm.sendOk("如果你想回到#m801000000#，那就和我说话。");
             cm.dispose();
         } else if (mode == 1) {
             status++;

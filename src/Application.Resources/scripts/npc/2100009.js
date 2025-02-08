@@ -36,7 +36,7 @@ function start() {
 function action(mode, type, selection) {
     if (mode < 1) {  // disposing issue with stylishs found thanks to Vcoc
         if (type == 7) {
-            cm.sendNext("I see...take your time, see if you really want it. Let me know when you make up your mind.");
+            cm.sendNext("我明白了...慢慢考虑，看看你是否真的想要。当你下定决心时告诉我。");
         }
 
         cm.dispose();
@@ -48,7 +48,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendSimple("Hi, I'm the face surgery assistant doctor from around here. With a #b#t5152029##k or a #b#t5152048##k, I can make it kick in just nice, trust me. Ah, don't forget, what comes next after the operation will be random! Then, what are you going for?\r\n#L1#Plastic Surgery: #i5152029##t5152029##l\r\n#L2#Cosmetic Lens: #i5152048##t5152048##l");
+            cm.sendSimple("嗨，我是这里的整容助理医生。用一个#b#t5152029##k或者一个#b#t5152048##k，我可以让它变得完美，相信我。啊，别忘了，手术后的结果是随机的！那么，你要做哪个呢？\r\n#L1#整形手术：#i5152029##t5152029##l\r\n#L2#美瞳：#i5152048##t5152048##l");
         } else if (status == 1) {
             if (selection == 1) {
                 beauty = 0;
@@ -68,7 +68,7 @@ function action(mode, type, selection) {
                                 % 100));
                     }
                 }
-                cm.sendYesNo("If you use the regular coupon, your face may transform into a random new look...do you still want to do it using #b#t5152029##k?");
+                cm.sendYesNo("如果你使用普通的优惠券，你的脸可能会变成一个随机的新样子...你还想用#b#t5152029##k来做吗？");
             } else if (selection == 2) {
                 beauty = 1;
                 if (cm.getPlayer().getGender() == 0) {
@@ -81,7 +81,7 @@ function action(mode, type, selection) {
                 }
                 colors = Array();
                 pushIfItemsExists(colors, [current, current + 100, current + 300, current + 600, current + 700]);
-                cm.sendYesNo("If you use the regular coupon, you'll be awarded a random pair of cosmetic lenses. Are you going to use a #b#t5152048##k and really make the change to your eyes?");
+                cm.sendYesNo("如果你使用普通优惠券，你将获得一副随机的化妆隐形眼镜。你打算使用#b#t5152048##k，真的改变你的眼睛吗？");
             }
         } else if (status == 2) {
             cm.dispose();
@@ -90,17 +90,17 @@ function action(mode, type, selection) {
                 if (cm.haveItem(5152029) == true) {
                     cm.gainItem(5152029, -1);
                     cm.setFace(facenew[Math.floor(Math.random() * facenew.length)]);
-                    cm.sendOk("Enjoy your new and improved face!");
+                    cm.sendOk("享受你的新面容吧！");
                 } else {
-                    cm.sendNext("Um ... it looks like you don't have the coupon specifically for this place...sorry to say this, but without the coupon, there's no plastic surgery for you.");
+                    cm.sendNext("嗯...看起来你没有这个地方特定的优惠券...很抱歉要说这个，但没有优惠券的话，你就不能进行整形手术了。");
                 }
             } else if (beauty == 1) {
                 if (cm.haveItem(5152048)) {
                     cm.gainItem(5152048, -1);
                     cm.setFace(colors[Math.floor(Math.random() * colors.length)]);
-                    cm.sendOk("Enjoy your new and improved cosmetic lenses!");
+                    cm.sendOk("享受你的新款和升级版的隐形眼镜吧！");
                 } else {
-                    cm.sendOk("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
+                    cm.sendOk("嗯...看起来你没有这个地方专门的优惠券。很抱歉要说这个，但没有优惠券，你就不能进行整形手术了...");
                 }
             }
         }

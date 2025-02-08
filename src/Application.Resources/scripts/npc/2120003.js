@@ -5,6 +5,6 @@
 */
 
 function start() {
-    cm.sendOk("Hello and welcome, dear guest. The Master has prepared some wonderful games for you to enjoy tonight.");
+    cm.sendOk("你好，欢迎，亲爱的客人。主人为您准备了一些精彩的游戏，让您今晚享受。");
     cm.dispose();
 }

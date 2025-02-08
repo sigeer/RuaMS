@@ -30,7 +30,7 @@ var status = -2;
 var readNotice = 0;
 
 function start() {
-    cm.sendSimple("#e< Notice >#n\r\nIf there is anyone who has the courage to challenge the Mu Lung Dojo, come to the Mu Lung Dojo.  - Mu Gong -\r\n\r\n\r\n#b#L0#Challenge the Mu Lung Dojo.#l\r\n#L1#Read the notice in more detail.#l");
+    cm.sendSimple("#e< 注意 >#n\r\n如果有人有勇气挑战武陵道场，请来武陵道场。 - 武功 -\r\n\r\n\r\n#b#L0#挑战武陵道场。#l\r\n#L1#更详细地阅读通知。#l");
 }
 
 function action(mode, type, selection) {
@@ -42,7 +42,7 @@ function action(mode, type, selection) {
         if (selection == 1 || readNotice == 1) {
             if (status == -1) {
                 readNotice = 1;
-                cm.sendNext("#e< Notice : Take the challenge! >#n\r\nMy name is Mu Gong, the owner of the My Lung Dojo. Since long ago, I have been training in Mu Lung to the point where my skills have now reached the pinnacle. Starting today, I will take on any and all applicants for Mu Lung Dojo. The rights to the Mu Lung Dojo will be given only to the strongest person.\r\nIf there is anyone who wishes to learn from me, come take the challenge any time! If there is anyone who wishes to challenge me, you're welcome as well. I will make you fully aware of your own weakness.");
+                cm.sendNext("#e< 注意：接受挑战！ >#n\r\n我的名字是慕容，慕龙道场的主人。自古以来，我一直在慕龙修炼，直到我的技能达到了巅峰。从今天开始，我将接受所有对慕龙道场的申请者。慕龙道场的权利将只赋予最强大的人。\r\n如果有人希望向我学习，随时来挑战吧！如果有人希望挑战我，也欢迎。我会让你充分意识到自己的弱点。");
             } else if (status == 0) {
                 cm.sendPrev("PS:You can challenge me on your own. But if you don't have that kind of courage, go ahead and call all your friends.");
             } else {
@@ -50,10 +50,10 @@ function action(mode, type, selection) {
             }
         } else {
             if (status == -1 && mode == 1) {
-                cm.sendYesNo("(Once I had placed my hands on the bulletin board, a mysterious energy began to envelop me.)\r\n\r\nWould you like to go to Mu Lung Dojo?");
+                cm.sendYesNo("（当我把手放在公告板上时，一股神秘的能量开始包围着我。）\r\n\r\n你想去勇士部落道场吗？");
             } else if (status == 0) {
                 if (mode == 0) {
-                    cm.sendNext("#b(As I took my hand off the bulletin board, the mysterious energy that was covering my disappeared as well.)");
+                    cm.sendNext("当我把手从公告板上拿开时，覆盖在我身上的神秘能量也消失了。");
                 } else {
                     cm.getPlayer().saveLocation("MIRROR");
                     cm.warp(925020000, 4);

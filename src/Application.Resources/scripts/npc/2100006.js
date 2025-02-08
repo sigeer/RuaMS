@@ -33,7 +33,7 @@ function action(mode, type, selection) {
             status--;
         }
         if (status == 0) {
-            cm.sendSimple("Hahaha... it takes a lot of style and flair for someone to pay attention to his or her hairsyle in a desert. Someone like you...If you have #bAriant hair style coupon(VIP)#k or #bAriant hair color coupon(VIP)#k, I'll give your hair a fresh new look. \r\n#L0#Haircut: #i5150027##t5150027##l\r\n#L1#Dye your hair: #i5151022##t5151022##l");
+            cm.sendSimple("“哈哈哈...在沙漠中，一个人要注意自己的发型，需要有很多的风格和魅力。像你这样的人...如果你有#b阿里安特发型券（VIP）#k或#b阿里安特染发券（VIP）#k，我会给你的头发一个全新的造型。\r\n#L0#理发：#i5150027##t5150027##l\r\n#L1#染发：#i5151022##t5151022##l");
         } else if (status == 1) {
             if (selection == 0) {
                 beauty = 1;
@@ -67,18 +67,18 @@ function action(mode, type, selection) {
                 if (cm.haveItem(5150027) == true) {
                     cm.gainItem(5150027, -1);
                     cm.setHair(hairnew[selection]);
-                    cm.sendOk("Enjoy your new and improved hairstyle!");
+                    cm.sendOk("享受你的新发型吧！");
                 } else {
-                    cm.sendNext("I thought I told you, you need the coupon in order for me to work magic on your hair check again.");
+                    cm.sendNext("我以为我告诉过你了，你需要优惠券我才能给你的头发做魔法，再检查一下。");
                 }
             }
             if (beauty == 2) {
                 if (cm.haveItem(5151022) == true) {
                     cm.gainItem(5151022, -1);
                     cm.setHair(haircolor[selection]);
-                    cm.sendOk("Enjoy your new and improved haircolor!");
+                    cm.sendOk("享受你的新发色吧！");
                 } else {
-                    cm.sendNext("I thought I told you, you need the coupon in order for me to work magic on your hair check again.");
+                    cm.sendNext("我以为我告诉过你了，你需要优惠券才能让我为你的头发施展魔法，再检查一下。");
                 }
             }
         }

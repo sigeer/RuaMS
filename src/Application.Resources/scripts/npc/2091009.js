@@ -20,7 +20,7 @@ function action(mode, type, selection) {
         cm.sendGetText("The entrance of the Sealed Shrine... #bPassword#k!");
     } else if (status == 1) {
         if (cm.getWarpMap(925040100).countPlayers() > 0) {
-            cm.sendOk("Someone is already attending the Sealed Shrine.");
+            cm.sendOk("有人已经在前往封印神殿的路上了。");
             cm.dispose();
             return;
         }
@@ -33,7 +33,7 @@ function action(mode, type, selection) {
 
             cm.dispose();
         } else {
-            cm.sendOk("#rWrong!");
+            cm.sendOk("#r错误！");
         }
     } else if (status == 2) {
         cm.dispose();

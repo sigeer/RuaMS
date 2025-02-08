@@ -40,7 +40,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("For those capable of great feats and bearers of an unwavering resolve, the #bfinal destination#k lies ahead past the gate. The Machine Room accepts only #rone party at a time#k, so make sure your party is ready when crossing the gate.");
+            cm.sendOk("对于那些能够完成伟大壮举并拥有坚定决心的人来说，#b最终目的地#k就在门后。机房一次只接受#r一个队伍#k，所以当穿过门时，请确保你的队伍已经准备好。");
             cm.dispose();
         }
     }

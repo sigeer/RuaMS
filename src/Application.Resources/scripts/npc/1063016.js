@@ -25,7 +25,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendYesNo("Will you exit this trial?");
+            cm.sendYesNo("你会退出这个试炼吗？");
         } else {
             cm.warp(105040201, 2);
             cm.dispose();

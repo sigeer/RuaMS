@@ -25,7 +25,7 @@ var cost;
 var status = 0;
 
 function start() {
-    cm.sendSimple("...Can I help you?\r\n#L0##bBuy the Magic Seed#k#l\r\n#L1##bDo something for Leafre#k#l");
+    cm.sendSimple("...我可以帮你吗？\r\n#L0##b购买魔法种子#k#l\r\n#L1##b为利夫雷做点什么#k#l");
 }
 
 function action(mode, type, selection) {
@@ -33,34 +33,34 @@ function action(mode, type, selection) {
         cm.dispose();
         return;
     } else if (mode == 0) {
-        cm.sendOk("Please think carefully. Once you have made your decision, let me know.");
+        cm.sendOk("请仔细考虑。一旦你做出了决定，请告诉我。");
         cm.dispose();
         return;
     }
     status++;
     if (status == 1) {
         if (selection == 0) {
-            cm.sendSimple("You don't seem to be from out town. How can I help you?#L0##bI would like some #t4031346#.#k#l");
+            cm.sendSimple("你好像不是本地人。我能帮你吗？#L0##b我想要一些#t4031346#。#k#l");
         } else {
-            cm.sendNext("Under development...");
+            cm.sendNext("正在开发中...");
             cm.dispose();
         }
     } else if (status == 2) {
         cm.sendGetNumber("#b#t4031346##k is a precious iteml I cannot give it to you just like that. How about doing me a little favor? Then I'll give it to you. I'll sell the #b#t4031346##k to you for #b30,000 mesos#k each. Are you willing to make the purchase? How many would you like, then?", 0, 0, 99);
     } else if (status == 3) {
         if (selection == 0) {
-            cm.sendOk("I can't sell you 0.");
+            cm.sendOk("我不能卖给你0。");
             cm.dispose();
         } else {
             temp = selection;
             cost = temp * 30000;
-            cm.sendYesNo("Buying #b" + temp + " #t4031346#(s)#k will cost you #b" + cost + " mesos#k. Are you sure you want to make the purchase?");
+            cm.sendYesNo("购买 #b" + temp + " #t4031346#(s)#k 将花费你 #b" + cost + " 金币#k。你确定要购买吗？");
         }
     } else if (status == 4) {
         if (cm.getMeso() < cost || !cm.canHold(4031346)) {
-            cm.sendOk("Please check and see if you have enough mesos to make the purchase. Also, I suggest you check the etc. inventory and see if you have enough space available to make the purchase.");
+            cm.sendOk("请检查并查看您是否有足够的金币来进行购买。另外，我建议您检查杂项物品栏，看看是否有足够的空间来进行购买。");
         } else {
-            cm.sendOk("See you again~");
+            cm.sendOk("再见~");
             cm.gainItem(4031346, temp);
             cm.gainMeso(-cost);
         }

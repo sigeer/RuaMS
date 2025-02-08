@@ -41,7 +41,7 @@ function action(mode, type, selection) {
             status--;
         }
         if (status == 0) {
-            cm.sendSimple("Hello, I'm Dr. Rhomes, head of the cosmetic lens department here at the Orbis Plastic Surgery Shop.\r\nMy goal here is to add personality to everyone's eyes through the wonders of cosmetic lenses, and with #b#t5152011##k or #b#t5152014##k, I can do the same for you, too! Now, what would you like to use?\r\n#L1#Cosmetic Lenses: #i5152011##t5152011##l\r\n#L2#Cosmetic Lenses: #i5152014##t5152014##l\r\n#L3#One-time Cosmetic Lenses: #i5152104# (any color)#l");
+            cm.sendSimple("你好，我是Rhomes博士，是奥比斯整形外科店的美瞳部门主任。\r\n我的目标是通过美瞳的奇迹为每个人的眼睛增添个性，而且通过#b#t5152011##k或者#b#t5152014##k，我也可以为你做同样的事情！现在，你想要使用哪个？\r\n#L1#美瞳：#i5152011##t5152011##l\r\n#L2#美瞳：#i5152014##t5152014##l\r\n#L3#一次性美瞳：#i5152104#（任何颜色）#l");
         } else if (status == 1) {
             if (selection == 1) {
                 beauty = 1;
@@ -75,7 +75,7 @@ function selectedRegularCoupon() {
     }
     colors = Array();
     pushIfItemsExists(colors, [current + 100, current + 300, current + 400, current + 700]);
-    cm.sendYesNo("If you use the regular coupon, you'll be awarded a random pair of cosmetic lenses. Are you going to use a #b#t5152011##k and really make the change to your eyes?");
+    cm.sendYesNo("如果你使用普通优惠券，你将获得一副随机的化妆隐形眼镜。你打算使用#b#t5152011##k，真的改变你的眼睛吗？");
 }
 
 function selectedVipCoupon() {
@@ -87,7 +87,7 @@ function selectedVipCoupon() {
 
     colors = Array();
     pushIfItemsExists(colors, [current + 100, current + 300, current + 400, current + 700]);
-    cm.sendStyle("With our new computer program, you can see yourself after the treatment in advance. What kind of lens would you like to wear? Please choose the style of your liking.", colors);
+    cm.sendStyle("用我们新的计算机程序，你可以提前看到治疗后的自己。你想戴什么样的美瞳？请选择您喜欢的风格。", colors);
 }
 
 function pushIfItemsExists(array, itemidList) {
@@ -116,12 +116,12 @@ function selectedOneTimeCoupon() {
     }
 
     if (colors.length == 0) {
-        cm.sendOk("You don't have any One-Time Cosmetic Lens to use.");
+        cm.sendOk("你没有任何一次性化妆镜片可供使用。");
         cm.dispose();
         return;
     }
 
-    cm.sendStyle("What kind of lens would you like to wear? Please choose the style of your liking.", colors);
+    cm.sendStyle("你想戴什么样的眼镜？请选择您喜欢的风格。", colors);
 }
 
 function pushIfItemExists(array, itemid) {
@@ -135,7 +135,7 @@ function acceptedRegularCoupon() {
     if (cm.haveItem(regularCouponItemId)) {
         cm.gainItem(regularCouponItemId, -1);
         cm.setFace(colors[Math.floor(Math.random() * colors.length)]);
-        cm.sendOk("Enjoy your new and improved cosmetic lenses!");
+        cm.sendOk("享受你的新款和升级版的美瞳隐形眼镜吧！");
     } else {
         sendLackingCoupon()
     }
@@ -147,7 +147,7 @@ function selectedVipStyle(selection) {
         cm.gainItem(vipCouponItemId, -1);
         const selectedFace = colors[selection]
         cm.setFace(selectedFace);
-        cm.sendOk("Enjoy your new and improved cosmetic lenses!");
+        cm.sendOk("享受你的新款和升级版的隐形眼镜吧！");
     } else {
         sendLackingCoupon()
     }
@@ -161,12 +161,12 @@ function selectedOneTimeStyle(selection) {
     if (cm.haveItem(oneTimeCouponItemId)) {
         cm.gainItem(oneTimeCouponItemId, -1);
         cm.setFace(selectedFace);
-        cm.sendOk("Enjoy your new and improved cosmetic lenses!");
+        cm.sendOk("享受你的新款和升级版的隐形眼镜吧！");
     } else {
         sendLackingCoupon()
     }
 }
 
 function sendLackingCoupon() {
-    cm.sendOk("I'm sorry, but I don't think you have our cosmetic lens coupon with you right now. Without the coupon, I'm afraid I can't do it for you..");
+    cm.sendOk("对不起，但我觉得你现在没有我们的美瞳优惠券。没有优惠券，恐怕我不能为你办理。");
 }

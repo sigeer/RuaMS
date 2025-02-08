@@ -92,15 +92,15 @@ function action(mode, type, selection) {
                                 cm.gainItem(4031424, -1);
                                 cm.dispose();
                             } else {
-                                cm.sendOk("You don't have a free USE slot right now.");
+                                cm.sendOk("你现在没有空闲的使用槽位。");
                                 cm.dispose();
                             }
                         } else {
-                            cm.sendOk("You must be married to claim the prize for this box.");
+                            cm.sendOk("你必须结婚才能领取这个宝箱的奖品。");
                             cm.dispose();
                         }
                     } else {
-                        cm.sendOk("You don't have an Onyx Chest for Bride and Groom.");
+                        cm.sendOk("你没有新人用的缟玛瑙宝箱。");
                         cm.dispose();
                     }
                 } else if (selection == 1) {
@@ -112,17 +112,17 @@ function action(mode, type, selection) {
                             cm.gainItem(4031423, -1);
                             cm.dispose();
                         } else {
-                            cm.sendOk("You don't have a free USE slot right now.");
+                            cm.sendOk("你现在没有空闲的使用槽位。");
                             cm.dispose();
                         }
                     } else {
-                        cm.sendOk("You don't have an Onyx Chest.");
+                        cm.sendOk("你没有黑檀宝箱。");
                         cm.dispose();
                     }
                 }
             }
         } else {
-            cm.sendOk("Hi there, welcome to Amoria's Wedding Gift Registry reserve. We redistribute and tender gifts for both wedding spouses and lucky ceremonial attenders.");
+            cm.sendOk("嗨，欢迎来到阿莫利亚的婚礼礼品登记保留处。我们为新人和幸运的仪式参与者重新分配和提供礼物。");
             cm.dispose();
         }
     }

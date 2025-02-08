@@ -11,11 +11,12 @@ var status;
 var common_heading = "@";
 var staff_heading = "!";
 
-var levels = ["Common", "Donator", "JrGM", "GM", "SuperGM", "Developer", "Admin"];
+// var levels = ["Common", "Donator", "JrGM", "GM", "SuperGM", "Developer", "Admin"];
+var levels = ["通用", "贡献者", "小GM", "GM", "大GM", "开发者", "超级管理员"];
 var commands;
 
 function writeHeavenMSCommands() {
-    commands = CommandExecutor.getInstance().getGmCommands();
+    commands = CommandsExecutor.getInstance().getCommandsNameDesc();
 }
 
 function start() {
@@ -39,14 +40,14 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            var sendStr = "There are all available commands for you:\r\n\r\n#b";
+            var sendStr = "可使用的指令：\r\n\r\n#b";
             for (var i = 0; i <= cm.getPlayer().gmLevel(); i++) {
                 sendStr += "#L" + i + "#" + levels[i] + "#l\r\n";
             }
 
             cm.sendSimple(sendStr);
         } else if (status == 1) {
-            var lvHead = (selection < 2) ? common_heading : staff_heading;
+            var lvComm, lvDesc, lvHead = (selection < 2) ? common_heading : staff_heading;
 
             if (selection > 6) {
                 selection = 6;
@@ -54,11 +55,12 @@ function action(mode, type, selection) {
                 selection = 0;
             }
 
-            var levelData = commands[selection];
+            lvComm = commands.get(selection).getLeft();
+            lvDesc = commands.get(selection).getRight();
 
-            var sendStr = "The following commands are available for #b" + levels[selection] + "#k:\r\n\r\n";
-            for (var i = 0; i < levelData.size(); i++) {
-                sendStr += "  #L" + i + "# " + lvHead + levelData.get(i).Name + " - " + levelData.get(i).Description;
+            var sendStr = "该选项可用指令 #b" + levels[selection] + "#k:\r\n\r\n";
+            for (var i = 0; i < lvComm.size(); i++) {
+                sendStr += "  #L" + i + "# " + lvHead + lvComm.get(i) + " - " + lvDesc.get(i);
                 sendStr += "#l\r\n";
             }
 

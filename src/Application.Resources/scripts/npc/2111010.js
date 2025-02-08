@@ -44,7 +44,7 @@ function action(mode, type, selection) {
                 if (cm.canHold(4031708, 1)) {
                     cm.gainItem(4031708, 1);
                 } else {
-                    cm.sendOk("Have a ETC slot available to get the Alcadno's secret document.");
+                    cm.sendOk("有一个ETC槽位可用，可以获取Alcadno的秘密文件。");
                 }
             }
 

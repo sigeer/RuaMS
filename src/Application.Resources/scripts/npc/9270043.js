@@ -30,9 +30,9 @@ function start() {
         cm.doGachapon();
         cm.dispose();
     } else if (cm.haveItem(5220000)) {
-        cm.sendYesNo("You may use Gachapon. Would you like to use your Gachapon ticket?");
+        cm.sendYesNo("你可以使用扭蛋机。你想使用你的扭蛋机券吗？");
     } else {
-        cm.sendSimple("Welcome to the " + cm.getPlayer().getMap().getMapName() + " Gachapon. How may I help you?\r\n\r\n#L0#What is Gachapon?#l\r\n#L1#Where can you buy Gachapon tickets?#l");
+        cm.sendSimple("欢迎来到冒险岛的扭蛋机。我可以为您做些什么呢？\r\n#L0#什么是扭蛋机？#l\r\n#L1#在哪里可以购买扭蛋机券？#l");
     }
 }
 
@@ -44,12 +44,12 @@ function action(mode, type, selection) {
         if (mode > 0) {
             status++;
             if (selection == 0) {
-                cm.sendNext("Play Gachapon to earn rare scrolls, equipment, chairs, mastery books, and other cool items! All you need is a #bGachapon Ticket#k to be the winner of a random mix of items.");
+                cm.sendNext("玩转扭蛋机，赢得稀有卷轴、装备、椅子、技能书和其他酷炫物品！你只需要一张 #b扭蛋券#k 就有机会获得随机组合的物品。");
             } else if (selection == 1) {
-                cm.sendNext("Gachapon Tickets are available in the #rCash Shop#k and can be purchased using NX or Maple Points. Click on the red SHOP at the lower right hand corner of the screen to visit the #rCash Shop #kwhere you can purchase tickets.");
+                cm.sendNext("“Gachapon Tickets 可以在 #r现金商店#k 购买，可以使用NX或枫叶点购买。点击屏幕右下角的红色商店图标，访问 #r现金商店#k 购买门票。”");
                 cm.dispose();
             } else if (status == 2) {
-                cm.sendNext("You'll find a variety of items from the " + cm.getPlayer().getMap().getMapName() + " Gachapon, but you'll most likely find several related items and scrolls since " + cm.getPlayer().getMap().getMapName() + " is known as the town.");
+                cm.sendNext("你会在“冒险岛”Gachapon中找到各种各样的物品，但你很可能会找到一些相关的物品和卷轴，因为“冒险岛”被称为这个城镇。");
                 cm.dispose();
             }
         }

@@ -52,7 +52,7 @@ function action(mode, type, selection) {
             status--;
         }
         if (status == 0) {
-            cm.sendSimple("Well well well, welcome to the Orbis Plastic Surgery! Would you like to transform your face into something new? With a #b#t5152005##k, you can let us take care of the rest and have the face you've always wanted~!\r\n#L2#Plastic Surgery: #i5152005##t5152005##l");
+            cm.sendSimple("嗯嗯嗯，欢迎来到奥比斯整形外科！您想将您的脸变成全新的样子吗？使用 #b#t5152005##k，您可以让我们来照顾剩下的事情，拥有您一直想要的脸~！\r\n#L2#整形外科：#i5152005##t5152005##l");
         } else if (status == 1) {
             if (selection == 2) {
                 facenew = Array();
@@ -70,16 +70,16 @@ function action(mode, type, selection) {
                                 % 100));
                     }
                 }
-                cm.sendStyle("I can totally transform your face into something new... how about giving us a try? For #b#t5152005##k, you can get the face of your liking...take your time in choosing the face of your preference.", facenew);
+                cm.sendStyle("我完全可以把你的脸改造成新的东西...我们试试看怎么样？只需 #b#t5152005##k，你可以得到你喜欢的脸......花点时间选择你喜欢的脸。", facenew);
             }
         } else if (status == 2) {
             cm.dispose();
             if (cm.haveItem(5152005) == true) {
                 cm.gainItem(5152005, -1);
                 cm.setFace(facenew[selection]);
-                cm.sendOk("Enjoy your new and improved face!");
+                cm.sendOk("享受你的新面容吧！");
             } else {
-                cm.sendOk("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
+                cm.sendOk("嗯...看起来你没有这个地方专门的优惠券。很抱歉要说这个，但没有优惠券，你就不能进行整形手术了...");
             }
         }
     }

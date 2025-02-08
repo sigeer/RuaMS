@@ -68,7 +68,7 @@ function action(mode, type, selection) {
                 cm.warp(261000001, 1);
                 cm.dispose();
             } else {
-                cm.sendOk("#rWrong!");
+                cm.sendOk("#r错误！");
                 cm.dispose();
             }
         }

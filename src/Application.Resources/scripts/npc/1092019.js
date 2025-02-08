@@ -62,7 +62,7 @@ function action(mode, type, selection) {
 
         if (status == 0) {    // missing script for skill test found thanks to Jade™
             if (!cm.isQuestStarted(6400)) {
-                cm.sendOk("Who are you talking to me? If you're just bored, go bother somebody else.");
+                cm.sendOk("你在跟我说话吗？如果你只是无聊，去烦别人吧。");
                 cm.dispose();
             } else {
                 seagullProgress = cm.getQuestProgressInt(6400, 1);
@@ -71,46 +71,46 @@ function action(mode, type, selection) {
                     seagullIdx = Math.floor(Math.random() * seagullQuestion.length);
 
                     // string visibility thanks to ProXAIMeRx & Glvelturall
-                    cm.sendNext("Ok then! I'll give you the first question now! You better be ready because this one's a hard one. Even the seagulls here think this one's pretty tough. It's a pretty difficult problem.");
+                    cm.sendNext("好的！我现在就给你第一个问题！你最好准备好，因为这个问题很难。甚至这里的海鸥都觉得这个问题相当棘手。这是一个相当困难的问题。");
                 } else if (seagullProgress == 1) {
-                    cm.sendNext("Now~ Let's go onto the next question. This one is really difficult. I am going to have Bart help me on this one. You know Bart, right?");
+                    cm.sendNext("现在~让我们继续下一个问题。这个问题真的很难。我要让巴特来帮我。你认识巴特，对吧？");
                 } else {
-                    cm.sendNext("Ohhhh! Now that was impressive! I considered my test quite difficult, and for you to pass that... you are indeed an integral member of the Pirate family, and a friend of seagulls. We are now bonded by the mutual friendship that will last a lifetime! And, most of all, friends are there to help you out when you are in dire straits. If you are in a state of emergency, call us seagulls.");
+                    cm.sendNext("哦！哇，这真是令人印象深刻！我认为我的考验相当困难，而你竟然通过了……你确实是海盗家族中不可或缺的一员，也是海鸥的朋友。我们现在因着持久的友谊而结为知己！最重要的是，朋友就是在你陷入困境时伸出援手的。如果你遇到紧急情况，就呼唤我们海鸥吧。");
                 }
             }
         } else if (status == 1) {
             if (seagullProgress == 0) {
                 cm.sendGetText(seagullQuestion[seagullIdx]);
             } else if (seagullProgress == 1) {
-                cm.sendNextPrev("I'm going to send you to an empty room in The Nautilus. You will see 9 Barts there. Hahaha~ Are they twins? No, no, certainly not. I've used a bit of magic for this test of will.");
+                cm.sendNextPrev("我要把你送到尼奥之舟的一个空房间里。你会在那里看到9个巴特。哈哈哈~他们是双胞胎吗？不，不，当然不是。我在这个意志测试中使用了一点魔法。");
             } else {
-                cm.sendNextPrev("Notify us using the skill Air Strike, and we will be there to help you out, because that's what friends are for.\r\n\r\n  #s5221003#    #b#q5221003##k");
+                cm.sendNextPrev("使用技能空袭通知我们，我们会前来帮助你，因为这就是朋友之间的互助。 #s5221003# #b#q5221003##k");
             }
         } else if (status == 2) {
             if (seagullIdx > -1) {
                 var answer = cm.getText();
                 if (answer == seagullAnswer[seagullIdx]) {
-                    cm.sendNext("What! I can't believe how incredibly smart you are! Incredible! In the seagull world, that kind of intellingence would give you a Ph.D. and then some. You're really amazing... I can't believe it... I simply can't believe it!");
+                    cm.sendNext("什么！我简直不敢相信你有多聪明！不可思议！在海鸥世界里，这种智慧会让你获得博士学位，甚至更多。你真是太了不起了……我简直不敢相信……我简直不敢相信！");
                     cm.setQuestProgress(6400, 1, 1);
                     cm.dispose();
                 } else {
-                    cm.sendOk("Hmm, that's not quite how I recall it. Try again!");
+                    cm.sendOk("嗯，那不太符合我的记忆。再试一次吧！");
                     cm.dispose();
                 }
             } else if (seagullProgress != 2) {
-                cm.sendNextPrev("Anyway, only one of 9 Barts is the real Bart. You know that Pirates are known for the strength of their friendships and camaraderie with their fellow pirates. If you're a true pirate, you should be able to find your own mate with ease. Alright then, I'll send you to the room where Bart is.");
+                cm.sendNextPrev("无论如何，9个巴特斯中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。");
             } else {
                 //cm.gainExp(1000000);
                 //cm.teachSkill(5221003, 0, 10, -1);
                 //cm.forceCompleteQuest(6400);
 
-                cm.sendNextPrev("You have met all my challenges, and passed! Good job!");
+                cm.sendNextPrev("你已经应对了我所有的挑战，并且成功通过了！干得好！");
                 cm.dispose();
             }
         } else if (status == 3) {
             var em = cm.getEventManager("4jaerial");
             if (!em.startInstance(cm.getPlayer())) {
-                cm.sendOk("Another player is already challenging the test in this channel. Please try another channel, or wait for the current player to finish.");
+                cm.sendOk("另一个玩家已经在这个频道挑战测试了。请尝试其他频道，或者等待当前玩家完成。");
             }
 
             cm.dispose();

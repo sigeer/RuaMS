@@ -43,7 +43,7 @@ function action(mode, type, selection) {
 
     if (status == 0) {
         if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT) {
-            cm.sendOk("The medal ranking system is currently unavailable...");
+            cm.sendOk("勋章排名系统目前不可用。");
             cm.dispose();
             return;
         }
@@ -61,9 +61,9 @@ function action(mode, type, selection) {
         var res = cm.getPlayer().sellAllItemsFromName(selectedType + 1, name);
 
         if (res > -1) {
-            cm.sendOk("Transaction complete! You received #r" + cm.numberWithCommas(res) + " mesos#k from this action.");
+            cm.sendOk("交易完成！你从这个行动中获得了#r" + cm.numberWithCommas(res) + "金币#k。");
         } else {
-            cm.sendOk("There is no #b'" + name + "'#k in your #b" + options[selectedType] + "#k inventory!");
+            cm.sendOk("你的#b'" + name + "'#k物品栏中没有#b" + options[selectedType] + "#k！");
         }
 
         cm.dispose();

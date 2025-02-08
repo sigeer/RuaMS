@@ -27,10 +27,10 @@
 
 function start() {
     if (cm.isQuestStarted(2166)) {
-        cm.sendNext("It's a beautiful, shiny rock. I can feel the mysterious power surrounding it.");
+        cm.sendNext("这是一块美丽而闪亮的岩石。我能感受到它周围的神秘力量。");
         cm.completeQuest(2166);
     } else {
-        cm.sendNext("I touched the shiny rock with my hand, and I felt a mysterious power flowing into my body.");
+        cm.sendNext("我用手碰了一下闪闪发光的石头，感觉到一股神秘的力量流入我的身体。");
     }
     cm.dispose();
 }

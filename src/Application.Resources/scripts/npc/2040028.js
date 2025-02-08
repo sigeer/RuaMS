@@ -46,13 +46,13 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            var greeting = "Thank you for finding the pendulum. Are you ready to return to Eos Tower?";
+            var greeting = "感谢你找到了摆锤。你准备好返回伊欧斯塔了吗？";
             if (cm.isQuestStarted(3230)) {
                 if (cm.haveItem(4031094)) {
                     cm.completeQuest(3230);
                     cm.gainItem(4031094, -1);
                 } else {
-                    greeting = "You haven't found the pendulum yet. Do you want to go back to Eos Tower?";
+                    greeting = "你还没有找到那个摆锤。你想回到伊俄斯塔吗？";
                 }
             }
             cm.sendYesNo(greeting);

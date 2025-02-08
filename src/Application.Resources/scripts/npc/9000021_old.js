@@ -10,7 +10,7 @@ var job;
 var koc = [];
 
 function start() {
-    cm.sendNext("Hey #e#h ##n, I'm the Aran & Cygnus Job Advancer.");
+    cm.sendNext("嘿 #e#h ##n，我是阿兰和皇家骑士的职业进阶者。");
 }
 
 function action(m, t, s) {
@@ -33,23 +33,23 @@ function action(m, t, s) {
                 for (var k = 0; k < koc.length; k++) {
                     list += "\r\n#L" + k + "#" + cm.getJobName(koc[k]) + "#l";
                 }
-                cm.sendSimple(list);
+                cm.sendSimple("清单");
             } else if (cm.getJobId() == 2000) {
                 job = cm.getJobId() + 100;
-                cm.sendYesNo(ask);
+                cm.sendYesNo("问");
             } else {
                 cm.dispose();
             }
         } else if (cm.getJobId() % 1000 != 0) {
             if (cm.getJobId() % 100 == 0 && cm.getLevel() >= 30) {
                 job = cm.getJobId() + 10;
-                cm.sendYesNo(ask);
+                cm.sendYesNo("问");
             } else if (cm.getJobId() % 10 == 0 && cm.getLevel() >= 70) {
                 job = cm.getJobId() + 1;
-                cm.sendYesNo(ask);
+                cm.sendYesNo("问");
             } else if (cm.getJobId() % 10 == 1 && cm.getJobId() >= 2000 && cm.getLevel() >= 120) {
                 job = cm.getJobId() + 1;
-                cm.sendYesNo(ask);
+                cm.sendYesNo("问");
             }
         }
     } else if (status == 1) {

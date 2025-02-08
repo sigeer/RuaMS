@@ -26,6 +26,6 @@
  */
 
 function start() {
-    cm.sendOk("The plaque translates as follows: \r\n\"The knights of Sharenian are proud warriors. Their Longinus Spears are both formidable weapons and the key to the castle's defense: By removing them from their platforms at the highest points of this hall, they block off the entrance from invaders.\"\r\n\r\nSomething seems to be etched in English on the side, barely readable: \r\n\"evil stole spears, chained up behind obstacles. return to top of towers. large spear, grab from higher up.\"\r\n...Obviously whoever figured it out didn't have much time to live. Poor guy.");
+    cm.sendOk("这块牌匾的翻译如下：\r\n“沙连尼亚的骑士是自豪的战士。他们的朗基努斯长矛既是强大的武器，也是城堡防御的关键：通过从大厅最高处的平台上移除它们，他们可以封锁入侵者的入口。”\r\n似乎有些东西用英文刻在侧面上，几乎看不清：\r\n“邪恶偷走了长矛，被锁在障碍物后面。返回到塔顶。大长矛，从更高处抓取。”\r\n……显然，找到答案的人没有太多时间活下去。可怜的家伙。");
     cm.dispose();
 }

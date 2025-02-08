@@ -150,35 +150,35 @@ function action(mode, type, selection) {
                 var wstg = eim.getIntProperty("weddingStage");
 
                 if (wstg == 2) {
-                    cm.sendYesNo("Awhoooooooooosh~, the guests have proclaimed their love to y'all. The time has come baby~, #rshould I make you Husband and Wife#k?");
+"Awhoooooooooosh~, the guests have proclaimed their love to y'all. The time has come baby~, #rshould I make you Husband and Wife#k?"
                     state = 1;
                 } else if (wstg == 1) {
-                    cm.sendOk("W-whoah wait a bit alright? Your guests are currently giving their love to y'all. Let's shake this place up, baby~~.");
+                    cm.sendOk("哇-等一下，好吗？你的客人们正在给你们表达爱意。让我们来点动感，宝贝~~。");
                     cm.dispose();
                 } else {
-                    cm.sendOk("Wheeeeeeeeeeeeeew! Our festival here is now complete, give a sweet talk to #b#p9201009##k, she will lead you and your folks to the afterparty. Cheers for your love!");
+                    cm.sendOk("Wheeeeeeeeeeeeeew! 我们的节日现在已经结束了，和#b#p9201009#交谈一下，她会带领你和你的朋友去参加后派对。感谢你们的热情！");
                     cm.dispose();
                 }
             } else {
                 var wstg = eim.getIntProperty("weddingStage");
                 if (wstg == 1) {
                     if (eim.gridCheck(cm.getPlayer()) != -1) {
-                        cm.sendOk("Everyone let's shake this place up! Let's rock 'n' roll!!");
+                        cm.sendOk("大家让我们把这个地方搞得热闹起来！让我们摇滚起来！！");
                         cm.dispose();
                     } else {
                         if (eim.getIntProperty("guestBlessings") == 1) {
-                            cm.sendYesNo("Will you manifest your love to the superstars here present?");
+                            cm.sendYesNo("你会向在场的超级明星表达你的爱吗？");
                             state = 0;
                         } else {
-                            cm.sendOk("Our superstars are gathered down here. Everyone, let's give them some nice, nicey party~!");
+                            cm.sendOk("我们的超级明星都聚集在这里。大家，让我们给他们一个美好的派对~！");
                             cm.dispose();
                         }
                     }
                 } else if (wstg == 3) {
-                    cm.sendOk("Whooooooo-hoo! The couple's love now are like one super big shiny heart right now! And it shall go on ever after this festival. Please #rget ready for the afterparty#k, baby~. Follow the married couple's lead!");
+                    cm.sendOk("哇哦！现在这对夫妇的爱就像一个超级大闪亮的心一样！而且它将在这个节日之后继续下去。请准备好参加派对，宝贝~。跟着新婚夫妇的步伐走吧！");
                     cm.dispose();
                 } else {
-                    cm.sendOk("It's now guys... Stay with your eyes and ears keened up! They are about to smooch it all over the place!!!");
+"It's now guys... Stay with your eyes and ears keened up! They are about to smooch it all over the place!!!"
                     cm.dispose();
                 }
             }
@@ -199,7 +199,7 @@ function action(mode, type, selection) {
                     target.getMap().broadcastMessage(target, PacketCreator.showForeignEffect(target.getId(), 9), false);
                 }
 
-                cm.sendOk("Way to go, my friend! Your LOVE has been added to theirs, now in one bigger heart-shaped sentiment that will remain lively in our hearts forever! Who-hoo~!");
+                cm.sendOk("太棒了，我的朋友！你的爱已经融入了他们的爱，现在成为一个更大的心形情感，将永远活跃在我们的心中！哇哦~！");
                 cm.dispose();
             } else {            // couple wants to complete the wedding
                 var wstg = eim.getIntProperty("weddingStage");
@@ -207,7 +207,7 @@ function action(mode, type, selection) {
                 if (wstg == 2) {
                     var pid = cm.getPlayer().getPartnerId();
                     if (pid <= 0) {
-                        cm.sendOk("Huh~.... Wait wait, did you just break that thing you had right now?? Oh my, what happened?");
+                        cm.sendOk("哎呀~.... 等等，你刚刚是不是把你手上的东西弄坏了？？哎呀，发生了什么事？");
                         cm.dispose();
                         return;
                     }
@@ -222,7 +222,7 @@ function action(mode, type, selection) {
                                 var pid = eim.getIntProperty("confirmedVows");
                                 if (pid != -1) {
                                     if (pid == player.getId()) {
-                                        cm.sendOk("You have already confirmed your vows. All that is left is for your partner to confirm now.");
+                                        cm.sendOk("你已经确认了你的誓言。现在只剩下你的伴侣需要确认了。");
                                     } else {
                                         eim.setIntProperty("weddingStage", 3);
                                         var cmPartner = partner.getAbstractPlayerInteraction();
@@ -234,7 +234,7 @@ function action(mode, type, selection) {
 
                                         cm.gainItem(playerItemId, -1);
                                         cmPartner.gainItem(partnerItemId, -1);
-                                        RingManager.GiveMarriageRings(player, partner, marriageRingId);
+                                        RingManager.giveMarriageRings(player, partner, marriageRingId);
                                         player.setMarriageItemId(marriageRingId);
                                         partner.setMarriageItemId(marriageRingId);
 
@@ -255,45 +255,45 @@ function action(mode, type, selection) {
                                 break;
 
                             case -1:
-                                cm.sendOk("Well, it seems you no longer have the ring/ring box you guys exchanged at the engagement. Awww man~");
+                                cm.sendOk("嗯，看来你们不再拥有订婚时交换的戒指/戒指盒了。哎呀~");
                                 break;
 
                             case -2:
-                                cm.sendOk("Well, it seems your partner no longer has the ring/ring box you guys exchanged at the engagement. Awww man~");
+                                cm.sendOk("嗯，看起来你的伴侣不再拥有你们订婚时交换的戒指/戒指盒了。哎呀，太遗憾了~");
                                 break;
 
                             case -3:
-                                cm.sendOk("Well, it seems you don't have the #r#t4000313##k given at the entrance... Please find it, baby~");
+                                cm.sendOk("嗯，看起来你没有入口处给的#r#t4000313##k...请找到它，宝贝~");
                                 break;
 
                             case -4:
-                                cm.sendOk("Aww I know that shucks, but the fashionable wedding clothes does a essential part here. Please wear it before talking to me.");
+                                cm.sendOk("啊，我知道这有点糟糕，但时尚的婚礼服装在这里扮演了一个重要的角色。在和我交谈之前，请穿上它。");
                                 break;
 
                             case 1:
-                                cm.sendOk("Please make an EQUIP slot available to get the marriage ring, will you?");
+                                cm.sendOk("请开放一个装备栏位以获取结婚戒指，可以吗？");
                                 break;
 
                             case 2:
-                                cm.sendOk("Please let your partner know to make an EQUIP slot available to get the marriage ring, will you?");
+                                cm.sendOk("请让你的伴侣知道要留出一个装备栏位来获取婚戒，好吗？");
                                 break;
 
                             case 3:
-                                cm.sendOk("Well, it seems your partner don't have the #r#t4000313##k given at the entrance... Please find it, I can't call the finally without it.");
+                                cm.sendOk("嗯，看起来你的搭档没有入口处给的#r#t4000313##k，请找到它，没有它我无法召唤最终的东西。");
                                 break;
 
                             case 4:
-                                cm.sendOk("Aww I know that shucks, but it seems your partner is not using the fashionable wedding clothes. Please tell them to wear it before talking to me.");
+                                cm.sendOk("唉，我知道很遗憾，但看起来你的伴侣没有穿时尚的婚礼服装。请告诉他们在和我交谈之前先穿上。");
                                 break;
                         }
 
                         cm.dispose();
                     } else {
-                        cm.sendOk("Oof, is that it that your partner is not here, right now? ... Oh noes, I'm afraid I can't call the finally if your partner is not here.");
+                        cm.sendOk("哦，你的伙伴现在不在吗？...哦不，如果你的伙伴不在，我恐怕不能最终召唤。");
                         cm.dispose();
                     }
                 } else {
-                    cm.sendOk("Wheeeeeeeeeeeeew~ You are now #bofficially one couple#k, and a brilliant one. Your moves fitted in outstandingly, congratulations!");
+                    cm.sendOk("哇哦～你们现在#正式成为一对#，而且是一对出色的一对。你们的配合非常出色，祝贺你们！");
                     cm.dispose();
                 }
             }

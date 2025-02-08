@@ -35,7 +35,7 @@ function start() {
         cm.gainItem(4031026, 20);
     } else {
         if (cm.getPlayer().getInventory(InventoryType.ETC).getNumFreeSlot() < 1) {
-            cm.sendNext("Check for a available slot on your ETC inventory.");
+            cm.sendNext("检查你的杂项物品栏是否有可用的空位。");
             cm.dispose();
             return;
         }

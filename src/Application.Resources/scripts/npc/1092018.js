@@ -45,9 +45,9 @@ function action(mode, type, selection) {
             if ((qs == 0 || qs == 1) && !cm.haveItem(4031839, 1)) {
                 if (cm.canHold(4031839, 1)) {
                     cm.gainItem(4031839, 1);
-                    cm.sendNext("(You retrieved a Crumpled Paper standing out of the trash can. It's content seems important.)", 2);
+                    cm.sendNext("你检索到了一个从垃圾桶中取出的皱巴巴的纸张。它的内容似乎很重要。");
                 } else {
-                    cm.sendNext("(You see a Crumpled Paper standing out of the trash can. It's content seems important, but you can't retrieve it since your inventory is full.)", 2);
+                    cm.sendNext("(你看到一个从垃圾桶中伸出的皱巴巴的纸张。内容似乎很重要，但由于你的背包已满，无法将其取出。)");
                 }
             }
 

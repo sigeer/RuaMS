@@ -97,7 +97,20 @@ public abstract class AbstractScriptManager
 
             //engine.AddHostedType("ListExtensions", typeof(ListExtensions));
             //engine.AddHostedType("Enumerable", typeof(Enumerable));
-
+            var toolJs = """
+                function pay(meso, failMsg) {
+                    if (cm.getMeso() < meso) {
+                        cm.sendNext(failMsg || "金币不足");
+                        cm.dispose();
+                        return false;
+                    }
+                    else {
+                        cm.gainMeso(-meso);
+                        return true;
+                    }
+                }
+                """;
+            engine.Evaluate(toolJs);
             engine.Evaluate(File.ReadAllText(path));
             return engine;
         }

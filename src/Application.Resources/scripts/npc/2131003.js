@@ -16,7 +16,7 @@ function action(mode, type, selection) {
         cm.sendSimple("So many injuries, so little medicine...#b\r\n#L0#Hey, take these black spores. You can make better medicine with them.#l");
     } else if (status == 1) {
         if (!cm.haveItem(exchangeItem, 100)) {
-            cm.sendNext("You don't have enough... I need at least 100.");
+            cm.sendNext("你没有足够的... 我至少需要100个。");
             cm.dispose();
         } else {
             cm.sendGetNumber("Hey, that's a good idea! I can give you #i4310000#Perfect Pitch for each 100 #i" + exchangeItem + "##t" + exchangeItem + "# you give me. How many do you want? (Current Items: " + cm.itemQuantity(exchangeItem) + ")", Math.min(300, cm.itemQuantity(exchangeItem) / 100), 1, Math.min(300, cm.itemQuantity(exchangeItem) / 100));
@@ -24,11 +24,11 @@ function action(mode, type, selection) {
     } else if (status == 2) {
         if (selection >= 1 && selection <= cm.itemQuantity(exchangeItem) / 100) {
             if (!cm.canHold(4310000, selection)) {
-                cm.sendOk("Please make some space in ETC tab.");
+                cm.sendOk("请在杂项标签页中腾出一些空间。");
             } else {
                 cm.gainItem(4310000, selection);
                 cm.gainItem(exchangeItem, -(selection * 100));
-                cm.sendOk("Thanks!");
+                cm.sendOk("谢谢！");
             }
         }
         cm.dispose();

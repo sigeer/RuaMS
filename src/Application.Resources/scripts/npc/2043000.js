@@ -44,7 +44,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendNext("You don't belong to this world... Return now.");
+"You don't belong to this world... Return now."
         } else if (status == 1) {
             cm.warp(220080000);
             cm.dispose();

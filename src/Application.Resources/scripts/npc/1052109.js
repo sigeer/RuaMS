@@ -45,7 +45,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendOk("Just a trash can sitting there.");
+            cm.sendOk("只是一个垃圾桶就坐在那里。");
             cm.dispose();
         }
     }

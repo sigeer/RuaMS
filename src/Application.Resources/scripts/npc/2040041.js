@@ -29,6 +29,6 @@
 */
 
 function start() {
-    cm.sendOk("Try to find the right combination of numbers to reach the top.");
+    cm.sendOk("尝试找到正确的数字组合来达到顶部。");
     cm.dispose();
 }

@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* Wayne
-    Marriage NPC
+	Marriage NPC
  */
 
 var status;
@@ -96,7 +96,7 @@ function action(mode, type, selection) {
                 }
                 cm.sendSimple(text);
             } else {
-                cm.sendOk("Hi there, folks. Even thought of having a wedding held on Amoria? When the talk is about wedding, everyone firstly thinks about Amoria, there is no miss to it. Our chapel here is renowned around the Maple world for offering the best wedding services for maplers!");
+                cm.sendOk("嗨，朋友们。有没有想过在阿莫利亚举行婚礼？一谈到婚礼，每个人首先想到的就是阿莫利亚，这一点毋庸置疑。我们这里的教堂在枫之世界中以为冒险家提供最好的婚礼服务而闻名！");
                 cm.dispose();
             }
         } else if (status == 1) {
@@ -108,36 +108,36 @@ function action(mode, type, selection) {
                     var partner = cserv.getPlayerStorage().getCharacterById(cm.getPlayer().getPartnerId());
                     if (!(partner == null || !cm.getMap().equals(partner.getMap()))) {
                         if (!cm.canHold(4000313)) {
-                            cm.sendOk("Please have a free ETC slot available to get the #b#t4000313##k.");
+                            cm.sendOk("请确保有一个空余的杂项栏位，以便获取#b#t4000313##k。");
                             cm.dispose();
                             return;
                         } else if (!partner.canHold(4000313)) {
-                            cm.sendOk("Please let your partner know they must have a free ETC slot available to get the #b#t4000313##k.");
+                            cm.sendOk("请让你的伙伴知道，他们必须有一个空闲的ETC槽位才能获得#b#t4000313##k。");
                             cm.dispose();
                             return;
                         } else if (!isSuitedForWedding(cm.getPlayer(), false)) {
-                            cm.sendOk("Please purchase fashionable #rwedding clothes#k for the wedding, quickly! It's time to shine, baby~!");
+                            cm.sendOk("请快速购买时尚的#婚礼服装#k，婚礼马上就要开始了！是时候闪耀了，宝贝~！");
                             cm.dispose();
                             return;
                         } else if (!isSuitedForWedding(partner, false)) {
-                            cm.sendOk("Your partner must know they must have fashionable #rwedding clothes#k for the wedding. It's time to shine, baby~!");
+                            cm.sendOk("你的伴侣必须知道他们必须为婚礼准备时尚的#婚礼服装#。是时候闪耀了，宝贝~！");
                             cm.dispose();
                             return;
                         }
 
-                        cm.sendOk("Alright! The couple appeared here stylish as ever. Let's go folks, let's rock 'n' roll!!!");
+                        cm.sendOk("好的！这对夫妇看起来一如既往地时尚。走吧，伙计们，让我们摇滚起来！！！");
                     } else {
-                        cm.sendOk("Aww, your partner is elsewhere... Both must be here for the wedding, else it's going to be sooooo lame.");
+                        cm.sendOk("哎呀，你的伴侣在别的地方... 婚礼上两个人都必须在这里，否则就太无聊了。");
                         cm.dispose();
                     }
                 } else {
                     var placeTime = cserv.getWeddingReservationTimeLeft(wid);
 
-                    cm.sendOk("Yo. Your wedding is set to happen at the #r" + placeTime + "#k, get a decent apparel don't be late will you?");
+                    cm.sendOk("哟。你的婚礼定在#r" + placeTime + "#k举行，穿得体面点，别迟到了，好吗？");
                     cm.dispose();
                 }
             } else {
-                cm.sendOk("Aawww, I'm sorry but there are no reservations made for you at this channel for the time being.");
+                cm.sendOk("啊呜，很抱歉，目前在这个频道没有为您预订任何位置。");
                 cm.dispose();
             }
         } else if (status == 2) {
@@ -160,23 +160,23 @@ function action(mode, type, selection) {
 
                                 eim.registerPlayer(partner);
                             } else {
-                                cm.sendOk("An unexpected error happened when locating the wedding event. Please try again later.");
+                                cm.sendOk("定位婚礼活动时发生了意外错误。请稍后再试。");
                             }
 
                             cm.dispose();
                         } else {
-                            cm.sendOk("An unexpected error happened before the wedding preparations. Please try again later.");
+                            cm.sendOk("婚礼准备之前发生了意外错误。请稍后再试。");
                             cm.dispose();
                         }
                     } else {
-                        cm.sendOk("An unexpected error happened before the wedding preparations. Please try again later.");
+                        cm.sendOk("婚礼准备之前发生了意外错误。请稍后再试。");
                         cm.dispose();
                     }
                 } else {    // partner already decided to start
                     cm.dispose();
                 }
             } else {
-                cm.sendOk("Aww, it seems your partner is elsewhere... Both must be here for the wedding, else it's going to be sooooo lame.");
+                cm.sendOk("哎呀，看起来你的伴侣在别的地方...两个人都必须在这里参加婚礼，否则就会非常无聊。");
                 cm.dispose();
             }
         }

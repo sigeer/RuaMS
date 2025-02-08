@@ -25,7 +25,7 @@
 */
 
 function start() {
-    cm.sendYesNo("Would you like to return to Ellinia?");
+    cm.sendYesNo("你想回到魔法密林吗？");
 }
 
 function action(mode, type, selection) {

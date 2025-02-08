@@ -59,7 +59,7 @@ function action(mode, type, selection) {
     switch (status) {
         case 0:
             if (cm.getMapId() == 680000300) {
-                cm.sendYesNo("Are you sure you want to #rquit the stage#k and head back to #bAmoria#k? You will be #rskipping the bonus stages#k that way.");
+                cm.sendYesNo("你确定要#r退出舞台#k并返回#b阿莫利亚#k吗？这样你将会#r跳过奖励关卡#k。");
             } else {
                 var hasEngagement = false;
                 for (var x = 4031357; x <= 4031364; x++) {
@@ -71,26 +71,26 @@ function action(mode, type, selection) {
 
                 if (cm.haveItem(4000313) && isMarrying) {
                     if (eim.getIntProperty("weddingStage") == 3) {
-                        cm.sendOk("You guys totally rocked the stage!!! Go go, talk to #b#p9201007##k to start the afterparty.");
+                        cm.sendOk("你们完全征服了舞台！！！快去找#b#p9201007##k开始派对。");
                         cm.dispose();
                     } else if (hasEngagement) {
                         if (!cm.createMarriageWishlist()) {
-                            cm.sendOk("You have already sent your wishlist...");
+                            cm.sendOk("您已经发送了您的愿望清单...");
                         }
                         cm.dispose();
                     } else {
-                        cm.sendOk("Oh, hey, where are the credentials for the this so-lauded party? Oh man, we can't continue at this rate now... Sorry, the party is over.");
+                        cm.sendOk("哦，嘿，这场备受赞誉的派对的证件在哪里？哦，天啊，现在我们无法以这种速度继续下去……抱歉，派对结束了。");
                     }
                 } else {
                     if (eim.getIntProperty("weddingStage") == 3) {
                         if (!isMarrying) {
-                            cm.sendYesNo("You guys didn't miss them right? Our superstars #rworked so good together#k, and soon #bthey will start the afterparty#k. Are you really going to #rdrop out of the show#k and return to #bAmoria#k?");
+                            cm.sendYesNo("你们不会错过他们了吧？我们的超级明星们#r合作得非常出色#k，很快#b他们就会开始派对#k。你真的要#r退出节目#k，回到#b阿莫利亚#k吗？");
                         } else {
-                            cm.sendOk("You guys totally rocked the stage!!! Go go, talk to #b#p9201007##k to start the afterparty.");
+                            cm.sendOk("你们完全征服了舞台！！！快去找#b#p9201007##k开始派对。");
                             cm.dispose();
                         }
                     } else {
-                        cm.sendYesNo("Are you sure you want to #rquit the stage#k and head to #bAmoria#k? You will be #rskipping the bonus stages#k, fam.");
+                        cm.sendYesNo("你确定要#r退出舞台#k并前往#b阿莫利亚#k吗？你将会#r跳过奖励阶段#k，家人。");
                     }
                 }
             }

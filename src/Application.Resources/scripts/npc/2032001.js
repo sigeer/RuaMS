@@ -30,9 +30,9 @@ var status = 0;
 
 function start() {
     if (cm.isQuestCompleted(3034)) {
-        cm.sendYesNo("You've been so much of a help to me... If you have any Dark Crystal Ore, I can refine it for you for only #b500000 meso#k each.");
+        cm.sendYesNo("你对我帮助很大……如果你有任何黑暗水晶矿石，我可以为你精炼，每个只需#b500000金币#k。");
     } else {
-        cm.sendOk("Go away, I'm trying to meditate.");
+        cm.sendOk("走开，我在冥想。");
         cm.dispose();
     }
 }
@@ -49,23 +49,23 @@ function action(mode, type, selection) {
         var complete = true;
 
         if (cm.getMeso() < 500000 * selection) {
-            cm.sendOk("I'm sorry, but I am NOT doing this for free.");
+            cm.sendOk("对不起，但我不会免费做这件事。");
             cm.dispose();
             return;
         } else if (!cm.haveItem(4004004, 10 * selection)) {
             complete = false;
         } else if (!cm.canHold(4005004, selection)) {
-            cm.sendOk("Are you having trouble with no empty slots on your inventory? Sort that out first!");
+            cm.sendOk("你的库存没有空位吗？先解决这个问题！");
             cm.dispose();
             return;
         }
         if (!complete) {
-            cm.sendOk("I need that ore to refine the Crystal. No exceptions..");
+            cm.sendOk("我需要那些矿石来提炼水晶。没有例外。");
         } else {
             cm.gainItem(4004004, -10 * selection);
             cm.gainMeso(-500000 * selection);
             cm.gainItem(4005004, selection);
-            cm.sendOk("Use it wisely.");
+            cm.sendOk("明智地使用它。");
         }
         cm.dispose();
     }

@@ -47,14 +47,14 @@ function action(mode, type, selection) {
     var mapId = cm.getPlayer().getMapId();
     if (mapId == 922010000) {
         if (status == 0) {
-            cm.sendNext("To return back to the recruitment map, follow this way.");
+            cm.sendNext("返回招募地图的方法是沿着这条路走。");
         } else {
             cm.warp(221024500);
             cm.dispose();
         }
     } else {
         if (status == 0) {
-            var outText = "Once you leave the map, you'll have to restart the whole quest if you want to try it again.  Do you still want to leave this map?";
+            var outText = "一旦你离开地图，如果你想再试一次，就得重新开始整个任务。你确定要离开这张地图吗？";
             cm.sendYesNo(outText);
         } else if (mode == 1) {
             cm.warp(922010000); // Warp player

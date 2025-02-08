@@ -65,10 +65,10 @@ function start() {
 
         var em = cm.getEventManager("3rdJob_" + js);
         if (em == null) {
-            cm.sendOk("Sorry, but 3rd job advancement (" + js + ") is closed.");
+            cm.sendOk("抱歉，但是三转职业升级（" + js + "）已关闭。");
         } else {
             if (!em.startInstance(cm.getPlayer())) {
-                cm.sendOk("Someone else is already challenging the clone. Please wait until the area is cleared.");
+                cm.sendOk("有其他人已经在挑战克隆体了。请等待直到该区域被清空。");
             }
 
             cm.dispose();

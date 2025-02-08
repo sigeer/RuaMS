@@ -2,6 +2,8 @@ namespace constants.id;
 
 public class NpcId
 {
+    public const int Administrator = 2007;
+
     public const int CUSTOM_DEV = 9977777;
 
     public const int MAPLE_ADMINISTRATOR = 9010000;
@@ -38,4 +40,5 @@ public class NpcId
 
     public const int PLAYER_NPC_BASE = 9900000;
 
+    public const int BEI_DOU_NPC_BASE = 9900001;
 }

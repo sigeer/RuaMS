@@ -26,6 +26,6 @@
 */
 
 function start() {
-    cm.sendOk("Hey hey!!! Find the Treasure Scroll! I lost the map\r\nsomewhere and I can't leave without it.");
+    cm.sendOk("嘿嘿!!! 找到宝藏卷轴！我把地图丢在某个地方了，没有地图我就不能离开这里。");
     cm.dispose();
 }

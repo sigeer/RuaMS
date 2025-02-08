@@ -51,15 +51,15 @@ function action(mode, type, selection) {
 
         if (status == 0) {
             if (eim.getIntProperty("escortFail") == 1) {
-                cm.sendNext("Thanks to you, we were capable of reunion once again. Yulete will now be forwarded to jail for attempt against the Law of Magatia. Once again, thank you.");
+                cm.sendNext("多亏了你，我们得以再次团聚。尤莱特现在将因触犯马加提亚法律而被送进监狱。再次感谢你。");
             } else {
-                cm.sendNext("Thanks to you, we were capable of reunion once again. Yulete will now pass through rehabilitation, as his studies are invaluable for the growth of our town, and all his doings were being made because he was blinded by the greed for power, although it was for the sake of Magatia. Once again, thank you.");
+                cm.sendNext("谢谢你，因为你，我们得以再次团聚。尤勒特现在将进行康复，因为他的研究对我们镇的发展至关重要，他的所作所为都是出于对权力的贪婪，尽管是为了马加提亚的利益。再次感谢你。");
             }
         } else {
             if (eim.giveEventReward(cm.getPlayer())) {
                 cm.warp((eim.getIntProperty("isAlcadno") == 0) ? 261000011 : 261000021);
             } else {
-                cm.sendOk("Please free a slot on one of your inventories before receiving your reward.");
+                cm.sendOk("请在领取奖励前为您的物品栏腾出一个空位。");
             }
 
             cm.dispose();

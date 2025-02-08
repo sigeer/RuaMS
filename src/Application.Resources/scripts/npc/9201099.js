@@ -7,7 +7,7 @@ function start() {
     if (cm.getQuestStatus(8224) == 2) {
         cm.openShopNPC(9201099);
     } else {
-        cm.sendOk("Hm, at who do you think you are looking at?");
+        cm.sendOk("“嗯，你觉得你在看谁？”");
     }
 
     cm.dispose();

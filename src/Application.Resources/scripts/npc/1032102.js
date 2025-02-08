@@ -21,7 +21,7 @@ function action(mode, type, selection) {
         cm.dispose();
     } else {
         if (mode == 0 && type > 0) {
-            cm.sendOk("Alright, see you next time.");
+            cm.sendOk("好的，下次见。");
             cm.dispose();
             return;
         }
@@ -32,24 +32,24 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            cm.sendYesNo("I am Mar the Fairy. If you have a dragon at level 15 or higher and a rock of evolution, I can evolve your dragon. If you are lucky, you may even get a black one! Would you like me to do so?");
+            cm.sendYesNo("我是仙女玛尔。如果你有一只等级达到15级或更高的龙和一块进化之石，我可以帮你进化你的龙。如果你幸运的话，甚至可能会得到一只黑色的龙！你想让我这样做吗？");
         } else if (status == 1) {
             if (cm.haveItem(5000028, 1)) {
                 cm.gainItem(5000028, -1);
                 cm.gainItem(5000029, 1);
-                cm.sendOk("I don't know how you got that egg, but it has hatched, apparently!");
+                cm.sendOk("我不知道你是怎么得到那个蛋的，但显然它已经孵化了！");
                 cm.dispose();
             } else if (cm.getPlayer().getPet(0) == null) {
-                cm.sendOk("Make sure your pet is equipped on slot 1.");
+                cm.sendOk("确保你的宠物装备在第一个槽位上。");
                 cm.dispose();
             } else if (cm.getPlayer().getPet(0).getItemId() < 5000029 || cm.getPlayer().getPet(0).getItemId() > 5000033 || !cm.haveItem(5380000, 1)) {
-                cm.sendOk("You do not meet the requirements. You need #i5380000##t5380000#, as well as either one of #d#i5000029##t5000029##k, #g#i5000030##t5000030##k, #r#i5000031##t5000031##k, #b#i5000032##t5000032##k, or #e#i5000033##t5000033##n equipped on slot 1. Please come back when you do.");
+                cm.sendOk("你不符合要求。你需要 #i5380000##t5380000#，以及 #d#i5000029##t5000029##k, #g#i5000030##t5000030##k, #r#i5000031##t5000031##k, #b#i5000032##t5000032##k, 或者 #e#i5000033##t5000033##n 中的任意一个装备在槽位1上。请在符合条件后再来。");
                 cm.dispose();
             } else if (cm.getPlayer().getPet(0).getLevel() < 15) {
-                cm.sendOk("Your pet must be level 15 or above to evolve.");
+                cm.sendOk("你的宠物必须达到15级或以上才能进化。");
                 cm.dispose();
             } else if (cm.haveItem(5000029, 2) || cm.haveItem(5000030, 2) || cm.haveItem(5000031, 2) || cm.haveItem(5000032, 2) || cm.haveItem(5000033, 2)) {
-                cm.sendSimple("You have a dragon which isn't out, and as well as a dragon which is out. I can remove one for you. Remember that the data for the dragon I am removing will be lost.\r\n#r#L0#Remove my CASH first slot.#l#k\r\n#b#L1#Remove the first dragon in my inventory.#l#k\r\n#g#L2#No thanks.#l#k");
+                cm.sendSimple("你有一只还没有出来的龙，还有一只已经出来的龙。我可以帮你移除其中一只。请记住，我移除的龙的数据将会丢失。\r\n#r#L0#移除我的现金第一个槽位。#l#k\r\n#b#L1#移除我背包中的第一只龙。#l#k\r\n#g#L2#不用了，谢谢。#l#k");
             } else {
                 var i;
 
@@ -60,7 +60,7 @@ function action(mode, type, selection) {
                     }
                 }
                 if (i == 3) {
-                    cm.sendOk("You either don't have a pet dragon ready to evolve or you lack #b#t5380000##k.");
+                    cm.sendOk("你要么没有准备好进化的宠物龙，要么缺少#b#t5380000##k。");
                     cm.dispose();
                     return;
                 }
@@ -72,7 +72,7 @@ function action(mode, type, selection) {
                 //var fullness = cm.getPlayer().getPet(i).getFullness();
                 //ItemInformationProvider ii = ItemInformationProvider.getInstance();
                 if (id < 5000029 || id > 5000033) {
-                    cm.sendOk("Something wrong, try again.");
+                    cm.sendOk("有些问题，再试一次。");
                     cm.dispose();
                 }
                 var rand = 1 + Math.floor(Math.random() * 10);
@@ -86,7 +86,7 @@ function action(mode, type, selection) {
                 } else if (rand == 10) {
                     after = 5000033;
                 } else {
-                    cm.sendOk("Something wrong. Try again.");
+                    cm.sendOk("有问题。请再试一次。");
                     cm.dispose();
                 }
 
@@ -97,13 +97,13 @@ function action(mode, type, selection) {
                 cm.gainItem(5380000, -1);
                 cm.evolvePet(i, after);
 
-                cm.sendOk("Your dragon has now evolved!! It used to be a #i" + id + "# #t" + id + "#, and now it's a #i" + after + "# #t" + after + "#!");
+                cm.sendOk("你的龙现在进化了！它以前是一个 #i" + id + "# #t" + id + "#，现在它是一个 #i" + after + "# #t" + after + "#！");
                 cm.dispose();
             }
         } else if (status == 2) {
             if (selection == 0) {
                 InventoryManipulator.removeFromSlot(cm.getClient(), InventoryType.CASH, 1, 1, true);
-                cm.sendOk("Your cash first slot is removed.");
+                cm.sendOk("您的现金第一个槽位已被移除。");
             } else if (selection == 1) {
                 if (cm.haveItem(5000029, 2)) {
                     cm.gainItem(5000029, -1);
@@ -116,9 +116,9 @@ function action(mode, type, selection) {
                 } else if (cm.haveItem(5000033, 2)) {
                     cm.gainItem(5000033, -1);
                 }
-                cm.sendOk("The first dragon in your inventory is removed.");
+                cm.sendOk("你的库存中的第一只龙被移除。");
             } else if (selection == 2) {
-                cm.sendOk("Okay, come back next time.");
+                cm.sendOk("好的，下次再来。");
             }
             cm.dispose();
         }

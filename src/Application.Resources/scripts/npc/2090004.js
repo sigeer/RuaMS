@@ -29,7 +29,7 @@ function action(mode, type, selection) {
     if (mode == 1) {
         status++;
     } else {
-        cm.sendOk("Oh, talk to me when you have decided what you want from me. I am very busy right now.");
+        cm.sendOk("哦，当你决定好你想要我做什么的时候再来找我说话。我现在非常忙。");
         cm.dispose();
         return;
     }
@@ -39,12 +39,12 @@ function action(mode, type, selection) {
             //player lost his book, help him complete quest anyways
 
             if (cm.canHold(4031554)) {
-                cm.sendOk("Oh, the boy wanted you to bring him a #t4031554#? No problem, I was on his debt anyway. Now, tell him I am repaying the debt, OK?");
+                cm.sendOk("哦，那个男孩想让你给他带一个 #t4031554#？没问题，我本来就欠他的。现在，告诉他我正在还债，好吗？");
                 cm.gainItem(4031554, 1);
                 cm.dispose();
                 return;
             } else {
-                cm.sendOk("Oh, the boy wanted you to bring him a #t4031554#? Make room at your ETC inventory first.");
+                cm.sendOk("哦，这个男孩想让你给他带一个#t4031554#？先在你的杂项物品栏腾出位置。");
                 cm.dispose();
                 return;
             }
@@ -66,7 +66,7 @@ function action(mode, type, selection) {
             matQtyMeso = [0, 0, 910, 950, 1940, 600, 700, 1000];
 
             if (!cm.haveItem(4161030)) {
-                cm.sendNext("If you want to make a medicine, you must study the Book on Herbal Medicine first. Nothing is more dangerous than practicing a medicine without proper knowledge.");
+                cm.sendNext("如果你想制作药物，你必须先学习《本草纲目》。没有比在没有适当知识的情况下进行药物实践更危险的事情了。");
                 cm.dispose();
                 return;
             }
@@ -185,7 +185,7 @@ function action(mode, type, selection) {
             }
 
             if (!complete || !cm.canHold(item, makeQty)) {
-                cm.sendOk("Please make sure you are neither lacking ingredients or lacking space in your use inventory.");
+                cm.sendOk("请确保你既不缺少原料，也不缺少使用库存空间。");
             } else {
                 if (mats instanceof Array) {
                     for (var i = 0; i < mats.length; i++) {
@@ -222,7 +222,7 @@ function action(mode, type, selection) {
             }
 
             if (!complete || !cm.canHold(item, 1)) {
-                cm.sendOk("Please make sure you are neither lacking ingredients or lacking space in your use inventory.");
+                cm.sendOk("请确保你既不缺少原料，也不缺少使用库存空间。");
             } else {
                 if (mats instanceof Array) {
                     for (var i = 0; i < mats.length; i++) {
@@ -244,7 +244,7 @@ function action(mode, type, selection) {
             }
 
             if (!complete) {
-                cm.sendOk("Please make sure you are neither lacking ingredients or lacking space in your etc inventory.");
+                cm.sendOk("请确保你既不缺少原料，也不缺少杂项物品栏的空间。");
                 cm.dispose();
                 return;
             }
@@ -258,7 +258,7 @@ function action(mode, type, selection) {
             }
 
             if (!cm.canHold(4001124, reward)) {
-                cm.sendOk("Please make sure you are neither lacking ingredients or lacking space in your etc inventory.");
+                cm.sendOk("请确保你既不缺少原料，也不缺少杂项物品栏的空间。");
             } else {
                 cm.gainItem(item, -100);
                 cm.gainItem(4001124, reward);

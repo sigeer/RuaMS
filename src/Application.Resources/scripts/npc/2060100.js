@@ -27,10 +27,10 @@ function start() {
             cm.gainItem(4000175, -1);
             cm.warp(923000000, 0);
         } else {
-            cm.sendOk("In order to open the crack of dimension you will have to posess one piece of Miniature Pianus. Those could be gained by defeating a Pianus.");
+            cm.sendOk("为了打开维度裂缝，你必须拥有一块小型钢琴怪的碎片。这些可以通过击败钢琴怪来获得。");
         }
     } else {
-        cm.sendOk("I'm #bCarta the sea-witch.#k Don't fool around with me, as I'm known for my habit of turning people into worms.");
+        cm.sendOk("我是#b海巫卡塔#k。别和我胡闹，因为我有把人变成蠕虫的习惯。");
     }
 
     cm.dispose();

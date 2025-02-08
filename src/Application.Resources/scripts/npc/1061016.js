@@ -12,7 +12,7 @@ function action(mode, type, selection) {
     }
     status++;
     if (status == 0) {
-        cm.sendSimple("Hello, #h0#. I can exchange your Balrog Leathers.\r\n\r\n#r#L1#Redeem items#l#k");
+        cm.sendSimple("你好，#h0#。我可以交换你的巴尔洛克皮革。\r\n\r\n#r#L1#兑换物品#l#k");
     } else if (status == 1) {
         var selStr = "Well, okay. These are what you can redeem...\r\n\r\n#b";
         for (var i = 0; i < itemids.length; i++) {
@@ -21,13 +21,13 @@ function action(mode, type, selection) {
         cm.sendSimple(selStr);
     } else if (status == 2) {
         if (!cm.canHold(itemids[selection], 1)) {
-            cm.sendOk("Please make room");
+            cm.sendOk("请腾出空间");
         } else if (!cm.haveItemWithId(4001261)) {
-            cm.sendOk("You don't have enough leathers.");
+            cm.sendOk("你没有足够的皮革。");
         } else {
             cm.gainItem(4001261, -1);
             cm.gainItem(itemids[selection], 1);
-            cm.sendOk("Thank you for your redemption");
+            cm.sendOk("谢谢您的兑换。");
         }
         cm.dispose();
     }

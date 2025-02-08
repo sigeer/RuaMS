@@ -28,7 +28,7 @@ var status = 0;
 var MySelection = -1;
 
 function start() {
-    cm.sendSimple("My name is Amos the Strong. What would you like to do?\r\n#b#L0#Enter the Amorian Challenge!!#l\r\n#L1#Trade 10 Keys for a Ticket!#l\r\n#k");
+    cm.sendSimple("我的名字是强壮的阿莫斯。你想做什么？\r\n#b#L0#参加阿莫利亚挑战！#l\r\n#L1#用10把钥匙交换门票！#l\r\n#k");
 }
 
 function action(mode, type, selection) {
@@ -36,7 +36,7 @@ function action(mode, type, selection) {
         cm.dispose();
     } else {
         if (status >= 0 && mode == 0) {
-            cm.sendOk("Ok come back when you're ready.");
+            cm.sendOk("好的，当你准备好的时候再回来。");
             cm.dispose();
             return;
         }
@@ -47,21 +47,21 @@ function action(mode, type, selection) {
         }
         if (status == 1 && selection == 0) {
             if (cm.haveItem(4031592, 1)) {
-                cm.sendYesNo("So you would like to enter the #bEntrance#k?");
+                cm.sendYesNo("所以你想进入 #b入口#k？");
                 MySelection = selection;
             } else {
-                cm.sendOk("You must have an Entrance Ticket to enter.");
+                cm.sendOk("您必须有入场券才能进入。");
                 cm.dispose();
             }
         } else if (status == 1 && selection == 1) {
             if (cm.haveItem(4031592)) {
-                cm.sendOk("You already have an Entrance Ticket!");
+                cm.sendOk("你已经有一张入场券了！");
                 cm.dispose();
             } else if (cm.haveItem(4031593, 10)) {
-                cm.sendYesNo("So you would like a Ticket?");
+                cm.sendYesNo("所以你想要一张门票？");
                 MySelection = selection;
             } else {
-                cm.sendOk("Please get me 10 Keys first!");
+                cm.sendOk("请先给我拿到10把钥匙！");
                 cm.dispose();
             }
         } else if (status == 2 && MySelection == 0) {

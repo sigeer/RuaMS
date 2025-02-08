@@ -37,9 +37,9 @@ function start() {
     }
 
     if (cm.haveItem(ticketId)) {
-        cm.sendYesNo("You may use Gachapon. Would you like to use your Gachapon ticket?");
+        cm.sendYesNo("你可以使用扭蛋机。你想使用你的扭蛋机券吗？");
     } else {
-        cm.sendSimple("Welcome to the " + cm.getPlayer().getMap().getMapName() + " Gachapon. How may I help you?\r\n\r\n#L0#What is Gachapon?#l\r\n#L1#Where can you buy Gachapon tickets?#l");
+        cm.sendSimple("欢迎来到冒险岛的扭蛋机。我可以为您做些什么呢？\r\n#L0#什么是扭蛋机？#l\r\n#L1#在哪里可以购买扭蛋机券？#l");
     }
 }
 
@@ -51,18 +51,18 @@ function action(mode, type, selection) {
             cm.gainItem(ticketId, -1);
             cm.doGachapon();
         } else {
-            cm.sendOk("Please have at least one slot in your #rEQUIP, USE, SET-UP, #kand #bETC#k inventories free.");
+            cm.sendOk("请确保你的#r装备、消耗、设置#k和#b其他#k物品栏至少有一个空位。");
         }
         cm.dispose();
     } else {
         if (mode > 0) {
             status++;
             if (selection == 0) {
-                cm.sendNext("Play Gachapon to earn rare scrolls, equipment, chairs, mastery books, and other cool items! All you need is a #bGachapon Ticket#k to be the winner of a random mix of items.");
+                cm.sendNext("玩转扭蛋机，赢得稀有卷轴、装备、椅子、熟练书和其他酷炫物品！你只需要一张 #b扭蛋券#k 就有机会成为随机物品的幸运获得者。");
             } else if (selection == 1) {
-                cm.sendNext("Gachapon Tickets are available in the #rCash Shop#k and can be purchased using NX or Maple Points. Click on the red SHOP at the lower right hand corner of the screen to visit the #rCash Shop#k where you can purchase tickets.");
+                cm.sendNext("“Gachapon Tickets可以在#r现金商店#k购买，可以使用NX或枫叶点购买。点击屏幕右下角的红色商店图标访问#r现金商店#k，您可以购买门票。”");
             } else if (status == 2) {
-                cm.sendNext("You'll find a variety of items from the " + cm.getPlayer().getMap().getMapName() + " Gachapon, but you'll most likely find several related items and scrolls since " + cm.getPlayer().getMap().getMapName() + " is known as the town.");
+                cm.sendNext("你会在“冒险岛”Gachapon中找到各种各样的物品，但你很可能会找到一些相关的物品和卷轴，因为“冒险岛”被称为这个城镇。");
                 cm.dispose();
             } else {
 
