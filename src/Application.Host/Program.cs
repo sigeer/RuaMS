@@ -26,7 +26,9 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+#if !DEBUG
     .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+#endif
     .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .WriteTo.Console()
@@ -41,10 +43,11 @@ Log.Logger = new LoggerConfiguration()
          )
     .CreateLogger();
 
-builder.Services.AddLogging(o => o.AddSerilog());
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog();
 
 // 数据库配置
-builder.Services.AddDbContext<DBContext>(o => o.UseMySQL(YamlConfig.config.server.DB_CONNECTIONSTRING));
+builder.Services.AddDbContext<DBContext>();
 
 
 //builder.Services.AddQuartz(o => o.AddJobListener(new JobCompleteListener()));
