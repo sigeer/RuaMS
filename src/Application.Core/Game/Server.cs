@@ -49,6 +49,7 @@ using server.expeditions;
 using server.quest;
 using service;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using static server.CashShop;
 
@@ -529,16 +530,6 @@ public class Server
             log.Information("数据库迁移...");
             await dbContext.Database.MigrateAsync();
             log.Information("数据库迁移成功");
-
-            if (!dbContext.Shops.Any())
-            {
-                var sqls = Directory.GetFiles("sql").OrderBy(x => Regex.Match(x, "v([0-9]+)\\S*\\.sql$").Groups[0].Value);
-                foreach (var file in sqls)
-                {
-                    var sqlStr = File.ReadAllText(file);
-                    await dbContext.Database.ExecuteSqlRawAsync(sqlStr);
-                }
-            }
 
             sw.Stop();
             log.Information("初始化数据库成功，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
