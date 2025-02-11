@@ -1,6 +1,7 @@
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
 using Application.Core.EF.Entities.SystemBase;
+using Application.Utility;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 
@@ -178,7 +179,7 @@ public partial class DBContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseMySQL(YamlConfig.config.server.DB_CONNECTIONSTRING);
+        optionsBuilder.UseMySQL(AppSettings.GetConnectionString);
         base.OnConfiguring(optionsBuilder);
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)

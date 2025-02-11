@@ -51,6 +51,40 @@ dotnet ef database update --startup-project ../Application.Host
 
 1. 配置 config.yaml，主要是连接字符串、IP
 2. v83客户端（wz） 、服务端wz、服务端Js需要配套。 
+
+
 项目中的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，
 可以使用该项目中的wz、以及客户端。
+
+也可以使用[Commit:ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1](https://github.com/sigeer/Cosmic_DotNet/commit/ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1) 之前的 `scripts`
+（来自于 [Cosmic](https://github.com/P0nk/Cosmic)）
+
 如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/Cosmic_DotNet/blob/master/docs/CodeMigration.MD#js)对js进行处理
+
+
+#### docker 运行
+
+**生成镜像**
+
+`docker build -f ./src/Application.Host/Dockerfile -t cosmic-dotnet:latest -t cosmic-dotnet:0.0.1 .`
+
+**运行**
+
+```bash
+docker run -itd \
+-p 8080:8080 \
+-p 8484:8484 \
+-p 7575-7600:7575-7600 \
+-v ./logs:/app/logs \
+--name cosmic-dotnet \
+cosmic-dotnet
+
+# 非docker compose运行需要设置连接字符串
+-e "DB_CONNECTIONSTRING=" \
+```
+
+**docker compose运行**
+
+```
+docker compose up -d
+```

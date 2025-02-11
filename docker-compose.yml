@@ -1,0 +1,38 @@
+services:
+  cosmic-dotnet:
+    container_name: service-cosmic-dotnet
+    image: cosmic-dotnet
+    build:
+      context: .
+      dockerfile: src/Application.Host/Dockerfile
+    depends_on:
+      cosmic-dotnet-db:
+        condition: service_healthy
+    environment:
+        DB_CONNECTIONSTRING: "server=cosmic-dotnet-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
+    ports:
+      - "8080:8080"
+      # 登录服务器
+      - "8484:8484"
+      # 频道服务器
+      - "7575-7600:7575-7600"
+    volumes:
+      - ./logs:/app/logs
+
+  cosmic-dotnet-db:
+    container_name: service-cosmic-dotnet-db
+    image: mysql:8.4.4
+    environment:
+      MYSQL_DATABASE: "cosmic"
+      MYSQL_ROOT_PASSWORD: "root"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/log:/var/log/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      retries: 20
+      timeout: 10s
+      start_period: 10s

@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DCCF81D5-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{BD851960-79BB-4DE0-901D-CA29E0DF1FCA}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build-docker.yml = .github\workflows\build-docker.yml
 		.github\workflows\build.yml = .github\workflows\build.yml
 	EndProjectSection
 EndProject
@@ -34,8 +35,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Shared", "src\A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{0BF5D534-3E6E-48C7-A7DA-F52236CB2A1B}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
+		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Host", "src\Application.Host\Application.Host.csproj", "{79AFD6B5-5964-4CCD-AE20-8C72D688A767}"
