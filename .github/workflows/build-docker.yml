@@ -73,7 +73,9 @@ jobs:
           context: .
           tags: |
             ${{ env.DOCKERHUB_IMAGE_NAME }}:${{ env.VERSION }}
+            ${{ env.DOCKERHUB_IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
           file: ./src/Application.Host/Dockerfile
           cache-from: type=gha
