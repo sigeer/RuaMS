@@ -35,8 +35,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Shared", "src\A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{0BF5D534-3E6E-48C7-A7DA-F52236CB2A1B}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
+		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Host", "src\Application.Host\Application.Host.csproj", "{79AFD6B5-5964-4CCD-AE20-8C72D688A767}"
@@ -44,8 +46,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Resources", "src\Application.Resources\Application.Resources.csproj", "{D000318F-55A6-4B49-B73C-4D5568C4FDC9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTest", "test\ServiceTest\ServiceTest.csproj", "{495690B4-0416-4C12-A9FA-5742C47EEB24}"
-EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{E6B06671-1E36-482B-9E7D-578D413F3879}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,10 +85,6 @@ Global
 		{495690B4-0416-4C12-A9FA-5742C47EEB24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{495690B4-0416-4C12-A9FA-5742C47EEB24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{495690B4-0416-4C12-A9FA-5742C47EEB24}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6B06671-1E36-482B-9E7D-578D413F3879}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6B06671-1E36-482B-9E7D-578D413F3879}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6B06671-1E36-482B-9E7D-578D413F3879}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6B06671-1E36-482B-9E7D-578D413F3879}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

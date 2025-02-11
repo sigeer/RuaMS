@@ -1,5 +1,8 @@
 <Project>
   <PropertyGroup>
     <Version>0.0.1</Version>
+	  <RepositoryUrl>https://github.com/sigeer/Cosmic_DotNet</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PackageProjectUrl>https://github.com/sigeer/Cosmic_DotNet</PackageProjectUrl>
   </PropertyGroup>
 </Project>
