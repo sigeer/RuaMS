@@ -9,7 +9,7 @@ services:
       cosmic-dotnet-db:
         condition: service_healthy
     ports:
-      - "8080:80"
+      - "8080:8080"
       # 登录服务器
       - "8484:8484"
       # 频道服务器

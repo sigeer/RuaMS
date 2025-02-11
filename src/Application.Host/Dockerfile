@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 USER $APP_UID
 WORKDIR /app
 # 控制台
-EXPOSE 80
+EXPOSE 8080
 # 登录服务器
 EXPOSE 8484
 # 频道服务器
@@ -34,7 +34,7 @@ COPY --from=sleepnap/beidou-server:nightly /opt/server/wz ./wz
 COPY --from=sleepnap/beidou-server:nightly /opt/server/wz-zh-CN ./wz
 
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS="http://*:80"
+ENV ASPNETCORE_URLS="http://*:8080"
 ENV ASPNETCORE_HTTP_PORTS=""
 
 ENTRYPOINT ["dotnet", "Application.Host.dll"]
