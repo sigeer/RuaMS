@@ -1,6 +1,6 @@
 services:
-  application.host:
-    image: ${DOCKER_REGISTRY-}applicationhost
+  cosmic-dotnet:
+    image: cosmic-dotnet
     build:
       context: .
       dockerfile: src/Application.Host/Dockerfile
@@ -18,7 +18,7 @@ services:
       - ./scripts:/app/scripts
       - ./wz:/app/wz
 
-  db:
+  cosmic-dotnet-db:
     image: mysql:8.4.4
     environment:
       MYSQL_DATABASE: "cosmic"

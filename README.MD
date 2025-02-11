@@ -60,3 +60,29 @@ dotnet ef database update --startup-project ../Application.Host
 （来自于 [Cosmic](https://github.com/P0nk/Cosmic)）
 
 如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/Cosmic_DotNet/blob/master/docs/CodeMigration.MD#js)对js进行处理
+
+
+#### docker 运行
+
+**生成镜像**
+
+`docker build -f ./src/Application.Host/Dockerfile -t cosmic-dotnet:latest -t cosmic-dotnet:0.0.1 .`
+
+**运行**
+
+```
+docker run -d cosmic-dotnet \
+-p 8080:80 \
+-p 8484:8484 \
+-p 7575-7800:7575:7800 \
+-v ./config.yaml:/app/config.yaml \
+-v ./scripts:/app/scripts \
+-v ./wz:/app/wz \
+-e DB_CONNECTIONSTRING="" \ # 非docker compose运行需要设置
+--name cosmic-dotnet
+```
+
+**docker compose运行**
+```
+docker-compose up -d
+```
