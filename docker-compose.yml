@@ -8,6 +8,8 @@ services:
     depends_on:
       cosmic-dotnet-db:
         condition: service_healthy
+    environment:
+        DB_CONNECTIONSTRING: "server=cosmic-dotnet-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
     ports:
       - "8080:8080"
       # 登录服务器
@@ -22,7 +24,7 @@ services:
     image: mysql:8.4.4
     environment:
       MYSQL_DATABASE: "cosmic"
-      MYSQL_ROOT_PASSWORD: "aA123456"
+      MYSQL_ROOT_PASSWORD: "root"
     ports:
       - "3306:3306"
     volumes:
