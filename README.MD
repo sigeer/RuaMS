@@ -71,6 +71,7 @@ dotnet ef database update --startup-project ../Application.Host
 **运行**
 
 ```
+ # 非docker compose运行需要设置连接字符串 -e DB_CONNECTIONSTRING="" \
 docker run -d cosmic-dotnet \
 -p 8080:80 \
 -p 8484:8484 \
@@ -78,11 +79,10 @@ docker run -d cosmic-dotnet \
 -v ./config.yaml:/app/config.yaml \
 -v ./scripts:/app/scripts \
 -v ./wz:/app/wz \
--e DB_CONNECTIONSTRING="" \ # 非docker compose运行需要设置
 --name cosmic-dotnet
 ```
 
 **docker compose运行**
 ```
-docker-compose up -d
+docker compose up -d
 ```

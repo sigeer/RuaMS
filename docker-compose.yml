@@ -1,11 +1,12 @@
 services:
   cosmic-dotnet:
+    container_name: service-cosmic-dotnet
     image: cosmic-dotnet
     build:
       context: .
       dockerfile: src/Application.Host/Dockerfile
     depends_on:
-      db:
+      cosmic-dotnet-db:
         condition: service_healthy
     ports:
       - "8080:80"
@@ -19,6 +20,7 @@ services:
       - ./wz:/app/wz
 
   cosmic-dotnet-db:
+    container_name: service-cosmic-dotnet-db
     image: mysql:8.4.4
     environment:
       MYSQL_DATABASE: "cosmic"
@@ -30,7 +32,7 @@ services:
       - ./db/log:/var/log/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 30s
-      retries: 5
+      interval: 10s
+      retries: 20
       timeout: 10s
       start_period: 10s

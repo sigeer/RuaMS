@@ -35,5 +35,6 @@ COPY --from=sleepnap/beidou-server:nightly /opt/server/wz-zh-CN ./wz
 
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS="http://*:80"
+ENV ASPNETCORE_HTTP_PORTS=""
 
 ENTRYPOINT ["dotnet", "Application.Host.dll"]
