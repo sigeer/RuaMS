@@ -30,8 +30,8 @@ RUN dotnet publish "./Application.Host.csproj" -c $BUILD_CONFIGURATION -o /app/p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=sleepnap/beidou-server-all:1.8.1 /opt/server/wz ./wz
-COPY --from=sleepnap/beidou-server-all:1.8.1 /opt/server/wz-zh-CN ./wz
+COPY --from=sleepnap/beidou-server:nightly /opt/server/wz ./wz
+COPY --from=sleepnap/beidou-server:nightly /opt/server/wz-zh-CN ./wz
 
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS="http://*:80"
