@@ -15,9 +15,7 @@ services:
       # 频道服务器
       - "7575-7600:7575-7600"
     volumes:
-      - ./config.yaml:/app/config.yaml
-      - ./scripts:/app/scripts
-      - ./wz:/app/wz
+      - ./logs:/app/logs
 
   cosmic-dotnet-db:
     container_name: service-cosmic-dotnet-db
