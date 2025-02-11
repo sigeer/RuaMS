@@ -13,7 +13,7 @@ services:
       # 登录服务器
       - "8484:8484"
       # 频道服务器
-      - "7575-7800:7575-7800"
+      - "7575-7600:7575-7600"
     volumes:
       - ./config.yaml:/app/config.yaml
       - ./scripts:/app/scripts

@@ -4,9 +4,7 @@ using Application.Host;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
-using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
@@ -40,8 +38,25 @@ Log.Logger = new LoggerConfiguration()
                     lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Error).WriteTo.Async(a => a.File($"logs/AllError/Error-.txt", rollingInterval: RollingInterval.Day))
                 )
                 .WriteTo.Logger(lg => lg.WriteTo.Async(a => a.File($"logs/{category}/All-.txt", rollingInterval: RollingInterval.Day)))
-         )
-    .CreateLogger();
+)
+.CreateLogger();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("cors", p =>
+    {
+        var allowedHost = builder.Configuration.GetValue<string>("AllowedHosts");
+        if (string.IsNullOrEmpty(allowedHost) || allowedHost == "*")
+            p.SetIsOriginAllowed(_ => true);
+        else
+            p.WithOrigins(allowedHost.Split(","));
+
+        p
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    });
+});
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
@@ -116,6 +131,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
     app.MapOpenApi();
 }
+
+app.UseCors("cors");
 
 app.UseAuthentication();
 app.UseAuthorization();
