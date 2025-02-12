@@ -1,4 +1,4 @@
-﻿/* @Author Ronan
+/* @Author Ronan
  * @Author Vcoc
         Name: Steward
         Map(s): Foyer
@@ -16,7 +16,7 @@ var levels = ["通用", "贡献者", "小GM", "GM", "大GM", "开发者", "超�
 var commands;
 
 function writeHeavenMSCommands() {
-    commands = CommandsExecutor.getInstance().getCommandsNameDesc();
+    commands = CommandExecutor.getInstance().getCommandsNameDesc();
 }
 
 function start() {
