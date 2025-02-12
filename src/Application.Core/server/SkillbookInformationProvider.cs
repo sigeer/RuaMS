@@ -21,6 +21,7 @@
 
 using Application.Core.Tools;
 using client;
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -53,10 +54,17 @@ public class SkillbookInformationProvider
 
     public static void loadAllSkillbookInformation()
     {
+        Stopwatch sw = new Stopwatch();
         Dictionary<int, SkillBookEntry> loadedSkillbooks = new();
+        sw.Start();
         loadedSkillbooks.putAll(fetchSkillbooksFromQuests());
+        log.Debug("fetchSkillbooksFromQuests 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
+        sw.Restart();
         loadedSkillbooks.putAll(fetchSkillbooksFromReactors());
+        log.Debug("fetchSkillbooksFromReactors 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
+        sw.Restart();
         loadedSkillbooks.putAll(fetchSkillbooksFromScripts());
+        log.Debug("fetchSkillbooksFromScripts 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
         SkillbookInformationProvider.foundSkillbooks = loadedSkillbooks;
     }
 
@@ -211,12 +219,12 @@ public class SkillbookInformationProvider
     {
         HashSet<int> matches = new HashSet<int>();
 
-        Regex regex = new Regex("22(8|9)[0-9]{4}");
+        Regex regex = new Regex("(?<!\\d)(22(8|9)[0-9]{4})(?!\\d)");
         MatchCollection matchCollection = regex.Matches(fileContent);
 
         foreach (Match match in matchCollection)
         {
-            matches.Add(int.Parse(fileContent.Substring(match.Index, match.Length)));
+            matches.Add(int.Parse(match.Groups[1].Value));
         }
 
         return matches;
