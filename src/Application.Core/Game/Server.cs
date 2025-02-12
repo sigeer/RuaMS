@@ -611,10 +611,7 @@ public class Server
         {
             await Initialize(ignoreCache);
 
-            if (YamlConfig.config.server.SHUTDOWNHOOK)
-            {
-                AppDomain.CurrentDomain.ProcessExit += (obj, evt) => shutdown(false);
-            }
+            AppDomain.CurrentDomain.ProcessExit += (obj, evt) => shutdown(false);
 
             channelDependencies = registerChannelDependencies();
 

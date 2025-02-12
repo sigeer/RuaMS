@@ -950,7 +950,7 @@ public class AbstractPlayerInteraction
             int baseValue = PartyQuest.getExp(PQ, player.getLevel());
             int exp = baseValue * bonus / 100;
             player.gainExp(exp, true, true);
-            if (YamlConfig.config.server.PQ_BONUS_EXP_RATE > 0 && DateTimeOffset.Now.ToUnixTimeMilliseconds() <= YamlConfig.config.server.EVENT_END_TIMESTAMP)
+            if (YamlConfig.config.server.PQ_BONUS_EXP_RATE > 0)
             {
                 player.gainExp((int)(exp * YamlConfig.config.server.PQ_BONUS_EXP_RATE), true, true);
             }

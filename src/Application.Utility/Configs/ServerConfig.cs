@@ -40,9 +40,6 @@ public class ServerConfig
     public string LANHOST;
     public string LOCALHOST;
 
-    //Other configuration
-    public bool SHUTDOWNHOOK;
-
     //Server Flags
     public bool USE_CUSTOM_KEYSET;
     public bool USE_DEBUG;
@@ -140,8 +137,6 @@ public class ServerConfig
     public float PARTY_BONUS_EXP_RATE;
 
     //Miscellaneous Configuration
-    public string TIMEZONE;
-    public string CHARSET;
     public bool USE_DISPLAY_NUMBERS_WITH_COMMA;
     public bool USE_UNITPRICE_WITH_COMMA;
     public byte MAX_MONITORED_BUFFSTATS;
@@ -282,9 +277,6 @@ public class ServerConfig
 
     // Login timeout by shavit
     public long TIMEOUT_DURATION;
-
-    //Event End Timestamp
-    public long EVENT_END_TIMESTAMP;
 
     //GM Security Configuration
     public int MINIMUM_GM_LEVEL_TO_TRADE;
