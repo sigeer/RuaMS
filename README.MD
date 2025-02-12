@@ -81,6 +81,9 @@ cosmic-dotnet
 
 # 非docker compose运行需要设置连接字符串
 -e "COSMIC_DOTNET_DB_CONNECTIONSTRING=" \
+
+# 公网运行运行需要修改Host
+-e "COSMIC_DOTNET_HOST=" \
 ```
 
 **docker compose运行**
