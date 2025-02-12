@@ -9,7 +9,11 @@ services:
       cosmic-dotnet-db:
         condition: service_healthy
     environment:
-        DB_CONNECTIONSTRING: "server=cosmic-dotnet-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
+        COSMIC_DOTNET_DB_CONNECTIONSTRING: "server=cosmic-dotnet-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
+        ## 此处修改HOST
+        # COSMIC_DOTNET_HOST: 127.0.0.1
+        # COSMIC_DOTNET_LANHOST: 127.0.0.1
+        # COSMIC_DOTNET_LOCALHOST: 127.0.0.1
     ports:
       - "8080:8080"
       # 登录服务器

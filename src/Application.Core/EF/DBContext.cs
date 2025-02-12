@@ -179,7 +179,7 @@ public partial class DBContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseMySQL(AppSettings.GetConnectionString);
+        optionsBuilder.UseMySQL(YamlConfig.config.server.DB_CONNECTIONSTRING);
         base.OnConfiguring(optionsBuilder);
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
