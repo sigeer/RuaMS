@@ -37,9 +37,6 @@ server:
     LANHOST: 127.0.0.1              #LAN IPv4 address
     LOCALHOST: 127.0.0.1            #Loopback IPv4 address
 
-    #Other configuration
-    SHUTDOWNHOOK: true
-
     #Server Flags
     USE_CUSTOM_KEYSET: false             #Enables auto-setup of the HeavenMS's custom keybindings when creating characters.
     USE_DEBUG: false                    #Will enable some text prints on the client, oriented for debugging purposes.
@@ -128,7 +125,7 @@ server:
     USE_WHOLE_SERVER_RANKING: false     #Enables a ranking pool made from every character registered on the server for the "ranks" command, instead of separated by worlds.
 
     EQUIP_EXP_RATE: 1.0                  #Rate for equipment exp gain, grows linearly. Set 1.0 for default (about 100~200 same-level range mobs killed to pass equip from level 1 to 2).
-    PQ_BONUS_EXP_RATE: 0.5               #Rate for the PQ exp reward.
+    PQ_BONUS_EXP_RATE: 0.5                 #Rate for the PQ exp reward.
 
     EXP_SPLIT_LEVEL_INTERVAL: 5            #Non-contributing players must be within N level between the mob to receive EXP.
     EXP_SPLIT_LEECH_INTERVAL: 5            #Non-contributing players must be within N level between any contributing party member to receive EXP.
@@ -137,8 +134,6 @@ server:
     PARTY_BONUS_EXP_RATE: 1.0            #Rate for the party exp bonus reward.
 
     #Miscellaneous Configuration
-    TIMEZONE: GMT
-    CHARSET: US-ASCII                          # Is loaded first, so applies to the rest of this config. Defaults to US-ASCII if invalid or not set.
     USE_DISPLAY_NUMBERS_WITH_COMMA: true          #Enforce comma on displayed strings (use this when USE_UNITPRICE_WITH_COMMA is active and you still want to display comma-separated values).
     USE_UNITPRICE_WITH_COMMA: true                #Set this accordingly with the layout of the unitPrices on Item.wz XML's, whether it's using commas or dots to represent fractions.
     MAX_MONITORED_BUFFSTATS: 5                 #Limits accounting for "dormant" buff effects, that should take place when stronger stat buffs expires.
@@ -279,9 +274,6 @@ server:
 
     # Login timeout by shavit
     TIMEOUT_DURATION: 3600000               # Kicks clients who don't send any packet to the game server in due time (in millisseconds).
-
-    #Event End Timestamp
-    EVENT_END_TIMESTAMP: 1428897600000
 
     # GM Security Configuration
     MINIMUM_GM_LEVEL_TO_TRADE: 4
