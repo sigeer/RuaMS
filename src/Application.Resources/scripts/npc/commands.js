@@ -8,7 +8,6 @@
 
 var status;
 
-var common_heading = "@";
 var staff_heading = "!";
 
 // var levels = ["Common", "Donator", "JrGM", "GM", "SuperGM", "Developer", "Admin"];
@@ -47,20 +46,17 @@ function action(mode, type, selection) {
 
             cm.sendSimple(sendStr);
         } else if (status == 1) {
-            var lvComm, lvDesc, lvHead = (selection < 2) ? common_heading : staff_heading;
-
             if (selection > 6) {
                 selection = 6;
             } else if (selection < 0) {
                 selection = 0;
             }
 
-            lvComm = commands.get(selection).getLeft();
-            lvDesc = commands.get(selection).getRight();
+            var levelData = commands[selection];
 
             var sendStr = "该选项可用指令 #b" + levels[selection] + "#k:\r\n\r\n";
-            for (var i = 0; i < lvComm.size(); i++) {
-                sendStr += "  #L" + i + "# " + lvHead + lvComm.get(i) + " - " + lvDesc.get(i);
+            for (var i = 0; i < levelData.size(); i++) {
+                sendStr += "  #L" + i + "# " + staff_heading + levelData.get(i).Name + " - " + levelData.get(i).Description;
                 sendStr += "#l\r\n";
             }
 
