@@ -80,7 +80,7 @@ docker run -itd \
 cosmic-dotnet
 
 # 非docker compose运行需要设置连接字符串
--e "DB_CONNECTIONSTRING=" \
+-e "COSMIC_DOTNET_DB_CONNECTIONSTRING=" \
 ```
 
 **docker compose运行**

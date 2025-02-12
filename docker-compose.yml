@@ -9,7 +9,7 @@ services:
       cosmic-dotnet-db:
         condition: service_healthy
     environment:
-        DB_CONNECTIONSTRING: "server=cosmic-dotnet-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
+        COSMIC_DOTNET_DB_CONNECTIONSTRING: "server=cosmic-dotnet-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
     ports:
       - "8080:8080"
       # 登录服务器
