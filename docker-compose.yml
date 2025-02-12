@@ -35,8 +35,7 @@ services:
       - ./db/data:/var/lib/mysql
       - ./db/log:/var/log/mysql
     healthcheck:
-      test: ["CMD", "mysql", "-hlocalhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "--silent", "--execute", "SELECT 1;"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       retries: 20
       timeout: 10s
-      start_period: 10s
