@@ -26,8 +26,11 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.TheWorld;
+using Application.Shared.Constants;
+using Application.Shared.MapObjects;
 using Application.Shared.WzEntity;
 using constants.id;
+using Google.Protobuf.WellKnownTypes;
 using scripting.Event;
 using server.life;
 using server.partyquest;
@@ -140,10 +143,10 @@ public class MapFactory
     {
         IMap map;
 
-        string mapName = getMapName(mapid);
-        var mapData = mapSource.getData(mapName);    // source.getData issue with giving nulls in rare ocasions found thanks to MedicOP
+        string mapImg = GetMapImg(mapid);
+        var mapData = mapSource.getData(mapImg);    // source.getData issue with giving nulls in rare ocasions found thanks to MedicOP
         if (mapData == null)
-            throw new BusinessResException($"Map {mapName} not existed");
+            throw new BusinessResException($"Map {mapImg} not existed");
 
         var infoData = mapData.getChildByPath("info");
 
@@ -151,8 +154,8 @@ public class MapFactory
         if (!string.IsNullOrEmpty(link))
         {
             //nexon made hundreds of dojo maps so to reduce the size they added links.
-            mapName = getMapName(int.Parse(link));
-            mapData = mapSource.getData(mapName);
+            mapImg = GetMapImg(int.Parse(link));
+            mapData = mapSource.getData(mapImg);
         }
         float monsterRate = 0;
         var mobRate = infoData?.getChildByPath("mobRate");
@@ -421,7 +424,7 @@ public class MapFactory
         return myReactor;
     }
 
-    private static string getMapName(int mapid)
+    private static string GetMapImg(int mapid)
     {
         string mapName = StringUtil.getLeftPaddedStr(mapid.ToString(), '0', 9);
         StringBuilder builder = new StringBuilder("Map/Map");
@@ -434,70 +437,82 @@ public class MapFactory
         return mapName;
     }
 
+    public static MapName? FindMapStringName(int mapId)
+    {
+        foreach (var mapleland in MapleLand.AllLands)
+        {
+            var imgPath = $"{mapleland}/{mapId}";
+            var node = nameData.getChildByPath(imgPath);
+            if (node != null)
+                return new MapName(DataTool.getString("streetName", node) ?? "", DataTool.getString("mapName", node) ?? "");
+        }
+        return null;
+    }
+
     private static string getMapStringName(int mapid)
     {
         StringBuilder builder = new StringBuilder();
         if (mapid < 100000000)
         {
-            builder.Append("maple");
+            builder.Append(MapleLand.Maple);
         }
         else if (mapid >= 100000000 && mapid < MapId.ORBIS)
         {
-            builder.Append("victoria");
+            builder.Append(MapleLand.Victoria);
         }
         else if (mapid >= MapId.ORBIS && mapid < MapId.ELLIN_FOREST)
         {
-            builder.Append("ossyria");
+            builder.Append(MapleLand.Ossyria);
         }
         else if (mapid >= MapId.ELLIN_FOREST && mapid < 400000000)
         {
-            builder.Append("elin");
+            builder.Append(MapleLand.Elin);
         }
         else if (mapid >= MapId.SINGAPORE && mapid < 560000000)
         {
-            builder.Append("singapore");
+            builder.Append(MapleLand.Singapore);
         }
         else if (mapid >= MapId.NEW_LEAF_CITY && mapid < 620000000)
         {
-            builder.Append("MasteriaGL");
+            builder.Append(MapleLand.MasteriaGL);
         }
         else if (mapid >= 677000000 && mapid < 677100000)
         {
-            builder.Append("Episode1GL");
+            builder.Append(MapleLand.Episode1GL);
         }
         else if (mapid >= 670000000 && mapid < 682000000)
         {
             if ((mapid >= 674030000 && mapid < 674040000) || (mapid >= 680100000 && mapid < 680200000))
             {
-                builder.Append("etc");
+                builder.Append(MapleLand.Etc);
             }
             else
             {
-                builder.Append("weddingGL");
+                builder.Append(MapleLand.WeddingGL);
             }
         }
         else if (mapid >= 682000000 && mapid < 683000000)
         {
-            builder.Append("HalloweenGL");
+            builder.Append(MapleLand.HalloweenGL);
         }
         else if (mapid >= 683000000 && mapid < 684000000)
         {
-            builder.Append("event");
+            builder.Append(MapleLand.Event);
         }
         else if (mapid >= MapId.MUSHROOM_SHRINE && mapid < 900000000)
         {
             if ((mapid >= 889100000 && mapid < 889200000))
             {
-                builder.Append("etc");
+                builder.Append(MapleLand.Etc);
             }
             else
             {
-                builder.Append("jp");
+                builder.Append(MapleLand.JP);
             }
         }
         else
         {
-            builder.Append("etc");
+            builder.Append(MapleLand.Etc);
         }
         builder.Append("/").Append(mapid);
         return builder.ToString();

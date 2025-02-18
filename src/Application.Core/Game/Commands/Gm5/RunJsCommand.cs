@@ -1,11 +1,10 @@
 using constants.id;
-using scripting.npc;
 
-namespace Application.Core.Game.Commands.Gm6
+namespace Application.Core.Game.Commands.Gm5
 {
     public class RunJsCommand : ParamsCommandBase
     {
-        public RunJsCommand() : base(["<jsname>"], 6, "runjs")
+        public RunJsCommand() : base(["<jsname>"], 5, "runjs")
         {
             Description = "调用Npc脚本";
         }
