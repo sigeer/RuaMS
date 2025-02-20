@@ -34,9 +34,8 @@ public class MobSkillFactory
 
     public static MobSkill? GetMobSkill(int type, int level)
     {
-        if (Enum.TryParse<MobSkillType>(type.ToString(), out var t))
-
-            return getMobSkill(t, level);
+        if (Enum.IsDefined(typeof(MobSkillType), type))
+            return getMobSkill((MobSkillType)type, level);
         return null;
     }
 
