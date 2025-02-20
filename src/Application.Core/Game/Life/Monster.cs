@@ -1761,7 +1761,7 @@ public class Monster : AbstractLifeObject
         return stats.hasSkill(skillId, level);
     }
 
-    public bool canUseSkill(MobSkill toUse, bool apply)
+    public bool canUseSkill(MobSkill? toUse, bool apply)
     {
         if (toUse == null || isBuffed(MonsterStatus.SEAL_SKILL))
         {

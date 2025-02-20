@@ -32,6 +32,14 @@ public class MobSkillFactory
     private static Data skillRoot = dataSource.getData("MobSkill.img");
     private static ReaderWriterLockSlim mainLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
+    public static MobSkill? GetMobSkill(int type, int level)
+    {
+        if (Enum.TryParse<MobSkillType>(type.ToString(), out var t))
+
+            return getMobSkill(t, level);
+        return null;
+    }
+
     public static MobSkill getMobSkillOrThrow(MobSkillType type, int level)
     {
         return getMobSkill(type, level) ?? throw new BusinessResException($"No MobSkill exists for type {type}, level {level}"); ;

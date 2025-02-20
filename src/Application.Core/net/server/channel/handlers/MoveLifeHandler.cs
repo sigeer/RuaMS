@@ -87,10 +87,9 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
 
             if (monster.hasSkill(useSkillId, useSkillLevel))
             {
-                MobSkillType mobSkillType = MobSkillTypeUtils.from(useSkillId);
-                MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(mobSkillType, useSkillLevel);
+                var toUse = MobSkillFactory.GetMobSkill(useSkillId, useSkillLevel);
 
-                if (monster.canUseSkill(toUse, true))
+                if (toUse != null && monster.canUseSkill(toUse, true))
                 {
                     int animationTime = MonsterInformationProvider.getInstance().getMobSkillAnimationTime(toUse);
                     if (animationTime > 0 && toUse.getType() != MobSkillType.BANISH)
@@ -123,10 +122,10 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         int mobMp = monster.getMp();
         if (nextMovementCouldBeSkill && monster.hasAnySkill())
         {
-            var skillToUse = monster.getRandomSkill();
+            var skillToUse = monster.getRandomSkill()!;
             nextSkillId = skillToUse.type.getId();
             nextSkillLevel = skillToUse.level;
-            nextUse = MobSkillFactory.getMobSkillOrThrow(skillToUse.type, skillToUse.level);
+            nextUse = MobSkillFactory.getMobSkill(skillToUse.type, skillToUse.level);
 
             if (!(nextUse != null && monster.canUseSkill(nextUse, false) && nextUse.getHP() >= (int)(((float)monster.getHp() / monster.getMaxHp()) * 100) && mobMp >= nextUse.getMpCon()))
             {
