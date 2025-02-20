@@ -1,4 +1,4 @@
-﻿using server.life;
+using server.life;
 
 namespace Application.Core.Game.Commands.Gm2;
 public class MobSkillCommand : CommandBase
@@ -19,8 +19,7 @@ public class MobSkillCommand : CommandBase
         if (!int.TryParse(paramsValue[0], out var skillId) || !int.TryParse(paramsValue[1], out var skillLevel))
             return;
 
-        var possibleType = MobSkillTypeUtils.from(skillId);
-        var possibleSkill = MobSkillFactory.getMobSkillOrThrow(possibleType, skillLevel);
+        var possibleSkill = MobSkillFactory.GetMobSkill(skillId, skillLevel);
         if (possibleSkill == null)
         {
             return;

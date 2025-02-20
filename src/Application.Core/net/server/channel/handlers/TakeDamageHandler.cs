@@ -164,8 +164,7 @@ public class TakeDamageHandler : AbstractPacketHandler
                 }
                 mpattack += attackInfo.getMpBurn();
 
-                var possibleType = MobSkillTypeUtils.from(attackInfo.getDiseaseSkill());
-                var possibleMobSkill = MobSkillFactory.getMobSkillOrThrow(possibleType, attackInfo.getDiseaseLevel());
+                var possibleMobSkill = MobSkillFactory.GetMobSkill(attackInfo.getDiseaseSkill(), attackInfo.getDiseaseLevel());
                 if (possibleMobSkill != null && damage > 0)
                 {
                     possibleMobSkill.applyEffect(chr, attacker, false, banishPlayers);
