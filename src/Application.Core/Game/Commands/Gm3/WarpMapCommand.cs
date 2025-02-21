@@ -35,7 +35,7 @@ public class WarpMapCommand : CommandBase
                     var messages = new StringBuilder("找到了这些相似项：");
                     foreach (var item in findResult.MatchedItems)
                     {
-                        messages.Append($"{item.Id} - {item.StreetName} - {item.Name}\r\n");
+                        messages.Append($"\r\n{item.Id} - {item.StreetName} - {item.Name}");
                     }
                     c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, messages.ToString());
                     return;

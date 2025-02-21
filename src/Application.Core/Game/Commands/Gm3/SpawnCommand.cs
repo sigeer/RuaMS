@@ -33,7 +33,7 @@ public class SpawnCommand : CommandBase
                 var messages = new StringBuilder("找到了这些相似项");
                 foreach (var item in list.MatchedItems)
                 {
-                    messages.Append($"{item.Id} - {item.Name}\r\n");
+                    messages.Append($"\r\n{item.Id} - {item.Name}");
                 }
                 c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, messages.ToString());
                 return;
