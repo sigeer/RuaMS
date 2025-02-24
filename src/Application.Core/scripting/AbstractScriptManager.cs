@@ -35,6 +35,7 @@ using net.server.channel;
 using server;
 using server.expeditions;
 using server.life;
+using System.Collections.Concurrent;
 using tools;
 using tools.packets;
 
@@ -46,6 +47,7 @@ namespace scripting;
 public abstract class AbstractScriptManager
 {
     protected ILogger log;
+    static ConcurrentDictionary<string, string> JsCache { get; set; } = new ConcurrentDictionary<string, string>();
 
     protected AbstractScriptManager()
     {
@@ -55,11 +57,17 @@ public abstract class AbstractScriptManager
     protected IEngine? getInvocableScriptEngine(string path)
     {
         path = GetFullScriptPath(path);
-        if (!File.Exists(path))
+        if (!JsCache.TryGetValue(path, out var jsContent))
         {
-            log.Fatal($"script {path} not found");
-            return null;
+            if (!File.Exists(path))
+            {
+                log.Fatal($"script {path} not found");
+                return null;
+            }
+            jsContent = File.ReadAllText(path);
+            JsCache[path] = jsContent;
         }
+
 
         var engine = new JintEngine();
         try
@@ -95,23 +103,8 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("Job", typeof(Job));
             engine.AddHostedType("InventoryType", typeof(InventoryType));
 
-            //engine.AddHostedType("ListExtensions", typeof(ListExtensions));
-            //engine.AddHostedType("Enumerable", typeof(Enumerable));
-            var toolJs = """
-                function pay(meso, failMsg) {
-                    if (cm.getMeso() < meso) {
-                        cm.sendNext(failMsg || "金币不足");
-                        cm.dispose();
-                        return false;
-                    }
-                    else {
-                        cm.gainMeso(-meso);
-                        return true;
-                    }
-                }
-                """;
-            engine.Evaluate(toolJs);
-            engine.Evaluate(File.ReadAllText(path));
+            engine.Evaluate(GetUtilJs());
+            engine.Evaluate(jsContent);
             return engine;
         }
         catch (Exception ex)
@@ -133,7 +126,10 @@ public abstract class AbstractScriptManager
         return engine;
     }
 
-
+    public static void ClearCache()
+    {
+        JsCache.Clear();
+    }
 
     protected void resetContext(string path, IClient c)
     {
@@ -149,6 +145,16 @@ public abstract class AbstractScriptManager
     {
         return type + "/" + (path.EndsWith(".js") ? path : (path + ".js"));
     }
+
+    private string GetUtilJs()
+    {
+        var jsFile = GetFullScriptPath("utils.js");
+        if (JsCache.TryGetValue(jsFile, out var jsContent))
+            return jsContent;
+
+        return JsCache[jsFile] = File.ReadAllText(jsFile);
+    }
+    protected string GetCommandScriptPath(string path) => GetScriptPath("commands", path);
     protected string GetNpcScriptPath(string path) => GetScriptPath("npc", path);
     protected string GetItemScriptPath(string path) => GetScriptPath("item", path);
     protected string GetQuestScriptPath(string path) => GetScriptPath("quest", path);

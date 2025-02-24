@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
 					   Matthias Butz <matze@odinms.de>
@@ -20,6 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// 天空之城 - 阿里安特
 var Orbis_btf;
 var Genie_to_Orbis;
 var Orbis_docked;
@@ -60,6 +61,7 @@ function scheduleNew() {
 
 function stopEntry() {
     em.setProperty("entry", "false");
+    em.setProperty("next", new Date().getTime() + em.getTransportationTime(beginTime - closeTime + rideTime));
 }
 
 function takeoff() {

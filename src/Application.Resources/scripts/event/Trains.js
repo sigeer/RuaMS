@@ -1,4 +1,5 @@
-﻿var Orbis_btf;
+// 天空之城 - 玩具城
+var Orbis_btf;
 var Train_to_Orbis;
 var Orbis_docked;
 var Ludibrium_btf;
@@ -41,6 +42,7 @@ function scheduleNew() {
 
 function stopEntry() {
     em.setProperty("entry", "false");
+    em.setProperty("next", new Date().getTime() + em.getTransportationTime(beginTime - closeTime + rideTime));
 }
 
 function takeoff() {

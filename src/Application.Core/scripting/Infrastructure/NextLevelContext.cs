@@ -85,7 +85,11 @@ namespace Application.Core.scripting.Infrastructure
                     if (mode == -1)
                         return false;
 
-                    nextLevelFunction = new NextLevelFunction("level" + (mode == 0 ? lastLevel : nextLevel));
+                    var nextOption = (mode == 0 ? lastLevel : nextLevel);
+                    if (string.IsNullOrWhiteSpace(nextOption) || nextOption.Equals("dispose", StringComparison.OrdinalIgnoreCase))
+                        return false;
+
+                    nextLevelFunction = new NextLevelFunction("level" + nextOption);
                     break;
                 default:
                     LogFactory.GetLogger("Script/NextLevel").Error("Unsupported level type: {LevelType}", LevelType);

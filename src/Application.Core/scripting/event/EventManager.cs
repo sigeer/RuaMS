@@ -269,9 +269,9 @@ public class EventManager
         setProperty(key, value);
     }
 
-    public void setProperty(string key, int value)
+    public void setProperty(string key, long value)
     {
-        props.AddOrUpdate(key, value.ToString());
+        setProperty(key, value.ToString());
     }
 
     public string? getProperty(string key)

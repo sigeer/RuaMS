@@ -1,4 +1,4 @@
-﻿// 渡轮相关地图变量
+// 渡轮相关地图变量
 var Orbis_btf; // 候船室<开往魔法密林>
 var Boat_to_Orbis; // 开往天空之城
 var Orbis_Boat_Cabin; // 船仓<开往天空之城>
@@ -60,6 +60,7 @@ function scheduleNew() {
 function stopentry() {
     // 关闭入口后清除船舱内的对象（例如箱子）
     em.setProperty("entry", "false");
+    em.setProperty("next", new Date().getTime() + em.getTransportationTime(beginTime - closeTime + rideTime));
     Orbis_Boat_Cabin.clearMapObjects();   // 清除船舱内的对象
     Ellinia_Boat_Cabin.clearMapObjects();
 }
