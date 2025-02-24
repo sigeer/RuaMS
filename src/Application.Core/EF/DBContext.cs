@@ -2402,7 +2402,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("int(11)")
                 .HasColumnName("characterid");
             entity.Property(e => e.Locationtype)
-                .HasColumnType("enum('FREE_MARKET','WORLDTOUR','FLORINA','INTRO','SUNDAY_MARKET','MIRROR','EVENT','BOSSPQ','HAPPYVILLE','DEVELOPER','MONSTER_CARNIVAL')")
+                .HasColumnType("enum('FREE_MARKET','WORLDTOUR','FLORINA','INTRO','SUNDAY_MARKET','MIRROR','EVENT','BOSSPQ','HAPPYVILLE','DEVELOPER','MONSTER_CARNIVAL','JAIL','CYGNUSINTRO')")
                 .HasColumnName("locationtype");
             entity.Property(e => e.Map)
                 .HasColumnType("int(11)")
