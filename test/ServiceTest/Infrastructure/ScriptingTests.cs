@@ -187,6 +187,30 @@ namespace ServiceTest.Infrastructure
             var d = _engine.CallFunction("CheckNumberBool", _testModel)?.ToString();
             Assert.That(d, Is.EqualTo("1")); 
         }
+
+
+        [Test]
+        public void PrototypeTest()
+        {
+            _engine.Evaluate("""
+                Date.prototype.formatDate = function () {
+                    var year = this.getFullYear();
+                    var month = (this.getMonth() + 1).toString().padStart(2, '0');
+                    var day = (this.getDate()).toString().padStart(2, '0');
+                    var hour = (this.getHours()).toString().padStart(2, '0');
+                    var minute = (this.getMinutes()).toString().padStart(2, '0');
+                    var second = (this.getSeconds()).toString().padStart(2, '0');
+
+                    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+                };
+
+                function getDt() {
+                    return new Date().formatDate();
+                }
+                """);
+            var d = _engine.CallFunction("getDt")?.ToString();
+            Assert.That(d, Is.EqualTo(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
+        }
     }
 
     public class ScriptTestCase

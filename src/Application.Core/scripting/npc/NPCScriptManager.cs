@@ -22,6 +22,7 @@
 
 
 using Application.Core.Scripting.Infrastructure;
+using Jint.Runtime;
 using tools;
 using static server.ItemInformationProvider;
 

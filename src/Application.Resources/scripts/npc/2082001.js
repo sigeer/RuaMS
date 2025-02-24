@@ -1,30 +1,33 @@
-﻿function start() {
-    if (cm.haveItem(4031045)) {
-        var em = cm.getEventManager("Cabin");
+// 神木林 -> 天空之城
+const ticket = 4031045;
+const targetMapId = 240000111;
+
+function start() {
+    if (cm.haveItem(ticket)) {
+        const em = cm.getEventManager("Cabin");
         if (em.getProperty("entry") == "true") {
-            cm.sendYesNo("你希望登上这班航班吗？");
+            cm.sendYesNoLevel("No", "Yes", `你希望登上这班航班吗？`);
         } else {
-            cm.sendOk("飞机还没有到达。请尽快回来。");
-            cm.dispose();
+            const next = new Date(+em.getProperty("next")).formatTime();
+            cm.sendOkLevel(`飞机还没有到达。请尽快回来。下一班将在 ${next} 抵达。`);
         }
     } else {
-        cm.sendOk("确保你有一张飞往奥比斯的机票。检查你的物品栏。");
-        cm.dispose();
+        cm.sendOkLevel(`确保你有一张飞往天空之城的机票。检查你的物品栏。`);
     }
 }
 
-function action(mode, type, selection) {
-    if (mode <= 0) {
-        cm.sendOk("好的，如果你改变主意，就跟我说话！");
-        cm.dispose();
-        return;
-    }
-    var em = cm.getEventManager("Cabin");
+function levelNo() {
+    cm.sendOkLevel("好的，如果你改变主意，就跟我说话！");
+}
+
+function levelYes() {
+    const em = cm.getEventManager("Cabin");
     if (em.getProperty("entry") == "true") {
-        cm.warp(240000111);
-        cm.gainItem(4031045, -1);
+        cm.warp(targetMapId);
+        cm.gainItem(ticket, -1);
+        cm.dispose();
     } else {
-        cm.sendOk("飞机还没有到达。请尽快回来。");
+        const next = new Date(+em.getProperty("next")).formatTime();
+        cm.sendOkLevel(`飞机还没有到达。请尽快回来。下一班将在 ${next} 抵达。`);
     }
-    cm.dispose();
 }

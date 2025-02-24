@@ -33,7 +33,9 @@ public enum SavedLocationType
     BOSSPQ,
     HAPPYVILLE,
     MONSTER_CARNIVAL,
-    DEVELOPER
+    DEVELOPER,
+    JAIL,
+    CYGNUSINTRO
 }
 
 public static class SavedLocationTypeUtils

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using server.maps;
 
 namespace Application.Core.Game.Players.PlayerProps
@@ -45,7 +45,7 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
-        public void AddOrUpdate(int index, SavedLocation? value)
+        private void AddOrUpdate(int index, SavedLocation? value)
         {
             _dataSource[index] = value;
         }

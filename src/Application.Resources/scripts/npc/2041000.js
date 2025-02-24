@@ -1,32 +1,34 @@
-﻿function start() {
-    if (cm.haveItem(4031045)) {
-        var em = cm.getEventManager("Trains");
+// 玩具城 -> 天空之城
+const ticket = 4031045;
+const target = "天空之城";
+const targetMapId = 220000111;
+
+function start() {
+    if (cm.haveItem(ticket)) {
+        const em = cm.getEventManager("Trains");
         if (em.getProperty("entry") == "true") {
-            cm.sendYesNo("你想去天空之城吗？");
+            cm.sendYesNoLevel("No", "Yes", `你想去${target}吗？`);
         } else {
-            cm.sendOk("飞往天空之城的火车已经启程，请耐心等待下一班。");
-            cm.dispose();
+            const next = new Date(+em.getProperty("next")).formatTime();
+            cm.sendOkLevel(`前往${target}的火车已经启程，请耐心等待下一班列车。下一班将在 ${next} 抵达。`);
         }
     } else {
-        cm.sendOk("确保你有一张飞往天空之城的车票才能乘坐这列火车。检查你的物品栏。");
-        cm.dispose();
+        cm.sendOkLevel(`确保你有一张前往${target}的车票才能乘坐这趟火车。检查你的背包。`);
     }
 }
 
-function action(mode, type, selection) {
-    if (mode <= 0) {
-        cm.sendOk("好的，如果你改变主意，就跟我说话！");
-        cm.dispose();
-        return;
-    }
+function levelNo() {
+    cm.sendOkLevel("好的，如果你改变主意，就跟我说话！");
+}
 
-    var em = cm.getEventManager("Trains");
+function levelYes() {
+    const em = cm.getEventManager("Trains");
     if (em.getProperty("entry") == "true") {
-        cm.warp(220000111);
-        cm.gainItem(4031045, -1);
+        cm.warp(targetMapId);
+        cm.gainItem(ticket, -1);
         cm.dispose();
     } else {
-        cm.sendOk("飞往天空之城的火车已经准备好了，下一班请耐心等候。");
-        cm.dispose();
+        const next = new Date(+em.getProperty("next")).formatTime();
+        cm.sendOkLevel(`前往${target}的火车已经启程，请耐心等候下一班列车。下一班将在 ${next} 抵达。`);
     }
 }

@@ -1311,10 +1311,20 @@ public class NPCConversationManager : AbstractPlayerInteraction
     /// <param name="nextLevel">下一步方法 function level{nextLevel}</param>
     /// <param name="text">对话内容</param>
     /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
-    public void sendNextLevel(string nextLevel, string text, byte speaker = 0)
+    public void sendNextLevel(string? nextLevel, string text, byte speaker = 0)
     {
         sendNext(text, speaker);
         NextLevelContext.OneOption(NextLevelType.SEND_NEXT, nextLevel);
+    }
+    /// <summary>
+    /// 只有下一步的对话
+    /// 对应sendNext
+    /// </summary>
+    /// <param name="text">对话内容</param>
+    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
+    public void sendNextLevel(string text, byte speaker = 0)
+    {
+        sendNextLevel(null, text, speaker);
     }
 
     /// <summary>
@@ -1346,7 +1356,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     /// <summary>
     /// 只有ok按钮的对话
-    /// 对应sendOk
+    /// 对应sendOk，OK后调用level{nextLevel}
     /// </summary>
     /// <param name="nextLevel">点击ok的下一步方法</param>
     /// <param name="text">对话内容</param>
@@ -1355,6 +1365,18 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         sendOk(text, speaker);
         NextLevelContext.OneOption(NextLevelType.SEND_OK, nextLevel);
+    }
+
+    /// <summary>
+    /// 只有ok按钮的对话
+    /// 对应sendOk，OK后直接结束，dispose
+    /// </summary>
+    /// <param name="text">对话内容</param>
+    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
+    public void sendOkLevel(string text, byte speaker = 0)
+    {
+        sendOk(text, speaker);
+        NextLevelContext.OneOption(NextLevelType.SEND_OK, null);
     }
 
     /**

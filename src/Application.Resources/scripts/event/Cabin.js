@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
 					   Matthias Butz <matze@odinms.de>
@@ -22,6 +22,7 @@
 
 /**
  -- Odin JavaScript --------------------------------------------------------------------------------
+ 天空之城 - 神木林
  Cabin between Orbis and Leafre
  -- By ---------------------------------------------------------------------------------------------
  Information
@@ -80,6 +81,7 @@ function scheduleNew() {
 
 function stopEntry() {
     em.setProperty("entry", "false");
+    em.setProperty("next", new Date().getTime() + em.getTransportationTime(beginTime - closeTime + rideTime));
 }
 
 function takeoff() {
