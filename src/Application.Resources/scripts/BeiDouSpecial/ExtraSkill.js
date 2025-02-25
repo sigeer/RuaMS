@@ -11,11 +11,12 @@ function start() {
 function levelStart() {
     let text = "额外技能选择\r\n\r\n";
     for (var i = 0; i < skillList.length; i++) {
-        text += `#L0# ${skillList[i].name} #l\r\n`;
+        text += `#L${i}# ${skillList[i].name} #l\r\n`;
     }
     cm.sendNextSelectLevel("SelectSkill", text);
 }
 
 function levelSelectSkill(idx) {
     cm.LearnExtraSkill(skillList[idx].id);
+    cm.dispose();
 }

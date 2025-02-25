@@ -240,10 +240,14 @@ public class NPCScriptManager : AbstractScriptManager
         string scriptFolder = (cm.isItemScript() ? "item" : "npc");
         if (cm.getScriptName() != null)
         {
+            if (scriptFolder == "npc")
+                resetContext(GetSpecialScriptPath(cm.getScriptName()!), c);
             resetContext(GetScriptPath(scriptFolder, cm.getScriptName()!), c);
         }
         else
         {
+            if (scriptFolder == "npc")
+                resetContext(GetSpecialScriptPath(cm.getNpc().ToString()), c);
             resetContext(GetScriptPath(scriptFolder, cm.getNpc().ToString()), c);
         }
 
