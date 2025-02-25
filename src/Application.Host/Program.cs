@@ -93,7 +93,7 @@ builder.Services.AddAuthentication(s =>
         ValidIssuer = "cosmic_dotnet",
 
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.SecretKey)),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.GetAuthCode())),
 
         ValidateAudience = false
     };
