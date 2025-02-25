@@ -1,4 +1,5 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
+using constants.skills;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -12,7 +13,24 @@ public class EmpowerMeCommand : CommandBase
     public override void Execute(IClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        int[] array = { 2311003, 2301004, 1301007, 4101004, 2001002, 1101007, 1005, 2301003, 5121009, 1111002, 4111001, 4111002, 4211003, 4211005, 1321000, 2321004, 3121002 };
+        int[] array = { 
+            Priest.HOLY_SYMBOL, 
+            Cleric.BLESS, 
+            Spearman.HYPER_BODY, 
+            Assassin.HASTE, 
+            Magician.MAGIC_GUARD, 
+            Fighter.POWER_GUARD, 
+            Beginner.ECHO_OF_HERO, 
+            Cleric.INVINCIBLE, 
+            Buccaneer.SPEED_INFUSION, 
+            Crusader.COMBO, 
+            Hermit.MESO_UP, 
+            Hermit.SHADOW_PARTNER, 
+            ChiefBandit.PICKPOCKET, 
+            ChiefBandit.MESO_GUARD, 
+            DarkKnight.MAPLE_WARRIOR, 
+            Bishop.INFINITY, 
+            Bowmaster.SHARP_EYES };
         foreach (int i in array)
         {
             var skill = SkillFactory.GetSkillTrust(i);

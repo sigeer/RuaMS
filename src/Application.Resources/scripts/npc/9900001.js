@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -54,6 +54,7 @@ function action(mode, type, selection) {
             text += "#L61#超级传送#l \t #L62#超级商店#l \t #L63#整容集合#l\r\n\r\n";
 			text += "#L64#UI查询#l \t #L65#一键删除道具#l \t #L66#一键刷道具#l\r\n\r\n";
 			text += "#L67#有状态脚本示例#l \t #L68#NextLevel脚本示例#l";
+            text += "#L69#添加技能#l\r\n";
         }
         cm.sendSimple(text);
     } else if (status === 1) {
@@ -108,6 +109,9 @@ function doSelect(selection) {
             break;
         case 68:
             openNpc("Example2")
+            break;
+        case 69:
+            openNpc("ExtraSkill")
             break;
         default:
             cm.sendOk("该功能暂不支持，敬请期待！");

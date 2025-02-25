@@ -113,7 +113,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error starting NPC script: {ScriptName}", npc);
+            log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", filename, npc);
             dispose(c);
         }
     }
@@ -136,13 +136,14 @@ public class NPCScriptManager : AbstractScriptManager
                 {
                     if (fileName != null)
                     {
-                        engine = getInvocableScriptEngine(GetNpcScriptPath(fileName), c);
+                        engine = getInvocableScriptEngine(GetNpcScriptPath(fileName), c) ?? getInvocableScriptEngine(GetSpecialScriptPath(fileName), c);
                     }
                 }
                 else
                 {
                     if (fileName != null)
-                    {     // thanks MiLin for drafting NPC-based item scripts
+                    {
+                        // thanks MiLin for drafting NPC-based item scripts
                         engine = getInvocableScriptEngine(GetItemScriptPath(fileName), c);
                     }
                 }
@@ -184,7 +185,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error starting NPC script: {ScriptName}", npc);
+            log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", fileName, npc);
             dispose(c);
 
             return false;
@@ -218,9 +219,10 @@ public class NPCScriptManager : AbstractScriptManager
             }
             catch (Exception t)
             {
-                if (getCM(c) != null)
+                var cm = getCM(c);
+                if (cm != null)
                 {
-                    log.Error(t, "Error performing NPC script action for npc: {ScriptName}", getCM(c)!.getNpc());
+                    log.Error(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", cm.getScriptName(), cm.getNpc());
                 }
                 dispose(c);
             }
@@ -238,11 +240,11 @@ public class NPCScriptManager : AbstractScriptManager
         string scriptFolder = (cm.isItemScript() ? "item" : "npc");
         if (cm.getScriptName() != null)
         {
-            resetContext(scriptFolder + "/" + cm.getScriptName() + ".js", c);
+            resetContext(GetScriptPath(scriptFolder, cm.getScriptName()!), c);
         }
         else
         {
-            resetContext(scriptFolder + "/" + cm.getNpc() + ".js", c);
+            resetContext(GetScriptPath(scriptFolder, cm.getNpc().ToString()), c);
         }
 
         c.OnlinedCharacter.flushDelayedUpdateQuests();

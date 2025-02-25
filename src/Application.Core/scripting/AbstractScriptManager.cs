@@ -143,7 +143,7 @@ public abstract class AbstractScriptManager
 
     protected string GetScriptPath(string type, string path)
     {
-        return type + "/" + (path.EndsWith(".js") ? path : (path + ".js"));
+        return Path.Combine(type, path.EndsWith(".js") ? path : (path + ".js"));
     }
 
     private string GetUtilJs()
@@ -154,7 +154,7 @@ public abstract class AbstractScriptManager
 
         return JsCache[jsFile] = File.ReadAllText(jsFile);
     }
-    protected string GetCommandScriptPath(string path) => GetScriptPath("commands", path);
+    protected string GetSpecialScriptPath(string path) => GetScriptPath("BeiDouSpecial", path);
     protected string GetNpcScriptPath(string path) => GetScriptPath("npc", path);
     protected string GetItemScriptPath(string path) => GetScriptPath("item", path);
     protected string GetQuestScriptPath(string path) => GetScriptPath("quest", path);

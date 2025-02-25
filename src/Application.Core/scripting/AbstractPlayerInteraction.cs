@@ -27,9 +27,11 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
+using Application.Shared.KeyMaps;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
+using client.keybind;
 using constants.game;
 using constants.id;
 using constants.inventory;
@@ -1392,5 +1394,13 @@ public class AbstractPlayerInteraction
     private void sendBlueNotice(IMap map, string message)
     {
         map.dropMessage(6, message);
+    }
+
+    public void LearnExtraSkill(int skillId)
+    {
+        var skill = SkillFactory.GetSkillTrust(skillId);
+        getPlayer().changeSkillLevel(skill, (sbyte)skill.getMaxLevel(), skill.getMaxLevel(), -1);
+        getPlayer().changeKeybinding((int)KeyCode.F12, new KeyBinding(KeyBindingType.Skill, skillId));
+        getPlayer().sendKeymap();
     }
 }

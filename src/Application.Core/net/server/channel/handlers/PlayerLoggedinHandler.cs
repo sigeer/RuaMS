@@ -23,6 +23,7 @@
 
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
+using Application.Shared.KeyMaps;
 using client;
 using client.inventory;
 using constants.game;
@@ -252,10 +253,10 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             player.sendMacros();
 
             // pot bindings being passed through other characters on the account detected thanks to Croosade dev team
-            var autohpPot = player.KeyMap.GetData(91);
+            var autohpPot = player.KeyMap.GetData((int)KeyCode.VirtualAutoPotionHP);
             player.sendPacket(PacketCreator.sendAutoHpPot(autohpPot != null ? autohpPot.getAction() : 0));
 
-            var autompPot = player.KeyMap.GetData(92);
+            var autompPot = player.KeyMap.GetData((int)KeyCode.VirtualAutoPotionMP);
             player.sendPacket(PacketCreator.sendAutoMpPot(autompPot != null ? autompPot.getAction() : 0));
 
             player.getMap().addPlayer(player);
