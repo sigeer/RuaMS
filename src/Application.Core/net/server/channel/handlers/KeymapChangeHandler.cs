@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Skills;
+using Application.Shared.KeyMaps;
 using client;
 using client.inventory;
 using client.keybind;
@@ -46,13 +47,16 @@ public class KeymapChangeHandler : AbstractPacketHandler
                     int type = p.readByte();
                     int action = p.readInt();
 
-                    if (type == 1)
+                    if (type == KeyBindingType.Skill)
                     {
                         var skill = SkillFactory.getSkill(action);
                         bool isBanndedSkill;
                         if (skill != null)
                         {
                             isBanndedSkill = GameConstants.bannedBindSkills(skill.getId());
+                            // 不能绑定的技能（一些玩法中临时获得的技能）
+                            // 非管理员能拥有的管理员技能
+                            // 非当前职业能拥有的技能
                             if (isBanndedSkill
                                 || (!c.OnlinedCharacter.isGM() && GameConstants.isGMSkills(skill.getId()))
                                 || (!GameConstants.isInJobTree(skill.getId(), c.OnlinedCharacter.getJob().getId()) && !c.OnlinedCharacter.isGM()))
@@ -74,24 +78,26 @@ public class KeymapChangeHandler : AbstractPacketHandler
                 }
             }
             else if (mode == 1)
-            { // Auto HP Potion
+            {
+                // Auto HP Potion
                 int itemID = p.readInt();
                 if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
                     c.disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
-                c.OnlinedCharacter.changeKeybinding(91, new KeyBinding(7, itemID));
+                c.OnlinedCharacter.changeKeybinding((int)KeyCode.VirtualAutoPotionHP, new KeyBinding(KeyBindingType.AutoPotion, itemID));
             }
             else if (mode == 2)
-            { // Auto MP Potion
+            {
+                // Auto MP Potion
                 int itemID = p.readInt();
                 if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
                     c.disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
-                c.OnlinedCharacter.changeKeybinding(92, new KeyBinding(7, itemID));
+                c.OnlinedCharacter.changeKeybinding((int)KeyCode.VirtualAutoPotionMP, new KeyBinding(KeyBindingType.AutoPotion, itemID));
             }
         }
     }

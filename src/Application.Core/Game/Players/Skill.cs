@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Players.PlayerProps;
+using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Event;
 using constants.game;
@@ -277,15 +277,16 @@ namespace Application.Core.Game.Players
                 List<PlayerCoolDownValueHolder> listcd = getAllCooldowns();
 
                 using var dbContext = new DBContext();
+                using var dbTrans = dbContext.Database.BeginTransaction();
                 if (listcd.Count > 0)
                 {
-                    dbContext.Cooldowns.Where(x => x.Charid == getId()).ExecuteDelete();
+                    dbContext.Cooldowns.Where(x => x.Charid == Id).ExecuteDelete();
                     dbContext.Cooldowns.AddRange(listcd.Select(x => new Cooldown(getId(), x.skillId, x.length, x.startTime)));
                 }
                 var listds = getAllDiseases();
                 if (listds.Count != 0)
                 {
-                    dbContext.Playerdiseases.Where(x => x.Charid == getId()).ExecuteDelete();
+                    dbContext.Playerdiseases.Where(x => x.Charid == Id).ExecuteDelete();
                     dbContext.Playerdiseases.AddRange(listds.Select(x =>
                     {
                         var ms = x.Value.MobSkill.getId();
@@ -293,6 +294,7 @@ namespace Application.Core.Game.Players
                     }));
                 }
                 dbContext.SaveChanges();
+                dbTrans.Commit();
             }
         }
 

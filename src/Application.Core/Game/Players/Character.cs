@@ -34,6 +34,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Core.scripting.Event;
+using Application.Shared.KeyMaps;
 using client;
 using client.autoban;
 using client.creator;
@@ -4706,7 +4707,7 @@ public partial class Player
         // autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
         if (hpchange < 0)
         {
-            KeyBinding? autohpPot = this.KeyMap.GetData(91);
+            KeyBinding? autohpPot = this.KeyMap.GetData((int)KeyCode.VirtualAutoPotionHP);
             if (autohpPot != null)
             {
                 int autohpItemid = autohpPot.getAction();
@@ -4725,7 +4726,7 @@ public partial class Player
 
         if (mpchange < 0)
         {
-            KeyBinding? autompPot = this.KeyMap.GetData(92);
+            KeyBinding? autompPot = this.KeyMap.GetData((int)KeyCode.VirtualAutoPotionMP);
             if (autompPot != null)
             {
                 int autompItemid = autompPot.getAction();
