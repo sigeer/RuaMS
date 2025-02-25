@@ -17,7 +17,7 @@ namespace Application.Host.Services
                 claims: [new Claim(ClaimTypes.NameIdentifier, "admin")],
                 notBefore: DateTime.Now,
                 expires: DateTime.Now.AddDays(1),
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.SecretKey)), SecurityAlgorithms.HmacSha256));
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.GetAuthCode())), SecurityAlgorithms.HmacSha256));
             var handler = new JwtSecurityTokenHandler();
             return handler.WriteToken(token);
         }
@@ -30,7 +30,6 @@ namespace Application.Host.Services
             return "error";
         }
 
-        public const string SecretKey = "C89CAFDA278A49BBA51220241122DD3C";
         public static string? AuthCode { get; set; }
         public static string GetAuthCode()
         {
