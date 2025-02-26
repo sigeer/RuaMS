@@ -259,12 +259,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public virtual void gainMeso(int gain)
     {
-        getPlayer().gainMeso(gain);
-    }
-
-    public virtual void gainMeso(double gain)
-    {
-        getPlayer().gainMeso((int)gain);
+        getPlayer().gainMeso(gain, inChat: true);
     }
 
     public virtual void gainExp(int gain)
