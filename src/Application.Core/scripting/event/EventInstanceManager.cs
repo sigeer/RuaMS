@@ -206,7 +206,7 @@ public class EventInstanceManager
         {
             foreach (IPlayer mc in players)
             {
-                mc.gainMeso((int)(gain * mc.getMesoRate()));
+                mc.gainMeso((int)(gain * mc.getMesoRate()), inChat: true);
             }
         }
         else
@@ -215,7 +215,7 @@ public class EventInstanceManager
             {
                 if (mc.getMapId() == mapId)
                 {
-                    mc.gainMeso((int)(gain * mc.getMesoRate()));
+                    mc.gainMeso((int)(gain * mc.getMesoRate()), inChat: true);
                 }
             }
         }

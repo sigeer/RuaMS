@@ -73,7 +73,7 @@ public class FamilySeparateHandler : AbstractPacketHandler
             c.sendPacket(PacketCreator.sendFamilyMessage(isSenior ? 81 : 80, cost));
             return;
         }
-        c.OnlinedCharacter.gainMeso(-cost);
+        c.OnlinedCharacter.gainMeso(-cost, inChat: true);
         int repCost = separateRepCost(forkOn);
         senior.gainReputation(-repCost, false);
         if (senior.getSenior() != null)
