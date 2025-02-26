@@ -190,12 +190,11 @@ public class NPCScriptManager : AbstractScriptManager
             }
             catch (Exception t)
             {
-                var cm = getCM(c);
-                if (cm != null)
+                if (c.NPCConversationManager != null)
                 {
-                    log.Error(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", cm.getScriptName(), cm.getNpc());
+                    log.Error(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.getScriptName(), c.NPCConversationManager.getNpc());
+                    c.NPCConversationManager.dispose();
                 }
-                c.NPCConversationManager?.dispose();
             }
         }
     }
@@ -224,11 +223,4 @@ public class NPCScriptManager : AbstractScriptManager
 
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
-
-
-    public NPCConversationManager? getCM(IClient c)
-    {
-        return c.NPCConversationManager;
-    }
-
 }

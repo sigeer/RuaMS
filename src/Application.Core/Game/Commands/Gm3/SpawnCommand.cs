@@ -1,5 +1,6 @@
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
+using Application.Shared;
 using constants.id;
 using server.life;
 using System.Text;
@@ -32,9 +33,10 @@ public class SpawnCommand : CommandBase
             else if (list.MatchedItems.Count > 0)
             {
                 var messages = new StringBuilder("找到了这些相似项：\r\n");
-                foreach (var item in list.MatchedItems)
+                for (int i = 0; i < list.MatchedItems.Count; i++)
                 {
-                    messages.Append($"\r\n{item.Id} - {item.Name}");
+                    var item = list.MatchedItems[i];
+                    messages.Append($"\r\n#L{i}# {item.Id} - {item.Name} #l");
                 }
                 c.NPCConversationManager?.dispose();
 

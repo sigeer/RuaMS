@@ -1,3 +1,4 @@
+using constants.id;
 using scripting.npc;
 
 namespace Application.Core.scripting.npc
@@ -17,7 +18,7 @@ namespace Application.Core.scripting.npc
         Action<TempConversation>? _onNo;
         TempConversationType _type;
 
-        public TempConversation(IClient c, int npc) : base(c, npc, null)
+        public TempConversation(IClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc, null)
         {
 
         }

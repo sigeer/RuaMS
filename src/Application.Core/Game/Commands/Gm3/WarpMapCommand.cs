@@ -36,9 +36,10 @@ public class WarpMapCommand : CommandBase
                 else if (findResult.MatchedItems.Count > 0)
                 {
                     var messages = new StringBuilder("找到了这些相似项：");
-                    foreach (var item in findResult.MatchedItems)
+                    for (int i = 0; i < findResult.MatchedItems.Count; i++)
                     {
-                        messages.Append($"\r\n{item.Id} - {item.StreetName} - {item.Name}");
+                        var item = findResult.MatchedItems[i];
+                        messages.Append($"\r\n#L{i}# {item.Id} - {item.StreetName} - {item.Name} #l");
                     }
 
                     c.NPCConversationManager?.dispose();
