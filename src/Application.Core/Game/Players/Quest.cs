@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Packets;
+using Application.Core.Game.Packets;
 using Application.Core.scripting.Event;
 using client;
 using constants.id;
@@ -242,7 +242,7 @@ namespace Application.Core.Game.Players
         {
             KeyValuePair<DelayedQuestUpdate, object[]> p = new(questUpdateType, paramsValue);
             var c = this.getClient();
-            if (c.getQM() != null || c.getCM() != null)
+            if (c.NPCConversationManager != null)
             {
                 lock (npcUpdateQuests)
                 {

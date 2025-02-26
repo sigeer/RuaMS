@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Scripting.Infrastructure
+namespace Application.Core.Scripting.Infrastructure
 {
     public interface IEngine : IDisposable
     {
@@ -7,5 +7,7 @@
         public object? CallFunction(string functionName, params object?[] paramsValue);
         public object Evaluate(string code);
         public object? GetValue(string variable);
+        public bool IsExisted(string variable);
+        public bool IsFunctionExisted(string functionName);
     }
 }

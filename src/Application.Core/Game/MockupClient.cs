@@ -25,6 +25,7 @@ namespace Application.Core.Game
 
         public int World { get; set; }
         public int Channel { get; set; }
+        public NPCConversationManager? NPCConversationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public MockupClient(int world, int channel)
         {

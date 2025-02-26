@@ -22,7 +22,6 @@
 
 
 using Application.Core.Scripting.Infrastructure;
-using Jint.Runtime;
 using tools;
 using static server.ItemInformationProvider;
 
@@ -35,7 +34,6 @@ public class NPCScriptManager : AbstractScriptManager
 {
     private static NPCScriptManager instance = new NPCScriptManager();
 
-    private Dictionary<IClient, NPCConversationManager> cms = new();
     readonly EngineStorate<IClient> _scripts = new EngineStorate<IClient>();
 
     public static NPCScriptManager getInstance()
@@ -83,38 +81,27 @@ public class NPCScriptManager : AbstractScriptManager
     {
         try
         {
-            NPCConversationManager cm = new NPCConversationManager(c, npc, chrs, true);
-            cm.dispose();
+            if (c.NPCConversationManager != null)
+                c.NPCConversationManager.dispose();
 
-            if (cms.ContainsKey(c))
-            {
-                return;
-            }
-            cms.AddOrUpdate(c, cm);
+            c.NPCConversationManager = new NPCConversationManager(c, npc, chrs, true);
             var engine = getInvocableScriptEngine(GetNpcScriptPath(filename), c);
 
             if (engine == null)
             {
                 c.OnlinedCharacter.dropMessage(1, "NPC " + npc + " is uncoded.");
-                cm.dispose();
+                c.NPCConversationManager.dispose();
                 return;
             }
-            engine.AddHostedObject("cm", cm);
+            engine.AddHostedObject("cm", c.NPCConversationManager);
             _scripts[c] = engine;
-            try
-            {
-                engine.CallFunction("start", chrs);
-            }
-            catch (Exception nsme)
-            {
-                log.Error(nsme.ToString());
-            }
 
+            engine.CallFunction("start", chrs);
         }
         catch (Exception e)
         {
             log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", filename, npc);
-            dispose(c);
+            c.NPCConversationManager?.dispose();
         }
     }
 
@@ -122,15 +109,12 @@ public class NPCScriptManager : AbstractScriptManager
     {
         try
         {
-            if (cms.ContainsKey(c))
-            {
-                dispose(c);
-            }
+            if (c.NPCConversationManager != null)
+                c.NPCConversationManager.dispose();
 
             if (c.canClickNPC())
             {
-                NPCConversationManager cm = new NPCConversationManager(c, npc, oid, fileName, itemScript);
-                cms.AddOrUpdate(c, cm);
+                c.NPCConversationManager = new NPCConversationManager(c, npc, oid, fileName, itemScript);
                 IEngine? engine = null;
                 if (!itemScript)
                 {
@@ -150,32 +134,19 @@ public class NPCScriptManager : AbstractScriptManager
                 if (engine == null)
                 {
                     engine = getInvocableScriptEngine(GetNpcScriptPath(npc.ToString()), c);
-                    cm.resetItemScript();
+                    c.NPCConversationManager.resetItemScript();
                 }
                 if (engine == null)
                 {
-                    dispose(c);
+                    c.NPCConversationManager.dispose();
                     return false;
                 }
-                engine.AddHostedObject(engineName, cm);
+                engine.AddHostedObject(engineName, c.NPCConversationManager);
 
                 _scripts[c] = engine;
                 c.setClickedNPC();
-                try
-                {
-                    engine.CallFunction("start");
-                }
-                catch (Exception)
-                {
-                    try
-                    {
-                        engine.CallFunction("start", chr);
-                    }
-                    catch (Exception nsma)
-                    {
-                        log.Error(nsma.ToString());
-                    }
-                }
+
+                engine.CallFunction("start", chr);
             }
             else
             {
@@ -186,7 +157,7 @@ public class NPCScriptManager : AbstractScriptManager
         catch (Exception e)
         {
             log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", fileName, npc);
-            dispose(c);
+            c.NPCConversationManager?.dispose();
 
             return false;
         }
@@ -201,7 +172,7 @@ public class NPCScriptManager : AbstractScriptManager
             {
                 c.setClickedNPC();
 
-                var nextLevelContext = c.getCM()?.NextLevelContext;
+                var nextLevelContext = c.NPCConversationManager?.NextLevelContext;
                 if (nextLevelContext?.LevelType != null)
                 {
                     if (nextLevelContext.TryGetInvokeFunction(c, mode, type, selection, out var function) && function != null)
@@ -210,7 +181,7 @@ public class NPCScriptManager : AbstractScriptManager
                     }
                     else
                     {
-                        dispose(c);
+                        c.NPCConversationManager?.dispose();
                         return;
                     }
                 }
@@ -224,7 +195,7 @@ public class NPCScriptManager : AbstractScriptManager
                 {
                     log.Error(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", cm.getScriptName(), cm.getNpc());
                 }
-                dispose(c);
+                c.NPCConversationManager?.dispose();
             }
         }
     }
@@ -234,7 +205,7 @@ public class NPCScriptManager : AbstractScriptManager
         IClient c = cm.getClient();
         c.OnlinedCharacter.setCS(false);
         c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
-        cms.Remove(c);
+        c.NPCConversationManager = null;
         _scripts.Remove(c);
 
         string scriptFolder = (cm.isItemScript() ? "item" : "npc");
@@ -254,18 +225,10 @@ public class NPCScriptManager : AbstractScriptManager
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 
-    public void dispose(IClient c)
-    {
-        var cm = cms.GetValueOrDefault(c);
-        if (cm != null)
-        {
-            cm.dispose();
-        }
-    }
 
     public NPCConversationManager? getCM(IClient c)
     {
-        return cms.GetValueOrDefault(c);
+        return c.NPCConversationManager;
     }
 
 }

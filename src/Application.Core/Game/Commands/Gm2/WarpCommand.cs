@@ -1,4 +1,5 @@
 using Application.Core.Managers;
+using Application.Core.scripting.npc;
 using constants.id;
 using server.maps;
 using System.Text;
@@ -27,12 +28,25 @@ public class WarpCommand : ParamsCommandBase
                 }
                 else if (findResult.MatchedItems.Count > 0)
                 {
-                    var messages = new StringBuilder("找到了这些相似项：");
-                    foreach (var item in findResult.MatchedItems)
+                    var messages = new StringBuilder("找到了这些相似项：\r\n");
+                    for (int i = 0; i < findResult.MatchedItems.Count; i++)
                     {
-                        messages.Append($"\r\n{item.Id} - {item.StreetName} - {item.Name}");
+                        var item = findResult.MatchedItems[i];
+                        messages.Append($"\r\n#L{i}# {item.Id} - {item.StreetName} - {item.Name} #l");
                     }
-                    c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, messages.ToString());
+                    c.NPCConversationManager?.dispose();
+
+                    var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
+                    tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
+                    {
+                        var mapItem = findResult.MatchedItems[idx];
+                        ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
+                        {
+                            WarpMapById(c, mapItem.Id);
+                            ctx.dispose();
+                        });
+                    });
+                    c.NPCConversationManager = tempConversation;
                     return;
                 }
                 else
@@ -42,36 +56,43 @@ public class WarpCommand : ParamsCommandBase
                 }
             }
 
-            var target = c.getChannelServer().getMapFactory().getMap(mapId);
-            if (target == null)
-            {
-                player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
-                return;
-            }
-
-            if (!player.isAlive())
-            {
-                player.dropMessage(1, "This command cannot be used when you're dead.");
-                return;
-            }
-
-            if (!player.isGM())
-            {
-                if (player.getEventInstance() != null || MiniDungeonInfo.isDungeonMap(player.getMapId()) || FieldLimit.CANNOTMIGRATE.check(player.getMap().getFieldLimit()))
-                {
-                    player.dropMessage(1, "This command cannot be used in this map.");
-                    return;
-                }
-            }
-
-            // expedition issue with this command detected thanks to Masterrulax
-            player.saveLocationOnWarp();
-            player.changeMap(target, target.getRandomPlayerSpawnpoint());
+            WarpMapById(c, mapId);
         }
         catch (Exception ex)
         {
             log.Warning(ex.ToString());
             player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
         }
+    }
+
+    private void WarpMapById(IClient c, int mapId)
+    {
+        var player = c.OnlinedCharacter;
+
+        var target = c.getChannelServer().getMapFactory().getMap(mapId);
+        if (target == null)
+        {
+            player.yellowMessage("Map ID " + mapId + " is invalid.");
+            return;
+        }
+
+        if (!player.isAlive())
+        {
+            player.dropMessage(1, "This command cannot be used when you're dead.");
+            return;
+        }
+
+        if (!player.isGM())
+        {
+            if (player.getEventInstance() != null || MiniDungeonInfo.isDungeonMap(player.getMapId()) || FieldLimit.CANNOTMIGRATE.check(player.getMap().getFieldLimit()))
+            {
+                player.dropMessage(1, "This command cannot be used in this map.");
+                return;
+            }
+        }
+
+        // expedition issue with this command detected thanks to Masterrulax
+        player.saveLocationOnWarp();
+        player.changeMap(target, target.getRandomPlayerSpawnpoint());
     }
 }

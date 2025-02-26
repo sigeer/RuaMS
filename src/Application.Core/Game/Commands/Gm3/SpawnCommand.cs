@@ -1,4 +1,5 @@
 using Application.Core.Managers;
+using Application.Core.scripting.npc;
 using constants.id;
 using server.life;
 using System.Text;
@@ -30,12 +31,24 @@ public class SpawnCommand : CommandBase
             }
             else if (list.MatchedItems.Count > 0)
             {
-                var messages = new StringBuilder("找到了这些相似项");
+                var messages = new StringBuilder("找到了这些相似项：\r\n");
                 foreach (var item in list.MatchedItems)
                 {
                     messages.Append($"\r\n{item.Id} - {item.Name}");
                 }
-                c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, messages.ToString());
+                c.NPCConversationManager?.dispose();
+
+                var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
+                tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
+                {
+                    var item = list.MatchedItems[idx];
+                    ctx.RegisterYesOrNo($"你确定要召唤 {item.Id} - {item.Name}？", ctx =>
+                    {
+                        SpawnById(player, item.Id, paramsValue);
+                        ctx.dispose();
+                    });
+                });
+                c.NPCConversationManager = tempConversation;
                 return;
             }
             else
@@ -46,6 +59,11 @@ public class SpawnCommand : CommandBase
 
         }
 
+        SpawnById(player, mobId, paramsValue);
+    }
+
+    private void SpawnById(IPlayer player, int mobId, string[] paramsValue)
+    {
         int monsterCount = paramsValue.Length != 2 ? 1 : (int.TryParse(paramsValue[1], out var d) ? d : 1);
         if (monsterCount < 1)
         {

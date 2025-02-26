@@ -1,5 +1,8 @@
+using Application.Core.Game.Players;
 using Application.Core.Managers;
+using Application.Core.scripting.npc;
 using constants.id;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Collections.Generic;
 using System.Text;
 
@@ -37,7 +40,20 @@ public class WarpMapCommand : CommandBase
                     {
                         messages.Append($"\r\n{item.Id} - {item.StreetName} - {item.Name}");
                     }
-                    c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, messages.ToString());
+
+                    c.NPCConversationManager?.dispose();
+
+                    var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
+                    tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
+                    {
+                        var mapItem = findResult.MatchedItems[idx];
+                        ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
+                        {
+                            WarpMapById(c, mapItem.Id);
+                            ctx.dispose();
+                        });
+                    });
+                    c.NPCConversationManager = tempConversation;
                     return;
                 }
                 else
@@ -47,24 +63,30 @@ public class WarpMapCommand : CommandBase
                 }
             }
 
-            var target = c.getChannelServer().getMapFactory().getMap(mapId);
-            if (target == null)
-            {
-                player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
-                return;
-            }
-            var characters = player.getMap().getAllPlayers();
-
-            foreach (var victim in characters)
-            {
-                victim.saveLocationOnWarp();
-                victim.changeMap(target, target.getRandomPlayerSpawnpoint());
-            }
+            WarpMapById(c, mapId);
         }
         catch (Exception ex)
         {
             log.Warning(ex.ToString());
             player.yellowMessage("Map ID " + paramsValue[0] + " is invalid.");
+        }
+    }
+
+    private void WarpMapById(IClient c, int mapId)
+    {
+        var player = c.OnlinedCharacter;
+        var target = c.getChannelServer().getMapFactory().getMap(mapId);
+        if (target == null)
+        {
+            player.yellowMessage("Map ID " + mapId + " is invalid.");
+            return;
+        }
+        var characters = player.getMap().getAllPlayers();
+
+        foreach (var victim in characters)
+        {
+            victim.saveLocationOnWarp();
+            victim.changeMap(target, target.getRandomPlayerSpawnpoint());
         }
     }
 }

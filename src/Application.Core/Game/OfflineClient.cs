@@ -19,6 +19,8 @@ namespace Application.Core.Game
         public string ClientInfo => $"OfflineClient";
         public IPlayer? Character => null;
 
+        public NPCConversationManager? NPCConversationManager { get ; set; }
+
         public bool acceptToS()
         {
             throw new BusinessCharacterOfflineException();

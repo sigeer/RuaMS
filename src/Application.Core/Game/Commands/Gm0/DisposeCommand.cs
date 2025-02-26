@@ -1,4 +1,4 @@
-﻿using scripting.npc;
+using scripting.npc;
 using scripting.quest;
 using tools;
 
@@ -12,8 +12,7 @@ public class DisposeCommand : CommandBase
     }
     public override void Execute(IClient c, string[] paramValues)
     {
-        NPCScriptManager.getInstance().dispose(c);
-        QuestScriptManager.getInstance().dispose(c);
+        c.NPCConversationManager?.dispose();
         c.sendPacket(PacketCreator.enableActions());
         c.removeClickedNPC();
         c.OnlinedCharacter.message("You've been disposed.");
