@@ -74,7 +74,7 @@ namespace Application.Core.scripting.Infrastructure
                     if (mode == 0)
                         return false;
 
-                    nextLevelFunction = new NextLevelFunction("level" + nextLevel, c.getCM()!.getText());
+                    nextLevelFunction = new NextLevelFunction("level" + nextLevel, c.NPCConversationManager?.getText());
                     break;
                 case NextLevelType.SEND_LAST_NEXT:
                 case NextLevelType.SEND_NEXT:

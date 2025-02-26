@@ -1,4 +1,4 @@
-﻿using Jint;
+using Jint;
 using Jint.Runtime.Interop;
 using System.Diagnostics.CodeAnalysis;
 
@@ -62,6 +62,16 @@ namespace Application.Core.Scripting.Infrastructure
         public object? GetValue(string variable)
         {
             return _engine.GetValue(variable).ToObject();
+        }
+
+        public bool IsExisted(string variable)
+        {
+            return !_engine.Evaluate(variable).IsUndefined();
+        }
+
+        public bool IsFunctionExisted(string variable)
+        {
+            return _engine.Evaluate($"typeof {variable}") == "function";
         }
     }
 

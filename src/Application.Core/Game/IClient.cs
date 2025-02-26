@@ -46,6 +46,7 @@ namespace Application.Core.Game
         public string ClientInfo { get; }
         public int World { get; set; }
         public int Channel { get; set; }
+        public NPCConversationManager? NPCConversationManager { get; set; }
         bool acceptToS();
         void addVotePoints(int points);
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);
@@ -86,7 +87,6 @@ namespace Application.Core.Game
         IWorldChannel getChannelServer();
         IWorldChannel getChannelServer(byte channel);
         short getCharacterSlots();
-        NPCConversationManager? getCM();
         EventManager? getEventManager(string evt);
         sbyte getGender();
         int getGMLevel();
@@ -99,7 +99,6 @@ namespace Application.Core.Game
         string getPic();
         string getPin();
         IPlayer? getPlayer();
-        QuestActionManager? getQM();
         string getRemoteAddress();
         IEngine? getScriptEngine(string name);
         long getSessionId();

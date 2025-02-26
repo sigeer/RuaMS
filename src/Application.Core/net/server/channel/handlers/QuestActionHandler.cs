@@ -123,7 +123,8 @@ public class QuestActionHandler : AbstractPacketHandler
                 quest.forfeit(player);
                 break;
             case 4:
-                { // scripted start quest
+                {
+                    // scripted start quest
                     int npc = p.readInt();
                     if (!isNpcNearby(p, player, quest, npc))
                     {

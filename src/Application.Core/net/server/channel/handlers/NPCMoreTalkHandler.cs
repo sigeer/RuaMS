@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.scripting.npc;
 using net.packet;
 using scripting.npc;
 using scripting.quest;
@@ -41,31 +42,33 @@ public class NPCMoreTalkHandler : AbstractPacketHandler
             if (action != 0)
             {
                 string returnText = p.readString();
-                if (c.getQM() != null)
+                if (c.NPCConversationManager != null)
                 {
-                    c.getQM()!.setGetText(returnText);
-                    if (c.getQM()!.isStart())
+                    c.NPCConversationManager.setGetText(returnText);
+                    if (c.NPCConversationManager is QuestActionManager q)
                     {
-                        QuestScriptManager.getInstance().start(c, action, lastMsg, -1);
+                        if (q.isStart())
+                        {
+                            QuestScriptManager.getInstance().start(c, action, lastMsg, -1);
+                        }
+                        else
+                        {
+                            QuestScriptManager.getInstance().end(c, action, lastMsg, -1);
+                        }
+                    }
+                    else if (c.NPCConversationManager is TempConversation temp)
+                    {
+                        temp.Handle(action, lastMsg, -1);
                     }
                     else
                     {
-                        QuestScriptManager.getInstance().end(c, action, lastMsg, -1);
+                        NPCScriptManager.getInstance().action(c, action, lastMsg, -1);
                     }
                 }
-                else
-                {
-                    c.getCM()!.setGetText(returnText);
-                    NPCScriptManager.getInstance().action(c, action, lastMsg, -1);
-                }
-            }
-            else if (c.getQM() != null)
-            {
-                c.getQM()!.dispose();
             }
             else
             {
-                c.getCM()!.dispose();
+                c.NPCConversationManager?.dispose();
             }
         }
         else
@@ -79,9 +82,9 @@ public class NPCMoreTalkHandler : AbstractPacketHandler
             {
                 selection = p.readUnsignedByte();
             }
-            if (c.getQM() != null)
+            if (c.NPCConversationManager is QuestActionManager q)
             {
-                if (c.getQM().isStart())
+                if (q.isStart())
                 {
                     QuestScriptManager.getInstance().start(c, action, lastMsg, selection);
                 }
@@ -90,7 +93,11 @@ public class NPCMoreTalkHandler : AbstractPacketHandler
                     QuestScriptManager.getInstance().end(c, action, lastMsg, selection);
                 }
             }
-            else if (c.getCM() != null)
+            else if (c.NPCConversationManager is TempConversation temp)
+            {
+                temp.Handle(action, lastMsg, selection);
+            }
+            else if (c.NPCConversationManager != null)
             {
                 NPCScriptManager.getInstance().action(c, action, lastMsg, selection);
             }

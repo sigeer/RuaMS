@@ -1,4 +1,4 @@
-﻿using constants.String;
+using constants.String;
 using net.server.coordinator.matchchecker;
 using scripting.npc;
 
@@ -12,7 +12,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
         }
         public override void onMatchCreated(IPlayer leader, HashSet<IPlayer> nonLeaderMatchPlayers, string message)
         {
-            NPCConversationManager cm = leader.getClient().getCM();
+            var cm = leader.getClient().NPCConversationManager;
             int npcid = cm.getNpc();
 
             var ldr = nonLeaderMatchPlayers.FirstOrDefault();
@@ -48,11 +48,11 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
 
             if (message == ("cpq1"))
             {
-                ldr.getClient().getCM()?.startCPQ(chr, ldr.getMapId() + 1);
+                ldr.getClient().NPCConversationManager?.startCPQ(chr, ldr.getMapId() + 1);
             }
             else
             {
-                ldr.getClient().getCM()?.startCPQ2(chr, ldr.getMapId() + 1);
+                ldr.getClient().NPCConversationManager?.startCPQ2(chr, ldr.getMapId() + 1);
             }
 
             ldr.getParty().setEnemy(chr.getParty());

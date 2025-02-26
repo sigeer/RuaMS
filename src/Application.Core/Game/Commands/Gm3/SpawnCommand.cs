@@ -1,4 +1,6 @@
 using Application.Core.Managers;
+using Application.Core.scripting.npc;
+using Application.Shared;
 using constants.id;
 using server.life;
 using System.Text;
@@ -30,12 +32,25 @@ public class SpawnCommand : CommandBase
             }
             else if (list.MatchedItems.Count > 0)
             {
-                var messages = new StringBuilder("找到了这些相似项");
-                foreach (var item in list.MatchedItems)
+                var messages = new StringBuilder("找到了这些相似项：\r\n");
+                for (int i = 0; i < list.MatchedItems.Count; i++)
                 {
-                    messages.Append($"\r\n{item.Id} - {item.Name}");
+                    var item = list.MatchedItems[i];
+                    messages.Append($"\r\n#L{i}# {item.Id} - {item.Name} #l");
                 }
-                c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, messages.ToString());
+                c.NPCConversationManager?.dispose();
+
+                var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
+                tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
+                {
+                    var item = list.MatchedItems[idx];
+                    ctx.RegisterYesOrNo($"你确定要召唤 {item.Id} - {item.Name}？", ctx =>
+                    {
+                        SpawnById(player, item.Id, paramsValue);
+                        ctx.dispose();
+                    });
+                });
+                c.NPCConversationManager = tempConversation;
                 return;
             }
             else
@@ -46,6 +61,11 @@ public class SpawnCommand : CommandBase
 
         }
 
+        SpawnById(player, mobId, paramsValue);
+    }
+
+    private void SpawnById(IPlayer player, int mobId, string[] paramsValue)
+    {
         int monsterCount = paramsValue.Length != 2 ? 1 : (int.TryParse(paramsValue[1], out var d) ? d : 1);
         if (monsterCount < 1)
         {

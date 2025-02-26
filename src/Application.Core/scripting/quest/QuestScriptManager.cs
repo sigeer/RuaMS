@@ -24,6 +24,7 @@
 using Application.Core.Scripting.Infrastructure;
 using client;
 using constants.game;
+using Org.BouncyCastle.Bcpg.Sig;
 using server.quest;
 
 namespace scripting.quest;
@@ -37,7 +38,6 @@ public class QuestScriptManager : AbstractScriptManager
 {
     private static QuestScriptManager instance = new QuestScriptManager();
 
-    private Dictionary<IClient, QuestActionManager> qms = new();
     readonly EngineStorate<IClient> _scripts = new EngineStorate<IClient>();
 
     public static QuestScriptManager getInstance()
@@ -45,7 +45,7 @@ public class QuestScriptManager : AbstractScriptManager
         return instance;
     }
 
-    private IEngine getQuestScriptEngine(IClient c, short questid)
+    private IEngine? getQuestScriptEngine(IClient c, short questid)
     {
         var engine = getInvocableScriptEngine(GetQuestScriptPath(questid.ToString()), c);
         if (engine == null && GameConstants.isMedalQuest(questid))
@@ -53,7 +53,7 @@ public class QuestScriptManager : AbstractScriptManager
             engine = getInvocableScriptEngine(GetQuestScriptPath("medalQuest"), c);   // start generic medal quest
         }
 
-        return engine!;
+        return engine;
     }
 
     public void start(IClient c, short questid, int npc)
@@ -61,19 +61,17 @@ public class QuestScriptManager : AbstractScriptManager
         Quest quest = Quest.getInstance(questid);
         try
         {
-            if (qms.ContainsKey(c))
-            {
+            if (c.NPCConversationManager != null)
                 return;
-            }
 
             if (c.canClickNPC())
             {
-                QuestActionManager qm = new QuestActionManager(c, questid, npc, true);
-                qms.AddOrUpdate(c, qm);
+                c.NPCConversationManager = new QuestActionManager(c, questid, npc, true);
 
                 if (!quest.hasScriptRequirement(false))
-                {   // lack of scripted quest checks found thanks to Mali, Resinate
-                    qm.dispose();
+                {
+                    // lack of scripted quest checks found thanks to Mali, Resinate
+                    c.NPCConversationManager.dispose();
                     return;
                 }
 
@@ -81,11 +79,11 @@ public class QuestScriptManager : AbstractScriptManager
                 if (engine == null)
                 {
                     log.Warning("START Quest {QuestId} is uncoded.", questid);
-                    qm.dispose();
+                    c.NPCConversationManager.dispose();
                     return;
                 }
 
-                engine.AddHostedObject("qm", qm);
+                engine.AddHostedObject("qm", c.NPCConversationManager);
 
                 _scripts[c] = engine;
                 c.setClickedNPC();
@@ -95,7 +93,7 @@ public class QuestScriptManager : AbstractScriptManager
         catch (Exception t)
         {
             log.Error(t, "Error starting quest script: {QuestId}", questid);
-            dispose(c);
+            c.NPCConversationManager?.dispose();
         }
     }
 
@@ -112,7 +110,7 @@ public class QuestScriptManager : AbstractScriptManager
             catch (Exception e)
             {
                 log.Error(e, "Error starting quest script: {QuestId}", getQM(c)?.getQuest());
-                dispose(c);
+                c.NPCConversationManager?.dispose();
             }
         }
     }
@@ -122,24 +120,21 @@ public class QuestScriptManager : AbstractScriptManager
         Quest quest = Quest.getInstance(questid);
         if (!c.OnlinedCharacter.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED) || (!c.OnlinedCharacter.getMap().containsNPC(npc) && !quest.isAutoComplete()))
         {
-            dispose(c);
+            c.NPCConversationManager?.dispose();
             return;
         }
         try
         {
-            if (qms.ContainsKey(c))
-            {
+            if (c.NPCConversationManager != null)
                 return;
-            }
 
             if (c.canClickNPC())
             {
-                var qm = new QuestActionManager(c, questid, npc, false);
-                qms.AddOrUpdate(c, qm);
+                c.NPCConversationManager = new QuestActionManager(c, questid, npc, false);
 
                 if (!quest.hasScriptRequirement(true))
                 {
-                    qm.dispose();
+                    c.NPCConversationManager.dispose();
                     return;
                 }
 
@@ -147,11 +142,11 @@ public class QuestScriptManager : AbstractScriptManager
                 if (engine == null)
                 {
                     log.Warning("END Quest {QuestId} is uncoded.", questid);
-                    qm.dispose();
+                    c.NPCConversationManager.dispose();
                     return;
                 }
 
-                engine.AddHostedObject("qm", qm);
+                engine.AddHostedObject("qm", c.NPCConversationManager);
 
                 _scripts[c] = engine;
                 c.setClickedNPC();
@@ -161,7 +156,7 @@ public class QuestScriptManager : AbstractScriptManager
         catch (Exception t)
         {
             log.Error(t, "Error starting quest script: {QuestId}", questid);
-            dispose(c);
+            c.NPCConversationManager?.dispose();
         }
     }
 
@@ -178,7 +173,7 @@ public class QuestScriptManager : AbstractScriptManager
             catch (Exception e)
             {
                 log.Error(e, "Error ending quest script: {QuestId}", getQM(c)?.getQuest());
-                dispose(c);
+                c.NPCConversationManager?.dispose();
             }
         }
     }
@@ -187,24 +182,23 @@ public class QuestScriptManager : AbstractScriptManager
     {
         try
         {
-            var qm = new QuestActionManager(c, questid, npc, true);
-            if (qms.ContainsKey(c))
+            if (c.NPCConversationManager != null)
             {
                 return;
             }
             if (c.canClickNPC())
             {
-                qms.AddOrUpdate(c, qm);
+                c.NPCConversationManager = new QuestActionManager(c, questid, npc, true);
 
                 var engine = getQuestScriptEngine(c, questid);
                 if (engine == null)
                 {
-                    //FilePrinter.printError(FilePrinter.QUEST_UNCODED, "RAISE Quest " + questid + " is uncoded.");
-                    qm.dispose();
+                    log.Error("RAISE Quest " + questid + " is uncoded.");
+                    c.NPCConversationManager.dispose();
                     return;
                 }
 
-                engine.AddHostedObject("qm", qm);
+                engine.AddHostedObject("qm", c.NPCConversationManager);
 
                 _scripts[c] = engine;
                 c.setClickedNPC();
@@ -214,36 +208,21 @@ public class QuestScriptManager : AbstractScriptManager
         catch (Exception t)
         {
             log.Error(t, "Error during quest script raiseOpen for quest: {QuestId}", questid);
-            dispose(c);
+            c.NPCConversationManager?.dispose();
         }
     }
 
     public void dispose(QuestActionManager qm, IClient c)
     {
-        qms.Remove(c);
+        c.NPCConversationManager = null;
         _scripts.Remove(c);
         c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
         resetContext(GetQuestScriptPath(qm.getQuest().ToString()), c);
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 
-    public void dispose(IClient c)
-    {
-        var qm = qms.GetValueOrDefault(c);
-        if (qm != null)
-        {
-            qm.dispose();
-        }
-    }
-
     public QuestActionManager? getQM(IClient c)
     {
-        return qms.GetValueOrDefault(c);
-    }
-
-    public void reloadQuestScripts()
-    {
-        _scripts.Clear();
-        qms.Clear();
+        return c.NPCConversationManager as QuestActionManager;
     }
 }

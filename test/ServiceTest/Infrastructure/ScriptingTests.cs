@@ -188,6 +188,31 @@ namespace ServiceTest.Infrastructure
             Assert.That(d, Is.EqualTo("1")); 
         }
 
+        [Test]
+        public void CheckExsited()
+        {
+            _engine.Evaluate("""
+                let v1;
+                let v2 = 2;
+                var v3;
+                var v4 = 4;
+                function Method1() {
+                    return 1;
+                }
+                """);
+            Assert.That(_engine.IsExisted("Method1"), Is.EqualTo(true));
+
+            Assert.That(_engine.IsExisted("v1"), Is.EqualTo(false));
+            Assert.That(_engine.IsExisted("v2"), Is.EqualTo(true));
+
+            Assert.That(_engine.IsExisted("v3"), Is.EqualTo(false));
+            Assert.That(_engine.IsExisted("v4"), Is.EqualTo(true));
+
+            Assert.That(_engine.IsFunctionExisted("v2"), Is.EqualTo(false));
+            Assert.That(_engine.IsFunctionExisted("v4"), Is.EqualTo(false));
+            Assert.That(_engine.IsFunctionExisted("Method1"), Is.EqualTo(true));
+        }
+
 
         [Test]
         public void PrototypeTest()

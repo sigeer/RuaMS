@@ -62,7 +62,7 @@ public class NPCTalkHandler : AbstractPacketHandler
             }
             else
             {
-                if (c.getCM() != null || c.getQM() != null)
+                if (c.NPCConversationManager != null)
                 {
                     c.sendPacket(PacketCreator.enableActions());
                     return;

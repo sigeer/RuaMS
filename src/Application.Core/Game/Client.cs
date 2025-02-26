@@ -1224,15 +1224,7 @@ public class Client : ChannelHandlerAdapter, IClient
         _engines.Remove(name);
     }
 
-    public NPCConversationManager? getCM()
-    {
-        return NPCScriptManager.getInstance().getCM(this);
-    }
-
-    public QuestActionManager? getQM()
-    {
-        return QuestScriptManager.getInstance().getQM(this);
-    }
+    public NPCConversationManager? NPCConversationManager { get; set; }
 
     public bool acceptToS()
     {
@@ -1256,7 +1248,8 @@ public class Client : ChannelHandlerAdapter, IClient
     }
 
     public void checkChar(int accid)
-    {  /// issue with multiple chars from same account login found by shavit, resinate
+    {
+        // issue with multiple chars from same account login found by shavit, resinate
         if (!YamlConfig.config.server.USE_CHARACTER_ACCOUNT_CHECK)
         {
             return;
@@ -1615,8 +1608,7 @@ public class Client : ChannelHandlerAdapter, IClient
     public void closePlayerScriptInteractions()
     {
         this.removeClickedNPC();
-        NPCScriptManager.getInstance().dispose(this);
-        QuestScriptManager.getInstance().dispose(this);
+        NPCConversationManager?.dispose();
     }
 
     public bool attemptCsCoupon()
@@ -1668,13 +1660,10 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public void OpenNpc(int npcid, string? script = null)
     {
-        if (getCM() != null)
-        {
+        if (NPCConversationManager != null)
             return;
-        }
 
         removeClickedNPC();
-        NPCScriptManager.getInstance().dispose(this);
         NPCScriptManager.getInstance().start(this, npcid, script, Character);
     }
 }
