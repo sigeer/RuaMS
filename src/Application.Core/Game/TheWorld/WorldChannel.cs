@@ -38,6 +38,7 @@ using server;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
+using System.Diagnostics;
 using System.Text;
 using tools;
 
@@ -64,7 +65,6 @@ public class WorldChannel : IWorldChannel
     private HashSet<int> playersAway = new();
     private Dictionary<ExpeditionType, Expedition> expeditions = new();
     private Dictionary<int, MiniDungeon> dungeons = new();
-    private List<ExpeditionType> expedType = new();
     private HashSet<IMap> ownedMaps = new();
     private Event @event;
     private HashSet<int> usedMC = new();
@@ -103,7 +103,7 @@ public class WorldChannel : IWorldChannel
         this.Port = world.Configs.StartPort + (this.channel - 1);
         this.ip = YamlConfig.config.server.HOST + ":" + Port;
         log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
-        expedType.AddRange(Arrays.asList(ExpeditionType.values<ExpeditionType>()));
+
         setServerMessage(WorldModel.ServerMessage);
         try
         {
@@ -119,7 +119,10 @@ public class WorldChannel : IWorldChannel
 
             services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
 
-            eventSM = new EventScriptManager(this, getEvents());
+            _ = Task.Run(() =>
+            {
+                eventSM = new EventScriptManager(this, getEvents());
+            });
         }
         catch (Exception e)
         {

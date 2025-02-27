@@ -4,6 +4,8 @@ public class ServerConfig
 {
     public string DB_CONNECTIONSTRING;
 
+    public bool ENABLE_OPENAPI;
+
     //Login Configuration
     public int WORLDS;
     public int WLDLIST_SIZE;

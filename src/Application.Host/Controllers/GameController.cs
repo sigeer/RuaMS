@@ -1,5 +1,7 @@
+using Application.Core.OpenApi;
 using Application.Host.Models;
 using Application.Host.Services;
+using Application.Shared.Events;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Host.Controllers
@@ -11,11 +13,14 @@ namespace Application.Host.Controllers
         readonly DropdataService _dropService;
         readonly DataService _dataService;
         readonly ServerService _serverService;
-        public GameController(DropdataService dropService, DataService dataService, ServerService serverService)
+        readonly ChannelService _channelService;
+
+        public GameController(DropdataService dropService, DataService dataService, ServerService serverService, ChannelService channelService)
         {
             _dropService = dropService;
             _dataService = dataService;
             _serverService = serverService;
+            _channelService = channelService;
         }
 
         [HttpPut]
@@ -87,6 +92,12 @@ namespace Application.Host.Controllers
         public List<WorldServerDto> GetWorldServerList()
         {
             return _serverService.GetWorldServerList();
+        }
+
+        [HttpGet]
+        public List<TravelScheduleItem> GetTravelSchedule()
+        {
+            return _channelService.GetTravelSchedule();
         }
     }
 }

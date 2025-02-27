@@ -1,4 +1,4 @@
-﻿using constants.id;
+using constants.id;
 using System.Reflection;
 
 namespace Application.Core.Game.Commands;
@@ -6,7 +6,7 @@ namespace Application.Core.Game.Commands;
 public class CommandExecutor
 {
     private ILogger log = LogFactory.GetLogger("Command");
-    private static char COMMAND_HEADING = '!';
+    private const char COMMAND_HEADING = '!';
 
     private Dictionary<string, CommandBase> registeredCommands = new();
 
