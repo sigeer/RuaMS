@@ -50,14 +50,20 @@ namespace Application.Core.scripting.npc
             if (_type == TempConversationType.Select)
             {
                 if (mode <= 0)
+                {
                     dispose();
+                    return;
+                }
 
                 _onSelect?.Invoke(selection, this);
             }
             else if (_type == TempConversationType.InputNumber)
             {
                 if (mode <= 0)
+                {
                     dispose();
+                    return;
+                }
 
                 _onInputNumber?.Invoke(selection, this);
             }
@@ -68,11 +74,15 @@ namespace Application.Core.scripting.npc
                 else if (mode == 0)
                     _onNo?.Invoke(this);
                 else
+                {
                     dispose();
+                    return;
+                }
             }
             else
             {
                 dispose();
+                return;
             }
         }
     }
