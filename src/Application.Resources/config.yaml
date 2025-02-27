@@ -2,6 +2,8 @@ server:
     #Database Configuration
     DB_CONNECTIONSTRING: "server=localhost;user id=root;password=aA123456;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
 
+    ENABLE_OPENAPI: true
+
     #Login Configuration
     WORLDS: 1                           #Initial number of worlds on the server.
     WLDLIST_SIZE: 21                    #Max possible worlds on the server.

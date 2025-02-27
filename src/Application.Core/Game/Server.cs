@@ -589,7 +589,6 @@ public class Server
 
         OpcodeConstants.generateOpcodeNames();
         CommandExecutor.getInstance();
-        ItemInformationProvider.getInstance();
 
         basedCached = true;
     }
@@ -627,7 +626,7 @@ public class Server
             applyAllWorldTransfers(dbContext);
             PlayerNPC.loadRunningRankData(dbContext);
 
-            await initializeTimelyTasks(channelDependencies);    // aggregated method for timely tasks thanks to lxconan
+            _ = initializeTimelyTasks(channelDependencies);    // aggregated method for timely tasks thanks to lxconan
 
             var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
             foreach (var worldConfig in worlds)
