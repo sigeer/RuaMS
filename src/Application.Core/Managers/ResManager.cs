@@ -1,4 +1,5 @@
 using Application.Shared;
+using server;
 
 namespace Application.Core.Managers
 {
@@ -55,6 +56,12 @@ namespace Application.Core.Managers
             }
 
             return new WzFindResult<WzFindMapResultItem>(list, name);
+        }
+
+        public static WzFindResult<WzFindResultItem> FindItemIdByName(string name)
+        {
+            var list = ItemInformationProvider.getInstance().getItemDataByName(name).Select(x => new WzFindResultItem(x.Id, x.Name)).ToList();
+            return new WzFindResult<WzFindResultItem>(list, name);
         }
     }
 }

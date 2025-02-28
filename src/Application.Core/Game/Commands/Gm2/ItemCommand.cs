@@ -1,7 +1,12 @@
-﻿using Application.Core.Managers;
+using Application.Core.Game.Players;
+using Application.Core.Managers;
+using Application.Core.scripting.npc;
+using Application.Shared;
 using client.inventory.manipulator;
+using constants.id;
 using constants.inventory;
 using server;
+using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -22,7 +27,46 @@ public class ItemCommand : CommandBase
             return;
         }
 
-        int itemId = int.Parse(paramsValue[0]);
+        if (!int.TryParse(paramsValue[0], out var itemId))
+        {
+            var findResult = ResManager.FindItemIdByName(paramsValue[0]);
+            if (findResult.BestMatch != null)
+                itemId = findResult.BestMatch.Id;
+            else if (findResult.MatchedItems.Count > 0)
+            {
+                var messages = new StringBuilder("找到了这些相似项：\r\n");
+                for (int i = 0; i < findResult.MatchedItems.Count; i++)
+                {
+                    var item = findResult.MatchedItems[i];
+                    messages.Append($"\r\n#L{i}# {item.Id} #t{item.Id}# - {item.Name} #l");
+                }
+                c.NPCConversationManager?.dispose();
+
+                var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
+                tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
+                {
+                    var item = findResult.MatchedItems[idx];
+                    ctx.RegisterYesOrNo($"选择 {item.Id} #t{item.Id}# - {item.Name}？", ctx =>
+                    {
+                        SendItem(c, item.Id, paramsValue);
+                        ctx.dispose();
+                    });
+                });
+                c.NPCConversationManager = tempConversation;
+                return;
+            }
+            else
+            {
+                player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
+                return;
+            }
+        }
+        SendItem(c, itemId, paramsValue);
+    }
+
+    private void SendItem(IClient c, int itemId, string[] paramsValue)
+    {
+        var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
         if (ii.getName(itemId) == null)
@@ -37,6 +81,7 @@ public class ItemCommand : CommandBase
             quantity = short.Parse(paramsValue[1]);
         }
 
+
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
             player.yellowMessage("You cannot create a cash item with this command.");
@@ -46,7 +91,8 @@ public class ItemCommand : CommandBase
         if (ItemConstants.isPet(itemId))
         {
             if (paramsValue.Length >= 2)
-            {   // thanks to istreety & TacoBell
+            {   
+                // thanks to istreety & TacoBell
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
                 long expiration = DateTimeOffset.Now.AddDays(days).ToUnixTimeMilliseconds();
