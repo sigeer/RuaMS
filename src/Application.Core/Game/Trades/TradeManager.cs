@@ -1,4 +1,4 @@
-﻿using client.inventory;
+using client.inventory;
 using net.server.coordinator.world;
 using server;
 using System.Text;
@@ -8,7 +8,7 @@ namespace Application.Core.Game.Trades
 {
     public class TradeManager
     {
-        private static ILogger log = LogFactory.GetLogger("Trade");
+        private static ILogger log = LogFactory.GetLogger(LogType.Trade);
         public static int GetFee(long meso)
         {
             long fee = 0;

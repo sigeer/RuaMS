@@ -47,7 +47,7 @@ public class Family
 
     public Family(int id, int world)
     {
-        log = LogFactory.GetLogger("Family");
+        log = LogFactory.GetLogger(LogType.Family);
         int newId = id;
         if (id == -1)
         {

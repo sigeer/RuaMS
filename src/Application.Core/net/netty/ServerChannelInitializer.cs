@@ -11,7 +11,6 @@ namespace net.netty;
 
 public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChannel>
 {
-    private static ILogger log = LogFactory.GetLogger("ServerChannelInitializer");
     private static int IDLE_TIME_SECONDS = 30;
 
     protected static AtomicLong sessionId = new AtomicLong(7777);
@@ -25,7 +24,7 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
         }
         catch (NullReferenceException npe)
         {
-            log.Warning(npe, "Unable to get remote address from netty Channel: {ChannelId}", channel);
+            Log.Logger.Warning(npe, "Unable to get remote address from netty Channel: {ChannelId}", channel);
         }
 
         return remoteAddress;

@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Gachapon;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
@@ -48,7 +47,6 @@ using tools;
 using tools.packets;
 using static server.partyquest.Pyramid;
 using static server.SkillbookInformationProvider;
-using static System.Net.Mime.MediaTypeNames;
 
 
 namespace scripting.npc;
@@ -58,7 +56,7 @@ namespace scripting.npc;
  */
 public class NPCConversationManager : AbstractPlayerInteraction
 {
-    private ILogger log = LogFactory.GetLogger("NPCConversationManager");
+    private ILogger log = LogFactory.GetLogger(LogType.Conversation);
 
     private int npc;
     private int npcOid;
@@ -435,8 +433,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
             : getNpc() == NpcId.GACHAPON_NLC ? 8 : 9];
         string map = c.getChannelServer().getMapFactory().getMap(mapId).getMapName();
 
-        LogFactory.GetLogger("Gachapon").Information(
-            "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.", 
+        LogFactory.GetLogger(LogType.Gachapon).Information(
+            "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.",
             getPlayer().getName(), ItemInformationProvider.getInstance().getName(item.ItemId), item.ItemId, map);
 
         if (item.Level > 0)

@@ -91,7 +91,7 @@ public class Monster : AbstractLifeObject
 
         maxHpPlusHeal.set(hp.get());
 
-        log = LogFactory.GetLogger($"Life/Monster/{new RangeNumberGenerator(id, 10000000)}");
+        log = LogFactory.GetLogger(LogType.Monster);
     }
 
     public Monster(Monster monster) : this(monster.getId(), monster.getStats())

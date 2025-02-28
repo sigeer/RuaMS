@@ -45,7 +45,7 @@ namespace Application.Core.Game.Life;
 // In summary: NPCs 9901910-9906599 and 9977777 are custom additions to HeavenMS that should be removed.
 public class PlayerNPC : AbstractMapObject
 {
-    static ILogger log = LogFactory.GetLogger("PlayerNPC");
+    ILogger log = LogFactory.GetLogger(LogType.PlayerNPC);
     private static Dictionary<Byte, List<int>> availablePlayerNpcScriptIds = new();
     private static AtomicInteger runningOverallRank = new AtomicInteger();
     private static List<AtomicInteger> runningWorldRank = new();
@@ -426,7 +426,7 @@ public class PlayerNPC : AbstractMapObject
 
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                log.Debug("GOT SID {ScriptId}, POS {Position}", scriptId, pos);
+                Log.Logger.Debug("GOT SID {ScriptId}, POS {Position}", scriptId, pos);
             }
 
             int worldId = chr.getWorld();

@@ -526,7 +526,7 @@ public class MapFactory
         }
         catch (Exception e)
         {
-            LogFactory.ResLogger.Error(e.ToString());
+            LogFactory.GetLogger(LogType.MapData).Error(e.ToString());
             return "";
         }
     }
@@ -539,7 +539,7 @@ public class MapFactory
         }
         catch (Exception e)
         {
-            LogFactory.ResLogger.Error(e.ToString());
+            LogFactory.GetLogger(LogType.MapData).Error(e.ToString());
             return "";
         }
     }

@@ -27,7 +27,7 @@ namespace server.quest.actions;
  */
 public abstract class AbstractQuestAction
 {
-    protected ILogger log = LogFactory.GetLogger("Quest/Action");
+    protected ILogger log;
     private QuestActionType type;
     protected int questID;
 
@@ -35,6 +35,7 @@ public abstract class AbstractQuestAction
     {
         this.type = action;
         this.questID = quest.getId();
+        log = LogFactory.GetLogger($"Quest/{quest.getId()}");
     }
 
     public abstract void run(IPlayer chr, int? extSelection);

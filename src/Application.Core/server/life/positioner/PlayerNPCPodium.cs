@@ -35,7 +35,7 @@ namespace server.life.positioner;
  */
 public class PlayerNPCPodium
 {
-    private static ILogger log = LogFactory.GetLogger("PlayerNPCPodium");
+    private static ILogger log = LogFactory.GetLogger(LogType.PlayerNPC);
 
     private static int getPlatformPosX(int platform)
     {

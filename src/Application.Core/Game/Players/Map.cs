@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
 using Application.Shared.WzEntity;
 using client.inventory;
@@ -430,12 +430,7 @@ namespace Application.Core.Game.Players
             {
                 nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds); // show underlevel info again after 1 minute
 
-                string medal = "";
-                Item? medalItem = mapOwner.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Medal);
-                if (medalItem != null)
-                {
-                    medal = "<" + ItemInformationProvider.getInstance().getName(medalItem.getItemId()) + "> ";
-                }
+                string medal = mapOwner.getMedalText();
 
                 List<string> strLines = new();
                 strLines.Add("");

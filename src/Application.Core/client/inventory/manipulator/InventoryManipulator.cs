@@ -37,7 +37,6 @@ namespace client.inventory.manipulator;
  */
 public class InventoryManipulator
 {
-    private static ILogger log = LogFactory.GetLogger("InventoryManipulator");
 
     public static bool addById(IClient c, int itemId, short quantity, string? owner = null, int petid = -1, short flag = 0, long expiration = -1)
     {
@@ -289,7 +288,7 @@ public class InventoryManipulator
         }
         else
         {
-            log.Warning("Tried to pickup Equip id {ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
+            Log.Logger.Warning("Tried to pickup Equip id {ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
             c.sendPacket(PacketCreator.getInventoryFull());
             c.sendPacket(PacketCreator.showItemUnavailable());
             return false;

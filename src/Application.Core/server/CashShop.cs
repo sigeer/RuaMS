@@ -272,7 +272,7 @@ public class CashShop
             }
             catch (Exception ex)
             {
-                LogFactory.ResLogger.Error(ex.ToString());
+                LogFactory.GetLogger(LogType.ItemData).Error(ex.ToString());
             }
         }
 

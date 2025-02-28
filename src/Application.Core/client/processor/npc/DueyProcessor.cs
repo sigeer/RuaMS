@@ -42,7 +42,7 @@ namespace client.processor.npc;
  */
 public class DueyProcessor
 {
-    private static ILogger log = LogFactory.GetLogger("DueyProcessor");
+    private static ILogger log = LogFactory.GetLogger(LogType.Duey);
 
     private static CharacterAccountIdPair getAccountCharacterIdFromCNAME(string name)
     {
@@ -495,7 +495,7 @@ public class DueyProcessor
         {
             var dayBefore30 = DateTimeOffset.Now.AddDays(-30);
             using var dbContext = new DBContext();
-            var toRemove = dbContext.Dueypackages.Where(x => x.TimeStamp < dayBefore30).Select(X => X.PackageId);
+            var toRemove = dbContext.Dueypackages.Where(x => x.TimeStamp < dayBefore30).Select(X => X.PackageId).ToList();
 
 
             foreach (int pid in toRemove)

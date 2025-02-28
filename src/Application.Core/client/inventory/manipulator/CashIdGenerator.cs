@@ -29,7 +29,6 @@ namespace client.inventory.manipulator;
  */
 public class CashIdGenerator
 {
-    private static ILogger log = LogFactory.GetLogger("CashIdGenerator");
     private static HashSet<int> existentCashids = new(10000);
     private static int runningCashid = 0;
 
@@ -72,7 +71,7 @@ public class CashIdGenerator
             }
             catch (Exception e)
             {
-                log.Warning(e, "Failed to reset overflowing cash ids");
+                Log.Logger.Warning(e, "Failed to reset overflowing cash ids");
             }
         }
     }

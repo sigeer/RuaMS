@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Relation;
+using Application.Core.Game.Relation;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.coordinator.matchchecker;
@@ -9,7 +9,7 @@ namespace Application.Core.Managers
 {
     public class GuildManager
     {
-        readonly static ILogger _log = LogFactory.GetLogger("Guild");
+        readonly static ILogger _log = LogFactory.GetLogger(LogType.Guild);
 
         public static bool CheckGuildName(string name)
         {

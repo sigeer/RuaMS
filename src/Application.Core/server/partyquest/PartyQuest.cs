@@ -30,7 +30,7 @@ namespace server.partyquest;
  */
 public abstract class PartyQuest
 {
-    protected static ILogger log = LogFactory.GetLogger("PartyQuest");
+    protected ILogger log;
 
     int channel, world;
     ITeam party;
@@ -53,6 +53,7 @@ public abstract class PartyQuest
                 }
             }
         }
+        log = LogFactory.GetLogger($"PartyQuest/{GetType().Name}");
     }
 
     public ITeam getParty()
@@ -112,7 +113,7 @@ public abstract class PartyQuest
             case "LudiPQLast":
                 return 800 * level / 5;
             default:
-                log.Warning("Unhandled PartyQuest: {PartyQuest}", PQ);
+                Log.Logger.Warning("Unhandled PartyQuest: {PartyQuest}", PQ);
                 return 0;
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands
+namespace Application.Core.Game.Commands
 {
     public abstract class CommandBase
     {
@@ -6,7 +6,7 @@
         public CommandBase(int level, params string[] syntax)
         {
             var commandType = GetType();
-            log = LogFactory.GetLogger($"Command/{commandType.Name}");
+            log = LogFactory.CommandLogger;
 
             Rank = level;
             AllSupportedCommand = syntax;
