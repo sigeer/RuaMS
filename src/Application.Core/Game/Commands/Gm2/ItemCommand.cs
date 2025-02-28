@@ -55,6 +55,11 @@ public class ItemCommand : CommandBase
                 c.NPCConversationManager = tempConversation;
                 return;
             }
+            else
+            {
+                player.yellowMessage("Item id '" + paramsValue[0] + "' does not exist.");
+                return;
+            }
         }
         SendItem(c, itemId, paramsValue);
     }
