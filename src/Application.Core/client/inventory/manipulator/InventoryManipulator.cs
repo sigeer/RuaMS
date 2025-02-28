@@ -851,7 +851,7 @@ public class InventoryManipulator
         if (chr.isGM() && chr.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
             chr.message("You cannot drop items at your GM level.");
-            log.Information("GM {CharacterName} tried to drop item id {ItemId}", chr.getName(), source.getItemId());
+            LogFactory.GM.Information("GM {CharacterName} tried to drop item id {ItemId}", chr.getName(), source.getItemId());
             return;
         }
 
