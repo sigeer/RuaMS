@@ -31,7 +31,7 @@ namespace net;
 
 public class PacketProcessor
 {
-    private static ILogger log = LogFactory.GetLogger("PacketProcessor");
+    private static ILogger log = LogFactory.GetLogger(LogType.Packet);
     private static Dictionary<string, PacketProcessor> instances = new();
 
     private static ChannelDependencies? channelDeps;

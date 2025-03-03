@@ -5,7 +5,7 @@ namespace Application.Core.Game.Commands;
 
 public class CommandExecutor
 {
-    private ILogger log = LogFactory.GetLogger("Command");
+    private ILogger log = LogFactory.CommandLogger;
     private const char COMMAND_HEADING = '!';
 
     private Dictionary<string, CommandBase> registeredCommands = new();

@@ -42,7 +42,7 @@ namespace server;
  */
 public class ItemInformationProvider
 {
-    private static ILogger log = LogFactory.GetLogger("ItemInformationProvider");
+    private static ILogger log = LogFactory.GetLogger(LogType.ItemData);
     private static ItemInformationProvider instance = new ItemInformationProvider();
 
     public static ItemInformationProvider getInstance()

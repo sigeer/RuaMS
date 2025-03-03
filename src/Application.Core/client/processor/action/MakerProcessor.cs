@@ -36,7 +36,7 @@ using static server.MakerItemFactory;
  */
 public class MakerProcessor
 {
-    private static ILogger log = LogFactory.GetLogger("MakerProcessor");
+    private static ILogger log = LogFactory.GetLogger(LogType.Maker);
     private static ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
     public static void makerAction(InPacket p, IClient c)

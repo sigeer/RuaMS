@@ -33,7 +33,7 @@ namespace server.life;
 
 public class LifeFactory
 {
-    private static ILogger log = LogFactory.GetLogger("LifeFactory");
+    private static ILogger log = LogFactory.GetLogger(LogType.LifeData);
     private static DataProvider data = DataProviderFactory.getDataProvider(WZFiles.MOB);
     private static DataProvider stringDataWZ = DataProviderFactory.getDataProvider(WZFiles.STRING);
     private static Data mobStringData = stringDataWZ.getData("Mob.img");

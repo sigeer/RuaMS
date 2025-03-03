@@ -6,8 +6,6 @@ namespace net.netty;
 
 public class ChannelServerInitializer : ServerChannelInitializer
 {
-    private static ILogger log = LogFactory.GetLogger("ServerChannelInitializer/Channel");
-
     private int world;
     private int channel;
 
@@ -20,7 +18,7 @@ public class ChannelServerInitializer : ServerChannelInitializer
     protected override void InitChannel(ISocketChannel socketChannel)
     {
         string clientIp = socketChannel.RemoteAddress.GetIPv4Address();
-        log.Debug("Client connecting to world {WorldId}, channel {ChannelId} from {ClientIP}", world, channel, clientIp);
+        Log.Logger.Debug("Client connecting to world {WorldId}, channel {ChannelId} from {ClientIP}", world, channel, clientIp);
 
         PacketProcessor packetProcessor = PacketProcessor.getChannelServerProcessor(world, channel);
         long clientSessionId = sessionId.getAndIncrement();

@@ -4,7 +4,6 @@ using Application.Core.Managers;
 using Application.Core.Scripting.Infrastructure;
 using client;
 using client.inventory;
-using constants.game;
 using constants.id;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
@@ -21,7 +20,6 @@ using net.server.world;
 using scripting;
 using scripting.Event;
 using scripting.npc;
-using scripting.quest;
 using server;
 using server.maps;
 using System.Collections.Concurrent;
@@ -34,8 +32,7 @@ namespace Application.Core.Game;
 
 public class Client : ChannelHandlerAdapter, IClient
 {
-    ILogger? _log;
-    ILogger log => _log ?? (_log = LogFactory.GetLogger($"Client/Session_{sessionId}"));
+    ILogger log;
     public const int LOGIN_NOTLOGGEDIN = 0;
     public const int LOGIN_SERVER_TRANSITION = 1;
     public const int LOGIN_LOGGEDIN = 2;
@@ -110,6 +107,8 @@ public class Client : ChannelHandlerAdapter, IClient
 
         World = world;
         Channel = channel;
+
+        log = LogFactory.GetLogger($"Client/{remoteAddress}");
 
         packetQueue = new ConcurrentQueue<Packet>();
         Task.Run(async () =>

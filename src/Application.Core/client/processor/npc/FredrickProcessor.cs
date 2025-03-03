@@ -40,7 +40,7 @@ namespace client.processor.npc;
  */
 public class FredrickProcessor
 {
-    private static ILogger log = LogFactory.GetLogger("Processor/FredrickProcessor");
+    private static ILogger log = LogFactory.GetLogger(LogType.Fredrick);
     private static int[] dailyReminders = new int[] { 2, 5, 10, 15, 30, 60, 90, int.MaxValue };
 
     private NoteService noteService;

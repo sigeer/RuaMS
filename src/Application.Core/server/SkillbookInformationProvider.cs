@@ -36,7 +36,7 @@ namespace server;
  */
 public class SkillbookInformationProvider
 {
-    private static ILogger log = LogFactory.ResLogger;
+    private static ILogger log = LogFactory.GetLogger(LogType.SkillData);
     private static volatile Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     public enum SkillBookEntry

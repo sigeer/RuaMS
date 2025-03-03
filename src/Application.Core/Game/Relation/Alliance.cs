@@ -56,7 +56,7 @@ public class Alliance : IAlliance
         Notice = string.Empty;
 
         Guilds = [];
-        log = LogFactory.GetLogger($"Alliance/{new RangeNumberGenerator(AllianceId, 1000)}/AllianceId_{AllianceId}");
+        log = LogFactory.GetLogger($"Alliance/{new RangeNumberGenerator(AllianceId, 1000)}");
     }
 
 

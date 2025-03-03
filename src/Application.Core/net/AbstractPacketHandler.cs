@@ -31,7 +31,7 @@ public abstract class AbstractPacketHandler : IPacketHandler
     protected ILogger log;
     public AbstractPacketHandler()
     {
-        log = LogFactory.GetLogger("packet/" + GetType().Name);
+        log = LogFactory.GetLogger(LogType.Packet);
     }
     public virtual bool ValidateState(IClient c)
     {

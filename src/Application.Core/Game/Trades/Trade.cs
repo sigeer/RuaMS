@@ -36,7 +36,7 @@ namespace Application.Core.Game.Trades;
  */
 public class Trade
 {
-    private ILogger log = LogFactory.GetLogger("Trade");
+    private ILogger log = LogFactory.GetLogger(LogType.Trade);
 
     public const int MaxItemCount = 9;
     public Trade? PartnerTrade { get; set; }

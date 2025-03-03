@@ -5,12 +5,10 @@ namespace net.netty;
 
 public class LoginServerInitializer : ServerChannelInitializer
 {
-    private ILogger log = LogFactory.GetLogger("ServerChannelInitializer/Login");
-
     protected override void InitChannel(ISocketChannel socketChannel)
     {
         string remoteAddress = getRemoteAddress(socketChannel);
-        log.Debug("Client connected to login server from {ClientIP} ", remoteAddress);
+        Log.Logger.Debug("Client connected to login server from {ClientIP} ", remoteAddress);
 
         PacketProcessor packetProcessor = PacketProcessor.getLoginServerProcessor();
         long clientSessionId = sessionId.getAndIncrement();

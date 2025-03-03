@@ -32,7 +32,7 @@ namespace server;
 
 
 /// <summary>
-/// NPC�̵ꣿ
+/// NPC商店？
 /// @author Matze
 /// </summary>
 public class Shop
@@ -68,7 +68,7 @@ public class Shop
         this.npcId = npcId;
         items = new();
 
-        log = LogFactory.GetLogger($"Shop/Shop_{id}/Npc_{npcId}");
+        log = LogFactory.GetLogger($"Shop/Shop_{id}_Npc_{npcId}");
     }
 
     private void addItem(ShopItem item)

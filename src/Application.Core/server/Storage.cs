@@ -47,7 +47,7 @@ public class Storage
 
     private Storage(int id, byte slots, int meso)
     {
-        log = LogFactory.GetLogger("Storage");
+        log = LogFactory.GetLogger(LogType.Storage);
         this.id = id;
         this.slots = slots;
         this.meso = meso;

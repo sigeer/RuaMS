@@ -22,6 +22,7 @@
 
 
 using client;
+using Serilog;
 
 namespace server.quest.requirements;
 
@@ -33,13 +34,14 @@ namespace server.quest.requirements;
  */
 public class MobRequirement : AbstractQuestRequirement
 {
-    private static ILogger log = LogFactory.GetLogger("MobRequirement");
+    private ILogger log;
     Dictionary<int, int> mobs = new();
     private int questID;
 
     public MobRequirement(Quest quest, Data data) : base(QuestRequirementType.MOB)
     {
         questID = quest.getId();
+        log = LogFactory.GetLogger($"Quest/{quest.getId()}");
         processData(data);
     }
 

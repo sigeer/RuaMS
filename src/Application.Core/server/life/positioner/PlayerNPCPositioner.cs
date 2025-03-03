@@ -31,7 +31,7 @@ namespace server.life.positioner;
  */
 public class PlayerNPCPositioner
 {
-    private static ILogger log = LogFactory.GetLogger("PlayerNPCPositioner");
+    private static ILogger log = LogFactory.GetLogger(LogType.PlayerNPC);
 
     private static bool isPlayerNpcNearby(List<Point> otherPos, Point searchPos, int xLimit, int yLimit)
     {

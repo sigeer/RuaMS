@@ -1,4 +1,4 @@
-﻿using server;
+using server;
 using System.Diagnostics;
 
 namespace Application.Core.Addon

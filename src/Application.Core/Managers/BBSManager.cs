@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.guild;
 
@@ -6,7 +6,7 @@ namespace Application.Core.Managers
 {
     public class BBSManager
     {
-        readonly static ILogger log = LogFactory.GetLogger("BBS");
+        readonly static ILogger log = LogFactory.GetLogger(LogType.BBS);
         public static void listBBSThreads(IClient c, int start)
         {
             try

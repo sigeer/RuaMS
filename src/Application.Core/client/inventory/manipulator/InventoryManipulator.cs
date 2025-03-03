@@ -37,7 +37,6 @@ namespace client.inventory.manipulator;
  */
 public class InventoryManipulator
 {
-    private static ILogger log = LogFactory.GetLogger("InventoryManipulator");
 
     public static bool addById(IClient c, int itemId, short quantity, string? owner = null, int petid = -1, short flag = 0, long expiration = -1)
     {
@@ -289,7 +288,7 @@ public class InventoryManipulator
         }
         else
         {
-            log.Warning("Tried to pickup Equip id {ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
+            Log.Logger.Warning("Tried to pickup Equip id {ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
             c.sendPacket(PacketCreator.getInventoryFull());
             c.sendPacket(PacketCreator.showItemUnavailable());
             return false;
@@ -852,7 +851,7 @@ public class InventoryManipulator
         if (chr.isGM() && chr.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
             chr.message("You cannot drop items at your GM level.");
-            log.Information("GM {CharacterName} tried to drop item id {ItemId}", chr.getName(), source.getItemId());
+            LogFactory.GM.Information("GM {CharacterName} tried to drop item id {ItemId}", chr.getName(), source.getItemId());
             return;
         }
 

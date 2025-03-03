@@ -1,4 +1,4 @@
-﻿using Application.Utility;
+using Application.Utility;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Loggers
@@ -34,8 +34,8 @@ namespace Application.Core.Loggers
         {
             return GetLogger($"{type}/{type}_{new RangeNumberGenerator(accountId, RangeSteps.Accounts)}/{accountId}/{type}");
         }
-
-        public static ILogger ResLogger => GetLogger($"Res");
+        public static ILogger CommandLogger => GetLogger("Command");
+        public static ILogger GM => GetLogger("GM");
 
     }
 }

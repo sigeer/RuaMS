@@ -42,6 +42,7 @@ public class Quest
     private static Dictionary<short, int> medals = new();
 
     private static HashSet<short> exploitableQuests = new();
+    static ILogger _questDataLogger = LogFactory.GetLogger(LogType.QuestData);
 
     static Quest()
     {
@@ -88,7 +89,7 @@ public class Quest
         var checkData = questCheck.getChildByPath(id.ToString());
         if (checkData == null)
         {
-            LogFactory.ResLogger.Error("QuestInfo: Id = {QuestId} not found in Check.img", id);
+            _questDataLogger.Warning("QuestInfo: Id = {QuestId} not found in Check.img", id);
             return;
         }
 
@@ -111,7 +112,7 @@ public class Quest
         }
         else
         {
-            LogFactory.ResLogger.Error("QuestInfo: Id = {QuestId} not found in QuestInfo.img", id);
+            _questDataLogger.Warning("QuestInfo: Id = {QuestId} not found in QuestInfo.img", id);
         }
 
         var startReqData = checkData.getChildByPath("0");
@@ -736,7 +737,7 @@ public class Quest
     public static void loadAllQuests()
     {
         var allWZData = questInfo.getChildren();
-        LogFactory.ResLogger.Debug($"QuestCount: {allWZData.Count}");
+        _questDataLogger.Debug($"QuestCount: {allWZData.Count}");
 
         Dictionary<int, Quest> loadedQuests = new();
         Dictionary<int, int> loadedInfoNumberQuests = new();

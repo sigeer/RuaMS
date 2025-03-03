@@ -41,8 +41,6 @@ namespace server.life;
  */
 public class MobSkill : ISkill
 {
-    private static ILogger log = LogFactory.GetLogger("MobSkill");
-
     private MobSkillId id;
     private int mpCon;
     private int spawnEffect;
