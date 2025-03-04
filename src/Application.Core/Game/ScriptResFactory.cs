@@ -24,5 +24,10 @@ namespace Application.Core.Game
         {
             return new DirectoryInfo(ScriptDirName).GetFiles("*", SearchOption.AllDirectories).ToList();
         }
+
+        public static string[] GetEvents()
+        {
+            return Directory.GetFiles(GetScriptFullPath("event")).Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
+        }
     }
 }

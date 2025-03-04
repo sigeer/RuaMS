@@ -226,7 +226,7 @@ public class RingActionHandler : AbstractPacketHandler
                     {
                         InventoryManipulator.removeById(source.getClient(), InventoryType.USE, itemid, 1, false, false);
 
-                        int tempMarriageId = c.getWorldServer().createRelationship(source.getId(), target.getId());
+                        int tempMarriageId = c.getWorldServer().WeddingInstance.CreateRelationship(source.getId(), target.getId());
                         source.setPartnerId(target.getId()); // engage them (new marriageitemid, partnerid for both)
                         target.setPartnerId(source.getId());
 
@@ -295,20 +295,20 @@ public class RingActionHandler : AbstractPacketHandler
                 try
                 {
                     var wserv = c.getWorldServer();
-                    var registration = wserv.getMarriageQueuedLocation(marriageId);
+                    var registration = wserv.WeddingInstance.GetMarriageQueuedLocation(marriageId);
 
                     if (registration != null)
                     {
-                        if (wserv.addMarriageGuest(marriageId, guest))
+                        if (wserv.WeddingInstance.AddMarriageGuest(marriageId, guest))
                         {
                             bool cathedral = registration.Value.Key;
                             int newItemId = cathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
 
                             var cserv = c.getChannelServer();
-                            int resStatus = cserv.getWeddingReservationStatus(marriageId, cathedral);
+                            int resStatus = cserv.WeddingInstance.GetWeddingReservationStatus(marriageId, cathedral);
                             if (resStatus > 0)
                             {
-                                long expiration = cserv.getWeddingTicketExpireTime(resStatus + 1);
+                                long expiration = cserv.WeddingInstance.GetWeddingTicketExpireTime(resStatus + 1);
 
                                 string baseMessage = $"You've been invited to {groom} and {bride}'s Wedding!";
                                 var guestChr = c.getWorldServer().getPlayerStorage().getCharacterById(guest);
@@ -375,7 +375,7 @@ public class RingActionHandler : AbstractPacketHandler
                     }
 
                     // collision case: most soon-to-come wedding will show up
-                    var coupleId = c.getWorldServer().getWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
+                    var coupleId = c.getWorldServer().WeddingInstance.GetWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
                     if (coupleId != null)
                     {
                         int groomId = coupleId.HusbandId, brideId = coupleId.WifeId;

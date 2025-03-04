@@ -25,21 +25,15 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
-using Application.Core.Managers;
-using Application.Core.model;
-using Application.Core.scripting.Event;
-using constants.id;
+using Application.Core.Gameplay.ChannelEvents;
 using net.netty;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
 using scripting.Event;
-using server;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
-using System.Diagnostics;
-using System.Text;
 using tools;
 
 namespace net.server.channel;
@@ -56,7 +50,7 @@ public class WorldChannel : IWorldChannel
 
     public ChannelPlayerStorage Players { get; }
     private ChannelServer channelServer;
-    private string serverMessage;
+    private string serverMessage = "";
     private MapManager mapManager;
     private EventScriptManager eventSM;
     private ServicesManager<ChannelServices> services;
@@ -66,27 +60,13 @@ public class WorldChannel : IWorldChannel
     private Dictionary<ExpeditionType, Expedition> expeditions = new();
     private Dictionary<int, MiniDungeon> dungeons = new();
     private HashSet<IMap> ownedMaps = new();
-    private Event @event;
+    private Event? @event;
     private HashSet<int> usedMC = new();
 
-    private int usedDojo = 0;
-    private int[] dojoStage;
-    private long[] dojoFinishTime;
-    private ScheduledFuture?[] dojoTask;
-    private Dictionary<int, int> dojoParty = new();
+    public DojoInstance DojoInstance { get; }
 
-    private List<int> chapelReservationQueue = new();
-    private List<int> cathedralReservationQueue = new();
-    private ScheduledFuture? chapelReservationTask;
-    private ScheduledFuture? cathedralReservationTask;
+    public WeddingChannelInstance WeddingInstance { get; }
 
-    private int? ongoingChapel = null;
-    private bool? ongoingChapelType = null;
-    private HashSet<int>? ongoingChapelGuests = null;
-    private int? ongoingCathedral = null;
-    private bool? ongoingCathedralType = null;
-    private HashSet<int>? ongoingCathedralGuests = null;
-    private long ongoingStartTime;
 
     private object lockObj = new object();
     private ReaderWriterLockSlim merchLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -98,36 +78,24 @@ public class WorldChannel : IWorldChannel
         this.world = world.getId();
         this.channel = channel;
         Players = new ChannelPlayerStorage(this.world, channel);
-        this.ongoingStartTime = startTime + 10000;  // rude approach to a world's last channel boot time, placeholder for the 1st wedding reservation ever
+
         this.mapManager = new MapManager(null, this);
         this.Port = world.Configs.StartPort + (this.channel - 1);
         this.ip = YamlConfig.config.server.HOST + ":" + Port;
+
+        channelServer = new ChannelServer(Port, this.world, this.channel);
         log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
 
         setServerMessage(WorldModel.ServerMessage);
-        try
-        {
-            dojoStage = new int[20];
-            dojoFinishTime = new long[20];
-            dojoTask = new ScheduledFuture[20];
-            for (int i = 0; i < 20; i++)
-            {
-                dojoStage[i] = 0;
-                dojoFinishTime[i] = 0;
-                dojoTask[i] = null;
-            }
 
-            services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
+        DojoInstance = new DojoInstance(this);
+        WeddingInstance = new WeddingChannelInstance(this);
 
-            _ = Task.Run(() =>
-            {
-                eventSM = new EventScriptManager(this, getEvents());
-            });
-        }
-        catch (Exception e)
+        services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
+        _ = Task.Run(() =>
         {
-            log.Warning(e, "Error during channel initialization");
-        }
+            eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
+        });
     }
 
 
@@ -143,13 +111,12 @@ public class WorldChannel : IWorldChannel
 
             eventSM.cancel();
             eventSM.dispose();
-            eventSM = new EventScriptManager(this, getEvents());
+            eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
         }
     }
 
     public async Task StartServer()
     {
-        channelServer = new ChannelServer(Port, world, channel);
         await channelServer.Start();
 
         IsRunning = true;
@@ -202,14 +169,7 @@ public class WorldChannel : IWorldChannel
 
     private async Task closeChannelSchedules()
     {
-        for (int i = 0; i < dojoTask.Length; i++)
-        {
-            if (dojoTask[i] != null)
-            {
-                await dojoTask[i]!.CancelAsync(false);
-                dojoTask[i] = null;
-            }
-        }
+        await DojoInstance.DisposeAsync();
         await SchedulerManage.Scheduler.Clear();
 
         closeChannelServices();
@@ -307,12 +267,12 @@ public class WorldChannel : IWorldChannel
         return ip;
     }
 
-    public Event getEvent()
+    public Event? getEvent()
     {
         return @event;
     }
 
-    public void setEvent(Event evt)
+    public void setEvent(Event? evt)
     {
         this.@event = evt;
     }
@@ -489,11 +449,6 @@ public class WorldChannel : IWorldChannel
         WorldModel.resetDisabledServerMessages();
     }
 
-    private static string[] getEvents()
-    {
-        return Directory.GetFiles(ScriptResFactory.GetScriptFullPath("event")).Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
-    }
-
     public int getStoredVar(int key)
     {
         return storedVars.GetValueOrDefault(key);
@@ -504,14 +459,10 @@ public class WorldChannel : IWorldChannel
         this.storedVars.AddOrUpdate(key, val);
     }
 
+    #region dojo
     public int lookupPartyDojo(ITeam? party)
     {
-        if (party == null)
-        {
-            return -1;
-        }
-
-        return dojoParty.GetValueOrDefault(party.GetHashCode(), -1);
+        return DojoInstance.LookupPartyDojo(party);
     }
 
     public int ingressDojo(bool isPartyDojo, int fromStage)
@@ -521,243 +472,39 @@ public class WorldChannel : IWorldChannel
 
     public int ingressDojo(bool isPartyDojo, ITeam? party, int fromStage)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            int dojoList = this.usedDojo;
-            int range, slot = 0;
-
-            if (!isPartyDojo)
-            {
-                dojoList = dojoList >> 5;
-                range = 15;
-            }
-            else
-            {
-                range = 5;
-            }
-
-            while ((dojoList & 1) != 0)
-            {
-                dojoList = (dojoList >> 1);
-                slot++;
-            }
-
-            if (slot < range)
-            {
-                int slotMapid = (isPartyDojo ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE) + (100 * (fromStage + 1)) + slot;
-                int dojoSlot = getDojoSlot(slotMapid);
-
-                if (party != null)
-                {
-                    if (dojoParty.ContainsKey(party.GetHashCode()))
-                    {
-                        return -2;
-                    }
-                    dojoParty.Add(party.GetHashCode(), dojoSlot);
-                }
-
-                this.usedDojo |= (1 << dojoSlot);
-
-                this.resetDojo(slotMapid);
-                this.startDojoSchedule(slotMapid);
-                return slot;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-    }
-
-    private void freeDojoSlot(int slot, ITeam? party)
-    {
-        int mask = 0b11111111111111111111;
-        mask ^= (1 << slot);
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            usedDojo &= mask;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-
-        if (party != null)
-        {
-            if (dojoParty.Remove(party.GetHashCode(), out var _))
-            {
-                return;
-            }
-        }
-
-        if (dojoParty.ContainsValue(slot))
-        {    // strange case, no party there!
-            HashSet<KeyValuePair<int, int>> es = new(dojoParty);
-
-            foreach (var e in es)
-            {
-                if (e.Value == slot)
-                {
-                    dojoParty.Remove(e.Key);
-                    break;
-                }
-            }
-        }
-    }
-
-    private static int getDojoSlot(int dojoMapId)
-    {
-        return (dojoMapId % 100) + ((dojoMapId / 10000 == 92502) ? 5 : 0);
+        return DojoInstance.IngressDojo(isPartyDojo, party, fromStage);
     }
 
     public void resetDojoMap(int fromMapId)
     {
-        for (int i = 0; i < (((fromMapId / 100) % 100 <= 36) ? 5 : 2); i++)
-        {
-            this.getMapFactory().getMap(fromMapId + (100 * i)).resetMapObjects();
-        }
+        DojoInstance.ResetDojoMap(fromMapId);
     }
 
     public void resetDojo(int dojoMapId)
     {
-        resetDojo(dojoMapId, -1);
-    }
-
-    private void resetDojo(int dojoMapId, int thisStg)
-    {
-        int slot = getDojoSlot(dojoMapId);
-        this.dojoStage[slot] = thisStg;
+        DojoInstance.ResetDojo(dojoMapId, -1);
     }
 
     public void freeDojoSectionIfEmpty(int dojoMapId)
     {
-        int slot = getDojoSlot(dojoMapId);
-        int delta = (dojoMapId) % 100;
-        int stage = (dojoMapId / 100) % 100;
-        int dojoBaseMap = (dojoMapId >= MapId.DOJO_PARTY_BASE) ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE;
-
-        for (int i = 0; i < 5; i++)
-        { //only 32 stages, but 38 maps
-            if (stage + i > 38)
-            {
-                break;
-            }
-            var dojoMap = getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta);
-            if (dojoMap.getAllPlayers().Count > 0)
-            {
-                return;
-            }
-        }
-
-        freeDojoSlot(slot, null);
-    }
-
-    private void startDojoSchedule(int dojoMapId)
-    {
-        int slot = getDojoSlot(dojoMapId);
-        int stage = (dojoMapId / 100) % 100;
-        if (stage <= dojoStage[slot])
-        {
-            return;
-        }
-
-        long clockTime = (stage > 36 ? 15 : (stage / 6) + 5) * 60000;
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            if (this.dojoTask[slot] != null)
-            {
-                this.dojoTask[slot]!.cancel(false);
-            }
-            this.dojoTask[slot] = TimerManager.getInstance().schedule(() =>
-            {
-                int delta = (dojoMapId) % 100;
-                int dojoBaseMap = (slot < 5) ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE;
-                ITeam? party = null;
-
-                for (int i = 0; i < 5; i++)
-                { //only 32 stages, but 38 maps
-                    if (stage + i > 38)
-                    {
-                        break;
-                    }
-
-                    var dojoExit = getMapFactory().getMap(MapId.DOJO_EXIT);
-                    foreach (var chr in getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta).getAllPlayers())
-                    {
-                        if (MapId.isDojo(chr.getMap().getId()))
-                        {
-                            chr.changeMap(dojoExit);
-                        }
-                        party = chr.getParty();
-                    }
-                }
-
-                freeDojoSlot(slot, party);
-            }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-
-        dojoFinishTime[slot] = Server.getInstance().getCurrentTime() + clockTime;
+        DojoInstance.FreeDojoSectionIfEmpty(dojoMapId);
     }
 
     public void dismissDojoSchedule(int dojoMapId, ITeam party)
     {
-        int slot = getDojoSlot(dojoMapId);
-        int stage = (dojoMapId / 100) % 100;
-        if (stage <= dojoStage[slot])
-        {
-            return;
-        }
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            if (this.dojoTask[slot] != null)
-            {
-                this.dojoTask[slot]!.cancel(false);
-                this.dojoTask[slot] = null;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-
-        freeDojoSlot(slot, party);
+        DojoInstance.DismissDojoSchedule(dojoMapId, party);
     }
 
     public bool setDojoProgress(int dojoMapId)
     {
-        int slot = getDojoSlot(dojoMapId);
-        int dojoStg = (dojoMapId / 100) % 100;
-
-        if (this.dojoStage[slot] < dojoStg)
-        {
-            this.dojoStage[slot] = dojoStg;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return DojoInstance.SetDojoProgress(dojoMapId);
     }
 
     public long getDojoFinishTime(int dojoMapId)
     {
-        return dojoFinishTime[getDojoSlot(dojoMapId)];
+        return DojoInstance.GetDojoFinishTime(dojoMapId);
     }
+    #endregion
 
     public bool addMiniDungeon(int dungeonid)
     {
@@ -807,377 +554,48 @@ public class WorldChannel : IWorldChannel
         }
     }
 
-    public KeyValuePair<bool, KeyValuePair<int, HashSet<int>>>? getNextWeddingReservation(bool cathedral)
-    {
-        int? ret;
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            List<int> weddingReservationQueue = (cathedral ? cathedralReservationQueue : chapelReservationQueue);
-            if (weddingReservationQueue.Count == 0)
-            {
-                return null;
-            }
-
-            ret = weddingReservationQueue.remove(0);
-            if (ret == null)
-            {
-                return null;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-
-        var wserv = getWorldServer();
-
-        var coupleId = wserv.getMarriageQueuedCouple(ret.Value)!;
-        var typeGuests = wserv.removeMarriageQueued(ret.Value);
-
-        CoupleNamePair couple = new(CharacterManager.getNameById(coupleId.HusbandId), CharacterManager.getNameById(coupleId.WifeId));
-        wserv.dropMessage(6, couple.CharacterName1 + " and " + couple.CharacterName2 + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + channel + ".");
-
-        return new(typeGuests.Key, new(ret.Value, typeGuests.Value));
-    }
-
+    #region wedding
     public bool isWeddingReserved(int weddingId)
     {
-        var wserv = getWorldServer();
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            return wserv.isMarriageQueued(weddingId) || weddingId.Equals(ongoingCathedral) || weddingId.Equals(ongoingChapel);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return WeddingInstance.IsWeddingReserved(weddingId);
     }
 
     public int getWeddingReservationStatus(int? weddingId, bool cathedral)
     {
-        if (weddingId == null)
-        {
-            return -1;
-        }
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            if (cathedral)
-            {
-                if (weddingId.Equals(ongoingCathedral))
-                {
-                    return 0;
-                }
-
-                for (int i = 0; i < cathedralReservationQueue.Count; i++)
-                {
-                    if (weddingId == cathedralReservationQueue[i])
-                    {
-                        return i + 1;
-                    }
-                }
-            }
-            else
-            {
-                if (weddingId.Equals(ongoingChapel))
-                {
-                    return 0;
-                }
-
-                for (int i = 0; i < chapelReservationQueue.Count; i++)
-                {
-                    if (weddingId == chapelReservationQueue[i])
-                    {
-                        return i + 1;
-                    }
-                }
-            }
-
-            return -1;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return WeddingInstance.GetWeddingReservationStatus(weddingId, cathedral);
     }
 
     public int pushWeddingReservation(int? weddingId, bool cathedral, bool premium, int groomId, int brideId)
     {
-        if (weddingId == null || isWeddingReserved(weddingId.Value))
-        {
-            return -1;
-        }
-
-        var wserv = getWorldServer();
-        wserv.putMarriageQueued(weddingId.Value, cathedral, premium, groomId, brideId);
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            List<int> weddingReservationQueue = (cathedral ? cathedralReservationQueue : chapelReservationQueue);
-
-            int delay = YamlConfig.config.server.WEDDING_RESERVATION_DELAY - 1 - weddingReservationQueue.Count;
-            for (int i = 0; i < delay; i++)
-            {
-                weddingReservationQueue.Add(0);  // push empty slots to fill the waiting time
-            }
-
-            weddingReservationQueue.Add(weddingId.Value);
-            return weddingReservationQueue.Count;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return WeddingInstance.PushWeddingReservation(weddingId, cathedral, premium, groomId, brideId);
     }
 
     public bool isOngoingWeddingGuest(bool cathedral, int playerId)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            if (cathedral)
-            {
-                return ongoingCathedralGuests != null && ongoingCathedralGuests.Contains(playerId);
-            }
-            else
-            {
-                return ongoingChapelGuests != null && ongoingChapelGuests.Contains(playerId);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return WeddingInstance.IsOngoingWeddingGuest(cathedral, playerId);
     }
 
     public int getOngoingWedding(bool cathedral)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return (cathedral ? ongoingCathedral : ongoingChapel) ?? 0;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return WeddingInstance.GetOngoingWedding(cathedral);
     }
-
-    //public bool getOngoingWeddingType(bool cathedral)
-    //{
-    //    Monitor.Enter(lockObj);
-    //    try
-    //    {
-    //        return (cathedral ? ongoingCathedralType : ongoingChapelType) ?? false;
-    //    }
-    //    finally
-    //    {
-    //        Monitor.Exit(lockObj);
-    //    }
-    //}
 
     public void closeOngoingWedding(bool cathedral)
     {
-        Monitor.Enter(lockObj);
-        try
-        {
-            if (cathedral)
-            {
-                ongoingCathedral = null;
-                ongoingCathedralType = null;
-                ongoingCathedralGuests = null;
-            }
-            else
-            {
-                ongoingChapel = null;
-                ongoingChapelType = null;
-                ongoingChapelGuests = null;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        WeddingInstance.CloseOngoingWedding(cathedral);
     }
 
-    public void setOngoingWedding(bool cathedral, bool? premium, int? weddingId, HashSet<int>? guests)
-    {
-        Monitor.Enter(lockObj);
-        try
-        {
-            if (cathedral)
-            {
-                ongoingCathedral = weddingId;
-                ongoingCathedralType = premium;
-                ongoingCathedralGuests = guests;
-            }
-            else
-            {
-                ongoingChapel = weddingId;
-                ongoingChapelType = premium;
-                ongoingChapelGuests = guests;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-
-        ongoingStartTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        if (weddingId != null)
-        {
-            ScheduledFuture? weddingTask = TimerManager.getInstance().schedule(() => closeOngoingWedding(cathedral), TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_TIMEOUT));
-
-            if (cathedral)
-            {
-                cathedralReservationTask = weddingTask;
-            }
-            else
-            {
-                chapelReservationTask = weddingTask;
-            }
-        }
-    }
-
-    object weddingLock = new object();
     public bool acceptOngoingWedding(bool cathedral)
     {
-        lock (weddingLock)
-        {
-            // couple succeeded to show up and started the ceremony
-            if (cathedral)
-            {
-                if (cathedralReservationTask == null)
-                {
-                    return false;
-                }
-
-                cathedralReservationTask.cancel(false);
-                cathedralReservationTask = null;
-            }
-            else
-            {
-                if (chapelReservationTask == null)
-                {
-                    return false;
-                }
-
-                chapelReservationTask.cancel(false);
-                chapelReservationTask = null;
-            }
-
-            return true;
-        }
-    }
-
-    private static string? getTimeLeft(long futureTime)
-    {
-        StringBuilder str = new StringBuilder();
-        long leftTime = futureTime - DateTimeOffset.Now.ToUnixTimeMilliseconds();
-
-        if (leftTime < 0)
-        {
-            return null;
-        }
-
-        byte mode = 0;
-        if ((leftTime / 60 * 1000) > 0)
-        {
-            mode++;     //counts minutes
-
-            if (leftTime / (3600 * 1000) > 0)
-            {
-                mode++;     //counts hours
-            }
-        }
-
-        switch (mode)
-        {
-            case 2:
-                int hours = (int)((leftTime / (3600 * 1000)));
-                str.Append(hours + " hours, ");
-                break;
-            case 1:
-                int minutes = (int)((leftTime / (60 * 1000)) % 60);
-                str.Append(minutes + " minutes, ");
-                break;
-            default:
-                int seconds = (int)(leftTime / 1000) % 60;
-                str.Append(seconds + " seconds");
-                break;
-        }
-
-        return str.ToString();
-    }
-
-    public long getWeddingTicketExpireTime(int resSlot)
-    {
-        return ongoingStartTime + getRelativeWeddingTicketExpireTime(resSlot);
-    }
-
-    public static long getRelativeWeddingTicketExpireTime(int resSlot)
-    {
-        return (long)resSlot * YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL * 60 * 1000;
+        return WeddingInstance.AcceptOngoingWedding(cathedral);
     }
 
     public string? getWeddingReservationTimeLeft(int? weddingId)
     {
-        if (weddingId == null)
-        {
-            return null;
-        }
-
-        Monitor.Enter(lockObj);
-        try
-        {
-            bool cathedral = true;
-
-            int resStatus;
-            resStatus = getWeddingReservationStatus(weddingId, true);
-            if (resStatus < 0)
-            {
-                cathedral = false;
-                resStatus = getWeddingReservationStatus(weddingId, false);
-
-                if (resStatus < 0)
-                {
-                    return null;
-                }
-            }
-
-            string venue = (cathedral ? "Cathedral" : "Chapel");
-            if (resStatus == 0)
-            {
-                return venue + " - RIGHT NOW";
-            }
-
-            return venue + " - " + getTimeLeft(ongoingStartTime + (long)resStatus * YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL * 60 * 1000) + " from now";
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
+        return WeddingInstance.GetWeddingReservationTimeLeft(weddingId);
     }
 
-    public CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral)
-    {
-        Monitor.Enter(lockObj);
-        try
-        {
-            return (isOngoingWeddingGuest(cathedral, guestId)) ? getWorldServer().getRelationshipCouple(getOngoingWedding(cathedral)) : null;
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-    }
-
+    #endregion
     public void dropMessage(int type, string message)
     {
         foreach (var player in getPlayerStorage().getAllCharacters())
@@ -1232,26 +650,5 @@ public class WorldChannel : IWorldChannel
     public bool canInitMonsterCarnival(bool cpq1, int field)
     {
         return !usedMC.Contains(getMonsterCarnivalRoom(cpq1, field));
-    }
-
-    public void debugMarriageStatus()
-    {
-        log.Debug(" ----- WORLD DATA -----");
-        getWorldServer().debugMarriageStatus();
-
-        log.Debug(" ----- CH. {ChannelId} -----", channel);
-        log.Debug(" ----- CATHEDRAL -----");
-        log.Debug("Current Queue: {0}", cathedralReservationQueue);
-        log.Debug("Cancel Task?: {0}", cathedralReservationTask != null);
-        log.Debug("Ongoing wid: {0}", ongoingCathedral);
-        log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingCathedral, ongoingCathedralType);
-        log.Debug("Guest list: {0}", ongoingCathedralGuests);
-        log.Debug(" ----- CHAPEL -----");
-        log.Debug("Current Queue: {0}", chapelReservationQueue);
-        log.Debug("Cancel Task?: {0}", chapelReservationTask != null);
-        log.Debug("Ongoing wid: {0}", ongoingChapel);
-        log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingChapel, ongoingChapelType);
-        log.Debug("Guest list: {0}", ongoingChapelGuests);
-        log.Debug("Starttime: {0}", ongoingStartTime);
     }
 }

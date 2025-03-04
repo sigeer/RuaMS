@@ -507,7 +507,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return getPlayer().getMap().getCharacters().Count(x => x.getParty() == getPlayer().getParty());
     }
 
-    public server.events.gm.Event getEvent()
+    public server.events.gm.Event? getEvent()
     {
         return c.getChannelServer().getEvent();
     }
@@ -516,7 +516,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         if (getEvent() != null)
         {
-            getPlayer().setTeam(getEvent().getLimit() % 2); //muhaha :D
+            getPlayer().setTeam(getEvent()!.getLimit() % 2); //muhaha :D
         }
     }
 
