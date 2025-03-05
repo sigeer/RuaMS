@@ -47,6 +47,7 @@ namespace Application.Core.Game
         public int World { get; set; }
         public int Channel { get; set; }
         public NPCConversationManager? NPCConversationManager { get; set; }
+        public IChannel NettyChannel { get; }
         bool acceptToS();
         void addVotePoints(int points);
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);

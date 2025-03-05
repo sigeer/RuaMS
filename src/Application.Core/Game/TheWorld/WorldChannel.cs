@@ -34,6 +34,7 @@ using scripting.Event;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
+using System.Net;
 using tools;
 
 namespace net.server.channel;
@@ -44,7 +45,7 @@ public class WorldChannel : IWorldChannel
     public bool IsRunning { get; private set; }
 
     public int Port { get; set; }
-    private string ip;
+    private IPEndPoint ipEndPoint;
     private int world;
     private int channel;
 
@@ -81,7 +82,7 @@ public class WorldChannel : IWorldChannel
 
         this.mapManager = new MapManager(null, this);
         this.Port = world.Configs.StartPort + (this.channel - 1);
-        this.ip = YamlConfig.config.server.HOST + ":" + Port;
+        this.ipEndPoint = new IPEndPoint(IPAddress.Parse(YamlConfig.config.server.HOST), Port);
 
         channelServer = new ChannelServer(Port, this.world, this.channel);
         log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
@@ -262,9 +263,9 @@ public class WorldChannel : IWorldChannel
         return channel;
     }
 
-    public string getIP()
+    public IPEndPoint getIP()
     {
-        return ip;
+        return ipEndPoint;
     }
 
     public Event? getEvent()
@@ -311,7 +312,8 @@ public class WorldChannel : IWorldChannel
     }
 
     public void insertPlayerAway(int chrId)
-    {   // either they in CS or MTS
+    {   
+        // either they in CS or MTS
         playersAway.Add(chrId);
     }
 

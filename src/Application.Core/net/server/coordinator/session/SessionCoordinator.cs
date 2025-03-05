@@ -144,26 +144,18 @@ public class SessionCoordinator
         switch (initResult.getAntiMulticlientResult())
         {
             case AntiMulticlientResult.REMOTE_PROCESSING:
-                {
-                    return false;
-                }
+                return false;
             case AntiMulticlientResult.COORDINATOR_ERROR:
-                {
-                    return true;
-                }
+                return true;
         }
 
         try
         {
             var knownHwid = hostHwidCache.getEntry(remoteHost);
             if (knownHwid != null && onlineRemoteHwids.Contains(knownHwid.hwid))
-            {
                 return false;
-            }
             else if (loginRemoteHosts.ContainsKey(remoteHost))
-            {
                 return false;
-            }
 
             loginRemoteHosts.AddOrUpdate(remoteHost, client);
             return true;

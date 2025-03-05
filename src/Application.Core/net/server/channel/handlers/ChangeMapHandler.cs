@@ -218,7 +218,7 @@ public class ChangeMapHandler : AbstractPacketHandler
             c.disconnect(false, false);
             return;
         }
-        string[] socket = Server.getInstance().getInetSocket(c, c.getWorld(), c.getChannel());
+        var socket = Server.getInstance().GetChannelEndPoint(c, c.getWorld(), c.getChannel());
         if (socket == null)
         {
             c.enableCSActions();
@@ -229,7 +229,7 @@ public class ChangeMapHandler : AbstractPacketHandler
         chr.setSessionTransitionState();
         try
         {
-            c.sendPacket(PacketCreator.getChannelChange(IPAddress.Parse(socket[0]), int.Parse(socket[1])));
+            c.sendPacket(PacketCreator.getChannelChange(socket));
         }
         catch (Exception ex)
         {

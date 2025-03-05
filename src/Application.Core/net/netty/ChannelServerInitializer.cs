@@ -17,13 +17,12 @@ public class ChannelServerInitializer : ServerChannelInitializer
 
     protected override void InitChannel(ISocketChannel socketChannel)
     {
-        string clientIp = socketChannel.RemoteAddress.GetIPv4Address();
+        string clientIp = getRemoteAddress(socketChannel);
         Log.Logger.Debug("Client connecting to world {WorldId}, channel {ChannelId} from {ClientIP}", world, channel, clientIp);
 
         PacketProcessor packetProcessor = PacketProcessor.getChannelServerProcessor(world, channel);
         long clientSessionId = sessionId.getAndIncrement();
-        string remoteAddress = getRemoteAddress(socketChannel);
-        Client client = Client.createChannelClient(clientSessionId, remoteAddress, packetProcessor, world, channel);
+        Client client = Client.createChannelClient(clientSessionId, socketChannel, packetProcessor, world, channel);
 
         if (Server.getInstance().getChannel(world, channel) == null)
         {

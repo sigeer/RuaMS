@@ -33,6 +33,7 @@ using scripting.Event;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
+using System.Net;
 
 namespace Application.Core.Game.TheWorld
 {
@@ -68,7 +69,7 @@ namespace Application.Core.Game.TheWorld
         List<Expedition> getExpeditions();
         Dictionary<int, HiredMerchant> getHiredMerchants();
         int getId();
-        string getIP();
+        IPEndPoint getIP();
         MapManager getMapFactory();
         MiniDungeon? getMiniDungeon(int dungeonid);
         int getOngoingWedding(bool cathedral);

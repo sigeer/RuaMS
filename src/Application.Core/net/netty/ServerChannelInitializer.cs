@@ -20,7 +20,7 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
         string remoteAddress = "null";
         try
         {
-            remoteAddress = channel.RemoteAddress.GetIPv4Address();
+            remoteAddress = channel.RemoteAddress.GetIPAddressString();
         }
         catch (NullReferenceException npe)
         {
