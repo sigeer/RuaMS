@@ -232,7 +232,6 @@ namespace Application.Core.Game.Players
         AutobanManager getAutobanManager();
         float getAutopotHpAlert();
         float getAutopotMpAlert();
-        HashSet<int> getAvailableBuffs();
         int getAvailableCP();
         int getBattleshipHp();
         List<string> getBlockedPortals();

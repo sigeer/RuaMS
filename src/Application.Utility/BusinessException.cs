@@ -1,4 +1,4 @@
-﻿namespace Application.Utility.Exceptions
+namespace Application.Utility.Exceptions
 {
     public class BusinessException(string? message) : Exception(message)
     {
@@ -44,6 +44,13 @@
         }
 
         public BusinessFatalException(string message) : base(message)
+        {
+        }
+    }
+
+    public class BusinessNotsupportException : BusinessException
+    {
+        public BusinessNotsupportException(string function) : base($"功能 {function} 未启用")
         {
         }
     }

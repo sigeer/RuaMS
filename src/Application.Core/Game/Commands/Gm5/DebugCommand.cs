@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using constants.id;
 using net.server;
@@ -144,7 +144,7 @@ public class DebugCommand : CommandBase
                 break;
 
             case "marriage":
-                c.getChannelServer().debugMarriageStatus();
+                c.getChannelServer().WeddingInstance.DebugMarriageStatus();
                 break;
 
             case "buff":

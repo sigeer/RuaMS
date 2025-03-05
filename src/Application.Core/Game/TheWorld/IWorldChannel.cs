@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
+using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.model;
 using net.packet;
 using net.server.services;
@@ -32,6 +33,7 @@ using scripting.Event;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
+using System.Net;
 
 namespace Application.Core.Game.TheWorld
 {
@@ -41,7 +43,8 @@ namespace Application.Core.Game.TheWorld
         IWorld WorldModel { get; set; }
         public bool IsRunning { get; }
         public int Port { get; set; }
-
+        DojoInstance DojoInstance { get; }
+        WeddingChannelInstance WeddingInstance { get; }
         Task StartServer();
 
         bool acceptOngoingWedding(bool cathedral);
@@ -54,33 +57,29 @@ namespace Application.Core.Game.TheWorld
         bool canInitMonsterCarnival(bool cpq1, int field);
         bool canUninstall();
         void closeOngoingWedding(bool cathedral);
-        void debugMarriageStatus();
         void dismissDojoSchedule(int dojoMapId, ITeam party);
         void dropMessage(int type, string message);
         void finishMonsterCarnival(bool cpq1, int field);
         void freeDojoSectionIfEmpty(int dojoMapId);
         int getChannelCapacity();
         long getDojoFinishTime(int dojoMapId);
-        Event getEvent();
+        Event? getEvent();
         EventScriptManager getEventSM();
         Expedition? getExpedition(ExpeditionType type);
         List<Expedition> getExpeditions();
         Dictionary<int, HiredMerchant> getHiredMerchants();
         int getId();
-        string getIP();
+        IPEndPoint getIP();
         MapManager getMapFactory();
         MiniDungeon? getMiniDungeon(int dungeonid);
-        KeyValuePair<bool, KeyValuePair<int, HashSet<int>>>? getNextWeddingReservation(bool cathedral);
         int getOngoingWedding(bool cathedral);
         List<IPlayer> getPartyMembers(ITeam party);
         ChannelPlayerStorage getPlayerStorage();
         string getServerMessage();
         BaseService getServiceAccess(ChannelServices sv);
         int getStoredVar(int key);
-        CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral);
         int getWeddingReservationStatus(int? weddingId, bool cathedral);
         string? getWeddingReservationTimeLeft(int? weddingId);
-        long getWeddingTicketExpireTime(int resSlot);
         int getWorld();
         IWorld getWorldServer();
         int ingressDojo(bool isPartyDojo, int fromStage);
@@ -104,8 +103,7 @@ namespace Application.Core.Game.TheWorld
         void resetDojoMap(int fromMapId);
         void runCheckOwnedMapsSchedule();
         bool setDojoProgress(int dojoMapId);
-        void setEvent(Event evt);
-        void setOngoingWedding(bool cathedral, bool? premium, int? weddingId, HashSet<int>? guests);
+        void setEvent(Event? evt);
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
         Task Shutdown();

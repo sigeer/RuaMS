@@ -13,7 +13,7 @@ public class LoginServerInitializer : ServerChannelInitializer
         PacketProcessor packetProcessor = PacketProcessor.getLoginServerProcessor();
         long clientSessionId = sessionId.getAndIncrement();
 
-        var client = Client.createLoginClient(clientSessionId, remoteAddress, packetProcessor, LoginServer.WORLD_ID, LoginServer.CHANNEL_ID);
+        var client = Client.createLoginClient(clientSessionId, socketChannel, packetProcessor, LoginServer.WORLD_ID, LoginServer.CHANNEL_ID);
 
         if (!SessionCoordinator.getInstance().canStartLoginSession(client))
         {

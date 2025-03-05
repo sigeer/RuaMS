@@ -17,6 +17,7 @@ namespace Application.Core.Game
         public int World { get; set; } = -1;
         public int Channel { get; set; } = -1;
         public string ClientInfo => $"OfflineClient";
+        public IChannel NettyChannel { get; private set; } = null!;
         public IPlayer? Character => null;
 
         public NPCConversationManager? NPCConversationManager { get ; set; }

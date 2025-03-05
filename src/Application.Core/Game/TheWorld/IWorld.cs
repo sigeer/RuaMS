@@ -2,6 +2,7 @@ using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
+using Application.Core.Gameplay.WorldEvents;
 using Application.Core.model;
 using client;
 using net.packet;
@@ -38,6 +39,7 @@ namespace Application.Core.Game.TheWorld
         public float FishingRate { get; set; }
         public float MobRate { get; set; }
 
+        public WeddingWorldInstance WeddingInstance { get; }
         /// <summary>
         /// 调整频道数量
         /// </summary>
@@ -47,7 +49,6 @@ namespace Application.Core.Game.TheWorld
         bool addChannel(IWorldChannel channel);
         Task<int> removeChannel();
         void addFamily(int id, Family f);
-        bool addMarriageGuest(int marriageId, int playerId);
         void addMessengerPlayer(Messenger messenger, string namefrom, int fromchannel, int position);
         void addOwlItemSearch(int itemid);
         void addPlayerHpDecrease(IPlayer chr);
@@ -58,10 +59,8 @@ namespace Application.Core.Game.TheWorld
         void changeEmblem(int gid, List<int> affectedPlayers, IGuild mgs);
         Messenger createMessenger(MessengerCharacter chrfor);
         ITeam createParty(IPlayer chrfor);
-        int createRelationship(int groomId, int brideId);
-        void debugMarriageStatus();
+
         void declineChat(string sender, IPlayer player);
-        void deleteRelationship(int playerId, int partnerId);
         void dropMessage(int type, string message);
         /// <summary>
         /// 
@@ -87,8 +86,6 @@ namespace Application.Core.Game.TheWorld
         IGuild? getGuild(IPlayer? mgc);
         HiredMerchant? getHiredMerchant(int ownerid);
         int getId();
-        CoupleIdPair? getMarriageQueuedCouple(int marriageId);
-        KeyValuePair<bool, bool>? getMarriageQueuedLocation(int marriageId);
         MatchCheckerCoordinator getMatchCheckerCoordinator();
         Messenger? getMessenger(int messengerid);
         List<List<int>> getMostSellerCashItems();
@@ -99,15 +96,12 @@ namespace Application.Core.Game.TheWorld
         int getPlayerNpcMapStep(int mapid);
         PlayerShop? getPlayerShop(int ownerid);
         WorldPlayerStorage getPlayerStorage();
-        CoupleIdPair? getRelationshipCouple(int relationshipId);
         int getRelationshipId(int playerId);
         BaseService getServiceAccess(WorldServices sv);
         int getTransportationTime(double travelTime);
-        CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral);
         int getWorldCapacityStatus();
         bool isConnected(string charName);
         bool isGuildQueued(int guildId);
-        bool isMarriageQueued(int marriageId);
         bool isWorldCapacityFull();
         void joinMessenger(int messengerid, MessengerCharacter target, string from, int fromchannel);
         void leaveMessenger(int messengerid, MessengerCharacter target);
@@ -120,7 +114,6 @@ namespace Application.Core.Game.TheWorld
         CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds);
         void partyChat(ITeam party, string chattext, string namefrom);
         void putGuildQueued(int guildId);
-        void putMarriageQueued(int marriageId, bool cathedral, bool premium, int groomId, int brideId);
         bool registerDisabledServerMessage(int chrid);
         bool registerFisherPlayer(IPlayer chr, int baitLevel);
         void registerHiredMerchant(HiredMerchant hm);
@@ -131,7 +124,6 @@ namespace Application.Core.Game.TheWorld
         void removeFamily(int id);
         void removeGuildQueued(int guildId);
         void removeMapPartyMembers(int partyid);
-        KeyValuePair<bool, HashSet<int>> removeMarriageQueued(int marriageId);
         void removeMessengerPlayer(Messenger messenger, int position);
         void removePlayer(IPlayer chr);
         void removePlayerHpDecrease(IPlayer chr);

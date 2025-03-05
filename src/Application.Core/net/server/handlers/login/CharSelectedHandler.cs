@@ -94,7 +94,7 @@ public class CharSelectedHandler : AbstractPacketHandler
             return;
         }
 
-        string[] socket = server.getInetSocket(c, c.getWorld(), c.getChannel());
+        var socket = server.GetChannelEndPoint(c, c.getWorld(), c.getChannel());
         if (socket == null)
         {
             c.sendPacket(PacketCreator.getAfterLoginError(10));
@@ -106,7 +106,7 @@ public class CharSelectedHandler : AbstractPacketHandler
 
         try
         {
-            c.sendPacket(PacketCreator.getServerIP(IPAddress.Parse(socket[0]), int.Parse(socket[1]), charId));
+            c.sendPacket(PacketCreator.getServerIP(socket, charId));
         }
         catch (Exception e)
         {

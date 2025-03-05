@@ -2,6 +2,7 @@ using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
+using Application.Core.Gameplay.WorldEvents;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Core.scripting.Event;
@@ -92,8 +93,7 @@ public class World : IWorld
     private AtomicInteger runningMessengerId = new AtomicInteger();
     private Dictionary<int, Family> families = new();
 
-    private Dictionary<int, int> relationships = new();
-    private Dictionary<int, CoupleIdPair> relationshipCouples = new();
+    public WeddingWorldInstance WeddingInstance { get; }
 
     private ServicesManager<WorldServices> services = new ServicesManager<WorldServices>(WorldServices.SAVE_CHARACTER);
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
@@ -103,8 +103,6 @@ public class World : IWorld
     private object accountCharsLock = new object();
 
     private HashSet<int> queuedGuilds = new();
-    private Dictionary<int, KeyValuePair<KeyValuePair<bool, bool>, CoupleIdPair>> queuedMarriages = new();
-    private ConcurrentDictionary<int, HashSet<int>> marriageGuests = new();
 
     private AtomicInteger runningPartyId = new AtomicInteger();
     private object partyLock = new object();
@@ -204,6 +202,8 @@ public class World : IWorld
         hpDecSchedule = tman.register(new CharacterHpDecreaseTask(this), 
             YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL, 
             YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
+
+        WeddingInstance = new WeddingWorldInstance(this);
 
         if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
@@ -622,118 +622,6 @@ public class World : IWorld
     public void removeGuildQueued(int guildId)
     {
         queuedGuilds.Remove(guildId);
-    }
-
-    public bool isMarriageQueued(int marriageId)
-    {
-        return queuedMarriages.ContainsKey(marriageId);
-    }
-
-    public KeyValuePair<bool, bool>? getMarriageQueuedLocation(int marriageId)
-    {
-        return queuedMarriages.TryGetValue(marriageId, out var qm) ? qm.Key : null;
-    }
-
-    public CoupleIdPair? getMarriageQueuedCouple(int marriageId)
-    {
-        return queuedMarriages.TryGetValue(marriageId, out var qm) ? qm.Value : null;
-    }
-
-    public void putMarriageQueued(int marriageId, bool cathedral, bool premium, int groomId, int brideId)
-    {
-        queuedMarriages.AddOrUpdate(marriageId, new(new(cathedral, premium), new(groomId, brideId)));
-        marriageGuests.AddOrUpdate(marriageId, new());
-    }
-
-    public KeyValuePair<bool, HashSet<int>> removeMarriageQueued(int marriageId)
-    {
-        queuedMarriages.Remove(marriageId, out var d);
-        marriageGuests.Remove(marriageId, out var guests);
-
-        return new(d.Key.Value, guests);
-    }
-
-    public bool addMarriageGuest(int marriageId, int playerId)
-    {
-        HashSet<int>? guests = marriageGuests.GetValueOrDefault(marriageId);
-        if (guests != null)
-        {
-            if (guests.Contains(playerId)) return false;
-
-            guests.Add(playerId);
-            return true;
-        }
-
-        return false;
-    }
-
-    public CoupleIdPair? getWeddingCoupleForGuest(int guestId, bool cathedral)
-    {
-        foreach (var ch in getChannels())
-        {
-            var p = ch.getWeddingCoupleForGuest(guestId, cathedral);
-            if (p != null)
-            {
-                return p;
-            }
-        }
-
-        List<int> possibleWeddings = new();
-        foreach (var mg in marriageGuests)
-        {
-            if (mg.Value.Contains(guestId))
-            {
-                var loc = getMarriageQueuedLocation(mg.Key);
-                if (loc != null && cathedral.Equals(loc.Value.Key))
-                {
-                    possibleWeddings.Add(mg.Key);
-                }
-            }
-        }
-
-        int pwSize = possibleWeddings.Count;
-        if (pwSize == 0)
-        {
-            return null;
-        }
-        else if (pwSize > 1)
-        {
-            int selectedPw = -1;
-            int selectedPos = int.MaxValue;
-
-            foreach (int pw in possibleWeddings)
-            {
-                foreach (var ch in getChannels())
-                {
-                    int pos = ch.getWeddingReservationStatus(pw, cathedral);
-                    if (pos != -1)
-                    {
-                        if (pos < selectedPos)
-                        {
-                            selectedPos = pos;
-                            selectedPw = pw;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (selectedPw == -1)
-            {
-                return null;
-            }
-
-            possibleWeddings.Clear();
-            possibleWeddings.Add(selectedPw);
-        }
-
-        return getMarriageQueuedCouple(possibleWeddings[0]);
-    }
-
-    public void debugMarriageStatus()
-    {
-        log.Debug("Queued marriages: " + queuedMarriages);
-        log.Debug("Guest list: " + marriageGuests);
     }
 
     public ITeam createParty(IPlayer chrfor)
@@ -1974,125 +1862,11 @@ public class World : IWorld
         return hmsAvailable;
     }
 
-    private void pushRelationshipCouple(CoupleTotal couple)
-    {
-        int mid = couple.MarriageId, hid = couple.HusbandId, wid = couple.WifeId;
-        relationshipCouples.AddOrUpdate(mid, new(hid, wid));
-        relationships.AddOrUpdate(hid, mid);
-        relationships.AddOrUpdate(wid, mid);
-    }
-
-    public CoupleIdPair? getRelationshipCouple(int relationshipId)
-    {
-        if (!relationshipCouples.TryGetValue(relationshipId, out var rc))
-        {
-            var couple = getRelationshipCoupleFromDb(relationshipId, true);
-            if (couple == null)
-            {
-                return null;
-            }
-
-            pushRelationshipCouple(couple);
-            rc = new(couple.HusbandId, couple.WifeId);
-        }
-
-        return rc;
-    }
-
     public int getRelationshipId(int playerId)
     {
-        if (!relationships.TryGetValue(playerId, out var value))
-        {
-            var couple = getRelationshipCoupleFromDb(playerId, false);
-            if (couple == null)
-            {
-                return -1;
-            }
-
-            pushRelationshipCouple(couple);
-            return couple.MarriageId;
-        }
-
-        return value;
+        return WeddingInstance.GetRelationshipId(playerId);
     }
 
-    private CoupleTotal? getRelationshipCoupleFromDb(int id, bool usingMarriageId)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            DB_Marriage? model = null;
-            if (usingMarriageId)
-            {
-                model = dbContext.Marriages.FirstOrDefault(x => x.Marriageid == id);
-            }
-            else
-            {
-                model = dbContext.Marriages.FirstOrDefault(x => x.Husbandid == id || x.Wifeid == id);
-            }
-            if (model == null)
-                return null;
-
-            return new CoupleTotal(model.Marriageid, model.Husbandid, model.Wifeid);
-        }
-        catch (Exception se)
-        {
-            log.Error(se.ToString());
-            return null;
-        }
-    }
-
-    public int createRelationship(int groomId, int brideId)
-    {
-        int ret = addRelationshipToDb(groomId, brideId);
-
-        pushRelationshipCouple(new(ret, groomId, brideId));
-        return ret;
-    }
-
-    private int addRelationshipToDb(int groomId, int brideId)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            var dbModel = new DB_Marriage
-            {
-                Husbandid = groomId,
-                Wifeid = brideId
-            };
-            dbContext.Marriages.Add(dbModel);
-            dbContext.SaveChanges();
-            return dbModel.Marriageid;
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-            return -1;
-        }
-    }
-
-    public void deleteRelationship(int playerId, int partnerId)
-    {
-        int relationshipId = relationships.GetValueOrDefault(playerId);
-        deleteRelationshipFromDb(relationshipId);
-
-        relationshipCouples.Remove(relationshipId);
-        relationships.Remove(playerId);
-        relationships.Remove(partnerId);
-    }
-
-    private void deleteRelationshipFromDb(int playerId)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            dbContext.Marriages.Where(x => x.Marriageid == playerId).ExecuteDelete();
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
 
     public void dropMessage(int type, string message)
     {

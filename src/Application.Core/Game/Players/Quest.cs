@@ -402,7 +402,7 @@ namespace Application.Core.Game.Players
 
                     if (questExpirations.Count == 0)
                     {
-                        questExpireTask.cancel(false);
+                        questExpireTask?.cancel(false);
                         questExpireTask = null;
                     }
                 }

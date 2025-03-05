@@ -12,6 +12,7 @@ namespace Application.Core.Loggers
         public const string Trade = "Trade";
         public const string Gachapon = "Gachapon";
         public const string Storage = "Storage";
+        public const string Wedding = "Wedding";
 
         public const string Fredrick = "Fredrick";
         public const string Duey = "Duey";

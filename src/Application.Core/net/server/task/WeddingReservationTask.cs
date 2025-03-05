@@ -37,24 +37,24 @@ public class WeddingReservationTask : BaseTask
         {
             KeyValuePair<bool, KeyValuePair<int, HashSet<int>>>? wedding;
 
-            wedding = ch.getNextWeddingReservation(true);   // start cathedral
+            wedding = ch.WeddingInstance.GetNextWeddingReservation(true);   // start cathedral
             if (wedding != null)
             {
-                ch.setOngoingWedding(true, wedding.Value.Key, wedding.Value.Value.Key, wedding.Value.Value.Value);
+                ch.WeddingInstance.SetOngoingWedding(true, wedding.Value.Key, wedding.Value.Value.Key, wedding.Value.Value.Value);
             }
             else
             {
-                ch.setOngoingWedding(true, null, null, null);
+                ch.WeddingInstance.SetOngoingWedding(true, null, null, null);
             }
 
-            wedding = ch.getNextWeddingReservation(false);  // start chapel
+            wedding = ch.WeddingInstance.GetNextWeddingReservation(false);  // start chapel
             if (wedding != null)
             {
-                ch.setOngoingWedding(false, wedding.Value.Key, wedding.Value.Value.Key, wedding.Value.Value.Value);
+                ch.WeddingInstance.SetOngoingWedding(false, wedding.Value.Key, wedding.Value.Value.Key, wedding.Value.Value.Value);
             }
             else
             {
-                ch.setOngoingWedding(false, null, null, null);
+                ch.WeddingInstance.SetOngoingWedding(false, null, null, null);
             }
         }
     }

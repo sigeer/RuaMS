@@ -81,7 +81,7 @@ public class ViewAllCharRegisterPicHandler : AbstractPacketHandler
         string pic = p.readString();
         c.setPic(pic);
 
-        string[] socket = server.getInetSocket(c, c.getWorld(), channel);
+        var socket = server.GetChannelEndPoint(c, c.getWorld(), channel);
         if (socket == null)
         {
             c.sendPacket(PacketCreator.getAfterLoginError(10));
@@ -93,7 +93,7 @@ public class ViewAllCharRegisterPicHandler : AbstractPacketHandler
 
         try
         {
-            c.sendPacket(PacketCreator.getServerIP(IPAddress.Parse(socket[0]), int.Parse(socket[1]), charId));
+            c.sendPacket(PacketCreator.getServerIP(socket, charId));
         }
         catch (Exception e)
         {

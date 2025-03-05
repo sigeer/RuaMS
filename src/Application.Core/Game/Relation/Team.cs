@@ -82,7 +82,7 @@ namespace Application.Core.Game.Relation
                 {
                     if (members.get(i).getId() == member.getId())
                     {
-                        members.set(i, member);
+                        members[i] = member;
                     }
                 }
             }

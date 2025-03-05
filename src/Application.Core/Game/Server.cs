@@ -28,7 +28,6 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
-using Application.Core.scripting.Event.jobs;
 using Application.Utility;
 using client;
 using client.inventory.manipulator;
@@ -43,14 +42,12 @@ using net.packet;
 using net.server.channel;
 using net.server.coordinator.session;
 using net.server.task;
-using Quartz.Impl;
 using server;
 using server.expeditions;
 using server.quest;
 using service;
 using System.Diagnostics;
-using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Net;
 using static server.CashShop;
 
 namespace net.server;
@@ -218,31 +215,27 @@ public class Server
         return getWorld(world).getChannels().Select(x => x.getId()).ToHashSet();
     }
 
-    private string? getIP(int world, int channel)
+    public IPEndPoint? GetChannelEndPoint(IClient client, int world, int channel)
     {
-        return getWorld(world).getChannel(channel).getIP();
-    }
-
-    public string[] getInetSocket(IClient client, int world, int channel)
-    {
-        string remoteIp = client.getRemoteAddress();
-
-        string[] hostAddress = getIP(world, channel).Split(":");
-        if (IpAddresses.isLocalAddress(remoteIp))
+        if (client.NettyChannel.RemoteAddress is IPEndPoint clientIPEndPoint)
         {
-            hostAddress[0] = YamlConfig.config.server.LOCALHOST;
-        }
-        else if (IpAddresses.isLanAddress(remoteIp))
-        {
-            hostAddress[0] = YamlConfig.config.server.LANHOST;
-        }
+            var hostAddress = getWorld(world).getChannel(channel).getIP();
 
-        return hostAddress;
+            if (IPAddress.IsLoopback(clientIPEndPoint.Address))
+            {
+                hostAddress.Address = IPAddress.Parse(YamlConfig.config.server.LOCALHOST);
+            }
+            else if (clientIPEndPoint.Address.IsPrivateIP())
+            {
+                hostAddress.Address = IPAddress.Parse(YamlConfig.config.server.LANHOST);
+            }
+            return hostAddress;
+        }
+        return null;
     }
 
     public async Task<int> AddWorldChannel(int worldid)
     {
-
         var world = this.getWorld(worldid);
 
         if (world == null)

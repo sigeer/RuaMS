@@ -181,17 +181,11 @@ public class Marriage : EventInstanceManager
 
     public static void saveGiftItemsToDb(IClient c, List<Item> giftItems, int cid)
     {
-        List<ItemInventoryType> items = new();
-        foreach (Item it in giftItems)
-        {
-            items.Add(new(it, it.getInventoryType()));
-        }
-
         try
         {
             using var dbContext = new DBContext();
             using var dbTrans = dbContext.Database.BeginTransaction();
-            ItemFactory.MARRIAGE_GIFTS.saveItems(items, cid, dbContext);
+            ItemFactory.MARRIAGE_GIFTS.saveItems(giftItems.Select(x => new ItemInventoryType(x, x.getInventoryType())).ToList(), cid, dbContext);
             dbTrans.Commit();
         }
         catch (Exception sqle)

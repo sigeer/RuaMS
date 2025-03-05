@@ -888,13 +888,13 @@ public class PacketCreator
     /// <param name="port">The port the channel is on.</param>
     /// <param name="clientId">The ID of the client.</param>
     /// <returns>The server IP packet.</returns>
-    public static Packet getServerIP(IPAddress inetAddr, int port, int clientId)
+    public static Packet getServerIP(IPEndPoint iPEndPoint, int clientId)
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVER_IP);
         p.writeShort(0);
-        byte[] addr = inetAddr.GetAddressBytes();
+        byte[] addr = iPEndPoint.Address.GetAddressBytes();
         p.writeBytes(addr);
-        p.writeShort(port);
+        p.writeShort(iPEndPoint.Port);
         p.writeInt(clientId);
         p.writeBytes(new byte[] { 0, 0, 0, 0, 0 });
         return p;
@@ -907,13 +907,13 @@ public class PacketCreator
     /// <param name="inetAddr">The InetAddress of the requested channel server.</param>
     /// <param name="port">The port the channel is on.</param>
     /// <returns>The server IP packet.</returns>
-    public static Packet getChannelChange(IPAddress inetAddr, int port)
+    public static Packet getChannelChange(IPEndPoint iPEndPoint)
     {
         OutPacket p = OutPacket.create(SendOpcode.CHANGE_CHANNEL);
         p.writeByte(1);
-        byte[] addr = inetAddr.GetAddressBytes();
+        byte[] addr = iPEndPoint.Address.GetAddressBytes();
         p.writeBytes(addr);
-        p.writeShort(port);
+        p.writeShort(iPEndPoint.Port);
         return p;
     }
 

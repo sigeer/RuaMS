@@ -7,6 +7,7 @@ using client.inventory;
 using constants.id;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
+using DotNetty.Transport.Channels.Sockets;
 using Microsoft.EntityFrameworkCore;
 using net;
 using net.netty;
@@ -48,8 +49,22 @@ public class Client : ChannelHandlerAdapter, IClient
     private string remoteAddress;
     public string ClientInfo => $"{remoteAddress}_{sessionId}";
 
-
-    private IChannel ioChannel = null!;
+    private IChannel? _ioChannel;
+    public IChannel NettyChannel
+    {
+        get
+        {
+            return _ioChannel ?? throw new BusinessException("连接断开");
+        }
+        private set
+        {
+            if (value != null)
+            {
+                remoteAddress = value.RemoteAddress.GetIPAddressString();
+            }
+            _ioChannel = value;
+        }
+    }
     /// <summary>
     /// 启动了客户端，但是角色可能并不在线
     /// </summary>
@@ -98,11 +113,11 @@ public class Client : ChannelHandlerAdapter, IClient
 
     ConcurrentQueue<Packet> packetQueue;
     bool _isProcessing = true;
-    public Client(Type type, long sessionId, string remoteAddress, PacketProcessor packetProcessor, int world, int channel)
+    public Client(Type type, long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor, int world, int channel)
     {
         this.type = type;
         this.sessionId = sessionId;
-        this.remoteAddress = remoteAddress;
+        this.NettyChannel = socketChannel;
         this.packetProcessor = packetProcessor;
 
         World = world;
@@ -116,23 +131,23 @@ public class Client : ChannelHandlerAdapter, IClient
             while (_isProcessing)
             {
                 if (packetQueue.TryDequeue(out var p))
-                    await ioChannel.WriteAndFlushAsync(p);
+                    await NettyChannel.WriteAndFlushAsync(p);
                 else
                     await Task.Delay(10);
             }
         });
     }
 
-    public static Client createLoginClient(long sessionId, string remoteAddress, PacketProcessor packetProcessor,
+    public static Client createLoginClient(long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor,
                                            int world, int channel)
     {
-        return new Client(Type.LOGIN, sessionId, remoteAddress, packetProcessor, world, channel);
+        return new Client(Type.LOGIN, sessionId, socketChannel, packetProcessor, world, channel);
     }
 
-    public static Client createChannelClient(long sessionId, string remoteAddress, PacketProcessor packetProcessor,
+    public static Client createChannelClient(long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor,
                                              int world, int channel)
     {
-        return new Client(Type.CHANNEL, sessionId, remoteAddress, packetProcessor, world, channel);
+        return new Client(Type.CHANNEL, sessionId, socketChannel, packetProcessor, world, channel);
     }
 
     public static Client createMock()
@@ -149,23 +164,7 @@ public class Client : ChannelHandlerAdapter, IClient
             return;
         }
 
-        this.remoteAddress = getRemoteAddress(channel);
-        this.ioChannel = channel;
-    }
-
-    private string getRemoteAddress(IChannel channel)
-    {
-        string remoteAddress = "null";
-        try
-        {
-            remoteAddress = channel.RemoteAddress.GetIPv4Address();
-        }
-        catch (NullReferenceException npe)
-        {
-            log.Warning(npe, "Unable to get remote address for client");
-        }
-
-        return remoteAddress;
+        this.NettyChannel = channel;
     }
 
     public override void ChannelRead(IChannelHandlerContext ctx, object msg)
@@ -283,12 +282,12 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public void closeSession()
     {
-        ioChannel.CloseAsync().Wait();
+        NettyChannel.CloseAsync().Wait();
     }
 
     public void disconnectSession()
     {
-        ioChannel.DisconnectAsync().Wait();
+        NettyChannel.DisconnectAsync().Wait();
     }
 
     public Hwid getHwid()
@@ -354,8 +353,7 @@ public class Client : ChannelHandlerAdapter, IClient
     public bool hasBannedIP()
     {
         using var dbContext = new DBContext();
-        var ip = ioChannel.RemoteAddress.GetIPv4Address();
-        return dbContext.Ipbans.Any(x => x.Ip.Contains(ip.ToString()));
+        return dbContext.Ipbans.Any(x => x.Ip.Contains(remoteAddress));
     }
 
     //public int getVoteTime()
@@ -1178,7 +1176,7 @@ public class Client : ChannelHandlerAdapter, IClient
             {
                 if (lastPong < pingedAt)
                 {
-                    if (ioChannel.Active)
+                    if (NettyChannel.Active)
                     {
                         log.Information("Disconnected {IP} due to idling. Reason: {State}", remoteAddress, evt.State);
                         updateLoginState(Client.LOGIN_NOTLOGGEDIN);
@@ -1525,7 +1523,7 @@ public class Client : ChannelHandlerAdapter, IClient
             return;
         }
 
-        string[] socket = Server.getInstance().getInetSocket(this, getWorld(), channel);
+        var socket = Server.getInstance().GetChannelEndPoint(this, getWorld(), channel);
         if (socket == null)
         {
             sendPacket(PacketCreator.serverNotice(1, "Channel " + channel + " is currently disabled. Try another channel."));
@@ -1560,7 +1558,7 @@ public class Client : ChannelHandlerAdapter, IClient
         Character.setSessionTransitionState();
         try
         {
-            sendPacket(PacketCreator.getChannelChange(IPAddress.Parse(socket[0]), int.Parse(socket[1])));
+            sendPacket(PacketCreator.getChannelChange(socket));
         }
         catch (IOException e)
         {
