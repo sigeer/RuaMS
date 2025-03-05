@@ -14,30 +14,43 @@ namespace Application.Core.Game.Players
     public partial class Player
     {
         private ScheduledFuture? _buffExpireTask = null;
+        /// <summary>
+        /// 和 buffEffects 区别？
+        /// </summary>
 
         private Dictionary<BuffStat, BuffStatValueHolder> effects = new();
+        /// <summary>
+        /// 似乎没有用
+        /// </summary>
         private Dictionary<BuffStat, sbyte> buffEffectsCount = new();
         private Dictionary<Disease, long> diseaseExpires = new();
+        /// <summary>
+        /// sourceid - effects
+        /// </summary>
         private Dictionary<int, Dictionary<BuffStat, BuffStatValueHolder>> buffEffects = new(); // non-overriding buffs thanks to Ronan
         private Dictionary<int, long> buffExpires = new();
-        public long? getBuffedStarttime(BuffStat effect)
+
+        private BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
         {
             Monitor.Enter(effLock);
             chLock.EnterReadLock();
             try
             {
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(effect);
-                if (mbsvh == null)
+                if (effects.TryGetValue(effect, out var mbsvh))
                 {
-                    return null;
+                    return mbsvh;
                 }
-                return mbsvh.startTime;
+                return null;
             }
             finally
             {
                 chLock.ExitReadLock();
                 Monitor.Exit(effLock);
             }
+        }
+        public long? getBuffedStarttime(BuffStat effect)
+        {
+            return GetBuffStatValue(effect)?.startTime;
         }
 
         public void setBuffedValue(BuffStat effect, int value)
@@ -46,12 +59,10 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(effect);
-                if (mbsvh == null)
+                if (effects.TryGetValue(effect, out var mbsvh))
                 {
-                    return;
+                    mbsvh.value = value;
                 }
-                mbsvh.value = value;
             }
             finally
             {
@@ -62,65 +73,17 @@ namespace Application.Core.Game.Players
 
         public int? getBuffedValue(BuffStat effect)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(effect);
-                if (mbsvh == null)
-                {
-                    return null;
-                }
-                return mbsvh.value;
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return GetBuffStatValue(effect)?.value;
         }
 
         public int getBuffSource(BuffStat stat)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(stat);
-                if (mbsvh == null)
-                {
-                    return -1;
-                }
-                return mbsvh.effect.getSourceId();
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return GetBuffStatValue(stat)?.effect?.getSourceId() ?? -1;
         }
 
         public StatEffect? getBuffEffect(BuffStat stat)
         {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                BuffStatValueHolder? mbsvh = effects.GetValueOrDefault(stat);
-                if (mbsvh == null)
-                {
-                    return null;
-                }
-                else
-                {
-                    return mbsvh.effect;
-                }
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
+            return GetBuffStatValue(stat)?.effect;
         }
 
         public bool HasBuff(BuffStat stat)
@@ -130,21 +93,6 @@ namespace Application.Core.Game.Players
             try
             {
                 return effects.ContainsKey(stat);
-            }
-            finally
-            {
-                chLock.ExitReadLock();
-                Monitor.Exit(effLock);
-            }
-        }
-
-        public HashSet<int> getAvailableBuffs()
-        {
-            Monitor.Enter(effLock);
-            chLock.EnterReadLock();
-            try
-            {
-                return new(buffEffects.Keys);
             }
             finally
             {
@@ -577,7 +525,7 @@ namespace Application.Core.Game.Players
                     activeEffects.Add(mse.effect);
                 }
 
-                foreach (Dictionary<BuffStat, BuffStatValueHolder> buff in buffEffects.Values)
+                foreach (var buff in buffEffects.Values)
                 {
                     StatEffect? mse = getEffectFromBuffSource(buff);
                     if (isUpdatingEffect(activeEffects, mse))
@@ -768,8 +716,7 @@ namespace Application.Core.Game.Players
 
         private void removeItemEffectHolder(int sourceid)
         {
-            buffEffects.Remove(sourceid, out var be);
-            if (be != null)
+            if (buffEffects.Remove(sourceid, out var be) && be != null)
             {
                 foreach (var bei in be)
                 {

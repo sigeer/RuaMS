@@ -4,7 +4,6 @@ using Application.Core.model;
 using Application.Core.scripting.Event;
 using server;
 using System.Text;
-using System.Threading.Channels;
 
 namespace Application.Core.Gameplay.ChannelEvents
 {
