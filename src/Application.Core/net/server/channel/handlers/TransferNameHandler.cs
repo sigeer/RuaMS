@@ -36,7 +36,7 @@ public class TransferNameHandler : AbstractPacketHandler
     {
         p.readInt(); //cid
         int birthday = p.readInt();
-        if (!CashOperationHandler.checkBirthday(c, birthday))
+        if (!c.CheckBirthday(birthday))
         {
             c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
             c.sendPacket(PacketCreator.enableActions());

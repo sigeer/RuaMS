@@ -122,7 +122,7 @@ public class CashOperationHandler : AbstractPacketHandler
                         c.enableCSActions();
                         return;
                     }
-                    if (!checkBirthday(c, birthday))
+                    if (!c.CheckBirthday(birthday))
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
                         return;
@@ -380,7 +380,7 @@ public class CashOperationHandler : AbstractPacketHandler
                 {
                     //crush ring (action 28)
                     int birthday = p.readInt();
-                    if (checkBirthday(c, birthday))
+                    if (c.CheckBirthday(birthday))
                     {
                         int toCharge = p.readInt();
                         int SN = p.readInt();
@@ -460,7 +460,7 @@ public class CashOperationHandler : AbstractPacketHandler
                 else if (action == 0x23)
                 { //Friendship :3
                     int birthday = p.readInt();
-                    if (checkBirthday(c, birthday))
+                    if (c.CheckBirthday(birthday))
                     {
                         int payment = p.readByte();
                         p.skip(3); //0s
@@ -593,15 +593,6 @@ public class CashOperationHandler : AbstractPacketHandler
         {
             c.sendPacket(PacketCreator.enableActions());
         }
-    }
-
-    public static bool checkBirthday(IClient c, int idate)
-    {
-        int year = idate / 10000;
-        int month = (idate - year * 10000) / 100;
-        int day = idate - year * 10000 - month * 100;
-        var cal = new DateTime(year, month, day);
-        return c.checkBirthDate(cal);
     }
 
     private bool canBuy(IPlayer chr, CashItem? item, int cash)

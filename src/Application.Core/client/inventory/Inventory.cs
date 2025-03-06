@@ -35,7 +35,6 @@ namespace client.inventory;
  */
 public class Inventory : IEnumerable<Item>
 {
-    readonly ILogger log;
     /// <summary>
     /// Slot - Item
     /// </summary>
@@ -53,7 +52,6 @@ public class Inventory : IEnumerable<Item>
         this.inventory = new();
         this.type = type;
         this.slotLimit = slotLimit;
-        log = mc.Log;
     }
 
     public bool isExtendableInventory()
@@ -135,7 +133,7 @@ public class Inventory : IEnumerable<Item>
             var itemName = ii.getName(item.getItemId());
             if (itemName == null)
             {
-                log.Error("[CRITICAL] Item {ItemId} has no name", item.getItemId());
+                owner.Log.Error("[CRITICAL] Item {ItemId} has no name", item.getItemId());
                 continue;
             }
 

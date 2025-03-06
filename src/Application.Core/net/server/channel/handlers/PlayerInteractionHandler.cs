@@ -371,7 +371,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                 {
                     p.readShort();
                     int birthday = p.readInt();
-                    if (!CashOperationHandler.checkBirthday(c, birthday))
+                    if (!c.CheckBirthday(birthday))
                     { // birthday check here found thanks to lucasziron
                         c.sendPacket(PacketCreator.serverNotice(1, "Please check again the birthday date."));
                         return;

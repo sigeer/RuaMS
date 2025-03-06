@@ -46,7 +46,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private PacketProcessor packetProcessor;
 
     private Hwid _hwid = Hwid.Default();
-    private string remoteAddress;
+    private string remoteAddress = "null";
     public string ClientInfo => $"{remoteAddress}_{sessionId}";
 
     private IChannel? _ioChannel;
@@ -838,7 +838,16 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public bool checkBirthDate(DateTime date)
     {
-        return date.Date == birthday.GetValueOrDefault().Date;
+        if (birthday.HasValue)
+            return date.Month == birthday.Value.Month && date.Day == birthday.Value.Day;
+        return false;
+    }
+
+    public bool CheckBirthday(int dateInt)
+    {
+        if (DateTime.TryParse(dateInt.ToString(), out var d))
+            return checkBirthDate(d);
+        return false;
     }
 
     private static void removePartyPlayer(IPlayer player, IWorld wserv)
