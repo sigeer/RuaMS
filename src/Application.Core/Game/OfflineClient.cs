@@ -556,5 +556,10 @@ namespace Application.Core.Game
         {
             throw new BusinessCharacterOfflineException();
         }
+
+        public bool CheckBirthday(int dateInt)
+        {
+            throw new BusinessCharacterOfflineException();
+        }
     }
 }

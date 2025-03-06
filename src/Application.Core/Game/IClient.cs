@@ -63,6 +63,7 @@ namespace Application.Core.Game
         bool canRequestCharlist();
         void changeChannel(int channel);
         bool checkBirthDate(DateTime date);
+        bool CheckBirthday(int dateInt);
         void checkChar(int accid);
         void checkIfIdle(IdleStateEvent evt);
         bool checkPic(string other);
