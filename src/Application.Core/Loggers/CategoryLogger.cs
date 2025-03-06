@@ -27,13 +27,9 @@ namespace Application.Core.Loggers
 
         public static ILogger GetCharacterLog(int accountId, int characterId, string type = "Account")
         {
-            return GetLogger($"{type}/{type}_{new RangeNumberGenerator(accountId, RangeSteps.Accounts)}/{accountId}/Character_{characterId}");
+            return GetLogger($"{type}/{type}_{new RangeNumberGenerator(accountId, RangeSteps.Accounts)}/Account_{accountId}/Character_{characterId}");
         }
 
-        public static ILogger GetAccountLog(int accountId, string type = "Account")
-        {
-            return GetLogger($"{type}/{type}_{new RangeNumberGenerator(accountId, RangeSteps.Accounts)}/{accountId}/{type}");
-        }
         public static ILogger CommandLogger => GetLogger("Command");
         public static ILogger GM => GetLogger("GM");
 
