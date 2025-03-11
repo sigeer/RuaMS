@@ -40,6 +40,7 @@ namespace Application.Core.Game.TheWorld
         public float MobRate { get; set; }
 
         public WeddingWorldInstance WeddingInstance { get; }
+        public FishingWorldInstance FishingInstance { get; }
         /// <summary>
         /// 调整频道数量
         /// </summary>
@@ -115,7 +116,6 @@ namespace Application.Core.Game.TheWorld
         void partyChat(ITeam party, string chattext, string namefrom);
         void putGuildQueued(int guildId);
         bool registerDisabledServerMessage(int chrid);
-        bool registerFisherPlayer(IPlayer chr, int baitLevel);
         void registerHiredMerchant(HiredMerchant hm);
         void registerMountHunger(IPlayer chr);
         void registerPetHunger(IPlayer chr, sbyte petSlot);
@@ -130,7 +130,6 @@ namespace Application.Core.Game.TheWorld
         BuddyList.BuddyAddResult requestBuddyAdd(string addName, int channelFrom, int cidFrom, string nameFrom);
         void resetDisabledServerMessages();
         void resetPlayerNpcMapData();
-        void runCheckFishingSchedule();
         void runDisabledServerMessagesSchedule();
         void runHiredMerchantSchedule();
         void runMountSchedule();
@@ -154,7 +153,6 @@ namespace Application.Core.Game.TheWorld
         void silentLeaveMessenger(int messengerid, MessengerCharacter target);
         void unregisterAccountStorage(int accountId);
         bool unregisterDisabledServerMessage(int chrid);
-        int unregisterFisherPlayer(IPlayer chr);
         void unregisterHiredMerchant(HiredMerchant hm);
         void unregisterMountHunger(IPlayer chr);
         void unregisterPetHunger(IPlayer chr, sbyte petSlot);

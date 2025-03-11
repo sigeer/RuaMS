@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using net.server;
+using server;
 using server.events;
 using server.life;
 using server.quest;
@@ -1192,6 +1193,29 @@ namespace Application.Core.Managers
                     });
                     player.Client.NPCConversationManager = tempConversation;
                 }
+            }
+        }
+
+        public static void ShowAllEquipFeatures(IPlayer player)
+        {
+            string showMsg = "";
+
+            ItemInformationProvider ii = ItemInformationProvider.getInstance();
+            foreach (Item item in player.getInventory(InventoryType.EQUIPPED).list())
+            {
+                Equip nEquip = (Equip)item;
+                var itemName = ii.getName(nEquip.getItemId());
+                if (itemName == null)
+                {
+                    continue;
+                }
+
+                showMsg += ItemManager.ShowEquipFeatures(nEquip);
+            }
+
+            if (showMsg.Count() > 0)
+            {
+                player.showHint("#ePLAYER EQUIPMENTS:#n\r\n\r\n" + showMsg, 400);
             }
         }
 

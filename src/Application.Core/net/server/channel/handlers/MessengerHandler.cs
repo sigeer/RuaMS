@@ -39,7 +39,7 @@ public class MessengerHandler : AbstractPacketHandler
                 byte mode = p.readByte();
                 var player = c.OnlinedCharacter;
                 var world = c.getWorldServer();
-                var messenger = player.getMessenger();
+                var messenger = player.Messenger;
                 switch (mode)
                 {
                     case 0x00:
@@ -99,7 +99,7 @@ public class MessengerHandler : AbstractPacketHandler
                             var target = c.getChannelServer().getPlayerStorage().getCharacterByName(input);
                             if (target != null)
                             {
-                                if (target.getMessenger() == null)
+                                if (target.Messenger == null)
                                 {
                                     if (InviteCoordinator.createInvite(InviteType.MESSENGER, c.OnlinedCharacter, messenger.getId(), target.getId()))
                                     {
@@ -140,7 +140,7 @@ public class MessengerHandler : AbstractPacketHandler
                     case 0x06:
                         if (messenger != null)
                         {
-                            MessengerCharacter messengerplayer = new MessengerCharacter(player, player.getMessengerPosition());
+                            MessengerCharacter messengerplayer = new MessengerCharacter(player, player.MessengerPosition);
                             input = p.readString();
                             world.messengerChat(messenger, input, messengerplayer.getName());
                         }

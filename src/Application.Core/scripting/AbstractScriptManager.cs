@@ -61,7 +61,7 @@ public abstract class AbstractScriptManager
         {
             if (!File.Exists(path))
             {
-                log.Fatal($"script {path} not found");
+                log.Error($"script {path} not found");
                 return null;
             }
             jsContent = File.ReadAllText(path);

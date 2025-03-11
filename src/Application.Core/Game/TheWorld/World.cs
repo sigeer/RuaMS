@@ -94,6 +94,7 @@ public class World : IWorld
     private Dictionary<int, Family> families = new();
 
     public WeddingWorldInstance WeddingInstance { get; }
+    public FishingWorldInstance FishingInstance { get; }
 
     private ServicesManager<WorldServices> services = new ServicesManager<WorldServices>(WorldServices.SAVE_CHARACTER);
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
@@ -140,7 +141,6 @@ public class World : IWorld
     private ScheduledFuture? timedMapObjectsSchedule;
     private object timedMapObjectLock = new object();
 
-    private Dictionary<IPlayer, int> fishingAttempters = new Dictionary<IPlayer, int>();
     private Dictionary<IPlayer, int> playerHpDec = new Dictionary<IPlayer, int>();
 
     private ScheduledFuture? charactersSchedule;
@@ -204,6 +204,7 @@ public class World : IWorld
             YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
 
         WeddingInstance = new WeddingWorldInstance(this);
+        FishingInstance = new FishingWorldInstance(this);
 
         if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
@@ -858,7 +859,7 @@ public class World : IWorld
             var targetChr = getPlayerStorage().getCharacterByName(target);
             if (targetChr != null && targetChr.IsOnlined)
             {
-                var messenger = targetChr.getMessenger();
+                var messenger = targetChr.Messenger;
                 if (messenger == null)
                 {
                     var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
@@ -1252,7 +1253,7 @@ public class World : IWorld
 
         return cashLeaderboards;
     }
-
+    #region Pet
     public void registerPetHunger(IPlayer chr, sbyte petSlot)
     {
         if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
@@ -1339,7 +1340,9 @@ public class World : IWorld
             }
         }
     }
+    #endregion
 
+    #region
     public void registerMountHunger(IPlayer chr)
     {
         if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
@@ -1427,7 +1430,9 @@ public class World : IWorld
             }
         }
     }
+    #endregion
 
+    #region
     public void registerPlayerShop(PlayerShop ps)
     {
         Monitor.Enter(activePlayerShopsLock);
@@ -1479,7 +1484,8 @@ public class World : IWorld
             Monitor.Exit(activePlayerShopsLock);
         }
     }
-
+    #endregion
+    #region
     public void registerHiredMerchant(HiredMerchant hm)
     {
         Monitor.Enter(activeMerchantsLock);
@@ -1575,7 +1581,8 @@ public class World : IWorld
             Monitor.Exit(activeMerchantsLock);
         }
     }
-
+    #endregion
+    #region
     public void registerTimedMapObject(Action r, long duration)
     {
         Monitor.Enter(timedMapObjectLock);
@@ -1622,6 +1629,7 @@ public class World : IWorld
             r.Invoke();
         }
     }
+    #endregion
 
     public void addPlayerHpDecrease(IPlayer chr)
     {
@@ -1873,54 +1881,6 @@ public class World : IWorld
         foreach (var player in getPlayerStorage().GetAllOnlinedPlayers())
         {
             player.dropMessage(type, message);
-        }
-    }
-
-    public bool registerFisherPlayer(IPlayer chr, int baitLevel)
-    {
-        lock (fishingAttempters)
-        {
-            if (fishingAttempters.ContainsKey(chr))
-            {
-                return false;
-            }
-
-            fishingAttempters.Add(chr, baitLevel);
-            return true;
-        }
-    }
-
-    public int unregisterFisherPlayer(IPlayer chr)
-    {
-        if (fishingAttempters.Remove(chr, out var baitLevel))
-        {
-            return baitLevel;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-
-    public void runCheckFishingSchedule()
-    {
-        double[] fishingLikelihoods = Fishing.fetchFishingLikelihood();
-        double yearLikelihood = fishingLikelihoods[0], timeLikelihood = fishingLikelihoods[1];
-
-        if (fishingAttempters.Count > 0)
-        {
-            List<IPlayer> fishingAttemptersList;
-
-            lock (fishingAttempters)
-            {
-                fishingAttemptersList = new(fishingAttempters.Keys);
-            }
-
-            foreach (IPlayer chr in fishingAttemptersList)
-            {
-                int baitLevel = unregisterFisherPlayer(chr);
-                Fishing.doFishing(chr, baitLevel, yearLikelihood, timeLikelihood);
-            }
         }
     }
 

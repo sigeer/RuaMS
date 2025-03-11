@@ -32,7 +32,7 @@ namespace net.server.coordinator.session;
  */
 public class SessionCoordinator
 {
-    private static ILogger log = LogFactory.GetLogger("SessionCoordinator");
+    private static ILogger log = LogFactory.GetLogger(LogType.Session);
     private static SessionCoordinator instance = new SessionCoordinator();
 
     public static SessionCoordinator getInstance()

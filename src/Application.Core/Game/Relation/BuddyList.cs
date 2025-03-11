@@ -44,17 +44,6 @@ public class BuddyList
         return ble?.Visible ?? false;
 
     }
-
-    public int getCapacity()
-    {
-        return Capacity;
-    }
-
-    public void setCapacity(int capacity)
-    {
-        Capacity = capacity;
-    }
-
     public BuddylistEntry? get(int characterId)
     {
         return buddies.GetValueOrDefault(characterId);
@@ -88,18 +77,12 @@ public class BuddyList
 
     public bool isFull()
     {
-        lock (buddies)
-        {
-            return buddies.Count >= Capacity;
-        }
+        return buddies.Count >= Capacity;
     }
 
     public int[] getBuddyIds()
     {
-        lock (buddies)
-        {
-            return buddies.Keys.ToArray();
-        }
+        return buddies.Keys.ToArray();
     }
 
     public void broadcast(Packet packet)
@@ -159,7 +142,7 @@ public class BuddyList
 
     public void addBuddyRequest(IClient c, int cidFrom, string nameFrom, int channelFrom)
     {
-        // 只是申请为什么要加数据？
+        // 鍙槸鐢宠涓轰粈涔堣鍔犳暟鎹紵
         put("Default Group", cidFrom, false);
         if (_pendingRequests.Count == 0)
         {

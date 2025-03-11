@@ -1,6 +1,7 @@
-﻿using Application.Core.Game.Items;
+using Application.Core.Game.Items;
 using client.inventory;
 using client.inventory.manipulator;
+using constants.game;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using server;
@@ -150,5 +151,18 @@ namespace Application.Core.Managers
             return equippedWithStat;
         }
 
+        public static string ShowEquipFeatures(Equip equip)
+        {
+            ItemInformationProvider ii = ItemInformationProvider.getInstance();
+            if (!ii.isUpgradeable(equip.getItemId()))
+            {
+                return "";
+            }
+
+            var eqpName = ii.getName(equip.getItemId());
+            var eqpInfo = equip.ReachedMaxLevel() ? " #e#rMAX LEVEL#k#n" : (" EXP: #e#b" + (int)equip.getItemExp() + "#k#n / " + ExpTable.getEquipExpNeededForLevel(equip.getItemLevel()));
+
+            return "'" + eqpName + "' -> LV: #e#b" + equip.getItemLevel() + "#k#n    " + eqpInfo + "\r\n";
+        }
     }
 }

@@ -336,11 +336,8 @@ namespace Application.Core.Game.Players
         int getMeso();
         float getMesoRate();
         int getMesosTraded();
-        Messenger? getMessenger();
-        int getMessengerPosition();
         int getMiniGamePoints(MiniGame.MiniGameResult type, bool omok);
         MonsterBook getMonsterBook();
-        int getMonsterBookCover();
         MonsterCarnival? getMonsterCarnival();
         MonsterCarnivalParty? getMonsterCarnivalParty();
         void SetMount(IMount? mount);
@@ -348,7 +345,6 @@ namespace Application.Core.Game.Players
         string getName();
         NewYearCardRecord? getNewYearRecord(int cardid);
         HashSet<NewYearCardRecord> getNewYearRecords();
-        int getNextEmptyPetIndex();
         int getNoPets();
         long getNpcCooldown();
         int getNumControlledMonsters();
@@ -668,7 +664,6 @@ namespace Application.Core.Game.Players
         void setWorld(int world);
         void setWorldRates();
         void shiftPetsRight();
-        void showAllEquipFeatures();
         void showDojoClock();
         void showHint(string msg);
         void showHint(string msg, int length);

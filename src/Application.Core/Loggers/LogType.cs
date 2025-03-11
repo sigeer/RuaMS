@@ -3,6 +3,7 @@ namespace Application.Core.Loggers
     public class LogType
     {
         public const string Server = "Server";
+        public const string Login = "Login";
         public const string Expedition = "Expedition";
         public const string Chat = "Chat";
         public const string MapleAESOFB = "MapleAESOFB";

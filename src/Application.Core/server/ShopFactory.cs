@@ -60,19 +60,16 @@ public class ShopFactory
 
     public Shop? getShop(int shopId)
     {
-        if (shops.ContainsKey(shopId))
-        {
-            return shops[shopId];
-        }
+        if (shops.TryGetValue(shopId, out var d))
+            return d;
+
         return loadShop(shopId, true);
     }
 
     public Shop? getShopForNPC(int npcId)
     {
-        if (npcShops.ContainsKey(npcId))
-        {
-            return npcShops[npcId];
-        }
+        if (npcShops.TryGetValue(npcId, out var d))
+            return d;
         return loadShop(npcId, false);
     }
 
