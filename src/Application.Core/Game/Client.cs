@@ -967,7 +967,7 @@ public class Client : ChannelHandlerAdapter, IClient
         //once per Client instance
         if (Character != null && Character.isLoggedin() && Character.getClient() != null)
         {
-            int messengerid = Character.getMessenger()?.getId() ?? 0;
+            int messengerid = Character.Messenger?.getId() ?? 0;
             //int fid = OnlinedCharacter.getFamilyId();
             MessengerCharacter chrm = new MessengerCharacter(Character, 0);
 
