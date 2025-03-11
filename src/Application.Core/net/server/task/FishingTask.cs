@@ -30,7 +30,7 @@ public class FishingTask : BaseTask
 
     public override void HandleRun()
     {
-        wserv.runCheckFishingSchedule();
+        wserv.FishingInstance.RunCheckFishingSchedule();
     }
 
     public FishingTask(IWorld world) : base(world)

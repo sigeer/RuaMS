@@ -85,8 +85,7 @@ namespace Application.Core.Game.Players
 
         public void Reload()
         {
-            BuddyList.setCapacity(BuddyCapacity);
-
+            BuddyList.Capacity = BuddyCapacity;
             Bag[InventoryType.EQUIP].setSlotLimit(Equipslots);
             Bag[InventoryType.USE].setSlotLimit(Useslots);
             Bag[InventoryType.SETUP].setSlotLimit(Setupslots);

@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Core.scripting.Event;
 using client;
@@ -21,7 +21,7 @@ namespace Application.Core.Game.Players
             {
                 if (ItemConstants.isFishingChair(chairid))
                 {
-                    this.getWorldServer().unregisterFisherPlayer(this);
+                    this.getWorldServer().FishingInstance.UnregisterFisherPlayer(this);
                 }
 
                 setChair(-1);

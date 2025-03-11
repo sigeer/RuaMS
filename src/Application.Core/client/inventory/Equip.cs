@@ -56,7 +56,8 @@ public class Equip : Item
     private float itemExp;
     private int ringid = -1;
     private bool _wear = false;
-    private bool isUpgradeable, isElemental = false;    // timeless or reverse, or any equip that could levelup on GMS for all effects
+    private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
+    public bool IsElemental { get; }
 
     public Equip(int id, short position, int slots = 0) : base(id, position, 1)
     {
@@ -65,7 +66,7 @@ public class Equip : Item
         this.itemExp = 0;
         this.itemLevel = 1;
 
-        this.isElemental = (ItemInformationProvider.getInstance().getEquipLevel(id, false) > 1);
+        IsElemental = (ItemInformationProvider.getInstance().getEquipLevel(id, false) > 1);
     }
 
     public override Item copy()
@@ -608,7 +609,7 @@ public class Equip : Item
     {
         List<KeyValuePair<StatUpgrade, int>> stats = new();
 
-        if (isElemental)
+        if (IsElemental)
         {
             var elementalStats = ItemInformationProvider.getInstance().getItemLevelupStats(getItemId(), itemLevel);
 
@@ -731,8 +732,6 @@ public class Equip : Item
     {
         lock (gainExpLock)
         {
-
-
             // Ronan's Equip Exp gain method
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             if (!ii.isUpgradeable(this.getItemId()))
@@ -749,7 +748,7 @@ public class Equip : Item
             int reqLevel = ii.getEquipLevelReq(this.getItemId());
 
             float masteryModifier = (float)(YamlConfig.config.server.EQUIP_EXP_RATE * ExpTable.getExpNeededForLevel(1)) / (float)normalizedMasteryExp(reqLevel);
-            float elementModifier = (isElemental) ? 0.85f : 0.6f;
+            float elementModifier = (IsElemental) ? 0.85f : 0.6f;
 
             float baseExpGain = gain * elementModifier * masteryModifier;
 
@@ -784,9 +783,9 @@ public class Equip : Item
         }
     }
 
-    private bool reachedMaxLevel()
+    public bool ReachedMaxLevel()
     {
-        if (isElemental)
+        if (IsElemental)
         {
             if (itemLevel < ItemInformationProvider.getInstance().getEquipLevel(getItemId(), true))
             {
@@ -795,20 +794,6 @@ public class Equip : Item
         }
 
         return itemLevel >= YamlConfig.config.server.USE_EQUIPMNT_LVLUP;
-    }
-
-    public string showEquipFeatures(IClient c)
-    {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        if (!ii.isUpgradeable(this.getItemId()))
-        {
-            return "";
-        }
-
-        var eqpName = ii.getName(getItemId());
-        var eqpInfo = reachedMaxLevel() ? " #e#rMAX LEVEL#k#n" : (" EXP: #e#b" + (int)itemExp + "#k#n / " + ExpTable.getEquipExpNeededForLevel(itemLevel));
-
-        return "'" + eqpName + "' -> LV: #e#b" + itemLevel + "#k#n    " + eqpInfo + "\r\n";
     }
 
     private static void showLevelupMessage(string msg, IClient c)

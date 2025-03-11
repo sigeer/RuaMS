@@ -2582,11 +2582,6 @@ public partial class Player
         return mesosTraded;
     }
 
-    public int getMessengerPosition()
-    {
-        return MessengerPosition;
-    }
-
     public int getTargetHpBarHash()
     {
         return this.targetHpBarHash;
@@ -2630,41 +2625,9 @@ public partial class Player
     {
         return Monsterbook;
     }
-
-    public int getMonsterBookCover()
-    {
-        return Monsterbookcover;
-    }
-
-
-    public Messenger? getMessenger()
-    {
-        return Messenger;
-    }
-
     public string getName()
     {
         return Name;
-    }
-
-    public int getNextEmptyPetIndex()
-    {
-        Monitor.Enter(petLock);
-        try
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                if (pets[i] == null)
-                {
-                    return i;
-                }
-            }
-            return 3;
-        }
-        finally
-        {
-            Monitor.Exit(petLock);
-        }
     }
 
     public int getNoPets()
@@ -2679,8 +2642,6 @@ public partial class Player
             Monitor.Exit(petLock);
         }
     }
-
-
 
     public PlayerShop? getPlayerShop()
     {
@@ -2767,14 +2728,14 @@ public partial class Player
 
     public void closePlayerMessenger()
     {
-        Messenger? m = this.getMessenger();
+        Messenger? m =  Messenger;
         if (m == null)
         {
             return;
         }
 
         var w = getWorldServer();
-        MessengerCharacter messengerplayer = new MessengerCharacter(this, this.getMessengerPosition());
+        MessengerCharacter messengerplayer = new MessengerCharacter(this, this.MessengerPosition);
 
         w.leaveMessenger(m.getId(), messengerplayer);
         this.setMessenger(null);
@@ -3038,15 +2999,16 @@ public partial class Player
 
     public void hasGivenFame(IPlayer to)
     {
-        LastFameTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        LastFameCIds.Add(to.getId());
         try
         {
+            LastFameTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            LastFameCIds.Add(to.getId());
+
             using var dbContext = new DBContext();
             var dbModel = new Famelog()
             {
-                Characterid = getId(),
-                CharacteridTo = to.getId()
+                Characterid = Id,
+                CharacteridTo = to.Id
             };
             dbContext.Famelogs.Add(dbModel);
             dbContext.SaveChanges();
@@ -3181,7 +3143,7 @@ public partial class Player
         return YamlConfig.config.server.USE_FISHING_SYSTEM && MapId.isFishingArea(getMapId()) &&
                 this.getPosition().Y > 0 &&
                 ItemConstants.isFishingChair(chair.get()) &&
-                this.getWorldServer().registerFisherPlayer(this, baitLevel);
+                this.getWorldServer().FishingInstance.RegisterFisherPlayer(this, baitLevel);
     }
 
     public void leaveMap()
@@ -4493,7 +4455,7 @@ public partial class Player
 
     public void setBuddyCapacity(int capacity)
     {
-        BuddyList.setCapacity(capacity);
+        BuddyList.Capacity = capacity;
         sendPacket(PacketCreator.updateBuddyCapacity(capacity));
     }
 
@@ -5491,31 +5453,6 @@ public partial class Player
         }
     }
 
-    public void showAllEquipFeatures()
-    {
-        string showMsg = "";
-
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        foreach (Item item in getInventory(InventoryType.EQUIPPED).list())
-        {
-            Equip nEquip = (Equip)item;
-            var itemName = ii.getName(nEquip.getItemId());
-            if (itemName == null)
-            {
-                continue;
-            }
-
-            showMsg += nEquip.showEquipFeatures(Client);
-        }
-
-        if (showMsg.Count() > 0)
-        {
-            this.showHint("#ePLAYER EQUIPMENTS:#n\r\n\r\n" + showMsg, 400);
-        }
-    }
-
-
-
     public Dictionary<string, Events> getEvents()
     {
         return Events;
@@ -5650,7 +5587,6 @@ public partial class Player
             {
                 // Client = null;  // clients still triggers handlers a few times after disconnecting
                 // base.MapModel = null;
-
                 // thanks Shavit for noticing a memory leak with inventories holding owner object
                 Bag.Dispose();
 

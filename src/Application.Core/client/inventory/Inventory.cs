@@ -312,12 +312,7 @@ public class Inventory : IEnumerable<Item>
         }
     }
 
-    public void removeItem(short slot)
-    {
-        removeItem(slot, 1, false);
-    }
-
-    public void removeItem(short slot, short quantity, bool allowZero)
+    public void removeItem(short slot, short quantity = 1, bool allowZero = false)
     {
         var item = getItem(slot);
         if (item == null)
