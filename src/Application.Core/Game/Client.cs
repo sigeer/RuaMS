@@ -23,8 +23,6 @@ using scripting.Event;
 using scripting.npc;
 using server;
 using server.maps;
-using System.Collections.Concurrent;
-using System.Net;
 using System.Text.RegularExpressions;
 using tools;
 using static net.server.coordinator.session.SessionCoordinator;
@@ -111,8 +109,7 @@ public class Client : ChannelHandlerAdapter, IClient
         CHANNEL
     }
 
-    ConcurrentQueue<Packet> packetQueue;
-    bool _isProcessing = true;
+    System.Threading.Channels.Channel<Packet> packetChannel;
     public Client(Type type, long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor, int world, int channel)
     {
         this.type = type;
@@ -125,15 +122,12 @@ public class Client : ChannelHandlerAdapter, IClient
 
         log = LogFactory.GetLogger($"Client/{remoteAddress}");
 
-        packetQueue = new ConcurrentQueue<Packet>();
+        packetChannel = System.Threading.Channels.Channel.CreateUnbounded<Packet>();
         Task.Run(async () =>
         {
-            while (_isProcessing)
+            await foreach (var p in packetChannel.Reader.ReadAllAsync())
             {
-                if (packetQueue.TryDequeue(out var p))
-                    await NettyChannel.WriteAndFlushAsync(p);
-                else
-                    await Task.Delay(10);
+                await NettyChannel.WriteAndFlushAsync(p);
             }
         });
     }
@@ -1087,7 +1081,7 @@ public class Client : ChannelHandlerAdapter, IClient
         this.birthday = null;
         this._engines.Clear();
         this.Character = null;
-        _isProcessing = false;
+        packetChannel.Writer.Complete();
     }
 
     public void setCharacterOnSessionTransitionState(int cid)
@@ -1482,7 +1476,6 @@ public class Client : ChannelHandlerAdapter, IClient
         }
     }
 
-    private object announcerLock = new object();
     public void sendPacket(Packet packet)
     {
         if (type == Type.Mock)
@@ -1491,16 +1484,8 @@ public class Client : ChannelHandlerAdapter, IClient
             return;
         }
 
-        packetQueue.Enqueue(packet);
-        //Monitor.Enter(announcerLock);
-        //try
-        //{
-        //    ioChannel.WriteAndFlushAsync(packet).Wait();
-        //}
-        //finally
-        //{
-        //    Monitor.Exit(announcerLock);
-        //}
+        if (!packetChannel.Writer.TryWrite(packet))
+            log.Error("数据包写入失败");
     }
 
     public void announceHint(string msg, int length)
@@ -1532,7 +1517,7 @@ public class Client : ChannelHandlerAdapter, IClient
             return;
         }
 
-        var socket = Server.getInstance().GetChannelEndPoint(this, getWorld(), channel);
+        var socket = server.GetChannelEndPoint(this, getWorld(), channel);
         if (socket == null)
         {
             sendPacket(PacketCreator.serverNotice(1, "Channel " + channel + " is currently disabled. Try another channel."));
