@@ -44,51 +44,44 @@ public class XMLDomMapleData : Data
         this.node = node;
     }
 
-    ConcurrentDictionary<string, Data?> dataCache = new ConcurrentDictionary<string, Data?>();
+    private string GetXPathFromPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return string.Empty;
+
+        // 判断路径是否以 ".." 开头，表示从父节点开始
+        bool isRelativeToParent = path.StartsWith("../");
+
+        // 移除 ".." 前缀，如果存在
+        if (isRelativeToParent)
+        {
+            path = path.Substring(3);  // 去掉 "../"
+        }
+
+        // 分割路径为多个段
+        string[] segments = path.Split('/');
+
+        // 构建 XPath 查询
+        string xpath = isRelativeToParent ? ".." : ".";  // 如果路径以 ".." 开头，前缀是 "../"
+
+
+        // 遍历后续路径段，继续拼接 XPath 查询
+        for (int i = 0; i < segments.Length; i++)
+        {
+            xpath += "/*[@name='" + segments[i] + "']";  // 查找子节点，name 为路径中的下一个部分
+        }
+
+        return xpath;
+    }
+
     public Data? getChildByPath(string path)
     {
-        // the whole XML reading system seems susceptible to give nulls on strenuous read scenarios
-
-        string[] segments = path.Split("/");
-        if (segments[0].Equals(".."))
-        {
-            return ((Data)getParent()).getChildByPath(path.Substring(path.IndexOf("/") + 1));
-        }
-
-        if (segments.Length == 1)
-        {
-            if (dataCache.TryGetValue(segments[0], out Data? value))
-                return value;
-
-            XmlNodeList childNodes = node.ChildNodes;
-            for (int i = 0; i < childNodes.Count; i++)
-            {
-                var childNode = childNodes.Item(i);
-                if (childNode != null && childNode.NodeType == XmlNodeType.Element)
-                {
-                    var nodeName = childNode.Attributes!.GetNamedItem("name")!.Value!;
-                    if (!dataCache.ContainsKey(nodeName))
-                    {
-                        XMLDomMapleData ret = new XMLDomMapleData(childNode);
-                        dataCache.TryAdd(nodeName, ret);
-                    }
-                }
-            }
-
-            if (dataCache.TryGetValue(segments[0], out Data? d))
-                return d;
-            else
-            {
-                dataCache.TryAdd(segments[0], null);
-                return null;
-            }
-        }
-        else
-        {
-            return getChildByPath(segments[0])?.getChildByPath(string.Join('/', segments.Skip(1)));
-        }
-
+        var xPath = GetXPathFromPath(path);
+        var xNode = node.SelectSingleNode(xPath);
+        if (xNode != null)
+            return new XMLDomMapleData(xNode);
+        return null;
     }
+
 
     List<Data>? cachedChildren = null;
     public List<Data> getChildren()
@@ -104,9 +97,7 @@ public class XMLDomMapleData : Data
             if (childNode != null && childNode.NodeType == XmlNodeType.Element)
             {
                 var nodeName = childNode.Attributes!.GetNamedItem("name")!.Value!;
-                var child = dataCache.GetOrAdd(nodeName, new XMLDomMapleData(childNode));
-                if (child != null)
-                    ret.Add(child);
+                    ret.Add(new XMLDomMapleData(childNode));
             }
         });
         return cachedChildren = ret.ToList();
