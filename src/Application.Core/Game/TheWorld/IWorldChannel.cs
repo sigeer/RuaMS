@@ -73,7 +73,6 @@ namespace Application.Core.Game.TheWorld
         MapManager getMapFactory();
         MiniDungeon? getMiniDungeon(int dungeonid);
         int getOngoingWedding(bool cathedral);
-        List<IPlayer> getPartyMembers(ITeam party);
         ChannelPlayerStorage getPlayerStorage();
         string getServerMessage();
         BaseService getServiceAccess(ChannelServices sv);

@@ -93,10 +93,7 @@ public class WorldChannel : IWorldChannel
         WeddingInstance = new WeddingChannelInstance(this);
 
         services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
-        _ = Task.Run(() =>
-        {
-            eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
-        });
+        eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
     }
 
 
@@ -293,24 +290,6 @@ public class WorldChannel : IWorldChannel
             }
         }
     }
-
-    public List<IPlayer> getPartyMembers(ITeam party)
-    {
-        List<IPlayer> partym = new(8);
-        foreach (var partychar in party.getMembers())
-        {
-            if (partychar.Channel == getId())
-            {
-                var chr = Players.getCharacterById(partychar.Id);
-                if (chr != null)
-                {
-                    partym.Add(chr);
-                }
-            }
-        }
-        return partym;
-    }
-
     public void insertPlayerAway(int chrId)
     {   
         // either they in CS or MTS

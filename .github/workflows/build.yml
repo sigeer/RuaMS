@@ -12,6 +12,7 @@ on:
       - 'src/Application.Core/**'
       - 'src/Application.Utility/**'
       - 'src/Application.Shared/**'
+      - 'src/XmlWzReader/**'
       - 'test/ServiceTest/**'
 
 jobs:
