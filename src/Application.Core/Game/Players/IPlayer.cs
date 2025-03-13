@@ -505,7 +505,7 @@ namespace Application.Core.Game.Players
         void message(string m);
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
-        void newClient(IClient c);
+        void LinkNewChannelClient(IClient newClient);
         void notifyMapTransferToPartner(int mapid);
         void partyOperationUpdate(ITeam party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
