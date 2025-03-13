@@ -22,6 +22,7 @@
 using Application.Core.scripting.Event;
 using net.server;
 using server;
+using System.Threading;
 
 namespace scripting.Event.scheduler;
 /**
@@ -34,8 +35,10 @@ public class EventScriptScheduler
     private int idleProcs = 0;
     private Dictionary<Action, long> registeredEntries = new();
 
-    private ScheduledFuture? schedulerTask = null;
+    private Task? schedulerTask = null;
     private object schedulerLock = new object();
+
+    CancellationTokenSource? cancellationTokenSource;
 
     private void runBaseSchedule()
     {
@@ -53,7 +56,7 @@ public class EventScriptScheduler
                 {
                     if (schedulerTask != null)
                     {
-                        schedulerTask.cancel(false);
+                        cancellationTokenSource?.Cancel();
                         schedulerTask = null;
                     }
                 }
@@ -98,14 +101,17 @@ public class EventScriptScheduler
         try
         {
             idleProcs = 0;
-            if (schedulerTask == null)
+            if (schedulerTask == null && !disposed)
             {
-                if (disposed)
+                cancellationTokenSource = new CancellationTokenSource();
+                schedulerTask = Task.Run(async () =>
                 {
-                    return;
-                }
-
-                schedulerTask = TimerManager.getInstance().register(() => runBaseSchedule(), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+                    while (!cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        await Task.Delay(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+                        runBaseSchedule();
+                    }
+                }, cancellationTokenSource.Token);
             }
 
             registeredEntries.Add(scheduledAction, Server.getInstance().getCurrentTime() + duration);
@@ -134,9 +140,9 @@ public class EventScriptScheduler
         Monitor.Enter(schedulerLock);
         try
         {
+            cancellationTokenSource?.Cancel();
             if (schedulerTask != null)
             {
-                schedulerTask.cancel(false);
                 schedulerTask = null;
             }
 

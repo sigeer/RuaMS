@@ -18,10 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using Application.Core.scripting.Event;
-using server;
-
 namespace net.server.services;
 
 
@@ -35,8 +31,10 @@ public abstract class BaseScheduler
     private List<object> externalLocks = new();
     private Dictionary<object, KeyValuePair<AbstractRunnable, long>> registeredEntries = new();
 
-    private ScheduledFuture? schedulerTask = null;
+    private Task? schedulerTask = null;
     private object schedulerLock = new object();
+
+    CancellationTokenSource? cancellationTokenSource;
 
     protected BaseScheduler()
     {
@@ -98,7 +96,7 @@ public abstract class BaseScheduler
                 {
                     if (schedulerTask != null)
                     {
-                        schedulerTask.cancel(false);
+                        cancellationTokenSource?.Cancel();
                         schedulerTask = null;
                     }
                 }
@@ -154,10 +152,15 @@ public abstract class BaseScheduler
             idleProcs = 0;
             if (schedulerTask == null)
             {
-                schedulerTask = TimerManager.getInstance().register(() =>
+                cancellationTokenSource = new CancellationTokenSource();
+                schedulerTask = Task.Run(async () =>
                 {
-                    runBaseSchedule();
-                }, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+                    while (!cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        await Task.Delay(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+                        runBaseSchedule();
+                    }
+                }, cancellationTokenSource.Token);
             }
 
             registeredEntries.AddOrUpdate(key, new(removalAction, Server.getInstance().getCurrentTime() + duration));
@@ -206,9 +209,9 @@ public abstract class BaseScheduler
         lockScheduler();
         try
         {
+            cancellationTokenSource?.Cancel();
             if (schedulerTask != null)
             {
-                schedulerTask.cancel(false);
                 schedulerTask = null;
             }
 
