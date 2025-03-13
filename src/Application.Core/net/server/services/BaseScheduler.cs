@@ -150,7 +150,7 @@ public abstract class BaseScheduler
         try
         {
             idleProcs = 0;
-            if (schedulerTask != null)
+            if (schedulerTask == null)
             {
                 cancellationTokenSource = new CancellationTokenSource();
                 schedulerTask = Task.Run(async () =>

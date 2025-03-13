@@ -101,7 +101,7 @@ public class EventScriptScheduler
         try
         {
             idleProcs = 0;
-            if (schedulerTask != null && !disposed)
+            if (schedulerTask == null && !disposed)
             {
                 cancellationTokenSource = new CancellationTokenSource();
                 schedulerTask = Task.Run(async () =>
