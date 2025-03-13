@@ -218,9 +218,8 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             // 换线，离开商城拍卖回到主世界
             if (!newcomer)
             {
-                c.setLanguage(player.getClient().getLanguage());
-                c.setCharacterSlots((sbyte)player.getClient().getCharacterSlots());
-                player.newClient(c);
+
+                player.LinkNewChannelClient(c);
             }
 
             cserv.addPlayer(player);

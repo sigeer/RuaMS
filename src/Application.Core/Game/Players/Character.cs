@@ -569,10 +569,14 @@ public partial class Player
         this.Client = c;
     }
 
-    public void newClient(IClient c)
+    public void LinkNewChannelClient(IClient newClient)
     {
-        c.setAccountName(this.Client.getAccountName());//No null's for accountName
-        this.setClient(c);
+        newClient.setLanguage(Client.getLanguage());
+        newClient.setCharacterSlots((sbyte)Client.getCharacterSlots());
+        newClient.setAccountName(Client.getAccountName());//No null's for accountName
+
+        this.setClient(newClient);
+        this.setMap(newClient.getChannelServer().getMapFactory().getMap(getMapId()));
         var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;
         this.setPosition(portal.getPosition());
         this.InitialSpawnPoint = portal.getId();

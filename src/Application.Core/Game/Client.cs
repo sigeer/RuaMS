@@ -1081,7 +1081,7 @@ public class Client : ChannelHandlerAdapter, IClient
         this.birthday = null;
         this._engines.Clear();
         this.Character = null;
-        packetChannel.Writer.Complete();
+        this.packetChannel.Writer.TryComplete();
     }
 
     public void setCharacterOnSessionTransitionState(int cid)
