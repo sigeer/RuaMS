@@ -66,23 +66,16 @@ public class Guild : IGuild
 
     readonly IMapper Mapper = GlobalTools.Mapper;
 
-    public Guild(List<IPlayer> members)
+    public Guild(int worldId, List<IPlayer> members)
     {
+        world = worldId;
         this.members = members;
     }
 
     private int world = -1;
-    private int GetWorld()
-    {
-        if (world != -1)
-            return world;
-
-        return world = members.FirstOrDefault(x => x.GuildId == GuildId)!.World;
-    }
-
     private IWorld GetWorldModel()
     {
-        return Server.getInstance().getWorld(GetWorld())!;
+        return Server.getInstance().getWorld(world)!;
     }
 
     private void buildNotifications()
