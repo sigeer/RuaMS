@@ -161,15 +161,11 @@ public class Server
 
     private void loadPlayerNpcMapStepFromDb()
     {
-        var wlist = this.getWorlds();
-
         using var dbContext = new DBContext();
         var list = dbContext.PlayernpcsFields.AsNoTracking().ToList();
         list.ForEach(rs =>
         {
-            var w = wlist.FirstOrDefault(x => x.getId() == rs.World);
-            if (w != null)
-                w.setPlayerNpcMapData(rs.Map, rs.Step, rs.Podium);
+            RunningWorlds[rs.World]?.setPlayerNpcMapData(rs.Map, rs.Step, rs.Podium);
         });
     }
 
@@ -550,7 +546,7 @@ public class Server
             sw.Start();
             SkillFactory.LoadAllSkills();
             sw.Stop();
-            log.Debug("Skills loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+            log.Debug("WZ - 技能加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
         _ = Task.Run(() =>
@@ -559,7 +555,7 @@ public class Server
             sw.Start();
             CashItemFactory.loadAllCashItems();
             sw.Stop();
-            log.Debug("CashItems loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+            log.Debug("WZ - 现金道具加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
         _ = Task.Run(() =>
@@ -568,7 +564,7 @@ public class Server
             sw.Start();
             Quest.loadAllQuests();
             sw.Stop();
-            log.Debug("Quest loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+            log.Debug("WZ - 任务加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
         _ = Task.Run(() =>
@@ -577,7 +573,7 @@ public class Server
             sw.Start();
             SkillbookInformationProvider.loadAllSkillbookInformation();
             sw.Stop();
-            log.Debug("Skillbook loaded in {StarupCost}s", sw.Elapsed.TotalSeconds);
+            log.Debug("WZ - 能手册加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
         });
 
         OpcodeConstants.generateOpcodeNames();
