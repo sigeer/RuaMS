@@ -1006,7 +1006,7 @@ public class AbstractPlayerInteraction
 
     public int getPlayerCount(int mapid)
     {
-        return c.getChannelServer().getMapFactory().getMap(mapid).getCharacters().Count;
+        return c.getChannelServer().getMapFactory().getMap(mapid).getAllPlayers().Count;
     }
 
     public void showInstruction(string msg, int width, int height)

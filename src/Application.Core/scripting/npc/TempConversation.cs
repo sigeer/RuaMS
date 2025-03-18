@@ -5,6 +5,7 @@ namespace Application.Core.scripting.npc
 {
     public enum TempConversationType
     {
+        Default,
         Select,
         InputNumber,
         YesNo
@@ -20,7 +21,12 @@ namespace Application.Core.scripting.npc
 
         public TempConversation(IClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc, null)
         {
+        }
 
+        public void RegisterTalk(string text)
+        {
+            _type = TempConversationType.Default;
+            sendSimple(text);
         }
 
         public void RegisterSelect(string text, Action<int, TempConversation> onSelect)

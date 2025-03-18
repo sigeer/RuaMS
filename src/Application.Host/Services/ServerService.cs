@@ -35,8 +35,6 @@ namespace Application.Host.Services
             var allWorlds = ServerManager.LoadAllWorld();
 
             var srv = Server.getInstance();
-            var allRunningWorlds = srv.getWorlds();
-
             var allDto = _mapper.Map<List<WorldServerDto>>(allWorlds);
             var allConfigs = _mapper.Map<List<WorldServerConfig>>(allWorlds);
             allDto.ForEach(w =>

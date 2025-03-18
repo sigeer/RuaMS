@@ -78,7 +78,7 @@ public class MapleMap : IMap
     public AtomicInteger droppedItemCount { get; set; } = new AtomicInteger(0);
 
 
-    private HashSet<IPlayer> characters = new();
+    private Dictionary<int, IPlayer> characters = new();
     private Dictionary<int, HashSet<int>> mapParty = new();
     private Dictionary<int, Portal> portals = new();
     private Dictionary<int, int> backgroundTypes = new();
@@ -211,7 +211,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            characters.Where(chrFilter).ToList()
+            getAllPlayers().Where(chrFilter).ToList()
                     .ForEach(chr => chr.sendPacket(packet));
         }
         finally
@@ -423,7 +423,7 @@ public class MapleMap : IMap
         {
             mapobject.setObjectId(curOID);
             this.mapobjects.AddOrUpdate(curOID, mapobject);
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 if (condition == null || condition.Invoke(chr))
                 {
@@ -1377,18 +1377,15 @@ public class MapleMap : IMap
 
     public List<IPlayer> getAllPlayers()
     {
-        List<IPlayer> character;
         chrLock.EnterReadLock();
         try
         {
-            character = new(characters);
+            return characters.Values.ToList();
         }
         finally
         {
             chrLock.ExitReadLock();
         }
-
-        return character;
     }
 
     public Dictionary<int, IPlayer> getMapAllPlayers()
@@ -1408,7 +1405,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 if (box.Contains(chr.getPosition()))
                 {
@@ -2717,7 +2714,13 @@ public class MapleMap : IMap
         chrLock.EnterWriteLock();
         try
         {
-            characters.Add(chr);
+            if (characters.ContainsKey(chr.Id))
+            {
+                log.Error("MapleMap.AddPlayer {CharacterId}", chr.Id);
+                return;
+            }
+
+            characters.Add(chr.Id, chr);
             chrSize = characters.Count;
 
             if (party != null && party.getMemberById(chr.getId()) != null)
@@ -3077,7 +3080,7 @@ public class MapleMap : IMap
                 removePartyMemberInternal(chr, party.getId());
             }
 
-            characters.Remove(chr);
+            characters.Remove(chr.Id);
             if (XiGuai?.Controller == chr)
                 XiGuai = null;
         }
@@ -3188,7 +3191,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 if (chr != source)
                 {
@@ -3242,7 +3245,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 if (chr != source)
                 {
@@ -3271,7 +3274,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 Packet packet = PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod, dropDelay);
 
@@ -3311,7 +3314,7 @@ public class MapleMap : IMap
         {
             if (gmBroadcast)
             {
-                foreach (IPlayer chr in characters)
+                foreach (IPlayer chr in getAllPlayers())
                 {
                     if (chr.isGM())
                     {
@@ -3324,7 +3327,7 @@ public class MapleMap : IMap
             }
             else
             {
-                foreach (IPlayer chr in characters)
+                foreach (IPlayer chr in getAllPlayers())
                 {
                     if (chr != source)
                     {
@@ -3344,7 +3347,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 if (chr != source)
                 {
@@ -3397,9 +3400,8 @@ public class MapleMap : IMap
 
         foreach (var o in allMapObjects)
         {
-            if (o.getType() == MapObjectType.SUMMON)
+            if (o.getType() == MapObjectType.SUMMON && o is Summon summon)
             {
-                Summon summon = (Summon)o;
                 if (summon.getOwner() == chr && (chr.isSummonsEmpty() || !chr.containsSummon(summon)))
                 {
                     removedSummonObjects.Add(o.getObjectId());
@@ -3415,14 +3417,14 @@ public class MapleMap : IMap
             // rangedMapobjectTypes 和 NonRangedType都包含了NPC
             if (IsObjectInRange(o, chrPosition, rangeDistance, rangedMapobjectTypes))
             {
-                if (o.getType() == MapObjectType.REACTOR && !((Reactor)o).isAlive())
+                if (o.getType() == MapObjectType.REACTOR && o is Reactor reactor && !reactor.isAlive())
                     continue;
 
                 o.sendSpawnData(chr.getClient());
                 chr.addVisibleMapObject(o);
 
-                if (o.getType() == MapObjectType.MONSTER)
-                    ((Monster)o).aggroUpdateController();
+                if (o.getType() == MapObjectType.MONSTER && o is Monster monster)
+                    monster.aggroUpdateController();
             }
         }
 
@@ -3642,28 +3644,12 @@ public class MapleMap : IMap
 
     public Dictionary<int, IPlayer> getMapPlayers()
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            return characters.ToDictionary(x => x.getId());
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        return characters;
     }
 
     public IReadOnlyCollection<IPlayer> getCharacters()
     {
-        chrLock.EnterReadLock();
-        try
-        {
-            return new ReadOnlyCollection<IPlayer>(characters.ToArray());
-        }
-        finally
-        {
-            chrLock.ExitReadLock();
-        }
+        return getAllPlayers();
     }
 
     public IPlayer? getCharacterById(int id)
@@ -3671,7 +3657,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            return characters.FirstOrDefault(x => x.getId() == id);
+            return characters.GetValueOrDefault(id);
         }
         finally
         {
@@ -3878,7 +3864,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in this.characters)
+            foreach (IPlayer chr in this.getAllPlayers())
             {
                 sendNightEffect(chr);
             }
@@ -3894,7 +3880,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            return characters.FirstOrDefault(x => x.getName().Equals(name, StringComparison.OrdinalIgnoreCase));
+            return getAllPlayers().FirstOrDefault(x => x.getName().Equals(name, StringComparison.OrdinalIgnoreCase));
         }
         finally
         {
@@ -4283,7 +4269,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            return characters.Count(x => rect.Contains(x.getPosition()));
+            return getAllPlayers().Count(x => rect.Contains(x.getPosition()));
         }
         finally
         {
@@ -4390,7 +4376,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 if (chr != source && chr.isGM())
                 {
@@ -4419,7 +4405,7 @@ public class MapleMap : IMap
         chrLock.EnterReadLock();
         try
         {
-            foreach (IPlayer chr in characters)
+            foreach (IPlayer chr in getAllPlayers())
             {
                 if (chr != source && !chr.isGM())
                 {
@@ -4907,7 +4893,7 @@ public class MapleMap : IMap
 
     public List<IMapObject> getAllPlayer()
     {
-        return getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER));
+        return getPlayers();
     }
 
     public bool isCPQMap()

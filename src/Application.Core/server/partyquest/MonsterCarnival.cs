@@ -165,7 +165,7 @@ public class MonsterCarnival
 
     public bool canSummonR()
     {
-        return summonsR < map.MaxReactors;
+        return summonsR < map.MaxMobs;
     }
 
     public void summonR()
@@ -611,7 +611,7 @@ public class MonsterCarnival
         return this.room;
     }
 
-    public IMap getEventMap()
+    public ICPQMap getEventMap()
     {
         return this.map;
     }
