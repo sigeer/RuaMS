@@ -289,7 +289,7 @@ public class PacketCreator
                 myEquip.AddOrUpdate(pos, item.getItemId());
             }
             else if (pos > 100 && pos != 111)
-            { 
+            {
                 // don't ask. o.o
                 pos -= 100;
                 if (myEquip.TryGetValue(pos, out var d))
@@ -8110,7 +8110,8 @@ public class PacketCreator
     }
 
     public static Packet CPUpdate(bool party, int curCP, int totalCP, int team)
-    { // CPQ
+    {
+        // CPQ
         OutPacket p;
         if (!party)
         {
@@ -8151,16 +8152,16 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet startMonsterCarnival(IPlayer chr, int team, int opposition)
+    public static Packet startMonsterCarnival(IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.MONSTER_CARNIVAL_START);
-        p.writeByte(team); // team
-        p.writeShort(chr.getCP()); // Obtained CP - Used CP
-        p.writeShort(chr.getTotalCP()); // Total Obtained CP
-        p.writeShort(chr.getMonsterCarnival()!.getCP(team)); // Obtained CP - Used CP of the team
-        p.writeShort(chr.getMonsterCarnival()!.getTotalCP(team)); // Total Obtained CP of the team
-        p.writeShort(chr.getMonsterCarnival()!.getCP(opposition)); // Obtained CP - Used CP of the team
-        p.writeShort(chr.getMonsterCarnival()!.getTotalCP(opposition)); // Total Obtained CP of the team
+        p.writeByte(chr.MCTeam!.TeamFlag); // team
+        p.writeShort(chr.AvailableCP); // Obtained CP - Used CP
+        p.writeShort(chr.TotalCP); // Total Obtained CP
+        p.writeShort(chr.MCTeam!.AvailableCP); // Obtained CP - Used CP of the team
+        p.writeShort(chr.MCTeam!.TotalCP); // Total Obtained CP of the team
+        p.writeShort(chr.MCTeam!.Enemy!.AvailableCP); // Obtained CP - Used CP of the team
+        p.writeShort(chr.MCTeam!.Enemy.TotalCP); // Total Obtained CP of the team
         p.writeShort(0); // Probably useless nexon shit
         p.writeLong(0); // Probably useless nexon shit
         return p;

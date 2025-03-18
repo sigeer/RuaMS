@@ -131,10 +131,9 @@ public class MapleMap : IMap
 
     // events
     private bool eventstarted = false, _isMuted = false;
-    private Snowball? snowball0 = null;
-    private Snowball? snowball1 = null;
 
-    public Coconut? Coconut { get; set; }
+
+
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
     private float _monsterRate;
@@ -149,7 +148,7 @@ public class MapleMap : IMap
                 _monsterRate = value;
         }
     }
-
+    public int Id { get; }
 
     //locks
     ReaderWriterLockSlim chrLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -162,6 +161,7 @@ public class MapleMap : IMap
     public XiGuai? XiGuai { get; set; }
     public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId, float monsterRate)
     {
+        Id = mapid;
         this.mapid = mapid;
         ChannelServer = worldChannel;
         this.returnMapId = returnMapId;
@@ -1390,13 +1390,7 @@ public class MapleMap : IMap
 
     public Dictionary<int, IPlayer> getMapAllPlayers()
     {
-        Dictionary<int, IPlayer> pchars = new();
-        foreach (IPlayer chr in this.getAllPlayers())
-        {
-            pchars.AddOrUpdate(chr.getId(), chr);
-        }
-
-        return pchars;
+        return characters;
     }
 
     public List<IPlayer> getPlayersInRange(Rectangle box)
@@ -2881,19 +2875,7 @@ public class MapleMap : IMap
             chr.sendPacket(PacketCreator.getClock(chr.getMonsterCarnival()!.getTimeLeftSeconds()));
             if (isCPQMap())
             {
-                int team = -1;
-                int oposition = -1;
-                if (chr.getTeam() == 0)
-                {
-                    team = 0;
-                    oposition = 1;
-                }
-                if (chr.getTeam() == 1)
-                {
-                    team = 1;
-                    oposition = 0;
-                }
-                chr.sendPacket(PacketCreator.startMonsterCarnival(chr, team, oposition));
+                chr.sendPacket(PacketCreator.startMonsterCarnival(chr));
             }
         }
 
@@ -4519,49 +4501,10 @@ public class MapleMap : IMap
         }
     }
 
-    // BEGIN EVENTS
-    public void setSnowball(int team, Snowball? ball)
-    {
-        switch (team)
-        {
-            case 0:
-                this.snowball0 = ball;
-                break;
-            case 1:
-                this.snowball1 = ball;
-                break;
-            default:
-                break;
-        }
-    }
-
-    public Snowball? getSnowball(int team)
-    {
-        switch (team)
-        {
-            case 0:
-                return snowball0;
-            case 1:
-                return snowball1;
-            default:
-                return null;
-        }
-    }
-
     private bool specialEquip()
     {
         //Maybe I shouldn't use fieldType :\
         return fieldType == 4 || fieldType == 19;
-    }
-
-    public void setCoconut(Coconut? nut)
-    {
-        this.Coconut = nut;
-    }
-
-    public Coconut? getCoconut()
-    {
-        return Coconut;
     }
 
     public void warpOutByTeam(int team, int mapid)
@@ -4579,14 +4522,9 @@ public class MapleMap : IMap
         }
     }
 
-    public void startEvent(IPlayer chr)
+    public virtual void startEvent(IPlayer chr)
     {
-        if (this.mapid == MapId.EVENT_COCONUT_HARVEST && Coconut == null)
-        {
-            Coconut = new Coconut(this);
-            Coconut.startEvent();
-        }
-        else if (this.mapid == MapId.EVENT_PHYSICAL_FITNESS)
+        if (this.mapid == MapId.EVENT_PHYSICAL_FITNESS)
         {
             chr.Fitness = new Fitness(chr);
             chr.Fitness.startFitness();
@@ -4602,12 +4540,6 @@ public class MapleMap : IMap
             Ox = new OxQuiz(this);
             Ox.sendQuestion();
             setOxQuiz(true);
-        }
-        else if (this.mapid == MapId.EVENT_SNOWBALL && getSnowball(chr.getTeam()) == null)
-        {
-            setSnowball(0, new Snowball(0, this));
-            setSnowball(1, new Snowball(1, this));
-            getSnowball(chr.getTeam())?.startEvent();
         }
     }
 

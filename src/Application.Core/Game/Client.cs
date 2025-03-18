@@ -893,7 +893,7 @@ public class Client : ChannelHandlerAdapter, IClient
                     eim.playerDisconnected(player);
                 }
 
-                player.getMonsterCarnival()?.playerDisconnected(player.Id);
+                player.getMonsterCarnival()?.playerDisconnected(player);
 
                 player.getAriantColiseum()?.playerDisconnected(player);
             }

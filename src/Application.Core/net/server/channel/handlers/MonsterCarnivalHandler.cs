@@ -52,7 +52,7 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                         var map = (c.OnlinedCharacter.getMap() as ICPQMap)!;
 
                         var mobs = map.getMobsToSpawn();
-                        if (num >= mobs.Count || c.OnlinedCharacter.getCP() < mobs[num].Value)
+                        if (num >= mobs.Count || c.OnlinedCharacter.AvailableCP < mobs[num].Value)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
@@ -60,30 +60,22 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                         }
 
                         var mob = LifeFactory.GetMonsterTrust(mobs[num].Key);
-                        var mcpq = c.OnlinedCharacter.getMonsterCarnival();
-                        if (mcpq != null)
+                        if (c.OnlinedCharacter.MCTeam != null)
                         {
-                            if (!mcpq.canSummonR() && c.OnlinedCharacter.getTeam() == 0 || !mcpq.canSummonB() && c.OnlinedCharacter.getTeam() == 1)
+                            if (!c.OnlinedCharacter.MCTeam.CanSummon())
                             {
                                 c.sendPacket(PacketCreator.CPQMessage(2));
                                 c.sendPacket(PacketCreator.enableActions());
                                 return;
                             }
 
-                            if (c.OnlinedCharacter.getTeam() == 0)
-                            {
-                                mcpq.summonR();
-                            }
-                            else
-                            {
-                                mcpq.summonB();
-                            }
+                            c.OnlinedCharacter.MCTeam.Summon();
 
-                            var spawnPos = map.getRandomSP(c.OnlinedCharacter.getTeam());
+                            var spawnPos = map.getRandomSP(c.OnlinedCharacter.MCTeam.TeamFlag);
                             mob.setPosition(spawnPos);
 
-                            c.OnlinedCharacter.getMap().addMonsterSpawn(mob, 1, c.OnlinedCharacter.getTeam());
-                            c.OnlinedCharacter.getMap().addAllMonsterSpawn(mob, 1, c.OnlinedCharacter.getTeam());
+                            c.OnlinedCharacter.getMap().addMonsterSpawn(mob, 1, c.OnlinedCharacter.MCTeam.TeamFlag);
+                            c.OnlinedCharacter.getMap().addAllMonsterSpawn(mob, 1, c.OnlinedCharacter.MCTeam.TeamFlag);
                             c.sendPacket(PacketCreator.enableActions());
                         }
 
@@ -101,20 +93,20 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                             return;
                         }
                         var skill = CarnivalFactory.getInstance().getSkill(skillid.get(num)); //ugh wtf
-                        if (skill == null || c.OnlinedCharacter.getCP() < skill.cpLoss)
+                        if (skill == null || c.OnlinedCharacter.AvailableCP < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
                         var dis = skill.getDisease();
-                        var enemies = c.OnlinedCharacter.getParty()!.getEnemy()!;
+                        var enemies = c.OnlinedCharacter.MCTeam!.Enemy!;
                         if (skill.targetsAll)
                         {
                             int hitChance = rollHitChance(dis?.getMobSkillType());
                             if (hitChance <= 80)
                             {
-                                foreach (var mc in enemies.getPartyMembers())
+                                foreach (var mc in enemies.Team.getMembers())
                                 {
                                     if (mc != null)
                                     {
@@ -132,9 +124,9 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                         }
                         else
                         {
-                            int amount = enemies.getMembers().Count - 1;
+                            int amount = enemies.Team.getMembers().Count - 1;
                             int randd = (int)Math.Floor(Randomizer.nextDouble() * amount);
-                            var chrApp = c.OnlinedCharacter.getMap().getCharacterById(enemies.getMemberByPos(randd).getId());
+                            var chrApp = c.OnlinedCharacter.getMap().getCharacterById(enemies.Team.getMemberByPos(randd).getId());
                             if (chrApp != null && chrApp.getMap().isCPQMap())
                             {
                                 if (dis == null)
@@ -151,19 +143,19 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                         c.sendPacket(PacketCreator.enableActions());
                     }
                     else if (tab == 2)
-                    { //protectors
+                    {
+                        //protectors
                         var skill = CarnivalFactory.getInstance().getGuardian(num);
-                        if (skill == null || c.OnlinedCharacter.getCP() < skill.cpLoss)
+                        if (skill == null || c.OnlinedCharacter.AvailableCP < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        var mcpq = c.OnlinedCharacter.getMonsterCarnival();
-                        if (mcpq != null)
+                        if (c.OnlinedCharacter.MCTeam != null)
                         {
-                            if (!mcpq.canGuardianR() && c.OnlinedCharacter.getTeam() == 0 || !mcpq.canGuardianB() && c.OnlinedCharacter.getTeam() == 1)
+                            if (!c.OnlinedCharacter.MCTeam.CanGuardian())
                             {
                                 c.sendPacket(PacketCreator.CPQMessage(2));
                                 c.sendPacket(PacketCreator.enableActions());
@@ -171,7 +163,7 @@ public class MonsterCarnivalHandler : AbstractPacketHandler
                             }
 
                             var map = c.OnlinedCharacter.getMap() as ICPQMap;
-                            int success = map.spawnGuardian(c.OnlinedCharacter.getTeam(), num);
+                            int success = map.spawnGuardian(c.OnlinedCharacter.MCTeam.TeamFlag, num);
                             if (success != 1)
                             {
                                 switch (success)

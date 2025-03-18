@@ -1169,17 +1169,18 @@ public class StatEffect
             applyto.gainCP(cp);
         }
         else if (nuffSkill != 0 && applyto.getParty() != null && applyto.getMap().isCPQMap())
-        { // added by Drago (Dragohe4rt)
+        { 
+            // added by Drago (Dragohe4rt)
             var skill = CarnivalFactory.getInstance().getSkill(nuffSkill);
             if (skill != null)
             {
                 var dis = skill.getDisease();
-                var opposition = applyfrom.getParty()!.getEnemy();
+                var opposition = applyfrom.MCTeam!.Enemy!;
                 if (skill.targetsAll)
                 {
-                    foreach (var chrApp in opposition.getPartyMembers())
+                    foreach (var chrApp in opposition.Team.getMembers())
                     {
-                        if (chrApp != null && chrApp.getMap().isCPQMap())
+                        if (chrApp.IsOnlined && chrApp.getMap().isCPQMap())
                         {
                             if (dis == null)
                             {
@@ -1195,9 +1196,9 @@ public class StatEffect
                 }
                 else
                 {
-                    int amount = opposition.getMembers().Count;
+                    int amount = opposition.Team.getMembers().Count;
                     int randd = (int)Math.Floor(Randomizer.nextDouble() * amount);
-                    var chrApp = applyfrom.getMap().getCharacterById(opposition.getMemberByPos(randd).getId());
+                    var chrApp = applyfrom.getMap().getCharacterById(opposition.Team.getMemberByPos(randd).getId());
                     if (chrApp != null && chrApp.getMap().isCPQMap())
                     {
                         if (dis == null)

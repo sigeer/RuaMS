@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+using Application.Core.Game.Maps.Specials;
 using net.packet;
 using tools;
 
@@ -36,7 +37,10 @@ public class SnowballHandler : AbstractPacketHandler
     {
         //D3 00 02 00 00 A5 01
         var chr = c.OnlinedCharacter;
-        var map = chr.getMap();
+        var sMap = chr.getMap();
+        if (sMap is not ISnowBallMap map)
+            return;
+
         var snowball = map.getSnowball(chr.getTeam());
         var othersnowball = map.getSnowball(chr.getTeam() == 0 ? 1 : 0);
         int what = p.readByte();

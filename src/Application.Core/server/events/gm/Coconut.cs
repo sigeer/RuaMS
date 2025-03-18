@@ -23,6 +23,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.Specials;
 using constants.id;
 using tools;
 
@@ -35,7 +36,7 @@ namespace server.events.gm;
 //Make them better :)
 public class Coconut : Event
 {
-    private IMap map;
+    private ICoconutMap map;
     private int MapleScore = 0;
     private int StoryScore = 0;
     private int countBombing = 80;
@@ -43,10 +44,12 @@ public class Coconut : Event
     private int countStopped = 20;
     private List<Coconuts> coconuts = new();
 
-    public Coconut(IMap map) : base(1, 50)
+    public Coconut(IMap map) : base(map.getId(), 50)
     {
-
-        this.map = map;
+        this.map = (map as ICoconutMap)!;
+        countBombing = this.map.CountBombing;
+        countFalling = this.map.CountFalling;
+        countStopped = this.map.CountStopped;
     }
 
     public void startEvent()
@@ -58,103 +61,43 @@ public class Coconut : Event
         }
         map.broadcastMessage(PacketCreator.hitCoconut(true, 0, 0));
         setCoconutsHittable(true);
-        map.broadcastMessage(PacketCreator.getClock(300));
+        map.broadcastMessage(PacketCreator.getClock(map.TimeDefault));
 
-        TimerManager.getInstance().schedule(() =>
-        {
-            if (map.getId() == MapId.EVENT_COCONUT_HARVEST)
-            {
-                if (getMapleScore() == getStoryScore())
-                {
-                    bonusTime();
-                }
-                else if (getMapleScore() > getStoryScore())
-                {
-                    foreach (var chr in map.getCharacters())
-                    {
-                        if (chr.getTeam() == 0)
-                        {
-                            chr.sendPacket(PacketCreator.showEffect("event/coconut/victory"));
-                            chr.sendPacket(PacketCreator.playSound("Coconut/Victory"));
-                        }
-                        else
-                        {
-                            chr.sendPacket(PacketCreator.showEffect("event/coconut/lose"));
-                            chr.sendPacket(PacketCreator.playSound("Coconut/Failed"));
-                        }
-                    }
-                    warpOut();
-                }
-                else
-                {
-                    foreach (var chr in map.getCharacters())
-                    {
-                        if (chr.getTeam() == 1)
-                        {
-                            chr.sendPacket(PacketCreator.showEffect("event/coconut/victory"));
-                            chr.sendPacket(PacketCreator.playSound("Coconut/Victory"));
-                        }
-                        else
-                        {
-                            chr.sendPacket(PacketCreator.showEffect("event/coconut/lose"));
-                            chr.sendPacket(PacketCreator.playSound("Coconut/Failed"));
-                        }
-                    }
-                    warpOut();
-                }
-            }
-        }, 300000);
+        TimerManager.getInstance().schedule(Check, TimeSpan.FromSeconds(map.TimeDefault));
     }
 
-    public void bonusTime()
+    private void Check()
     {
-        map.broadcastMessage(PacketCreator.getClock(120));
-        TimerManager.getInstance().schedule(() =>
+        if (map.getId() == MapId.EVENT_COCONUT_HARVEST)
         {
             if (getMapleScore() == getStoryScore())
             {
-                foreach (var chr in map.getCharacters())
-                {
-                    chr.sendPacket(PacketCreator.showEffect("event/coconut/lose"));
-                    chr.sendPacket(PacketCreator.playSound("Coconut/Failed"));
-                }
-                warpOut();
-            }
-            else if (getMapleScore() > getStoryScore())
-            {
-                foreach (var chr in map.getCharacters())
-                {
-                    if (chr.getTeam() == 0)
-                    {
-                        chr.sendPacket(PacketCreator.showEffect("event/coconut/victory"));
-                        chr.sendPacket(PacketCreator.playSound("Coconut/Victory"));
-                    }
-                    else
-                    {
-                        chr.sendPacket(PacketCreator.showEffect("event/coconut/lose"));
-                        chr.sendPacket(PacketCreator.playSound("Coconut/Failed"));
-                    }
-                }
-                warpOut();
+                bonusTime();
             }
             else
             {
+                var winnerTeam = getMapleScore() > getStoryScore() ? 0 : 1;
                 foreach (var chr in map.getCharacters())
                 {
-                    if (chr.getTeam() == 1)
+                    if (chr.getTeam() == winnerTeam)
                     {
-                        chr.sendPacket(PacketCreator.showEffect("event/coconut/victory"));
-                        chr.sendPacket(PacketCreator.playSound("Coconut/Victory"));
+                        chr.sendPacket(PacketCreator.showEffect(map.EffectWin));
+                        chr.sendPacket(PacketCreator.playSound(map.SoundWin));
                     }
                     else
                     {
-                        chr.sendPacket(PacketCreator.showEffect("event/coconut/lose"));
-                        chr.sendPacket(PacketCreator.playSound("Coconut/Failed"));
+                        chr.sendPacket(PacketCreator.showEffect(map.EffectLose));
+                        chr.sendPacket(PacketCreator.playSound(map.SoundLose));
                     }
                 }
                 warpOut();
             }
-        }, 120000);
+        }
+    }
+    public void bonusTime()
+    {
+        map.broadcastMessage(PacketCreator.getClock(map.TimeExpand));
+        TimerManager.getInstance().schedule(Check, TimeSpan.FromSeconds(map.TimeExpand));
 
     }
 
@@ -173,11 +116,11 @@ public class Coconut : Event
                 }
                 else
                 {
-                    chr.changeMap(MapId.EVENT_EXIT);
+                    chr.changeMap(map.getForcedReturnId());
                 }
             }
-            map.setCoconut(null);
-        }, 12000);
+            map.Coconut = null;
+        }, TimeSpan.FromSeconds(map.TimeFinish));
     }
 
     public int getMapleScore()

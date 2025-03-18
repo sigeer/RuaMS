@@ -16,6 +16,7 @@ namespace Application.Core.Game.Maps
 {
     public interface IMap
     {
+        int Id { get; }
         XiGuai? XiGuai { get; set; }
         public IWorldChannel ChannelServer { get; }
         /// <summary>
@@ -23,7 +24,6 @@ namespace Application.Core.Game.Maps
         /// </summary>
         public float MonsterRate { get; set; }
         AtomicInteger droppedItemCount { get; set; }
-        public Coconut? Coconut { get; set; }
         public OxQuiz? Ox { get; set; }
         /// <summary>
         /// 似乎并没有派上用
@@ -113,7 +113,6 @@ namespace Application.Core.Game.Maps
         IPlayer? getCharacterById(int id);
         IPlayer? getCharacterByName(string name);
         IReadOnlyCollection<IPlayer> getCharacters();
-        Coconut? getCoconut();
         int getCurrentPartyId();
         bool getDocked();
         Portal? getDoorPortal(int doorid);
@@ -169,7 +168,7 @@ namespace Application.Core.Game.Maps
         IMap getReturnMap();
         int getReturnMapId();
         int getSeats();
-        Snowball? getSnowball(int team);
+
         int getSpawnedMonstersOnMap();
         string getStreetName();
         bool getSummonState();
@@ -244,7 +243,6 @@ namespace Application.Core.Game.Maps
         void setBackgroundTypes(Dictionary<int, int> backTypes);
         void setBoat(bool hasBoat);
         void setClock(bool hasClock);
-        void setCoconut(Coconut? nut);
         void setDocked(bool isDocked);
         void setEventInstance(EventInstanceManager? eim);
         void setEventStarted(bool @event);
@@ -267,7 +265,6 @@ namespace Application.Core.Game.Maps
         void setReactorState();
         void setRecovery(float recRate);
         void setSeats(int seats);
-        void setSnowball(int team, Snowball? ball);
         void setStreetName(string streetName);
 
         void setTimeLimit(int timeLimit);

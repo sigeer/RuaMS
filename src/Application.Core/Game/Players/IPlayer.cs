@@ -72,6 +72,10 @@ namespace Application.Core.Game.Players
         public event EventHandler<IPlayer>? OnJobUpdate;
         public event EventHandler<IPlayer>? OnLodgedUpdate;
 
+        public MonsterCarnivalParty? MCTeam { get; set; }
+        public int TotalCP { get; }
+        public int AvailableCP { get; }
+
         public ILogger Log { get; }
         void LeaveGuild();
         void StartPlayerTask();
@@ -232,7 +236,6 @@ namespace Application.Core.Game.Players
         AutobanManager getAutobanManager();
         float getAutopotHpAlert();
         float getAutopotMpAlert();
-        int getAvailableCP();
         int getBattleshipHp();
         List<string> getBlockedPortals();
         float getBossDropRate();
@@ -255,7 +258,6 @@ namespace Application.Core.Game.Players
         float getCouponDropRate();
         float getCouponExpRate();
         float getCouponMesoRate();
-        int getCP();
         List<Ring> getCrushRings();
         bool getCS();
         int getCurrentCI();
@@ -339,7 +341,6 @@ namespace Application.Core.Game.Players
         int getMiniGamePoints(MiniGame.MiniGameResult type, bool omok);
         MonsterBook getMonsterBook();
         MonsterCarnival? getMonsterCarnival();
-        MonsterCarnivalParty? getMonsterCarnivalParty();
         void SetMount(IMount? mount);
         IMount? getMount();
         string getName();
@@ -408,7 +409,6 @@ namespace Application.Core.Game.Players
         int getTargetHpBarHash();
         long getTargetHpBarTime();
         sbyte getTeam();
-        int getTotalCP();
         int getTotalDex();
         int getTotalInt();
         int getTotalLuk();
@@ -580,7 +580,6 @@ namespace Application.Core.Game.Players
         void setChasing(bool chasing);
         void setClient(IClient c);
         void setCombo(short count);
-        void setCP(int a);
         void setCpqTimer(ScheduledFuture timer);
         void setCS(bool cs);
         void setDisconnectedFromChannelWorld();
@@ -632,7 +631,6 @@ namespace Application.Core.Game.Players
         void setMiniGamePoints(IPlayer visitor, int winnerslot, bool omok);
         void setMonsterBookCover(int bookCover);
         void setMonsterCarnival(MonsterCarnival? monsterCarnival);
-        void setMonsterCarnivalParty(MonsterCarnivalParty? mcp);
         void setName(string name);
         void setNpcCooldown(long d);
         // void setOfflineGuildRank(int newRank);
@@ -657,7 +655,6 @@ namespace Application.Core.Game.Players
         void setTargetHpBarHash(int mobHash);
         void setTargetHpBarTime(long timeNow);
         void setTeam(int team);
-        void setTotalCP(int a);
         void setTrade(Trade? trade);
         void setVanquisherKills(int x);
         void setVanquisherStage(int x);

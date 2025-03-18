@@ -1,4 +1,6 @@
 using Application.Core.Game.Life;
+using Application.Shared.Events;
+using Application.Shared.MapObjects;
 using server.maps;
 using server.partyquest;
 using tools;
@@ -6,13 +8,17 @@ using static server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Game.Maps.Specials
 {
-    public interface ICPQMap : IMap
+    public interface ICPQMap : IMap, IGroupEffectEventMap, IGroupSoundEventMap, ITimeLimitedEventMap
     {
         public int MaxMobs { get; set; }
         public int MaxReactors { get; set; }
         public int DeathCP { get; set; }
-        public int TimeDefault { get; set; }
-        public int TimeExpand { get; set; }
+
+        public int RewardMapWin { get; set; }
+        public int RewardMapLose { get; set; }
+
+        public int ReactorRed { get; set; }
+        public int ReactorBlue { get; set; }
 
 
         public List<int> GetSkillIds();
@@ -29,8 +35,18 @@ namespace Application.Core.Game.Maps.Specials
         List<MCSkill> getBlueTeamBuffs();
         List<MCSkill> getRedTeamBuffs();
     }
+    /// <summary>
+    /// 0. 准备地图  1. 战场 3. 胜利地图 4. 失败地图
+    /// 10. 中断离开地图
+    /// </summary>
     public class MonsterCarnivalMap : MapleMap, ICPQMap
     {
+
+        public const string DefaultEffectWin = "quest/carnival/win";
+        public const string DefaultEffectLose = "quest/carnival/lose";
+        public const string DefaultSoundWin = "MobCarnival/Win";
+        public const string DefaultSoundLose = "MobCarnival/Lose";
+
         private List<int> skillIds = new();
 
         private List<GuardianSpawnPoint> guardianSpawns = new();
@@ -44,9 +60,37 @@ namespace Application.Core.Game.Maps.Specials
         public int DeathCP { get; set; }
         public int TimeDefault { get; set; }
         public int TimeExpand { get; set; }
+        public int TimeFinish { get; set; }
+        public string EffectWin { get; set; } = DefaultEffectWin;
+        public string EffectLose { get; set; } = DefaultEffectLose;
+        public string SoundWin { get; set; } = DefaultSoundWin;
+        public string SoundLose { get; set; } = DefaultSoundLose;
+        public int RewardMapWin { get; set; }
+        public int RewardMapLose { get; set; }
+        public int ReactorRed { get; set; }
+        public int ReactorBlue { get; set; }
+
 
         public MonsterCarnivalMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId(), map.MonsterRate)
         {
+        }
+
+        public string GetDefaultSoundWin()
+        {
+            return DefaultSoundWin;
+        }
+        public string GetDefaultSoundLose()
+        {
+            return DefaultSoundLose;
+        }
+
+        public string GetDefaultEffectWin()
+        {
+            return DefaultEffectWin;
+        }
+        public string GetDefaultEffectLose()
+        {
+            return DefaultEffectLose;
         }
 
         public List<int> GetSkillIds()
@@ -135,7 +179,7 @@ namespace Application.Core.Game.Maps.Specials
                 {
                     return -1;
                 }
-                int reactorID = 9980000 + team;
+                int reactorID = team == TeamGroupEnum.Red ? ReactorRed : ReactorBlue;
                 Reactor reactor = new Reactor(ReactorFactory.getReactorS(reactorID), reactorID);
                 pt.setTaken(true);
                 reactor.setPosition(pt.getPosition());
