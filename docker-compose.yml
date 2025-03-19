@@ -1,19 +1,20 @@
 services:
-  cosmic-dotnet:
-    container_name: service-cosmic-dotnet
-    image: cosmic-dotnet
+  rua-ms:
+    container_name: service-rua-ms-server
+    image: rua-ms
     build:
       context: .
       dockerfile: src/Application.Host/Dockerfile
     depends_on:
-      cosmic-dotnet-db:
+      rua-ms-db:
         condition: service_healthy
     environment:
-        COSMIC_DOTNET_DB_CONNECTIONSTRING: "server=cosmic-dotnet-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
+        RUA_MS_DB_CONNECTIONSTRING: "server=rua-ms-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
         ## 此处修改HOST
-        # COSMIC_DOTNET_HOST: 127.0.0.1
-        # COSMIC_DOTNET_LANHOST: 127.0.0.1
-        # COSMIC_DOTNET_LOCALHOST: 127.0.0.1
+        # RUA_MS_HOST: 127.0.0.1
+        # RUA_MS_LANHOST: 127.0.0.1
+        # RUA_MS_LOCALHOST: 127.0.0.1
+        # RUA_MS_ENABLE_OPENAPI: false
     ports:
       - "8080:8080"
       # 登录服务器
@@ -23,11 +24,11 @@ services:
     volumes:
       - ./logs:/app/logs
 
-  cosmic-dotnet-db:
-    container_name: service-cosmic-dotnet-db
+  rua-ms-db:
+    container_name: service-rua-ms-db
     image: mysql:8.4.4
     environment:
-      MYSQL_DATABASE: "cosmic"
+      MYSQL_DATABASE: "ruams"
       MYSQL_ROOT_PASSWORD: "root"
     ports:
       - "3306:3306"
