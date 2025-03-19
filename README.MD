@@ -56,17 +56,17 @@ dotnet ef database update --startup-project ../Application.Host
 项目中的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，
 可以使用该项目中的wz、以及客户端。
 
-也可以使用[Commit:ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1](https://github.com/sigeer/Cosmic_DotNet/commit/ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1) 之前的 `scripts`
+也可以使用[Commit:ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1](https://github.com/sigeer/RuaMS/commit/ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1) 之前的 `scripts`
 （来自于 [Cosmic](https://github.com/P0nk/Cosmic)）
 
-如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/Cosmic_DotNet/blob/master/docs/CodeMigration.MD#js)对js进行处理
+如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/RuaMS/blob/master/docs/CodeMigration.MD#js)对js进行处理
 
 
 #### docker 运行
 
 **生成镜像**
 
-`docker build -f ./src/Application.Host/Dockerfile -t cosmic-dotnet:latest -t cosmic-dotnet:0.0.1 .`
+`docker build -f ./src/Application.Host/Dockerfile -t rua-ms:latest -t rua-ms:0.0.1 .`
 
 **运行**
 
@@ -76,14 +76,15 @@ docker run -itd \
 -p 8484:8484 \
 -p 7575-7600:7575-7600 \
 -v ./logs:/app/logs \
---name cosmic-dotnet \
-cosmic-dotnet
+--name rua-ms \
+rua-ms
 
+# 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
 # 非docker compose运行需要设置连接字符串
--e "COSMIC_DOTNET_DB_CONNECTIONSTRING=" \
+-e "RUA_MS_DB_CONNECTIONSTRING=" \
 
 # 公网运行运行需要修改Host
--e "COSMIC_DOTNET_HOST=" \
+-e "RUA_MS_HOST=" \
 ```
 
 **docker compose运行**

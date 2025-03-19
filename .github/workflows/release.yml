@@ -1,0 +1,62 @@
+name: Release
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  # github.repository as <account>/<repo>
+  ReleaseName: RuaMS
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+  
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore "./src/Application.Host/Application.Host.csproj"
+
+    - name: Publish win-x64
+      run: dotnet publish "./src/Application.Host.csproj" -c Release -r win-x64 -o /app/win-x64 --self-contained true
+
+    - name: Publish linux-x64
+      run: dotnet publish "./src/Application.Host.csproj" -c Release -r linux-x64 -o /app/linux-x64 --self-contained true
+
+    - name: get latest version
+      run: |
+          VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+    - name: Zip win-x64
+      run: zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-win-x64.zip /app/win-x64
+
+    - name: Zip linux-x64
+      run: zip -r ${{env.ReleaseName}}-v${{env.VERSION}}-linux-x64.zip /app/linux-x64
+
+    - name: Create Release and Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        tag_name: ${{ github.ref }}
+        name: v${{env.VERSION}}
+        body: ${{env.ReleaseName}}-v${{env.VERSION}}
+        draft: false
+        prerelease: false
+        files: |
+          ${{env.ReleaseName}}-v${{env.VERSION}}-win-x64.zip
+          ${{env.ReleaseName}}-v${{env.VERSION}}-linux-x64.zip

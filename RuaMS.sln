@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{BD
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build-docker.yml = .github\workflows\build-docker.yml
 		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlWzReader", "src\XmlWzReader\XmlWzReader.csproj", "{45FF432D-41A4-4F93-9F98-37F50A0D2224}"
