@@ -165,9 +165,13 @@ public class MapFactory
         }
         map = new MapleMap(mapid, worldChannel, DataTool.getInt("returnMap", infoData), monsterRate);
 
-        var cpqInfo = mapData.getChildByPath("monsterCarnival");
-        if (map.isCPQMap() && cpqInfo != null)
+        var eventInfo = mapData.getChildByPath("monsterCarnival");
+        if (map.isCPQMap() && eventInfo != null)
             map = new MonsterCarnivalMap(map);
+
+        eventInfo = mapData.getChildByPath("coconut");
+        if (eventInfo != null)
+            map = new CoconutMap(map);
 
         map.setEventInstance(evt);
 
@@ -304,14 +308,57 @@ public class MapFactory
         loadLifeFromWz(map, mapData);
         loadLifeFromDb(map);
 
-        if (map is MonsterCarnivalMap cpqMap)
+        if (map is IGroupEffectEventMap effectMap)
         {
-            cpqMap.DeathCP = (DataTool.getIntConvert("deathCP", cpqInfo, 0));
-            cpqMap.MaxMobs = (DataTool.getIntConvert("mobGenMax", cpqInfo, 20));    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
-            cpqMap.TimeDefault = (DataTool.getIntConvert("timeDefault", cpqInfo, 0));
-            cpqMap.TimeExpand = (DataTool.getIntConvert("timeExpand", cpqInfo, 0));
-            cpqMap.MaxReactors = (DataTool.getIntConvert("guardianGenMax", cpqInfo, 16));
-            var guardianGenData = cpqInfo!.getChildByPath("guardianGenPos");
+            effectMap.EffectWin = DataTool.getString("effectWin", eventInfo) ?? effectMap.GetDefaultEffectWin();
+            effectMap.EffectLose = DataTool.getString("effectLose", eventInfo) ?? effectMap.GetDefaultEffectLose();
+        }
+
+        if (map is IGroupSoundEventMap soundMap)
+        {
+            soundMap.SoundWin = DataTool.getString("soundWin", eventInfo) ?? soundMap.GetDefaultSoundWin();
+            soundMap.SoundLose = DataTool.getString("soundLose", eventInfo) ?? soundMap.GetDefaultSoundLose();
+        }
+
+        if (map is ITimeLimitedEventMap timedMap)
+        {
+            timedMap.TimeDefault = (DataTool.getIntConvert("timeDefault", eventInfo, 0));
+            timedMap.TimeExpand = (DataTool.getIntConvert("timeExpand", eventInfo, 0));
+            timedMap.TimeFinish = (DataTool.getIntConvert("timeFinish", eventInfo, 10));
+        }
+
+        if (map is ICoconutMap coconutMap)
+        {
+            coconutMap.CountFalling = (DataTool.getIntConvert("countFalling", eventInfo, 0));
+            coconutMap.CountBombing = (DataTool.getIntConvert("countBombing", eventInfo, 0));
+            coconutMap.CountStopped = (DataTool.getIntConvert("countStopped", eventInfo, 0));
+            coconutMap.CountHit = (DataTool.getIntConvert("countHit", eventInfo, 0));
+        }
+
+        if (map is ISnowBallMap snowBallMap)
+        {
+            snowBallMap.DamageSnowBall = DataTool.getIntConvert("damageSnowBall", eventInfo, 0);
+            snowBallMap.DamageSnowMan0 = DataTool.getIntConvert("damageSnowMan0", eventInfo, 0);
+            snowBallMap.DamageSnowMan1= DataTool.getIntConvert("damageSnowMan1", eventInfo, 0);
+            snowBallMap.RecoveryAmount = DataTool.getIntConvert("recoveryAmount", eventInfo, 0);
+            snowBallMap.SnowManHP= DataTool.getIntConvert("snowManHP", eventInfo, 0);
+            snowBallMap.SnowManWait = DataTool.getIntConvert("snowManWait", eventInfo, 0);
+            snowBallMap.RecoveryAmount = DataTool.getIntConvert("recoveryAmount", eventInfo, 0);
+        }
+
+        if (map is ICPQMap cpqMap)
+        {
+            cpqMap.DeathCP = (DataTool.getIntConvert("deathCP", eventInfo, 0));
+            cpqMap.MaxMobs = (DataTool.getIntConvert("mobGenMax", eventInfo, 20));    // thanks Atoot for noticing CPQ1 bf. 3 and 4 not accepting spawns due to undefined limits, Lame for noticing a need to cap mob spawns even on such undefined limits
+
+            cpqMap.MaxReactors = (DataTool.getIntConvert("guardianGenMax", eventInfo, 16));
+
+            cpqMap.RewardMapWin = DataTool.getIntConvert("rewardMapWin", eventInfo, mapid + (!map.isCPQMap2() ? 2 : 200));
+            cpqMap.RewardMapLose = DataTool.getIntConvert("rewardMapLose", eventInfo, mapid + (!map.isCPQMap2() ? 3 : 300));
+            cpqMap.ReactorRed = DataTool.getIntConvert("reactorRed", eventInfo, 9980000);
+            cpqMap.ReactorBlue = DataTool.getIntConvert("reactorBlue", eventInfo, 9980001);
+
+            var guardianGenData = eventInfo!.getChildByPath("guardianGenPos");
             foreach (Data node in guardianGenData.getChildren())
             {
                 GuardianSpawnPoint pt = new GuardianSpawnPoint(new Point(DataTool.getIntConvert("x", node), DataTool.getIntConvert("y", node)));
@@ -319,17 +366,17 @@ public class MapFactory
                 pt.setTaken(false);
                 cpqMap.AddGuardianSpawnPoint(pt);
             }
-            if (cpqInfo.getChildByPath("skill") != null)
+            if (eventInfo.getChildByPath("skill") != null)
             {
-                foreach (var area in cpqInfo.getChildByPath("skill")!)
+                foreach (var area in eventInfo.getChildByPath("skill")!)
                 {
                     cpqMap.AddSkillId(DataTool.getInt(area));
                 }
             }
 
-            if (cpqInfo.getChildByPath("mob") != null)
+            if (eventInfo.getChildByPath("mob") != null)
             {
-                foreach (var area in cpqInfo.getChildByPath("mob")!)
+                foreach (var area in eventInfo.getChildByPath("mob")!)
                 {
                     cpqMap.AddMobSpawn(DataTool.getInt(area.getChildByPath("id")), DataTool.getInt(area.getChildByPath("spendCP")));
                 }

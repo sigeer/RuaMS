@@ -1,4 +1,4 @@
-﻿using server.maps;
+using server.maps;
 
 namespace Application.Core.Game.Relation
 {
@@ -24,13 +24,10 @@ namespace Application.Core.Game.Relation
         ICollection<IPlayer> getMembers();
         List<int> getMembersSortedByHistory();
         sbyte getPartyDoor(int cid);
-        List<IPlayer> getPartyMembers();
         List<IPlayer> getPartyMembersOnline();
         void removeDoor(int owner);
         void removeMember(IPlayer member);
         void setEligibleMembers(List<IPlayer> eliParty);
-        ITeam? getEnemy();
-        void setEnemy(ITeam? enemy);
         void setId(int id);
         void setLeader(IPlayer victim);
         void updateMember(IPlayer member);

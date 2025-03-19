@@ -3809,11 +3809,11 @@ public partial class Player
         if (this.MapModel.isCPQMap() && MapModel is ICPQMap cpqMap)
         {
             int losing = cpqMap.DeathCP;
-            if (getCP() < losing)
+            if (AvailableCP < losing)
             {
-                losing = getCP();
+                losing = AvailableCP;
             }
-            MapModel.broadcastMessage(PacketCreator.playerDiedMessage(getName(), losing, getTeam()));
+            MapModel.broadcastMessage(PacketCreator.playerDiedMessage(getName(), losing, MCTeam!.TeamFlag));
             gainCP(-losing);
             return;
         }

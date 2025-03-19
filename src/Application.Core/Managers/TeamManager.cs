@@ -60,7 +60,7 @@ namespace Application.Core.Managers
                     var mcpq = player.getMonsterCarnival();
                     if (mcpq != null)
                     {
-                        mcpq.leftParty(player.getId());
+                        mcpq.leftParty(player);
                     }
 
                     world.updateParty(party.getId(), PartyOperation.DISBAND, player);
@@ -82,7 +82,7 @@ namespace Application.Core.Managers
                     var mcpq = player.getMonsterCarnival();
                     if (mcpq != null)
                     {
-                        mcpq.leftParty(player.getId());
+                        mcpq.leftParty(player);
                     }
 
                     world.updateParty(party.getId(), PartyOperation.LEAVE, player);
@@ -175,7 +175,7 @@ namespace Application.Core.Managers
                         var mcpq = player.getMonsterCarnival();
                         if (mcpq != null)
                         {
-                            mcpq.leftParty(emc.getId());
+                            mcpq.leftParty(emc);
                         }
 
                         var eim = emc.getEventInstance();

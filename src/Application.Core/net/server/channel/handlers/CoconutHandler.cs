@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Game.Maps.Specials;
 using net.packet;
 using tools;
 
@@ -40,13 +41,12 @@ public class CoconutHandler : AbstractPacketHandler
          */
         int id = p.readShort();
         var map = c.OnlinedCharacter.getMap();
-        var evt = map.getCoconut();
-        if (evt == null)
+        if (map is not ICoconutMap coconutMap || coconutMap.Coconut == null)
         {
             return;
         }
 
-        var nut = evt.getCoconut(id);
+        var nut = coconutMap.Coconut.getCoconut(id);
         if (!nut.isHittable())
         {
             return;
@@ -57,35 +57,35 @@ public class CoconutHandler : AbstractPacketHandler
         }
         if (nut.getHits() > 2 && Randomizer.nextDouble() < 0.4)
         {
-            if (Randomizer.nextDouble() < 0.01 && evt.getStopped() > 0)
+            if (Randomizer.nextDouble() < 0.01 && coconutMap.Coconut.getStopped() > 0)
             {
                 nut.setHittable(false);
-                evt.stopCoconut();
+                coconutMap.Coconut.stopCoconut();
                 map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
                 return;
             }
             nut.setHittable(false); // for sure :)
             nut.resetHits(); // For next event (without restarts)
-            if (Randomizer.nextDouble() < 0.05 && evt.getBombings() > 0)
+            if (Randomizer.nextDouble() < 0.05 && coconutMap.Coconut.getBombings() > 0)
             {
                 map.broadcastMessage(PacketCreator.hitCoconut(false, id, 2));
-                evt.bombCoconut();
+                coconutMap.Coconut.bombCoconut();
             }
-            else if (evt.getFalling() > 0)
+            else if (coconutMap.Coconut.getFalling() > 0)
             {
                 map.broadcastMessage(PacketCreator.hitCoconut(false, id, 3));
-                evt.fallCoconut();
+                coconutMap.Coconut.fallCoconut();
                 if (c.OnlinedCharacter.getTeam() == 0)
                 {
-                    evt.addMapleScore();
+                    coconutMap.Coconut.addMapleScore();
                     map.broadcastMessage(PacketCreator.serverNotice(5, c.OnlinedCharacter.getName() + " of Team Maple knocks down a coconut."));
                 }
                 else
                 {
-                    evt.addStoryScore();
+                    coconutMap.Coconut.addStoryScore();
                     map.broadcastMessage(PacketCreator.serverNotice(5, c.OnlinedCharacter.getName() + " of Team Story knocks down a coconut."));
                 }
-                map.broadcastMessage(PacketCreator.coconutScore(evt.getMapleScore(), evt.getStoryScore()));
+                map.broadcastMessage(PacketCreator.coconutScore(coconutMap.Coconut.getMapleScore(), coconutMap.Coconut.getStoryScore()));
             }
         }
         else

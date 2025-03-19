@@ -55,8 +55,6 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 ldr.getClient().NPCConversationManager?.startCPQ2(chr, ldr.getMapId() + 1);
             }
 
-            ldr.getParty().setEnemy(chr.getParty());
-            chr.getParty().setEnemy(ldr.getParty());
             chr.setChallenged(false);
         }
 

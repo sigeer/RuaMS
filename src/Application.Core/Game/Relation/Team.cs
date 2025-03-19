@@ -6,7 +6,6 @@ namespace Application.Core.Game.Relation
     public class Team : ITeam
     {
         private int id;
-        private ITeam? enemy = null;
         private int leaderId;
         private List<IPlayer> members = new();
         private List<IPlayer> pqMembers = new List<IPlayer>();
@@ -118,35 +117,12 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public List<IPlayer> getPartyMembers()
-        {
-            Monitor.Enter(lockObj);
-            try
-            {
-                return new(members);
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
-            }
-        }
-
         public List<IPlayer> getPartyMembersOnline()
         {
             Monitor.Enter(lockObj);
             try
             {
-                List<IPlayer> ret = new();
-
-                foreach (IPlayer mpc in members)
-                {
-                    if (mpc.IsOnlined)
-                    {
-                        ret.Add(mpc);
-                    }
-                }
-
-                return ret;
+                return members.Where(x => x.IsOnlined).ToList();
             }
             finally
             {
@@ -191,16 +167,6 @@ namespace Application.Core.Game.Relation
             {
                 Monitor.Exit(lockObj);
             }
-        }
-
-        public ITeam? getEnemy()
-        {
-            return enemy;
-        }
-
-        public void setEnemy(ITeam? enemy)
-        {
-            this.enemy = enemy;
         }
 
         public List<int> getMembersSortedByHistory()

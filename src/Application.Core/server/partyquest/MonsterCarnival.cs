@@ -5,7 +5,6 @@ using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Relation;
 using Application.Core.scripting.Event;
 using constants.String;
-using server.maps;
 using tools;
 
 namespace server.partyquest;
@@ -15,118 +14,86 @@ namespace server.partyquest;
  */
 public class MonsterCarnival
 {
-
     public static int D = 3;
     public static int C = 2;
     public static int B = 1;
     public static int A = 0;
 
-    private ITeam p1, p2;
     private ICPQMap map;
-    private ScheduledFuture? timer, effectTimer, respawnTask;
-    private long startTime = 0;
-    private int summonsR = 0, summonsB = 0, room = 0;
-    private IPlayer leader1, leader2;
-    IPlayer? team1, team2;
-    private int redCP, blueCP, redTotalCP, blueTotalCP, redTimeupCP, blueTimeupCP;
-    private bool cpq1;
+    private ScheduledFuture? effectTimer, respawnTask;
+    private DateTimeOffset endingTime;
+    private int room = 0;
+    public bool IsCompleted { get; private set; }
+    public bool IsCPQ1 { get; }
+    MonsterCarnivalParty redTeam;
+    MonsterCarnivalParty blueTeam;
 
     public MonsterCarnival(ITeam p1, ITeam p2, int mapid, bool cpq1, int room)
     {
-        this.cpq1 = cpq1;
+        this.IsCPQ1 = cpq1;
         this.room = room;
-        this.p1 = p1;
-        this.p2 = p2;
         var cs = p2.getLeader().getChannelServer();
-        p1.setEnemy(p2);
-        p2.setEnemy(p1);
         // 是否可以替换成getMap？不可以，任务结束后会关闭地图，getMap不会创建新地图
         map = (cs.getMapFactory().getDisposableMap(mapid) as ICPQMap)!;
-        startTime = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds();
-        int redPortal = 0;
-        int bluePortal = 0;
-        if (map.isPurpleCPQMap())
-        {
-            redPortal = 2;
-            bluePortal = 1;
-        }
-        leader1 = p1.getLeader();
-        foreach (var mc in p1.getMembers())
-        {
-            if (mc != null)
-            {
-                mc.setMonsterCarnival(this);
-                mc.setTeam(0);
-                mc.setFestivalPoints(0);
-                mc.forceChangeMap(map, map.getPortal(redPortal));
-                mc.dropMessage(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntry));
-                team1 = mc;
-            }
-        }
 
-        leader2 = p2.getLeader();
-        foreach (var mc in p2.getMembers())
+        redTeam = new MonsterCarnivalParty(this, p1, 0);
+        blueTeam = new MonsterCarnivalParty(this, p2, 1);
+        redTeam.SetEnemy(blueTeam);
+        blueTeam.SetEnemy(redTeam);
+
+        if (CheckMembers())
         {
-            if (mc != null)
-            {
-                mc.setMonsterCarnival(this);
-                mc.setTeam(1);
-                mc.setFestivalPoints(0);
-                mc.forceChangeMap(map, map.getPortal(bluePortal));
-                mc.dropMessage(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntry));
-                team2 = mc;
-            }
+            endingTime = DateTimeOffset.Now.AddSeconds(map.TimeDefault);
+
+            effectTimer = TimerManager.getInstance().schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
+            respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
+
+            cs.initMonsterCarnival(cpq1, room);
         }
-        if (team1 == null || team2 == null)
+        else
         {
-            foreach (var chr in p1.getMembers())
+            dispose();
+        }
+    }
+
+    public bool CheckMembers()
+    {
+        var redTeamMembers = redTeam.Team.getPartyMembersOnline();
+        var blueTeamMembers = blueTeam.Team.getPartyMembersOnline();
+        if (redTeamMembers.Count != blueTeamMembers.Count)
+        {
+            foreach (var chr in redTeamMembers)
             {
                 if (chr != null)
                 {
                     chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
                 }
             }
-            foreach (var chr in p2.getMembers())
+            foreach (var chr in blueTeamMembers)
             {
                 if (chr != null)
                 {
                     chr.dropMessage(5, LanguageConstants.getMessage(chr, LanguageConstants.CPQError));
                 }
             }
-            return;
+            return false;
         }
-
-        // thanks Atoot, Vcoc for noting double CPQ functional being sent to players in CPQ start
-
-        timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.TimeDefault)); // thanks Atoot for noticing an irregular "event extended" issue here
-        effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
-        respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
-
-        cs.initMonsterCarnival(cpq1, room);
+        return true;
     }
 
     private void respawn()
     {
-        map.respawn();
+        if (!IsCompleted)
+            map.respawn();
     }
 
-    public void playerDisconnected(int charid)
+    public void playerDisconnected(IPlayer player)
     {
-        int team = -1;
-        foreach (var mpc in leader1.getParty()!.getMembers())
-        {
-            if (mpc.getId() == charid)
-            {
-                team = 0;
-            }
-        }
-        foreach (var mpc in leader2.getParty()!.getMembers())
-        {
-            if (mpc.getId() == charid)
-            {
-                team = 1;
-            }
-        }
+        if (player.MCTeam == null)
+            return;
+
+        int team = player.MCTeam.TeamFlag;
+
         foreach (var chrMap in map.getAllPlayers())
         {
             if (team == -1)
@@ -153,9 +120,9 @@ public class MonsterCarnival
         dispose(true);
     }
 
-    public void leftParty(int charid)
+    public void leftParty(IPlayer player)
     {
-        playerDisconnected(charid);
+        playerDisconnected(player);
     }
 
     protected void dispose()
@@ -163,79 +130,18 @@ public class MonsterCarnival
         dispose(false);
     }
 
-    public bool canSummonR()
+    public IMap GetOutMap()
     {
-        return summonsR < map.MaxMobs;
-    }
-
-    public void summonR()
-    {
-        summonsR++;
-    }
-
-    public bool canSummonB()
-    {
-        return summonsB < map.MaxMobs;
-    }
-
-    public void summonB()
-    {
-        summonsB++;
-    }
-
-    public bool canGuardianR()
-    {
-        return map.getAllReactors().Count(x => x.getName().Substring(0, 1) == "0") < map.MaxReactors;
-    }
-
-    public bool canGuardianB()
-    {
-        return map.getAllReactors().Count(x => x.getName().Substring(0, 1) == "1") < map.MaxReactors;
+        return map.getForcedReturnMap();
     }
 
     protected void dispose(bool warpout)
     {
         var cs = map.getChannelServer();
-        IMap outs;
-        if (!cpq1)
-        { // cpq2
-            outs = cs.getMapFactory().getMap(980030010);
-        }
-        else
-        {
-            outs = cs.getMapFactory().getMap(980000010);
-        }
-        foreach (var mc in leader1.getParty()!.getMembers())
-        {
-            if (mc != null)
-            {
-                mc.resetCP();
-                mc.setTeam(-1);
-                mc.setMonsterCarnival(null);
-                if (warpout)
-                {
-                    mc.changeMap(outs, outs.getPortal(0));
-                }
-            }
-        }
-        foreach (var mc in leader2.getParty()!.getMembers())
-        {
-            if (mc != null)
-            {
-                mc.resetCP();
-                mc.setTeam(-1);
-                mc.setMonsterCarnival(null);
-                if (warpout)
-                {
-                    mc.changeMap(outs, outs.getPortal(0));
-                }
-            }
-        }
-        if (this.timer != null)
-        {
-            this.timer.cancel(true);
-            this.timer = null;
-        }
+        IMap outs = GetOutMap();
+        redTeam.Dispose(warpout);
+        blueTeam.Dispose(warpout);
+
         if (this.effectTimer != null)
         {
             this.effectTimer.cancel(true);
@@ -246,14 +152,10 @@ public class MonsterCarnival
             this.respawnTask.cancel(true);
             this.respawnTask = null;
         }
-        redTotalCP = 0;
-        blueTotalCP = 0;
-        leader1.getParty()!.setEnemy(null);
-        leader2.getParty()!.setEnemy(null);
         map.dispose();
         // map = null;
 
-        cs.finishMonsterCarnival(cpq1, room);
+        cs.finishMonsterCarnival(IsCPQ1, room);
     }
 
     public void exit()
@@ -261,354 +163,59 @@ public class MonsterCarnival
         dispose();
     }
 
-    public ScheduledFuture? getTimer()
-    {
-        return this.timer;
-    }
-
-    private void finish(int winningTeam)
-    {
-        try
-        {
-            var cs = map.getChannelServer();
-            var mapFactory = cs.getMapFactory();
-            if (winningTeam == 0)
-            {
-                foreach (var mc in leader1.getParty()!.getMembers())
-                {
-                    if (mc != null)
-                    {
-                        mc.gainFestivalPoints(this.redTotalCP);
-                        mc.setMonsterCarnival(null);
-                        if (cpq1)
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 2), mapFactory.getMap(map.getId() + 2).getPortal(0));
-                        }
-                        else
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 200), mapFactory.getMap(map.getId() + 200).getPortal(0));
-                        }
-                        mc.setTeam(-1);
-                        mc.dispelDebuffs();
-                    }
-                }
-                foreach (var mc in leader2.getParty()!.getMembers())
-                {
-                    if (mc != null)
-                    {
-                        mc.gainFestivalPoints(this.blueTotalCP);
-                        mc.setMonsterCarnival(null);
-                        if (cpq1)
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 3), mapFactory.getMap(map.getId() + 3).getPortal(0));
-                        }
-                        else
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 300), mapFactory.getMap(map.getId() + 300).getPortal(0));
-                        }
-                        mc.setTeam(-1);
-                        mc.dispelDebuffs();
-                    }
-                }
-            }
-            else if (winningTeam == 1)
-            {
-                foreach (var mc in leader2.getParty()!.getMembers())
-                {
-                    if (mc != null)
-                    {
-                        mc.gainFestivalPoints(this.blueTotalCP);
-                        mc.setMonsterCarnival(null);
-                        if (cpq1)
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 2), mapFactory.getMap(map.getId() + 2).getPortal(0));
-                        }
-                        else
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 200), mapFactory.getMap(map.getId() + 200).getPortal(0));
-                        }
-                        mc.setTeam(-1);
-                        mc.dispelDebuffs();
-                    }
-                }
-                foreach (var mc in leader1.getParty()!.getMembers())
-                {
-                    if (mc != null)
-                    {
-                        mc.gainFestivalPoints(this.redTotalCP);
-                        mc.setMonsterCarnival(null);
-                        if (cpq1)
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 3), mapFactory.getMap(map.getId() + 3).getPortal(0));
-                        }
-                        else
-                        {
-                            mc.changeMap(mapFactory.getMap(map.getId() + 300), mapFactory.getMap(map.getId() + 300).getPortal(0));
-                        }
-                        mc.setTeam(-1);
-                        mc.dispelDebuffs();
-                    }
-                }
-            }
-            dispose();
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-    }
-
-    private void timeUp()
-    {
-        int cp1 = this.redTimeupCP;
-        int cp2 = this.blueTimeupCP;
-        if (cp1 == cp2)
-        {
-            extendTime();
-            return;
-        }
-        if (cp1 > cp2)
-        {
-            finish(0);
-        }
-        else
-        {
-            finish(1);
-        }
-    }
-
-    public long getTimeLeft()
-    {
-        return (startTime - DateTimeOffset.Now.ToUnixTimeMilliseconds());
-    }
-
     public int getTimeLeftSeconds()
     {
-        return (int)(getTimeLeft() / 1000);
+        return (int)(endingTime - DateTimeOffset.Now).TotalSeconds;
     }
 
-    private void extendTime()
+    private void ExtendTime()
     {
         foreach (var chrMap in map.getAllPlayers())
         {
             chrMap.dropMessage(5, LanguageConstants.getMessage(chrMap, LanguageConstants.CPQExtendTime));
         }
-        startTime = DateTimeOffset.Now.AddMinutes(3).ToUnixTimeMilliseconds();
+        endingTime = DateTimeOffset.Now.AddSeconds(map.TimeExpand);
 
-        map.broadcastMessage(PacketCreator.getClock(3 * 60));
+        map.broadcastMessage(PacketCreator.getClock(map.TimeExpand));
 
-        timer = TimerManager.getInstance().schedule(() => timeUp(), TimeSpan.FromSeconds(map.TimeExpand));
-        effectTimer = TimerManager.getInstance().schedule(() => complete(), TimeSpan.FromSeconds(map.TimeExpand - 10)); // thanks Vcoc for noticing a time set issue here
+        effectTimer = TimerManager.getInstance().schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeExpand - 10)); // thanks Vcoc for noticing a time set issue here
     }
-
-    public void complete()
+    /// <summary>
+    /// 先complete  过 10s finish
+    /// </summary>
+    /// <exception cref="Exception"></exception>
+    public void Complete()
     {
-        int cp1 = this.redTotalCP;
-        int cp2 = this.blueTotalCP;
-
-        this.redTimeupCP = cp1;
-        this.blueTimeupCP = cp2;
-
-        if (cp1 == cp2)
+        if (redTeam.TotalCP != blueTeam.TotalCP)
         {
-            return;
-        }
-        bool redWin = cp1 > cp2;
-        int chnl = leader1.getClient().getChannel();
-        int chnl1 = leader2.getClient().getChannel();
-        if (chnl != chnl1)
-        {
-            throw new Exception("Os lideres estao em canais diferentes.");
-        }
+            IsCompleted = true;
+            map.killAllMonsters();
 
-        map.killAllMonsters();
-        foreach (var mc in leader1.getParty()!.getMembers())
-        {
-            if (mc != null)
+            bool redWin = redTeam.TotalCP > blueTeam.TotalCP;
+            this.redTeam.SetResult(redWin);
+            this.blueTeam.SetResult(!redWin);
+
+            this.redTeam.PlayUI();
+            this.blueTeam.PlayUI();
+
+            Task.Run(async () =>
             {
-                if (redWin)
-                {
-                    mc.sendPacket(PacketCreator.showEffect("quest/carnival/win"));
-                    mc.sendPacket(PacketCreator.playSound("MobCarnival/Win"));
-                    mc.dispelDebuffs();
-                }
-                else
-                {
-                    mc.sendPacket(PacketCreator.showEffect("quest/carnival/lose"));
-                    mc.sendPacket(PacketCreator.playSound("MobCarnival/Lose"));
-                    mc.dispelDebuffs();
-                }
-            }
-        }
-        foreach (var mc in leader2.getParty()!.getMembers())
-        {
-            if (mc != null)
-            {
-                if (!redWin)
-                {
-                    mc.sendPacket(PacketCreator.showEffect("quest/carnival/win"));
-                    mc.sendPacket(PacketCreator.playSound("MobCarnival/Win"));
-                    mc.dispelDebuffs();
-                }
-                else
-                {
-                    mc.sendPacket(PacketCreator.showEffect("quest/carnival/lose"));
-                    mc.sendPacket(PacketCreator.playSound("MobCarnival/Lose"));
-                    mc.dispelDebuffs();
-                }
-            }
-        }
-    }
-
-    public ITeam getRed()
-    {
-        return p1;
-    }
-
-    public void setRed(ITeam p1)
-    {
-        this.p1 = p1;
-    }
-
-    public ITeam getBlue()
-    {
-        return p2;
-    }
-
-    public void setBlue(ITeam p2)
-    {
-        this.p2 = p2;
-    }
-
-    public IPlayer getLeader1()
-    {
-        return leader1;
-    }
-
-    public void setLeader1(IPlayer leader1)
-    {
-        this.leader1 = leader1;
-    }
-
-    public IPlayer getLeader2()
-    {
-        return leader2;
-    }
-
-    public void setLeader2(IPlayer leader2)
-    {
-        this.leader2 = leader2;
-    }
-
-    public IPlayer getEnemyLeader(int team)
-    {
-        return team switch
-        {
-            0 => leader2,
-            1 => leader1,
-            _ => throw new BusinessException(),
-        };
-    }
-
-    public int getBlueCP()
-    {
-        return blueCP;
-    }
-
-    public void setBlueCP(int blueCP)
-    {
-        this.blueCP = blueCP;
-    }
-
-    public int getBlueTotalCP()
-    {
-        return blueTotalCP;
-    }
-
-    public void setBlueTotalCP(int blueTotalCP)
-    {
-        this.blueTotalCP = blueTotalCP;
-    }
-
-    public int getRedCP()
-    {
-        return redCP;
-    }
-
-    public void setRedCP(int redCP)
-    {
-        this.redCP = redCP;
-    }
-
-    public int getRedTotalCP()
-    {
-        return redTotalCP;
-    }
-
-    public void setRedTotalCP(int redTotalCP)
-    {
-        this.redTotalCP = redTotalCP;
-    }
-
-    public int getTotalCP(int team)
-    {
-        if (team == 0)
-        {
-            return redTotalCP;
-        }
-        else if (team == 1)
-        {
-            return blueTotalCP;
+                await Task.Delay(TimeSpan.FromSeconds(10));
+                redTeam.Finish();
+                blueTeam.Finish();
+                dispose();
+            });
         }
         else
         {
-            throw new Exception("Equipe desconhecida");
+            Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10));
+                ExtendTime();
+            });
         }
-    }
 
-    public void setTotalCP(int totalCP, int team)
-    {
-        if (team == 0)
-        {
-            this.redTotalCP = totalCP;
-        }
-        else if (team == 1)
-        {
-            this.blueTotalCP = totalCP;
-        }
-    }
 
-    public int getCP(int team)
-    {
-        if (team == 0)
-        {
-            return redCP;
-        }
-        else if (team == 1)
-        {
-            return blueCP;
-        }
-        else
-        {
-            throw new Exception("Equipe desconhecida" + team);
-        }
-    }
-
-    public void setCP(int CP, int team)
-    {
-        if (team == 0)
-        {
-            this.redCP = CP;
-        }
-        else if (team == 1)
-        {
-            this.blueCP = CP;
-        }
-    }
-
-    public int getRoom()
-    {
-        return this.room;
     }
 
     public ICPQMap getEventMap()

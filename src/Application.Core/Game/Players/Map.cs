@@ -231,8 +231,6 @@ namespace Application.Core.Game.Players
             getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
             this.closePlayerInteractions();
 
-            var k = this.getParty()?.getEnemy();
-
             sendPacket(warpPacket);
             MapModel.removePlayer(this);
             if (isLoggedinWorld())
@@ -254,10 +252,6 @@ namespace Application.Core.Game.Players
                 finally
                 {
                     Monitor.Exit(prtLock);
-                }
-                if (this.getParty() != null)
-                {
-                    this.getParty()!.setEnemy(k);
                 }
                 silentPartyUpdateInternal(getParty());  // EIM script calls inside
             }

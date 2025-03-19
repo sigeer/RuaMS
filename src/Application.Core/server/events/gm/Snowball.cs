@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.Specials;
 using constants.id;
 using tools;
 
@@ -31,7 +32,7 @@ namespace server.events.gm;
  */
 public class Snowball
 {
-    private IMap map;
+    private ISnowBallMap map;
     private int position = 0;
     private int hits = 3;
     private int snowmanhp = 1000;
@@ -42,8 +43,10 @@ public class Snowball
 
     public Snowball(int team, IMap map)
     {
-        this.map = map;
+        this.map = (map as ISnowBallMap)!;
         this.team = team;
+
+        snowmanhp = this.map.SnowManHP;
 
         foreach (var chr in map.getCharacters())
         {
@@ -146,7 +149,7 @@ public class Snowball
 
                     TimerManager.getInstance().schedule(() =>
                     {
-                        setSnowmanHP(7500);
+                        setSnowmanHP(map.SnowManHP);
                         message(5);
                     }, 10000);
                 }

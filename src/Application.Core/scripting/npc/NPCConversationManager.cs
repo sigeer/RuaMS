@@ -671,9 +671,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         int num = 0;
         int avg = 0;
-        foreach (var mmo in c.getChannelServer().getMapFactory().getMap(map).getAllPlayer())
+        foreach (var mmo in c.getChannelServer().getMapFactory().getMap(map).getAllPlayers())
         {
-            avg += ((IPlayer)mmo).getLevel();
+            avg += mmo.getLevel();
             num++;
         }
         avg /= num;
@@ -811,7 +811,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             cpqMaxLvl = 70;
         }
 
-        var partyMembers = party.getPartyMembers();
+        var partyMembers = party.getMembers();
         foreach (var pchr in partyMembers)
         {
             if (pchr.getLevel() >= cpqMinLvl && pchr.getLevel() <= cpqMaxLvl)

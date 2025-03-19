@@ -1,14 +1,12 @@
-﻿using tools;
+using Application.Shared.Events;
+using tools;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private int cp = 0;
-        private int totCP = 0;
         private int FestivalPoints;
         private bool challenged = false;
-        public int totalCP, availableCP;
 
         public void gainFestivalPoints(int gain)
         {
@@ -25,77 +23,38 @@ namespace Application.Core.Game.Players
             this.FestivalPoints = pontos;
         }
 
-        public int getCP()
-        {
-            return cp;
-        }
-
         public void addCP(int ammount)
         {
-            totalCP += ammount;
-            availableCP += ammount;
+            TotalCP += ammount;
+            AvailableCP += ammount;
         }
 
         public void useCP(int ammount)
         {
-            availableCP -= ammount;
+            AvailableCP -= ammount;
         }
 
         public void gainCP(int gain)
         {
-            var monsterCarnival = getMonsterCarnival();
-            if (monsterCarnival != null)
+            if (MCTeam != null)
             {
                 if (gain > 0)
+                    MCTeam.AddCP(this, gain);
+                else
+                    MCTeam.UseCP(this, -gain);
+
+                sendPacket(PacketCreator.CPUpdate(false, AvailableCP, TotalCP, MCTeam.TeamFlag));
+                if (MCTeam.TeamFlag != TeamGroupEnum.None)
                 {
-                    this.setTotalCP(this.getTotalCP() + gain);
-                }
-                this.setCP(this.getCP() + gain);
-                if (this.getParty() != null)
-                {
-                    monsterCarnival.setCP(monsterCarnival.getCP(team) + gain, team);
-                    if (gain > 0)
-                    {
-                        monsterCarnival.setTotalCP(monsterCarnival.getTotalCP(team) + gain, team);
-                    }
-                }
-                if (this.getCP() > this.getTotalCP())
-                {
-                    this.setTotalCP(this.getCP());
-                }
-                sendPacket(PacketCreator.CPUpdate(false, this.getCP(), this.getTotalCP(), getTeam()));
-                if (this.getParty() != null && getTeam() != -1)
-                {
-                    this.MapModel.broadcastMessage(PacketCreator.CPUpdate(true, monsterCarnival.getCP(team), monsterCarnival.getTotalCP(team), getTeam()));
+                    this.MapModel.broadcastMessage(PacketCreator.CPUpdate(true, MCTeam.AvailableCP, MCTeam.TotalCP, MCTeam.TeamFlag));
                 }
             }
         }
 
-        public void setTotalCP(int a)
-        {
-            this.totCP = a;
-        }
-
-        public void setCP(int a)
-        {
-            this.cp = a;
-        }
-
-        public int getTotalCP()
-        {
-            return totCP;
-        }
-
-        public int getAvailableCP()
-        {
-            return availableCP;
-        }
-
         public void resetCP()
         {
-            this.cp = 0;
-            this.totCP = 0;
-            this.monsterCarnival = null;
+            this.AvailableCP = 0;
+            this.TotalCP = 0;
         }
 
 
