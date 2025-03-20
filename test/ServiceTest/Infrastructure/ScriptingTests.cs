@@ -153,7 +153,7 @@ namespace ServiceTest.Infrastructure
         }
 
         [Test]
-        public void CheckReturnArrayTest()
+        public void CheckReturnArrayTest1()
         {
             _engine.Evaluate("""
                 function check_return_array() {
@@ -167,6 +167,27 @@ namespace ServiceTest.Infrastructure
             _engine.AddHostedType("Point", typeof(Point));
             var d = _engine.CallFunction("check_return_array").ToObject<List<Point>>();
             Assert.That(d.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void CheckReturnArrayTest2()
+        {
+            _engine.Evaluate("""
+                function check_return_array() {
+                    var arr = [];
+                    arr.push(new TestArrayItem());
+                    arr.push(new TestArrayItem());
+                    arr.push(new TestArrayItem());
+                    return arr;
+                }
+                """);
+            _engine.AddHostedType("TestArrayItem", typeof(TestArrayItem));
+            var result = _engine.CallFunction("check_return_array");
+            var d1 = result.ToObject<List<TestArrayItem>>();
+            Assert.That(d1.Count, Is.EqualTo(3));
+
+            var d2 = result.ToObject<TestArrayItem[]>();
+            Assert.That(d2.Count, Is.EqualTo(3));
         }
 
         [OneTimeTearDown]
@@ -277,5 +298,10 @@ namespace ServiceTest.Infrastructure
     public enum TestEnum
     {
         A, B, C, D
+    }
+
+    public class TestArrayItem
+    {
+        public int F { get; set; }
     }
 }

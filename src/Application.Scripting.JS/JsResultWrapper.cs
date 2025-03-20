@@ -22,30 +22,39 @@ namespace Application.Scripting.JS
             if (typeof(IConvertible).IsAssignableFrom(targetType))
                 return (TObject)Convert.ChangeType(obj, targetType);
 
-            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
+            if (obj is Array array)
             {
-                var elementType = targetType.GetGenericArguments()[0];
+                Type? elementType = null;
+                if (targetType.IsArray)
+                    elementType = targetType.GetElementType();
+
+                if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
+                    elementType = targetType.GetGenericArguments()[0];
+
+                if (elementType == null)
+                    throw new InvalidCastException();
+
                 var elementConvertible = typeof(IConvertible).IsAssignableFrom(elementType);
-                if (obj is Array array)
+                var convertedArray = Array.CreateInstance(elementType, array.Length);
+                for (int i = 0; i < array.Length; i++)
                 {
-                    var convertedArray = Array.CreateInstance(elementType, array.Length);
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        var item = array.GetValue(i);
-                        convertedArray.SetValue(
-                             elementConvertible ?
-                                Convert.ChangeType(item, elementType) :
-                                item,
-                            i
-                        );
-                    }
-                    // 使用 List<T> 的构造函数直接传入数组
+                    var item = array.GetValue(i);
+                    convertedArray.SetValue(
+                         elementConvertible ?
+                            Convert.ChangeType(item, elementType) :
+                            item,
+                        i
+                    );
+                }
+
+                if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
+                {
                     var list = Activator.CreateInstance(
                         typeof(List<>).MakeGenericType(elementType),
-                        convertedArray
-                    );
+                        convertedArray);
                     return (TObject)list;
                 }
+                return (TObject)(object)convertedArray;
             }
 
             return (TObject)obj;
