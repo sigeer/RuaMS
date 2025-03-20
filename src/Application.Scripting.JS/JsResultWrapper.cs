@@ -28,8 +28,12 @@ namespace Application.Scripting.JS
                 if (targetType.IsArray)
                     elementType = targetType.GetElementType();
 
+                bool isList = false;
                 if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
+                {
                     elementType = targetType.GetGenericArguments()[0];
+                    isList = true;
+                }
 
                 if (elementType == null)
                     throw new InvalidCastException();
@@ -47,7 +51,7 @@ namespace Application.Scripting.JS
                     );
                 }
 
-                if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
+                if (isList)
                 {
                     var list = Activator.CreateInstance(
                         typeof(List<>).MakeGenericType(elementType),
