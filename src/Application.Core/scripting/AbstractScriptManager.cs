@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Managers;
-using Application.Core.Scripting.Infrastructure;
+using Application.Scripting.JS;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -61,56 +61,71 @@ public abstract class AbstractScriptManager
         {
             if (!File.Exists(path))
             {
-                log.Error($"script {path} not found");
+                log.Warning($"script {path} not found");
                 return null;
             }
             jsContent = File.ReadAllText(path);
             JsCache[path] = jsContent;
         }
 
+        IEngine engine = new JintEngine();
+        //if (path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+        //    engine = new JintEngine();
+        //else if (path.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
+        //    engine = new LuaScriptEngine();
+        //else
+        //{
+        //    throw new BusinessException($"不支持的脚本类型：{path}");
+        //}
 
-        var engine = new JintEngine();
         try
         {
-            engine.AddHostedObject("log", log);
+            InitializeScriptType(engine);
 
-            engine.AddHostedType("Item", typeof(Item));
-            engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
-            engine.AddHostedType("BuffStat", typeof(BuffStat));
-            engine.AddHostedType("MapId", typeof(MapId));
-            engine.AddHostedType("Rectangle", typeof(Rectangle));
-            engine.AddHostedType("RingManager", typeof(RingManager));
-            engine.AddHostedType("Channel", typeof(WorldChannel));
-            engine.AddHostedType("CommandExecutor", typeof(CommandExecutor));
-            engine.AddHostedType("CharacterManager", typeof(CharacterManager));
-            engine.AddHostedType("GachaponManager", typeof(GachaponManager));
-            engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
-            engine.AddHostedType("MonsterBook", typeof(MonsterBook));
-            engine.AddHostedType("ExpTable", typeof(ExpTable));
-            engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
-            engine.AddHostedType("Server", typeof(Server));
-            engine.AddHostedType("Point", typeof(Point));
-            engine.AddHostedType("LifeFactory", typeof(LifeFactory));
-            engine.AddHostedType("Wedding", typeof(WeddingPackets));
-            engine.AddHostedType("GameConstants", typeof(GameConstants));
-            engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
-            engine.AddHostedType("ShopFactory", typeof(ShopFactory));
-            engine.AddHostedType("PacketCreator", typeof(PacketCreator));
-            engine.AddHostedType("YamlConfig", typeof(YamlConfig));
-            engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
-            engine.AddHostedType("Guild", typeof(GuildManager));
-
-            engine.AddHostedType("Job", typeof(Job));
-            engine.AddHostedType("InventoryType", typeof(InventoryType));
-
-            engine.Evaluate(GetUtilJs());
             engine.Evaluate(jsContent);
             return engine;
         }
         catch (Exception ex)
         {
-            log.Error(ex.ToString());
-            return null;
+            log.Error(ex, "File: {ScriptPath}", path);
+            throw;
+        }
+    }
+
+    void InitializeScriptType(IEngine engine)
+    {
+        engine.AddHostedType("Item", typeof(Item));
+        engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
+        engine.AddHostedType("BuffStat", typeof(BuffStat));
+        engine.AddHostedType("MapId", typeof(MapId));
+        engine.AddHostedType("Rectangle", typeof(Rectangle));
+        engine.AddHostedType("RingManager", typeof(RingManager));
+        engine.AddHostedType("Channel", typeof(WorldChannel));
+        engine.AddHostedType("CommandExecutor", typeof(CommandExecutor));
+        engine.AddHostedType("CharacterManager", typeof(CharacterManager));
+        engine.AddHostedType("GachaponManager", typeof(GachaponManager));
+        engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
+        engine.AddHostedType("MonsterBook", typeof(MonsterBook));
+        engine.AddHostedType("ExpTable", typeof(ExpTable));
+        engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
+        engine.AddHostedType("Server", typeof(Server));
+        engine.AddHostedType("Point", typeof(Point));
+        engine.AddHostedType("LifeFactory", typeof(LifeFactory));
+        engine.AddHostedType("Wedding", typeof(WeddingPackets));
+        engine.AddHostedType("GameConstants", typeof(GameConstants));
+        engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
+        engine.AddHostedType("ShopFactory", typeof(ShopFactory));
+        engine.AddHostedType("PacketCreator", typeof(PacketCreator));
+        engine.AddHostedType("YamlConfig", typeof(YamlConfig));
+        engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
+        engine.AddHostedType("Guild", typeof(GuildManager));
+
+        engine.AddHostedType("Job", typeof(Job));
+        engine.AddHostedType("InventoryType", typeof(InventoryType));
+
+        if (engine is JintEngine js)
+        {
+            engine.Evaluate(GetUtilJs());
         }
     }
 
@@ -141,9 +156,14 @@ public abstract class AbstractScriptManager
         return ScriptResFactory.GetScriptFullPath(relativePath);
     }
 
-    protected string GetScriptPath(string type, string path)
+    protected string GetScriptPath(string category, string path, string type = "js")
     {
-        return Path.Combine(type, path.EndsWith(".js") ? path : (path + ".js"));
+        if (path.EndsWith(".js") || path.EndsWith(".lua"))
+            return Path.Combine(category, path);
+
+        var extension = type == "js" ? ".js" : ".lua";
+
+        return Path.Combine(category, path + extension);
     }
 
     private string GetUtilJs()

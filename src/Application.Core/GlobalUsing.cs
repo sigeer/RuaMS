@@ -1,4 +1,4 @@
-﻿global using Application.Core;
+global using Application.Core;
 global using Application.Core.Addon;
 global using Application.Core.Compatible;
 global using Application.Core.Compatible.Atomics;
@@ -17,3 +17,4 @@ global using System;
 global using System.Drawing;
 global using XmlWzReader;
 global using XmlWzReader.wz;
+global using Application.Scripting;

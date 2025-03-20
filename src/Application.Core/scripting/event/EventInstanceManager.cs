@@ -226,7 +226,7 @@ public class EventInstanceManager
     {
         if (!disposed)
         {
-            return em.getIv().CallFunction(name, args);
+            return em.getIv().CallFunction(name, args).ToObject();
         }
         else
         {

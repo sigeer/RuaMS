@@ -147,7 +147,7 @@ public class EventManager
     {
         try
         {
-            return Convert.ToInt32(iv.CallFunction("getMaxLobbies"));
+            return iv.CallFunction("getMaxLobbies").ToObject<int>();
         }
         catch (Exception ex)
         {
@@ -212,6 +212,11 @@ public class EventManager
     public IWorldChannel getChannelServer()
     {
         return cserv;
+    }
+
+    public IMap GetMap(int mapId)
+    {
+        return getChannelServer().getMapFactory().getMap(mapId);
     }
 
     public IEngine getIv()
@@ -370,7 +375,7 @@ public class EventManager
 
     private EventInstanceManager createInstance(string name, params object?[] args)
     {
-        return (EventInstanceManager)iv.CallFunction(name, args);
+        return iv.CallFunction(name, args).ToObject<EventInstanceManager>();
     }
 
     private void registerEventInstance(string eventName, int lobbyId)
@@ -871,7 +876,7 @@ public class EventManager
         try
         {
             var result = iv.CallFunction("getEligibleParty", party.getPartyMembersOnline());
-            var eligibleParty = ((object[]?)result ?? []).OfType<IPlayer>().ToList();
+            var eligibleParty = result.ToObject<List<IPlayer>>();
             party.setEligibleMembers(eligibleParty);
             return eligibleParty;
         }
