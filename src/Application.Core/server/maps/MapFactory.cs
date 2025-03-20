@@ -176,11 +176,11 @@ public class MapFactory
         map.setEventInstance(evt);
 
         var mapStr = mapid.ToString();
-        string onFirstEnter = DataTool.getString(infoData?.getChildByPath("onFirstUserEnter")) ?? mapStr;
-        map.setOnFirstUserEnter(onFirstEnter.Equals("") ? mapStr : onFirstEnter);
+        var onFirstEnter = DataTool.getString(infoData?.getChildByPath("onFirstUserEnter"));
+        map.setOnFirstUserEnter(string.IsNullOrEmpty(onFirstEnter) ? mapStr : onFirstEnter);
 
-        string onEnter = DataTool.getString(infoData?.getChildByPath("onUserEnter")) ?? mapStr;
-        map.setOnUserEnter(onEnter.Equals("") ? mapStr : onEnter);
+        var onEnter = DataTool.getString(infoData?.getChildByPath("onUserEnter")) ?? mapStr;
+        map.setOnUserEnter(string.IsNullOrEmpty(onEnter) ? mapStr : onEnter);
 
         map.setFieldLimit(DataTool.getInt(infoData?.getChildByPath("fieldLimit"), 0));
         map.setMobInterval((short)DataTool.getInt(infoData?.getChildByPath("createMobInterval"), 5000));

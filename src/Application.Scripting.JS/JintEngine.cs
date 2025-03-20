@@ -2,7 +2,7 @@ using Jint;
 using Jint.Runtime.Interop;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Application.Core.Scripting.Infrastructure
+namespace Application.Scripting.JS
 {
     public class JintEngine : IEngine
     {
@@ -43,10 +43,10 @@ namespace Application.Core.Scripting.Infrastructure
         /// Regex -> RegExp
         /// Function -> Delegate
         /// </returns>
-        public object? CallFunction(string functionName, params object?[] paramsValue)
+        public ScriptResultWrapper CallFunction(string functionName, params object?[] paramsValue)
         {
             var m = _engine.Invoke(functionName, paramsValue);
-            return m.ToObject();
+            return new JsResultWrapper(m);
         }
 
         public void Dispose()
@@ -67,11 +67,6 @@ namespace Application.Core.Scripting.Infrastructure
         public bool IsExisted(string variable)
         {
             return !_engine.Evaluate(variable).IsUndefined();
-        }
-
-        public bool IsFunctionExisted(string variable)
-        {
-            return _engine.Evaluate($"typeof {variable}") == "function";
         }
     }
 

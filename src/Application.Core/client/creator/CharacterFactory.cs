@@ -33,8 +33,6 @@ namespace client.creator;
  */
 public abstract class CharacterFactory
 {
-    private static ILogger log = LogFactory.GetLogger("CharacterFactory");
-
     static object createNewLock = new object();
 
     /// <summary>
@@ -49,7 +47,7 @@ public abstract class CharacterFactory
     /// <param name="gender"></param>
     /// <param name="recipe"></param>
     /// <param name="newchar"></param>
-    /// <returns>0=≥…π¶</returns>
+    /// <returns>0=ÊàêÂäü</returns>
     public static int CreateCharacter(int world, int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
     {
         lock (createNewLock)
@@ -106,7 +104,7 @@ public abstract class CharacterFactory
 
             if (!MakeCharInfoValidator.isNewCharacterValid(newCharacter))
             {
-                log.Warning("Owner from account {AccountId} tried to packet edit in character creation", newCharacter.getAccountID());
+                Log.Logger.Warning("Owner from account {AccountId} tried to packet edit in character creation", newCharacter.getAccountID());
                 return CreateCharResult.Error;
             }
 
@@ -134,7 +132,7 @@ public abstract class CharacterFactory
 
                 Server.getInstance().createCharacterEntry(newCharacter);
                 Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[New Char]: " + c.getAccountName() + " has created a new character with IGN " + name));
-                log.Information("Account {AccountName} created chr with name {CharacterName}", c.getAccountName(), name);
+                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.getAccountName(), name);
 
                 return CreateCharResult.Success;
             }

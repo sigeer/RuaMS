@@ -14,7 +14,7 @@ namespace ServiceTest
     {
         public TestBase()
         {
-            Environment.SetEnvironmentVariable("wz-path", "D:\\Cosmic\\wz");
+            Environment.SetEnvironmentVariable("ms-wz", "D:\\walker\\demo\\MS\\Cosmic\\wz");
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             GlobalTools.Encoding = Encoding.GetEncoding("GBK");

@@ -13,7 +13,6 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Jint" Version="4.2.0" />
 		<PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
 		  <PrivateAssets>all</PrivateAssets>
@@ -32,6 +31,7 @@
 
 
 	<ItemGroup>
+		<ProjectReference Include="..\Application.Scripting.JS\Application.Scripting.JS.csproj" />
 		<ProjectReference Include="..\Application.Shared\Application.Shared.csproj" />
 		<ProjectReference Include="..\Application.Utility\Application.Utility.csproj" />
 		<ProjectReference Include="..\XmlWzReader\XmlWzReader.csproj" />

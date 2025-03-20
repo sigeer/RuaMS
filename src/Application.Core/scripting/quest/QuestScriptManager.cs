@@ -62,7 +62,12 @@ public class QuestScriptManager : AbstractScriptManager
         try
         {
             if (c.NPCConversationManager != null)
-                return;
+            {
+                if (c.NPCConversationManager is not QuestActionManager)
+                    c.NPCConversationManager.dispose();
+                else
+                    return;
+            }
 
             if (c.canClickNPC())
             {
@@ -126,7 +131,12 @@ public class QuestScriptManager : AbstractScriptManager
         try
         {
             if (c.NPCConversationManager != null)
-                return;
+            {
+                if (c.NPCConversationManager is not QuestActionManager)
+                    c.NPCConversationManager.dispose();
+                else
+                    return;
+            }
 
             if (c.canClickNPC())
             {
@@ -184,7 +194,10 @@ public class QuestScriptManager : AbstractScriptManager
         {
             if (c.NPCConversationManager != null)
             {
-                return;
+                if (c.NPCConversationManager is not QuestActionManager)
+                    c.NPCConversationManager.dispose();
+                else
+                    return;
             }
             if (c.canClickNPC())
             {

@@ -590,7 +590,7 @@ public class Server
             return;
 
         IsStarting = true;
-        log.Information("Cosmic v{Version} starting up.", ServerConstants.VERSION);
+        log.Information("游戏服务器启动中...");
 
         Stopwatch totalSw = new Stopwatch();
         totalSw.Start();
@@ -638,7 +638,7 @@ public class Server
             log.Information("Listening on port 8484");
 
             totalSw.Stop();
-            log.Information("Cosmic is now online after {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
+            log.Information("游戏服务器启动完成，耗时 {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
         }
         catch (Exception ex)
         {

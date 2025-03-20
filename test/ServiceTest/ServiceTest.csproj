@@ -27,6 +27,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Application.Core\Application.Core.csproj" />
     <ProjectReference Include="..\..\src\Application.Resources\Application.Resources.csproj" />
+    <ProjectReference Include="..\..\src\Application.Scripting.JS\Application.Scripting.JS.csproj" />
+    <ProjectReference Include="..\..\src\Application.Scripting.Lua\Application.Scripting.Lua.csproj" />
   </ItemGroup>
 
 </Project>

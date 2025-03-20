@@ -116,7 +116,6 @@ public class EventScriptManager : AbstractScriptManager
 
     private EventEntry initializeEventEntry(string script, IWorldChannel channel)
     {
-        //var engine = new JurassicJsEngine();
         var engine = getInvocableScriptEngine(GetEventScriptPath(script));
         EventManager eventManager = new EventManager(channel, engine, script);
         engine.AddHostedObject(INJECTED_VARIABLE_NAME, eventManager);

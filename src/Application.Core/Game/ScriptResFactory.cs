@@ -27,7 +27,7 @@ namespace Application.Core.Game
 
         public static string[] GetEvents()
         {
-            return Directory.GetFiles(GetScriptFullPath("event")).Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
+            return Directory.GetFiles(GetScriptFullPath("event")).Select(x => Path.GetFileName(x)).ToArray();
         }
     }
 }
