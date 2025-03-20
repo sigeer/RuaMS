@@ -46,9 +46,11 @@ namespace Application.Scripting.JS
             return list.Size() == 0;
         }
 
-        public static int getId(this Enum m)
+        public static int GetId(this object m)
         {
-            return Convert.ToInt32(m);
+            if (m is IConvertible)
+                return Convert.ToInt32(m);
+            return 0;
         }
     }
 }
