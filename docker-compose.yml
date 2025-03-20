@@ -9,7 +9,7 @@ services:
       rua-ms-db:
         condition: service_healthy
     environment:
-        RUA_MS_DB_CONNECTIONSTRING: "server=rua-ms-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
+        RUA_MS_DB_CONNECTIONSTRING: "server=rua-ms-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=ruams;Charset=utf8mb4;"
         ## 此处修改HOST
         # RUA_MS_HOST: 127.0.0.1
         # RUA_MS_LANHOST: 127.0.0.1
