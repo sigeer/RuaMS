@@ -1025,7 +1025,7 @@ public partial class Player
 
             broadcastChangeJob();
 
-            if (newJob.HasSPTable && newJob != Job.EVAN)
+            if (newJob.HasDragon())
             {
                 if (getBuffedValue(BuffStat.MONSTER_RIDING) != null)
                 {

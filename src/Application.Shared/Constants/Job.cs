@@ -136,8 +136,7 @@ namespace Application.Shared.Constants
             Id = value;
             Name = name;
 
-            if (Id >= JobId.EVAN1 && Id <= JobId.EVAN10)
-                HasSPTable = true;
+            HasSPTable = IsEvan();
 
             Type = (JobType)(Id / 1000);
 
@@ -200,6 +199,16 @@ namespace Application.Shared.Constants
         public bool IsGmJob()
         {
             return Id == JobId.GM || Id == JobId.SUPERGM || Id == JobId.MAPLELEAF_BRIGADIER;
+        }
+
+        public bool IsEvan()
+        {
+            return Id == JobId.EVAN || HasDragon();
+        }
+
+        public bool HasDragon()
+        {
+            return Id >= JobId.EVAN1 && Id <= JobId.EVAN10;
         }
 
         public override string ToString()
