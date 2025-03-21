@@ -36,7 +36,7 @@ public class AranComboHandler : AbstractPacketHandler
     {
         var player = c.OnlinedCharacter;
         int skillLevel = player.getSkillLevel(SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY));
-        if (GameConstants.isAran(player.getJob().getId()) && (skillLevel > 0 || player.getJob().getId() == 2000))
+        if (player.JobModel.IsAran() && (skillLevel > 0 || player.JobModel.Id == JobId.LEGEND))
         {
             long currentTime = currentServerTime();
             short combo = player.getCombo();

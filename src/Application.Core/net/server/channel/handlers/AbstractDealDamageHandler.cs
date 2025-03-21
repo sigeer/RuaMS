@@ -55,7 +55,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
 
         Skill? theSkill = null;
         StatEffect? attackEffect = null;
-        int job = player.getJob().getId();
+
         try
         {
             if (player.isBanned())
@@ -391,7 +391,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             monster.applyStatus(player, monsterStatusEffect, false, duration);
                         }
                     }
-                    if (job == (int)Job.WHITEKNIGHT || job == (int)Job.PALADIN)
+                    if (player.JobModel == Job.WHITEKNIGHT || player.JobModel == Job.PALADIN)
                     {
                         for (int charge = 1211005; charge < 1211007; charge++)
                         {
@@ -413,7 +413,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                 }
                             }
                         }
-                        if (job == (int)Job.PALADIN)
+                        if (player.JobModel == Job.PALADIN)
                         {
                             for (int charge = 1221003; charge < 1221004; charge++)
                             {
@@ -434,7 +434,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
                         player.addHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
                     }
-                    else if (job == (int)Job.NIGHTLORD || job == (int)Job.SHADOWER || job == (int)Job.NIGHTWALKER3)
+                    else if (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3)
                     {
                         Skill type = SkillFactory.GetSkillTrust(player.getJob().getId() == 412 ? 4120005 : (player.getJob().getId() == 1411 ? 14110004 : 4220005));
                         if (player.getSkillLevel(type) > 0)
@@ -454,12 +454,12 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             }
                         }
                     }
-                    else if (job >= 311 && job <= 322)
+                    else if (player.JobModel.Id >= JobId.RANGER && player.JobModel.Id <= JobId.MARKSMAN)
                     {
                         if (!monster.isBoss())
                         {
                             Skill mortalBlow;
-                            if (job == 311 || job == 312)
+                            if (player.JobModel.Id == JobId.RANGER || player.JobModel.Id == JobId.BOWMASTER)
                             {
                                 mortalBlow = SkillFactory.GetSkillTrust(Ranger.MORTAL_BLOW);
                             }

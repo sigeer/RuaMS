@@ -161,7 +161,7 @@ public class PacketCreator
         }
 
         p.writeByte(chr.getLevel()); // level
-        p.writeShort(chr.getJob().getId()); // job
+        p.writeShort(chr.JobModel.Id); // job
         p.writeShort(chr.Str); // str
         p.writeShort(chr.Dex); // dex
         p.writeShort(chr.Int); // int
@@ -8217,7 +8217,7 @@ public class PacketCreator
         p.writeShort(0);
         p.writeByte(dragon.getStance());
         p.writeByte(0);
-        p.writeShort(dragon.getOwner().getJob().getId());
+        p.writeShort(dragon.getOwner().JobModel.Id);
         return p;
     }
 

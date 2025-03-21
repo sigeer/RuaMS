@@ -9,7 +9,7 @@ namespace Application.Shared.Constants
 
         static JobFactory()
         {
-            _dataSource = EnumClassUtils.GetValues<Job>().ToDictionary(x => x.getId(), x => x);
+            _dataSource = EnumClassUtils.GetValues<Job>().ToDictionary(x => x.Id, x => x);
         }
 
         public static Job GetById(int id)

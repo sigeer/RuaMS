@@ -465,13 +465,11 @@ public class GameConstants
 
     public static int getHallOfFameMapid(Job job)
     {
-        int jobid = job.getId();
-
-        if (isCygnus(jobid))
+        if (job.Type == JobType.Cygnus)
         {
             return MapId.KNIGHTS_CHAMBER;
         }
-        else if (isAran(jobid))
+        else if (job.IsAran())
         {
             return MapId.PALACE_OF_THE_MASTER;
         }
@@ -529,16 +527,6 @@ public class GameConstants
     public static bool isHiddenSkills(int skill)
     {
         return Aran.HIDDEN_FULL_DOUBLE == skill || Aran.HIDDEN_FULL_TRIPLE == skill || Aran.HIDDEN_OVER_DOUBLE == skill || Aran.HIDDEN_OVER_TRIPLE == skill;
-    }
-
-    public static bool isCygnus(int job)
-    {
-        return job / 1000 == 1;
-    }
-
-    public static bool isAran(int job)
-    {
-        return job == 2000 || (job >= 2100 && job <= 2112);
     }
 
     private static bool isInBranchJobTree(int skillJobId, int jobId, int branchType)

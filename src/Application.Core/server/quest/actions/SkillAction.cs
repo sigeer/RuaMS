@@ -125,7 +125,7 @@ public class SkillAction : AbstractQuestAction
 
         public bool jobsContains(Job job)
         {
-            return jobs.Contains(job.getId());
+            return jobs.Contains(job.Id);
         }
 
 
