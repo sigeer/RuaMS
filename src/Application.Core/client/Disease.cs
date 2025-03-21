@@ -75,7 +75,7 @@ public class Disease : EnumClass
     {
         try
         {
-            return GetValues<Disease>()[ord];
+            return EnumClassUtils.GetValues<Disease>()[ord];
         }
         catch (IndexOutOfRangeException e)
         {
@@ -91,7 +91,7 @@ public class Disease : EnumClass
 
     public static Disease? getBySkill(MobSkillType? skill)
     {
-        return GetValues<Disease>().FirstOrDefault(x => x.mobSkillType == skill);
+        return EnumClassUtils.GetValues<Disease>().FirstOrDefault(x => x.mobSkillType == skill);
     }
 
     public static Disease GetBySkillTrust(MobSkillType? skill)

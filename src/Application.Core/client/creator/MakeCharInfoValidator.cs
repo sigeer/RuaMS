@@ -22,11 +22,15 @@ public class MakeCharInfoValidator
 
     private static MakeCharInfo? getMakeCharInfo(IPlayer character)
     {
-        return character.getJob() switch
+        if (character.JobModel.Type == JobType.Adventurer)
+            return character.isMale() ? charMale : charFemale;
+
+
+        return character.JobModel.Type switch
         {
-            Job.BEGINNER or Job.WARRIOR or Job.MAGICIAN or Job.BOWMAN or Job.THIEF or Job.PIRATE => character.isMale() ? charMale : charFemale,
-            Job.NOBLESSE => character.isMale() ? premiumCharMale : premiumCharFemale,
-            Job.LEGEND => character.isMale() ? orientCharMale : orientCharFemale,
+            JobType.Adventurer => character.isMale() ? charMale : charFemale,
+            JobType.Cygnus => character.isMale() ? premiumCharMale : premiumCharFemale,
+            JobType.Legend => character.isMale() ? orientCharMale : orientCharFemale,
             _ => null
         };
     }

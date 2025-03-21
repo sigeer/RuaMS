@@ -10,6 +10,8 @@ global using Application.Core.tools;
 global using Application.EF;
 global using Application.EF.Entities;
 global using Application.Shared;
+global using Application.Shared.Constants;
+global using Application.Utility;
 global using Application.Utility.Configs;
 global using Application.Utility.Exceptions;
 global using Serilog;

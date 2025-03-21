@@ -45,7 +45,7 @@ public class WorldServices : EnumClass, ServiceType<WorldServices>
 
     public WorldServices[] enumValues()
     {
-        return GetValues<WorldServices>().ToArray();
+        return EnumClassUtils.GetValues<WorldServices>().ToArray();
     }
 
     int ServiceType<WorldServices>.ordinal()

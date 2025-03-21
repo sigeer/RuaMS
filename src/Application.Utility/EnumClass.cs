@@ -1,15 +1,10 @@
-﻿using System.Reflection;
+using System.Reflection;
 
-namespace Application.Core.Compatible
+namespace Application.Utility
 {
     public class EnumClass
     {
-        protected static List<TModel> GetValues<TModel>() where TModel : EnumClass
-        {
-            return typeof(TModel).GetFields().Where(x => x.IsStatic
-                        && x.IsPublic
-                        && x.FieldType == typeof(TModel)).Select(x => (TModel)x.GetValue(null)!).ToList();
-        }
+
 
         public static TModel[] values<TModel>() where TModel : EnumClass
         {
@@ -34,5 +29,15 @@ namespace Application.Core.Compatible
         }
 
         public string name() => GetInfo().Name;
+    }
+
+    public class EnumClassUtils
+    {
+        public static List<TModel> GetValues<TModel>() where TModel : EnumClass
+        {
+            return typeof(TModel).GetFields().Where(x => x.IsStatic
+                        && x.IsPublic
+                        && x.FieldType == typeof(TModel)).Select(x => (TModel)x.GetValue(null)!).ToList();
+        }
     }
 }

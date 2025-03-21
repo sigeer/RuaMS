@@ -355,7 +355,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void changeJobById(int a)
     {
-        changeJob(JobUtils.getById(a));
+        changeJob(JobFactory.GetById(a));
     }
 
     public void changeJob(Job job)
@@ -365,7 +365,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public string getJobName(int id)
     {
-        return GameConstants.getJobName(id);
+        return JobFactory.GetById(id).Name;
     }
 
     public StatEffect? getItemEffect(int itemId)

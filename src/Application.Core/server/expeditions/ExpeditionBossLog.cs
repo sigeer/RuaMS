@@ -80,7 +80,7 @@ public class ExpeditionBossLog
 
         public static BossLogEntry getBossEntryByName(string name)
         {
-            foreach (BossLogEntry b in GetValues<BossLogEntry>())
+            foreach (BossLogEntry b in EnumClassUtils.GetValues<BossLogEntry>())
             {
                 if (name == b.name())
                 {
@@ -100,7 +100,7 @@ public class ExpeditionBossLog
         var thursday = DateTimeOffset.Now.Date;
         int delta = DayOfWeek.Thursday - thursday.DayOfWeek;
         //if (delta <= 0)
-        //    delta += 7; // Èç¼Ó7Ììµ½ÏÂÒ»¸öÖÜËÄ
+        //    delta += 7; // å¦‚åŠ 7å¤©åˆ°ä¸‹ä¸€ä¸ªå‘¨å››
         thursday.AddDays(delta);
 
         DateTimeOffset now = DateTimeOffset.Now;

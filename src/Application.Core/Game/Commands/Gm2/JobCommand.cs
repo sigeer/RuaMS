@@ -1,4 +1,4 @@
-﻿using client;
+using client;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -21,7 +21,7 @@ public class JobCommand : CommandBase
                 return;
             }
 
-            player.changeJob(JobUtils.getById(jobid));
+            player.changeJob(JobFactory.GetById(jobid));
             player.equipChanged();
         }
         else if (paramsValue.Length == 2)
@@ -37,7 +37,7 @@ public class JobCommand : CommandBase
                     return;
                 }
 
-                victim.changeJob(JobUtils.getById(jobid));
+                victim.changeJob(JobFactory.GetById(jobid));
                 player.equipChanged();
             }
             else

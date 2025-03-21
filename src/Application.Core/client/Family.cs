@@ -269,7 +269,7 @@ public class Family
                     family = new Family(familyid, world);
                     Server.getInstance().getWorld(world).addFamily(familyid, family);
                 }
-                FamilyEntry familyEntry = new FamilyEntry(family, cid, name, level, JobUtils.getById(jobID));
+                FamilyEntry familyEntry = new FamilyEntry(family, cid, name, level, JobFactory.GetById(jobID));
                 family.addEntry(familyEntry);
                 if (seniorid <= 0)
                 {

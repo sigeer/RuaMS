@@ -1,4 +1,4 @@
-﻿using client;
+using client;
 using constants.game;
 
 namespace Application.Core.Managers
@@ -59,7 +59,7 @@ namespace Application.Core.Managers
 
         public static int GetJobMaxSp(Job job)
         {
-            int jobBranch = GameConstants.getJobBranch(job);
+            int jobBranch = job.Rank;
             int jobRange = GameConstants.getJobUpgradeLevelRange(jobBranch);
             return GetJobLevelSp(jobRange, job.getId(), jobBranch);
         }

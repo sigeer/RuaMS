@@ -171,7 +171,7 @@ public class PacketCreator
         p.writeShort(chr.Mp); // mp (?)
         p.writeShort(chr.Maxmp); // maxmp
         p.writeShort(chr.Ap); // remaining ap
-        if (GameConstants.hasSPTable(chr.getJob()))
+        if (chr.JobModel.HasSPTable)
         {
             addRemainingSkillInfo(p, chr);
         }
@@ -1086,7 +1086,7 @@ public class PacketCreator
                 }
                 else if (statupdate.Key.getValue() == 0x8000)
                 {
-                    if (GameConstants.hasSPTable(chr!.getJob()))
+                    if (chr.JobModel.HasSPTable)
                     {
                         addRemainingSkillInfo(p, chr);
                     }
