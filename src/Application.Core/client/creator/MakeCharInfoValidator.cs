@@ -31,6 +31,7 @@ public class MakeCharInfoValidator
             JobType.Adventurer => character.isMale() ? charMale : charFemale,
             JobType.Cygnus => character.isMale() ? premiumCharMale : premiumCharFemale,
             JobType.Legend => character.isMale() ? orientCharMale : orientCharFemale,
+            _ => null
         };
     }
 
