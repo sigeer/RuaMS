@@ -126,121 +126,212 @@ public class AssignAPProcessor
                 }
 
                 Stat primary, secondary, tertiary = Stat.LUK;
-                switch (stance)
+                if (stance == Job.MAGICIAN)
                 {
-                    case Job.MAGICIAN:
-                        CAP = 165;
-                        scStat = (chr.getLevel() + 3) - (chr.getLuk() + luk - eqpLuk);
+                    CAP = 165;
+                    scStat = (chr.getLevel() + 3) - (chr.getLuk() + luk - eqpLuk);
+                    if (scStat < 0)
+                    {
+                        scStat = 0;
+                    }
+                    scStat = Math.Min(scStat, tempAp);
+
+                    if (tempAp > scStat)
+                    {
+                        tempAp -= scStat;
+                    }
+                    else
+                    {
+                        tempAp = 0;
+                    }
+
+                    prStat = tempAp;
+                    int_ = prStat;
+                    luk = scStat;
+                    str = 0;
+                    dex = 0;
+
+                    if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && luk + chr.getLuk() > CAP)
+                    {
+                        temp = luk + chr.getLuk() - CAP;
+                        scStat -= temp;
+                        prStat += temp;
+                    }
+
+                    primary = Stat.INT;
+                    secondary = Stat.LUK;
+                    tertiary = Stat.DEX;
+                }
+                else if (stance == Job.BOWMAN)
+                {
+                    CAP = 125;
+                    scStat = (chr.getLevel() + 5) - (chr.getStr() + str - eqpStr);
+                    if (scStat < 0)
+                    {
+                        scStat = 0;
+                    }
+                    scStat = Math.Min(scStat, tempAp);
+
+                    if (tempAp > scStat)
+                    {
+                        tempAp -= scStat;
+                    }
+                    else
+                    {
+                        tempAp = 0;
+                    }
+
+                    prStat = tempAp;
+                    dex = prStat;
+                    str = scStat;
+                    int_ = 0;
+                    luk = 0;
+
+                    if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && str + chr.getStr() > CAP)
+                    {
+                        temp = str + chr.getStr() - CAP;
+                        scStat -= temp;
+                        prStat += temp;
+                    }
+
+                    primary = Stat.DEX;
+                    secondary = Stat.STR;
+                }
+                else if (stance == Job.GUNSLINGER || stance == Job.CROSSBOWMAN)
+                {
+                    CAP = 120;
+                    scStat = chr.getLevel() - (chr.getStr() + str - eqpStr);
+                    if (scStat < 0)
+                    {
+                        scStat = 0;
+                    }
+                    scStat = Math.Min(scStat, tempAp);
+
+                    if (tempAp > scStat)
+                    {
+                        tempAp -= scStat;
+                    }
+                    else
+                    {
+                        tempAp = 0;
+                    }
+
+                    prStat = tempAp;
+                    dex = prStat;
+                    str = scStat;
+                    int_ = 0;
+                    luk = 0;
+
+                    if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && str + chr.getStr() > CAP)
+                    {
+                        temp = str + chr.getStr() - CAP;
+                        scStat -= temp;
+                        prStat += temp;
+                    }
+
+                    primary = Stat.DEX;
+                    secondary = Stat.STR;
+                }
+                else if (stance == Job.THIEF)
+                {
+                    CAP = 160;
+
+                    scStat = 0;
+                    if (chr.getDex() < 80)
+                    {
+                        scStat = (2 * chr.getLevel()) - (chr.getDex() + dex - eqpDex);
                         if (scStat < 0)
                         {
                             scStat = 0;
                         }
-                        scStat = Math.Min(scStat, tempAp);
 
-                        if (tempAp > scStat)
+                        scStat = Math.Min(80 - chr.getDex(), scStat);
+                        scStat = Math.Min(tempAp, scStat);
+                        tempAp -= scStat;
+                    }
+
+                    temp = (chr.getLevel() + 40) - Math.Max(80, scStat + chr.getDex() + dex - eqpDex);
+                    if (temp < 0)
+                    {
+                        temp = 0;
+                    }
+                    temp = Math.Min(tempAp, temp);
+                    scStat += temp;
+                    tempAp -= temp;
+
+                    // thieves will upgrade STR as well only if a level-based threshold is reached.
+                    if (chr.getStr() >= Math.Max(13, (int)(0.4 * chr.getLevel())))
+                    {
+                        if (chr.getStr() < 50)
                         {
-                            tempAp -= scStat;
-                        }
-                        else
-                        {
-                            tempAp = 0;
-                        }
+                            trStat = (chr.getLevel() - 10) - (chr.getStr() + str - eqpStr);
+                            if (trStat < 0)
+                            {
+                                trStat = 0;
+                            }
 
-                        prStat = tempAp;
-                        int_ = prStat;
-                        luk = scStat;
-                        str = 0;
-                        dex = 0;
-
-                        if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && luk + chr.getLuk() > CAP)
-                        {
-                            temp = luk + chr.getLuk() - CAP;
-                            scStat -= temp;
-                            prStat += temp;
-                        }
-
-                        primary = Stat.INT;
-                        secondary = Stat.LUK;
-                        tertiary = Stat.DEX;
-
-                        break;
-
-                    case Job.BOWMAN:
-                        CAP = 125;
-                        scStat = (chr.getLevel() + 5) - (chr.getStr() + str - eqpStr);
-                        if (scStat < 0)
-                        {
-                            scStat = 0;
-                        }
-                        scStat = Math.Min(scStat, tempAp);
-
-                        if (tempAp > scStat)
-                        {
-                            tempAp -= scStat;
-                        }
-                        else
-                        {
-                            tempAp = 0;
+                            trStat = Math.Min(50 - chr.getStr(), trStat);
+                            trStat = Math.Min(tempAp, trStat);
+                            tempAp -= trStat;
                         }
 
-                        prStat = tempAp;
-                        dex = prStat;
-                        str = scStat;
-                        int_ = 0;
-                        luk = 0;
-
-                        if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && str + chr.getStr() > CAP)
+                        temp = (20 + (chr.getLevel() / 2)) - Math.Max(50, trStat + chr.getStr() + str - eqpStr);
+                        if (temp < 0)
                         {
-                            temp = str + chr.getStr() - CAP;
-                            scStat -= temp;
-                            prStat += temp;
+                            temp = 0;
                         }
+                        temp = Math.Min(tempAp, temp);
+                        trStat += temp;
+                        tempAp -= temp;
+                    }
 
-                        primary = Stat.DEX;
-                        secondary = Stat.STR;
+                    prStat = tempAp;
+                    luk = prStat;
+                    dex = scStat;
+                    str = trStat;
+                    int_ = 0;
 
-                        break;
+                    if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && dex + chr.getDex() > CAP)
+                    {
+                        temp = dex + chr.getDex() - CAP;
+                        scStat -= temp;
+                        prStat += temp;
+                    }
+                    if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && str + chr.getStr() > CAP)
+                    {
+                        temp = str + chr.getStr() - CAP;
+                        trStat -= temp;
+                        prStat += temp;
+                    }
 
-                    case Job.GUNSLINGER:
-                    case Job.CROSSBOWMAN:
-                        CAP = 120;
-                        scStat = chr.getLevel() - (chr.getStr() + str - eqpStr);
-                        if (scStat < 0)
+                    primary = Stat.LUK;
+                    secondary = Stat.DEX;
+                    tertiary = Stat.STR;
+
+                }
+                else
+                {
+                    CAP = 300;
+
+                    bool highDex = false;    // thanks lucasziron & Vcoc for finding out DEX autoassigning poorly for STR-based characters
+                    if (chr.getLevel() < 40)
+                    {
+                        if (chr.getDex() >= (2 * chr.getLevel()) + 2)
                         {
-                            scStat = 0;
+                            highDex = true;
                         }
-                        scStat = Math.Min(scStat, tempAp);
-
-                        if (tempAp > scStat)
+                    }
+                    else
+                    {
+                        if (chr.getDex() >= chr.getLevel() + 42)
                         {
-                            tempAp -= scStat;
+                            highDex = true;
                         }
-                        else
-                        {
-                            tempAp = 0;
-                        }
+                    }
 
-                        prStat = tempAp;
-                        dex = prStat;
-                        str = scStat;
-                        int_ = 0;
-                        luk = 0;
-
-                        if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && str + chr.getStr() > CAP)
-                        {
-                            temp = str + chr.getStr() - CAP;
-                            scStat -= temp;
-                            prStat += temp;
-                        }
-
-                        primary = Stat.DEX;
-                        secondary = Stat.STR;
-
-                        break;
-
-                    case Job.THIEF:
-                        CAP = 160;
-
+                    // other classes will start favoring more DEX only if a level-based threshold is reached.
+                    if (!highDex)
+                    {
                         scStat = 0;
                         if (chr.getDex() < 80)
                         {
@@ -263,146 +354,48 @@ public class AssignAPProcessor
                         temp = Math.Min(tempAp, temp);
                         scStat += temp;
                         tempAp -= temp;
-
-                        // thieves will upgrade STR as well only if a level-based threshold is reached.
-                        if (chr.getStr() >= Math.Max(13, (int)(0.4 * chr.getLevel())))
+                    }
+                    else
+                    {
+                        scStat = 0;
+                        if (chr.getDex() < 96)
                         {
-                            if (chr.getStr() < 50)
+                            scStat = (int)(2.4 * chr.getLevel()) - (chr.getDex() + dex - eqpDex);
+                            if (scStat < 0)
                             {
-                                trStat = (chr.getLevel() - 10) - (chr.getStr() + str - eqpStr);
-                                if (trStat < 0)
-                                {
-                                    trStat = 0;
-                                }
-
-                                trStat = Math.Min(50 - chr.getStr(), trStat);
-                                trStat = Math.Min(tempAp, trStat);
-                                tempAp -= trStat;
+                                scStat = 0;
                             }
 
-                            temp = (20 + (chr.getLevel() / 2)) - Math.Max(50, trStat + chr.getStr() + str - eqpStr);
-                            if (temp < 0)
-                            {
-                                temp = 0;
-                            }
-                            temp = Math.Min(tempAp, temp);
-                            trStat += temp;
-                            tempAp -= temp;
+                            scStat = Math.Min(96 - chr.getDex(), scStat);
+                            scStat = Math.Min(tempAp, scStat);
+                            tempAp -= scStat;
                         }
 
-                        prStat = tempAp;
-                        luk = prStat;
-                        dex = scStat;
-                        str = trStat;
-                        int_ = 0;
-
-                        if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && dex + chr.getDex() > CAP)
+                        temp = 96 + (int)(1.2 * (chr.getLevel() - 40)) - Math.Max(96, scStat + chr.getDex() + dex - eqpDex);
+                        if (temp < 0)
                         {
-                            temp = dex + chr.getDex() - CAP;
-                            scStat -= temp;
-                            prStat += temp;
+                            temp = 0;
                         }
-                        if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && str + chr.getStr() > CAP)
-                        {
-                            temp = str + chr.getStr() - CAP;
-                            trStat -= temp;
-                            prStat += temp;
-                        }
+                        temp = Math.Min(tempAp, temp);
+                        scStat += temp;
+                        tempAp -= temp;
+                    }
 
-                        primary = Stat.LUK;
-                        secondary = Stat.DEX;
-                        tertiary = Stat.STR;
+                    prStat = tempAp;
+                    str = prStat;
+                    dex = scStat;
+                    int_ = 0;
+                    luk = 0;
 
-                        break;
+                    if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && dex + chr.getDex() > CAP)
+                    {
+                        temp = dex + chr.getDex() - CAP;
+                        scStat -= temp;
+                        prStat += temp;
+                    }
 
-                    case Job.BRAWLER:
-                    default:    //warrior, beginner, ...
-                        CAP = 300;
-
-                        bool highDex = false;    // thanks lucasziron & Vcoc for finding out DEX autoassigning poorly for STR-based characters
-                        if (chr.getLevel() < 40)
-                        {
-                            if (chr.getDex() >= (2 * chr.getLevel()) + 2)
-                            {
-                                highDex = true;
-                            }
-                        }
-                        else
-                        {
-                            if (chr.getDex() >= chr.getLevel() + 42)
-                            {
-                                highDex = true;
-                            }
-                        }
-
-                        // other classes will start favoring more DEX only if a level-based threshold is reached.
-                        if (!highDex)
-                        {
-                            scStat = 0;
-                            if (chr.getDex() < 80)
-                            {
-                                scStat = (2 * chr.getLevel()) - (chr.getDex() + dex - eqpDex);
-                                if (scStat < 0)
-                                {
-                                    scStat = 0;
-                                }
-
-                                scStat = Math.Min(80 - chr.getDex(), scStat);
-                                scStat = Math.Min(tempAp, scStat);
-                                tempAp -= scStat;
-                            }
-
-                            temp = (chr.getLevel() + 40) - Math.Max(80, scStat + chr.getDex() + dex - eqpDex);
-                            if (temp < 0)
-                            {
-                                temp = 0;
-                            }
-                            temp = Math.Min(tempAp, temp);
-                            scStat += temp;
-                            tempAp -= temp;
-                        }
-                        else
-                        {
-                            scStat = 0;
-                            if (chr.getDex() < 96)
-                            {
-                                scStat = (int)(2.4 * chr.getLevel()) - (chr.getDex() + dex - eqpDex);
-                                if (scStat < 0)
-                                {
-                                    scStat = 0;
-                                }
-
-                                scStat = Math.Min(96 - chr.getDex(), scStat);
-                                scStat = Math.Min(tempAp, scStat);
-                                tempAp -= scStat;
-                            }
-
-                            temp = 96 + (int)(1.2 * (chr.getLevel() - 40)) - Math.Max(96, scStat + chr.getDex() + dex - eqpDex);
-                            if (temp < 0)
-                            {
-                                temp = 0;
-                            }
-                            temp = Math.Min(tempAp, temp);
-                            scStat += temp;
-                            tempAp -= temp;
-                        }
-
-                        prStat = tempAp;
-                        str = prStat;
-                        dex = scStat;
-                        int_ = 0;
-                        luk = 0;
-
-                        if (YamlConfig.config.server.USE_AUTOASSIGN_SECONDARY_CAP && dex + chr.getDex() > CAP)
-                        {
-                            temp = dex + chr.getDex() - CAP;
-                            scStat -= temp;
-                            prStat += temp;
-                        }
-
-                        primary = Stat.STR;
-                        secondary = Stat.DEX;
-                        break;
+                    primary = Stat.STR;
+                    secondary = Stat.DEX;
                 }
 
                 //-------------------------------------------------------------------------------------

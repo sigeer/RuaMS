@@ -49,7 +49,7 @@ public class ChannelServices : EnumClass, ServiceType<ChannelServices>
 
     public ChannelServices[] enumValues()
     {
-        return GetValues<ChannelServices>().ToArray();
+        return EnumClassUtils.GetValues<ChannelServices>().ToArray();
     }
 
     int ServiceType<ChannelServices>.ordinal()

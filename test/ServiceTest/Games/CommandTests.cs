@@ -1,6 +1,7 @@
-﻿using Application.Core.Compatible.Extensions;
+using Application.Core.Compatible.Extensions;
 using Application.Core.Game;
 using Application.Core.Game.Commands;
+using Application.Scripting.JS;
 
 namespace ServiceTest.Games
 {

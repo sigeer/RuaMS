@@ -311,20 +311,7 @@ public class GameConstants
 
     public static string getJobName(int jobid)
     {
-        string? name = jobNames.GetValueOrDefault(jobid);
-
-        if (name == null)
-        {
-            Job job = JobUtils.getById(jobid);
-
-            name = job.ToString().ToLower();
-            name = Regex.Replace(name, "[0-9]", "");
-            name = name.Substring(0, 1).ToUpper() + name.Substring(1);
-
-            jobNames.AddOrUpdate(jobid, name);
-        }
-
-        return name;
+        return JobFactory.GetById(jobid).Name;
     }
 
     public static int getJobUpgradeLevelRange(int jobbranch)
@@ -519,44 +506,9 @@ public class GameConstants
 
     public static int getJobBranch(Job job)
     {
-        int jobid = job.getId();
-
-        if (jobid % 1000 == 0)
-        {
-            return 0;
-        }
-        else if (jobid % 100 == 0)
-        {
-            return 1;
-        }
-        else
-        {
-            return 2 + (jobid % 10);
-        }
+        return job.Rank;
     }
 
-    public static int getJobMaxLevel(Job job)
-    {
-        int jobBranch = getJobBranch(job);
-
-        switch (jobBranch)
-        {
-            case 0:
-                return 10;   // beginner
-
-            case 1:
-                return 30;   // 1st job
-
-            case 2:
-                return 70;   // 2nd job
-
-            case 3:
-                return 120;   // 3rd job
-
-            default:
-                return (job.getId() / 1000 == 1) ? 120 : 200;   // 4th job: cygnus is 120, rest is 200
-        }
-    }
 
     public static int getSkillBook(int job)
     {
@@ -695,27 +647,6 @@ public class GameConstants
     public static bool isMedalQuest(short questid)
     {
         return Quest.getInstance(questid).getMedalRequirement() != -1;
-    }
-
-    public static bool hasSPTable(Job job)
-    {
-        switch (job)
-        {
-            case Job.EVAN:
-            case Job.EVAN1:
-            case Job.EVAN2:
-            case Job.EVAN3:
-            case Job.EVAN4:
-            case Job.EVAN5:
-            case Job.EVAN6:
-            case Job.EVAN7:
-            case Job.EVAN8:
-            case Job.EVAN9:
-            case Job.EVAN10:
-                return true;
-            default:
-                return false;
-        }
     }
 
     public static int getMonsterHP(int level)

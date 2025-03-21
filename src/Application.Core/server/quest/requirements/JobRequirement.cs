@@ -54,13 +54,9 @@ public class JobRequirement : AbstractQuestRequirement
 
     public override bool check(IPlayer chr, int? npcid)
     {
-        foreach (int job in jobs)
-        {
-            if (chr.getJob().Equals(JobUtils.getById(job)) || chr.isGM())
-            {
-                return true;
-            }
-        }
-        return false;
+        if (chr.isGM())
+            return true;
+
+        return jobs.Any(x => x == chr.JobModel.Id);
     }
 }

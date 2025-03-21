@@ -50,7 +50,7 @@ public class PartySearchCoordinator
     ReaderWriterLockSlim leaderQueueLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     public PartySearchCoordinator()
     {
-        foreach (Job job in Enum.GetValues<Job>())
+        foreach (Job job in EnumClassUtils.GetValues<Job>())
         {
             storage.AddOrUpdate(job, new PartySearchStorage());
             upcomers.AddOrUpdate(job, new PartySearchEchelon());
@@ -134,12 +134,12 @@ public class PartySearchCoordinator
         int i = 0;
         foreach (var p in jobSearchTypes)
         {
-            table.AddOrUpdate(i, JobUtils.getById(p.Key));
+            table.AddOrUpdate(i, JobFactory.GetById(p.Key));
             i++;
 
             for (int j = 1; j <= p.Value; j++)
             {
-                table.AddOrUpdate(i, JobUtils.getById(p.Key + 10 * j));
+                table.AddOrUpdate(i, JobFactory.GetById(p.Key + 10 * j));
                 i++;
             }
         }
@@ -216,17 +216,18 @@ public class PartySearchCoordinator
 
     private static Job getPartySearchJob(Job job)
     {
-        if (job.getJobNiche() == 0)
+        if (job.GetJobNiche() == 0)
         {
             return Job.BEGINNER;
         }
         else if (job.getId() < 600)
-        { // explorers
-            return JobUtils.getById((job.getId() / 10) * 10);
+        {
+            // explorers
+            return JobFactory.GetById((job.getId() / 10) * 10);
         }
         else if (job.getId() >= 1000)
         {
-            return JobUtils.getById((job.getId() / 100) * 100);
+            return JobFactory.GetById((job.getId() / 100) * 100);
         }
         else
         {

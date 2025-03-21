@@ -139,8 +139,8 @@ public partial class Player
         get
         {
             if (jobModel == null)
-                jobModel = JobUtils.getById(JobId);
-            return jobModel.Value;
+                jobModel = JobFactory.GetById(JobId);
+            return jobModel;
         }
         set
         {
@@ -874,39 +874,39 @@ public partial class Player
             if (PartySearch && TeamModel == null)
             {
                 this.updatePartySearchAvailability(false);
-                this.JobModel = newJob.Value;
+                this.JobModel = newJob;
                 this.updatePartySearchAvailability(true);
             }
             else
             {
-                this.JobModel = newJob.Value;
+                this.JobModel = newJob;
             }
 
             int spGain = 1;
-            if (GameConstants.hasSPTable(newJob.Value))
+            if (newJob.HasSPTable)
             {
                 spGain += 2;
             }
             else
             {
-                if (newJob.Value.getId() % 10 == 2)
+                if (newJob.getId() % 10 == 2)
                 {
                     spGain += 2;
                 }
 
                 if (YamlConfig.config.server.USE_ENFORCE_JOB_SP_RANGE)
                 {
-                    spGain = getChangedJobSp(newJob.Value);
+                    spGain = getChangedJobSp(newJob);
                 }
             }
 
             if (spGain > 0)
             {
-                gainSp(spGain, GameConstants.getSkillBook(newJob.Value.getId()), true);
+                gainSp(spGain, GameConstants.getSkillBook(newJob.getId()), true);
             }
 
             // thanks xinyifly for finding out missing AP awards (AP Reset can be used as a compass)
-            if (newJob.Value.getId() % 100 >= 1)
+            if (newJob.getId() % 100 >= 1)
             {
                 if (this.isCygnus())
                 {
@@ -914,7 +914,7 @@ public partial class Player
                 }
                 else
                 {
-                    if (YamlConfig.config.server.USE_STARTING_AP_4 || newJob.Value.getId() % 10 >= 1)
+                    if (YamlConfig.config.server.USE_STARTING_AP_4 || newJob.getId() % 10 >= 1)
                     {
                         gainAp(5, true);
                     }
@@ -922,7 +922,7 @@ public partial class Player
             }
             else
             {    // thanks Periwinks for noticing an AP shortage from lower levels
-                if (YamlConfig.config.server.USE_STARTING_AP_4 && newJob.Value.getId() % 1000 >= 1)
+                if (YamlConfig.config.server.USE_STARTING_AP_4 && newJob.getId() % 1000 >= 1)
                 {
                     gainAp(4, true);
                 }
@@ -1025,7 +1025,7 @@ public partial class Player
 
             broadcastChangeJob();
 
-            if (GameConstants.hasSPTable(newJob.Value) && newJob.Value != Job.EVAN)
+            if (newJob.HasSPTable && newJob != Job.EVAN)
             {
                 if (getBuffedValue(BuffStat.MONSTER_RIDING) != null)
                 {
@@ -1038,7 +1038,7 @@ public partial class Player
             {
                 if (!this.isGM())
                 {
-                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(GameConstants.getJobBranch(newJob.Value)) + " Job] " + Name + " has just become a " + GameConstants.getJobName(this.JobId) + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
+                    broadcastAcquaintances(6, "[" + GameConstants.ordinal(JobModel.Rank) + " Job] " + Name + " has just become a " + JobModel.Name + ".");    // thanks Vcoc for noticing job name appearing in uppercase here
                 }
             }
 
@@ -2572,7 +2572,7 @@ public partial class Player
             return getMaxClassLevel();
         }
 
-        return GameConstants.getJobMaxLevel(JobModel);
+        return JobModel.MaxLevel;
     }
 
     public int getMeso()
@@ -2732,7 +2732,7 @@ public partial class Player
 
     public void closePlayerMessenger()
     {
-        Messenger? m =  Messenger;
+        Messenger? m = Messenger;
         if (m == null)
         {
             return;
@@ -3102,13 +3102,12 @@ public partial class Player
 
     public bool isGmJob()
     {
-        int jn = JobModel.getJobNiche();
-        return jn >= 8 && jn <= 9;
+        return JobModel.IsGmJob();
     }
 
     public bool isCygnus()
     {
-        return getJobType() == 1;
+        return JobModel.Type == JobType.Cygnus;
     }
 
     public bool isAran()
@@ -3118,7 +3117,7 @@ public partial class Player
 
     public bool isBeginnerJob()
     {
-        return (JobId == 0 || JobId == 1000 || JobId == 2000);
+        return JobModel.IsBeginningJob();
     }
 
     public bool isGM()
@@ -3171,7 +3170,7 @@ public partial class Player
     {
         int curSp = getUsedSp(newJob) + getJobRemainingSp(newJob);
         int spGain = 0;
-        int expectedSp = JobManager.GetJobLevelSp(Level - 10, newJob.getId(), GameConstants.getJobBranch(newJob));
+        int expectedSp = JobManager.GetJobLevelSp(Level - 10, newJob.getId(), newJob.Rank);
         if (curSp < expectedSp)
         {
             spGain += (expectedSp - curSp);
@@ -3210,19 +3209,18 @@ public partial class Player
         int maxSp = JobManager.GetJobMaxSp(job);
 
         spGain = Math.Min(spGain, maxSp - curSp);
-        int jobBranch = GameConstants.getJobBranch(job);
         return spGain;
     }
 
     private void levelUpGainSp()
     {
-        if (GameConstants.getJobBranch(JobModel) == 0)
+        if (JobModel.Rank == 0)
         {
             return;
         }
 
         int spGain = 3;
-        if (YamlConfig.config.server.USE_ENFORCE_JOB_SP_RANGE && !GameConstants.hasSPTable(JobModel))
+        if (YamlConfig.config.server.USE_ENFORCE_JOB_SP_RANGE && !JobModel.HasSPTable)
         {
             spGain = getSpGain(spGain, JobModel);
         }
@@ -4091,9 +4089,9 @@ public partial class Player
                             var item = inv.getItem(i);
                             if (item != null)
                             {
-                                if ((claw && ItemConstants.isThrowingStar(item.getItemId())) 
-                                    || (gun && ItemConstants.isBullet(item.getItemId())) 
-                                    || (bow && ItemConstants.isArrowForBow(item.getItemId())) 
+                                if ((claw && ItemConstants.isThrowingStar(item.getItemId()))
+                                    || (gun && ItemConstants.isBullet(item.getItemId()))
+                                    || (bow && ItemConstants.isArrowForBow(item.getItemId()))
                                     || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
                                 {
                                     if (item.getQuantity() > 0)
@@ -5037,7 +5035,7 @@ public partial class Player
                     incVal = (float)Math.Log(incVal);
                     break;
             }
-            
+
             if (statups.TryGetValue(s.Key, out var newVal))
             {
                 newVal += incVal;

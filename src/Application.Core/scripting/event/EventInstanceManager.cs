@@ -121,7 +121,7 @@ public class EventInstanceManager
         int mask = 0;
         foreach (var chr in getPlayers())
         {
-            mask |= (1 << chr.getJob().getJobNiche());
+            mask |= (1 << chr.getJob().GetJobNiche());
         }
 
         return mask;
