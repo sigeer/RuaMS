@@ -67,6 +67,7 @@ public class Quest
     private static Data questInfo = questData.getData("QuestInfo.img");
     private static Data questAct = questData.getData("Act.img");
     private static Data questCheck = questData.getData("Check.img");
+    public bool IsValid { get; } = true;
 
     private Quest(Data? reqInfo, short? questId = null)
     {
@@ -84,13 +85,6 @@ public class Quest
         {
             idString = reqInfo.getName()!;
             this.id = short.Parse(idString);
-        }
-
-        var checkData = questCheck.getChildByPath(id.ToString());
-        if (checkData == null)
-        {
-            _questDataLogger.Warning("QuestInfo: Id = {QuestId} not found in Check.img", id);
-            return;
         }
 
         if (reqInfo != null)
@@ -112,7 +106,15 @@ public class Quest
         }
         else
         {
-            _questDataLogger.Warning("QuestInfo: Id = {QuestId} not found in QuestInfo.img", id);
+            IsValid = false;
+            _questDataLogger.Error("QuestInfo: Id = {QuestId} not found in QuestInfo.img", id);
+        }
+
+        var checkData = questCheck.getChildByPath(id.ToString());
+        if (checkData == null)
+        {
+            _questDataLogger.Warning("QuestInfo: Id = {QuestId} not found in Check.img", id);
+            return;
         }
 
         var startReqData = checkData.getChildByPath("0");
