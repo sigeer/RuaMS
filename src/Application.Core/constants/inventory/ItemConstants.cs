@@ -23,6 +23,7 @@
 
 using client.inventory;
 using constants.id;
+using server;
 
 namespace constants.inventory;
 
@@ -91,7 +92,7 @@ public class ItemConstants
         return useType == 2022 || useType == 2010 || useType == 2020;
     }
     /// <summary>
-    /// ҩˮ��ʳ��
+    /// 药水或食物
     /// </summary>
     /// <param name="itemId"></param>
     /// <returns></returns>
@@ -101,7 +102,7 @@ public class ItemConstants
     }
 
     /// <summary>
-    /// �ɲ���ģ��ӵ�������
+    /// 可补充的，子弹、飞镖
     /// </summary>
     /// <param name="itemId"></param>
     /// <returns></returns>
@@ -166,11 +167,20 @@ public class ItemConstants
         return itemId >= 2030000;
     }
 
+    /// <summary>
+    /// 白医卷轴
+    /// </summary>
+    /// <param name="scrollId"></param>
+    /// <returns></returns>
     public static bool isCleanSlate(int scrollId)
     {
-        return scrollId > 2048999 && scrollId < 2049004;
+        return scrollId >= 2049000 && scrollId <= 2049003;
     }
-
+    /// <summary>
+    /// 不消耗强化次数
+    /// </summary>
+    /// <param name="scrollId"></param>
+    /// <returns></returns>
     public static bool isModifierScroll(int scrollId)
     {
         return scrollId == ItemId.SPIKES_SCROLL || scrollId == ItemId.COLD_PROTECTION_SCROLl;
@@ -184,7 +194,11 @@ public class ItemConstants
         }
         return scrollId == ItemId.SPIKES_SCROLL && ((flag & ItemConstants.SPIKES) == ItemConstants.SPIKES);
     }
-
+    /// <summary>
+    /// 混沌卷轴
+    /// </summary>
+    /// <param name="scrollId"></param>
+    /// <returns></returns>
     public static bool isChaosScroll(int scrollId)
     {
         return scrollId >= 2049100 && scrollId <= 2049103;
@@ -218,10 +232,8 @@ public class ItemConstants
 
     public static InventoryType getInventoryType(int itemId)
     {
-        if (inventoryTypeCache.ContainsKey(itemId))
-        {
-            return inventoryTypeCache.GetValueOrDefault(itemId);
-        }
+        if (inventoryTypeCache.TryGetValue(itemId, out var d))
+            return d;
 
         InventoryType ret = InventoryType.UNDEFINED;
 

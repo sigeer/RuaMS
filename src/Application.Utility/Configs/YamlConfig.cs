@@ -1,4 +1,3 @@
-using YamlDotNet.Core.Tokens;
 using YamlDotNet.Serialization;
 
 namespace Application.Utility.Configs;
@@ -23,6 +22,15 @@ public class YamlConfig
 
         member.SetValue(config.server, Convert.ChangeType(value, member.FieldType));
         return null;
+    }
+
+    public static string? GetValue(string name)
+    {
+        var member = typeof(ServerConfig).GetField(name);
+        if (member == null)
+            return "没有找到配置 " + name;
+
+        return member.GetValue(config.server)?.ToString();
     }
 
     public static YamlConfig FromFile(string filename)

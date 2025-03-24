@@ -2563,7 +2563,7 @@ public partial class Player
 
     public int getMaxClassLevel()
     {
-        return isCygnus() ? 120 : 200;
+        return isCygnus() ? 120 : NumericConfig.MaxLevel;
     }
 
     public int getMaxLevel()
@@ -4865,10 +4865,6 @@ public partial class Player
                 return (0);
             }
             short iQuant = item.getQuantity();
-            if (iQuant == 0xFFFF)
-            {
-                iQuant = 1;
-            }
 
             if (quantity <= iQuant && iQuant > 0)
             {
@@ -5398,7 +5394,7 @@ public partial class Player
                     pendantOfSpirit!.cancel(false);
                 }
 
-            }, 3600000); //1 hour
+            }, TimeSpan.FromHours(1)); //1 hour
         }
     }
 

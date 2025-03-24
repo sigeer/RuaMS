@@ -777,12 +777,12 @@ public class ItemInformationProvider
 
     private static short getMaximumShortMaxIfOverflow(int value1, int value2)
     {
-        return (short)Math.Min(short.MaxValue, Math.Max(value1, value2));
+        return (short)Math.Min(NumericConfig.MaxStat, Math.Max(value1, value2));
     }
 
     private static short getShortMaxIfOverflow(int value)
     {
-        return (short)Math.Min(short.MaxValue, value);
+        return (short)Math.Min(NumericConfig.MaxStat, value);
     }
 
     private static short chscrollRandomizedStat(int range)
@@ -792,10 +792,11 @@ public class ItemInformationProvider
 
     private static void UpdateEquipStat(Func<int> getStat, Action<int> setStat, int range)
     {
-        if (getStat() > 0)
+        var oldValue = getStat();
+        if (oldValue > 0)
         {
-            int newValue = getStat() + chscrollRandomizedStat(range);
-            int baseValue = YamlConfig.config.server.USE_ENHANCED_CHSCROLL ? getStat() : 0;
+            int newValue = oldValue + chscrollRandomizedStat(range);
+            int baseValue = YamlConfig.config.server.USE_ENHANCED_CHSCROLL ? oldValue : 0;
             setStat(getMaximumShortMaxIfOverflow(baseValue, newValue));
         }
     }
@@ -1126,9 +1127,9 @@ public class ItemInformationProvider
         {
             var stats = this.getEquipStats(scrollId);
 
-            if (((nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId))) || assertGM)
+            if (nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId) || assertGM)
             {
-                double prop = stats.GetValueOrDefault("success");
+                double prop = stats?.GetValueOrDefault("success") ?? throw new BusinessResException($"卷轴没有成功率数据，SrollId = {scrollId}");
 
                 switch (vegaItemId)
                 {
@@ -2102,19 +2103,7 @@ public class ItemInformationProvider
         }
 
 
-        bool highfivestamp = false;
-        /* Removed check above for message ><
-         try {
-         foreach(Pair<Item, InventoryType> ii in ItemFactory.INVENTORY.loadItems(chr.getId(), false)) {
-         if (ii.getRight() == InventoryType.CASH) {
-         if (ii.getLeft().getItemId() == 5590000) {
-         highfivestamp = true;
-         }
-         }
-         }
-         } catch (SQLException ex) {
-            Log.Logger.Error(ex.ToString());
-         }*/
+        bool highfivestamp = chr.Bag[InventoryType.CASH].HasItem(5590000);
 
         int reqLevel = getEquipLevelReq(equip.getItemId());
         if (highfivestamp)
@@ -2166,7 +2155,7 @@ public class ItemInformationProvider
     public List<ItemInfoBase> getItemDataByName(string name)
     {
         var kw = name.ToLower();
-        return ItemInformationProvider.getInstance().getAllItems().Where(x => x.Name.ToLower().Contains(kw)).ToList();
+        return ItemInformationProvider.getInstance().getAllItems().Where(x => x.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     private Data? getEquipLevelInfo(int itemId)
@@ -2456,7 +2445,7 @@ public class ItemInformationProvider
         try
         {
             using var dbContext = new DBContext();
-            var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == itemId && x.ReqItem >= 4260000 && x.Itemid < 4270000).ToList();
+            var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == itemId && x.ReqItem >= ItemId.BASIC_MONSTER_CRYSTAL_1&& x.Itemid < 4270000).ToList();
             return dataList.Select(x => new ItemQuantity(x.ReqItem, x.Count)).ToList();
         }
         catch (Exception e)

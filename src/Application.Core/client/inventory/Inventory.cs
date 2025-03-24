@@ -150,6 +150,11 @@ public class Inventory : IEnumerable<Item>
         return list().Where(x => x.getItemId() == itemId).Sum(x => x.getQuantity());
     }
 
+    public bool HasItem(int itemId)
+    {
+        return list().Any(x => x.getItemId() == itemId);
+    }
+
     public int countNotOwnedById(int itemId)
     {
         int qty = 0;
@@ -752,7 +757,7 @@ public class Inventory : IEnumerable<Item>
 
     public void dispose()
     {
-
+        inventory.Clear();
     }
 
 }

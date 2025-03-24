@@ -1055,7 +1055,10 @@ public class AbstractPlayerInteraction
         {
             if (!force && level > -1)
             {
-                getPlayer().changeSkillLevel(skill, Math.Max(skillEntry.skillevel, level), Math.Max(skillEntry.masterlevel, masterLevel), expiration == -1 ? -1 : Math.Max(skillEntry.expiration, expiration));
+                getPlayer().changeSkillLevel(skill, 
+                    Math.Max(skillEntry.skillevel, level), 
+                    Math.Max(skillEntry.masterlevel, masterLevel), 
+                    expiration == -1 ? -1 : Math.Max(skillEntry.expiration, expiration));
                 return;
             }
         }

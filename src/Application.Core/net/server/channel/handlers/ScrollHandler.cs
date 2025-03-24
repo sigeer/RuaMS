@@ -126,7 +126,9 @@ public class ScrollHandler : AbstractPacketHandler
                 {
                     scrollSuccess = Equip.ScrollResult.CURSE;
                 }
-                else if (scrolled.getLevel() > oldLevel || (ItemConstants.isCleanSlate(scroll.getItemId()) && scrolled.getUpgradeSlots() == oldSlots + 1) || ItemConstants.isFlagModifier(scroll.getItemId(), scrolled.getFlag()))
+                else if (scrolled.getLevel() > oldLevel 
+                    || (ItemConstants.isCleanSlate(scroll.getItemId()) && scrolled.getUpgradeSlots() == oldSlots + 1) 
+                    || ItemConstants.isFlagModifier(scroll.getItemId(), scrolled.getFlag()))
                 {
                     scrollSuccess = Equip.ScrollResult.SUCCESS;
                 }
@@ -148,10 +150,10 @@ public class ScrollHandler : AbstractPacketHandler
                             return;
                         }
 
-                        InventoryManipulator.removeFromSlot(c, InventoryType.USE, wscroll.getPosition(), 1, false, false);
+                        c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
                     }
 
-                    InventoryManipulator.removeFromSlot(c, InventoryType.USE, scroll.getPosition(), 1, false);
+                    c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
                 }
                 finally
                 {

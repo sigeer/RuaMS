@@ -42,7 +42,7 @@ public class FamilyUseHandler : AbstractPacketHandler
         {
             return;
         }
-        FamilyEntitlement type = FamilyEntitlement.values<FamilyEntitlement>()[p.readInt()];
+        FamilyEntitlement type = EnumClassUtils.GetValues<FamilyEntitlement>()[p.readInt()];
         int cost = type.getRepCost();
         var entry = c.OnlinedCharacter.getFamilyEntry();
         if (entry.getReputation() < cost || entry.isEntitlementUsed(type))

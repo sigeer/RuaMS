@@ -5,7 +5,7 @@ namespace Application.Shared.Constants
 {
     public class JobFactory
     {
-        static Dictionary<int, Job> _dataSource = new Dictionary<int, Job>();
+        private static Dictionary<int, Job> _dataSource = new Dictionary<int, Job>();
 
         static JobFactory()
         {
@@ -19,5 +19,7 @@ namespace Application.Shared.Constants
 
             throw new BusinessException("不存在的JobId: " + id);
         }
+
+        public static int MaxJobId = _dataSource.Keys.Max();
     }
 }

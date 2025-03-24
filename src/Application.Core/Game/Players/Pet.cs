@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Items;
+using Application.Core.Game.Items;
 using client.inventory;
 using tools;
 
@@ -158,12 +158,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void unequipPet(Pet pet, bool shift_left)
-        {
-            unequipPet(pet, shift_left, false);
-        }
-
-        public void unequipPet(Pet pet, bool shift_left, bool hunger)
+        public void unequipPet(Pet pet, bool shift_left, bool hunger = false)
         {
             sbyte petIdx = this.getPetIndex(pet);
             Pet? chrPet = this.getPet(petIdx);
