@@ -5,12 +5,7 @@ namespace Application.Shared.Constants
 {
     public class JobFactory
     {
-        private static Dictionary<int, Job> _dataSource = new Dictionary<int, Job>();
-
-        static JobFactory()
-        {
-            _dataSource = EnumClassUtils.GetValues<Job>().ToDictionary(x => x.Id, x => x);
-        }
+        private static Dictionary<int, Job> _dataSource = EnumClassUtils.GetValues<Job>().ToDictionary(x => x.Id, x => x);
 
         public static Job GetById(int id)
         {
