@@ -67,7 +67,7 @@ public class ExpeditionBossLog
         {
             List<KeyValuePair<DateTimeOffset, BossLogEntry>> resetTimestamps = new();
 
-            foreach (BossLogEntry b in BossLogEntry.values<BossLogEntry>())
+            foreach (BossLogEntry b in EnumClassUtils.GetValues<BossLogEntry>())
             {
                 if (b.week == week)
                 {

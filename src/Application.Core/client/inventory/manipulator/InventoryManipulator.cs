@@ -470,7 +470,7 @@ public class InventoryManipulator
                 inv.unlockInventory();
             }
 
-            announceModifyInventory(c, item, fromDrop, allowZero);
+            AnnounceModifyInventory(c, item, fromDrop, allowZero);
         }
         else
         {
@@ -487,7 +487,7 @@ public class InventoryManipulator
                 inv.removeItem(slot, quantity, allowZero);
                 if (type != InventoryType.CANHOLD)
                 {
-                    announceModifyInventory(c, item, fromDrop, allowZero);
+                    AnnounceModifyInventory(c, item, fromDrop, allowZero);
                 }
 
                 // thanks Robin Schulz for noticing pet issues when moving pets out of inventory
@@ -497,13 +497,13 @@ public class InventoryManipulator
                 inv.removeItem(slot, quantity, allowZero);
                 if (type != InventoryType.CANHOLD)
                 {
-                    announceModifyInventory(c, item, fromDrop, allowZero);
+                    AnnounceModifyInventory(c, item, fromDrop, allowZero);
                 }
             }
         }
     }
 
-    private static void announceModifyInventory(IClient c, Item item, bool fromDrop, bool allowZero)
+    public static void AnnounceModifyInventory(IClient c, Item item, bool fromDrop, bool allowZero)
     {
         if (item.getQuantity() == 0 && !allowZero)
         {

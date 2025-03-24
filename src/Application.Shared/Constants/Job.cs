@@ -206,6 +206,10 @@ namespace Application.Shared.Constants
             return Id == JobId.EVAN || HasDragon();
         }
 
+        public bool IsAran()
+        {
+            return Id == JobId.LEGEND || (Id >= JobId.ARAN1 && Id <= JobId.ARAN4);
+        }
         public bool HasDragon()
         {
             return Id >= JobId.EVAN1 && Id <= JobId.EVAN10;
@@ -218,7 +222,7 @@ namespace Application.Shared.Constants
 
         public static explicit operator int(Job v)
         {
-            return v.getId();
+            return v.Id;
         }
     }
 }

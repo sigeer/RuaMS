@@ -1,4 +1,7 @@
-﻿using client.inventory;
+using client.inventory;
+using client.inventory.manipulator;
+using constants.inventory;
+using Mysqlx.Crud;
 
 namespace Application.Core.Game.Players
 {
@@ -8,9 +11,10 @@ namespace Application.Core.Game.Players
         public const byte DEFAULT_CASH_BAG_SIZE = 96;
         readonly Inventory[] _dataSource;
         private bool disposedValue;
-
+        IPlayer Owner { get; }
         public PlayerBag(IPlayer owner)
         {
+            Owner = owner;
             var typeList = Enum.GetValues<InventoryType>();
             _dataSource = new Inventory[typeList.Length];
 
@@ -76,6 +80,47 @@ namespace Application.Core.Game.Players
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public void RemoveFromSlot(InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
+        {
+            Inventory inv = this[type];
+            var item = inv.getItem(slot);
+            if (item == null)
+                return;
+
+            inv.lockInventory();
+            try
+            {
+                if (type == InventoryType.EQUIPPED)
+                {
+                    Owner.unequippedItem((Equip)item);
+                }
+                else
+                {
+                    int petid = item.getPetId();
+                    if (petid > -1)
+                    {
+                        int petIdx = Owner.getPetIndex(petid);
+                        if (petIdx > -1)
+                        {
+                            var pet = Owner.getPet(petIdx)!;
+                            Owner.unequipPet(pet, true);
+                        }
+                    }
+                }
+
+                bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
+                inv.removeItem(slot, quantity, allowZero);
+                if (type != InventoryType.CANHOLD)
+                {
+                    InventoryManipulator.AnnounceModifyInventory(Owner.Client, item, fromDrop, allowZero);
+                }
+            }
+            finally
+            {
+                inv.unlockInventory();
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 public class SetStatCommand : CommandBase
 {
     public SetStatCommand() : base(2, "setstat")
@@ -19,13 +19,14 @@ public class SetStatCommand : CommandBase
         {
             int x = int.Parse(paramsValue[0]);
 
-            if (x > short.MaxValue)
+            if (x > NumericConfig.MaxStat)
             {
-                x = short.MaxValue;
+                x = NumericConfig.MaxStat;
             }
-            else if (x < 4)
+            else if (x < NumericConfig.MinStat)
             {
-                x = 4;  // thanks Vcoc for pointing the minimal allowed stat value here
+                // thanks Vcoc for pointing the minimal allowed stat value here
+                x = NumericConfig.MinStat;
             }
 
             player.updateStrDexIntLuk(x);

@@ -40,7 +40,7 @@ public class FamilyEntry
 
     private volatile FamilyEntry? senior;
     private FamilyEntry?[] juniors = new FamilyEntry[2];
-    private int[] entitlements = new int[11];
+    private int[] entitlements;
     private volatile int reputation, totalReputation;
     private volatile int todaysRep, repsToSenior; //both are daily values
     private volatile int totalJuniors, totalSeniors;
@@ -56,6 +56,7 @@ public class FamilyEntry
 
     public FamilyEntry(Family family, int characterID, string charName, int level, Job job)
     {
+        entitlements = new int[EnumClassUtils.GetValues<FamilyEntitlement>().Count];
         this.family = family;
         this.characterID = characterID;
         this.charName = charName;
@@ -70,7 +71,7 @@ public class FamilyEntry
 
     public void setCharacter(IPlayer? newCharacter)
     {
-        // bug£¿
+        // bugï¼Ÿ
         if (newCharacter == null)
         {
             cacheOffline(newCharacter);
@@ -768,10 +769,7 @@ public class FamilyEntry
 
     public void resetEntitlementUsages()
     {
-        foreach (FamilyEntitlement entitlement in FamilyEntitlement.values<FamilyEntitlement>())
-        {
-            entitlements[entitlement.ordinal()] = 0;
-        }
+        Array.Fill(entitlements, 0);
     }
 
     public bool saveReputation()

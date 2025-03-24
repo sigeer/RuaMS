@@ -47,6 +47,7 @@ using constants.id;
 using constants.inventory;
 using constants.skills;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using net.packet;
 using net.server;
 using net.server.coordinator.world;
@@ -2562,7 +2563,7 @@ public partial class Player
 
     public int getMaxClassLevel()
     {
-        return isCygnus() ? 120 : 200;
+        return isCygnus() ? 120 : NumericConfig.MaxLevel;
     }
 
     public int getMaxLevel()
@@ -3072,14 +3073,6 @@ public partial class Player
         }
     }
 
-    private static string getTimeRemaining(long timeLeft)
-    {
-        int seconds = (int)Math.Floor((double)timeLeft / 1000) % 60;
-        int minutes = (int)Math.Floor((double)timeLeft / 60000) % 60;
-
-        return (minutes > 0 ? (string.Format("{0:D2}", minutes) + " minutes, ") : "") + string.Format("{0:D2}", seconds) + " seconds";
-    }
-
     public bool isBuffFrom(BuffStat stat, Skill skill)
     {
         Monitor.Enter(effLock);
@@ -3112,7 +3105,7 @@ public partial class Player
 
     public bool isAran()
     {
-        return JobId >= 2000 && JobId <= 2112;
+        return JobModel.IsAran();
     }
 
     public bool isBeginnerJob()
@@ -4872,10 +4865,6 @@ public partial class Player
                 return (0);
             }
             short iQuant = item.getQuantity();
-            if (iQuant == 0xFFFF)
-            {
-                iQuant = 1;
-            }
 
             if (quantity <= iQuant && iQuant > 0)
             {
@@ -5405,7 +5394,7 @@ public partial class Player
                     pendantOfSpirit!.cancel(false);
                 }
 
-            }, 3600000); //1 hour
+            }, TimeSpan.FromHours(1)); //1 hour
         }
     }
 

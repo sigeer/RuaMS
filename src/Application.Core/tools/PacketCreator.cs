@@ -161,7 +161,7 @@ public class PacketCreator
         }
 
         p.writeByte(chr.getLevel()); // level
-        p.writeShort(chr.getJob().getId()); // job
+        p.writeShort(chr.JobModel.Id); // job
         p.writeShort(chr.Str); // str
         p.writeShort(chr.Dex); // dex
         p.writeShort(chr.Int); // int
@@ -1086,7 +1086,7 @@ public class PacketCreator
                 }
                 else if (statupdate.Key.getValue() == 0x8000)
                 {
-                    if (chr.JobModel.HasSPTable)
+                    if (chr != null && chr.JobModel.HasSPTable)
                     {
                         addRemainingSkillInfo(p, chr);
                     }
@@ -1111,6 +1111,7 @@ public class PacketCreator
         }
         return p;
     }
+
 
     /// <summary>
     /// Gets a packet telling the client to change maps.
@@ -6493,10 +6494,11 @@ public class PacketCreator
     public static Packet loadFamily(IPlayer player)
     {
         OutPacket p = OutPacket.create(SendOpcode.FAMILY_PRIVILEGE_LIST);
-        p.writeInt(FamilyEntitlement.values<FamilyEntitlement>().Length);
-        for (int i = 0; i < FamilyEntitlement.values<FamilyEntitlement>().Length; i++)
+        var allItems = EnumClassUtils.GetValues<FamilyEntitlement>();
+        p.writeInt(allItems.Count);
+        for (int i = 0; i < allItems.Count; i++)
         {
-            FamilyEntitlement entitlement = FamilyEntitlement.values<FamilyEntitlement>()[i];
+            FamilyEntitlement entitlement = allItems[i];
             p.writeByte(i <= 1 ? 1 : 2); //type
             p.writeInt(entitlement.getRepCost());
             p.writeInt(entitlement.getUsageLimit());
@@ -6566,8 +6568,9 @@ public class PacketCreator
         p.writeInt(f.getFamily().getLeader().getChrId()); // Leader ID (Allows setting message)
         p.writeString(f.getFamily().getName());
         p.writeString(f.getFamily().getMessage()); //family message
-        p.writeInt(FamilyEntitlement.values<FamilyEntitlement>().Length); //Entitlement info count
-        foreach (FamilyEntitlement entitlement in FamilyEntitlement.values<FamilyEntitlement>())
+        var allItem = EnumClassUtils.GetValues<FamilyEntitlement>();
+        p.writeInt(allItem.Count); //Entitlement info count
+        foreach (var entitlement in allItem)
         {
             p.writeInt(entitlement.ordinal()); //ID
             p.writeInt(f.isEntitlementUsed(entitlement) ? 1 : 0); //Used count
@@ -8217,7 +8220,7 @@ public class PacketCreator
         p.writeShort(0);
         p.writeByte(dragon.getStance());
         p.writeByte(0);
-        p.writeShort(dragon.getOwner().getJob().getId());
+        p.writeShort(dragon.getOwner().JobModel.Id);
         return p;
     }
 

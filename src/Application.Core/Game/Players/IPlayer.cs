@@ -681,8 +681,7 @@ namespace Application.Core.Game.Players
         void toggleWhiteChat();
         void unequipAllPets();
         void unequippedItem(Equip equip);
-        void unequipPet(Pet pet, bool shift_left);
-        void unequipPet(Pet pet, bool shift_left, bool hunger);
+        void unequipPet(Pet pet, bool shift_left, bool hunger = false);
         bool unregisterChairBuff();
         void updateActiveEffects();
         void updateAreaInfo(int area, string info);

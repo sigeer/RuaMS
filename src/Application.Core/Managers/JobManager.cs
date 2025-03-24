@@ -61,7 +61,7 @@ namespace Application.Core.Managers
         {
             int jobBranch = job.Rank;
             int jobRange = GameConstants.getJobUpgradeLevelRange(jobBranch);
-            return GetJobLevelSp(jobRange, job.getId(), jobBranch);
+            return GetJobLevelSp(jobRange, job.Id, jobBranch);
         }
     }
 }

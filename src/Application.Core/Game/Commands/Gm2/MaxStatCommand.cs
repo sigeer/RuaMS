@@ -1,4 +1,4 @@
-﻿using client;
+using client;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -13,18 +13,18 @@ public class MaxStatCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
         player.loseExp(player.getExp(), false, false);
-        player.setLevel(255);
+        player.setLevel(NumericConfig.MaxLevel);
         player.resetPlayerRates();
         if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL)
         {
             player.setPlayerRates();
         }
         player.setWorldRates();
-        player.updateStrDexIntLuk(short.MaxValue);
-        player.setFame(13337);
-        player.updateMaxHpMaxMp(30000, 30000);
-        player.updateSingleStat(Stat.LEVEL, 255);
-        player.updateSingleStat(Stat.FAME, 13337);
+        player.updateStrDexIntLuk(NumericConfig.MaxStat);
+        player.setFame(NumericConfig.MaxFame);
+        player.updateMaxHpMaxMp(NumericConfig.MaxHP, NumericConfig.MaxMP);
+        player.updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
+        player.updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
         player.yellowMessage("Stats maxed out.");
     }
 }

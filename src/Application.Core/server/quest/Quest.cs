@@ -224,6 +224,8 @@ public class Quest
         if (ret == null)
         {
             ret = new Quest(null, (short)id);
+            if (!ret.IsValid)
+                throw new BusinessResException($"任务 Id={id}不存在");
             quests.AddOrUpdate(id, ret);
         }
         return ret;

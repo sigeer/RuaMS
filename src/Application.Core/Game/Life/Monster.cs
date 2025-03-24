@@ -1468,7 +1468,7 @@ public class Monster : AbstractLifeObject
             if (from.getJob() == Job.NIGHTLORD || from.getJob() == Job.SHADOWER || from.getJob().isA(Job.NIGHTWALKER3))
             {
                 int poisonLevel, matk, jobid = from.getJob().getId();
-                int skillid = (jobid == 412 ? NightLord.VENOMOUS_STAR : (jobid == 422 ? Shadower.VENOMOUS_STAB : NightWalker.VENOM));
+                int skillid = (jobid == JobId.NIGHTLORD ? NightLord.VENOMOUS_STAR : (jobid == JobId.SHADOWER ? Shadower.VENOMOUS_STAB : NightWalker.VENOM));
                 var skill = SkillFactory.getSkill(skillid);
                 poisonLevel = from.getSkillLevel(skill);
                 if (poisonLevel <= 0)
