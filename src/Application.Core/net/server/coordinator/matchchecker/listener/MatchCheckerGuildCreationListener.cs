@@ -132,7 +132,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    TeamManager.leaveParty(chr.getParty(), chr.getClient());
+                    TeamManager.leaveParty(chr.getParty(), chr);
                 }
 
                 if (chr.isLoggedinWorld())
@@ -161,7 +161,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    TeamManager.leaveParty(chr.getParty()!, chr.getClient());
+                    TeamManager.leaveParty(chr.getParty()!, chr);
                 }
 
                 if (chr.isLoggedinWorld())

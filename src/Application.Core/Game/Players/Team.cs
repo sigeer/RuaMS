@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Relation;
+using Application.Core.Game.Relation;
 using Application.Core.Managers;
 using tools;
 
@@ -188,7 +188,7 @@ namespace Application.Core.Game.Players
                 {
                     party.assignNewLeader(Client);
                 }
-                TeamManager.leaveParty(party, Client);
+                TeamManager.leaveParty(party, this);
 
                 return true;
             }

@@ -15,6 +15,11 @@ namespace Application.Shared.Constants
             throw new BusinessException("不存在的JobId: " + id);
         }
 
+        public static List<Job> GetAllJob()
+        {
+            return _dataSource.Values.ToList();
+        }
+
         public static int MaxJobId = _dataSource.Keys.Max();
     }
 }

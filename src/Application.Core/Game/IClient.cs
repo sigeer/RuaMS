@@ -49,7 +49,6 @@ namespace Application.Core.Game
         public NPCConversationManager? NPCConversationManager { get; set; }
         public IChannel NettyChannel { get; }
         bool acceptToS();
-        void addVotePoints(int points);
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);
         void announceHint(string msg, int length);
         void announceServerMessage();
@@ -107,7 +106,6 @@ namespace Application.Core.Game
         DateTimeOffset? getTempBanCalendar();
         DateTimeOffset? getTempBanCalendarFromDB();
         int getVisibleWorlds();
-        int getVotePoints();
         int getWorld();
         IWorld getWorldServer();
         bool hasBannedHWID();
@@ -151,7 +149,6 @@ namespace Application.Core.Game
         void updateLoginState(int newState);
         void updateMacs(string macData);
         void UserEventTriggered(IChannelHandlerContext ctx, object evt);
-        void useVotePoints(int points);
 
         void OpenNpc(int npcid, string? script = null);
     }

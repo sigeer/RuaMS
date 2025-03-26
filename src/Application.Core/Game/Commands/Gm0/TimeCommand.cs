@@ -1,4 +1,6 @@
-﻿namespace Application.Core.Game.Commands.Gm0;
+using net.server;
+
+namespace Application.Core.Game.Commands.Gm0;
 
 public class TimeCommand : CommandBase
 {
@@ -9,6 +11,6 @@ public class TimeCommand : CommandBase
 
     public override void Execute(IClient client, string[] paramsValue)
     {
-        client.OnlinedCharacter.yellowMessage("Cosmic NewServer Time: " + DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+        client.OnlinedCharacter.yellowMessage("Server Time: " + DateTimeOffset.FromUnixTimeMilliseconds(Server.getInstance().getCurrentTime()).ToString("yyyy-MM-dd HH:mm:ss"));
     }
 }

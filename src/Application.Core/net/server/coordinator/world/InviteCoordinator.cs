@@ -72,7 +72,7 @@ public class InviteCoordinator
 
     public static void removePlayerIncomingInvites(int cid)
     {
-        foreach (InviteType it in InviteType.values<InviteType>())
+        foreach (InviteType it in EnumClassUtils.GetValues<InviteType>())
         {
             it.removeRequest(cid);
         }
@@ -80,7 +80,7 @@ public class InviteCoordinator
 
     public static void runTimeoutSchedule()
     {
-        foreach (InviteType it in InviteType.values<InviteType>())
+        foreach (InviteType it in EnumClassUtils.GetValues<InviteType>())
         {
             var timeoutTable = it.getRequestsTimeoutTable();
 
