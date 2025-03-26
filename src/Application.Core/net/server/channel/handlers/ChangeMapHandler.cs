@@ -91,7 +91,7 @@ public class ChangeMapHandler : AbstractPacketHandler
                         InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.WHEEL_OF_FORTUNE, 1, true, false);
                         chr.sendPacket(PacketCreator.showWheelsLeft(chr.getItemQuantity(ItemId.WHEEL_OF_FORTUNE, false)));
 
-                        chr.updateHp(50);
+                        chr.SetHP(50);
                         chr.changeMap(map, map.findClosestPlayerSpawnpoint(chr.getPosition()));
                     }
                     else

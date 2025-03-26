@@ -599,19 +599,15 @@ public class AssignAPProcessor
                     }
 
                     int hplose = -takeHp(player.getJob());
-                    if (player.getMaxHp() + hplose < getMinHp(player.getJob(), player.getLevel()))
+                    if (player.MaxHP + hplose < getMinHp(player.getJob(), player.getLevel()))
                     {
                         player.message("You don't have the minimum HP pool required to swap.");
                         c.sendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    int curHp = player.getHp();
                     player.assignHP(hplose, -1);
-                    if (!YamlConfig.config.server.USE_FIXED_RATIO_HPMP_UPDATE)
-                    {
-                        player.updateHp(Math.Max(1, curHp + hplose));
-                    }
+                    player.ChangeHP(hplose);
 
                     break;
                 case 8192: // MP
@@ -633,19 +629,15 @@ public class AssignAPProcessor
                     }
 
                     int mplose = -takeMp(player.getJob());
-                    if (player.getMaxMp() + mplose < getMinMp(player.getJob(), player.getLevel()))
+                    if (player.MaxMP + mplose < getMinMp(player.getJob(), player.getLevel()))
                     {
                         player.message("You don't have the minimum MP pool required to swap.");
                         c.sendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    int curMp = player.getMp();
                     player.assignMP(mplose, -1);
-                    if (!YamlConfig.config.server.USE_FIXED_RATIO_HPMP_UPDATE)
-                    {
-                        player.updateMp(Math.Max(0, curMp + mplose));
-                    }
+                    player.ChangeMP(mplose);
                     break;
                 default:
                     c.sendPacket(PacketCreator.updatePlayerStats(PacketCreator.EMPTY_STATUPDATE, true, player));

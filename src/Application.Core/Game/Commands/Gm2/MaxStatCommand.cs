@@ -22,7 +22,8 @@ public class MaxStatCommand : CommandBase
         player.setWorldRates();
         player.updateStrDexIntLuk(NumericConfig.MaxStat);
         player.setFame(NumericConfig.MaxFame);
-        player.updateMaxHpMaxMp(NumericConfig.MaxHP, NumericConfig.MaxMP);
+        player.SetMaxHP(NumericConfig.MaxHP);
+        player.SetMaxMP(NumericConfig.MaxMP);
         player.updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
         player.updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
         player.yellowMessage("Stats maxed out.");

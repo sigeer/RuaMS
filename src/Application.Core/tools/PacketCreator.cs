@@ -166,10 +166,10 @@ public class PacketCreator
         p.writeShort(chr.Dex); // dex
         p.writeShort(chr.Int); // int
         p.writeShort(chr.Luk); // luk
-        p.writeShort(chr.Hp); // hp (?)
-        p.writeShort(chr.Maxhp); // maxhp
-        p.writeShort(chr.Mp); // mp (?)
-        p.writeShort(chr.Maxmp); // maxmp
+        p.writeShort(chr.HP); // hp (?)
+        p.writeShort(chr.MaxHP); // maxhp
+        p.writeShort(chr.MP); // mp (?)
+        p.writeShort(chr.MaxMP); // maxmp
         p.writeShort(chr.Ap); // remaining ap
         if (chr.JobModel.HasSPTable)
         {
@@ -1128,7 +1128,7 @@ public class PacketCreator
         p.writeByte(0);//updated
         p.writeInt(to.getId());
         p.writeByte(spawnPoint);
-        p.writeShort(chr.getHp());
+        p.writeShort(chr.HP);
         p.writeBool(chr.isChasing());
         if (chr.isChasing())
         {
@@ -1148,7 +1148,7 @@ public class PacketCreator
         p.writeByte(0);//updated
         p.writeInt(to.getId());
         p.writeByte(spawnPoint);
-        p.writeShort(chr.getHp());
+        p.writeShort(chr.HP);
         p.writeBool(true);
         p.writeInt(spawnPosition.X);    // spawn position placement thanks to Arnah (Vertisy)
         p.writeInt(spawnPosition.Y);

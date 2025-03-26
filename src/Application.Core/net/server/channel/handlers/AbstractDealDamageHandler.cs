@@ -72,9 +72,9 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     return;
                 }
 
-                if (player.getMp() < attackEffect.getMpCon())
+                if (player.MP < attackEffect.getMpCon())
                 {
-                    AutobanFactory.MPCON.addPoint(player.getAutobanManager(), "Skill: " + attack.skill + "; Player MP: " + player.getMp() + "; MP Needed: " + attackEffect.getMpCon());
+                    AutobanFactory.MPCON.addPoint(player.getAutobanManager(), "Skill: " + attack.skill + "; Player MP: " + player.MP + "; MP Needed: " + attackEffect.getMpCon());
                 }
 
                 int mobCount = attackEffect.getMobCount();
@@ -283,10 +283,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         || attack.skill == Assassin.DRAIN)
                     {
                         var skillModel = SkillFactory.GetSkillTrust(attack.skill);
-                        player.addHP(
+                        player.ChangeHP(
                             Math.Min(monster.getMaxHp(),
                             Math.Min((int)(totDamage * (double)skillModel.getEffect(player.getSkillLevel(skillModel)).getX() / 100.0),
-                            player.getCurrentMaxHp() / 2)));
+                            player.ActualMaxHP / 2)));
                     }
                     else if (attack.skill == Bandit.STEAL)
                     {
@@ -432,7 +432,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     else if (player.getBuffedValue(BuffStat.COMBO_DRAIN) != null)
                     {
                         Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
-                        player.addHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
+                        player.ChangeHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
                     }
                     else if (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3)
                     {
@@ -580,7 +580,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.addHP(-toUse.getX());
+                                player.ChangeHP(-toUse.getX());
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getX(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
                         }
@@ -592,7 +592,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.addHP(-toUse.getY());
+                                player.ChangeHP(-toUse.getY());
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getY(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
                         }

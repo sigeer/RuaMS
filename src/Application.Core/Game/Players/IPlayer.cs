@@ -9,6 +9,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.scripting.Event;
+using Application.Shared.Objects;
 using client;
 using client.autoban;
 using client.creator;
@@ -32,7 +33,7 @@ using static Application.Core.Game.Players.Player;
 
 namespace Application.Core.Game.Players
 {
-    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer
+    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife
     {
         public IClient Client { get; }
         public int Channel { get; }

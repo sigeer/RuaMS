@@ -58,7 +58,7 @@ public class HealOvertimeHandler : AbstractPacketHandler
                 return;
             }
 
-            chr.addHP(healHP);
+            chr.ChangeHP(healHP);
             chr.getMap().broadcastMessage(chr, PacketCreator.showHpHealed(chr.getId(), healHP), false);
             abm.spam(0, timestamp);
         }
@@ -71,7 +71,7 @@ public class HealOvertimeHandler : AbstractPacketHandler
                 AutobanFactory.FAST_MP_HEALING.addPoint(abm, "Fast mp healing");
                 return;     // thanks resinate for noticing mp being gained even after detection
             }
-            chr.addMP(healMP);
+            chr.ChangeMP(healMP);
             abm.spam(1, timestamp);
         }
     }

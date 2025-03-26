@@ -119,9 +119,9 @@ public class SpecialMoveHandler : AbstractPacketHandler
             var s = SkillFactory.GetSkillTrust(skillid);
             StatEffect ef = s.getEffect(chr.getSkillLevel(s));
 
-            int lose = chr.safeAddHP(-1 * (chr.getCurrentMaxHp() / ef.getX()));
+            int lose = chr.safeAddHP(-1 * (chr.ActualMaxHP / ef.getX()));
             int gain = -lose * (ef.getY() / 100);
-            chr.addMP(gain);
+            chr.ChangeMP(gain);
         }
         else if (skillid == SuperGM.HEAL_PLUS_DISPEL)
         {

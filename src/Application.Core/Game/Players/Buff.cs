@@ -1293,7 +1293,7 @@ namespace Application.Core.Game.Players
                             return;
                         }
 
-                        addHP(healEffect.getHp());
+                        ChangeHP(healEffect.getHp());
                         sendPacket(PacketCreator.showOwnBuffEffect(beholder, 2));
                         MapModel.broadcastMessage(this, PacketCreator.summonSkill(getId(), beholder, 5), true);
                         MapModel.broadcastMessage(this, PacketCreator.showOwnBuffEffect(beholder, 2), false);
@@ -1354,7 +1354,7 @@ namespace Application.Core.Game.Players
                             return;
                         }
 
-                        addHP(heal);
+                        ChangeHP(heal);
                         sendPacket(PacketCreator.showOwnRecovery(heal));
                         MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, heal), false);
 
@@ -1505,6 +1505,7 @@ namespace Application.Core.Game.Players
             if (dragonBloodSchedule != null)
             {
                 dragonBloodSchedule.cancel(false);
+                dragonBloodSchedule = null;
             }
             dragonBloodSchedule = TimerManager.getInstance().register(() =>
             {
@@ -1513,10 +1514,16 @@ namespace Application.Core.Game.Players
                     return;
                 }
 
-                addHP(-bloodEffect.getX());
-                sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
-                MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
-
+                if (ChangeHP(-bloodEffect.getX()))
+                {
+                    sendPacket(PacketCreator.showOwnBuffEffect(bloodEffect.getSourceId(), 5));
+                    MapModel.broadcastMessage(this, PacketCreator.showBuffEffect(getId(), bloodEffect.getSourceId(), 5), false);
+                }
+                else
+                {
+                    dragonBloodSchedule!.cancel(false);
+                    dragonBloodSchedule = null;
+                }
             }, 4000, 4000);
         }
 

@@ -106,20 +106,16 @@ namespace Application.Core.Game.Players
                     int healHP = localchairhp;
                     int healMP = localchairmp;
 
-                    if (this.getHp() < localmaxhp)
+                    if (HP < ActualMaxHP)
                     {
                         byte recHP = (byte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
 
                         sendPacket(PacketCreator.showOwnRecovery(recHP));
                         MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, recHP), false);
                     }
-                    else if (this.getMp() >= localmaxmp)
-                    {
-                        stopChairTask();    // optimizing schedule management when player is already with full pool.
-                    }
 
-                    addMPHP(healHP, healMP);
-
+                    ChangeHP(healHP);
+                    ChangeMP(healMP);
                 }, healInterval, healInterval);
             }
             finally
@@ -208,7 +204,7 @@ namespace Application.Core.Game.Players
             statLock.EnterWriteLock();
             try
             {
-                var p = getChairTaskIntervalRate(localmaxhp, localmaxmp);
+                var p = getChairTaskIntervalRate(ActualMaxHP, ActualMaxMP);
 
                 localchairrate = p.Rate;
                 localchairhp = p.Hp;

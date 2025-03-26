@@ -1,4 +1,4 @@
-﻿using net.server;
+using net.server;
 
 namespace Application.Core.Game.Commands.Gm6;
 
@@ -19,8 +19,8 @@ public class MapPlayersCommand : CommandBase
             foreach (var chr in world.getPlayerStorage().GetAllOnlinedPlayers())
             {
                 int curMap = chr.getMapId();
-                string hp = chr.getHp().ToString();
-                string maxhp = chr.getCurrentMaxHp().ToString();
+                string hp = chr.HP.ToString();
+                string maxhp = chr.MaxHP.ToString();
                 string name = chr.getName() + ": " + hp + "/" + maxhp;
                 if (map == curMap)
                 {
