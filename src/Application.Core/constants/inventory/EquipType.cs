@@ -67,14 +67,7 @@ public enum EquipType
 
 public static class EquipTypeUtils
 {
-    private static Dictionary<int, EquipType> map = new(34);
-    static EquipTypeUtils()
-    {
-        foreach (EquipType eqEnum in Enum.GetValues<EquipType>())
-        {
-            map.Add((int)eqEnum, eqEnum);
-        }
-    }
+    private static Dictionary<int, EquipType> map = Enum.GetValues<EquipType>().ToDictionary(x => (int)x, x => x);
     public static EquipType getEquipTypeById(int itemid)
     {
         int val = itemid / 100000;

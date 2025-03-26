@@ -34,6 +34,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Core.scripting.Event;
+using Application.Shared.Constants;
 using Application.Shared.KeyMaps;
 using client;
 using client.autoban;
@@ -3987,9 +3988,9 @@ public partial class Player
             {
                 localmaxmp += (hbmp.Value / 100) * localmaxmp;
             }
-
-            localmaxhp = Math.Min(30000, localmaxhp);
-            localmaxmp = Math.Min(30000, localmaxmp);
+            
+            localmaxhp = Math.Min(NumericConfig.MaxHP, localmaxhp);
+            localmaxmp = Math.Min(NumericConfig.MaxMP, localmaxmp);
 
             StatEffect? combo = getBuffEffect(BuffStat.ARAN_COMBO);
             if (combo != null)
@@ -5767,34 +5768,6 @@ public partial class Player
     public void setLastCommandMessage(string text)
     {
         this.commandtext = text;
-    }
-
-    public int getRewardPoints()
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            return dbContext.Accounts.Where(x => x.Id == AccountId).Select(x => new { x.Rewardpoints }).FirstOrDefault()?.Rewardpoints ?? -1;
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
-        }
-        return -1;
-    }
-
-    public void setRewardPoints(int value)
-    {
-
-        try
-        {
-            using var dbContext = new DBContext();
-            dbContext.Accounts.Where(x => x.Id == AccountId).ExecuteUpdate(x => x.SetProperty(y => y.Rewardpoints, value));
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
-        }
     }
 
     //EVENTS

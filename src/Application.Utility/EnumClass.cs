@@ -5,14 +5,6 @@ namespace Application.Utility
     public class EnumClass
     {
 
-
-        public static TModel[] values<TModel>() where TModel : EnumClass
-        {
-            return typeof(TModel).GetFields().Where(x => x.IsStatic
-                        && x.IsPublic
-                        && x.FieldType == typeof(TModel)).Select(x => (TModel)x.GetValue(null)!).ToArray();
-        }
-
         protected FieldInfo GetInfo()
         {
             return GetType().GetFields().Where(x => x.IsStatic

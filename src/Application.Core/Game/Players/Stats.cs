@@ -1,4 +1,5 @@
-﻿using client;
+using Application.Shared.Constants;
+using client;
 using constants.game;
 using tools;
 
@@ -333,7 +334,7 @@ namespace Application.Core.Game.Players
                 this.transienthp = float.NegativeInfinity;
             }
             this.Maxhp = hp_;
-            this.clientmaxhp = Math.Min(30000, hp_);
+            this.clientmaxhp = Math.Min(NumericConfig.MaxHP, hp_);
         }
 
         protected void setMaxMp(int mp_)
@@ -343,7 +344,7 @@ namespace Application.Core.Game.Players
                 this.transientmp = float.NegativeInfinity;
             }
             this.Maxmp = mp_;
-            this.clientmaxmp = Math.Min(30000, mp_);
+            this.clientmaxmp = Math.Min(NumericConfig.MaxMP, mp_);
         }
 
         private static long clampStat(int v, int min, int max)
@@ -356,11 +357,11 @@ namespace Application.Core.Game.Players
             long r;
             if (v == null)
             {
-                r = -32768;
+                r = short.MinValue;
             }
             else
             {
-                r = clampStat(v.Value, -32767, 32767);
+                r = clampStat(v.Value, short.MinValue, short.MaxValue);
             }
 
             return ((r & 0x0FFFF) << displacement);

@@ -95,8 +95,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private object encoderLock = new object();
     // thanks Masterrulax & try2hack for pointing out a bottleneck issue with shared locks, shavit for noticing an opportunity for improvement
     private DateTimeOffset? tempBanCalendar;
-    private int votePoints;
-    private int voteTime = -1;
+
     private int visibleWorlds;
     private long lastNpcClick;
     private long lastPacket = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -350,44 +349,6 @@ public class Client : ChannelHandlerAdapter, IClient
         return dbContext.Ipbans.Any(x => x.Ip.Contains(remoteAddress));
     }
 
-    //public int getVoteTime()
-    //{
-    //    if (voteTime != -1)
-    //    {
-    //        return voteTime;
-    //    }
-
-    //    try (DBContext dbContext = DatabaseConnection.getConnection();
-    //    PreparedStatement ps = con.prepareStatement("SELECT date FROM bit_votingrecords WHERE UPPER(account) = UPPER(?)")) {
-    //        ps.setString(1, accountName);
-    //        try (ResultSet rs = ps.executeQuery()) {
-    //            if (!rs.next())
-    //            {
-    //                return -1;
-    //            }
-    //            voteTime = rs.getInt("date");
-    //        }
-    //        }
-    //        catch (SQLException e)
-    //        {
-    //            _logger.Error("Error getting voting time");
-    //            return -1;
-    //        }
-    //        return voteTime;
-    //    }
-
-    //    public void resetVoteTime()
-    //    {
-    //        voteTime = -1;
-    //    }
-
-    //    public bool hasVotedAlready()
-    //    {
-    //        Date currentDate = new Date();
-    //        int timeNow = (int)(currentDate.getTime() / 1000);
-    //        int difference = (timeNow - getVoteTime());
-    //        return difference < 86400 && difference > 0;
-    //    }
 
     public bool hasBannedHWID()
     {
@@ -1266,46 +1227,6 @@ public class Client : ChannelHandlerAdapter, IClient
                 }
             }
         }
-    }
-
-    public int getVotePoints()
-    {
-        int points = 0;
-        try
-        {
-            using var dbContext = new DBContext();
-            votePoints = dbContext.Accounts.Where(x => x.Id == accId).Select(x => new { x.Votepoints }).FirstOrDefault()?.Votepoints ?? 0;
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-        votePoints = points;
-        return votePoints;
-    }
-
-    public void addVotePoints(int points)
-    {
-        votePoints += points;
-        saveVotePoints();
-    }
-
-    public void useVotePoints(int points)
-    {
-        if (points > votePoints)
-        {
-            //Should not happen, should probably log this
-            return;
-        }
-        votePoints -= points;
-        saveVotePoints();
-        MapleLeafLogger.log(OnlinedCharacter, false, points.ToString());
-    }
-
-    private void saveVotePoints()
-    {
-        using var _dbContext = new DBContext();
-        _dbContext.Accounts.Where(x => x.Id == accId).ExecuteUpdate(x => x.SetProperty(y => y.Votepoints, votePoints));
     }
 
     public void lockClient()

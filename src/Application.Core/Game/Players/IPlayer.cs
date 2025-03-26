@@ -386,7 +386,6 @@ namespace Application.Core.Game.Players
         HashSet<NewYearCardRecord> getReceivedNewYearRecords();
         int getRelationshipId();
         int getRemainingSp();
-        int getRewardPoints();
         Ring? getRingById(int id);
         RockPaperScissor? getRPS();
         int getSavedLocation(string type);
@@ -645,7 +644,6 @@ namespace Application.Core.Game.Players
         void setPlayerShop(PlayerShop? playerShop);
         void setQuestAdd(Quest quest, byte status, string customData);
         void setQuestProgress(int id, int infoNumber, string progress);
-        void setRewardPoints(int value);
         void setRPS(RockPaperScissor? rps);
         void setSearch(string? find);
         void setSessionTransitionState();

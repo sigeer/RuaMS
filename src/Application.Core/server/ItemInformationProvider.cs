@@ -375,35 +375,6 @@ public class ItemInformationProvider
         return ret;
     }
 
-    public List<int> getItemIdsInRange(int minId, int maxId, bool ignoreCashItem)
-    {
-        List<int> list = new();
-
-        if (ignoreCashItem)
-        {
-            for (int i = minId; i <= maxId; i++)
-            {
-                if (getItemData(i) != null && !isCash(i))
-                {
-                    list.Add(i);
-                }
-            }
-        }
-        else
-        {
-            for (int i = minId; i <= maxId; i++)
-            {
-                if (getItemData(i) != null)
-                {
-                    list.Add(i);
-                }
-            }
-        }
-
-
-        return list;
-    }
-
     private static int getExtraSlotMaxFromPlayer(IClient c, int itemId)
     {
         int ret = 0;
