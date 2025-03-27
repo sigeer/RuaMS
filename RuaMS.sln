@@ -54,6 +54,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Scripting.Lua",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Scripting.JS", "src\Application.Scripting.JS\Application.Scripting.JS.csproj", "{20A7FBB0-2018-4624-B977-9BAE517E1485}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Benchmark", "src\Application.Benchmark\Application.Benchmark.csproj", "{40095876-7318-4CE1-BF58-B2D3E8D4D347}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,10 @@ Global
 		{20A7FBB0-2018-4624-B977-9BAE517E1485}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20A7FBB0-2018-4624-B977-9BAE517E1485}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20A7FBB0-2018-4624-B977-9BAE517E1485}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40095876-7318-4CE1-BF58-B2D3E8D4D347}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40095876-7318-4CE1-BF58-B2D3E8D4D347}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40095876-7318-4CE1-BF58-B2D3E8D4D347}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40095876-7318-4CE1-BF58-B2D3E8D4D347}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -120,6 +126,7 @@ Global
 		{C4D3996D-69D4-47B6-BA81-5E802BC3696A} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{60D61555-EAC6-4A2C-B254-EF0EAE248DE4} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 		{20A7FBB0-2018-4624-B977-9BAE517E1485} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
+		{40095876-7318-4CE1-BF58-B2D3E8D4D347} = {215B4C1A-2E8E-4C9C-872E-C3B8F86FB346}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24613DFE-A8D5-438B-BCD0-3F036C9952D7}

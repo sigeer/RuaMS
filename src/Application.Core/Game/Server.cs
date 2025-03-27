@@ -64,7 +64,6 @@ public class Server
     private static Dictionary<int, int> couponRates = new(30);
     private static List<int> activeCoupons = new();
 
-    private static ChannelDependencies channelDependencies;
 
     private LoginServer loginServer = null!;
     public Dictionary<int, IWorld> RunningWorlds { get; set; } = new();
@@ -601,8 +600,6 @@ public class Server
 
             AppDomain.CurrentDomain.ProcessExit += (obj, evt) => shutdown(false);
 
-            channelDependencies = registerChannelDependencies();
-
             using var dbContext = new DBContext();
             setAllLoggedOut(dbContext);
             setAllMerchantsInactive(dbContext);
@@ -615,7 +612,7 @@ public class Server
             applyAllWorldTransfers(dbContext);
             PlayerNPC.loadRunningRankData(dbContext);
 
-            var startTimelyTask = initializeTimelyTasks(channelDependencies);    // aggregated method for timely tasks thanks to lxconan
+            var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
 
             var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
             foreach (var worldConfig in worlds)
@@ -681,13 +678,15 @@ public class Server
         dbContext.Characters.ExecuteUpdate(x => x.SetProperty(y => y.HasMerchant, false));
     }
 
-    private async Task initializeTimelyTasks(ChannelDependencies channelDependencies)
+    public async Task InitializeTimelyTasks(TaskEngine engine)
     {
-        await TimerManager.InitializeAsync(TaskEngine.Quartz);
+        var channelDependencies = registerChannelDependencies();
+
+        await TimerManager.InitializeAsync(engine);
         var tMan = TimerManager.getInstance();
         await tMan.Start();
         tMan.register(TimerManager.purge, YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
-        disconnectIdlesOnLoginTask();
+        tMan.register(disconnectIdlesOnLoginState, TimeSpan.FromMinutes(5));
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
@@ -1228,6 +1227,11 @@ public class Server
         return async () => await Stop(restart);
     }
 
+    public void Reset()
+    {
+        instance = new Lazy<Server>(new Server());
+    }
+
     //synchronized
     public async Task Stop(bool restart, bool force = false)
     {
@@ -1262,7 +1266,7 @@ public class Server
         if (restart)
         {
             log.Information("Restarting the server...");
-            instance = new Lazy<Server>(new Server());
+            Reset();
             await getInstance().Start();//DID I DO EVERYTHING?! D:
         }
     }

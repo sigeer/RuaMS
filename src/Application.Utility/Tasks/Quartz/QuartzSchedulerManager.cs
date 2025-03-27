@@ -17,8 +17,11 @@ namespace Application.Utility.Tasks
 
         public Task JobDeleted(JobKey jobKey, CancellationToken cancellationToken)
         {
-            if (SchedulerManager.TaskScheduler.Remove(jobKey.Name, out var p))
+            if (SchedulerManager.TaskScheduler.Remove(jobKey.Name, out var p) && p is QuartzScheduledFuture data)
+            {
                 Log.Logger.Debug("结束了一个任务，JobId = {JobId}", jobKey.Name);
+                QuartzSchedulerManager.Scheduler.UnscheduleJob(data.TriggerKey);
+            }
             return Task.CompletedTask;
         }
 

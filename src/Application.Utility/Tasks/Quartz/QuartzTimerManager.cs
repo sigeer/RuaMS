@@ -48,7 +48,7 @@ public class QuartzTimerManager : ITimerManager
             .Build();
 
         var builder = TriggerBuilder.Create()
-                        .WithIdentity(r!.Name);
+                        .WithIdentity("T_" + r.Name);
         if (delay == null)
             builder.StartNow();
         else
@@ -61,7 +61,7 @@ public class QuartzTimerManager : ITimerManager
                         .Build();
 
         _scheduler.ScheduleJob(job, trigger).Wait();
-        return SchedulerManager.TaskScheduler[r.Name] = new QuartzScheduledFuture(r!.Name);
+        return SchedulerManager.TaskScheduler[r.Name] = new QuartzScheduledFuture(r!.Name, trigger.Key);
     }
 
     public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
@@ -75,12 +75,12 @@ public class QuartzTimerManager : ITimerManager
             .Build();
 
         var trigger = TriggerBuilder.Create()
-            .WithIdentity(r.Name)
+            .WithIdentity("T_" + r.Name)
             .StartAt(DateTimeOffset.Now.Add(delay))
             .Build();
 
         _scheduler.ScheduleJob(job, trigger).Wait();
-        return SchedulerManager.TaskScheduler[r.Name] = new QuartzScheduledFuture(r!.Name);
+        return SchedulerManager.TaskScheduler[r.Name] = new QuartzScheduledFuture(r!.Name, trigger.Key);
     }
 
     public ScheduledFuture schedule(Action r, TimeSpan delay)

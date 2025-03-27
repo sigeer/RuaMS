@@ -4,9 +4,11 @@ namespace Application.Utility.Tasks
 {
     public class QuartzScheduledFuture: ScheduledFuture
     {
-        public QuartzScheduledFuture(string jobId)
+        public TriggerKey TriggerKey { get; }
+        public QuartzScheduledFuture(string jobId, TriggerKey triggerKey)
         {
             JobId = jobId;
+            TriggerKey = triggerKey;
         }
 
         public string JobId { get; set; }
