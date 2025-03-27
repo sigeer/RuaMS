@@ -286,8 +286,9 @@ public class TakeDamageHandler : AbstractPacketHandler
                     mploss = curmp;
                 }
 
-                chr.ChangeHP(-hploss);
+                chr.ChangeHP(-hploss, false);
                 chr.ChangeMP(-mploss);
+                chr.SendStats();
             }
             else if (mesoguard != null)
             {
@@ -302,8 +303,9 @@ public class TakeDamageHandler : AbstractPacketHandler
                 {
                     chr.gainMeso(-mesoloss, false);
                 }
-                chr.ChangeHP(-damage);
+                chr.ChangeHP(-damage, false);
                 chr.ChangeMP(-mpattack);
+                chr.SendStats();
             }
             else
             {
@@ -311,8 +313,9 @@ public class TakeDamageHandler : AbstractPacketHandler
                 {
                     chr.decreaseBattleshipHp(damage);
                 }
-                chr.ChangeHP(-damage);
+                chr.ChangeHP(-damage, false);
                 chr.ChangeMP(-mpattack);
+                chr.SendStats();
             }
         }
         if (!chr.isHidden())

@@ -115,6 +115,7 @@ namespace Application.Core.Game.Players
 
                     ChangeHP(healHP);
                     ChangeMP(healMP);
+                    SendStats();
                 }, healInterval, healInterval);
             }
             finally

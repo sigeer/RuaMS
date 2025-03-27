@@ -614,9 +614,6 @@ namespace Application.Core.Managers
                     ret.Storage = wserv.getAccountStorage(ret.AccountId);
 
                     ret.reapplyLocalStats();
-                    ret.SetHP(ret.HP);
-                    ret.SetMP(ret.MP);
-                    ret.SendStats();
                     //ret.resetBattleshipHp();
                 }
 

@@ -31,6 +31,7 @@ public class HpMpCommand : CommandBase
         {
             victim.SetHP(statUpdate);
             victim.SetMP(statUpdate);
+            victim.SendStats();
         }
         else
         {

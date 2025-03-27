@@ -24,8 +24,9 @@ public class MaxStatCommand : CommandBase
         player.setFame(NumericConfig.MaxFame);
         player.SetMaxHP(NumericConfig.MaxHP);
         player.SetMaxMP(NumericConfig.MaxMP);
-        player.updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
-        player.updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
+        player.SendStats();
+        //player.updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
+        //player.updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
         player.yellowMessage("Stats maxed out.");
     }
 }

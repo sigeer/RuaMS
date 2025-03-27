@@ -59,6 +59,7 @@ public class HealOvertimeHandler : AbstractPacketHandler
             }
 
             chr.ChangeHP(healHP);
+            chr.SendStats();
             chr.getMap().broadcastMessage(chr, PacketCreator.showHpHealed(chr.getId(), healHP), false);
             abm.spam(0, timestamp);
         }
@@ -72,6 +73,7 @@ public class HealOvertimeHandler : AbstractPacketHandler
                 return;     // thanks resinate for noticing mp being gained even after detection
             }
             chr.ChangeMP(healMP);
+            chr.SendStats();
             abm.spam(1, timestamp);
         }
     }

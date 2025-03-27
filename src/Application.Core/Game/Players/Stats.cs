@@ -1,5 +1,6 @@
 using client;
 using constants.game;
+using System.Numerics;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -262,6 +263,7 @@ namespace Application.Core.Game.Players
         {
             SetHP(NumericConfig.MaxHP);
             SetMP(NumericConfig.MaxHP);
+            SendStats();
         }
 
         public int safeAddHP(int delta)
@@ -276,6 +278,7 @@ namespace Application.Core.Game.Players
                 }
 
                 ChangeHP(delta);
+                SendStats();
                 return delta;
             }
             finally

@@ -608,6 +608,7 @@ public class AssignAPProcessor
 
                     player.assignHP(hplose, -1);
                     player.ChangeHP(hplose);
+                    player.SendStats();
 
                     break;
                 case 8192: // MP
@@ -638,6 +639,7 @@ public class AssignAPProcessor
 
                     player.assignMP(mplose, -1);
                     player.ChangeMP(mplose);
+                    player.SendStats();
                     break;
                 default:
                     c.sendPacket(PacketCreator.updatePlayerStats(PacketCreator.EMPTY_STATUPDATE, true, player));

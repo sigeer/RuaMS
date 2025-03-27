@@ -905,6 +905,7 @@ public class StatEffect
                         {
                             mob.setMp(mob.getMp() - absorbMp);
                             applyto.ChangeMP(absorbMp);
+                            applyto.SendStats();
                             applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
                             applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), false);
                         }

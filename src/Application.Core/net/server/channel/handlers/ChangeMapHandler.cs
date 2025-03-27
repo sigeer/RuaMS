@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Players;
 using Application.Core.Game.Trades;
 using client.inventory;
 using client.inventory.manipulator;
@@ -92,6 +93,7 @@ public class ChangeMapHandler : AbstractPacketHandler
                         chr.sendPacket(PacketCreator.showWheelsLeft(chr.getItemQuantity(ItemId.WHEEL_OF_FORTUNE, false)));
 
                         chr.SetHP(50);
+                        chr.SendStats();
                         chr.changeMap(map, map.findClosestPlayerSpawnpoint(chr.getPosition()));
                     }
                     else

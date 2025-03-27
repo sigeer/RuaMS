@@ -288,6 +288,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             Math.Min(monster.getMaxHp(),
                             Math.Min((int)(totDamage * (double)skillModel.getEffect(player.getSkillLevel(skillModel)).getX() / 100.0),
                             player.ActualMaxHP / 2)));
+                        player.SendStats();
                     }
                     else if (attack.skill == Bandit.STEAL)
                     {
@@ -434,6 +435,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     {
                         Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
                         player.ChangeHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
+                        player.SendStats();
                     }
                     else if (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3)
                     {
@@ -582,6 +584,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
                                 player.ChangeHP(-toUse.getX());
+                                player.SendStats();
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getX(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
                         }
@@ -594,6 +597,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
                                 player.ChangeHP(-toUse.getY());
+                                player.SendStats();
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getY(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
                         }

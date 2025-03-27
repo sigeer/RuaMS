@@ -122,6 +122,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
             int lose = chr.safeAddHP(-1 * (chr.ActualMaxHP / ef.getX()));
             int gain = -lose * (ef.getY() / 100);
             chr.ChangeMP(gain);
+            chr.SendStats();
         }
         else if (skillid == SuperGM.HEAL_PLUS_DISPEL)
         {

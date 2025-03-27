@@ -1637,6 +1637,7 @@ public partial class Player
 
             ChangeHP(healHP);
             ChangeMP(healMP);
+            SendStats();
 
         }, healInterval, healInterval);
     }
@@ -1734,7 +1735,8 @@ public partial class Player
     {
         if (!(this.getInventory(InventoryType.EQUIPPED).findById(MapModel.getHPDecProtect()) != null || buffMapProtection()))
         {
-            ChangeHP(-MapModel.getHPDec());
+            ChangeHP(-MapModel.getHPDec(), false);
+            SendStats();
         }
     }
 
@@ -3911,7 +3913,7 @@ public partial class Player
         {
             SetHP(NumericConfig.MinHp);
         }
-
+        SendStats();
         setStance(0);
     }
 
@@ -4499,6 +4501,7 @@ public partial class Player
 
             SetHP(nextHp);
             SetMP(nextMp);
+            SendStats();
         }
         finally
         {

@@ -142,11 +142,14 @@ namespace Application.Core.Game.Players
 
             ActualMaxHP = (int)(MaxHP + BuffMaxHP + EquipMaxHP);
             ActualMaxMP = (int)(MaxMP + EquipMaxMP + BuffMaxMP);
+            SetHP(HP);
+            SetMP(MP);
         }
 
         public void KilledBy(ILife killer)
         {
             SetHP(0);
+            SendStats();
         }
     }
 }
