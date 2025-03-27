@@ -20,7 +20,6 @@
 
 
 using Application.Core.Game.Maps;
-using Application.Core.scripting.Event;
 using constants.game;
 using constants.id;
 using server.expeditions;

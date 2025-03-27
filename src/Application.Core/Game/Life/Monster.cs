@@ -26,9 +26,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.scripting.Event;
 using Application.Shared.WzEntity;
-using Application.Utility;
 using client;
 using client.status;
 using constants.id;
@@ -2528,7 +2526,7 @@ public class Monster : AbstractLifeObject
         {
             this.setControllerHasAggro(true);
             if (!YamlConfig.config.server.USE_AUTOAGGRO_NEARBY)
-            {   
+            {
                 // thanks Lichtmager for noticing autoaggro not updating the player properly
                 aggroMonsterControl(player.getClient(), this, true);
             }
@@ -2600,7 +2598,7 @@ public class Monster : AbstractLifeObject
 
         var c = chrController.getClient();
         foreach (Monster mob in puppetControlled)
-        { 
+        {
             // thanks BHB for noticing puppets disrupting mobstatuses for bowmans
             aggroMonsterControl(c, mob, mob.isControllerKnowsAboutAggro());
         }

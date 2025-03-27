@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Maps;
-using Application.Core.scripting.Event;
 using client.inventory;
 using net.packet;
 using net.server.services.task.channel;
@@ -35,7 +34,7 @@ namespace server.maps;
 
 
 /// <summary>
-/// Ïä×ÓÖ®ÀàµÄµØÍ¼ÉÏ¿É¹¥»÷µÄ¶ÔÏó£¿
+/// ç®±å­ä¹‹ç±»çš„åœ°å›¾ä¸Šå¯æ”»å‡»çš„å¯¹è±¡ï¼Ÿ
 /// @author Lerk
 /// @author Ronan
 /// </summary>
@@ -399,7 +398,7 @@ public class Reactor : AbstractMapObject
     }
 
     /// <summary>
-    /// Ö»ÒªÏä×ÓÄÜÖØÉú£¬¾Í²»»á´ÓµØÍ¼ÉÏÒÆ³ı£¬Ö»ÊÇ¿´²»¼û
+    /// åªè¦ç®±å­èƒ½é‡ç”Ÿï¼Œå°±ä¸ä¼šä»åœ°å›¾ä¸Šç§»é™¤ï¼Œåªæ˜¯çœ‹ä¸è§
     /// </summary>
     /// <returns></returns>
     public bool destroy()

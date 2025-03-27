@@ -1,5 +1,4 @@
 using Application.Core.Game.Packets;
-using Application.Core.scripting.Event;
 using client;
 using constants.id;
 using net.server;

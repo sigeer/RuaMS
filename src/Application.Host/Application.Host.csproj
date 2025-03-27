@@ -14,7 +14,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.13.1" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.0.11" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
 		  <PrivateAssets>all</PrivateAssets>

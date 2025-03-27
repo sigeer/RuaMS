@@ -1,5 +1,4 @@
 using Application.Core.EF.Entities;
-using Application.Core.scripting.Event;
 using System.Collections.Concurrent;
 
 namespace server;

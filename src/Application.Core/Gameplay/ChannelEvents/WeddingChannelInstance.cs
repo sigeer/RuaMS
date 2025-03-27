@@ -1,7 +1,6 @@
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
-using Application.Core.scripting.Event;
 using server;
 using System.Text;
 
