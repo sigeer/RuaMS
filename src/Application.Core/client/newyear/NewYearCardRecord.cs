@@ -19,7 +19,6 @@
 */
 
 
-using Application.Core.scripting.Event;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using server;

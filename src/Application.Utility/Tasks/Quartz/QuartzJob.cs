@@ -1,9 +1,9 @@
-﻿using Application.Core.constants;
 using Quartz;
+using Serilog;
 
-namespace Application.Core.scripting.Event.jobs
+namespace Application.Utility.Tasks
 {
-    public class AbstractRunnableJob : IJob
+    public class QuartzJob : IJob
     {
         public Task Execute(IJobExecutionContext context)
         {
@@ -13,6 +13,7 @@ namespace Application.Core.scripting.Event.jobs
                 r.run();
             else
                 Log.Logger.Error($"TaskJob Invalid, {(type == null ? "null" : type.GetType().Name)}");
+
             return Task.CompletedTask;
         }
     }

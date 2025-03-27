@@ -1,4 +1,4 @@
-namespace Application.Core.Loggers
+namespace Application.Utility.Loggers
 {
     public class LogType
     {

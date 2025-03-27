@@ -26,8 +26,6 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using Application.Core.scripting.Event;
-using client;
 using constants.inventory;
 using net.server.coordinator.world;
 using scripting.Event.scheduler;

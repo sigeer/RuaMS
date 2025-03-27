@@ -1,7 +1,8 @@
-using server;
+using Application.Utility.Loggers;
+using Serilog;
 using System.Diagnostics;
 
-namespace Application.Core.Addon
+namespace Application.Utility.Tasks
 {
     /// <summary>
     /// 具名任务
@@ -34,7 +35,6 @@ namespace Application.Core.Addon
         public string Name { get; set; }
     }
 
-
     public class EmptyRunnable : AbstractRunnable
     {
     }
@@ -42,7 +42,7 @@ namespace Application.Core.Addon
     public class TempRunnable : AbstractRunnable
     {
         private Action _action;
-        private static string[] Special = [nameof(TimerManager.register), nameof(TimerManager.schedule), nameof(TimerManager.scheduleAtTimestamp)];
+        private static string[] Special = [nameof(ITimerManager.register), nameof(ITimerManager.schedule), nameof(ITimerManager.scheduleAtTimestamp)];
         private TempRunnable(string name, Action action) : base(name)
         {
             _action = action;

@@ -23,7 +23,6 @@
 
 
 using Application.Core.Game.Relation;
-using Application.Core.scripting.Event;
 using constants.id;
 using tools;
 

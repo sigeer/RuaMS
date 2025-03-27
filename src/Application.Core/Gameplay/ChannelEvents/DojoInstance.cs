@@ -1,13 +1,12 @@
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
-using Application.Core.scripting.Event;
 using constants.id;
 using net.server;
 using server;
 
 namespace Application.Core.Gameplay.ChannelEvents
 {
-    public class DojoInstance: IAsyncDisposable
+    public class DojoInstance : IAsyncDisposable
     {
         IWorldChannel Channel { get; }
         private int usedDojo = 0;

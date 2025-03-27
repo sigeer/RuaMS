@@ -19,10 +19,7 @@
  */
 
 
-using Application.Core.scripting.Event;
 using net.server;
-using server;
-using System.Threading;
 
 namespace scripting.Event.scheduler;
 /**

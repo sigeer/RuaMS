@@ -3,6 +3,7 @@ using Application.Core.Game;
 using Application.Core.Game.Players;
 using Application.Core.Managers;
 using Application.EF;
+using Application.Utility.Tasks;
 using constants.id;
 using net.server;
 using server;
@@ -19,7 +20,7 @@ namespace ServiceTest
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             GlobalTools.Encoding = Encoding.GetEncoding("GBK");
 
-            TimerManager.Initialize().Wait();
+            TimerManager.InitializeAsync(TaskEngine.Task).Wait();
 
             LoadTestWorld();
         }

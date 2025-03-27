@@ -19,7 +19,6 @@
 */
 
 
-using Application.Core.scripting.Event;
 using tools;
 
 namespace server.maps;

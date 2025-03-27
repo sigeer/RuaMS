@@ -8,8 +8,6 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
-using Application.Core.scripting.Event;
-using Application.Shared.Objects;
 using client;
 using client.autoban;
 using client.creator;

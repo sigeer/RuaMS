@@ -1,4 +1,4 @@
-﻿namespace Application.Core.constants
+namespace Application.Utility.Tasks
 {
     public class JobDataKeys
     {

@@ -33,8 +33,6 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
-using Application.Core.scripting.Event;
-using Application.Shared.Constants;
 using Application.Shared.KeyMaps;
 using client;
 using client.autoban;
@@ -49,7 +47,6 @@ using constants.inventory;
 using constants.skills;
 using Jint.Runtime;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using net.packet;
 using net.server;
 using net.server.coordinator.world;
@@ -2952,7 +2949,7 @@ public partial class Player
         Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
         StatEffect ceffect;
         ceffect = energycharge.getEffect(getSkillLevel(energycharge));
-        TimerManager tMan = TimerManager.getInstance();
+        var tMan = TimerManager.getInstance();
         if (energybar < 10000)
         {
             energybar += 102;

@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Host.Controllers
 {
+#if !DEBUG
     [Authorize]
+#endif
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class ServerController : ControllerBase

@@ -29,9 +29,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
-using Application.Core.scripting.Event;
 using Application.Shared.WzEntity;
-using Application.Utility;
 using client;
 using client.autoban;
 using client.inventory;
@@ -50,7 +48,6 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
-using System.Collections.ObjectModel;
 using System.Text;
 using tools;
 
@@ -2385,7 +2382,7 @@ public class MapleMap : IMap
     {
         addMapObject(mist);
         broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
-        TimerManager tMan = TimerManager.getInstance();
+        var tMan = TimerManager.getInstance();
         ScheduledFuture? poisonSchedule;
         if (poison)
         {

@@ -1,6 +1,5 @@
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
-using Application.Core.scripting.Event;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
 using net.server;
