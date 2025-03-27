@@ -1016,7 +1016,7 @@ public class StatEffect
                 }
                 else
                 {
-                    target = applyto.getClient().getWorldServer().getChannel(applyto.getClient().getChannel()).getMapFactory().getMap(moveTo);
+                    target = applyto.getChannelServer().getMapFactory().getMap(moveTo);
                     int targetid = target.getId() / 10000000;
                     if (targetid != 60
                         && applyto.getMapId() / 10000000 != 61
@@ -1773,6 +1773,10 @@ public class StatEffect
         return sourceid == Cleric.HEAL || sourceid == SuperGM.HEAL_PLUS_DISPEL;
     }
 
+    /// <summary>
+    /// 复活术
+    /// </summary>
+    /// <returns></returns>
     private bool isResurrection()
     {
         return sourceid == Bishop.RESURRECTION || sourceid == GM.RESURRECTION || sourceid == SuperGM.RESURRECTION;

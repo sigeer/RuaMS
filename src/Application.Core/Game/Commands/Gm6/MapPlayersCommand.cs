@@ -20,7 +20,7 @@ public class MapPlayersCommand : CommandBase
             {
                 int curMap = chr.getMapId();
                 string hp = chr.HP.ToString();
-                string maxhp = chr.MaxHP.ToString();
+                string maxhp = chr.ActualMaxHP.ToString();
                 string name = chr.getName() + ": " + hp + "/" + maxhp;
                 if (map == curMap)
                 {

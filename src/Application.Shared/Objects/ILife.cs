@@ -32,8 +32,8 @@ namespace Application.Shared.Objects
         /// </summary>
         /// <param name="deltaValue"></param>
         /// <returns></returns>
-        bool ChangeHP(int deltaValue);
-        bool ChangeMP(int deltaValue);
+        bool ChangeHP(int deltaValue, bool useCheck = true);
+        bool ChangeMP(int deltaValue, bool useCheck = true);
         void SetHP(int value);
         void SetMP(int value);
         void SetMaxHP(int value);

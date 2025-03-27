@@ -57,19 +57,19 @@ namespace Application.Core.Game.Players
             statUpdates[Stat.MAXMP] = MaxMP;
             SetMP(MP);
         }
-        public bool ChangeHP(int deltaValue)
+        public bool ChangeHP(int deltaValue, bool useCheck = true)
         {
             var targetValue = HP + deltaValue;
-            if (targetValue < 0)
+            if (useCheck && targetValue < 0)
                 return false;
 
             SetHP(targetValue);
             return true;
         }
-        public bool ChangeMP(int deltaValue)
+        public bool ChangeMP(int deltaValue, bool useCheck = true)
         {
             var targetValue = MP + deltaValue;
-            if (targetValue < 0)
+            if (useCheck && targetValue < 0)
                 return false;
 
             SetMP(targetValue);
@@ -78,6 +78,9 @@ namespace Application.Core.Game.Players
 
         public void SetHP(int value)
         {
+            if (value == HP)
+                return;
+
             if (value < 0)
                 value = 0;
             if (value > ActualMaxHP)
@@ -88,11 +91,12 @@ namespace Application.Core.Game.Players
 
             if (MapModel != null)
             {
+                var died = HP <= 0;
                 MapModel.registerCharacterStatUpdate(() =>
                 {
                     updatePartyMemberHP();    // thanks BHB (BHB88) for detecting a deadlock case within player stats.
 
-                    if (HP <= 0)
+                    if (died)
                     {
                         playerDead();
                     }

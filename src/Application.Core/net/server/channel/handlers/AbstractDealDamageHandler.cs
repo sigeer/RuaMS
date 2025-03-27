@@ -283,6 +283,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         || attack.skill == Assassin.DRAIN)
                     {
                         var skillModel = SkillFactory.GetSkillTrust(attack.skill);
+                        // 按造成伤害的百分比恢复HP，最大不超过Monster血量上限，自身血量上限的50%
                         player.ChangeHP(
                             Math.Min(monster.getMaxHp(),
                             Math.Min((int)(totDamage * (double)skillModel.getEffect(player.getSkillLevel(skillModel)).getX() / 100.0),

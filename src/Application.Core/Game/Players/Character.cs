@@ -1368,7 +1368,7 @@ public partial class Player
             int skilllevel = getSkillLevel(BerserkX);
             if (skilllevel > 0)
             {
-                berserk = this.HP * 100 / this.MaxHP < BerserkX.getEffect(skilllevel).getX();
+                berserk = (this.HP * 100 / this.ActualMaxHP) < BerserkX.getEffect(skilllevel).getX();
                 berserkSchedule = TimerManager.getInstance().register(() =>
                 {
                     if (awayFromWorld.Get())
@@ -4468,7 +4468,13 @@ public partial class Player
         this.Hair = hair;
     }
 
-
+    /// <summary>
+    /// 使用药品、技能带来的（血条蓝条）变化
+    /// </summary>
+    /// <param name="hpCon"></param>
+    /// <param name="hpchange"></param>
+    /// <param name="mpchange"></param>
+    /// <returns></returns>
     public bool applyHpMpChange(int hpCon, int hpchange, int mpchange)
     {
         bool zombify = hasDisease(Disease.ZOMBIFY);
@@ -4506,7 +4512,7 @@ public partial class Player
         // autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
         if (hpchange < 0)
         {
-            KeyBinding? autohpPot = this.KeyMap.GetData((int)KeyCode.VirtualAutoPotionHP);
+            KeyBinding? autohpPot = this.KeyMap.GetData(KeyCode.VirtualAutoPotionHP);
             if (autohpPot != null)
             {
                 int autohpItemid = autohpPot.getAction();
@@ -4525,7 +4531,7 @@ public partial class Player
 
         if (mpchange < 0)
         {
-            KeyBinding? autompPot = this.KeyMap.GetData((int)KeyCode.VirtualAutoPotionMP);
+            KeyBinding? autompPot = this.KeyMap.GetData(KeyCode.VirtualAutoPotionMP);
             if (autompPot != null)
             {
                 int autompItemid = autompPot.getAction();
