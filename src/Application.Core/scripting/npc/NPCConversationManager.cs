@@ -758,7 +758,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                     mc.setChallenged(false);
                     mc.changeMap(map, map.getPortal(0));
                     mc.sendPacket(PacketCreator.serverNotice(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntryLobby)));
-                    TimerManager tMan = TimerManager.getInstance();
+                    var tMan = TimerManager.getInstance();
                     tMan.schedule(() => mapClock(3 * 60), 1500);
 
                     mc.setCpqTimer(TimerManager.getInstance().schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));
@@ -872,7 +872,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 }
             }
             int mapid = getPlayer().getMapId() + 1;
-            TimerManager tMan = TimerManager.getInstance();
+            var tMan = TimerManager.getInstance();
             tMan.schedule(() =>
             {
                 ITeam lobbyParty = getPlayer().getParty()!, challengerParty = challenger.getParty()!;
@@ -934,7 +934,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 }
             }
             int mapid = getPlayer().getMapId() + 100;
-            TimerManager tMan = TimerManager.getInstance();
+            var tMan = TimerManager.getInstance();
             tMan.schedule(() =>
             {
                 var lobbyParty = getPlayer().getParty()!;
@@ -1059,7 +1059,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                     mc.setChallenged(false);
                     mc.changeMap(map, map.getPortal(0));
                     mc.sendPacket(PacketCreator.serverNotice(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntryLobby)));
-                    TimerManager tMan = TimerManager.getInstance();
+                    var tMan = TimerManager.getInstance();
                     tMan.schedule(() => mapClock(3 * 60), 1500);
 
                     mc.setCpqTimer(TimerManager.getInstance().schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));

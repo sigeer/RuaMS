@@ -4,9 +4,6 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
 using Application.Core.Managers;
-using Application.Core.model;
-using Application.Core.scripting.Event;
-using Application.Utility;
 using client;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
@@ -23,9 +20,7 @@ using net.server.task;
 using net.server.world;
 using server;
 using server.maps;
-using System.Collections.Concurrent;
 using tools;
-using tools.packets;
 using static Application.Core.Game.Relation.BuddyList;
 
 namespace Application.Core.Game.TheWorld;
@@ -185,22 +180,22 @@ public class World : IWorld
         this.FishingRate = config.FishingRate;
         MobRate = config.MobRate;
 
-        TimerManager tman = TimerManager.getInstance();
+        var tman = TimerManager.getInstance();
         petsSchedule = tman.register(new PetFullnessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         srvMessagesSchedule = tman.register(new ServerMessageTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         mountsSchedule = tman.register(new MountTirednessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         merchantSchedule = tman.register(new HiredMerchantTask(this), TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
         timedMapObjectsSchedule = tman.register(new TimedMapObjectTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
-        marriagesSchedule = tman.register(new WeddingReservationTask(this), 
-            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL), 
+        marriagesSchedule = tman.register(new WeddingReservationTask(this),
+            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
         mapOwnershipSchedule = tman.register(new MapOwnershipTask(this), TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
         fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         partySearchSchedule = tman.register(new PartySearchTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        hpDecSchedule = tman.register(new CharacterHpDecreaseTask(this), 
-            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL, 
+        hpDecSchedule = tman.register(new CharacterHpDecreaseTask(this),
+            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL,
             YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
 
         WeddingInstance = new WeddingWorldInstance(this);
@@ -1985,7 +1980,6 @@ public class World : IWorld
             await hpDecSchedule.CancelAsync(false);
             hpDecSchedule = null;
         }
-        await SchedulerManage.Scheduler.Clear();
 
         Players.disconnectAll();
 

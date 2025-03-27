@@ -20,7 +20,6 @@
 
 
 using Application.Core.Game.Life;
-using Application.Core.scripting.Event;
 using server;
 
 namespace net.server.coordinator.world;

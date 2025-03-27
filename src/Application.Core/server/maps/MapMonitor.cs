@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Maps;
-using Application.Core.scripting.Event;
 
 namespace server.maps;
 

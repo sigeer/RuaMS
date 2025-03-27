@@ -1,7 +1,8 @@
 using Application.Utility;
+using Serilog;
 using System.Collections.Concurrent;
 
-namespace Application.Core.Loggers
+namespace Application.Utility.Loggers
 {
     public class CategoryLogger
     {

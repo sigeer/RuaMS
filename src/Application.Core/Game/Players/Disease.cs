@@ -1,4 +1,3 @@
-﻿using Application.Core.scripting.Event;
 using client;
 using constants.skills;
 using net.server;

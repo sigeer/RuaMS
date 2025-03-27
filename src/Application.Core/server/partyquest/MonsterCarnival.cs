@@ -3,7 +3,6 @@
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Relation;
-using Application.Core.scripting.Event;
 using constants.String;
 using tools;
 

@@ -1,4 +1,3 @@
-using Application.Core.scripting.Event;
 using client;
 using client.inventory;
 using client.inventory.manipulator;

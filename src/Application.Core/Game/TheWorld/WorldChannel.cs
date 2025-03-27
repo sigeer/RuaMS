@@ -168,7 +168,6 @@ public class WorldChannel : IWorldChannel
     private async Task closeChannelSchedules()
     {
         await DojoInstance.DisposeAsync();
-        await SchedulerManage.Scheduler.Clear();
 
         closeChannelServices();
     }

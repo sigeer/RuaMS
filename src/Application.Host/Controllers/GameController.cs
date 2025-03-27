@@ -99,5 +99,15 @@ namespace Application.Host.Controllers
         {
             return _channelService.GetTravelSchedule();
         }
+
+        /// <summary>
+        /// 后台任务列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public List<string> GetTaskList()
+        {
+            return TaskService.GetTaskList();
+        }
     }
 }

@@ -1,10 +1,10 @@
-﻿using Quartz;
+using Quartz;
 
-namespace Application.Core.scripting.Event
+namespace Application.Utility.Tasks
 {
-    public class ScheduledFuture
+    public class QuartzScheduledFuture: ScheduledFuture
     {
-        public ScheduledFuture(string jobId)
+        public QuartzScheduledFuture(string jobId)
         {
             JobId = jobId;
         }
@@ -14,9 +14,9 @@ namespace Application.Core.scripting.Event
         {
             var jobKey = JobKey.Create(JobId);
             if (immediately)
-                await SchedulerManage.Scheduler.Interrupt(jobKey);
+                await QuartzSchedulerManager.Scheduler.Interrupt(jobKey);
 
-            return await SchedulerManage.Scheduler.DeleteJob(jobKey);
+            return await QuartzSchedulerManager.Scheduler.DeleteJob(jobKey);
         }
 
         public bool cancel(bool immediately)

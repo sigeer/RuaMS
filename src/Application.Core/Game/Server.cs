@@ -615,7 +615,7 @@ public class Server
             applyAllWorldTransfers(dbContext);
             PlayerNPC.loadRunningRankData(dbContext);
 
-            _ = initializeTimelyTasks(channelDependencies);    // aggregated method for timely tasks thanks to lxconan
+            var startTimelyTask = initializeTimelyTasks(channelDependencies);    // aggregated method for timely tasks thanks to lxconan
 
             var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
             foreach (var worldConfig in worlds)
@@ -639,6 +639,8 @@ public class Server
 
             totalSw.Stop();
             log.Information("游戏服务器启动完成，耗时 {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
+
+            await startTimelyTask;
         }
         catch (Exception ex)
         {
@@ -681,10 +683,10 @@ public class Server
 
     private async Task initializeTimelyTasks(ChannelDependencies channelDependencies)
     {
-        await TimerManager.Initialize();
-        TimerManager tMan = TimerManager.getInstance();
-        await tMan.start();
-        tMan.register(tMan.purge, YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
+        await TimerManager.InitializeAsync(TaskEngine.Quartz);
+        var tMan = TimerManager.getInstance();
+        await tMan.Start();
+        tMan.register(TimerManager.purge, YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
         disconnectIdlesOnLoginTask();
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
@@ -1229,6 +1231,12 @@ public class Server
     //synchronized
     public async Task Stop(bool restart, bool force = false)
     {
+        if (!IsOnline)
+        {
+            log.Warning("不能停止未启动的服务");
+            return;
+        }
+
         log.Information("{0} the server!", restart ? "Restarting" : "Shutting down");
         var runningWorlds = getWorlds();
         if (runningWorlds.Count == 0)
@@ -1243,7 +1251,6 @@ public class Server
         resetServerWorlds();
 
         ThreadManager.getInstance().stop();
-        TimerManager.getInstance().purge();
         await TimerManager.getInstance().Stop();
 
         await loginServer.Stop();
