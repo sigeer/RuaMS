@@ -38,8 +38,6 @@ namespace Application.Shared.Objects
         bool ChangeMP(int deltaValue, bool useCheck = true);
         void SetHP(int value);
         void SetMP(int value);
-        void SetMaxHP(int value);
-        void SetMaxMP(int value);
         void KilledBy(ILife killer);
     }
 }

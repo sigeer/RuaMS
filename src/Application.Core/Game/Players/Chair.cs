@@ -113,9 +113,11 @@ namespace Application.Core.Game.Players
                         MapModel.broadcastMessage(this, PacketCreator.showRecovery(Id, recHP), false);
                     }
 
-                    ChangeHP(healHP);
-                    ChangeMP(healMP);
-                    SendStats();
+                    UpdateStatsChunk(() =>
+                    {
+                        ChangeHP(healHP);
+                        ChangeMP(healMP);
+                    });
                 }, healInterval, healInterval);
             }
             finally

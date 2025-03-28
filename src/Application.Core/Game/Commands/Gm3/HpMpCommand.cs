@@ -29,9 +29,11 @@ public class HpMpCommand : CommandBase
 
         if (victim != null && victim.IsOnlined)
         {
-            victim.SetHP(statUpdate);
-            victim.SetMP(statUpdate);
-            victim.SendStats();
+            victim.UpdateStatsChunk(() =>
+            {
+                victim.SetHP(statUpdate);
+                victim.SetMP(statUpdate);
+            });
         }
         else
         {

@@ -24,8 +24,9 @@ namespace ServiceTest.Games
         public void UseHyperBody()
         {
             var client = GetOnlinedTestClient();
-            client.OnlinedCharacter.healHpMp();
             PrintHP("初始", client.OnlinedCharacter);
+            client.OnlinedCharacter.healHpMp();
+            PrintHP("healHpMp", client.OnlinedCharacter);
             var oldMaxHp = client.OnlinedCharacter.ActualMaxHP;
             Assert.That(client.OnlinedCharacter.HP, Is.EqualTo(client.OnlinedCharacter.ActualMaxHP));
             SkillFactory.GetSkillTrust(Spearman.HYPER_BODY).getEffect(30).applyTo(client.OnlinedCharacter);

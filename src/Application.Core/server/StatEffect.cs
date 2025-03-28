@@ -904,8 +904,11 @@ public class StatEffect
                         if (absorbMp > 0)
                         {
                             mob.setMp(mob.getMp() - absorbMp);
-                            applyto.ChangeMP(absorbMp);
-                            applyto.SendStats();
+                            applyto.UpdateStatsChunk(() =>
+                            {
+                                applyto.ChangeMP(absorbMp);
+                            });
+                            
                             applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
                             applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), false);
                         }

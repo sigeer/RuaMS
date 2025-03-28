@@ -1057,7 +1057,7 @@ public class PacketCreator
     /// <param name="enableActions">Allows actions after the update.</param>
     /// <param name="chr">The update target.</param>
     /// <returns>The stat update packet.</returns>
-    public static Packet updatePlayerStats(List<KeyValuePair<Stat, int>> stats, bool enableActions, IPlayer? chr)
+    public static Packet updatePlayerStats(ICollection<KeyValuePair<Stat, int>> stats, bool enableActions, IPlayer? chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.STAT_CHANGED);
         p.writeBool(enableActions);

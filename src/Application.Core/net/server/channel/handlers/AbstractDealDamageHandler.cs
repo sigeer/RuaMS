@@ -37,6 +37,7 @@ using scripting;
 using server;
 using server.life;
 using tools;
+using static server.partyquest.CarnivalFactory;
 
 namespace net.server.channel.handlers;
 
@@ -283,12 +284,14 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         || attack.skill == Assassin.DRAIN)
                     {
                         var skillModel = SkillFactory.GetSkillTrust(attack.skill);
-                        // 按造成伤害的百分比恢复HP，最大不超过Monster血量上限，自身血量上限的50%
-                        player.ChangeHP(
-                            Math.Min(monster.getMaxHp(),
-                            Math.Min((int)(totDamage * (double)skillModel.getEffect(player.getSkillLevel(skillModel)).getX() / 100.0),
-                            player.ActualMaxHP / 2)));
-                        player.SendStats();
+                        player.UpdateStatsChunk(() =>
+                        {
+                            // 按造成伤害的百分比恢复HP，最大不超过Monster血量上限，自身血量上限的50%
+                            player.ChangeHP(
+                                Math.Min(monster.getMaxHp(),
+                                Math.Min((int)(totDamage * (double)skillModel.getEffect(player.getSkillLevel(skillModel)).getX() / 100.0),
+                                player.ActualMaxHP / 2)));
+                        });
                     }
                     else if (attack.skill == Bandit.STEAL)
                     {
@@ -434,8 +437,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     else if (player.getBuffedValue(BuffStat.COMBO_DRAIN) != null)
                     {
                         Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
-                        player.ChangeHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
-                        player.SendStats();
+                        player.UpdateStatsChunk(() =>
+                        {
+                            player.ChangeHP(((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100));
+                        });
                     }
                     else if (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3)
                     {
@@ -583,8 +588,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.ChangeHP(-toUse.getX(), false);
-                                player.SendStats();
+                                player.UpdateStatsChunk(() =>
+                                {
+                                    player.ChangeHP(-toUse.getX(), false);
+                                });
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getX(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
                         }
@@ -596,8 +603,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.ChangeHP(-toUse.getY(), false);
-                                player.SendStats();
+                                player.UpdateStatsChunk(() =>
+                                {
+                                    player.ChangeHP(-toUse.getY(), false);
+                                });
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getY(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
                         }

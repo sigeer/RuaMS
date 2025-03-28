@@ -261,13 +261,16 @@ namespace Application.Core.Game.Players
 
         public void healHpMp()
         {
-            SetHP(NumericConfig.MaxHP);
-            SetMP(NumericConfig.MaxHP);
-            SendStats();
+            UpdateStatsChunk(() =>
+            {
+                SetHP(NumericConfig.MaxHP);
+                SetMP(NumericConfig.MaxMP);
+            });
         }
 
         public int safeAddHP(int delta)
         {
+
             Monitor.Enter(effLock);
             statLock.EnterWriteLock();
             try
@@ -277,8 +280,10 @@ namespace Application.Core.Game.Players
                     delta = -HP + 1;
                 }
 
-                ChangeHP(delta);
-                SendStats();
+                UpdateStatsChunk(() =>
+                {
+                    ChangeHP(delta);
+                });
                 return delta;
             }
             finally
@@ -525,12 +530,77 @@ namespace Application.Core.Game.Players
 
         public void SendStats()
         {
-            sendPacket(PacketCreator.updatePlayerStats(statUpdates.ToList(), true, this));
+            sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
         }
 
         public void PrintStatsUpdated()
         {
             Console.WriteLine(string.Join(Environment.NewLine, statUpdates.Select(x => $"<{x.Key}>=<{x.Value}>")));
+        }
+
+        public void UpdateStatsChunk(Action action)
+        {
+            Monitor.Enter(effLock);
+            statLock.EnterWriteLock();
+            try
+            {
+                statUpdates.Clear();
+
+                action();
+
+                if (statUpdates.Count > 0)
+                {
+                    sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
+                }
+            }
+            finally
+            {
+                Monitor.Exit(effLock);
+                statLock.ExitWriteLock();
+            }
+        }
+
+        public TOut UpdateStatsChunk<TOut>(Func<TOut> action)
+        {
+            Monitor.Enter(effLock);
+            statLock.EnterWriteLock();
+            try
+            {
+                statUpdates.Clear();
+
+                return action();
+            }
+            finally
+            {
+                if (statUpdates.Count > 0)
+                {
+                    sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
+                }
+
+                Monitor.Exit(effLock);
+                statLock.ExitWriteLock();
+            }
+        }
+
+        public void MaxStat()
+        {
+            loseExp(getExp(), false, false);
+            setLevel(NumericConfig.MaxLevel);
+            resetPlayerRates();
+            if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL)
+            {
+                setPlayerRates();
+            }
+            setWorldRates();
+            updateStrDexIntLuk(NumericConfig.MaxStat);
+            setFame(NumericConfig.MaxFame);
+            UpdateStatsChunk(() =>
+            {
+                SetMaxHP(NumericConfig.MaxHP);
+                SetMaxMP(NumericConfig.MaxMP);
+            });
+            updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
+            updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Application.Core.Game.Players
             SetMaxMP(targetValue);
         }
 
-        public void SetMaxHP(int value)
+        private void SetMaxHP(int value)
         {
             if (value < NumericConfig.MinHp)
                 value = NumericConfig.MinHp;
@@ -44,7 +44,7 @@ namespace Application.Core.Game.Players
             MaxHP = value;
         }
 
-        public void SetMaxMP(int value)
+        private void SetMaxMP(int value)
         {
             if (value < NumericConfig.MinMP)
                 value = NumericConfig.MinMP;
@@ -56,7 +56,7 @@ namespace Application.Core.Game.Players
         public bool ChangeHP(int deltaValue, bool useCheck = true)
         {
             var targetValue = HP + deltaValue;
-            if (useCheck && targetValue < 0)
+            if (useCheck && targetValue <= 0)
                 return false;
 
             SetHP(targetValue);
@@ -83,7 +83,7 @@ namespace Application.Core.Game.Players
                 value = ActualMaxHP;
 
             HP = value;
-            statUpdates.AddOrUpdate(Stat.HP, HP);
+            statUpdates[Stat.HP] = HP;
 
             if (MapModel != null)
             {
@@ -106,12 +106,16 @@ namespace Application.Core.Game.Players
 
         public void SetMP(int value)
         {
+            if (value == MP)
+                return;
+
             if (value < 0)
                 value = 0;
             if (value > ActualMaxMP)
                 value = ActualMaxMP;
+
             MP = value;
-            statUpdates.AddOrUpdate(Stat.MP, MP);
+            statUpdates[Stat.MP] = MP;
         }
 
         private void RefreshByBuff()
@@ -139,18 +143,31 @@ namespace Application.Core.Game.Players
 
         public void RecalculateMaxHPMP()
         {
-            ActualMaxHP = (int)(MaxHP + BuffMaxHP + EquipMaxHP);
-            ActualMaxMP = (int)(MaxMP + EquipMaxMP + BuffMaxMP);
-            statUpdates[Stat.MAXHP] = ActualMaxHP;
-            statUpdates[Stat.MAXMP] = ActualMaxMP;
-            SetHP(HP);
-            SetMP(MP);
+            var newMaxHp = (int)(MaxHP + BuffMaxHP + EquipMaxHP);
+            if (newMaxHp != ActualMaxHP)
+            {
+                ActualMaxHP = newMaxHp;
+                statUpdates[Stat.MAXHP] = ActualMaxHP;
+
+                SetHP(HP);
+            }
+
+            var newMaxMp = (int)(MaxMP + EquipMaxMP + BuffMaxMP);
+            if (newMaxMp != ActualMaxMP)
+            {
+                ActualMaxMP = newMaxMp;
+                statUpdates[Stat.MAXMP] = ActualMaxMP;
+
+                SetMP(MP);
+            }
         }
 
         public void KilledBy(ILife killer)
         {
-            SetHP(0);
-            SendStats();
+            UpdateStatsChunk(() =>
+            {
+                SetHP(0);
+            });
         }
     }
 }

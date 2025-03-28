@@ -1635,9 +1635,11 @@ public partial class Player
                 }
             }
 
-            ChangeHP(healHP);
-            ChangeMP(healMP);
-            SendStats();
+            UpdateStatsChunk(() =>
+            {
+                ChangeHP(healHP);
+                ChangeMP(healMP);
+            });
 
         }, healInterval, healInterval);
     }
@@ -1735,8 +1737,10 @@ public partial class Player
     {
         if (!(this.getInventory(InventoryType.EQUIPPED).findById(MapModel.getHPDecProtect()) != null || buffMapProtection()))
         {
-            ChangeHP(-MapModel.getHPDec(), false);
-            SendStats();
+            UpdateStatsChunk(() =>
+            {
+                ChangeHP(-MapModel.getHPDec(), false);
+            });
         }
     }
 
@@ -3903,17 +3907,19 @@ public partial class Player
 
         cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town
 
-        if (usedSafetyCharm)
+        UpdateStatsChunk(() =>
         {
-            // thanks kvmba for noticing safety charm not providing 30% HP/MP
-            SetHP((int)Math.Ceiling(this.ActualMaxHP * 0.3));
-            SetMP((int)Math.Ceiling(this.ActualMaxMP * 0.3));
-        }
-        else
-        {
-            SetHP(NumericConfig.MinHp);
-        }
-        SendStats();
+            if (usedSafetyCharm)
+            {
+                // thanks kvmba for noticing safety charm not providing 30% HP/MP
+                SetHP((int)Math.Ceiling(this.ActualMaxHP * 0.3));
+                SetMP((int)Math.Ceiling(this.ActualMaxMP * 0.3));
+            }
+            else
+            {
+                SetHP(NumericConfig.MinHp);
+            }
+        });
         setStance(0);
     }
 
@@ -4503,9 +4509,11 @@ public partial class Player
                 }
             }
 
-            SetHP(nextHp);
-            SetMP(nextMp);
-            SendStats();
+            UpdateStatsChunk(() =>
+            {
+                SetHP(nextHp);
+                SetMP(nextMp);
+            });
         }
         finally
         {

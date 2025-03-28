@@ -48,5 +48,13 @@ namespace Application.Core.Game.Players
         void SendStats();
         void UpdateLocalStats();
         void PrintStatsUpdated();
+        /// <summary>
+        /// 更新属性时（Stat），都通过这个方法包裹
+        /// </summary>
+        /// <param name="action"></param>
+        void UpdateStatsChunk(Action action);
+        TOut UpdateStatsChunk<TOut>(Func<TOut> action);
+
+        void MaxStat();
     }
 }

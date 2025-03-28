@@ -606,9 +606,11 @@ public class AssignAPProcessor
                         return false;
                     }
 
-                    player.assignHP(hplose, -1);
-                    player.ChangeHP(hplose);
-                    player.SendStats();
+                    player.UpdateStatsChunk(() =>
+                    {
+                        player.assignHP(hplose, -1);
+                        player.ChangeHP(hplose);
+                    });
 
                     break;
                 case 8192: // MP
@@ -637,9 +639,11 @@ public class AssignAPProcessor
                         return false;
                     }
 
-                    player.assignMP(mplose, -1);
-                    player.ChangeMP(mplose);
-                    player.SendStats();
+                    player.UpdateStatsChunk(() =>
+                    {
+                        player.assignMP(mplose, -1);
+                        player.ChangeMP(mplose);
+                    });
                     break;
                 default:
                     c.sendPacket(PacketCreator.enableActions());
@@ -705,7 +709,10 @@ public class AssignAPProcessor
                 }
                 break;
             case 2048:
-                if (!chr.assignHP(calcHpChange(chr, usedAPReset), 1))
+                if (!chr.UpdateStatsChunk(() =>
+                {
+                    return chr.assignHP(calcHpChange(chr, usedAPReset), 1);
+                }))
                 {
                     chr.message("Couldn't execute AP assign operation.");
                     chr.sendPacket(PacketCreator.enableActions());
@@ -713,7 +720,10 @@ public class AssignAPProcessor
                 }
                 break;
             case 8192:
-                if (!chr.assignMP(calcMpChange(chr, usedAPReset), 1))
+                if (!chr.UpdateStatsChunk(() =>
+                {
+                    return chr.assignMP(calcMpChange(chr, usedAPReset), 1);
+                }))
                 {
                     chr.message("Couldn't execute AP assign operation.");
                     chr.sendPacket(PacketCreator.enableActions());
