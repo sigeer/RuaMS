@@ -613,7 +613,7 @@ namespace Application.Core.Managers
                     ret.BuddyList.LoadFromDb(dbContext);
                     ret.Storage = wserv.getAccountStorage(ret.AccountId);
 
-                    ret.reapplyLocalStats();
+                    ret.UpdateLocalStats();
                     //ret.resetBattleshipHp();
                 }
 

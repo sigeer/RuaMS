@@ -648,7 +648,7 @@ public partial class Player
     {
         if (isLoggedinWorld())
         {
-            updateLocalStats();
+            UpdateLocalStats();
             sendPacket(PacketCreator.cancelBuff(buffstats));
             if (buffstats.Count > 0)
             {
@@ -986,7 +986,7 @@ public partial class Player
                 ChangeMaxHP(addhp);
                 ChangeMaxMP(addmp);
 
-                reapplyLocalStats();
+                UpdateLocalStats();
 
                 List<KeyValuePair<Stat, int>> statup = new(7);
                 statup.Add(new(Stat.HP, HP));
@@ -1754,7 +1754,7 @@ public partial class Player
     {
         MapModel.broadcastUpdateCharLookMessage(this, this);
         equipchanged = true;
-        updateLocalStats();
+        UpdateLocalStats();
         if (Messenger != null)
         {
             getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.getChannel());
@@ -3404,7 +3404,7 @@ public partial class Player
             statLock.EnterWriteLock();
             try
             {
-                reapplyLocalStats();
+                UpdateLocalStats();
 
                 List<KeyValuePair<Stat, int>> statup = new(10);
                 statup.Add(new(Stat.AVAILABLEAP, Ap));
@@ -3919,7 +3919,7 @@ public partial class Player
 
 
 
-    private void recalcEquipStats()
+    private void RefreshByEquipChange()
     {
         if (equipchanged)
         {
@@ -3963,7 +3963,10 @@ public partial class Player
         localwatk += equipwatk;
     }
 
-    public void reapplyLocalStats()
+    /// <summary>
+    /// 重算所有人物属性
+    /// </summary>
+    private void reapplyLocalStats()
     {
         Monitor.Enter(effLock);
         chLock.EnterReadLock();
@@ -3978,8 +3981,9 @@ public partial class Player
             localwatk = 0;
             localchairrate = -1;
 
-            recalcEquipStats();
-            Refresh();
+            RefreshByEquipChange();
+            RefreshByBuff();
+            RecalculateMaxHPMP();
 
             localmagic = Math.Min(localmagic, 2000);
 
@@ -4101,7 +4105,7 @@ public partial class Player
         }
     }
 
-    private void updateLocalStats()
+    public void UpdateLocalStats()
     {
         Monitor.Enter(prtLock);
         Monitor.Enter(effLock);
@@ -4473,7 +4477,7 @@ public partial class Player
     /// <param name="hpCon"></param>
     /// <param name="hpchange"></param>
     /// <param name="mpchange"></param>
-    /// <returns></returns>
+    /// <returns>ture: 使用成功，false: 使用失败</returns>
     public bool applyHpMpChange(int hpCon, int hpchange, int mpchange)
     {
         bool zombify = hasDisease(Disease.ZOMBIFY);

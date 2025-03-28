@@ -243,7 +243,7 @@ namespace Application.Core.Game.Players
                 {
                     if (statUpdate)
                     {
-                        reapplyLocalStats();
+                        UpdateLocalStats();
                     }
 
                     if (!silent)
@@ -526,6 +526,11 @@ namespace Application.Core.Game.Players
         public void SendStats()
         {
             sendPacket(PacketCreator.updatePlayerStats(statUpdates.ToList(), true, this));
+        }
+
+        public void PrintStatsUpdated()
+        {
+            Console.WriteLine(string.Join(Environment.NewLine, statUpdates.Select(x => $"<{x.Key}>=<{x.Value}>")));
         }
     }
 }

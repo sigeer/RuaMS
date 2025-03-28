@@ -167,9 +167,9 @@ public class PacketCreator
         p.writeShort(chr.Int); // int
         p.writeShort(chr.Luk); // luk
         p.writeShort(chr.HP); // hp (?)
-        p.writeShort(chr.MaxHP); // maxhp
+        p.writeShort(chr.ActualMaxHP); // maxhp
         p.writeShort(chr.MP); // mp (?)
-        p.writeShort(chr.MaxMP); // maxmp
+        p.writeShort(chr.ActualMaxMP); // maxmp
         p.writeShort(chr.Ap); // remaining ap
         if (chr.JobModel.HasSPTable)
         {

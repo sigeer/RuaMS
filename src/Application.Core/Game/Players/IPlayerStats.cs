@@ -46,5 +46,7 @@ namespace Application.Core.Game.Players
         void updateStrDexIntLuk(int x);
 
         void SendStats();
+        void UpdateLocalStats();
+        void PrintStatsUpdated();
     }
 }

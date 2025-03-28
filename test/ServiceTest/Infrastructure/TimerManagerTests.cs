@@ -1,4 +1,4 @@
-﻿using server;
+using server;
 
 namespace ServiceTest.Infrastructure
 {
@@ -7,7 +7,7 @@ namespace ServiceTest.Infrastructure
         [Test]
         public async Task RegisterTaskTests()
         {
-            await TimerManager.getInstance().start();
+            await TimerManager.getInstance().Start();
             int count = 0;
             var task = TimerManager.getInstance().register(() =>
             {

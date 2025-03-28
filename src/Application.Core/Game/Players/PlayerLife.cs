@@ -42,7 +42,6 @@ namespace Application.Core.Game.Players
                 value = NumericConfig.MaxHP;
 
             MaxHP = value;
-            statUpdates[Stat.MAXHP] = MaxHP;
             SetHP(HP);
         }
 
@@ -54,7 +53,6 @@ namespace Application.Core.Game.Players
                 value = NumericConfig.MaxMP;
 
             MaxMP = value;
-            statUpdates[Stat.MAXMP] = MaxMP;
             SetMP(MP);
         }
         public bool ChangeHP(int deltaValue, bool useCheck = true)
@@ -118,7 +116,7 @@ namespace Application.Core.Game.Players
             statUpdates.AddOrUpdate(Stat.MP, MP);
         }
 
-        public void Refresh()
+        private void RefreshByBuff()
         {
             var hbhp = getBuffedValue(BuffStat.HYPERBODYHP);
             if (hbhp != null)
@@ -139,9 +137,14 @@ namespace Application.Core.Game.Players
             {
                 BuffMaxMP = 0;
             }
+        }
 
+        public void RecalculateMaxHPMP()
+        {
             ActualMaxHP = (int)(MaxHP + BuffMaxHP + EquipMaxHP);
             ActualMaxMP = (int)(MaxMP + EquipMaxMP + BuffMaxMP);
+            statUpdates[Stat.MAXHP] = ActualMaxHP;
+            statUpdates[Stat.MAXMP] = ActualMaxMP;
             SetHP(HP);
             SetMP(MP);
         }

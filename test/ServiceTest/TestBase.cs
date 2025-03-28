@@ -50,7 +50,7 @@ namespace ServiceTest
 
         private IPlayer GetMockPlayer(IClient client, int charId = 1)
         {
-            var player = CharacterManager.GetPlayerById(charId)!;
+            var player = CharacterManager.LoadPlayerFromDB(charId, client, true)!;
             client.setPlayer(player);
             player.setClient(client);
             player.setMap(Server.getInstance().getChannel(0, 1).getMapFactory().getMap(MapId.HENESYS));

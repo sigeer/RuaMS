@@ -451,7 +451,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(effLock);
             try
             {
-                ret = cancelEffect(effect, overwrite, startTime, true);
+                ret = cancelEffect(effect, overwrite, true);
             }
             finally
             {
@@ -580,17 +580,17 @@ namespace Application.Core.Game.Players
             }
         }
 
-        private bool cancelEffect(StatEffect effect, bool overwrite, long startTime, bool firstCancel)
+        private bool cancelEffect(StatEffect effect, bool overwrite, bool firstCancel)
         {
             HashSet<BuffStat> removedStats = new();
-            dropBuffStats(cancelEffectInternal(effect, overwrite, startTime, removedStats));
-            updateLocalStats();
+            dropBuffStats(cancelEffectInternal(effect, overwrite, removedStats));
+            UpdateLocalStats();
             updateEffects(removedStats);
 
             return removedStats.Count > 0;
         }
 
-        private List<BuffStateValuePair> cancelEffectInternal(StatEffect effect, bool overwrite, long startTime, HashSet<BuffStat> removedStats)
+        private List<BuffStateValuePair> cancelEffectInternal(StatEffect effect, bool overwrite, HashSet<BuffStat> removedStats)
         {
             Dictionary<BuffStat, BuffStatValueHolder>? buffstats = null;
             BuffStat? ombs;
@@ -1498,7 +1498,7 @@ namespace Application.Core.Game.Players
                 Monitor.Exit(prtLock);
             }
 
-            updateLocalStats();
+            UpdateLocalStats();
         }
 
         private void prepareDragonBlood(StatEffect bloodEffect)
