@@ -42,7 +42,6 @@ namespace Application.Core.Game.Players
                 value = NumericConfig.MaxHP;
 
             MaxHP = value;
-            SetHP(HP);
         }
 
         public void SetMaxMP(int value)
@@ -53,7 +52,6 @@ namespace Application.Core.Game.Players
                 value = NumericConfig.MaxMP;
 
             MaxMP = value;
-            SetMP(MP);
         }
         public bool ChangeHP(int deltaValue, bool useCheck = true)
         {

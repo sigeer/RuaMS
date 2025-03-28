@@ -583,7 +583,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.ChangeHP(-toUse.getX());
+                                player.ChangeHP(-toUse.getX(), false);
                                 player.SendStats();
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getX(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }
@@ -596,7 +596,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.ChangeHP(-toUse.getY());
+                                player.ChangeHP(-toUse.getY(), false);
                                 player.SendStats();
                                 map.broadcastMessage(player, PacketCreator.damagePlayer(0, monster.getId(), player.getId(), toUse.getY(), 0, 0, false, 0, true, monster.getObjectId(), 0, 0), true);
                             }

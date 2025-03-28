@@ -21,7 +21,7 @@ namespace ServiceTest.Games
 
 
         [Test]
-        public void UseHuperBody()
+        public void UseHyperBody()
         {
             var client = GetOnlinedTestClient();
             client.OnlinedCharacter.healHpMp();

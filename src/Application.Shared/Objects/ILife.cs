@@ -27,11 +27,13 @@ namespace Application.Shared.Objects
         /// 重算真实上限
         /// </summary>
         void RecalculateMaxHPMP();
+
         /// <summary>
         /// 修改当前血量，HP in [0, ActualMaxHP]
         /// </summary>
         /// <param name="deltaValue"></param>
-        /// <returns></returns>
+        /// <param name="useCheck">是否校验当前血量</param>
+        /// <returns>校验当前血量时，如果当前血量不足返回false</returns>
         bool ChangeHP(int deltaValue, bool useCheck = true);
         bool ChangeMP(int deltaValue, bool useCheck = true);
         void SetHP(int value);

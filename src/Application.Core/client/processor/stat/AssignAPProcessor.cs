@@ -642,7 +642,7 @@ public class AssignAPProcessor
                     player.SendStats();
                     break;
                 default:
-                    c.sendPacket(PacketCreator.updatePlayerStats(PacketCreator.EMPTY_STATUPDATE, true, player));
+                    c.sendPacket(PacketCreator.enableActions());
                     return false;
             }
 
@@ -721,7 +721,7 @@ public class AssignAPProcessor
                 }
                 break;
             default:
-                chr.sendPacket(PacketCreator.updatePlayerStats(PacketCreator.EMPTY_STATUPDATE, true, chr));
+                chr.sendPacket(PacketCreator.enableActions());
                 return false;
         }
         return true;
