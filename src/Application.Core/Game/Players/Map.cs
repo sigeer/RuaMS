@@ -100,7 +100,7 @@ namespace Application.Core.Game.Players
                 dropMessage(5, banishInfo.msg);
             }
 
-            IMap map_ = getWarpMap(getMapId());
+            IMap map_ = getWarpMap(banishInfo.map);
             var portal_ = map_.getPortal(banishInfo.portal);
             changeMap(map_, portal_ != null ? portal_ : map_.getRandomPlayerSpawnpoint());
         }
