@@ -575,7 +575,7 @@ public class MobSkill : ISkill
 
     public bool makeChanceResult()
     {
-        return prop == 1.0 || Randomizer.nextDouble() < prop;
+        return Randomizer.nextDouble() < prop;
     }
 
     private Rectangle calculateBoundingBox(Point posFrom)
