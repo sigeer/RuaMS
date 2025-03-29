@@ -535,7 +535,13 @@ namespace Application.Core.Game.Players
 
         public void PrintStatsUpdated()
         {
-            Console.WriteLine(string.Join(Environment.NewLine, statUpdates.Select(x => $"<{x.Key}>=<{x.Value}>")));
+            Log.Debug($"== MaxHP: {ActualMaxHP}, HP: {HP}");
+            Log.Debug($"== MaxMP: {ActualMaxMP}, MP: {MP}");
+            foreach (var x in statUpdates)
+            {
+                Log.Debug($"<{x.Key}>=<{x.Value}>");
+            }
+
         }
 
         public void UpdateStatsChunk(Action action)

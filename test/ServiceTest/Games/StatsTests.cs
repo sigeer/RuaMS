@@ -14,8 +14,7 @@ namespace ServiceTest.Games
 
         private void PrintHP(string prefix, IPlayer chr)
         {
-            Console.WriteLine($"{prefix} == MaxHP: {chr.ActualMaxHP}, HP: {chr.HP}");
-            Console.WriteLine($"{prefix} == MaxMP: {chr.ActualMaxMP}, MP: {chr.MP}");
+            Console.WriteLine($"===={prefix}====");
             chr.PrintStatsUpdated();
         }
 

@@ -6,6 +6,8 @@ using Application.EF;
 using Application.Utility.Tasks;
 using constants.id;
 using net.server;
+using Serilog.Events;
+using Serilog;
 using server;
 using System.Text;
 
@@ -15,7 +17,16 @@ namespace ServiceTest
     {
         public TestBase()
         {
-            Environment.SetEnvironmentVariable("ms-wz", "D:\\walker\\demo\\MS\\Cosmic\\wz");
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+            Environment.SetEnvironmentVariable("ms-wz", "C:\\Demo\\MS\\wz");
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             GlobalTools.Encoding = Encoding.GetEncoding("GBK");

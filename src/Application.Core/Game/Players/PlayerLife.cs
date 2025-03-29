@@ -41,7 +41,11 @@ namespace Application.Core.Game.Players
             if (value > NumericConfig.MaxHP)
                 value = NumericConfig.MaxHP;
 
+            if (value == MaxHP)
+                return;
+
             MaxHP = value;
+            RecalculateMaxHP();
         }
 
         private void SetMaxMP(int value)
@@ -51,7 +55,11 @@ namespace Application.Core.Game.Players
             if (value > NumericConfig.MaxMP)
                 value = NumericConfig.MaxMP;
 
+            if (value == MaxMP)
+                return;
+
             MaxMP = value;
+            RecalculateMaxMP();
         }
         public bool ChangeHP(int deltaValue, bool useCheck = true)
         {
@@ -74,13 +82,13 @@ namespace Application.Core.Game.Players
 
         public void SetHP(int value)
         {
-            if (value == HP)
-                return;
-
             if (value < 0)
                 value = 0;
             if (value > ActualMaxHP)
                 value = ActualMaxHP;
+
+            if (value == HP)
+                return;
 
             HP = value;
             statUpdates[Stat.HP] = HP;
@@ -106,13 +114,13 @@ namespace Application.Core.Game.Players
 
         public void SetMP(int value)
         {
-            if (value == MP)
-                return;
-
             if (value < 0)
                 value = 0;
             if (value > ActualMaxMP)
                 value = ActualMaxMP;
+
+            if (value == MP)
+                return;
 
             MP = value;
             statUpdates[Stat.MP] = MP;
@@ -120,6 +128,7 @@ namespace Application.Core.Game.Players
 
         private void RefreshByBuff()
         {
+            var oldBuffMaxHP = BuffMaxHP;
             var hbhp = getBuffedValue(BuffStat.HYPERBODYHP);
             if (hbhp != null)
             {
@@ -130,6 +139,7 @@ namespace Application.Core.Game.Players
                 BuffMaxHP = 0;
             }
 
+            var oldBuffMaxMP = BuffMaxMP;
             var buffMP = getBuffedValue(BuffStat.HYPERBODYMP);
             if (buffMP != null)
             {
@@ -140,8 +150,20 @@ namespace Application.Core.Game.Players
                 BuffMaxMP = 0;
             }
         }
+        private void RefreshByEquip(int hp, int mp)
+        {
+            if (EquipMaxHP != hp)
+            {
+                EquipMaxHP = hp;
+            }
 
-        public void RecalculateMaxHPMP()
+            if (EquipMaxMP != mp)
+            {
+                EquipMaxMP = mp;
+            }
+        }
+
+        public void RecalculateMaxHP()
         {
             var newMaxHp = (int)(MaxHP + BuffMaxHP + EquipMaxHP);
             if (newMaxHp != ActualMaxHP)
@@ -151,7 +173,10 @@ namespace Application.Core.Game.Players
 
                 SetHP(HP);
             }
+        }
 
+        public void RecalculateMaxMP()
+        {
             var newMaxMp = (int)(MaxMP + EquipMaxMP + BuffMaxMP);
             if (newMaxMp != ActualMaxMP)
             {

@@ -3955,9 +3955,7 @@ public partial class Player
                 //equipjump += equip.getJump();
             }
 
-            EquipMaxHP = equipmaxhp;
-            EquipMaxMP = equipmaxmp;
-
+            RefreshByEquip(equipmaxhp, equipmaxmp);
             equipchanged = false;
         }
 
@@ -3989,7 +3987,8 @@ public partial class Player
 
             RefreshByEquipChange();
             RefreshByBuff();
-            RecalculateMaxHPMP();
+            RecalculateMaxHP();
+            RecalculateMaxMP();
 
             localmagic = Math.Min(localmagic, 2000);
 

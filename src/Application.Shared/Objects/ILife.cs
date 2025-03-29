@@ -26,7 +26,8 @@ namespace Application.Shared.Objects
         /// <summary>
         /// 重算真实上限
         /// </summary>
-        void RecalculateMaxHPMP();
+        void RecalculateMaxHP();
+        void RecalculateMaxMP();
 
         /// <summary>
         /// 修改当前血量，HP in [0, ActualMaxHP]
