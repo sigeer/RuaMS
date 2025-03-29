@@ -147,6 +147,10 @@ public class DebugCommand : CommandBase
                 c.getChannelServer().WeddingInstance.DebugMarriageStatus();
                 break;
 
+            case "stats":
+                c.OnlinedCharacter.PrintStatsUpdated();
+                break;
+
             case "buff":
                 c.OnlinedCharacter.debugListAllBuffs();
                 break;

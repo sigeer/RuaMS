@@ -1,39 +1,49 @@
-#### ½Å±¾Ïà¹Ø
+#### è„šæœ¬ç›¸å…³
 
- - Channel ºÍ EventScriptManager ÊÇÒ»¶ÔÒ»
+ - Channel å’Œ EventScriptManager æ˜¯ä¸€å¯¹ä¸€
 
- - EventScriptManager ºÍ EventManager£¨em£© ÊÇÒ»¶Ô¶à£¬ÔÚ·şÎñÆ÷Æô¶¯Ê±Éú³É£¬Ö±½Ó×°ÔØÁËËùÓĞeventÏÂµÄ½Å±¾£¨EventManagerÓëevent½Å±¾Ò»¶ÔÒ»£©£¬²¢µ÷ÓÃÁËinit·½·¨¡£
-EventManagerÒ»°ãÔÚjsÖĞÍ¨¹ı`newInstance`£¬´´½¨ EventInstanceManager£¨eim£© £¬¿ÉÒÔ½«`EventInstanceManager`ÊÓ×÷`EventManager`µÄÊµÀı£¬Ò»¶Ô¶à
+ - EventScriptManager å’Œ EventManagerï¼ˆemï¼‰ æ˜¯ä¸€å¯¹å¤šï¼Œåœ¨æœåŠ¡å™¨å¯åŠ¨æ—¶ç”Ÿæˆï¼Œç›´æ¥è£…è½½äº†æ‰€æœ‰eventä¸‹çš„è„šæœ¬ï¼ˆEventManagerä¸eventè„šæœ¬ä¸€å¯¹ä¸€ï¼‰ï¼Œå¹¶è°ƒç”¨äº†initæ–¹æ³•ã€‚
+EventManagerä¸€èˆ¬åœ¨jsä¸­é€šè¿‡`newInstance`ï¼Œåˆ›å»º EventInstanceManagerï¼ˆeimï¼‰ ï¼Œå¯ä»¥å°†`EventInstanceManager`è§†ä½œ`EventManager`çš„å®ä¾‹ï¼Œä¸€å¯¹å¤š
 
-- NPCScriptManager ÊÇµ¥Àı£¬µ±ÓëNPC¶Ô»°Ê±£¬µ÷ÓÃ`start`·½·¨¿ªÆô¶Ô»°£¬Í¬Ê±Éú³É NPCConversationManager£¨cm£©¡£
-Ö®ºóµ÷ÓÃ`action`£¬Í¨¹ı²ÎÊı½øÈë¶Ô»°µÄ²»Í¬½×¶Î
+- NPCScriptManager æ˜¯å•ä¾‹ï¼Œå½“ä¸NPCå¯¹è¯æ—¶ï¼Œè°ƒç”¨`start`æ–¹æ³•å¼€å¯å¯¹è¯ï¼ŒåŒæ—¶ç”Ÿæˆ NPCConversationManagerï¼ˆcmï¼‰ã€‚
+ä¹‹åè°ƒç”¨`action`ï¼Œé€šè¿‡å‚æ•°è¿›å…¥å¯¹è¯çš„ä¸åŒé˜¶æ®µ
 
 
-#### ¸±±¾Ïà¹Ø
+#### å‰¯æœ¬ç›¸å…³
 
-##### ÔÂÃî
+##### æœˆå¦™
 
 `/event/HenesysPQ.js`
-Èë¿Ú£º`/npc/1012112.js`
+å…¥å£ï¼š`/npc/1012112.js`
 
-##### ·Ï¶¼
+##### åºŸéƒ½
 
 `/event/KerningPQ.js`
-Èë¿Ú£º`/npc/9020000.js`
-¹ı¹ØNPC£º`/npc/9020001.js`
+å…¥å£ï¼š`/npc/9020000.js`
+è¿‡å…³NPCï¼š`/npc/9020001.js`
 
 
-##### 101²ã
+##### 101å±‚
 
 `/event/LudiPQ.js`
-Èë¿Ú£º`/npc/2040034.js`
-¹ı¹ØNPC£º`/npc/2040036.js`~`/npc/2040044.js`
+å…¥å£ï¼š`/npc/2040034.js`
+è¿‡å…³NPCï¼š`/npc/2040036.js`~`/npc/2040044.js`
 
-##### °¬ÁÕÉ­ÁÖ
+##### è‰¾ç³æ£®æ—
 
 `/event/EllinPQ.js`
-Èë¿Ú£º`/npc/2133000.js`
-´«ËÍµã¹ı¹Ø£¬½Å±¾`/portal/party6_*.js`
-²¿·Ö¹Ø¿¨NPC£º`/npc/2133001.js` 
-ÌøÌø¹Ø¿¨NPC£º`/npc/2133004.js`
-½±Àø£º`/portal/party6_stage800.js`
+å…¥å£ï¼š`/npc/2133000.js`
+ä¼ é€ç‚¹è¿‡å…³ï¼Œè„šæœ¬`/portal/party6_*.js`
+éƒ¨åˆ†å…³å¡NPCï¼š`/npc/2133001.js` 
+è·³è·³å…³å¡NPCï¼š`/npc/2133004.js`
+å¥–åŠ±ï¼š`/portal/party6_stage800.js`
+
+
+
+```
+BuffStatï¼šçŠ¶æ€
+
+StatEffect ï¼š çŠ¶æ€æ•ˆæœï¼Œå¯èƒ½æ¥è‡ªæŠ€èƒ½ã€ç‰©å“é“å…·ï¼Œå¯ä»¥é™„åŠ å¤šä¸ªBuffStat
+
+BuffStatValueHolderï¼šç©å®¶èº«ä¸Šçš„çŠ¶æ€
+```

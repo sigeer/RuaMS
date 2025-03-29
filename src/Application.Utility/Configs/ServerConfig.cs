@@ -58,7 +58,6 @@ public class ServerConfig
     public bool USE_MTS;
     public bool USE_CPQ;
     public bool USE_AUTOHIDE_GM;
-    public bool USE_FIXED_RATIO_HPMP_UPDATE;
     public bool USE_FAMILY_SYSTEM;
     public bool USE_DUEY;
     public bool USE_RANDOMIZE_HPMP_GAIN;

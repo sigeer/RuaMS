@@ -904,7 +904,11 @@ public class StatEffect
                         if (absorbMp > 0)
                         {
                             mob.setMp(mob.getMp() - absorbMp);
-                            applyto.addMP(absorbMp);
+                            applyto.UpdateStatsChunk(() =>
+                            {
+                                applyto.ChangeMP(absorbMp);
+                            });
+                            
                             applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
                             applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), false);
                         }
@@ -975,7 +979,7 @@ public class StatEffect
         {
             if (isResurrection())
             {
-                hpchange = applyto.getCurrentMaxHp();
+                hpchange = applyto.ActualMaxHP;
                 applyto.broadcastStance(applyto.isFacingLeft() ? 5 : 4);
             }
         }
@@ -1016,7 +1020,7 @@ public class StatEffect
                 }
                 else
                 {
-                    target = applyto.getClient().getWorldServer().getChannel(applyto.getClient().getChannel()).getMapFactory().getMap(moveTo);
+                    target = applyto.getChannelServer().getMapFactory().getMap(moveTo);
                     int targetid = target.getId() / 10000000;
                     if (targetid != 60
                         && applyto.getMapId() / 10000000 != 61
@@ -1592,7 +1596,7 @@ public class StatEffect
             }
             else
             { // assumption: this is heal
-                float hpHeal = (applyfrom.getCurrentMaxHp() * (float)hp / (100.0f * affectedPlayers));
+                float hpHeal = (applyfrom.ActualMaxHP * (float)hp / (100.0f * affectedPlayers));
                 hpchange += (int)hpHeal;
                 if (applyfrom.hasDisease(Disease.ZOMBIFY))
                 {
@@ -1603,7 +1607,7 @@ public class StatEffect
         }
         if (hpR != 0)
         {
-            hpchange += (int)(applyfrom.getCurrentMaxHp() * hpR) / (applyfrom.hasDisease(Disease.ZOMBIFY) ? 2 : 1);
+            hpchange += (int)(applyfrom.ActualMaxHP * hpR) / (applyfrom.hasDisease(Disease.ZOMBIFY) ? 2 : 1);
         }
         if (primary)
         {
@@ -1618,7 +1622,7 @@ public class StatEffect
         }
         else if (sourceid == SuperGM.HEAL_PLUS_DISPEL)
         {
-            hpchange += applyfrom.getCurrentMaxHp();
+            hpchange += applyfrom.ActualMaxHP;
         }
 
         return hpchange;
@@ -1645,7 +1649,7 @@ public class StatEffect
         }
         if (mpR != 0)
         {
-            mpchange += (int)(applyfrom.getCurrentMaxMp() * mpR);
+            mpchange += (int)(applyfrom.ActualMaxMP * mpR);
         }
         if (primary)
         {
@@ -1677,7 +1681,7 @@ public class StatEffect
         }
         if (sourceid == SuperGM.HEAL_PLUS_DISPEL)
         {
-            mpchange += applyfrom.getCurrentMaxMp();
+            mpchange += applyfrom.ActualMaxMP;
         }
 
         return mpchange;
@@ -1773,6 +1777,10 @@ public class StatEffect
         return sourceid == Cleric.HEAL || sourceid == SuperGM.HEAL_PLUS_DISPEL;
     }
 
+    /// <summary>
+    /// 复活术
+    /// </summary>
+    /// <returns></returns>
     private bool isResurrection()
     {
         return sourceid == Bishop.RESURRECTION || sourceid == GM.RESURRECTION || sourceid == SuperGM.RESURRECTION;

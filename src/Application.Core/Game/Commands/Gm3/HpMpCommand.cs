@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class HpMpCommand : CommandBase
 {
@@ -29,7 +29,11 @@ public class HpMpCommand : CommandBase
 
         if (victim != null && victim.IsOnlined)
         {
-            victim.updateHpMp(statUpdate);
+            victim.UpdateStatsChunk(() =>
+            {
+                victim.SetHP(statUpdate);
+                victim.SetMP(statUpdate);
+            });
         }
         else
         {

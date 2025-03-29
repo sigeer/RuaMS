@@ -246,7 +246,7 @@ namespace Application.Core.Game.Players
                     if (TeamModel != null)
                     {
                         sendPacket(PacketCreator.updateParty(Client.getChannel(), TeamModel, PartyOperation.SILENT_UPDATE, this));
-                        updatePartyMemberHPInternal();
+                        receivePartyMemberHP();
                     }
                 }
                 finally

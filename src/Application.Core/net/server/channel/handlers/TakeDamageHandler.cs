@@ -159,7 +159,7 @@ public class TakeDamageHandler : AbstractPacketHandler
             {
                 if (attackInfo.isDeadlyAttack())
                 {
-                    mpattack = chr.getMp() - 1;
+                    mpattack = chr.MP - 1;
                     is_deadly = true;
                 }
                 mpattack += attackInfo.getMpBurn();
@@ -279,14 +279,18 @@ public class TakeDamageHandler : AbstractPacketHandler
                 int mploss = (int)(damage * (chr.getBuffedValue(BuffStat.MAGIC_GUARD)!.Value / 100.0));
                 int hploss = damage - mploss;
 
-                int curmp = chr.getMp();
+                int curmp = chr.MP;
                 if (mploss > curmp)
                 {
                     hploss += mploss - curmp;
                     mploss = curmp;
                 }
 
-                chr.addMPHP(-hploss, -mploss);
+                chr.UpdateStatsChunk(() =>
+                {
+                    chr.ChangeHP(-hploss, false);
+                    chr.ChangeMP(-mploss);
+                });
             }
             else if (mesoguard != null)
             {
@@ -301,7 +305,11 @@ public class TakeDamageHandler : AbstractPacketHandler
                 {
                     chr.gainMeso(-mesoloss, false);
                 }
-                chr.addMPHP(-damage, -mpattack);
+                chr.UpdateStatsChunk(() =>
+                {
+                    chr.ChangeHP(-damage, false);
+                    chr.ChangeMP(-mpattack);
+                });
             }
             else
             {
@@ -309,7 +317,11 @@ public class TakeDamageHandler : AbstractPacketHandler
                 {
                     chr.decreaseBattleshipHp(damage);
                 }
-                chr.addMPHP(-damage, -mpattack);
+                chr.UpdateStatsChunk(() =>
+                {
+                    chr.ChangeHP(-damage, false);
+                    chr.ChangeMP(-mpattack);
+                });
             }
         }
         if (!chr.isHidden())

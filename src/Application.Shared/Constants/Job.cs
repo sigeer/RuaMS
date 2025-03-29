@@ -189,6 +189,11 @@ namespace Application.Shared.Constants
             return Id == JobId.BEGINNER || Id == JobId.NOBLESSE || Id == JobId.LEGEND;
         }
 
+        /// <summary>
+        /// 是<paramref name="basejob"/>的上位职业
+        /// </summary>
+        /// <param name="basejob"></param>
+        /// <returns></returns>
         public bool isA(Job basejob)
         {
             // thanks Steve (kaito1410) for pointing out an improvement here

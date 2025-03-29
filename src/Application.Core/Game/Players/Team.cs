@@ -33,7 +33,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(prtLock);
             try
             {
-                updatePartyMemberHPInternal();
+                receivePartyMemberHP();
             }
             finally
             {
@@ -41,18 +41,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-        private void updatePartyMemberHPInternal()
-        {
-            if (TeamModel != null)
-            {
-                int curmaxhp = getCurrentMaxHp();
-                int curhp = getHp();
-                foreach (IPlayer partychar in this.getPartyMembersOnSameMap())
-                {
-                    partychar.sendPacket(PacketCreator.updatePartyMemberHP(getId(), curhp, curmaxhp));
-                }
-            }
-        }
         public bool isLeader()
         {
             return isPartyLeader();
@@ -207,7 +195,7 @@ namespace Application.Core.Game.Players
                 {
                     foreach (var player in this.getPartyMembersOnSameMap())
                     {
-                        sendPacket(PacketCreator.updatePartyMemberHP(player.getId(), player.getHp(), player.getCurrentMaxHp()));
+                        sendPacket(PacketCreator.updatePartyMemberHP(player.getId(), player.HP, player.ActualMaxHP));
                     }
                 }
             }

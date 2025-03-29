@@ -1,4 +1,4 @@
-﻿using net.server;
+using net.server;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -22,7 +22,7 @@ public class KillCommand : CommandBase
         var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
-            victim.updateHpMp(0);
+            victim.KilledBy(player);
             Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(5, player.getName() + " used !kill on " + victim.getName()));
         }
         else

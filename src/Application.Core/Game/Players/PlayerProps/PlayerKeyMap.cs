@@ -1,4 +1,5 @@
-﻿using client.keybind;
+using Application.Shared.KeyMaps;
+using client.keybind;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,5 +54,6 @@ namespace Application.Core.Game.Players.PlayerProps
         }
 
         public KeyBinding? GetData(int key) => _dataSource.GetValueOrDefault(key);
+        public KeyBinding? GetData(KeyCode key) => GetData((int)key);
     }
 }
