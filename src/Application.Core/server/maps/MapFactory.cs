@@ -157,11 +157,11 @@ public class MapFactory
             mapImg = GetMapImg(int.Parse(link));
             mapData = mapSource.getData(mapImg);
         }
-        float monsterRate = 0;
+        float monsterRate = 1;
         var mobRate = infoData?.getChildByPath("mobRate");
         if (mobRate != null)
         {
-            monsterRate = (float?)mobRate.getData() ?? 0;
+            monsterRate = DataTool.getFloat(mobRate, 1);
         }
         map = new MapleMap(mapid, worldChannel, DataTool.getInt("returnMap", infoData), monsterRate);
 
@@ -384,9 +384,10 @@ public class MapFactory
 
         }
 
-        if (mapData.getChildByPath("reactor") != null)
+        var imgReactor = mapData.getChildByPath("reactor");
+        if (imgReactor != null)
         {
-            foreach (var reactor in mapData.getChildByPath("reactor")!)
+            foreach (var reactor in imgReactor)
             {
                 var id = DataTool.getString(reactor.getChildByPath("id"));
                 if (id != null)

@@ -50,11 +50,11 @@ public class DataTool
         return (double)d;
     }
 
-    public static float getFloat(Data? data)
+    public static float getFloat(Data? data, float def = 0)
     {
         var d = data?.getData();
         if (d == null)
-            return 0;
+            return def;
         return (float)d;
     }
 
