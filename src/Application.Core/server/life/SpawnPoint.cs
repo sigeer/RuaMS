@@ -44,6 +44,8 @@ public class SpawnPoint
     readonly Monster _monsterMeta;
     readonly IMap _map;
 
+    public float MobRate => _map.MonsterRate * _map.getWorldServer().MobRate;
+
     public SpawnPoint(IMap map, Monster monster, Point pos, bool immobile, int mobTime, int mobInterval, int team)
     {
         _map = map;
@@ -77,7 +79,8 @@ public class SpawnPoint
 
     public bool shouldSpawn()
     {
-        if (denySpawn || mobTime < 0 || spawnedMonsters.get() > 0)
+        var max = _monsterMeta.isBoss() ? 1 : Math.Ceiling(1 * MobRate);
+        if (denySpawn || mobTime < 0 || spawnedMonsters.get() >= max)
         {
             return false;
         }
@@ -89,7 +92,7 @@ public class SpawnPoint
         return mobTime >= 0 && spawnedMonsters.get() <= 0;
     }
 
-    public Monster getMonster()
+    public Monster GenrateMonster()
     {
         var mob = LifeFactory.GetMonsterTrust(monster);
         mob.setPosition(pos);
@@ -162,7 +165,7 @@ public class SpawnPoint
 
         while (rate > Randomizer.nextFloat())
         {
-            _map.spawnMonster(getMonster(), difficulty, isPq);
+            _map.spawnMonster(GenrateMonster(), difficulty, isPq);
             rate -= 1;
         }
     }
