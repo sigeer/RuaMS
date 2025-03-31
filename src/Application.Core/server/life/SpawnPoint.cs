@@ -44,6 +44,22 @@ public class SpawnPoint
     readonly Monster _monsterMeta;
     readonly IMap _map;
 
+    public float MobRate
+    {
+        get
+        {
+            var rate = _map.MonsterRate * _map.getWorldServer().MobRate;
+            // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
+            if (_map.getEventInstance() != null)
+                rate = 1;
+
+            if (_monsterMeta.isBoss())
+                rate = 1;
+
+            return rate;
+        }
+    }
+
     public SpawnPoint(IMap map, Monster monster, Point pos, bool immobile, int mobTime, int mobInterval, int team)
     {
         _map = map;
@@ -77,7 +93,8 @@ public class SpawnPoint
 
     public bool shouldSpawn()
     {
-        if (denySpawn || mobTime < 0 || spawnedMonsters.get() > 0)
+        var max = _monsterMeta.isBoss() ? 1 : Math.Ceiling(1 * MobRate);
+        if (denySpawn || mobTime < 0 || spawnedMonsters.get() >= max)
         {
             return false;
         }
@@ -89,7 +106,7 @@ public class SpawnPoint
         return mobTime >= 0 && spawnedMonsters.get() <= 0;
     }
 
-    public Monster getMonster()
+    public Monster GenrateMonster()
     {
         var mob = LifeFactory.GetMonsterTrust(monster);
         mob.setPosition(pos);
@@ -152,17 +169,11 @@ public class SpawnPoint
 
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
-        var rate =_map.MonsterRate * _map.getWorldServer().MobRate;
-        // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
-        if (_map.getEventInstance() != null)
-            rate = 1;
-
-        if (_monsterMeta.isBoss())
-            rate = 1;
+        var rate = MobRate;
 
         while (rate > Randomizer.nextFloat())
         {
-            _map.spawnMonster(getMonster(), difficulty, isPq);
+            _map.spawnMonster(GenrateMonster(), difficulty, isPq);
             rate -= 1;
         }
     }
