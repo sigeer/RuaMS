@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Compatible
 {
@@ -6,8 +6,14 @@ namespace Application.Core.Compatible
     {
         public static void shuffle<TModel>(List<TModel> list)
         {
-            var comparedList = new int[] { -1, 0, 1 };
-            list.Sort((o1, o2) => comparedList[Randomizer.rand(0, 2)]);
+            Random rng = new Random();
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = Randomizer.nextInt(n + 1);  // 生成 0 到 n 之间的随机索引
+                (list[n], list[k]) = (list[k], list[n]);  // 交换元素
+            }
         }
 
 
