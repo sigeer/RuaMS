@@ -12,10 +12,12 @@ namespace Application.Core.Game.Gameplay
         {
             MapModel = mapModel;
             Controller = controller;
+            Position = Controller.getPosition();
         }
 
         public IMap MapModel { get; set; }
         public IPlayer Controller { get; set; }
+        public Point Position { get; }
 
         public void Start()
         {
@@ -34,7 +36,7 @@ namespace Application.Core.Game.Gameplay
                 return;
             }
 
-            monster.resetMobPosition(Controller.getPosition());
+            monster.resetMobPosition(Position);
         }
     }
 }
