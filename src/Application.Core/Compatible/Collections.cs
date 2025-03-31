@@ -6,7 +6,6 @@ namespace Application.Core.Compatible
     {
         public static void shuffle<TModel>(List<TModel> list)
         {
-            Random rng = new Random();
             int n = list.Count;
             while (n > 1)
             {
