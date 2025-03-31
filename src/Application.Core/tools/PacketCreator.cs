@@ -283,7 +283,7 @@ public class PacketCreator
         Dictionary<short, int> maskedEquip = new();
         foreach (Item item in ii)
         {
-            short pos = (byte)(item.getPosition() * -1);
+            short pos = (short)(item.getPosition() * -1);
             if (pos < 100 && !myEquip.ContainsKey(pos))
             {
                 myEquip.AddOrUpdate(pos, item.getItemId());
@@ -5078,7 +5078,7 @@ public class PacketCreator
         p.writeInt(mount.getLevel());
         p.writeInt(mount.getExp());
         p.writeInt(mount.getTiredness());
-        p.writeByte(levelup ? (byte)1 : (byte)0);
+        p.writeBool(levelup);
         return p;
     }
 
@@ -6346,7 +6346,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
         p.writeByte(0x59);
-        p.writeByte((byte)cashItems.Count);
+        p.writeByte(cashItems.Count);
         foreach (Item item in cashItems)
         {
             addCashItemInformation(p, item, accountId);
