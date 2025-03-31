@@ -44,7 +44,21 @@ public class SpawnPoint
     readonly Monster _monsterMeta;
     readonly IMap _map;
 
-    public float MobRate => _map.MonsterRate * _map.getWorldServer().MobRate;
+    public float MobRate
+    {
+        get
+        {
+            var rate = _map.MonsterRate * _map.getWorldServer().MobRate;
+            // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
+            if (_map.getEventInstance() != null)
+                rate = 1;
+
+            if (_monsterMeta.isBoss())
+                rate = 1;
+
+            return rate;
+        }
+    }
 
     public SpawnPoint(IMap map, Monster monster, Point pos, bool immobile, int mobTime, int mobInterval, int team)
     {
@@ -155,13 +169,7 @@ public class SpawnPoint
 
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
-        var rate =_map.MonsterRate * _map.getWorldServer().MobRate;
-        // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
-        if (_map.getEventInstance() != null)
-            rate = 1;
-
-        if (_monsterMeta.isBoss())
-            rate = 1;
+        var rate = MobRate;
 
         while (rate > Randomizer.nextFloat())
         {
