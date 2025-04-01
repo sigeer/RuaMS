@@ -77,7 +77,7 @@ public class CommandExecutor
 
         client.OnlinedCharacter.setLastCommandMessage(SplitedMessage[1]);    // thanks Tochi & Nulliphite for noticing string messages being marshalled lowercase
         string commandName = SplitedMessage[0].ToLower();
-        string[] lowercaseParams = SplitedMessage[1].ToLower().Split(splitRegex);
+        string[] lowercaseParams = SplitedMessage[1].Split(splitRegex);
 
         var command = registeredCommands.GetValueOrDefault(commandName);
         if (command == null)
