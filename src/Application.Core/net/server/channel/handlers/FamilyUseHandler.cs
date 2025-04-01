@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Invites;
 using client;
 using constants.id;
 using net.packet;
@@ -83,12 +84,12 @@ public class FamilyUseHandler : AbstractPacketHandler
                                     && (ownMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(ownMap.getId())) && ownMap.getEventInstance() == null)
                             {
 
-                                if (InviteCoordinator.hasInvite(InviteType.FAMILY_SUMMON, victim.getId()))
+                                if (InviteType.FAMILY_SUMMON.HasRequest(victim.getId()))
                                 {
                                     c.sendPacket(PacketCreator.sendFamilyMessage(74, 0));
                                     return;
                                 }
-                                InviteCoordinator.createInvite(InviteType.FAMILY_SUMMON, c.OnlinedCharacter, victim, victim.getId(), c.OnlinedCharacter.getMap());
+                                InviteType.FAMILY_SUMMON.CreateInvite(new FamilySummonInviteRequest(c.OnlinedCharacter, victim));
                                 victim.sendPacket(PacketCreator.sendFamilySummonRequest(c.OnlinedCharacter.getFamily().getName(), c.OnlinedCharacter.getName()));
                                 useEntitlement(entry, type);
                             }

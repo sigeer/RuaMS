@@ -96,7 +96,7 @@ public class GuildOperationHandler : AbstractPacketHandler
                 }
 
                 string targetName = p.readString();
-                var mgr = GuildManager.sendInvitation(c, targetName);
+                var mgr = GuildManager.SendInvitation(c, targetName);
                 if (mgr != null)
                 {
                     c.sendPacket(mgr.Value.getPacket(targetName));
@@ -120,7 +120,7 @@ public class GuildOperationHandler : AbstractPacketHandler
                     return;
                 }
 
-                if (!GuildManager.answerInvitation(cid, mc.getName(), gid, true))
+                if (!GuildManager.AnswerInvitation(mc, gid, true))
                 {
                     return;
                 }

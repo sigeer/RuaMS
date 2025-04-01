@@ -1,4 +1,5 @@
 using Application.Core.EF.Entities.SystemBase;
+using Application.Core.Game.Invites;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
@@ -860,7 +861,7 @@ public class World : IWorld
                     var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
                     if (from != null)
                     {
-                        if (InviteCoordinator.createInvite(InviteType.MESSENGER, from, messengerid, targetChr.getId()))
+                        if (InviteType.MESSENGER.CreateInvite(new ChatInviteRequest(from, targetChr, messengerid)))
                         {
                             targetChr.sendPacket(PacketCreator.messengerInvite(sender, messengerid));
                             from.sendPacket(PacketCreator.messengerNote(target, 4, 1));
@@ -954,7 +955,7 @@ public class World : IWorld
             var senderChr = getPlayerStorage().getCharacterByName(sender);
             if (senderChr != null && senderChr.IsOnlined && senderChr.Messenger != null)
             {
-                if (InviteCoordinator.answerInvite(InviteType.MESSENGER, player.getId(), senderChr.Messenger.getId(), false).result == InviteResultType.DENIED)
+                if (InviteType.MESSENGER.AnswerInvite(player.getId(), senderChr.Messenger.getId(), false).Result == InviteResultType.DENIED)
                 {
                     senderChr.sendPacket(PacketCreator.messengerNote(player.getName(), 5, 0));
                 }

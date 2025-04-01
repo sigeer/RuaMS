@@ -1,3 +1,4 @@
+using Application.Core.Game.Invites;
 using client.inventory;
 using net.server.coordinator.world;
 using server;
@@ -9,6 +10,7 @@ namespace Application.Core.Game.Trades
     public class TradeManager
     {
         private static ILogger log = LogFactory.GetLogger(LogType.Trade);
+
         public static int GetFee(long meso)
         {
             long fee = 0;
@@ -69,7 +71,7 @@ namespace Application.Core.Game.Trades
             return false;
         }
 
-        public static void inviteTrade(IPlayer c1, IPlayer c2)
+        public static void InviteTrade(IPlayer c1, IPlayer c2)
         {
 
             if (c1.isGM() && !c2.isGM() && c1.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_TRADE)
@@ -87,7 +89,7 @@ namespace Application.Core.Game.Trades
                 return;
             }
 
-            if (InviteCoordinator.hasInvite(InviteType.TRADE, c1.getId()))
+            if (InviteType.TRADE.HasRequest(c1.getId()))
             {
                 if (hasTradeInviteBack(c1, c2))
                 {
@@ -106,7 +108,7 @@ namespace Application.Core.Game.Trades
                 return;
             }
 
-            if (InviteCoordinator.createInvite(InviteType.TRADE, c1, c1.getId(), c2.getId()))
+            if (InviteType.TRADE.CreateInvite(new InviteRequest(c1, c2)))
             {
                 if (JoinTrade(c1.getTrade()!, c2))
                 {
@@ -117,7 +119,7 @@ namespace Application.Core.Game.Trades
                 {
                     c1.message("The other player is already trading with someone else.");
                     CancelTrade(c1, TradeResult.NO_RESPONSE);
-                    InviteCoordinator.answerInvite(InviteType.TRADE, c2.getId(), c1.getId(), false);
+                    InviteType.TRADE.AnswerInvite(c2.getId(), c1.getId(), false);
                 }
             }
             else
@@ -144,9 +146,9 @@ namespace Application.Core.Game.Trades
 
         public static void VisitTrade(IPlayer c1, IPlayer c2)
         {
-            InviteResult inviteRes = InviteCoordinator.answerInvite(InviteType.TRADE, c1.getId(), c2.getId(), true);
+            InviteResult inviteRes = InviteType.TRADE.AnswerInvite(c1.getId(), c2.getId(), true);
 
-            InviteResultType res = inviteRes.result;
+            InviteResultType res = inviteRes.Result;
             if (res == InviteResultType.ACCEPTED)
             {
                 if (c1.getTrade() != null && c1.getTrade()!.PartnerTrade == c2.getTrade() && c2.getTrade() != null && c2.getTrade()!.PartnerTrade == c1.getTrade())
@@ -176,7 +178,7 @@ namespace Application.Core.Game.Trades
                 if (trade.PartnerTrade != null)
                 {
                     IPlayer other = trade.PartnerTrade.getChr();
-                    if (InviteCoordinator.answerInvite(InviteType.TRADE, chr.getId(), other.getId(), false).result == InviteResultType.DENIED)
+                    if (InviteType.TRADE.AnswerInvite(chr.Id, other.Id, false).Result == InviteResultType.DENIED)
                     {
                         other.message(chr.getName() + " has declined your trade request.");
                     }

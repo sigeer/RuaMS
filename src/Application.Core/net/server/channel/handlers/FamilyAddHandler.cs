@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Invites;
 using net.packet;
 using net.server.coordinator.world;
 using tools;
@@ -66,7 +67,7 @@ public class FamilyAddHandler : AbstractPacketHandler
         { //same family
             c.sendPacket(PacketCreator.enableActions());
         }
-        else if (InviteCoordinator.hasInvite(InviteType.FAMILY, addChr.getId()))
+        else if (InviteType.FAMILY.HasRequest(addChr.getId()))
         {
             c.sendPacket(PacketCreator.sendFamilyMessage(73, 0));
         }
@@ -76,7 +77,7 @@ public class FamilyAddHandler : AbstractPacketHandler
         }
         else
         {
-            InviteCoordinator.createInvite(InviteType.FAMILY, chr, addChr, addChr.getId());
+            InviteType.FAMILY.CreateInvite(new InviteRequest(chr, addChr));
             addChr.getClient().sendPacket(PacketCreator.sendFamilyInvite(chr.getId(), chr.getName()));
             chr.dropMessage("The invite has been sent.");
             c.sendPacket(PacketCreator.enableActions());

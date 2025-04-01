@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Invites;
 using Application.Core.Managers;
 using net.packet;
 using net.server.coordinator.world;
@@ -63,8 +64,8 @@ public class PartyOperationHandler : AbstractPacketHandler
                 { // join
                     int partyid = p.readInt();
 
-                    InviteResult inviteRes = InviteCoordinator.answerInvite(InviteType.PARTY, player.getId(), partyid, true);
-                    InviteResultType res = inviteRes.result;
+                    InviteResult inviteRes = InviteType.PARTY.AnswerInvite(player.getId(), partyid, true);
+                    InviteResultType res = inviteRes.Result;
                     if (res == InviteResultType.ACCEPTED)
                     {
                         TeamManager.joinParty(player, partyid, false);
@@ -105,7 +106,7 @@ public class PartyOperationHandler : AbstractPacketHandler
                             }
                             if (party.getMembers().Count < 6)
                             {
-                                if (InviteCoordinator.createInvite(InviteType.PARTY, player, party.getId(), invited.getId()))
+                                if (InviteType.PARTY.CreateInvite(new TeamInviteRequest(invited, player)))
                                 {
                                     invited.sendPacket(PacketCreator.partyInvite(player));
                                 }
