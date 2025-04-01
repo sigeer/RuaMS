@@ -106,7 +106,7 @@ public class PartyOperationHandler : AbstractPacketHandler
                             }
                             if (party.getMembers().Count < 6)
                             {
-                                if (InviteType.PARTY.CreateInvite(new TeamInviteRequest(invited, player)))
+                                if (InviteType.PARTY.CreateInvite(new TeamInviteRequest(player, invited)))
                                 {
                                     invited.sendPacket(PacketCreator.partyInvite(player));
                                 }
