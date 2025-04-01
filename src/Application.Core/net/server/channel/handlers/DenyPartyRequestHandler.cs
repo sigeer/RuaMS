@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Invites;
 using net.packet;
 using net.server.coordinator.world;
 using tools;
@@ -40,7 +41,7 @@ public class DenyPartyRequestHandler : AbstractPacketHandler
         {
             var chr = c.OnlinedCharacter;
 
-            if (InviteCoordinator.answerInvite(InviteType.PARTY, chr.getId(), cfrom.getPartyId(), false).result == InviteResultType.DENIED)
+            if (InviteType.PARTY.AnswerInvite(chr.getId(), cfrom.getPartyId(), false).Result == InviteResultType.DENIED)
             {
                 chr.updatePartySearchAvailability(chr.getParty() == null);
                 cfrom.sendPacket(PacketCreator.partyStatusMessage(23, chr.getName()));

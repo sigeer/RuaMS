@@ -244,7 +244,7 @@ public class PlayerInteractionHandler : AbstractPacketHandler
                     return;
                 }
 
-                TradeManager.inviteTrade(chr, other);
+                TradeManager.InviteTrade(chr, other);
             }
             else if (mode == Action.DECLINE.getCode())
             {

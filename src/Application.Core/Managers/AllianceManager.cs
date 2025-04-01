@@ -1,3 +1,4 @@
+using Application.Core.Game.Invites;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Microsoft.EntityFrameworkCore;
@@ -185,7 +186,7 @@ namespace Application.Core.Managers
                     }
                     else
                     {
-                        if (InviteCoordinator.createInvite(InviteType.ALLIANCE, c.OnlinedCharacter, allianceId, victim.getId()))
+                        if (InviteType.ALLIANCE.CreateInvite(new AllianceInviteRequest(c.OnlinedCharacter, victim)))
                         {
                             victim.sendPacket(GuildPackets.allianceInvite(allianceId, c.OnlinedCharacter));
                         }
@@ -200,11 +201,10 @@ namespace Application.Core.Managers
 
         public static bool answerInvitation(int targetId, string targetGuildName, int allianceId, bool answer)
         {
-            InviteResult res = InviteCoordinator.answerInvite(InviteType.ALLIANCE, targetId, allianceId, answer);
+            InviteResult res = InviteType.ALLIANCE.AnswerInvite(targetId, allianceId, answer);
 
             string msg;
-            var sender = res.from;
-            switch (res.result)
+            switch (res.Result)
             {
                 case InviteResultType.ACCEPTED:
                     return true;
@@ -218,9 +218,9 @@ namespace Application.Core.Managers
                     break;
             }
 
-            if (sender != null)
+            if (res.Request != null)
             {
-                sender.dropMessage(5, msg);
+                res.Request.From.dropMessage(5, msg);
             }
 
             return false;

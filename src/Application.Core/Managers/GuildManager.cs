@@ -1,3 +1,4 @@
+using Application.Core.Game.Invites;
 using Application.Core.Game.Relation;
 using Microsoft.EntityFrameworkCore;
 using net.server;
@@ -59,7 +60,7 @@ namespace Application.Core.Managers
             return guild;
         }
 
-        public static GuildResponse? sendInvitation(IClient c, string targetName)
+        public static GuildResponse? SendInvitation(IClient c, string targetName)
         {
             var sender = c.OnlinedCharacter;
 
@@ -73,7 +74,7 @@ namespace Application.Core.Managers
                 return GuildResponse.ALREADY_IN_GUILD;
             }
 
-            if (InviteCoordinator.createInvite(InviteType.GUILD, sender, sender.GuildId, mc.getId()))
+            if (InviteType.GUILD.CreateInvite(new GuildInviteRequest(sender, mc)))
             {
                 mc.sendPacket(GuildPackets.guildInvite(sender.GuildId, sender.getName()));
                 return null;
@@ -84,13 +85,12 @@ namespace Application.Core.Managers
             }
         }
 
-        public static bool answerInvitation(int targetId, string targetName, int guildId, bool answer)
+        public static bool AnswerInvitation(IPlayer answer, int guildId, bool operation)
         {
-            InviteResult res = InviteCoordinator.answerInvite(InviteType.GUILD, targetId, guildId, answer);
+            InviteResult res = InviteType.GUILD.AnswerInvite(answer.Id, guildId, operation);
 
             GuildResponse? mgr = null;
-            var sender = res.from;
-            switch (res.result)
+            switch (res.Result)
             {
                 case InviteResultType.ACCEPTED:
                     return true;
@@ -104,9 +104,9 @@ namespace Application.Core.Managers
                     break;
             }
 
-            if (mgr != null && sender != null)
+            if (mgr != null && res.Request != null)
             {
-                sender.sendPacket(mgr.Value.getPacket(targetName));
+                res.Request.From.sendPacket(mgr.Value.getPacket(answer.getName()));
             }
             return false;
         }

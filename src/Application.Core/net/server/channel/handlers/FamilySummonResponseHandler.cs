@@ -1,5 +1,6 @@
 
 
+using Application.Core.Game.Invites;
 using Application.Core.Game.Maps;
 using client;
 using net.packet;
@@ -19,21 +20,25 @@ public class FamilySummonResponseHandler : AbstractPacketHandler
         }
         p.readString(); //family name
         bool accept = p.readByte() != 0;
-        InviteResult inviteResult = InviteCoordinator.answerInvite(InviteType.FAMILY_SUMMON, c.OnlinedCharacter.getId(), c.OnlinedCharacter, accept);
-        if (inviteResult.result == InviteResultType.NOT_FOUND)
+        InviteResult inviteResult = InviteType.FAMILY_SUMMON.AnswerInvite(c.OnlinedCharacter.getId(), c.OnlinedCharacter.getId(), accept);
+        if (inviteResult.Result == InviteResultType.NOT_FOUND)
         {
             return;
         }
-        var inviter = inviteResult.from;
+
+        var request = inviteResult.Request as FamilySummonInviteRequest;
+        if (request == null)
+            return;
+
+        var inviter = request.From;
         var inviterEntry = inviter.getFamilyEntry();
         if (inviterEntry == null)
         {
             return;
         }
-        var map = (IMap)inviteResult.paramsValue[0];
-        if (accept && inviter.getMap() == map)
+        if (accept && inviter.getMap() == request.Map)
         { //cancel if inviter has changed maps
-            c.OnlinedCharacter.changeMap(map, map.getPortal(0));
+            c.OnlinedCharacter.changeMap(request.Map, request.Map.getPortal(0));
         }
         else
         {

@@ -38,7 +38,7 @@ public class DenyGuildRequestHandler : AbstractPacketHandler
         var cfrom = c.getWorldServer().getPlayerStorage().getCharacterByName(p.readString());
         if (cfrom != null)
         {
-            GuildManager.answerInvitation(c.OnlinedCharacter.Id, c.OnlinedCharacter.Name, cfrom.GuildId, false);
+            GuildManager.AnswerInvitation(c.OnlinedCharacter, cfrom.GuildId, false);
         }
     }
 }

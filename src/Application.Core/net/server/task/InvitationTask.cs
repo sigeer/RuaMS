@@ -23,9 +23,11 @@ using net.server.coordinator.world;
 
 namespace net.server.task;
 
-/**
- * @author Ronan
- */
+
+/// <summary>
+/// @author Ronan
+/// 30s
+/// </summary>
 public class InvitationTask : AbstractRunnable
 {
 
