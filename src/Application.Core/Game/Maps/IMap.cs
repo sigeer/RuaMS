@@ -65,7 +65,6 @@ namespace Application.Core.Game.Maps
         void broadcastZakumVictory();
         Point calcDropPos(Point initial, Point fallback);
         bool canDeployDoor(Point pos);
-        void changeEnvironment(string mapObj, int newState);
         void checkMapOwnerActivity();
         bool claimOwnership(IPlayer chr);
         void clearDrops();
@@ -113,7 +112,6 @@ namespace Application.Core.Game.Maps
         IPlayer? getCharacterById(int id);
         IPlayer? getCharacterByName(string name);
         IReadOnlyCollection<IPlayer> getCharacters();
-        int getCurrentPartyId();
         bool getDocked();
         Portal? getDoorPortal(int doorid);
         KeyValuePair<string, int>? getDoorPositionStatus(Point pos);
@@ -172,7 +170,6 @@ namespace Application.Core.Game.Maps
         int getSpawnedMonstersOnMap();
         string getStreetName();
         bool getSummonState();
-        int getTimeLeft();
         int getTimeLimit();
         int getWorld();
         IWorld getWorldServer();
@@ -207,7 +204,6 @@ namespace Application.Core.Game.Maps
         public void killMonster(Monster? monster, IPlayer? chr, bool withDrops, short dropDelay = 0);
         void killMonster(Monster? monster, IPlayer? chr, bool withDrops, int animation, short dropDelay);
         void killMonsterWithDrops(int mobId);
-        void limitReactor(int rid, int num);
         bool makeDisappearItemFromMap(MapItem mapitem);
         bool makeDisappearItemFromMap(IMapObject? mapobj);
         void makeMonsterReal(Monster monster);
@@ -274,7 +270,6 @@ namespace Application.Core.Game.Maps
         void softKillAllMonsters();
         void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
         void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
-        void spawnCPQMonster(Monster mob, Point pos, int team);
         void spawnDojoMonster(Monster monster);
         void spawnDoor(DoorObject door);
         void spawnFakeMonster(Monster monster);
