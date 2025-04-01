@@ -4101,11 +4101,16 @@ public class MapleMap : IMap
 
         if (YamlConfig.config.server.USE_ENABLE_FULL_RESPAWN)
         {
-            return (monsterSpawn.Count - spawnedMonstersOnMap.get());
+            return (GetMaxMobCount() - spawnedMonstersOnMap.get());
         }
 
-        int maxNumShouldSpawn = (int)Math.Ceiling(getCurrentSpawnRate(numPlayers) * monsterSpawn.Count);
+        int maxNumShouldSpawn = (int)Math.Ceiling(getCurrentSpawnRate(numPlayers) * GetMaxMobCount());
         return maxNumShouldSpawn - spawnedMonstersOnMap.get();
+    }
+
+    private int GetMaxMobCount()
+    {
+        return (int)Math.Ceiling(monsterSpawn.Count * this.MonsterRate);
     }
 
     public void respawn()
