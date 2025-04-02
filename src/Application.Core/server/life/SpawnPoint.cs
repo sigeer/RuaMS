@@ -153,17 +153,16 @@ public class SpawnPoint
     private int GetMaxMobCount()
     {
         var rate = _map.ActualMonsterRate;
-        // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
         if (_map.getEventInstance() != null || _monsterMeta.isBoss())
             rate = 1;
 
-        return (int)Math.Ceiling(rate);
+        // 比如2.5倍，那么就算已有2只也算作满怪
+        return (int)Math.Floor(rate);
     }
 
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
         var  rate = _map.ActualMonsterRate;
-        // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
         if (_map.getEventInstance() != null || _monsterMeta.isBoss())
             rate = 1;
 
