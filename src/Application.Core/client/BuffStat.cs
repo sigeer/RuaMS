@@ -44,6 +44,8 @@ public class BuffStat : EnumClass
     public static readonly BuffStat AURA = new BuffStat(0x40000L);
     public static readonly BuffStat CONFUSE = new BuffStat(0x80000L);
 
+    public static readonly BuffStat EXP_BUFF = new BuffStat(0x40000000L);
+
     // ------ COUPON feature ------
     public static readonly BuffStat COUPON_EXP1 = new BuffStat(0x100000L);
     public static readonly BuffStat COUPON_EXP2 = new BuffStat(0x200000L);

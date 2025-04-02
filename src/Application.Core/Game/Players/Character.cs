@@ -33,6 +33,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
+using Application.Shared.Items;
 using Application.Shared.KeyMaps;
 using client;
 using client.autoban;
@@ -184,8 +185,7 @@ public partial class Player
 
     private ConcurrentDictionary<IMapObject, int> visibleMapObjects = new ConcurrentDictionary<IMapObject, int>();
 
-    private Dictionary<int, int> activeCoupons = new();
-    private Dictionary<int, int> activeCouponRates = new();
+    private Dictionary<int, CouponBuffEntry> activeCoupons = new();
 
     private Dictionary<int, Summon> summons = new();
 
@@ -3548,10 +3548,6 @@ public partial class Player
         }
     }
 
-    private void revertCouponRates()
-    {
-        revertCouponsEffects();
-    }
 
     public void updateCouponRates()
     {
@@ -3566,7 +3562,7 @@ public partial class Player
         cashInv.lockInventory();
         try
         {
-            revertCouponRates();
+            revertCouponsEffects();
             setCouponRates();
         }
         finally
@@ -3577,12 +3573,9 @@ public partial class Player
         }
     }
 
-    private int getCouponMultiplier(int couponId)
-    {
-        return activeCouponRates.GetValueOrDefault(couponId);
-    }
-
-
+    /// <summary>
+    /// 移除倍率buff并重算
+    /// </summary>
     private void revertCouponsEffects()
     {
         dispelBuffCoupons();
@@ -3601,23 +3594,28 @@ public partial class Player
 
         if (YamlConfig.config.server.USE_STACK_COUPON_RATES)
         {
+            var stackExpCoupon = 0;
+            var stackDropCoupon = 0;
+
             foreach (var coupon in activeCoupons)
             {
                 int couponId = coupon.Key;
-                int couponQty = coupon.Value;
+                int couponQty = coupon.Value.Count;
 
                 toCommitEffect.Add(couponId);
 
                 if (ItemConstants.isExpCoupon(couponId))
                 {
-                    this.expCoupon *= (getCouponMultiplier(couponId) * couponQty);
+                    stackExpCoupon += coupon.Value.Count * coupon.Value.Rate;
                 }
                 else
                 {
-                    this.dropCoupon *= (getCouponMultiplier(couponId) * couponQty);
-                    this.mesoCoupon *= (getCouponMultiplier(couponId) * couponQty);
+                    stackDropCoupon += coupon.Value.Count * coupon.Value.Rate;
                 }
             }
+            expCoupon = stackExpCoupon == 0 ? 1 : stackExpCoupon;
+            mesoCoupon = stackDropCoupon == 0 ? 1 : stackDropCoupon;
+            dropCoupon = mesoCoupon;
         }
         else
         {
@@ -3629,18 +3627,18 @@ public partial class Player
 
                 if (ItemConstants.isExpCoupon(couponId))
                 {
-                    if (maxExpRate < getCouponMultiplier(couponId))
+                    if (maxExpRate < coupon.Value.Rate)
                     {
                         maxExpCouponId = couponId;
-                        maxExpRate = getCouponMultiplier(couponId);
+                        maxExpRate = coupon.Value.Rate;
                     }
                 }
                 else
                 {
-                    if (maxDropRate < getCouponMultiplier(couponId))
+                    if (maxDropRate < coupon.Value.Rate)
                     {
                         maxDropCouponId = couponId;
-                        maxDropRate = getCouponMultiplier(couponId);
+                        maxDropRate = coupon.Value.Rate;
                     }
                 }
             }
@@ -3667,7 +3665,6 @@ public partial class Player
     private void setActiveCoupons(ICollection<Item> cashItems)
     {
         activeCoupons.Clear();
-        activeCouponRates.Clear();
 
         Dictionary<int, int> coupons = Server.getInstance().getCouponRates();
         List<int> active = Server.getInstance().getActiveCoupons();
@@ -3676,14 +3673,13 @@ public partial class Player
         {
             if (ItemConstants.isRateCoupon(it.getItemId()) && active.Contains(it.getItemId()))
             {
-                if (activeCoupons.TryGetValue(it.getItemId(), out var count))
+                if (activeCoupons.TryGetValue(it.getItemId(), out var d))
                 {
-                    activeCoupons.AddOrUpdate(it.getItemId(), count + 1);
+                    d.Count++;
                 }
                 else
                 {
-                    activeCoupons.AddOrUpdate(it.getItemId(), 1);
-                    activeCouponRates.AddOrUpdate(it.getItemId(), coupons.GetValueOrDefault(it.getItemId()));
+                    activeCoupons.AddOrUpdate(it.getItemId(), new CouponBuffEntry(1, coupons.GetValueOrDefault(it.getItemId())));
                 }
             }
         }
@@ -3701,7 +3697,10 @@ public partial class Player
         mse?.applyTo(this);
     }
 
-    public void dispelBuffCoupons()
+    /// <summary>
+    /// 移除倍率道具buff
+    /// </summary>
+    private void dispelBuffCoupons()
     {
         List<BuffStatValueHolder> allBuffs = getAllStatups();
 

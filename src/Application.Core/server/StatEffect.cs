@@ -58,6 +58,7 @@ public class StatEffect
     private byte mhpR, mmpR;
     private short mpCon, hpCon;
     private int duration, target, barrier, mob;
+    public int ExpBuff { get; set; }
     private bool overTime, repeatEffect;
     private int sourceid;
     private int moveTo;
@@ -200,6 +201,7 @@ public class StatEffect
         hpCon = (short)DataTool.getInt("hpCon", source, 0);
         int iprop = DataTool.getInt("prop", source, 100);
         prop = iprop / 100.0;
+        ExpBuff = DataTool.getInt("expBuff", source, 0) ;
 
         cp = DataTool.getInt("cp", source, 0);
         List<Disease> cure = new(5);
@@ -449,7 +451,7 @@ public class StatEffect
                     speed *= 15;
                 }
             }
-
+            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, ExpBuff);
             addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
             addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
             addBuffStatPairToListIfNotZero(statups, BuffStat.MATK, matk);

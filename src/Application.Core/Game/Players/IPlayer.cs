@@ -185,7 +185,6 @@ namespace Application.Core.Game.Players
         void disbandGuild();
         void diseaseExpireTask();
         void dispel();
-        void dispelBuffCoupons();
         void dispelDebuff(Disease debuff);
         void dispelDebuffs();
         void dispelSkill(int skillid);
