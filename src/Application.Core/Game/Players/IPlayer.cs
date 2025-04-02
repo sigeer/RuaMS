@@ -193,7 +193,7 @@ namespace Application.Core.Game.Players
         void doPendingNameChange();
         void dropMessage(int type, string message);
         void dropMessage(string message);
-        void empty(bool remove);
+        void Dispose();
 
         void equipChanged();
         void equippedItem(Equip equip);
@@ -541,13 +541,9 @@ namespace Application.Core.Game.Players
         void resetExcluded(int petId);
         void resetPartySearchInvite(int fromLeaderid);
         void resetPlayerAggro();
-        void resetPlayerRates();
         void resetStats();
         void respawn(EventInstanceManager? eim, int returnMap);
         void respawn(int returnMap);
-        void revertLastPlayerRates();
-        void revertPlayerRates();
-        void revertWorldRates();
         void runFullnessSchedule(int petSlot);
         bool runTirednessSchedule();
         //void saveCharToDB();
@@ -639,7 +635,6 @@ namespace Application.Core.Game.Players
         void setPartyQuest(PartyQuest? pq);
         void setPartyQuestItemObtained(string partyquestchar);
         void setPlayerAggro(int mobHash);
-        void setPlayerRates();
         void setPlayerShop(PlayerShop? playerShop);
         void setQuestAdd(Quest quest, byte status, string customData);
         void setQuestProgress(int id, int infoNumber, string progress);
@@ -656,7 +651,6 @@ namespace Application.Core.Game.Players
         void setVanquisherKills(int x);
         void setVanquisherStage(int x);
         void setWorld(int world);
-        void setWorldRates();
         void shiftPetsRight();
         void showDojoClock();
         void showHint(string msg);

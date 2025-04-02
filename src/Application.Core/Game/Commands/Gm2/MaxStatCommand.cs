@@ -14,12 +14,6 @@ public class MaxStatCommand : CommandBase
         var player = c.OnlinedCharacter;
         player.loseExp(player.getExp(), false, false);
         player.setLevel(NumericConfig.MaxLevel);
-        player.resetPlayerRates();
-        if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL)
-        {
-            player.setPlayerRates();
-        }
-        player.setWorldRates();
         player.updateStrDexIntLuk(NumericConfig.MaxStat);
         player.setFame(NumericConfig.MaxFame);
         player.updateMaxHpMaxMp(NumericConfig.MaxHP, NumericConfig.MaxMP);

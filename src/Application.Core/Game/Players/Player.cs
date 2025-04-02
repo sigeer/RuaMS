@@ -76,6 +76,14 @@ namespace Application.Core.Game.Players
             setPosition(new Point(0, 0));
 
             RegisterStatsListener();
+
+            var worldServer = client.getWorldServer();
+            worldServer.OnExpRateChanged += UpdateActualExpRate;
+            worldServer.OnMesoRateChanged += UpdateActualMesoRate;
+            worldServer.OnDropRateChanged += UpdateActualDropRate;
+            worldServer.OnBossDropRateChaged += UpdateActualBossDropRate;
+            worldServer.OnQuestRateChanged += UpdateActualQuestExpRate;
+            worldServer.OnQuestRateChanged += UpdateActualQuestMesoRate;
         }
 
         public Player() : this(new OfflineClient())

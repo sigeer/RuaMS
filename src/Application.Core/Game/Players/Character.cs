@@ -105,7 +105,7 @@ public partial class Player
     private int mesosTraded = 0;
     private int possibleReports = 10;
     private int dojoEnergy;
-    private float expRate = 1, mesoRate = 1, dropRate = 1, expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
+    private float expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
     private int owlSearch;
     private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
@@ -252,6 +252,15 @@ public partial class Player
     private bool chasing = false;
 
     ReaderWriterLockSlim chLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+    float expRateByLevel = 1;
+    float mesoRateByLevel = 1;
+    float dropRateByLevel = 1;
+    public float ActualExpRate { get; private set; }
+    public float ActualMesoRate { get; private set; }
+    public float ActualDropRate { get; private set; }
+    public float ActualQuestExpRate { get; private set; }
+    public float ActualQuestMesoRate { get; private set; }
+    public float ActualBossDropRate { get; private set; }
 
     public Job getJobStyle(byte opt)
     {
@@ -2283,7 +2292,7 @@ public partial class Player
             return 1;
         }
 
-        return expRate;
+        return ActualExpRate;
     }
 
     public float getCouponExpRate()
@@ -2293,12 +2302,12 @@ public partial class Player
 
     public float getRawExpRate()
     {
-        return expRate / (expCoupon * getWorldServer().ExpRate);
+        return expRateByLevel;
     }
 
     public float getDropRate()
     {
-        return dropRate;
+        return ActualDropRate;
     }
 
     public float getCouponDropRate()
@@ -2308,18 +2317,17 @@ public partial class Player
 
     public float getRawDropRate()
     {
-        return dropRate / (dropCoupon * getWorldServer().DropRate);
+        return dropRateByLevel;
     }
 
     public float getBossDropRate()
     {
-        var w = getWorldServer();
-        return (dropRate / w.DropRate) * w.BossDropRate;
+        return ActualBossDropRate;
     }
 
     public float getMesoRate()
     {
-        return mesoRate;
+        return ActualMesoRate;
     }
 
     public float getCouponMesoRate()
@@ -2329,7 +2337,7 @@ public partial class Player
 
     public float getRawMesoRate()
     {
-        return mesoRate / (mesoCoupon * getWorldServer().MesoRate);
+        return mesoRateByLevel;
     }
 
     public float getQuestExpRate()
@@ -2339,14 +2347,12 @@ public partial class Player
             return 1;
         }
 
-        var w = getWorldServer();
-        return w.ExpRate * w.QuestRate;
+        return ActualQuestExpRate;
     }
 
     public float getQuestMesoRate()
     {
-        var w = getWorldServer();
-        return w.MesoRate * w.QuestRate;
+        return ActualQuestMesoRate;
     }
 
     public float getCardRate(int itemid)
@@ -3444,9 +3450,7 @@ public partial class Player
                     }
                 }
                 if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL == true)
-                { //For the rate upgrade
-                    revertLastPlayerRates();
-                    setPlayerRates();
+                {
                     this.yellowMessage("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
                 }
             }
@@ -3492,42 +3496,34 @@ public partial class Player
         }
     }
 
-
-    public void setPlayerRates()
+    void UpdateActualExpRate()
     {
-        this.expRate *= GameConstants.getPlayerBonusExpRate(this.Level / 20);
-        this.mesoRate *= GameConstants.getPlayerBonusMesoRate(this.Level / 20);
-        this.dropRate *= GameConstants.getPlayerBonusDropRate(this.Level / 20);
+        ActualExpRate = expRateByLevel * getWorldServer().ExpRate * expCoupon;
     }
 
-    public void revertLastPlayerRates()
+    void UpdateActualMesoRate()
     {
-        this.expRate /= GameConstants.getPlayerBonusExpRate((this.Level - 1) / 20);
-        this.mesoRate /= GameConstants.getPlayerBonusMesoRate((this.Level - 1) / 20);
-        this.dropRate /= GameConstants.getPlayerBonusDropRate((this.Level - 1) / 20);
+        ActualMesoRate = mesoRateByLevel * getWorldServer().MesoRate * mesoCoupon;
     }
 
-    public void revertPlayerRates()
+    void UpdateActualDropRate()
     {
-        this.expRate /= GameConstants.getPlayerBonusExpRate(this.Level / 20);
-        this.mesoRate /= GameConstants.getPlayerBonusMesoRate(this.Level / 20);
-        this.dropRate /= GameConstants.getPlayerBonusDropRate(this.Level / 20);
+        ActualDropRate = dropRateByLevel * getWorldServer().DropRate * dropCoupon;
     }
 
-    public void setWorldRates()
+    void UpdateActualBossDropRate()
     {
-        var worldz = getWorldServer();
-        this.expRate *= worldz.ExpRate;
-        this.mesoRate *= worldz.MesoRate;
-        this.dropRate *= worldz.DropRate;
+        ActualBossDropRate = getWorldServer().BossDropRate;
     }
 
-    public void revertWorldRates()
+    void UpdateActualQuestExpRate()
     {
-        var worldz = getWorldServer();
-        this.expRate /= worldz.ExpRate;
-        this.mesoRate /= worldz.MesoRate;
-        this.dropRate /= worldz.DropRate;
+        ActualQuestExpRate = getWorldServer().QuestRate;
+    }
+
+    void UpdateActualQuestMesoRate()
+    {
+        ActualQuestMesoRate = getWorldServer().QuestRate;
     }
 
     private void setCouponRates()
@@ -3581,44 +3577,22 @@ public partial class Player
         }
     }
 
-    public void resetPlayerRates()
-    {
-        expRate = 1;
-        mesoRate = 1;
-        dropRate = 1;
-
-        expCoupon = 1;
-        mesoCoupon = 1;
-        dropCoupon = 1;
-    }
-
     private int getCouponMultiplier(int couponId)
     {
         return activeCouponRates.GetValueOrDefault(couponId);
     }
 
-    private void setExpCouponRate(int couponId, int couponQty)
-    {
-        this.expCoupon *= (getCouponMultiplier(couponId) * couponQty);
-    }
-
-    private void setDropCouponRate(int couponId, int couponQty)
-    {
-        this.dropCoupon *= (getCouponMultiplier(couponId) * couponQty);
-        this.mesoCoupon *= (getCouponMultiplier(couponId) * couponQty);
-    }
 
     private void revertCouponsEffects()
     {
         dispelBuffCoupons();
 
-        this.expRate /= this.expCoupon;
-        this.dropRate /= this.dropCoupon;
-        this.mesoRate /= this.mesoCoupon;
-
         this.expCoupon = 1;
         this.dropCoupon = 1;
         this.mesoCoupon = 1;
+        UpdateActualExpRate();
+        UpdateActualMesoRate();
+        UpdateActualDropRate();
     }
 
     private List<int> activateCouponsEffects()
@@ -3636,11 +3610,12 @@ public partial class Player
 
                 if (ItemConstants.isExpCoupon(couponId))
                 {
-                    setExpCouponRate(couponId, couponQty);
+                    this.expCoupon *= (getCouponMultiplier(couponId) * couponQty);
                 }
                 else
                 {
-                    setDropCouponRate(couponId, couponQty);
+                    this.dropCoupon *= (getCouponMultiplier(couponId) * couponQty);
+                    this.mesoCoupon *= (getCouponMultiplier(couponId) * couponQty);
                 }
             }
         }
@@ -3683,11 +3658,9 @@ public partial class Player
             this.dropCoupon = maxDropRate;
             this.mesoCoupon = maxDropRate;
         }
-
-        this.expRate *= this.expCoupon;
-        this.dropRate *= this.dropCoupon;
-        this.mesoRate *= this.mesoCoupon;
-
+        UpdateActualExpRate();
+        UpdateActualMesoRate();
+        UpdateActualDropRate();
         return toCommitEffect;
     }
 
@@ -5471,7 +5444,7 @@ public partial class Player
         cpqSchedule = null;
     }
 
-    public void empty(bool remove)
+    public void Dispose()
     {
         if (dragonBloodSchedule != null)
         {
@@ -5560,27 +5533,25 @@ public partial class Player
             MountModel.empty();
             MountModel = null;
         }
-        if (remove)
+
+        partyQuest = null;
+
+        TeamModel = null;
+        var familyEntry = getFamilyEntry();
+        if (familyEntry != null)
         {
-            partyQuest = null;
-
-            TeamModel = null;
-            var familyEntry = getFamilyEntry();
-            if (familyEntry != null)
-            {
-                familyEntry.setCharacter(null);
-                setFamilyEntry(null);
-            }
-
-            getWorldServer().registerTimedMapObject(() =>
-            {
-                // Client = null;  // clients still triggers handlers a few times after disconnecting
-                // base.MapModel = null;
-                // thanks Shavit for noticing a memory leak with inventories holding owner object
-                Bag.Dispose();
-
-            }, (long)TimeSpan.FromMinutes(5).TotalMilliseconds);
+            familyEntry.setCharacter(null);
+            setFamilyEntry(null);
         }
+        Bag.Dispose();
+
+        var worldServer = getWorldServer();
+        worldServer.OnExpRateChanged -= UpdateActualExpRate;
+        worldServer.OnMesoRateChanged -= UpdateActualMesoRate;
+        worldServer.OnDropRateChanged -= UpdateActualDropRate;
+        worldServer.OnBossDropRateChaged -= UpdateActualBossDropRate;
+        worldServer.OnQuestRateChanged -= UpdateActualQuestExpRate;
+        worldServer.OnQuestRateChanged -= UpdateActualQuestMesoRate;
     }
 
     public void logOff()
