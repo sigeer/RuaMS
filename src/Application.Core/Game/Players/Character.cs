@@ -3371,12 +3371,13 @@ public partial class Player
                 }
             }
 
-            Level++;
-            if (Level >= getMaxClassLevel())
+            setLevel(Level + 1);
+
+            int maxClassLevel = getMaxClassLevel();
+            if (Level >= maxClassLevel)
             {
                 ExpValue.set(0);
 
-                int maxClassLevel = getMaxClassLevel();
                 if (Level == maxClassLevel)
                 {
                     if (!this.isGM())
@@ -3394,7 +3395,7 @@ public partial class Player
                     }
                 }
 
-                Level = maxClassLevel; //To prevent levels past the maximum
+                setLevel(maxClassLevel);
             }
 
             levelUpGainSp();
@@ -4692,6 +4693,16 @@ public partial class Player
     public void setLevel(int level)
     {
         this.Level = level;
+
+        if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL && IsOnlined)
+        {
+            expRateByLevel = GameConstants.getPlayerBonusExpRate(this.Level / 20);
+            mesoRateByLevel = GameConstants.getPlayerBonusMesoRate(this.Level / 20);
+            dropRateByLevel = GameConstants.getPlayerBonusDropRate(this.Level / 20);
+            UpdateActualExpRate();
+            UpdateActualMesoRate();
+            UpdateActualDropRate();
+        }
     }
 
     public void setMessenger(Messenger? messenger)

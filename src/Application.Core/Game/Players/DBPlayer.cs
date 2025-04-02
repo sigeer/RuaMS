@@ -17,23 +17,7 @@ namespace Application.Core.Game.Players
 
         public string Name { get; set; } = null!;
 
-        int _level;
-        public int Level
-        {
-            get => _level; set
-            {
-                _level = value;
-                if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL)
-                {
-                    expRateByLevel = GameConstants.getPlayerBonusExpRate(this.Level / 20);
-                    mesoRateByLevel = GameConstants.getPlayerBonusMesoRate(this.Level / 20);
-                    dropRateByLevel = GameConstants.getPlayerBonusDropRate(this.Level / 20);
-                    UpdateActualExpRate();
-                    UpdateActualMesoRate();
-                    UpdateActualDropRate();
-                }
-            }
-        }
+        public int Level { get; set; }
 
         public int Exp { get; set; }
 
