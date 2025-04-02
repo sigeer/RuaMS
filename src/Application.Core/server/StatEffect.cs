@@ -260,7 +260,7 @@ public class StatEffect
         }
         this.sourceid = sourceid;
         this.skill = skill;
-        if (!skill && duration > -1)
+        if (!this.skill && duration > -1)
         {
             this.overTime = true;
         }
@@ -287,9 +287,9 @@ public class StatEffect
         mapProtection = GetMapProtection(sourceid);
         addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, mapProtection);
 
-        if (overTime && getSummonMovementType() == null)
+        if (this.overTime && getSummonMovementType() == null)
         {
-            if (!skill)
+            if (!this.skill)
             {
                 if (ItemId.isPyramidBuff(sourceid))
                 {
@@ -493,7 +493,7 @@ public class StatEffect
         itemConNo = DataTool.getInt("itemConNo", source, 0);
         moveTo = DataTool.getInt("moveTo", source, -1);
         monsterStatus = new();
-        if (skill)
+        if (this.skill)
         {
             switch (sourceid)
             {
@@ -874,7 +874,7 @@ public class StatEffect
         {
             statups.Add(new(BuffStat.MORPH, getMorph()));
         }
-        if (ghost > 0 && !skill)
+        if (ghost > 0 && !this.skill)
         {
             statups.Add(new(BuffStat.GHOST_MORPH, ghost));
         }
