@@ -53,7 +53,7 @@ public class Randomizer
         return Random.Shared.NextDouble();
     }
 
-    public static float nextFloat()
+    public static float NextFloat()
     {
         return Random.Shared.NextSingle();
     }
