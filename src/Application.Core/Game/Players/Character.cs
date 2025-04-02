@@ -3497,6 +3497,16 @@ public partial class Player
         }
     }
 
+    void UpdateActualRate()
+    {
+        UpdateActualExpRate();
+        UpdateActualMesoRate();
+        UpdateActualDropRate();
+        UpdateActualBossDropRate();
+        UpdateActualQuestExpRate();
+        UpdateActualQuestMesoRate();
+    }
+
     void UpdateActualExpRate()
     {
         ActualExpRate = expRateByLevel * getWorldServer().ExpRate * expCoupon;

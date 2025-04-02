@@ -87,6 +87,8 @@ namespace Application.Core.Game.Players
                 worldServer.OnBossDropRateChaged += UpdateActualBossDropRate;
                 worldServer.OnQuestRateChanged += UpdateActualQuestExpRate;
                 worldServer.OnQuestRateChanged += UpdateActualQuestMesoRate;
+
+                UpdateActualRate();
             }
         }
 
