@@ -829,6 +829,12 @@ public class Monster : AbstractLifeObject
                 personalExp += expBonus.Value;
             }
 
+            var expBuff = attacker.getBuffedValue(BuffStat.EXP_BUFF);
+            if (expBuff != null)
+            {
+                personalExp *= expBuff.Value / 100;
+            }
+
             int _personalExp = expValueToInteger(personalExp.Value); // assuming no negative xp here
 
             if (partyExp != null)
@@ -843,6 +849,12 @@ public class Monster : AbstractLifeObject
             }
 
             int _partyExp = expValueToInteger(partyExp.Value);
+
+            if (attacker.hasDisease(Disease.CURSE))
+            {
+                _personalExp = (int)(_personalExp * 0.5);
+                _partyExp = (int)(_partyExp * 0.5);
+            }
 
             attacker.gainExp(_personalExp, _partyExp, true, false, white);
             attacker.increaseEquipExp(_personalExp);

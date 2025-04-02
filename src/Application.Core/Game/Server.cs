@@ -369,11 +369,7 @@ public class Server
 
     private void loadCouponRates(DBContext dbContext)
     {
-        var list = dbContext.Nxcoupons.AsNoTracking().ToList();
-        list.ForEach(rs =>
-        {
-            couponRates.AddOrUpdate(rs.CouponId, rs.Rate);
-        });
+        couponRates = dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToList().ToDictionary(x => x.CouponId, x => x.Rate);
     }
 
     public List<int> getActiveCoupons()

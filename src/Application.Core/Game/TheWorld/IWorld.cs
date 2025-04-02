@@ -20,6 +20,12 @@ namespace Application.Core.Game.TheWorld
     {
         #region Events
         event Action? OnMobRateChanged;
+
+        event Action? OnExpRateChanged;
+        event Action? OnMesoRateChanged;
+        event Action? OnDropRateChanged;
+        event Action? OnQuestRateChanged;
+        event Action? OnBossDropRateChaged;
         #endregion
         WorldConfigEntity Configs { get; set; }
         public List<IWorldChannel> Channels { get; }

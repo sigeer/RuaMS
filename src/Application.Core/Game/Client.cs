@@ -1027,7 +1027,7 @@ public class Client : ChannelHandlerAdapter, IClient
         // player hard reference removal thanks to Steve (kaito1410)
         if (this.Character != null)
         {
-            this.Character.empty(true); // clears schedules and stuff
+            this.Character.Dispose(); // clears schedules and stuff
         }
 
         Server.getInstance().unregisterLoginState(this);

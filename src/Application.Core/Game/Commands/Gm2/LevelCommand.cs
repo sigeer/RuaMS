@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 
 public class LevelCommand : CommandBase
 {
@@ -24,13 +24,6 @@ public class LevelCommand : CommandBase
 
         player.loseExp(player.getExp(), false, false);
         player.setLevel(Math.Min(newlevel, player.getMaxClassLevel()) - 1);
-
-        player.resetPlayerRates();
-        if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL)
-        {
-            player.setPlayerRates();
-        }
-        player.setWorldRates();
 
         player.levelUp(false);
     }
