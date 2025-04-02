@@ -132,18 +132,17 @@ public class MapleMap : IMap
 
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
-    private float _monsterRate;
-    public float MonsterRate
+    float _monsterRate;
+    public float MonsterRate 
     {
         get => _monsterRate;
         set
         {
-            if (value <= 0)
-                _monsterRate = 1;
-            else
-                _monsterRate = value;
+            _monsterRate = value;
+            UpdateMapActualMobRate();
         }
     }
+    public float ActualMonsterRate { get; private set; }
     public int Id { get; }
 
     //locks
@@ -155,13 +154,13 @@ public class MapleMap : IMap
 
     public IWorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
-    public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId, float monsterRate)
+    public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId)
     {
         Id = mapid;
         this.mapid = mapid;
         ChannelServer = worldChannel;
         this.returnMapId = returnMapId;
-        this.MonsterRate = monsterRate;
+        this.MonsterRate = 1;
         aggroMonitor = new MonsterAggroCoordinator();
         onFirstUserEnter = mapid.ToString();
         onUserEnter = mapid.ToString();
@@ -170,6 +169,11 @@ public class MapleMap : IMap
 
         var range = new RangeNumberGenerator(mapid, 100000000);
         log = LogFactory.GetLogger($"Map/{range}");
+    }
+
+    void UpdateMapActualMobRate()
+    {
+        ActualMonsterRate = MonsterRate * ChannelServer.WorldModel.MobRate;
     }
 
     public void setEventInstance(EventInstanceManager? eim)
@@ -4110,7 +4114,7 @@ public class MapleMap : IMap
 
     private int GetMaxMobCount()
     {
-        return (int)Math.Ceiling(monsterSpawn.Count * this.MonsterRate);
+        return (int)Math.Ceiling(monsterSpawn.Count * ActualMonsterRate);
     }
 
     public void respawn()

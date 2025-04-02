@@ -71,7 +71,7 @@ namespace Application.Core.Game.Maps.Specials
         public int ReactorBlue { get; set; }
 
 
-        public MonsterCarnivalMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId(), map.MonsterRate)
+        public MonsterCarnivalMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId())
         {
         }
 
