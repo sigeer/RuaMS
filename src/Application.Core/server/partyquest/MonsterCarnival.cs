@@ -151,7 +151,7 @@ public class MonsterCarnival
             this.respawnTask.cancel(true);
             this.respawnTask = null;
         }
-        map.dispose();
+        map.Dispose();
         // map = null;
 
         cs.finishMonsterCarnival(IsCPQ1, room);
