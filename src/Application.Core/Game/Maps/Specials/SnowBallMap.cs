@@ -32,7 +32,7 @@ namespace Application.Core.Game.Maps.Specials
         private Snowball? snowball0 = null;
         private Snowball? snowball1 = null;
 
-        public SnowBallMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId(), map.MonsterRate)
+        public SnowBallMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId())
         {
         }
 

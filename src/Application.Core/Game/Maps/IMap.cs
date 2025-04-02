@@ -23,6 +23,7 @@ namespace Application.Core.Game.Maps
         /// 当存在小数时，则是概率生成
         /// </summary>
         public float MonsterRate { get; set; }
+        float ActualMonsterRate { get; }
         AtomicInteger droppedItemCount { get; set; }
         public OxQuiz? Ox { get; set; }
         /// <summary>

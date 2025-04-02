@@ -35,7 +35,7 @@ namespace Application.Core.Game.Maps.Specials
         public int CountHit { get; set; }
 
         public Coconut? Coconut { get; set; }
-        public CoconutMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId(), map.MonsterRate)
+        public CoconutMap(IMap map) : base(map.getId(), map.ChannelServer, map.getReturnMapId())
         {
         }
 
