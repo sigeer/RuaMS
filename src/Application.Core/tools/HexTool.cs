@@ -36,7 +36,7 @@ public static class HexTool
 
 
     /// <summary>
-    /// 16½øÖÆ£¬´óĞ´£¬ÓĞ¿Õ¸ñ
+    /// 16è¿›åˆ¶ï¼Œå¤§å†™ï¼Œæœ‰ç©ºæ ¼
     /// </summary>
     /// <param name="bytes"></param>
     /// <returns></returns>
@@ -46,10 +46,10 @@ public static class HexTool
     }
 
     /// <summary>
-    /// 16½øÖÆ£¬Ä¬ÈÏĞ¡Ğ´£¬Ä¬ÈÏÃ»ÓĞ¿Õ¸ñ
+    /// 16è¿›åˆ¶ï¼Œé»˜è®¤å°å†™ï¼Œé»˜è®¤æ²¡æœ‰ç©ºæ ¼
     /// </summary>
     /// <param name="bytes"></param>
-    /// <param name="isUpcase">´óĞ¡Ğ´£¬Ä¬ÈÏĞ¡Ğ´</param>
+    /// <param name="isUpcase">å¤§å°å†™ï¼Œé»˜è®¤å°å†™</param>
     /// <returns></returns>
     public static string ToHexString(this byte[] bytes, bool hasSpace = false, bool isUpcase = false)
     {
