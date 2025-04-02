@@ -51,7 +51,7 @@ public class LoginPasswordHandler : AbstractPacketHandler
 
         p.skip(6);   // localhost masked the initial part with zeroes...
         byte[] hwidNibbles = p.readBytes(4);
-        Hwid hwid = new Hwid(HexTool.toCompactHexString(hwidNibbles));
+        Hwid hwid = new Hwid(hwidNibbles.ToHexString());
         int loginok = c.login(login, pwd, hwid);
 
 
