@@ -550,7 +550,7 @@ public class Client : ChannelHandlerAdapter, IClient
                     loggedIn = false;
                     loginok = 7;
                 }
-                else if (pwd.Equals(passhash) || checkHash(passhash, "SHA-1", pwd) || checkHash(passhash, "SHA-512", pwd))
+                else if (pwd.Equals(passhash) || checkHash(passhash, pwd))
                 {
                     // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
                     loginok = !tos ? 23 : 0; // migrate to bcrypt
@@ -1273,11 +1273,11 @@ public class Client : ChannelHandlerAdapter, IClient
         actionsSemaphore.Release();
     }
 
-    private static bool checkHash(string hash, string type, string password)
+    private static bool checkHash(string hash, string password)
     {
         try
         {
-            return HashDigest.HashByType(type, password).ToHexString().Equals(hash);
+            return HashDigest.HashByType("SHA-512", password).ToHexString().Equals(hash);
         }
         catch (Exception e)
         {

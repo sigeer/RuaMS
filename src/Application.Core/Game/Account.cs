@@ -99,7 +99,6 @@ namespace Application.Core.Game
                     return LoginResultCode.Fail_AlreadyLoggedIn;
                 }
                 else if (_inputPassword.Equals(passhash)
-                    || HashDigest.HashByType("SHA-1", _inputPassword).ToHexString().Equals(passhash)
                     || HashDigest.HashByType("SHA-512", _inputPassword).ToHexString().Equals(passhash))
                 {
                     // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
