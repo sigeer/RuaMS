@@ -550,14 +550,10 @@ public class Client : ChannelHandlerAdapter, IClient
                     loggedIn = false;
                     loginok = 7;
                 }
-                else if (passhash.ElementAt(0) == '$' && passhash.ElementAt(1) == '2' && BCrypt.checkpw(pwd, passhash))
-                {
-                    loginok = !tos ? 23 : 0;
-                }
                 else if (pwd.Equals(passhash) || checkHash(passhash, "SHA-1", pwd) || checkHash(passhash, "SHA-512", pwd))
                 {
                     // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
-                    loginok = !tos ? (!YamlConfig.config.server.BCRYPT_MIGRATION ? 23 : -23) : (!YamlConfig.config.server.BCRYPT_MIGRATION ? 0 : -10); // migrate to bcrypt
+                    loginok = !tos ? 23 : 0; // migrate to bcrypt
                 }
                 else
                 {

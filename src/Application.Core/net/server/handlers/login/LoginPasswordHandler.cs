@@ -73,22 +73,6 @@ public class LoginPasswordHandler : AbstractPacketHandler
             }
         }
 
-        if (YamlConfig.config.server.BCRYPT_MIGRATION && (loginok <= -10))
-        { // -10 means migration to bcrypt, -23 means TOS wasn't accepted
-            try
-            {
-                AccountManager.UpdatePasswordToBCrypt(login, pwd);
-            }
-            catch (Exception e)
-            {
-                log.Error(e.ToString());
-            }
-            finally
-            {
-                loginok = (loginok == -10) ? 0 : 23;
-            }
-        }
-
         if (c.hasBannedIP() || c.hasBannedMac())
         {
             c.sendPacket(PacketCreator.getLoginFailed(3));

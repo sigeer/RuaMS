@@ -602,16 +602,16 @@ public class Inventory : IEnumerable<Item>
         int len = k.Length;
         for (int i = 0; i < len; i++)
         {
-            rv ^= k.ElementAt(i);
+            rv ^= (byte)k[i];
             rv *= FNV_32_PRIME;
         }
 
-        return rv >= 0 ? rv : (2L * int.MaxValue) + rv;
+        return rv;
     }
 
     private static long hashKey(int itemId, string owner)
     {
-        return (itemId << 32) + fnvHash32(owner);
+        return ((long)itemId << 32) + fnvHash32(owner);
     }
 
 
