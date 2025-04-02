@@ -50,6 +50,7 @@ public class World : IWorld
                 _mobRate = 1;
             else
                 _mobRate = Math.Min(value, 5);
+            OnMobRateChanged?.Invoke();
         }
     }
 
@@ -148,6 +149,9 @@ public class World : IWorld
     private ScheduledFuture? hpDecSchedule;
 
     public WorldConfigEntity Configs { get; set; }
+    #region
+    public event Action? OnMobRateChanged;
+    #endregion
 
     public World(WorldConfigEntity config)
     {

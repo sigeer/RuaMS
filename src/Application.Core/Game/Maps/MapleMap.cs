@@ -169,6 +169,8 @@ public class MapleMap : IMap
 
         var range = new RangeNumberGenerator(mapid, 100000000);
         log = LogFactory.GetLogger($"Map/{range}");
+
+        ChannelServer.WorldModel.OnMobRateChanged += UpdateMapActualMobRate;
     }
 
     void UpdateMapActualMobRate()
@@ -4890,7 +4892,7 @@ public class MapleMap : IMap
         statUpdateRunnables.Add(r);
     }
 
-    public void dispose()
+    public virtual void Dispose()
     {
         foreach (Monster mm in this.getAllMonsters())
         {
@@ -4898,6 +4900,8 @@ public class MapleMap : IMap
         }
 
         clearMapObjects();
+
+        ChannelServer.WorldModel.OnMobRateChanged -= UpdateMapActualMobRate;
 
 
         @event = null;

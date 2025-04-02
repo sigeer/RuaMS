@@ -14,7 +14,7 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap
+    public interface IMap: IDisposable
     {
         int Id { get; }
         XiGuai? XiGuai { get; set; }
@@ -88,7 +88,6 @@ namespace Application.Core.Game.Maps
         void disappearingItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos);
         void disappearingMesoDrop(int meso, IMapObject dropper, IPlayer owner, Point pos);
         void dismissRemoveAfter(Monster monster);
-        void dispose();
         void dropFromFriendlyMonster(IPlayer chr, Monster mob);
         void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
         byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);

@@ -18,6 +18,9 @@ namespace Application.Core.Game.TheWorld
 {
     public interface IWorld
     {
+        #region Events
+        event Action? OnMobRateChanged;
+        #endregion
         WorldConfigEntity Configs { get; set; }
         public List<IWorldChannel> Channels { get; }
         WorldGuildStorage GuildStorage { get; }
