@@ -2,4 +2,8 @@
 using Application.Benchmark;
 using BenchmarkDotNet.Running;
 
-BenchmarkRunner.Run<TaskBenchmark>();
+BenchmarkRunner.Run<PasswordBenchmark>();
+
+//BenchmarkSwitcher
+//    .FromAssembly(typeof(Program).Assembly)
+//    .Run(args);

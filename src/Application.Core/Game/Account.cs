@@ -98,18 +98,14 @@ namespace Application.Core.Game
                     _isLoggedIn = false;
                     return LoginResultCode.Fail_AlreadyLoggedIn;
                 }
-                else if (passhash.ElementAt(0) == '$' && passhash.ElementAt(1) == '2' && BCrypt.checkpw(_inputPassword, passhash))
-                {
-                    return !tos ? LoginResultCode.Fail_Error23 : LoginResultCode.Success;
-                }
                 else if (_inputPassword.Equals(passhash)
                     || HashDigest.HashByType("SHA-1", _inputPassword).ToHexString().Equals(passhash)
                     || HashDigest.HashByType("SHA-512", _inputPassword).ToHexString().Equals(passhash))
                 {
                     // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
                     return !tos
-                        ? (!YamlConfig.config.server.BCRYPT_MIGRATION ? LoginResultCode.Fail_Error23 : LoginResultCode.CheckTOS)
-                        : (!YamlConfig.config.server.BCRYPT_MIGRATION ? LoginResultCode.Success : LoginResultCode.MigrateBCrypto); // migrate to bcrypt
+                        ? LoginResultCode.Fail_Error23
+                        : LoginResultCode.Success; // migrate to bcrypt
                 }
                 else
                 {
