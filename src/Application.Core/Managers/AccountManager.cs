@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using tools;
 
 namespace Application.Core.Managers
@@ -14,7 +14,7 @@ namespace Application.Core.Managers
         public static int CreateAccount(string loginAccount, string pwd)
         {
             using var dbContext = new DBContext();
-            var password = YamlConfig.config.server.BCRYPT_MIGRATION ? BCrypt.hashpw(pwd, BCrypt.gensalt(12)) : HashDigest.HashByType("SHA-512", pwd).ToHexString();
+            var password = HashDigest.HashByType("SHA-512", pwd).ToHexString();
             var newAccModel = new AccountEntity
             {
                 Name = loginAccount,
@@ -24,12 +24,6 @@ namespace Application.Core.Managers
             dbContext.Accounts.Add(newAccModel);
             dbContext.SaveChanges();
             return newAccModel.Id;
-        }
-
-        public static void UpdatePasswordToBCrypt(string loginAccount, string pwd)
-        {
-            using var dbContext = new DBContext();
-            dbContext.Accounts.Where(x => x.Name == loginAccount).ExecuteUpdate(x => x.SetProperty(y => y.Password, BCrypt.hashpw(pwd, BCrypt.gensalt(12))));
         }
 
         /// <summary>

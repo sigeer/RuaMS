@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Application.Benchmark": {
+      "commandName": "Project",
+      "commandLineArgs": "-c Release"
+    }
+  }
+}

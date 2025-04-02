@@ -36,42 +36,23 @@ public static class HexTool
 
 
     /// <summary>
-    /// 16½øÖÆ£¬´óÐ´£¬ÓÐ¿Õ¸ñ
+    /// 16è¿›åˆ¶ï¼Œå¤§å†™ï¼Œæœ‰åˆ†éš”ç¬¦-
     /// </summary>
     /// <param name="bytes"></param>
     /// <returns></returns>
     public static string toHexString(byte[] bytes)
     {
-        return ToHexString(bytes, hasSpace: true, isUpcase: true);
+        return BitConverter.ToString(bytes);
     }
 
     /// <summary>
-    /// 16½øÖÆ£¬Ä¬ÈÏÐ¡Ð´£¬Ä¬ÈÏÃ»ÓÐ¿Õ¸ñ
+    /// 16è¿›åˆ¶ï¼Œå¤§å†™ï¼Œæ²¡æœ‰åˆ†éš”ç¬¦
     /// </summary>
     /// <param name="bytes"></param>
-    /// <param name="isUpcase">´óÐ¡Ð´£¬Ä¬ÈÏÐ¡Ð´</param>
     /// <returns></returns>
-    public static string ToHexString(this byte[] bytes, bool hasSpace = false, bool isUpcase = false)
+    public static string ToHexString(this byte[] bytes)
     {
-        return string.Join(hasSpace ? " " : "", bytes.Select(x => x.ToString(isUpcase ? "X2" : "x2")));
-    }
-
-    /**
-     * Convert a byte array to its hex string representation (upper case).
-     * Like {@link #toHexString(byte[]) HexTool.toString}, but with no space delimiter.
-     *
-     * @return The compact hex string
-     */
-    public static string toCompactHexString(byte[] bytes)
-    {
-        return ToHexString(bytes, hasSpace: false, isUpcase: true);
-    }
-
-    private static byte[] GetByteArrayFromHexString(string hex)
-    {
-        return Enumerable.Range(0, hex.Length / 2)
-                                  .Select(i => Convert.ToByte(hex.Substring(i * 2, 2), 16))
-                                  .ToArray();
+        return Convert.ToHexString(bytes);
     }
 
     /**
@@ -86,7 +67,7 @@ public static class HexTool
      */
     public static byte[] toBytes(string hexString)
     {
-        return GetByteArrayFromHexString(Regex.Replace(hexString, "\\s", ""));
+        return Convert.FromHexString(Regex.Replace(hexString, "\\s", ""));
     }
 
     public static string toStringFromAscii(byte[] bytes)

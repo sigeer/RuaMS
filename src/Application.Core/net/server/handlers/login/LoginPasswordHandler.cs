@@ -51,7 +51,7 @@ public class LoginPasswordHandler : AbstractPacketHandler
 
         p.skip(6);   // localhost masked the initial part with zeroes...
         byte[] hwidNibbles = p.readBytes(4);
-        Hwid hwid = new Hwid(HexTool.toCompactHexString(hwidNibbles));
+        Hwid hwid = new Hwid(hwidNibbles.ToHexString());
         int loginok = c.login(login, pwd, hwid);
 
 
@@ -70,22 +70,6 @@ public class LoginPasswordHandler : AbstractPacketHandler
             finally
             {
                 loginok = c.login(login, pwd, hwid);
-            }
-        }
-
-        if (YamlConfig.config.server.BCRYPT_MIGRATION && (loginok <= -10))
-        { // -10 means migration to bcrypt, -23 means TOS wasn't accepted
-            try
-            {
-                AccountManager.UpdatePasswordToBCrypt(login, pwd);
-            }
-            catch (Exception e)
-            {
-                log.Error(e.ToString());
-            }
-            finally
-            {
-                loginok = (loginok == -10) ? 0 : 23;
             }
         }
 

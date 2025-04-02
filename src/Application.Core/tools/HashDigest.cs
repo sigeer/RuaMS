@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Application.Core.tools
 {
@@ -26,7 +27,7 @@ namespace Application.Core.tools
                     default:
                         throw new ArgumentException("Unsupported hash type");
                 }
-                return hashAlgorithm.ComputeHash(GlobalTools.Encoding.GetBytes(str));
+                return hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(str));
             }
             finally
             {
