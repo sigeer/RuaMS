@@ -114,7 +114,6 @@ public class ServerConfig
     public bool USE_JOINT_CASHSHOP_INVENTORY;
     public bool USE_CLEAR_OUTDATED_COUPONS;
     public bool ALLOW_CASHSHOP_NAME_CHANGE;
-    public bool ALLOW_CASHSHOP_WORLD_TRANSFER;//Allows players to buy world transfers in the cash shop.
 
     //Maker Configuration
     public bool USE_MAKER_PERMISSIVE_ATKUP;

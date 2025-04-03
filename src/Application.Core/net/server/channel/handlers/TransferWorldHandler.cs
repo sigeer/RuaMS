@@ -43,41 +43,7 @@ public class TransferWorldHandler : AbstractPacketHandler
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
-        var chr = c.OnlinedCharacter;
-        if (!YamlConfig.config.server.ALLOW_CASHSHOP_WORLD_TRANSFER || Server.getInstance().getWorldsSize() <= 1)
-        {
-            c.sendPacket(PacketCreator.sendWorldTransferRules(9, c));
-            return;
-        }
-        int worldTransferError = chr.checkWorldTransferEligibility();
-        if (worldTransferError != 0)
-        {
-            c.sendPacket(PacketCreator.sendWorldTransferRules(worldTransferError, c));
-            return;
-        }
-        try
-        {
-            using var dbContext = new DBContext();
-            var dataList = dbContext.Worldtransfers.Where(x => x.Characterid == chr.getId()).Select(x => new { x.CompletionTime }).ToList();
-            foreach (var rs in dataList)
-            {
-                if (rs.CompletionTime == null)
-                { //has pending world transfer
-                    c.sendPacket(PacketCreator.sendWorldTransferRules(6, c));
-                    return;
-                }
-                else if (rs.CompletionTime.Value.AddMilliseconds(YamlConfig.config.server.WORLD_TRANSFER_COOLDOWN) > DateTimeOffset.Now)
-                {
-                    c.sendPacket(PacketCreator.sendWorldTransferRules(7, c));
-                    return;
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-            return;
-        }
-        c.sendPacket(PacketCreator.sendWorldTransferRules(0, c));
+        c.sendPacket(PacketCreator.sendWorldTransferRules(9, c));
+        return;
     }
 }

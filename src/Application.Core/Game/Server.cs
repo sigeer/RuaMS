@@ -606,7 +606,6 @@ public class Server
             NewYearCardRecord.startPendingNewYearCardRequests(dbContext);
             CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
-            applyAllWorldTransfers(dbContext);
             PlayerNPC.loadRunningRankData(dbContext);
 
             var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
@@ -948,55 +947,6 @@ public class Server
         catch (Exception e)
         {
             log.Warning(e, "Failed to retrieve list of pending name changes");
-            throw;
-        }
-    }
-
-    private static void applyAllWorldTransfers(DBContext dbContext)
-    {
-        try
-        {
-            var ds = dbContext.Worldtransfers.Where(x => x.CompletionTime == null).ToList();
-            List<int> removedTransfers = new();
-
-            ds.ForEach(x =>
-            {
-                string? reason = CharacterManager.checkWorldTransferEligibility(dbContext, x.Characterid, x.From, x.To);
-                if (!string.IsNullOrEmpty(reason))
-                {
-                    removedTransfers.Add(x.Id);
-                    dbContext.Worldtransfers.Remove(x);
-                    log.Information("World transfer canceled: chrId {CharacterId}, reason {WorldTransferReason}", x.Characterid, reason);
-                }
-            });
-
-            using var dbTrans = dbContext.Database.BeginTransaction();
-            List<CharacterWorldTransferPair> worldTransfers = new(); //logging only <charid, <oldWorld, newWorld>>
-
-            ds.ForEach(x =>
-            {
-                var success = CharacterManager.doWorldTransfer(dbContext, x.Characterid, x.From, x.To, x.Id);
-                if (!success)
-                    dbTrans.Rollback();
-                else
-                {
-                    dbTrans.Commit();
-                    worldTransfers.Add(new(x.Characterid, x.From, x.To));
-                }
-            });
-
-            //log
-            foreach (var worldTransferPair in worldTransfers)
-            {
-                int charId = worldTransferPair.CharacterId;
-                int oldWorld = worldTransferPair.OldId;
-                int newWorld = worldTransferPair.NewId;
-                log.Information("World transfer applied - character id {CharacterId} from world {WorldId} to world {WorldId}", charId, oldWorld, newWorld);
-            }
-        }
-        catch (Exception e)
-        {
-            log.Warning(e, "Failed to retrieve list of pending world transfers");
             throw;
         }
     }

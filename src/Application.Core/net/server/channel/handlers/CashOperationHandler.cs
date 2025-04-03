@@ -537,7 +537,8 @@ public class CashOperationHandler : AbstractPacketHandler
                     c.enableCSActions();
                 }
                 else if (action == 0x31)
-                { //world transfer
+                {
+                    //world transfer
                     var cItem = CashItemFactory.getItem(p.readInt());
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)))
                     {
@@ -545,37 +546,9 @@ public class CashOperationHandler : AbstractPacketHandler
                         c.enableCSActions();
                         return;
                     }
-                    if (cItem.getSN() == 50600001 && YamlConfig.config.server.ALLOW_CASHSHOP_WORLD_TRANSFER)
+                    if (cItem.getSN() == 50600001)
                     {
-                        int newWorldSelection = p.readInt();
-
-                        int worldTransferError = chr.checkWorldTransferEligibility();
-                        if (worldTransferError != 0 || newWorldSelection >= Server.getInstance().getWorldsSize() || Server.getInstance().getWorldsSize() <= 1)
-                        {
-                            c.sendPacket(PacketCreator.showCashShopMessage(0));
-                            return;
-                        }
-                        else if (newWorldSelection == c.getWorld())
-                        {
-                            c.sendPacket(PacketCreator.showCashShopMessage(0xDC));
-                            return;
-                        }
-                        else if (c.getAvailableCharacterWorldSlots(newWorldSelection) < 1 || Server.getInstance().getAccountWorldCharacterCount(c.getAccID(), newWorldSelection) >= 3)
-                        {
-                            c.sendPacket(PacketCreator.showCashShopMessage(0xDF));
-                            return;
-                        }
-                        else if (chr.registerWorldTransfer(newWorldSelection))
-                        {
-                            Item item = cItem.toItem();
-                            c.sendPacket(PacketCreator.showWorldTransferSuccess(item, c.getAccID()));
-                            cs.gainCash(4, cItem, chr.getWorld());
-                            cs.addToInventory(item);
-                        }
-                        else
-                        {
-                            c.sendPacket(PacketCreator.showCashShopMessage(0));
-                        }
+                        throw new BusinessNotsupportException("World Transfer");
                     }
                     c.enableCSActions();
                 }

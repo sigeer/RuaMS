@@ -169,8 +169,6 @@ public partial class DBContext : DbContext
     public virtual DbSet<Trocklocation> Trocklocations { get; set; }
 
     public virtual DbSet<Wishlist> Wishlists { get; set; }
-
-    public virtual DbSet<Worldtransfer> Worldtransfers { get; set; }
     #endregion
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -2621,35 +2619,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Sn)
                 .HasColumnType("int(11)")
                 .HasColumnName("sn");
-        });
-
-        modelBuilder.Entity<Worldtransfer>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("worldtransfers");
-
-            entity.HasIndex(e => e.Characterid, "characterid");
-
-            entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
-                .HasColumnName("id");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
-                .HasColumnName("characterid");
-            entity.Property(e => e.CompletionTime)
-                .HasColumnType("timestamp")
-                .HasColumnName("completionTime");
-            entity.Property(e => e.From)
-                .HasColumnType("tinyint(3)")
-                .HasColumnName("from");
-            entity.Property(e => e.RequestTime)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasColumnName("requestTime");
-            entity.Property(e => e.To)
-                .HasColumnType("tinyint(3)")
-                .HasColumnName("to");
         });
 
         modelBuilder.Entity<ExpLogRecord>(entity =>
