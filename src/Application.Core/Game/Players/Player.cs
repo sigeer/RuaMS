@@ -5,6 +5,7 @@ using Application.Core.Game.Skills;
 using client;
 using client.autoban;
 using client.inventory;
+using DotNetty.Handlers.Tls;
 using server.events;
 using server.maps;
 
@@ -74,6 +75,19 @@ namespace Application.Core.Game.Players
 
             quests = new();
             setPosition(new Point(0, 0));
+
+            if (Client is not OfflineClient)
+            {
+                var worldServer = Client.getWorldServer();
+                worldServer.OnExpRateChanged += UpdateActualExpRate;
+                worldServer.OnMesoRateChanged += UpdateActualMesoRate;
+                worldServer.OnDropRateChanged += UpdateActualDropRate;
+                worldServer.OnBossDropRateChaged += UpdateActualBossDropRate;
+                worldServer.OnQuestRateChanged += UpdateActualQuestExpRate;
+                worldServer.OnQuestRateChanged += UpdateActualQuestMesoRate;
+
+                UpdateActualRate();
+            }
         }
 
         public Player() : this(new OfflineClient())

@@ -77,7 +77,7 @@ public class SpawnPoint
 
     public bool shouldSpawn()
     {
-        if (denySpawn || mobTime < 0 || spawnedMonsters.get() > 0)
+        if (denySpawn || mobTime < 0 || spawnedMonsters.get() >= GetMaxMobCount())
         {
             return false;
         }
@@ -89,7 +89,7 @@ public class SpawnPoint
         return mobTime >= 0 && spawnedMonsters.get() <= 0;
     }
 
-    public Monster getMonster()
+    public Monster GenrateMonster()
     {
         var mob = LifeFactory.GetMonsterTrust(monster);
         mob.setPosition(pos);
@@ -150,19 +150,25 @@ public class SpawnPoint
         return team;
     }
 
+    private int GetMaxMobCount()
+    {
+        var rate = _map.ActualMonsterRate;
+        if (_map.getEventInstance() != null || _monsterMeta.isBoss())
+            rate = 1;
+
+        // 比如2.5倍，那么就算已有2只也算作满怪
+        return (int)Math.Floor(rate);
+    }
+
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
-        var rate =_map.MonsterRate * _map.getWorldServer().MobRate;
-        // 全局倍率也可以在这里控制，但是全局倍率应该对有事件的地图除外 _map.getEventInstance() != null
-        if (_map.getEventInstance() != null)
+        var  rate = _map.ActualMonsterRate;
+        if (_map.getEventInstance() != null || _monsterMeta.isBoss())
             rate = 1;
 
-        if (_monsterMeta.isBoss())
-            rate = 1;
-
-        while (rate > Randomizer.nextFloat())
+        while (rate > Randomizer.NextFloat())
         {
-            _map.spawnMonster(getMonster(), difficulty, isPq);
+            _map.spawnMonster(GenrateMonster(), difficulty, isPq);
             rate -= 1;
         }
     }

@@ -831,7 +831,7 @@ public class EventInstanceManager
 
             TimerManager.getInstance().schedule(() =>
             {
-                mapManager.dispose();   // issues from instantly disposing some event objects found thanks to MedicOP
+                mapManager.Dispose();   // issues from instantly disposing some event objects found thanks to MedicOP
                 //lockObj.EnterWriteLock();
                 //try
                 //{

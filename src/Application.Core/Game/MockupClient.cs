@@ -347,9 +347,7 @@ namespace Application.Core.Game
         IWorld? _worldServer;
         public IWorld getWorldServer()
         {
-            if (_worldServer == null)
-                _worldServer = Server.getInstance().getWorld(0);
-            return _worldServer;
+            return _worldServer ??= Server.getInstance().getWorld(_world);
         }
 
         public bool hasBannedHWID()

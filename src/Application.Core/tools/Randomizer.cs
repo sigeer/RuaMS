@@ -2,16 +2,14 @@ namespace tools;
 
 public class Randomizer
 {
-
-    private static Random _rand = new Random();
-
     /// <summary>
-    /// [0, int.MaxValue)
+    /// [int.MinValue, int.MaxValue)
+    /// å’Œjavaçš„nextIntä»æœ‰åŒºåˆ«
     /// </summary>
     /// <returns></returns>
     public static int nextInt()
     {
-        return _rand.Next();
+        return Random.Shared.Next(int.MinValue, int.MaxValue);
     }
 
     /// <summary>
@@ -21,28 +19,28 @@ public class Randomizer
     /// <returns></returns>
     public static int nextInt(int arg0)
     {
-        return _rand.Next(arg0);
+        return Random.Shared.Next(arg0);
     }
 
     /// <summary>
-    /// [min, max) °üº¬×îĞ¡Öµ£¬µ«²»°üº¬×î´óÖµ
+    /// [min, max) åŒ…å«æœ€å°å€¼ï¼Œä½†ä¸åŒ…å«æœ€å¤§å€¼
     /// </summary>
     /// <param name="min"></param>
     /// <param name="max"></param>
     /// <returns></returns>
     public static int NextInt(int min, int max)
     {
-        return _rand.Next(min, max);
+        return Random.Shared.Next(min, max);
     }
 
     public static short NextShort()
     {
-        return (short)_rand.Next(short.MaxValue);
+        return (short)Random.Shared.Next(short.MaxValue);
     }
 
     public static void nextBytes(byte[] bytes)
     {
-        _rand.NextBytes(bytes);
+        Random.Shared.NextBytes(bytes);
     }
 
     public static bool nextBoolean()
@@ -52,28 +50,28 @@ public class Randomizer
 
     public static double nextDouble()
     {
-        return _rand.NextDouble();
+        return Random.Shared.NextDouble();
     }
 
-    public static float nextFloat()
+    public static float NextFloat()
     {
-        return _rand.NextSingle();
+        return Random.Shared.NextSingle();
     }
 
     public static long nextLong()
     {
-        return _rand.NextInt64();
+        return Random.Shared.NextInt64();
     }
 
     /// <summary>
-    /// [lbound, ubound]£¬°üº¬×îĞ¡ÖµºÍ×î´óÖµ
+    /// [lbound, ubound]ï¼ŒåŒ…å«æœ€å°å€¼å’Œæœ€å¤§å€¼
     /// </summary>
     /// <param name="lbound"></param>
     /// <param name="ubound"></param>
     /// <returns></returns>
     public static int rand(int lbound, int ubound)
     {
-        return ((int)(_rand.NextDouble() * (ubound - lbound + 1))) + lbound;
+        return Random.Shared.Next(lbound, ubound + 1);
     }
 
     public static TItem Select<TItem>(IEnumerable<TItem> list)

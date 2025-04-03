@@ -26,7 +26,6 @@ public class ServerConfig
     public int BYPASS_PIN_EXPIRATION;
 
     public bool AUTOMATIC_REGISTER;
-    public bool BCRYPT_MIGRATION;
     public bool COLLECTIVE_CHARSLOT;
     public bool DETERRED_MULTICLIENT;
 

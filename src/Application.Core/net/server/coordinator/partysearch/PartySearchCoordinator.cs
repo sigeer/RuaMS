@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Game.Invites;
 using client;
 using constants.id;
 using net.server.coordinator.world;
@@ -339,7 +340,7 @@ public class PartySearchCoordinator
             return false;
         }
 
-        if (InviteCoordinator.createInvite(InviteType.PARTY, leader, partyid, chr.getId()))
+        if (InviteType.PARTY.CreateInvite(new TeamInviteRequest(leader, chr)))
         {
             chr.disablePartySearchInvite(leader.getId());
             chr.sendPacket(PacketCreator.partySearchInvite(leader));

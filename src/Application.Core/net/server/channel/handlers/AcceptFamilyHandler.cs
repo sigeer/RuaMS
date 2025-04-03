@@ -1,3 +1,4 @@
+using Application.Core.Game.Invites;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
@@ -23,8 +24,8 @@ public class AcceptFamilyHandler : AbstractPacketHandler
         var inviter = c.getWorldServer().getPlayerStorage().getCharacterById(inviterId);
         if (inviter != null && inviter.IsOnlined)
         {
-            InviteResult inviteResult = InviteCoordinator.answerInvite(InviteType.FAMILY, c.OnlinedCharacter.getId(), c.OnlinedCharacter, accept);
-            if (inviteResult.result == InviteResultType.NOT_FOUND)
+            InviteResult inviteResult = InviteType.FAMILY.AnswerInvite(c.OnlinedCharacter.getId(), inviter.Id, accept);
+            if (inviteResult.Result == InviteResultType.NOT_FOUND)
             {
                 return; //was never invited. (or expired on server only somehow?)
             }
@@ -74,7 +75,7 @@ public class AcceptFamilyHandler : AbstractPacketHandler
                 {
                     var chrFamily = chr.getFamily();
                     // create new family
-                    // !!! inviterFamily在此处为null
+                    // !!! inviterFamily鍦ㄦ澶勪负null
                     if (chrFamily != null
                         && inviterFamily != null
                         && chrFamily.getTotalGenerations() + inviterFamily.getTotalGenerations() >= YamlConfig.config.server.FAMILY_MAX_GENERATIONS)

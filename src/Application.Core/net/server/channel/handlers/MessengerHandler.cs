@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Invites;
 using net;
 using net.packet;
 using net.server.coordinator.world;
@@ -48,7 +49,7 @@ public class MessengerHandler : AbstractPacketHandler
                         {
                             if (messengerid == 0)
                             {
-                                InviteCoordinator.removeInvite(InviteType.MESSENGER, player.getId());
+                                InviteType.MESSENGER.RemoveRequest(player.getId());
 
                                 MessengerCharacter messengerplayer = new MessengerCharacter(player, 0);
                                 messenger = world.createMessenger(messengerplayer);
@@ -60,8 +61,8 @@ public class MessengerHandler : AbstractPacketHandler
                                 messenger = world.getMessenger(messengerid);
                                 if (messenger != null)
                                 {
-                                    InviteResult inviteRes = InviteCoordinator.answerInvite(InviteType.MESSENGER, player.getId(), messengerid, true);
-                                    InviteResultType res = inviteRes.result;
+                                    InviteResult inviteRes = InviteType.MESSENGER.AnswerInvite(player.getId(), messengerid, true);
+                                    InviteResultType res = inviteRes.Result;
                                     if (res == InviteResultType.ACCEPTED)
                                     {
                                         int position = messenger.getLowestPosition();
@@ -82,7 +83,7 @@ public class MessengerHandler : AbstractPacketHandler
                         }
                         else
                         {
-                            InviteCoordinator.answerInvite(InviteType.MESSENGER, player.getId(), messengerid, false);
+                            InviteType.MESSENGER.AnswerInvite(player.getId(), messengerid, false);
                         }
                         break;
                     case 0x02:
@@ -101,7 +102,7 @@ public class MessengerHandler : AbstractPacketHandler
                             {
                                 if (target.Messenger == null)
                                 {
-                                    if (InviteCoordinator.createInvite(InviteType.MESSENGER, c.OnlinedCharacter, messenger.getId(), target.getId()))
+                                    if (InviteType.MESSENGER.CreateInvite(new ChatInviteRequest(c.OnlinedCharacter, target, messenger.getId())))
                                     {
                                         target.sendPacket(PacketCreator.messengerInvite(c.OnlinedCharacter.getName(), messenger.getId()));
                                         c.sendPacket(PacketCreator.messengerNote(input, 4, 1));

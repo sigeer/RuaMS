@@ -27,7 +27,7 @@ using System.Collections.Concurrent;
 
 namespace server.maps;
 
-public class MapManager
+public class MapManager: IDisposable
 {
     private EventInstanceManager? evt;
     readonly IWorldChannel _channelServer;
@@ -105,11 +105,11 @@ public class MapManager
         }
     }
 
-    public void dispose()
+    public void Dispose()
     {
         foreach (IMap map in getMaps().Values)
         {
-            map.dispose();
+            map.Dispose();
         }
 
         this.evt = null;

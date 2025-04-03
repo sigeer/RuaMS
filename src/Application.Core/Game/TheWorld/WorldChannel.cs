@@ -143,7 +143,7 @@ public class WorldChannel : IWorldChannel
 
             eventSM.dispose();
 
-            mapManager.dispose();
+            mapManager.Dispose();
 
             await closeChannelSchedules();
 

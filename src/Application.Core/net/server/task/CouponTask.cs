@@ -22,11 +22,11 @@ namespace net.server.task;
 
 
 
-
-/**
- * @author Ronan
- * @info Thread responsible for maintaining coupons EXP & DROP effects active
- */
+/// <summary>
+///  @author Ronan
+///  @info Thread responsible for maintaining coupons EXP & DROP effects active
+///  整点开始，每小时执行
+/// </summary>
 public class CouponTask : AbstractRunnable
 {
     public override void HandleRun()

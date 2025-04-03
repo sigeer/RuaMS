@@ -1,4 +1,5 @@
 using Application.Core.EF.Entities.SystemBase;
+using Application.Core.Game.Invites;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
@@ -12,7 +13,6 @@ using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
 using net.server.coordinator.partysearch;
-using net.server.coordinator.world;
 using net.server.guild;
 using net.server.services;
 using net.server.services.type;
@@ -32,11 +32,16 @@ public class World : IWorld
     public string Name { get; set; }
     public string WhyAmIRecommended { get; set; }
     public int Flag { get; set; }
-    public float ExpRate { get; set; }
-    public float DropRate { get; set; }
-    public float BossDropRate { get; set; }
-    public float MesoRate { get; set; }
-    public float QuestRate { get; set; }
+    float _expRate;
+    public float ExpRate { get => _expRate; set { _expRate = value; OnExpRateChanged?.Invoke(); } }
+    float _dropRate;
+    public float DropRate { get => _dropRate; set { _dropRate = value; OnDropRateChanged?.Invoke(); } }
+    float _bossDropRate;
+    public float BossDropRate { get => _bossDropRate; set { _bossDropRate = value; OnBossDropRateChaged?.Invoke(); } }
+    float _mesoRate;
+    public float MesoRate { get => _mesoRate; set { _mesoRate = value; OnMesoRateChanged?.Invoke(); } }
+    float _questRate;
+    public float QuestRate { get => _questRate; set { _questRate = value; OnQuestRateChanged?.Invoke(); } }
     public float TravelRate { get; set; }
     public float FishingRate { get; set; }
     private float _mobRate;
@@ -49,6 +54,7 @@ public class World : IWorld
                 _mobRate = 1;
             else
                 _mobRate = Math.Min(value, 5);
+            OnMobRateChanged?.Invoke();
         }
     }
 
@@ -147,6 +153,14 @@ public class World : IWorld
     private ScheduledFuture? hpDecSchedule;
 
     public WorldConfigEntity Configs { get; set; }
+    #region
+    public event Action? OnMobRateChanged;
+    public event Action? OnExpRateChanged;
+    public event Action? OnMesoRateChanged;
+    public event Action? OnDropRateChanged;
+    public event Action? OnQuestRateChanged;
+    public event Action? OnBossDropRateChaged;
+    #endregion
 
     public World(WorldConfigEntity config)
     {
@@ -283,71 +297,17 @@ public class World : IWorld
 
     public void setExpRate(float exp)
     {
-        var list = getPlayerStorage().GetAllOnlinedPlayers();
-
-        foreach (IPlayer chr in list)
-        {
-            if (!chr.isLoggedin())
-            {
-                continue;
-            }
-            chr.revertWorldRates();
-        }
         this.ExpRate = exp;
-        foreach (IPlayer chr in list)
-        {
-            if (!chr.isLoggedin())
-            {
-                continue;
-            }
-            chr.setWorldRates();
-        }
     }
 
 
     public void setDropRate(float drop)
     {
-        var list = getPlayerStorage().GetAllOnlinedPlayers();
-
-        foreach (IPlayer chr in list)
-        {
-            if (!chr.isLoggedin())
-            {
-                continue;
-            }
-            chr.revertWorldRates();
-        }
         this.DropRate = drop;
-        foreach (IPlayer chr in list)
-        {
-            if (!chr.isLoggedin())
-            {
-                continue;
-            }
-            chr.setWorldRates();
-        }
     }
     public void setMesoRate(float meso)
     {
-        var list = getPlayerStorage().GetAllOnlinedPlayers();
-
-        foreach (IPlayer chr in list)
-        {
-            if (!chr.isLoggedin())
-            {
-                continue;
-            }
-            chr.revertWorldRates();
-        }
         this.MesoRate = meso;
-        foreach (IPlayer chr in list)
-        {
-            if (!chr.isLoggedin())
-            {
-                continue;
-            }
-            chr.setWorldRates();
-        }
     }
 
     public int getTransportationTime(double travelTime)
@@ -860,7 +820,7 @@ public class World : IWorld
                     var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
                     if (from != null)
                     {
-                        if (InviteCoordinator.createInvite(InviteType.MESSENGER, from, messengerid, targetChr.getId()))
+                        if (InviteType.MESSENGER.CreateInvite(new ChatInviteRequest(from, targetChr, messengerid)))
                         {
                             targetChr.sendPacket(PacketCreator.messengerInvite(sender, messengerid));
                             from.sendPacket(PacketCreator.messengerNote(target, 4, 1));
@@ -954,7 +914,7 @@ public class World : IWorld
             var senderChr = getPlayerStorage().getCharacterByName(sender);
             if (senderChr != null && senderChr.IsOnlined && senderChr.Messenger != null)
             {
-                if (InviteCoordinator.answerInvite(InviteType.MESSENGER, player.getId(), senderChr.Messenger.getId(), false).result == InviteResultType.DENIED)
+                if (InviteType.MESSENGER.AnswerInvite(player.getId(), senderChr.Messenger.getId(), false).Result == InviteResultType.DENIED)
                 {
                     senderChr.sendPacket(PacketCreator.messengerNote(player.getName(), 5, 0));
                 }

@@ -1,4 +1,4 @@
-﻿using Application.Core.EF.Entities;
+using Application.Core.EF.Entities;
 using client;
 using constants.game;
 using server;
@@ -26,12 +26,6 @@ namespace Application.Core.Game.Players
 
         public void gainExp(int gain, int party, bool show, bool inChat, bool white)
         {
-            if (hasDisease(Disease.CURSE))
-            {
-                gain = (int)(gain * 0.5);
-                party = (int)(party * 0.5);
-            }
-
             if (gain < 0)
             {
                 gain = int.MaxValue;   // integer overflow, heh.

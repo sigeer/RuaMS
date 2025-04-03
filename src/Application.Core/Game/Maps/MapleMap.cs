@@ -102,7 +102,6 @@ public class MapleMap : IMap
     private bool everlast = false;
     private int forcedReturnMap = MapId.NONE;
     private int timeLimit;
-    private long mapTimer;
     private int decHP = 0;
     private float recovery = 1.0f;
     private int protectItem = 0;
@@ -133,18 +132,17 @@ public class MapleMap : IMap
 
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
-    private float _monsterRate;
-    public float MonsterRate
+    float _monsterRate;
+    public float MonsterRate 
     {
         get => _monsterRate;
         set
         {
-            if (value <= 0)
-                _monsterRate = 1;
-            else
-                _monsterRate = value;
+            _monsterRate = value;
+            UpdateMapActualMobRate();
         }
     }
+    public float ActualMonsterRate { get; private set; }
     public int Id { get; }
 
     //locks
@@ -156,13 +154,13 @@ public class MapleMap : IMap
 
     public IWorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
-    public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId, float monsterRate)
+    public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId)
     {
         Id = mapid;
         this.mapid = mapid;
         ChannelServer = worldChannel;
         this.returnMapId = returnMapId;
-        this.MonsterRate = monsterRate;
+        this.MonsterRate = 1;
         aggroMonitor = new MonsterAggroCoordinator();
         onFirstUserEnter = mapid.ToString();
         onUserEnter = mapid.ToString();
@@ -171,6 +169,13 @@ public class MapleMap : IMap
 
         var range = new RangeNumberGenerator(mapid, 100000000);
         log = LogFactory.GetLogger($"Map/{range}");
+
+        ChannelServer.WorldModel.OnMobRateChanged += UpdateMapActualMobRate;
+    }
+
+    void UpdateMapActualMobRate()
+    {
+        ActualMonsterRate = MonsterRate * ChannelServer.WorldModel.MobRate;
     }
 
     public void setEventInstance(EventInstanceManager? eim)
@@ -281,20 +286,14 @@ public class MapleMap : IMap
         this.timeLimit = timeLimit;
     }
 
-    public int getTimeLeft()
-    {
-        return (int)((mapTimer - DateTimeOffset.Now.ToUnixTimeMilliseconds()) / 1000);
-    }
-
     public void setReactorState()
     {
         foreach (IMapObject o in getMapObjects())
         {
-            if (o.getType() == MapObjectType.REACTOR)
+            if (o.getType() == MapObjectType.REACTOR && o is Reactor mr)
             {
-                if (((Reactor)o).getState() < 1)
+                if (mr.getState() < 1)
                 {
-                    Reactor mr = (Reactor)o;
                     mr.lockReactor();
                     try
                     {
@@ -310,37 +309,6 @@ public class MapleMap : IMap
         }
     }
 
-    public void limitReactor(int rid, int num)
-    {
-        List<Reactor> toDestroy = new();
-        Dictionary<int, int> contained = new();
-
-        foreach (IMapObject obj in getReactors())
-        {
-            Reactor mr = (Reactor)obj;
-            if (contained.TryGetValue(mr.getId(), out var containedData))
-            {
-                if (containedData >= num)
-                {
-                    toDestroy.Add(mr);
-                }
-                else
-                {
-                    contained.AddOrUpdate(mr.getId(), containedData + 1);
-                }
-            }
-            else
-            {
-                contained.AddOrUpdate(mr.getId(), 1);
-            }
-        }
-
-        foreach (Reactor mr in toDestroy)
-        {
-            destroyReactor(mr.getObjectId());
-        }
-    }
-
     public bool isAllReactorState(int reactorId, int state)
     {
         foreach (var mo in getReactors())
@@ -353,18 +321,6 @@ public class MapleMap : IMap
             }
         }
         return true;
-    }
-
-    public int getCurrentPartyId()
-    {
-        foreach (IPlayer chr in this.getCharacters())
-        {
-            if (chr.getPartyId() != -1)
-            {
-                return chr.getPartyId();
-            }
-        }
-        return -1;
     }
 
     public void addPlayerNPCMapObject(PlayerNPC pnpcobject)
@@ -1807,7 +1763,7 @@ public class MapleMap : IMap
     {
         List<Point> points = new();
         var reactors = getReactors();
-        List<IMapObject> targets = new();
+        List<Reactor> targets = new();
 
         foreach (var obj in reactors)
         {
@@ -1815,14 +1771,13 @@ public class MapleMap : IMap
             if (mr.getId() >= first && mr.getId() <= last)
             {
                 points.Add(mr.getPosition());
-                targets.Add(obj);
+                targets.Add(mr);
             }
         }
         Collections.shuffle(points);
-        foreach (var obj in targets)
+        for (int i = 0; i < targets.Count; i++)
         {
-            Reactor mr = (Reactor)obj;
-            mr.setPosition(points.remove(points.Count - 1));
+            targets[i].setPosition(points[i]);
         }
     }
 
@@ -1830,7 +1785,7 @@ public class MapleMap : IMap
     {
         List<Point> points = new();
         List<IMapObject> listObjects = new();
-        List<IMapObject> targets = new();
+        List<Reactor> targets = new();
 
         objectLock.EnterReadLock();
         try
@@ -1839,7 +1794,6 @@ public class MapleMap : IMap
             {
                 if (ob is IMapObject mmo)
                 {
-
                     if (mapobjects.ContainsValue(mmo) && mmo.getType() == MapObjectType.REACTOR)
                     {
                         listObjects.Add(mmo);
@@ -1857,13 +1811,12 @@ public class MapleMap : IMap
             Reactor mr = (Reactor)obj;
 
             points.Add(mr.getPosition());
-            targets.Add(obj);
+            targets.Add(mr);
         }
         Collections.shuffle(points);
-        foreach (var obj in targets)
+        for (int i = 0; i < targets.Count; i++)
         {
-            Reactor mr = (Reactor)obj;
-            mr.setPosition(points.remove(points.Count - 1));
+            targets[i].setPosition(points[i]);
         }
     }
 
@@ -2083,21 +2036,6 @@ public class MapleMap : IMap
             spos = calcedPos.Value;
             spos.Y--;
             mob.setPosition(spos);
-            spawnMonster(mob);
-        }
-
-    }
-
-    public void spawnCPQMonster(Monster mob, Point pos, int team)
-    {
-        Point spos = new Point(pos.X, pos.Y - 1);
-        var calcedPos = calcPointBelow(spos);
-        if (calcedPos != null)
-        {
-            spos = calcedPos.Value;
-            spos.Y--;
-            mob.setPosition(spos);
-            mob.setTeam(team);
             spawnMonster(mob);
         }
 
@@ -2579,12 +2517,6 @@ public class MapleMap : IMap
             }
         }
     }
-
-    public void changeEnvironment(string mapObj, int newState)
-    {
-        broadcastMessage(PacketCreator.environmentChange(mapObj, newState));
-    }
-
 
     public void startMapEffect(string msg, int itemId, long time = 30000)
     {
@@ -4175,11 +4107,16 @@ public class MapleMap : IMap
 
         if (YamlConfig.config.server.USE_ENABLE_FULL_RESPAWN)
         {
-            return (monsterSpawn.Count - spawnedMonstersOnMap.get());
+            return (GetMaxMobCount() - spawnedMonstersOnMap.get());
         }
 
-        int maxNumShouldSpawn = (int)Math.Ceiling(getCurrentSpawnRate(numPlayers) * monsterSpawn.Count);
+        int maxNumShouldSpawn = (int)Math.Ceiling(getCurrentSpawnRate(numPlayers) * GetMaxMobCount());
         return maxNumShouldSpawn - spawnedMonstersOnMap.get();
+    }
+
+    private int GetMaxMobCount()
+    {
+        return (int)Math.Ceiling(monsterSpawn.Count * ActualMonsterRate);
     }
 
     public void respawn()
@@ -4955,7 +4892,7 @@ public class MapleMap : IMap
         statUpdateRunnables.Add(r);
     }
 
-    public void dispose()
+    public virtual void Dispose()
     {
         foreach (Monster mm in this.getAllMonsters())
         {
@@ -4963,6 +4900,8 @@ public class MapleMap : IMap
         }
 
         clearMapObjects();
+
+        ChannelServer.WorldModel.OnMobRateChanged -= UpdateMapActualMobRate;
 
 
         @event = null;

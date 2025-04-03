@@ -416,13 +416,6 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             player.commitExcludedItems();
             showDueyNotification(c, player);
 
-            player.resetPlayerRates();
-            if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL)
-            {
-                player.setPlayerRates();
-            }
-
-            player.setWorldRates();
             player.updateCouponRates();
 
             player.receivePartyMemberHP();

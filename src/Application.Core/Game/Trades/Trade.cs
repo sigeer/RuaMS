@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Invites;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
@@ -281,8 +282,8 @@ public class Trade
             trade.PartnerTrade.GainItemByCancel(partnerResult);
             trade.PartnerTrade.getChr().setTrade(null);
 
-            InviteCoordinator.answerInvite(InviteType.TRADE, trade.getChr().getId(), trade.PartnerTrade.getChr().getId(), false);
-            InviteCoordinator.answerInvite(InviteType.TRADE, trade.PartnerTrade.getChr().getId(), trade.getChr().getId(), false);
+            InviteType.TRADE.AnswerInvite(trade.getChr().getId(), trade.PartnerTrade.getChr().getId(), false);
+            InviteType.TRADE.AnswerInvite(trade.PartnerTrade.getChr().getId(), trade.getChr().getId(), false);
         }
         trade.getChr().setTrade(null);
     }

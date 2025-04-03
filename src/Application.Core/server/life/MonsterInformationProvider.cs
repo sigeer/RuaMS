@@ -64,14 +64,12 @@ public class MonsterInformationProvider
     {
         int continentid = mapid / 100000000;
 
-        var contiItems = continentdrops.GetValueOrDefault(continentid);
-        if (contiItems == null)
-        {
-            // continent separated global drops found thanks to marcuswoon
-            contiItems = globaldrops.Where(e => e.ContinentId < 0 || e.ContinentId == continentid).ToList();
+        if (continentdrops.TryGetValue(continentid, out var contiItems))
+            return contiItems;
 
-            continentdrops.AddOrUpdate(continentid, contiItems);
-        }
+        contiItems = globaldrops.Where(e => e.ContinentId < 0 || e.ContinentId == continentid).ToList();
+
+        continentdrops[continentid] = contiItems;
 
         return contiItems;
     }

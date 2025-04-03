@@ -369,11 +369,7 @@ public class Server
 
     private void loadCouponRates(DBContext dbContext)
     {
-        var list = dbContext.Nxcoupons.AsNoTracking().ToList();
-        list.ForEach(rs =>
-        {
-            couponRates.AddOrUpdate(rs.CouponId, rs.Rate);
-        });
+        couponRates = dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToList().ToDictionary(x => x.CouponId, x => x.Rate);
     }
 
     public List<int> getActiveCoupons()
@@ -428,9 +424,10 @@ public class Server
             var d = DateTimeOffset.Now;
 
             int weekDay = (int)d.DayOfWeek;
+            weekDay = weekDay == 0 ? 7 : weekDay;
             int hourDay = d.Hour;
 
-            int weekdayMask = (1 << weekDay);
+            int weekdayMask = 1 << weekDay;
             activeCoupons = dbContext.Nxcoupons.Where(x => x.Starthour <= hourDay && x.Endhour > hourDay && (x.Activeday & weekdayMask) == weekdayMask)
                     .Select(x => x.CouponId).ToList();
 

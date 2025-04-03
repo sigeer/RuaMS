@@ -12,7 +12,7 @@ namespace Application.Core.Game.Commands.Gm3
             var curMap = client.OnlinedCharacter.getMap();
             var p = GetFloatParam("mobrate");
             curMap.MonsterRate = p;
-            client.OnlinedCharacter.dropMessage($"当前地图的怪物倍率：x {curMap.MonsterRate}。总倍率：x {client.getWorldServer().MobRate * client.OnlinedCharacter.getMap().MonsterRate}");
+            client.OnlinedCharacter.dropMessage($"全局的怪物倍率：x {client.OnlinedCharacter.getWorldServer().MobRate}。当前地图的怪物倍率：x {curMap.MonsterRate}。当前地图实际倍率：x {curMap.ActualMonsterRate}");
         }
     }
 }
