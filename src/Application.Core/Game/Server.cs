@@ -786,8 +786,8 @@ public class Server
         lgnLock.EnterReadLock();
         try
         {
-            if (AccountCharacterCache.ContainsKey(accountid))
-                return AllPlayerStorage.GetPlayersByIds(AccountCharacterCache[accountid], loadLevel).ToHashSet();
+            if (AccountCharacterCache.TryGetValue(accountid, out var d))
+                return AllPlayerStorage.GetPlayersByIds(d, loadLevel).ToHashSet();
             return [];
         }
         finally
@@ -955,10 +955,6 @@ public class Server
     {
         int accId = c.getAccID();
         LoadAccountCharactersView(accId);
-
-        var accData = getAccountCharacterEntries(accId);
-        int gmLevel = accData.Count == 0 ? 0 : accData.Max(x => x.gmLevel());
-
     }
 
     private void LoadAccountCharactersView(int accId, int worldId = -1, bool force = true)
