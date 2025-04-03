@@ -65,7 +65,6 @@ namespace Application.Core.Game.Players
 
         public int Spawnpoint { get; set; }
 
-        public sbyte Gm { get; set; }
 
         public int Party { get; set; }
 

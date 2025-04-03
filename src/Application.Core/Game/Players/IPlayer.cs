@@ -132,7 +132,6 @@ namespace Application.Core.Game.Players
         void cancelExpirationTask();
         void cancelMagicDoor();
         bool cancelPendingNameChange();
-        bool cancelPendingWorldTranfer();
         void cancelQuestExpirationTask();
         void cancelSkillCooldownTask();
         bool canDoor();
@@ -155,7 +154,6 @@ namespace Application.Core.Game.Players
         void changeType(int type);
         void checkBerserk(bool isHidden);
         void checkMessenger();
-        int checkWorldTransferEligibility();
         void clearCpqTimer();
         void clearSavedLocation(SavedLocationType type);
         void clearSummons();
@@ -519,7 +517,6 @@ namespace Application.Core.Game.Players
         bool registerChairBuff();
         void registerEffect(StatEffect effect, long starttime, long expirationtime, bool isSilent);
         bool registerNameChange(string newName);
-        bool registerWorldTransfer(int newWorld);
         void releaseControlledMonsters();
         void reloadQuestExpirations();
         void removeAllCooldownsExcept(int id, bool packet);
@@ -593,8 +590,6 @@ namespace Application.Core.Game.Players
         void setFinishedDojoTutorial();
         void setGachaExp(int amount);
         void setGender(int gender);
-        void setGM(int level);
-        void setGMLevel(int level);
         void setGuildId(int _id);
         void setGuildRank(int _rank);
         void setHair(int hair);

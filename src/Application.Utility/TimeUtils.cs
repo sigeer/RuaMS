@@ -12,5 +12,12 @@ namespace Application.Utility
         {
             return (DateTimeOffset.Now.AddDays(1).Date - DateTimeOffset.Now);
         }
+
+        public static string GetTimeString(long then)
+        {
+            long duration = DateTimeOffset.Now.ToUnixTimeMilliseconds() - then;
+            var d = TimeSpan.FromMilliseconds(duration);
+            return d.Minutes + " Minutes and " + d.Seconds + " Seconds";
+        }
     }
 }

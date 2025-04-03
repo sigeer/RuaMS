@@ -813,9 +813,10 @@ public class Monster : AbstractLifeObject
     {
         if (attacker.isAlive())
         {
+            var expFromHolySymbol = getStatusExpMultiplier(attacker, hasPartySharers);
             if (personalExp != null)
             {
-                personalExp *= getStatusExpMultiplier(attacker, hasPartySharers);
+                personalExp *= expFromHolySymbol;
                 personalExp *= attacker.getExpRate();
             }
             else
@@ -839,7 +840,7 @@ public class Monster : AbstractLifeObject
 
             if (partyExp != null)
             {
-                partyExp *= getStatusExpMultiplier(attacker, hasPartySharers);
+                partyExp *= expFromHolySymbol;
                 partyExp *= attacker.getExpRate();
                 partyExp *= YamlConfig.config.server.PARTY_BONUS_EXP_RATE;
             }
@@ -1526,7 +1527,7 @@ public class Monster : AbstractLifeObject
             // Ninja Ambush
             var skill = SkillFactory.GetSkillTrust(effectSkill.getId());
             var level = from.getSkillLevel(skill);
-            int damage = (int)((from.getStr() + from.getLuk()) * ((3.7 * skill.getEffect(level).getDamage()) / 100));
+            int damage = (int)((from.getStr() + from.getLuk()) * ((3.7 * skill.getEffect(level).getDamage()) / 100.0));
 
             status.setValue(MonsterStatus.NINJA_AMBUSH, damage);
             animationTime = broadcastStatusEffect(status);

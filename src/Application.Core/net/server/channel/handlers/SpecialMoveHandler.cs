@@ -120,7 +120,7 @@ public class SpecialMoveHandler : AbstractPacketHandler
             StatEffect ef = s.getEffect(chr.getSkillLevel(s));
 
             int lose = chr.safeAddHP(-1 * (chr.ActualMaxHP / ef.getX()));
-            int gain = -lose * (ef.getY() / 100);
+            int gain = (int)(-lose * (ef.getY() / 100.0));
             chr.UpdateStatsChunk(() =>
             {
                 chr.ChangeMP(gain);

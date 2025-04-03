@@ -1,9 +1,7 @@
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
 using Application.Core.EF.Entities.SystemBase;
-using Application.Utility;
 using Microsoft.EntityFrameworkCore;
-using MySql.EntityFrameworkCore.Extensions;
 
 namespace Application.EF;
 
@@ -169,8 +167,6 @@ public partial class DBContext : DbContext
     public virtual DbSet<Trocklocation> Trocklocations { get; set; }
 
     public virtual DbSet<Wishlist> Wishlists { get; set; }
-
-    public virtual DbSet<Worldtransfer> Worldtransfers { get; set; }
     #endregion
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -188,120 +184,7 @@ public partial class DBContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<AccountEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("accounts");
-
-            entity.HasIndex(e => new { e.Id, e.Name }, "id");
-
-            entity.HasIndex(e => new { e.Id, e.NxCredit, e.MaplePoint, e.NxPrepaid }, "id_2");
-
-            entity.HasIndex(e => e.Name, "name").IsUnique();
-
-            entity.HasIndex(e => new { e.Id, e.Banned }, "ranking1");
-
-            entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
-                .HasColumnName("id");
-            entity.Property(e => e.Banned).HasColumnName("banned");
-            entity.Property(e => e.Banreason)
-                .HasColumnType("text")
-                .HasColumnName("banreason");
-            entity.Property(e => e.Birthday)
-                .HasDefaultValueSql("'2005-05-11'")
-                .HasColumnType("date")
-                .HasColumnName("birthday");
-            entity.Property(e => e.Characterslots)
-                .HasDefaultValueSql("'3'")
-                .HasColumnType("tinyint(2)")
-                .HasColumnName("characterslots");
-            entity.Property(e => e.Createdat)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasColumnName("createdat");
-            entity.Property(e => e.Email)
-                .HasMaxLength(45)
-                .HasColumnName("email");
-            entity.Property(e => e.Gender)
-                .HasDefaultValueSql("'10'")
-                .HasColumnType("tinyint(2)")
-                .HasColumnName("gender");
-            entity.Property(e => e.Greason)
-                .HasColumnType("tinyint(4)")
-                .HasColumnName("greason");
-            entity.Property(e => e.Hwid)
-                .HasMaxLength(12)
-                .HasDefaultValueSql("''")
-                .HasColumnName("hwid");
-            entity.Property(e => e.Ip)
-                .HasColumnType("text")
-                .HasColumnName("ip");
-            entity.Property(e => e.Language)
-                .HasDefaultValueSql("'2'")
-                .HasColumnType("int(1)")
-                .HasColumnName("language");
-            entity.Property(e => e.Lastlogin)
-                .HasColumnType("timestamp")
-                .HasColumnName("lastlogin");
-            entity.Property(e => e.Loggedin)
-                .HasColumnType("tinyint(4)")
-                .HasColumnName("loggedin");
-            entity.Property(e => e.Macs)
-                .HasColumnType("tinytext")
-                .HasColumnName("macs");
-            entity.Property(e => e.MaplePoint)
-                .HasColumnType("int(11)")
-                .HasColumnName("maplePoint");
-            entity.Property(e => e.Mute)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType("int(1)")
-                .HasColumnName("mute");
-            entity.Property(e => e.Name)
-                .HasMaxLength(13)
-                .HasDefaultValueSql("''")
-                .HasColumnName("name");
-            entity.Property(e => e.Nick)
-                .HasMaxLength(20)
-                .HasColumnName("nick");
-            entity.Property(e => e.NxCredit)
-                .HasColumnType("int(11)")
-                .HasColumnName("nxCredit");
-            entity.Property(e => e.NxPrepaid)
-                .HasColumnType("int(11)")
-                .HasColumnName("nxPrepaid");
-            entity.Property(e => e.Password)
-                .HasMaxLength(128)
-                .HasDefaultValueSql("''")
-                .HasColumnName("password");
-            entity.Property(e => e.Pic)
-                .HasMaxLength(26)
-                .HasDefaultValueSql("''")
-                .HasColumnName("pic");
-            entity.Property(e => e.Pin)
-                .HasMaxLength(10)
-                .HasDefaultValueSql("''")
-                .HasColumnName("pin");
-            entity.Property(e => e.Rewardpoints)
-                .HasColumnType("int(11)")
-                .HasColumnName("rewardpoints");
-            entity.Property(e => e.Sitelogged)
-                .HasColumnType("text")
-                .HasColumnName("sitelogged");
-            entity.Property(e => e.Tempban)
-                .HasDefaultValueSql("'2005-05-11 00:00:00'")
-                .HasColumnType("timestamp")
-                .HasColumnName("tempban");
-            entity.Property(e => e.Tos).HasColumnName("tos");
-            entity.Property(e => e.Votepoints)
-                .HasColumnType("int(11)")
-                .HasColumnName("votepoints");
-            entity.Property(e => e.Webadmin)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType("int(1)")
-                .HasColumnName("webadmin");
-        });
+        ConfigAccountCharacter(modelBuilder);
 
         modelBuilder.Entity<AllianceEntity>(entity =>
         {
@@ -510,273 +393,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Pending)
                 .HasColumnType("tinyint(4)")
                 .HasColumnName("pending");
-        });
-
-        modelBuilder.Entity<CharacterEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("characters");
-
-            entity.HasIndex(e => e.AccountId, "accountid");
-
-            entity.HasIndex(e => new { e.Id, e.AccountId, e.World }, "id");
-
-            entity.HasIndex(e => new { e.Id, e.AccountId, e.Name }, "id_2");
-
-            entity.HasIndex(e => e.Party, "party");
-
-            entity.HasIndex(e => new { e.Level, e.Exp }, "ranking1");
-
-            entity.HasIndex(e => new { e.Gm, e.JobId }, "ranking2");
-
-            entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
-                .HasColumnName("id");
-            entity.Property(e => e.AccountId)
-                .HasColumnType("int(11)")
-                .HasColumnName("accountid");
-            entity.Property(e => e.AllianceRank)
-                .HasDefaultValueSql("'5'")
-                .HasColumnType("int(10)")
-                .HasColumnName("allianceRank");
-            entity.Property(e => e.Ap)
-                .HasColumnType("int(11)")
-                .HasColumnName("ap");
-            entity.Property(e => e.AriantPoints)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("ariantPoints");
-            entity.Property(e => e.BuddyCapacity)
-                .HasDefaultValueSql("'25'")
-                .HasColumnType("int(11)")
-                .HasColumnName("buddyCapacity");
-            entity.Property(e => e.CreateDate)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasColumnName("createdate");
-            entity.Property(e => e.DataString)
-                .HasMaxLength(64)
-                .HasDefaultValueSql("''")
-                .HasColumnName("dataString");
-            entity.Property(e => e.Dex)
-                .HasDefaultValueSql("'5'")
-                .HasColumnType("int(11)")
-                .HasColumnName("dex");
-            entity.Property(e => e.DojoPoints)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("dojoPoints");
-            entity.Property(e => e.Equipslots)
-                .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
-                .HasColumnName("equipslots");
-            entity.Property(e => e.Etcslots)
-                .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
-                .HasColumnName("etcslots");
-            entity.Property(e => e.Exp)
-                .HasColumnType("int(11)")
-                .HasColumnName("exp");
-            entity.Property(e => e.Face)
-                .HasColumnType("int(11)")
-                .HasColumnName("face");
-            entity.Property(e => e.Fame)
-                .HasColumnType("int(11)")
-                .HasColumnName("fame");
-            entity.Property(e => e.FamilyId)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
-                .HasColumnName("familyId");
-            entity.Property(e => e.FinishedDojoTutorial)
-                .HasColumnType("tinyint(1) unsigned")
-                .HasColumnName("finishedDojoTutorial");
-            entity.Property(e => e.Fquest)
-                .HasColumnType("int(11)")
-                .HasColumnName("fquest");
-            entity.Property(e => e.Gachaexp)
-                .HasColumnType("int(11)")
-                .HasColumnName("gachaexp");
-            entity.Property(e => e.Gender)
-                .HasColumnType("int(11)")
-                .HasColumnName("gender");
-            entity.Property(e => e.Gm).HasColumnName("gm").HasColumnType("tinyint").HasDefaultValueSql("'0'");
-            entity.Property(e => e.GuildId)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("guildid");
-            entity.Property(e => e.GuildRank)
-                .HasDefaultValueSql("'5'")
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("guildrank");
-            entity.Property(e => e.Hair)
-                .HasColumnType("int(11)")
-                .HasColumnName("hair");
-            entity.Property(e => e.HasMerchant).HasDefaultValue(false);
-            entity.Property(e => e.Hp)
-                .HasDefaultValueSql("'50'")
-                .HasColumnType("int(11)")
-                .HasColumnName("hp");
-            entity.Property(e => e.HpMpUsed)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("hpMpUsed");
-            entity.Property(e => e.Int)
-                .HasDefaultValueSql("'4'")
-                .HasColumnType("int(11)")
-                .HasColumnName("int");
-            entity.Property(e => e.Jailexpire)
-                .HasColumnType("bigint(20)")
-                .HasColumnName("jailexpire");
-            entity.Property(e => e.JobId)
-                .HasColumnType("int(11)")
-                .HasColumnName("job");
-            entity.Property(e => e.JobRank)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("jobRank");
-            entity.Property(e => e.JobRankMove)
-                .HasColumnType("int(11)")
-                .HasColumnName("jobRankMove");
-            entity.Property(e => e.LastDojoStage)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("lastDojoStage");
-            entity.Property(e => e.LastExpGainTime)
-                .HasDefaultValueSql("'2015-01-01 05:00:00'")
-                .HasColumnType("timestamp")
-                .HasColumnName("lastExpGainTime");
-            entity.Property(e => e.LastLogoutTime)
-                .HasDefaultValueSql("'2015-01-01 05:00:00'")
-                .HasColumnType("timestamp")
-                .HasColumnName("lastLogoutTime");
-            entity.Property(e => e.Level)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
-                .HasColumnName("level");
-            entity.Property(e => e.Luk)
-                .HasDefaultValueSql("'4'")
-                .HasColumnType("int(11)")
-                .HasColumnName("luk");
-            entity.Property(e => e.Map)
-                .HasColumnType("int(11)")
-                .HasColumnName("map");
-            entity.Property(e => e.MarriageItemId)
-                .HasColumnType("int(11)")
-                .HasColumnName("marriageItemId");
-            entity.Property(e => e.Matchcardlosses)
-                .HasColumnType("int(11)")
-                .HasColumnName("matchcardlosses");
-            entity.Property(e => e.Matchcardties)
-                .HasColumnType("int(11)")
-                .HasColumnName("matchcardties");
-            entity.Property(e => e.Matchcardwins)
-                .HasColumnType("int(11)")
-                .HasColumnName("matchcardwins");
-            entity.Property(e => e.Maxhp)
-                .HasDefaultValueSql("'50'")
-                .HasColumnType("int(11)")
-                .HasColumnName("maxhp");
-            entity.Property(e => e.Maxmp)
-                .HasDefaultValueSql("'5'")
-                .HasColumnType("int(11)")
-                .HasColumnName("maxmp");
-            entity.Property(e => e.MerchantMesos)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)");
-            entity.Property(e => e.Meso)
-                .HasColumnType("int(11)")
-                .HasColumnName("meso");
-            entity.Property(e => e.MessengerId)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("messengerid");
-            entity.Property(e => e.MessengerPosition)
-                .HasDefaultValueSql("'4'")
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("messengerposition");
-            entity.Property(e => e.Monsterbookcover)
-                .HasColumnType("int(11)")
-                .HasColumnName("monsterbookcover");
-            entity.Property(e => e.MountExp)
-                .HasColumnType("int(9)")
-                .HasColumnName("mountexp");
-            entity.Property(e => e.MountLevel)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int(9)")
-                .HasColumnName("mountlevel");
-            entity.Property(e => e.Mounttiredness)
-                .HasColumnType("int(9)")
-                .HasColumnName("mounttiredness");
-            entity.Property(e => e.Mp)
-                .HasDefaultValueSql("'5'")
-                .HasColumnType("int(11)")
-                .HasColumnName("mp");
-            entity.Property(e => e.Name)
-                .HasMaxLength(13)
-                .HasDefaultValueSql("''")
-                .HasColumnName("name");
-            entity.Property(e => e.Omoklosses)
-                .HasColumnType("int(11)")
-                .HasColumnName("omoklosses");
-            entity.Property(e => e.Omokties)
-                .HasColumnType("int(11)")
-                .HasColumnName("omokties");
-            entity.Property(e => e.Omokwins)
-                .HasColumnType("int(11)")
-                .HasColumnName("omokwins");
-            entity.Property(e => e.PartnerId)
-                .HasColumnType("int(11)")
-                .HasColumnName("partnerId");
-            entity.Property(e => e.Party)
-                .HasColumnType("int(11)")
-                .HasColumnName("party");
-            entity.Property(e => e.PartySearch)
-                .IsRequired()
-                .HasDefaultValue(true)
-                .HasSentinel(true)
-                .HasColumnName("partySearch");
-            entity.Property(e => e.Pqpoints)
-                .HasColumnType("int(11)")
-                .HasColumnName("PQPoints");
-            entity.Property(e => e.Rank)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("rank");
-            entity.Property(e => e.RankMove)
-                .HasColumnType("int(11)")
-                .HasColumnName("rankMove");
-            entity.Property(e => e.Reborns)
-                .HasColumnType("int(5)")
-                .HasColumnName("reborns");
-            entity.Property(e => e.Setupslots)
-                .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
-                .HasColumnName("setupslots");
-            entity.Property(e => e.Skincolor)
-                .HasColumnType("int(11)")
-                .HasColumnName("skincolor");
-            entity.Property(e => e.Sp)
-                .HasMaxLength(128)
-                .HasDefaultValueSql("'0,0,0,0,0,0,0,0,0,0'")
-                .HasColumnName("sp");
-            entity.Property(e => e.Spawnpoint)
-                .HasColumnType("int(11)")
-                .HasColumnName("spawnpoint");
-            entity.Property(e => e.Str)
-                .HasDefaultValueSql("'12'")
-                .HasColumnType("int(11)")
-                .HasColumnName("str");
-            entity.Property(e => e.SummonValue)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("summonValue");
-            entity.Property(e => e.Useslots)
-                .HasDefaultValueSql("'24'")
-                .HasColumnType("int(11)")
-                .HasColumnName("useslots");
-            entity.Property(e => e.VanquisherKills)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("vanquisherKills");
-            entity.Property(e => e.VanquisherStage)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("vanquisherStage");
-            entity.Property(e => e.World)
-                .HasColumnType("int(11)")
-                .HasColumnName("world");
         });
 
         modelBuilder.Entity<Cooldown>(entity =>
@@ -1187,162 +803,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("hwid");
         });
 
-        modelBuilder.Entity<Inventoryequipment>(entity =>
-        {
-            entity.HasKey(e => e.Inventoryequipmentid).HasName("PRIMARY");
-
-            entity.ToTable("inventoryequipment");
-
-            entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
-
-            entity.Property(e => e.Inventoryequipmentid)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("inventoryequipmentid");
-            entity.Property(e => e.Acc)
-                .HasColumnType("int(11)")
-                .HasColumnName("acc");
-            entity.Property(e => e.Avoid)
-                .HasColumnType("int(11)")
-                .HasColumnName("avoid");
-            entity.Property(e => e.Dex)
-                .HasColumnType("int(11)")
-                .HasColumnName("dex");
-            entity.Property(e => e.Hands)
-                .HasColumnType("int(11)")
-                .HasColumnName("hands");
-            entity.Property(e => e.Hp)
-                .HasColumnType("int(11)")
-                .HasColumnName("hp");
-            entity.Property(e => e.Int)
-                .HasColumnType("int(11)")
-                .HasColumnName("int");
-            entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("inventoryitemid");
-            entity.Property(e => e.Itemexp)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("itemexp");
-            entity.Property(e => e.Itemlevel)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int(11)")
-                .HasColumnName("itemlevel");
-            entity.Property(e => e.Jump)
-                .HasColumnType("int(11)")
-                .HasColumnName("jump");
-            entity.Property(e => e.Level)
-                .HasColumnType("int(11)")
-                .HasColumnName("level");
-            entity.Property(e => e.Locked)
-                .HasColumnType("int(11)")
-                .HasColumnName("locked");
-            entity.Property(e => e.Luk)
-                .HasColumnType("int(11)")
-                .HasColumnName("luk");
-            entity.Property(e => e.Matk)
-                .HasColumnType("int(11)")
-                .HasColumnName("matk");
-            entity.Property(e => e.Mdef)
-                .HasColumnType("int(11)")
-                .HasColumnName("mdef");
-            entity.Property(e => e.Mp)
-                .HasColumnType("int(11)")
-                .HasColumnName("mp");
-            entity.Property(e => e.RingId)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
-                .HasColumnName("ringid");
-            entity.Property(e => e.Speed)
-                .HasColumnType("int(11)")
-                .HasColumnName("speed");
-            entity.Property(e => e.Str)
-                .HasColumnType("int(11)")
-                .HasColumnName("str");
-            entity.Property(e => e.Upgradeslots)
-                .HasColumnType("int(11)")
-                .HasColumnName("upgradeslots");
-            entity.Property(e => e.Vicious)
-                .HasColumnType("int(11) unsigned")
-                .HasColumnName("vicious");
-            entity.Property(e => e.Watk)
-                .HasColumnType("int(11)")
-                .HasColumnName("watk");
-            entity.Property(e => e.Wdef)
-                .HasColumnType("int(11)")
-                .HasColumnName("wdef");
-        });
-
-        modelBuilder.Entity<Inventoryitem>(entity =>
-        {
-            entity.HasKey(e => e.Inventoryitemid).HasName("PRIMARY");
-
-            entity.ToTable("inventoryitems");
-
-            entity.HasIndex(e => e.Characterid, "CHARID");
-
-            entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("inventoryitemid");
-            entity.Property(e => e.Accountid)
-                .HasColumnType("int(11)")
-                .HasColumnName("accountid");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Expiration)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint(20)")
-                .HasColumnName("expiration");
-            entity.Property(e => e.Flag)
-                .HasColumnType("int(11)")
-                .HasColumnName("flag");
-            entity.Property(e => e.GiftFrom)
-                .HasMaxLength(26)
-                .HasColumnName("giftFrom");
-            entity.Property(e => e.Inventorytype)
-                .HasColumnType("int(11)")
-                .HasColumnName("inventorytype");
-            entity.Property(e => e.Itemid)
-                .HasColumnType("int(11)")
-                .HasColumnName("itemid");
-            entity.Property(e => e.Owner)
-                .HasColumnType("tinytext")
-                .HasColumnName("owner");
-            entity.Property(e => e.Petid)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
-                .HasColumnName("petid");
-            entity.Property(e => e.Position)
-                .HasColumnType("int(11)")
-                .HasColumnName("position");
-            entity.Property(e => e.Quantity)
-                .HasColumnType("int(11)")
-                .HasColumnName("quantity");
-            entity.Property(e => e.Type)
-                .HasColumnType("tinyint(3) unsigned")
-                .HasColumnName("type");
-        });
-
-        modelBuilder.Entity<Inventorymerchant>(entity =>
-        {
-            entity.HasKey(e => e.Inventorymerchantid).HasName("PRIMARY");
-
-            entity.ToTable("inventorymerchant");
-
-            entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
-
-            entity.Property(e => e.Inventorymerchantid)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("inventorymerchantid");
-            entity.Property(e => e.Bundles)
-                .HasColumnType("int(10)")
-                .HasColumnName("bundles");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("inventoryitemid");
-        });
+        ConfigInventory(modelBuilder);
 
         modelBuilder.Entity<Ipban>(entity =>
         {
@@ -2623,35 +2084,6 @@ public partial class DBContext : DbContext
                 .HasColumnName("sn");
         });
 
-        modelBuilder.Entity<Worldtransfer>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("worldtransfers");
-
-            entity.HasIndex(e => e.Characterid, "characterid");
-
-            entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
-                .HasColumnName("id");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
-                .HasColumnName("characterid");
-            entity.Property(e => e.CompletionTime)
-                .HasColumnType("timestamp")
-                .HasColumnName("completionTime");
-            entity.Property(e => e.From)
-                .HasColumnType("tinyint(3)")
-                .HasColumnName("from");
-            entity.Property(e => e.RequestTime)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasColumnName("requestTime");
-            entity.Property(e => e.To)
-                .HasColumnType("tinyint(3)")
-                .HasColumnName("to");
-        });
-
         modelBuilder.Entity<ExpLogRecord>(entity =>
         {
             entity.ToTable("characterexplogs");
@@ -2708,6 +2140,534 @@ public partial class DBContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 
+    private void ConfigAccountCharacter(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AccountEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("accounts");
+
+            entity.HasIndex(e => new { e.Id, e.Name }, "id");
+
+            entity.HasIndex(e => new { e.Id, e.NxCredit, e.MaplePoint, e.NxPrepaid }, "id_2");
+
+            entity.HasIndex(e => e.Name, "name").IsUnique();
+
+            entity.HasIndex(e => new { e.Id, e.Banned }, "ranking1");
+
+            entity.Property(e => e.Id)
+                .HasColumnType("int(11)")
+                .HasColumnName("id");
+            entity.Property(e => e.Banned).HasColumnName("banned");
+            entity.Property(e => e.Banreason)
+                .HasColumnType("text")
+                .HasColumnName("banreason");
+            entity.Property(e => e.Birthday)
+                .HasDefaultValueSql("'2005-05-11'")
+                .HasColumnType("date")
+                .HasColumnName("birthday");
+            entity.Property(e => e.Characterslots)
+                .HasDefaultValueSql("'3'")
+                .HasColumnType("tinyint(2)")
+                .HasColumnName("characterslots");
+            entity.Property(e => e.Createdat)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("createdat");
+            entity.Property(e => e.Email)
+                .HasMaxLength(45)
+                .HasColumnName("email");
+            entity.Property(e => e.Gender)
+                .HasDefaultValueSql("'10'")
+                .HasColumnType("tinyint(2)")
+                .HasColumnName("gender");
+            entity.Property(e => e.Greason)
+                .HasColumnType("tinyint(4)")
+                .HasColumnName("greason");
+            entity.Property(e => e.Hwid)
+                .HasMaxLength(12)
+                .HasDefaultValueSql("''")
+                .HasColumnName("hwid");
+            entity.Property(e => e.Ip)
+                .HasColumnType("text")
+                .HasColumnName("ip");
+            entity.Property(e => e.Language)
+                .HasDefaultValueSql("'2'")
+                .HasColumnType("int(1)")
+                .HasColumnName("language");
+            entity.Property(e => e.Lastlogin)
+                .HasColumnType("timestamp")
+                .HasColumnName("lastlogin");
+            entity.Property(e => e.Loggedin)
+                .HasColumnType("tinyint(4)")
+                .HasColumnName("loggedin");
+            entity.Property(e => e.Macs)
+                .HasColumnType("tinytext")
+                .HasColumnName("macs");
+            entity.Property(e => e.MaplePoint)
+                .HasColumnType("int(11)")
+                .HasColumnName("maplePoint");
+            entity.Property(e => e.Name)
+                .HasMaxLength(13)
+                .HasDefaultValueSql("''")
+                .HasColumnName("name");
+            entity.Property(e => e.Nick)
+                .HasMaxLength(20)
+                .HasColumnName("nick");
+            entity.Property(e => e.NxCredit)
+                .HasColumnType("int(11)")
+                .HasColumnName("nxCredit");
+            entity.Property(e => e.NxPrepaid)
+                .HasColumnType("int(11)")
+                .HasColumnName("nxPrepaid");
+            entity.Property(e => e.Password)
+                .HasMaxLength(128)
+                .HasDefaultValueSql("''")
+                .HasColumnName("password");
+            entity.Property(e => e.Pic)
+                .HasMaxLength(26)
+                .HasDefaultValueSql("''")
+                .HasColumnName("pic");
+            entity.Property(e => e.Pin)
+                .HasMaxLength(10)
+                .HasDefaultValueSql("''")
+                .HasColumnName("pin");
+            entity.Property(e => e.GMLevel)
+                .HasColumnType("tinyint")
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("gmlevel");
+            entity.Property(e => e.Tempban)
+                .HasColumnType("timestamp")
+                .HasColumnName("tempban");
+            entity.Property(e => e.Tos).HasColumnName("tos");
+        });
+
+        modelBuilder.Entity<CharacterEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("characters");
+
+            entity.HasIndex(e => e.AccountId, "accountid");
+
+            entity.HasIndex(e => new { e.Id, e.AccountId, e.World }, "id");
+
+            entity.HasIndex(e => new { e.Id, e.AccountId, e.Name }, "id_2");
+
+            entity.HasIndex(e => e.Party, "party");
+
+            entity.HasIndex(e => new { e.Level, e.Exp }, "ranking1");
+
+            entity.Property(e => e.Id)
+                .HasColumnType("int(11)")
+                .HasColumnName("id");
+            entity.Property(e => e.AccountId)
+                .HasColumnType("int(11)")
+                .HasColumnName("accountid");
+            entity.Property(e => e.AllianceRank)
+                .HasDefaultValueSql("'5'")
+                .HasColumnType("int(10)")
+                .HasColumnName("allianceRank");
+            entity.Property(e => e.Ap)
+                .HasColumnType("int(11)")
+                .HasColumnName("ap");
+            entity.Property(e => e.AriantPoints)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("ariantPoints");
+            entity.Property(e => e.BuddyCapacity)
+                .HasDefaultValueSql("'25'")
+                .HasColumnType("int(11)")
+                .HasColumnName("buddyCapacity");
+            entity.Property(e => e.CreateDate)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("createdate");
+            entity.Property(e => e.DataString)
+                .HasMaxLength(64)
+                .HasDefaultValueSql("''")
+                .HasColumnName("dataString");
+            entity.Property(e => e.Dex)
+                .HasDefaultValueSql("'5'")
+                .HasColumnType("int(11)")
+                .HasColumnName("dex");
+            entity.Property(e => e.DojoPoints)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("dojoPoints");
+            entity.Property(e => e.Equipslots)
+                .HasDefaultValueSql("'24'")
+                .HasColumnType("int(11)")
+                .HasColumnName("equipslots");
+            entity.Property(e => e.Etcslots)
+                .HasDefaultValueSql("'24'")
+                .HasColumnType("int(11)")
+                .HasColumnName("etcslots");
+            entity.Property(e => e.Exp)
+                .HasColumnType("int(11)")
+                .HasColumnName("exp");
+            entity.Property(e => e.Face)
+                .HasColumnType("int(11)")
+                .HasColumnName("face");
+            entity.Property(e => e.Fame)
+                .HasColumnType("int(11)")
+                .HasColumnName("fame");
+            entity.Property(e => e.FamilyId)
+                .HasDefaultValueSql("'-1'")
+                .HasColumnType("int(11)")
+                .HasColumnName("familyId");
+            entity.Property(e => e.FinishedDojoTutorial)
+                .HasColumnType("tinyint(1) unsigned")
+                .HasColumnName("finishedDojoTutorial");
+            entity.Property(e => e.Fquest)
+                .HasColumnType("int(11)")
+                .HasColumnName("fquest");
+            entity.Property(e => e.Gachaexp)
+                .HasColumnType("int(11)")
+                .HasColumnName("gachaexp");
+            entity.Property(e => e.Gender)
+                .HasColumnType("int(11)")
+                .HasColumnName("gender");
+            entity.Property(e => e.GuildId)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("guildid");
+            entity.Property(e => e.GuildRank)
+                .HasDefaultValueSql("'5'")
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("guildrank");
+            entity.Property(e => e.Hair)
+                .HasColumnType("int(11)")
+                .HasColumnName("hair");
+            entity.Property(e => e.HasMerchant).HasDefaultValue(false);
+            entity.Property(e => e.Hp)
+                .HasDefaultValueSql("'50'")
+                .HasColumnType("int(11)")
+                .HasColumnName("hp");
+            entity.Property(e => e.HpMpUsed)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("hpMpUsed");
+            entity.Property(e => e.Int)
+                .HasDefaultValueSql("'4'")
+                .HasColumnType("int(11)")
+                .HasColumnName("int");
+            entity.Property(e => e.Jailexpire)
+                .HasColumnType("bigint(20)")
+                .HasColumnName("jailexpire");
+            entity.Property(e => e.JobId)
+                .HasColumnType("int(11)")
+                .HasColumnName("job");
+            entity.Property(e => e.JobRank)
+                .HasDefaultValueSql("'1'")
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("jobRank");
+            entity.Property(e => e.JobRankMove)
+                .HasColumnType("int(11)")
+                .HasColumnName("jobRankMove");
+            entity.Property(e => e.LastDojoStage)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("lastDojoStage");
+            entity.Property(e => e.LastExpGainTime)
+                .HasDefaultValueSql("'2015-01-01 05:00:00'")
+                .HasColumnType("timestamp")
+                .HasColumnName("lastExpGainTime");
+            entity.Property(e => e.LastLogoutTime)
+                .HasDefaultValueSql("'2015-01-01 05:00:00'")
+                .HasColumnType("timestamp")
+                .HasColumnName("lastLogoutTime");
+            entity.Property(e => e.Level)
+                .HasDefaultValueSql("'1'")
+                .HasColumnType("int(11)")
+                .HasColumnName("level");
+            entity.Property(e => e.Luk)
+                .HasDefaultValueSql("'4'")
+                .HasColumnType("int(11)")
+                .HasColumnName("luk");
+            entity.Property(e => e.Map)
+                .HasColumnType("int(11)")
+                .HasColumnName("map");
+            entity.Property(e => e.MarriageItemId)
+                .HasColumnType("int(11)")
+                .HasColumnName("marriageItemId");
+            entity.Property(e => e.Matchcardlosses)
+                .HasColumnType("int(11)")
+                .HasColumnName("matchcardlosses");
+            entity.Property(e => e.Matchcardties)
+                .HasColumnType("int(11)")
+                .HasColumnName("matchcardties");
+            entity.Property(e => e.Matchcardwins)
+                .HasColumnType("int(11)")
+                .HasColumnName("matchcardwins");
+            entity.Property(e => e.Maxhp)
+                .HasDefaultValueSql("'50'")
+                .HasColumnType("int(11)")
+                .HasColumnName("maxhp");
+            entity.Property(e => e.Maxmp)
+                .HasDefaultValueSql("'5'")
+                .HasColumnType("int(11)")
+                .HasColumnName("maxmp");
+            entity.Property(e => e.MerchantMesos)
+                .HasDefaultValueSql("'0'")
+                .HasColumnType("int(11)");
+            entity.Property(e => e.Meso)
+                .HasColumnType("int(11)")
+                .HasColumnName("meso");
+            entity.Property(e => e.MessengerId)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("messengerid");
+            entity.Property(e => e.MessengerPosition)
+                .HasDefaultValueSql("'4'")
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("messengerposition");
+            entity.Property(e => e.Monsterbookcover)
+                .HasColumnType("int(11)")
+                .HasColumnName("monsterbookcover");
+            entity.Property(e => e.MountExp)
+                .HasColumnType("int(9)")
+                .HasColumnName("mountexp");
+            entity.Property(e => e.MountLevel)
+                .HasDefaultValueSql("'1'")
+                .HasColumnType("int(9)")
+                .HasColumnName("mountlevel");
+            entity.Property(e => e.Mounttiredness)
+                .HasColumnType("int(9)")
+                .HasColumnName("mounttiredness");
+            entity.Property(e => e.Mp)
+                .HasDefaultValueSql("'5'")
+                .HasColumnType("int(11)")
+                .HasColumnName("mp");
+            entity.Property(e => e.Name)
+                .HasMaxLength(13)
+                .HasDefaultValueSql("''")
+                .HasColumnName("name");
+            entity.Property(e => e.Omoklosses)
+                .HasColumnType("int(11)")
+                .HasColumnName("omoklosses");
+            entity.Property(e => e.Omokties)
+                .HasColumnType("int(11)")
+                .HasColumnName("omokties");
+            entity.Property(e => e.Omokwins)
+                .HasColumnType("int(11)")
+                .HasColumnName("omokwins");
+            entity.Property(e => e.PartnerId)
+                .HasColumnType("int(11)")
+                .HasColumnName("partnerId");
+            entity.Property(e => e.Party)
+                .HasColumnType("int(11)")
+                .HasColumnName("party");
+            entity.Property(e => e.PartySearch)
+                .IsRequired()
+                .HasDefaultValue(true)
+                .HasSentinel(true)
+                .HasColumnName("partySearch");
+            entity.Property(e => e.Pqpoints)
+                .HasColumnType("int(11)")
+                .HasColumnName("PQPoints");
+            entity.Property(e => e.Rank)
+                .HasDefaultValueSql("'1'")
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("rank");
+            entity.Property(e => e.RankMove)
+                .HasColumnType("int(11)")
+                .HasColumnName("rankMove");
+            entity.Property(e => e.Reborns)
+                .HasColumnType("int(5)")
+                .HasColumnName("reborns");
+            entity.Property(e => e.Setupslots)
+                .HasDefaultValueSql("'24'")
+                .HasColumnType("int(11)")
+                .HasColumnName("setupslots");
+            entity.Property(e => e.Skincolor)
+                .HasColumnType("int(11)")
+                .HasColumnName("skincolor");
+            entity.Property(e => e.Sp)
+                .HasMaxLength(128)
+                .HasDefaultValueSql("'0,0,0,0,0,0,0,0,0,0'")
+                .HasColumnName("sp");
+            entity.Property(e => e.Spawnpoint)
+                .HasColumnType("int(11)")
+                .HasColumnName("spawnpoint");
+            entity.Property(e => e.Str)
+                .HasDefaultValueSql("'12'")
+                .HasColumnType("int(11)")
+                .HasColumnName("str");
+            entity.Property(e => e.SummonValue)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("summonValue");
+            entity.Property(e => e.Useslots)
+                .HasDefaultValueSql("'24'")
+                .HasColumnType("int(11)")
+                .HasColumnName("useslots");
+            entity.Property(e => e.VanquisherKills)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("vanquisherKills");
+            entity.Property(e => e.VanquisherStage)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("vanquisherStage");
+            entity.Property(e => e.World)
+                .HasColumnType("int(11)")
+                .HasColumnName("world");
+        });
+    }
+
+    private void ConfigInventory(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Inventoryitem>(entity =>
+        {
+            entity.HasKey(e => e.Inventoryitemid).HasName("PRIMARY");
+
+            entity.ToTable("inventoryitems");
+
+            entity.HasIndex(e => e.Characterid, "CHARID");
+
+            entity.Property(e => e.Inventoryitemid)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("inventoryitemid");
+            entity.Property(e => e.Accountid)
+                .HasColumnType("int(11)")
+                .HasColumnName("accountid");
+            entity.Property(e => e.Characterid)
+                .HasColumnType("int(11)")
+                .HasColumnName("characterid");
+            entity.Property(e => e.Expiration)
+                .HasDefaultValueSql("'-1'")
+                .HasColumnType("bigint(20)")
+                .HasColumnName("expiration");
+            entity.Property(e => e.Flag)
+                .HasColumnType("int(11)")
+                .HasColumnName("flag");
+            entity.Property(e => e.GiftFrom)
+                .HasMaxLength(26)
+                .HasColumnName("giftFrom");
+            entity.Property(e => e.Inventorytype)
+                .HasColumnType("int(11)")
+                .HasColumnName("inventorytype");
+            entity.Property(e => e.Itemid)
+                .HasColumnType("int(11)")
+                .HasColumnName("itemid");
+            entity.Property(e => e.Owner)
+                .HasColumnType("tinytext")
+                .HasColumnName("owner");
+            entity.Property(e => e.Petid)
+                .HasDefaultValueSql("'-1'")
+                .HasColumnType("int(11)")
+                .HasColumnName("petid");
+            entity.Property(e => e.Position)
+                .HasColumnType("int(11)")
+                .HasColumnName("position");
+            entity.Property(e => e.Quantity)
+                .HasColumnType("int(11)")
+                .HasColumnName("quantity");
+            entity.Property(e => e.Type)
+                .HasColumnType("tinyint(3) unsigned")
+                .HasColumnName("type");
+        });
+
+        modelBuilder.Entity<Inventoryequipment>(entity =>
+        {
+            entity.HasKey(e => e.Inventoryequipmentid).HasName("PRIMARY");
+
+            entity.ToTable("inventoryequipment");
+
+            entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
+
+            entity.Property(e => e.Inventoryequipmentid)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("inventoryequipmentid");
+            entity.Property(e => e.Acc)
+                .HasColumnType("int(11)")
+                .HasColumnName("acc");
+            entity.Property(e => e.Avoid)
+                .HasColumnType("int(11)")
+                .HasColumnName("avoid");
+            entity.Property(e => e.Dex)
+                .HasColumnType("int(11)")
+                .HasColumnName("dex");
+            entity.Property(e => e.Hands)
+                .HasColumnType("int(11)")
+                .HasColumnName("hands");
+            entity.Property(e => e.Hp)
+                .HasColumnType("int(11)")
+                .HasColumnName("hp");
+            entity.Property(e => e.Int)
+                .HasColumnType("int(11)")
+                .HasColumnName("int");
+            entity.Property(e => e.Inventoryitemid)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("inventoryitemid");
+            entity.Property(e => e.Itemexp)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("itemexp");
+            entity.Property(e => e.Itemlevel)
+                .HasDefaultValueSql("'1'")
+                .HasColumnType("int(11)")
+                .HasColumnName("itemlevel");
+            entity.Property(e => e.Jump)
+                .HasColumnType("int(11)")
+                .HasColumnName("jump");
+            entity.Property(e => e.Level)
+                .HasColumnType("int(11)")
+                .HasColumnName("level");
+            entity.Property(e => e.Locked)
+                .HasColumnType("int(11)")
+                .HasColumnName("locked");
+            entity.Property(e => e.Luk)
+                .HasColumnType("int(11)")
+                .HasColumnName("luk");
+            entity.Property(e => e.Matk)
+                .HasColumnType("int(11)")
+                .HasColumnName("matk");
+            entity.Property(e => e.Mdef)
+                .HasColumnType("int(11)")
+                .HasColumnName("mdef");
+            entity.Property(e => e.Mp)
+                .HasColumnType("int(11)")
+                .HasColumnName("mp");
+            entity.Property(e => e.RingId)
+                .HasDefaultValueSql("'-1'")
+                .HasColumnType("int(11)")
+                .HasColumnName("ringid");
+            entity.Property(e => e.Speed)
+                .HasColumnType("int(11)")
+                .HasColumnName("speed");
+            entity.Property(e => e.Str)
+                .HasColumnType("int(11)")
+                .HasColumnName("str");
+            entity.Property(e => e.Upgradeslots)
+                .HasColumnType("int(11)")
+                .HasColumnName("upgradeslots");
+            entity.Property(e => e.Vicious)
+                .HasColumnType("int(11) unsigned")
+                .HasColumnName("vicious");
+            entity.Property(e => e.Watk)
+                .HasColumnType("int(11)")
+                .HasColumnName("watk");
+            entity.Property(e => e.Wdef)
+                .HasColumnType("int(11)")
+                .HasColumnName("wdef");
+        });
+
+        modelBuilder.Entity<Inventorymerchant>(entity =>
+        {
+            entity.HasKey(e => e.Inventorymerchantid).HasName("PRIMARY");
+
+            entity.ToTable("inventorymerchant");
+
+            entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
+
+            entity.Property(e => e.Inventorymerchantid)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("inventorymerchantid");
+            entity.Property(e => e.Bundles)
+                .HasColumnType("int(10)")
+                .HasColumnName("bundles");
+            entity.Property(e => e.Characterid)
+                .HasColumnType("int(11)")
+                .HasColumnName("characterid");
+            entity.Property(e => e.Inventoryitemid)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("inventoryitemid");
+        });
+    }
+
     private void ConfigWorldConfig(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<WorldConfigEntity>(entity =>
@@ -2745,13 +2705,7 @@ public partial class DBContext : DbContext
                 BossDropRate = 10,
                 MesoRate = 10,
                 StartPort = 7575
-            }, new WorldConfigEntity(1, "Bera"), new WorldConfigEntity(2, "Broa"), new WorldConfigEntity(3, "Windia")
-            , new WorldConfigEntity(4, "Khaini"), new WorldConfigEntity(5, "Bellocan"), new WorldConfigEntity(6, "Mardia")
-            , new WorldConfigEntity(7, "Kradia"), new WorldConfigEntity(8, "Yellonde"), new WorldConfigEntity(9, "Demethos")
-            , new WorldConfigEntity(10, "Galicia"), new WorldConfigEntity(11, "El Nido"), new WorldConfigEntity(12, "Zenith")
-            , new WorldConfigEntity(13, "Arcenia"), new WorldConfigEntity(14, "Kastia"), new WorldConfigEntity(15, "Judis")
-            , new WorldConfigEntity(16, "Plana"), new WorldConfigEntity(17, "Kalluna"), new WorldConfigEntity(18, "Stius")
-            , new WorldConfigEntity(19, "Croa"), new WorldConfigEntity(20, "Medere"));
+            });
         });
     }
 }

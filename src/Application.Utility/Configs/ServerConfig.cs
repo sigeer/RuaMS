@@ -113,7 +113,6 @@ public class ServerConfig
     public bool USE_JOINT_CASHSHOP_INVENTORY;
     public bool USE_CLEAR_OUTDATED_COUPONS;
     public bool ALLOW_CASHSHOP_NAME_CHANGE;
-    public bool ALLOW_CASHSHOP_WORLD_TRANSFER;//Allows players to buy world transfers in the cash shop.
 
     //Maker Configuration
     public bool USE_MAKER_PERMISSIVE_ATKUP;
@@ -137,8 +136,6 @@ public class ServerConfig
     public float PARTY_BONUS_EXP_RATE;
 
     //Miscellaneous Configuration
-    public bool USE_DISPLAY_NUMBERS_WITH_COMMA;
-    public bool USE_UNITPRICE_WITH_COMMA;
     public byte MAX_MONITORED_BUFFSTATS;
     public int MAX_AP;
     public int MAX_EVENT_LEVELS;
