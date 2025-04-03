@@ -592,12 +592,6 @@ namespace Application.Core.Game.Players
         {
             loseExp(getExp(), false, false);
             setLevel(NumericConfig.MaxLevel);
-            resetPlayerRates();
-            if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL)
-            {
-                setPlayerRates();
-            }
-            setWorldRates();
             updateStrDexIntLuk(NumericConfig.MaxStat);
             setFame(NumericConfig.MaxFame);
             UpdateStatsChunk(() =>
