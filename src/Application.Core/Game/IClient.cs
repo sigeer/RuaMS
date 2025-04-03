@@ -48,6 +48,7 @@ namespace Application.Core.Game
         public int Channel { get; set; }
         public NPCConversationManager? NPCConversationManager { get; set; }
         public IChannel NettyChannel { get; }
+        void LoadAccountInfo(AccountEntity? dbModel);
         bool acceptToS();
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);
         void announceHint(string msg, int length);

@@ -3,6 +3,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
+using Microsoft.EntityFrameworkCore;
 using net.packet;
 using net.server.coordinator.session;
 using scripting;
@@ -19,8 +20,16 @@ namespace Application.Core.Game
         public string ClientInfo => $"OfflineClient";
         public IChannel NettyChannel { get; private set; } = null!;
         public IPlayer? Character => null;
+        public int AccountId { get; set; }
+        public int GmLevel { get; set; }
+        public AccountEntity? AccountInfo { get; set; }
 
         public NPCConversationManager? NPCConversationManager { get ; set; }
+
+        public void LoadAccountInfo(AccountEntity? dbModel)
+        {
+            AccountInfo = dbModel;
+        }
 
         public bool acceptToS()
         {
@@ -234,7 +243,7 @@ namespace Application.Core.Game
 
         public int getGMLevel()
         {
-            throw new BusinessCharacterOfflineException();
+            return AccountInfo?.GMLevel ?? 0;
         }
 
         public sbyte getGReason()

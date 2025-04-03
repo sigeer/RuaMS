@@ -569,5 +569,10 @@ namespace Application.Core.Game
         {
             throw new BusinessCharacterOfflineException();
         }
+
+        public void LoadAccountInfo(AccountEntity? dbModel)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

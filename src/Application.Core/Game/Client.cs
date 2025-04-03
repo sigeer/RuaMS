@@ -284,6 +284,23 @@ public class Client : ChannelHandlerAdapter, IClient
         NettyChannel.DisconnectAsync().Wait();
     }
 
+    public void LoadAccountInfo(AccountEntity? dbModel)
+    {
+        if (dbModel == null)
+            return;
+
+        accId = dbModel.Id;
+        accountName = dbModel.Name;
+        gmlevel = 0;
+        _pin = dbModel.Pin;
+        _pic = dbModel.Pic;
+        gender = dbModel.Gender;
+        characterSlots = dbModel.Characterslots;
+        lang = dbModel.Language;
+        gmlevel = dbModel.GMLevel;
+    }
+
+
     public Hwid getHwid()
     {
         return _hwid;
@@ -530,17 +547,10 @@ public class Client : ChannelHandlerAdapter, IClient
                     return 15;
                 }
 
-                bool banned = dbModel.Banned == 1;
-                gmlevel = 0;
-                _pin = dbModel.Pin;
-                _pic = dbModel.Pic;
-                gender = dbModel.Gender;
-                characterSlots = dbModel.Characterslots;
-                lang = dbModel.Language;
+                LoadAccountInfo(dbModel);
                 string passhash = dbModel.Password;
                 var tos = dbModel.Tos;
-                setGMLevel(dbModel.GMLevel);
-                if (banned)
+                if (dbModel.Banned == 1)
                 {
                     return 3;
                 }
