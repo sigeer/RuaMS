@@ -1,7 +1,16 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class AccountEntity
 {
+    private AccountEntity() { }
+    public AccountEntity(string name, string password)
+    {
+        Name = name;
+        Password = password;
+        Createdat = DateTimeOffset.Now;
+        Birthday = DateTime.Now.Date;
+        Nick = name;
+    }
     public int Id { get; set; }
 
     public string Name { get; set; } = null!;
@@ -36,27 +45,17 @@ public partial class AccountEntity
 
     public sbyte Gender { get; set; }
 
-    public DateTimeOffset Tempban { get; set; } = DateTimeOffset.Parse("2005-05-11 00:00:00");
+    public DateTimeOffset? Tempban { get; set; }
 
     public sbyte Greason { get; set; }
 
     public bool Tos { get; set; }
 
-    public string? Sitelogged { get; set; }
-
-    public int? Webadmin { get; set; }
-
+    public sbyte GMLevel { get; set; }
     public string? Nick { get; set; }
-
-    public int? Mute { get; set; }
-
     public string? Email { get; set; }
 
     public string? Ip { get; set; }
-
-    public int Rewardpoints { get; set; }
-
-    public int Votepoints { get; set; }
 
     public string Hwid { get; set; } = null!;
 

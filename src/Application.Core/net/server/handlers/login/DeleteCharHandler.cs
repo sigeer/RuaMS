@@ -55,15 +55,6 @@ public class DeleteCharHandler : AbstractPacketHandler
                         return;
                     }
                 }
-
-                var worldTranferCount = dbContext.Worldtransfers.Where(x => x.Characterid == cid && x.CompletionTime == null).Count();
-
-                if (worldTranferCount > 0)
-                {
-                    c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x1A));
-                    return;
-                }
-
             }
             catch (Exception e)
             {

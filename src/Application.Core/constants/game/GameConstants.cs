@@ -1,13 +1,11 @@
 
 
 using Application.Core.Game.Maps;
-using client;
 using constants.id;
 using constants.skills;
 using server.maps;
 using server.quest;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace constants.game;
 
@@ -18,7 +16,6 @@ namespace constants.game;
  */
 public class GameConstants
 {
-    public static string[] stats = { "tuc", "reqLevel", "reqJob", "reqSTR", "reqDEX", "reqINT", "reqLUK", "reqPOP", "cash", "cursed", "success", "setItemID", "equipTradeBlock", "durability", "randOption", "randStat", "masterLevel", "reqSkillLevel", "elemDefault", "incRMAS", "incRMAF", "incRMAI", "incRMAL", "canLevel", "skill", "charmEXP" };
     public static int[] CASH_DATA = new int[] { 50200004, 50200069, 50200117, 50100008, 50000047 };
 
     // Ronan's rates upgrade system
@@ -28,14 +25,6 @@ public class GameConstants
 
     private static int[] jobUpgradeBlob = { 1, 20, 60, 110, 190 };
     private static int[] jobUpgradeSpUp = { 0, 1, 2, 3, 6 };
-    private static Dictionary<int, string> jobNames = new();
-
-    static CultureInfo FR = new CultureInfo("fr-FR");
-    static CultureInfo EN = new CultureInfo("en-GB");
-    static CultureInfo Culture = YamlConfig.config.server.USE_UNITPRICE_WITH_COMMA ? FR : EN;
-
-    public static Disease[] CPQ_DISEASES = {Disease.SLOW, Disease.SEDUCE, Disease.STUN, Disease.POISON,
-            Disease.SEAL, Disease.DARKNESS, Disease.WEAKEN, Disease.CURSE};
 
     public static int MAX_FIELD_MOB_DAMAGE = getMaxObstacleMobDamageFromWz() * 2;
 
@@ -53,225 +42,6 @@ public class GameConstants
     {
         return (EXP_RATE_GAIN[slot]);
     }
-
-    // "goto" command for players
-    public static Dictionary<string, int> GOTO_TOWNS = new Dictionary<string, int>()
-    {
-        {"southperry", 60000 },
-        {"amherst", 1000000},
-        {"henesys", 100000000},
-        {"ellinia", 101000000},
-        {"perion", 102000000},
-        {"kerning", 103000000},
-        {"lith", 104000000},
-        {"sleepywood", 105040300},
-        {"florina", 110000000},
-        {"nautilus", 120000000},
-        {"ereve", 130000000},
-        {"rien", 140000000},
-        {"orbis", 200000000},
-        {"happy", 209000000},
-        {"elnath", 211000000},
-        {"ludi", 220000000},
-        {"aqua", 230000000},
-        {"leafre", 240000000},
-        {"mulung", 250000000},
-        {"herb", 251000000},
-        {"omega", 221000000},
-        {"korean", 222000000},
-        {"ellin", 300000000},
-        {"nlc", 600000000},
-        {"showa", 801000000},
-        {"shrine", 800000000},
-        {"ariant", 260000000},
-        {"magatia", 261000000},
-        {"singapore", 540000000},
-        {"quay", 541000000},
-        {"kampung", 551000000},
-        {"amoria", 680000000},
-        {"temple", 270000100},
-        {"square", 103040000},
-        {"neo", 240070000},
-        {"mushking", 106020000}
-    };
-
-    // "goto" command for only-GMs
-    public static Dictionary<string, int> GOTO_AREAS = new Dictionary<string, int>() {
-        {"gmmap", 180000000},
-{"excavation", 990000000},
-{"mushmom", 100000005},
-{"griffey", 240020101},
-{"manon", 240020401},
-{"horseman", 682000001},
-{"balrog", 105090900},
-{"zakum", 211042300},
-{"papu", 220080001},
-{"guild", 200000301},
-{"skelegon", 240040511},
-{"hpq", 100000200},
-{"pianus", 230040420},
-{"horntail", 240050400},
-{"pinkbean", 270050000},
-{"keep", 610020006},
-{"dojo", 925020001},
-{"bosspq", 970030000},
-{"fm", 910000000},
- };
-
-    public static List<string> GAME_SONGS = new List<string>(170) {
-        "Jukebox/Congratulation",
-"Bgm00/SleepyWood",
-"Bgm00/FloralLife",
-"Bgm00/GoPicnic",
-"Bgm00/Nightmare",
-"Bgm00/RestNPeace",
-"Bgm01/AncientMove",
-"Bgm01/MoonlightShadow",
-"Bgm01/WhereTheBarlogFrom",
-"Bgm01/CavaBien",
-"Bgm01/HighlandStar",
-"Bgm01/BadGuys",
-"Bgm02/MissingYou",
-"Bgm02/WhenTheMorningComes",
-"Bgm02/EvilEyes",
-"Bgm02/JungleBook",
-"Bgm02/AboveTheTreetops",
-"Bgm03/Subway",
-"Bgm03/Elfwood",
-"Bgm03/BlueSky",
-"Bgm03/Beachway",
-"Bgm03/SnowyVillage",
-"Bgm04/PlayWithMe",
-"Bgm04/WhiteChristmas",
-"Bgm04/UponTheSky",
-"Bgm04/ArabPirate",
-"Bgm04/Shinin'Harbor",
-"Bgm04/WarmRegard",
-"Bgm05/WolfWood",
-"Bgm05/DownToTheCave",
-"Bgm05/AbandonedMine",
-"Bgm05/MineQuest",
-"Bgm05/HellGate",
-"Bgm06/FinalFight",
-"Bgm06/WelcomeToTheHell",
-"Bgm06/ComeWithMe",
-"Bgm06/FlyingInABlueDream",
-"Bgm06/FantasticThinking",
-"Bgm07/WaltzForWork",
-"Bgm07/WhereverYouAre",
-"Bgm07/FunnyTimeMaker",
-"Bgm07/HighEnough",
-"Bgm07/Fantasia",
-"Bgm08/LetsMarch",
-"Bgm08/ForTheGlory",
-"Bgm08/FindingForest",
-"Bgm08/LetsHuntAliens",
-"Bgm08/PlotOfPixie",
-"Bgm09/DarkShadow",
-"Bgm09/TheyMenacingYou",
-"Bgm09/FairyTale",
-"Bgm09/FairyTalediffvers",
-"Bgm09/TimeAttack",
-"Bgm10/Timeless",
-"Bgm10/TimelessB",
-"Bgm10/BizarreTales",
-"Bgm10/TheWayGrotesque",
-"Bgm10/Eregos",
-"Bgm11/BlueWorld",
-"Bgm11/Aquarium",
-"Bgm11/ShiningSea",
-"Bgm11/DownTown",
-"Bgm11/DarkMountain",
-"Bgm12/AquaCave",
-"Bgm12/DeepSee",
-"Bgm12/WaterWay",
-"Bgm12/AcientRemain",
-"Bgm12/RuinCastle",
-"Bgm12/Dispute",
-"Bgm13/CokeTown",
-"Bgm13/Leafre",
-"Bgm13/Minar'sDream",
-"Bgm13/AcientForest",
-"Bgm13/TowerOfGoddess",
-"Bgm14/DragonLoad",
-"Bgm14/HonTale",
-"Bgm14/CaveOfHontale",
-"Bgm14/DragonNest",
-"Bgm14/Ariant",
-"Bgm14/HotDesert",
-"Bgm15/MureungHill",
-"Bgm15/MureungForest",
-"Bgm15/WhiteHerb",
-"Bgm15/Pirate",
-"Bgm15/SunsetDesert",
-"Bgm16/Duskofgod",
-"Bgm16/FightingPinkBeen",
-"Bgm16/Forgetfulness",
-"Bgm16/Remembrance",
-"Bgm16/Repentance",
-"Bgm16/TimeTemple",
-"Bgm17/MureungSchool1",
-"Bgm17/MureungSchool2",
-"Bgm17/MureungSchool3",
-"Bgm17/MureungSchool4",
-"Bgm18/BlackWing",
-"Bgm18/DrillHall",
-"Bgm18/QueensGarden",
-"Bgm18/RaindropFlower",
-"Bgm18/WolfAndSheep",
-"Bgm19/BambooGym",
-"Bgm19/CrystalCave",
-"Bgm19/MushCatle",
-"Bgm19/RienVillage",
-"Bgm19/SnowDrop",
-"Bgm20/GhostShip",
-"Bgm20/NetsPiramid",
-"Bgm20/UnderSubway",
-"Bgm21/2021year",
-"Bgm21/2099year",
-"Bgm21/2215year",
-"Bgm21/2230year",
-"Bgm21/2503year",
-"Bgm21/KerningSquare",
-"Bgm21/KerningSquareField",
-"Bgm21/KerningSquareSubway",
-"Bgm21/TeraForest",
-"BgmEvent/FunnyRabbit",
-"BgmEvent/FunnyRabbitFaster",
-"BgmEvent/wedding",
-"BgmEvent/weddingDance",
-"BgmEvent/wichTower",
-"BgmGL/amoria",
-"BgmGL/Amorianchallenge",
-"BgmGL/chapel",
-"BgmGL/cathedral",
-"BgmGL/Courtyard",
-"BgmGL/CrimsonwoodKeep",
-"BgmGL/CrimsonwoodKeepInterior",
-"BgmGL/GrandmastersGauntlet",
-"BgmGL/HauntedHouse",
-"BgmGL/NLChunt",
-"BgmGL/NLCtown",
-"BgmGL/NLCupbeat",
-"BgmGL/PartyQuestGL",
-"BgmGL/PhantomForest",
-"BgmJp/Feeling",
-"BgmJp/BizarreForest",
-"BgmJp/Hana",
-"BgmJp/Yume",
-"BgmJp/Bathroom",
-"BgmJp/BattleField",
-"BgmJp/FirstStepMaster",
-"BgmMY/Highland",
-"BgmMY/KualaLumpur",
-"BgmSG/BoatQuay_field",
-"BgmSG/BoatQuay_town",
-"BgmSG/CBD_field",
-"BgmSG/CBD_town",
-"BgmSG/Ghostship",
-"BgmUI/ShopBgm",
-"BgmUI/Title",
-   };
 
     // MapleStory default keyset
     private static int[] DEFAULT_KEY = { 18, 65, 2, 23, 3, 4, 5, 6, 16, 17, 19, 25, 26, 27, 31, 34, 35, 37, 38, 40, 43, 44, 45, 46, 50, 56, 59, 60, 61, 62, 63, 64, 57, 48, 29, 7, 24, 33, 41, 39 };
@@ -448,20 +218,6 @@ public class GameConstants
         }
     }
 
-    public static bool canPnpcBranchUseScriptId(byte branch, int scriptId)
-    {
-        scriptId /= 100;
-        scriptId %= 100;
-
-        if (branch < 26)
-        {
-            return branch == scriptId;
-        }
-        else
-        {
-            return scriptId >= branch && scriptId < branch + 4;
-        }
-    }
 
     public static int getHallOfFameMapid(Job job)
     {
@@ -660,35 +416,9 @@ public class GameConstants
                 return i + sufixes[i % 10];
         }
     }
-    private static readonly NumberFormatInfo nfFormatter = new NumberFormatInfo
-    {
-        NumberGroupSizes = new[] { 3 },
-        NumberGroupSeparator = ",",
-        NumberDecimalDigits = 0
-    };
     public static string numberWithCommas(int i)
     {
-        if (!YamlConfig.config.server.USE_DISPLAY_NUMBERS_WITH_COMMA)
-        {
-            return i.ToString("N", nfFormatter);   // will display number on whatever locale is currently assigned on NumberFormat
-        }
-        else
-        {
-            return i.ToString("N", EN.NumberFormat);
-        }
-    }
-
-    public static decimal parseNumber(string value)
-    {
-        try
-        {
-            return decimal.Parse(value, Culture.NumberFormat);
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return 0;
-        }
+        return i.ToString("N", CultureInfo.CurrentCulture);
     }
 
     private static int getMaxObstacleMobDamageFromWz()

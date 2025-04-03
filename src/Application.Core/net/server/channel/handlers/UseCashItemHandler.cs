@@ -528,7 +528,7 @@ public class UseCashItemHandler : AbstractPacketHandler
             }
             else if (itemId == ItemId.WORLD_TRANSFER)
             {
-                c.sendPacket(PacketCreator.showWorldTransferCancel(player.cancelPendingWorldTranfer()));
+                throw new BusinessNotsupportException("World Transfer");
             }
             remove(c, position, itemId);
             c.sendPacket(PacketCreator.enableActions());

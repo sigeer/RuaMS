@@ -1,4 +1,4 @@
-﻿
+
 using Application.Core.client.Characters;
 
 namespace Application.EF.Entities;
@@ -7,7 +7,7 @@ public class CharacterEntity : IDB_Character
 {
     protected CharacterEntity() { }
 
-    public CharacterEntity(int accountId, int world, string name, int level, int exp, int gachaexp, int str, int dex, int luk, int @int, int hp, int mp, int maxhp, int maxmp, int meso, int job, int skincolor, int gender, int hair, int face, int map, int spawnpoint, sbyte gm, int ap, string sp)
+    public CharacterEntity(int accountId, int world, string name, int level, int exp, int gachaexp, int str, int dex, int luk, int @int, int hp, int mp, int maxhp, int maxmp, int meso, int job, int skincolor, int gender, int hair, int face, int map, int spawnpoint, int ap, string sp)
     {
         AccountId = accountId;
         World = world;
@@ -33,8 +33,9 @@ public class CharacterEntity : IDB_Character
         Sp = sp;
         Map = map;
         Spawnpoint = spawnpoint;
-        Gm = gm;
         CreateDate = DateTimeOffset.Now;
+        LastLogoutTime = DateTimeOffset.Now;
+        LastExpGainTime = DateTimeOffset.Now;
     }
 
     public int Id { get; set; }
@@ -93,7 +94,6 @@ public class CharacterEntity : IDB_Character
 
     public int Spawnpoint { get; set; }
 
-    public sbyte Gm { get; set; }
 
     public int Party { get; set; }
 

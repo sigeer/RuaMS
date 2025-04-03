@@ -157,11 +157,11 @@ public class Expedition
 
     private void log()
     {
-        string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + getTimeString(getStartTime());
+        string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(getStartTime());
         Server.getInstance().broadcastGMMessage(getLeader().getWorld(), PacketCreator.serverNotice(6, gmMessage));
 
         string log = type + " EXPEDITION\r\n";
-        log += getTimeString(startTime) + "\r\n";
+        log += TimeUtils.GetTimeString(startTime) + "\r\n";
 
         foreach (string memberName in getMembers().Values)
         {
@@ -177,12 +177,6 @@ public class Expedition
         _log.Information(log);
     }
 
-    private static string getTimeString(long then)
-    {
-        long duration = DateTimeOffset.Now.ToUnixTimeMilliseconds() - then;
-        var d = TimeSpan.FromMilliseconds(duration);
-        return d.Minutes + " Minutes and " + d.Seconds + " Seconds";
-    }
 
     public void finishRegistration()
     {
@@ -325,7 +319,7 @@ public class Expedition
         {
             if (mob.getId() == expeditionBoss)
             {
-                bossLogs.Add(">" + mob.getName() + " was killed after " + getTimeString(startTime) + " - " + DateTimeOffset.Now.ToString("HH:mm:ss") + "\r\n");
+                bossLogs.Add(">" + mob.getName() + " was killed after " + TimeUtils.GetTimeString(startTime) + " - " + DateTimeOffset.Now.ToString("HH:mm:ss") + "\r\n");
                 return;
             }
         }

@@ -3,6 +3,7 @@ using System;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Application.Core.EF.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20250403064627_remove-worldtransfer")]
+    partial class removeworldtransfer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -229,6 +232,406 @@ namespace Application.Core.EF.Migrations
                             ServerMessage = "Welcome to Scania!",
                             StartPort = 7575,
                             TravelRate = 10f
+                        },
+                        new
+                        {
+                            Id = 1,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Bera",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Broa",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Windia",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 4,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Khaini",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Bellocan",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Mardia",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 7,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Kradia",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 8,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Yellonde",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 9,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Demethos",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 10,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Galicia",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 11,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "El Nido",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 12,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Zenith",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 13,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Arcenia",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 14,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Kastia",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 15,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Judis",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 16,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Plana",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 17,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Kalluna",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 18,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Stius",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 19,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Croa",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
+                        },
+                        new
+                        {
+                            Id = 20,
+                            BossDropRate = 1f,
+                            ChannelCount = 3,
+                            DropRate = 1f,
+                            Enable = false,
+                            EventMessage = "",
+                            ExpRate = 1f,
+                            FishingRate = 1f,
+                            Flag = 0,
+                            MesoRate = 1f,
+                            MobRate = 1f,
+                            Name = "Medere",
+                            QuestRate = 1f,
+                            RecommendMessage = "",
+                            ServerMessage = "Welcome",
+                            StartPort = 0,
+                            TravelRate = 1f
                         });
                 });
 
@@ -316,12 +719,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("varchar(45)")
                         .HasColumnName("email");
 
-                    b.Property<sbyte>("GMLevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
-                        .HasColumnName("gmlevel")
-                        .HasDefaultValueSql("'0'");
-
                     b.Property<sbyte>("Gender")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(2)")
@@ -365,6 +762,12 @@ namespace Application.Core.EF.Migrations
                     b.Property<int?>("MaplePoint")
                         .HasColumnType("int(11)")
                         .HasColumnName("maplePoint");
+
+                    b.Property<int?>("Mute")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int(1)")
+                        .HasColumnName("mute")
+                        .HasDefaultValueSql("'0'");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -411,13 +814,33 @@ namespace Application.Core.EF.Migrations
                         .HasColumnName("pin")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTimeOffset?>("Tempban")
+                    b.Property<int>("Rewardpoints")
+                        .HasColumnType("int(11)")
+                        .HasColumnName("rewardpoints");
+
+                    b.Property<string>("Sitelogged")
+                        .HasColumnType("text")
+                        .HasColumnName("sitelogged");
+
+                    b.Property<DateTimeOffset>("Tempban")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
-                        .HasColumnName("tempban");
+                        .HasColumnName("tempban")
+                        .HasDefaultValueSql("'2005-05-11 00:00:00'");
 
                     b.Property<bool>("Tos")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("tos");
+
+                    b.Property<int>("Votepoints")
+                        .HasColumnType("int(11)")
+                        .HasColumnName("votepoints");
+
+                    b.Property<int?>("Webadmin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int(1)")
+                        .HasColumnName("webadmin")
+                        .HasDefaultValueSql("'0'");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -834,6 +1257,12 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("gender");
 
+                    b.Property<sbyte>("Gm")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasColumnName("gm")
+                        .HasDefaultValueSql("'0'");
+
                     b.Property<int>("GuildId")
                         .HasColumnType("int(10) unsigned")
                         .HasColumnName("guildid");
@@ -1107,6 +1536,8 @@ namespace Application.Core.EF.Migrations
 
                     b.HasIndex(new[] { "Level", "Exp" }, "ranking1")
                         .HasDatabaseName("ranking11");
+
+                    b.HasIndex(new[] { "Gm", "JobId" }, "ranking2");
 
                     b.ToTable("characters", (string)null);
                 });

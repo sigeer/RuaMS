@@ -7,8 +7,6 @@ namespace Application.Core.Game.Players
 {
     public class PlayerBag : IDisposable
     {
-        public const byte DEFAULT_BAG_SIZE = 24;
-        public const byte DEFAULT_CASH_BAG_SIZE = 96;
         readonly Inventory[] _dataSource;
         private bool disposedValue;
         IPlayer Owner { get; }
@@ -21,19 +19,14 @@ namespace Application.Core.Game.Players
             for (int i = 0; i < typeList.Length; i++)
             {
                 var type = typeList[i];
-                byte b = DEFAULT_BAG_SIZE;
+                byte b = BagConfig.DefaultSize;
                 if (type == InventoryType.CASH)
                 {
-                    b = DEFAULT_CASH_BAG_SIZE;
+                    b = BagConfig.CashSize;
                 }
                 _dataSource[i] = new Inventory(owner, type, b);
             }
             _dataSource[InventoryType.CANHOLD.ordinal()] = new InventoryProof(owner);
-        }
-
-        public PlayerBag(Inventory[] dataSource)
-        {
-            _dataSource = dataSource;
         }
 
         public Inventory this[InventoryType type] => this[type.ordinal()];

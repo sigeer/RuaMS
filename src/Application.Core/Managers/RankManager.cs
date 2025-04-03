@@ -14,7 +14,7 @@ namespace Application.Core.Managers
             using var dbContext = new DBContext();
             var query = from a in dbContext.Characters
                         join b in dbContext.Accounts on a.AccountId equals b.Id
-                        where a.Gm < 2 && b.Banned != 1
+                        where b.GMLevel < 2 && b.Banned != 1
                         select a;
 
             var list = (from a in query

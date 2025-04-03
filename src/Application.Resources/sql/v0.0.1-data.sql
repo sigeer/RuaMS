@@ -1,6 +1,6 @@
 /*Data for the table `accounts` */
 
-insert  into `accounts`(`id`,`name`,`password`,`pin`,`pic`,`loggedin`,`lastlogin`,`createdat`,`birthday`,`banned`,`banreason`,`macs`,`nxCredit`,`maplePoint`,`nxPrepaid`,`characterslots`,`gender`,`tempban`,`greason`,`tos`,`sitelogged`,`webadmin`,`nick`,`mute`,`email`,`ip`,`rewardpoints`,`votepoints`,`hwid`,`language`) values (1,'admin','$2y$12$aFD9BDeUocDMY1X4tDYDyeJw/HhkQwCQWs3KAY7gCaRG0cpqJcaL.','0000','000000',0,'2021-05-24 08:00:01','2021-05-24 08:00:02','2005-05-11',0,NULL,NULL,1000000,1000000,1000000,3,0,'2005-05-11 11:00:00',0,1,NULL,0,NULL,0,NULL,NULL,0,0,'1234-5678',2);
+insert  into `accounts`(`id`,`name`,`password`,`pin`,`pic`,`loggedin`,`lastlogin`,`createdat`,`birthday`,`banned`,`banreason`,`macs`,`nxCredit`,`maplePoint`,`nxPrepaid`,`characterslots`,`gender`,`tempban`,`greason`,`tos`,`sitelogged`,`webadmin`,`nick`,`mute`,`email`,`ip`,`rewardpoints`,`votepoints`,`hwid`,`language`) values (1,'admin','C7AD44CBAD762A5DA0A452F9E854FDC1E0E7A52A38015F23F3EAB1D80B931DD472634DFAC71CD34EBC35D16AB7FB8A90C81F975113D6C7538DC69DD8DE9077EC','0000','000000',0,'2021-05-24 08:00:01','2021-05-24 08:00:02','2005-05-11',0,NULL,NULL,1000000,1000000,1000000,3,0,'2005-05-11 11:00:00',0,1,NULL,0,NULL,0,NULL,NULL,0,0,'1234-5678',2);
 
 /*Data for the table `alliance` */
 

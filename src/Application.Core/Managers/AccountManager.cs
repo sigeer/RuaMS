@@ -15,12 +15,7 @@ namespace Application.Core.Managers
         {
             using var dbContext = new DBContext();
             var password = HashDigest.HashByType("SHA-512", pwd).ToHexString();
-            var newAccModel = new AccountEntity
-            {
-                Name = loginAccount,
-                Password = password,
-                Birthday = DateTime.Now.Date
-            };
+            var newAccModel = new AccountEntity(loginAccount, password);
             dbContext.Accounts.Add(newAccModel);
             dbContext.SaveChanges();
             return newAccModel.Id;

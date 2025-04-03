@@ -25,6 +25,7 @@ using server;
 using server.maps;
 using System.Text.RegularExpressions;
 using tools;
+using static Mysqlx.Notice.Warning.Types;
 using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Game;
@@ -538,7 +539,7 @@ public class Client : ChannelHandlerAdapter, IClient
                 lang = dbModel.Language;
                 string passhash = dbModel.Password;
                 var tos = dbModel.Tos;
-
+                setGMLevel(dbModel.GMLevel);
                 if (banned)
                 {
                     return 3;
@@ -713,7 +714,7 @@ public class Client : ChannelHandlerAdapter, IClient
         {
             using var dbContext = new DBContext();
             var dbModel = dbContext.Accounts.Where(x => x.Id == getAccID()).Select(x => new { x.Tempban }).FirstOrDefault();
-            if (dbModel == null || dbModel.Tempban == DateTimeOffset.MinValue || dbModel.Tempban == DefaultDates.getTempban())
+            if (dbModel == null || dbModel.Tempban == null)
             {
                 return null;
             }

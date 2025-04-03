@@ -84,10 +84,6 @@ public class Disease : EnumClass
         }
     }
 
-    public static Disease getRandom()
-    {
-        return Randomizer.Select(GameConstants.CPQ_DISEASES);
-    }
 
     public static Disease? getBySkill(MobSkillType? skill)
     {

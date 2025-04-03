@@ -1,6 +1,7 @@
-﻿using constants.id;
+using constants.id;
 using server;
 using server.quest;
+using System.Diagnostics;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -34,7 +35,8 @@ public class SearchCommand : CommandBase
         StringBuilder sb = new StringBuilder();
 
         string search = joinStringFrom(paramsValue, 1);
-        long start = DateTimeOffset.Now.ToUnixTimeMilliseconds();//for the lulz
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
         Data? data = null;
         if (!paramsValue[0].Equals("ITEM", StringComparison.OrdinalIgnoreCase))
         {
@@ -137,7 +139,8 @@ public class SearchCommand : CommandBase
         {
             sb.Append("#bNo ").Append(paramsValue[0].ToLower()).Append("s found.\r\n");
         }
-        sb.Append("\r\n#kLoaded within ").Append((double)(DateTimeOffset.Now.ToUnixTimeMilliseconds() - start) / 1000).Append(" seconds.");//because I can, and it's free
+        sw.Stop();
+        sb.Append("\r\n#kLoaded within ").Append(sw.Elapsed.TotalSeconds).Append(" seconds.");//because I can, and it's free
 
         c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, sb.ToString());
     }
