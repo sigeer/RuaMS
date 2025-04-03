@@ -6,6 +6,7 @@ using client;
 using client.autoban;
 using client.inventory;
 using DotNetty.Handlers.Tls;
+using Microsoft.EntityFrameworkCore;
 using server.events;
 using server.maps;
 
@@ -105,6 +106,9 @@ namespace Application.Core.Game.Players
             Bag[InventoryType.SETUP].setSlotLimit(Setupslots);
             Bag[InventoryType.ETC].setSlotLimit(Etcslots);
             Bag[InventoryType.CASH].setSlotLimit(BagConfig.CashSize);
+
+            using var dbContext = new DBContext();
+            Client.LoadAccountInfo(dbContext.Accounts.Where(x => x.Id == AccountId).AsNoTracking().FirstOrDefault());
         }
 
 
