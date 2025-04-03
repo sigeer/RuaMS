@@ -104,7 +104,7 @@ namespace Application.Core.Game.Players
             Bag[InventoryType.USE].setSlotLimit(Useslots);
             Bag[InventoryType.SETUP].setSlotLimit(Setupslots);
             Bag[InventoryType.ETC].setSlotLimit(Etcslots);
-            Bag[InventoryType.CASH].setSlotLimit(PlayerBag.DEFAULT_CASH_BAG_SIZE);
+            Bag[InventoryType.CASH].setSlotLimit(BagConfig.CashSize);
         }
 
 

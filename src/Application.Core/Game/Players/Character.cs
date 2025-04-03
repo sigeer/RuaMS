@@ -582,6 +582,7 @@ public partial class Player
         newClient.setLanguage(Client.getLanguage());
         newClient.setCharacterSlots((sbyte)Client.getCharacterSlots());
         newClient.setAccountName(Client.getAccountName());//No null's for accountName
+        newClient.setGMLevel(Client.getGMLevel());
 
         this.setClient(newClient);
         this.setMap(newClient.getChannelServer().getMapFactory().getMap(getMapId()));
@@ -5170,7 +5171,7 @@ public partial class Player
 
     public override void sendSpawnData(IClient Client)
     {
-        if (!this.isHidden() || Client.OnlinedCharacter.Gm > 1)
+        if (!this.isHidden() || Client.getGMLevel() > 1)
         {
             Client.sendPacket(PacketCreator.spawnPlayerMapObject(Client, this, false));
 

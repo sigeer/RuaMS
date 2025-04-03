@@ -1,4 +1,4 @@
-﻿namespace Application.Core.client.Characters
+namespace Application.Core.client.Characters
 {
     /// <summary>
     /// 角色
@@ -60,8 +60,6 @@
         public int Map { get; set; }
 
         public int Spawnpoint { get; set; }
-
-        public sbyte Gm { get; set; }
 
         public int Party { get; set; }
 

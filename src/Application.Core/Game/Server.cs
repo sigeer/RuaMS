@@ -958,7 +958,7 @@ public class Server
 
         var accData = getAccountCharacterEntries(accId);
         int gmLevel = accData.Count == 0 ? 0 : accData.Max(x => x.gmLevel());
-        c.setGMLevel(gmLevel);
+
     }
 
     private void LoadAccountCharactersView(int accId, int worldId = -1, bool force = true)
