@@ -138,8 +138,6 @@ public class ServerConfig
     public float PARTY_BONUS_EXP_RATE;
 
     //Miscellaneous Configuration
-    public bool USE_DISPLAY_NUMBERS_WITH_COMMA;
-    public bool USE_UNITPRICE_WITH_COMMA;
     public byte MAX_MONITORED_BUFFSTATS;
     public int MAX_AP;
     public int MAX_EVENT_LEVELS;
