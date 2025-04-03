@@ -583,6 +583,7 @@ public partial class Player
         newClient.setCharacterSlots((sbyte)Client.getCharacterSlots());
         newClient.setAccountName(Client.getAccountName());//No null's for accountName
         newClient.setGMLevel(Client.getGMLevel());
+        newClient.setAccID(Client.getAccID());
 
         this.setClient(newClient);
         this.setMap(newClient.getChannelServer().getMapFactory().getMap(getMapId()));
@@ -2658,16 +2659,6 @@ public partial class Player
         return playerShop;
     }
 
-
-
-    public void setGMLevel(int level)
-    {
-        this.Gm = (sbyte)Math.Min(level, 6);
-        this.Gm = (sbyte)Math.Max(level, 0);
-
-        whiteChat = Gm >= 4;   // thanks ozanrijen for suggesting default white chat
-    }
-
     public void closePartySearchInteractions()
     {
         this.getWorldServer().getPartySearchCoordinator().unregisterPartyLeader(this);
@@ -2919,7 +2910,7 @@ public partial class Player
 
     public int gmLevel()
     {
-        return Gm;
+        return Client.getGMLevel();
     }
 
     private void guildUpdate()
@@ -3120,7 +3111,7 @@ public partial class Player
 
     public bool isGM()
     {
-        return Gm > 1;
+        return gmLevel() > 1;
     }
 
     public bool isHidden()
@@ -4495,11 +4486,6 @@ public partial class Player
         this.Gender = gender;
     }
 
-    public void setGM(int level)
-    {
-        this.Gm = (sbyte)level;
-    }
-
     public void setGuildId(int _id)
     {
         GuildId = _id;
@@ -5608,7 +5594,7 @@ public partial class Player
 
     public bool getWhiteChat()
     {
-        return isGM() && whiteChat;
+        return gmLevel() > 4 && whiteChat;
     }
 
     public void toggleWhiteChat()

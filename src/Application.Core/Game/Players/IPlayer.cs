@@ -589,8 +589,6 @@ namespace Application.Core.Game.Players
         void setFinishedDojoTutorial();
         void setGachaExp(int amount);
         void setGender(int gender);
-        void setGM(int level);
-        void setGMLevel(int level);
         void setGuildId(int _id);
         void setGuildRank(int _rank);
         void setHair(int hair);

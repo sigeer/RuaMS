@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm6;
+namespace Application.Core.Game.Commands.Gm6;
 
 public class SetGmLevelCommand : CommandBase
 {
@@ -20,7 +20,6 @@ public class SetGmLevelCommand : CommandBase
         var target = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (target != null)
         {
-            target.setGMLevel(newLevel);
             target.getClient().setGMLevel(newLevel);
 
             target.dropMessage("You are now a level " + newLevel + " GM. See @commands for a list of available commands.");
