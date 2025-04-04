@@ -52,7 +52,7 @@ public class ViewAllCharHandler : AbstractPacketHandler
             bool usePic = YamlConfig.config.server.ENABLE_PIC && !c.canBypassPic();
             foreach (var item in worldChrs)
             {
-                c.sendPacket(PacketCreator.showAllCharacterInfo(item.Key, item.Value, usePic));
+                c.sendPacket(PacketCreator.showAllCharacterInfo(c, item.Key, item.Value, usePic));
             }
         }
         catch (Exception e)

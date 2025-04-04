@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Game.TheWorld;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using server;
@@ -232,18 +233,7 @@ public class NewYearCardRecord
 
         sendTask = TimerManager.getInstance().register(() =>
         {
-            Server server = Server.getInstance();
-
-            int world = server.getCharacterWorld(receiverId);
-            if (world == -1)
-            {
-                sendTask!.cancel(false);
-                sendTask = null;
-
-                return;
-            }
-
-            var target = server.getWorld(world).getPlayerStorage().getCharacterById(receiverId);
+            var target = AllPlayerStorage.GetOrAddCharacterById(receiverId);
             if (target != null && target.isLoggedinWorld())
             {
                 target.sendPacket(PacketCreator.onNewYearCardRes(target, this, 0xC, 0));
