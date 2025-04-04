@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class KillMapCommand : CommandBase
 {
@@ -12,7 +12,7 @@ public class KillMapCommand : CommandBase
         var player = c.OnlinedCharacter;
         foreach (var mch in player.getMap().getCharacters())
         {
-            mch.updateHp(0);
+            mch.KilledBy(player);
         }
     }
 }

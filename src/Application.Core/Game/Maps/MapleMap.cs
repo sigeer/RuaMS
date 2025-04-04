@@ -2352,7 +2352,7 @@ public class MapleMap : IMap
                         IPlayer chr = (IPlayer)mo;
                         if (playerMist.getOwner().getId() == chr.getId() || playerMist.getOwner().getParty() != null && playerMist.getOwner().getParty()!.containsMembers(chr))
                         {
-                            chr.addMP(playerMist.getSourceSkill().getEffect(chr.getSkillLevel(playerMist.getSourceSkill().getId())).getX() * chr.getMp() / 100);
+                            chr.ChangeMP(playerMist.getSourceSkill().getEffect(chr.getSkillLevel(playerMist.getSourceSkill().getId())).getX() * chr.MP / 100);
                         }
                     }
                 }

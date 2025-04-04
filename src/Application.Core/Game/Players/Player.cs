@@ -35,10 +35,10 @@ namespace Application.Core.Game.Players
         {
             World = world;
             AccountId = accountId;
-            Hp = hp;
-            Maxhp = hp;
-            Mp = mp;
-            Maxmp = mp;
+            HP = hp;
+            MaxHP = hp;
+            MP = mp;
+            MaxMP = mp;
             Str = str;
             Dex = dex;
             Int = @int;
@@ -76,8 +76,6 @@ namespace Application.Core.Game.Players
 
             quests = new();
             setPosition(new Point(0, 0));
-
-            RegisterStatsListener();
 
             if (Client is not OfflineClient)
             {

@@ -599,19 +599,18 @@ public class AssignAPProcessor
                     }
 
                     int hplose = -takeHp(player.getJob());
-                    if (player.getMaxHp() + hplose < getMinHp(player.getJob(), player.getLevel()))
+                    if (player.MaxHP + hplose < getMinHp(player.getJob(), player.getLevel()))
                     {
                         player.message("You don't have the minimum HP pool required to swap.");
                         c.sendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    int curHp = player.getHp();
-                    player.assignHP(hplose, -1);
-                    if (!YamlConfig.config.server.USE_FIXED_RATIO_HPMP_UPDATE)
+                    player.UpdateStatsChunk(() =>
                     {
-                        player.updateHp(Math.Max(1, curHp + hplose));
-                    }
+                        player.assignHP(hplose, -1);
+                        player.ChangeHP(hplose);
+                    });
 
                     break;
                 case 8192: // MP
@@ -633,22 +632,21 @@ public class AssignAPProcessor
                     }
 
                     int mplose = -takeMp(player.getJob());
-                    if (player.getMaxMp() + mplose < getMinMp(player.getJob(), player.getLevel()))
+                    if (player.MaxMP + mplose < getMinMp(player.getJob(), player.getLevel()))
                     {
                         player.message("You don't have the minimum MP pool required to swap.");
                         c.sendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    int curMp = player.getMp();
-                    player.assignMP(mplose, -1);
-                    if (!YamlConfig.config.server.USE_FIXED_RATIO_HPMP_UPDATE)
+                    player.UpdateStatsChunk(() =>
                     {
-                        player.updateMp(Math.Max(0, curMp + mplose));
-                    }
+                        player.assignMP(mplose, -1);
+                        player.ChangeMP(mplose);
+                    });
                     break;
                 default:
-                    c.sendPacket(PacketCreator.updatePlayerStats(PacketCreator.EMPTY_STATUPDATE, true, player));
+                    c.sendPacket(PacketCreator.enableActions());
                     return false;
             }
 
@@ -711,7 +709,10 @@ public class AssignAPProcessor
                 }
                 break;
             case 2048:
-                if (!chr.assignHP(calcHpChange(chr, usedAPReset), 1))
+                if (!chr.UpdateStatsChunk(() =>
+                {
+                    return chr.assignHP(calcHpChange(chr, usedAPReset), 1);
+                }))
                 {
                     chr.message("Couldn't execute AP assign operation.");
                     chr.sendPacket(PacketCreator.enableActions());
@@ -719,7 +720,10 @@ public class AssignAPProcessor
                 }
                 break;
             case 8192:
-                if (!chr.assignMP(calcMpChange(chr, usedAPReset), 1))
+                if (!chr.UpdateStatsChunk(() =>
+                {
+                    return chr.assignMP(calcMpChange(chr, usedAPReset), 1);
+                }))
                 {
                     chr.message("Couldn't execute AP assign operation.");
                     chr.sendPacket(PacketCreator.enableActions());
@@ -727,7 +731,7 @@ public class AssignAPProcessor
                 }
                 break;
             default:
-                chr.sendPacket(PacketCreator.updatePlayerStats(PacketCreator.EMPTY_STATUPDATE, true, chr));
+                chr.sendPacket(PacketCreator.enableActions());
                 return false;
         }
         return true;

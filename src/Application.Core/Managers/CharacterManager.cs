@@ -613,8 +613,7 @@ namespace Application.Core.Managers
                     ret.BuddyList.LoadFromDb(dbContext);
                     ret.Storage = wserv.getAccountStorage(ret.AccountId);
 
-                    ret.reapplyLocalStats();
-                    ret.changeHpMp(ret.Hp, ret.Mp, true);
+                    ret.UpdateLocalStats(true);
                     //ret.resetBattleshipHp();
                 }
 
@@ -932,7 +931,7 @@ namespace Application.Core.Managers
                         }
                         else
                         {
-                            entity.Map = player.getHp() < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
+                            entity.Map = player.HP < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
                         }
                     }
                     if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)

@@ -11,14 +11,7 @@ public class MaxStatCommand : CommandBase
 
     public override void Execute(IClient c, string[] paramsValue)
     {
-        var player = c.OnlinedCharacter;
-        player.loseExp(player.getExp(), false, false);
-        player.setLevel(NumericConfig.MaxLevel);
-        player.updateStrDexIntLuk(NumericConfig.MaxStat);
-        player.setFame(NumericConfig.MaxFame);
-        player.updateMaxHpMaxMp(NumericConfig.MaxHP, NumericConfig.MaxMP);
-        player.updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
-        player.updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
-        player.yellowMessage("Stats maxed out.");
+        c.OnlinedCharacter.MaxStat();
+        c.OnlinedCharacter.yellowMessage("Stats maxed out.");
     }
 }

@@ -87,11 +87,11 @@ public class PetAutopotProcessor
             int useCount = 0, qtyCount = 0;
             StatEffect? stat = null;
 
-            maxHp = chr.getCurrentMaxHp();
-            maxMp = chr.getCurrentMaxMp();
+            maxHp = chr.ActualMaxHP;
+            maxMp = chr.ActualMaxMP;
 
-            curHp = chr.getHp();
-            curMp = chr.getMp();
+            curHp = chr.HP;
+            curMp = chr.MP;
 
             Inventory useInv = chr.getInventory(InventoryType.USE);
             useInv.lockInventory();

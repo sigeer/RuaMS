@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.TheWorld
+namespace Application.Core.Game.TheWorld
 {
     /// <summary>
     /// 所有关于角色数据加载的都放在这里，如果未登录，则client是offlineclient，否则则是正常的client

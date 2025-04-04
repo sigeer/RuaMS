@@ -218,7 +218,7 @@ namespace Application.Core.Game.Players
                         }
                         else
                         {
-                            entity.Map = getHp() < 1 ? MapModel.getReturnMapId() : MapModel.getId();
+                            entity.Map = HP < 1 ? MapModel.getReturnMapId() : MapModel.getId();
                         }
                     }
                     if (base.MapModel == null || MapModel.getId() == MapId.CRIMSONWOOD_VALLEY_1 || MapModel.getId() == MapId.CRIMSONWOOD_VALLEY_2)

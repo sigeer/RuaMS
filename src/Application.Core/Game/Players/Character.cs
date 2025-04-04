@@ -46,6 +46,7 @@ using constants.game;
 using constants.id;
 using constants.inventory;
 using constants.skills;
+using Jint.Runtime;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
 using net.server;
@@ -110,7 +111,7 @@ public partial class Player
     private int owlSearch;
     private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
-    private int equipmaxhp, equipmaxmp, equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
+    private int equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
     private int localchairrate;
     private bool hidden, equipchanged = true, berserk, hasSandboxItem = false, whiteChat = false;
     private bool equippedMesoMagnet = false, equippedItemPouch = false, equippedPetItemIgnore = false;
@@ -658,7 +659,7 @@ public partial class Player
     {
         if (isLoggedinWorld())
         {
-            updateLocalStats();
+            UpdateLocalStats();
             sendPacket(PacketCreator.cancelBuff(buffstats));
             if (buffstats.Count > 0)
             {
@@ -993,14 +994,18 @@ public partial class Player
             statLock.EnterWriteLock();
             try
             {
-                addMaxMPMaxHP(addhp, addmp, true);
-                recalcLocalStats();
+                ChangeMaxHP(addhp);
+                ChangeMaxMP(addmp);
+                SetHP(ActualMaxHP);
+                SetMP(ActualMaxMP);
+
+                UpdateLocalStats();
 
                 List<KeyValuePair<Stat, int>> statup = new(7);
-                statup.Add(new(Stat.HP, Hp));
-                statup.Add(new(Stat.MP, Mp));
-                statup.Add(new(Stat.MAXHP, clientmaxhp));
-                statup.Add(new(Stat.MAXMP, clientmaxmp));
+                statup.Add(new(Stat.HP, HP));
+                statup.Add(new(Stat.MP, MP));
+                statup.Add(new(Stat.MAXHP, MaxHP));
+                statup.Add(new(Stat.MAXMP, MaxMP));
                 statup.Add(new(Stat.AVAILABLEAP, Ap));
                 statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
                 statup.Add(new(Stat.JOB, JobId));
@@ -1373,7 +1378,7 @@ public partial class Player
             int skilllevel = getSkillLevel(BerserkX);
             if (skilllevel > 0)
             {
-                berserk = chr.getHp() * 100 / chr.getCurrentMaxHp() < BerserkX.getEffect(skilllevel).getX();
+                berserk = (this.HP * 100 / this.ActualMaxHP) < BerserkX.getEffect(skilllevel).getX();
                 berserkSchedule = TimerManager.getInstance().register(() =>
                 {
                     if (awayFromWorld.Get())
@@ -1634,7 +1639,7 @@ public partial class Player
                 return;
             }
 
-            if (this.getHp() < localmaxhp)
+            if (HP < ActualMaxHP)
             {
                 if (healHP > 0)
                 {
@@ -1643,7 +1648,11 @@ public partial class Player
                 }
             }
 
-            addMPHP(healHP, healMP);
+            UpdateStatsChunk(() =>
+            {
+                ChangeHP(healHP);
+                ChangeMP(healMP);
+            });
 
         }, healInterval, healInterval);
     }
@@ -1741,7 +1750,10 @@ public partial class Player
     {
         if (!(this.getInventory(InventoryType.EQUIPPED).findById(MapModel.getHPDecProtect()) != null || buffMapProtection()))
         {
-            addHP(-MapModel.getHPDec());
+            UpdateStatsChunk(() =>
+            {
+                ChangeHP(-MapModel.getHPDec(), false);
+            });
         }
     }
 
@@ -1759,7 +1771,7 @@ public partial class Player
     {
         MapModel.broadcastUpdateCharLookMessage(this, this);
         equipchanged = true;
-        updateLocalStats();
+        UpdateLocalStats();
         if (Messenger != null)
         {
             getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.getChannel());
@@ -3352,7 +3364,10 @@ public partial class Player
                 }
             }
 
-            addMaxMPMaxHP(addhp, addmp, true);
+            ChangeMaxHP(addhp);
+            ChangeMaxMP(addmp);
+            SetHP(ActualMaxHP);
+            SetMP(ActualMaxMP);
 
             if (takeexp)
             {
@@ -3396,18 +3411,17 @@ public partial class Player
             statLock.EnterWriteLock();
             try
             {
-                recalcLocalStats();
-                changeHpMp(localmaxhp, localmaxmp, true);
+                UpdateLocalStats();
 
                 List<KeyValuePair<Stat, int>> statup = new(10);
                 statup.Add(new(Stat.AVAILABLEAP, Ap));
                 statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
-                statup.Add(new(Stat.HP, Hp));
-                statup.Add(new(Stat.MP, Mp));
                 statup.Add(new(Stat.EXP, ExpValue.get()));
                 statup.Add(new(Stat.LEVEL, Level));
-                statup.Add(new(Stat.MAXHP, clientmaxhp));
-                statup.Add(new(Stat.MAXMP, clientmaxmp));
+                statup.Add(new(Stat.MAXHP, MaxHP));
+                statup.Add(new(Stat.MAXMP, MaxMP));
+                statup.Add(new(Stat.HP, HP));
+                statup.Add(new(Stat.MP, MP));
                 statup.Add(new(Stat.STR, Str));
                 statup.Add(new(Stat.DEX, Dex));
 
@@ -3872,26 +3886,30 @@ public partial class Player
 
         cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town
 
-        if (usedSafetyCharm)
-        {  // thanks kvmba for noticing safety charm not providing 30% HP/MP
-            addMPHP((int)Math.Ceiling(this.getClientMaxHp() * 0.3), (int)Math.Ceiling(this.getClientMaxMp() * 0.3));
-        }
-        else
+        UpdateStatsChunk(() =>
         {
-            updateHp(50);
-        }
-
+            if (usedSafetyCharm)
+            {
+                // thanks kvmba for noticing safety charm not providing 30% HP/MP
+                SetHP((int)Math.Ceiling(this.ActualMaxHP * 0.3));
+                SetMP((int)Math.Ceiling(this.ActualMaxMP * 0.3));
+            }
+            else
+            {
+                SetHP(NumericConfig.MinHp);
+            }
+        });
         setStance(0);
     }
 
 
 
-    private void recalcEquipStats()
+    private void RefreshByEquipChange()
     {
         if (equipchanged)
         {
-            equipmaxhp = 0;
-            equipmaxmp = 0;
+            var equipmaxhp = 0;
+            var equipmaxmp = 0;
             equipdex = 0;
             equipint_ = 0;
             equipstr = 0;
@@ -3916,11 +3934,10 @@ public partial class Player
                 //equipjump += equip.getJump();
             }
 
+            RefreshByEquip(equipmaxhp, equipmaxmp);
             equipchanged = false;
         }
 
-        localmaxhp += equipmaxhp;
-        localmaxmp += equipmaxmp;
         localdex += equipdex;
         localint_ += equipint_;
         localstr += equipstr;
@@ -3929,15 +3946,16 @@ public partial class Player
         localwatk += equipwatk;
     }
 
-    public void reapplyLocalStats()
+    /// <summary>
+    /// 重算所有人物属性
+    /// </summary>
+    private void reapplyLocalStats()
     {
         Monitor.Enter(effLock);
         chLock.EnterReadLock();
         statLock.EnterWriteLock();
         try
         {
-            localmaxhp = getMaxHp();
-            localmaxmp = getMaxMp();
             localdex = getDex();
             localint_ = getInt();
             localstr = getStr();
@@ -3946,23 +3964,12 @@ public partial class Player
             localwatk = 0;
             localchairrate = -1;
 
-            recalcEquipStats();
+            RefreshByEquipChange();
+            RefreshByBuff();
+            RecalculateMaxHP();
+            RecalculateMaxMP();
 
             localmagic = Math.Min(localmagic, 2000);
-
-            int? hbhp = getBuffedValue(BuffStat.HYPERBODYHP);
-            if (hbhp != null)
-            {
-                localmaxhp += (hbhp.Value / 100) * localmaxhp;
-            }
-            int? hbmp = getBuffedValue(BuffStat.HYPERBODYMP);
-            if (hbmp != null)
-            {
-                localmaxmp += (hbmp.Value / 100) * localmaxmp;
-            }
-
-            localmaxhp = Math.Min(NumericConfig.MaxHP, localmaxhp);
-            localmaxmp = Math.Min(NumericConfig.MaxMP, localmaxmp);
 
             StatEffect? combo = getBuffEffect(BuffStat.ARAN_COMBO);
             if (combo != null)
@@ -4082,82 +4089,24 @@ public partial class Player
         }
     }
 
-    private List<KeyValuePair<Stat, int>> recalcLocalStats()
-    {
-        Monitor.Enter(effLock);
-        chLock.EnterReadLock();
-        statLock.EnterWriteLock();
-        try
-        {
-            List<KeyValuePair<Stat, int>> hpmpupdate = new(2);
-            int oldlocalmaxhp = localmaxhp;
-            int oldlocalmaxmp = localmaxmp;
-
-            reapplyLocalStats();
-
-            if (YamlConfig.config.server.USE_FIXED_RATIO_HPMP_UPDATE)
-            {
-                if (localmaxhp != oldlocalmaxhp)
-                {
-                    KeyValuePair<Stat, int> hpUpdate;
-
-                    if (transienthp == float.NegativeInfinity)
-                    {
-                        hpUpdate = calcHpRatioUpdate(localmaxhp, oldlocalmaxhp);
-                    }
-                    else
-                    {
-                        hpUpdate = calcHpRatioTransient();
-                    }
-
-                    hpmpupdate.Add(hpUpdate);
-                }
-
-                if (localmaxmp != oldlocalmaxmp)
-                {
-                    KeyValuePair<Stat, int> mpUpdate;
-
-                    if (transientmp == float.NegativeInfinity)
-                    {
-                        mpUpdate = calcMpRatioUpdate(localmaxmp, oldlocalmaxmp);
-                    }
-                    else
-                    {
-                        mpUpdate = calcMpRatioTransient();
-                    }
-
-                    hpmpupdate.Add(mpUpdate);
-                }
-            }
-
-            return hpmpupdate;
-        }
-        finally
-        {
-            statLock.ExitWriteLock();
-            chLock.ExitReadLock();
-            Monitor.Exit(effLock);
-        }
-    }
-
-    private void updateLocalStats()
+    public void UpdateLocalStats(bool isInitial = false)
     {
         Monitor.Enter(prtLock);
         Monitor.Enter(effLock);
         statLock.EnterWriteLock();
         try
         {
-            int oldmaxhp = localmaxhp;
-            List<KeyValuePair<Stat, int>> hpmpupdate = recalcLocalStats();
-            enforceMaxHpMp();
+            int oldmaxhp = ActualMaxHP;
+            int oldmaxmp = ActualMaxMP;
+            reapplyLocalStats();
 
-            if (hpmpupdate.Count > 0)
+            //登录时不能发送 不然客户端会崩溃
+            if (!isInitial)
+                SendStats();
+
+            if (oldmaxhp != ActualMaxHP)
             {
-                sendPacket(PacketCreator.updatePlayerStats(hpmpupdate, true, this));
-            }
-
-            if (oldmaxhp != localmaxhp)
-            {   // thanks Wh1SK3Y (Suwaidy) for pointing out a deadlock occuring related to party members HP
+                // thanks Wh1SK3Y (Suwaidy) for pointing out a deadlock occuring related to party members HP
                 updatePartyMemberHP();
             }
         }
@@ -4309,10 +4258,10 @@ public partial class Player
         Dex = recipe.getDex();
         Int = recipe.getInt();
         Luk = recipe.getLuk();
-        setMaxHp(recipe.getMaxHp());
-        setMaxMp(recipe.getMaxMp());
-        Hp = Maxhp;
-        Mp = Maxmp;
+        SetHP(recipe.getMaxHp());
+        SetMP(recipe.getMaxMp());
+        SetMaxHP(recipe.getMaxHp());
+        SetMaxMP(recipe.getMaxMp());
         Ap = recipe.getRemainingAp();
         RemainingSp[GameConstants.getSkillBook(JobId)] = recipe.getRemainingSp();
         MesoValue.set(recipe.getMeso());
@@ -4506,96 +4455,13 @@ public partial class Player
         this.Hair = hair;
     }
 
-    private void hpChangeAction(int oldHp)
-    {
-        bool playerDied = false;
-        if (Hp <= 0)
-        {
-            if (oldHp > Hp)
-            {
-                playerDied = true;
-            }
-        }
-
-        bool chrDied = playerDied;
-        if (base.MapModel != null)
-        {
-            MapModel.registerCharacterStatUpdate(() =>
-            {
-                updatePartyMemberHP();    // thanks BHB (BHB88) for detecting a deadlock case within player stats.
-
-                if (chrDied)
-                {
-                    playerDead();
-                }
-                else
-                {
-                    checkBerserk(isHidden());
-                }
-            });
-        }
-    }
-
-    private KeyValuePair<Stat, int> calcHpRatioUpdate(int newHp, int oldHp)
-    {
-        int delta = newHp - oldHp;
-        this.Hp = calcHpRatioUpdate(Hp, oldHp, delta);
-
-        hpChangeAction(short.MinValue);
-        return new(Stat.HP, Hp);
-    }
-
-    private KeyValuePair<Stat, int> calcMpRatioUpdate(int newMp, int oldMp)
-    {
-        int delta = newMp - oldMp;
-        this.Mp = calcMpRatioUpdate(Mp, oldMp, delta);
-        return new(Stat.MP, Mp);
-    }
-
-    private static int calcTransientRatio(float transientpoint)
-    {
-        int ret = (int)transientpoint;
-        return !(ret <= 0 && transientpoint > 0.0f) ? ret : 1;
-    }
-
-    private KeyValuePair<Stat, int> calcHpRatioTransient()
-    {
-        this.Hp = calcTransientRatio(transienthp * localmaxhp);
-
-        hpChangeAction(short.MinValue);
-        return new(Stat.HP, Hp);
-    }
-
-    private KeyValuePair<Stat, int> calcMpRatioTransient()
-    {
-        this.Mp = calcTransientRatio(transientmp * localmaxmp);
-        return new(Stat.MP, Mp);
-    }
-
-    private int calcHpRatioUpdate(int curpoint, int maxpoint, int diffpoint)
-    {
-        int curMax = maxpoint;
-        int nextMax = Math.Min(30000, maxpoint + diffpoint);
-
-        float temp = curpoint * nextMax;
-        int ret = (int)Math.Ceiling(temp / curMax);
-
-        transienthp = (maxpoint > nextMax) ? ((float)curpoint) / maxpoint : ((float)ret) / nextMax;
-        return ret;
-    }
-
-    private int calcMpRatioUpdate(int curpoint, int maxpoint, int diffpoint)
-    {
-        int curMax = maxpoint;
-        int nextMax = Math.Min(30000, maxpoint + diffpoint);
-
-        float temp = curpoint * nextMax;
-        int ret = (int)Math.Ceiling(temp / curMax);
-
-        transientmp = (maxpoint > nextMax) ? ((float)curpoint) / maxpoint : ((float)ret) / nextMax;
-        return ret;
-    }
-
+    /// <summary>
+    /// 使用药品、技能带来的（血条蓝条）变化
+    /// </summary>
+    /// <param name="hpCon"></param>
+    /// <param name="hpchange"></param>
+    /// <param name="mpchange"></param>
+    /// <returns>ture: 使用成功，false: 使用失败</returns>
     public bool applyHpMpChange(int hpCon, int hpchange, int mpchange)
     {
         bool zombify = hasDisease(Disease.ZOMBIFY);
@@ -4604,7 +4470,7 @@ public partial class Player
         statLock.EnterWriteLock();
         try
         {
-            int nextHp = Hp + hpchange, nextMp = Mp + mpchange;
+            int nextHp = HP + hpchange, nextMp = MP + mpchange;
             bool cannotApplyHp = hpchange != 0 && nextHp <= 0 && (!zombify || hpCon > 0);
             bool cannotApplyMp = mpchange != 0 && nextMp < 0;
 
@@ -4621,7 +4487,11 @@ public partial class Player
                 }
             }
 
-            updateHpMp(nextHp, nextMp);
+            UpdateStatsChunk(() =>
+            {
+                SetHP(nextHp);
+                SetMP(nextMp);
+            });
         }
         finally
         {
@@ -4632,12 +4502,12 @@ public partial class Player
         // autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
         if (hpchange < 0)
         {
-            KeyBinding? autohpPot = this.KeyMap.GetData((int)KeyCode.VirtualAutoPotionHP);
+            KeyBinding? autohpPot = this.KeyMap.GetData(KeyCode.VirtualAutoPotionHP);
             if (autohpPot != null)
             {
                 int autohpItemid = autohpPot.getAction();
                 float autohpAlert = this.getAutopotHpAlert();
-                if (((float)this.getHp()) / this.getCurrentMaxHp() <= autohpAlert)
+                if (((float)this.HP / this.ActualMaxHP) <= autohpAlert)
                 { // try within user settings... thanks Lame, Optimist, Stealth2800
                     var autohpItem = this.getInventory(InventoryType.USE).findById(autohpItemid);
                     if (autohpItem != null)
@@ -4651,12 +4521,12 @@ public partial class Player
 
         if (mpchange < 0)
         {
-            KeyBinding? autompPot = this.KeyMap.GetData((int)KeyCode.VirtualAutoPotionMP);
+            KeyBinding? autompPot = this.KeyMap.GetData(KeyCode.VirtualAutoPotionMP);
             if (autompPot != null)
             {
                 int autompItemid = autompPot.getAction();
                 float autompAlert = this.getAutopotMpAlert();
-                if (((float)this.getMp()) / this.getCurrentMaxMp() <= autompAlert)
+                if (((float)this.MP) / this.ActualMaxMP <= autompAlert)
                 {
                     var autompItem = this.getInventory(InventoryType.USE).findById(autompItemid);
                     if (autompItem != null)
@@ -5550,7 +5420,7 @@ public partial class Player
             familyEntry.setCharacter(null);
             setFamilyEntry(null);
         }
-        Bag.Dispose();
+        // Bag.Dispose();
 
         var worldServer = getWorldServer();
         worldServer.OnExpRateChanged -= UpdateActualExpRate;

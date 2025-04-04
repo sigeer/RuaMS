@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -22,11 +22,6 @@ namespace Application.Core.Game.Players
 {
     public interface IPlayerStats
     {
-        void addHP(int delta);
-        void addMaxHP(int delta);
-        void addMaxMP(int delta);
-        void addMP(int delta);
-        void addMPHP(int hpDelta, int mpDelta);
         bool assignDex(int x);
         bool assignHP(int deltaHP, int deltaAp);
         bool assignInt(int x);
@@ -37,35 +32,28 @@ namespace Application.Core.Game.Players
         void changeRemainingAp(int x, bool silent);
         void gainAp(int deltaAp, bool silent);
         void gainSp(int deltaSp, int skillbook, bool silent);
-        int getClientMaxHp();
-        int getClientMaxMp();
-        int getCurrentMaxHp();
-        int getCurrentMaxMp();
         int getDex();
-        int getHp();
         int getHpMpApUsed();
         int getInt();
         int getLuk();
 
-        int getMaxHp();
-        int getMaxMp();
-        int getMp();
         int getRemainingAp();
         int[] getRemainingSps();
         int getStr();
         void healHpMp();
         bool isAlive();
         int safeAddHP(int delta);
-
-        void updateHp(int hp);
-        void updateHpMaxHp(int? hp, int? maxhp);
-        void updateHpMp(int x);
-        void updateHpMp(int newhp, int newmp);
-        void updateMaxHp(int maxhp);
-        void updateMaxHpMaxMp(int maxhp, int maxmp);
-        void updateMaxMp(int maxmp);
-        void updateMp(int mp);
-        void updateMpMaxMp(int? mp, int? maxmp);
         void updateStrDexIntLuk(int x);
+
+        void UpdateLocalStats(bool isInisital = false);
+        void PrintStatsUpdated();
+        /// <summary>
+        /// 更新属性时（Stat），都通过这个方法包裹
+        /// </summary>
+        /// <param name="action"></param>
+        void UpdateStatsChunk(Action action);
+        TOut UpdateStatsChunk<TOut>(Func<TOut> action);
+
+        void MaxStat();
     }
 }
