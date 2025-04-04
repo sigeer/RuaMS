@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -165,7 +165,7 @@ function action(mode, type, selection) {
                             eim.gridInsert(cm.getPlayer(), 0);
                         } else {
                             var question = stage1Questions[eim.gridCheck(cm.getPlayer()) - 1];
-                            cm.sendNext("对不起，但那不是正确的答案！\r\n" + 问题);
+                            cm.sendNext("对不起，但那不是正确的答案！\r\n" + question);
                         }
                     }
                 }

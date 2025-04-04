@@ -337,7 +337,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addCharEntry(OutPacket p, IPlayer chr, bool viewall)
+    private static void addCharEntry(OutPacket p,IClient playerClient, IPlayer chr, bool viewall)
     {
         addCharStats(p, chr);
         addCharLook(p, chr, false);
@@ -345,7 +345,7 @@ public class PacketCreator
         {
             p.writeByte(0);
         }
-        if (chr.isGM() || chr.isGmJob())
+        if (playerClient.getGMLevel() > 1 || chr.isGmJob())
         {  // thanks Daddy Egg (Ubaware), resinate for noticing GM jobs crashing on non-GM players account
             p.writeByte(0);
             return;
@@ -947,7 +947,7 @@ public class PacketCreator
         p.writeByte((byte)chars.Count);
         foreach (IPlayer chr in chars)
         {
-            addCharEntry(p, chr, false);
+            addCharEntry(p, c, chr, false);
         }
 
         p.writeByte(YamlConfig.config.server.ENABLE_PIC && !c.canBypassPic() ? (string.IsNullOrEmpty(c.getPic()) ? 0 : 1) : 2);
@@ -2925,11 +2925,11 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet addNewCharEntry(IPlayer chr)
+    public static Packet addNewCharEntry(IClient client, IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.ADD_NEW_CHAR_ENTRY);
         p.writeByte(0);
-        addCharEntry(p, chr, false);
+        addCharEntry(p, client, chr, false);
         return p;
     }
 
@@ -5057,7 +5057,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showAllCharacterInfo(int worldid, List<IPlayer> chars, bool usePic)
+    public static Packet showAllCharacterInfo(IClient client, int worldid, List<IPlayer> chars, bool usePic)
     {
         OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
         p.writeByte(0);
@@ -5065,7 +5065,7 @@ public class PacketCreator
         p.writeByte(chars.Count);
         foreach (IPlayer chr in chars)
         {
-            addCharEntry(p, chr, true);
+            addCharEntry(p, client, chr, true);
         }
         p.writeByte(usePic ? 1 : 2);
         return p;
