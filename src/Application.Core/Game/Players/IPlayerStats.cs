@@ -45,8 +45,7 @@ namespace Application.Core.Game.Players
         int safeAddHP(int delta);
         void updateStrDexIntLuk(int x);
 
-        void SendStats();
-        void UpdateLocalStats();
+        void UpdateLocalStats(bool isInisital = false);
         void PrintStatsUpdated();
         /// <summary>
         /// 更新属性时（Stat），都通过这个方法包裹

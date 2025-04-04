@@ -1,6 +1,5 @@
 using client;
 using constants.game;
-using System.Numerics;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -530,7 +529,11 @@ namespace Application.Core.Game.Players
 
         public void SendStats()
         {
-            sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
+            if (statUpdates.Count > 0)
+            {
+                sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
+                PrintStatsUpdated();
+            }
         }
 
         public void PrintStatsUpdated()
@@ -554,10 +557,7 @@ namespace Application.Core.Game.Players
 
                 action();
 
-                if (statUpdates.Count > 0)
-                {
-                    sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
-                }
+                SendStats();
             }
             finally
             {
@@ -578,10 +578,7 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                if (statUpdates.Count > 0)
-                {
-                    sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
-                }
+                SendStats();
 
                 Monitor.Exit(effLock);
                 statLock.ExitWriteLock();

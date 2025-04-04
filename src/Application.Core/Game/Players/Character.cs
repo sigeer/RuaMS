@@ -4085,7 +4085,7 @@ public partial class Player
         }
     }
 
-    public void UpdateLocalStats()
+    public void UpdateLocalStats(bool isInitial = false)
     {
         Monitor.Enter(prtLock);
         Monitor.Enter(effLock);
@@ -4093,7 +4093,12 @@ public partial class Player
         try
         {
             int oldmaxhp = ActualMaxHP;
+            int oldmaxmp = ActualMaxMP;
             reapplyLocalStats();
+
+            //登录时不能发送 不然客户端会崩溃
+            if (!isInitial)
+                SendStats();
 
             if (oldmaxhp != ActualMaxHP)
             {
@@ -5411,7 +5416,7 @@ public partial class Player
             familyEntry.setCharacter(null);
             setFamilyEntry(null);
         }
-        Bag.Dispose();
+        // Bag.Dispose();
 
         var worldServer = getWorldServer();
         worldServer.OnExpRateChanged -= UpdateActualExpRate;

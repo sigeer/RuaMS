@@ -30,7 +30,7 @@ namespace Application.Core.Game.Players
         }
         public void ChangeMaxMP(int value)
         {
-            var targetValue = MaxHP + value;
+            var targetValue = MaxMP + value;
             SetMaxMP(targetValue);
         }
 
@@ -45,7 +45,7 @@ namespace Application.Core.Game.Players
                 return;
 
             MaxHP = value;
-            RecalculateMaxHP();
+            RecalculateMaxHP(true);
         }
 
         private void SetMaxMP(int value)
@@ -59,7 +59,7 @@ namespace Application.Core.Game.Players
                 return;
 
             MaxMP = value;
-            RecalculateMaxMP();
+            RecalculateMaxMP(true);
         }
         public bool ChangeHP(int deltaValue, bool useCheck = true)
         {
@@ -163,27 +163,31 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void RecalculateMaxHP()
+        private void RecalculateMaxHP(bool fromBase = false)
         {
             var newMaxHp = (int)(MaxHP + BuffMaxHP + EquipMaxHP);
             if (newMaxHp != ActualMaxHP)
             {
                 ActualMaxHP = newMaxHp;
-                statUpdates[Stat.MAXHP] = ActualMaxHP;
 
                 SetHP(HP);
+
+                if (fromBase)
+                    statUpdates[Stat.MAXHP] = ActualMaxHP;
             }
         }
 
-        public void RecalculateMaxMP()
+        private void RecalculateMaxMP(bool fromBase = false)
         {
             var newMaxMp = (int)(MaxMP + EquipMaxMP + BuffMaxMP);
             if (newMaxMp != ActualMaxMP)
             {
                 ActualMaxMP = newMaxMp;
-                statUpdates[Stat.MAXMP] = ActualMaxMP;
 
                 SetMP(MP);
+
+                if (fromBase)
+                    statUpdates[Stat.MAXMP] = ActualMaxMP;
             }
         }
 
