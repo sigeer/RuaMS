@@ -996,14 +996,16 @@ public partial class Player
             {
                 ChangeMaxHP(addhp);
                 ChangeMaxMP(addmp);
+                SetHP(ActualMaxHP);
+                SetMP(ActualMaxMP);
 
                 UpdateLocalStats();
 
                 List<KeyValuePair<Stat, int>> statup = new(7);
                 statup.Add(new(Stat.HP, HP));
                 statup.Add(new(Stat.MP, MP));
-                statup.Add(new(Stat.MAXHP, ActualMaxHP));
-                statup.Add(new(Stat.MAXMP, ActualMaxMP));
+                statup.Add(new(Stat.MAXHP, MaxHP));
+                statup.Add(new(Stat.MAXMP, MaxMP));
                 statup.Add(new(Stat.AVAILABLEAP, Ap));
                 statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
                 statup.Add(new(Stat.JOB, JobId));
@@ -3364,6 +3366,8 @@ public partial class Player
 
             ChangeMaxHP(addhp);
             ChangeMaxMP(addmp);
+            SetHP(ActualMaxHP);
+            SetMP(ActualMaxMP);
 
             if (takeexp)
             {
@@ -3414,8 +3418,8 @@ public partial class Player
                 statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
                 statup.Add(new(Stat.EXP, ExpValue.get()));
                 statup.Add(new(Stat.LEVEL, Level));
-                statup.Add(new(Stat.MAXHP, ActualMaxHP));
-                statup.Add(new(Stat.MAXMP, ActualMaxMP));
+                statup.Add(new(Stat.MAXHP, MaxHP));
+                statup.Add(new(Stat.MAXMP, MaxMP));
                 statup.Add(new(Stat.HP, HP));
                 statup.Add(new(Stat.MP, MP));
                 statup.Add(new(Stat.STR, Str));
