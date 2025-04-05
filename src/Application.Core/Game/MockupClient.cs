@@ -574,5 +574,10 @@ namespace Application.Core.Game
         {
             throw new NotImplementedException();
         }
+
+        public void SetAccountInfoFromClient(IClient? client)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

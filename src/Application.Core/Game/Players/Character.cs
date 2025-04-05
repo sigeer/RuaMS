@@ -580,12 +580,7 @@ public partial class Player
 
     public void LinkNewChannelClient(IClient newClient)
     {
-        newClient.setLanguage(Client.getLanguage());
-        newClient.setCharacterSlots((sbyte)Client.getCharacterSlots());
-        newClient.setAccountName(Client.getAccountName());//No null's for accountName
-        newClient.setGMLevel(Client.getGMLevel());
-        newClient.setAccID(Client.getAccID());
-
+        newClient.SetAccountInfoFromClient(Client);
         this.setClient(newClient);
         this.setMap(newClient.getChannelServer().getMapFactory().getMap(getMapId()));
         var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;

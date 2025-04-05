@@ -300,6 +300,21 @@ public class Client : ChannelHandlerAdapter, IClient
         gmlevel = dbModel.GMLevel;
     }
 
+    public void SetAccountInfoFromClient(IClient? client)
+    {
+        if (client == null)
+            return;
+
+        accId = client.getAccID();
+        accountName = client.getAccountName();
+        gmlevel = client.getGMLevel();
+        _pin = client.getPin();
+        _pic = client.getPic();
+        gender = client.getGender();
+        characterSlots = (sbyte)client.getCharacterSlots();
+        lang = client.getLanguage();
+    }
+
 
     public Hwid getHwid()
     {

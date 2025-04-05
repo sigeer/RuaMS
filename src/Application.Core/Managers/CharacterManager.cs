@@ -461,12 +461,10 @@ namespace Application.Core.Managers
 
                 ret.PlayerTrockLocation.LoadData(dbContext);
 
-                var accountFromDB = dbContext.Accounts.Where(x => x.Id == ret.AccountId).Select(x => new { x.Name, x.Characterslots, x.Language }).FirstOrDefault();
+                var accountFromDB = dbContext.Accounts.Where(x => x.Id == ret.AccountId).AsNoTracking().FirstOrDefault();
                 if (accountFromDB != null)
                 {
-                    client.setAccountName(accountFromDB.Name);
-                    client.setCharacterSlots(accountFromDB.Characterslots);
-                    client.setLanguage(accountFromDB.Language);   // thanks Zein for noticing user language not overriding default once player is in-game
+                    client.LoadAccountInfo(accountFromDB);
                 }
 
                 var areaInfoFromDB = dbContext.AreaInfos.Where(x => x.Charid == ret.Id).Select(x => new { x.Area, x.Info }).ToList();

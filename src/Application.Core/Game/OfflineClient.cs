@@ -10,6 +10,8 @@ using scripting;
 using scripting.Event;
 using scripting.npc;
 using scripting.quest;
+using static Mysqlx.Notice.Warning.Types;
+using System.Reflection;
 
 namespace Application.Core.Game
 {
@@ -21,7 +23,13 @@ namespace Application.Core.Game
         public IChannel NettyChannel { get; private set; } = null!;
         public IPlayer? Character => null;
         public int AccountId { get; set; }
+        public string AccountName { get; set; }
+        public string Pic { get; set; }
+        public string Pin { get; set; }
+        public sbyte Slots { get; set; }
         public int GmLevel { get; set; }
+        public int Gender { get; set; }
+        public int Language { get; set; }
         public AccountEntity? AccountInfo { get; set; }
 
         public NPCConversationManager? NPCConversationManager { get ; set; }
@@ -183,12 +191,12 @@ namespace Application.Core.Game
 
         public int getAccID()
         {
-            throw new BusinessCharacterOfflineException();
+            return AccountId;
         }
 
         public string getAccountName()
         {
-            throw new BusinessCharacterOfflineException();
+            return AccountName;
         }
 
         public short getAvailableCharacterSlots()
@@ -223,7 +231,7 @@ namespace Application.Core.Game
 
         public short getCharacterSlots()
         {
-            throw new BusinessCharacterOfflineException();
+            return Slots;
         }
 
         public NPCConversationManager? getCM()
@@ -238,12 +246,12 @@ namespace Application.Core.Game
 
         public sbyte getGender()
         {
-            throw new BusinessCharacterOfflineException();
+            return (sbyte)Gender;
         }
 
         public int getGMLevel()
         {
-            return AccountInfo?.GMLevel ?? 0;
+            return GmLevel;
         }
 
         public sbyte getGReason()
@@ -569,6 +577,21 @@ namespace Application.Core.Game
         public bool CheckBirthday(int dateInt)
         {
             throw new BusinessCharacterOfflineException();
+        }
+
+        public void SetAccountInfoFromClient(IClient? client)
+        {
+            if (client == null)
+                return;
+
+            AccountId = client.getAccID();
+            AccountName = client.getAccountName();
+            GmLevel = client.getGMLevel();
+            Pin = client.getPin();
+            Pic = client.getPic();
+            Gender = client.getGender();
+            Slots = (sbyte)client.getCharacterSlots();
+            Language = client.getLanguage();
         }
     }
 }
