@@ -1,5 +1,6 @@
 using Application.Scripting;
 using Application.Scripting.JS;
+using Jint;
 using System.Drawing;
 
 namespace ServiceTest.Infrastructure
@@ -188,6 +189,21 @@ namespace ServiceTest.Infrastructure
 
             var d2 = result.ToObject<TestArrayItem[]>();
             Assert.That(d2.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void CheckPointExtension()
+        {
+            _engine.AddHostedType("Point", typeof(Point));
+            _engine.Evaluate("""
+                function test() {
+                var p1 = new Point(0, 0);
+                var p2 = new Point(3, 4);
+                    return p1.distance(p2);
+                }
+                """);
+            var d = _engine.CallFunction("test");
+            Assert.That(d.ToObject<float>(), Is.EqualTo(5.0f));
         }
 
         [OneTimeTearDown]

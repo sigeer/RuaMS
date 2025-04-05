@@ -1,3 +1,4 @@
+using Application.Utility.Extensions;
 using Jint;
 using Jint.Runtime.Interop;
 using System.Diagnostics.CodeAnalysis;
@@ -11,7 +12,7 @@ namespace Application.Scripting.JS
         {
             _engine = new Engine(o =>
             {
-                o.AllowClr().AddExtensionMethods(typeof(JsEngineExtensions));
+                o.AllowClr().AddExtensionMethods(typeof(JsEngineExtensions), typeof(PointExtensions));
                 o.SetTypeConverter(o =>
                 {
                     return new CustomeTypeConverter(o);
