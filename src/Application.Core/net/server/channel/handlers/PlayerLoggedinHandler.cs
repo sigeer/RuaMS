@@ -158,7 +158,6 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 }
             }
             c.setPlayer(player);
-            c.setAccID(player.getAccountID());
 
             bool allowLogin = true;
 
