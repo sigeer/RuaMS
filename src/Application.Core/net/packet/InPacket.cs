@@ -6,7 +6,6 @@ public interface InPacket : Packet
 {
     byte readByte();
     sbyte ReadSByte();
-    ushort readUnsignedByte();
     short readShort();
     int readInt();
     long readLong();
