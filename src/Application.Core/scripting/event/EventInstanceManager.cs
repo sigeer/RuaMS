@@ -696,7 +696,7 @@ public class EventInstanceManager
     {
         try
         {
-            return Convert.ToBoolean(invokeScriptFunction("playerRevive", this, chr));
+            return Convert.ToBoolean(invokeScriptFunction("playerRevive", this, chr) ?? true);
         }
         catch (Exception ex)
         {
