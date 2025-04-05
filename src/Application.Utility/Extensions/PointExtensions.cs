@@ -1,6 +1,7 @@
-﻿using System.Numerics;
+using System.Drawing;
+using System.Numerics;
 
-namespace Application.Core.Compatible.Extensions
+namespace Application.Utility.Extensions
 {
     public static class PointExtensions
     {

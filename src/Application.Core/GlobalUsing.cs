@@ -14,6 +14,7 @@ global using Application.Utility.Configs;
 global using Application.Utility.Exceptions;
 global using Application.Utility.Tasks;
 global using Application.Utility.Loggers;
+global using Application.Utility.Extensions;
 global using Serilog;
 global using System;
 global using System.Drawing;
