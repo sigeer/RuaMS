@@ -34,6 +34,7 @@ using net.server.coordinator.world;
 using net.server.guild;
 using net.server.world;
 using service;
+using System.Net;
 using tools;
 using tools.packets;
 
@@ -157,6 +158,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                     return;
                 }
             }
+            c.SetAccountInfoFromClient(player.Client);
             c.setPlayer(player);
 
             bool allowLogin = true;
