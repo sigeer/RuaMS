@@ -80,7 +80,7 @@ public class NPCMoreTalkHandler : AbstractPacketHandler
             }
             else if (p.available() > 0)
             {
-                selection = p.readUnsignedByte();
+                selection = p.readByte();
             }
             if (c.NPCConversationManager is QuestActionManager q)
             {

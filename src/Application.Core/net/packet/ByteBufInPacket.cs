@@ -33,7 +33,6 @@ public class ByteBufInPacket : InPacket
     {
         return (sbyte)byteBuf.ReadByte();
     }
-    public ushort readUnsignedByte() { return byteBuf.ReadUnsignedShort(); }
 
     public short readShort()
     {
