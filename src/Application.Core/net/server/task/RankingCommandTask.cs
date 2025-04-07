@@ -28,6 +28,7 @@ public class RankingCommandTask : AbstractRunnable
 
     public override void HandleRun()
     {
-        Server.getInstance().LoadPlayerRanking();
+        using var dbContext = new DBContext();
+        Server.getInstance().LoadPlayerRanking(dbContext);
     }
 }

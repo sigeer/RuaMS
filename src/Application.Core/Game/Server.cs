@@ -158,9 +158,8 @@ public class Server
         return availableDeveloperRoom;
     }
 
-    private void loadPlayerNpcMapStepFromDb()
+    private void loadPlayerNpcMapStepFromDb(DBContext dbContext)
     {
-        using var dbContext = new DBContext();
         var list = dbContext.PlayernpcsFields.AsNoTracking().ToList();
         list.ForEach(rs =>
         {
@@ -310,7 +309,8 @@ public class Server
             return false;
         }
 
-        LoadPlayerRanking();
+        using var dbContext = new DBContext();
+        LoadPlayerRanking(dbContext);
         await w.Shutdown();
 
         RunningWorlds.Remove(worldId);
@@ -477,9 +477,9 @@ public class Server
         return [];
     }
 
-    public Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRanking()
+    public Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRanking(DBContext dbContext)
     {
-        return playerRanking = RankManager.LoadPlayerRankingFromDB();
+        return playerRanking = RankManager.LoadPlayerRankingFromDB(dbContext);
     }
 
     private async Task InitialDataBase()
@@ -577,7 +577,17 @@ public class Server
 
             AppDomain.CurrentDomain.ProcessExit += (obj, evt) => shutdown(false);
 
+            var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
+
+            var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
+            foreach (var worldConfig in worlds)
+            {
+                await InitWorld(worldConfig);
+            }
+
             using var dbContext = new DBContext();
+            LoadAccountCharacterCache(dbContext);
+
             setAllLoggedOut(dbContext);
             setAllMerchantsInactive(dbContext);
             cleanNxcodeCoupons(dbContext);
@@ -587,18 +597,10 @@ public class Server
             CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             PlayerNPC.loadRunningRankData(dbContext);
-            LoadAccountCharacterCache(dbContext);
 
-            var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
+            LoadPlayerRanking(dbContext);
 
-            var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
-            foreach (var worldConfig in worlds)
-            {
-                await InitWorld(worldConfig);
-            }
-            LoadPlayerRanking();
-
-            loadPlayerNpcMapStepFromDb();
+            loadPlayerNpcMapStepFromDb(dbContext);
 
             if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
             {

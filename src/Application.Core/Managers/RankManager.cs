@@ -9,9 +9,8 @@ namespace Application.Core.Managers
         /// </summary>
         /// <param name="topCount"></param>
         /// <returns>WorldId - Data -1: 全部</returns>
-        public static Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRankingFromDB(int topCount = 50)
+        public static Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRankingFromDB(DBContext dbContext, int topCount = 50)
         {
-            using var dbContext = new DBContext();
             var query = from a in dbContext.Characters
                         join b in dbContext.Accounts on a.AccountId equals b.Id
                         where b.GMLevel < 2 && b.Banned != 1
