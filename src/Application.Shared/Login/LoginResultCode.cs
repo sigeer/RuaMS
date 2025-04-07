@@ -32,7 +32,10 @@ namespace Application.Shared.Login
         Fail_Error13 = 13,
         Fail_Error17 = 17,
 
-        Fail_Error23 = 23,
+        /// <summary>
+        /// 未同意协议
+        /// </summary>
+        Fail_Agreement = 23,
 
         MigrateBCrypto = -10,
         CheckTOS = -23
@@ -45,7 +48,7 @@ namespace Application.Shared.Login
         /// </summary>
         public const int LOGIN_NOTLOGGEDIN = 0;
         /// <summary>
-        /// 已登录，但是未选择频道，未进入游戏
+        /// 已登录，但是未选择角色进入游戏
         /// </summary>
         public const int LOGIN_SERVER_TRANSITION = 1;
         /// <summary>
