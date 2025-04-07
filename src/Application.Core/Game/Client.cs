@@ -5,6 +5,7 @@ using Application.Core.Scripting.Infrastructure;
 using client;
 using client.inventory;
 using constants.id;
+using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
@@ -23,6 +24,7 @@ using scripting.Event;
 using scripting.npc;
 using server;
 using server.maps;
+using System.Text;
 using System.Text.RegularExpressions;
 using tools;
 using static Mysqlx.Notice.Warning.Types;
@@ -208,7 +210,8 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public override void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
     {
-        log.Error(cause, "Exception caught by {ClientInfo}, Character: {CharacterName}", ClientInfo, Character);
+        if (cause is not DecoderException)
+            log.Error(cause, "Exception caught by {ClientInfo}, Character: {CharacterName}", ClientInfo, Character);
 
         if (cause is InvalidPacketHeaderException)
         {

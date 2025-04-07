@@ -532,7 +532,7 @@ namespace Application.Core.Game.Players
             if (statUpdates.Count > 0)
             {
                 sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
-                PrintStatsUpdated();
+                // PrintStatsUpdated();
             }
         }
 
