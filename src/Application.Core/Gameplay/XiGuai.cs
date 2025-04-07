@@ -17,7 +17,12 @@ namespace Application.Core.Game.Gameplay
 
         public IMap MapModel { get; set; }
         public IPlayer Controller { get; set; }
-        public Point Position { get; }
+        public Point Position { get; private set; }
+
+        public void RestPosition()
+        {
+            Position = Controller.getPosition();
+        }
 
         public void Start()
         {
