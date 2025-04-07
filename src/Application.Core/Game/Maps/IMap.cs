@@ -105,7 +105,6 @@ namespace Application.Core.Game.Maps
         List<IMapObject> getAllPlayer();
         List<IPlayer> getAllPlayers();
         List<Reactor> getAllReactors();
-        IPlayer? getAnyCharacterFromParty(int partyid);
         Rectangle getArea(int index);
         List<Rectangle> getAreas();
         IWorldChannel getChannelServer();
@@ -147,8 +146,6 @@ namespace Application.Core.Game.Maps
         NPC? getNPCById(int id);
         int getNumPlayersInArea(int index);
         int getNumPlayersInRect(Rectangle rect);
-        int getNumPlayersItemsInArea(int index);
-        int getNumPlayersItemsInRect(Rectangle rect);
         string getOnFirstUserEnter();
         string getOnUserEnter();
         List<IMapObject> getPlayers();

@@ -2,7 +2,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.Scripting.Infrastructure;
-using client;
 using client.inventory;
 using constants.id;
 using DotNetty.Codecs;
@@ -24,10 +23,8 @@ using scripting.Event;
 using scripting.npc;
 using server;
 using server.maps;
-using System.Text;
 using System.Text.RegularExpressions;
 using tools;
-using static Mysqlx.Notice.Warning.Types;
 using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Game;
@@ -294,7 +291,6 @@ public class Client : ChannelHandlerAdapter, IClient
 
         accId = dbModel.Id;
         accountName = dbModel.Name;
-        gmlevel = 0;
         _pin = dbModel.Pin;
         _pic = dbModel.Pic;
         gender = dbModel.Gender;

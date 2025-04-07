@@ -1,4 +1,13 @@
 namespace Application.Shared.MapObjects
 {
-    public record MapName(string StreetName, string Name);
+    public struct MapName
+    {
+        public string StreetName { get; set; }
+        public string Name { get; set; }
+        public MapName(string streetName, string name)
+        {
+            StreetName = streetName;
+            Name = name;
+        }
+    }
 }

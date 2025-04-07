@@ -2,6 +2,7 @@ services:
   rua-ms:
     container_name: service-rua-ms-server
     image: rua-ms
+    # privileged: true  # 启用特权模式
     build:
       context: .
       dockerfile: src/Application.Host/Dockerfile

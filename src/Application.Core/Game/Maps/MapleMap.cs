@@ -2536,19 +2536,6 @@ public class MapleMap : IMap
         registerMapSchedule(r, time);
     }
 
-    public IPlayer? getAnyCharacterFromParty(int partyid)
-    {
-        foreach (IPlayer chr in this.getAllPlayers())
-        {
-            if (chr.getPartyId() == partyid)
-            {
-                return chr;
-            }
-        }
-
-        return null;
-    }
-
     private void addPartyMemberInternal(IPlayer chr, int partyid)
     {
         if (partyid == -1)
@@ -3645,9 +3632,9 @@ public class MapleMap : IMap
     {
         var env = getEnvironment();
 
-        if (env.ContainsKey(ms))
+        if (env.TryGetValue(ms, out var value))
         {
-            moveEnvironment(ms, env[ms] == 1 ? 2 : 1);
+            moveEnvironment(ms, value == 1 ? 2 : 1);
         }
         else
         {
@@ -4191,19 +4178,6 @@ public class MapleMap : IMap
         {
             chrLock.ExitReadLock();
         }
-    }
-
-    public int getNumPlayersItemsInArea(int index)
-    {
-        return getNumPlayersItemsInRect(getArea(index));
-    }
-
-    public int getNumPlayersItemsInRect(Rectangle rect)
-    {
-        int retP = getNumPlayersInRect(rect);
-        int retI = getMapObjectsInBox(rect, Arrays.asList(MapObjectType.ITEM)).Count;
-
-        return retP + retI;
     }
 
     //private interface DelayedPacketCreation
