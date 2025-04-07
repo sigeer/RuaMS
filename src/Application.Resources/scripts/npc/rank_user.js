@@ -53,7 +53,7 @@ function action(mode, type, selection) {
                 rankStr += "\r\n    Overall " + branchJobName + " rank: #e#b" + GameConstants.ordinal(pnpc.getOverallJobRank()) + "#k#n";
                 rankStr += "\r\n    Overall rank: #e#b" + GameConstants.ordinal(pnpc.getOverallRank()) + "#k#n";
 
-                cm.sendOk("排名字符串");
+                cm.sendOk(rankStr);
             } else {
                 cm.sendOk("你好，你好吗？");
             }
