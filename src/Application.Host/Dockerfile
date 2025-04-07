@@ -10,6 +10,10 @@ EXPOSE 8484
 # 频道服务器
 EXPOSE 7575-7600
 
+# 安装dotnet-dump
+RUN dotnet tool install -g dotnet-dump \
+    && export PATH="$PATH:/root/.dotnet/tools"
+
 # 此阶段用于生成服务项目
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
