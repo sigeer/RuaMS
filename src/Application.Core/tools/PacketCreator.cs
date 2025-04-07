@@ -736,7 +736,6 @@ public class PacketCreator
      */
     public static Packet getAuthSuccess(IClient c)
     {
-        Server.getInstance().loadAccountCharacters(c);    // locks the login session until data is recovered from the cache or the DB.
         Server.getInstance().loadAccountStorages(c);
 
         OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);

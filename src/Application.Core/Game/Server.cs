@@ -71,7 +71,7 @@ public class Server
     /// <summary>
     /// AccountId - cid
     /// </summary>
-    private Dictionary<int, HashSet<int>> AccountCharacterCache = new();
+    private Dictionary<int, HashSet<AccountInfo>> AccountCharacterCache = new();
 
     private Dictionary<string, int> transitioningChars = new();
 
@@ -256,27 +256,7 @@ public class Server
 
     public async Task<bool> AddWorld(WorldConfigEntity worldConfig)
     {
-        if (await InitWorld(worldConfig))
-        {
-            HashSet<int> accounts;
-            lgnLock.EnterReadLock();
-            try
-            {
-                accounts = new(AccountCharacterCache.Keys);
-            }
-            finally
-            {
-                lgnLock.ExitReadLock();
-            }
-
-            foreach (int accId in accounts)
-            {
-                LoadAccountCharactersView(accId);
-            }
-            return true;
-        }
-
-        return false;
+        return await InitWorld(worldConfig);
     }
 
     public async Task<bool> InitWorld(WorldConfigEntity worldConfig)
@@ -607,6 +587,7 @@ public class Server
             CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             PlayerNPC.loadRunningRankData(dbContext);
+            LoadAccountCharacterCache(dbContext);
 
             var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
 
@@ -763,7 +744,7 @@ public class Server
         try
         {
             var accChars = AccountCharacterCache.GetValueOrDefault(accountid) ?? [];
-            return accChars.Contains(chrid);
+            return accChars.Any(x => x.Id == chrid);
         }
         finally
         {
@@ -771,14 +752,14 @@ public class Server
         }
     }
 
-    public short getAccountCharacterCount(int accountid)
+    public int getAccountCharacterCount(int accountid)
     {
-        return (short)getAccountCharacterEntries(accountid).Count;
+        return AccountCharacterCache.GetValueOrDefault(accountid, []).Count;
     }
 
-    public short getAccountWorldCharacterCount(int accountid, int worldid)
+    public int getAccountWorldCharacterCount(int accountid, int worldid)
     {
-        return (short)getAccountCharacterEntries(accountid).Count(x => x.World == worldid);
+        return AccountCharacterCache.GetValueOrDefault(accountid, []).Count(x => x.World == worldid);
     }
 
     private HashSet<IPlayer> getAccountCharacterEntries(int accountid, int loadLevel = 0)
@@ -787,7 +768,7 @@ public class Server
         try
         {
             if (AccountCharacterCache.TryGetValue(accountid, out var d))
-                return AllPlayerStorage.GetPlayersByIds(d, loadLevel).ToHashSet();
+                return AllPlayerStorage.GetPlayersByIds(d.Select(x => x.Id).ToArray(), loadLevel).ToHashSet();
             return [];
         }
         finally
@@ -806,7 +787,7 @@ public class Server
             if (!AccountCharacterCache.ContainsKey(accountid))
                 AccountCharacterCache.Add(accountid, new());
 
-            AccountCharacterCache[accountid].Add(chr.Id);
+            AccountCharacterCache[accountid].Add(new AccountInfo(chr.Id, chr.World, chr.AccountId));
         }
         finally
         {
@@ -821,7 +802,7 @@ public class Server
         {
             var accChars = AccountCharacterCache.GetValueOrDefault(accountid);
             if (accChars != null)
-                accChars.Remove(chrid);
+                accChars = accChars.Where(x => x.Id != chrid).ToHashSet();
         }
         finally
         {
@@ -829,48 +810,6 @@ public class Server
         }
     }
 
-    //public void transferWorldCharacterEntry(IPlayer chr, int toWorld)
-    //{
-    //    // used before setting the new worldid on the character object
-    //    lgnLock.EnterWriteLock();
-    //    try
-    //    {
-    //        int chrid = chr.getId(), accountid = chr.getAccountID();
-
-    //        var wservTmp = this.getWorld(chr.World);
-    //        if (wservTmp != null)
-    //        {
-    //            wservTmp.unregisterAccountCharacterView(accountid, chrid);
-    //        }
-
-    //        var wserv = this.getWorld(toWorld);
-    //        if (wserv != null)
-    //        {
-    //            wserv.registerAccountCharacterView(chr.AccountId, chr);
-    //        }
-    //    }
-    //    finally
-    //    {
-    //        lgnLock.ExitWriteLock();
-    //    }
-    //}
-
-    /*
-    public void deleteAccountEntry(int accountid) { is this even a thing?
-        lgnLock.EnterWriteLock();
-        try {
-            accountCharacterCount.Remove(accountid);
-            accountChars.Remove(accountid);
-        } finally {
-            lgnLock.ExitWriteLock();
-        }
-
-        foreach(World wserv in this.getWorlds()) {
-            wserv.clearAccountCharacterView(accountid);
-            wserv.unregisterAccountStorage(accountid);
-        }
-    }
-    */
 
     /// <summary>
     /// world - players
@@ -880,8 +819,6 @@ public class Server
     /// <returns></returns>
     public SortedDictionary<int, List<IPlayer>> LoadAccountCharList(int accountId, int visibleWorlds)
     {
-        LoadAccountCharactersView(accountId);
-
         var accountData = getAccountCharacterEntries(accountId, 1);
         SortedDictionary<int, List<IPlayer>> worldChrs = new();
 
@@ -902,16 +839,22 @@ public class Server
         return worldChrs;
     }
 
+    private Dictionary<int, HashSet<AccountInfo>> LoadAccountCharacterCache(DBContext dbContext)
+    {
+        AccountCharacterCache = (from a in dbContext.Accounts
+                                 let chars = dbContext.Characters.Where(x => x.AccountId == a.Id).Select(x => new { x.AccountId, x.Id, x.World }).ToList()
+                                 select new { AccountId = a.Id, CharIdList = chars }).ToList()
+                       .ToDictionary(x => x.AccountId, x => x.CharIdList.Select(x => new AccountInfo(x.Id, x.World, x.AccountId)).ToHashSet());
+        return AccountCharacterCache;
+    }
 
     public List<IPlayer> loadAllAccountsCharactersView()
     {
-        using var dbContext = new DBContext();
-        var idList = dbContext.Accounts.Select(x => x.Id).ToList();
+        var idList = AccountCharacterCache.Keys.ToList();
 
         var list = new List<IPlayer>();
         idList.ForEach(accountId =>
         {
-            LoadAccountCharactersView(accountId, force: false);
             list.AddRange(getAccountCharacterEntries(accountId));
         });
 
@@ -951,60 +894,15 @@ public class Server
         }
     }
 
-    public void loadAccountCharacters(IClient c)
-    {
-        int accId = c.getAccID();
-        LoadAccountCharactersView(accId);
-    }
-
-    private void LoadAccountCharactersView(int accId, int worldId = -1, bool force = true)
-    {
-        var filterWorlds = new List<int>();
-        if (worldId == -1)
-        {
-            filterWorlds = RunningWorlds.Keys.ToList();
-        }
-        else
-        {
-            filterWorlds.Add(worldId);
-        }
-
-        lgnLock.EnterWriteLock();
-        try
-        {
-            if (!AccountCharacterCache.ContainsKey(accId))
-            {
-                AccountCharacterCache[accId] = new();
-            }
-            else
-            {
-                if (!force)
-                    return;
-            }
-
-            var playerIdList = AccountManager.LoadAccountWorldPlayers(accId, filterWorlds);
-            foreach (var cid in playerIdList)
-            {
-                AccountCharacterCache[accId].Add(cid);
-            }
-        }
-        finally
-        {
-            lgnLock.ExitWriteLock();
-        }
-    }
-
     public void loadAccountStorages(IClient c)
     {
         int accountId = c.getAccID();
-        var accWorlds = getAccountCharacterEntries(accountId).Select(x => x.World).ToHashSet();
+        var accWorlds = AccountCharacterCache.GetValueOrDefault(accountId, []).Select(x => x.World).ToHashSet();
 
-        var worldList = this.getWorlds();
         foreach (int worldid in accWorlds)
         {
-            if (worldid < worldList.Count)
+            if (RunningWorlds.TryGetValue(worldid, out var wserv))
             {
-                var wserv = worldList.get(worldid);
                 wserv.loadAccountStorage(accountId);
             }
         }
