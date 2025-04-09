@@ -66,8 +66,10 @@ public class SkillBookHandler : AbstractPacketHandler
                 {
                     return;
                 }
-                var skill2 = SkillFactory.GetSkillTrust(skilldata.GetValueOrDefault("skillid"));
-                if (skilldata.GetValueOrDefault("skillid") == 0)
+
+                var targetSkillId = skilldata.GetValueOrDefault("skillid");
+                var skill2 = SkillFactory.getSkill(targetSkillId);
+                if (targetSkillId == 0)
                 {
                     canuse = false;
                 }
