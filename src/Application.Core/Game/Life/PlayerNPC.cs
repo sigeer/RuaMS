@@ -438,7 +438,7 @@ public class PlayerNPC : AbstractMapObject
             {
                 using var dbContext = new DBContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
-                var dbModel = dbContext.Playernpcs.Where(x => x.Scriptid == scriptId).First();
+                var dbModel = dbContext.Playernpcs.Where(x => x.Scriptid == scriptId).FirstOrDefault();
 
                 if (dbModel == null)
                 {

@@ -31,10 +31,10 @@ namespace Application.Core.Managers
         /// <param name="accountId"></param>
         /// <param name="world"> -1时获取全部， 默认-1</param>
         /// <returns></returns>
-        public static List<int> LoadAccountWorldPlayers(int accountId, int world = -1)
+        public static List<int> LoadAccountWorldPlayers(int accountId)
         {
             using var dbContext = new DBContext();
-            return dbContext.Characters.Where(x => x.AccountId == accountId && (world == -1 || x.World == world)).OrderBy(x => x.Id).Select(x => x.Id).ToList();
+            return dbContext.Characters.Where(x => x.AccountId == accountId).OrderBy(x => x.Id).Select(x => x.Id).ToList();
         }
 
         public static List<int> LoadAccountWorldPlayers(int accountId, IEnumerable<int> worlds)

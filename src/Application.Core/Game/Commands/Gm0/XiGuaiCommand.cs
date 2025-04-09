@@ -20,6 +20,8 @@ namespace Application.Core.Game.Commands.Gm0
 
                 if (map.XiGuai == null)
                     map.XiGuai = new Gameplay.XiGuai(map, client.OnlinedCharacter);
+                else
+                    map.XiGuai.RestPosition();
 
                 map.XiGuai.Start();
             }

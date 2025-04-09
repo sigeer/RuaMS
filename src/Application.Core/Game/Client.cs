@@ -2,9 +2,9 @@ using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.Scripting.Infrastructure;
-using client;
 using client.inventory;
 using constants.id;
+using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
@@ -25,7 +25,6 @@ using server;
 using server.maps;
 using System.Text.RegularExpressions;
 using tools;
-using static Mysqlx.Notice.Warning.Types;
 using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Game;
@@ -208,7 +207,8 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public override void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
     {
-        log.Error(cause, "Exception caught by {ClientInfo}, Character: {CharacterName}", ClientInfo, Character);
+        if (cause is not DecoderException)
+            log.Error(cause, "Exception caught by {ClientInfo}, Character: {CharacterName}", ClientInfo, Character);
 
         if (cause is InvalidPacketHeaderException)
         {
@@ -291,7 +291,6 @@ public class Client : ChannelHandlerAdapter, IClient
 
         accId = dbModel.Id;
         accountName = dbModel.Name;
-        gmlevel = 0;
         _pin = dbModel.Pin;
         _pic = dbModel.Pic;
         gender = dbModel.Gender;

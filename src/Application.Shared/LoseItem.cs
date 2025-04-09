@@ -1,4 +1,16 @@
-﻿namespace Application.Shared
+namespace Application.Shared
 {
-    public record LoseItem(int Id, byte Prob, byte X);
+    public struct LoseItem
+    {
+        public int Id { get; set; }
+        public byte Prob { get; set; }
+        public byte X { get; set; }
+
+        public LoseItem(int id, byte prob, byte x)
+        {
+            Id = id;
+            Prob = prob;
+            X = x;
+        }
+    }
 }
