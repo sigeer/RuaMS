@@ -70,7 +70,7 @@ namespace Application.Core.Game.Players
             {
                 return 0;
             }
-            return getMasterLevel(skill);
+            return getMasterLevel(skillData);
         }
 
         public int getMasterLevel(Skill? skill)
