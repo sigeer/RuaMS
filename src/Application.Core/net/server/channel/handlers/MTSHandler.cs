@@ -532,7 +532,7 @@ public class MTSHandler : AbstractPacketHandler
                 q = q.Where(x => x.Type == type);
             if (cOi != 0)
             {
-                var filteredItemId = ii.getAllItems().Where(itemPair => itemPair.Name.ToLower().Contains(search.ToLower())).Select(x => x.Id).ToList();
+                var filteredItemId = ii.getAllItems().Where(itemPair => itemPair.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).Select(x => x.Id).ToList();
                 q = q.Where(x => filteredItemId.Contains(x.Itemid));
             }
             else

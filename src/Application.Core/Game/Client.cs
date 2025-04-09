@@ -422,7 +422,7 @@ public class Client : ChannelHandlerAdapter, IClient
             if (dbModel != null && !string.IsNullOrEmpty(dbModel.Macs))
             {
                 var splitedData = dbModel.Macs.Split(",").Where(x => !string.IsNullOrEmpty(x)).ToList();
-                macs.addAll(splitedData);
+                macs.UnionWith(splitedData);
             }
         }
     }
@@ -788,7 +788,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public void updateMacs(string macData)
     {
-        macs.addAll(Arrays.asList(macData.Split(", ")));
+        macs.UnionWith(macData.Split(", "));
         var macString = string.Join(',', macs);
         try
         {

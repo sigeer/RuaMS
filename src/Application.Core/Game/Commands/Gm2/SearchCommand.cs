@@ -1,3 +1,4 @@
+using Application.Core.scripting.npc;
 using constants.id;
 using server;
 using server.quest;
@@ -77,7 +78,7 @@ public class SearchCommand : CommandBase
                     foreach (Data searchData in data.getChildren())
                     {
                         name = DataTool.getString(searchData.getChildByPath("name")) ?? "NO-NAME";
-                        if (name.ToLower().Contains(search.ToLower()))
+                        if (name.Contains(search, StringComparison.OrdinalIgnoreCase))
                         {
                             sb.Append("#b").Append(int.Parse(searchData.getName())).Append("#k - #r").Append(name).Append("\r\n");
                         }
@@ -94,7 +95,7 @@ public class SearchCommand : CommandBase
                             mapName = DataTool.getString(searchData.getChildByPath("mapName")) ?? "NO-NAME";
                             streetName = DataTool.getString(searchData.getChildByPath("streetName")) ?? "NO-NAME";
 
-                            if (mapName.ToLower().Contains(search.ToLower()) || streetName.ToLower().Contains(search.ToLower()))
+                            if (mapName.Contains(search, StringComparison.OrdinalIgnoreCase) || streetName.Contains(search, StringComparison.OrdinalIgnoreCase))
                             {
                                 sb.Append("#b").Append(int.Parse(searchData.getName())).Append("#k - #r").Append(streetName).Append(" - ").Append(mapName).Append("\r\n");
                             }
@@ -142,6 +143,6 @@ public class SearchCommand : CommandBase
         sw.Stop();
         sb.Append("\r\n#kLoaded within ").Append(sw.Elapsed.TotalSeconds).Append(" seconds.");//because I can, and it's free
 
-        c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, sb.ToString());
+        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }

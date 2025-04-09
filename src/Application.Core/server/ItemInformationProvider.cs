@@ -2125,8 +2125,7 @@ public class ItemInformationProvider
 
     public List<ItemInfoBase> getItemDataByName(string name)
     {
-        var kw = name.ToLower();
-        return ItemInformationProvider.getInstance().getAllItems().Where(x => x.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)).ToList();
+        return ItemInformationProvider.getInstance().getAllItems().Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     private Data? getEquipLevelInfo(int itemId)

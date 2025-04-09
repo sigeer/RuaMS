@@ -76,7 +76,7 @@ public class MiniGame : AbstractMapObject
 
     public bool checkPassword(string sentPw)
     {
-        return password.Length == 0 || sentPw.ToLower().Equals(password.ToLower());
+        return password.Length == 0 || sentPw.Equals(password, StringComparison.OrdinalIgnoreCase);
     }
 
     public bool hasFreeSlot()

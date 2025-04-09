@@ -1,4 +1,6 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+using Application.Core.scripting.npc;
+
+namespace Application.Core.Game.Commands.Gm3;
 
 public class InMapCommand : CommandBase
 {
@@ -10,8 +12,9 @@ public class InMapCommand : CommandBase
     public override void Execute(IClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        string st = string.Join(' ', player.getMap().getCharacters());
-        player.message(st);
+
+        string st = string.Join("\r\n", player.getMap().getCharacters());
+        TempConversation.Create(c)?.RegisterTalk(st);
 
     }
 }

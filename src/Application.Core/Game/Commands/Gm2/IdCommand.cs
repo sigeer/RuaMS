@@ -1,4 +1,4 @@
-﻿using constants.game;
+using constants.game;
 using constants.id;
 using server;
 using System.Collections.Concurrent;
@@ -70,7 +70,7 @@ public class IdCommand : CommandBase
             {
                 return false;
             }
-            return this.name.ToLower().Contains(query.ToLower());
+            return this.name.Contains(query, StringComparison.OrdinalIgnoreCase);
         }
     }
 

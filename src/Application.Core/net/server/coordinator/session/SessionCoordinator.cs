@@ -20,6 +20,7 @@
 
 
 using Application.Core.Managers;
+using Application.Core.scripting.npc;
 using constants.id;
 using net.server.coordinator.login;
 using System.Collections.Concurrent;
@@ -471,6 +472,6 @@ public class SessionCoordinator
             }
         }
 
-        c.getAbstractPlayerInteraction().npcTalk(NpcId.TEMPLE_KEEPER, str);
+        TempConversation.Create(c, NpcId.TEMPLE_KEEPER)?.RegisterTalk(str);
     }
 }

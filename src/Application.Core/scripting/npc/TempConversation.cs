@@ -1,5 +1,6 @@
 using constants.id;
 using scripting.npc;
+using tools;
 
 namespace Application.Core.scripting.npc
 {
@@ -19,8 +20,30 @@ namespace Application.Core.scripting.npc
         Action<TempConversation>? _onNo;
         TempConversationType _type;
 
-        public TempConversation(IClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc, null)
+        private TempConversation(IClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc, null)
         {
+        }
+
+        /// <summary>
+        /// 创建临时对话
+        /// </summary>
+        /// <param name="c"></param>
+        /// <param name="npc"></param>
+        /// <param name="force"></param>
+        /// <returns></returns>
+        public static TempConversation? Create(IClient c, int npc = NpcId.MAPLE_ADMINISTRATOR, bool force = true)
+        {
+            if (force)
+                c.NPCConversationManager?.dispose();
+            else if (c.NPCConversationManager != null)
+            {
+                c.sendPacket(PacketCreator.sendYellowTip("有正在进行的对话，使用!dispose解卡"));
+                return null;
+            }
+
+            var value = new TempConversation(c, npc);
+            c.NPCConversationManager = value;
+            return value;
         }
 
         public void RegisterTalk(string text)

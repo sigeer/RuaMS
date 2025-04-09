@@ -38,19 +38,17 @@ public class SpawnCommand : CommandBase
                     var item = list.MatchedItems[i];
                     messages.Append($"\r\n#L{i}# {item.Id} - {item.Name} #l");
                 }
-                c.NPCConversationManager?.dispose();
 
-                var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
-                tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
-                {
-                    var item = list.MatchedItems[idx];
-                    ctx.RegisterYesOrNo($"你确定要召唤 {item.Id} - {item.Name}？", ctx =>
+                TempConversation.Create(c, NpcId.MAPLE_ADMINISTRATOR)?
+                    .RegisterSelect(messages.ToString(), (idx, ctx) =>
                     {
-                        SpawnById(player, item.Id, paramsValue);
-                        ctx.dispose();
+                        var item = list.MatchedItems[idx];
+                        ctx.RegisterYesOrNo($"你确定要召唤 {item.Id} - {item.Name}？", ctx =>
+                        {
+                            SpawnById(player, item.Id, paramsValue);
+                            ctx.dispose();
+                        });
                     });
-                });
-                c.NPCConversationManager = tempConversation;
                 return;
             }
             else

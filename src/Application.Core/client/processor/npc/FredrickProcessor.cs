@@ -89,11 +89,6 @@ public class FredrickProcessor
         return 0x0;
     }
 
-    public static int timestampElapsedDays(DateTimeOffset then, DateTimeOffset timeNow)
-    {
-        return (timeNow - then).Days;
-    }
-
     private static string fredrickReminderMessage(int daynotes)
     {
         string msg;
@@ -110,11 +105,10 @@ public class FredrickProcessor
         return msg;
     }
 
-    public static void removeFredrickLog(int cid)
+    public static void removeFredrickLog(DBContext dbContext, int cid)
     {
         try
         {
-            using var dbContext = new DBContext();
             dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
         }
         catch (Exception sqle)
@@ -143,26 +137,12 @@ public class FredrickProcessor
         }
     }
 
-    private static void removeFredrickReminders(List<CharacterIdWorldPair> expiredCids)
+    private static void removeFredrickReminders(DBContext dbContext, List<CharacterIdWorldPair> expiredCids)
     {
-        List<string> expiredCnames = new();
-        foreach (var id in expiredCids)
-        {
-            var name = CharacterManager.getNameById(id.CharacterId);
-            if (name != null)
-            {
-                expiredCnames.Add(name);
-            }
-        }
-
+        List<string> expiredCnames = expiredCids.Select(x => x.Name).ToList();
         try
         {
-            using var dbContext = new DBContext();
-
-            foreach (string cname in expiredCnames)
-            {
-                dbContext.Notes.Where(x => EF.Functions.Like(x.From, "FREDRICK") && EF.Functions.Like(x.To, cname)).ExecuteDelete();
-            }
+            dbContext.Notes.Where(x =>  x.From == "FREDRICK" && expiredCnames.Contains(x.To)).ExecuteDelete();
         }
         catch (Exception e)
         {
@@ -175,6 +155,7 @@ public class FredrickProcessor
         try
         {
             using var dbContext = new DBContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
             List<CharacterIdWorldPair> expiredCids = new();
             List<KeyValuePair<CharacterIdNamePair, int>> notifCids = new();
             var dataList = (from a in dbContext.Fredstorages
@@ -185,10 +166,10 @@ public class FredrickProcessor
             {
                 int daynotes = Math.Min(dailyReminders.Length - 1, x.data.Daynotes);
 
-                int elapsedDays = timestampElapsedDays(x.data.Timestamp, DateTimeOffset.Now);
+                int elapsedDays = TimeUtils.DayDiff(x.data.Timestamp, DateTimeOffset.Now);
                 if (elapsedDays > 100)
                 {
-                    expiredCids.Add(new(x.CId, x.World));
+                    expiredCids.Add(new(x.CId, x.Name, x.World));
                 }
                 else
                 {
@@ -202,7 +183,7 @@ public class FredrickProcessor
                             notifDay = dailyReminders[daynotes];
                         } while (elapsedDays >= notifDay);
 
-                        int inactivityDays = timestampElapsedDays(x.LastLogoutTime, DateTimeOffset.Now);
+                        int inactivityDays = TimeUtils.DayDiff(x.LastLogoutTime, DateTimeOffset.Now);
 
                         if (inactivityDays < 7 || daynotes >= dailyReminders.Length - 1)
                         {  // don't spam inactive players
@@ -235,7 +216,7 @@ public class FredrickProcessor
                 dbContext.Characters.Where(x => cidList.Contains(x.Id)).ExecuteUpdate(x => x.SetProperty(y => y.MerchantMesos, 0));
 
 
-                removeFredrickReminders(expiredCids);
+                removeFredrickReminders(dbContext, expiredCids);
 
                 dbContext.Fredstorages.Where(x => cidList.Contains(x.Cid)).ExecuteDelete();
             }
@@ -253,6 +234,7 @@ public class FredrickProcessor
                 }
 
             }
+            dbTrans.Commit();
         }
         catch (Exception e)
         {
@@ -260,11 +242,10 @@ public class FredrickProcessor
         }
     }
 
-    private static bool deleteFredrickItems(int cid)
+    private static bool deleteFredrickItems(DBContext dbContext, int cid)
     {
         try
         {
-            using var dbContext = new DBContext();
             var typeValue = ItemFactory.MERCHANT.getValue();
             dbContext.Inventoryitems.Where(x => x.Type == typeValue && x.Characterid == cid).ExecuteDelete();
             return true;
@@ -298,7 +279,8 @@ public class FredrickProcessor
 
                     chr.withdrawMerchantMesos();
 
-                    if (deleteFredrickItems(chr.getId()))
+                    using var dbContext = new DBContext();
+                    if (deleteFredrickItems(dbContext, chr.getId()))
                     {
                         var merchant = chr.getHiredMerchant();
 
@@ -316,7 +298,7 @@ public class FredrickProcessor
                         }
 
                         chr.sendPacket(PacketCreator.fredrickMessage(0x1E));
-                        removeFredrickLog(chr.getId());
+                        removeFredrickLog(dbContext, chr.getId());
                     }
                     else
                     {
