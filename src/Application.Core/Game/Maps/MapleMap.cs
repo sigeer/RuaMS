@@ -325,7 +325,15 @@ public class MapleMap : IMap
 
     public void addPlayerNPCMapObject(PlayerNPC pnpcobject)
     {
-        addMapObject(pnpcobject);
+        objectLock.EnterWriteLock();
+        try
+        {
+            this.mapobjects.AddOrUpdate(pnpcobject.getObjectId(), pnpcobject);
+        }
+        finally
+        {
+            objectLock.ExitWriteLock();
+        }
     }
 
     public void addMapObject(IMapObject mapobject)
