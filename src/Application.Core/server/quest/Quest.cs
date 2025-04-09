@@ -724,10 +724,9 @@ public class Quest
     {
         List<Quest> ret = new();
 
-        search = search.ToLower();
         foreach (Quest mq in quests.Values)
         {
-            if (mq.name.ToLower().Contains(search) || mq.parent.ToLower().Contains(search))
+            if (mq.name.Contains(search, StringComparison.OrdinalIgnoreCase) || mq.parent.Contains(search, StringComparison.OrdinalIgnoreCase))
             {
                 ret.Add(mq);
             }

@@ -1216,7 +1216,7 @@ public class EventInstanceManager
         lockObj.EnterWriteLock();
         try
         {
-            exclusiveItems.addAll(exclusive);
+            exclusiveItems.UnionWith(exclusive);
         }
         finally
         {

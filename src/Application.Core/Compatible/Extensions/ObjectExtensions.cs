@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Compatible.Extensions
+namespace Application.Core.Compatible.Extensions
 {
     public static class ObjectExtensions
     {
@@ -12,7 +12,7 @@
             return dp;
         }
 
-        public static byte[] ToSBytes(this sbyte[] byteArray)
+        public static byte[] ToBytes(this sbyte[] byteArray)
         {
             var dp = new byte[byteArray.Length];
             for (int i = 0; i < byteArray.Length; i++)

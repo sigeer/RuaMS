@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Trades;
+using Application.Core.Game.Trades;
 using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 
@@ -92,7 +92,7 @@ namespace Application.Core.Game.Players
             using var dbContext = new DBContext();
             var dbModel = dbContext.Fredstorages.Where(x => x.Cid == getId()).Select(x => new { x.Timestamp }).FirstOrDefault();
             if (dbModel != null)
-                elapsedDays = FredrickProcessor.timestampElapsedDays(dbModel.Timestamp, DateTimeOffset.Now);
+                elapsedDays = TimeUtils.DayDiff(dbModel.Timestamp, DateTimeOffset.Now);
 
             if (elapsedDays > 100)
             {

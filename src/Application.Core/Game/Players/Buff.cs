@@ -626,7 +626,7 @@ namespace Application.Core.Game.Players
 
             if (!overwrite)
             {
-                removedStats.addAll(buffstats.Keys);
+                removedStats.UnionWith(buffstats.Keys);
             }
 
             return toCancel;

@@ -34,6 +34,7 @@ using server.expeditions;
 using server.life;
 using server.quest;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using tools.exceptions;
 
 //using jdk.nashorn.api.scripting;
@@ -57,7 +58,7 @@ public class EventManager
     private Queue<int> queuedGuilds = new();
     private Dictionary<int, int> queuedGuildLeaders = new();
     private List<bool> openedLobbys;
-    private List<EventInstanceManager> readyInstances = new();
+    private Queue<EventInstanceManager> readyInstances = new();
     private int readyId = 0, onLoadInstances = 0;
     private Dictionary<string, string> props = new Dictionary<string, string>();
     /// <summary>
@@ -116,7 +117,7 @@ public class EventManager
             eim.dispose(true);
         }
 
-        List<EventInstanceManager> readyEims;
+        Queue<EventInstanceManager> readyEims;
         Monitor.Enter(queueLock);
         try
         {
@@ -1097,7 +1098,7 @@ public class EventManager
                 return null;
             }
 
-            EventInstanceManager eim = readyInstances.remove(0);
+            EventInstanceManager eim = readyInstances.Dequeue();
             fillEimQueue();
 
             return eim;
@@ -1137,7 +1138,7 @@ public class EventManager
                 return;
             }
 
-            readyInstances.Add(eim);
+            readyInstances.Enqueue(eim);
             onLoadInstances--;
         }
         finally

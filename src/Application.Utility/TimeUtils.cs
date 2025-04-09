@@ -19,5 +19,10 @@ namespace Application.Utility
             var d = TimeSpan.FromMilliseconds(duration);
             return d.Minutes + " Minutes and " + d.Seconds + " Seconds";
         }
+
+        public static int DayDiff(DateTimeOffset from, DateTimeOffset to)
+        {
+            return (to - from).Days;
+        }
     }
 }

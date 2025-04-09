@@ -37,7 +37,6 @@ using scripting;
 using server;
 using server.life;
 using tools;
-using static server.partyquest.CarnivalFactory;
 
 namespace net.server.channel.handlers;
 
@@ -202,21 +201,11 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                     }
 
                     int totDamageToOneMonster = 0;
-                    var onedList = target.Value?.damageLines ?? [];
+                    var onedList = (target.Value?.damageLines ?? []).ToArray();
 
-                    if (attack.magic)
-                    { // thanks BHB, Alex (CanIGetaPR) for noticing no immunity status check here
-                        if (monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY))
-                        {
-                            Collections.fill(onedList, 1);
-                        }
-                    }
-                    else
+                    if (attack.magic ? monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY) : monster.isBuffed(MonsterStatus.WEAPON_IMMUNITY))
                     {
-                        if (monster.isBuffed(MonsterStatus.WEAPON_IMMUNITY))
-                        {
-                            Collections.fill(onedList, 1);
-                        }
+                        Array.Fill(onedList, 1);
                     }
 
                     if (MobId.isDojoBoss(monster.getId()))
@@ -224,13 +213,10 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                         if (attack.skill == Beginner.BAMBOO_RAIN || attack.skill == Noblesse.BAMBOO_RAIN || attack.skill == Legend.BAMBOO_THRUST)
                         {
                             int dmgLimit = (int)Math.Ceiling(0.3 * monster.getMaxHp());
-                            List<int> _onedList = new();
-                            foreach (int i in onedList)
+                            for (int i = 0; i < onedList.Length; i++)
                             {
-                                _onedList.Add(i < dmgLimit ? i : dmgLimit);
+                                onedList[i] = onedList[i] < dmgLimit ? onedList[i] : dmgLimit;
                             }
-
-                            onedList = _onedList;
                         }
                     }
 

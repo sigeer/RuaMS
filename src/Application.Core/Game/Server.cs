@@ -80,8 +80,8 @@ public class Server
     private PlayerBuffStorage buffStorage = new PlayerBuffStorage();
 
     private Dictionary<int, NewYearCardRecord> newyears = new();
-    private List<IClient> processDiseaseAnnouncePlayers = new();
-    private List<IClient> registeredDiseaseAnnouncePlayers = new();
+    private Queue<IClient> processDiseaseAnnouncePlayers = new();
+    private Queue<IClient> registeredDiseaseAnnouncePlayers = new();
 
     /// <summary>
     /// World - Data
@@ -416,7 +416,7 @@ public class Server
     #endregion
     public void runAnnouncePlayerDiseasesSchedule()
     {
-        List<IClient> processDiseaseAnnounceClients;
+        Queue<IClient> processDiseaseAnnounceClients;
         Monitor.Enter(disLock);
         try
         {
@@ -428,9 +428,8 @@ public class Server
             Monitor.Exit(disLock);
         }
 
-        while (processDiseaseAnnounceClients.Count > 0)
+        while (processDiseaseAnnounceClients.TryDequeue(out var c))
         {
-            var c = processDiseaseAnnounceClients.remove(0);
             var player = c.getPlayer();
             if (player != null && player.isLoggedinWorld())
             {
@@ -443,10 +442,9 @@ public class Server
         try
         {
             // this is to force the system to wait for at least one complete tick before releasing disease info for the registered clients
-            while (registeredDiseaseAnnouncePlayers.Count > 0)
+            while (registeredDiseaseAnnouncePlayers.TryDequeue(out var c))
             {
-                var c = registeredDiseaseAnnouncePlayers.remove(0);
-                processDiseaseAnnouncePlayers.Add(c);
+                processDiseaseAnnouncePlayers.Enqueue(c);
             }
         }
         finally
@@ -460,7 +458,7 @@ public class Server
         Monitor.Enter(disLock);
         try
         {
-            registeredDiseaseAnnouncePlayers.Add(c);
+            registeredDiseaseAnnouncePlayers.Enqueue(c);
         }
         finally
         {

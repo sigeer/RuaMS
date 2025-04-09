@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Relation;
+using Application.Core.Game.TheWorld;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
@@ -60,9 +61,8 @@ public class BuddylistModifyHandler : AbstractPacketHandler
 
     private CharacterIdNameBuddyCapacity? getCharacterIdAndNameFromDatabase(string name)
     {
-        using var dbContext = new DBContext();
-        return dbContext.Characters.Where(x => EF.Functions.Like(x.Name, name)).Select(x => new { x.Id, x.Name, x.BuddyCapacity }).ToList()
-           .Select(x => new CharacterIdNameBuddyCapacity(x.Id, x.Name, x.BuddyCapacity)).FirstOrDefault();
+        var p = AllPlayerStorage.GetOrAddCharacterByName(name);
+        return p == null ? null : new CharacterIdNameBuddyCapacity(p.Id, p.Name, p.BuddyList.Capacity);
     }
 
     public override void HandlePacket(InPacket p, IClient c)

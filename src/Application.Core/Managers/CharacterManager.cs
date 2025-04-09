@@ -222,7 +222,7 @@ namespace Application.Core.Managers
                 dbContext.Inventoryequipments.RemoveRange(inventoryEquipList);
 
                 deleteQuestProgressWhereCharacterId(dbContext, cid);
-                FredrickProcessor.removeFredrickLog(cid);   // thanks maple006 for pointing out the player's Fredrick items are not being deleted at character deletion
+                FredrickProcessor.removeFredrickLog(dbContext, cid);   // thanks maple006 for pointing out the player's Fredrick items are not being deleted at character deletion
 
                 var mtsCartIdList = dbContext.MtsCarts.Where(x => x.Cid == cid).Select(x => x.Id).ToList();
                 dbContext.MtsItems.Where(x => mtsCartIdList.Contains(x.Id)).ExecuteDelete();

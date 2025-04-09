@@ -78,7 +78,7 @@ public class SearchCommand : CommandBase
                     foreach (Data searchData in data.getChildren())
                     {
                         name = DataTool.getString(searchData.getChildByPath("name")) ?? "NO-NAME";
-                        if (name.ToLower().Contains(search.ToLower()))
+                        if (name.Contains(search, StringComparison.OrdinalIgnoreCase))
                         {
                             sb.Append("#b").Append(int.Parse(searchData.getName())).Append("#k - #r").Append(name).Append("\r\n");
                         }
@@ -95,7 +95,7 @@ public class SearchCommand : CommandBase
                             mapName = DataTool.getString(searchData.getChildByPath("mapName")) ?? "NO-NAME";
                             streetName = DataTool.getString(searchData.getChildByPath("streetName")) ?? "NO-NAME";
 
-                            if (mapName.ToLower().Contains(search.ToLower()) || streetName.ToLower().Contains(search.ToLower()))
+                            if (mapName.Contains(search, StringComparison.OrdinalIgnoreCase) || streetName.Contains(search, StringComparison.OrdinalIgnoreCase))
                             {
                                 sb.Append("#b").Append(int.Parse(searchData.getName())).Append("#k - #r").Append(streetName).Append(" - ").Append(mapName).Append("\r\n");
                             }

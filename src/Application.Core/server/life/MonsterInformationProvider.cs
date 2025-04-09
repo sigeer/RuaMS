@@ -276,8 +276,7 @@ public class MonsterInformationProvider
     public List<KeyValuePair<int, string>> getMobsIDsFromName(string search)
     {
         LoadAllMobNameCache();
-        var searchKw = search.ToLower();
-        return allMobNameCache.Where(x => x.Value.ToLower().Contains(searchKw)).ToList();
+        return allMobNameCache.Where(x => x.Value.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     public bool isBoss(int id)

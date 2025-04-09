@@ -1,4 +1,4 @@
-﻿namespace Application.Core.model
+namespace Application.Core.model
 {
-    public record CharacterIdWorldPair(int CharacterId, int World);
+    public record CharacterIdWorldPair(int CharacterId, string Name, int World);
 }
