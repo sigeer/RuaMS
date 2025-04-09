@@ -40,19 +40,17 @@ public class ItemCommand : CommandBase
                     var item = findResult.MatchedItems[i];
                     messages.Append($"\r\n#L{i}# {item.Id} #t{item.Id}# - {item.Name} #l");
                 }
-                c.NPCConversationManager?.dispose();
 
-                var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
-                tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
-                {
-                    var item = findResult.MatchedItems[idx];
-                    ctx.RegisterYesOrNo($"选择 {item.Id} #t{item.Id}# - {item.Name}？", ctx =>
+                TempConversation.Create(c, NpcId.MAPLE_ADMINISTRATOR)?
+                    .RegisterSelect(messages.ToString(), (idx, ctx) =>
                     {
-                        SendItem(c, item.Id, paramsValue);
-                        ctx.dispose();
+                        var item = findResult.MatchedItems[idx];
+                        ctx.RegisterYesOrNo($"选择 {item.Id} #t{item.Id}# - {item.Name}？", ctx =>
+                        {
+                            SendItem(c, item.Id, paramsValue);
+                            ctx.dispose();
+                        });
                     });
-                });
-                c.NPCConversationManager = tempConversation;
                 return;
             }
             else

@@ -1,3 +1,4 @@
+using Application.Core.scripting.npc;
 using constants.game;
 using net.server;
 
@@ -34,7 +35,7 @@ public class IpListCommand : CommandBase
             }
         }
 
-        c.getAbstractPlayerInteraction().npcTalk(22000, str);
+        TempConversation.Create(c, 22000)?.RegisterTalk(str);
     }
 
 }

@@ -1,5 +1,6 @@
-﻿using Application.Core.EF.Entities.Gachapons;
+using Application.Core.EF.Entities.Gachapons;
 using Application.Core.Game.Gachapon;
+using Application.Core.scripting.npc;
 using constants.id;
 using server;
 
@@ -59,6 +60,6 @@ public class GachaCommand : CommandBase
         }
         talkStr += "\r\nPlease keep in mind that there are items that are in all gachapons and are not listed here.";
 
-        c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, talkStr);
+        TempConversation.Create(c)?.RegisterTalk(talkStr);
     }
 }

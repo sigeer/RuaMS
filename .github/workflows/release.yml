@@ -55,7 +55,7 @@ jobs:
         tag_name: ${{ github.ref }}
         name: v${{env.VERSION}}
         body: ${{env.ReleaseName}}-v${{env.VERSION}}
-        draft: false
+        draft: true
         prerelease: false
         files: |
           ${{env.ReleaseName}}-v${{env.VERSION}}-win-x64.zip

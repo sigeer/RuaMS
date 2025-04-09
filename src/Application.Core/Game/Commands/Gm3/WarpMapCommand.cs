@@ -42,19 +42,16 @@ public class WarpMapCommand : CommandBase
                         messages.Append($"\r\n#L{i}# {item.Id} - {item.StreetName} - {item.Name} #l");
                     }
 
-                    c.NPCConversationManager?.dispose();
-
-                    var tempConversation = new TempConversation(c, NpcId.MAPLE_ADMINISTRATOR);
-                    tempConversation.RegisterSelect(messages.ToString(), (idx, ctx) =>
-                    {
-                        var mapItem = findResult.MatchedItems[idx];
-                        ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
+                    TempConversation.Create(c, NpcId.MAPLE_ADMINISTRATOR)?
+                        .RegisterSelect(messages.ToString(), (idx, ctx) =>
                         {
-                            WarpMapById(c, mapItem.Id);
-                            ctx.dispose();
+                            var mapItem = findResult.MatchedItems[idx];
+                            ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
+                            {
+                                WarpMapById(c, mapItem.Id);
+                                ctx.dispose();
+                            });
                         });
-                    });
-                    c.NPCConversationManager = tempConversation;
                     return;
                 }
                 else

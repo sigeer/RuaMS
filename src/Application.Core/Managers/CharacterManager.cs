@@ -1066,25 +1066,6 @@ namespace Application.Core.Managers
             player.GuildRank = 5;
         }
 
-        public static void RetryEvent(IPlayer player)
-        {
-            var eim = player.getEventInstance();
-            if (player.IsOnlined && player.TeamModel != null && player.TeamModel.getLeader().IsOnlined)
-            {
-                var leader = player.TeamModel.getLeader();
-                var teamEim = leader.getEventInstance();
-                if (teamEim != null)
-                {
-                    var tempConversation = new TempConversation(player.Client);
-                    tempConversation.RegisterYesOrNo($"检测到你有正在进行的组队任务，是否重连？", ctx =>
-                    {
-                        player.changeMap(leader.getMap());
-                    });
-                    player.Client.NPCConversationManager = tempConversation;
-                }
-            }
-        }
-
         public static void ShowAllEquipFeatures(IPlayer player)
         {
             string showMsg = "";

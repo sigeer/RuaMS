@@ -1,3 +1,4 @@
+using Application.Core.scripting.npc;
 using constants.id;
 using server;
 using server.quest;
@@ -142,6 +143,6 @@ public class SearchCommand : CommandBase
         sw.Stop();
         sb.Append("\r\n#kLoaded within ").Append(sw.Elapsed.TotalSeconds).Append(" seconds.");//because I can, and it's free
 
-        c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, sb.ToString());
+        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
     }
 }
