@@ -1100,7 +1100,8 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
         {
             // Poison Bomb
             p.skip(4);
-            ret.position.setLocation(p.readShort(), p.readShort());
+            ret.position.X = p.readShort();
+            ret.position.Y = p.readShort();
         }
         return ret;
     }
