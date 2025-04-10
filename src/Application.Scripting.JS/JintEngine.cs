@@ -47,7 +47,7 @@ namespace Application.Scripting.JS
         public ScriptResultWrapper CallFunction(string functionName, params object?[] paramsValue)
         {
             var m = _engine.Invoke(functionName, paramsValue);
-            return new JsResultWrapper(m);
+            return new JintResultWrapper(m);
         }
 
         public void Dispose()
@@ -55,19 +55,34 @@ namespace Application.Scripting.JS
             _engine.Dispose();
         }
 
-        public object Evaluate(string code)
+        public ScriptResultWrapper EvaluateFile(string filePath)
         {
-            return _engine.Evaluate(code);
+            return Evaluate(File.ReadAllText(filePath));
         }
 
-        public object? GetValue(string variable)
+        public ScriptResultWrapper Evaluate(string code)
         {
-            return _engine.GetValue(variable).ToObject();
+            return new JintResultWrapper(_engine.Evaluate(code));
+        }
+
+        public ScriptResultWrapper Evaluate(ScriptPrepareWrapper prepared)
+        {
+            return new JintResultWrapper(_engine.Evaluate(((JintScriptPrepareWrapper)prepared).Value));
+        }
+
+        public ScriptResultWrapper GetValue(string variable)
+        {
+            return new JintResultWrapper(_engine.GetValue(variable));
         }
 
         public bool IsExisted(string variable)
         {
             return !_engine.Evaluate(variable).IsUndefined();
+        }
+
+        public ScriptPrepareWrapper Prepare(string code)
+        {
+            return new JintScriptPrepareWrapper(Engine.PrepareScript(code));
         }
     }
 

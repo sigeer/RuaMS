@@ -31,6 +31,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Application.Scripting.JS\Application.Scripting.JS.csproj" />
+		<ProjectReference Include="..\Application.Scripting.Lua\Application.Scripting.Lua.csproj" />
 		<ProjectReference Include="..\Application.Shared\Application.Shared.csproj" />
 		<ProjectReference Include="..\Application.Utility\Application.Utility.csproj" />
 		<ProjectReference Include="..\XmlWzReader\XmlWzReader.csproj" />

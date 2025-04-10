@@ -38,6 +38,8 @@ public class EventScriptManager : AbstractScriptManager
     private static EventEntry? fallback;
     private ConcurrentDictionary<string, EventEntry> events = new();
     private bool active = false;
+    public IWorldChannel LinkedWorldChannel { get; }
+    readonly string[] eventScripts;
 
     private class EventEntry
     {
@@ -54,16 +56,23 @@ public class EventScriptManager : AbstractScriptManager
 
     public EventScriptManager(IWorldChannel channel, string[] scripts)
     {
-        foreach (string script in scripts)
+        LinkedWorldChannel = channel;
+        eventScripts = scripts;
+        foreach (string script in eventScripts)
         {
             if (!string.IsNullOrEmpty(script))
             {
-                events.AddOrUpdate(script, initializeEventEntry(script, channel));
+                events.AddOrUpdate(GetEventName(script), initializeEventEntry(script));
             }
         }
 
         init();
         events.TryRemove("0_EXAMPLE", out fallback);
+    }
+
+    private string GetEventName(string eventScript)
+    {
+        return Path.GetFileNameWithoutExtension(eventScript);
     }
 
     public EventManager? getEventManager(string evt)
@@ -100,24 +109,19 @@ public class EventScriptManager : AbstractScriptManager
 
     private void reloadScripts()
     {
-        HashSet<KeyValuePair<string, EventEntry>> eventEntries = new(events);
-        if (eventEntries.Count == 0)
+        foreach (string script in eventScripts)
         {
-            return;
-        }
-
-        var channel = eventEntries.FirstOrDefault().Value.em.getChannelServer();
-        foreach (var entry in eventEntries)
-        {
-            string script = entry.Key;
-            events.AddOrUpdate(script, initializeEventEntry(script, channel));
+            if (!string.IsNullOrEmpty(script))
+            {
+                events.AddOrUpdate(GetEventName(script), initializeEventEntry(script));
+            }
         }
     }
 
-    private EventEntry initializeEventEntry(string script, IWorldChannel channel)
+    private EventEntry initializeEventEntry(string script)
     {
         var engine = getInvocableScriptEngine(GetEventScriptPath(script));
-        EventManager eventManager = new EventManager(channel, engine, script);
+        EventManager eventManager = new EventManager(LinkedWorldChannel, engine, script);
         engine.AddHostedObject(INJECTED_VARIABLE_NAME, eventManager);
         return new EventEntry(engine, eventManager);
     }
