@@ -2,7 +2,7 @@
 using Application.Benchmark;
 using BenchmarkDotNet.Running;
 
-BenchmarkRunner.Run<PasswordBenchmark>();
+BenchmarkRunner.Run<ScriptBenchmark>();
 
 //BenchmarkSwitcher
 //    .FromAssembly(typeof(Program).Assembly)

@@ -25,6 +25,7 @@ using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Managers;
 using Application.Scripting.JS;
+using Application.Scripting.Lua;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -47,7 +48,7 @@ namespace scripting;
 public abstract class AbstractScriptManager
 {
     protected ILogger log;
-    static ConcurrentDictionary<string, string> JsCache { get; set; } = new ConcurrentDictionary<string, string>();
+    static ConcurrentDictionary<string, ScriptPrepareWrapper> JsCache { get; set; } = new();
 
     protected AbstractScriptManager()
     {
@@ -64,19 +65,20 @@ public abstract class AbstractScriptManager
                 log.Warning($"script {path} not found");
                 return null;
             }
-            jsContent = File.ReadAllText(path);
-            JsCache[path] = jsContent;
         }
 
         IEngine engine = new JintEngine();
-        //if (path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
-        //    engine = new JintEngine();
-        //else if (path.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
-        //    engine = new LuaScriptEngine();
-        //else
-        //{
-        //    throw new BusinessException($"不支持的脚本类型：{path}");
-        //}
+        if (path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+            engine = new JintEngine();
+        else if (path.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
+            engine = new NLuaScriptEngine();
+        else
+        {
+            throw new BusinessException($"不支持的脚本类型：{path}");
+        }
+
+        jsContent = engine.Prepare(File.ReadAllText(path));
+        JsCache[path] = jsContent;
 
         try
         {
@@ -125,7 +127,15 @@ public abstract class AbstractScriptManager
 
         if (engine is JintEngine js)
         {
-            engine.Evaluate(GetUtilJs());
+            var jsFile = GetFullScriptPath("utils.js");
+            if (JsCache.TryGetValue(jsFile, out var jsContent))
+                engine.Evaluate(jsContent);
+            else
+            {
+                var content = engine.Prepare(File.ReadAllText(jsFile));
+                JsCache[jsFile] = content;
+                engine.Evaluate(content);
+            }
         }
     }
 
@@ -166,14 +176,6 @@ public abstract class AbstractScriptManager
         return Path.Combine(category, path + extension);
     }
 
-    private string GetUtilJs()
-    {
-        var jsFile = GetFullScriptPath("utils.js");
-        if (JsCache.TryGetValue(jsFile, out var jsContent))
-            return jsContent;
-
-        return JsCache[jsFile] = File.ReadAllText(jsFile);
-    }
     protected string GetSpecialScriptPath(string path) => GetScriptPath("BeiDouSpecial", path);
     protected string GetNpcScriptPath(string path) => GetScriptPath("npc", path);
     protected string GetItemScriptPath(string path) => GetScriptPath("item", path);
