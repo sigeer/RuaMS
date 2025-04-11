@@ -172,7 +172,6 @@ namespace Application.Core.Game.Maps
         IWorld getWorldServer();
         bool hasClock();
         bool hasEventNPC();
-        void instanceMapFirstSpawn(int difficulty, bool isPq);
         void instanceMapForceRespawn();
         void instanceMapRespawn();
         bool isAllReactorState(int reactorId, int state);

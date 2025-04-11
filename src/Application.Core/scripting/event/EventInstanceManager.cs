@@ -1055,6 +1055,11 @@ public class EventInstanceManager
         return (chr.getId() == getLeaderId());
     }
 
+    /// <summary>
+    /// 和 getMapInstance 有什么区别？
+    /// </summary>
+    /// <param name="mapid"></param>
+    /// <returns></returns>
     public IMap? getInstanceMap(int mapid)
     {
         if (disposed)
@@ -1062,7 +1067,7 @@ public class EventInstanceManager
             return null;
         }
         mapIds.Add(mapid);
-        return getMapFactory().getMap(mapid);
+        return mapManager.getMap(mapid);
     }
 
     public bool disposeIfPlayerBelow(byte size, int towarp)

@@ -8,6 +8,7 @@ namespace Application.Scripting.Lua
         {
             _engine = new NLua.Lua();
             _engine.LoadCLRPackage();
+            AddHostedType("LuaTableUtils", typeof(LuaTableUtils));
         }
 
         public void AddHostedObject(string name, object obj)

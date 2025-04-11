@@ -39,5 +39,10 @@ namespace ServiceTest.Infrastructure.Scripts
         {
             return 2;
         }
+
+        public static int PrintScriptArray(int[] list)
+        {
+            return list.Length;
+        }
     }
 }

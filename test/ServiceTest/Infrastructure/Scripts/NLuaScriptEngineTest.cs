@@ -1,5 +1,7 @@
 using Application.Scripting.JS;
 using Application.Scripting.Lua;
+using Application.Utility.Extensions;
+using System.Drawing;
 
 namespace ServiceTest.Infrastructure.Scripts
 {
@@ -53,22 +55,23 @@ namespace ServiceTest.Infrastructure.Scripts
             base.CheckExsited();
         }
 
-        //[Test]
-        //public void CheckExtension()
-        //{
-        //    Code = """
-        //        function test()
-        //        var p1 = new Point(0, 0);
-        //        var p2 = new Point(3, 4);
-        //            return p1.distance(p2);
-        //        end
-        //        """;
+        [Test]
+        public void CheckExtension()
+        {
+            Code = """
+                function test()
+                    local p1 = Point(0, 0);
+                    local p2 = Point(3, 4);
+                    return p1:distance(p2);
+                end
+                """;
 
-        //    _engine.AddHostedType("Point", typeof(Point));
-        //    _engine.Evaluate(Code);
-        //    var d = _engine.CallFunction("test");
-        //    Assert.That(d.ToObject<float>(), Is.EqualTo(5.0f));
-        //}
+            _engine.AddHostedType("PointExtensions", typeof(PointExtensions));
+            _engine.AddHostedType("Point", typeof(Point));
+            _engine.Evaluate(Code);
+            var d = _engine.CallFunction("test");
+            Assert.That(d.ToObject<float>(), Is.EqualTo(5.0f));
+        }
 
         [Test]
         public void CheckGetItemTest()
@@ -244,6 +247,46 @@ namespace ServiceTest.Infrastructure.Scripts
                 end
                 """;
             base.UseEnumTest();
+        }
+
+        [Test]
+        public override void Script2CSharpArray()
+        {
+            // nlua 不能配置
+            Code = """
+                function test()
+                    local arr = {1, 2, 3}
+                    return ScriptTestStaticClass.PrintScriptArray(LuaTableUtils.ToInt32Array({2, 3, 4}))
+                end
+                """;
+
+            base.Script2CSharpArray();
+        }
+
+        [Test]
+        public void NewList()
+        {
+            Code = """
+                function test()
+                    local List = luanet.import_type("System.Collections.Generic.List`1[System.Int32]")
+                    local list = List()
+                    return list.Count
+                end
+                """;
+            base.CheckFunctionReturnValue("test", 0);
+        }
+
+        [Test]
+        public void NewArray()
+        {
+            Code = """
+                function test()
+                local Int32 = luanet.import_type("System.Int32")
+                local arr = Int32[0]
+                return arr.Length
+                end
+                """;
+            base.CheckFunctionReturnValue("test", 0);
         }
     }
 }

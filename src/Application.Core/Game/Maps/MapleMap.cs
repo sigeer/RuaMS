@@ -3949,7 +3949,7 @@ public class MapleMap : IMap
         }
     }
 
-    public void instanceMapFirstSpawn(int difficulty, bool isPq)
+    private void instanceMapFirstSpawn()
     {
         foreach (SpawnPoint spawnPoint in getAllMonsterSpawn())
         {
@@ -4575,7 +4575,7 @@ public class MapleMap : IMap
         clearMapObjects();
 
         restoreMapSpawnPoints();
-        instanceMapFirstSpawn(difficulty, isPq);
+        instanceMapFirstSpawn();
     }
 
     public void broadcastShip(bool state)

@@ -197,5 +197,18 @@ namespace ServiceTest.Infrastructure.Scripts
             Assert.That(_engine.IsExisted("v1"), Is.EqualTo(false));
             Assert.That(_engine.IsExisted("v2"), Is.EqualTo(true));
         }
+
+        public virtual void Script2CSharpArray()
+        {
+            _engine.AddHostedType("ScriptTestStaticClass", typeof(ScriptTestStaticClass));
+            _engine.Evaluate(Code);
+            Assert.That(_engine.CallFunction("test").ToObject<int>(), Is.EqualTo(3));
+        }
+
+        public void CheckFunctionReturnValue(string functionName, int value)
+        {
+            _engine.Evaluate(Code);
+            Assert.That(_engine.CallFunction(functionName).ToObject<int>(), Is.EqualTo(value));
+        }
     }
 }
