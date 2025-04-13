@@ -1,9 +1,12 @@
 namespace Application.Core.Game
 {
+    public class ScriptType
+    {
+        public const string Event = "event-lua";
+    }
     public class ScriptResFactory
     {
         public readonly static string ScriptDirName = GetScriptDir();
-
         public static string GetScriptFullPath(string relativePath)
         {
             if (!Path.IsPathRooted(relativePath))
@@ -27,7 +30,7 @@ namespace Application.Core.Game
 
         public static string[] GetEvents()
         {
-            return Directory.GetFiles(GetScriptFullPath("event")).Select(x => Path.GetFileName(x)).Where(x => !x.StartsWith("__")).ToArray();
+            return Directory.GetFiles(GetScriptFullPath(ScriptType.Event)).Select(x => Path.GetFileName(x)).Where(x => !x.StartsWith("__")).ToArray();
         }
     }
 }

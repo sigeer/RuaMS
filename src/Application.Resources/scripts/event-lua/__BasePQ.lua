@@ -35,7 +35,7 @@ function BaseEvent:new(config)
         }
     }
     -- 怪物重生
-    instance.respawnConfig = config.respawnConfir or {
+    instance.respawnConfig = config.respawnConfig or {
         maps = {},
         duration = 15000
     }
@@ -169,7 +169,7 @@ function BaseEvent:setup(level, lobbyid)
     eim:startEventTimer(self.eventTime * 60000)
     self:setEventRewards(eim)
     self:setEventExclusives(eim)
-    return eim;
+    return eim
 end
 
 -- 事件实例初始化完毕后触发
@@ -187,9 +187,10 @@ function BaseEvent:respawnStages(eim)
     for _, mapId in ipairs(self.respawnConfig.maps) do
         eim:getInstanceMap(mapId):instanceMapRespawn()
     end
-    eim:schedule("respawnStages", self.respawnConfig.duration);
+    eim:schedule("respawnStages", self.respawnConfig.duration)
 end
 
+-- 非后端调用代码
 function BaseEvent:resetMap(eim, level)
     if (#self.resetConfig.resetPQMaps > 0) then
         for _, mapId in ipairs(self.resetConfig.resetPQMaps) do
@@ -206,11 +207,9 @@ end
 
 -- 玩家进入事件
 function BaseEvent:playerEntry(eim, player)
-    if self.broadMessage then
-        eim:dropMessage(5, "[Expedition] " + player:getName() + " has entered the map.");
-    end
-    local map = eim:getMapInstance(entryMap);
-    player:changeMap(map, map.getPortal(0));
+    self:noticePlayerEnter(eim, player)
+    local map = eim:getMapInstance(entryMap)
+    player:changeMap(map, map.getPortal(0))
 end
 
 -- 玩家注销前操作
@@ -219,14 +218,14 @@ end
 
 -- 玩家退出事件
 function BaseEvent:playerExit(eim, player)
-    eim:unregisterPlayer(player);
-    player:changeMap(exitMap, 0);
+    eim:unregisterPlayer(player)
+    player:changeMap(exitMap, 0)
 end
 
 -- 玩家离开队伍
 function BaseEvent:playerLeft(eim, player)
     if (not eim:isEventCleared()) then
-        self:playerExit(eim, player);
+        self:playerExit(eim, player)
     end
 end
 
@@ -234,12 +233,12 @@ end
 function BaseEvent:changedMap(eim, player, mapId)
     if mapId < self.minMapId or mapId > self.maxMapId then
         if (eim:isEventTeamLackingNow(true, self.minPlayers, player)) then
-            eim:unregisterPlayer(player);
+            eim:unregisterPlayer(player)
             self:noticePlayerLeft(eim, player)
-            self:endEvent(eim);
+            self:endEvent(eim)
         else
             self:noticeMemberCount(eim, player)
-            eim:unregisterPlayer(player);
+            eim:unregisterPlayer(player)
         end
     end
 end
@@ -250,24 +249,15 @@ end
 
 -- 更换队长
 function BaseEvent:changedLeader(eim, leader)
-    local mapid = leader:getMapId();
+    local mapid = leader:getMapId()
     if (not eim:isEventCleared() and (mapid < self.minMapId or mapid > self.maxMapId)) then
-        self:endEvent(eim);
+        self:endEvent(eim)
     end
 end
 
+-- 事件超时
 function BaseEvent:scheduledTimeout(eim)
-    -- 事件超时
-end
-
-function BaseEvent:timeOut(eim)
-    if eim:getPlayerCount() > 0 then
-        for _, player in ipairs(eim:getPlayers()) do
-            player:dropMessage(6, "你已经没有时间完成这个事件！")
-            self:playerExit(eim, player)
-        end
-    end
-    eim:dispose()
+    
 end
 
 -- 敌对怪物死亡
@@ -335,6 +325,10 @@ end
 function BaseEvent:clearPQ(eim)
     eim:stopEventTimer()
     eim:setEventCleared()
+
+    -- if self.clearMap then
+        -- eim:warpEventTeam(self.clearMap)
+    -- end
 end
 
 -- 离开队伍
@@ -391,6 +385,11 @@ end
 
 function BaseEvent:noticeMemberCount(eim, player)
 end
+
+function BaseEvent:noticePlayerEnter(eim, player)
+	-- body
+end
+
 
 function BaseEvent:spawnBoss(eim, level)
     local mob = LifeFactory.getMonster(self.bossConfig.id)

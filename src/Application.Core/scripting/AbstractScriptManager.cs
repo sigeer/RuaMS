@@ -180,7 +180,7 @@ public abstract class AbstractScriptManager
     protected string GetNpcScriptPath(string path) => GetScriptPath("npc", path);
     protected string GetItemScriptPath(string path) => GetScriptPath("item", path);
     protected string GetQuestScriptPath(string path) => GetScriptPath("quest", path);
-    protected string GetEventScriptPath(string path) => GetScriptPath("event", path);
+    protected string GetEventScriptPath(string path) => GetScriptPath(ScriptType.Event, path);
     protected string GetPortalScriptPath(string path) => GetScriptPath("portal", path);
     protected string GetReactorScriptPath(string path) => GetScriptPath("reactor", path);
     protected string GetMapScriptPath(string path) => GetScriptPath("map", path);

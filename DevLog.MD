@@ -1,4 +1,12 @@
-#### 脚本相关
+
+## 脚本相关
+
+### 事件脚本
+
+3rdJob_xxx 三转任务
+AreaBoss 地图BOSS
+
+### 代码实现
 
  - Channel 和 EventScriptManager 是一对一
 

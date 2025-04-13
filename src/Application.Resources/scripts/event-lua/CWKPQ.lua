@@ -1,4 +1,4 @@
-local BaseEvent = require("scripts/event/__BasePQ")
+local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 未完成
 -- 配置事件参数
 local config = {

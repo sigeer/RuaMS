@@ -1,4 +1,4 @@
-local Common_AreaBoss = require("scripts/event/__BaseAreaBoss")
+local Common_AreaBoss = require("scripts/event-lua/__BaseAreaBoss")
 
 -- 继承基类方法
 for k, v in pairs(Common_AreaBoss) do
@@ -16,7 +16,7 @@ function start()
     local posY = 776
     Common_AreaBoss.spawnBoss(
         221040301,          -- 地图ID
-        6220001,            -- 怪物ID 提莫
+        6220001,            -- 怪物ID 朱诺
         posX,               -- X坐标
         posY,               -- Y坐标
         "Zeno has appeared with a heavy sound of machinery."  -- 提示消息

@@ -1,4 +1,4 @@
-local Common_AreaBoss = require("scripts/event/__BaseAreaBoss")
+local Common_AreaBoss = require("scripts/event-lua/__BaseAreaBoss")
 
 -- 继承基类方法
 for k, v in pairs(Common_AreaBoss) do

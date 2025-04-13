@@ -1,6 +1,6 @@
 server:
     #Database Configuration
-    DB_CONNECTIONSTRING: "server=localhost;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=ruams;Charset=utf8mb4;"
+    DB_CONNECTIONSTRING: "server=localhost;user id=root;password=aA123456;SslMode=None;allowPublicKeyRetrieval=true;database=cosmic;Charset=utf8mb4;"
 
     ENABLE_OPENAPI: true
 
@@ -40,7 +40,7 @@ server:
 
     #Server Flags
     USE_CUSTOM_KEYSET: false             #Enables auto-setup of the HeavenMS's custom keybindings when creating characters.
-    USE_DEBUG: false                    #Will enable some text prints on the client, oriented for debugging purposes.
+    USE_DEBUG: true                    #Will enable some text prints on the client, oriented for debugging purposes.
     USE_DEBUG_SHOW_INFO_EQPEXP: false   #Prints on the cmd all equip exp gain info.
     USE_DEBUG_SHOW_RCVD_PACKET: false   #Prints on the cmd all received packet ids.
     USE_DEBUG_SHOW_RCVD_MVLIFE: false   #Prints on the cmd all received move life content.
@@ -53,7 +53,7 @@ server:
     USE_MAXRANGE_ECHO_OF_HERO: true
     USE_MTS: false
     USE_CPQ: true                       #Renders the CPQ available or not.
-    USE_AUTOHIDE_GM: true              #When enabled, GMs are automatically hidden when joining. Thanks to Steven Deblois (steven1152).
+    USE_AUTOHIDE_GM: false              #When enabled, GMs are automatically hidden when joining. Thanks to Steven Deblois (steven1152).
     USE_FAMILY_SYSTEM: true
     USE_DUEY: true
     USE_RANDOMIZE_HPMP_GAIN: true       #Enables randomizing on MaxHP/MaxMP gains and INT accounting for the MaxMP gain on level up.

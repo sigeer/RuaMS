@@ -1,4 +1,4 @@
-local BaseEvent = require("scripts/event/__BasePQ")
+local BaseEvent = require("scripts/event-lua/__BasePQ")
 
 -- 配置事件参数
 local config = {
@@ -37,8 +37,12 @@ function Sample:setup(level, lobbyid)
     return eim
 end
 
+function Sample:noticePlayerEnter(eim, player)
+    eim:dropMessage(5, "[Expedition] " + player.Name + " has entered the map.")
+end
+
 function Sample:noticePlayerLeft(eim, player)
-    eim:dropMessage(5, "[Expedition] " + player:getName() + " has entered the map.")
+    eim:dropMessage(5, "[Expedition] " + player.Name + " has left the instance.")
 end
 
 function Sample:noticeMemberCount(eim, player)
