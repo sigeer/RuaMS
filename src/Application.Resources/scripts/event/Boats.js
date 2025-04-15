@@ -60,7 +60,7 @@ function scheduleNew() {
 function stopentry() {
     // 关闭入口后清除船舱内的对象（例如箱子）
     em.setProperty("entry", "false");
-    em.setProperty("next", new Date().getTime() + em.getTransportationTime(beginTime - closeTime + rideTime));
+    em.setProperty("next", new Date().getTime() + beginTime - closeTime + rideTime);
     Orbis_Boat_Cabin.clearMapObjects();   // 清除船舱内的对象
     Ellinia_Boat_Cabin.clearMapObjects();
 }

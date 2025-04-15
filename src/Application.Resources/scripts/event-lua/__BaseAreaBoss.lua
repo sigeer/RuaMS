@@ -5,7 +5,7 @@ local setupTask = nil
 
 -- 基础方法
 function Common_AreaBoss.init()
-    scheduleNew()
+    Common_AreaBoss.scheduleNew()
 end
 
 function Common_AreaBoss.scheduleNew()

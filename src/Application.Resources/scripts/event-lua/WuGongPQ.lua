@@ -2,6 +2,8 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 
 -- 创建武功PQ实例
 local config = {
+    name = "WuGongPQ",
+    instanceName = "WuGongPQ",
     minPlayers = 1,
     maxPlayers = 6,
     minLevel = 25,

@@ -3,7 +3,7 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 配置事件参数
 local config = {
     -- 注册的事件名
-    name = "PreZakum",
+    instanceName = "PreZakum",
     minPlayers = 6,
     maxPlayers = 6,
     minLevel = 50,

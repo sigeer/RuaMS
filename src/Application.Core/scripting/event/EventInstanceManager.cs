@@ -57,7 +57,6 @@ public class EventInstanceManager
     private long timeStarted = 0;
     private long eventTime = 0;
     private Expedition? expedition = null;
-    private List<int> mapIds = new();
 
     private ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
@@ -525,18 +524,6 @@ public class EventInstanceManager
         }
     }
 
-    public void movePlayer(IPlayer chr)
-    {
-        try
-        {
-            invokeScriptFunction("moveMap", this, chr);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "moveMap", em.getName());
-        }
-    }
-
     public void changedMap(IPlayer chr, int mapId)
     {
         try
@@ -746,19 +733,6 @@ public class EventInstanceManager
 
     public void dispose()
     {
-        lockObj.EnterReadLock();
-        try
-        {
-            foreach (IPlayer chr in chars.Values)
-            {
-                chr.setEventInstance(null);
-            }
-        }
-        finally
-        {
-            lockObj.ExitReadLock();
-        }
-
         dispose(false);
     }
 
@@ -810,7 +784,6 @@ public class EventInstanceManager
             }
 
             killCount.Clear();
-            mapIds.Clear();
             props.Clear();
             objectProps.Clear();
 
@@ -1057,6 +1030,7 @@ public class EventInstanceManager
 
     /// <summary>
     /// 和 getMapInstance 有什么区别？
+    /// 获得的map没有绑定eim
     /// </summary>
     /// <param name="mapid"></param>
     /// <returns></returns>
@@ -1066,7 +1040,6 @@ public class EventInstanceManager
         {
             return null;
         }
-        mapIds.Add(mapid);
         return mapManager.getMap(mapid);
     }
 
@@ -1447,6 +1420,13 @@ public class EventInstanceManager
         }
     }
 
+    /// <summary>
+    /// 有成员退出时（离开队伍，离线，死亡等），判断队伍是否仍然可以继续任务
+    /// </summary>
+    /// <param name="leavingEventMap">正在离开任务地图</param>
+    /// <param name="minPlayers">任务要求的最少人数</param>
+    /// <param name="quitter">离开者</param>
+    /// <returns>true：不能继续任务</returns>
     public bool isEventTeamLackingNow(bool leavingEventMap, int minPlayers, IPlayer quitter)
     {
         if (eventCleared)

@@ -1,101 +1,45 @@
-local entryMap = 108010100
-local exitMap = 105040305
+local BaseChallenge = require("scripts/event-lua/__BaseChallenge")
 
-local minMapId = 108010100
-local maxMapId = 108010101
+local config = {
+    name = "3rdJob_bowman",
+    instanceName = "3rdJob_bowman_",
+    entryMap = 108010100,
+    entryPortal = 0,
+    exitMap = 105040305,
+    minMapId = 108010100,
+    maxMapId = 108010101,
+    eventTime = 20,
+    maxLobbies = 7
+}
 
-local eventTime = 20 -- 20 minutes
+local Event = BaseChallenge:extend()
 
-local maxLobbies = 7
-
-function getMaxLobbies()
-    return maxLobbies
+function Event:InitializeMap(eim)
+    local mapObject = eim:getInstanceMap(self.maxMapId)
+    mapObject:resetPQ(1)
 end
 
-function init()
-    em:setProperty("noEntry", "false")
-end
+-- 创建事件实例
+local event = Event:new(config)
 
-function setup(level, lobbyid)
-    local eim = em:newInstance("3rdJob_bowman_" .. lobbyid)
-    eim:setProperty("level", level)
-    eim:setProperty("boss", "0")
-
-    return eim
-end
-
-function playerEntry(eim, player)
-    eim:getInstanceMap(maxMapId):resetPQ(1)
-
-    player:changeMap(entryMap, 0)
-    em:setProperty("noEntry", "true")
-    player:sendPacket(PacketCreator.getClock(eventTime * 60))
-    eim:startEventTimer(eventTime * 60000)
-end
-
-function playerUnregistered(eim, player)
-end
-
-function playerExit(eim, player)
-    eim:unregisterPlayer(player)
-    eim:dispose()
-    em:setProperty("noEntry", "false")
-end
-
-function scheduledTimeout(eim)
-    local player = eim:getPlayers():get(1)
-    playerExit(eim, eim:getPlayers():get(1))
-    player:changeMap(exitMap)
-end
-
-function playerDisconnected(eim, player)
-    playerExit(eim, player)
-end
-
-function clear(eim)
-    local player = eim:getPlayers():get(1)
-    eim:unregisterPlayer(player)
-    player:changeMap(exitMap)
-
-    eim:dispose()
-    em:setProperty("noEntry", "false")
-end
-
-function changedMap(eim, chr, mapid)
-    if mapid < minMapId or mapid > maxMapId then
-        playerExit(eim, chr)
+-- 导出所有方法到全局环境（包括继承的方法）
+local function exportMethods(obj)
+    local exported = {}
+    local current = obj
+    while current do
+        for k, v in pairs(current) do
+            if type(v) == "function" and not exported[k] then
+                _ENV[k] = function(...)
+                    return v(event, ...)
+                end
+                exported[k] = true
+            end
+        end
+        current = getmetatable(current)
+        if current then
+            current = current.__index
+        end
     end
 end
 
-function monsterKilled(mob, eim)
-end
-
-function monsterValue(eim, mobId)
-    return 1
-end
-
-function allMonstersDead(eim)
-end
-
-function cancelSchedule()
-end
-
-function dispose()
-end
-
--- ---------- FILLER FUNCTIONS ----------
-
-function disbandParty(eim, player)
-end
-
-function afterSetup(eim)
-end
-
-function changedLeader(eim, leader)
-end
-
-function leftParty(eim, player)
-end
-
-function clearPQ(eim)
-end
+exportMethods(event)

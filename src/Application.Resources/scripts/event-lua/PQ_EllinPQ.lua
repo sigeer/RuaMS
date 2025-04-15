@@ -2,7 +2,8 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 
 -- 配置事件参数
 local config = {
-    name = "Ellin",
+    name = "EllinPQ",
+    instanceName = "Ellin",
     minPlayers = 4,
     maxPlayers = 6,
     minLevel = 44,
@@ -27,10 +28,8 @@ local config = {
 -- 创建自定义事件
 local EllinPQ = BaseEvent:extend()
 
-function EllinPQ:setup(level, lobbyid)
-    local eim = BaseEvent.setup(self, level, lobbyid)
+function EllinPQ:setupProperty(eim, level, lobbyid)
     eim:setProperty("statusStg4", 0)
-    return eim
 end
 
 function EllinPQ:respawnStages(eim)
@@ -48,7 +47,7 @@ end
 function EllinPQ:monsterKilled(mob, eim, hasKiller)
     local map = mob.getMap();
 
-    if (isPoisonGolem(mob)) then
+    if (self:isPoisonGolem(mob)) then
         eim:showClearEffect(map:getId());
         eim:clearPQ();
     elseif (map:countMonsters() == 0) then

@@ -5,10 +5,6 @@ for k, v in pairs(Common_AreaBoss) do
     _ENV[k] = v
 end
 
--- 重写 init 方法
-function init()
-    scheduleNew()
-end
 
 -- 重写 start 方法
 function start()

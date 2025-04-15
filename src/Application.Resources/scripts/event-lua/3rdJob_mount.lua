@@ -1,21 +1,38 @@
-local entryMap = 923010000
-local exitMap = 923010100
+local BaseChallenge = require("scripts/event-lua/__BaseChallenge")
 
-local minMapId = 923010000
-local maxMapId = 923010000
+local config = {
+    instanceName = "3rdJob_mount_",
+    entryMap = 923010000,
+    entryPortal = 0,
+    exitMap = 923010100,
+    minMapId = 923010000,
+    maxMapId = 923010000,
+    eventTime = 5,
+    maxLobbies = 7,
+    eventMaps = {923010000}
+}
 
-local eventMaps = {923010000}
+local Event = BaseChallenge:extend()
 
-local eventTime = 5 -- 5 minutes
-
-local maxLobbies = 7
-
-function getMaxLobbies()
-    return maxLobbies
+function Event:setup(level, lobbyid)
+    local eim = BaseChallenge.setup(self, level, lobbyid)
+    eim:setProperty("whog_hp", "0")
+    return eim
 end
 
-function init()
-    em:setProperty("noEntry", "false")
+function Event:InitializeMap(eim)
+    local mapObject = eim:getInstanceMap(self.entryMap)
+    mapObject:resetPQ(1)
+    mapObject:instanceMapForceRespawn()
+end
+
+function Event:respawnStages(eim)
+    for _, mapId in ipairs(self.eventMaps) do
+        eim:getInstanceMap(mapId):instanceMapRespawn();
+    end
+    checkHogHealth(eim);
+
+    eim.schedule("respawnStages", 10 * 1000);
 end
 
 function checkHogHealth(eim)
@@ -31,112 +48,35 @@ function checkHogHealth(eim)
     end
 end
 
-function respawnStages(eim)
-    for i = 1, #eventMaps do
-        eim:getInstanceMap(eventMaps[i]):instanceMapRespawn()
-    end
-    checkHogHealth(eim)
+function Event:playerExit(eim, player)
+    local api = player:getAbstractPlayerInteraction();
+    api:removeAll(4031507);
+    api:removeAll(4031508);
 
-    eim:schedule("respawnStages", 10 * 1000)
+    BaseChallenge.playerExit(self, eim, player)
 end
 
-function setup(level, lobbyid)
-    local eim = em:newInstance("3rdJob_mount_" .. lobbyid)
-    eim:setProperty("level", level)
-    eim:setProperty("boss", "0")
-    eim:setProperty("whog_hp", "0")
+-- 创建事件实例
+local event = Event:new(config)
 
-    return eim
-end
-
-function playerEntry(eim, player)
-    local mapObj = eim:getInstanceMap(entryMap)
-
-    mapObj:resetPQ(1)
-    mapObj:instanceMapForceRespawn()
-    respawnStages(eim)
-
-    player:changeMap(entryMap, 0)
-    em:setProperty("noEntry", "true")
-    player:sendPacket(PacketCreator.getClock(eventTime * 60))
-    eim:startEventTimer(eventTime * 60000)
-end
-
-function playerUnregistered(eim, player)
-end
-
-function playerExit(eim, player)
-    local api = player:getAbstractPlayerInteraction()
-    api:removeAll(4031507)
-    api:removeAll(4031508)
-
-    eim:unregisterPlayer(player)
-    eim:dispose()
-    em:setProperty("noEntry", "false")
-end
-
-function scheduledTimeout(eim)
-    local player = eim:getPlayers():get(1)
-    playerExit(eim, eim:getPlayers():get(1))
-    player:changeMap(exitMap)
-end
-
-function playerDisconnected(eim, player)
-    playerExit(eim, player)
-end
-
-function changedMap(eim, chr, mapid)
-    if mapid < minMapId or mapid > maxMapId then
-        playerExit(eim, chr)
+-- 导出所有方法到全局环境（包括继承的方法）
+local function exportMethods(obj)
+    local exported = {}
+    local current = obj
+    while current do
+        for k, v in pairs(current) do
+            if type(v) == "function" and not exported[k] then
+                _ENV[k] = function(...)
+                    return v(event, ...)
+                end
+                exported[k] = true
+            end
+        end
+        current = getmetatable(current)
+        if current then
+            current = current.__index
+        end
     end
 end
 
-function clearPQ(eim)
-    eim:stopEventTimer()
-    eim:setEventCleared()
-
-    local player = eim:getPlayers():get(1)
-    eim:unregisterPlayer(player)
-    player:changeMap(exitMap)
-
-    eim:dispose()
-    em:setProperty("noEntry", "false")
-end
-
-function monsterKilled(mob, eim)
-end
-
-function monsterValue(eim, mobId)
-    return 1
-end
-
-function friendlyKilled(mob, eim)
-    if em:getProperty("noEntry") ~= "false" then
-        local player = eim:getPlayers()[1]
-        playerExit(eim, player)
-        player:changeMap(exitMap)
-    end
-end
-
-function allMonstersDead(eim)
-end
-
-function cancelSchedule()
-end
-
-function dispose()
-end
-
--- ---------- FILLER FUNCTIONS ----------
-
-function disbandParty(eim, player)
-end
-
-function afterSetup(eim)
-end
-
-function changedLeader(eim, leader)
-end
-
-function leftParty(eim, player)
-end
+exportMethods(event)

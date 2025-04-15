@@ -3,7 +3,8 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 配置事件参数
 local config = {
     -- 注册的事件名
-    name = "Pirate",
+    name = "PiratePQ",
+    instanceName = "Pirate",
     minPlayers = 3,
     maxPlayers = 6,
     minLevel = 55,
@@ -12,6 +13,7 @@ local config = {
     exitMap = 925100700,
     recruitMap = 251010404,
     clearMap = 925100600,
+    warpTeamWhenClear = true,
     minMapId = 925100000,
     maxMapId = 925100500,
     eventTime = 4,
@@ -20,25 +22,13 @@ local config = {
     -- base.setup.resetMap 中调用
     resetConfig = {
         -- 重置地图
-        resetPQMaps = {925100000, 925100100, 925100200, 925100201},
+        resetPQMaps = { 925100000, 925100100, 925100200, 925100201 },
         -- 打乱地图reactor顺序
         resetReactorMaps = { 925100000, 925100200 }
     },
     -- base.setup.setEventExclusives 任务特有的道具，需要被清理
     eventItems = { 4001117, 4001120, 4001121, 4001122 },
-    -- base.setup.setEventRewards 奖励设置
-    rewardConfig = {
-        -- 每一关的经验奖励
-        expStages = {},
-        -- 每一关的金钱奖励
-        mesoStages = {},
-        -- 最终关卡的物品奖励
-        finalItem = {
-            level = 1,
-            list = {},
-            quantity = {}
-        }
-    },
+
     -- base.setup.respawnStages调用 地图怪物重生设置
     respawnConfig = {
         maps = {},
@@ -76,7 +66,7 @@ function Sample:setup(level, lobbyid)
     eim:setProperty("stage5", "0");
 
     eim:setProperty("curStage", "1");
-    eim:setProperty("grindMode", isGrindMode ? "1" : "0");
+    eim:setProperty("grindMode", "0");
 
     eim:setProperty("openedChests", "0");
     eim:setProperty("openedBoxes", "0");
@@ -92,10 +82,10 @@ function Sample:setup(level, lobbyid)
         eim:registerMonster(mob2);
         eim:registerMonster(mob3);
         eim:registerMonster(mob4);
-        mob:changeDifficulty(level, isPq);
-        mob2:changeDifficulty(level, isPq);
-        mob3:changeDifficulty(level, isPq);
-        mob4:changeDifficulty(level, isPq);
+        mob:changeDifficulty(level, true);
+        mob2:changeDifficulty(level, true);
+        mob3:changeDifficulty(level, true);
+        mob4:changeDifficulty(level, true);
         map:spawnMonsterOnGroundBelow(mob, Point(430, 75));
         map:spawnMonsterOnGroundBelow(mob2, Point(1600, 75));
         map:spawnMonsterOnGroundBelow(mob3, Point(430, 238));
@@ -105,15 +95,15 @@ function Sample:setup(level, lobbyid)
     map = eim.getInstanceMap(925100201);
     map:resetPQ(level);
     for i = 1, 10 do
-        local mob = em.getMonster(9300112);
-        local mob2 = em.getMonster(9300113);
+        local mob = em:getMonster(9300112);
+        local mob2 = em:getMonster(9300113);
         eim:registerMonster(mob);
         eim:registerMonster(mob2);
-        mob:changeDifficulty(level, isPq);
-        mob2:changeDifficulty(level, isPq);
-        map:spawnMonsterOnGroundBelow(mob, new Point(0, 238));
-        map:spawnMonsterOnGroundBelow(mob2, new Point(1700, 238));
-    }
+        mob:changeDifficulty(level, true);
+        mob2:changeDifficulty(level, true);
+        map:spawnMonsterOnGroundBelow(mob, Point(0, 238));
+        map:spawnMonsterOnGroundBelow(mob2, Point(1700, 238));
+    end
     eim.getInstanceMap(925100202).resetPQ(level);
     map = eim.getInstanceMap(925100300);
     map.resetPQ(level);
@@ -127,10 +117,10 @@ function Sample:setup(level, lobbyid)
         eim:registerMonster(mob2);
         eim:registerMonster(mob3);
         eim:registerMonster(mob4);
-        mob:changeDifficulty(level, isPq);
-        mob2:changeDifficulty(level, isPq);
-        mob3:changeDifficulty(level, isPq);
-        mob4:changeDifficulty(level, isPq);
+        mob:changeDifficulty(level, true);
+        mob2:changeDifficulty(level, true);
+        mob3:changeDifficulty(level, true);
+        mob4:changeDifficulty(level, true);
         map:spawnMonsterOnGroundBelow(mob, Point(430, 75));
         map:spawnMonsterOnGroundBelow(mob2, Point(1600, 75));
         map:spawnMonsterOnGroundBelow(mob3, Point(430, 238));
@@ -138,37 +128,38 @@ function Sample:setup(level, lobbyid)
     end
     map = eim.getInstanceMap(925100301);
     map.resetPQ(level);
-    for (var i = 0; i < 10; i++) {
+    for i = 1, 10 do
         local mob = em:getMonster(9300112);
         local mob2 = em:getMonster(9300113);
         eim:registerMonster(mob);
         eim:registerMonster(mob2);
-        mob:changeDifficulty(level, isPq);
-        mob2:changeDifficulty(level, isPq);
+        mob:changeDifficulty(level, true);
+        mob2:changeDifficulty(level, true);
         map:spawnMonsterOnGroundBelow(mob, Point(0, 238));
         map:spawnMonsterOnGroundBelow(mob2, Point(1700, 238));
-    }
+    end
     eim:getInstanceMap(925100302):resetPQ(level);
     eim:getInstanceMap(925100400):resetPQ(level);
     eim:getInstanceMap(925100500):resetPQ(level);
 
-   self.respawnStages(eim);
+    self.respawnStages(eim);
 
-    eim.startEventTimer(eventTime * 60000);
-   BaseEvent.setEventRewards(self, eim);
+    eim.startEventTimer(self.eventTime * 60000);
+    BaseEvent.setEventRewards(self, eim);
     BaseEvent.setEventExclusives(self, eim);
     return eim;
 end
 
-function Sample:respawnStages(eim) {
+function Sample:respawnStages(eim)
     local stg = eim:getIntProperty("stage2");
     if (stg < 3) then
-        eim:getMapInstance(925100100):spawnAllMonsterIdFromMapSpawnList("9300114" .. stg, eim:getIntProperty("level"), true);
+        eim:getMapInstance(925100100):spawnAllMonsterIdFromMapSpawnList("9300114" .. stg, eim:getIntProperty("level"),
+            true);
     end
 
     eim:getMapInstance(925100400):instanceMapRespawn();
     eim:schedule("respawnStages", 10 * 1000);
-}
+end
 
 function Sample:changedMapInside(eim, mapid)
     local stage = eim.getIntProperty("curStage");
@@ -187,7 +178,7 @@ function Sample:changedMapInside(eim, mapid)
         if (mapid == 925100300) then
             eim.restartEventTimer(6 * 60 * 1000);
             eim.setIntProperty("curStage", 4);
-       end
+        end
     elseif (stage == 4) then
         if (mapid == 925100400) then
             eim.restartEventTimer(6 * 60 * 1000);
@@ -219,12 +210,10 @@ end
 function Sample:clearPQ(eim)
     BaseEvent.clearPQ(self, eim)
 
-    local chests = parseInt(eim.getProperty("openedChests"));
-    local expSet = {28000, 35000, 42000}
-    local expGain = expGain[chests + 1]
+    local chests = tonumber(eim.getProperty("openedChests"));
+    local expSet = { 28000, 35000, 42000 }
+    local expGain = expSet[chests + 1]
     eim:giveEventPlayersExp(expGain);
-
-    eim:warpEventTeam(925100600);
 end
 
 function Sample:isLordPirate(mob)
@@ -235,7 +224,7 @@ end
 function Sample:passedGrindMode(map, eim)
     if (eim:getIntProperty("grindMode") == 0) then
         return true;
-   end
+    end
     return eim:activatedAllReactorsOnMap(map, 2511000, 2517999);
 end
 

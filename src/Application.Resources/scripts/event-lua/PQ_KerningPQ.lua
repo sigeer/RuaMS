@@ -2,8 +2,8 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 
 -- 配置事件参数
 local config = {
-    isPq = true,
-    name = "Kerning",
+    name = "KerningPQ",
+    instanceName = "Kerning",
     minPlayers = 3,
     maxPlayers = 6,
     minLevel = 21,
@@ -33,11 +33,7 @@ local config = {
     }
 }
 
--- 创建自定义事件
-local KerningPQ = BaseEvent:extend()
-
--- 创建事件实例
-local event = KerningPQ:new(config)
+local event = BaseEvent:new(config)
 
 -- 导出所有方法到全局环境（包括继承的方法）
 local function exportMethods(obj)

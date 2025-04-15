@@ -3,7 +3,7 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 配置事件参数
 local config = {
     -- 注册的事件名
-    name = "Balrog",
+    instanceName = "Balrog",
     minPlayers = 3,
     maxPlayers = 30,
     minLevel = 50,

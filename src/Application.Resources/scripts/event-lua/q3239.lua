@@ -1,95 +1,53 @@
-local entryMap;
-local exitMap;
-local eventLength = 20;
+local BaseChallenge = require("scripts/event-lua/__BaseChallenge")
 
-function init()
-    em:setProperty("noEntry", "false");
-    entryMap = em:GetMap(922000000);
-    exitMap = em:GetMap(922000009);
+local config = {
+    name = "q32396",
+    instanceName = "q3239_",
+    entryMap = 922000000,
+    entryPortal = 0,
+    exitMap = 922000009,
+    minMapId = 922000000,
+    maxMapId = 922000000,
+    eventTime = 20,
+    maxLobbies = 7
+}
+
+local Event = BaseChallenge:extend()
+
+function Event:setup(level, lobbyId)
+    local eim = em:newInstance(self.instanceName .. lobbyId)
+    eim:setExclusiveItems(LuaTableUtils.ToList({4031092}));
+    return eim
 end
 
-function setup(level, lobbyid)
-    local eim = em:newInstance("q3239_" + lobbyid);
-    eim:setExclusiveItems({ 4031092 });
-    return eim;
+function Event:InitializeMap(eim)
+    local mapObject = eim:getInstanceMap(self.entryMap)
+    mapObject:clearDrops()
+    mapObject:resetReactors()
+    mapObject:shuffleReactors()
 end
 
-function playerEntry(eim, player)
-    local im = eim:getInstanceMap(entryMap:getId());
+-- 创建事件实例
+local event = Event:new(config)
 
-    -- Reset instance
-    im:clearDrops();
-    im:resetReactors();
-    im:shuffleReactors();
-
-    -- Start timer
-    eim:startEventTimer(eventLength * 60 * 1000);
-
-    -- Warp player and mark event as occupied
-    player:changeMap(entryMap, 0);
-    em:setProperty("noEntry", "true");
-end
-
-function changedMap(eim, player, mapid)
-    if (mapid ~= entryMap:getId()) then
-        playerExit(eim, player);
+-- 导出所有方法到全局环境（包括继承的方法）
+local function exportMethods(obj)
+    local exported = {}
+    local current = obj
+    while current do
+        for k, v in pairs(current) do
+            if type(v) == "function" and not exported[k] then
+                _ENV[k] = function(...)
+                    return v(event, ...)
+                end
+                exported[k] = true
+            end
+        end
+        current = getmetatable(current)
+        if current then
+            current = current.__index
+        end
     end
 end
 
-function playerExit(eim, player)
-    finish(eim);
-end
-
-function playerDisconnected(eim, player)
-    finish(eim);
-end
-
-function scheduledTimeout(eim)
-    finish(eim);
-end
-
-function finish(eim)
-    local party = eim:getPlayers(); -- should only ever be one player
-    for _, player in ipairs(party) do
-        eim:unregisterPlayer(player);
-        player:changeMap(exitMap);
-    end
-
-    eim:dispose();
-    em:setProperty("noEntry", "false");
-end
-
--- Stub/filler functions
-
-function disbandParty(eim, player)
-end
-
-function afterSetup(eim) 
-end
-
-function playerUnregistered(eim, player)
-end
-
-function changedLeader(eim, leader) 
-end
-
-function leftParty(eim, player) 
-end
-
-function clearPQ(eim) 
-end
-
-function dispose() 
-end
-
-function cancelSchedule() 
-end
-
-function allMonstersDead(eim) 
-end
-
-function monsterValue(eim, mobId) 
-end
-
-function monsterKilled(mob, eim) 
-end
+exportMethods(event)

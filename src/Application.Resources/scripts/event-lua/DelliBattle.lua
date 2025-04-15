@@ -3,7 +3,7 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 配置事件参数
 local config = {
     -- 注册的事件名
-    name = "Delli",
+    instanceName = "Delli",
     minPlayers = 1,
     maxPlayers = 2,
     minLevel = 120,

@@ -140,7 +140,12 @@ namespace Application.Scripting.Lua
 
         public override string ToString(IFormatProvider? provider)
         {
-            return Convert.ToString(ToObject());
+            return ToObject().ToString();
+        }
+
+        public override string ToString()
+        {
+            return ToObject()?.ToString();
         }
 
         public override object ToType(Type conversionType, IFormatProvider? provider)

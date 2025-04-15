@@ -3,7 +3,7 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 配置事件参数
 local config = {
     -- 注册的事件名
-    name = "Henesys",
+    instanceName = "Henesys",
     minPlayers = 3,
     maxPlayers = 6,
     minLevel = 10,
@@ -69,21 +69,21 @@ function Sample:scheduledTimeout(eim)
 end
 
 function Sample:friendlyItemDrop(eim, mob)
-    if (mob:getId() == 9300061) {
+    if (mob:getId() == 9300061) then
         local cakes = eim.getIntProperty("bunnyCake") + 1;
         eim:setIntProperty("bunnyCake", cakes);
         mob:getMap():broadcastMessage(PacketCreator.serverNotice(6, "The Moon Bunny made rice cake number " .. cakes .. "."));
-    }
+    end
 end
 
 function Sample:friendlyDamaged(eim, mob)
-    if (mob:getId() == 9300061) {
+    if (mob:getId() == 9300061) then
         local bunnyDamage = eim.getIntProperty("bunnyDamaged") + 1;
         if (bunnyDamage > 5) then
             mob:getMap():broadcastMessage(PacketCreator.serverNotice(6, "The Moon Bunny is feeling sick. Please protect it so it can make delicious rice cakes."));
             eim:setIntProperty("bunnyDamaged", 0);
         end
-    }
+    end
 end
 
 function Sample:friendlyKilled(mob, eim)

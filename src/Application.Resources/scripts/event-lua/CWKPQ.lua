@@ -3,6 +3,7 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 配置事件参数
 local config = {
     name = "CWKPQ",
+    instanceName = "CWKPQ",
     minPlayers = 6,
     maxPlayers = 30,
     minLevel = 90,

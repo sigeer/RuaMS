@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.TheWorld;
-using Application.Core.Scripting.Infrastructure;
 using System.Collections.Concurrent;
 
 namespace scripting.Event;
@@ -35,39 +34,43 @@ namespace scripting.Event;
 public class EventScriptManager : AbstractScriptManager
 {
     private const string INJECTED_VARIABLE_NAME = "em";
-    private static EventEntry? fallback;
-    private ConcurrentDictionary<string, EventEntry> events = new();
+
+    private ConcurrentDictionary<string, EventManager> events = new();
     private bool active = false;
     public IWorldChannel LinkedWorldChannel { get; }
     readonly string[] eventScripts;
 
-    private class EventEntry
-    {
-
-        public EventEntry(IEngine iv, EventManager em)
-        {
-            this.iv = iv;
-            this.em = em;
-        }
-
-        public IEngine iv;
-        public EventManager em;
-    }
 
     public EventScriptManager(IWorldChannel channel, string[] scripts)
     {
         LinkedWorldChannel = channel;
         eventScripts = scripts;
+
+        ReloadEventScript();
+    }
+
+    public void ReloadEventScript()
+    {
+        DisposeEvents();
+
         foreach (string script in eventScripts)
         {
             if (!string.IsNullOrEmpty(script))
             {
-                events.AddOrUpdate(GetEventName(script), initializeEventEntry(script));
+                var em = initializeEventEntry(script);
+
+                var eventName = em.getIv().CallFunction("init").ToString();
+                if (string.IsNullOrEmpty(eventName))
+                {
+                    eventName = GetEventName(script);
+                }
+                if (!events.TryAdd(eventName, em))
+                {
+                    throw new BusinessFatalException($"事件名重复，名称：{eventName}");
+                }
             }
         }
-
-        init();
-        events.TryRemove("0_EXAMPLE", out fallback);
+        active = events.Count > 0;
     }
 
     private string GetEventName(string eventScript)
@@ -75,14 +78,10 @@ public class EventScriptManager : AbstractScriptManager
         return Path.GetFileNameWithoutExtension(eventScript);
     }
 
+
     public EventManager? getEventManager(string evt)
     {
-        EventEntry? entry = events.GetValueOrDefault(evt);
-        if (entry == null)
-        {
-            return fallback?.em;
-        }
-        return entry.em;
+        return events.GetValueOrDefault(evt);
     }
 
     public bool isActive()
@@ -90,57 +89,33 @@ public class EventScriptManager : AbstractScriptManager
         return active;
     }
 
-    public void init()
-    {
-        foreach (EventEntry entry in events.Values)
-        {
-            try
-            {
-                entry.iv.CallFunction("init");
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Error on script: {ScriptName}", entry.em.getName());
-            }
-        }
 
-        active = events.Count > 1; // bootup loads only 1 script
-    }
-
-    private void reloadScripts()
-    {
-        foreach (string script in eventScripts)
-        {
-            if (!string.IsNullOrEmpty(script))
-            {
-                events.AddOrUpdate(GetEventName(script), initializeEventEntry(script));
-            }
-        }
-    }
-
-    private EventEntry initializeEventEntry(string script)
+    private EventManager initializeEventEntry(string script)
     {
         var engine = getInvocableScriptEngine(GetEventScriptPath(script));
         EventManager eventManager = new EventManager(LinkedWorldChannel, engine, script);
         engine.AddHostedObject(INJECTED_VARIABLE_NAME, eventManager);
-        return new EventEntry(engine, eventManager);
+        return eventManager;
     }
 
-    // Is never being called
-    public void reload()
-    {
-        cancel();
-        reloadScripts();
-        init();
-    }
 
     public void cancel()
     {
         active = false;
-        foreach (EventEntry entry in events.Values)
+        foreach (var entry in events.Values)
         {
-            entry.em.cancel();
+            entry.cancel();
         }
+    }
+
+    void DisposeEvents()
+    {
+        var cleanEvents = events.Values.ToList();
+        foreach (var old in cleanEvents)
+        {
+            old.cancel();
+        }
+        events.Clear();
     }
 
     public void dispose()
@@ -150,13 +125,8 @@ public class EventScriptManager : AbstractScriptManager
             return;
         }
 
-        HashSet<EventEntry> eventEntries = events.Values.ToHashSet();
-        events.Clear();
+        DisposeEvents();
 
         active = false;
-        foreach (EventEntry entry in eventEntries)
-        {
-            entry.em.cancel();
-        }
     }
 }

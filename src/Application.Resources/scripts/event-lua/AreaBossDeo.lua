@@ -1,59 +1,19 @@
-function init()
-    scheduleNew()
+local Common_AreaBoss = require("scripts/event-lua/__BaseAreaBoss")
+
+-- 继承基类方法
+for k, v in pairs(Common_AreaBoss) do
+    _ENV[k] = v
 end
 
-function scheduleNew()
-    setupTask = em:schedule("start", 0) -- spawns upon server start. Each 3 hours an server event checks if boss exists, if not spawns it instantly.
-end
-
-function cancelSchedule()
-    if setupTask ~= nil then
-        setupTask:cancel(true)
-    end
-end
-
+-- 重写 start 方法
 function start()
-    local royalCatthusDesert = em:GetMap(260010201)
-
-    if royalCatthusDesert:getMonsterById(3220001) ~= nil then
-        em:schedule("start", 3 * 60 * 60 * 1000)
-        return
-    end
-
-    local deo = LifeFactory.getMonster(3220001)
-    royalCatthusDesert:spawnMonsterOnGroundBelow(deo, Point(645, 275))
-    royalCatthusDesert:broadcastMessage(PacketCreator.serverNotice(6, "Deo slowly appeared out of the sand dust."))
-    em:schedule("start", 3 * 60 * 60 * 1000)
+    local posX = 645
+    local posY = 275
+    Common_AreaBoss.spawnBoss(
+        260010201,          -- 地图ID
+        3220001,            -- 怪物ID 大宇
+        posX,               -- X坐标
+        posY,               -- Y坐标
+        "Deo slowly appeared out of the sand dust."  -- 提示消息
+    )
 end
-
--- ---------- FILLER FUNCTIONS ----------
-
-function dispose() end
-
-function setup(eim, leaderId) end
-
-function monsterValue(eim, mobId) return 0 end
-
-function disbandParty(eim, player) end
-
-function playerDisconnected(eim, player) end
-
-function playerEntry(eim, player) end
-
-function monsterKilled(mob, eim) end
-
-function scheduledTimeout(eim) end
-
-function afterSetup(eim) end
-
-function changedLeader(eim, leader) end
-
-function playerExit(eim, player) end
-
-function leftParty(eim, player) end
-
-function clearPQ(eim) end
-
-function allMonstersDead(eim) end
-
-function playerUnregistered(eim, player) end
