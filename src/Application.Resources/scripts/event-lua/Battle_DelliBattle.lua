@@ -3,6 +3,7 @@ local BaseEvent = require("scripts/event-lua/__BasePQ")
 -- 配置事件参数
 local config = {
     -- 注册的事件名
+    name = "DelliBattle",
     instanceName = "Delli",
     minPlayers = 1,
     maxPlayers = 2,
@@ -28,11 +29,9 @@ local config = {
 local Sample = BaseEvent:extend()
 
 -- 没办法通过设置处理的就在这里进行重载
-function Sample:setup(level, lobbyid)
-    local eim = BaseEvent.setup(self, level, lobbyid)
+function Sample:BeforeStartEvent(eim, level, lobbyid)
     -- toggle？
     eim:getMapInstance(self.entryMap):toggleDrops();
-    return eim
 end
 
 function Sample:scheduledTimeout(eim)

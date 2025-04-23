@@ -9,18 +9,14 @@ local config = {
     minMapId = 922000000,
     maxMapId = 922000000,
     eventTime = 20,
-    maxLobbies = 7
+    maxLobbies = 7,
+
+    eventItems = { 4031092 }
 }
 
 local Event = BaseChallenge:extend()
 
-function Event:setup(level, lobbyId)
-    local eim = em:newInstance(self.instanceName .. lobbyId)
-    eim:setExclusiveItems(LuaTableUtils.ToList({4031092}));
-    return eim
-end
-
-function Event:InitializeMap(eim)
+function Event:ResetMap(eim)
     local mapObject = eim:getInstanceMap(self.entryMap)
     mapObject:clearDrops()
     mapObject:resetReactors()

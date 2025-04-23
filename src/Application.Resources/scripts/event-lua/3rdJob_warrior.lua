@@ -8,15 +8,12 @@ local config = {
     minMapId = 108010300,
     maxMapId = 108010301,
     eventTime = 20,
-    maxLobbies = 7
+    maxLobbies = 7,
+
+    resetPQMaps = { 108010301 }
 }
 
 local Event = BaseChallenge:extend()
-
-function Event:InitializeMap(eim)
-    local mapObject = eim:getInstanceMap(self.maxMapId)
-    mapObject:resetPQ(1)
-end
 
 -- 创建事件实例
 local event = Event:new(config)

@@ -19,12 +19,7 @@ local config = {
     maxLobbies = 1,
 
     -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = { 541010100 },
-        -- 打乱地图reactor顺序
-        resetReactorMaps = { }
-    }
+    resetPQMaps = { 541010100 },
 }
 
 -- 创建自定义事件

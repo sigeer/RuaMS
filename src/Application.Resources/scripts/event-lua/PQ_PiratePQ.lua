@@ -20,12 +20,10 @@ local config = {
     maxLobbies = 1,
 
     -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = { 925100000, 925100100, 925100200, 925100201 },
-        -- 打乱地图reactor顺序
-        resetReactorMaps = { 925100000, 925100200 }
-    },
+    -- 重置地图
+    resetPQMaps = { 925100000, 925100100, 925100200, 925100201, 925100202, 925100300, 925100301, 925100302, 925100400, 925100500 },
+    -- 打乱地图reactor顺序
+    resetReactorMaps = { 925100000, 925100200, 925100300 },
     -- base.setup.setEventExclusives 任务特有的道具，需要被清理
     eventItems = { 4001117, 4001120, 4001121, 4001122 },
 
@@ -51,148 +49,133 @@ local config = {
 }
 
 -- 创建自定义事件
-local Sample = BaseEvent:extend()
+local PiratePQ = BaseEvent:extend()
 
--- 没办法通过设置处理的就在这里进行重载
-function Sample:setup(level, lobbyid)
-    local eim = BaseEvent.setup(self, level, lobbyid)
-    -- xxx
-    eim:setProperty("stage2", "0");
-    eim:setProperty("stage2a", "0");
-    eim:setProperty("stage3a", "0");
-    eim:setProperty("stage2b", "0");
-    eim:setProperty("stage3b", "0");
-    eim:setProperty("stage4", "0");
-    eim:setProperty("stage5", "0");
 
-    eim:setProperty("curStage", "1");
-    eim:setProperty("grindMode", "0");
+function PiratePQ:BeforeStartEvent(eim, level, lobbyId)
+    eim:setProperty("stage2", "0")
+    eim:setProperty("stage2a", "0")
+    eim:setProperty("stage3a", "0")
+    eim:setProperty("stage2b", "0")
+    eim:setProperty("stage3b", "0")
+    eim:setProperty("stage4", "0")
+    eim:setProperty("stage5", "0")
 
-    eim:setProperty("openedChests", "0");
-    eim:setProperty("openedBoxes", "0");
+    eim:setProperty("curStage", "1")
+    eim:setProperty("grindMode", "0")
 
-    local map = eim.getInstanceMap(925100200);
+    eim:setProperty("openedChests", "0")
+    eim:setProperty("openedBoxes", "0")
+
+    local map = eim.getInstanceMap(925100200)
 
     for i = 1, 5 do
-        local mob = em:getMonster(9300124);
-        local mob2 = em:getMonster(9300125);
-        local mob3 = em:getMonster(9300124);
-        local mob4 = em:getMonster(9300125);
-        eim:registerMonster(mob);
-        eim:registerMonster(mob2);
-        eim:registerMonster(mob3);
-        eim:registerMonster(mob4);
-        mob:changeDifficulty(level, true);
-        mob2:changeDifficulty(level, true);
-        mob3:changeDifficulty(level, true);
-        mob4:changeDifficulty(level, true);
-        map:spawnMonsterOnGroundBelow(mob, Point(430, 75));
-        map:spawnMonsterOnGroundBelow(mob2, Point(1600, 75));
-        map:spawnMonsterOnGroundBelow(mob3, Point(430, 238));
-        map:spawnMonsterOnGroundBelow(mob4, Point(1600, 238));
+        local mob = em:getMonster(9300124)
+        local mob2 = em:getMonster(9300125)
+        local mob3 = em:getMonster(9300124)
+        local mob4 = em:getMonster(9300125)
+        eim:registerMonster(mob)
+        eim:registerMonster(mob2)
+        eim:registerMonster(mob3)
+        eim:registerMonster(mob4)
+        mob:changeDifficulty(level, true)
+        mob2:changeDifficulty(level, true)
+        mob3:changeDifficulty(level, true)
+        mob4:changeDifficulty(level, true)
+        map:spawnMonsterOnGroundBelow(mob, Point(430, 75))
+        map:spawnMonsterOnGroundBelow(mob2, Point(1600, 75))
+        map:spawnMonsterOnGroundBelow(mob3, Point(430, 238))
+        map:spawnMonsterOnGroundBelow(mob4, Point(1600, 238))
     end
 
-    map = eim.getInstanceMap(925100201);
-    map:resetPQ(level);
+    map = eim.getInstanceMap(925100201)
     for i = 1, 10 do
-        local mob = em:getMonster(9300112);
-        local mob2 = em:getMonster(9300113);
-        eim:registerMonster(mob);
-        eim:registerMonster(mob2);
-        mob:changeDifficulty(level, true);
-        mob2:changeDifficulty(level, true);
-        map:spawnMonsterOnGroundBelow(mob, Point(0, 238));
-        map:spawnMonsterOnGroundBelow(mob2, Point(1700, 238));
+        local mob = em:getMonster(9300112)
+        local mob2 = em:getMonster(9300113)
+        eim:registerMonster(mob)
+        eim:registerMonster(mob2)
+        mob:changeDifficulty(level, true)
+        mob2:changeDifficulty(level, true)
+        map:spawnMonsterOnGroundBelow(mob, Point(0, 238))
+        map:spawnMonsterOnGroundBelow(mob2, Point(1700, 238))
     end
-    eim.getInstanceMap(925100202).resetPQ(level);
-    map = eim.getInstanceMap(925100300);
-    map.resetPQ(level);
-    map.shuffleReactors();
+
+    map = eim.getInstanceMap(925100300)
     for i = 1, 5 do
-        local mob = em:getMonster(9300124);
-        local mob2 = em:getMonster(9300125);
-        local mob3 = em:getMonster(9300124);
-        local mob4 = em:getMonster(9300125);
-        eim:registerMonster(mob);
-        eim:registerMonster(mob2);
-        eim:registerMonster(mob3);
-        eim:registerMonster(mob4);
-        mob:changeDifficulty(level, true);
-        mob2:changeDifficulty(level, true);
-        mob3:changeDifficulty(level, true);
-        mob4:changeDifficulty(level, true);
-        map:spawnMonsterOnGroundBelow(mob, Point(430, 75));
-        map:spawnMonsterOnGroundBelow(mob2, Point(1600, 75));
-        map:spawnMonsterOnGroundBelow(mob3, Point(430, 238));
-        map:spawnMonsterOnGroundBelow(mob4, Point(1600, 238));
+        local mob = em:getMonster(9300124)
+        local mob2 = em:getMonster(9300125)
+        local mob3 = em:getMonster(9300124)
+        local mob4 = em:getMonster(9300125)
+        eim:registerMonster(mob)
+        eim:registerMonster(mob2)
+        eim:registerMonster(mob3)
+        eim:registerMonster(mob4)
+        mob:changeDifficulty(level, true)
+        mob2:changeDifficulty(level, true)
+        mob3:changeDifficulty(level, true)
+        mob4:changeDifficulty(level, true)
+        map:spawnMonsterOnGroundBelow(mob, Point(430, 75))
+        map:spawnMonsterOnGroundBelow(mob2, Point(1600, 75))
+        map:spawnMonsterOnGroundBelow(mob3, Point(430, 238))
+        map:spawnMonsterOnGroundBelow(mob4, Point(1600, 238))
     end
-    map = eim.getInstanceMap(925100301);
-    map.resetPQ(level);
+    map = eim.getInstanceMap(925100301)
+
     for i = 1, 10 do
-        local mob = em:getMonster(9300112);
-        local mob2 = em:getMonster(9300113);
-        eim:registerMonster(mob);
-        eim:registerMonster(mob2);
-        mob:changeDifficulty(level, true);
-        mob2:changeDifficulty(level, true);
-        map:spawnMonsterOnGroundBelow(mob, Point(0, 238));
-        map:spawnMonsterOnGroundBelow(mob2, Point(1700, 238));
+        local mob = em:getMonster(9300112)
+        local mob2 = em:getMonster(9300113)
+        eim:registerMonster(mob)
+        eim:registerMonster(mob2)
+        mob:changeDifficulty(level, true)
+        mob2:changeDifficulty(level, true)
+        map:spawnMonsterOnGroundBelow(mob, Point(0, 238))
+        map:spawnMonsterOnGroundBelow(mob2, Point(1700, 238))
     end
-    eim:getInstanceMap(925100302):resetPQ(level);
-    eim:getInstanceMap(925100400):resetPQ(level);
-    eim:getInstanceMap(925100500):resetPQ(level);
-
-    self.respawnStages(eim);
-
-    eim.startEventTimer(self.eventTime * 60000);
-    BaseEvent.setEventRewards(self, eim);
-    BaseEvent.setEventExclusives(self, eim);
-    return eim;
 end
 
-function Sample:respawnStages(eim)
-    local stg = eim:getIntProperty("stage2");
+function PiratePQ:respawnStages(eim)
+    local stg = eim:getIntProperty("stage2")
     if (stg < 3) then
         eim:getMapInstance(925100100):spawnAllMonsterIdFromMapSpawnList("9300114" .. stg, eim:getIntProperty("level"),
-            true);
+            true)
     end
 
-    eim:getMapInstance(925100400):instanceMapRespawn();
-    eim:schedule("respawnStages", 10 * 1000);
+    eim:getMapInstance(925100400):instanceMapRespawn()
+    eim:schedule("respawnStages", 10 * 1000)
 end
 
-function Sample:changedMapInside(eim, mapid)
-    local stage = eim.getIntProperty("curStage");
+function PiratePQ:changedMapInside(eim, mapid)
+    local stage = eim.getIntProperty("curStage")
 
     if (stage == 1) then
         if (mapid == 925100100) then
-            eim.restartEventTimer(6 * 60 * 1000);
-            eim.setIntProperty("curStage", 2);
+            eim.restartEventTimer(6 * 60 * 1000)
+            eim.setIntProperty("curStage", 2)
         end
     elseif (stage == 2) then
         if (mapid == 925100200) then
-            eim.restartEventTimer(6 * 60 * 1000);
-            eim.setIntProperty("curStage", 3);
+            eim.restartEventTimer(6 * 60 * 1000)
+            eim.setIntProperty("curStage", 3)
         end
     elseif (stage == 3) then
         if (mapid == 925100300) then
-            eim.restartEventTimer(6 * 60 * 1000);
-            eim.setIntProperty("curStage", 4);
+            eim.restartEventTimer(6 * 60 * 1000)
+            eim.setIntProperty("curStage", 4)
         end
     elseif (stage == 4) then
         if (mapid == 925100400) then
-            eim.restartEventTimer(6 * 60 * 1000);
-            eim.setIntProperty("curStage", 5);
+            eim.restartEventTimer(6 * 60 * 1000)
+            eim.setIntProperty("curStage", 5)
         end
     elseif (stage == 5) then
         if (mapid == 925100500) then
-            eim.restartEventTimer(8 * 60 * 1000);
-            eim.setIntProperty("curStage", 6);
+            eim.restartEventTimer(8 * 60 * 1000)
+            eim.setIntProperty("curStage", 6)
         end
     end
 end
 
-function Sample:changedMap(eim, player, mapId)
+function PiratePQ:changedMap(eim, player, mapId)
     if mapId < self.minMapId or mapId > self.maxMapId then
         if (eim:isEventTeamLackingNow(true, self.minPlayers, player)) then
             eim:unregisterPlayer(player)
@@ -203,54 +186,54 @@ function Sample:changedMap(eim, player, mapId)
             eim:unregisterPlayer(player)
         end
     else
-        self:changedMapInside(eim, mapId);
+        self:changedMapInside(eim, mapId)
     end
 end
 
-function Sample:clearPQ(eim)
+function PiratePQ:clearPQ(eim)
     BaseEvent.clearPQ(self, eim)
 
-    local chests = tonumber(eim.getProperty("openedChests"));
+    local chests = tonumber(eim.getProperty("openedChests"))
     local expSet = { 28000, 35000, 42000 }
     local expGain = expSet[chests + 1]
-    eim:giveEventPlayersExp(expGain);
+    eim:giveEventPlayersExp(expGain)
 end
 
-function Sample:isLordPirate(mob)
-    local mobid = mob.getId();
-    return (mobid == 9300105) or (mobid == 9300106) or (mobid == 9300107) or (mobid == 9300119);
+function PiratePQ:isLordPirate(mob)
+    local mobid = mob.getId()
+    return (mobid == 9300105) or (mobid == 9300106) or (mobid == 9300107) or (mobid == 9300119)
 end
 
-function Sample:passedGrindMode(map, eim)
+function PiratePQ:passedGrindMode(map, eim)
     if (eim:getIntProperty("grindMode") == 0) then
-        return true;
+        return true
     end
-    return eim:activatedAllReactorsOnMap(map, 2511000, 2517999);
+    return eim:activatedAllReactorsOnMap(map, 2511000, 2517999)
 end
 
-function Sample:monsterKilled(mob, eim)
-    local map = mob:getMap();
+function PiratePQ:monsterKilled(mob, eim)
+    local map = mob:getMap()
 
     if (self:isLordPirate(mob)) then
-        map:broadcastStringMessage(5, "As Lord Pirate dies, Wu Yang is released!");
-        eim:spawnNpc(2094001, Point(777, 140), mob:getMap());
+        map:broadcastStringMessage(5, "As Lord Pirate dies, Wu Yang is released!")
+        eim:spawnNpc(2094001, Point(777, 140), mob:getMap())
     end
 
     if (map:countMonsters() == 0) then
-        local stage = ((map:getId() % 1000) / 100) + 1;
+        local stage = ((map:getId() % 1000) / 100) + 1
 
         if ((stage == 1 or stage == 3 or stage == 4) and self:passedGrindMode(map, eim)) then
-            eim:showClearEffect(map:getId());
+            eim:showClearEffect(map:getId())
         elseif (stage == 5) then
             if (map:getReactorByName("sMob1"):getState() >= 1 and map:getReactorByName("sMob2"):getState() >= 1 and map.getReactorByName("sMob3"):getState() >= 1 and map.getReactorByName("sMob4").getState() >= 1) then
-                eim:showClearEffect(map:getId());
+                eim:showClearEffect(map:getId())
             end
         end
     end
 end
 
 -- 创建事件实例
-local event = Sample:new(config)
+local event = PiratePQ:new(config)
 
 -- 导出所有方法到全局环境（包括继承的方法）
 local function exportMethods(obj)

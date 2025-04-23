@@ -44,5 +44,10 @@ namespace ServiceTest.Infrastructure.Scripts
         {
             return list.Length;
         }
+
+        public static int PrintObjectListCount(List<object> list)
+        {
+            return list.Count;
+        }
     }
 }

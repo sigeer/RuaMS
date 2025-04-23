@@ -1,8 +1,9 @@
-local BaseEvent = require("scripts/event-lua/__BasePQ")
+local BasePQ = require("scripts/event-lua/__BasePQ")
 
 -- 配置事件参数
 local config = {
     -- 注册的事件名
+    name = "HenesysPQ",
     instanceName = "Henesys",
     minPlayers = 3,
     maxPlayers = 6,
@@ -12,18 +13,14 @@ local config = {
     exitMap = 910010300,
     recruitMap = 100000200,
     clearMap = 910010100,
+    warpTeamWhenClear = true,
     minMapId = 910010000,
     maxMapId = 910010400,
     eventTime = 10,
     maxLobbies = 1,
 
     -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = { 910010000, 910010200 },
-        -- 打乱地图reactor顺序
-        resetReactorMaps = { }
-    },
+    resetPQMaps = { 910010000, 910010200 },
     -- base.setup.setEventExclusives 任务特有的道具，需要被清理
     eventItems = { 4001095, 4001096, 4001097, 4001098, 4001099, 4001100, 400110 },
     -- base.setup.setEventRewards 奖励设置
@@ -47,28 +44,28 @@ local config = {
 }
 
 -- 创建自定义事件
-local Sample = BaseEvent:extend()
+local HenesysPQ = BasePQ:extend()
 
 -- 没办法通过设置处理的就在这里进行重载
-function Sample:setup(level, lobbyid)
-    local eim = BaseEvent.setup(self, level, lobbyid)
+function HenesysPQ:BeforeStartEvent(eim, level, lobbyid)
     eim:setProperty("stage", "0");
     eim:setProperty("bunnyCake", "0");
     eim:setProperty("bunnyDamaged", "0");
-    return eim
+
+    eim:getInstanceMap(910010000):allowSummonState(false)
 end
 
-function Sample:scheduledTimeout(eim)
+function HenesysPQ:scheduledTimeout(eim)
     if eim:getProperty("1stageclear") then
         local curStage = 910010200
         local toStage = 910010400;
         eim.warpEventTeam(curStage, toStage);
      else 
-        BaseEvent.endEvent(self, eim)
+        BasePQ.endEvent(self, eim)
      end
 end
 
-function Sample:friendlyItemDrop(eim, mob)
+function HenesysPQ:friendlyItemDrop(eim, mob)
     if (mob:getId() == 9300061) then
         local cakes = eim.getIntProperty("bunnyCake") + 1;
         eim:setIntProperty("bunnyCake", cakes);
@@ -76,7 +73,7 @@ function Sample:friendlyItemDrop(eim, mob)
     end
 end
 
-function Sample:friendlyDamaged(eim, mob)
+function HenesysPQ:friendlyDamaged(eim, mob)
     if (mob:getId() == 9300061) then
         local bunnyDamage = eim.getIntProperty("bunnyDamaged") + 1;
         if (bunnyDamage > 5) then
@@ -86,24 +83,20 @@ function Sample:friendlyDamaged(eim, mob)
     end
 end
 
-function Sample:friendlyKilled(mob, eim)
+function HenesysPQ:friendlyKilled(mob, eim)
     if (mob:getId() == 9300061) then
         eim:schedule("bunnyDefeated", 5 * 1000);
     end
 end
 
-function Sample:bunnyDefeated(eim)
+function HenesysPQ:bunnyDefeated(eim)
     eim:dropMessage(5, "Due to your failure to protect the Moon Bunny, you have been transported to the Exile Map.");
-    BaseEvent.endEvent(self, eim)
+    BasePQ.endEvent(self, eim)
 end
 
-function Sample:clearPQ(eim)
-   BaseEvent.clearPQ(self, eim)
-   eim:warpEventTeam(self.clearMap)
-end
 
 -- 创建事件实例
-local event = Sample:new(config)
+local event = HenesysPQ:new(config)
 
 -- 导出所有方法到全局环境（包括继承的方法）
 local function exportMethods(obj)

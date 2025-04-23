@@ -20,13 +20,7 @@ local config = {
     eventTime = 45,
     maxLobbies = 1,
 
-    -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = {220080001},
-        -- 打乱地图reactor顺序
-        resetReactorMaps = {}
-    },
+    resetPQMaps = {220080001},
     -- base.setup.setEventExclusives 任务特有的道具，需要被清理
     eventItems = {},
     -- base.setup.setEventRewards 奖励设置
@@ -52,15 +46,8 @@ local config = {
 -- 创建自定义事件
 local Sample = BaseEvent:extend()
 
-function Sample:setupProperty(level, lobbyid)
+function Sample:BeforeStartEvent(eim, level, lobbyid)
     eim:setProperty("boss", 0)
-end
-
--- 没办法通过设置处理的就在这里进行重载
-function Sample:setup(level, lobbyid)
-    local eim = BaseEvent.setup(self, level, lobbyid)
-    -- xxx
-    return eim
 end
 
 function Sample:afterSetup()

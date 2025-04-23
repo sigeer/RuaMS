@@ -8,6 +8,7 @@
         "YamlConfig",
         "LuaTableUtils",
         "Item",
-        "eim"
+        "eim",
+        "DropItemEntry"
     ]
 }

@@ -121,6 +121,7 @@ public abstract class AbstractScriptManager
         engine.AddHostedType("YamlConfig", typeof(YamlConfig));
         engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
         engine.AddHostedType("Guild", typeof(GuildManager));
+        engine.AddHostedType("DropItemEntry", typeof(DropItemEntry));
 
         engine.AddHostedType("Job", typeof(Job));
         engine.AddHostedType("InventoryType", typeof(InventoryType));

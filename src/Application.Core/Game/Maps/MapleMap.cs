@@ -766,7 +766,7 @@ public class MapleMap : IMap
         MonsterInformationProvider mi = MonsterInformationProvider.getInstance();
         List<DropEntry> globalEntry = mi.getRelevantGlobalDrops(this.getId());
 
-        List<DropEntry> lootEntry = YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? mob.retrieveRelevantDrops() : mi.retrieveEffectiveDrop(mob.getId());
+        List<DropEntry> lootEntry = mob.GetDropEntryList();
         DropEntry.ClassifyDropEntries(lootEntry, out var dropEntry, out var visibleQuestEntry, out var otherQuestEntry, chr);     // thanks Articuno, Limit, Rohenn for noticing quest loots not showing up in only-quest item drops scenario
 
         if (lootEntry.Count == 0)
@@ -784,7 +784,14 @@ public class MapleMap : IMap
         dropItemsFromMonsterOnMap(otherQuestEntry, pos, index, chRate, droptype, mobpos, chr, mob, dropDelay);
     }
 
-    public void dropItemsFromMonster(List<DropEntry> list, IPlayer chr, Monster mob, short dropDelay)
+    /// <summary>
+    /// 偷窃获得掉落物
+    /// </summary>
+    /// <param name="list"></param>
+    /// <param name="chr"></param>
+    /// <param name="mob"></param>
+    /// <param name="dropDelay"></param>
+    public void DropItemFromMonsterBySteal(List<DropEntry> list, IPlayer chr, Monster mob, short dropDelay)
     {
         if (mob.dropsDisabled() || !dropsOn)
         {
@@ -793,7 +800,7 @@ public class MapleMap : IMap
 
         byte droptype = (byte)(chr.getParty() != null ? 1 : 0);
         int mobpos = mob.getPosition().X;
-        int chRate = 1000000;   // guaranteed item drop
+        int chRate = 1000000;   // 偷窃得到，必定获取
         byte d = 1;
         Point pos = new Point(0, mob.getPosition().Y);
 

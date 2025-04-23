@@ -18,23 +18,19 @@ local config = {
     maxLobbies = 1,
 
     -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = {280030000},
-        -- 打乱地图reactor顺序
-        resetReactorMaps = {}
-    }
+    -- 重置地图
+    resetPQMaps = { 280030000 },
+    -- 打乱地图reactor顺序
+    resetReactorMaps = {}
 }
 
 -- 创建自定义事件
 local Sample = BaseEvent:extend()
 
 -- 没办法通过设置处理的就在这里进行重载
-function Sample:setup(level, lobbyid)
-    local eim = BaseEvent.setup(self, level, lobbyid)
+function Sample:BeforeStartEvent(eim, level, lobbyid)
     eim:setProperty("canJoin", 1)
     eim:setProperty("defeatedBoss", 0)
-    return eim
 end
 
 function Sample:noticePlayerEnter(eim, player)

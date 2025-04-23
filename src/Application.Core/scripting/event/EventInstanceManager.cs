@@ -1187,6 +1187,11 @@ public class EventInstanceManager
         }
     }
 
+    public void dropAllExclusiveItems()
+    {
+        getPlayers().ForEach(dropExclusiveItems);
+    }
+
     public void setExclusiveItems(List<object> items)
     {
         List<int> exclusive = convertToIntegerList(items);

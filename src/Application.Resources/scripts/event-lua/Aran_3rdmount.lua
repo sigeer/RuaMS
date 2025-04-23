@@ -13,7 +13,7 @@ local config = {
 
 local Event = BaseChallenge:extend()
 
-function Event:InitializeMap(eim)
+function Event:ResetMap(eim)
     local mapObject = eim:getInstanceMap(self.entryMap)
     mapObject:resetPQ(1)
     mapObject:instanceMapForceRespawn()

@@ -18,34 +18,28 @@ local config = {
     eventTime = 45,
     maxLobbies = 1,
 
-    -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = {926110000, 926110001, 926110100, 926110200, 926110201, 926110202, 926110203, 926110300,
-                       926110301, 926110302, 926110303, 926110304, 926110400, 926110401, 926110500, 926110600, 926110700},
-        -- 打乱地图reactor顺序
-        resetReactorMaps = {}
-    },
+    resetPQMaps = { 926110000, 926110001, 926110100, 926110200, 926110201, 926110202, 926110203, 926110300,
+        926110301, 926110302, 926110303, 926110304, 926110400, 926110401, 926110500, 926110600, 926110700 },
     -- base.setup.setEventExclusives 任务特有的道具，需要被清理
-    eventItems = {4001130, 4001131, 4001132, 4001133, 4001134, 4001135},
+    eventItems = { 4001130, 4001131, 4001132, 4001133, 4001134, 4001135 },
     -- base.setup.setEventRewards 奖励设置
     rewardConfig = {
         -- 每一关的经验奖励
-        expStages = {0, 10000, 20000, 0, 20000, 20000, 0, 0},
+        expStages = { 0, 10000, 20000, 0, 20000, 20000, 0, 0 },
         -- 每一关的金钱奖励
         mesoStages = {},
         -- 最终关卡的物品奖励
         finalItem = {
             level = 1,
-            list = {2000003, 2000002, 2000004, 2000005, 2022003, 1032016, 1032015, 1032014, 2041212, 2041020, 2040502,
-                    2041016, 2044701, 2040301, 2043201, 2040501, 2040704, 2044001, 2043701, 2040803, 1102026, 1102028,
-                    1102029},
-            quantity = {100, 100, 20, 10, 50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+            list = { 2000003, 2000002, 2000004, 2000005, 2022003, 1032016, 1032015, 1032014, 2041212, 2041020, 2040502,
+                2041016, 2044701, 2040301, 2043201, 2040501, 2040704, 2044001, 2043701, 2040803, 1102026, 1102028,
+                1102029 },
+            quantity = { 100, 100, 20, 10, 50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
         }
     },
     -- base.setup.respawnStages调用 地图怪物重生设置
     respawnConfig = {
-        maps = {926110100, 926110200},
+        maps = { 926110100, 926110200 },
         duration = 15000
     }
 }
@@ -85,11 +79,11 @@ end
 function Sample:afterSetup(eim)
     eim:setIntProperty("escortFail", 0);
 
-    local books = {-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 2, 3}
+    local books = { -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 2, 3 }
     shuffle(books);
 
     for i = 1, #books do
-        eim:setIntProperty("stg1_b"..(i - 1), books[i]);
+        eim:setIntProperty("stg1_b" .. (i - 1), books[i]);
     end
 end
 
@@ -123,9 +117,11 @@ function Sample:yuleteAction(eim)
     if (eim:getIntProperty("yuleteTalked") == 1) then
         eim:setIntProperty("yuletePassed", 1);
 
-        eim:dropMessage(5, "Yulete: Ugh, you guys disgust me. All I desired was to make this nation the greatest alchemy powerhouse of the entire world. If they won't accept this, I will make it true by myself, at any costs!!!");
+        eim:dropMessage(5,
+            "Yulete: Ugh, you guys disgust me. All I desired was to make this nation the greatest alchemy powerhouse of the entire world. If they won't accept this, I will make it true by myself, at any costs!!!");
     else
-        eim:dropMessage(5, "Yulete: Hahaha... Did you really think I was going to be so disprepared knowing that the Magatia societies' dogs would be coming in my pursuit after my actions? Fools!");
+        eim:dropMessage(5,
+            "Yulete: Hahaha... Did you really think I was going to be so disprepared knowing that the Magatia societies' dogs would be coming in my pursuit after my actions? Fools!");
     end
     eim:setIntProperty("yuleteTalked", -1);
 
@@ -202,7 +198,7 @@ function friendlyKilled(mob, eim)
 end
 
 -- thanks Chloek3, seth1 for stating generated sequences are supposed to be linked
-function generateStg6Combo(eim) 
+function generateStg6Combo(eim)
     local matrix = {};
 
     for i = 1, 4 do
@@ -210,7 +206,7 @@ function generateStg6Combo(eim)
     end
 
     for i = 1, 10 do
-        local array = { 0, 1, 2, 3};
+        local array = { 0, 1, 2, 3 };
         array = shuffle(array);
 
         for i = 1, 4 do
@@ -228,7 +224,6 @@ function generateStg6Combo(eim)
         eim.setProperty("stage6_comb" + (i + 1), comb);
     end
 end
-
 
 -- 创建事件实例
 local event = Sample:new(config)

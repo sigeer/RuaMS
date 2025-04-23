@@ -89,13 +89,20 @@ namespace ServiceTest.Infrastructure.Scripts
         public virtual void ReturnScriptNewObjectArray()
         {
             _engine.AddHostedType("ScriptTestClass", typeof(ScriptTestClass));
+            _engine.AddHostedType("ScriptTestStaticClass", typeof(ScriptTestStaticClass));
             _engine.Evaluate(Code);
 
-            var test1 = _engine.CallFunction("test").ToObject<ScriptTestClass[]>();
+            var check_returnResult = _engine.CallFunction("check_return");
+
+            var test1 = check_returnResult.ToObject<ScriptTestClass[]>();
             Assert.That(test1!.Length, Is.EqualTo(3));
 
-            var test2 = _engine.CallFunction("test").ToObject<List<ScriptTestClass>>();
+            var test2 = check_returnResult.ToObject<List<ScriptTestClass>>();
             Assert.That(test2!.Count(), Is.EqualTo(3));
+
+
+            var check_paramsResult = _engine.CallFunction("check_params");
+            Assert.That(check_paramsResult.ToObject<int>(), Is.EqualTo(3));
         }
 
         /// <summary>

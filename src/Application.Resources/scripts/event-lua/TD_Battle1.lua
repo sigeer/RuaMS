@@ -21,12 +21,10 @@ local config = {
     maxLobbies = 1,
 
     -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = { 240070203 },
-        -- 打乱地图reactor顺序
-        resetReactorMaps = { }
-    },
+    -- 重置地图
+    resetPQMaps = { 240070203 },
+    -- 打乱地图reactor顺序
+    resetReactorMaps = {},
 
     bossId = 7220005
 }

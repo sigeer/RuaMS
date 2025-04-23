@@ -19,12 +19,10 @@ local config = {
     maxLobbies = 1,
 
     -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = {},
-        -- 打乱地图reactor顺序
-        resetReactorMaps = { }
-    },
+    -- 重置地图
+    resetPQMaps = {},
+    -- 打乱地图reactor顺序
+    resetReactorMaps = {},
     -- base.setup.respawnStages调用 地图怪物重生设置
     respawnConfig = {
         maps = {},

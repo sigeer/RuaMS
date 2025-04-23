@@ -17,13 +17,10 @@ local config = {
     eventTime = 60,
     maxLobbies = 1,
 
-    -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = {105100400, 105100401},
-        -- 打乱地图reactor顺序
-        resetReactorMaps = {}
-    },
+    -- 重置地图
+    resetPQMaps = { 105100400, 105100401 },
+    -- 打乱地图reactor顺序
+    resetReactorMaps = {},
     -- 复合型怪物（一个用于显示的fake，加上多个真实的躯体）
     compositBoss = {
         main = 8830010,
@@ -56,7 +53,6 @@ function Sample:releaseLeftClaw(eim)
     eim:getInstanceMap(self.entryMap):killMonster(self.conpositBoss.maxMobId)
 end
 
-
 function Sample:spawnBalrog(eim)
     local mapObj = eim:getInstanceMap(self.entryMap)
     local spawnPoint = Point(self.compositBoss.posX, self.compositBoss.posY)
@@ -69,7 +65,8 @@ end
 
 function Sample:spawnSealedBalrog(eim)
     local spawnPoint = Point(self.compositBoss.posX, self.compositBoss.posY)
-    eim:getInstanceMap(self.entryMap):spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.compositBoss.main), spawnPoint)
+    eim:getInstanceMap(self.entryMap):spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.compositBoss.main),
+        spawnPoint)
 end
 
 function Sample:isUnsealedBalrog(mob)

@@ -59,7 +59,16 @@ public class EventScriptManager : AbstractScriptManager
             {
                 var em = initializeEventEntry(script);
 
-                var eventName = em.getIv().CallFunction("init").ToString();
+                string? eventName;
+                try
+                {
+                    eventName = em.getIv().CallFunction("init").ToString();
+                }
+                catch (Exception ex)
+                {
+                    throw new BusinessFatalException($"事件脚本{script}加载失败：" + ex.Message);
+                }
+
                 if (string.IsNullOrEmpty(eventName))
                 {
                     eventName = GetEventName(script);
@@ -68,6 +77,7 @@ public class EventScriptManager : AbstractScriptManager
                 {
                     throw new BusinessFatalException($"事件名重复，名称：{eventName}");
                 }
+                log.Debug("频道{Channel}事件 {EventName} 加载成功，脚本 {ScriptPath} ", LinkedWorldChannel.getId(), eventName, script);
             }
         }
         active = events.Count > 0;

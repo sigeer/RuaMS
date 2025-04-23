@@ -3,8 +3,10 @@
 
 ### 事件脚本
 
-3rdJob_xxx 三转任务
-AreaBoss 地图BOSS
+__BaseAreaBoss 地图BOSS
+__BasePQ 组队任务
+__BaseTransport 交通工具
+
 
 ### 代码实现
 

@@ -17,10 +17,8 @@ local config = {
     eventTime = 30,
     maxLobbies = 1,
 
-    resetConfig = {
-        resetPQMaps = {930000000, 930000100, 930000200, 930000300, 930000400, 930000500, 930000600, 930000700},
-        resetReactorMaps = { 930000500 }
-    },
+    resetPQMaps = {930000000, 930000100, 930000200, 930000300, 930000400, 930000500, 930000600, 930000700},
+    resetReactorMaps = { 930000500 },
 
     eventItems = { 4001162, 4001163, 4001169, 2270004 },
 }
@@ -28,7 +26,7 @@ local config = {
 -- 创建自定义事件
 local EllinPQ = BaseEvent:extend()
 
-function EllinPQ:setupProperty(eim, level, lobbyid)
+function EllinPQ:HandleSetup(eim, level, lobbyid)
     eim:setProperty("statusStg4", 0)
 end
 

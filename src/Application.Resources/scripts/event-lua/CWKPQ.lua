@@ -21,20 +21,18 @@ local config = {
     rewardConfig = {
         finalItem = {
             level = 1,
-            list = { },
-            quantity = { }
+            list = {},
+            quantity = {}
         },
-        expStages = { 2500, 8000, 18000, 25000, 30000, 40000 } ,
+        expStages = { 2500, 8000, 18000, 25000, 30000, 40000 },
         mesoStages = { 500, 1000, 2000, 5000, 8000, 20000 }
     },
 
-    resetConfig = {
-        resetPQMaps = {610030100, 610030200, 610030300, 610030400, 
+    resetPQMaps = { 610030100, 610030200, 610030300, 610030400,
         610030500, 610030510, 610030520, 610030521,
         610030522, 610030530, 610030540, 610030550,
-        610030600, 610030700, 610030800},
-        resetReactorMaps = { 610030550 }
-    }
+        610030600, 610030700, 610030800 },
+    resetReactorMaps = { 610030550 }
 }
 
 -- 创建自定义事件
@@ -46,14 +44,12 @@ function EllinPQ:setup(level, lobbyid)
     return eim
 end
 
-
 function EllinPQ:respawnStages(eim)
     local stg2Map = eim:getMapInstance(930000200)
     if stg2Map:getPlayers().Count > 0 then
         stg2Map:instanceMapRespawn()
     end
     eim:schedule("respawnStages", 4 * 1000)
-    
 end
 
 -- 创建事件实例

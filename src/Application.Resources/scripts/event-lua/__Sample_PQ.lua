@@ -20,12 +20,9 @@ local config = {
     maxLobbies = 1,
 
     -- base.setup.resetMap 中调用
-    resetConfig = {
-        -- 重置地图
-        resetPQMaps = {},
-        -- 打乱地图reactor顺序
-        resetReactorMaps = { }
-    },
+    resetPQMaps = {},
+    resetReactorMaps = { },
+
     -- base.setup.setEventExclusives 任务特有的道具，需要被清理
     eventItems = { },
     -- base.setup.setEventRewards 奖励设置

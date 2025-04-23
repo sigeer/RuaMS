@@ -19,9 +19,7 @@ local config = {
     maxLobbies = 1,
 
     -- 重置地图配置
-    resetConfig = {
-        resetReactorMaps = { 922000010 }
-    },
+    resetReactorMaps = { 922000010 },
 
     -- 任务特有道具
     eventItems = { 4031094 }

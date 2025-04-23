@@ -73,6 +73,10 @@ public class Monster : AbstractLifeObject
     private ScheduledFuture? monsterItemDrop = null;
     private Action? removeAfterAction = null;
     private bool availablePuppetUpdate = true;
+    /// <summary>
+    /// 有值时，不走默认的drop_data
+    /// </summary>
+    public List<DropEntry>? CustomeDrops { get; set; }
 
     private object externalLock = new object();
     private object monsterLock = new object();
@@ -864,7 +868,7 @@ public class Monster : AbstractLifeObject
     }
 
     /// <summary>
-    /// 只生成击杀玩家可收集的道具
+    /// 只生成击杀玩家（或其队友）可收集的道具
     /// </summary>
     /// <returns></returns>
     public List<DropEntry> retrieveRelevantDrops()
@@ -2697,6 +2701,17 @@ public class Monster : AbstractLifeObject
     public int getRemoveAfter()
     {
         return stats.removeAfter();
+    }
+
+    public void SetCustomeDrop(List<DropItemEntry> data)
+    {
+        CustomeDrops = data.Select(x => DropEntry.MobDrop(this.getId(), x.ItemId, x.Chance, x.MinCount, x.MaxCount, 0)).ToList();
+    }
+    public List<DropEntry> GetDropEntryList()
+    {
+        if (CustomeDrops == null)
+            return YamlConfig.config.server.USE_SPAWN_RELEVANT_LOOT ? retrieveRelevantDrops() : MonsterInformationProvider.getInstance().retrieveEffectiveDrop(this.getId());
+        return CustomeDrops;
     }
 
     public void dispose()

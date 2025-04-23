@@ -14,13 +14,11 @@ local config = {
 
 local Event = BaseChallenge:extend()
 
-function Event:setup(level, lobbyid)
-    local eim = BaseChallenge.setup(self, level, lobbyid)
+function Event:SetupProperty(eim, level, lobbyid)
     eim:setProperty("whog_hp", "0")
-    return eim
 end
 
-function Event:InitializeMap(eim)
+function Event:ResetMap(eim)
     local mapObject = eim:getInstanceMap(self.entryMap)
     mapObject:resetPQ(1)
     mapObject:instanceMapForceRespawn()

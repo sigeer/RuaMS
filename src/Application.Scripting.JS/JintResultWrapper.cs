@@ -86,9 +86,9 @@ namespace Application.Scripting.JS
             return (float)Value.AsNumber();
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
-            return Value.AsString();
+            return Value.IsUndefined() ? null : Value.AsString();
         }
 
         public override string ToString(IFormatProvider? provider)

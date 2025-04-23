@@ -7,7 +7,7 @@ function BaseBossBattle:new(config)
     return BasePQ:new(config)
 end
 
-function BaseBossBattle:setupProperty(eim, level, lobbyId)
+function BaseBossBattle:BeforeStartEvent(eim, level, lobbyId)
     eim:setProperty("boss", "0")
 end
 

@@ -13,49 +13,33 @@ function BaseChallenge:init()
     return self.name
 end
 
-
-function BaseChallenge:respawnStages(eim) end
+function BaseChallenge:setup(level, lobbyId)
+    local eim = em:newInstance(self.instanceName .. lobbyId)
+    eim:setProperty("level", level)
+    eim:setProperty("lobbyId", lobbyId)
+    eim:setProperty("boss", 0)
+    self:SetupProperty(eim, level, lobbyId)
+    self:setEventRewards(eim)
+    self:setEventExclusives(eim)
+    return eim
+end
 
 -- 不同于__BasePQ，地图初始化和计时在进入时触发而不是setup
 function BaseChallenge:playerEntry(eim, player)
-    self:InitializeMap(eim)
+    local level = eim:getIntProperty("level")
+    local lobbyId = eim:getIntProperty("lobbyId")
+
+    self:BeforeStartEvent(eim, level, lobbyId)
+    self:ResetMap(eim, level)
+
+    self:respawnStages(eim)
+    self:StartEvent(eim, level, lobbyId)
     BasePQ.playerEntry(self, eim, player)
+    em:setProperty("noEntry", "true");
 end
 
-function BaseChallenge:InitializeMap(eim)
-
-end
-
-function BaseChallenge:playerUnregistered(eim, player) end
-
-function BaseChallenge:playerExit(eim, player)
-    self:clearPQ(eim)
-end
-
-function BaseChallenge:scheduledTimeout(eim)
-    self:clearPQ(eim)
-end
-
-function BaseChallenge:playerDisconnected(eim, player)
-    self:clearPQ(eim)
-end
-
-function BaseChallenge:changedMap(eim, player, mapId)
-    if mapId < self.minMapId or mapId > self.maxMapId then
-        self:clearPQ(eim)
-    end
-end
-
-
-function BaseChallenge:clearPQ(eim)
-    eim:stopEventTimer()
-    eim:setEventCleared()
-
-    local player = eim:getPlayers()[0]
-    eim:unregisterPlayer(player)
-    player:changeMap(self.exitMap)
-
-    eim:dispose()
+function BaseChallenge:endEvent(eim)
+    BasePQ.endEvent(self, eim)
     em:setProperty("noEntry", "false")
 end
 

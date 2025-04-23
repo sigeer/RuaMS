@@ -198,12 +198,21 @@ namespace ServiceTest.Infrastructure.Scripts
         public override void ReturnScriptNewObjectArray()
         {
             Code = """
-                function test()
+                function check_return()
                     local arr = {};
                     table.insert(arr, ScriptTestClass())
                     table.insert(arr, ScriptTestClass())
                     table.insert(arr, ScriptTestClass())
                     return arr;
+                end
+
+                function check_params()
+                    local arr = {};
+                    table.insert(arr, ScriptTestClass())
+                    table.insert(arr, ScriptTestClass())
+                    table.insert(arr, ScriptTestClass())
+
+                    return ScriptTestStaticClass.PrintObjectListCount(LuaTableUtils.ToListA(arr, "ServiceTest.Infrastructure.Scripts.ScriptTestClass"));
                 end
                 """;
             base.ReturnScriptNewObjectArray();

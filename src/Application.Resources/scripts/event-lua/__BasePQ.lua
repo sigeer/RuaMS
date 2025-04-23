@@ -42,13 +42,8 @@ function BasePQ:new(config)
         maps = {},
         duration = 15000
     }
-
-    instance.resetConfig = config.resetConfig or {
-        -- 需要重置地图
-        resetPQMaps = {},
-        -- 需要打乱reactor
-        resetReactorMaps = {}
-    }
+    instance.resetPQMaps = config.resetPQMaps 
+    instance.resetReactorMaps = config.resetReactorMaps 
 
     instance.bossConfig = config.bossConfig or {
         id = nil,
@@ -156,26 +151,30 @@ function BasePQ:FilterTeam(player)
 end
 
 -- 设置事件实例
-function BasePQ:setup(level, lobbyid)
-    local eim = em:newInstance(self.instanceName .. lobbyid)
+function BasePQ:setup(level, lobbyId)
+    local eim = em:newInstance(self.instanceName .. lobbyId)
     eim:setProperty("level", level)
+    eim:setProperty("lobbyId", lobbyId)
 
-    self:setupProperty(eim, level, lobbyid)
-    self:resetMap(eim, level)
-
-    -- 生成Boss
-    if self.bossConfig.id then
-        self:spawnBossDynamic(eim, level)
-    end
+    self:SetupProperty(eim, level, lobbyId)
+    self:BeforeStartEvent(eim, level, lobbyId)
+    self:ResetMap(eim, level)
 
     self:respawnStages(eim)
-    eim:startEventTimer(self.eventTime * 60000)
     self:setEventRewards(eim)
     self:setEventExclusives(eim)
+    self:StartEvent(eim, level, lobbyId)
     return eim
 end
 
-function BasePQ:setupProperty(eim, level, lobbyid)
+function BasePQ:SetupProperty(eim, level, lobbyid)
+end
+
+function BasePQ:BeforeStartEvent(eim, level, lobbyid)
+end
+
+function BasePQ:StartEvent(eim, level, lobbyid)
+    eim:startEventTimer(self.eventTime * 60000)
 end
 
 -- 定义事件内部允许重生的地图
@@ -190,15 +189,15 @@ function BasePQ:respawnStages(eim)
 end
 
 -- 非后端调用代码
-function BasePQ:resetMap(eim, level)
-    if (self.resetConfig.resetPQMaps) then
-        for _, mapId in ipairs(self.resetConfig.resetPQMaps) do
+function BasePQ:ResetMap(eim, level)
+    if (self.resetPQMaps) then
+        for _, mapId in ipairs(self.resetPQMaps) do
             eim:getInstanceMap(mapId):resetPQ(level)
         end
     end
 
-    if (self.resetConfig.resetReactorMaps) then
-        for _, mapId in ipairs(self.resetConfig.resetReactorMaps) do
+    if (self.resetReactorMaps) then
+        for _, mapId in ipairs(self.resetReactorMaps) do
             eim:getInstanceMap(mapId):shuffleReactors(level)
         end
     end
@@ -316,32 +315,6 @@ end
 
 function BasePQ:noticePlayerEnter(eim, player)
     -- body
-end
-
-function BasePQ:spawnBossDynamic(eim, level)
-    local mob = LifeFactory.getMonster(self.bossConfig.id)
-    if mob then
-        local map = eim:getMapInstance(self.entryMap)
-        map:killAllMonsters()
-
-        if self.bossConfig.difficulty then
-            level = math.max(1, level)
-            local stats = mob:getStats()
-            local hpMax = math.min(mob:getMaxHp() * level, 2147483647)
-            local mpMax = math.min(mob:getMaxMp() * level, 2147483647)
-
-            mob:setStartingHp(hpMax)
-            mob:setMp(mpMax)
-
-            stats:setPADamage(stats:getPADamage() * level)
-            stats:setPDDamage(stats:getPDDamage() * level)
-            stats:setMADamage(stats:getMADamage() * level)
-            stats:setMDDamage(stats:getMDDamage() * level)
-            mob:setStats(stats)
-        end
-
-        map:spawnMonsterOnGroundBelow(mob, Point(self.bossConfig.posX, self.bossConfig.posY))
-    end
 end
 
 return BasePQ

@@ -2,7 +2,7 @@ local BasePQ = require("scripts/event-lua/__BasePQ")
 
 -- 配置事件参数
 local config = {
-    name = "BossRush",
+    name = "BossRushPQ",
     instanceName = "BossRush",
     minPlayers = 1,
     maxPlayers = 6,

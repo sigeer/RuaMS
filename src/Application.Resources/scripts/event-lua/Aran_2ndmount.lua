@@ -21,7 +21,7 @@ function Event:friendlyKilled(mob, eim)
     end
 end
 
-function Event:InitializeMap(eim)
+function Event:ResetMap(eim)
     local mapObject = eim:getInstanceMap(self.entryMap)
     mapObject:resetPQ(1)
     mapObject:instanceMapForceRespawn()
