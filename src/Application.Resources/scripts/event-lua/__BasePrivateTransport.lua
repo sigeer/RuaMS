@@ -17,7 +17,7 @@ function BasePrivateTransport:new(config)
     instance.transportationA = config.transportationA   -- A->B路线
     instance.transportationB = config.transportationB   -- B->A路线
     
-    return BaseEvent:new(instance)
+    return BaseEvent.new(self, instance)
 end
 
 function BasePrivateTransport:init()
