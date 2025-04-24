@@ -1,8 +1,8 @@
 namespace Application.Core.Game
 {
-    public class ScriptType
+    public class ScriptDir
     {
-        public const string Event = "event-lua";
+        public static string Event = "event-lua";
     }
     public class ScriptResFactory
     {
@@ -30,7 +30,7 @@ namespace Application.Core.Game
 
         public static string[] GetEvents()
         {
-            return Directory.GetFiles(GetScriptFullPath(ScriptType.Event)).Select(x => Path.GetFileName(x)).Where(x => !x.StartsWith("__")).ToArray();
+            return Directory.GetFiles(GetScriptFullPath(ScriptDir.Event)).Select(x => Path.GetFileName(x)).Where(x => !x.StartsWith("__")).ToArray();
         }
     }
 }

@@ -1,62 +1,44 @@
+using Application.Core;
+using Application.Core.Game;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Order;
-using ServiceTest.Infrastructure.Scripts;
+using net.server;
+using Serilog;
+using Serilog.Events;
+using System.Text;
 
 namespace Application.Benchmark
 {
     [RankColumn]
-    [MemoryDiagnoser]
+    [MemoryDiagnoser()]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    [SimpleJob(RunStrategy.ColdStart, iterationCount: 100)]
-    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByParams)]
+    [SimpleJob(RunStrategy.ColdStart, iterationCount: 5)]
     public class ScriptBenchmark
     {
-
-        [Params(ScriptType.Jint, ScriptType.NLua)]
-        public ScriptType Type { get; set; }
-
-
-        [Benchmark()]
-        public void ReturnScriptNewObject()
+        void Initialize()
         {
-            BaseScriptTest p;
-            if (Type == ScriptType.NLua)
-                p = new NLuaScriptEngineTest();
-            else
-                p = new JintScriptEngineTest();
-            p.ReturnScriptNewObject();
-        }
-
-        [Benchmark()]
-        public void ReturnScriptNewObjectArray()
-        {
-            BaseScriptTest p;
-            if (Type == ScriptType.NLua)
-                p = new NLuaScriptEngineTest();
-            else
-                p = new JintScriptEngineTest();
-            p.ReturnScriptNewObjectArray();
+            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
+            // 支持GBK
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            GlobalTools.Encoding = Encoding.GetEncoding("GBK");
         }
 
 
         [Benchmark()]
-        public void UpdateObject()
+        public async Task UseJint()
         {
-            BaseScriptTest p;
-            if (Type == ScriptType.NLua)
-                p = new NLuaScriptEngineTest();
-            else
-                p = new JintScriptEngineTest();
-            p.UpdateObject();
+            Initialize();
+            ScriptDir.Event = "event";
+            await Server.getInstance().Start();
         }
 
-    }
-
-    public enum ScriptType
-    {
-        Jint,
-        NLua
+        [Benchmark()]
+        public async Task UseNLua()
+        {
+            Initialize();
+            ScriptDir.Event = "event-lua";
+            await Server.getInstance().Start();
+        }
     }
 }
