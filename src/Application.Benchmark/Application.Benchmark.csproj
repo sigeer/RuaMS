@@ -12,10 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\test\ServiceTest\ServiceTest.csproj" />
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
-    <ProjectReference Include="..\Application.Scripting.Lua\Application.Scripting.Lua.csproj" />
   </ItemGroup>
 
 </Project>

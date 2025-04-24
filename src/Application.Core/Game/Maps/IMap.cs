@@ -91,7 +91,7 @@ namespace Application.Core.Game.Maps
         void dropFromFriendlyMonster(IPlayer chr, Monster mob);
         void dropFromReactor(IPlayer chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
         byte dropGlobalItemsFromMonsterOnMap(List<DropEntry> globalEntry, Point pos, byte d, byte droptype, int mobpos, IPlayer chr, Monster mob, short delay);
-        void dropItemsFromMonster(List<DropEntry> list, IPlayer chr, Monster mob, short delay);
+        void DropItemFromMonsterBySteal(List<DropEntry> list, IPlayer chr, Monster mob, short delay);
         void dropMessage(int type, string message);
         bool eventStarted();
         Portal? findClosestPlayerSpawnpoint(Point from);
@@ -172,7 +172,6 @@ namespace Application.Core.Game.Maps
         IWorld getWorldServer();
         bool hasClock();
         bool hasEventNPC();
-        void instanceMapFirstSpawn(int difficulty, bool isPq);
         void instanceMapForceRespawn();
         void instanceMapRespawn();
         bool isAllReactorState(int reactorId, int state);

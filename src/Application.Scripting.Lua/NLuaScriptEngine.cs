@@ -8,6 +8,7 @@ namespace Application.Scripting.Lua
         {
             _engine = new NLua.Lua();
             _engine.LoadCLRPackage();
+            AddHostedType("LuaTableUtils", typeof(LuaTableUtils));
         }
 
         public void AddHostedObject(string name, object obj)
@@ -17,9 +18,16 @@ namespace Application.Scripting.Lua
 
         public void AddHostedType(string name, Type type)
         {
-            _engine.DoString($"""
+            var fullName = type.Assembly.FullName;
+            if (fullName != null)
+            {
+                CLRTypeManager.TypeSource[fullName] = type;
+                _engine.DoString($"""
                 import ('{type.Assembly.FullName}', '{type.Namespace}') 
                 """);
+            }
+
+
         }
 
         public ScriptResultWrapper CallFunction(string functionName, params object?[] paramsValue)

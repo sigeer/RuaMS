@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -94,7 +94,7 @@ function action(mode, type, selection) {
 
                 em = cm.getEventManager("CafePQ_" + pqArea);
                 if (em == null) {
-                    cm.sendOk("CafePQ_ + pqArea + 遇到了一个错误。");
+                    cm.sendOk("CafePQ_" + pqArea + "遇到了一个错误。");
                     cm.dispose();
                     return;
                 } else if (cm.isUsingOldPqNpcStyle()) {

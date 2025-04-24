@@ -268,5 +268,26 @@ namespace ServiceTest.Infrastructure.Scripts
             Assert.That(d, Is.EqualTo(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
         }
 
+        [Test]
+        public override void Script2CSharpArray()
+        {
+            Code = """
+                function test() {
+                    return ScriptTestStaticClass.PrintScriptArray([1,2,3]);
+                }
+                """;
+            base.Script2CSharpArray();
+        }
+
+        //[Test]
+        //public void NewList()
+        //{
+        //    Code = """
+        //        function test() {
+        //            return new List<int>();
+        //        }
+        //        """;
+        //    base.TestFunctionReturn0();
+        //}
     }
 }

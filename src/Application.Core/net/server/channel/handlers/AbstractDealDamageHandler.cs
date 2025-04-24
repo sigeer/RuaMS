@@ -304,7 +304,7 @@ public abstract class AbstractDealDamageHandler : AbstractPacketHandler
                                     List<DropEntry> toSteal = new();
                                     toSteal.Add(mi.retrieveDrop(monster.getId()).get(i));
 
-                                    map.dropItemsFromMonster(toSteal, player, monster, target.Value!.delay);
+                                    map.DropItemFromMonsterBySteal(toSteal, player, monster, target.Value!.delay);
                                     monster.addStolen(toSteal.get(0).ItemId);
                                 }
                             }

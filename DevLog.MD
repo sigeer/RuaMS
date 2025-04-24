@@ -1,4 +1,14 @@
-#### 脚本相关
+
+## 脚本相关
+
+### 事件脚本
+
+__BaseAreaBoss 地图BOSS
+__BasePQ 组队任务
+__BaseTransport 交通工具
+
+
+### 代码实现
 
  - Channel 和 EventScriptManager 是一对一
 

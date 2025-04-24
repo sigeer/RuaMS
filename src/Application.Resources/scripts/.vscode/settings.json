@@ -1,0 +1,14 @@
+{
+    "Lua.diagnostics.globals": [
+        "em",
+        "PacketCreator",
+        "bit",
+        "Point",
+        "LifeFactory",
+        "YamlConfig",
+        "LuaTableUtils",
+        "Item",
+        "eim",
+        "DropItemEntry"
+    ]
+}

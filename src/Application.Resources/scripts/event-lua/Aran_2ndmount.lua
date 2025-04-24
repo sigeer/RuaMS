@@ -1,0 +1,53 @@
+local BaseChallenge = require("scripts/event-lua/__BaseChallenge")
+
+local config = {
+    instanceName = "Aran_2ndmount_",
+    entryMap = 921110000,
+    entryPortal = 2,
+    exitMap = 211050000,
+    minMapId = 921110000,
+    maxMapId = 921110000,
+    eventTime = 3,
+    maxLobbies = 7
+}
+
+local Event = BaseChallenge:extend()
+
+function Event:friendlyKilled(mob, eim)
+    if em:getProperty("noEntry") ~= "false" then
+        local player = eim:getPlayers()[0]
+        self:playerExit(eim, player)
+        player:changeMap(self.exitMap)
+    end
+end
+
+function Event:ResetMap(eim)
+    local mapObject = eim:getInstanceMap(self.entryMap)
+    mapObject:resetPQ(1)
+    mapObject:instanceMapForceRespawn()
+end
+
+-- 创建事件实例
+local event = Event:new(config)
+
+-- 导出所有方法到全局环境（包括继承的方法）
+local function exportMethods(obj)
+    local exported = {}
+    local current = obj
+    while current do
+        for k, v in pairs(current) do
+            if type(v) == "function" and not exported[k] then
+                _ENV[k] = function(...)
+                    return v(event, ...)
+                end
+                exported[k] = true
+            end
+        end
+        current = getmetatable(current)
+        if current then
+            current = current.__index
+        end
+    end
+end
+
+exportMethods(event)

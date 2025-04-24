@@ -42,7 +42,7 @@ function scheduleNew() {
 
 function stopEntry() {
     em.setProperty("entry", "false");
-    em.setProperty("next", new Date().getTime() + em.getTransportationTime(beginTime - closeTime + rideTime));
+    em.setProperty("next", new Date().getTime() + beginTime - closeTime + rideTime);
 }
 
 function takeoff() {

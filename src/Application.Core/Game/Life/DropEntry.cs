@@ -1,37 +1,48 @@
+using constants.id;
 using server;
 using tools;
 
 namespace Application.Core.Game.Life
 {
+    public class DropItemEntry
+    {
+        public DropItemEntry(int itemId, int chance, int minCount, int maxCount)
+        {
+            ItemId = itemId;
+            Chance = chance;
+            MinCount = minCount;
+            MaxCount = maxCount;
+        }
+
+        public int ItemId { get; set; }
+        /// <summary>
+        /// 物品基础爆率，（非Reactor）最大值：1000000，每个物品单独计算是否掉落
+        /// </summary>
+        public int Chance { get; set; }
+        public int MinCount { get; set; }
+        public int MaxCount { get; set; }
+    }
     /// <summary>
     /// 物品掉落
     /// </summary>
-    public class DropEntry
+    public class DropEntry: DropItemEntry
     {
-        private DropEntry() { }
+        private DropEntry(int itemId, int chance, int itemMinCount, int itemMaxCount) :base(itemId, chance, itemMinCount, itemMaxCount){ }
 
         public static DropEntry Global(int continentId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)
         {
-            return new DropEntry
+            return new DropEntry(itemId, chance, itemMinCount, itemMaxCount)
             {
                 ContinentId = continentId,
-                ItemId = itemId,
-                Chance = chance,
-                MinCount = itemMinCount,
-                MaxCount = itemMaxCount,
                 QuestId = questId,
                 Type = DropType.GlobalDrop
             };
         }
         public static DropEntry MobDrop(int mobId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)
         {
-            return new DropEntry
+            return new DropEntry(itemId, chance, itemMinCount, itemMaxCount)
             {
                 DropperId = mobId,
-                ItemId = itemId,
-                Chance = chance,
-                MinCount = itemMinCount,
-                MaxCount = itemMaxCount,
                 QuestId = questId,
                 Type = DropType.MonsterDrop
             };
@@ -39,13 +50,9 @@ namespace Application.Core.Game.Life
 
         public static DropEntry ReactorDrop(int reactorId, int itemId, int chance, short questId)
         {
-            return new DropEntry
+            return new DropEntry(itemId, chance, 1, 1)
             {
                 DropperId = reactorId,
-                ItemId = itemId,
-                Chance = chance,
-                MinCount = 1,
-                MaxCount = 1,
                 QuestId = questId,
                 Type = DropType.ReactorDrop
             };
@@ -53,28 +60,14 @@ namespace Application.Core.Game.Life
 
         public static DropEntry ReactorDropMeso(int chance)
         {
-            return new DropEntry
+            return new DropEntry(0, chance, 1, 1)
             {
-                ItemId = 0,
-                Chance = chance,
-                MinCount = 1,
-                MaxCount = 1,
                 Type = DropType.ReactorDrop
             };
         }
-        public int ItemId { get; set; }
-        /// <summary>
-        /// 物品基础爆率，（非Reactor）最大值：1000000，每个物品单独计算是否掉落
-        /// </summary>
-        public int Chance { get; set; }
-        public short QuestId { get; set; } = -1;
 
+        public short QuestId { get; set; } = -1;
         public int? ContinentId { get; set; }
-        /// <summary>
-        /// 不会为0
-        /// </summary>
-        public int MinCount { get; set; }
-        public int MaxCount { get; set; }
         public DropType Type { get; set; }
         public int DropperId { get; set; }
 

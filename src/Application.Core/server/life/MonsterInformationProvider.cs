@@ -183,7 +183,7 @@ public class MonsterInformationProvider
     }
 
     /// <summary>
-    /// 怪物所有非任务道具掉落物及其概率
+    /// 怪物所有非任务道具掉落物概率
     /// </summary>
     /// <param name="monsterId"></param>
     /// <returns></returns>
