@@ -11,6 +11,10 @@ function start() {
 }
 
 function action(mode, type, selection) {
+    if (mode === -1) {
+        cm.dispose();
+        return;
+    }
     if (status >= 0 && mode == 0) {
         cm.sendOk("恩... 我猜你还有想在这做的事？");
         cm.dispose();
