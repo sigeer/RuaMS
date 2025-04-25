@@ -902,11 +902,11 @@ public class MapleMap : IMap
                 }
             }, YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable("ItemExpireCheck", makeDisappearExpiredItemDrops), 
+            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops), 
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK, 
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
-            characterStatUpdateTask = TimerManager.getInstance().register(new NamedRunnable("UpdateMapCharacterStat", UpdateMapCharacterStat), 200, 200);
+            characterStatUpdateTask = TimerManager.getInstance().register(new NamedRunnable($"UpdateMapCharacterStat_Map:{getId()}_{GetHashCode()}", UpdateMapCharacterStat), 200, 200);
 
             itemMonitorTimeout = 1;
         }
