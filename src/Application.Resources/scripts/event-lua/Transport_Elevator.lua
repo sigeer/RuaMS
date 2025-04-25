@@ -66,10 +66,10 @@ end
 function Elevator:arrived()
     if em:getProperty("direction") == "down" then
         -- 下行到达
-        self.transportationMapB:warpEveryone(self.stationA, 4)
+        self.transportationBMap:warpEveryone(self.stationA, 4)
     else
         -- 上行到达
-        self.transportationMapA:warpEveryone(self.stationB, 0)
+        self.transportationAMap:warpEveryone(self.stationB, 0)
     end
     
     -- 安排下一次运行

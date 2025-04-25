@@ -190,13 +190,13 @@ function BaseTransport:arrived()
     end
 
     if em:getProperty("haveBalrogA") == "true" then
-        self.transportationMapA:broadcastEnemyShip(false)
-        self.transportationMapA:killAllMonsters()
+        self.transportationAMap:broadcastEnemyShip(false)
+        self.transportationAMap:killAllMonsters()
     end
 
     if em:getProperty("haveBalrogB") == "true" then
-        self.transportationMapB:broadcastEnemyShip(false)
-        self.transportationMapB:killAllMonsters()
+        self.transportationBMap:broadcastEnemyShip(false)
+        self.transportationBMap:killAllMonsters()
     end
 
     -- 安排下一班次
@@ -209,7 +209,7 @@ function BaseTransport:invasionApproachA()
     -- 更改背景音乐
     self.transportationAMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
-    em:schedule("invasionSpawnMobA", self.invasionConfig.invasionDelay);
+    em:schedule("invasionSpawnMobA", self.invasionConfig.delay);
 end
 
 function BaseTransport:invasionApproachB()
@@ -218,7 +218,7 @@ function BaseTransport:invasionApproachB()
     -- 更改背景音乐
     self.transportationBMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
-    em:schedule("invasionSpawnMobB", self.invasionConfig.invasionDelay);
+    em:schedule("invasionSpawnMobB", self.invasionConfig.delay);
 end
 
 -- 生成蝙蝠魔
