@@ -48,6 +48,7 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
+using System.Collections.Concurrent;
 using System.Text;
 using tools;
 
@@ -82,7 +83,7 @@ public class MapleMap : IMap
     private Dictionary<string, int> environment = new();
     private Dictionary<MapItem, long> droppedItems = new();
     private List<WeakReference<IMapObject>> registeredDrops = new();
-    private List<Action> statUpdateRunnables = new(50);
+    private ConcurrentQueue<Action> statUpdateRunnables = new();
     private List<Rectangle> areas = new();
     private FootholdTree? footholds = null;
     private KeyValuePair<int, int> xLimits;  // caches the min and max x's with available footholds
@@ -901,9 +902,11 @@ public class MapleMap : IMap
                 }
             }, YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = TimerManager.getInstance().register(() => { makeDisappearExpiredItemDrops(); }, YamlConfig.config.server.ITEM_EXPIRE_CHECK, YamlConfig.config.server.ITEM_EXPIRE_CHECK);
+            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable("ItemExpireCheck", makeDisappearExpiredItemDrops), 
+                YamlConfig.config.server.ITEM_EXPIRE_CHECK, 
+                YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
-            characterStatUpdateTask = TimerManager.getInstance().register(runCharacterStatUpdate, 200, 200);
+            characterStatUpdateTask = TimerManager.getInstance().register(new NamedRunnable("UpdateMapCharacterStat", UpdateMapCharacterStat), 200, 200);
 
             itemMonitorTimeout = 1;
         }
@@ -2692,31 +2695,7 @@ public class MapleMap : IMap
             chr.cancelBuffStats(BuffStat.MONSTER_RIDING);
         }
 
-        if (mapid == MapId.FROM_LITH_TO_RIEN)
-        { // To Rien
-            int travelTime = getWorldServer().getTransportationTime(TimeSpan.FromMinutes(1).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            TimerManager.getInstance().schedule(() =>
-            {
-                if (chr.getMapId() == MapId.FROM_LITH_TO_RIEN)
-                {
-                    chr.changeMap(MapId.DANGEROUS_FOREST, 0);
-                }
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_RIEN_TO_LITH)
-        { // To Lith Harbor
-            int travelTime = getWorldServer().getTransportationTime(TimeSpan.FromMinutes(1).TotalMilliseconds);
-            chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            TimerManager.getInstance().schedule(() =>
-            {
-                if (chr.getMapId() == MapId.FROM_RIEN_TO_LITH)
-                {
-                    chr.changeMap(MapId.LITH_HARBOUR, 3);
-                }
-            }, travelTime);
-        }
-        else if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
+        if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
         { // To Ereve (SkyFerry)
             int travelTime = getWorldServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
@@ -4854,23 +4833,17 @@ public class MapleMap : IMap
         return false;
     }
 
-    public void runCharacterStatUpdate()
+    void UpdateMapCharacterStat()
     {
-        if (statUpdateRunnables.Count > 0)
+        while (statUpdateRunnables.TryDequeue(out var action))
         {
-            List<Action> toRun = new(statUpdateRunnables);
-            statUpdateRunnables.Clear();
-
-            foreach (Action r in toRun)
-            {
-                r.Invoke();
-            }
+            try { action(); } catch (Exception ex) { log.Error(ex, "runCharacterStatUpdate"); }
         }
     }
 
     public void registerCharacterStatUpdate(Action r)
     {
-        statUpdateRunnables.Add(r);
+        statUpdateRunnables.Enqueue(r);
     }
 
     public virtual void Dispose()

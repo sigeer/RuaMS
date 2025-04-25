@@ -72,24 +72,24 @@ public class MapId
 
     // Travel
     // There are 10 of each of these travel maps in the files
-    public static int FROM_LITH_TO_RIEN = 200090060;
-    public static int FROM_RIEN_TO_LITH = 200090070;
-    public static int DANGEROUS_FOREST = 140020300; // Rien docks
-    public static int FROM_ELLINIA_TO_EREVE = 200090030;
-    public static int SKY_FERRY = 130000210; // Ereve platform
-    public static int FROM_EREVE_TO_ELLINIA = 200090031;
-    public static int ELLINIA_SKY_FERRY = 101000400;
-    public static int FROM_EREVE_TO_ORBIS = 200090021;
-    public static int ORBIS_STATION = 200000161;
-    public static int FROM_ORBIS_TO_EREVE = 200090020;
+    public const int FROM_LITH_TO_RIEN = 200090060;
+    public const int FROM_RIEN_TO_LITH = 200090070;
+    public const int DANGEROUS_FOREST = 140020300; // Rien docks
+    public const int FROM_ELLINIA_TO_EREVE = 200090030;
+    public const int SKY_FERRY = 130000210; // Ereve platform
+    public const int FROM_EREVE_TO_ELLINIA = 200090031;
+    public const int ELLINIA_SKY_FERRY = 101000400;
+    public const int FROM_EREVE_TO_ORBIS = 200090021;
+    public const int ORBIS_STATION = 200000161;
+    public const int FROM_ORBIS_TO_EREVE = 200090020;
 
     // Aran
-    public static int ARAN_TUTORIAL_START = 914000000;
-    public static int ARAN_TUTORIAL_MAX = 914000500;
-    public static int ARAN_INTRO = 140090000;
-    private static int BURNING_FOREST_1 = 914000200;
-    private static int BURNING_FOREST_2 = 914000210;
-    private static int BURNING_FOREST_3 = 914000220;
+    public const int ARAN_TUTORIAL_START = 914000000;
+    public const int ARAN_TUTORIAL_MAX = 914000500;
+    public const int ARAN_INTRO = 140090000;
+    private const int BURNING_FOREST_1 = 914000200;
+    private const int BURNING_FOREST_2 = 914000210;
+    private const int BURNING_FOREST_3 = 914000220;
 
     // Aran tutorial
     public static bool isGodlyStatMap(int mapId)
