@@ -76,8 +76,8 @@ function BaseTransport:init()
     self.waitingRoomAMap = em:GetMap(self.waitingRoomA)
     self.waitingRoomBMap = em:GetMap(self.waitingRoomB)
 
-    self.transportationMapA = em:GetMap(self.transportationA)
-    self.transportationMapB = em:GetMap(self.transportationB)
+    self.transportationAMap = em:GetMap(self.transportationA)
+    self.transportationBMap = em:GetMap(self.transportationB)
 
     if (self.dockA) then
         self.dockAMap = em:GetMap(self.dockA)
@@ -171,8 +171,8 @@ end
 -- 到达目的地
 function BaseTransport:arrived()
     -- 传送玩家到目的地
-    self.transportationMapA:warpEveryone(self.stationB, self.stationBPortal)
-    self.transportationMapB:warpEveryone(self.stationA, self.stationAPortal)
+    self.transportationAMap:warpEveryone(self.stationB, self.stationBPortal)
+    self.transportationBMap:warpEveryone(self.stationA, self.stationAPortal)
 
     if self.cabinAMap then
         self.cabinAMap:warpEveryone(self.stationB, self.stationBPortal)
@@ -205,18 +205,18 @@ end
 
 function BaseTransport:invasionApproachA()
     em:setProperty("haveBalrogA", "true");
-    self.transportationA:broadcastEnemyShip(true);
+    self.transportationAMap:broadcastEnemyShip(true);
     -- 更改背景音乐
-    self.transportationA:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+    self.transportationAMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
     em:schedule("invasionSpawnMobA", self.invasionConfig.invasionDelay);
 end
 
 function BaseTransport:invasionApproachB()
     em:setProperty("haveBalrogB", "true");
-    self.transportationB:broadcastEnemyShip(true);
+    self.transportationBMap:broadcastEnemyShip(true);
     -- 更改背景音乐
-    self.transportationB:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+    self.transportationBMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
     em:schedule("invasionSpawnMobB", self.invasionConfig.invasionDelay);
 end
@@ -226,7 +226,7 @@ function BaseTransport:invasionSpawnMobA()
     -- 生成偶遇蝙蝠魔
     local pos = Point(self.invasionConfig.posAX, self.invasionConfig.posAY)
     for i = 1, self.invasionConfig.countA do
-        self.transportationA:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobA), pos)
+        self.transportationAMap:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobA), pos)
     end
 end
 
@@ -234,7 +234,7 @@ function BaseTransport:invasionSpawnMobB()
     -- 生成偶遇蝙蝠魔
     local pos = Point(self.invasionConfig.posBX, self.invasionConfig.posBY)
     for i = 1, self.invasionConfig.countB do
-        self.transportationB:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobB), pos)
+        self.transportationBMap:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobB), pos)
     end
 end
 
