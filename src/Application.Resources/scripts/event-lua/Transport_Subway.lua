@@ -19,27 +19,4 @@ local config = {
     transportationB = 600010003, -- 行驶中 - 从新叶城往废弃都市
 }
 
--- 创建实例
-local transport = BaseTransport:new(config)
-
--- 导出所有方法到全局环境
-local function exportMethods(obj)
-    local exported = {}
-    local current = obj
-    while current do
-        for k, v in pairs(current) do
-            if type(v) == "function" and not exported[k] then
-                _ENV[k] = function(...)
-                    return v(transport, ...)
-                end
-                exported[k] = true
-            end
-        end
-        current = getmetatable(current)
-        if current then
-            current = current.__index
-        end
-    end
-end
-
-exportMethods(transport)
+BaseTransport:new(config)

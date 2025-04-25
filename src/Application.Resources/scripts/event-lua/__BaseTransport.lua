@@ -6,34 +6,34 @@ BaseTransport.__index = BaseTransport
 
 -- 构造函数
 function BaseTransport:new(config)
-    local instance = {}
+    config = config or {}
 
     -- 基础配置
-    instance.name = config.name
+    config.name = config.name
     -- 时间设置（以毫秒为单位）
-    instance.closeTime = config.closeTime -- 关闭登船/登车入口的时间
-    instance.beginTime = config.beginTime -- 启航/发车前的准备时间
-    instance.rideTime = config.rideTime -- 到达目的地所需的时间
+    config.closeTime = config.closeTime -- 关闭登船/登车入口的时间
+    config.beginTime = config.beginTime -- 启航/发车前的准备时间
+    config.rideTime = config.rideTime -- 到达目的地所需的时间
 
     -- 地图配置
-    instance.stationA = config.stationA -- 起点站 / 售票处
-    instance.stationAPortal = config.stationAPortal or 0
-    instance.stationB = config.stationB -- 终点站 / 售票处
-    instance.stationBPortal = config.stationBPortal or 0
+    config.stationA = config.stationA -- 起点站 / 售票处
+    config.stationAPortal = config.stationAPortal or 0
+    config.stationB = config.stationB -- 终点站 / 售票处
+    config.stationBPortal = config.stationBPortal or 0
 
-    instance.waitingRoomA = config.waitingRoomA -- 起点候车室
-    instance.waitingRoomB = config.waitingRoomB -- 终点候车室
+    config.waitingRoomA = config.waitingRoomA -- 起点候车室
+    config.waitingRoomB = config.waitingRoomB -- 终点候车室
 
-    instance.dockA = config.dockA -- 起点码头/站台 有些交通工具没有码头/站台
-    instance.dockB = config.dockB -- 终点码头/站台
+    config.dockA = config.dockA -- 起点码头/站台 有些交通工具没有码头/站台
+    config.dockB = config.dockB -- 终点码头/站台
 
-    instance.transportationA = config.transportationA -- 交通工具本身
-    instance.transportationB = config.transportationB -- 交通工具本身
+    config.transportationA = config.transportationA -- 交通工具本身
+    config.transportationB = config.transportationB -- 交通工具本身
 
-    instance.cabinA = config.cabinA -- 船舱A
-    instance.cabinB = config.cabinB -- 船舱B
+    config.cabinA = config.cabinA -- 船舱A
+    config.cabinB = config.cabinB -- 船舱B
 
-    instance.invasionConfig = instance.invasionConfig
+    config.invasionConfig = config.invasionConfig
     -- {
     --     mobA = 8150000,                         -- 蝙蝠魔
     --     mobB = 8150000,                         -- 蝙蝠魔
@@ -50,7 +50,9 @@ function BaseTransport:new(config)
     --     delay = 5 * 1000                        -- 生成怪物的时间延迟
     -- }
 
-    return setmetatable(instance, self)
+    setmetatable(config, self)
+    config:exportMethods()
+    return config
 end
 
 -- 创建子类的辅助函数
@@ -238,6 +240,21 @@ end
 
 -- 取消调度
 function BaseTransport:cancelSchedule()
+end
+
+function BaseTransport:exportMethods()
+    local exported = {}
+    local current = self
+    while current do
+        for k, v in pairs(current) do
+            if type(v) == "function" and not exported[k] then
+                _ENV[k] = function(...) return v(self, ...) end
+                exported[k] = true
+            end
+        end
+        local mt = getmetatable(current)
+        current = mt and mt.__index or nil
+    end
 end
 
 return BaseTransport

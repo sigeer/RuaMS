@@ -59,7 +59,7 @@ function BasePQ:new(config)
 
     -- 如果开启单人模式，则最小人数改为1
     if YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS then
-        self.minPlayers = 1
+        instance.minPlayers = 1
     end
 
     return BaseEvent.new(self, instance)
@@ -69,10 +69,6 @@ end
 function BasePQ:init()
     self:setEventRequirements()
     return self.name
-end
-
-function BasePQ:getMaxLobbies()
-    return self.maxLobbies
 end
 
 function BasePQ:setEventRequirements()
