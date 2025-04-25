@@ -36,17 +36,17 @@ local dataSource = {
     -- 未知的小吃店
     { name = "SnackBar", task = nil, mapId = 105090310, mobId = 8220008, checkMobs = {8220008, 8220009}, pos = { { x = -626, y = -604 }, { x = 735, y = -600 } }, interval = 3 * 60 * 60 * 1000, msg = "一个可疑的小吃摊在一个奇怪的偏僻地方慢慢开张了。"},
     -- 黑暗独角兽
-    { name = "Door1", task = nil, mapId = 677000003, mobId = 9400610, pos = { { x = 467, y = 0 } }, interval = 3 * 60 * 60 * 1000, msg = "Amdusias has appeared!"},
+    -- { name = "Door1", task = nil, mapId = 677000003, mobId = 9400610, pos = { { x = 467, y = 0 } }, interval = 3 * 60 * 60 * 1000, msg = "Amdusias has appeared!"},
     -- 印第安老斑鸠
-    { name = "Door2", task = nil, mapId = 677000005, mobId = 9400609, pos = { { x = 201, y = 80 } }, interval = 3 * 60 * 60 * 1000, msg = "Andras has appeared!"},
+    -- { name = "Door2", task = nil, mapId = 677000005, mobId = 9400609, pos = { { x = 201, y = 80 } }, interval = 3 * 60 * 60 * 1000, msg = "Andras has appeared!"},
     -- 沃勒福
-    { name = "Door3", task = nil, mapId = 677000009, mobId = 9400613, pos = { { x = 251, y = -841 } }, interval = 3 * 60 * 60 * 1000, msg = "Valefor has appeared!"},
+    -- { name = "Door3", task = nil, mapId = 677000009, mobId = 9400613, pos = { { x = 251, y = -841 } }, interval = 3 * 60 * 60 * 1000, msg = "Valefor has appeared!"},
     -- 地狱大公
-    { name = "Door4", task = nil, mapId = 677000012, mobId = 9400633, pos = { { x = 842, y = 0 } }, interval = 3 * 60 * 60 * 1000, msg = "Astaroth has appeared!"},
+    -- { name = "Door4", task = nil, mapId = 677000012, mobId = 9400633, pos = { { x = 842, y = 0 } }, interval = 3 * 60 * 60 * 1000, msg = "Astaroth has appeared!"},
     -- 牛魔王
-    { name = "Door5", task = nil, mapId = 677000001, mobId = 9400612, pos = { { x = 461, y = 61 } }, interval = 3 * 60 * 60 * 1000, msg = "Marbas has appeared!"},
+    -- { name = "Door5", task = nil, mapId = 677000001, mobId = 9400612, pos = { { x = 461, y = 61 } }, interval = 3 * 60 * 60 * 1000, msg = "Marbas has appeared!"},
     -- 雪之猫女
-    { name = "Door6", task = nil, mapId = 677000007, mobId = 9400611, pos = { { x = 171, y = 50 } }, interval = 3 * 60 * 60 * 1000, msg = "Crocell has appeared!"},
+    -- { name = "Door6", task = nil, mapId = 677000007, mobId = 9400611, pos = { { x = 171, y = 50 } }, interval = 3 * 60 * 60 * 1000, msg = "Crocell has appeared!"},
     -- 时间漩涡 提莫
     { name = "Timer1", task = nil, mapId = 220050100, mobId = 5220003, pos = { { minX = -770, maxX = 0, y = 1030 } }, interval = 3 * 60 * 60 * 1000, msg = "Tick-Tock Tick-Tock! Timer makes it's presence known."},
     -- 丢失的时间1 提莫

@@ -6,34 +6,34 @@ BaseTransport.__index = BaseTransport
 
 -- 构造函数
 function BaseTransport:new(config)
-    local instance = {}
+    config = config or {}
 
     -- 基础配置
-    instance.name = config.name
+    config.name = config.name
     -- 时间设置（以毫秒为单位）
-    instance.closeTime = config.closeTime -- 关闭登船/登车入口的时间
-    instance.beginTime = config.beginTime -- 启航/发车前的准备时间
-    instance.rideTime = config.rideTime -- 到达目的地所需的时间
+    config.closeTime = config.closeTime -- 关闭登船/登车入口的时间
+    config.beginTime = config.beginTime -- 启航/发车前的准备时间
+    config.rideTime = config.rideTime -- 到达目的地所需的时间
 
     -- 地图配置
-    instance.stationA = config.stationA -- 起点站 / 售票处
-    instance.stationAPortal = config.stationAPortal or 0
-    instance.stationB = config.stationB -- 终点站 / 售票处
-    instance.stationBPortal = config.stationBPortal or 0
+    config.stationA = config.stationA -- 起点站 / 售票处
+    config.stationAPortal = config.stationAPortal or 0
+    config.stationB = config.stationB -- 终点站 / 售票处
+    config.stationBPortal = config.stationBPortal or 0
 
-    instance.waitingRoomA = config.waitingRoomA -- 起点候车室
-    instance.waitingRoomB = config.waitingRoomB -- 终点候车室
+    config.waitingRoomA = config.waitingRoomA -- 起点候车室
+    config.waitingRoomB = config.waitingRoomB -- 终点候车室
 
-    instance.dockA = config.dockA -- 起点码头/站台 有些交通工具没有码头/站台
-    instance.dockB = config.dockB -- 终点码头/站台
+    config.dockA = config.dockA -- 起点码头/站台 有些交通工具没有码头/站台
+    config.dockB = config.dockB -- 终点码头/站台
 
-    instance.transportationA = config.transportationA -- 交通工具本身
-    instance.transportationB = config.transportationB -- 交通工具本身
+    config.transportationA = config.transportationA -- 交通工具本身
+    config.transportationB = config.transportationB -- 交通工具本身
 
-    instance.cabinA = config.cabinA -- 船舱A
-    instance.cabinB = config.cabinB -- 船舱B
+    config.cabinA = config.cabinA -- 船舱A
+    config.cabinB = config.cabinB -- 船舱B
 
-    instance.invasionConfig = instance.invasionConfig
+    config.invasionConfig = config.invasionConfig
     -- {
     --     mobA = 8150000,                         -- 蝙蝠魔
     --     mobB = 8150000,                         -- 蝙蝠魔
@@ -50,7 +50,9 @@ function BaseTransport:new(config)
     --     delay = 5 * 1000                        -- 生成怪物的时间延迟
     -- }
 
-    return setmetatable(instance, self)
+    setmetatable(config, self)
+    config:exportMethods()
+    return config
 end
 
 -- 创建子类的辅助函数
@@ -74,8 +76,8 @@ function BaseTransport:init()
     self.waitingRoomAMap = em:GetMap(self.waitingRoomA)
     self.waitingRoomBMap = em:GetMap(self.waitingRoomB)
 
-    self.transportationMapA = em:GetMap(self.transportationA)
-    self.transportationMapB = em:GetMap(self.transportationB)
+    self.transportationAMap = em:GetMap(self.transportationA)
+    self.transportationBMap = em:GetMap(self.transportationB)
 
     if (self.dockA) then
         self.dockAMap = em:GetMap(self.dockA)
@@ -169,8 +171,8 @@ end
 -- 到达目的地
 function BaseTransport:arrived()
     -- 传送玩家到目的地
-    self.transportationMapA:warpEveryone(self.stationB, self.stationBPortal)
-    self.transportationMapB:warpEveryone(self.stationA, self.stationAPortal)
+    self.transportationAMap:warpEveryone(self.stationB, self.stationBPortal)
+    self.transportationBMap:warpEveryone(self.stationA, self.stationAPortal)
 
     if self.cabinAMap then
         self.cabinAMap:warpEveryone(self.stationB, self.stationBPortal)
@@ -188,13 +190,13 @@ function BaseTransport:arrived()
     end
 
     if em:getProperty("haveBalrogA") == "true" then
-        self.transportationMapA:broadcastEnemyShip(false)
-        self.transportationMapA:killAllMonsters()
+        self.transportationAMap:broadcastEnemyShip(false)
+        self.transportationAMap:killAllMonsters()
     end
 
     if em:getProperty("haveBalrogB") == "true" then
-        self.transportationMapB:broadcastEnemyShip(false)
-        self.transportationMapB:killAllMonsters()
+        self.transportationBMap:broadcastEnemyShip(false)
+        self.transportationBMap:killAllMonsters()
     end
 
     -- 安排下一班次
@@ -203,20 +205,20 @@ end
 
 function BaseTransport:invasionApproachA()
     em:setProperty("haveBalrogA", "true");
-    self.transportationA:broadcastEnemyShip(true);
+    self.transportationAMap:broadcastEnemyShip(true);
     -- 更改背景音乐
-    self.transportationA:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+    self.transportationAMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
-    em:schedule("invasionSpawnMobA", self.invasionConfig.invasionDelay);
+    em:schedule("invasionSpawnMobA", self.invasionConfig.delay);
 end
 
 function BaseTransport:invasionApproachB()
     em:setProperty("haveBalrogB", "true");
-    self.transportationB:broadcastEnemyShip(true);
+    self.transportationBMap:broadcastEnemyShip(true);
     -- 更改背景音乐
-    self.transportationB:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+    self.transportationBMap:broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
     -- 安排蝙蝠魔出现的时间点
-    em:schedule("invasionSpawnMobB", self.invasionConfig.invasionDelay);
+    em:schedule("invasionSpawnMobB", self.invasionConfig.delay);
 end
 
 -- 生成蝙蝠魔
@@ -224,7 +226,7 @@ function BaseTransport:invasionSpawnMobA()
     -- 生成偶遇蝙蝠魔
     local pos = Point(self.invasionConfig.posAX, self.invasionConfig.posAY)
     for i = 1, self.invasionConfig.countA do
-        self.transportationA:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobA), pos)
+        self.transportationAMap:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobA), pos)
     end
 end
 
@@ -232,12 +234,27 @@ function BaseTransport:invasionSpawnMobB()
     -- 生成偶遇蝙蝠魔
     local pos = Point(self.invasionConfig.posBX, self.invasionConfig.posBY)
     for i = 1, self.invasionConfig.countB do
-        self.transportationB:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobB), pos)
+        self.transportationBMap:spawnMonsterOnGroundBelow(LifeFactory.getMonster(self.invasionConfig.mobB), pos)
     end
 end
 
 -- 取消调度
 function BaseTransport:cancelSchedule()
+end
+
+function BaseTransport:exportMethods()
+    local exported = {}
+    local current = self
+    while current do
+        for k, v in pairs(current) do
+            if type(v) == "function" and not exported[k] then
+                _ENV[k] = function(...) return v(self, ...) end
+                exported[k] = true
+            end
+        end
+        local mt = getmetatable(current)
+        current = mt and mt.__index or nil
+    end
 end
 
 return BaseTransport

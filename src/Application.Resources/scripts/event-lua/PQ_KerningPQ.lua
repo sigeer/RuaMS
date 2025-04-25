@@ -1,4 +1,4 @@
-local BaseEvent = require("scripts/event-lua/__BasePQ")
+local BasePQ = require("scripts/event-lua/__BasePQ")
 
 -- 配置事件参数
 local config = {
@@ -33,24 +33,4 @@ local config = {
     }
 }
 
-local event = BaseEvent:new(config)
-
--- 导出所有方法到全局环境（包括继承的方法）
-local function exportMethods(obj)
-    local exported = {}
-    local current = obj
-    while current do
-        for k, v in pairs(current) do
-            if type(v) == "function" and not exported[k] then
-                _ENV[k] = function(...) return v(event, ...) end
-                exported[k] = true
-            end
-        end
-        current = getmetatable(current)
-        if current then
-            current = current.__index
-        end
-    end
-end
-
-exportMethods(event)
+BasePQ:new(config)

@@ -4,11 +4,12 @@ BaseEvent.__index = BaseEvent
 
 -- 构造函数
 function BaseEvent:new(config)
-    local instance = {}
-
     config = config or {}
-    instance.name = config.name
-    return setmetatable(config, self)
+    config.name = config.name
+    config.maxLobbies = config.maxLobbies or 1
+    setmetatable(config, self)
+    config:exportMethods()
+    return config
 end
 
 -- 创建子类的辅助函数
@@ -21,12 +22,12 @@ end
 
 -- 在ChannelServer加载后执行初始化操作
 function BaseEvent:init()
-    return self.eventName
+    return self.name
 end
 
 -- 同时最多可执行的事件
 function BaseEvent:getMaxLobbies()
-    return 1
+    return self.maxLobbies
 end
 
 -- 从给定的队伍中选择符合资格的团队
@@ -144,6 +145,21 @@ function BaseEvent:endEvent(eim)
         self:playerExit(eim, party[i])
     end
     eim:dispose()
+end
+
+function BaseEvent:exportMethods()
+    local exported = {}
+    local current = self
+    while current do
+        for k, v in pairs(current) do
+            if type(v) == "function" and not exported[k] then
+                _ENV[k] = function(...) return v(self, ...) end
+                exported[k] = true
+            end
+        end
+        local mt = getmetatable(current)
+        current = mt and mt.__index or nil
+    end
 end
 
 return BaseEvent

@@ -3,10 +3,6 @@ local BasePQ = require("scripts/event-lua/__BasePQ")
 
 local BaseChallenge = BasePQ:extend()
 
-function BaseChallenge:new(config)
-    return BasePQ.new(self, config)
-end
-
 -- 在ChannelServer加载后执行初始化操作
 function BaseChallenge:init()
     em:setProperty("noEntry", "false")
