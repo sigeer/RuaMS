@@ -923,7 +923,7 @@ namespace Application.Core.Managers
                     }
                     else
                     {
-                        if (player.MapModel.getForcedReturnId() != 999999999)
+                        if (player.MapModel.getForcedReturnId() != MapId.NONE)
                         {
                             entity.Map = player.MapModel.getForcedReturnId();
                         }

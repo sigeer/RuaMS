@@ -3,9 +3,13 @@
 
 ### 事件脚本
 
-__BaseAreaBoss 地图BOSS
-__BasePQ 组队任务
-__BaseTransport 交通工具
+__BaseEvent 包含了所有可能被调用的方法，所有事件的基类  
+
+AreaBoss 地图BOSS  
+__BasePQ 组队任务  
+__BaseTransport 交通工具  
+__BasePrivateTransport 单人交通工具  
+__BaseChallenge 单人事件  
 
 
 ### 代码实现

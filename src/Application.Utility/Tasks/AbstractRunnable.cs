@@ -39,11 +39,10 @@ namespace Application.Utility.Tasks
     {
     }
 
-    public class TempRunnable : AbstractRunnable
+    public class NamedRunnable: AbstractRunnable
     {
         private Action _action;
-        private static string[] Special = [nameof(ITimerManager.register), nameof(ITimerManager.schedule), nameof(ITimerManager.scheduleAtTimestamp)];
-        private TempRunnable(string name, Action action) : base(name)
+        public NamedRunnable(string name, Action action) : base(name)
         {
             _action = action;
         }
@@ -51,6 +50,15 @@ namespace Application.Utility.Tasks
         public override void HandleRun()
         {
             _action?.Invoke();
+        }
+    }
+
+    public class TempRunnable : NamedRunnable
+    {
+        private static string[] Special = [nameof(ITimerManager.register), nameof(ITimerManager.schedule), nameof(ITimerManager.scheduleAtTimestamp)];
+
+        public TempRunnable(string name, Action action) : base(name, action)
+        {
         }
 
         public static TempRunnable Parse(Action action)

@@ -96,38 +96,38 @@ public abstract class AbstractScriptManager
 
     void InitializeScriptType(IEngine engine)
     {
-        engine.AddHostedType("Item", typeof(Item));
-        engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
-        engine.AddHostedType("BuffStat", typeof(BuffStat));
-        engine.AddHostedType("MapId", typeof(MapId));
-        engine.AddHostedType("Rectangle", typeof(Rectangle));
-        engine.AddHostedType("RingManager", typeof(RingManager));
-        engine.AddHostedType("Channel", typeof(WorldChannel));
-        engine.AddHostedType("CommandExecutor", typeof(CommandExecutor));
-        engine.AddHostedType("CharacterManager", typeof(CharacterManager));
-        engine.AddHostedType("GachaponManager", typeof(GachaponManager));
-        engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
-        engine.AddHostedType("MonsterBook", typeof(MonsterBook));
-        engine.AddHostedType("ExpTable", typeof(ExpTable));
-        engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
-        engine.AddHostedType("Server", typeof(Server));
-        engine.AddHostedType("Point", typeof(Point));
         engine.AddHostedType("LifeFactory", typeof(LifeFactory));
-        engine.AddHostedType("Wedding", typeof(WeddingPackets));
-        engine.AddHostedType("GameConstants", typeof(GameConstants));
-        engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
-        engine.AddHostedType("ShopFactory", typeof(ShopFactory));
-        engine.AddHostedType("PacketCreator", typeof(PacketCreator));
-        engine.AddHostedType("YamlConfig", typeof(YamlConfig));
-        engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
-        engine.AddHostedType("Guild", typeof(GuildManager));
         engine.AddHostedType("DropItemEntry", typeof(DropItemEntry));
-
-        engine.AddHostedType("Job", typeof(Job));
-        engine.AddHostedType("InventoryType", typeof(InventoryType));
+        engine.AddHostedType("YamlConfig", typeof(YamlConfig));
+        engine.AddHostedType("PacketCreator", typeof(PacketCreator));
+        engine.AddHostedType("Point", typeof(Point));
 
         if (engine is JintEngine js)
         {
+            engine.AddHostedType("Item", typeof(Item));
+            engine.AddHostedType("InventoryManipulator", typeof(InventoryManipulator));
+            engine.AddHostedType("BuffStat", typeof(BuffStat));
+            engine.AddHostedType("MapId", typeof(MapId));
+            engine.AddHostedType("Rectangle", typeof(Rectangle));
+            engine.AddHostedType("RingManager", typeof(RingManager));
+            engine.AddHostedType("Channel", typeof(WorldChannel));
+            engine.AddHostedType("CommandExecutor", typeof(CommandExecutor));
+            engine.AddHostedType("CharacterManager", typeof(CharacterManager));
+            engine.AddHostedType("GachaponManager", typeof(GachaponManager));
+            engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
+            engine.AddHostedType("MonsterBook", typeof(MonsterBook));
+            engine.AddHostedType("ExpTable", typeof(ExpTable));
+            engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
+            engine.AddHostedType("Server", typeof(Server));
+            engine.AddHostedType("Wedding", typeof(WeddingPackets));
+            engine.AddHostedType("GameConstants", typeof(GameConstants));
+            engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
+            engine.AddHostedType("ShopFactory", typeof(ShopFactory));
+            engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
+            engine.AddHostedType("Guild", typeof(GuildManager));
+            engine.AddHostedType("Job", typeof(Job));
+            engine.AddHostedType("InventoryType", typeof(InventoryType));
+
             var jsFile = GetFullScriptPath("utils.js");
             if (JsCache.TryGetValue(jsFile, out var jsContent))
                 engine.Evaluate(jsContent);

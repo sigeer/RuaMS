@@ -662,8 +662,8 @@ public class Server
         await TimerManager.InitializeAsync(engine);
         var tMan = TimerManager.getInstance();
         await tMan.Start();
-        tMan.register(TimerManager.purge, YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
-        tMan.register(disconnectIdlesOnLoginState, TimeSpan.FromMinutes(5));
+        tMan.register(new NamedRunnable("purge", TimerManager.purge), YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
+        tMan.register(new NamedRunnable("disconnectIdlesOnLoginState", disconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);

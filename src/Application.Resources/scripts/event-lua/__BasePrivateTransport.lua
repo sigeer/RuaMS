@@ -86,15 +86,15 @@ function BasePrivateTransport:playerExit(eim, player, success)
     end
     
     player:changeMap(destMap, destMap:getPortal(destPortal))
+    eim:dispose()
 end
 
 function BasePrivateTransport:timeOut(eim)
     -- 时间到，结束行程
     local players = eim:getPlayers()
-    for i = 1, #players do
+    for i = 0, players.Count - 1 do
         self:playerExit(eim, players[i], true)
     end
-    eim:dispose()
 end
 
 function BasePrivateTransport:playerDisconnected(eim, player)

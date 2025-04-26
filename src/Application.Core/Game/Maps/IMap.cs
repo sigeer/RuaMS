@@ -227,7 +227,6 @@ namespace Application.Core.Game.Maps
         void resetReactors(List<Reactor> list);
         void respawn();
         void restoreMapSpawnPoints();
-        void runCharacterStatUpdate();
         void searchItemReactors(Reactor react);
         void sendNightEffect(IPlayer chr);
         void setAllowSpawnPointInBox(bool allow, Rectangle box);
