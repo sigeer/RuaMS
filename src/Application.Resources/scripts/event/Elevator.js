@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file is part of the OdinMS Maple Story Server
 Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
 				   Matthias Butz <matze@odinms.de>
@@ -31,56 +31,55 @@ function init() {
     em.getChannelServer().getMapFactory().getMap(222020100).resetReactors();
     em.getChannelServer().getMapFactory().getMap(222020200).resetReactors();
 
+    em.setProperty("current", "222020100");
+    em.setProperty("isMoving", false);
     scheduleNew();
 }
 
 function scheduleNew() {
-    em.setProperty("goingUp", "false");
-    em.setProperty("goingDown", "true");
-
     em.getChannelServer().getMapFactory().getMap(222020100).resetReactors();
     em.getChannelServer().getMapFactory().getMap(222020200).setReactorState();
     em.schedule("goingUpNow", beginTime);
 }
 
-function goUp() {
-    em.schedule("goingUpNow", beginTime);
-}
-
-function goDown() {
-    em.schedule("goingDownNow", beginTime);
-}
-
 function goingUpNow() {
+    em.setProperty("isMoving", true);
+
     em.getChannelServer().getMapFactory().getMap(222020110).warpEveryone(222020111);
-    em.setProperty("goingUp", "true");
+
     em.schedule("isUpNow", rideTime);
 
     em.getChannelServer().getMapFactory().getMap(222020100).setReactorState();
 }
 
 function goingDownNow() {
+    em.setProperty("isMoving", true);
+
     em.getChannelServer().getMapFactory().getMap(222020210).warpEveryone(222020211);
-    em.setProperty("goingDown", "true");
+    em.setProperty("direction", "down")
     em.schedule("isDownNow", rideTime);
 
     em.getChannelServer().getMapFactory().getMap(222020200).setReactorState();
 }
 
 function isUpNow() {
-    em.setProperty("goingDown", "false"); // clear
+    em.setProperty("isMoving", false);
+    em.setProperty("current", "222020200");
+
     em.getChannelServer().getMapFactory().getMap(222020200).resetReactors();
     em.getChannelServer().getMapFactory().getMap(222020111).warpEveryone(222020200, 0);
 
-    goDown();
+    em.schedule("goingDownNow", beginTime);
 }
 
 function isDownNow() {
-    em.setProperty("goingUp", "false"); // clear
+    em.setProperty("isMoving", false);
+    em.setProperty("current", "222020100");
+
     em.getChannelServer().getMapFactory().getMap(222020100).resetReactors();
     em.getChannelServer().getMapFactory().getMap(222020211).warpEveryone(222020100, 4);
 
-    goUp();
+    em.schedule("goingUpNow", beginTime);
 }
 
 function cancelSchedule() {}

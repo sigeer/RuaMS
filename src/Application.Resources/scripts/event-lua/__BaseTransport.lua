@@ -95,9 +95,14 @@ function BaseTransport:init()
         self.cabinBMap = em:GetMap(self.cabinB)
     end
 
+    self:InitPrperty()
     -- 安排新的周期性任务
     self:scheduleNew()
     return self.name
+end
+
+-- init中scheduleNew之前执行
+function BaseTransport:InitPrperty()
 end
 
 function BaseTransport:scheduleNew()
