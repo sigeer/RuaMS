@@ -21,9 +21,12 @@ local config = {
 -- 创建自定义交通工具
 local Elevator = BaseTransport:extend()
 
--- 不同于其他，每次都是单向的
-function Elevator:init()
-    local eventName = BaseTransport.init(self)
+function Elevator:InitProperty()
+    -- 初始没有启动
+    em:setProperty("isMoving", "false")
+    -- 初始在2层
+    em:setProperty("current", self.stationA)
+
     -- 初始状态设置
     self.stationAMap:resetReactors()
     self.stationBMap:resetReactors()
@@ -31,25 +34,24 @@ function Elevator:init()
 end
 
 function Elevator:scheduleNew()
-    local elevatorCurrent = em:getProperty("direction")
-    if (elevatorCurrent == "up") then
+    local elevatorCurrent = em:getIntProperty("current")
+    if (elevatorCurrent == self.stationB) then
         -- 准备下降
         self.stationAMap:setReactorState()
         self.stationBMap:resetReactors()
-        em:setProperty("direction", "down")
     else
         -- 准备上升
         self.stationAMap:resetReactors()
         self.stationBMap:setReactorState()
-        em:setProperty("direction", "up")
     end
     
-    -- 安排下一次运行
+    -- 准备出发
     em:schedule("takeoff", self.beginTime)
 end
 
+-- 出发
 function Elevator:takeoff()
-    if em:getProperty("direction") == "down" then
+    if em:getIntProperty("current") == self.stationB then
         -- 下行
         self.waitingRoomBMap:warpEveryone(self.transportationB)
         self.stationBMap:setReactorState()
@@ -58,20 +60,23 @@ function Elevator:takeoff()
         self.waitingRoomAMap:warpEveryone(self.transportationA)
         self.stationAMap:setReactorState()
     end
-    
+
+    em:setProperty("isMoving", "true")
     -- 安排到达时间
     em:schedule("arrived", self.rideTime)
 end
 
 function Elevator:arrived()
-    if em:getProperty("direction") == "down" then
+    if em:getIntProperty("current") == self.stationB then
         -- 下行到达
         self.transportationBMap:warpEveryone(self.stationA, 4)
+        em:setProperty("current", self.stationA)
     else
         -- 上行到达
         self.transportationAMap:warpEveryone(self.stationB, 0)
+        em:setProperty("current", self.stationB)
     end
-    
+    em:setProperty("isMoving", "false")
     -- 安排下一次运行
     self:scheduleNew()
 end
