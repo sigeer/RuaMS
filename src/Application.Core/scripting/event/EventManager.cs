@@ -57,7 +57,7 @@ public class EventManager
     private Dictionary<string, int> instanceLocks = new();
     private Queue<int> queuedGuilds = new();
     private Dictionary<int, int> queuedGuildLeaders = new();
-    private List<bool> openedLobbys;
+
     private Queue<EventInstanceManager> readyInstances = new();
     private int readyId = 0, onLoadInstances = 0;
     private Dictionary<string, string> props = new Dictionary<string, string>();
@@ -73,7 +73,10 @@ public class EventManager
     private HashSet<int> playerPermit = new();
     private SemaphoreSlim startSemaphore = new SemaphoreSlim(7);
 
-    private static int maxLobbys = 8;     // an event manager holds up to this amount of concurrent lobbys
+    private Dictionary<int, bool> openedLobbys = new();
+    public int MaxLobbys { get; set; }
+    public const int DefaultMaxLobbys = 8;
+
 
     public EventManager(IWorldChannel cserv, IEngine iv, string name)
     {
@@ -82,12 +85,6 @@ public class EventManager
         this.cserv = cserv;
         this.wserv = cserv.WorldModel;
         this.name = name;
-
-        this.openedLobbys = new();
-        for (int i = 0; i < maxLobbys; i++)
-        {
-            this.openedLobbys.Add(false);
-        }
     }
 
     private bool isDisposed()
@@ -146,16 +143,20 @@ public class EventManager
 
     private int getMaxLobbies()
     {
+        if (MaxLobbys > 0)
+            return MaxLobbys;
+
         try
         {
-            return iv.CallFunction("getMaxLobbies").ToObject<int>();
+            MaxLobbys = iv.CallFunction("getMaxLobbies").ToObject<int>();
         }
         catch (Exception ex)
         {
             // they didn't define a lobby range
             log.Error(ex, "Script: {Script}", name);
-            return maxLobbys;
+            MaxLobbys = DefaultMaxLobbys;
         }
+        return MaxLobbys;
     }
 
     public EventScheduledFuture schedule(string methodName, long delay)
@@ -235,14 +236,36 @@ public class EventManager
         return instances.Values.ToList();
     }
 
-    public EventInstanceManager newInstance(string name)
+    private EventInstanceManager? getReadyInstance()
     {
-        var ret = getReadyInstance() ?? new EventInstanceManager(this, name);
+        Monitor.Enter(queueLock);
+        try
+        {
+            if (readyInstances.Count == 0)
+            {
+                fillEimQueue();
+                return null;
+            }
 
-        ret.setName(name);
+            EventInstanceManager eim = readyInstances.Dequeue();
+            fillEimQueue();
 
-        if (!instances.TryAdd(name, ret))
-            throw new EventInstanceInProgressException(name, this.getName());
+            return eim;
+        }
+        finally
+        {
+            Monitor.Exit(queueLock);
+        }
+    }
+
+    public EventInstanceManager newInstance(string instanceName)
+    {
+        var ret = getReadyInstance() ?? new EventInstanceManager(this, instanceName);
+
+        ret.setName(instanceName);
+
+        if (!instances.TryAdd(instanceName, ret))
+            throw new EventInstanceInProgressException(instanceName, this.getName());
         return ret;
     }
 
@@ -290,12 +313,13 @@ public class EventManager
         return int.Parse(props.GetValueOrDefault(key) ?? "0");
     }
 
-    private void setLockLobby(int lobbyId, bool lockObj)
+
+    void DisposeLobby(int lobbyId)
     {
         Monitor.Enter(lobbyLock);
         try
         {
-            openedLobbys[lobbyId] = lockObj;
+            openedLobbys[lobbyId] = false;
         }
         finally
         {
@@ -312,12 +336,8 @@ public class EventManager
             {
                 lobbyId = 0;
             }
-            else if (lobbyId >= maxLobbys)
-            {
-                lobbyId = maxLobbys - 1;
-            }
 
-            if (!openedLobbys.get(lobbyId))
+            if (!openedLobbys.TryGetValue(lobbyId, out var value) || !value)
             {
                 openedLobbys[lobbyId] = true;
                 return true;
@@ -331,18 +351,18 @@ public class EventManager
         }
     }
 
-    private void freeLobbyInstance(string lobbyName)
+    private void freeLobbyInstance(string instanceName)
     {
-        int? i = instanceLocks.GetValueOrDefault(lobbyName);
+        int? i = instanceLocks.GetValueOrDefault(instanceName);
         if (i == null)
         {
             return;
         }
 
-        instanceLocks.Remove(lobbyName);
+        instanceLocks.Remove(instanceName);
         if (i > -1)
         {
-            setLockLobby(i.Value, false);
+            DisposeLobby(i.Value);
         }
     }
 
@@ -351,7 +371,7 @@ public class EventManager
         return name;
     }
 
-    private int availableLobbyInstance()
+    private int GetAvailableLobbyInstance()
     {
         int maxLobbies = getMaxLobbies();
 
@@ -381,13 +401,7 @@ public class EventManager
 
     private void registerEventInstance(string eventName, int lobbyId)
     {
-        int? oldLobby = instanceLocks.GetValueOrDefault(eventName);
-        if (oldLobby != null)
-        {
-            setLockLobby(oldLobby.Value, false);
-        }
-
-        instanceLocks.AddOrUpdate(eventName, lobbyId);
+        instanceLocks[eventName] = lobbyId;
     }
 
     public bool startInstance(Expedition exped)
@@ -421,7 +435,7 @@ public class EventManager
                     {
                         if (lobbyId == -1)
                         {
-                            lobbyId = availableLobbyInstance();
+                            lobbyId = GetAvailableLobbyInstance();
                             if (lobbyId == -1)
                             {
                                 return false;
@@ -449,10 +463,7 @@ public class EventManager
                                 throw;
                             }
 
-                            if (lobbyId > -1)
-                            {
-                                setLockLobby(lobbyId, false);
-                            }
+                            DisposeLobby(lobbyId);
                             return false;
                         }
 
@@ -518,7 +529,7 @@ public class EventManager
                     {
                         if (lobbyId == -1)
                         {
-                            lobbyId = availableLobbyInstance();
+                            lobbyId = GetAvailableLobbyInstance();
                             if (lobbyId == -1)
                             {
                                 return false;
@@ -546,10 +557,7 @@ public class EventManager
                                 throw;
                             }
 
-                            if (lobbyId > -1)
-                            {
-                                setLockLobby(lobbyId, false);
-                            }
+                            DisposeLobby(lobbyId);
                             return false;
                         }
                         eim.setLeader(leader);
@@ -616,7 +624,7 @@ public class EventManager
                     {
                         if (lobbyId == -1)
                         {
-                            lobbyId = availableLobbyInstance();
+                            lobbyId = GetAvailableLobbyInstance();
                             if (lobbyId == -1)
                             {
                                 return false;
@@ -644,10 +652,7 @@ public class EventManager
                                 throw;
                             }
 
-                            if (lobbyId > -1)
-                            {
-                                setLockLobby(lobbyId, false);
-                            }
+                            DisposeLobby(lobbyId);
                             return false;
                         }
 
@@ -713,7 +718,7 @@ public class EventManager
                     {
                         if (lobbyId == -1)
                         {
-                            lobbyId = availableLobbyInstance();
+                            lobbyId = GetAvailableLobbyInstance();
                             if (lobbyId == -1)
                             {
                                 return false;
@@ -741,10 +746,7 @@ public class EventManager
                                 throw;
                             }
 
-                            if (lobbyId > -1)
-                            {
-                                setLockLobby(lobbyId, false);
-                            }
+                            DisposeLobby(lobbyId);
                             return false;
                         }
 
@@ -780,93 +782,90 @@ public class EventManager
     }
 
     //non-PQ method for starting instance
-    public bool startInstance(EventInstanceManager eim, string ldr)
-    {
-        return startInstance(-1, eim, ldr);
-    }
+    //public bool startInstance(EventInstanceManager eim, string ldr)
+    //{
+    //    return startInstance(-1, eim, ldr);
+    //}
 
-    public bool startInstance(EventInstanceManager eim, IPlayer ldr)
-    {
-        return startInstance(-1, eim, ldr.getName(), ldr);
-    }
+    //public bool startInstance(EventInstanceManager eim, IPlayer ldr)
+    //{
+    //    return startInstance(-1, eim, ldr.getName(), ldr);
+    //}
 
-    public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr)
-    {
-        return startInstance(lobbyId, eim, ldr, eim.getEm().getChannelServer().getPlayerStorage().getCharacterByName(ldr));  // things they make me do...
-    }
+    //public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr)
+    //{
+    //    return startInstance(lobbyId, eim, ldr, eim.getEm().getChannelServer().getPlayerStorage().getCharacterByName(ldr));  // things they make me do...
+    //}
 
-    public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr, IPlayer leader)
-    {
-        if (this.isDisposed())
-        {
-            return false;
-        }
+    //public bool startInstance(int lobbyId, EventInstanceManager eim, string ldr, IPlayer leader)
+    //{
+    //    if (this.isDisposed())
+    //    {
+    //        return false;
+    //    }
 
-        try
-        {
-            if (!playerPermit.Contains(leader.getId()) && startSemaphore.Wait(7777))
-            {
-                playerPermit.Add(leader.getId());
+    //    try
+    //    {
+    //        if (!playerPermit.Contains(leader.getId()) && startSemaphore.Wait(7777))
+    //        {
+    //            playerPermit.Add(leader.getId());
 
-                Monitor.Enter(startLock);
-                try
-                {
-                    try
-                    {
-                        if (lobbyId == -1)
-                        {
-                            lobbyId = availableLobbyInstance();
-                            if (lobbyId == -1)
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            if (!startLobbyInstance(lobbyId))
-                            {
-                                return false;
-                            }
-                        }
+    //            Monitor.Enter(startLock);
+    //            try
+    //            {
+    //                try
+    //                {
+    //                    if (lobbyId == -1)
+    //                    {
+    //                        lobbyId = GetAvailableLobbyInstance();
+    //                        if (lobbyId == -1)
+    //                        {
+    //                            return false;
+    //                        }
+    //                    }
+    //                    else
+    //                    {
+    //                        if (!startLobbyInstance(lobbyId))
+    //                        {
+    //                            return false;
+    //                        }
+    //                    }
 
-                        if (eim == null)
-                        {
-                            if (lobbyId > -1)
-                            {
-                                setLockLobby(lobbyId, false);
-                            }
-                            return false;
-                        }
-                        registerEventInstance(eim.getName(), lobbyId);
-                        eim.setLeader(leader);
+    //                    if (eim == null)
+    //                    {
+    //                        DisposeLobby(lobbyId);
+    //                        return false;
+    //                    }
+    //                    registerEventInstance(eim.getName(), lobbyId);
+    //                    eim.setLeader(leader);
 
-                        iv.CallFunction("setup", eim);
-                        eim.setProperty("leader", ldr);
+    //                    iv.CallFunction("setup", eim);
+    //                    eim.setProperty("leader", ldr);
 
-                        eim.startEvent();
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Error(ex, "Event script startInstance, Script: {Script}", name);
-                    }
+    //                    eim.startEvent();
+    //                }
+    //                catch (Exception ex)
+    //                {
+    //                    log.Error(ex, "Event script startInstance, Script: {Script}", name);
+    //                }
 
-                    return true;
-                }
-                finally
-                {
-                    Monitor.Exit(startLock);
-                    playerPermit.Remove(leader.getId());
-                    startSemaphore.Release();
-                }
-            }
-        }
-        catch (ThreadInterruptedException)
-        {
-            playerPermit.Remove(leader.getId());
-        }
+    //                return true;
+    //            }
+    //            finally
+    //            {
+    //                Monitor.Exit(startLock);
+    //                playerPermit.Remove(leader.getId());
+    //                startSemaphore.Release();
+    //            }
+    //        }
+    //    }
+    //    catch (ThreadInterruptedException)
+    //    {
+    //        playerPermit.Remove(leader.getId());
+    //    }
 
-        return false;
-    }
+    //    return false;
+    //}
 
     public List<IPlayer> getEligibleParty(ITeam party)
     {
@@ -1084,30 +1083,9 @@ public class EventManager
 
     private void fillEimQueue()
     {
-        ThreadManager.getInstance().newTask(new EventManagerTask(this));  //call new thread to fill up readied instances queue
+        instantiateQueuedInstance();
     }
 
-    private EventInstanceManager? getReadyInstance()
-    {
-        Monitor.Enter(queueLock);
-        try
-        {
-            if (readyInstances.Count == 0)
-            {
-                fillEimQueue();
-                return null;
-            }
-
-            EventInstanceManager eim = readyInstances.Dequeue();
-            fillEimQueue();
-
-            return eim;
-        }
-        finally
-        {
-            Monitor.Exit(queueLock);
-        }
-    }
 
     private void instantiateQueuedInstance()
     {
@@ -1115,7 +1093,7 @@ public class EventManager
         Monitor.Enter(queueLock);
         try
         {
-            if (this.isDisposed() || readyInstances.Count + onLoadInstances >= Math.Ceiling(maxLobbys / 3.0))
+            if (this.isDisposed() || readyInstances.Count + onLoadInstances >= Math.Ceiling(MaxLobbys / 3.0))
             {
                 return;
             }
@@ -1147,21 +1125,5 @@ public class EventManager
         }
 
         instantiateQueuedInstance();    // keep filling the queue until reach threshold.
-    }
-
-    private class EventManagerTask : AbstractRunnable
-    {
-
-        readonly EventManager _manager;
-
-        public EventManagerTask(EventManager manager)
-        {
-            _manager = manager;
-        }
-
-        public override void HandleRun()
-        {
-            _manager.instantiateQueuedInstance();
-        }
     }
 }
