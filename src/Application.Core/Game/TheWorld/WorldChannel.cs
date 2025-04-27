@@ -379,14 +379,12 @@ public class WorldChannel : IWorldChannel
     {
         lock (expeditions)
         {
-            if (expeditions.ContainsKey(exped.getType()))
+            if (expeditions.TryAdd(exped.getType(), exped))
             {
-                return false;
+                exped.beginRegistration();
+                return true;
             }
-
-            expeditions.Add(exped.getType(), exped);
-            exped.beginRegistration();  // thanks Conrad for noticing leader still receiving packets on failure-to-register cases
-            return true;
+            return false;
         }
     }
 

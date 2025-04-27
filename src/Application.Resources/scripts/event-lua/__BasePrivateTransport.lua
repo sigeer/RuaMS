@@ -31,8 +31,6 @@ function BasePrivateTransport:setup(level, lobbyid)
         -- 获取地图实例
         self.stationAMap = em:GetMap(self.stationA)
         self.stationBMap = em:GetMap(self.stationB)
-        self.transportationMapA = em:GetMap(self.transportationA)
-        self.transportationMapB = em:GetMap(self.transportationB)
         self.loaded = true
     end
 
@@ -45,9 +43,9 @@ function BasePrivateTransport:playerEntry(eim, player)
     local transportMap
     
     if currentMap == self.stationA then
-        transportMap = self.transportationMapA
+        transportMap = eim:getMapInstance(self.transportationA)
     else
-        transportMap = self.transportationMapB
+        transportMap = eim:getMapInstance(self.transportationB)
     end
     
     -- 传送玩家到交通工具
