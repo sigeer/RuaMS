@@ -75,7 +75,7 @@ public class EventManager
 
     private Dictionary<int, bool> openedLobbys = new();
     public int MaxLobbys { get; set; }
-    public const int DefaultMaxLobbys = 8;
+    public const int DefaultMaxLobbys = 1;
 
 
     public EventManager(IWorldChannel cserv, IEngine iv, string name)
@@ -241,19 +241,14 @@ public class EventManager
         Monitor.Enter(queueLock);
         try
         {
-            if (readyInstances.Count == 0)
-            {
-                fillEimQueue();
-                return null;
-            }
+            if (readyInstances.TryDequeue(out var eim))
+                return eim;
 
-            EventInstanceManager eim = readyInstances.Dequeue();
-            fillEimQueue();
-
-            return eim;
+            return null;
         }
         finally
         {
+            fillEimQueue();
             Monitor.Exit(queueLock);
         }
     }
@@ -353,16 +348,9 @@ public class EventManager
 
     private void freeLobbyInstance(string instanceName)
     {
-        int? i = instanceLocks.GetValueOrDefault(instanceName);
-        if (i == null)
+        if (instanceLocks.Remove(instanceName, out var i) && i > -1)
         {
-            return;
-        }
-
-        instanceLocks.Remove(instanceName);
-        if (i > -1)
-        {
-            DisposeLobby(i.Value);
+            DisposeLobby(i);
         }
     }
 
@@ -606,85 +594,7 @@ public class EventManager
 
     public bool startInstance(int lobbyId, ITeam party, IMap map, IPlayer leader)
     {
-        if (this.isDisposed())
-        {
-            return false;
-        }
-
-        try
-        {
-            if (!playerPermit.Contains(leader.getId()) && startSemaphore.Wait(7777))
-            {
-                playerPermit.Add(leader.getId());
-
-                Monitor.Enter(startLock);
-                try
-                {
-                    try
-                    {
-                        if (lobbyId == -1)
-                        {
-                            lobbyId = GetAvailableLobbyInstance();
-                            if (lobbyId == -1)
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            if (!startLobbyInstance(lobbyId))
-                            {
-                                return false;
-                            }
-                        }
-
-                        EventInstanceManager eim;
-                        try
-                        {
-                            eim = createInstance("setup");
-                            registerEventInstance(eim.getName(), lobbyId);
-                        }
-                        catch (Exception e)
-                        {
-                            string message = getInternalScriptExceptionMessage(e);
-                            if (message != null && !message.StartsWith(EventInstanceInProgressException.EIIP_KEY))
-                            {
-                                throw;
-                            }
-
-                            DisposeLobby(lobbyId);
-                            return false;
-                        }
-
-                        eim.setLeader(leader);
-
-                        eim.registerParty(party, map);
-                        party.setEligibleMembers([]);
-
-                        eim.startEvent();
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Error(ex, "Event script startInstance");
-                    }
-
-                    return true;
-                }
-                finally
-                {
-                    Monitor.Exit(startLock);
-                    playerPermit.Remove(leader.getId());
-                    startSemaphore.Release();
-                }
-            }
-        }
-        catch (ThreadInterruptedException ie)
-        {
-            log.Error(ie.ToString());
-            playerPermit.Remove(leader.getId());
-        }
-
-        return false;
+        return startInstance(lobbyId, party, map, 0, leader);
     }
 
     //PQ method: starts a PQ with a difficulty level, requires function setup(difficulty, leaderid) instead of setup()
@@ -1083,7 +993,7 @@ public class EventManager
 
     private void fillEimQueue()
     {
-        instantiateQueuedInstance();
+        ThreadManager.getInstance().newTask(instantiateQueuedInstance);
     }
 
 
