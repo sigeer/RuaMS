@@ -32,7 +32,6 @@ function init() {
     em.getChannelServer().getMapFactory().getMap(222020200).resetReactors();
 
     em.setProperty("current", "222020100");
-    em.setProperty("isMoving", false);
     scheduleNew();
 }
 
@@ -43,8 +42,7 @@ function scheduleNew() {
 }
 
 function goingUpNow() {
-    em.setProperty("isMoving", true);
-
+    em.setProperty("current", "222020111");
     em.getChannelServer().getMapFactory().getMap(222020110).warpEveryone(222020111);
 
     em.schedule("isUpNow", rideTime);
@@ -53,17 +51,15 @@ function goingUpNow() {
 }
 
 function goingDownNow() {
-    em.setProperty("isMoving", true);
-
+    em.setProperty("current", "222020211");
     em.getChannelServer().getMapFactory().getMap(222020210).warpEveryone(222020211);
-    em.setProperty("direction", "down")
+
     em.schedule("isDownNow", rideTime);
 
     em.getChannelServer().getMapFactory().getMap(222020200).setReactorState();
 }
 
 function isUpNow() {
-    em.setProperty("isMoving", false);
     em.setProperty("current", "222020200");
 
     em.getChannelServer().getMapFactory().getMap(222020200).resetReactors();
@@ -73,7 +69,6 @@ function isUpNow() {
 }
 
 function isDownNow() {
-    em.setProperty("isMoving", false);
     em.setProperty("current", "222020100");
 
     em.getChannelServer().getMapFactory().getMap(222020100).resetReactors();

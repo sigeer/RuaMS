@@ -22,8 +22,6 @@ local config = {
 local Elevator = BaseTransport:extend()
 
 function Elevator:InitProperty()
-    -- 初始没有启动
-    em:setProperty("isMoving", "false")
     -- 初始在2层
     em:setProperty("current", self.stationA)
 
@@ -36,8 +34,10 @@ end
 function Elevator:scheduleNew()
     local elevatorCurrent = em:getIntProperty("current")
     if (elevatorCurrent == self.stationB) then
-        -- 准备下降
+        -- 在99层，准备下降
+        -- 锁定2层电梯
         self.stationAMap:setReactorState()
+        -- 99层电梯开放
         self.stationBMap:resetReactors()
     else
         -- 准备上升
@@ -53,15 +53,19 @@ end
 function Elevator:takeoff()
     if em:getIntProperty("current") == self.stationB then
         -- 下行
+        -- 等待室传送到运行中的电梯
         self.waitingRoomBMap:warpEveryone(self.transportationB)
+        -- 锁定99层的电梯
         self.stationBMap:setReactorState()
+        -- 设置当前电梯处于运行中
+        em:setProperty("current", self.transportationB)
     else
         -- 上行
         self.waitingRoomAMap:warpEveryone(self.transportationA)
         self.stationAMap:setReactorState()
+        em:setProperty("current", self.transportationA)
     end
 
-    em:setProperty("isMoving", "true")
     -- 安排到达时间
     em:schedule("arrived", self.rideTime)
 end
@@ -76,7 +80,7 @@ function Elevator:arrived()
         self.transportationAMap:warpEveryone(self.stationB, 0)
         em:setProperty("current", self.stationB)
     end
-    em:setProperty("isMoving", "false")
+
     -- 安排下一次运行
     self:scheduleNew()
 end
