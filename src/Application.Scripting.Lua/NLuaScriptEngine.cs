@@ -62,7 +62,7 @@ namespace Application.Scripting.Lua
 
         public ScriptResultWrapper GetValue(string variable)
         {
-            return new NLuaResultWrapper(_engine.DoString(variable));
+            return new NLuaResultWrapper(new object[] { _engine.GetObjectFromPath(variable)  });
         }
 
         public bool IsExisted(string variable)

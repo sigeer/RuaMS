@@ -9,6 +9,13 @@ namespace ServiceTest.Infrastructure.Scripts
         protected IEngine _engine;
         protected string Code;
 
+        public virtual void GetValueTest()
+        {
+            _engine.Evaluate(Code);
+            var d = _engine.GetValue("test").ToObject<string>();
+            Assert.That(d.Equals("test"));
+        }
+
         public virtual void CheckMathRandomTest()
         {
             _engine.Evaluate(Code);
