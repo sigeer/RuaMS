@@ -152,8 +152,12 @@ function BaseEvent:exportMethods()
     local current = self
     while current do
         for k, v in pairs(current) do
-            if type(v) == "function" and not exported[k] then
-                _ENV[k] = function(...) return v(self, ...) end
+            if not exported[k] then
+                if type(v) == "function" then
+                    _ENV[k] = function(...) return v(self, ...) end
+                elseif type(v) == "number" or type(v) == "string" or type(v) == "boolean" then
+                    _ENV[k] = v
+                end
                 exported[k] = true
             end
         end

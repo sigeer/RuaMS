@@ -20,6 +20,15 @@ namespace ServiceTest.Infrastructure.Scripts
         }
 
         [Test]
+        public override void GetValueTest()
+        {
+            Code = """
+                test = "test"
+                """;
+            base.GetValueTest();
+        }
+
+        [Test]
         public override void CallStaticMethod()
         {
             Code = """
