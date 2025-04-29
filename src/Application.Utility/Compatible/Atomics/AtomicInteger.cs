@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Compatible.Atomics
+namespace Application.Utility.Compatible.Atomics
 {
     public class AtomicInteger
     {

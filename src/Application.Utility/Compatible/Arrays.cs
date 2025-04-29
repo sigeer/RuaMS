@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Compatible
+namespace Application.Utility.Compatible
 {
     public static class Arrays
     {

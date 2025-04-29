@@ -1,7 +1,6 @@
 global using Application.Core;
-global using Application.Core.Compatible;
-global using Application.Core.Compatible.Atomics;
-global using Application.Core.Compatible.Extensions;
+global using Application.Utility.Compatible;
+global using Application.Utility.Compatible.Atomics;
 global using Application.Core.Game;
 global using Application.Core.Game.Players;
 global using Application.Core.tools;

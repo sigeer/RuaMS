@@ -1,4 +1,4 @@
-namespace tools;
+namespace Application.Utility;
 
 public class Randomizer
 {
