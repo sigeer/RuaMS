@@ -142,11 +142,6 @@ namespace Application.Core.Game.Players
             this.Ap = remainingAp;
         }
 
-        private void setRemainingSp(int remainingSp, int skillbook)
-        {
-            this.RemainingSp[skillbook] = remainingSp;
-        }
-
 
         private static long clampStat(int v, int min, int max)
         {
@@ -234,8 +229,8 @@ namespace Application.Core.Game.Players
                     short sp = (short)(newSp >> 16);
                     short skillbook = (short)newSp;
 
-                    setRemainingSp(sp, skillbook);
-                    statUpdates.AddOrUpdate(Stat.AVAILABLESP, RemainingSp[skillbook]);
+                    this.RemainingSp[skillbook] = sp;
+                    statUpdates.AddOrUpdate(Stat.AVAILABLESP, sp);
                 }
 
                 if (statUpdates.Count > 0)

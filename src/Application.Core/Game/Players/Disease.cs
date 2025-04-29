@@ -11,6 +11,7 @@ namespace Application.Core.Game.Players
     {
         private ScheduledFuture? _diseaseExpireTask = null;
         private Dictionary<Disease, KeyValuePair<DiseaseValueHolder, MobSkill>> diseases = new();
+        private Dictionary<Disease, long> diseaseExpires = new();
 
         public bool hasDisease(Disease dis)
         {

@@ -14,19 +14,25 @@ namespace Application.Core.Game.Players
     {
         private ScheduledFuture? _buffExpireTask = null;
         /// <summary>
-        /// 和 buffEffects 区别？
+        /// 仅供debug使用
+        /// </summary>
+        private Dictionary<BuffStat, sbyte> buffEffectsCount = new();
+        /// <summary>
+        /// buffEffects 同一类型buff取效果最好的那种，当该buff过期时，使用次一级效果且未过期的
         /// </summary>
 
         private Dictionary<BuffStat, BuffStatValueHolder> effects = new();
         /// <summary>
-        /// 似乎没有用
-        /// </summary>
-        private Dictionary<BuffStat, sbyte> buffEffectsCount = new();
-        private Dictionary<Disease, long> diseaseExpires = new();
-        /// <summary>
         /// sourceid - effects
+        /// <para>
+        /// 玩家受到的所有buff
+        /// 同类型的buff可能有多个来源：加成同一种属性的不同药品
+        /// </para>
         /// </summary>
-        private Dictionary<int, Dictionary<BuffStat, BuffStatValueHolder>> buffEffects = new(); // non-overriding buffs thanks to Ronan
+        private Dictionary<int, Dictionary<BuffStat, BuffStatValueHolder>> buffEffects = new();
+        /// <summary>
+        /// sourceId - expire
+        /// </summary>
         private Dictionary<int, long> buffExpires = new();
 
         private BuffStatValueHolder? GetBuffStatValue(BuffStat effect)
@@ -222,7 +228,7 @@ namespace Application.Core.Game.Players
                         {
                             if (curTime >= bel.Value)
                             {
-                                toCancel.Add(buffEffects.GetValueOrDefault(bel.Key)!.Values.First());    //rofl
+                                toCancel.AddRange(buffEffects.GetValueOrDefault(bel.Key)!.Values);    //rofl
                             }
                         }
                     }
