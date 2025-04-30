@@ -3852,15 +3852,9 @@ public partial class Player
             }
         }
 
-        if (getBuffedValue(BuffStat.MORPH) != null)
-        {
-            cancelEffectFromBuffStat(BuffStat.MORPH);
-        }
+        cancelEffectFromBuffStat(BuffStat.MORPH);
 
-        if (getBuffedValue(BuffStat.MONSTER_RIDING) != null)
-        {
-            cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
-        }
+        cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
 
         unsitChairInternal();
         sendPacket(PacketCreator.enableActions());

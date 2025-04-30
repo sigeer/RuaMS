@@ -128,6 +128,10 @@ namespace Application.Core.Game.Players
         void cancelDiseaseExpireTask();
         void cancelEffect(int itemId);
         bool cancelEffect(StatEffect effect, bool overwrite, long startTime);
+        /// <summary>
+        /// 内部会先判断buff是否存在，不需要先调用getBuffedValue != null
+        /// </summary>
+        /// <param name="stat"></param>
         void cancelEffectFromBuffStat(BuffStat stat);
         void cancelExpirationTask();
         void cancelMagicDoor();

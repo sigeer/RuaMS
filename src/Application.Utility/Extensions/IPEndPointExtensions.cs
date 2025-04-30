@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace Application.Core.Compatible.Extensions
+namespace Application.Utility.Extensions
 {
     public static class IPEndPointExtensions
     {

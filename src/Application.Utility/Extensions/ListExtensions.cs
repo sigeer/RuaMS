@@ -1,4 +1,4 @@
-namespace Application.Core.Compatible.Extensions
+namespace Application.Utility.Extensions
 {
     public static class ListExtensions
     {
