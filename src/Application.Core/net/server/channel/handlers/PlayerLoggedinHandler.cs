@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Skills;
+using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Shared.KeyMaps;
 using client;
@@ -99,17 +100,11 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 return;
             }
 
-            var cserv = wserv.getChannel(c.getChannel());
+            var cserv = c.getChannelServer();
             if (cserv == null)
             {
-                c.setChannel(1);
-                cserv = wserv.getChannel(c.getChannel());
-
-                if (cserv == null)
-                {
-                    c.disconnect(true, false);
-                    return;
-                }
+                c.disconnect(true, false);
+                return;
             }
 
             var storage = wserv.getPlayerStorage();
@@ -368,7 +363,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 {
                     if (pet != null)
                     {
-                        wserv.registerPetHunger(player, player.getPetIndex(pet));
+                        c.getChannelServer().PetFullnessController.registerPetHunger(player, player.getPetIndex(pet));
                     }
                 }
 

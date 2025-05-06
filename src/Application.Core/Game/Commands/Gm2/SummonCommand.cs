@@ -1,4 +1,4 @@
-﻿using net.server;
+using net.server;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -18,20 +18,7 @@ public class SummonCommand : CommandBase
             return;
         }
 
-        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (victim == null)
-        {
-            //If victim isn't on current channel, loop all channels on current world.
-
-            foreach (var ch in Server.getInstance().getChannelsFromWorld(c.getWorld()))
-            {
-                victim = ch.getPlayerStorage().getCharacterByName(paramsValue[0]);
-                if (victim != null)
-                {
-                    break;//We found the person, no need to continue the loop.
-                }
-            }
-        }
+        var victim = c.getWorldServer().Transport.FindPlayerByName(paramsValue[0]);
         if (victim != null)
         {
             if (!victim.isLoggedinWorld())

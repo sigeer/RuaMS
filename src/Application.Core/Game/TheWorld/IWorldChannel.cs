@@ -25,10 +25,10 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
-using Application.Core.model;
-using net.packet;
+using Application.Shared.Servers;
 using net.server.services;
 using net.server.services.type;
+using net.server.task;
 using scripting.Event;
 using server.events.gm;
 using server.expeditions;
@@ -37,16 +37,29 @@ using System.Net;
 
 namespace Application.Core.Game.TheWorld
 {
-    public interface IWorldChannel
+    public interface IWorldChannel : IServerBase<IChannelSeverTransport>
     {
+        public PetFullnessController PetFullnessController { get; }
+        public HiredMerchantController HiredMerchantController { get; }
+        public CharacterHpDecreaseController CharacterHpDecreaseController { get; }
+        public MapObjectController MapObjectController { get; }
+        public ServerMessageController ServerMessageController { get; }
+        public MountTirednessController MountTirednessController { get; }
+        public MapOwnershipController MapOwnershipController { get; }
+        public CharacterAutoSaveController CharacterAutoSaveController { get; }
+        public WeddingReservationController WeddingReservationController { get; }
+        public TimeoutController TimeoutController { get; }
+        public FishingController FishingController { get; }
+        public PartySearchController PartySearchController { get; }
+        ActualServerConfig ServerConfig { get; }
+
+        event Action? OnWorldMobRateChanged;
+        float WorldMobRate { get; }
         ChannelPlayerStorage Players { get; }
         IWorld WorldModel { get; set; }
         public bool IsRunning { get; }
-        public int Port { get; set; }
         DojoInstance DojoInstance { get; }
         WeddingChannelInstance WeddingInstance { get; }
-        Task StartServer();
-
         bool acceptOngoingWedding(bool cathedral);
         bool addExpedition(Expedition exped);
         void addHiredMerchant(int chrid, HiredMerchant hm);
@@ -79,8 +92,7 @@ namespace Application.Core.Game.TheWorld
         int getStoredVar(int key);
         int getWeddingReservationStatus(int? weddingId, bool cathedral);
         string? getWeddingReservationTimeLeft(int? weddingId);
-        int getWorld();
-        IWorld getWorldServer();
+
         int ingressDojo(bool isPartyDojo, int fromStage);
         int ingressDojo(bool isPartyDojo, ITeam? party, int fromStage);
         void initMonsterCarnival(bool cpq1, int field);
@@ -105,7 +117,6 @@ namespace Application.Core.Game.TheWorld
         void setEvent(Event? evt);
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
-        Task Shutdown();
         void unregisterOwnedMap(IMap map);
     }
 }

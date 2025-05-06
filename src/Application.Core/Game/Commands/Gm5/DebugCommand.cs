@@ -143,9 +143,9 @@ public class DebugCommand : CommandBase
                 player.dropMessage(6, st);
                 break;
 
-            case "marriage":
-                c.getChannelServer().WeddingInstance.DebugMarriageStatus();
-                break;
+            //case "marriage":
+            //    c.getChannelServer().WeddingInstance.DebugMarriageStatus();
+            //    break;
 
             case "stats":
                 c.OnlinedCharacter.PrintStatsUpdated();

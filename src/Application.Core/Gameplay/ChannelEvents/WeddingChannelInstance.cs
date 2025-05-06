@@ -61,13 +61,11 @@ namespace Application.Core.Gameplay.ChannelEvents
                 Monitor.Exit(lockObj);
             }
 
-            var wserv = ChannelServer.WorldModel.WeddingInstance;
-
-            var coupleId = wserv.GetMarriageQueuedCouple(ret.Value)!;
-            var typeGuests = wserv.RemoveMarriageQueued(ret.Value);
+            var coupleId = ChannelServer.Transport.GetMarriageQueuedCouple(ret.Value)!;
+            var typeGuests = ChannelServer.Transport.RemoveMarriageQueued(ret.Value);
 
             CoupleNamePair couple = new(CharacterManager.getNameById(coupleId.HusbandId), CharacterManager.getNameById(coupleId.WifeId));
-            ChannelServer.WorldModel.dropMessage(6, couple.CharacterName1 + " and " + couple.CharacterName2 + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + ChannelServer.getId() + ".");
+            ChannelServer.Transport.DropMessage(6, couple.CharacterName1 + " and " + couple.CharacterName2 + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + ChannelServer.getId() + ".");
 
             return new(typeGuests.Key, new(ret.Value, typeGuests.Value));
         }
@@ -77,7 +75,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             Monitor.Enter(lockObj);
             try
             {
-                return ChannelServer.WorldModel.WeddingInstance.IsMarriageQueued(weddingId) || weddingId.Equals(ongoingCathedral) || weddingId.Equals(ongoingChapel);
+                return ChannelServer.Transport.IsMarriageQueued(weddingId) || weddingId.Equals(ongoingCathedral) || weddingId.Equals(ongoingChapel);
             }
             finally
             {
@@ -119,7 +117,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 return -1;
             }
 
-            ChannelServer.WorldModel.WeddingInstance.PutMarriageQueued(weddingId.Value, cathedral, premium, groomId, brideId);
+            ChannelServer.Transport.PutMarriageQueued(weddingId.Value, cathedral, premium, groomId, brideId);
 
             Monitor.Enter(lockObj);
             try
@@ -376,7 +374,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             Monitor.Enter(lockObj);
             try
             {
-                return (IsOngoingWeddingGuest(cathedral, guestId)) ? ChannelServer.WorldModel.WeddingInstance.GetRelationshipCouple(GetOngoingWedding(cathedral)) : null;
+                return (IsOngoingWeddingGuest(cathedral, guestId)) ? ChannelServer.Transport.GetRelationshipCouple(GetOngoingWedding(cathedral)) : null;
             }
             finally
             {
@@ -384,25 +382,25 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
         }
 
-        public void DebugMarriageStatus()
-        {
-            log.Debug(" ----- WORLD DATA -----");
-            ChannelServer.WorldModel.WeddingInstance.DebugMarriageStatus();
+        //public void DebugMarriageStatus()
+        //{
+        //    log.Debug(" ----- WORLD DATA -----");
+        //    ChannelServer.WorldModel.WeddingInstance.DebugMarriageStatus();
 
-            log.Debug(" ----- CH. {ChannelId} -----", ChannelServer.getId());
-            log.Debug(" ----- CATHEDRAL -----");
-            log.Debug("Current Queue: {0}", cathedralReservationQueue);
-            log.Debug("Cancel Task?: {0}", cathedralReservationTask != null);
-            log.Debug("Ongoing wid: {0}", ongoingCathedral);
-            log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingCathedral, ongoingCathedralType);
-            log.Debug("Guest list: {0}", ongoingCathedralGuests);
-            log.Debug(" ----- CHAPEL -----");
-            log.Debug("Current Queue: {0}", chapelReservationQueue);
-            log.Debug("Cancel Task?: {0}", chapelReservationTask != null);
-            log.Debug("Ongoing wid: {0}", ongoingChapel);
-            log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingChapel, ongoingChapelType);
-            log.Debug("Guest list: {0}", ongoingChapelGuests);
-            log.Debug("Starttime: {0}", ongoingStartTime);
-        }
+        //    log.Debug(" ----- CH. {ChannelId} -----", ChannelServer.getId());
+        //    log.Debug(" ----- CATHEDRAL -----");
+        //    log.Debug("Current Queue: {0}", cathedralReservationQueue);
+        //    log.Debug("Cancel Task?: {0}", cathedralReservationTask != null);
+        //    log.Debug("Ongoing wid: {0}", ongoingCathedral);
+        //    log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingCathedral, ongoingCathedralType);
+        //    log.Debug("Guest list: {0}", ongoingCathedralGuests);
+        //    log.Debug(" ----- CHAPEL -----");
+        //    log.Debug("Current Queue: {0}", chapelReservationQueue);
+        //    log.Debug("Cancel Task?: {0}", chapelReservationTask != null);
+        //    log.Debug("Ongoing wid: {0}", ongoingChapel);
+        //    log.Debug("Ongoing wid: {0}, isPremium: {1}", ongoingChapel, ongoingChapelType);
+        //    log.Debug("Guest list: {0}", ongoingChapelGuests);
+        //    log.Debug("Starttime: {0}", ongoingStartTime);
+        //}
     }
 }

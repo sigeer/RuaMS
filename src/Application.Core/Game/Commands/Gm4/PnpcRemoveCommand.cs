@@ -1,4 +1,4 @@
-﻿using Application.Core.constants.game;
+using Application.Core.constants.game;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -36,19 +36,14 @@ public class PnpcRemoveCommand : CommandBase
 
             var dataList = preSearch.ToList();
             dbContext.Plives.RemoveRange(dataList);
-            var toRemove = dataList.Select(x => new { x.Life, x.X, x.Y }).ToList();
+            var toRemove = dataList.Select(x => new { x.Life }).ToList();
 
 
             if (toRemove.Count > 0)
             {
-                foreach (var ch in player.getWorldServer().getChannels())
+                foreach (var r in toRemove)
                 {
-                    var map = ch.getMapFactory().getMap(mapId);
-
-                    foreach (var r in toRemove)
-                    {
-                        map.destroyNPC(r.Life);
-                    }
+                    player.getWorldServer().Transport.RemovePnpc(mapId, r.Life);
                 }
             }
 

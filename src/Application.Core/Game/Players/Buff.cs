@@ -626,7 +626,7 @@ namespace Application.Core.Game.Players
             List<BuffStateValuePair> toCancel = deregisterBuffStats(buffstats);
             if (effect.isMonsterRiding())
             {
-                this.getClient().getWorldServer().unregisterMountHunger(this);
+                this.getClient().getChannelServer().MountTirednessController.unregisterMountHunger(this);
                 this.getMount()?.setActive(false);
             }
 

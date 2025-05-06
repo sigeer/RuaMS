@@ -285,7 +285,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                     }
                     break;
                 case 2: // Super megaphone
-                    Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
+                    c.CurrentServer.Transport.BroadcastMessage(PacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -333,7 +333,7 @@ public class UseCashItemHandler : AbstractPacketHandler
 
                     if (megassenger)
                     {
-                        Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + builder, ear));
+                        c.CurrentServer.Transport.BroadcastMessage(PacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + builder, ear));
                     }
 
                     break;
@@ -351,7 +351,7 @@ public class UseCashItemHandler : AbstractPacketHandler
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.itemMegaphone(msg, whisper, c.getChannel(), item));
+                    c.CurrentServer.Transport.BroadcastMessage(PacketCreator.itemMegaphone(msg, whisper, c.getChannel(), item));
                     break;
                 case 7: //triple megaphone
                     int lines = p.ReadSByte();
@@ -365,7 +365,7 @@ public class UseCashItemHandler : AbstractPacketHandler
                         msg2[i] = medal + player.getName() + " : " + p.readString();
                     }
                     whisper = p.readByte() == 1;
-                    Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.getMultiMegaphone(msg2, c.getChannel(), whisper));
+                    c.CurrentServer.Transport.BroadcastMessage(PacketCreator.getMultiMegaphone(msg2, c.getChannel(), whisper));
                     break;
             }
             remove(c, position, itemId);
@@ -514,8 +514,8 @@ public class UseCashItemHandler : AbstractPacketHandler
             }
 
             int world = c.getWorld();
-            Server.getInstance().broadcastMessage(world, PacketCreator.getAvatarMega(player, medal, c.getChannel(), itemId, strLines, (p.readByte() != 0)));
-            TimerManager.getInstance().schedule(() => Server.getInstance().broadcastMessage(world, PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
+            c.CurrentServer.Transport.BroadcastMessage(PacketCreator.getAvatarMega(player, medal, c.getChannel(), itemId, strLines, (p.readByte() != 0)));
+            TimerManager.getInstance().schedule(() => c.CurrentServer.Transport.BroadcastMessage(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
         else if (itemType == 540)

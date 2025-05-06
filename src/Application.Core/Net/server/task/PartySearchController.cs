@@ -19,21 +19,24 @@
 */
 
 using Application.Core.Game.TheWorld;
+using net.server.coordinator.partysearch;
 
 namespace net.server.task;
 
 /**
  * @author Ronan
  */
-public class PartySearchTask : BaseTask
+public class PartySearchController : TimelyControllerBase
 {
 
-    public override void HandleRun()
+    private PartySearchCoordinator partySearch = new PartySearchCoordinator();
+    protected override void HandleRun()
     {
-        wserv.runPartySearchUpdateSchedule();
+        partySearch.updatePartySearchStorage();
+        partySearch.runPartySearch();
     }
 
-    public PartySearchTask(IWorld world) : base(world)
+    public PartySearchController(IWorldChannel world) : base("PartySearchController", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
     {
     }
 }

@@ -431,7 +431,7 @@ public class HiredMerchant : AbstractMapObject
             Monitor.Exit(visitorLock);
         }
 
-        Owner.getWorldServer().unregisterHiredMerchant(this);
+        Owner.getChannelServer().HiredMerchantController.unregisterHiredMerchant(this);
 
         try
         {
@@ -545,7 +545,7 @@ public class HiredMerchant : AbstractMapObject
             Log.Logger.Error(e.ToString());
         }
 
-        Owner.getWorldServer().unregisterHiredMerchant(this);
+        Owner.getChannelServer().HiredMerchantController.unregisterHiredMerchant(this);
     }
 
 

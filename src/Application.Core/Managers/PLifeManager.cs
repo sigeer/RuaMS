@@ -1,4 +1,4 @@
-﻿using Application.Core.constants.game;
+using Application.Core.constants.game;
 using server.life;
 using tools;
 
@@ -25,24 +25,12 @@ namespace Application.Core.Managers
             dbContext.Plives.Add(model);
             dbContext.SaveChanges();
 
-            foreach (var ch in player.getWorldServer().getChannels())
-            {
-                npc = LifeFactory.getNPC(npcId);
-                npc.setPosition(checkpos);
-                npc.setCy(ypos);
-                npc.setRx0(xpos + 50);
-                npc.setRx1(xpos - 50);
-                npc.setFh(fh);
-
-                var map = ch.getMapFactory().getMap(mapId);
-                map.addMapObject(npc);
-                map.broadcastMessage(PacketCreator.spawnNPC(npc));
-            }
+            player.getWorldServer().Transport.AddPnpc(mapId, npcId, checkpos, ypos, xpos + 50, xpos - 50, fh);
             dbTrans.Commit();
             return true;
         }
 
-        public static bool RemovePMonster(int mobId, IPlayer player)
+        public static int RemovePMonster(int mobId, IPlayer player)
         {
             int mapId = player.getMapId();
 
@@ -70,18 +58,12 @@ namespace Application.Core.Managers
 
             if (toRemove.Count > 0)
             {
-                foreach (var ch in player.getWorldServer().getChannels())
+                foreach (var r in toRemove)
                 {
-                    var map = ch.getMapFactory().getMap(mapId);
-
-                    foreach (var r in toRemove)
-                    {
-                        map.removeMonsterSpawn(r.Life, r.X, r.Y);
-                        map.removeAllMonsterSpawn(r.Life, r.X, r.Y);
-                    }
+                    player.getWorldServer().Transport.RemoveMapSpawnPoint(mapId, r.Life, r.X, r.Y);
                 }
             }
-            return true;
+            return toRemove.Count;
         }
     }
 }

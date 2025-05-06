@@ -89,7 +89,7 @@ public class MapFactory
         try
         {
             using var dbContext = new DBContext();
-            var dataList = dbContext.Plives.Where(x => x.Map == map.getId() && x.World == map.getWorld()).ToList();
+            var dataList = dbContext.Plives.Where(x => x.Map == map.getId() && x.World == 0).ToList();
 
             foreach (var rs in dataList)
             {
@@ -285,7 +285,7 @@ public class MapFactory
             try
             {
                 using var dbContext = new DBContext();
-                var dataList = dbContext.Playernpcs.Where(x => x.Map == mapid && x.World == worldChannel.getWorld()).ToList();
+                var dataList = dbContext.Playernpcs.Where(x => x.Map == mapid && x.World == worldChannel.World).ToList();
 
                 foreach (var item in dataList)
                 {

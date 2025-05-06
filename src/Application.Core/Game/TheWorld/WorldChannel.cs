@@ -26,31 +26,38 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
+using Application.Shared.Net;
+using Application.Shared.Servers;
+using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Net.Client;
 using net.netty;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
+using net.server.task;
+using RemoteService;
 using scripting.Event;
+using server;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
 using System.Net;
+using System.Security.Policy;
 using tools;
 
 namespace net.server.channel;
 
 public class WorldChannel : IWorldChannel
 {
+    public string InstanceId { get; }
     private ILogger log;
-    public bool IsRunning { get; private set; }
+    public bool IsRunning => Channel > 0;
 
     public int Port { get; set; }
-    private IPEndPoint ipEndPoint;
-    private int world;
-    private int channel;
+    public AbstractServer NettyServer { get; }
 
     public ChannelPlayerStorage Players { get; }
-    private ChannelServer channelServer;
     private string serverMessage = "";
     private MapManager mapManager;
     private EventScriptManager eventSM;
@@ -73,27 +80,77 @@ public class WorldChannel : IWorldChannel
     private ReaderWriterLockSlim merchLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
     public IWorld WorldModel { get; set; }
-    public WorldChannel(IWorld world, int channel, long startTime)
+
+    public IChannelSeverTransport Transport { get; }
+
+    public IPEndPoint IPEndPoint { get; }
+
+    public int World { get; } = 0;
+    public int Channel { get; private set; } = -1;
+    public DateTimeOffset StartTime { get; }
+    public ActualServerConfig ServerConfig { get; }
+
+    public event Action? OnWorldMobRateChanged;
+    public float WorldMobRate { get; set; }
+
+    #region
+    public PetFullnessController PetFullnessController { get; }
+    public HiredMerchantController HiredMerchantController { get; }
+    public CharacterHpDecreaseController CharacterHpDecreaseController { get; }
+    public MapObjectController MapObjectController { get; }
+    public ServerMessageController ServerMessageController { get; }
+    public MountTirednessController MountTirednessController { get; }
+    public MapOwnershipController MapOwnershipController { get; }
+    public CharacterAutoSaveController CharacterAutoSaveController { get; }
+    public WeddingReservationController WeddingReservationController { get; }
+    public TimeoutController TimeoutController { get; }
+    public FishingController FishingController { get; }
+    public PartySearchController PartySearchController { get; }
+    #endregion
+    public WorldChannel(ActualServerConfig config, IChannelSeverTransport worldCaller)
     {
-        WorldModel = world;
-        this.world = world.getId();
-        this.channel = channel;
-        Players = new ChannelPlayerStorage(this.world, channel);
+        InstanceId = Guid.NewGuid().ToString();
+        ServerConfig = config;
+        Transport = worldCaller;
+
+        StartTime = DateTimeOffset.Now;
+
+        NettyServer = new ChannelServer(this);
+
+        Players = new ChannelPlayerStorage();
 
         this.mapManager = new MapManager(null, this);
-        this.Port = world.Configs.StartPort + (this.channel - 1);
-        this.ipEndPoint = new IPEndPoint(IPAddress.Parse(YamlConfig.config.server.HOST), Port);
+        this.Port = ServerConfig.Port;
+        IPEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.Host), Port);
 
-        channelServer = new ChannelServer(Port, this.world, this.channel);
-        log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
 
-        setServerMessage(WorldModel.ServerMessage);
+        //log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
+
+        setServerMessage(config.ServerMessage);
 
         DojoInstance = new DojoInstance(this);
         WeddingInstance = new WeddingChannelInstance(this);
 
         services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
         eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
+
+        PetFullnessController = new PetFullnessController(this);
+        MountTirednessController = new MountTirednessController(this);
+        HiredMerchantController = new HiredMerchantController(this);
+        CharacterHpDecreaseController = new CharacterHpDecreaseController(this);
+        MapObjectController = new MapObjectController(this);
+        ServerMessageController = new ServerMessageController(this);
+        MapOwnershipController = new MapOwnershipController(this);
+        CharacterAutoSaveController = new CharacterAutoSaveController(this);
+        WeddingReservationController = new WeddingReservationController(this);
+        TimeoutController = new TimeoutController(this);
+        FishingController = new FishingController(this);
+        PartySearchController = new PartySearchController(this);
+        LoadConfigFromWorld();
+    }
+
+    public WorldChannel(ActualServerConfig config) :this(config, new LocalChannelServerTransport())
+    {
     }
 
 
@@ -113,13 +170,34 @@ public class WorldChannel : IWorldChannel
         }
     }
 
+    void LoadConfigFromWorld()
+    {
+        WorldMobRate = Transport.GetWorldMobRate();
+    }
+
     public async Task StartServer()
     {
-        await channelServer.Start();
+        log.Information("频道服务器{InstanceId}启动中...", InstanceId);
+        await NettyServer.Start();
+        log.Information("频道服务器{InstanceId}启动成功：监听端口{Port}", Port);
 
-        IsRunning = true;
+        Channel = await Transport.RegisterChannel(this);
+        log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", Channel);
 
-        log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), Port);
+        PetFullnessController.Register();
+        MountTirednessController.Register();
+        HiredMerchantController.Register();
+        CharacterHpDecreaseController.Register();
+        MapObjectController.Register();
+        ServerMessageController.Register();
+        MapOwnershipController.Register();
+        CharacterAutoSaveController.Register();
+        WeddingReservationController.Register();
+        TimeoutController.Register();
+        FishingController.Register();
+        PartySearchController.Register();
+
+        log.Information("频道服务器{InstanceId}任务注册成功：频道号{Channel}", Channel);
     }
 
     bool isShuttingDown = false;
@@ -127,15 +205,32 @@ public class WorldChannel : IWorldChannel
     {
         try
         {
-            if (isShuttingDown || !IsRunning)
-            {
+            if (isShuttingDown)
                 return;
-            }
 
             isShuttingDown = true;
-            log.Information("Shutting down channel {ChannelId} in world {WorldId}", channel, world);
 
-            await channelServer.Stop();
+            log.Information("频道{Channel}服务器{InstanceId}，停止中...", Channel, InstanceId);
+            await Transport.UnRegisterChannel(InstanceId);
+            Channel = -1;
+            log.Information("频道服务器{InstanceId}，已从世界移除", InstanceId);
+
+            await NettyServer.Stop();
+            log.Information("频道服务器{InstanceId}，已停止监听", InstanceId);
+
+            await PetFullnessController.StopAsync();
+            await ServerMessageController.StopAsync();
+            await MountTirednessController.StopAsync();
+            await HiredMerchantController.StopAsync();
+            await MapObjectController.StopAsync();
+            await CharacterAutoSaveController.StopAsync();
+            await WeddingReservationController.StopAsync();
+            await MapOwnershipController.StopAsync();
+            await FishingController.StopAsync();
+            await PartySearchController.StopAsync();
+            await TimeoutController.StopAsync();
+            await CharacterHpDecreaseController.StopAsync();
+            log.Information("频道服务器{InstanceId}，已停止定时任务", InstanceId);
 
             closeAllMerchants();
             disconnectAwayPlayers();
@@ -147,12 +242,11 @@ public class WorldChannel : IWorldChannel
 
             await closeChannelSchedules();
 
-            IsRunning = false;
-            log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);
+            log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", Channel, World);
         }
         catch (Exception e)
         {
-            log.Error(e, "Error while shutting down channel {ChannelId} in world {WorldId}", channel, world);
+            log.Error(e, "Error while shutting down channel {ChannelId} in world {WorldId}", Channel, World);
         }
         finally
         {
@@ -210,15 +304,6 @@ public class WorldChannel : IWorldChannel
         return services.getAccess(sv).getService();
     }
 
-    public int getWorld()
-    {
-        return world;
-    }
-
-    public IWorld getWorldServer()
-    {
-        return WorldModel;
-    }
 
     public void addPlayer(IPlayer chr)
     {
@@ -256,12 +341,12 @@ public class WorldChannel : IWorldChannel
 
     public int getId()
     {
-        return channel;
+        return Channel;
     }
 
     public IPEndPoint getIP()
     {
-        return ipEndPoint;
+        return IPEndPoint;
     }
 
     public Event? getEvent()
@@ -290,7 +375,7 @@ public class WorldChannel : IWorldChannel
         }
     }
     public void insertPlayerAway(int chrId)
-    {   
+    {
         // either they in CS or MTS
         playersAway.Add(chrId);
     }
@@ -307,15 +392,16 @@ public class WorldChannel : IWorldChannel
 
     private void disconnectAwayPlayers()
     {
-        var wserv = getWorldServer();
-        foreach (int cid in playersAway)
-        {
-            var chr = wserv.Players.getCharacterById(cid);
-            if (chr != null && chr.IsOnlined)
-            {
-                chr.getClient().forceDisconnect();
-            }
-        }
+        Transport.DisconnectPlayers(playersAway);
+        //var wserv = getWorldServer();
+        //foreach (int cid in playersAway)
+        //{
+        //    var chr = wserv.Players.getCharacterById(cid);
+        //    if (chr != null && chr.IsOnlined)
+        //    {
+        //        chr.getClient().forceDisconnect();
+        //    }
+        //}
     }
 
     public Dictionary<int, HiredMerchant> getHiredMerchants()
@@ -424,7 +510,7 @@ public class WorldChannel : IWorldChannel
     {
         this.serverMessage = message;
         broadcastPacket(PacketCreator.serverMessage(message));
-        WorldModel.resetDisabledServerMessages();
+        Transport.ResetDisabledServerMessages();
     }
 
     public int getStoredVar(int key)
@@ -629,4 +715,6 @@ public class WorldChannel : IWorldChannel
     {
         return !usedMC.Contains(getMonsterCarnivalRoom(cpq1, field));
     }
+
+
 }

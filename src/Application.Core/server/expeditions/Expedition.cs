@@ -24,6 +24,7 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using constants.id;
@@ -193,7 +194,7 @@ public class Expedition
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
         }
         startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        Server.getInstance().broadcastGMMessage(startMap.getWorld(), PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
+        startMap.ChannelServer.Transport.BroadcastGMMessage(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
     }
 
     public string addMember(IPlayer player)
@@ -284,34 +285,34 @@ public class Expedition
         return false;
     }
 
-    public void ban(CharacterIdNamePair chr)
-    {
-        int cid = chr.Id;
-        if (!banned.Contains(cid))
-        {
-            banned.Add(cid);
-            members.Remove(cid);
+    //public void ban(CharacterIdNamePair chr)
+    //{
+    //    int cid = chr.Id;
+    //    if (!banned.Contains(cid))
+    //    {
+    //        banned.Add(cid);
+    //        members.Remove(cid);
 
-            if (!silent)
-            {
-                broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
-            }
+    //        if (!silent)
+    //        {
+    //            broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
+    //        }
 
-            var player = startMap.getWorldServer().getPlayerStorage().getCharacterById(cid);
-            if (player != null && player.isLoggedinWorld())
-            {
-                player.sendPacket(PacketCreator.removeClock());
-                if (!silent)
-                {
-                    player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
-                }
-                if (ExpeditionType.ARIANT.Equals(type) || ExpeditionType.ARIANT1.Equals(type) || ExpeditionType.ARIANT2.Equals(type))
-                {
-                    player.changeMap(MapId.ARPQ_LOBBY);
-                }
-            }
-        }
-    }
+    //        var player = startMap.getWorldServer().getPlayerStorage().getCharacterById(cid);
+    //        if (player != null && player.isLoggedinWorld())
+    //        {
+    //            player.sendPacket(PacketCreator.removeClock());
+    //            if (!silent)
+    //            {
+    //                player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
+    //            }
+    //            if (ExpeditionType.ARIANT.Equals(type) || ExpeditionType.ARIANT1.Equals(type) || ExpeditionType.ARIANT2.Equals(type))
+    //            {
+    //                player.changeMap(MapId.ARPQ_LOBBY);
+    //            }
+    //        }
+    //    }
+    //}
 
     public void monsterKilled(IPlayer chr, Monster mob)
     {
@@ -342,7 +343,7 @@ public class Expedition
 
     public List<IPlayer> getActiveMembers()
     {    // thanks MedicOP for figuring out an issue with broadcasting packets to offline members
-        var ps = startMap.getWorldServer().getPlayerStorage();
+        var ps = startMap.getChannelServer().getPlayerStorage();
 
         List<IPlayer> activeMembers = new();
         foreach (int chrid in getMembers().Keys)
@@ -367,16 +368,20 @@ public class Expedition
         return getMembers().OrderByDescending(x => isLeader(x.Key)).ThenBy(x => x.Key).Select(x => new CharacterIdNamePair(x.Key, x.Value)).ToList();
     }
 
-    public bool isExpeditionTeamTogether()
-    {
-        List<IPlayer> chars = getActiveMembers();
-        if (chars.Count <= 1)
-        {
-            return true;
-        }
+    /// <summary>
+    /// 未发现引用
+    /// </summary>
+    /// <returns></returns>
+    //public bool isExpeditionTeamTogether()
+    //{
+    //    List<IPlayer> chars = getActiveMembers();
+    //    if (chars.Count <= 1)
+    //    {
+    //        return true;
+    //    }
 
-        return chars.GroupBy(x => x.getMapId()).Count() <= 1;
-    }
+    //    return chars.GroupBy(x => x.getMapId()).Count() <= 1;
+    //}
 
     public void warpExpeditionTeam(int warpFrom, int warpTo)
     {

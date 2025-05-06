@@ -42,7 +42,7 @@ public class CharlistRequestHandler : AbstractPacketHandler
         }
 
         int channel = p.readByte() + 1;
-        var ch = wserv.getChannel(channel);
+        var ch = Server.getInstance().ChannelList.ElementAt(channel - 1);
         if (ch == null)
         {
             c.sendPacket(PacketCreator.getServerStatus(2));

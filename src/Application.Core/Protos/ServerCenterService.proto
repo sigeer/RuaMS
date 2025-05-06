@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";  
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "RemoteService";
+
+package ServerCenter;
+
+// 订单服务定义
+service ServerCenterService {
+  // 广播
+  rpc BroadcastMessage (MessagePacket) returns (google.protobuf.Empty);
+  // 获取服务器当前时间
+  rpc GetCurrentTime (google.protobuf.Empty) returns (ServerTime);
+  // 获取服务器启动时间
+  rpc GetUpTime(google.protobuf.Empty) returns (ServerupTime);
+  // 获取服务器运行时长（当前服务器时间-启动时间）
+  rpc GetServerTimestamp(google.protobuf.Empty) returns (ServerRunningTime);
+  // 强制刷新服务器时间
+  rpc ForceUpdateServerTime(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // 注册频道服务器
+  rpc AddChannel(ChannelInfo) returns (AddChannelResult);
+  rpc RemoveChannel(ChannelInfo) returns (google.protobuf.Empty);
+  // 保存buff
+  rpc SaveBuff(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+enum PlayerType {
+    Default = 0;
+    GM = 1;
+    Both = 2;
+}
+
+message MessagePacket {
+  bytes data = 1;
+  PlayerType playerType = 2;
+}
+
+
+//创建订单返回结果
+message ServerTime {
+  google.protobuf.Timestamp time = 1;
+}
+
+message ServerupTime {
+  google.protobuf.Timestamp startTime = 1;
+}
+
+message ServerRunningTime {
+  google.protobuf.Duration duration = 1;
+}
+
+message ChannelInfo {
+    string id = 1;
+    string host = 2;
+    int32 port = 3;
+    string grpcAddress = 4;
+}
+
+message AddChannelResult {
+    int32 channelId = 1;
+}

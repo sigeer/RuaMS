@@ -2,6 +2,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.Scripting.Infrastructure;
+using Application.Shared.Servers;
 using client.inventory;
 using constants.id;
 using DotNetty.Codecs;
@@ -14,6 +15,7 @@ using net.netty;
 using net.packet;
 using net.packet.logging;
 using net.server;
+using net.server.channel;
 using net.server.coordinator.login;
 using net.server.coordinator.session;
 using net.server.guild;
@@ -36,7 +38,7 @@ public class Client : ChannelHandlerAdapter, IClient
     public const int LOGIN_SERVER_TRANSITION = 1;
     public const int LOGIN_LOGGEDIN = 2;
 
-    public int World { get; set; }
+    public int World { get; set; } = 0;
     public int Channel { get; set; } = 1;
 
     private Type type;
@@ -100,7 +102,7 @@ public class Client : ChannelHandlerAdapter, IClient
     private long lastNpcClick;
     private long lastPacket = DateTimeOffset.Now.ToUnixTimeMilliseconds();
     private int lang = 0;
-
+    public IServerBase<IServerTransport> CurrentServer { get; }
     public enum Type
     {
         Mock = -1,
@@ -109,15 +111,15 @@ public class Client : ChannelHandlerAdapter, IClient
     }
 
     System.Threading.Channels.Channel<Packet> packetChannel;
-    public Client(Type type, long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor, int world, int channel)
+    public Client(Type type, long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor, IServerBase<IServerTransport> server)
     {
         this.type = type;
         this.sessionId = sessionId;
         this.NettyChannel = socketChannel;
         this.packetProcessor = packetProcessor;
-
-        World = world;
-        Channel = channel;
+        CurrentServer = server;
+        World = server.World;
+        Channel = server.Channel;
 
         log = LogFactory.GetLogger($"Client/{remoteAddress}");
 
@@ -132,26 +134,26 @@ public class Client : ChannelHandlerAdapter, IClient
     }
 
     public static Client createLoginClient(long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor,
-                                           int world, int channel)
+                                           IWorldLogin server)
     {
-        return new Client(Type.LOGIN, sessionId, socketChannel, packetProcessor, world, channel);
+        return new Client(Type.LOGIN, sessionId, socketChannel, packetProcessor, server);
     }
 
-    public static Client createChannelClient(long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor,
-                                             int world, int channel)
+    public static Client CreateChannelClient(long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor,
+                                             IWorldChannel server)
     {
-        return new Client(Type.CHANNEL, sessionId, socketChannel, packetProcessor, world, channel);
+        return new Client(Type.CHANNEL, sessionId, socketChannel, packetProcessor, server);
     }
 
     public static Client createMock()
     {
-        return new Client(Type.Mock, -1, null, null, -123, -123);
+        return new Client(Type.Mock, -1, null, null, null);
     }
 
     public override async void ChannelActive(IChannelHandlerContext ctx)
     {
         var channel = ctx.Channel;
-        if (!Server.getInstance().isOnline())
+        if (!Server.getInstance().IsOnline)
         {
             await channel.CloseAsync();
             return;
@@ -699,7 +701,7 @@ public class Client : ChannelHandlerAdapter, IClient
             int state = data.Loggedin;
             if (state == LOGIN_SERVER_TRANSITION)
             {
-                if (data.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < Server.getInstance().getCurrentTime())
+                if (data.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.Transport.GetServerCurrentTime())
                 {
                     int accountId = accId;
                     state = LOGIN_NOTLOGGEDIN;
@@ -891,7 +893,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
                 if (player.getMap().getHPDec() > 0)
                 {
-                    player.getWorldServer().removePlayerHpDecrease(player);
+                    player.getChannelServer().CharacterHpDecreaseController.removePlayerHpDecrease(player);
                 }
             }
 
@@ -1080,7 +1082,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public IWorldChannel getChannelServer()
     {
-        return Server.getInstance().getChannel(World, Channel);
+        return (CurrentServer as IWorldChannel)!;
     }
 
     public IWorld getWorldServer()
@@ -1088,10 +1090,6 @@ public class Client : ChannelHandlerAdapter, IClient
         return Server.getInstance().getWorld(World);
     }
 
-    public IWorldChannel getChannelServer(byte channel)
-    {
-        return Server.getInstance().getChannel(World, channel);
-    }
 
     public bool deleteCharacter(int cid, int senderAccId)
     {
@@ -1377,7 +1375,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     private void announceDisableServerMessage()
     {
-        if (!this.getWorldServer().registerDisabledServerMessage(OnlinedCharacter.getId()))
+        if (!this.getChannelServer().ServerMessageController.registerDisabledServerMessage(OnlinedCharacter.getId()))
         {
             sendPacket(PacketCreator.serverMessage(""));
         }
@@ -1509,17 +1507,17 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public bool canRequestCharlist()
     {
-        return lastNpcClick + 877 < Server.getInstance().getCurrentTime();
+        return lastNpcClick + 877 < CurrentServer.Transport.GetServerCurrentTime();
     }
 
     public bool canClickNPC()
     {
-        return lastNpcClick + 500 < Server.getInstance().getCurrentTime();
+        return lastNpcClick + 500 < CurrentServer.Transport.GetServerCurrentTime();
     }
 
     public void setClickedNPC()
     {
-        lastNpcClick = Server.getInstance().getCurrentTime();
+        lastNpcClick = CurrentServer.Transport.GetServerCurrentTime();
     }
 
     public void removeClickedNPC()

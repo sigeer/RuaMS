@@ -5,14 +5,16 @@ namespace Application.Host
 {
     public class GameHost : IHostedService
     {
+        readonly ServerCenter _center;
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public GameHost(ServerCenter center)
         {
-            Task.Run(async () =>
-            {
-                await Server.getInstance().Start();
-            });
-            return Task.CompletedTask ;
+            _center = center;
+        }
+
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            await _center.StartServer();
         }
 
         public async Task StartNow(bool ignoreCache)

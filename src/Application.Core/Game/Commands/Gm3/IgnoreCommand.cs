@@ -1,4 +1,4 @@
-﻿using client.autoban;
+using client.autoban;
 using net.server;
 using tools;
 
@@ -29,7 +29,7 @@ public class IgnoreCommand : CommandBase
         bool ignored = AutobanFactory.toggleIgnored(victim.getId());
         player.yellowMessage(victim.getName() + " is " + (ignored ? "now being ignored." : "no longer being ignored."));
         string message_ = player.getName() + (ignored ? " has started ignoring " : " has stopped ignoring ") + victim.getName() + ".";
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(5, message_));
+        c.CurrentServer.Transport.BroadcastGMMessage(PacketCreator.serverNotice(5, message_));
 
     }
 }

@@ -5,6 +5,7 @@ using constants.game;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using server;
+using tools;
 using static client.inventory.Equip;
 
 namespace Application.Core.Managers
@@ -163,6 +164,17 @@ namespace Application.Core.Managers
             var eqpInfo = equip.ReachedMaxLevel() ? " #e#rMAX LEVEL#k#n" : (" EXP: #e#b" + (int)equip.getItemExp() + "#k#n / " + ExpTable.getEquipExpNeededForLevel(equip.getItemLevel()));
 
             return "'" + eqpName + "' -> LV: #e#b" + equip.getItemLevel() + "#k#n    " + eqpInfo + "\r\n";
+        }
+
+        public static void ShowDueyNotification(IPlayer player)
+        {
+            using var dbContext = new DBContext();
+            var sender = dbContext.Dueypackages.Where(x => x.ReceiverId == player.getId() && x.Checked).OrderByDescending(x => x.Type).Select(x => new { x.SenderName, x.Type }).FirstOrDefault();
+            if (sender != null)
+            {
+                dbContext.Dueypackages.Where(x => x.ReceiverId == player.getId()).ExecuteUpdate(x => x.SetProperty(y => y.Checked, false));
+                player.sendPacket(PacketCreator.sendDueyParcelReceived(sender.SenderName, sender.Type));
+            }
         }
     }
 }

@@ -313,13 +313,13 @@ public class AriantColiseum
             {
                 exped.dispose(false);
 
-                foreach (IPlayer chr in exped.getActiveMembers())
+                foreach (var chr in exped.getActiveMembers())
                 {
                     chr.setAriantColiseum(null);
                     chr.changeMap(MapId.ARPQ_LOBBY, 0);
                 }
 
-                map.getWorldServer().registerTimedMapObject(() =>
+                map.ChannelServer.MapObjectController.RegisterTimedMapObject(() =>
                 {
                     score.Clear();
                     exped = null;

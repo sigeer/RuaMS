@@ -2,6 +2,7 @@ using Application.Core;
 using Application.Core.OpenApi;
 using Application.EF;
 using Application.Host;
+using Application.Host.GrpcServices;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
@@ -46,6 +47,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
+builder.Services.AddGrpc();
 builder.Services.AddHostedService<GameHost>();
 if (YamlConfig.config.server.ENABLE_OPENAPI)
 {
@@ -146,5 +148,6 @@ if (YamlConfig.config.server.ENABLE_OPENAPI)
 
     app.MapControllers();
 }
+app.MapGrpcService<Channel2WorldAcceptor>();
 
 app.Run();

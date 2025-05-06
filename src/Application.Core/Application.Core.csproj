@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -13,6 +13,13 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Protos\World2Channel.proto" GrpcServices="Both" />
+		<Protobuf Include="Protos\WorldWedding.proto" GrpcServices="Both" />
+		<Protobuf Include="Protos\ServerCenterService.proto" GrpcServices="Both" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
 		<PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
 		  <PrivateAssets>all</PrivateAssets>

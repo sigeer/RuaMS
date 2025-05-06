@@ -1,24 +1,19 @@
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
-using client;
 
 namespace net.server.task;
 
-public class FamilyDailyResetTask : BaseTask
+public class FamilyDailyResetTask : TimelyControllerBase
 {
-    private IWorld world;
-
-    public FamilyDailyResetTask(IWorld world): base(world)
+    readonly IWorldChannel worldChannel;
+    public FamilyDailyResetTask(IWorldChannel world) : base("FamilyDailyResetTask", TimeSpan.FromDays(1), TimeSpan.FromDays(1))
     {
-        this.world = world;
+        worldChannel = world;
     }
 
-    public override void HandleRun()
+    protected override void HandleRun()
     {
-        FamilyManager.resetEntitlementUsage(world);
-        foreach (Family family in world.getFamilies())
-        {
-            family.resetDailyReps();
-        }
+        FamilyManager.resetEntitlementUsage();
+        worldChannel.Transport.ResetFamilyDailyReps();
     }
 }

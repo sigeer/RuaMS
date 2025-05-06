@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";  
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "World2Channel";
+
+package ServerCenter;
+
+// 订单服务定义
+service World2ChannelService {
+  rpc AddMonsterSpawn (AddMonsterSpawnMessage) returns (google.protobuf.Empty);
+
+  rpc SendDueyNotification(SendDueyNotificationMessage) returns(google.protobuf.Empty);
+}
+
+message AddMonsterSpawnMessage {
+  int32 mapId = 1;
+  int32 mobId = 2;
+  int32 posX = 3;
+  int32 poxY = 4;
+  int32 cy = 5;
+  int32 rx0 = 6;
+  int32 rx1 = 7;
+  int32 fh = 8;
+  int32 mobTime = 9;
+}
+
+message SendDueyNotificationMessage {
+	string name = 1;
+}

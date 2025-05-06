@@ -1,4 +1,4 @@
-namespace net.netty;
+namespace Application.Shared.Servers;
 
 public abstract class AbstractServer
 {
@@ -11,4 +11,5 @@ public abstract class AbstractServer
 
     public abstract Task Start();
     public abstract Task Stop();
+    public bool IsConnected { get; protected set; }
 }

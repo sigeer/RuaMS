@@ -59,25 +59,6 @@ public class DueyProcessor
         }
     }
 
-    private static void showDueyNotification(IClient c, IPlayer player)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            var sender = dbContext.Dueypackages.Where(x => x.ReceiverId == player.getId() && x.Checked).OrderByDescending(x => x.Type).Select(x => new { x.SenderName, x.Type }).FirstOrDefault();
-            if (sender != null)
-            {
-                dbContext.Dueypackages.Where(x => x.ReceiverId == player.getId()).ExecuteUpdate(x => x.SetProperty(y => y.Checked, false));
-                c.sendPacket(PacketCreator.sendDueyParcelReceived(sender.SenderName, sender.Type));
-            }
-
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
-
     private static void deletePackageFromInventoryDB(DBContext dbContext, int packageId)
     {
         ItemFactory.DUEY.saveItems([], packageId, dbContext);
@@ -331,25 +312,7 @@ public class DueyProcessor
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                 }
 
-                IClient? rClient = null;
-                int channel = c.getWorldServer().find(recipient);
-                if (channel > -1)
-                {
-                    var rcserv = c.getWorldServer().getChannel(channel);
-                    if (rcserv != null)
-                    {
-                        var rChr = rcserv.getPlayerStorage().getCharacterByName(recipient);
-                        if (rChr != null)
-                        {
-                            rClient = rChr.getClient();
-                        }
-                    }
-                }
-
-                if (rClient != null && rClient.isLoggedIn() && !rClient.OnlinedCharacter.isAwayFromWorld())
-                {
-                    showDueyNotification(rClient, rClient.OnlinedCharacter);
-                }
+                c.getWorldServer().Transport.SendDueyNotification(recipient);
             }
             finally
             {

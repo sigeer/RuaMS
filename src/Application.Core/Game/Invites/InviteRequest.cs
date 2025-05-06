@@ -7,7 +7,7 @@ namespace Application.Core.Game.Invites
     {
         public InviteRequest(IPlayer from, IPlayer to)
         {
-            CreationTime = Server.getInstance().getCurrentTime();
+            CreationTime = from.Client.CurrentServer.Transport.GetServerCurrentTime();
             From = from;
             To = to;
         }

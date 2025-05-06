@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using net.server;
 using server;
 using System.Text.RegularExpressions;
@@ -56,12 +56,12 @@ public class BanCommand : CommandBase
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
             var rip = target;
             TimerManager.getInstance().schedule(() => rip.getClient().disconnect(false, false), TimeSpan.FromSeconds(5)); //5 Seconds
-            Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            c.CurrentServer.Transport.BroadcastMessage(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
         else if (CharacterManager.Ban(ign, reason, false))
         {
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
-            Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            c.CurrentServer.Transport.BroadcastMessage(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
         else
         {

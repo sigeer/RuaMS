@@ -29,6 +29,5 @@ namespace Application.Core.EF.Entities.SystemBase
         public float TravelRate { get; set; } = 1;
         public int ChannelCount { get; set; } = 3;
         public int StartPort { get; set; }
-        public bool CanDeploy => Enable && StartPort > 0;
     }
 }

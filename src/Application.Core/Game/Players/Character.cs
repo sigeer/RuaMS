@@ -1546,7 +1546,7 @@ public partial class Player
             Skill battleship = SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
             sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
-            addCooldown(Corsair.BATTLE_SHIP, Server.getInstance().getCurrentTime(), cooldown * 1000);
+            addCooldown(Corsair.BATTLE_SHIP, Client.CurrentServer.Transport.GetServerCurrentTime(), cooldown * 1000);
             removeCooldown(5221999);
             cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
         }
@@ -2628,7 +2628,7 @@ public partial class Player
 
     public void resetPlayerAggro()
     {
-        if (getWorldServer().unregisterDisabledServerMessage(Id))
+        if (getChannelServer().ServerMessageController.unregisterDisabledServerMessage(Id))
         {
             Client.announceServerMessage();
         }
@@ -4996,7 +4996,8 @@ public partial class Player
 
     public void sendPacket(Packet packet)
     {
-        Client.sendPacket(packet);
+        if (IsOnlined)
+            Client.sendPacket(packet);
     }
 
     public override int getObjectId()

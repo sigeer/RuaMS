@@ -87,15 +87,15 @@ namespace Application.Host.Services
             return true;
         }
 
-        public async Task<bool> Apply()
+        public bool Apply()
         {
             if (!Server.getInstance().IsOnline)
                 return false;
-            await ServerManager.ApplyWorldServer();
+            ServerManager.ApplyWorldServer();
             return true;
         }
 
-        public async Task<bool> Apply(int id)
+        public bool Apply(int id)
         {
             if (!Server.getInstance().IsOnline)
                 return false;
@@ -104,7 +104,7 @@ namespace Application.Host.Services
             if (config == null)
                 return false;
 
-            await ServerManager.ApplyWorldServer(config);
+            ServerManager.ApplyWorldServer(config);
             return true;
         }
     }

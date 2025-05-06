@@ -1,5 +1,6 @@
-﻿using net.server;
+using net.server;
 using server.expeditions;
+using System.Net;
 
 namespace Application.Core.Game.Commands.Gm3;
 

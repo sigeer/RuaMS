@@ -35,7 +35,7 @@ public class InventorySortHandler : AbstractPacketHandler
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
-        chr.getAutobanManager().setTimestamp(3, Server.getInstance().getCurrentTimestamp(), 4);
+        chr.getAutobanManager().setTimestamp(3, c.CurrentServer.Transport.GetServerCurrentTimestamp(), 4);
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
         {
@@ -62,7 +62,7 @@ public class InventorySortHandler : AbstractPacketHandler
                 var item = inventory.getItem(i);
                 if (item != null)
                 {
-                    // Ϊʲô��copy��
+                    // 为什么用copy？
                     itemarray.Add(item.copy());
                 }
             }

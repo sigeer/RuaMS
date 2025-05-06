@@ -1,4 +1,4 @@
-﻿using Application.Core.constants.game;
+using Application.Core.constants.game;
 using server.life;
 
 namespace Application.Core.Game.Commands.Gm4;
@@ -45,13 +45,7 @@ public class PmobCommand : CommandBase
                 dbContext.Plives.Add(newModel);
                 dbContext.SaveChanges();
 
-                foreach (var ch in player.getWorldServer().getChannels())
-                {
-                    var map = ch.getMapFactory().getMap(mapId);
-                    map.addMonsterSpawn(mob, mobTime, -1);
-                    map.addAllMonsterSpawn(mob, mobTime, -1);
-                }
-
+                player.getWorldServer().Transport.AddMapSpawnPoint(mapId, mobId, checkpos, ypos, xpos + 50, xpos - 50, fh, mobTime);
                 player.yellowMessage("Pmob created.");
             }
             catch (Exception e)

@@ -24,9 +24,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
+using Application.Shared.Servers;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using net.packet;
+using net.server.channel;
 using net.server.coordinator.session;
 using scripting;
 using scripting.Event;
@@ -44,6 +46,7 @@ namespace Application.Core.Game
         public bool IsGameOnlined => Character != null;
         public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
         public string ClientInfo { get; }
+        IServerBase<IServerTransport> CurrentServer { get; }
         public int World { get; set; }
         public int Channel { get; set; }
         public NPCConversationManager? NPCConversationManager { get; set; }
@@ -88,7 +91,6 @@ namespace Application.Core.Game
         void setChannel(int channel);
         int getChannel();
         IWorldChannel getChannelServer();
-        IWorldChannel getChannelServer(byte channel);
         short getCharacterSlots();
         EventManager? getEventManager(string evt);
         sbyte getGender();

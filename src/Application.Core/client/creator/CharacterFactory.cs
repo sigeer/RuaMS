@@ -131,7 +131,7 @@ public abstract class CharacterFactory
                 c.sendPacket(PacketCreator.addNewCharEntry(c, newCharacter));
 
                 Server.getInstance().createCharacterEntry(newCharacter);
-                Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[New Char]: " + c.getAccountName() + " has created a new character with IGN " + name));
+                c.CurrentServer.Transport.BroadcastGMMessage(PacketCreator.sendYellowTip("[New Char]: " + c.getAccountName() + " has created a new character with IGN " + name));
                 Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.getAccountName(), name);
 
                 return CreateCharResult.Success;

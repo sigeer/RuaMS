@@ -4,11 +4,11 @@ namespace Application.Utility.Tasks
     {
         Task Start();
         Task Stop();
-        ScheduledFuture register(AbstractRunnable r, long repeatTime, long? delay = null);
-        ScheduledFuture register(AbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null);
+        ScheduledFuture register(AbstractRunnable r, long repeatDuration, long? delay = null);
+        ScheduledFuture register(AbstractRunnable r, TimeSpan repeatDuration, TimeSpan? delay = null);
 
-        ScheduledFuture register(Action r, long repeatTime, long? delay = null);
-        ScheduledFuture register(Action r, TimeSpan repeatTime, TimeSpan? delay = null);
+        ScheduledFuture register(Action r, long repeatDuration, long? delay = null);
+        ScheduledFuture register(Action r, TimeSpan repeatDuration, TimeSpan? delay = null);
 
 
         ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay);

@@ -57,7 +57,7 @@ public class SpawnPoint
         this.f = monster.getF();
         this.immobile = immobile;
         this.mobInterval = mobInterval;
-        this.nextPossibleSpawn = Server.getInstance().getCurrentTime();
+        this.nextPossibleSpawn = this._map.ChannelServer.Transport.GetServerCurrentTime();
     }
 
     public int getSpawned()
@@ -81,7 +81,7 @@ public class SpawnPoint
         {
             return false;
         }
-        return nextPossibleSpawn <= Server.getInstance().getCurrentTime();
+        return nextPossibleSpawn <= this._map.ChannelServer.Transport.GetServerCurrentTime();
     }
 
     public bool shouldForceSpawn()
@@ -101,7 +101,7 @@ public class SpawnPoint
         {
             monsterKilled = (int aniTime) =>
             {
-                nextPossibleSpawn = Server.getInstance().getCurrentTime();
+                nextPossibleSpawn = this._map.ChannelServer.Transport.GetServerCurrentTime();
                 if (mobTime > 0)
                 {
                     nextPossibleSpawn += mobTime * 1000;
@@ -115,7 +115,7 @@ public class SpawnPoint
         });
         if (mobTime == 0)
         {
-            nextPossibleSpawn = Server.getInstance().getCurrentTime() + mobInterval;
+            nextPossibleSpawn = this._map.ChannelServer.Transport.GetServerCurrentTime() + mobInterval;
         }
         return mob;
     }

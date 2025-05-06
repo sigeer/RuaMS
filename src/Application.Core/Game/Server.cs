@@ -28,6 +28,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
+using Application.Shared.Servers;
 using Application.Utility;
 using client;
 using client.inventory.manipulator;
@@ -64,8 +65,6 @@ public class Server
     private static Dictionary<int, int> couponRates = new(30);
     private static List<int> activeCoupons = new();
 
-
-    private LoginServer loginServer = null!;
     public Dictionary<int, IWorld> RunningWorlds { get; set; } = new();
 
     /// <summary>
@@ -98,6 +97,25 @@ public class Server
     public bool IsOnline { get; set; }
     public static DateTimeOffset uptime = DateTimeOffset.Now;
     ReaderWriterLockSlim lgnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+    public List<ServerChannelWrapper> ChannelList { get; } = new List<ServerChannelWrapper>();
+    public int AddChannel(ServerChannelWrapper data)
+    {
+        ChannelList.Add(data);
+        return ChannelList.Count;
+    }
+
+    public bool RemoveChannel(string id)
+    {
+        var item = ChannelList.FirstOrDefault(x => x.InstanceId == id);
+        if (item == null)
+            return false;
+        return ChannelList.Remove(item);
+    }
+
+    public ServerChannelWrapper GetChannel(int channel)
+    {
+        return ChannelList[channel - 1];
+    }
     private Server()
     {
     }
@@ -124,11 +142,6 @@ public class Server
         currentTime.set(timeNow);
 
         return timeNow;
-    }
-
-    public bool isOnline()
-    {
-        return IsOnline;
     }
 
     public void setNewYearCard(NewYearCardRecord nyc)
@@ -211,110 +224,24 @@ public class Server
 
     public IPEndPoint? GetChannelEndPoint(IClient client, int world, int channel)
     {
-        if (client.NettyChannel.RemoteAddress is IPEndPoint clientIPEndPoint)
-        {
-            var hostAddress = getWorld(world).getChannel(channel).getIP();
+        var channelInfo = ChannelList.ElementAtOrDefault(channel - 1);
+        if (channelInfo == null)
+            return null;
 
-            if (IPAddress.IsLoopback(clientIPEndPoint.Address))
-            {
-                hostAddress.Address = IPAddress.Parse(YamlConfig.config.server.LOCALHOST);
-            }
-            else if (clientIPEndPoint.Address.IsPrivateIP())
-            {
-                hostAddress.Address = IPAddress.Parse(YamlConfig.config.server.LANHOST);
-            }
-            return hostAddress;
-        }
-        return null;
+        return new IPEndPoint(IPAddress.Parse(channelInfo.ServerConfig.Host), channelInfo.ServerConfig.Port);
     }
 
-    public async Task<int> AddWorldChannel(int worldid)
+
+    public bool InitWorld(WorldConfigEntity worldConfig)
     {
-        var world = this.getWorld(worldid);
-
-        if (world == null)
-        {
-            return -3;
-        }
-
-
-        var channelid = world.Channels.Count;
-        if (channelid >= YamlConfig.config.server.CHANNEL_SIZE)
-        {
-            return -2;
-        }
-
-        channelid++;
-
-        IWorldChannel channel = new WorldChannel(world, channelid, getCurrentTime());
-        await channel.StartServer();
-
-        world.addChannel(channel);
-        return channelid;
-    }
-
-    public async Task<bool> AddWorld(WorldConfigEntity worldConfig)
-    {
-        return await InitWorld(worldConfig);
-    }
-
-    public async Task<bool> InitWorld(WorldConfigEntity worldConfig)
-    {
-        if (!worldConfig.CanDeploy)
-        {
-            log.Information("初始化 {WorldId} 失败: 未启用 或者 未设置端口", worldConfig.Id);
-            return false;
-        }
-
         if (RunningWorlds.ContainsKey(worldConfig.Id))
             return false;
 
-        log.Information("Starting world {WorldId}", worldConfig.Id);
+        log.Information("启动世界{WorldId}", worldConfig.Id);
 
         var world = new World(worldConfig);
-
-        long bootTime = getCurrentTime();
-        for (int j = 1; j <= worldConfig.ChannelCount; j++)
-        {
-            int channelid = j;
-            var channel = new WorldChannel(world, channelid, bootTime);
-            await channel.StartServer();
-            world.addChannel(channel);
-        }
-
         RunningWorlds[worldConfig.Id] = world;
-        log.Information("Finished loading world {WorldId}", world.Id);
-        return true;
-    }
-
-    public async Task<bool> RemoveWorldChannel(int worldid)
-    {
-        var world = RunningWorlds.GetValueOrDefault(worldid);
-
-        if (world != null)
-        {
-            int channel = await world.removeChannel();
-            return channel > -1;
-        }
-
-        return false;
-    }
-
-    public async Task<bool> RemoveWorld(int worldId)
-    {
-        var w = RunningWorlds.GetValueOrDefault(worldId);
-
-        if (w == null || !w.canUninstall())
-        {
-            return false;
-        }
-
-        using var dbContext = new DBContext();
-        LoadPlayerRanking(dbContext);
-        await w.Shutdown();
-
-        RunningWorlds.Remove(worldId);
-
+        log.Information("世界{WorldId}启动成功", world.Id);
         return true;
     }
 
@@ -577,10 +504,10 @@ public class Server
 
             var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
 
-            var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
+            var worlds = ServerManager.LoadAllWorld().ToList();
             foreach (var worldConfig in worlds)
             {
-                await InitWorld(worldConfig);
+                InitWorld(worldConfig);
             }
 
             using var dbContext = new DBContext();
@@ -606,7 +533,6 @@ public class Server
             }
 
             // Wait on all async tasks to complete
-            loginServer = await initLoginServer(8484);
             IsOnline = true;
 
             log.Information("Listening on port 8484");
@@ -636,13 +562,6 @@ public class Server
         PacketProcessor.registerGameHandlerDependencies(channelDependencies);
 
         return channelDependencies;
-    }
-
-    private async Task<LoginServer> initLoginServer(int port)
-    {
-        LoginServer loginServer = new LoginServer(port);
-        await loginServer.Start();
-        return loginServer;
     }
 
     private static void setAllLoggedOut(DBContext dbContext)
@@ -1098,7 +1017,6 @@ public class Server
         ThreadManager.getInstance().stop();
         await TimerManager.getInstance().Stop();
 
-        await loginServer.Stop();
         IsOnline = false;
         if (force)
             basedCached = false;

@@ -12,6 +12,7 @@ using scripting.npc;
 using scripting.quest;
 using static Mysqlx.Notice.Warning.Types;
 using System.Reflection;
+using Application.Shared.Servers;
 
 namespace Application.Core.Game
 {
@@ -33,6 +34,8 @@ namespace Application.Core.Game
         public AccountEntity? AccountInfo { get; set; }
 
         public NPCConversationManager? NPCConversationManager { get ; set; }
+
+        public IServerBase<IServerTransport> CurrentServer => throw new BusinessCharacterOfflineException();
 
         public void LoadAccountInfo(AccountEntity? dbModel)
         {

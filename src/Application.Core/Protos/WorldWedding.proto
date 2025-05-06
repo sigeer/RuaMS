@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "RemoteService";
+
+package World;
+
+
+service WorldWeddingService {
+
+  rpc IsMarriageQueued (google.protobuf.Int32Value) returns (google.protobuf.BoolValue);
+
+  rpc PutMarriageQueued (PutMarriageModel) returns (google.protobuf.Empty);
+
+  rpc GetRelationshipCouple(google.protobuf.Int32Value) returns (CoupleModel);
+}
+
+
+//创建订单返回结果
+message PutMarriageModel {
+  int32 weddingId = 1;
+  bool isCathedral = 2;
+  bool isPremium = 3;
+  int32 groomId = 4;
+  int32 bridgeId = 5;
+}
+
+message CoupleModel {
+	int32 husbandId = 1;
+	int32 wifeId = 2;
+}

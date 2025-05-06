@@ -43,7 +43,7 @@ public class OwlWarpHandler : AbstractPacketHandler
             return;
         }
 
-        var hm = c.getWorldServer().getHiredMerchant(ownerid);   // if both hired merchant and player shop is on the same map
+        var hm = c.getChannelServer().HiredMerchantController.getHiredMerchant(ownerid);   // if both hired merchant and player shop is on the same map
         PlayerShop? ps;
         if (hm == null || hm.getMapId() != mapid || !hm.hasItem(c.OnlinedCharacter.getOwlSearch()))
         {

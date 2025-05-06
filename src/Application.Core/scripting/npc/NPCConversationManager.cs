@@ -522,7 +522,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public IPlayer? getMapleCharacter(string player)
     {
-        return Server.getInstance().getWorld(c.getWorld()).getChannel(c.getChannel()).getPlayerStorage().getCharacterByName(player);
+        return c.getChannelServer().getPlayerStorage().getCharacterByName(player);
     }
 
     public void logLeaf(string prize)

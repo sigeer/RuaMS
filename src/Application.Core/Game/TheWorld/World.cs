@@ -4,11 +4,10 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
-using Application.Core.Managers;
+using Application.Shared.Servers;
 using client;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
@@ -16,7 +15,6 @@ using net.server.coordinator.partysearch;
 using net.server.guild;
 using net.server.services;
 using net.server.services.type;
-using net.server.task;
 using net.server.world;
 using server;
 using server.maps;
@@ -71,10 +69,7 @@ public class World : IWorld
             {
                 _serverMessage = value;
 
-                foreach (var ch in getChannels())
-                {
-                    ch.setServerMessage(_serverMessage);
-                }
+                Transport.SetServerMessage(_serverMessage);
             }
         }
     }
@@ -113,19 +108,6 @@ public class World : IWorld
     private List<Dictionary<int, int>> cashItemBought = new(9);
     private ReaderWriterLockSlim suggestLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-    private Dictionary<int, int> disabledServerMessages = new();    // reuse owl lock
-    private object srvMessagesLock = new object();
-    private ScheduledFuture? srvMessagesSchedule;
-
-    private object activePetsLock = new object();
-    private Dictionary<int, int> activePets = new();
-    private ScheduledFuture? petsSchedule;
-    private long petUpdate;
-
-    private object activeMountsLock = new object();
-    private Dictionary<int, int> activeMounts = new();
-    private ScheduledFuture? mountsSchedule;
-    private long mountUpdate;
 
     private object activePlayerShopsLock = new object();
     /// <summary>
@@ -133,24 +115,7 @@ public class World : IWorld
     /// </summary>
     private Dictionary<int, PlayerShop> activePlayerShops = new();
 
-    private object activeMerchantsLock = new object();
-    private Dictionary<int, MerchantOperation> activeMerchants = new();
-    private ScheduledFuture? merchantSchedule;
-    private long merchantUpdate;
-
-    private Dictionary<Action, long> registeredTimedMapObjects = new();
-    private ScheduledFuture? timedMapObjectsSchedule;
-    private object timedMapObjectLock = new object();
-
-    private Dictionary<IPlayer, int> playerHpDec = new Dictionary<IPlayer, int>();
-
-    private ScheduledFuture? charactersSchedule;
-    private ScheduledFuture? marriagesSchedule;
-    private ScheduledFuture? mapOwnershipSchedule;
-    private ScheduledFuture? fishingSchedule;
-    private ScheduledFuture? partySearchSchedule;
-    private ScheduledFuture? timeoutSchedule;
-    private ScheduledFuture? hpDecSchedule;
+    public IWorldServerTransport Transport { get; }
 
     public WorldConfigEntity Configs { get; set; }
     #region
@@ -169,8 +134,6 @@ public class World : IWorld
         TeamStorage = new Dictionary<int, ITeam>();
         runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
         runningMessengerId.set(1);
-        petUpdate = Server.getInstance().getCurrentTime();
-        mountUpdate = petUpdate;
         GuildStorage = new WorldGuildStorage();
 
         for (int i = 0; i < 9; i++)
@@ -194,33 +157,16 @@ public class World : IWorld
         this.FishingRate = config.FishingRate;
         MobRate = config.MobRate;
 
-        var tman = TimerManager.getInstance();
-        petsSchedule = tman.register(new PetFullnessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        srvMessagesSchedule = tman.register(new ServerMessageTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        mountsSchedule = tman.register(new MountTirednessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        merchantSchedule = tman.register(new HiredMerchantTask(this), TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-        timedMapObjectsSchedule = tman.register(new TimedMapObjectTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
-        marriagesSchedule = tman.register(new WeddingReservationTask(this),
-            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
-            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
-        mapOwnershipSchedule = tman.register(new MapOwnershipTask(this), TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
-        fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        partySearchSchedule = tman.register(new PartySearchTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        hpDecSchedule = tman.register(new CharacterHpDecreaseTask(this),
-            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL,
-            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
-
         WeddingInstance = new WeddingWorldInstance(this);
         FishingInstance = new FishingWorldInstance(this);
+        Transport = new WorldServerTransport();
 
-        if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
-        {
-            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            FamilyManager.resetEntitlementUsage(this);
-            tman.register(new FamilyDailyResetTask(this), TimeSpan.FromDays(1), timeLeft);
-        }
+        //if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
+        //{
+        //    var timeLeft = TimeUtils.GetTimeLeftForNextDay();
+        //    FamilyManager.resetEntitlementUsage(this);
+        //    tman.register(new FamilyDailyResetTask(this), TimeSpan.FromDays(1), timeLeft);
+        //}
     }
 
     public int getChannelsSize()
@@ -271,29 +217,6 @@ public class World : IWorld
 
         return ch.getId();
     }
-
-    public async Task ResizeChannel(int channelSize)
-    {
-        if (Channels.Count == channelSize)
-            return;
-
-        var srv = Server.getInstance();
-        while (Channels.Count != channelSize)
-        {
-            if (Channels.Count > channelSize)
-                await srv.RemoveWorldChannel(Id);
-            else
-                await srv.AddWorldChannel(Id);
-        }
-    }
-
-    public bool canUninstall()
-    {
-        if (Players.Count() > 0) return false;
-
-        return this.getChannels().All(x => x.canUninstall());
-    }
-
 
     public void setExpRate(float exp)
     {
@@ -771,18 +694,18 @@ public class World : IWorld
         }
     }
 
-    public CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds)
-    {
-        List<CharacterIdChannelPair> foundsChars = new(characterIds.Length);
-        foreach (var ch in getChannels())
-        {
-            foreach (int charid in ch.multiBuddyFind(charIdFrom, characterIds))
-            {
-                foundsChars.Add(new CharacterIdChannelPair(charid, ch.getId()));
-            }
-        }
-        return foundsChars.ToArray();
-    }
+    //public CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds)
+    //{
+    //    List<CharacterIdChannelPair> foundsChars = new(characterIds.Length);
+    //    foreach (var ch in getChannels())
+    //    {
+    //        foreach (int charid in ch.multiBuddyFind(charIdFrom, characterIds))
+    //        {
+    //            foundsChars.Add(new CharacterIdChannelPair(charid, ch.getId()));
+    //        }
+    //    }
+    //    return foundsChars.ToArray();
+    //}
 
     #region Messenger
 
@@ -817,7 +740,7 @@ public class World : IWorld
                 var messenger = targetChr.Messenger;
                 if (messenger == null)
                 {
-                    var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
+                    var from = Transport.GetChannelPlayerByName(fromchannel, sender);
                     if (from != null)
                     {
                         if (InviteType.MESSENGER.CreateInvite(new ChatInviteRequest(from, targetChr, messengerid)))
@@ -833,7 +756,7 @@ public class World : IWorld
                 }
                 else
                 {
-                    var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
+                    var from = Transport.GetChannelPlayerByName(fromchannel, sender);
                     from?.sendPacket(PacketCreator.messengerChat(sender + " : " + target + " is already using Maple Messenger"));
                 }
             }
@@ -851,7 +774,7 @@ public class World : IWorld
             }
             if (!messengerchar.getName().Equals(namefrom))
             {
-                var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
+                var from = Transport.GetChannelPlayerByName(fromchannel, namefrom);
                 if (from != null)
                 {
                     chr.sendPacket(PacketCreator.addMessengerPlayer(namefrom, from, position, (byte)(fromchannel - 1)));
@@ -933,13 +856,12 @@ public class World : IWorld
     {
         foreach (var messengerchar in messenger.getMembers())
         {
-            var ch = getChannel(fromchannel);
             if (!(messengerchar.getName().Equals(namefrom)))
             {
-                var chr = ch.getPlayerStorage().getCharacterByName(messengerchar.getName());
+                var chr = Transport.GetChannelPlayerByName(fromchannel, messengerchar.getName());
                 if (chr != null)
                 {
-                    var fromPlayer = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
+                    var fromPlayer = Transport.GetChannelPlayerByName(fromchannel, namefrom);
                     if (fromPlayer != null)
                         chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, fromPlayer, position, (byte)(fromchannel - 1)));
                 }
@@ -1055,12 +977,6 @@ public class World : IWorld
                 }
             }
         }
-    }
-
-    private static int getPetKey(IPlayer chr, sbyte petSlot)
-    {
-        // assuming max 3 pets
-        return (chr.getId() << 2) + petSlot;
     }
 
     public void addOwlItemSearch(int itemid)
@@ -1208,184 +1124,8 @@ public class World : IWorld
 
         return cashLeaderboards;
     }
-    #region Pet
-    public void registerPetHunger(IPlayer chr, sbyte petSlot)
-    {
-        if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
-        {
-            return;
-        }
 
-        int key = getPetKey(chr, petSlot);
 
-        Monitor.Enter(activePetsLock);
-        try
-        {
-            int initProc;
-            if (Server.getInstance().getCurrentTime() - petUpdate > 55000)
-            {
-                initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 2;
-            }
-            else
-            {
-                initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 1;
-            }
-
-            activePets.AddOrUpdate(key, initProc);
-        }
-        finally
-        {
-            Monitor.Exit(activePetsLock);
-        }
-    }
-
-    public void unregisterPetHunger(IPlayer chr, sbyte petSlot)
-    {
-        int key = getPetKey(chr, petSlot);
-
-        Monitor.Enter(activePetsLock);
-        try
-        {
-            activePets.Remove(key);
-        }
-        finally
-        {
-            Monitor.Exit(activePetsLock);
-        }
-    }
-
-    public void runPetSchedule()
-    {
-        Dictionary<int, int> deployedPets;
-
-        Monitor.Enter(activePetsLock);
-        try
-        {
-            petUpdate = Server.getInstance().getCurrentTime();
-            deployedPets = new(activePets);   // exception here found thanks to MedicOP
-        }
-        finally
-        {
-            Monitor.Exit(activePetsLock);
-        }
-
-        foreach (var dp in deployedPets)
-        {
-            var chr = this.getPlayerStorage().getCharacterById(dp.Key / 4);
-            if (chr == null || !chr.isLoggedinWorld())
-            {
-                continue;
-            }
-
-            int dpVal = dp.Value + 1;
-            if (dpVal == YamlConfig.config.server.PET_EXHAUST_COUNT)
-            {
-                chr.runFullnessSchedule(dp.Key % 4);
-                dpVal = 0;
-            }
-
-            Monitor.Enter(activePetsLock);
-            try
-            {
-                activePets.AddOrUpdate(dp.Key, dpVal);
-            }
-            finally
-            {
-                Monitor.Exit(activePetsLock);
-            }
-        }
-    }
-    #endregion
-
-    #region
-    public void registerMountHunger(IPlayer chr)
-    {
-        if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
-        {
-            return;
-        }
-
-        int key = chr.getId();
-        Monitor.Enter(activeMountsLock);
-        try
-        {
-            int initProc;
-            if (Server.getInstance().getCurrentTime() - mountUpdate > 45000)
-            {
-                initProc = YamlConfig.config.server.MOUNT_EXHAUST_COUNT - 2;
-            }
-            else
-            {
-                initProc = YamlConfig.config.server.MOUNT_EXHAUST_COUNT - 1;
-            }
-
-            activeMounts.AddOrUpdate(key, initProc);
-        }
-        finally
-        {
-            Monitor.Exit(activeMountsLock);
-        }
-    }
-
-    public void unregisterMountHunger(IPlayer chr)
-    {
-        int key = chr.getId();
-
-        Monitor.Enter(activeMountsLock);
-        try
-        {
-            activeMounts.Remove(key);
-        }
-        finally
-        {
-            Monitor.Exit(activeMountsLock);
-        }
-    }
-
-    public void runMountSchedule()
-    {
-        Dictionary<int, int> deployedMounts;
-        Monitor.Enter(activeMountsLock);
-        try
-        {
-            mountUpdate = Server.getInstance().getCurrentTime();
-            deployedMounts = new(activeMounts);
-        }
-        finally
-        {
-            Monitor.Exit(activeMountsLock);
-        }
-
-        foreach (var dp in deployedMounts)
-        {
-            var chr = this.getPlayerStorage().getCharacterById(dp.Key);
-            if (chr == null || !chr.isLoggedinWorld())
-            {
-                continue;
-            }
-
-            int dpVal = dp.Value + 1;
-            if (dpVal == YamlConfig.config.server.MOUNT_EXHAUST_COUNT)
-            {
-                if (!chr.runTirednessSchedule())
-                {
-                    continue;
-                }
-                dpVal = 0;
-            }
-
-            Monitor.Enter(activeMountsLock);
-            try
-            {
-                activeMounts.AddOrUpdate(dp.Key, dpVal);
-            }
-            finally
-            {
-                Monitor.Exit(activeMountsLock);
-            }
-        }
-    }
-    #endregion
 
     #region
     public void registerPlayerShop(PlayerShop ps)
@@ -1440,272 +1180,6 @@ public class World : IWorld
         }
     }
     #endregion
-    #region
-    public void registerHiredMerchant(HiredMerchant hm)
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            int initProc;
-            if (Server.getInstance().getCurrentTime() - merchantUpdate > TimeSpan.FromMinutes(5).TotalMilliseconds)
-            {
-                initProc = 1;
-            }
-            else
-            {
-                initProc = 0;
-            }
-
-            activeMerchants.AddOrUpdate(hm.getOwnerId(), new(hm, initProc));
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public void unregisterHiredMerchant(HiredMerchant hm)
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            activeMerchants.Remove(hm.getOwnerId());
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public void runHiredMerchantSchedule()
-    {
-        Dictionary<int, MerchantOperation> deployedMerchants;
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            merchantUpdate = Server.getInstance().getCurrentTime();
-            deployedMerchants = new(activeMerchants);
-
-            foreach (var dm in deployedMerchants)
-            {
-                int timeOn = dm.Value.TimeWorked;
-                HiredMerchant hm = dm.Value.HiredMerchant;
-
-                if (timeOn <= 144)
-                {
-                    // 1440 minutes == 24hrs
-                    activeMerchants.AddOrUpdate(hm.getOwnerId(), new(hm, timeOn + 1));
-                }
-                else
-                {
-                    hm.forceClose();
-                    this.getChannel(hm.getChannel()).removeHiredMerchant(hm.getOwnerId());
-
-                    activeMerchants.Remove(dm.Key);
-                }
-            }
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public List<HiredMerchant> getActiveMerchants()
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            return activeMerchants.Where(x => x.Value.HiredMerchant.isOpen()).Select(x => x.Value.HiredMerchant).ToList();
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public HiredMerchant? getHiredMerchant(int ownerid)
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            return activeMerchants.TryGetValue(ownerid, out var value) ? value.HiredMerchant : null;
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-    #endregion
-    #region
-    public void registerTimedMapObject(Action r, long duration)
-    {
-        Monitor.Enter(timedMapObjectLock);
-        try
-        {
-            long expirationTime = Server.getInstance().getCurrentTime() + duration;
-            registeredTimedMapObjects.AddOrUpdate(r, expirationTime);
-        }
-        finally
-        {
-            Monitor.Exit(timedMapObjectLock);
-        }
-    }
-
-    public void runTimedMapObjectSchedule()
-    {
-        List<Action> toRemove = new();
-
-        Monitor.Enter(timedMapObjectLock);
-        try
-        {
-            long timeNow = Server.getInstance().getCurrentTime();
-
-            foreach (var rtmo in registeredTimedMapObjects)
-            {
-                if (rtmo.Value <= timeNow)
-                {
-                    toRemove.Add(rtmo.Key);
-                }
-            }
-
-            foreach (Action r in toRemove)
-            {
-                registeredTimedMapObjects.Remove(r);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(timedMapObjectLock);
-        }
-
-        foreach (Action r in toRemove)
-        {
-            r.Invoke();
-        }
-    }
-    #endregion
-
-    public void addPlayerHpDecrease(IPlayer chr)
-    {
-        playerHpDec.TryAdd(chr, 0);
-    }
-
-    public void removePlayerHpDecrease(IPlayer chr)
-    {
-        playerHpDec.Remove(chr);
-    }
-
-    public void runPlayerHpDecreaseSchedule()
-    {
-        Dictionary<IPlayer, int> m = new();
-        m.putAll(playerHpDec);
-
-        foreach (var e in m)
-        {
-            IPlayer chr = e.Key;
-
-            if (!chr.isAwayFromWorld())
-            {
-                int c = e.Value;
-                c = (c + 1) % YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT;
-                playerHpDec.AddOrUpdate(chr, c);
-
-                if (c == 0)
-                {
-                    chr.doHurtHp();
-                }
-            }
-        }
-    }
-
-    public void resetDisabledServerMessages()
-    {
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            disabledServerMessages.Clear();
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-    }
-
-    public bool registerDisabledServerMessage(int chrid)
-    {
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            bool alreadyDisabled = disabledServerMessages.ContainsKey(chrid);
-            disabledServerMessages.AddOrUpdate(chrid, 0);
-
-            return alreadyDisabled;
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-    }
-
-    public bool unregisterDisabledServerMessage(int chrid)
-    {
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            return disabledServerMessages.Remove(chrid, out var d);
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-    }
-
-    public void runDisabledServerMessagesSchedule()
-    {
-        List<int> toRemove = new();
-
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            foreach (var dsm in disabledServerMessages)
-            {
-                int b = dsm.Value;
-                if (b >= 4)
-                {
-                    // ~35sec duration, 10sec update
-                    toRemove.Add(dsm.Key);
-                }
-                else
-                {
-                    disabledServerMessages.AddOrUpdate(dsm.Key, ++b);
-                }
-            }
-
-            foreach (int chrid in toRemove)
-            {
-                disabledServerMessages.Remove(chrid);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-
-        if (toRemove.Count > 0)
-        {
-            foreach (int chrid in toRemove)
-            {
-                var chr = Players.getCharacterById(chrid);
-
-                if (chr != null && chr.isLoggedinWorld())
-                {
-                    chr.sendPacket(PacketCreator.serverMessage(ServerMessage));
-                }
-            }
-        }
-    }
-
     public void setPlayerNpcMapStep(int mapid, int step)
     {
         setPlayerNpcMapData(mapid, step, -1, false);
@@ -1802,15 +1276,15 @@ public class World : IWorld
     {
         List<KeyValuePair<PlayerShopItem, AbstractMapObject>> hmsAvailable = new();
 
-        foreach (HiredMerchant hm in getActiveMerchants())
-        {
-            List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemid);
+        //foreach (HiredMerchant hm in getActiveMerchants())
+        //{
+        //    List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemid);
 
-            foreach (PlayerShopItem mpsi in itemBundles)
-            {
-                hmsAvailable.Add(new(mpsi, hm));
-            }
-        }
+        //    foreach (PlayerShopItem mpsi in itemBundles)
+        //    {
+        //        hmsAvailable.Add(new(mpsi, hm));
+        //    }
+        //}
 
         foreach (PlayerShop ps in getActivePlayerShops())
         {
@@ -1864,82 +1338,7 @@ public class World : IWorld
 
     public async Task Shutdown()
     {
-        foreach (var ch in getChannels())
-        {
-            await ch.Shutdown();
-        }
-
-        if (petsSchedule != null)
-        {
-            await petsSchedule.CancelAsync(false);
-            petsSchedule = null;
-        }
-
-        if (srvMessagesSchedule != null)
-        {
-            await srvMessagesSchedule.CancelAsync(false);
-            srvMessagesSchedule = null;
-        }
-
-        if (mountsSchedule != null)
-        {
-            await mountsSchedule.CancelAsync(false);
-            mountsSchedule = null;
-        }
-
-        if (merchantSchedule != null)
-        {
-            await merchantSchedule.CancelAsync(false);
-            merchantSchedule = null;
-        }
-
-        if (timedMapObjectsSchedule != null)
-        {
-            await timedMapObjectsSchedule.CancelAsync(false);
-            timedMapObjectsSchedule = null;
-        }
-
-        if (charactersSchedule != null)
-        {
-            await charactersSchedule.CancelAsync(false);
-            charactersSchedule = null;
-        }
-
-        if (marriagesSchedule != null)
-        {
-            await marriagesSchedule.CancelAsync(false);
-            marriagesSchedule = null;
-        }
-
-        if (mapOwnershipSchedule != null)
-        {
-            await mapOwnershipSchedule.CancelAsync(false);
-            mapOwnershipSchedule = null;
-        }
-
-        if (fishingSchedule != null)
-        {
-            await fishingSchedule.CancelAsync(false);
-            fishingSchedule = null;
-        }
-
-        if (partySearchSchedule != null)
-        {
-            await partySearchSchedule.CancelAsync(false);
-            partySearchSchedule = null;
-        }
-
-        if (timeoutSchedule != null)
-        {
-            await timeoutSchedule.CancelAsync(false);
-            timeoutSchedule = null;
-        }
-
-        if (hpDecSchedule != null)
-        {
-            await hpDecSchedule.CancelAsync(false);
-            hpDecSchedule = null;
-        }
+        await Transport.Shutdown();
 
         Players.disconnectAll();
 

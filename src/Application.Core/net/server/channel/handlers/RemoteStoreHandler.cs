@@ -60,7 +60,7 @@ public class RemoteStoreHandler : AbstractPacketHandler
     {
         if (c.OnlinedCharacter.hasMerchant())
         {
-            return c.getWorldServer().getHiredMerchant(c.OnlinedCharacter.getId());
+            return c.getChannelServer().HiredMerchantController.getHiredMerchant(c.OnlinedCharacter.getId());
         }
         return null;
     }
