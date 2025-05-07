@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -22,7 +22,7 @@ public class FishingRateCommand : CommandBase
             return;
 
         int fishrate = Math.Max(d, 1);
-        c.getWorldServer().FishingRate = fishrate;
+        c.getChannelServer().Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { FishingRate = fishrate });
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Fishing Rate has been changed to " + fishrate + "x."));
     }
 }

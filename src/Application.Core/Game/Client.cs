@@ -2,6 +2,8 @@ using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.Scripting.Infrastructure;
+using Application.Core.Servers;
+using Application.Core.ServerTransports;
 using client.inventory;
 using constants.id;
 using DotNetty.Codecs;
@@ -101,6 +103,8 @@ public class Client : ChannelHandlerAdapter, IClient
     private long lastPacket = DateTimeOffset.Now.ToUnixTimeMilliseconds();
     private int lang = 0;
 
+    public IServerBase<IServerTransport> CurrentServer { get; }
+
     public enum Type
     {
         Mock = -1,
@@ -109,15 +113,15 @@ public class Client : ChannelHandlerAdapter, IClient
     }
 
     System.Threading.Channels.Channel<Packet> packetChannel;
-    public Client(Type type, long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor, int world, int channel)
+    public Client(Type type, long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor, IServerBase<IServerTransport> server)
     {
         this.type = type;
         this.sessionId = sessionId;
         this.NettyChannel = socketChannel;
         this.packetProcessor = packetProcessor;
 
-        World = world;
-        Channel = channel;
+        World = 0;
+        CurrentServer = server;
 
         log = LogFactory.GetLogger($"Client/{remoteAddress}");
 
@@ -132,26 +136,26 @@ public class Client : ChannelHandlerAdapter, IClient
     }
 
     public static Client createLoginClient(long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor,
-                                           int world, int channel)
+                                           IMasterServer world)
     {
-        return new Client(Type.LOGIN, sessionId, socketChannel, packetProcessor, world, channel);
+        return new Client(Type.LOGIN, sessionId, socketChannel, packetProcessor, world);
     }
 
     public static Client createChannelClient(long sessionId, ISocketChannel socketChannel, PacketProcessor packetProcessor,
-                                             int world, int channel)
+                                             IWorldChannel worldChannel)
     {
-        return new Client(Type.CHANNEL, sessionId, socketChannel, packetProcessor, world, channel);
+        return new Client(Type.CHANNEL, sessionId, socketChannel, packetProcessor, worldChannel);
     }
 
     public static Client createMock()
     {
-        return new Client(Type.Mock, -1, null, null, -123, -123);
+        return new Client(Type.Mock, -1, null, null, null);
     }
 
     public override async void ChannelActive(IChannelHandlerContext ctx)
     {
         var channel = ctx.Channel;
-        if (!Server.getInstance().isOnline())
+        if (!Server.getInstance().IsOnline)
         {
             await channel.CloseAsync();
             return;
@@ -1078,9 +1082,10 @@ public class Client : ChannelHandlerAdapter, IClient
         return Channel;
     }
 
+    IWorldChannel _cachedServer;
     public IWorldChannel getChannelServer()
     {
-        return Server.getInstance().getChannel(World, Channel);
+        return _cachedServer ??= (CurrentServer as IWorldChannel)!;
     }
 
     public IWorld getWorldServer()
@@ -1377,7 +1382,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     private void announceDisableServerMessage()
     {
-        if (!this.getWorldServer().registerDisabledServerMessage(OnlinedCharacter.getId()))
+        if (!this.getChannelServer().ServerMessageController.registerDisabledServerMessage(OnlinedCharacter.getId()))
         {
             sendPacket(PacketCreator.serverMessage(""));
         }

@@ -49,7 +49,7 @@ TimeSpan.FromSeconds($1)
 | - | `Java.to`      | - | CodeMigration替换 |
 | - | `iterator()`      | ❗ | 需要手动处理 |
 | - | `size()`, `toArray()`, `get()` | - | 目前通过扩展方法适配，暂不用处理 |
-| - | `Channel` -> `WorldChannel` | - | jint保持了相同的别名，暂不用处理 |
+| - | `Channel.getRelativeWeddingTicketExpireTime` -> `CommonManager.GetRelativeWeddingTicketExpireTime` | ❗ | 静态方法移动 |
 | - | `Character` -> `CharacterManager` | ❗ | 静态方法移动 |
 | - | `Wedding` -> `WeddingPackets` | - | jint保持了相同的别名，暂不用处理 |
 | - | `RingActionHandler` -> `RingManager` | ❗ | 静态方法移动 |

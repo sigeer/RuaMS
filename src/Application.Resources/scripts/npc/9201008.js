@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2017 RonanLana
 
@@ -175,7 +175,7 @@ function action(mode, type, selection) {
                                         if (resStatus > 0) {
                                             cm.gainItem((weddingType) ? weddingEntryTicketPremium : weddingEntryTicketCommon, -1);
 
-                                            var expirationTime = Channel.getRelativeWeddingTicketExpireTime(resStatus);
+                                            var expirationTime = CommonManager.GetRelativeWeddingTicketExpireTime(resStatus);
                                             cm.gainItem(weddingSendTicket, 15, false, true, expirationTime);
                                             partner.getAbstractPlayerInteraction().gainItem(weddingSendTicket, 15, false, true, expirationTime);
 
@@ -249,7 +249,7 @@ function action(mode, type, selection) {
                         if (resStatus > 0) {
                             if (cm.canHold(weddingSendTicket, 3)) {
                                 cm.gainItem(5251100, -1);
-                                var expirationTime = Channel.getRelativeWeddingTicketExpireTime(resStatus);
+                                var expirationTime = CommonManager.GetRelativeWeddingTicketExpireTime(resStatus);
                                 cm.gainItem(weddingSendTicket, 3, false, true, expirationTime);
                             } else {
                                 cm.sendOk("请确保有一个空余的ETC槽位以获取更多的邀请。");

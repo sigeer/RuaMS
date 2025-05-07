@@ -56,19 +56,19 @@ public class PacketProcessor
         PacketProcessor.channelDeps = channelDependencies;
     }
 
-    public static PacketProcessor getLoginServerProcessor()
+    public static PacketProcessor getLoginServerProcessor(string instanceId)
     {
-        return getProcessor(LoginServer.WORLD_ID, LoginServer.CHANNEL_ID);
+        return getProcessor(instanceId, true);
     }
 
-    public static PacketProcessor getChannelServerProcessor(int world, int channel)
+    public static PacketProcessor getChannelServerProcessor(string instanceId)
     {
         if (channelDeps == null)
         {
             throw new Exception("Unable to get channel server processor - dependencies are not registered");
         }
 
-        return getProcessor(world, channel);
+        return getProcessor(instanceId, false);
     }
 
     public IPacketHandler? getHandler(short packetId)
@@ -94,29 +94,28 @@ public class PacketProcessor
     }
 
     static object getLock = new object();
-    public static PacketProcessor getProcessor(int world, int channel)
+    public static PacketProcessor getProcessor(string processorId, bool isLogin)
     {
         lock (getLock)
         {
-            string processorId = world + " " + channel;
             var processor = instances.GetValueOrDefault(processorId);
             if (processor == null)
             {
                 processor = new PacketProcessor();
-                processor.reset(channel);
+                processor.reset(isLogin);
                 instances.AddOrUpdate(processorId, processor);
             }
             return processor;
         }
     }
 
-    public void reset(int channel)
+    public void reset(bool isLogin)
     {
         handlers = new IPacketHandler[handlers.Length];
 
         registerCommonHandlers();
 
-        if (channel < 0)
+        if (isLogin)
         {
             registerLoginHandlers();
         }

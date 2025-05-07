@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Skills;
+using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Shared.KeyMaps;
 using client;
@@ -99,20 +100,18 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 return;
             }
 
-            var cserv = wserv.getChannel(c.getChannel());
+            var cserv = c.CurrentServer as IWorldChannel;
             if (cserv == null)
             {
-                c.setChannel(1);
-                cserv = wserv.getChannel(c.getChannel());
-
-                if (cserv == null)
-                {
-                    c.disconnect(true, false);
-                    return;
-                }
+                c.disconnect(true, false);
+                return;
+            }
+            else
+            {
+                c.setChannel(cserv.getId());
             }
 
-            var storage = wserv.getPlayerStorage();
+                var storage = wserv.getPlayerStorage();
             var player = storage.getCharacterById(cid);
 
             Hwid? hwid;
@@ -305,7 +304,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 }
                 else
                 {
-                    player.GuildModel.setOnline(player.Id, true, c.Channel);
+                    player.GuildModel.setOnline(player.Id, true, c.getChannel());
                     c.sendPacket(GuildPackets.showGuildInfo(player));
                     if (player.AllianceModel != null)
                     {

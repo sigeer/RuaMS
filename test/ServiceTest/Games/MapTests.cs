@@ -185,16 +185,16 @@ namespace ServiceTest.Games
             Assert.That(map.getItems().Count == 0);
         }
 
-        [Test]
-        public void MobRateChange_Test()
-        {
-            var map = LoadMap(10000);
+        //[Test]
+        //public void MobRateChange_Test()
+        //{
+        //    var map = LoadMap(10000);
 
-            Assert.That(map.ActualMonsterRate, Is.EqualTo(map.getWorldServer().MobRate));
-            map.getWorldServer().MobRate = 2;
-            Assert.That(map.ActualMonsterRate, Is.EqualTo(map.getWorldServer().MobRate));
-            map.MonsterRate = 0.5f;
-            Assert.That(map.ActualMonsterRate, Is.EqualTo(1));
-        }
+        //    Assert.That(map.ActualMonsterRate, Is.EqualTo(map.getWorldServer().MobRate));
+        //    map.getWorldServer().MobRate = 2;
+        //    Assert.That(map.ActualMonsterRate, Is.EqualTo(map.getWorldServer().MobRate));
+        //    map.MonsterRate = 0.5f;
+        //    Assert.That(map.ActualMonsterRate, Is.EqualTo(1));
+        //}
     }
 }

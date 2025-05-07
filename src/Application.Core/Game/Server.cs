@@ -28,7 +28,6 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
-using Application.Utility;
 using client;
 using client.inventory.manipulator;
 using client.newyear;
@@ -37,9 +36,7 @@ using constants.inventory;
 using constants.net;
 using database.note;
 using Microsoft.EntityFrameworkCore;
-using net.netty;
 using net.packet;
-using net.server.channel;
 using net.server.coordinator.session;
 using net.server.task;
 using server;
@@ -64,8 +61,6 @@ public class Server
     private static Dictionary<int, int> couponRates = new(30);
     private static List<int> activeCoupons = new();
 
-
-    private LoginServer loginServer = null!;
     public Dictionary<int, IWorld> RunningWorlds { get; set; } = new();
 
     /// <summary>
@@ -124,11 +119,6 @@ public class Server
         currentTime.set(timeNow);
 
         return timeNow;
-    }
-
-    public bool isOnline()
-    {
-        return IsOnline;
     }
 
     public void setNewYearCard(NewYearCardRecord nyc)
@@ -228,62 +218,23 @@ public class Server
         return null;
     }
 
-    public async Task<int> AddWorldChannel(int worldid)
+
+    public bool AddWorld(WorldConfigEntity worldConfig)
     {
-        var world = this.getWorld(worldid);
-
-        if (world == null)
-        {
-            return -3;
-        }
-
-
-        var channelid = world.Channels.Count;
-        if (channelid >= YamlConfig.config.server.CHANNEL_SIZE)
-        {
-            return -2;
-        }
-
-        channelid++;
-
-        IWorldChannel channel = new WorldChannel(world, channelid, getCurrentTime());
-        await channel.StartServer();
-
-        world.addChannel(channel);
-        return channelid;
+        return InitWorld(worldConfig);
     }
 
-    public async Task<bool> AddWorld(WorldConfigEntity worldConfig)
+    public bool InitWorld(WorldConfigEntity worldConfig)
     {
-        return await InitWorld(worldConfig);
-    }
-
-    public async Task<bool> InitWorld(WorldConfigEntity worldConfig)
-    {
-        if (!worldConfig.CanDeploy)
-        {
-            log.Information("初始化 {WorldId} 失败: 未启用 或者 未设置端口", worldConfig.Id);
-            return false;
-        }
-
         if (RunningWorlds.ContainsKey(worldConfig.Id))
             return false;
 
-        log.Information("Starting world {WorldId}", worldConfig.Id);
+        log.Information("初始化世界 {WorldId}", worldConfig.Id);
 
         var world = new World(worldConfig);
 
-        long bootTime = getCurrentTime();
-        for (int j = 1; j <= worldConfig.ChannelCount; j++)
-        {
-            int channelid = j;
-            var channel = new WorldChannel(world, channelid, bootTime);
-            await channel.StartServer();
-            world.addChannel(channel);
-        }
-
         RunningWorlds[worldConfig.Id] = world;
-        log.Information("Finished loading world {WorldId}", world.Id);
+        log.Information("世界 {WorldId} 加载完成", world.Id);
         return true;
     }
 
@@ -564,7 +515,7 @@ public class Server
             return;
 
         IsStarting = true;
-        log.Information("游戏服务器启动中...");
+        log.Information("服务器配置加载中...");
 
         Stopwatch totalSw = new Stopwatch();
         totalSw.Start();
@@ -577,10 +528,10 @@ public class Server
 
             var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
 
-            var worlds = ServerManager.LoadAllWorld().Where(x => x.CanDeploy).ToList();
+            var worlds = ServerManager.LoadAllWorld().ToList();
             foreach (var worldConfig in worlds)
             {
-                await InitWorld(worldConfig);
+                InitWorld(worldConfig);
             }
 
             using var dbContext = new DBContext();
@@ -605,20 +556,16 @@ public class Server
                 Family.loadAllFamilies(dbContext);
             }
 
-            // Wait on all async tasks to complete
-            loginServer = await initLoginServer(8484);
             IsOnline = true;
 
-            log.Information("Listening on port 8484");
-
             totalSw.Stop();
-            log.Information("游戏服务器启动完成，耗时 {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
+            log.Information("服务器配置加载完成，耗时 {StartupCost}s.", totalSw.Elapsed.TotalSeconds);
 
             await startTimelyTask;
         }
         catch (Exception ex)
         {
-            log.Error(ex, "启动失败");
+            log.Error(ex, "服务器配置加载失败");
             throw;
         }
         finally
@@ -636,13 +583,6 @@ public class Server
         PacketProcessor.registerGameHandlerDependencies(channelDependencies);
 
         return channelDependencies;
-    }
-
-    private async Task<LoginServer> initLoginServer(int port)
-    {
-        LoginServer loginServer = new LoginServer(port);
-        await loginServer.Start();
-        return loginServer;
     }
 
     private static void setAllLoggedOut(DBContext dbContext)
@@ -1098,7 +1038,6 @@ public class Server
         ThreadManager.getInstance().stop();
         await TimerManager.getInstance().Stop();
 
-        await loginServer.Stop();
         IsOnline = false;
         if (force)
             basedCached = false;

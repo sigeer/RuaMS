@@ -14,7 +14,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : AbstractAnimatedMapObject, IPlayer
     {
-        public int Channel => awayFromWorld ? -1 : Client.Channel;
+        public int Channel => awayFromWorld ? -1 : Client.getChannel();
         public IClient Client { get; private set; }
         public bool IsOnlined => Client.IsGameOnlined;
 
@@ -79,13 +79,13 @@ namespace Application.Core.Game.Players
 
             if (Client is not OfflineClient)
             {
-                var worldServer = Client.getWorldServer();
-                worldServer.OnExpRateChanged += UpdateActualExpRate;
-                worldServer.OnMesoRateChanged += UpdateActualMesoRate;
-                worldServer.OnDropRateChanged += UpdateActualDropRate;
-                worldServer.OnBossDropRateChaged += UpdateActualBossDropRate;
-                worldServer.OnQuestRateChanged += UpdateActualQuestExpRate;
-                worldServer.OnQuestRateChanged += UpdateActualQuestMesoRate;
+                var worldServer = Client.getChannelServer();
+                worldServer.OnWorldExpRateChanged += UpdateActualExpRate;
+                worldServer.OnWorldMesoRateChanged += UpdateActualMesoRate;
+                worldServer.OnWorldDropRateChanged += UpdateActualDropRate;
+                worldServer.OnWorldBossDropRateChanged += UpdateActualBossDropRate;
+                worldServer.OnWorldQuestRateChanged += UpdateActualQuestExpRate;
+                worldServer.OnWorldQuestRateChanged += UpdateActualQuestMesoRate;
 
                 UpdateActualRate();
             }

@@ -138,7 +138,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
             posX -= 12;
         }
         Point dropPos = new Point(posX, posY);
-        var worldMesoRate = c.getWorldServer().MesoRate;
+        var worldMesoRate = c.getChannelServer().WorldMesoRate;
 
         if (!delayed)
         {

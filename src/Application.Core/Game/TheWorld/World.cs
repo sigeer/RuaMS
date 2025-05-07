@@ -32,52 +32,6 @@ public class World : IWorld
     public string Name { get; set; }
     public string WhyAmIRecommended { get; set; }
     public int Flag { get; set; }
-    float _expRate;
-    public float ExpRate { get => _expRate; set { _expRate = value; OnExpRateChanged?.Invoke(); } }
-    float _dropRate;
-    public float DropRate { get => _dropRate; set { _dropRate = value; OnDropRateChanged?.Invoke(); } }
-    float _bossDropRate;
-    public float BossDropRate { get => _bossDropRate; set { _bossDropRate = value; OnBossDropRateChaged?.Invoke(); } }
-    float _mesoRate;
-    public float MesoRate { get => _mesoRate; set { _mesoRate = value; OnMesoRateChanged?.Invoke(); } }
-    float _questRate;
-    public float QuestRate { get => _questRate; set { _questRate = value; OnQuestRateChanged?.Invoke(); } }
-    public float TravelRate { get; set; }
-    public float FishingRate { get; set; }
-    private float _mobRate;
-    public float MobRate
-    {
-        get => _mobRate;
-        set
-        {
-            if (value <= 0)
-                _mobRate = 1;
-            else
-                _mobRate = Math.Min(value, 5);
-            OnMobRateChanged?.Invoke();
-        }
-    }
-
-    string _serverMessage;
-    public string ServerMessage
-    {
-        get
-        {
-            return _serverMessage;
-        }
-        set
-        {
-            if (_serverMessage != value)
-            {
-                _serverMessage = value;
-
-                foreach (var ch in getChannels())
-                {
-                    ch.setServerMessage(_serverMessage);
-                }
-            }
-        }
-    }
 
     public string EventMessage { get; set; }
 
@@ -93,8 +47,6 @@ public class World : IWorld
     private Dictionary<int, Messenger> messengers = new();
     private AtomicInteger runningMessengerId = new AtomicInteger();
     private Dictionary<int, Family> families = new();
-
-    public WeddingWorldInstance WeddingInstance { get; }
     public FishingWorldInstance FishingInstance { get; }
 
     private ServicesManager<WorldServices> services = new ServicesManager<WorldServices>(WorldServices.SAVE_CHARACTER);
@@ -104,18 +56,12 @@ public class World : IWorld
     private Dictionary<int, Storage> accountStorages = new();
     private object accountCharsLock = new object();
 
-    private HashSet<int> queuedGuilds = new();
-
     private AtomicInteger runningPartyId = new AtomicInteger();
     private object partyLock = new object();
 
     private Dictionary<int, int> owlSearched = new();
     private List<Dictionary<int, int>> cashItemBought = new(9);
     private ReaderWriterLockSlim suggestLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-    private Dictionary<int, int> disabledServerMessages = new();    // reuse owl lock
-    private object srvMessagesLock = new object();
-    private ScheduledFuture? srvMessagesSchedule;
 
     private object activePetsLock = new object();
     private Dictionary<int, int> activePets = new();
@@ -153,14 +99,6 @@ public class World : IWorld
     private ScheduledFuture? hpDecSchedule;
 
     public WorldConfigEntity Configs { get; set; }
-    #region
-    public event Action? OnMobRateChanged;
-    public event Action? OnExpRateChanged;
-    public event Action? OnMesoRateChanged;
-    public event Action? OnDropRateChanged;
-    public event Action? OnQuestRateChanged;
-    public event Action? OnBossDropRateChaged;
-    #endregion
 
     public World(WorldConfigEntity config)
     {
@@ -183,20 +121,10 @@ public class World : IWorld
         this.Flag = config.Flag;
         Name = config.Name;
         WhyAmIRecommended = config.RecommendMessage;
-        ServerMessage = config.ServerMessage;
         this.EventMessage = config.EventMessage;
-        this.ExpRate = config.ExpRate;
-        this.DropRate = config.DropRate;
-        this.BossDropRate = config.BossDropRate;
-        this.MesoRate = config.MesoRate;
-        this.QuestRate = config.QuestRate;
-        this.TravelRate = config.TravelRate;
-        this.FishingRate = config.FishingRate;
-        MobRate = config.MobRate;
 
         var tman = TimerManager.getInstance();
         petsSchedule = tman.register(new PetFullnessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        srvMessagesSchedule = tman.register(new ServerMessageTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         mountsSchedule = tman.register(new MountTirednessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         merchantSchedule = tman.register(new HiredMerchantTask(this), TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
         timedMapObjectsSchedule = tman.register(new TimedMapObjectTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
@@ -212,7 +140,6 @@ public class World : IWorld
             YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL,
             YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
 
-        WeddingInstance = new WeddingWorldInstance(this);
         FishingInstance = new FishingWorldInstance(this);
 
         if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
@@ -238,18 +165,11 @@ public class World : IWorld
         return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessFatalException($"Channel {channel} not existed");
     }
 
-    public bool addChannel(IWorldChannel channel)
+    public int addChannel(IWorldChannel channel)
     {
-        if (channel.getId() == Channels.Count + 1)
-        {
-            Channels.Add(channel);
-            Players.RelateChannel(channel.getId(), channel.Players);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        Channels.Add(channel);
+        Players.RelateChannel(channel.getId(), channel.Players);
+        return Channels.Count;
     }
 
     public async Task<int> removeChannel()
@@ -272,20 +192,6 @@ public class World : IWorld
         return ch.getId();
     }
 
-    public async Task ResizeChannel(int channelSize)
-    {
-        if (Channels.Count == channelSize)
-            return;
-
-        var srv = Server.getInstance();
-        while (Channels.Count != channelSize)
-        {
-            if (Channels.Count > channelSize)
-                await srv.RemoveWorldChannel(Id);
-            else
-                await srv.AddWorldChannel(Id);
-        }
-    }
 
     public bool canUninstall()
     {
@@ -293,28 +199,6 @@ public class World : IWorld
 
         return this.getChannels().All(x => x.canUninstall());
     }
-
-
-    public void setExpRate(float exp)
-    {
-        this.ExpRate = exp;
-    }
-
-
-    public void setDropRate(float drop)
-    {
-        this.DropRate = drop;
-    }
-    public void setMesoRate(float meso)
-    {
-        this.MesoRate = meso;
-    }
-
-    public int getTransportationTime(double travelTime)
-    {
-        return (int)Math.Ceiling(travelTime / TravelRate);
-    }
-
 
 
     public void loadAccountStorage(int accountId)
@@ -565,20 +449,6 @@ public class World : IWorld
         }
     }
 
-    public bool isGuildQueued(int guildId)
-    {
-        return queuedGuilds.Contains(guildId);
-    }
-
-    public void putGuildQueued(int guildId)
-    {
-        queuedGuilds.Add(guildId);
-    }
-
-    public void removeGuildQueued(int guildId)
-    {
-        queuedGuilds.Remove(guildId);
-    }
 
     public ITeam createParty(IPlayer chrfor)
     {
@@ -1619,93 +1489,6 @@ public class World : IWorld
         }
     }
 
-    public void resetDisabledServerMessages()
-    {
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            disabledServerMessages.Clear();
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-    }
-
-    public bool registerDisabledServerMessage(int chrid)
-    {
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            bool alreadyDisabled = disabledServerMessages.ContainsKey(chrid);
-            disabledServerMessages.AddOrUpdate(chrid, 0);
-
-            return alreadyDisabled;
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-    }
-
-    public bool unregisterDisabledServerMessage(int chrid)
-    {
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            return disabledServerMessages.Remove(chrid, out var d);
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-    }
-
-    public void runDisabledServerMessagesSchedule()
-    {
-        List<int> toRemove = new();
-
-        Monitor.Enter(srvMessagesLock);
-        try
-        {
-            foreach (var dsm in disabledServerMessages)
-            {
-                int b = dsm.Value;
-                if (b >= 4)
-                {
-                    // ~35sec duration, 10sec update
-                    toRemove.Add(dsm.Key);
-                }
-                else
-                {
-                    disabledServerMessages.AddOrUpdate(dsm.Key, ++b);
-                }
-            }
-
-            foreach (int chrid in toRemove)
-            {
-                disabledServerMessages.Remove(chrid);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(srvMessagesLock);
-        }
-
-        if (toRemove.Count > 0)
-        {
-            foreach (int chrid in toRemove)
-            {
-                var chr = Players.getCharacterById(chrid);
-
-                if (chr != null && chr.isLoggedinWorld())
-                {
-                    chr.sendPacket(PacketCreator.serverMessage(ServerMessage));
-                }
-            }
-        }
-    }
-
     public void setPlayerNpcMapStep(int mapid, int step)
     {
         setPlayerNpcMapData(mapid, step, -1, false);
@@ -1825,11 +1608,6 @@ public class World : IWorld
         return hmsAvailable;
     }
 
-    public int getRelationshipId(int playerId)
-    {
-        return WeddingInstance.GetRelationshipId(playerId);
-    }
-
 
     public void dropMessage(int type, string message)
     {
@@ -1873,12 +1651,6 @@ public class World : IWorld
         {
             await petsSchedule.CancelAsync(false);
             petsSchedule = null;
-        }
-
-        if (srvMessagesSchedule != null)
-        {
-            await srvMessagesSchedule.CancelAsync(false);
-            srvMessagesSchedule = null;
         }
 
         if (mountsSchedule != null)

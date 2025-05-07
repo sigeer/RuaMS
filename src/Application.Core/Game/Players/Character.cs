@@ -374,7 +374,7 @@ public partial class Player
 
     public int getRelationshipId()
     {
-        return getWorldServer().getRelationshipId(Id);
+        return getChannelServer().Transport.GetRelationshipId(Id);
     }
 
 
@@ -2628,7 +2628,7 @@ public partial class Player
 
     public void resetPlayerAggro()
     {
-        if (getWorldServer().unregisterDisabledServerMessage(Id))
+        if (getChannelServer().ServerMessageController.unregisterDisabledServerMessage(Id))
         {
             Client.announceServerMessage();
         }
@@ -3510,32 +3510,32 @@ public partial class Player
 
     void UpdateActualExpRate()
     {
-        ActualExpRate = expRateByLevel * getWorldServer().ExpRate * expCoupon;
+        ActualExpRate = expRateByLevel * getChannelServer().WorldExpRate * expCoupon;
     }
 
     void UpdateActualMesoRate()
     {
-        ActualMesoRate = mesoRateByLevel * getWorldServer().MesoRate * mesoCoupon;
+        ActualMesoRate = mesoRateByLevel * getChannelServer().WorldMesoRate * mesoCoupon;
     }
 
     void UpdateActualDropRate()
     {
-        ActualDropRate = dropRateByLevel * getWorldServer().DropRate * dropCoupon;
+        ActualDropRate = dropRateByLevel * getChannelServer().WorldDropRate * dropCoupon;
     }
 
     void UpdateActualBossDropRate()
     {
-        ActualBossDropRate = getWorldServer().BossDropRate;
+        ActualBossDropRate = getChannelServer().WorldBossDropRate;
     }
 
     void UpdateActualQuestExpRate()
     {
-        ActualQuestExpRate = getWorldServer().QuestRate;
+        ActualQuestExpRate = getChannelServer().WorldQuestRate;
     }
 
     void UpdateActualQuestMesoRate()
     {
-        ActualQuestMesoRate = getWorldServer().QuestRate;
+        ActualQuestMesoRate = getChannelServer().WorldQuestRate;
     }
 
     private void setCouponRates()
@@ -5411,13 +5411,13 @@ public partial class Player
         }
         // Bag.Dispose();
 
-        var worldServer = getWorldServer();
-        worldServer.OnExpRateChanged -= UpdateActualExpRate;
-        worldServer.OnMesoRateChanged -= UpdateActualMesoRate;
-        worldServer.OnDropRateChanged -= UpdateActualDropRate;
-        worldServer.OnBossDropRateChaged -= UpdateActualBossDropRate;
-        worldServer.OnQuestRateChanged -= UpdateActualQuestExpRate;
-        worldServer.OnQuestRateChanged -= UpdateActualQuestMesoRate;
+        var worldServer = getChannelServer();
+        worldServer.OnWorldExpRateChanged -= UpdateActualExpRate;
+        worldServer.OnWorldMesoRateChanged -= UpdateActualMesoRate;
+        worldServer.OnWorldDropRateChanged -= UpdateActualDropRate;
+        worldServer.OnWorldBossDropRateChanged -= UpdateActualBossDropRate;
+        worldServer.OnWorldQuestRateChanged -= UpdateActualQuestExpRate;
+        worldServer.OnWorldQuestRateChanged -= UpdateActualQuestMesoRate;
     }
 
     public void logOff()

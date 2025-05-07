@@ -1,5 +1,6 @@
 
 
+using Application.Core.Game.TheWorld;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
@@ -8,14 +9,11 @@ namespace net.netty;
 
 public class ChannelServer : AbstractServer
 {
-    private int world;
-    private int channel;
     private IChannel? nettyChannel;
-
-    public ChannelServer(int port, int world, int channel) : base(port)
+    readonly IWorldChannel worldChannel;
+    public ChannelServer(IWorldChannel worldChannel) : base(worldChannel.Port)
     {
-        this.world = world;
-        this.channel = channel;
+        this.worldChannel = worldChannel;
     }
 
     public override async Task Start()
@@ -25,7 +23,7 @@ public class ChannelServer : AbstractServer
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .Group(parentGroup, childGroup)
                 .Channel<TcpServerSocketChannel>()
-                .ChildHandler(new ChannelServerInitializer(world, channel));
+                .ChildHandler(new ChannelServerInitializer(worldChannel));
 
         this.nettyChannel = await bootstrap.BindAsync(port);
     }

@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
+using Application.Core.Servers;
+using Application.Core.ServerTransports;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using net.packet;
@@ -46,6 +48,7 @@ namespace Application.Core.Game
         public string ClientInfo { get; }
         public int World { get; set; }
         public int Channel { get; set; }
+        public IServerBase<IServerTransport> CurrentServer { get; }
         public NPCConversationManager? NPCConversationManager { get; set; }
         public IChannel NettyChannel { get; }
         void LoadAccountInfo(AccountEntity? dbModel);

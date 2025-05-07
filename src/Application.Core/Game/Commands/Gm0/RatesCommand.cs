@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm0;
+namespace Application.Core.Game.Commands.Gm0;
 
 public class RatesCommand : CommandBase
 {
@@ -19,7 +19,7 @@ public class RatesCommand : CommandBase
         showMsg_ += "BOSS DROP Rate: #e#b" + player.getBossDropRate() + "x#k#n" + "\r\n";
         if (YamlConfig.config.server.USE_QUEST_RATE)
         {
-            showMsg_ += "QUEST Rate: #e#b" + c.getWorldServer().QuestRate + "x#k#n" + "\r\n";
+            showMsg_ += "QUEST Rate: #e#b" + c.getChannelServer().WorldQuestRate + "x#k#n" + "\r\n";
         }
 
         player.showHint(showMsg_, 300);

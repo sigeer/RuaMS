@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 public class QuestRateCommand : CommandBase
@@ -21,7 +21,7 @@ public class QuestRateCommand : CommandBase
             return;
 
         int questrate = Math.Max(d, 1);
-        c.getWorldServer().QuestRate = questrate;
+        c.getChannelServer().Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { QuestRate = questrate });
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Quest Rate has been changed to " + questrate + "x."));
 
     }

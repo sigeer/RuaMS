@@ -1,6 +1,8 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
+using Application.Core.Servers;
+using Application.Core.ServerTransports;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using net.packet;
@@ -27,6 +29,8 @@ namespace Application.Core.Game
         public int Channel { get; set; }
         public IChannel NettyChannel { get; private set; } = null!;
         public NPCConversationManager? NPCConversationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public IServerBase<IServerTransport> CurrentServer => throw new NotImplementedException();
 
         public MockupClient(int world, int channel)
         {

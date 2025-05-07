@@ -1,5 +1,7 @@
 using Application.Core;
+using Application.Core.Login;
 using Application.Core.OpenApi;
+using Application.Core.Servers;
 using Application.EF;
 using Application.Host;
 using Application.Host.Middlewares;
@@ -46,6 +48,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
+builder.Services.AddSingleton<IMasterServer, MasterServer>();
 builder.Services.AddHostedService<GameHost>();
 if (YamlConfig.config.server.ENABLE_OPENAPI)
 {
