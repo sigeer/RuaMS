@@ -111,7 +111,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
                 c.setChannel(cserv.getId());
             }
 
-                var storage = wserv.getPlayerStorage();
+            var storage = wserv.getPlayerStorage();
             var player = storage.getCharacterById(cid);
 
             Hwid? hwid;
@@ -218,7 +218,6 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             // 换线，离开商城拍卖回到主世界
             if (!newcomer)
             {
-
                 player.LinkNewChannelClient(c);
             }
 

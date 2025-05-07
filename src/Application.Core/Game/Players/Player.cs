@@ -79,13 +79,7 @@ namespace Application.Core.Game.Players
 
             if (Client is not OfflineClient)
             {
-                var worldServer = Client.getChannelServer();
-                worldServer.OnWorldExpRateChanged += UpdateActualExpRate;
-                worldServer.OnWorldMesoRateChanged += UpdateActualMesoRate;
-                worldServer.OnWorldDropRateChanged += UpdateActualDropRate;
-                worldServer.OnWorldBossDropRateChanged += UpdateActualBossDropRate;
-                worldServer.OnWorldQuestRateChanged += UpdateActualQuestExpRate;
-                worldServer.OnWorldQuestRateChanged += UpdateActualQuestMesoRate;
+                AddWorldWatcher();
 
                 UpdateActualRate();
             }

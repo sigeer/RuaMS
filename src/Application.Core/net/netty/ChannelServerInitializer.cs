@@ -16,7 +16,7 @@ public class ChannelServerInitializer : ServerChannelInitializer
     protected override void InitChannel(ISocketChannel socketChannel)
     {
         string clientIp = getRemoteAddress(socketChannel);
-        Log.Logger.Debug("{ClientIP} 发起连接 客户端：{InstanceId} from ", clientIp, worldChannel.InstanceId);
+        Log.Logger.Debug("{ClientIP} 发起连接到频道服务器：{InstanceId}", clientIp, worldChannel.InstanceId);
 
         PacketProcessor packetProcessor = PacketProcessor.getChannelServerProcessor(worldChannel.InstanceId);
         long clientSessionId = sessionId.getAndIncrement();
