@@ -30,46 +30,46 @@ namespace Application.Host.Services
             };
         }
 
-        public List<WorldServerDto> GetWorldServerList()
-        {
-            var allWorlds = ServerManager.LoadAllWorld();
+        //public List<WorldServerDto> GetWorldServerList()
+        //{
+        //    var allWorlds = ServerManager.LoadAllWorld();
 
-            var srv = Server.getInstance();
-            var allDto = _mapper.Map<List<WorldServerDto>>(allWorlds);
-            var allConfigs = _mapper.Map<List<WorldServerConfig>>(allWorlds);
-            allDto.ForEach(w =>
-            {
-                w.Config = allConfigs.FirstOrDefault(x => x.Id == w.Id)!;
-                if (srv.RunningWorlds.TryGetValue(w.Id, out var world))
-                {
-                    w.ActualConfig = new WorldServerConfig
-                    {
-                        Id = world.Id,
-                        StartPort = world.Channels.FirstOrDefault()?.Port ?? 0,
-                        Name = world.Name,
-                        ExpRate = world.ExpRate,
-                        BossDropRate = world.BossDropRate,
-                        EventMessage = world.EventMessage,
-                        MobRate = world.MobRate,
-                        QuestRate = world.QuestRate,
-                        ServerMessage = world.ServerMessage,
-                        RecommendMessage = world.WhyAmIRecommended,
-                        TravelRate = world.TravelRate,
-                        DropRate = world.DropRate,
-                        MesoRate = world.MesoRate,
-                        FishingRate = world.FishingRate,
-                        ChannelCount = world.Channels.Count
-                    };
-                    w.Channels = world.Channels.Select(x => new WorldChannelServerDto
-                    {
-                        Id = x.getId(),
-                        Port = x.Port,
-                        IsRunning = x.IsRunning
-                    }).ToList();
-                }
-            });
-            return allDto;
-        }
+        //    var srv = Server.getInstance();
+        //    var allDto = _mapper.Map<List<WorldServerDto>>(allWorlds);
+        //    var allConfigs = _mapper.Map<List<WorldServerConfig>>(allWorlds);
+        //    allDto.ForEach(w =>
+        //    {
+        //        w.Config = allConfigs.FirstOrDefault(x => x.Id == w.Id)!;
+        //        if (srv.RunningWorlds.TryGetValue(w.Id, out var world))
+        //        {
+        //            w.ActualConfig = new WorldServerConfig
+        //            {
+        //                Id = world.Id,
+        //                StartPort = world.Channels.FirstOrDefault()?.Port ?? 0,
+        //                Name = world.Name,
+        //                ExpRate = world.ExpRate,
+        //                BossDropRate = world.BossDropRate,
+        //                EventMessage = world.EventMessage,
+        //                MobRate = world.MobRate,
+        //                QuestRate = world.QuestRate,
+        //                ServerMessage = world.ServerMessage,
+        //                RecommendMessage = world.WhyAmIRecommended,
+        //                TravelRate = world.TravelRate,
+        //                DropRate = world.DropRate,
+        //                MesoRate = world.MesoRate,
+        //                FishingRate = world.FishingRate,
+        //                ChannelCount = world.Channels.Count
+        //            };
+        //            w.Channels = world.Channels.Select(x => new WorldChannelServerDto
+        //            {
+        //                Id = x.getId(),
+        //                Port = x.Port,
+        //                IsRunning = x.IsRunning
+        //            }).ToList();
+        //        }
+        //    });
+        //    return allDto;
+        //}
 
         public async Task<bool> ToggleWorldServerState(WorldServerState data)
         {
@@ -87,15 +87,15 @@ namespace Application.Host.Services
             return true;
         }
 
-        public async Task<bool> Apply()
+        public bool Apply()
         {
             if (!Server.getInstance().IsOnline)
                 return false;
-            await ServerManager.ApplyWorldServer();
+            ServerManager.ApplyWorldServer();
             return true;
         }
 
-        public async Task<bool> Apply(int id)
+        public bool Apply(int id)
         {
             if (!Server.getInstance().IsOnline)
                 return false;
@@ -104,7 +104,6 @@ namespace Application.Host.Services
             if (config == null)
                 return false;
 
-            await ServerManager.ApplyWorldServer(config);
             return true;
         }
     }

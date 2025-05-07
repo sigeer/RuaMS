@@ -1,46 +1,33 @@
-/*
-This file is part of the OdinMS Maple Story NewServer
-Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-Matthias Butz <matze@odinms.de>
-Jan Christian Meyer <vimes@odinms.de>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation version 3 as published by
-the Free Software Foundation. You may not use, modify or distribute
-this program under any other version of the GNU Affero General Public
-License.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
+using Application.Core.Game;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Tasks;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
+using Application.Core.Servers;
+using Application.Core.ServerTransports;
+using Application.Shared.Configs;
+using Application.Utility.Configs;
+using Application.Utility.Loggers;
 using net.netty;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
 using scripting.Event;
+using Serilog;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
 using System.Net;
 using tools;
 
-namespace net.server.channel;
+namespace Application.Core.Channel;
 
 public class WorldChannel : IWorldChannel
 {
+    public string InstanceId { get; }
     private ILogger log;
     public bool IsRunning { get; private set; }
 
@@ -50,8 +37,8 @@ public class WorldChannel : IWorldChannel
     private int channel;
 
     public ChannelPlayerStorage Players { get; }
-    private ChannelServer channelServer;
-    private string serverMessage = "";
+    public AbstractServer NettyServer { get; }
+
     private MapManager mapManager;
     private EventScriptManager eventSM;
     private ServicesManager<ChannelServices> services;
@@ -64,6 +51,8 @@ public class WorldChannel : IWorldChannel
     private Event? @event;
     private HashSet<int> usedMC = new();
 
+    public DateTimeOffset StartupTime { get; }
+
     public DojoInstance DojoInstance { get; }
 
     public WeddingChannelInstance WeddingInstance { get; }
@@ -72,28 +61,111 @@ public class WorldChannel : IWorldChannel
     private object lockObj = new object();
     private ReaderWriterLockSlim merchLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-    public IWorld WorldModel { get; set; }
-    public WorldChannel(IWorld world, int channel, long startTime)
+    // public IWorld WorldModel { get; set; }
+    public event Action? OnWorldMobRateChanged;
+    float _worldMobRate;
+    public float WorldMobRate
     {
-        WorldModel = world;
-        this.world = world.getId();
-        this.channel = channel;
-        Players = new ChannelPlayerStorage(this.world, channel);
+        get => _worldMobRate;
+        private set
+        {
+            _worldMobRate = value;
+            OnWorldMobRateChanged?.Invoke();
+        }
+    }
+
+    public event Action? OnWorldMesoRateChanged;
+    private float worldMesoRate;
+
+    public float WorldMesoRate { get => worldMesoRate; private set { worldMesoRate = value; OnWorldMesoRateChanged?.Invoke(); } }
+    private float worldExpRate;
+    public event Action? OnWorldExpRateChanged;
+    public float WorldExpRate { get => worldExpRate; private set { worldExpRate = value; OnWorldExpRateChanged?.Invoke(); } }
+    public event Action? OnWorldDropRateChanged;
+    private float worldDropRate;
+
+    public float WorldDropRate { get => worldDropRate; private set { worldDropRate = value; OnWorldDropRateChanged?.Invoke(); } }
+    public event Action? OnWorldBossDropRateChanged;
+    private float worldBossDropRate;
+
+    public float WorldBossDropRate { get => worldBossDropRate; private set { worldBossDropRate = value; OnWorldBossDropRateChanged?.Invoke(); } }
+    public event Action? OnWorldQuestRateChanged;
+    private float worldQuestRate;
+    public float WorldQuestRate { get => worldQuestRate; private set { worldQuestRate = value; OnWorldQuestRateChanged?.Invoke(); } }
+    public float WorldTravelRate { get; private set; }
+    public float WorldFishingRate { get; private set; }
+    public string WorldServerMessage { get; private set; }
+    public IChannelServerTransport Transport { get; }
+    public ChannelServerConfig ServerConfig { get; }
+    public ServerMessageController ServerMessageController { get; }
+    public WorldChannel(ChannelServerConfig config, IChannelServerTransport transport)
+    {
+        InstanceId = Guid.NewGuid().ToString();
+        ServerConfig = config;
+        WorldServerMessage = "";
+        Transport = transport;
+
+        this.world = 0;
+
+        Players = new ChannelPlayerStorage();
 
         this.mapManager = new MapManager(null, this);
-        this.Port = world.Configs.StartPort + (this.channel - 1);
-        this.ipEndPoint = new IPEndPoint(IPAddress.Parse(YamlConfig.config.server.HOST), Port);
+        this.Port = config.Port;
+        this.ipEndPoint = new IPEndPoint(IPAddress.Parse(config.Host), Port);
 
-        channelServer = new ChannelServer(Port, this.world, this.channel);
-        log = LogFactory.GetLogger($"World_{this.world}/Channel_{channel}");
+        NettyServer = new ChannelServer(this);
+        log = LogFactory.GetLogger($"Channel_{InstanceId}");
 
-        setServerMessage(WorldModel.ServerMessage);
+        ServerMessageController = new ServerMessageController(this);
 
         DojoInstance = new DojoInstance(this);
         WeddingInstance = new WeddingChannelInstance(this);
 
         services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
         eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
+
+        StartupTime = DateTimeOffset.Now;
+    }
+
+    public int getTransportationTime(double travelTime)
+    {
+        return (int)Math.Ceiling(travelTime / WorldTravelRate);
+    }
+
+    public void UpdateWorldConfig(WorldConfigPatch updatePatch)
+    {
+        if (updatePatch.MobRate.HasValue)
+        {
+            WorldMobRate = updatePatch.MobRate.Value;
+        }
+        if (updatePatch.MesoRate.HasValue)
+        {
+            WorldMesoRate = updatePatch.MesoRate.Value;
+        }
+        if (updatePatch.ExpRate.HasValue)
+        {
+            WorldExpRate = updatePatch.ExpRate.Value;
+        }
+        if (updatePatch.DropRate.HasValue)
+        {
+            WorldDropRate = updatePatch.DropRate.Value;
+        }
+        if (updatePatch.BossDropRate.HasValue)
+        {
+            WorldBossDropRate = updatePatch.BossDropRate.Value;
+        }
+        if (updatePatch.TravelRate.HasValue)
+        {
+            WorldTravelRate = updatePatch.TravelRate.Value;
+        }
+        if (updatePatch.FishingRate.HasValue)
+        {
+            WorldFishingRate = updatePatch.FishingRate.Value;
+        }
+        if (updatePatch.ServerMessage != null)
+        {
+            setServerMessage(updatePatch.ServerMessage);
+        }
     }
 
 
@@ -115,14 +187,21 @@ public class WorldChannel : IWorldChannel
 
     public async Task StartServer()
     {
-        await channelServer.Start();
+        log.Information("频道服务器{InstanceId}启动中...", InstanceId);
+        await NettyServer.Start();
+        log.Information("频道服务器{InstanceId}启动成功：监听端口{Port}", InstanceId, Port);
+
+        channel = await Transport.RegisterServer(this);
+        log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
+
+        ServerMessageController.Register();
 
         IsRunning = true;
-
-        log.Information("Channel {ChannelId}: Listening on port {Port}", getId(), Port);
     }
 
     bool isShuttingDown = false;
+
+
     public async Task Shutdown()
     {
         try
@@ -135,7 +214,9 @@ public class WorldChannel : IWorldChannel
             isShuttingDown = true;
             log.Information("Shutting down channel {ChannelId} in world {WorldId}", channel, world);
 
-            await channelServer.Stop();
+            await NettyServer.Stop();
+
+            await ServerMessageController.StopAsync();
 
             closeAllMerchants();
             disconnectAwayPlayers();
@@ -215,20 +296,15 @@ public class WorldChannel : IWorldChannel
         return world;
     }
 
-    public IWorld getWorldServer()
-    {
-        return WorldModel;
-    }
-
     public void addPlayer(IPlayer chr)
     {
         Players.AddPlayer(chr);
-        chr.sendPacket(PacketCreator.serverMessage(serverMessage));
+        chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
     }
 
     public string getServerMessage()
     {
-        return serverMessage;
+        return WorldServerMessage;
     }
 
     public ChannelPlayerStorage getPlayerStorage()
@@ -290,7 +366,7 @@ public class WorldChannel : IWorldChannel
         }
     }
     public void insertPlayerAway(int chrId)
-    {   
+    {
         // either they in CS or MTS
         playersAway.Add(chrId);
     }
@@ -307,15 +383,7 @@ public class WorldChannel : IWorldChannel
 
     private void disconnectAwayPlayers()
     {
-        var wserv = getWorldServer();
-        foreach (int cid in playersAway)
-        {
-            var chr = wserv.Players.getCharacterById(cid);
-            if (chr != null && chr.IsOnlined)
-            {
-                chr.getClient().forceDisconnect();
-            }
-        }
+        Transport.DisconnectPlayers(playersAway);
     }
 
     public Dictionary<int, HiredMerchant> getHiredMerchants()
@@ -336,7 +404,7 @@ public class WorldChannel : IWorldChannel
         merchLock.EnterWriteLock();
         try
         {
-            hiredMerchants.AddOrUpdate(chrid, hm);
+            hiredMerchants[chrid] = hm;
         }
         finally
         {
@@ -422,9 +490,9 @@ public class WorldChannel : IWorldChannel
 
     public void setServerMessage(string message)
     {
-        this.serverMessage = message;
+        this.WorldServerMessage = message;
         broadcastPacket(PacketCreator.serverMessage(message));
-        WorldModel.resetDisabledServerMessages();
+        ServerMessageController.resetDisabledServerMessages();
     }
 
     public int getStoredVar(int key)
@@ -434,7 +502,7 @@ public class WorldChannel : IWorldChannel
 
     public void setStoredVar(int key, int val)
     {
-        this.storedVars.AddOrUpdate(key, val);
+        this.storedVars[key] = val;
     }
 
     #region dojo

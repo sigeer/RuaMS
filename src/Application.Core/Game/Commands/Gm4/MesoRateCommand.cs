@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -22,7 +22,7 @@ public class MesoRateCommand : CommandBase
             return;
 
         int mesorate = Math.Max(d, 1);
-        c.getWorldServer().setMesoRate(mesorate);
+        c.getChannelServer().Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { MesoRate = mesorate });
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Meso Rate has been changed to " + mesorate + "x."));
     }
 }

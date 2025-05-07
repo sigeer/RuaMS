@@ -1,20 +1,13 @@
-﻿namespace Application.Core.Game.TheWorld
+namespace Application.Core.Game.TheWorld
 {
     public class ChannelPlayerStorage
     {
-        int _world;
-        int _channel;
         private Dictionary<int, IPlayer> storage = new();
         private Dictionary<string, IPlayer> nameStorage = new();
         private ReaderWriterLockSlim locks = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
         public event EventHandler<IPlayer>? OnChannelAddPlayer;
 
-        public ChannelPlayerStorage(int world, int channel)
-        {
-            _world = world;
-            _channel = channel;
-        }
 
         public void AddPlayer(IPlayer chr)
         {

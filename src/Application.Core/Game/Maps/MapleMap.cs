@@ -171,12 +171,12 @@ public class MapleMap : IMap
         var range = new RangeNumberGenerator(mapid, 100000000);
         log = LogFactory.GetLogger($"Map/{range}");
 
-        ChannelServer.WorldModel.OnMobRateChanged += UpdateMapActualMobRate;
+        ChannelServer.OnWorldMobRateChanged += UpdateMapActualMobRate;
     }
 
     void UpdateMapActualMobRate()
     {
-        ActualMonsterRate = MonsterRate * ChannelServer.WorldModel.MobRate;
+        ActualMonsterRate = MonsterRate * ChannelServer.WorldMobRate;
     }
 
     public void setEventInstance(EventInstanceManager? eim)
@@ -245,7 +245,7 @@ public class MapleMap : IMap
 
     public IWorld getWorldServer()
     {
-        return ChannelServer.WorldModel;
+        return Server.getInstance().getWorld(0);
     }
 
     public IMap getReturnMap()
@@ -2697,7 +2697,7 @@ public class MapleMap : IMap
 
         if (mapid == MapId.FROM_ELLINIA_TO_EREVE)
         { // To Ereve (SkyFerry)
-            int travelTime = getWorldServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             TimerManager.getInstance().schedule(() =>
             {
@@ -2709,7 +2709,7 @@ public class MapleMap : IMap
         }
         else if (mapid == MapId.FROM_EREVE_TO_ELLINIA)
         { // To Victoria Island (SkyFerry)
-            int travelTime = getWorldServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             TimerManager.getInstance().schedule(() =>
             {
@@ -2721,7 +2721,7 @@ public class MapleMap : IMap
         }
         else if (mapid == MapId.FROM_EREVE_TO_ORBIS)
         { // To Orbis (SkyFerry)
-            int travelTime = getWorldServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             TimerManager.getInstance().schedule(() =>
             {
@@ -2733,7 +2733,7 @@ public class MapleMap : IMap
         }
         else if (mapid == MapId.FROM_ORBIS_TO_EREVE)
         { // To Ereve From Orbis (SkyFerry)
-            int travelTime = getWorldServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
+            int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
             TimerManager.getInstance().schedule(() =>
             {
@@ -4855,7 +4855,7 @@ public class MapleMap : IMap
 
         clearMapObjects();
 
-        ChannelServer.WorldModel.OnMobRateChanged -= UpdateMapActualMobRate;
+        ChannelServer.OnWorldMobRateChanged -= UpdateMapActualMobRate;
 
 
         @event = null;

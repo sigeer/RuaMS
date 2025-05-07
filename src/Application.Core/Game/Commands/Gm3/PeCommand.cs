@@ -1,4 +1,4 @@
-﻿using DotNetty.Buffers;
+using DotNetty.Buffers;
 using net;
 using net.packet;
 using System.Text.Json;
@@ -34,7 +34,7 @@ public class PeCommand : CommandBase
         byte[] packetContent = HexTool.toBytes(packet);
         InPacket inPacket = new ByteBufInPacket(Unpooled.WrappedBuffer(packetContent));
         short packetId = inPacket.readShort();
-        var packetHandler = PacketProcessor.getProcessor(0, c.getChannel()).getHandler(packetId);
+        var packetHandler = PacketProcessor.getProcessor(c.getChannelServer().InstanceId, false).getHandler(packetId);
         if (packetHandler != null && packetHandler.ValidateState(c))
         {
             try

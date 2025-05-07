@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Relation;
+using Application.Core.Game.Relation;
 using constants.id;
 using server;
 using tools;
@@ -130,7 +130,7 @@ namespace Application.Core.Game.Players
             {
                 MarriageItemId = -1;
             }
-            else if (PartnerId > 0 && getWorldServer().getRelationshipId(Id) <= 0)
+            else if (PartnerId > 0 && getChannelServer().Transport.GetRelationshipId(Id) <= 0)
             {
                 MarriageItemId = -1;
                 PartnerId = -1;

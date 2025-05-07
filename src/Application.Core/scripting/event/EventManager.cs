@@ -50,7 +50,6 @@ public class EventManager
     ILogger log = LogFactory.GetLogger(LogType.EventManager);
     private IEngine iv;
     private IWorldChannel cserv;
-    private IWorld wserv;
     private Server server;
     private EventScriptScheduler ess = new EventScriptScheduler();
     private ConcurrentDictionary<string, EventInstanceManager> instances = new();
@@ -83,7 +82,6 @@ public class EventManager
         this.server = Server.getInstance();
         this.iv = iv;
         this.cserv = cserv;
-        this.wserv = cserv.WorldModel;
         this.name = name;
     }
 
@@ -205,11 +203,6 @@ public class EventManager
     //    ess.registerEntry(r, timestamp - server.getCurrentTime());
     //    return new EventScheduledFuture(r, ess);
     //}
-
-    public IWorld getWorldServer()
-    {
-        return wserv;
-    }
 
     public IWorldChannel getChannelServer()
     {
@@ -856,7 +849,7 @@ public class EventManager
             if (!queuedGuilds.TryDequeue(out var guildId))
                 return null;
 
-            wserv.removeGuildQueued(guildId);
+            cserv.Transport.RemoveGuildQueued(guildId);
             var leaderId = queuedGuildLeaders.Remove(guildId, out var d) ? d : 0;
 
             int place = 1;
@@ -891,7 +884,7 @@ public class EventManager
 
     public sbyte addGuildToQueue(int guildId, int leaderId)
     {
-        if (wserv.isGuildQueued(guildId))
+        if (cserv.Transport.IsGuildQueued(guildId))
         {
             return -1;
         }
@@ -904,7 +897,7 @@ public class EventManager
                 canStartAhead = queuedGuilds.Count == 0;
 
                 queuedGuilds.Enqueue(guildId);
-                wserv.putGuildQueued(guildId);
+                cserv.Transport.PutGuildQueued(guildId);
                 queuedGuildLeaders.AddOrUpdate(guildId, leaderId);
 
                 int place = queuedGuilds.Count;
@@ -918,7 +911,7 @@ public class EventManager
                     lock (queuedGuilds)
                     {
                         queuedGuilds.Enqueue(guildId);
-                        wserv.putGuildQueued(guildId);
+                        cserv.Transport.PutGuildQueued(guildId);
                         queuedGuildLeaders.AddOrUpdate(guildId, leaderId);
                     }
                 }
@@ -988,7 +981,7 @@ public class EventManager
 
     public int getTransportationTime(double travelTime)
     {
-        return this.getWorldServer().getTransportationTime(travelTime);
+        return cserv.getTransportationTime(travelTime);
     }
 
     private void fillEimQueue()

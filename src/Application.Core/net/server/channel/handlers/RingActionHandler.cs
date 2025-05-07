@@ -226,7 +226,7 @@ public class RingActionHandler : AbstractPacketHandler
                     {
                         InventoryManipulator.removeById(source.getClient(), InventoryType.USE, itemid, 1, false, false);
 
-                        int tempMarriageId = c.getWorldServer().WeddingInstance.CreateRelationship(source.getId(), target.getId());
+                        int tempMarriageId = c.getChannelServer().Transport.CreateRelationship(source.getId(), target.getId());
                         source.setPartnerId(target.getId()); // engage them (new marriageitemid, partnerid for both)
                         target.setPartnerId(source.getId());
 
@@ -295,11 +295,11 @@ public class RingActionHandler : AbstractPacketHandler
                 try
                 {
                     var wserv = c.getWorldServer();
-                    var registration = wserv.WeddingInstance.GetMarriageQueuedLocation(marriageId);
+                    var registration = c.getChannelServer().Transport.GetMarriageQueuedLocation(marriageId);
 
                     if (registration != null)
                     {
-                        if (wserv.WeddingInstance.AddMarriageGuest(marriageId, guest))
+                        if (c.getChannelServer().Transport.AddMarriageGuest(marriageId, guest))
                         {
                             bool cathedral = registration.Value.Key;
                             int newItemId = cathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
@@ -375,7 +375,7 @@ public class RingActionHandler : AbstractPacketHandler
                     }
 
                     // collision case: most soon-to-come wedding will show up
-                    var coupleId = c.getWorldServer().WeddingInstance.GetWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
+                    var coupleId = c.getChannelServer().Transport.GetWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
                     if (coupleId != null)
                     {
                         int groomId = coupleId.HusbandId, brideId = coupleId.WifeId;

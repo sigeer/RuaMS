@@ -1,8 +1,10 @@
 
 
+using Application.Core.Servers;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
+using net.server.handlers.login;
 
 
 namespace net.netty;
@@ -12,9 +14,10 @@ public class LoginServer : AbstractServer
     public static int WORLD_ID = -1;
     public static int CHANNEL_ID = -1;
     private IChannel? nettyChannel;
-
-    public LoginServer(int port) : base(port)
+    readonly IMasterServer masterServer;
+    public LoginServer(IMasterServer server) : base(server.Port)
     {
+        masterServer = server;
     }
 
     public override async Task Start()
@@ -24,7 +27,7 @@ public class LoginServer : AbstractServer
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .Group(parentGroup, childGroup)
                 .Channel<TcpServerSocketChannel>()
-                .ChildHandler(new LoginServerInitializer());
+                .ChildHandler(new LoginServerInitializer(masterServer));
 
         this.nettyChannel = await bootstrap.BindAsync(port);
     }

@@ -132,7 +132,7 @@ namespace Application.Core.Managers
                     return;
                 }
 
-                chr.getWorldServer().WeddingInstance.DeleteRelationship(chr.getId(), partnerid);
+                chr.getChannelServer().Transport.DeleteRelationship(chr.getId(), partnerid);
                 RingManager.RemoveRing(chr.getMarriageRing());
 
                 var partner = chr.getWorldServer().getPlayerStorage().getCharacterById(partnerid);
@@ -185,7 +185,7 @@ namespace Application.Core.Managers
                 int partnerid = chr.getPartnerId();
                 int marriageitemid = chr.getMarriageItemId();
 
-                chr.getWorldServer().WeddingInstance.DeleteRelationship(chr.getId(), partnerid);
+                chr.getChannelServer().Transport.DeleteRelationship(chr.getId(), partnerid);
 
                 var partner = chr.getWorldServer().getPlayerStorage().getCharacterById(partnerid);
                 if (partner == null || !partner.IsOnlined)

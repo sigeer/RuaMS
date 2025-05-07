@@ -58,15 +58,15 @@ namespace Application.Host.Controllers
         }
 
         [HttpPut]
-        public async Task<bool> ApplyWorldSetting(int id)
+        public bool ApplyWorldSetting(int id)
         {
-            return await _serverService.Apply(id);
+            return _serverService.Apply(id);
         }
 
         [HttpPut]
-        public async Task<bool> ApplyAllWorldSetting()
+        public bool ApplyAllWorldSetting()
         {
-            return await _serverService.Apply();
+            return _serverService.Apply();
         }
 
         [HttpGet]
@@ -75,11 +75,11 @@ namespace Application.Host.Controllers
             return _dataService.GetWorldsData();
         }
 
-        [HttpGet]
-        public List<WorldServerDto> GetWorldServerList()
-        {
-            return _serverService.GetWorldServerList();
-        }
+        //[HttpGet]
+        //public List<WorldServerDto> GetWorldServerList()
+        //{
+        //    return _serverService.GetWorldServerList();
+        //}
 
         [HttpPut]
         public async Task<bool> PutWorldConfig([FromBody]WorldServerConfig data)

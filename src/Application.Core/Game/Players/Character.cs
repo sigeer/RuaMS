@@ -374,7 +374,7 @@ public partial class Player
 
     public int getRelationshipId()
     {
-        return getWorldServer().getRelationshipId(Id);
+        return getChannelServer().Transport.GetRelationshipId(Id);
     }
 
 
@@ -578,10 +578,35 @@ public partial class Player
         this.Client = c;
     }
 
+    private void RemoveWorldWatcher()
+    {
+        var channelServer = Client.getChannelServer();
+        channelServer.OnWorldExpRateChanged -= UpdateActualExpRate;
+        channelServer.OnWorldMesoRateChanged -= UpdateActualMesoRate;
+        channelServer.OnWorldDropRateChanged -= UpdateActualDropRate;
+        channelServer.OnWorldBossDropRateChanged -= UpdateActualBossDropRate;
+        channelServer.OnWorldQuestRateChanged -= UpdateActualQuestExpRate;
+        channelServer.OnWorldQuestRateChanged -= UpdateActualQuestMesoRate;
+    }
+    private void AddWorldWatcher()
+    {
+        var channelServer = Client.getChannelServer();
+        channelServer.OnWorldExpRateChanged += UpdateActualExpRate;
+        channelServer.OnWorldMesoRateChanged += UpdateActualMesoRate;
+        channelServer.OnWorldDropRateChanged += UpdateActualDropRate;
+        channelServer.OnWorldBossDropRateChanged += UpdateActualBossDropRate;
+        channelServer.OnWorldQuestRateChanged += UpdateActualQuestExpRate;
+        channelServer.OnWorldQuestRateChanged += UpdateActualQuestMesoRate;
+    }
+
     public void LinkNewChannelClient(IClient newClient)
     {
+        RemoveWorldWatcher();
+
         newClient.SetAccountInfoFromClient(Client);
         this.setClient(newClient);
+
+        AddWorldWatcher();
         this.setMap(newClient.getChannelServer().getMapFactory().getMap(getMapId()));
         var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;
         this.setPosition(portal.getPosition());
@@ -2628,7 +2653,7 @@ public partial class Player
 
     public void resetPlayerAggro()
     {
-        if (getWorldServer().unregisterDisabledServerMessage(Id))
+        if (getChannelServer().ServerMessageController.unregisterDisabledServerMessage(Id))
         {
             Client.announceServerMessage();
         }
@@ -3510,32 +3535,32 @@ public partial class Player
 
     void UpdateActualExpRate()
     {
-        ActualExpRate = expRateByLevel * getWorldServer().ExpRate * expCoupon;
+        ActualExpRate = expRateByLevel * getChannelServer().WorldExpRate * expCoupon;
     }
 
     void UpdateActualMesoRate()
     {
-        ActualMesoRate = mesoRateByLevel * getWorldServer().MesoRate * mesoCoupon;
+        ActualMesoRate = mesoRateByLevel * getChannelServer().WorldMesoRate * mesoCoupon;
     }
 
     void UpdateActualDropRate()
     {
-        ActualDropRate = dropRateByLevel * getWorldServer().DropRate * dropCoupon;
+        ActualDropRate = dropRateByLevel * getChannelServer().WorldDropRate * dropCoupon;
     }
 
     void UpdateActualBossDropRate()
     {
-        ActualBossDropRate = getWorldServer().BossDropRate;
+        ActualBossDropRate = getChannelServer().WorldBossDropRate;
     }
 
     void UpdateActualQuestExpRate()
     {
-        ActualQuestExpRate = getWorldServer().QuestRate;
+        ActualQuestExpRate = getChannelServer().WorldQuestRate;
     }
 
     void UpdateActualQuestMesoRate()
     {
-        ActualQuestMesoRate = getWorldServer().QuestRate;
+        ActualQuestMesoRate = getChannelServer().WorldQuestRate;
     }
 
     private void setCouponRates()
@@ -5410,18 +5435,12 @@ public partial class Player
             setFamilyEntry(null);
         }
         // Bag.Dispose();
-
-        var worldServer = getWorldServer();
-        worldServer.OnExpRateChanged -= UpdateActualExpRate;
-        worldServer.OnMesoRateChanged -= UpdateActualMesoRate;
-        worldServer.OnDropRateChanged -= UpdateActualDropRate;
-        worldServer.OnBossDropRateChaged -= UpdateActualBossDropRate;
-        worldServer.OnQuestRateChanged -= UpdateActualQuestExpRate;
-        worldServer.OnQuestRateChanged -= UpdateActualQuestMesoRate;
     }
 
     public void logOff()
     {
+        RemoveWorldWatcher();
+
         setClient(new OfflineClient());
         using var dbContext = new DBContext();
         dbContext.Characters.Where(x => x.Id == getId()).ExecuteUpdate(x => x.SetProperty(y => y.LastLogoutTime, DateTimeOffset.Now));

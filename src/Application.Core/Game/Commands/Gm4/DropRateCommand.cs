@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -22,7 +22,7 @@ public class DropRateCommand : CommandBase
             return;
 
         int droprate = Math.Max(d, 1);
-        c.getWorldServer().setDropRate(droprate);
+        c.getChannelServer().Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { DropRate = droprate });
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Drop Rate has been changed to " + droprate + "x."));
 
     }

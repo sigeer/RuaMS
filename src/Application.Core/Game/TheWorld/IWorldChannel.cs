@@ -23,9 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Tasks;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.model;
+using Application.Core.Servers;
+using Application.Core.ServerTransports;
+using Application.Shared.Configs;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
@@ -37,16 +41,32 @@ using System.Net;
 
 namespace Application.Core.Game.TheWorld
 {
-    public interface IWorldChannel
+    public interface IWorldChannel: IServerBase<IChannelServerTransport>
     {
+        public event Action? OnWorldMobRateChanged;
+        public float WorldMobRate { get; }
+        public event Action? OnWorldMesoRateChanged;
+        public float WorldMesoRate { get; }
+        public event Action? OnWorldExpRateChanged;
+        public float WorldExpRate { get; }
+        public event Action? OnWorldDropRateChanged;
+        public float WorldDropRate { get; }
+        public event Action? OnWorldBossDropRateChanged;
+        public float WorldBossDropRate { get; }
+        public event Action? OnWorldQuestRateChanged;
+        public float WorldQuestRate { get; }
+        public float WorldTravelRate { get; }
+        public float WorldFishingRate { get; }
+        public string WorldServerMessage { get; }
+        ChannelServerConfig ServerConfig { get; }
         ChannelPlayerStorage Players { get; }
-        IWorld WorldModel { get; set; }
-        public bool IsRunning { get; }
-        public int Port { get; set; }
         DojoInstance DojoInstance { get; }
         WeddingChannelInstance WeddingInstance { get; }
-        Task StartServer();
+        ServerMessageController ServerMessageController { get; }
 
+        void UpdateWorldConfig(WorldConfigPatch updatePatch);
+
+        int getTransportationTime(double travelTime);
         bool acceptOngoingWedding(bool cathedral);
         bool addExpedition(Expedition exped);
         void addHiredMerchant(int chrid, HiredMerchant hm);
@@ -80,7 +100,6 @@ namespace Application.Core.Game.TheWorld
         int getWeddingReservationStatus(int? weddingId, bool cathedral);
         string? getWeddingReservationTimeLeft(int? weddingId);
         int getWorld();
-        IWorld getWorldServer();
         int ingressDojo(bool isPartyDojo, int fromStage);
         int ingressDojo(bool isPartyDojo, ITeam? party, int fromStage);
         void initMonsterCarnival(bool cpq1, int field);

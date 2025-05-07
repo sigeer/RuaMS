@@ -4,6 +4,8 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
 using Application.Core.model;
+using Application.Core.Servers;
+using Application.Core.ServerTransports;
 using client;
 using net.packet;
 using net.server.channel;
@@ -16,17 +18,8 @@ using server;
 
 namespace Application.Core.Game.TheWorld
 {
-    public interface IWorld
+    public interface IWorld 
     {
-        #region Events
-        event Action? OnMobRateChanged;
-
-        event Action? OnExpRateChanged;
-        event Action? OnMesoRateChanged;
-        event Action? OnDropRateChanged;
-        event Action? OnQuestRateChanged;
-        event Action? OnBossDropRateChaged;
-        #endregion
         WorldConfigEntity Configs { get; set; }
         public List<IWorldChannel> Channels { get; }
         WorldGuildStorage GuildStorage { get; }
@@ -37,26 +30,11 @@ namespace Application.Core.Game.TheWorld
         public int Flag { get; set; }
         public string Name { get; set; }
         public string WhyAmIRecommended { get; set; }
-        public string ServerMessage { get; set; }
         public string EventMessage { get; set; }
-        public float ExpRate { get; set; }
-        public float DropRate { get; set; }
-        public float BossDropRate { get; set; }
-        public float MesoRate { get; set; }
-        public float QuestRate { get; set; }
-        public float TravelRate { get; set; }
-        public float FishingRate { get; set; }
-        public float MobRate { get; set; }
-
-        public WeddingWorldInstance WeddingInstance { get; }
         public FishingWorldInstance FishingInstance { get; }
-        /// <summary>
-        /// 调整频道数量
-        /// </summary>
-        /// <param name="channelSize"></param>
-        Task ResizeChannel(int channelSize);
+
         void addCashItemBought(int snid);
-        bool addChannel(IWorldChannel channel);
+        int addChannel(IWorldChannel channel);
         Task<int> removeChannel();
         void addFamily(int id, Family f);
         void addMessengerPlayer(Messenger messenger, string namefrom, int fromchannel, int position);
@@ -106,12 +84,9 @@ namespace Application.Core.Game.TheWorld
         int getPlayerNpcMapStep(int mapid);
         PlayerShop? getPlayerShop(int ownerid);
         WorldPlayerStorage getPlayerStorage();
-        int getRelationshipId(int playerId);
         BaseService getServiceAccess(WorldServices sv);
-        int getTransportationTime(double travelTime);
         int getWorldCapacityStatus();
         bool isConnected(string charName);
-        bool isGuildQueued(int guildId);
         bool isWorldCapacityFull();
         void joinMessenger(int messengerid, MessengerCharacter target, string from, int fromchannel);
         void leaveMessenger(int messengerid, MessengerCharacter target);
@@ -123,23 +98,18 @@ namespace Application.Core.Game.TheWorld
         void messengerInvite(string sender, int messengerid, string target, int fromchannel);
         CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds);
         void partyChat(ITeam party, string chattext, string namefrom);
-        void putGuildQueued(int guildId);
-        bool registerDisabledServerMessage(int chrid);
         void registerHiredMerchant(HiredMerchant hm);
         void registerMountHunger(IPlayer chr);
         void registerPetHunger(IPlayer chr, sbyte petSlot);
         void registerPlayerShop(PlayerShop ps);
         void registerTimedMapObject(Action r, long duration);
         void removeFamily(int id);
-        void removeGuildQueued(int guildId);
         void removeMapPartyMembers(int partyid);
         void removeMessengerPlayer(Messenger messenger, int position);
         void removePlayer(IPlayer chr);
         void removePlayerHpDecrease(IPlayer chr);
         BuddyList.BuddyAddResult requestBuddyAdd(string addName, int channelFrom, int cidFrom, string nameFrom);
-        void resetDisabledServerMessages();
         void resetPlayerNpcMapData();
-        void runDisabledServerMessagesSchedule();
         void runHiredMerchantSchedule();
         void runMountSchedule();
         void runPartySearchUpdateSchedule();
@@ -147,9 +117,6 @@ namespace Application.Core.Game.TheWorld
         void runPlayerHpDecreaseSchedule();
         void runTimedMapObjectSchedule();
         void sendPacket(List<int> targetIds, Packet packet, int exception);
-        void setDropRate(float drop);
-        void setExpRate(float exp);
-        void setMesoRate(float meso);
         void setGuildAndRank(int cid, int guildid, int rank);
         void setGuildAndRank(List<int> cids, int guildid, int rank, int exception);
 
@@ -161,7 +128,6 @@ namespace Application.Core.Game.TheWorld
         void silentJoinMessenger(int messengerid, MessengerCharacter target, int position);
         void silentLeaveMessenger(int messengerid, MessengerCharacter target);
         void unregisterAccountStorage(int accountId);
-        bool unregisterDisabledServerMessage(int chrid);
         void unregisterHiredMerchant(HiredMerchant hm);
         void unregisterMountHunger(IPlayer chr);
         void unregisterPetHunger(IPlayer chr, sbyte petSlot);

@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -22,7 +22,7 @@ public class ExpRateCommand : CommandBase
             return;
 
         int exprate = Math.Max(d, 1);
-        c.getWorldServer().setExpRate(exprate);
+        c.getChannelServer().Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { ExpRate = exprate });
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Exp Rate has been changed to " + exprate + "x."));
     }
 }

@@ -88,11 +88,11 @@ namespace Application.Host.Controllers
             return _dataService.GetWorldsData();
         }
 
-        [HttpGet]
-        public List<WorldServerDto> GetWorldServerList()
-        {
-            return _serverService.GetWorldServerList();
-        }
+        //[HttpGet]
+        //public List<WorldServerDto> GetWorldServerList()
+        //{
+        //    return _serverService.GetWorldServerList();
+        //}
 
         [HttpGet]
         public List<TravelScheduleItem> GetTravelSchedule()
