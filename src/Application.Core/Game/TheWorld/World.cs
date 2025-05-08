@@ -68,10 +68,6 @@ public class World : IWorld
     private ScheduledFuture? petsSchedule;
     private long petUpdate;
 
-    private object activeMountsLock = new object();
-    private Dictionary<int, int> activeMounts = new();
-    private ScheduledFuture? mountsSchedule;
-    private long mountUpdate;
 
     private object activePlayerShopsLock = new object();
     /// <summary>
@@ -79,16 +75,7 @@ public class World : IWorld
     /// </summary>
     private Dictionary<int, PlayerShop> activePlayerShops = new();
 
-    private object activeMerchantsLock = new object();
-    private Dictionary<int, MerchantOperation> activeMerchants = new();
-    private ScheduledFuture? merchantSchedule;
-    private long merchantUpdate;
 
-    private Dictionary<Action, long> registeredTimedMapObjects = new();
-    private ScheduledFuture? timedMapObjectsSchedule;
-    private object timedMapObjectLock = new object();
-
-    private Dictionary<IPlayer, int> playerHpDec = new Dictionary<IPlayer, int>();
 
     private ScheduledFuture? charactersSchedule;
     private ScheduledFuture? marriagesSchedule;
@@ -96,7 +83,6 @@ public class World : IWorld
     private ScheduledFuture? fishingSchedule;
     private ScheduledFuture? partySearchSchedule;
     private ScheduledFuture? timeoutSchedule;
-    private ScheduledFuture? hpDecSchedule;
 
     public WorldConfigEntity Configs { get; set; }
 
@@ -108,7 +94,6 @@ public class World : IWorld
         runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
         runningMessengerId.set(1);
         petUpdate = Server.getInstance().getCurrentTime();
-        mountUpdate = petUpdate;
         GuildStorage = new WorldGuildStorage();
 
         for (int i = 0; i < 9; i++)
@@ -125,9 +110,6 @@ public class World : IWorld
 
         var tman = TimerManager.getInstance();
         petsSchedule = tman.register(new PetFullnessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        mountsSchedule = tman.register(new MountTirednessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        merchantSchedule = tman.register(new HiredMerchantTask(this), TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-        timedMapObjectsSchedule = tman.register(new TimedMapObjectTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
         marriagesSchedule = tman.register(new WeddingReservationTask(this),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
@@ -136,9 +118,6 @@ public class World : IWorld
         fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         partySearchSchedule = tman.register(new PartySearchTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        hpDecSchedule = tman.register(new CharacterHpDecreaseTask(this),
-            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL,
-            YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL);
 
         FishingInstance = new FishingWorldInstance(this);
 
@@ -1168,96 +1147,6 @@ public class World : IWorld
     #endregion
 
     #region
-    public void registerMountHunger(IPlayer chr)
-    {
-        if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
-        {
-            return;
-        }
-
-        int key = chr.getId();
-        Monitor.Enter(activeMountsLock);
-        try
-        {
-            int initProc;
-            if (Server.getInstance().getCurrentTime() - mountUpdate > 45000)
-            {
-                initProc = YamlConfig.config.server.MOUNT_EXHAUST_COUNT - 2;
-            }
-            else
-            {
-                initProc = YamlConfig.config.server.MOUNT_EXHAUST_COUNT - 1;
-            }
-
-            activeMounts.AddOrUpdate(key, initProc);
-        }
-        finally
-        {
-            Monitor.Exit(activeMountsLock);
-        }
-    }
-
-    public void unregisterMountHunger(IPlayer chr)
-    {
-        int key = chr.getId();
-
-        Monitor.Enter(activeMountsLock);
-        try
-        {
-            activeMounts.Remove(key);
-        }
-        finally
-        {
-            Monitor.Exit(activeMountsLock);
-        }
-    }
-
-    public void runMountSchedule()
-    {
-        Dictionary<int, int> deployedMounts;
-        Monitor.Enter(activeMountsLock);
-        try
-        {
-            mountUpdate = Server.getInstance().getCurrentTime();
-            deployedMounts = new(activeMounts);
-        }
-        finally
-        {
-            Monitor.Exit(activeMountsLock);
-        }
-
-        foreach (var dp in deployedMounts)
-        {
-            var chr = this.getPlayerStorage().getCharacterById(dp.Key);
-            if (chr == null || !chr.isLoggedinWorld())
-            {
-                continue;
-            }
-
-            int dpVal = dp.Value + 1;
-            if (dpVal == YamlConfig.config.server.MOUNT_EXHAUST_COUNT)
-            {
-                if (!chr.runTirednessSchedule())
-                {
-                    continue;
-                }
-                dpVal = 0;
-            }
-
-            Monitor.Enter(activeMountsLock);
-            try
-            {
-                activeMounts.AddOrUpdate(dp.Key, dpVal);
-            }
-            finally
-            {
-                Monitor.Exit(activeMountsLock);
-            }
-        }
-    }
-    #endregion
-
-    #region
     public void registerPlayerShop(PlayerShop ps)
     {
         Monitor.Enter(activePlayerShopsLock);
@@ -1310,184 +1199,6 @@ public class World : IWorld
         }
     }
     #endregion
-    #region
-    public void registerHiredMerchant(HiredMerchant hm)
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            int initProc;
-            if (Server.getInstance().getCurrentTime() - merchantUpdate > TimeSpan.FromMinutes(5).TotalMilliseconds)
-            {
-                initProc = 1;
-            }
-            else
-            {
-                initProc = 0;
-            }
-
-            activeMerchants.AddOrUpdate(hm.getOwnerId(), new(hm, initProc));
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public void unregisterHiredMerchant(HiredMerchant hm)
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            activeMerchants.Remove(hm.getOwnerId());
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public void runHiredMerchantSchedule()
-    {
-        Dictionary<int, MerchantOperation> deployedMerchants;
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            merchantUpdate = Server.getInstance().getCurrentTime();
-            deployedMerchants = new(activeMerchants);
-
-            foreach (var dm in deployedMerchants)
-            {
-                int timeOn = dm.Value.TimeWorked;
-                HiredMerchant hm = dm.Value.HiredMerchant;
-
-                if (timeOn <= 144)
-                {
-                    // 1440 minutes == 24hrs
-                    activeMerchants.AddOrUpdate(hm.getOwnerId(), new(hm, timeOn + 1));
-                }
-                else
-                {
-                    hm.forceClose();
-                    this.getChannel(hm.getChannel()).removeHiredMerchant(hm.getOwnerId());
-
-                    activeMerchants.Remove(dm.Key);
-                }
-            }
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public List<HiredMerchant> getActiveMerchants()
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            return activeMerchants.Where(x => x.Value.HiredMerchant.isOpen()).Select(x => x.Value.HiredMerchant).ToList();
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-
-    public HiredMerchant? getHiredMerchant(int ownerid)
-    {
-        Monitor.Enter(activeMerchantsLock);
-        try
-        {
-            return activeMerchants.TryGetValue(ownerid, out var value) ? value.HiredMerchant : null;
-        }
-        finally
-        {
-            Monitor.Exit(activeMerchantsLock);
-        }
-    }
-    #endregion
-    #region
-    public void registerTimedMapObject(Action r, long duration)
-    {
-        Monitor.Enter(timedMapObjectLock);
-        try
-        {
-            long expirationTime = Server.getInstance().getCurrentTime() + duration;
-            registeredTimedMapObjects.AddOrUpdate(r, expirationTime);
-        }
-        finally
-        {
-            Monitor.Exit(timedMapObjectLock);
-        }
-    }
-
-    public void runTimedMapObjectSchedule()
-    {
-        List<Action> toRemove = new();
-
-        Monitor.Enter(timedMapObjectLock);
-        try
-        {
-            long timeNow = Server.getInstance().getCurrentTime();
-
-            foreach (var rtmo in registeredTimedMapObjects)
-            {
-                if (rtmo.Value <= timeNow)
-                {
-                    toRemove.Add(rtmo.Key);
-                }
-            }
-
-            foreach (Action r in toRemove)
-            {
-                registeredTimedMapObjects.Remove(r);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(timedMapObjectLock);
-        }
-
-        foreach (Action r in toRemove)
-        {
-            r.Invoke();
-        }
-    }
-    #endregion
-
-    public void addPlayerHpDecrease(IPlayer chr)
-    {
-        playerHpDec.TryAdd(chr, 0);
-    }
-
-    public void removePlayerHpDecrease(IPlayer chr)
-    {
-        playerHpDec.Remove(chr);
-    }
-
-    public void runPlayerHpDecreaseSchedule()
-    {
-        Dictionary<IPlayer, int> m = new();
-        m.putAll(playerHpDec);
-
-        foreach (var e in m)
-        {
-            IPlayer chr = e.Key;
-
-            if (!chr.isAwayFromWorld())
-            {
-                int c = e.Value;
-                c = (c + 1) % YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT;
-                playerHpDec.AddOrUpdate(chr, c);
-
-                if (c == 0)
-                {
-                    chr.doHurtHp();
-                }
-            }
-        }
-    }
 
     public void setPlayerNpcMapStep(int mapid, int step)
     {
@@ -1585,13 +1296,16 @@ public class World : IWorld
     {
         List<KeyValuePair<PlayerShopItem, AbstractMapObject>> hmsAvailable = new();
 
-        foreach (HiredMerchant hm in getActiveMerchants())
+        foreach (var ch in getChannels())
         {
-            List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemid);
-
-            foreach (PlayerShopItem mpsi in itemBundles)
+            foreach (var hm in ch.HiredMerchantController.getActiveMerchants())
             {
-                hmsAvailable.Add(new(mpsi, hm));
+                List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemid);
+
+                foreach (PlayerShopItem mpsi in itemBundles)
+                {
+                    hmsAvailable.Add(new(mpsi, hm));
+                }
             }
         }
 
@@ -1653,24 +1367,6 @@ public class World : IWorld
             petsSchedule = null;
         }
 
-        if (mountsSchedule != null)
-        {
-            await mountsSchedule.CancelAsync(false);
-            mountsSchedule = null;
-        }
-
-        if (merchantSchedule != null)
-        {
-            await merchantSchedule.CancelAsync(false);
-            merchantSchedule = null;
-        }
-
-        if (timedMapObjectsSchedule != null)
-        {
-            await timedMapObjectsSchedule.CancelAsync(false);
-            timedMapObjectsSchedule = null;
-        }
-
         if (charactersSchedule != null)
         {
             await charactersSchedule.CancelAsync(false);
@@ -1706,13 +1402,6 @@ public class World : IWorld
             await timeoutSchedule.CancelAsync(false);
             timeoutSchedule = null;
         }
-
-        if (hpDecSchedule != null)
-        {
-            await hpDecSchedule.CancelAsync(false);
-            hpDecSchedule = null;
-        }
-
         Players.disconnectAll();
 
         clearWorldData();

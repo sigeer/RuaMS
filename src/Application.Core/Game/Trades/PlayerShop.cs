@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Shared.MapObjects;
 using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
@@ -34,7 +35,7 @@ namespace Application.Core.Game.Trades;
  * @author Matze
  * @author Ronan - concurrency protection
  */
-public class PlayerShop : AbstractMapObject
+public class PlayerShop : AbstractMapObject, IPlayerShop
 {
     private AtomicBoolean open = new AtomicBoolean(false);
     private IPlayer owner;
@@ -50,12 +51,21 @@ public class PlayerShop : AbstractMapObject
     private Dictionary<int, byte> chatSlot = new();
     private object visitorLock = new object();
 
+
+    public int Channel { get; }
+    public string TypeName { get; }
+
     public PlayerShop(IPlayer owner, string description, int itemid)
     {
         setPosition(owner.getPosition());
         this.owner = owner;
         this.description = description;
         this.itemid = itemid;
+
+        setMap(owner.getMap());
+        Channel = owner.Channel;
+
+        TypeName = "shop";
     }
 
     public int getChannel()

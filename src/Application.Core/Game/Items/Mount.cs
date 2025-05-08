@@ -37,7 +37,7 @@ public class Mount : IMount
     private IPlayer owner;
     private bool active;
 
-    public IWorld WorldServer => owner.getWorldServer();
+    public IWorldChannel ChannelServer => owner.getChannelServer();
 
     public Mount(IPlayer owner, int id)
     {
@@ -145,7 +145,7 @@ public class Mount : IMount
     {
         if (owner != null)
         {
-            WorldServer.unregisterMountHunger(owner);
+            ChannelServer.MountTirednessController.unregisterMountHunger(owner);
         }
     }
 }

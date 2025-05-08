@@ -30,6 +30,7 @@ using net.packet;
 using net.server;
 using server;
 using server.maps;
+using System.Reflection.Metadata;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -40,7 +41,7 @@ namespace Application.Core.Game.Trades;
  * @author XoticStory
  * @author Ronan - concurrency protection
  */
-public class HiredMerchant : AbstractMapObject
+public class HiredMerchant : AbstractMapObject, IPlayerShop
 {
     private const int VISITOR_HISTORY_LIMIT = 10;
     private const int BLACKLIST_LIMIT = 20;
@@ -65,6 +66,8 @@ public class HiredMerchant : AbstractMapObject
     private object visitorLock = new object();
 
     public IPlayer Owner { get; set; }
+    public int Channel { get; }
+    public string TypeName { get; }
 
     public HiredMerchant(IPlayer owner, string desc, int itemId)
     {
@@ -78,6 +81,9 @@ public class HiredMerchant : AbstractMapObject
         ownerName = owner.getName();
         description = desc;
         setMap(owner.MapModel);
+        Channel = owner.Channel;
+
+        TypeName = "merchant";
     }
 
     public void broadcastToVisitorsThreadsafe(Packet packet)
@@ -431,7 +437,7 @@ public class HiredMerchant : AbstractMapObject
             Monitor.Exit(visitorLock);
         }
 
-        Owner.getWorldServer().unregisterHiredMerchant(this);
+        Owner.getChannelServer().HiredMerchantController.unregisterHiredMerchant(this);
 
         try
         {
@@ -478,7 +484,7 @@ public class HiredMerchant : AbstractMapObject
     {
         MapModel.removeMapObject(this);
         MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(ownerId));
-        c.getChannelServer().removeHiredMerchant(ownerId);
+        c.getChannelServer().HiredMerchantController.unregisterHiredMerchant(ownerId);
 
         removeAllVisitors();
         removeOwner(c.OnlinedCharacter);
@@ -545,7 +551,7 @@ public class HiredMerchant : AbstractMapObject
             Log.Logger.Error(e.ToString());
         }
 
-        Owner.getWorldServer().unregisterHiredMerchant(this);
+        Owner.getChannelServer().HiredMerchantController.unregisterHiredMerchant(this);
     }
 
 

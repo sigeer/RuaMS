@@ -20,6 +20,12 @@ namespace Application.Utility
             return d.Minutes + " Minutes and " + d.Seconds + " Seconds";
         }
 
+        public static string GetTimeString(DateTimeOffset then)
+        {
+            var d = DateTimeOffset.Now - then;
+            return d.Minutes + " Minutes and " + d.Seconds + " Seconds";
+        }
+
         public static int DayDiff(DateTimeOffset from, DateTimeOffset to)
         {
             return (to - from).Days;

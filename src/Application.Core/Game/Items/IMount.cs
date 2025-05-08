@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -25,7 +25,7 @@ namespace Application.Core.Game.Items
 {
     public interface IMount
     {
-        public IWorld WorldServer { get; }
+        public IWorldChannel ChannelServer { get; }
         void empty();
         int getExp();
         int getId();

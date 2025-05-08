@@ -196,7 +196,7 @@ public class MapleMap : IMap
 
     public int getWorld()
     {
-        return ChannelServer.getWorld();
+        return 0;
     }
 
     public void broadcastPacket(IPlayer source, Packet packet)
@@ -241,11 +241,6 @@ public class MapleMap : IMap
     public IWorldChannel getChannelServer()
     {
         return ChannelServer;
-    }
-
-    public IWorld getWorldServer()
-    {
-        return Server.getInstance().getWorld(0);
     }
 
     public IMap getReturnMap()
@@ -1429,22 +1424,22 @@ public class MapleMap : IMap
 
     public void broadcastBalrogVictory(string leaderName)
     {
-        getWorldServer().dropMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.");
+        ChannelServer.Transport.DropWorldMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.");
     }
 
     public void broadcastHorntailVictory()
     {
-        getWorldServer().dropMessage(6, "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!");
+        ChannelServer.Transport.DropWorldMessage(6, "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!");
     }
 
     public void broadcastZakumVictory()
     {
-        getWorldServer().dropMessage(6, "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!");
+        ChannelServer.Transport.DropWorldMessage(6, "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!");
     }
 
     public void broadcastPinkBeanVictory(int channel)
     {
-        getWorldServer().dropMessage(6, "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!");
+        ChannelServer.Transport.DropWorldMessage(6, "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!");
     }
 
     private bool removeKilledMonsterObject(Monster monster)
@@ -2399,7 +2394,7 @@ public class MapleMap : IMap
             broadcastMessage(kite.makeDestroyData());
         };
 
-        getWorldServer().registerTimedMapObject(expireKite, YamlConfig.config.server.KITE_EXPIRE_TIME);
+        ChannelServer.MapObjectController.RegisterTimedMapObject(expireKite, YamlConfig.config.server.KITE_EXPIRE_TIME);
     }
 
     public void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
@@ -2659,11 +2654,11 @@ public class MapleMap : IMap
 
         if (this.getHPDec() > 0)
         {
-            getWorldServer().addPlayerHpDecrease(chr);
+            getChannelServer().CharacterHpDecreaseController.addPlayerHpDecrease(chr);
         }
         else
         {
-            getWorldServer().removePlayerHpDecrease(chr);
+            getChannelServer().CharacterHpDecreaseController.removePlayerHpDecrease(chr);
         }
 
         MapScriptManager msm = MapScriptManager.getInstance();

@@ -43,112 +43,83 @@ public class OwlWarpHandler : AbstractPacketHandler
             return;
         }
 
-        var hm = c.getWorldServer().getHiredMerchant(ownerid);   // if both hired merchant and player shop is on the same map
-        PlayerShop? ps;
-        if (hm == null || hm.getMapId() != mapid || !hm.hasItem(c.OnlinedCharacter.getOwlSearch()))
+        var dto = c.getChannelServer().Transport.SendOwlWarp(mapid, ownerid, c.OnlinedCharacter.getOwlSearch());
+        if (dto == null)
         {
-            ps = c.getWorldServer().getPlayerShop(ownerid);
-            if (ps == null || ps.getMapId() != mapid || !ps.hasItem(c.OnlinedCharacter.getOwlSearch()))
-            {
-                if (hm == null && ps == null)
-                {
-                    c.sendPacket(PacketCreator.getOwlMessage(1));
-                }
-                else
-                {
-                    c.sendPacket(PacketCreator.getOwlMessage(3));
-                }
-                return;
-            }
+            c.sendPacket(PacketCreator.getOwlMessage(1));
+            return;
+        }
 
-            if (ps.isOpen())
+        if(!dto.IsOpen)
+        {
+            c.sendPacket(PacketCreator.getOwlMessage(18));
+            return;
+        }
+
+
+        if (GameConstants.isFreeMarketRoom(mapid))
+        {
+            if (dto.Channel == c.getChannel())
             {
-                if (GameConstants.isFreeMarketRoom(mapid))
+                c.OnlinedCharacter.changeMap(mapid);
+
+                if (dto.IsOpen)
                 {
-                    if (ps.getChannel() == c.getChannel())
+                    IPlayerShop? ps = c.getWorldServer().getPlayerShop(ownerid);
+                    ps ??= c.getChannelServer().HiredMerchantController.getHiredMerchant(ownerid);
+                    if (ps == null)
                     {
-                        c.OnlinedCharacter.changeMap(mapid);
+                        c.sendPacket(PacketCreator.getOwlMessage(1));
+                        return;
+                    }
 
-                        if (ps.isOpen())
-                        {   //change map has a delay, must double check
-                            if (!ps.visitShop(c.OnlinedCharacter))
+                    if (!ps.isOpen())
+                    {
+                        c.sendPacket(PacketCreator.getOwlMessage(18));
+                        return;
+                    }
+
+                    if (ps is PlayerShop shop)
+                    {
+                        if (!shop.visitShop(c.OnlinedCharacter))
+                        {
+                            if (!shop.isBanned(c.OnlinedCharacter.getName()))
                             {
-                                if (!ps.isBanned(c.OnlinedCharacter.getName()))
-                                {
-                                    c.sendPacket(PacketCreator.getOwlMessage(2));
-                                }
-                                else
-                                {
-                                    c.sendPacket(PacketCreator.getOwlMessage(17));
-                                }
+                                c.sendPacket(PacketCreator.getOwlMessage(2));
                             }
+                            else
+                            {
+                                c.sendPacket(PacketCreator.getOwlMessage(17));
+                            }
+                        }
+                    }
+                    else if (ps is HiredMerchant merchant)
+                    {
+                        if (merchant.addVisitor(c.OnlinedCharacter))
+                        {
+                            c.sendPacket(PacketCreator.getHiredMerchant(c.OnlinedCharacter, merchant, false));
+                            c.OnlinedCharacter.setHiredMerchant(merchant);
                         }
                         else
                         {
-                            //c.sendPacket(PacketCreator.serverNotice(1, "That merchant has either been closed or is under maintenance."));
-                            c.sendPacket(PacketCreator.getOwlMessage(18));
+                            c.sendPacket(PacketCreator.getOwlMessage(2));
                         }
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.serverNotice(1, "That shop is currently located in another channel. Current location: Channel " + hm.getChannel() + ", '" + hm.getMap().getMapName() + "'."));
                     }
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.serverNotice(1, "That shop is currently located outside of the FM area. Current location: Channel " + hm.getChannel() + ", '" + hm.getMap().getMapName() + "'."));
+                    //c.sendPacket(PacketCreator.serverNotice(1, "That merchant has either been closed or is under maintenance."));
+                    c.sendPacket(PacketCreator.getOwlMessage(18));
                 }
             }
             else
             {
-                //c.sendPacket(PacketCreator.serverNotice(1, "That merchant has either been closed or is under maintenance."));
-                c.sendPacket(PacketCreator.getOwlMessage(18));
+                c.sendPacket(PacketCreator.serverNotice(1, $"That {dto.TypeName} is currently located in another channel. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
             }
         }
         else
         {
-            if (hm.isOpen())
-            {
-                if (GameConstants.isFreeMarketRoom(mapid))
-                {
-                    if (hm.getChannel() == c.getChannel())
-                    {
-                        c.OnlinedCharacter.changeMap(mapid);
-
-                        if (hm.isOpen())
-                        {   //change map has a delay, must double check
-                            if (hm.addVisitor(c.OnlinedCharacter))
-                            {
-                                c.sendPacket(PacketCreator.getHiredMerchant(c.OnlinedCharacter, hm, false));
-                                c.OnlinedCharacter.setHiredMerchant(hm);
-                            }
-                            else
-                            {
-                                //c.sendPacket(PacketCreator.serverNotice(1, hm.getOwner() + "'s merchant is full. Wait awhile before trying again."));
-                                c.sendPacket(PacketCreator.getOwlMessage(2));
-                            }
-                        }
-                        else
-                        {
-                            //c.sendPacket(PacketCreator.serverNotice(1, "That merchant has either been closed or is under maintenance."));
-                            c.sendPacket(PacketCreator.getOwlMessage(18));
-                        }
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.serverNotice(1, "That merchant is currently located in another channel. Current location: Channel " + hm.getChannel() + ", '" + hm.getMap().getMapName() + "'."));
-                    }
-                }
-                else
-                {
-                    c.sendPacket(PacketCreator.serverNotice(1, "That merchant is currently located outside of the FM area. Current location: Channel " + hm.getChannel() + ", '" + hm.getMap().getMapName() + "'."));
-                }
-            }
-            else
-            {
-                //c.sendPacket(PacketCreator.serverNotice(1, "That merchant has either been closed or is under maintenance."));
-                c.sendPacket(PacketCreator.getOwlMessage(18));
-            }
+            c.sendPacket(PacketCreator.serverNotice(1, $"That {dto.TypeName} is currently located outside of the FM area. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
         }
     }
 }

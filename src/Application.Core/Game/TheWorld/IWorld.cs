@@ -39,7 +39,7 @@ namespace Application.Core.Game.TheWorld
         void addFamily(int id, Family f);
         void addMessengerPlayer(Messenger messenger, string namefrom, int fromchannel, int position);
         void addOwlItemSearch(int itemid);
-        void addPlayerHpDecrease(IPlayer chr);
+
         void broadcastPacket(Packet packet);
         void buddyChanged(int cid, int cidFrom, string name, int channel, BuddyList.BuddyOperation operation);
         void buddyChat(int[] recipientCharacterIds, int cidFrom, string nameFrom, string chattext);
@@ -63,7 +63,6 @@ namespace Application.Core.Game.TheWorld
         /// <returns>channel</returns>
         int find(string name);
         Storage getAccountStorage(int accountId);
-        List<HiredMerchant> getActiveMerchants();
         List<PlayerShop> getActivePlayerShops();
         List<KeyValuePair<PlayerShopItem, AbstractMapObject>> getAvailableItemBundles(int itemid);
         IWorldChannel getChannel(int channel);
@@ -72,7 +71,6 @@ namespace Application.Core.Game.TheWorld
         ICollection<Family> getFamilies();
         Family? getFamily(int id);
         IGuild? getGuild(IPlayer? mgc);
-        HiredMerchant? getHiredMerchant(int ownerid);
         int getId();
         MatchCheckerCoordinator getMatchCheckerCoordinator();
         Messenger? getMessenger(int messengerid);
@@ -98,24 +96,16 @@ namespace Application.Core.Game.TheWorld
         void messengerInvite(string sender, int messengerid, string target, int fromchannel);
         CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds);
         void partyChat(ITeam party, string chattext, string namefrom);
-        void registerHiredMerchant(HiredMerchant hm);
-        void registerMountHunger(IPlayer chr);
         void registerPetHunger(IPlayer chr, sbyte petSlot);
         void registerPlayerShop(PlayerShop ps);
-        void registerTimedMapObject(Action r, long duration);
         void removeFamily(int id);
         void removeMapPartyMembers(int partyid);
         void removeMessengerPlayer(Messenger messenger, int position);
         void removePlayer(IPlayer chr);
-        void removePlayerHpDecrease(IPlayer chr);
         BuddyList.BuddyAddResult requestBuddyAdd(string addName, int channelFrom, int cidFrom, string nameFrom);
         void resetPlayerNpcMapData();
-        void runHiredMerchantSchedule();
-        void runMountSchedule();
         void runPartySearchUpdateSchedule();
         void runPetSchedule();
-        void runPlayerHpDecreaseSchedule();
-        void runTimedMapObjectSchedule();
         void sendPacket(List<int> targetIds, Packet packet, int exception);
         void setGuildAndRank(int cid, int guildid, int rank);
         void setGuildAndRank(List<int> cids, int guildid, int rank, int exception);
@@ -128,8 +118,6 @@ namespace Application.Core.Game.TheWorld
         void silentJoinMessenger(int messengerid, MessengerCharacter target, int position);
         void silentLeaveMessenger(int messengerid, MessengerCharacter target);
         void unregisterAccountStorage(int accountId);
-        void unregisterHiredMerchant(HiredMerchant hm);
-        void unregisterMountHunger(IPlayer chr);
         void unregisterPetHunger(IPlayer chr, sbyte petSlot);
         void unregisterPlayerShop(PlayerShop ps);
         void updateMessenger(int messengerid, string namefrom, int fromchannel);

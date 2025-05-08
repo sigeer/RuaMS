@@ -3418,7 +3418,7 @@ public partial class Player
                         }
 
                         string names = (getMedalText() + Name);
-                        getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, string.Format(GameConstants.LEVEL_200, names, maxClassLevel, names)));
+                        getChannelServer().Transport.BroadcastMessage(PacketCreator.serverNotice(6, string.Format(GameConstants.LEVEL_200, names, maxClassLevel, names)));
                     }
                 }
 

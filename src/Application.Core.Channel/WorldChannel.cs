@@ -15,6 +15,7 @@ using net.netty;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
+using Org.BouncyCastle.Asn1.Mozilla;
 using scripting.Event;
 using Serilog;
 using server.events.gm;
@@ -98,6 +99,10 @@ public class WorldChannel : IWorldChannel
     public IChannelServerTransport Transport { get; }
     public ChannelServerConfig ServerConfig { get; }
     public ServerMessageController ServerMessageController { get; }
+    public CharacterHpDecreaseController CharacterHpDecreaseController { get; }
+    public MapObjectController MapObjectController { get; }
+    public MountTirednessController MountTirednessController { get; }
+    public HiredMerchantController HiredMerchantController { get; }
     public WorldChannel(ChannelServerConfig config, IChannelServerTransport transport)
     {
         InstanceId = Guid.NewGuid().ToString();
@@ -117,6 +122,10 @@ public class WorldChannel : IWorldChannel
         log = LogFactory.GetLogger($"Channel_{InstanceId}");
 
         ServerMessageController = new ServerMessageController(this);
+        CharacterHpDecreaseController = new CharacterHpDecreaseController(this);
+        MapObjectController = new MapObjectController(this);
+        MountTirednessController = new MountTirednessController(this);
+        HiredMerchantController = new HiredMerchantController(this);
 
         DojoInstance = new DojoInstance(this);
         WeddingInstance = new WeddingChannelInstance(this);
@@ -195,6 +204,10 @@ public class WorldChannel : IWorldChannel
         log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
 
         ServerMessageController.Register();
+        CharacterHpDecreaseController.Register();
+        MapObjectController.Register();
+        MountTirednessController.Register();
+        HiredMerchantController.Register();
 
         IsRunning = true;
     }
@@ -212,11 +225,15 @@ public class WorldChannel : IWorldChannel
             }
 
             isShuttingDown = true;
-            log.Information("Shutting down channel {ChannelId} in world {WorldId}", channel, world);
+            log.Information("正在停止频道{Channel}", channel);
 
-            await NettyServer.Stop();
-
+            log.Information("频道{Channel}停止定时任务...", channel);
             await ServerMessageController.StopAsync();
+            await CharacterHpDecreaseController.StopAsync();
+            await MapObjectController.StopAsync();
+            await MountTirednessController.StopAsync();
+            await HiredMerchantController.StopAsync();
+            log.Information("频道{Channel}停止定时任务...完成", channel);
 
             closeAllMerchants();
             disconnectAwayPlayers();
@@ -227,6 +244,10 @@ public class WorldChannel : IWorldChannel
             mapManager.Dispose();
 
             await closeChannelSchedules();
+
+            await NettyServer.Stop();
+            log.Information("频道{Channel}停止监听", channel);
+
 
             IsRunning = false;
             log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);
@@ -386,44 +407,6 @@ public class WorldChannel : IWorldChannel
         Transport.DisconnectPlayers(playersAway);
     }
 
-    public Dictionary<int, HiredMerchant> getHiredMerchants()
-    {
-        merchLock.EnterReadLock();
-        try
-        {
-            return new Dictionary<int, HiredMerchant>(hiredMerchants);
-        }
-        finally
-        {
-            merchLock.ExitReadLock();
-        }
-    }
-
-    public void addHiredMerchant(int chrid, HiredMerchant hm)
-    {
-        merchLock.EnterWriteLock();
-        try
-        {
-            hiredMerchants[chrid] = hm;
-        }
-        finally
-        {
-            merchLock.ExitWriteLock();
-        }
-    }
-
-    public void removeHiredMerchant(int chrid)
-    {
-        merchLock.EnterWriteLock();
-        try
-        {
-            hiredMerchants.Remove(chrid);
-        }
-        finally
-        {
-            merchLock.ExitWriteLock();
-        }
-    }
 
     public int[] multiBuddyFind(int charIdFrom, int[] characterIds)
     {

@@ -126,7 +126,8 @@ public class PlayerNPCPodium
     }
 
     private static Point? getNextPlayerNpcPosition(IMap map, int podiumData)
-    {   // automated playernpc position thanks to Ronan
+    {  
+        // automated playernpc position thanks to Ronan
         int podiumStep = podiumData % (1 << 5), podiumCount = (podiumData / (1 << 5));
 
         if (podiumCount >= 3 * podiumStep)
@@ -137,19 +138,21 @@ public class PlayerNPCPodium
             }
 
             var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
-            map.getWorldServer().setPlayerNpcMapPodiumData(map.getId(), encodePodiumData(podiumStep + 1, podiumCount + 1));
+            var podimuData = encodePodiumData(podiumStep + 1, podiumCount + 1);
+            map.ChannelServer.Transport.SetPlayerNpcMapPodiumData(map.getId(), podimuData);
             return reorganizePlayerNpcs(map, podiumStep + 1, mmoList);
         }
         else
         {
-            map.getWorldServer().setPlayerNpcMapPodiumData(map.getId(), encodePodiumData(podiumStep, podiumCount + 1));
+            var outPodiumData = encodePodiumData(podiumStep, podiumCount + 1);
+            map.ChannelServer.Transport.SetPlayerNpcMapPodiumData(map.getId(), outPodiumData);
             return calcNextPos(podiumCount, podiumStep);
         }
     }
 
     public static Point? getNextPlayerNpcPosition(IMap map)
     {
-        var pos = getNextPlayerNpcPosition(map, map.getWorldServer().getPlayerNpcMapPodiumData(map.getId()));
+        var pos = getNextPlayerNpcPosition(map, map.ChannelServer.Transport.GetPlayerNpcMapPodiumData(map.getId()));
         if (pos == null)
         {
             return null;

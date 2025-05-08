@@ -238,36 +238,6 @@ public class Server
         return true;
     }
 
-    public async Task<bool> RemoveWorldChannel(int worldid)
-    {
-        var world = RunningWorlds.GetValueOrDefault(worldid);
-
-        if (world != null)
-        {
-            int channel = await world.removeChannel();
-            return channel > -1;
-        }
-
-        return false;
-    }
-
-    public async Task<bool> RemoveWorld(int worldId)
-    {
-        var w = RunningWorlds.GetValueOrDefault(worldId);
-
-        if (w == null || !w.canUninstall())
-        {
-            return false;
-        }
-
-        using var dbContext = new DBContext();
-        LoadPlayerRanking(dbContext);
-        await w.Shutdown();
-
-        RunningWorlds.Remove(worldId);
-
-        return true;
-    }
 
     private void resetServerWorlds()
     {
