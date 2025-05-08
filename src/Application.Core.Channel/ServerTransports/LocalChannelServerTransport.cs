@@ -1,10 +1,18 @@
+using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
+using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
+using Application.Core.Game.Trades;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.MapObjects;
+using constants.id;
+using net.packet;
 using net.server;
 using System.Security.Cryptography;
+using tools;
 
 namespace Application.Core.Channel.ServerTransports
 {
@@ -158,5 +166,167 @@ namespace Application.Core.Channel.ServerTransports
             _server.UpdateWorldConfig(updatePatch);
         }
 
+        public Task<bool> RemoveServer(IWorldChannel server)
+        {
+            return Task.FromResult(true);
+        }
+
+        public ITeam CreateTeam(int playerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPlayerNpcMapPodiumData(int mapId, int podumData)
+        {
+            _world.setPlayerNpcMapPodiumData(mapId, podumData);
+        }
+
+        public int GetPlayerNpcMapPodiumData(int mapId)
+        {
+            return _world.getPlayerNpcMapPodiumData(mapId);
+        }
+
+        public void SetPlayerNpcMapStep(int mapId, int step)
+        {
+            _world.setPlayerNpcMapStep(mapId, step);
+        }
+
+        public int GetPlayerNpcMapStep(int mapId)
+        {
+            return _world.getPlayerNpcMapStep(mapId);
+        }
+
+        public void RequestRemovePlayerNpc(int mapId, IEnumerable<int> playerNpcObjectId)
+        {
+            foreach (var ch in Server.getInstance().getChannelsFromWorld(0))
+            {
+                var map = ch.getMapFactory().getMap(mapId);
+                
+
+                foreach (var pn in playerNpcObjectId)
+                {
+                    map.removeMapObject(pn);
+                    map.broadcastMessage(PacketCreator.removeNPCController(pn));
+                    map.broadcastMessage(PacketCreator.removePlayerNPC(pn));
+                }
+            }
+        }
+
+        public void BroadcastMessage(Packet p)
+        {
+            Server.getInstance().broadcastMessage(0, p);
+        }
+
+        public void BroadcastGMMessage(Packet p)
+        {
+            Server.getInstance().broadcastGMMessage(0, p);
+        }
+
+        public void SendTimer(int seconds)
+        {
+            foreach (var victim in Server.getInstance().getWorld(0).getPlayerStorage().GetAllOnlinedPlayers())
+            {
+                victim.sendPacket(PacketCreator.getClock(seconds));
+            }
+        }
+
+        public void RemoveTimer()
+        {
+            foreach (var victim in Server.getInstance().getWorld(0).getPlayerStorage().GetAllOnlinedPlayers())
+            {
+                victim.sendPacket(PacketCreator.removeClock());
+            }
+        }
+
+        public List<OwlSearchResult> OwlSearch(int itemId)
+        {
+            List<OwlSearchResult> hmsAvailable = new();
+
+            foreach (var ch in Server.getInstance().getWorld(0).getChannels())
+            {
+                foreach (var hm in ch.HiredMerchantController.getActiveMerchants())
+                {
+                    List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemId);
+
+                    foreach (PlayerShopItem mpsi in itemBundles)
+                    {
+                        hmsAvailable.Add(new OwlSearchResult
+                        {
+                            Bundles = mpsi.getBundles(),
+                            Price = mpsi.getPrice(),
+                            Channel = hm.Channel,
+                            Description = hm.getDescription(),
+                            ItemQuantity = mpsi.getItem().getQuantity(),
+                            MapId = hm.getMapId(),
+                            OwnerId = hm.getOwnerId(),
+                            OwnerName = hm.getOwner()
+                        });
+                    }
+                }
+            }
+
+            foreach (PlayerShop ps in Server.getInstance().getWorld(0).getActivePlayerShops())
+            {
+                List<PlayerShopItem> itemBundles = ps.sendAvailableBundles(itemId);
+
+                foreach (PlayerShopItem mpsi in itemBundles)
+                {
+                    hmsAvailable.Add(new OwlSearchResult
+                    {
+                        Bundles = mpsi.getBundles(),
+                        Price = mpsi.getPrice(),
+                        Channel = ps.Channel,
+                        Description = ps.getDescription(),
+                        ItemQuantity = mpsi.getItem().getQuantity(),
+                        MapId = ps.getMapId(),
+                        OwnerId = ps.getOwner().Id,
+                        OwnerName = ps.getOwner().Name
+                    });
+                }
+            }
+            hmsAvailable = hmsAvailable.OrderBy(x => x.Price).Take(200).ToList();
+            return hmsAvailable;
+        }
+
+        public PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem)
+        {
+            IPlayerShop? ps = null;
+            foreach (var ch in Server.getInstance().getWorld(0).getChannels())
+            {
+                ps = ch.HiredMerchantController.getHiredMerchant(ownerId);
+                if (ps != null)
+                    break;
+            }
+
+            if (ps == null)
+                ps = Server.getInstance().getWorld(0).getPlayerShop(ownerId);
+
+            if (ps == null || ps.getMap().getId() != mapId || !ps.hasItem(searchItem))
+                return null;
+
+            return new PlayerShopDto
+            {
+                MapName = ps.getMap().getMapName(),
+                Channel = ps.Channel,
+                IsOpen = ps.isOpen(),
+                TypeName = ps.TypeName
+            };
+        }
+
+        public int? FindPlayerShopChannel(int ownerId)
+        {
+            IPlayerShop? ps = null;
+            foreach (var ch in Server.getInstance().getWorld(0).getChannels())
+            {
+                ps = ch.HiredMerchantController.getHiredMerchant(ownerId);
+                if (ps != null)
+                    break;
+            }
+
+            if (ps == null)
+                return null;
+
+            return ps.Channel;
+        }
     }
 }

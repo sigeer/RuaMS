@@ -89,7 +89,7 @@ public class MapFactory
         try
         {
             using var dbContext = new DBContext();
-            var dataList = dbContext.Plives.Where(x => x.Map == map.getId() && x.World == map.getWorld()).ToList();
+            var dataList = dbContext.Plives.Where(x => x.Map == map.getId()).ToList();
 
             foreach (var rs in dataList)
             {

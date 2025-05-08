@@ -56,6 +56,7 @@ namespace Application.Core.Login
             return selectedPw;
         }
 
+
         public void SendServerMessage(IEnumerable<int> playerIdList)
         {
             if (playerIdList.Count() > 0)

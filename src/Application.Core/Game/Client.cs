@@ -895,7 +895,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
                 if (player.getMap().getHPDec() > 0)
                 {
-                    player.getWorldServer().removePlayerHpDecrease(player);
+                    player.getChannelServer().CharacterHpDecreaseController.removePlayerHpDecrease(player);
                 }
             }
 

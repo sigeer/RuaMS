@@ -81,7 +81,7 @@ public class Expedition
     private ScheduledFuture? schedule;
     private ConcurrentDictionary<int, string> members = new();
     private List<int> banned = new();
-    private long startTime;
+    private DateTimeOffset startTime;
     private ConcurrentDictionary<string, string> props = new();
     private bool silent;
     private int minSize;
@@ -124,7 +124,7 @@ public class Expedition
     private void scheduleRegistrationEnd()
     {
         Expedition exped = this;
-        startTime = DateTimeOffset.Now.AddMinutes(type.getRegistrationMinutes()).ToUnixTimeMilliseconds();
+        startTime = DateTimeOffset.Now.AddMinutes(type.getRegistrationMinutes());
 
         schedule = TimerManager.getInstance().schedule(() =>
         {
@@ -157,7 +157,7 @@ public class Expedition
 
     private void log()
     {
-        string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(getStartTime());
+        string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(startTime);
         Server.getInstance().broadcastGMMessage(getLeader().getWorld(), PacketCreator.serverNotice(6, gmMessage));
 
         string log = type + " EXPEDITION\r\n";
@@ -192,8 +192,8 @@ public class Expedition
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
         }
-        startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        Server.getInstance().broadcastGMMessage(startMap.getWorld(), PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
+        startTime = DateTimeOffset.Now;
+        startMap.ChannelServer.Transport.BroadcastGMMessage(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
     }
 
     public string addMember(IPlayer player)
@@ -218,7 +218,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((int)(startTime - DateTimeOffset.Now.ToUnixTimeMilliseconds()) / 1000));
+        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.Now).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -242,7 +242,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((int)(startTime - DateTimeOffset.Now.ToUnixTimeMilliseconds()) / 1000));
+        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.Now).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -284,34 +284,34 @@ public class Expedition
         return false;
     }
 
-    public void ban(CharacterIdNamePair chr)
-    {
-        int cid = chr.Id;
-        if (!banned.Contains(cid))
-        {
-            banned.Add(cid);
-            members.Remove(cid);
+    //public void ban(CharacterIdNamePair chr)
+    //{
+    //    int cid = chr.Id;
+    //    if (!banned.Contains(cid))
+    //    {
+    //        banned.Add(cid);
+    //        members.Remove(cid);
 
-            if (!silent)
-            {
-                broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
-            }
+    //        if (!silent)
+    //        {
+    //            broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
+    //        }
 
-            var player = startMap.getWorldServer().getPlayerStorage().getCharacterById(cid);
-            if (player != null && player.isLoggedinWorld())
-            {
-                player.sendPacket(PacketCreator.removeClock());
-                if (!silent)
-                {
-                    player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
-                }
-                if (ExpeditionType.ARIANT.Equals(type) || ExpeditionType.ARIANT1.Equals(type) || ExpeditionType.ARIANT2.Equals(type))
-                {
-                    player.changeMap(MapId.ARPQ_LOBBY);
-                }
-            }
-        }
-    }
+    //        var player = startMap.getWorldServer().getPlayerStorage().getCharacterById(cid);
+    //        if (player != null && player.isLoggedinWorld())
+    //        {
+    //            player.sendPacket(PacketCreator.removeClock());
+    //            if (!silent)
+    //            {
+    //                player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
+    //            }
+    //            if (ExpeditionType.ARIANT.Equals(type) || ExpeditionType.ARIANT1.Equals(type) || ExpeditionType.ARIANT2.Equals(type))
+    //            {
+    //                player.changeMap(MapId.ARPQ_LOBBY);
+    //            }
+    //        }
+    //    }
+    //}
 
     public void monsterKilled(IPlayer chr, Monster mob)
     {
@@ -341,8 +341,9 @@ public class Expedition
     }
 
     public List<IPlayer> getActiveMembers()
-    {    // thanks MedicOP for figuring out an issue with broadcasting packets to offline members
-        var ps = startMap.getWorldServer().getPlayerStorage();
+    {
+        // thanks MedicOP for figuring out an issue with broadcasting packets to offline members
+        var ps = startMap.ChannelServer.getPlayerStorage();
 
         List<IPlayer> activeMembers = new();
         foreach (int chrid in getMembers().Keys)
@@ -467,11 +468,6 @@ public class Expedition
     public bool isInProgress()
     {
         return !registering;
-    }
-
-    public long getStartTime()
-    {
-        return startTime;
     }
 
     public List<string> getBossLogs()

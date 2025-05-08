@@ -1,6 +1,9 @@
+using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
+using Application.Shared.MapObjects;
+using net.packet;
 
 namespace Application.Core.ServerTransports
 {
@@ -14,8 +17,19 @@ namespace Application.Core.ServerTransports
         public DateTimeOffset GetServerupTime();
 
         Task<int> RegisterServer(IWorldChannel server);
+        Task<bool> RemoveServer(IWorldChannel server);
 
         void DropWorldMessage(int type, string message);
+        /// <summary>
+        /// 向全服发送数据包
+        /// </summary>
+        /// <param name="p"></param>
+        void BroadcastMessage(Packet p);
+        /// <summary>
+        /// 全服GM发送数据包
+        /// </summary>
+        /// <param name="p"></param>
+        void BroadcastGMMessage(Packet p);
 
         #region wedding
         CoupleIdPair? GetRelationshipCouple(int cathedralId);
@@ -45,5 +59,32 @@ namespace Application.Core.ServerTransports
         void SendWorldConfig(WorldConfigPatch updatePatch);
 
         void DisconnectPlayers(IEnumerable<int> playerIdList);
+        #region Team
+        ITeam CreateTeam(int playerId);
+        #endregion
+
+        #region player npc
+        void SetPlayerNpcMapPodiumData(int mapId, int podumData);
+        int GetPlayerNpcMapPodiumData(int mapId);
+        void SetPlayerNpcMapStep(int mapId, int step);
+        int GetPlayerNpcMapStep(int mapId);
+
+        void RequestRemovePlayerNpc(int mapId, IEnumerable<int> playerNpcObjectId);
+        #endregion
+
+        #region
+        void SendTimer(int seconds);
+        void RemoveTimer();
+        #endregion
+
+        #region PlayerShop
+        List<OwlSearchResult> OwlSearch(int itemId);
+        PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem);
+        int? FindPlayerShopChannel(int ownerId);
+        #endregion
+
+        #region Guild
+
+        #endregion
     }
 }

@@ -319,7 +319,7 @@ public class AriantColiseum
                     chr.changeMap(MapId.ARPQ_LOBBY, 0);
                 }
 
-                map.getWorldServer().registerTimedMapObject(() =>
+                map.ChannelServer.MapObjectController.RegisterTimedMapObject(() =>
                 {
                     score.Clear();
                     exped = null;

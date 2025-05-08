@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -20,20 +20,14 @@ public class TimerAllCommand : CommandBase
 
         if (paramsValue[0].Equals("remove", StringComparison.OrdinalIgnoreCase))
         {
-            foreach (var victim in player.getWorldServer().getPlayerStorage().GetAllOnlinedPlayers())
-            {
-                victim.sendPacket(PacketCreator.removeClock());
-            }
+            player.getChannelServer().Transport.RemoveTimer();
         }
         else
         {
             try
             {
                 int seconds = int.Parse(paramsValue[0]);
-                foreach (var victim in player.getWorldServer().getPlayerStorage().GetAllOnlinedPlayers())
-                {
-                    victim.sendPacket(PacketCreator.getClock(seconds));
-                }
+                player.getChannelServer().Transport.SendTimer(seconds);
             }
             catch (FormatException e)
             {

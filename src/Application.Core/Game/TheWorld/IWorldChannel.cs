@@ -63,13 +63,16 @@ namespace Application.Core.Game.TheWorld
         DojoInstance DojoInstance { get; }
         WeddingChannelInstance WeddingInstance { get; }
         ServerMessageController ServerMessageController { get; }
+        CharacterHpDecreaseController CharacterHpDecreaseController { get; }
+        MapObjectController MapObjectController { get; }
+        MountTirednessController MountTirednessController { get; }
+        HiredMerchantController HiredMerchantController { get; }
 
         void UpdateWorldConfig(WorldConfigPatch updatePatch);
 
         int getTransportationTime(double travelTime);
         bool acceptOngoingWedding(bool cathedral);
         bool addExpedition(Expedition exped);
-        void addHiredMerchant(int chrid, HiredMerchant hm);
         bool addMiniDungeon(int dungeonid);
         void addPlayer(IPlayer chr);
         void broadcastGMPacket(Packet packet);
@@ -87,7 +90,6 @@ namespace Application.Core.Game.TheWorld
         EventScriptManager getEventSM();
         Expedition? getExpedition(ExpeditionType type);
         List<Expedition> getExpeditions();
-        Dictionary<int, HiredMerchant> getHiredMerchants();
         int getId();
         IPEndPoint getIP();
         MapManager getMapFactory();
@@ -113,7 +115,6 @@ namespace Application.Core.Game.TheWorld
         void registerOwnedMap(IMap map);
         void reloadEventScriptManager();
         void removeExpedition(Expedition exped);
-        void removeHiredMerchant(int chrid);
         void removeMiniDungeon(int dungeonid);
         bool removePlayer(IPlayer chr);
         void removePlayerAway(int chrId);

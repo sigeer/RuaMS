@@ -169,7 +169,6 @@ namespace Application.Core.Game.Maps
         bool getSummonState();
         int getTimeLimit();
         int getWorld();
-        IWorld getWorldServer();
         bool hasClock();
         bool hasEventNPC();
         void instanceMapForceRespawn();

@@ -36,16 +36,17 @@ public class RemoteStoreHandler : AbstractPacketHandler
     public override void HandlePacket(InPacket p, IClient c)
     {
         var chr = c.OnlinedCharacter;
-        var hm = getMerchant(c);
-        if (hm != null && hm.isOwner(chr))
+        var hmChannel = c.getChannelServer().Transport.FindPlayerShopChannel(chr.Id);
+        if (hmChannel != null)
         {
-            if (hm.getChannel() == chr.getClient().getChannel())
+            if (hmChannel.Value == chr.getClient().getChannel())
             {
-                hm.visitShop(chr);
+                var hm = c.getChannelServer().HiredMerchantController.getHiredMerchant(chr.Id);
+                hm!.visitShop(chr);
             }
             else
             {
-                c.sendPacket(PacketCreator.remoteChannelChange((byte)(hm.getChannel() - 1)));
+                c.sendPacket(PacketCreator.remoteChannelChange((byte)(hmChannel.Value - 1)));
             }
             return;
         }
@@ -54,14 +55,5 @@ public class RemoteStoreHandler : AbstractPacketHandler
             chr.dropMessage(1, "You don't have a Merchant open.");
         }
         c.sendPacket(PacketCreator.enableActions());
-    }
-
-    private static HiredMerchant? getMerchant(IClient c)
-    {
-        if (c.OnlinedCharacter.hasMerchant())
-        {
-            return c.getWorldServer().getHiredMerchant(c.OnlinedCharacter.getId());
-        }
-        return null;
     }
 }

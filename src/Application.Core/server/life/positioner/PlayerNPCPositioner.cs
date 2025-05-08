@@ -218,7 +218,7 @@ public class PlayerNPCPositioner
                         {
                             if (i > initStep)
                             {
-                                map.getWorldServer().setPlayerNpcMapStep(map.getId(), i);
+                                map.ChannelServer.Transport.SetPlayerNpcMapStep(map.getId(), i);
                             }
 
                             if (reorganize && YamlConfig.config.server.PLAYERNPC_ORGANIZE_AREA)
@@ -249,13 +249,13 @@ public class PlayerNPCPositioner
 
         if (i > initStep)
         {
-            map.getWorldServer().setPlayerNpcMapStep(map.getId(), YamlConfig.config.server.PLAYERNPC_AREA_STEPS - 1);
+            map.ChannelServer.Transport.SetPlayerNpcMapStep(map.getId(), YamlConfig.config.server.PLAYERNPC_AREA_STEPS - 1);
         }
         return null;
     }
 
     public static Point? getNextPlayerNpcPosition(IMap map)
     {
-        return getNextPlayerNpcPosition(map, map.getWorldServer().getPlayerNpcMapStep(map.getId()));
+        return getNextPlayerNpcPosition(map, map.ChannelServer.Transport.GetPlayerNpcMapStep(map.getId()));
     }
 }
