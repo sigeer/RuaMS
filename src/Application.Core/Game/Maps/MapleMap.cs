@@ -77,7 +77,7 @@ public class MapleMap : IMap
 
 
     private Dictionary<int, IPlayer> characters = new();
-    private Dictionary<int, HashSet<int>> mapParty = new();
+
     private Dictionary<int, Portal> portals = new();
     private Dictionary<int, int> backgroundTypes = new();
     private Dictionary<string, int> environment = new();
@@ -2355,7 +2355,7 @@ public class MapleMap : IMap
                     if (playerMist.makeChanceResult())
                     {
                         IPlayer chr = (IPlayer)mo;
-                        if (playerMist.getOwner().getId() == chr.getId() || playerMist.getOwner().getParty() != null && playerMist.getOwner().getParty()!.containsMembers(chr))
+                        if (playerMist.getOwner().getId() == chr.getId() || playerMist.getOwner().getParty() != null && playerMist.getOwner().getParty()!.ContainsMember(chr.Id))
                         {
                             chr.ChangeMP(playerMist.getSourceSkill().getEffect(chr.getSkillLevel(playerMist.getSourceSkill().getId())).getX() * chr.MP / 100);
                         }
@@ -2541,86 +2541,7 @@ public class MapleMap : IMap
         registerMapSchedule(r, time);
     }
 
-    private void addPartyMemberInternal(IPlayer chr, int partyid)
-    {
-        if (partyid == -1)
-        {
-            return;
-        }
 
-        HashSet<int>? partyEntry = mapParty.GetValueOrDefault(partyid);
-        if (partyEntry == null)
-        {
-            partyEntry = new();
-            partyEntry.Add(chr.getId());
-
-            mapParty.AddOrUpdate(partyid, partyEntry);
-        }
-        else
-        {
-            partyEntry.Add(chr.getId());
-        }
-    }
-
-    private void removePartyMemberInternal(IPlayer chr, int partyid)
-    {
-        if (partyid == -1)
-        {
-            return;
-        }
-
-        HashSet<int>? partyEntry = mapParty.GetValueOrDefault(partyid);
-        if (partyEntry != null)
-        {
-            if (partyEntry.Count > 1)
-            {
-                partyEntry.Remove(chr.getId());
-            }
-            else
-            {
-                mapParty.Remove(partyid);
-            }
-        }
-    }
-
-    public void addPartyMember(IPlayer chr, int partyid)
-    {
-        chrLock.EnterWriteLock();
-        try
-        {
-            addPartyMemberInternal(chr, partyid);
-        }
-        finally
-        {
-            chrLock.ExitWriteLock();
-        }
-    }
-
-    public void removePartyMember(IPlayer chr, int partyid)
-    {
-        chrLock.EnterWriteLock();
-        try
-        {
-            removePartyMemberInternal(chr, partyid);
-        }
-        finally
-        {
-            chrLock.ExitWriteLock();
-        }
-    }
-
-    public void removeParty(int partyid)
-    {
-        chrLock.EnterWriteLock();
-        try
-        {
-            mapParty.Remove(partyid);
-        }
-        finally
-        {
-            chrLock.ExitWriteLock();
-        }
-    }
 
     public void addPlayer(IPlayer chr)
     {
@@ -2638,10 +2559,6 @@ public class MapleMap : IMap
             characters.Add(chr.Id, chr);
             chrSize = characters.Count;
 
-            if (party != null && party.getMemberById(chr.getId()) != null)
-            {
-                addPartyMemberInternal(chr, party.getId());
-            }
             itemMonitorTimeout = 1;
         }
         finally
@@ -2954,11 +2871,6 @@ public class MapleMap : IMap
         chrLock.EnterWriteLock();
         try
         {
-            if (party != null && party.getMemberById(chr.getId()) != null)
-            {
-                removePartyMemberInternal(chr, party.getId());
-            }
-
             characters.Remove(chr.Id);
             if (XiGuai?.Controller == chr)
                 XiGuai = null;

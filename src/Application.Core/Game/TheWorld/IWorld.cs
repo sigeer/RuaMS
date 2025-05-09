@@ -46,8 +46,6 @@ namespace Application.Core.Game.TheWorld
         bool canUninstall();
         void changeEmblem(int gid, List<int> affectedPlayers, IGuild mgs);
         Messenger createMessenger(MessengerCharacter chrfor);
-        ITeam createParty(IPlayer chrfor);
-
         void declineChat(string sender, IPlayer player);
         void dropMessage(int type, string message);
         /// <summary>
@@ -99,7 +97,6 @@ namespace Application.Core.Game.TheWorld
         void registerPetHunger(IPlayer chr, sbyte petSlot);
         void registerPlayerShop(PlayerShop ps);
         void removeFamily(int id);
-        void removeMapPartyMembers(int partyid);
         void removeMessengerPlayer(Messenger messenger, int position);
         void removePlayer(IPlayer chr);
         BuddyList.BuddyAddResult requestBuddyAdd(string addName, int channelFrom, int cidFrom, string nameFrom);
@@ -122,6 +119,5 @@ namespace Application.Core.Game.TheWorld
         void unregisterPlayerShop(PlayerShop ps);
         void updateMessenger(int messengerid, string namefrom, int fromchannel);
         void updateMessenger(Messenger messenger, string namefrom, int position, int fromchannel);
-        void updateParty(int partyid, PartyOperation operation, IPlayer target);
     }
 }

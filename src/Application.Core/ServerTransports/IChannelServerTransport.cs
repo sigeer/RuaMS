@@ -3,6 +3,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
 using Application.Shared.MapObjects;
+using Application.Shared.Relations;
 using net.packet;
 
 namespace Application.Core.ServerTransports
@@ -16,7 +17,7 @@ namespace Application.Core.ServerTransports
         public int GetCurrentTimestamp();
         public DateTimeOffset GetServerupTime();
 
-        Task<int> RegisterServer(IWorldChannel server);
+        Task<int> RegisterServer();
         Task<bool> RemoveServer(IWorldChannel server);
 
         void DropWorldMessage(int type, string message);
@@ -60,7 +61,10 @@ namespace Application.Core.ServerTransports
 
         void DisconnectPlayers(IEnumerable<int> playerIdList);
         #region Team
-        ITeam CreateTeam(int playerId);
+        int CreateTeam(int playerId);
+
+        void SendExpelFromParty(int operatorId, int expelCid);
+        void SendUpdateTeamGlobalData(int partyId, PartyOperation operation, int targetId, string targetName);
         #endregion
 
         #region player npc
@@ -81,6 +85,7 @@ namespace Application.Core.ServerTransports
         List<OwlSearchResult> OwlSearch(int itemId);
         PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem);
         int? FindPlayerShopChannel(int ownerId);
+
         #endregion
 
         #region Guild

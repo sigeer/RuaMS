@@ -444,7 +444,7 @@ namespace Application.Core.Managers
                     }
                     ret.setPosition(portal.getPosition());
 
-                    ret.setParty(wserv.getParty(dbModel.Party));
+                    ret.setParty(ret.getChannelServer().GetLocalTeam(dbModel.Party));
 
                     int messengerid = dbModel.MessengerId;
                     int position = dbModel.MessengerPosition;

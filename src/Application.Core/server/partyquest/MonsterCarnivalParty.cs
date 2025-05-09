@@ -42,7 +42,7 @@ public class MonsterCarnivalParty
             portal = TeamFlag == 0 ? 2 : 1;
         }
 
-        foreach (var mc in team.getMembers())
+        foreach (var mc in team.GetChannelMembers())
         {
             if (mc != null)
             {
@@ -99,7 +99,7 @@ public class MonsterCarnivalParty
         var map = Event.getEventMap();
         var effect = IsWinner ? map.EffectWin : map.EffectLose;
         var sound = IsWinner ? map.SoundWin : map.SoundLose;
-        foreach (var mc in Team.getMembers())
+        foreach (var mc in Team.GetChannelMembers())
         {
             if (mc.IsOnlined)
             {
@@ -116,7 +116,7 @@ public class MonsterCarnivalParty
         var map = Event.getEventMap();
 
         var rewardMap = mapFactory.getMap(IsWinner ? map.RewardMapWin : map.RewardMapLose);
-        foreach (var mc in Team.getMembers())
+        foreach (var mc in Team.GetChannelMembers())
         {
             if (mc.IsOnlined)
             {
@@ -132,7 +132,7 @@ public class MonsterCarnivalParty
     public void Dispose(bool warpout)
     {
         var outMap = Event.GetOutMap();
-        foreach (var mc in Team.getMembers())
+        foreach (var mc in Team.GetChannelMembers())
         {
             if (mc != null)
             {

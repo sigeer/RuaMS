@@ -428,26 +428,6 @@ public class World : IWorld
         }
     }
 
-
-    public ITeam createParty(IPlayer chrfor)
-    {
-        int partyid = runningPartyId.getAndIncrement();
-        var party = new Team(partyid, chrfor);
-
-        Monitor.Enter(partyLock);
-        try
-        {
-            TeamStorage.AddOrUpdate(party.getId(), party);
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
-
-        party.addMember(chrfor);
-        return party;
-    }
-
     public ITeam? getParty(int partyid)
     {
         Monitor.Enter(partyLock);
@@ -475,108 +455,6 @@ public class World : IWorld
         }
     }
 
-    private void updateParty(ITeam party, PartyOperation operation, IPlayer target)
-    {
-        var partyMembers = party.getMembers();
-
-        foreach (var partychar in partyMembers)
-        {
-            partychar.setParty(operation == PartyOperation.DISBAND ? null : party);
-            if (partychar.IsOnlined)
-            {
-                partychar.sendPacket(PacketCreator.updateParty(partychar.getClient().getChannel(), party, operation, target));
-            }
-        }
-        switch (operation)
-        {
-            case PartyOperation.LEAVE:
-            case PartyOperation.EXPEL:
-                target.setParty(null);
-                if (target.IsOnlined)
-                {
-                    target.sendPacket(PacketCreator.updateParty(target.Client.getChannel(), party, operation, target));
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    public void updateParty(int partyid, PartyOperation operation, IPlayer target)
-    {
-        var party = getParty(partyid) ?? throw new ArgumentException("no party with the specified partyid exists");
-        switch (operation)
-        {
-            case PartyOperation.JOIN:
-                party.addMember(target);
-                break;
-            case PartyOperation.EXPEL:
-            case PartyOperation.LEAVE:
-                party.removeMember(target);
-                break;
-            case PartyOperation.DISBAND:
-                disbandParty(partyid);
-                break;
-            case PartyOperation.SILENT_UPDATE:
-            case PartyOperation.LOG_ONOFF:
-                party.updateMember(target);
-                break;
-            case PartyOperation.CHANGE_LEADER:
-                var mc = party.getLeader();
-                if (mc != null)
-                {
-                    var eim = mc.getEventInstance();
-
-                    if (eim != null && eim.isEventLeader(mc))
-                    {
-                        eim.changedLeader(target);
-                    }
-                    else
-                    {
-                        int oldLeaderMapid = mc.getMapId();
-
-                        if (MiniDungeonInfo.isDungeonMap(oldLeaderMapid))
-                        {
-                            if (oldLeaderMapid != target.getMapId())
-                            {
-                                var mmd = mc.getClient().getChannelServer().getMiniDungeon(oldLeaderMapid);
-                                if (mmd != null)
-                                {
-                                    mmd.close();
-                                }
-                            }
-                        }
-                    }
-                    party.setLeader(target);
-                }
-                break;
-            default:
-                log.Warning("Unhandled updateParty operation: {PartyOperation}", operation.ToString());
-                break;
-        }
-        updateParty(party, operation, target);
-    }
-
-    public void removeMapPartyMembers(int partyid)
-    {
-        var party = getParty(partyid);
-        if (party == null)
-        {
-            return;
-        }
-
-        foreach (var mc in party.getMembers())
-        {
-            if (mc != null)
-            {
-                var map = mc.getMap();
-                if (map != null)
-                {
-                    map.removeParty(partyid);
-                }
-            }
-        }
-    }
 
     public int find(string name)
     {

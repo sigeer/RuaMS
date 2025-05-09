@@ -495,7 +495,10 @@ namespace Application.Core.Game.Players
         bool isRidingBattleship();
         bool isSummonsEmpty();
         void leaveMap();
-        bool leaveParty();
+        bool JoinParty(int partyId, bool silentCheck);
+        bool LeaveParty(bool disbandTeam = true);
+        bool CreateParty(bool silentCheck);
+        void ExpelFromParty(int expelCid);
         void levelUp(bool takeexp);
         void logOff();
         void loseExp(int loss, bool show, bool inChat);

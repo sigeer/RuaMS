@@ -1,7 +1,10 @@
+using Application.Core.Game.Relation;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Relations;
+using Application.Shared.Servers;
 using net.server;
 using tools;
 
@@ -85,6 +88,33 @@ namespace Application.Core.Login
             foreach (var ch in world.Channels)
             {
                 ch.UpdateWorldConfig(patch);
+            }
+        }
+
+        public void SyncTeam(ITeamGlobal teamGlobal)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.Channels)
+            {
+                ch.SyncTeam(teamGlobal);
+            }
+        }
+
+        public void SendExpelFromParty(int partyId, int expelCid)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.Channels)
+            {
+                ch.ProcessExpelFromParty(partyId, expelCid);
+            }
+        }
+
+        public void UpdateTeamChannelData(int partyId, PartyOperation operation, TeamMember targetMember)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.Channels)
+            {
+                ch.ProcessUpdateTeamChannelData(partyId, operation, targetMember);
             }
         }
     }

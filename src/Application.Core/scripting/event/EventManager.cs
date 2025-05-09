@@ -26,6 +26,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
+using Application.Shared.Relations;
 using constants.game;
 using net.server;
 using scripting.Event.scheduler;
@@ -448,7 +449,7 @@ public class EventManager
                             return false;
                         }
 
-                        eim.setLeader(leader);
+                        eim.setLeader(leader.Id);
 
                         exped.start();
                         eim.registerExpedition(exped);
@@ -541,7 +542,7 @@ public class EventManager
                             DisposeLobby(lobbyId);
                             return false;
                         }
-                        eim.setLeader(leader);
+                        eim.setLeader(leader.Id);
 
                         if (chr != null)
                         {
@@ -582,26 +583,17 @@ public class EventManager
 
     public bool startInstance(int lobbyId, ITeam party, IMap map)
     {
-        return startInstance(lobbyId, party, map, party.getLeader());
+        return startInstance(lobbyId, party, map, 0, party.getLeaderId());
     }
 
-    public bool startInstance(int lobbyId, ITeam party, IMap map, IPlayer leader)
-    {
-        return startInstance(lobbyId, party, map, 0, leader);
-    }
 
     //PQ method: starts a PQ with a difficulty level, requires function setup(difficulty, leaderid) instead of setup()
     public bool startInstance(ITeam party, IMap map, int difficulty)
     {
-        return startInstance(-1, party, map, difficulty);
+        return startInstance(-1, party, map, difficulty, party.getLeaderId());
     }
 
-    public bool startInstance(int lobbyId, ITeam party, IMap map, int difficulty)
-    {
-        return startInstance(lobbyId, party, map, difficulty, party.getLeader());
-    }
-
-    public bool startInstance(int lobbyId, ITeam party, IMap map, int difficulty, IPlayer leader)
+    public bool startInstance(int lobbyId, ITeam party, IMap map, int difficulty, int leaderId)
     {
         if (this.isDisposed())
         {
@@ -610,9 +602,9 @@ public class EventManager
 
         try
         {
-            if (!playerPermit.Contains(leader.getId()) && startSemaphore.Wait(7777))
+            if (!playerPermit.Contains(leaderId) && startSemaphore.Wait(7777))
             {
-                playerPermit.Add(leader.getId());
+                playerPermit.Add(leaderId);
 
                 Monitor.Enter(startLock);
                 try
@@ -653,7 +645,7 @@ public class EventManager
                             return false;
                         }
 
-                        eim.setLeader(leader);
+                        eim.setLeader(leaderId);
 
                         eim.registerParty(party, map);
                         party.setEligibleMembers([]);
@@ -670,7 +662,7 @@ public class EventManager
                 finally
                 {
                     Monitor.Exit(startLock);
-                    playerPermit.Remove(leader.getId());
+                    playerPermit.Remove(leaderId);
                     startSemaphore.Release();
                 }
             }
@@ -678,7 +670,7 @@ public class EventManager
         catch (ThreadInterruptedException ie)
         {
             log.Error(ie.ToString());
-            playerPermit.Remove(leader.getId());
+            playerPermit.Remove(leaderId);
         }
 
         return false;
@@ -778,7 +770,7 @@ public class EventManager
         }
         try
         {
-            var result = iv.CallFunction("getEligibleParty", party.getPartyMembersOnline());
+            var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers());
             var eligibleParty = result.ToObject<List<IPlayer>>();
             party.setEligibleMembers(eligibleParty);
             return eligibleParty;

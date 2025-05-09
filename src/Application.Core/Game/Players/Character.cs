@@ -35,6 +35,7 @@ using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Shared.Items;
 using Application.Shared.KeyMaps;
+using Application.Shared.Relations;
 using client;
 using client.autoban;
 using client.creator;
@@ -1219,7 +1220,8 @@ public partial class Player
         }
 
         List<IPlayer> partyMembers = new();
-        foreach (var mc in (exPartyMembers != null) ? exPartyMembers : this.getPartyMembersOnline())
+        var filteredPartyMembers = exPartyMembers ?? this.getPartyMembersOnline();
+        foreach (var mc in filteredPartyMembers)
         {
             if (mc.isLoggedinWorld())
             {
@@ -3494,10 +3496,9 @@ public partial class Player
             {
                 Action r = () =>
                 {
-                    if (leaveParty())
+                    if (LeaveParty())
                     {
                         showHint("You have reached #blevel 10#k, therefore you must leave your #rstarter party#k.");
-
                     }
                 };
 
@@ -4999,7 +5000,7 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            getWorldServer().updateParty(chrParty.getId(), PartyOperation.SILENT_UPDATE, this);
+            getChannelServer().UpdateTeamGlobalData(chrParty.getId(), PartyOperation.SILENT_UPDATE, Id, Name);
         }
     }
 

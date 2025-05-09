@@ -79,7 +79,7 @@ public class GuildOperationHandler : AbstractPacketHandler
                     return;
                 }
 
-                if (!TeamManager.createParty(mc, true))
+                if (!mc.CreateParty(true))
                 {
                     mc.dropMessage(1, "You cannot create a new Guild while in a party.");
                     return;
@@ -278,7 +278,7 @@ public class GuildOperationHandler : AbstractPacketHandler
                             int partyid = leader.getPartyId();
                             if (partyid != -1)
                             {
-                                TeamManager.joinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
+                                mc.JoinParty(partyid, true);// GMS gimmick "party to form guild" recalled thanks to Vcoc
                             }
                         }
                     }

@@ -32,20 +32,17 @@ public abstract class PartyQuest
 {
     protected ILogger log;
 
-    int channel, world;
     ITeam party;
     List<IPlayer> participants = new();
 
     public PartyQuest(ITeam party)
     {
         this.party = party;
-        var leader = party.getLeader();
-        channel = leader.Channel;
-        world = leader.getWorld();
+        var leader = party.GetLeader();
         int mapid = leader.getMapId();
-        foreach (var pchr in party.getMembers())
+        foreach (var pchr in party.GetChannelMembers())
         {
-            if (pchr.Channel == channel && pchr.getMapId() == mapid)
+            if ( pchr.getMapId() == mapid)
             {
                 if (pchr.isLoggedinWorld())
                 {

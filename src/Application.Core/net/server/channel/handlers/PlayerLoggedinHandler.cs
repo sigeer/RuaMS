@@ -25,6 +25,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Shared.KeyMaps;
+using Application.Shared.Relations;
 using client;
 using client.inventory;
 using constants.game;
@@ -105,10 +106,6 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             {
                 c.disconnect(true, false);
                 return;
-            }
-            else
-            {
-                c.setChannel(cserv.getId());
             }
 
             var storage = wserv.getPlayerStorage();
@@ -328,7 +325,7 @@ public class PlayerLoggedinHandler : AbstractPacketHandler
             {
                 //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
                 //c.sendPacket(PacketCreator.partyCreated(pchar));
-                wserv.updateParty(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player);
+                c.getChannelServer().UpdateTeamGlobalData(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player.Id, player.Name);
                 player.updatePartyMemberHP();
             }
 

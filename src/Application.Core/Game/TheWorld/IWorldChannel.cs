@@ -30,6 +30,8 @@ using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Relations;
+using Application.Shared.Servers;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
@@ -125,7 +127,14 @@ namespace Application.Core.Game.TheWorld
         void setEvent(Event? evt);
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
-        Task Shutdown();
         void unregisterOwnedMap(IMap map);
+
+        ITeam CreateTeam(int playerId);
+        ITeam? GetLocalTeam(int teamId);
+        void SyncTeam(ITeamGlobal teamGlobal);
+        void UpdateTeamGlobalData(int partyId, PartyOperation operation, int targetId, string targetName);
+        void ProcessUpdateTeamChannelData(int partyId, PartyOperation operation, TeamMember targetMember);
+        void ExpelFromParty(int partyId, int expelCid);
+        void ProcessExpelFromParty(int partyId, int expelCid);
     }
 }

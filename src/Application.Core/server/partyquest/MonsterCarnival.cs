@@ -3,6 +3,7 @@
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.Relation;
+using Application.Core.Game.TheWorld;
 using constants.String;
 using tools;
 
@@ -27,13 +28,12 @@ public class MonsterCarnival
     MonsterCarnivalParty redTeam;
     MonsterCarnivalParty blueTeam;
 
-    public MonsterCarnival(ITeam p1, ITeam p2, int mapid, bool cpq1, int room)
+    public MonsterCarnival(IWorldChannel evtChannel, ITeam p1, ITeam p2, int mapid, bool cpq1, int room)
     {
         this.IsCPQ1 = cpq1;
         this.room = room;
-        var cs = p2.getLeader().getChannelServer();
         // 是否可以替换成getMap？不可以，任务结束后会关闭地图，getMap不会创建新地图
-        map = (cs.getMapFactory().getDisposableMap(mapid) as ICPQMap)!;
+        map = (evtChannel.getMapFactory().getDisposableMap(mapid) as ICPQMap)!;
 
         redTeam = new MonsterCarnivalParty(this, p1, 0);
         blueTeam = new MonsterCarnivalParty(this, p2, 1);
@@ -47,7 +47,7 @@ public class MonsterCarnival
             effectTimer = TimerManager.getInstance().schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
             respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
 
-            cs.initMonsterCarnival(cpq1, room);
+            evtChannel.initMonsterCarnival(cpq1, room);
         }
         else
         {
@@ -57,8 +57,8 @@ public class MonsterCarnival
 
     public bool CheckMembers()
     {
-        var redTeamMembers = redTeam.Team.getPartyMembersOnline();
-        var blueTeamMembers = blueTeam.Team.getPartyMembersOnline();
+        var redTeamMembers = redTeam.Team.GetChannelMembers();
+        var blueTeamMembers = blueTeam.Team.GetChannelMembers();
         if (redTeamMembers.Count != blueTeamMembers.Count)
         {
             foreach (var chr in redTeamMembers)

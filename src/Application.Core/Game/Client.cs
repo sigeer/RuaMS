@@ -4,6 +4,7 @@ using Application.Core.Managers;
 using Application.Core.Scripting.Infrastructure;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
+using Application.Shared.Relations;
 using client.inventory;
 using constants.id;
 using DotNetty.Codecs;
@@ -147,9 +148,9 @@ public class Client : ChannelHandlerAdapter, IClient
         return new Client(Type.CHANNEL, sessionId, socketChannel, packetProcessor, worldChannel);
     }
 
-    public static Client createMock()
+    public static Client createMock(IWorldChannel? worldChannel = null)
     {
-        return new Client(Type.Mock, -1, null, null, null);
+        return new Client(Type.Mock, -1, null, null, worldChannel);
     }
 
     public override async void ChannelActive(IChannelHandlerContext ctx)
@@ -832,28 +833,12 @@ public class Client : ChannelHandlerAdapter, IClient
 
     private static void removePartyPlayer(IPlayer player, IWorld wserv)
     {
-        var map = player.getMap();
         var party = player.getParty();
-        int idz = player.getId();
 
         if (party != null)
         {
-            wserv.updateParty(party.getId(), PartyOperation.LOG_ONOFF, player);
-            if (party.getLeader().getId() == idz && map != null)
-            {
-                IPlayer? lchr = null;
-                foreach (var pchr in party.getMembers())
-                {
-                    if (pchr != null && pchr.getId() != idz && (lchr == null || lchr.getLevel() <= pchr.getLevel()) && map.getCharacterById(pchr.getId()) != null)
-                    {
-                        lchr = pchr;
-                    }
-                }
-                if (lchr != null)
-                {
-                    wserv.updateParty(party.getId(), PartyOperation.CHANGE_LEADER, lchr);
-                }
-            }
+            player.getChannelServer().UpdateTeamGlobalData(party.getId(), PartyOperation.LOG_ONOFF, player.Id, player.Name);
+            party.AssignNewLeader();
         }
     }
 
@@ -870,7 +855,8 @@ public class Client : ChannelHandlerAdapter, IClient
             player.closePartySearchInteractions();
 
             if (!serverTransition)
-            {    // thanks MedicOP for detecting an issue with party leader change on changing channels
+            {
+                // thanks MedicOP for detecting an issue with party leader change on changing channels
                 removePartyPlayer(player, wserv);
 
                 var eim = player.getEventInstance();
@@ -960,7 +946,7 @@ public class Client : ChannelHandlerAdapter, IClient
             {
                 removePlayer(Character, wserv, this.serverTransition);
 
-                if (!(Channel == -1 || shutdown))
+                if (!(getChannel() == -1 || shutdown))
                 {
                     if (!cashshop)
                     {
@@ -982,7 +968,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             }
                             if (Character.BuddyList.Count > 0)
                             {
-                                wserv.loggedOff(Character.Name, Character.Id, Channel, Character.BuddyList.getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, getChannel(), Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -993,7 +979,7 @@ public class Client : ChannelHandlerAdapter, IClient
                             // if dc inside of cash shop.
                             if (Character.BuddyList.Count > 0)
                             {
-                                wserv.loggedOff(Character.Name, Character.Id, Channel, Character.BuddyList.getBuddyIds());
+                                wserv.loggedOff(Character.Name, Character.Id, getChannel(), Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -1079,7 +1065,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public int getChannel()
     {
-        return Channel;
+        return _cachedServer == null ? -1 : _cachedServer.getId();
     }
 
     IWorldChannel _cachedServer;
@@ -1111,8 +1097,8 @@ public class Client : ChannelHandlerAdapter, IClient
 
             if (chr.Party > 0)
             {
-                chr.setParty(chr.getWorldServer().getParty(chr.Party));
-                chr.leaveParty();   // thanks Vcoc for pointing out deleted characters would still stay in a party
+                chr.setParty(chr.getChannelServer().GetLocalTeam(chr.Party));
+                chr.LeaveParty(false);   // thanks Vcoc for pointing out deleted characters would still stay in a party
 
                 this.setPlayer(null);
             }

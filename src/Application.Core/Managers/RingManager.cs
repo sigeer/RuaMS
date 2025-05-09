@@ -152,7 +152,7 @@ namespace Application.Core.Managers
                     partner.addMarriageRing(null);
                 }
 
-                chr.dropMessage(5, "You have successfully break the marriage with " + CharacterManager.getNameById(partnerid) + ".");
+                chr.dropMessage(5, "You have successfully break the marriage with " + partner?.Name + ".");
 
                 //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
                 chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
@@ -212,7 +212,7 @@ namespace Application.Core.Managers
                 {
                     InventoryManipulator.removeById(chr.getClient(), InventoryType.ETC, marriageitemid, 1, false, false);
                 }
-                chr.dropMessage(5, "You have successfully break the engagement with " + CharacterManager.getNameById(partnerid) + ".");
+                chr.dropMessage(5, "You have successfully break the engagement with " + partner?.Name + ".");
 
                 //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
                 chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));

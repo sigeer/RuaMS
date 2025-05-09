@@ -410,7 +410,7 @@ public class EventInstanceManager
             if (mpc.IsOnlined)
             {
                 // thanks resinate
-                var chr = map.getCharacterById(mpc.getId());
+                var chr = map.getCharacterById(mpc.Id);
                 if (chr != null)
                 {
                     registerPlayer(chr);
@@ -1540,12 +1540,12 @@ public class EventInstanceManager
         }
     }
 
-    public void setLeader(IPlayer chr)
+    public void setLeader(int leaderId)
     {
         lockObj.EnterWriteLock();
         try
         {
-            leaderId = chr.getId();
+            this.leaderId = leaderId;
         }
         finally
         {

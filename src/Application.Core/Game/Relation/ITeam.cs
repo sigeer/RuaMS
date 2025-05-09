@@ -1,3 +1,5 @@
+using Application.Core.Game.TheWorld;
+using Application.Shared.Relations;
 using server.maps;
 
 namespace Application.Core.Game.Relation
@@ -8,28 +10,34 @@ namespace Application.Core.Game.Relation
     public interface ITeam
     {
         void addDoor(int owner, Door door);
-        void addMember(IPlayer member);
-        void assignNewLeader(IClient c);
-        bool containsMembers(IPlayer member);
+        void addMember(TeamMember member);
+        void AssignNewLeader();
+        bool ContainsMember(int playerId);
         bool Equals(object? obj);
         Dictionary<int, Door> getDoors();
-        ICollection<IPlayer> getEligibleMembers();
+
 
         int GetHashCode();
         int getId();
-        IPlayer getLeader();
         int getLeaderId();
-        IPlayer? getMemberById(int id);
-        IPlayer? getMemberByPos(int pos);
-        ICollection<IPlayer> getMembers();
+        TeamMember? getMemberById(int id);
+        int GetRandomMemberId();
+        ICollection<TeamMember> getMembers();
         List<int> getMembersSortedByHistory();
         sbyte getPartyDoor(int cid);
-        List<IPlayer> getPartyMembersOnline();
         void removeDoor(int owner);
-        void removeMember(IPlayer member);
+        void removeMember(int member);
+
+        ICollection<IPlayer> getEligibleMembers();
         void setEligibleMembers(List<IPlayer> eliParty);
-        void setId(int id);
-        void setLeader(IPlayer victim);
-        void updateMember(IPlayer member);
+        void updateMember(TeamMember member);
+
+        /// <summary>
+        /// 调用时确保所有人在同一频道
+        /// </summary>
+        /// <returns></returns>
+        List<IPlayer> GetChannelMembers();
+        IPlayer? GetLeader();
+        IPlayer? GetChannelMember(int memberId);
     }
 }

@@ -1,10 +1,7 @@
-using Application.Core.Game.Tasks;
 using Application.Core.Gameplay.Wedding;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
-using Application.Scripting.JS;
 using Application.Shared.Configs;
-using Application.Utility.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using net.netty;
@@ -75,13 +72,13 @@ namespace Application.Core.Login
             WeddingInstance = new WeddingService(this);
 
             var serverSection = configuration.GetSection("WorldConfig");
-            MobRate = serverSection.GetValue<float>("MobRate");
-            ExpRate = serverSection.GetValue<float>("ExpRate");
-            MesoRate = serverSection.GetValue<float>("MesoRate");
-            DropRate = serverSection.GetValue<float>("DropRate");
-            BossDropRate = serverSection.GetValue<float>("BossDropRate");
-            TravelRate = serverSection.GetValue<float>("TravelRate");
-            FishingRate = serverSection.GetValue<float>("FishingRate");
+            MobRate = serverSection.GetValue<float>("MobRate", 1);
+            ExpRate = serverSection.GetValue<float>("ExpRate", 1);
+            MesoRate = serverSection.GetValue<float>("MesoRate", 1);
+            DropRate = serverSection.GetValue<float>("DropRate", 1);
+            BossDropRate = serverSection.GetValue<float>("BossDropRate", 1);
+            TravelRate = serverSection.GetValue<float>("TravelRate", 1);
+            FishingRate = serverSection.GetValue<float>("FishingRate", 1);
 
             EventMessage = serverSection.GetValue<string>("EventMessage");
             ServerMessage = serverSection.GetValue<string>("ServerMessage");
@@ -175,7 +172,5 @@ namespace Application.Core.Login
             // 通知频道服务器更新
             Transport.SendWorldConfig(updatePatch);
         }
-
-
     }
 }

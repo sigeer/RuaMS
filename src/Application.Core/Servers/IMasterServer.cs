@@ -1,3 +1,4 @@
+using Application.Core.Game.Relation;
 using Application.Core.Game.Tasks;
 using Application.Core.Gameplay.Wedding;
 using Application.Core.Gameplay.WorldEvents;
@@ -9,7 +10,7 @@ namespace Application.Core.Servers
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World）
     /// </summary>
-    public interface IMasterServer : IServerBase<IMasterServerTransport>
+    public interface IMasterServer : IServerBase<IMasterServerTransport>, ITeamManager
     {
         #region world config
         public int Id { get; }
@@ -39,6 +40,10 @@ namespace Application.Core.Servers
         void PutGuildQueued(int guildId);
         void RemoveGuildQueued(int guildId);
 
+
+
         //void resetDisabledServerMessages();
+
+        void ExpelFromParty(int partyId, int expelCid);
     }
 }

@@ -25,7 +25,7 @@ namespace Application.Host
                 var channel = new WorldChannel(new ChannelServerConfig
                 {
                     Port = 7574 + channelid
-                }, new LocalChannelServerTransport(_server, world));
+                },_server, world);
                 await channel.StartServer();
             }
             return;

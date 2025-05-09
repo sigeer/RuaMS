@@ -51,12 +51,14 @@ namespace Application.Core.Managers
         private static List<IPlayer> getPartyGuildMasters(ITeam party)
         {
             List<IPlayer> mcl = new();
+            var leaderId = party.getLeaderId();
+            var allMemer = party.GetChannelMembers();
+            var lchr = allMemer.FirstOrDefault(x => x.Id == leaderId);
 
-            foreach (var chr in party.getMembers())
+            foreach (var chr in allMemer)
             {
                 if (chr != null)
                 {
-                    var lchr = party.getLeader();
                     if (chr.getGuildRank() == 1 && lchr != null && chr.getMapId() == lchr.getMapId())
                     {
                         mcl.Add(chr);

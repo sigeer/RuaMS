@@ -1,5 +1,8 @@
 using Application.Core.Game.Relation;
 using Application.Core.Managers;
+using Application.Shared.Relations;
+using net.server.coordinator.matchchecker;
+using System.Numerics;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -92,7 +95,7 @@ namespace Application.Core.Game.Players
             {
                 if (TeamModel != null)
                 {
-                    return TeamModel.getMembers().Where(x => x.IsOnlined).ToList();
+                    return TeamModel.GetChannelMembers();
                 }
                 return new List<IPlayer>();
             }
@@ -112,7 +115,7 @@ namespace Application.Core.Game.Players
             {
                 if (TeamModel != null)
                 {
-                    foreach (var chr in TeamModel.getMembers())
+                    foreach (var chr in TeamModel.GetChannelMembers())
                     {
                         var chrMap = chr.getMap();
                         // 用hashcode判断地图是否相同？ -- 同一频道、同一mapid
@@ -154,38 +157,6 @@ namespace Application.Core.Game.Players
             return false;
         }
 
-        public bool leaveParty()
-        {
-            ITeam? party;
-            bool partyLeader;
-
-            Monitor.Enter(prtLock);
-            try
-            {
-                party = getParty();
-                partyLeader = isPartyLeader();
-            }
-            finally
-            {
-                Monitor.Exit(prtLock);
-            }
-
-            if (party != null)
-            {
-                if (partyLeader)
-                {
-                    party.assignNewLeader(Client);
-                }
-                TeamManager.leaveParty(party, this);
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         public void receivePartyMemberHP()
         {
             Monitor.Enter(prtLock);
@@ -204,5 +175,148 @@ namespace Application.Core.Game.Players
                 Monitor.Exit(prtLock);
             }
         }
+
+        public bool LeaveParty(bool disbandTeam = true)
+        {
+            lock (prtLock)
+            {
+                var party = getParty();
+                if (party == null)
+                    return false;
+
+                if (Id == party.getLeaderId() && !disbandTeam)
+                {
+                    party.AssignNewLeader();
+                }
+
+
+                var channel = this.getChannelServer();
+
+                if (Id == party.getLeaderId())
+                {
+                    var mcpq = getMonsterCarnival();
+                    if (mcpq != null)
+                    {
+                        mcpq.leftParty(this);
+                    }
+
+                    channel.UpdateTeamGlobalData(party.getId(), PartyOperation.DISBAND, Id, Name);
+
+                    var eim = getEventInstance();
+                    if (eim != null)
+                    {
+                        eim.disbandParty();
+                    }
+                }
+                else
+                {
+                    var mcpq = getMonsterCarnival();
+                    if (mcpq != null)
+                    {
+                        mcpq.leftParty(this);
+                    }
+
+                    channel.UpdateTeamGlobalData(party.getId(), PartyOperation.LEAVE, Id, Name);
+
+                    var eim = getEventInstance();
+                    if (eim != null)
+                    {
+                        eim.leftParty(this);
+                    }
+                }
+
+                setParty(null);
+
+                var world = getWorldServer();
+                MatchCheckerCoordinator mmce = world.getMatchCheckerCoordinator();
+                if (mmce.getMatchConfirmationLeaderid(getId()) == getId() && mmce.getMatchConfirmationType(getId()) == MatchCheckerType.GUILD_CREATION)
+                {
+                    mmce.dismissMatchConfirmation(getId());
+                }
+                return true;
+            }
+
+        }
+
+        public bool JoinParty(int partyid, bool silentCheck)
+        {
+            var playerParty = getParty();
+            if (playerParty != null)
+            {
+                if (!silentCheck)
+                {
+                    sendPacket(PacketCreator.serverNotice(5, "You can't join the party as you are already in one."));
+                }
+                return false;
+            }
+
+
+            var channelServer = getChannelServer();
+            var party = channelServer.GetLocalTeam(partyid);
+            if (party == null)
+            {
+                sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party since it had already been disbanded."));
+                return false;
+            }
+
+            if (party.getMembers().Count < 6)
+            {
+                if (!silentCheck)
+                {
+                    sendPacket(PacketCreator.partyStatusMessage(17));
+                }
+                return false;
+            }
+
+            channelServer.UpdateTeamGlobalData(party.getId(), PartyOperation.JOIN, Id, Name);
+            receivePartyMemberHP();
+            updatePartyMemberHP();
+
+            resetPartySearchInvite(party.getLeaderId());
+            updatePartySearchAvailability(false);
+            partyOperationUpdate(party, null);
+            return true;;
+        }
+
+        public void ExpelFromParty(int expelCid)
+        {
+            getChannelServer().ExpelFromParty(Id, expelCid);
+        }
+
+        public bool CreateParty(bool silentCheck)
+        {
+            var party = getParty();
+            if (party != null)
+            {
+                if (!silentCheck)
+                {
+                    sendPacket(PacketCreator.partyStatusMessage(16));
+                }
+                return false;
+            }
+
+            if (Level < 10 && !YamlConfig.config.server.USE_PARTY_FOR_STARTERS)
+            {
+                sendPacket(PacketCreator.partyStatusMessage(10));
+                return false;
+            }
+            else if (getAriantColiseum() != null)
+            {
+                dropMessage(5, "You cannot request a party creation while participating the Ariant Battle Arena.");
+                return false;
+            }
+
+            party = getChannelServer().CreateTeam(Id);
+            setParty(party);
+            silentPartyUpdate();
+
+            updatePartySearchAvailability(false);
+            partyOperationUpdate(party, null);
+
+            sendPacket(PacketCreator.partyCreated(party, Id));
+
+            return true;
+        }
+
     }
 }

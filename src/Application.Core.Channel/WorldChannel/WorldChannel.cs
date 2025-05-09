@@ -1,3 +1,4 @@
+using Application.Core.Channel.ServerTransports;
 using Application.Core.Game;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
@@ -15,7 +16,6 @@ using net.netty;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
-using Org.BouncyCastle.Asn1.Mozilla;
 using scripting.Event;
 using Serilog;
 using server.events.gm;
@@ -26,7 +26,7 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public class WorldChannel : IWorldChannel
+public partial class WorldChannel : IWorldChannel
 {
     public string InstanceId { get; }
     private ILogger log;
@@ -103,12 +103,11 @@ public class WorldChannel : IWorldChannel
     public MapObjectController MapObjectController { get; }
     public MountTirednessController MountTirednessController { get; }
     public HiredMerchantController HiredMerchantController { get; }
-    public WorldChannel(ChannelServerConfig config, IChannelServerTransport transport)
+    private WorldChannel(ChannelServerConfig config)
     {
         InstanceId = Guid.NewGuid().ToString();
         ServerConfig = config;
         WorldServerMessage = "";
-        Transport = transport;
 
         this.world = 0;
 
@@ -134,6 +133,15 @@ public class WorldChannel : IWorldChannel
         eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
 
         StartupTime = DateTimeOffset.Now;
+    }
+    public WorldChannel(ChannelServerConfig config, IChannelServerTransport transport) : this(config)
+    {
+        Transport = transport;
+    }
+
+    public WorldChannel(ChannelServerConfig config, IMasterServer server, IWorld world) : this(config)
+    {
+        Transport = new LocalChannelServerTransport(server, world, this);
     }
 
     public int getTransportationTime(double travelTime)
@@ -200,7 +208,7 @@ public class WorldChannel : IWorldChannel
         await NettyServer.Start();
         log.Information("频道服务器{InstanceId}启动成功：监听端口{Port}", InstanceId, Port);
 
-        channel = await Transport.RegisterServer(this);
+        channel = await Transport.RegisterServer();
         log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
 
         ServerMessageController.Register();
@@ -680,4 +688,5 @@ public class WorldChannel : IWorldChannel
     {
         return !usedMC.Contains(getMonsterCarnivalRoom(cpq1, field));
     }
+
 }

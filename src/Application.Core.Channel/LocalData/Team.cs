@@ -1,14 +1,18 @@
-using net.server.world;
+using Application.Core.Game.Players;
+using Application.Core.Game.Relation;
+using Application.Core.Game.TheWorld;
+using Application.Shared.Relations;
+using Application.Utility;
 using server.maps;
 
-namespace Application.Core.Game.Relation
+namespace Application.Core.Channel.LocalData
 {
     public class Team : ITeam
     {
         private int id;
         private int leaderId;
-        private List<IPlayer> members = new();
-        private List<IPlayer> pqMembers = new List<IPlayer>();
+        private Dictionary<int, TeamMember> members = new();
+        private List<IPlayer> pqMembers = new();
 
         private Dictionary<int, int> histMembers = new();
         private int nextEntry = 0;
@@ -16,19 +20,21 @@ namespace Application.Core.Game.Relation
         private Dictionary<int, Door> doors = new();
 
         private object lockObj = new object();
+        IWorldChannel _channelServer;
 
-        public Team(int id, IPlayer chrfor)
+        public Team(IWorldChannel channel, int id, int leaderId)
         {
-            this.leaderId = chrfor.getId();
+            _channelServer = channel;
+            this.leaderId = leaderId;
             this.id = id;
         }
 
-        public bool containsMembers(IPlayer member)
+        public bool ContainsMember(int playerId)
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.Contains(member);
+                return members.ContainsKey(playerId);
             }
             finally
             {
@@ -36,15 +42,15 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void addMember(IPlayer member)
+        public void addMember(TeamMember player)
         {
             Monitor.Enter(lockObj);
             try
             {
-                histMembers.AddOrUpdate(member.getId(), nextEntry);
+                histMembers[player.Id] = nextEntry;
                 nextEntry++;
 
-                members.Add(member);
+                members[player.Id] = player;
             }
             finally
             {
@@ -52,14 +58,14 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void removeMember(IPlayer member)
+        public void removeMember(int playerId)
         {
             Monitor.Enter(lockObj);
             try
             {
-                histMembers.Remove(member.getId());
+                histMembers.Remove(playerId);
 
-                members.Remove(member);
+                members.Remove(playerId);
             }
             finally
             {
@@ -67,23 +73,17 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void setLeader(IPlayer victim)
+        internal void SetLeader(int victim)
         {
-            this.leaderId = victim.getId();
+            this.leaderId = victim;
         }
 
-        public void updateMember(IPlayer member)
+        public void updateMember(TeamMember member)
         {
             Monitor.Enter(lockObj);
             try
             {
-                for (int i = 0; i < members.Count; i++)
-                {
-                    if (members.get(i).getId() == member.getId())
-                    {
-                        members[i] = member;
-                    }
-                }
+                members[member.Id] = member;
             }
             finally
             {
@@ -91,12 +91,12 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public IPlayer? getMemberById(int id)
+        public TeamMember? getMemberById(int id)
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.FirstOrDefault(x => x.getId() == id);
+                return members.GetValueOrDefault(id);
             }
             finally
             {
@@ -104,25 +104,12 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public ICollection<IPlayer> getMembers()
+        public ICollection<TeamMember> getMembers()
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.ToList();
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
-            }
-        }
-
-        public List<IPlayer> getPartyMembersOnline()
-        {
-            Monitor.Enter(lockObj);
-            try
-            {
-                return members.Where(x => x.IsOnlined).ToList();
+                return members.Values.ToList();
             }
             finally
             {
@@ -146,27 +133,9 @@ namespace Application.Core.Game.Relation
             return id;
         }
 
-        public void setId(int id)
-        {
-            this.id = id;
-        }
-
         public int getLeaderId()
         {
             return leaderId;
-        }
-
-        public IPlayer getLeader()
-        {
-            Monitor.Enter(lockObj);
-            try
-            {
-                return members.FirstOrDefault(x => x.getId() == leaderId) ?? throw new BusinessException();
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
-            }
         }
 
         public List<int> getMembersSortedByHistory()
@@ -215,7 +184,7 @@ namespace Application.Core.Game.Relation
             Monitor.Enter(lockObj);
             try
             {
-                this.doors.AddOrUpdate(owner, door);
+                this.doors[owner] = door;
             }
             finally
             {
@@ -249,20 +218,16 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void assignNewLeader(IClient c)
+        public void AssignNewLeader()
         {
-            var world = c.getWorldServer();
-            IPlayer? newLeadr = null;
-
             Monitor.Enter(lockObj);
             try
             {
-                foreach (IPlayer mpc in members)
+                var newPlayer = members.Values.Where(x => x.Id != leaderId).OrderByDescending(x => x.Level).FirstOrDefault();
+
+                if (newPlayer != null)
                 {
-                    if (mpc.getId() != leaderId && (newLeadr == null || newLeadr.getLevel() < mpc.getLevel()))
-                    {
-                        newLeadr = mpc;
-                    }
+                    _channelServer.UpdateTeamGlobalData(this.getId(), PartyOperation.CHANGE_LEADER, newPlayer.Id, newPlayer.Name);
                 }
             }
             finally
@@ -270,10 +235,6 @@ namespace Application.Core.Game.Relation
                 Monitor.Exit(lockObj);
             }
 
-            if (newLeadr != null)
-            {
-                world.updateParty(this.getId(), PartyOperation.CHANGE_LEADER, newLeadr);
-            }
         }
 
         public override int GetHashCode()
@@ -284,14 +245,30 @@ namespace Application.Core.Game.Relation
             return result;
         }
 
-        public IPlayer? getMemberByPos(int pos)
+        public int GetRandomMemberId()
         {
-            return members.ElementAtOrDefault(pos);
+            return Randomizer.Select(members.Keys);
         }
 
         public override bool Equals(object? obj)
         {
             return obj is Team other && other.getId() == id;
+        }
+
+
+        public List<IPlayer> GetChannelMembers()
+        {
+            return members.Keys.Select(x => _channelServer.Players.getCharacterById(x)).Where(x => x != null).ToList();
+        }
+
+        public IPlayer? GetLeader()
+        {
+            return GetChannelMember(leaderId);
+        }
+
+        public IPlayer? GetChannelMember(int memberId)
+        {
+            return members.ContainsKey(memberId) ? _channelServer.Players.getCharacterById(memberId) : null;
         }
     }
 }

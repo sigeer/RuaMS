@@ -1,4 +1,4 @@
-﻿using Application.Core.Game;
+using Application.Core.Game;
 using Application.Core.Game.GameEvents.PartyQuest;
 using Application.Core.Managers;
 
@@ -15,7 +15,7 @@ namespace ServiceTest.Games
             MockClient.OnlinedCharacter.Level = 10;
             pq.MinLevel = 1;
             pq.MinCount = 1;
-            TeamManager.createParty(MockClient.OnlinedCharacter, true);
+            MockClient.OnlinedCharacter.CreateParty(true);
             pq.StartQuest();
             Assert.Pass();
         }

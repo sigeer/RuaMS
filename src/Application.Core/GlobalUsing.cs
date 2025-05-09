@@ -8,6 +8,7 @@ global using Application.EF;
 global using Application.EF.Entities;
 global using Application.Shared;
 global using Application.Shared.Constants;
+global using Application.Shared.Relations;
 global using Application.Utility;
 global using Application.Utility.Configs;
 global using Application.Utility.Exceptions;

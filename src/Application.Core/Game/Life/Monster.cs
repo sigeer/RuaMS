@@ -415,7 +415,7 @@ public class Monster : AbstractLifeObject
             {
                 foreach (var mpc in from.getParty()!.getMembers())
                 {
-                    var member = from.getMap().getCharacterById(mpc.getId()); // god bless
+                    var member = from.getMap().getCharacterById(mpc.Id); // god bless
                     if (member != null)
                     {
                         member.sendPacket(packet);

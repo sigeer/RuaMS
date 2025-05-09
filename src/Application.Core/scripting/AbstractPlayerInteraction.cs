@@ -869,31 +869,6 @@ public class AbstractPlayerInteraction
         }
     }
 
-    public void removeHPQItems()
-    {
-        int[] items = {ItemId.GREEN_PRIMROSE_SEED, ItemId.PURPLE_PRIMROSE_SEED, ItemId.PINK_PRIMROSE_SEED,
-                ItemId.BROWN_PRIMROSE_SEED, ItemId.YELLOW_PRIMROSE_SEED, ItemId.BLUE_PRIMROSE_SEED, ItemId.MOON_BUNNYS_RICE_CAKE};
-        foreach (int item in items)
-        {
-            removePartyItems(item);
-        }
-    }
-
-    public void removePartyItems(int id)
-    {
-        if (getParty() == null)
-        {
-            removeAll(id);
-            return;
-        }
-        foreach (var chr in getParty()!.getMembers())
-        {
-            if (chr != null && chr.getClient() != null)
-            {
-                removeAll(id, chr.getClient());
-            }
-        }
-    }
 
     public void giveCharacterExp(int amount, IPlayer chr)
     {
@@ -925,11 +900,13 @@ public class AbstractPlayerInteraction
         if (party == null)
             return;
 
-        int size = party.getMembers().Count;
+        var pqMembers = party.GetChannelMembers();
+
+        int size = pqMembers.Count;
 
         if (instance)
         {
-            foreach (var chr in party.getMembers())
+            foreach (var chr in pqMembers)
             {
                 if (!chr.IsOnlined || chr.getEventInstance() == null)
                 {
@@ -939,7 +916,7 @@ public class AbstractPlayerInteraction
         }
 
         int bonus = size < 4 ? 100 : 70 + (size * 10);
-        foreach (var player in party.getMembers())
+        foreach (var player in pqMembers)
         {
             if (player == null || player.getEventInstance() == null)
             {

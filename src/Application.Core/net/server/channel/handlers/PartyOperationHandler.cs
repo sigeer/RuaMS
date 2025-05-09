@@ -23,6 +23,7 @@
 
 using Application.Core.Game.Invites;
 using Application.Core.Managers;
+using Application.Shared.Relations;
 using net.packet;
 using net.server.coordinator.world;
 using net.server.world;
@@ -45,16 +46,17 @@ public class PartyOperationHandler : AbstractPacketHandler
         {
             case 1:
                 { // create
-                    TeamManager.createParty(player, false);
+                    player.CreateParty(false);
                     break;
                 }
             case 2:
-                { // leave/disband
+                { 
+                    // leave/disband
                     if (party != null)
                     {
                         var partymembers = player.getPartyMembersOnline();
 
-                        TeamManager.leaveParty(party, player);
+                        player.LeaveParty(true);
                         player.updatePartySearchAvailability(true);
                         player.partyOperationUpdate(party, partymembers);
                     }
@@ -68,7 +70,7 @@ public class PartyOperationHandler : AbstractPacketHandler
                     InviteResultType res = inviteRes.Result;
                     if (res == InviteResultType.ACCEPTED)
                     {
-                        TeamManager.joinParty(player, partyid, false);
+                        player.JoinParty(partyid, false);
                     }
                     else
                     {
@@ -97,7 +99,7 @@ public class PartyOperationHandler : AbstractPacketHandler
                         {
                             if (party == null)
                             {
-                                if (!TeamManager.createParty(player, false))
+                                if (!player.CreateParty(false))
                                 {
                                     return;
                                 }
@@ -132,16 +134,18 @@ public class PartyOperationHandler : AbstractPacketHandler
                     break;
                 }
             case 5:
-                { // expel
+                {
+                    // expel
                     int cid = p.readInt();
-                    TeamManager.expelFromParty(party, c, cid);
+                    player.ExpelFromParty(cid);
                     break;
                 }
             case 6:
-                { // change leader
+                {
+                    // change leader
                     int newLeader = p.readInt();
                     var newLeadr = party.getMemberById(newLeader);
-                    world.updateParty(party.getId(), PartyOperation.CHANGE_LEADER, newLeadr);
+                    c.getChannelServer().UpdateTeamGlobalData(party.getId(), PartyOperation.CHANGE_LEADER, newLeadr.Id, newLeadr.Name);
                     break;
                 }
         }

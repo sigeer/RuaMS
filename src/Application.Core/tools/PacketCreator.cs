@@ -34,6 +34,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
+using Application.Shared.Relations;
 using client;
 using client.inventory;
 using client.keybind;
@@ -4143,15 +4144,15 @@ public class PacketCreator
         var partymembers = party.getMembers();
         while (partymembers.Count < 6)
         {
-            partymembers.Add(new Player());
+            partymembers.Add(new TeamMember());
         }
         foreach (var partychar in partymembers)
         {
-            p.writeInt(partychar.getId());
+            p.writeInt(partychar.Id);
         }
         foreach (var partychar in partymembers)
         {
-            p.writeFixedString(partychar.getName());
+            p.writeFixedString(partychar.Name);
         }
         foreach (var partychar in partymembers)
         {
@@ -4159,7 +4160,7 @@ public class PacketCreator
         }
         foreach (var partychar in partymembers)
         {
-            p.writeInt(partychar.getLevel());
+            p.writeInt(partychar.Level);
         }
         foreach (var partychar in partymembers)
         {
@@ -4172,12 +4173,12 @@ public class PacketCreator
                 p.writeInt(-2);
             }
         }
-        p.writeInt(party.getLeader().getId());
+        p.writeInt(party.getLeaderId());
         foreach (var partychar in partymembers)
         {
             if (partychar.Channel == forchannel)
             {
-                p.writeInt(partychar.getMapId());
+                p.writeInt(partychar.MapId);
             }
             else
             {
@@ -4192,7 +4193,7 @@ public class PacketCreator
             {
                 if (partyDoors.Count > 0)
                 {
-                    var door = partyDoors.GetValueOrDefault(partychar.getId());
+                    var door = partyDoors.GetValueOrDefault(partychar.Id);
                     if (door != null)
                     {
                         DoorObject mdo = door.getTownDoor();
@@ -4227,7 +4228,7 @@ public class PacketCreator
         }
     }
 
-    public static Packet updateParty(int forChannel, ITeam party, PartyOperation op, IPlayer target)
+    public static Packet updateParty(int forChannel, ITeam party, PartyOperation op, int targetId, string targetName)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         switch (op)
@@ -4237,7 +4238,7 @@ public class PacketCreator
             case PartyOperation.LEAVE:
                 p.writeByte(0x0C);
                 p.writeInt(party.getId());
-                p.writeInt(target.getId());
+                p.writeInt(targetId);
                 if (op == PartyOperation.DISBAND)
                 {
                     p.writeByte(0);
@@ -4254,14 +4255,14 @@ public class PacketCreator
                     {
                         p.writeByte(0);
                     }
-                    p.writeString(target.getName());
+                    p.writeString(targetName);
                     addPartyStatus(forChannel, party, p, false);
                 }
                 break;
             case PartyOperation.JOIN:
                 p.writeByte(0xF);
                 p.writeInt(party.getId());
-                p.writeString(target.getName());
+                p.writeString(targetName);
                 addPartyStatus(forChannel, party, p, false);
                 break;
             case PartyOperation.SILENT_UPDATE:
@@ -4272,7 +4273,7 @@ public class PacketCreator
                 break;
             case PartyOperation.CHANGE_LEADER:
                 p.writeByte(0x1B);
-                p.writeInt(target.getId());
+                p.writeInt(targetId);
                 p.writeByte(0);
                 break;
         }

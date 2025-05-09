@@ -1,5 +1,6 @@
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
+using Application.Shared.Relations;
 using Application.Shared.WzEntity;
 using client.inventory;
 using constants.id;
@@ -245,7 +246,7 @@ namespace Application.Core.Game.Players
                 {
                     if (TeamModel != null)
                     {
-                        sendPacket(PacketCreator.updateParty(Client.getChannel(), TeamModel, PartyOperation.SILENT_UPDATE, this));
+                        sendPacket(PacketCreator.updateParty(Client.getChannel(), TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
                         receivePartyMemberHP();
                     }
                 }

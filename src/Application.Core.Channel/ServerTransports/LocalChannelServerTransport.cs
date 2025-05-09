@@ -8,9 +8,15 @@ using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.MapObjects;
+using Application.Shared.Relations;
 using constants.id;
+using net.netty;
 using net.packet;
 using net.server;
+using Org.BouncyCastle.Asn1.X509;
+using Serilog;
+using server.maps;
+using System.Numerics;
 using System.Security.Cryptography;
 using tools;
 
@@ -31,16 +37,18 @@ namespace Application.Core.Channel.ServerTransports
         /// </summary>
         /// <param name="server"></param>
         /// <param name="world"></param>
-        public LocalChannelServerTransport(IMasterServer server, IWorld world)
+        readonly IWorldChannel _worldChannel;
+        public LocalChannelServerTransport(IMasterServer server, IWorld world, IWorldChannel worldChanne)
         {
             _server = server;
             _world = world;
+            _worldChannel = worldChanne;
         }
 
-        public Task<int> RegisterServer(IWorldChannel server)
+        public Task<int> RegisterServer()
         {
-            var channelId = _world.addChannel(server);
-            server.UpdateWorldConfig(new WorldConfigPatch
+            var channelId = _world.addChannel(_worldChannel);
+            _worldChannel.UpdateWorldConfig(new WorldConfigPatch
             {
                 MobRate = _server.MobRate,
                 MesoRate = _server.MesoRate,
@@ -53,7 +61,7 @@ namespace Application.Core.Channel.ServerTransports
                 ServerMessage = _server.ServerMessage
             });
             return Task.FromResult(channelId);
-            return Task.FromResult(_server.AddChannel(new InternalWorldChannel(server)));
+            return Task.FromResult(_server.AddChannel(new InternalWorldChannel(_worldChannel)));
         }
 
         public void DisconnectPlayers(IEnumerable<int> playerIdList)
@@ -171,10 +179,7 @@ namespace Application.Core.Channel.ServerTransports
             return Task.FromResult(true);
         }
 
-        public ITeam CreateTeam(int playerId)
-        {
-            throw new NotImplementedException();
-        }
+
 
         public void SetPlayerNpcMapPodiumData(int mapId, int podumData)
         {
@@ -328,5 +333,22 @@ namespace Application.Core.Channel.ServerTransports
 
             return ps.Channel;
         }
+
+        public int CreateTeam(int playerId)
+        {
+            return _server.CreateTeam(playerId);
+        }
+
+
+        public void SendExpelFromParty(int partyId, int expelCid)
+        {
+            _server.ExpelFromParty(partyId, expelCid);
+        }
+
+        public void SendUpdateTeamGlobalData(int partyId, PartyOperation operation, int targetId, string targetName)
+        {
+            _server.UpdateTeamGlobalData(partyId, operation, targetId, targetName);
+        }
+
     }
 }
