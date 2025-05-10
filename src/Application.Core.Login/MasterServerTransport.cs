@@ -1,4 +1,5 @@
 using Application.Core.Game.Relation;
+using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
@@ -77,10 +78,6 @@ namespace Application.Core.Login
             }
         }
 
-        public void SendServerMessage()
-        {
-            throw new NotImplementedException();
-        }
 
         public void SendWorldConfig(WorldConfigPatch patch)
         {
@@ -105,7 +102,9 @@ namespace Application.Core.Login
             var world = Server.getInstance().getWorld(0);
             foreach (var ch in world.Channels)
             {
-                ch.ProcessExpelFromParty(partyId, expelCid);
+                if (ch is IWorldChannelProcessor processor)
+                    processor.ProcessExpelFromParty(partyId, expelCid);
+
             }
         }
 
@@ -114,7 +113,18 @@ namespace Application.Core.Login
             var world = Server.getInstance().getWorld(0);
             foreach (var ch in world.Channels)
             {
-                ch.ProcessUpdateTeamChannelData(partyId, operation, targetMember);
+                if (ch is IWorldChannelProcessor processor)
+                    processor.ProcessUpdateTeamChannelData(partyId, operation, targetMember);
+            }
+        }
+
+        public void SendTeamMessage(int teamId, string from, string message)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.Channels)
+            {
+                if (ch is IWorldChannelProcessor processor)
+                    processor.ProcessBroadcastTeamMessage(teamId, from, message);
             }
         }
     }

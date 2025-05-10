@@ -39,5 +39,6 @@ namespace Application.Core.Game.Relation
         List<IPlayer> GetChannelMembers();
         IPlayer? GetLeader();
         IPlayer? GetChannelMember(int memberId);
+        void BroadcastTeamMessage(string from, string message);
     }
 }

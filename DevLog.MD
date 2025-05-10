@@ -69,6 +69,10 @@ BuffStatValueHolder：玩家身上的状态
 1. 在`WorldChannel中调用（相当于原先的`world.xxx`）
 2. 通过`Transport`对`MasterServer`发起请求
 3. `MasterServer`更新后，通过`Transport`推送给所有`Channel`
-4. `Channel`接受到请求后完成更新
+4. `Channel`接受到请求后调用`IWorldChannelProcessor`完成更新
 
-当单进程部署时，Transport的实现都选择使用local实现
+#### 注意事项
+
+目前都是用的单进程部署，Transport的实现都选择使用local实现，再加上代码没有物理隔离，看似是可以直接交互的，
+但是为了后期的拆分不能这样做  
+同样 有些代码是静态方法，也影响了一些调用的判断

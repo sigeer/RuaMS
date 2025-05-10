@@ -90,6 +90,7 @@ namespace Application.Core.Login
                     break;
                 case PartyOperation.SILENT_UPDATE:
                 case PartyOperation.LOG_ONOFF:
+                    updateResult = true;
                     break;
                 case PartyOperation.CHANGE_LEADER:
                     updateResult = ChangeLeader(partyId, targetId);
@@ -106,6 +107,10 @@ namespace Application.Core.Login
             {
                 _logger.LogError("[队伍数据]操作失败");
             }
+        }
+        public void BroadcastTeamMessage(int teamId, string from, string message)
+        {
+            Transport.SendTeamMessage(teamId, from, message);
         }
     }
 }

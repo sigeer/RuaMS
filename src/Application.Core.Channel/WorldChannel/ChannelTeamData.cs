@@ -161,5 +161,17 @@ namespace Application.Core.Channel
             }
         }
 
+        public void BroadcastTeamMessage(int teamId, string from, string message)
+        {
+            Transport.RequestTeamMessage(teamId, from, message);
+        }
+        public void ProcessBroadcastTeamMessage(int teamId, string from, string message)
+        {
+            if (TeamChannelStorage.TryGetValue(teamId, out var team))
+            {
+                team.BroadcastTeamMessage(from, message);
+            }
+        }
+
     }
 }

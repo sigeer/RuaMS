@@ -32,7 +32,7 @@ using static Application.Core.Game.Players.Player;
 
 namespace Application.Core.Game.Players
 {
-    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife
+    public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, ITeamPlayer
     {
         public IClient Client { get; }
         public int Channel { get; }
@@ -495,10 +495,7 @@ namespace Application.Core.Game.Players
         bool isRidingBattleship();
         bool isSummonsEmpty();
         void leaveMap();
-        bool JoinParty(int partyId, bool silentCheck);
-        bool LeaveParty(bool disbandTeam = true);
-        bool CreateParty(bool silentCheck);
-        void ExpelFromParty(int expelCid);
+
         void levelUp(bool takeexp);
         void logOff();
         void loseExp(int loss, bool show, bool inChat);

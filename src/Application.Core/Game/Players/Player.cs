@@ -23,7 +23,6 @@ namespace Application.Core.Game.Players
 
 
         public PlayerKeyMap KeyMap { get; set; }
-        public MapManager MapManager => Client.getChannelServer().getMapFactory();
 
         public object SaveToDBLock { get; set; } = new object();
 

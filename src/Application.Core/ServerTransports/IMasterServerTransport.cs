@@ -9,7 +9,6 @@ namespace Application.Core.ServerTransports
     public interface IMasterServerTransport : IServerTransport
     {
         void SendServerMessage(IEnumerable<int> playerIdList);
-        void SendServerMessage();
         CoupleIdPair? GetAllWeddingCoupleForGuest(int guestId, bool cathedral);
         int GetAllWeddingReservationStatus(IEnumerable<int> pw, bool cathedral);
         void SendWorldConfig(WorldConfigPatch patch);
@@ -22,6 +21,7 @@ namespace Application.Core.ServerTransports
         void SyncTeam(ITeamGlobal teamGlobal);
         void SendExpelFromParty(int partyId, int expelCid);
         void UpdateTeamChannelData(int partyId, PartyOperation operation, TeamMember targetMember);
+        void SendTeamMessage(int teamId, string from, string message);
         #endregion
     }
 }

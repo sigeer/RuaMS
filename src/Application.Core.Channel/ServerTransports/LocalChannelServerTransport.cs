@@ -23,7 +23,7 @@ using tools;
 namespace Application.Core.Channel.ServerTransports
 {
     /// <summary>
-    /// 登录服务器 与 频道服务器在同一个进程中时，直接与MasterServer交互
+    /// 登录服务器 与 频道服务器在同一个进程中时，再加上代码没有物理隔离，看上去可以直接交互，实际上应该避免，而是通过MasterServer->Transport->IWorldChannelProcessor实现
     /// </summary>
     public class LocalChannelServerTransport : IChannelServerTransport
     {
@@ -348,6 +348,11 @@ namespace Application.Core.Channel.ServerTransports
         public void SendUpdateTeamGlobalData(int partyId, PartyOperation operation, int targetId, string targetName)
         {
             _server.UpdateTeamGlobalData(partyId, operation, targetId, targetName);
+        }
+
+        public void RequestTeamMessage(int partyId, string from, string message)
+        {
+            _server.BroadcastTeamMessage(partyId, from, message);
         }
 
     }

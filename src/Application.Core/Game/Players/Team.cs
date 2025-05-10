@@ -259,7 +259,7 @@ namespace Application.Core.Game.Players
                 return false;
             }
 
-            if (party.getMembers().Count < 6)
+            if (party.getMembers().Count >= 6)
             {
                 if (!silentCheck)
                 {
@@ -316,6 +316,15 @@ namespace Application.Core.Game.Players
             sendPacket(PacketCreator.partyCreated(party, Id));
 
             return true;
+        }
+
+        public void TeamChat(string message)
+        {
+            var party = getParty();
+            if (party == null)
+                return;
+
+            getChannelServer().BroadcastTeamMessage(party.getId(), Name, message);
         }
 
     }

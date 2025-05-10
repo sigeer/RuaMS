@@ -133,8 +133,11 @@ namespace Application.Core.Game.TheWorld
         ITeam? GetLocalTeam(int teamId);
         void SyncTeam(ITeamGlobal teamGlobal);
         void UpdateTeamGlobalData(int partyId, PartyOperation operation, int targetId, string targetName);
-        void ProcessUpdateTeamChannelData(int partyId, PartyOperation operation, TeamMember targetMember);
+       
         void ExpelFromParty(int partyId, int expelCid);
-        void ProcessExpelFromParty(int partyId, int expelCid);
+
+
+        void BroadcastTeamMessage(int teamId, string from, string message);
+
     }
 }

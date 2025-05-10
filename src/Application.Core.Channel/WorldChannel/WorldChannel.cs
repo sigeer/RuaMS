@@ -26,7 +26,7 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : IWorldChannel
+public partial class WorldChannel : IWorldChannel, IWorldChannelProcessor
 {
     public string InstanceId { get; }
     private ILogger log;

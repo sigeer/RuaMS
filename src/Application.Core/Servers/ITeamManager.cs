@@ -9,5 +9,7 @@ namespace Application.Core.Servers
         int CreateTeam(int playerId);
         ITeamGlobal? GetParty(int teamId);
         void UpdateTeamGlobalData(int partyId, PartyOperation operation, int targetId, string targetName);
+
+        void BroadcastTeamMessage(int teamId, string from, string message);
     }
 }

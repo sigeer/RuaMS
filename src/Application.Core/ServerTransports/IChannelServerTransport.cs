@@ -65,6 +65,7 @@ namespace Application.Core.ServerTransports
 
         void SendExpelFromParty(int operatorId, int expelCid);
         void SendUpdateTeamGlobalData(int partyId, PartyOperation operation, int targetId, string targetName);
+        void RequestTeamMessage(int partyId, string from, string message);
         #endregion
 
         #region player npc

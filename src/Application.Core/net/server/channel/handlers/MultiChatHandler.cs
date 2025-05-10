@@ -61,7 +61,7 @@ public class MultiChatHandler : AbstractPacketHandler
         }
         else if (type == 1 && player.getParty() != null)
         {
-            world.partyChat(player.getParty()!, chattext, player.getName());
+            player.TeamChat(chattext);
             ChatLogger.log(c, "Party", chattext);
         }
         else if (type == 2 && player.GuildModel != null)

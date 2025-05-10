@@ -94,7 +94,7 @@ public class CharSelectedHandler : AbstractPacketHandler
             return;
         }
 
-        var socket = server.GetChannelEndPoint(c, c.getWorld(), c.getChannel());
+        var socket = server.GetChannelEndPoint(c, c.getWorld(), c.Channel);
         if (socket == null)
         {
             c.sendPacket(PacketCreator.getAfterLoginError(10));

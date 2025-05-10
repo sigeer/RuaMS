@@ -93,7 +93,6 @@ namespace Application.Core.Game.TheWorld
         void messengerChat(Messenger messenger, string chattext, string namefrom);
         void messengerInvite(string sender, int messengerid, string target, int fromchannel);
         CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds);
-        void partyChat(ITeam party, string chattext, string namefrom);
         void registerPetHunger(IPlayer chr, sbyte petSlot);
         void registerPlayerShop(PlayerShop ps);
         void removeFamily(int id);

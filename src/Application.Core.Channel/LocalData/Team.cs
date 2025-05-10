@@ -4,6 +4,7 @@ using Application.Core.Game.TheWorld;
 using Application.Shared.Relations;
 using Application.Utility;
 using server.maps;
+using tools;
 
 namespace Application.Core.Channel.LocalData
 {
@@ -269,6 +270,17 @@ namespace Application.Core.Channel.LocalData
         public IPlayer? GetChannelMember(int memberId)
         {
             return members.ContainsKey(memberId) ? _channelServer.Players.getCharacterById(memberId) : null;
+        }
+
+        public void BroadcastTeamMessage(string from, string message)
+        {
+            foreach (var partychar in GetChannelMembers())
+            {
+                if (partychar.Name != from)
+                {
+                    partychar.sendPacket(PacketCreator.multiChat(from, message, 1));
+                }
+            }
         }
     }
 }

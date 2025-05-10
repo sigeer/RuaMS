@@ -20,7 +20,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             var chr = leader;
 
             List<IPlayer> chrMembers = new();
-            foreach (IPlayer mpc in chr.getParty().getMembers())
+            foreach (var mpc in chr.getParty().GetChannelMembers())
             {
                 if (mpc.IsOnlined)
                 {

@@ -468,19 +468,6 @@ public class World : IWorld
         return chr?.Channel ?? -1;
     }
 
-    public void partyChat(ITeam party, string chattext, string namefrom)
-    {
-        foreach (IPlayer partychar in party.getMembers())
-        {
-            if (!partychar.getName().Equals(namefrom))
-            {
-                if (partychar.IsOnlined)
-                {
-                    partychar.sendPacket(PacketCreator.multiChat(namefrom, chattext, 1));
-                }
-            }
-        }
-    }
 
     public void buddyChat(int[] recipientCharacterIds, int cidFrom, string nameFrom, string chattext)
     {
