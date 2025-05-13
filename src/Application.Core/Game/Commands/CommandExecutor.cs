@@ -42,7 +42,7 @@ public class CommandExecutor
         }
     }
 
-    public void handle(IClient client, string message)
+    public void handle(IChannelClient client, string message)
     {
         if (client.tryacquireClient())
         {
@@ -61,7 +61,7 @@ public class CommandExecutor
         }
     }
 
-    private void handleInternal(IClient client, string message)
+    private void handleInternal(IChannelClient client, string message)
     {
         if (client.OnlinedCharacter.getMapId() == MapId.JAIL)
         {

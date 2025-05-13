@@ -1,4 +1,4 @@
-﻿using scripting.portal;
+using scripting.portal;
 
 namespace Application.Core.Game.Commands.Gm3;
 public class ReloadPortalsCommand : CommandBase
@@ -8,7 +8,7 @@ public class ReloadPortalsCommand : CommandBase
         Description = "Reload all portal scripts.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         PortalScriptManager.getInstance().reloadPortalScripts();

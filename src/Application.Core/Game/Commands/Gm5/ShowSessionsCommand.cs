@@ -1,4 +1,4 @@
-﻿using net.server.coordinator.session;
+using net.server.coordinator.session;
 
 namespace Application.Core.Game.Commands.Gm5;
 
@@ -12,7 +12,7 @@ public class ShowSessionsCommand : CommandBase
         Description = "Show online sessions.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         SessionCoordinator.getInstance().printSessionTrace(c);
     }

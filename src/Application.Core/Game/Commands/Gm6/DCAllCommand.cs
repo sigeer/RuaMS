@@ -9,7 +9,7 @@ public class DCAllCommand : CommandBase
         Description = "Disconnect all players (online or logged in).";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var world in Server.getInstance().getWorlds())

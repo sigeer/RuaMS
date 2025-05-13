@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using net.server;
 using tools;
 
@@ -19,7 +19,7 @@ public class GmCommand : CommandBase
                 "Do not ask if you can receive help, just state your issue.",
                 "Do not say 'I have a bug to report', just state it.",
         };
-    public override void Execute(IClient c, string[] paramValues)
+    public override void Execute(IChannelClient c, string[] paramValues)
     {
         var player = c.OnlinedCharacter;
         if (paramValues.Length < 1 || paramValues[0].Length < 3)

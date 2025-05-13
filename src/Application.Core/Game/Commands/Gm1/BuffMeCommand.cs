@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
 
 namespace Application.Core.Game.Commands.Gm1;
 
@@ -9,7 +9,7 @@ public class BuffMeCommand : CommandBase
         Description = "Activate GM buffs on self.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 

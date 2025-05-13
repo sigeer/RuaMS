@@ -20,6 +20,7 @@
  */
 
 
+using Application.Core.Client;
 using net.opcodes;
 using tools;
 
@@ -62,7 +63,7 @@ public class MonitoredChrLogger
         return monitoredChrIds;
     }
 
-    public static void logPacketIfMonitored(IClient c, short packetId, byte[] packetContent)
+    public static void logPacketIfMonitored(IChannelClient c, short packetId, byte[] packetContent)
     {
         var chr = c.Character;
         if (chr == null)
@@ -80,7 +81,7 @@ public class MonitoredChrLogger
         }
 
         string packet = packetContent.Length > 0 ? HexTool.toHexString(packetContent) : "<empty>";
-        log.Information("{AccountName}-{CharacterName} {PacketId}-{Packet}", c.getAccountName(), chr.getName(), packetId, packet);
+        log.Information("{AccountId}.{CharacterName} {PacketId}-{Packet}", c.AccountId, chr.getName(), packetId, packet);
     }
 
     private static bool isRecvBlocked(RecvOpcode op)

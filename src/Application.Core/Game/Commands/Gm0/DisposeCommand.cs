@@ -10,7 +10,7 @@ public class DisposeCommand : CommandBase
     {
 
     }
-    public override void Execute(IClient c, string[] paramValues)
+    public override void Execute(IChannelClient c, string[] paramValues)
     {
         c.NPCConversationManager?.dispose();
         c.sendPacket(PacketCreator.enableActions());

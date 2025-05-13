@@ -7,6 +7,7 @@ using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using constants.id;
 using net.packet;
@@ -327,6 +328,11 @@ namespace Application.Core.Channel.ServerTransports
                 return null;
 
             return ps.Channel;
+        }
+
+        public void SendAccountLogout(int accountId)
+        {
+            _server.UpdateAccountState(AccountStage.LOGIN_NOTLOGGEDIN);
         }
     }
 }

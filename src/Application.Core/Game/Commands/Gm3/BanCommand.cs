@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using net.server;
 using server;
 using System.Text.RegularExpressions;
@@ -13,7 +13,7 @@ public class BanCommand : CommandBase
         Description = "Ban a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)

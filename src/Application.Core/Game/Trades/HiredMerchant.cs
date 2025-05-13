@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Maps;
 using client.inventory;
 using client.inventory.manipulator;
@@ -284,7 +285,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                         return;
                     }
 
-                    InventoryManipulator.addFromDrop(chr.getClient(), iitem, true);
+                    InventoryManipulator.addFromDrop(chr.Client, iitem, true);
                 }
 
                 removeFromSlot(slot);
@@ -298,7 +299,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    private static bool canBuy(IClient c, Item newItem)
+    private static bool canBuy(IChannelClient c, Item newItem)
     {
         // thanks xiaokelvin (Conrad) for noticing a leaked test code here
         return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && InventoryManipulator.addFromDrop(c, newItem, false);
@@ -322,7 +323,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void buy(IClient c, int item, short quantity)
+    public void buy(IChannelClient c, int item, short quantity)
     {
         lock (items)
         {
@@ -475,16 +476,16 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     {
         if (isOwner(chr))
         {
-            closeShop(chr.getClient(), false);
+            closeShop(chr.Client, false);
             chr.setHasMerchant(false);
         }
     }
 
-    private void closeShop(IClient c, bool timeout)
+    private void closeShop(IChannelClient c, bool timeout)
     {
         MapModel.removeMapObject(this);
         MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(ownerId));
-        c.getChannelServer().HiredMerchantController.unregisterHiredMerchant(ownerId);
+        c.CurrentServer.HiredMerchantController.unregisterHiredMerchant(ownerId);
 
         removeAllVisitors();
         removeOwner(c.OnlinedCharacter);
@@ -907,9 +908,9 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return MapObjectType.HIRED_MERCHANT;
     }
 
-    public override void sendDestroyData(IClient client) { }
+    public override void sendDestroyData(IChannelClient client) { }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.spawnHiredMerchantBox(this));
     }

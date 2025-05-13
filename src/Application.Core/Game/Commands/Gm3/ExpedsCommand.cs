@@ -1,4 +1,4 @@
-﻿using net.server;
+using net.server;
 using server.expeditions;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -10,7 +10,7 @@ public class ExpedsCommand : CommandBase
         Description = "Show all ongoing boss expeditions.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var ch in Server.getInstance().getChannelsFromWorld(c.getWorld()))

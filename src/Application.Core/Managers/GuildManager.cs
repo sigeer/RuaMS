@@ -1,3 +1,4 @@
+using Application.Core.Client;
 using Application.Core.Game.Invites;
 using Application.Core.Game.Relation;
 using Microsoft.EntityFrameworkCore;
@@ -60,11 +61,11 @@ namespace Application.Core.Managers
             return guild;
         }
 
-        public static GuildResponse? SendInvitation(IClient c, string targetName)
+        public static GuildResponse? SendInvitation(IChannelClient c, string targetName)
         {
             var sender = c.OnlinedCharacter;
 
-            var mc = sender.getChannelServer().getPlayerStorage().getCharacterByName(targetName);
+            var mc = c.CurrentServer.getPlayerStorage().getCharacterByName(targetName);
             if (mc == null)
             {
                 return GuildResponse.NOT_IN_CHANNEL;
@@ -128,7 +129,7 @@ namespace Application.Core.Managers
             return guildMembers;
         }
 
-        public static void displayGuildRanks(IClient c, int npcid)
+        public static void displayGuildRanks(IChannelClient c, int npcid)
         {
             try
             {

@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Client;
 using client.newyear;
 using constants.id;
 using constants.inventory;
@@ -37,8 +38,7 @@ namespace client.inventory.manipulator;
  */
 public class InventoryManipulator
 {
-
-    public static bool addById(IClient c, int itemId, short quantity, string? owner = null, int petid = -1, short flag = 0, long expiration = -1)
+    public static bool addById(IChannelClient c, int itemId, short quantity, string? owner = null, int petid = -1, short flag = 0, long expiration = -1)
     {
         IPlayer chr = c.OnlinedCharacter;
         InventoryType type = ItemConstants.getInventoryType(itemId);
@@ -55,7 +55,7 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addByIdInternal(IClient c, IPlayer chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, int petid, short flag, long expiration)
+    private static bool addByIdInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, int petid, short flag, long expiration)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (!type.Equals(InventoryType.EQUIP))
@@ -164,12 +164,12 @@ public class InventoryManipulator
     }
 
 
-    public static bool addFromDrop(IClient c, Item item, bool show = true)
+    public static bool addFromDrop(IChannelClient c, Item item, bool show = true)
     {
         return addFromDrop(c, item, show, item.getPetId());
     }
 
-    public static bool addFromDrop(IClient c, Item item, bool show, int petId)
+    public static bool addFromDrop(IChannelClient c, Item item, bool show, int petId)
     {
         var chr = c.OnlinedCharacter;
         InventoryType type = item.getInventoryType();
@@ -186,7 +186,7 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addFromDropInternal(IClient c, IPlayer chr, InventoryType type, Inventory inv, Item item, bool show, int petId)
+    private static bool addFromDropInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, Item item, bool show, int petId)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         int itemid = item.getItemId();
@@ -304,8 +304,7 @@ public class InventoryManipulator
     {
         return inv.findById(itemid) != null;
     }
-
-    public static bool checkSpace(IClient c, int itemid, int quantity, string owner)
+    public static bool checkSpace(IChannelClient c, int itemid, int quantity, string owner)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         InventoryType type = ItemConstants.getInventoryType(itemid);
@@ -450,7 +449,7 @@ public class InventoryManipulator
         return returnValue;
     }
 
-    public static void removeFromSlot(IClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
+    public static void removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
         IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
@@ -503,7 +502,7 @@ public class InventoryManipulator
         }
     }
 
-    public static void AnnounceModifyInventory(IClient c, Item item, bool fromDrop, bool allowZero)
+    public static void AnnounceModifyInventory(IChannelClient c, Item item, bool fromDrop, bool allowZero)
     {
         if (item.getQuantity() == 0 && !allowZero)
         {
@@ -515,7 +514,7 @@ public class InventoryManipulator
         }
     }
 
-    public static void removeById(IClient c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
+    public static void removeById(IChannelClient c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
     {
         int removeQuantity = quantity;
         Inventory inv = c.OnlinedCharacter.Bag[type];
@@ -552,8 +551,7 @@ public class InventoryManipulator
     {
         return source.getOwner().Equals(target.getOwner());
     }
-
-    public static void move(IClient c, InventoryType type, short src, short dst)
+    public static void move(IChannelClient c, InventoryType type, short src, short dst)
     {
         Inventory inv = c.OnlinedCharacter.getInventory(type);
 
@@ -602,7 +600,7 @@ public class InventoryManipulator
         c.sendPacket(PacketCreator.modifyInventory(true, mods));
     }
 
-    public static void equip(IClient c, short src, short dst)
+    public static void equip(IChannelClient c, short src, short dst)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
@@ -751,7 +749,7 @@ public class InventoryManipulator
         chr.equipChanged();
     }
 
-    public static void unequip(IClient c, short src, short dst)
+    public static void unequip(IChannelClient c, short src, short dst)
     {
         IPlayer chr = c.OnlinedCharacter;
         Inventory eqpInv = chr.getInventory(InventoryType.EQUIP);
@@ -830,8 +828,7 @@ public class InventoryManipulator
             return ItemId.isWeddingRing(it.getItemId());
         }
     }
-
-    public static void drop(IClient c, InventoryType type, short src, short quantity)
+    public static void drop(IChannelClient c, InventoryType type, short src, short quantity)
     {
         if (src < 0)
         {

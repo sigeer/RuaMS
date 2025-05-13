@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Client;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
@@ -38,7 +39,7 @@ public class StorageProcessor
 {
     private static ILogger log = LogFactory.GetLogger(LogType.StorageProcessor);
 
-    public static void storageAction(InPacket p, IClient c)
+    public static void storageAction(InPacket p, IChannelClient c)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         var chr = c.OnlinedCharacter;

@@ -1,13 +1,22 @@
+using Application.Core.Client;
+using Application.Core.Game;
 using Application.Core.Game.Tasks;
 using Application.Core.Gameplay.Wedding;
+using Application.Core.Login.Net;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Scripting.JS;
 using Application.Shared.Configs;
+using Application.Utility.Configs;
 using Application.Utility.Tasks;
+using Jint;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using net.netty;
+using net.server.coordinator.session;
+using server;
+using System.Collections.Generic;
+using System.Net;
 
 
 namespace Application.Core.Login
@@ -62,7 +71,7 @@ namespace Application.Core.Login
         #endregion
 
 
-        public MasterServer(ILogger<MasterServer> logger, IConfiguration configuration)
+        public MasterServer(LoginServer loginServer, ILogger<MasterServer> logger, IConfiguration configuration)
         {
             _logger = logger;
 
@@ -70,7 +79,7 @@ namespace Application.Core.Login
             ChannelServerList = new List<ChannelServerWrapper>();
             StartupTime = DateTimeOffset.Now;
             Transport = new MasterServerTransport(this);
-            NettyServer = new LoginServer(this);
+            NettyServer = loginServer;
 
             WeddingInstance = new WeddingService(this);
 
@@ -95,6 +104,8 @@ namespace Application.Core.Login
 
         public async Task StartServer()
         {
+            await RegisterTask();
+
             _logger.LogInformation("登录服务器启动中...");
             await NettyServer.Start();
             _logger.LogInformation("登录服务器启动成功, 监听端口{Port}", Port);
@@ -119,6 +130,12 @@ namespace Application.Core.Login
         public ChannelServerWrapper GetChannel(int channelId)
         {
             return ChannelServerList[channelId - 1];
+        }
+
+        public IPEndPoint GetChannelIPEndPoint(int channelId)
+        {
+            var channel = GetChannel(channelId);
+            return new IPEndPoint(IPAddress.Parse(channel.ServerConfig.Host), channel.ServerConfig.Port);
         }
 
         public bool IsGuildQueued(int guildId)
@@ -176,6 +193,197 @@ namespace Application.Core.Login
             Transport.SendWorldConfig(updatePatch);
         }
 
+        private async Task RegisterTask()
+        {
+            _logger.LogInformation("定时任务加载中...");
+            await TimerManager.InitializeAsync(TaskEngine.Quartz);
+            var tMan = TimerManager.getInstance();
+            await tMan.Start();
+            tMan.register(new NamedRunnable("Purge", TimerManager.purge), YamlConfig.config.server.PURGING_INTERVAL);
+            tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            _logger.LogInformation("定时任务加载完成");
+        }
 
+        public bool IsWorldCapacityFull()
+        {
+            return GetWorldCapacityStatus() == 2;
+        }
+
+        public int GetWorldCapacityStatus()
+        {
+            int worldCap = ChannelServerList.Count * YamlConfig.config.server.CHANNEL_LOAD;
+            int num = Players.Count();
+
+            int status;
+            if (num >= worldCap)
+            {
+                status = 2;
+            }
+            else if (num >= worldCap *  0.8)
+            {
+                // More than 80 percent o___o
+                status = 1;
+            }
+            else
+            {
+                status = 0;
+            }
+
+            return status;
+        }
+
+        private object srvLock = new object();
+
+        private Dictionary<ILoginClient, DateTimeOffset> inLoginState = new(100);
+        public void RegisterLoginState(ILoginClient c)
+        {
+            Monitor.Enter(srvLock);
+            try
+            {
+                inLoginState[c] = DateTimeOffset.Now.AddMinutes(10);
+            }
+            finally
+            {
+                Monitor.Exit(srvLock);
+            }
+        }
+
+        public void UnregisterLoginState(ILoginClient c)
+        {
+            Monitor.Enter(srvLock);
+            try
+            {
+                inLoginState.Remove(c);
+            }
+            finally
+            {
+                Monitor.Exit(srvLock);
+            }
+        }
+
+        private void DisconnectIdlesOnLoginState()
+        {
+            List<ILoginClient> toDisconnect = new();
+
+            Monitor.Enter(srvLock);
+            try
+            {
+                var timeNow = DateTimeOffset.Now;
+
+                foreach (var mc in inLoginState)
+                {
+                    if (timeNow > mc.Value)
+                    {
+                        toDisconnect.Add(mc.Key);
+                    }
+                }
+
+                foreach (var c in toDisconnect)
+                {
+                    inLoginState.Remove(c);
+                }
+            }
+            finally
+            {
+                Monitor.Exit(srvLock);
+            }
+
+            foreach (var c in toDisconnect)
+            {
+                // thanks Lei for pointing a deadlock issue with srvLock
+                if (c.IsOnlined)
+                {
+                    c.Disconnect();
+                }
+                else
+                {
+                    SessionCoordinator.getInstance().closeSession(c, true);
+                }
+            }
+        }
+
+        ReaderWriterLockSlim lgnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private Dictionary<string, int> transitioningChars = new();
+        public void SetCharacteridInTransition(ILoginClient client, int charId)
+        {
+            string remoteIp = client.GetSessionRemoteHost();
+
+            lgnLock.EnterWriteLock();
+            try
+            {
+                transitioningChars[remoteIp] = charId;
+            }
+            finally
+            {
+                lgnLock.ExitWriteLock();
+            }
+        }
+
+        public bool ValidateCharacteridInTransition(ILoginClient client, int charId)
+        {
+            if (!YamlConfig.config.server.USE_IP_VALIDATION)
+            {
+                return true;
+            }
+
+            var remoteIp = client.GetSessionRemoteHost();
+
+            lgnLock.EnterWriteLock();
+            try
+            {
+                return transitioningChars.Remove(remoteIp, out var cid) && cid == charId;
+            }
+            finally
+            {
+                lgnLock.ExitWriteLock();
+            }
+        }
+
+        public int? FreeCharacteridInTransition(ILoginClient client)
+        {
+            if (!YamlConfig.config.server.USE_IP_VALIDATION)
+            {
+                return null;
+            }
+
+            string remoteIp = client.GetSessionRemoteHost();
+
+            lgnLock.EnterWriteLock();
+            try
+            {
+                if (transitioningChars.Remove(remoteIp, out var d))
+                    return d;
+                return null;
+            }
+            finally
+            {
+                lgnLock.ExitWriteLock();
+            }
+        }
+
+        public bool HasCharacteridInTransition(ILoginClient client)
+        {
+            if (!YamlConfig.config.server.USE_IP_VALIDATION)
+            {
+                return true;
+            }
+
+            string remoteIp = client.GetSessionRemoteHost();
+
+            lgnLock.EnterReadLock();
+            try
+            {
+                return transitioningChars.ContainsKey(remoteIp);
+            }
+            finally
+            {
+                lgnLock.ExitReadLock();
+            }
+        }
+
+        public void UpdateAccountState(int state)
+        {
+            
+        }
     }
 }

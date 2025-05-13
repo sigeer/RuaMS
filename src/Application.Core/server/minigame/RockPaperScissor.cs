@@ -25,7 +25,7 @@ public class RockPaperScissor
         }
     }
 
-    public bool answer(IClient c, int answer)
+    public bool answer(IChannelClient c, int answer)
     {
         if (ableAnswer && !win && answer >= 0 && answer <= 2)
         {
@@ -52,7 +52,7 @@ public class RockPaperScissor
         return false;
     }
 
-    public bool timeOut(IClient c)
+    public bool timeOut(IChannelClient c)
     {
         if (ableAnswer && !win)
         {
@@ -64,7 +64,7 @@ public class RockPaperScissor
         return false;
     }
 
-    public bool nextRound(IClient c)
+    public bool nextRound(IChannelClient c)
     {
         if (win)
         {
@@ -85,7 +85,7 @@ public class RockPaperScissor
         return false;
     }
 
-    public void reward(IClient c)
+    public void reward(IChannelClient c)
     {
         if (win)
         {
@@ -94,7 +94,7 @@ public class RockPaperScissor
         c.OnlinedCharacter.setRPS(null);
     }
 
-    public void dispose(IClient c)
+    public void dispose(IChannelClient c)
     {
         reward(c);
         c.sendPacket(PacketCreator.rpsMode(0x0D));

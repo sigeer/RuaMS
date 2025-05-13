@@ -36,10 +36,10 @@ namespace client.processor.action;
 public class PetAutopotProcessor
 {
 
-    private class AutopotAction(IClient c, short slot, int itemId)
+    private class AutopotAction(IChannelClient c, short slot, int itemId)
     {
 
-        private IClient c = c;
+        private IChannelClient c = c;
         private short slot = slot;
         private int itemId = itemId;
 
@@ -208,7 +208,7 @@ public class PetAutopotProcessor
         }
     }
 
-    public static void runAutopotAction(IClient c, short slot, int itemid)
+    public static void runAutopotAction(IChannelClient c, short slot, int itemid)
     {
         AutopotAction action = new AutopotAction(c, slot, itemid);
         action.run();

@@ -140,7 +140,7 @@ public class BuddyList
         return null;
     }
 
-    public void addBuddyRequest(IClient c, int cidFrom, string nameFrom, int channelFrom)
+    public void addBuddyRequest(IChannelClient c, int cidFrom, string nameFrom, int channelFrom)
     {
         // 只是申请为什么要加数据？
         put("Default Group", cidFrom, false);

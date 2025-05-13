@@ -9,7 +9,7 @@ public class MaxStatCommand : CommandBase
         Description = "Max out all character stats.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.MaxStat();
         c.OnlinedCharacter.yellowMessage("Stats maxed out.");

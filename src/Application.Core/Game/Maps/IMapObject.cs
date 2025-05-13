@@ -1,4 +1,4 @@
-﻿using server.maps;
+using server.maps;
 
 namespace Application.Core.Game.Maps
 {
@@ -12,8 +12,8 @@ namespace Application.Core.Game.Maps
         void setObjectId(int id);
         MapObjectType getType();
         void setPosition(Point position);
-        void sendSpawnData(IClient client);
-        void sendDestroyData(IClient client);
+        void sendSpawnData(IChannelClient client);
+        void sendDestroyData(IChannelClient client);
         void nullifyPosition();
     }
 }

@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.GameEvents.PartyQuest;
+using Application.Core.Game.GameEvents.PartyQuest;
 
 namespace Application.Core.Game.Commands.Gm2
 {
@@ -9,7 +9,7 @@ namespace Application.Core.Game.Commands.Gm2
             Description = "强制开启团队任务，完成当前关卡。";
         }
 
-        public override void Execute(IClient client, string[] values)
+        public override void Execute(IChannelClient client, string[] values)
         {
             PlayerPartyQuestBase? pq = null;
             if (values[0] == "kpq")

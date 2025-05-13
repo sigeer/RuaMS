@@ -1,4 +1,4 @@
-﻿using client;
+using client;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -9,7 +9,7 @@ public class FameCommand : CommandBase
         Description = "Set new fame value of a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)

@@ -6,7 +6,7 @@ namespace Application.Core.Game.Commands.Gm0
         {
         }
 
-        public override void Execute(IClient client, string[] values)
+        public override void Execute(IChannelClient client, string[] values)
         {
 
             var map = client.OnlinedCharacter.getMap();

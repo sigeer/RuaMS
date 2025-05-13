@@ -1,4 +1,4 @@
-﻿using client.autoban;
+using client.autoban;
 using net.server;
 using tools;
 
@@ -11,7 +11,7 @@ public class IgnoreCommand : CommandBase
         Description = "Toggle ignore a character from auto-ban alerts.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

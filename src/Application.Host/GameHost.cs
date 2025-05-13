@@ -1,5 +1,7 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerTransports;
+using Application.Core.Game.TheWorld;
 using Application.Core.Servers;
 using net.server;
 
@@ -8,7 +10,7 @@ namespace Application.Host
     public class GameHost : IHostedService
     {
         readonly IMasterServer _server;
-
+        readonly IServiceProvider _serviceProvider;
         public GameHost(IMasterServer server)
         {
             _server = server;
@@ -21,8 +23,11 @@ namespace Application.Host
             var world = Server.getInstance().getWorld(0);
             for (int j = 1; j <= 3; j++)
             {
+                var scope = _serviceProvider.CreateScope();
+                var channel = scope.ServiceProvider.GetRequiredService<IWorldChannel>();
+
                 int channelid = j;
-                var channel = new WorldChannel(new ChannelServerConfig
+                ActivatorUtilities.CreateInstance<IWorldChannel>(scope.ServiceProvider, new ChannelServerConfig
                 {
                     Port = 7574 + channelid
                 }, new LocalChannelServerTransport(_server, world));

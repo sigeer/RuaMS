@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class PosCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class PosCommand : CommandBase
         Description = "Show current position and foothold.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         float xpos = player.getPosition().X;

@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using client.autoban;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -10,7 +10,7 @@ public class IgnoredCommand : CommandBase
         Description = "Show all characters being ignored in auto-ban alerts.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (int chrId in AutobanFactory.getIgnoredChrIds())

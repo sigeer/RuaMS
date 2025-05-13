@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class MuteMapCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class MuteMapCommand : CommandBase
         Description = "Toggle mute players in the map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (player.getMap().isMuted())

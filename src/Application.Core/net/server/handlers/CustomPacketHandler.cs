@@ -21,23 +21,25 @@
 */
 
 
+using Application.Core.Client;
+using Application.Core.Net;
 using net.packet;
 using tools;
 
 namespace net.server.handlers;
 
-public class CustomPacketHandler : IPacketHandler
+public class CustomPacketHandler<TClient> : IPacketHandlerBase<TClient> where TClient : IClientBase
 {
-    public void HandlePacket(InPacket p, IClient c)
+    public void HandlePacket(InPacket p, TClient c)
     {
-        if (p.available() > 0 && c.getGMLevel() == 4)
+        if (p.available() > 0 && c.AccountEntity?.GMLevel == 4)
         {
             //w/e
             c.sendPacket(PacketCreator.customPacket(p.readBytes(p.available())));
         }
     }
 
-    public bool ValidateState(IClient c)
+    public bool ValidateState(TClient c)
     {
         return true;
     }

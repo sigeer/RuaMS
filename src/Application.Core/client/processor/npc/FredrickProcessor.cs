@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Client;
 using Application.Core.Managers;
 using Application.Core.model;
 using client.inventory;
@@ -257,7 +258,7 @@ public class FredrickProcessor
         }
     }
 
-    public void fredrickRetrieveItems(IClient c)
+    public void fredrickRetrieveItems(IChannelClient c)
     {     // thanks Gustav for pointing out the dupe on Fredrick handling
         if (c.tryacquireClient())
         {
@@ -292,7 +293,7 @@ public class FredrickProcessor
                         foreach (var it in items)
                         {
                             Item item = it.Item;
-                            InventoryManipulator.addFromDrop(chr.getClient(), item, false);
+                            InventoryManipulator.addFromDrop(chr.Client, item, false);
                             var itemName = ItemInformationProvider.getInstance().getName(item.getItemId());
                             log.Debug("Chr {CharacterName} gained {ItemQuantity}x {ItemName} ({CharacterId})", chr.getName(), item.getQuantity(), itemName, item.getItemId());
                         }

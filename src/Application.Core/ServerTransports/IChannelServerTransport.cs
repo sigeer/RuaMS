@@ -86,5 +86,9 @@ namespace Application.Core.ServerTransports
         #region Guild
 
         #endregion
+
+        #region login
+        void SendAccountLogout(int accountId);
+        #endregion
     }
 }

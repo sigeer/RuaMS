@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -9,7 +9,7 @@ public class UnBugCommand : CommandBase
         Description = "Unbug self.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.enableActions());
     }

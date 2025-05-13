@@ -7,7 +7,7 @@ namespace Application.Core.Game.Commands.Gm3
             Description = "设置当前地图的怪物倍率";
         }
 
-        public override void Execute(IClient client, string[] values)
+        public override void Execute(IChannelClient client, string[] values)
         {
             var curMap = client.OnlinedCharacter.getMap();
             var p = GetFloatParam("mobrate");

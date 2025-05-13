@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using client.inventory;
@@ -37,7 +38,7 @@ public class SpawnPetProcessor
 {
     private static DataProvider dataRoot = DataProviderFactory.getDataProvider(WZFiles.ITEM);
 
-    public static void processSpawnPet(IClient c, byte slot, bool lead)
+    public static void processSpawnPet(IChannelClient c, byte slot, bool lead)
     {
         if (c.tryacquireClient())
         {

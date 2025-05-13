@@ -20,6 +20,7 @@
  */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -34,6 +35,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
+using Application.Shared.Battle;
 using client;
 using client.inventory;
 using client.keybind;
@@ -47,7 +49,6 @@ using net.encryption;
 using net.opcodes;
 using net.packet;
 using net.server;
-using net.server.channel.handlers;
 using net.server.world;
 using server;
 using server.events.gm;
@@ -57,7 +58,6 @@ using server.movement;
 using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
-using static net.server.channel.handlers.SummonDamageHandler;
 using static server.CashShop;
 
 namespace tools;
@@ -337,7 +337,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addCharEntry(OutPacket p,IClient playerClient, IPlayer chr, bool viewall)
+    private static void addCharEntry(OutPacket p, IClient playerClient, IPlayer chr, bool viewall)
     {
         addCharStats(p, chr);
         addCharLook(p, chr, false);
@@ -712,7 +712,7 @@ public class PacketCreator
         p.writeByte(2); // Account is banned
         p.writeByte(0);
         p.writeInt(0);
-        p.writeByte(0);
+        p.writeByte(reason);
         p.writeLong(getTime(-1));
         return p;
     }
@@ -2054,7 +2054,7 @@ public class PacketCreator
      * @param enteringField Whether the character to spawn is not yet present in the map or already is.
      * @return The spawn player packet.
      */
-    public static Packet spawnPlayerMapObject(IClient target, IPlayer chr, bool enteringField)
+    public static Packet spawnPlayerMapObject(IChannelClient target, IPlayer chr, bool enteringField)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_PLAYER);
         p.writeInt(chr.getId());
@@ -2324,7 +2324,7 @@ public class PacketCreator
         }
     }
 
-    private static void addMarriageRingLook(IClient target, OutPacket p, IPlayer chr)
+    private static void addMarriageRingLook(IChannelClient target, OutPacket p, IPlayer chr)
     {
         var ring = chr.getMarriageRing();
 
@@ -2336,7 +2336,7 @@ public class PacketCreator
         {
             p.writeByte(1);
 
-            var targetChr = target.getPlayer();
+            var targetChr = target.Character;
             if (targetChr != null && targetChr.getPartnerId() == chr.getId())
             {
                 p.writeInt(0);
@@ -2503,7 +2503,7 @@ public class PacketCreator
         p.writeByte(0);     // char level
         p.writeByte(direction);
         p.writeByte(allDamage.Count);
-        foreach (SummonAttackEntry attackEntry in allDamage)
+        foreach (var attackEntry in allDamage)
         {
             p.writeInt(attackEntry.monsterOid); // oid
             p.writeByte(6); // who knows
@@ -2611,7 +2611,7 @@ public class PacketCreator
         return (short)(BitConverter.DoubleToInt64Bits(d) >> 48);
     }
 
-    public static Packet getNPCShop(IClient c, int sid, List<ShopItem> items)
+    public static Packet getNPCShop(IChannelClient c, int sid, List<ShopItem> items)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         OutPacket p = OutPacket.create(SendOpcode.OPEN_NPC_SHOP);
@@ -2837,7 +2837,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateCharLook(IClient target, IPlayer chr)
+    public static Packet updateCharLook(IChannelClient target, IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_LOOK);
         p.writeInt(chr.getId());
@@ -3390,8 +3390,8 @@ public class PacketCreator
     public static Packet getPlayerShopChat(IPlayer chr, string chat, bool owner)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.CHAT.getCode());
-        p.writeByte(PlayerInteractionHandler.Action.CHAT_THING.getCode());
+        p.writeByte(PlayerInterAction.CHAT.getCode());
+        p.writeByte(PlayerInterAction.CHAT_THING.getCode());
         p.writeBool(!owner);
         p.writeString(chr.getName() + " : " + chat);
         return p;
@@ -3400,7 +3400,7 @@ public class PacketCreator
     public static Packet getPlayerShopNewVisitor(IPlayer chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.VISIT.getCode());
+        p.writeByte(PlayerInterAction.VISIT.getCode());
         p.writeByte(slot);
         addCharLook(p, chr, false);
         p.writeString(chr.getName());
@@ -3410,7 +3410,7 @@ public class PacketCreator
     public static Packet getPlayerShopRemoveVisitor(int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.EXIT.getCode());
+        p.writeByte(PlayerInterAction.EXIT.getCode());
         if (slot != 0)
         {
             p.writeShort(slot);
@@ -3421,7 +3421,7 @@ public class PacketCreator
     public static Packet getTradePartnerAdd(IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.VISIT.getCode());
+        p.writeByte(PlayerInterAction.VISIT.getCode());
         p.writeByte(1);
         addCharLook(p, chr, false);
         p.writeString(chr.getName());
@@ -3431,7 +3431,7 @@ public class PacketCreator
     public static Packet tradeInvite(IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.INVITE.getCode());
+        p.writeByte(PlayerInterAction.INVITE.getCode());
         p.writeByte(3);
         p.writeString(chr.getName());
         p.writeBytes(new byte[] { 0xB7, 0x50, 0, 0 });
@@ -3441,7 +3441,7 @@ public class PacketCreator
     public static Packet getTradeMesoSet(byte number, int meso)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.SET_MESO.getCode());
+        p.writeByte(PlayerInterAction.SET_MESO.getCode());
         p.writeByte(number);
         p.writeInt(meso);
         return p;
@@ -3450,7 +3450,7 @@ public class PacketCreator
     public static Packet getTradeItemAdd(byte number, Item item)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.SET_ITEMS.getCode());
+        p.writeByte(PlayerInterAction.SET_ITEMS.getCode());
         p.writeByte(number);
         p.writeByte(item.getPosition());
         addItemInfo(p, item, true);
@@ -3460,7 +3460,7 @@ public class PacketCreator
     public static Packet getPlayerShopItemUpdate(PlayerShop shop)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.UPDATE_MERCHANT.getCode());
+        p.writeByte(PlayerInterAction.UPDATE_MERCHANT.getCode());
         p.writeByte(shop.getItems().Count);
         foreach (PlayerShopItem item in shop.getItems())
         {
@@ -3475,7 +3475,7 @@ public class PacketCreator
     public static Packet getPlayerShopOwnerUpdate(SoldItem item, int position)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.UPDATE_PLAYERSHOP.getCode());
+        p.writeByte(PlayerInterAction.UPDATE_PLAYERSHOP.getCode());
         p.writeByte(position);
         p.writeShort(item.quantity);
         p.writeString(item.buyer);
@@ -3492,7 +3492,7 @@ public class PacketCreator
     public static Packet getPlayerShop(PlayerShop shop, bool owner)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
+        p.writeByte(PlayerInterAction.ROOM.getCode());
         p.writeByte(4);
         p.writeByte(4);
         p.writeByte(owner ? 0 : 1);
@@ -3546,7 +3546,7 @@ public class PacketCreator
     public static Packet getTradeStart(IClient c, Trade trade, byte number)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
+        p.writeByte(PlayerInterAction.ROOM.getCode());
         p.writeByte(3);
         p.writeByte(2);
         p.writeByte(number);
@@ -3566,7 +3566,7 @@ public class PacketCreator
     public static Packet getTradeConfirmation()
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.CONFIRM.getCode());
+        p.writeByte(PlayerInterAction.CONFIRM.getCode());
         return p;
     }
 
@@ -3586,7 +3586,7 @@ public class PacketCreator
     public static Packet getTradeResult(byte number, byte operation)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.EXIT.getCode());
+        p.writeByte(PlayerInterAction.EXIT.getCode());
         p.writeByte(number);
         p.writeByte(operation);
         return p;
@@ -5097,10 +5097,10 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getMiniGame(IClient c, MiniGame minigame, bool owner, int piece)
+    public static Packet getMiniGame(IChannelClient c, MiniGame minigame, bool owner, int piece)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
+        p.writeByte(PlayerInterAction.ROOM.getCode());
         p.writeByte(1);
         p.writeByte(0);
         p.writeBool(!owner);
@@ -5141,21 +5141,21 @@ public class PacketCreator
     public static Packet getMiniGameReady(MiniGame game)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.READY.getCode());
+        p.writeByte(PlayerInterAction.READY.getCode());
         return p;
     }
 
     public static Packet getMiniGameUnReady(MiniGame game)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.UN_READY.getCode());
+        p.writeByte(PlayerInterAction.UN_READY.getCode());
         return p;
     }
 
     public static Packet getMiniGameStart(MiniGame game, int loser)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.START.getCode());
+        p.writeByte(PlayerInterAction.START.getCode());
         p.writeByte(loser);
         return p;
     }
@@ -5163,7 +5163,7 @@ public class PacketCreator
     public static Packet getMiniGameSkipOwner(MiniGame game)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.SKIP.getCode());
+        p.writeByte(PlayerInterAction.SKIP.getCode());
         p.writeByte(0x01);
         return p;
     }
@@ -5171,14 +5171,14 @@ public class PacketCreator
     public static Packet getMiniGameRequestTie(MiniGame game)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.REQUEST_TIE.getCode());
+        p.writeByte(PlayerInterAction.REQUEST_TIE.getCode());
         return p;
     }
 
     public static Packet getMiniGameDenyTie(MiniGame game)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ANSWER_TIE.getCode());
+        p.writeByte(PlayerInterAction.ANSWER_TIE.getCode());
         return p;
     }
 
@@ -5210,7 +5210,7 @@ public class PacketCreator
     public static Packet getMiniRoomError(int status)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
+        p.writeByte(PlayerInterAction.ROOM.getCode());
         p.writeByte(0);
         p.writeByte(status);
         return p;
@@ -5219,14 +5219,14 @@ public class PacketCreator
     public static Packet getMiniGameSkipVisitor(MiniGame game)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeShort(PlayerInteractionHandler.Action.SKIP.getCode());
+        p.writeShort(PlayerInterAction.SKIP.getCode());
         return p;
     }
 
     public static Packet getMiniGameMoveOmok(MiniGame game, int move1, int move2, int move3)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.MOVE_OMOK.getCode());
+        p.writeByte(PlayerInterAction.MOVE_OMOK.getCode());
         p.writeInt(move1);
         p.writeInt(move2);
         p.writeByte(move3);
@@ -5236,7 +5236,7 @@ public class PacketCreator
     public static Packet getMiniGameNewVisitor(MiniGame minigame, IPlayer chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.VISIT.getCode());
+        p.writeByte(PlayerInterAction.VISIT.getCode());
         p.writeByte(slot);
         addCharLook(p, chr, false);
         p.writeString(chr.getName());
@@ -5251,7 +5251,7 @@ public class PacketCreator
     public static Packet getMiniGameRemoveVisitor()
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.EXIT.getCode());
+        p.writeByte(PlayerInterAction.EXIT.getCode());
         p.writeByte(1);
         return p;
     }
@@ -5259,7 +5259,7 @@ public class PacketCreator
     private static Packet getMiniGameResult(MiniGame game, int tie, int result, int forfeit)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.GET_RESULT.getCode());
+        p.writeByte(PlayerInterAction.GET_RESULT.getCode());
 
         int matchResultType;
         if (tie == 0 && forfeit != 1)
@@ -5330,16 +5330,16 @@ public class PacketCreator
     public static Packet getMiniGameClose(bool visitor, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.EXIT.getCode());
+        p.writeByte(PlayerInterAction.EXIT.getCode());
         p.writeBool(visitor);
         p.writeByte(type); /* 2 : CRASH 3 : The room has been closed 4 : You have left the room 5 : You have been expelled  */
         return p;
     }
 
-    public static Packet getMatchCard(IClient c, MiniGame minigame, bool owner, int piece)
+    public static Packet getMatchCard(IChannelClient c, MiniGame minigame, bool owner, int piece)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
+        p.writeByte(PlayerInterAction.ROOM.getCode());
         p.writeByte(2);
         p.writeByte(2);
         p.writeBool(!owner);
@@ -5382,7 +5382,7 @@ public class PacketCreator
     public static Packet getMatchCardStart(MiniGame game, int loser)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.START.getCode());
+        p.writeByte(PlayerInterAction.START.getCode());
         p.writeByte(loser);
 
         int last;
@@ -5410,7 +5410,7 @@ public class PacketCreator
     public static Packet getMatchCardNewVisitor(MiniGame minigame, IPlayer chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.VISIT.getCode());
+        p.writeByte(PlayerInterAction.VISIT.getCode());
         p.writeByte(slot);
         addCharLook(p, chr, false);
         p.writeString(chr.getName());
@@ -5425,7 +5425,7 @@ public class PacketCreator
     public static Packet getMatchCardSelect(MiniGame game, int turn, int slot, int firstslot, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.SELECT_CARD.getCode());
+        p.writeByte(PlayerInterAction.SELECT_CARD.getCode());
         p.writeByte(turn);
         if (turn == 1)
         {
@@ -5563,8 +5563,8 @@ public class PacketCreator
     public static Packet getPlayerShopChat(IPlayer chr, string chat, byte slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.CHAT.getCode());
-        p.writeByte(PlayerInteractionHandler.Action.CHAT_THING.getCode());
+        p.writeByte(PlayerInterAction.CHAT.getCode());
+        p.writeByte(PlayerInterAction.CHAT_THING.getCode());
         p.writeByte(slot);
         p.writeString(chr.getName() + " : " + chat);
         return p;
@@ -5573,8 +5573,8 @@ public class PacketCreator
     public static Packet getTradeChat(IPlayer chr, string chat, bool owner)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.CHAT.getCode());
-        p.writeByte(PlayerInteractionHandler.Action.CHAT_THING.getCode());
+        p.writeByte(PlayerInterAction.CHAT.getCode());
+        p.writeByte(PlayerInterAction.CHAT_THING.getCode());
         p.writeByte(owner ? 0 : 1);
         p.writeString(chr.getName() + " : " + chat);
         return p;
@@ -5699,7 +5699,7 @@ public class PacketCreator
     {
         //Thanks Dustin
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
+        p.writeByte(PlayerInterAction.ROOM.getCode());
         p.writeByte(0x05);
         p.writeByte(0x04);
         p.writeShort(hm.getVisitorSlotThreadsafe(chr) + 1);
@@ -5773,7 +5773,7 @@ public class PacketCreator
     public static Packet updateHiredMerchant(HiredMerchant hm, IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.UPDATE_MERCHANT.getCode());
+        p.writeByte(PlayerInterAction.UPDATE_MERCHANT.getCode());
         p.writeInt(hm.isOwner(chr) ? chr.getMerchantMeso() : chr.getMeso());
         p.writeByte(hm.getItems().Count);
         foreach (PlayerShopItem item in hm.getItems())
@@ -5789,8 +5789,8 @@ public class PacketCreator
     public static Packet hiredMerchantChat(string message, byte slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.CHAT.getCode());
-        p.writeByte(PlayerInteractionHandler.Action.CHAT_THING.getCode());
+        p.writeByte(PlayerInterAction.CHAT.getCode());
+        p.writeByte(PlayerInterAction.CHAT_THING.getCode());
         p.writeByte(slot);
         p.writeString(message);
         return p;
@@ -5799,7 +5799,7 @@ public class PacketCreator
     public static Packet hiredMerchantVisitorLeave(int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.EXIT.getCode());
+        p.writeByte(PlayerInterAction.EXIT.getCode());
         if (slot != 0)
         {
             p.writeByte(slot);
@@ -5810,7 +5810,7 @@ public class PacketCreator
     public static Packet hiredMerchantOwnerLeave()
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.REAL_CLOSE_MERCHANT.getCode());
+        p.writeByte(PlayerInterAction.REAL_CLOSE_MERCHANT.getCode());
         p.writeByte(0);
         return p;
     }
@@ -5818,7 +5818,7 @@ public class PacketCreator
     public static Packet hiredMerchantOwnerMaintenanceLeave()
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.REAL_CLOSE_MERCHANT.getCode());
+        p.writeByte(PlayerInterAction.REAL_CLOSE_MERCHANT.getCode());
         p.writeByte(5);
         return p;
     }
@@ -5826,7 +5826,7 @@ public class PacketCreator
     public static Packet hiredMerchantMaintenanceMessage()
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.ROOM.getCode());
+        p.writeByte(PlayerInterAction.ROOM.getCode());
         p.writeByte(0x00);
         p.writeByte(0x12);
         return p;
@@ -5835,7 +5835,7 @@ public class PacketCreator
     public static Packet leaveHiredMerchant(int slot, int status2)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.EXIT.getCode());
+        p.writeByte(PlayerInterAction.EXIT.getCode());
         p.writeByte(slot);
         p.writeByte(status2);
         return p;
@@ -5848,7 +5848,7 @@ public class PacketCreator
     public static Packet viewMerchantVisitorHistory(List<PastVisitor> pastVisitors)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.VIEW_VISITORS.getCode());
+        p.writeByte(PlayerInterAction.VIEW_VISITORS.getCode());
         p.writeShort(pastVisitors.Count);
         foreach (PastVisitor pastVisitor in pastVisitors)
         {
@@ -5864,7 +5864,7 @@ public class PacketCreator
     public static Packet viewMerchantBlacklist(HashSet<string> chrNames)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.VIEW_BLACKLIST.getCode());
+        p.writeByte(PlayerInterAction.VIEW_BLACKLIST.getCode());
         p.writeShort(chrNames.Count);
         foreach (string chrName in chrNames)
         {
@@ -5876,7 +5876,7 @@ public class PacketCreator
     public static Packet hiredMerchantVisitorAdd(IPlayer chr, int slot)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInteractionHandler.Action.VISIT.getCode());
+        p.writeByte(PlayerInterAction.VISIT.getCode());
         p.writeByte(slot);
         addCharLook(p, chr, false);
         p.writeString(chr.getName());
@@ -6407,7 +6407,7 @@ public class PacketCreator
         p.writeByte(type);
         p.writeInt(fieldOrChannel);
 
-        if (type == WhisperHandler.RT_SAME_CHANNEL)
+        if (type == WhisperType.RT_SAME_CHANNEL)
         {
             p.writeInt(target.getPosition().X);
             p.writeInt(target.getPosition().Y);
@@ -7911,7 +7911,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showCashInventory(IClient c)
+    public static Packet showCashInventory(IChannelClient c)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
@@ -7920,11 +7920,11 @@ public class PacketCreator
 
         foreach (Item item in c.OnlinedCharacter.getCashShop().getInventory())
         {
-            addCashItemInformation(p, item, c.getAccID());
+            addCashItemInformation(p, item, c.AccountEntity!.Id);
         }
 
         p.writeShort(c.OnlinedCharacter.getStorage().getSlots());
-        p.writeShort(c.getCharacterSlots());
+        p.writeShort(c.AccountEntity!.Characterslots);
 
         return p;
     }
@@ -8026,7 +8026,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet openCashShop(IClient c, bool mts)
+    public static Packet openCashShop(IChannelClient c, bool mts)
     {
         OutPacket p = OutPacket.create(mts ? SendOpcode.SET_ITC : SendOpcode.SET_CASH_SHOP);
 
@@ -8037,7 +8037,7 @@ public class PacketCreator
             p.writeByte(1);
         }
 
-        p.writeString(c.getAccountName());
+        p.writeString(c.AccountEntity.Name);
         if (mts)
         {
             p.writeBytes(new byte[]{ 0x88, 19, 0, 0,

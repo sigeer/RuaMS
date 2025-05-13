@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 
 public class LevelProCommand : ParamsCommandBase
 {
@@ -7,7 +7,7 @@ public class LevelProCommand : ParamsCommandBase
         Description = "Set your level, one by one.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 

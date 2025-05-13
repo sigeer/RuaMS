@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class EndEventCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class EndEventCommand : CommandBase
         Description = "Close entry for ongoing event.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         c.getChannelServer().setEvent(null);

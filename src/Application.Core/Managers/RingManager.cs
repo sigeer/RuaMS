@@ -83,14 +83,14 @@ namespace Application.Core.Managers
             Equip ringEqp = (Equip)ringObj;
             ringEqp.setRingId(rings.MyRingId);
             player.addMarriageRing(LoadFromDb(rings.MyRingId));
-            InventoryManipulator.addFromDrop(player.getClient(), ringEqp, false, -1);
+            InventoryManipulator.addFromDrop(player.Client, ringEqp, false, -1);
             player.broadcastMarriageMessage();
 
             ringObj = ii.getEquipById(marriageRingId);
             ringEqp = (Equip)ringObj;
             ringEqp.setRingId(rings.PartnerRingId);
             partner.addMarriageRing(LoadFromDb(rings.PartnerRingId));
-            InventoryManipulator.addFromDrop(partner.getClient(), ringEqp, false, -1);
+            InventoryManipulator.addFromDrop(partner.Client, ringEqp, false, -1);
             partner.broadcastMarriageMessage();
         }
 
@@ -199,7 +199,7 @@ namespace Application.Core.Managers
                     int partnerMarriageitemid = marriageitemid + ((chr.getGender() == 0) ? 1 : -1);
                     if (partner.haveItem(partnerMarriageitemid))
                     {
-                        InventoryManipulator.removeById(partner.getClient(), InventoryType.ETC, partnerMarriageitemid, 1, false, false);
+                        InventoryManipulator.removeById(partner.Client, InventoryType.ETC, partnerMarriageitemid, 1, false, false);
                     }
 
                     //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
@@ -210,7 +210,7 @@ namespace Application.Core.Managers
 
                 if (chr.haveItem(marriageitemid))
                 {
-                    InventoryManipulator.removeById(chr.getClient(), InventoryType.ETC, marriageitemid, 1, false, false);
+                    InventoryManipulator.removeById(chr.Client, InventoryType.ETC, marriageitemid, 1, false, false);
                 }
                 chr.dropMessage(5, "You have successfully break the engagement with " + CharacterManager.getNameById(partnerid) + ".");
 

@@ -140,13 +140,13 @@ public abstract class AbstractScriptManager
         }
     }
 
-    protected IEngine getInvocableScriptEngine(string path, IClient c)
+    protected IEngine getInvocableScriptEngine(string path, IChannelClient c)
     {
-        var engine = c.getScriptEngine(path);
+        var engine = c.ScriptEngines[path];
         if (engine == null)
         {
             engine = getInvocableScriptEngine(path)!;
-            c.setScriptEngine(path, engine);
+            c.ScriptEngines[path] =  engine;
         }
 
         return engine;
@@ -157,9 +157,9 @@ public abstract class AbstractScriptManager
         JsCache.Clear();
     }
 
-    protected void resetContext(string path, IClient c)
+    protected void resetContext(string path, IChannelClient c)
     {
-        c.removeScriptEngine(path);
+        c.ScriptEngines.Remove(path);
     }
 
     protected string GetFullScriptPath(string relativePath)

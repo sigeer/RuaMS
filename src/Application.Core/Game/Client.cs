@@ -4,6 +4,7 @@ using Application.Core.Managers;
 using Application.Core.Scripting.Infrastructure;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
+using Application.Scripting.JS;
 using client.inventory;
 using constants.id;
 using DotNetty.Codecs;
@@ -1493,10 +1494,9 @@ public class Client : ChannelHandlerAdapter, IClient
         Character.getInventory(InventoryType.EQUIPPED).SetChecked(false); //test
         Character.getMap().removePlayer(Character);
         Character.getChannelServer().removePlayer(Character);
-
         Character.saveCharToDB();
 
-        Character.setSessionTransitionState();
+        setCharacterOnSessionTransitionState(Character.getId());
         try
         {
             sendPacket(PacketCreator.getChannelChange(socket));

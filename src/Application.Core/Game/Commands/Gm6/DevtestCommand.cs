@@ -1,4 +1,4 @@
-﻿using Application.Core.Scripting.Infrastructure;
+using Application.Core.Scripting.Infrastructure;
 using scripting;
 
 namespace Application.Core.Game.Commands.Gm6;
@@ -20,7 +20,7 @@ public class DevtestCommand : CommandBase
 
     }
 
-    public override void Execute(IClient client, string[] paramsValue)
+    public override void Execute(IChannelClient client, string[] paramsValue)
     {
         DevtestScriptManager scriptManager = new DevtestScriptManager();
         var scriptEngine = scriptManager.GetScriptEngine("devtest.js");

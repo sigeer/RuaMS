@@ -1,4 +1,4 @@
-﻿using server.life;
+using server.life;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -9,7 +9,7 @@ public class ReloadDropsCommand : CommandBase
         Description = "Reload all drop data.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         MonsterInformationProvider.getInstance().clearDrops();

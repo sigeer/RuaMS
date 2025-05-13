@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -53,14 +54,14 @@ namespace scripting;
 public class AbstractPlayerInteraction
 {
 
-    public IClient c;
+    public IChannelClient c;
 
-    public AbstractPlayerInteraction(IClient c)
+    public AbstractPlayerInteraction(IChannelClient c)
     {
         this.c = c;
     }
 
-    public IClient getClient()
+    public IChannelClient getClient()
     {
         return c;
     }
@@ -145,7 +146,7 @@ public class AbstractPlayerInteraction
     {
 
         int mapid = getMapId();
-        var warpMap = c.getChannelServer().getMapFactory().getMap(map);
+        var warpMap = c.CurrentServer.getMapFactory().getMap(map);
 
         var portal = warpMap.getPortal(portalName);
 
@@ -856,7 +857,7 @@ public class AbstractPlayerInteraction
     {
         foreach (var chr in partyMembers)
         {
-            var cl = chr.getClient();
+            var cl = chr.Client;
             if (quantity >= 0)
             {
                 InventoryManipulator.addById(cl, id, quantity);
@@ -890,7 +891,7 @@ public class AbstractPlayerInteraction
         {
             if (chr != null && chr.getClient() != null)
             {
-                removeAll(id, chr.getClient());
+                removeAll(id, chr.Client);
             }
         }
     }
@@ -979,7 +980,7 @@ public class AbstractPlayerInteraction
         removeAll(id, c);
     }
 
-    public void removeAll(int id, IClient cl)
+    public void removeAll(int id, IChannelClient cl)
     {
         InventoryType invType = ItemConstants.getInventoryType(id);
         int possessed = cl.OnlinedCharacter.getInventory(invType).countById(id);
@@ -1006,7 +1007,7 @@ public class AbstractPlayerInteraction
 
     public int getPlayerCount(int mapid)
     {
-        return c.getChannelServer().getMapFactory().getMap(mapid).getAllPlayers().Count;
+        return c.CurrentServer.getMapFactory().getMap(mapid).getAllPlayers().Count;
     }
 
     public void showInstruction(string msg, int width, int height)
@@ -1314,12 +1315,12 @@ public class AbstractPlayerInteraction
 
     public List<Item> getUnclaimedMarriageGifts()
     {
-        return Marriage.loadGiftItemsFromDb(this.getClient(), this.getPlayer().getId());
+        return Marriage.loadGiftItemsFromDb(this.getPlayer().getId());
     }
 
     public bool startDungeonInstance(int dungeonid)
     {
-        return c.getChannelServer().addMiniDungeon(dungeonid);
+        return c.CurrentServer.addMiniDungeon(dungeonid);
     }
 
     public bool canGetFirstJob(int jobType)

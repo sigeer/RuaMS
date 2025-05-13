@@ -16,7 +16,7 @@ public class IpListCommand : CommandBase
         Description = "Show IP of all players.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         string str = "Player-IP relation:";
 

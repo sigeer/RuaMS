@@ -1,11 +1,10 @@
 using Application.Core.Channel;
-using Application.Core.Game.TheWorld;
-using Application.Core.Servers;
 using Application.Host.Channel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IWorldChannel>(o => new WorldChannel(new ChannelServerConfig { }, new RemoteChannelServerTransport()));
+builder.Services.AddScoped<RemoteChannelServerTransport>();
+builder.Services.RegisterChannelServer();
 // Add services to the container.
 builder.Services.AddHostedService<ChannelHost>();
 

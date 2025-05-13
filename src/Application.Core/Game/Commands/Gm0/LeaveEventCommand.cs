@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm0;
+namespace Application.Core.Game.Commands.Gm0;
 
 public class LeaveEventCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class LeaveEventCommand : CommandBase
         Description = "Leave active event.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int returnMap = player.getSavedLocation("EVENT");

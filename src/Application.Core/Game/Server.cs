@@ -572,8 +572,6 @@ public class Server
         await TimerManager.InitializeAsync(engine);
         var tMan = TimerManager.getInstance();
         await tMan.Start();
-        tMan.register(new NamedRunnable("purge", TimerManager.purge), YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
-        tMan.register(new NamedRunnable("disconnectIdlesOnLoginState", disconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
@@ -926,51 +924,7 @@ public class Server
         }
     }
 
-    private void disconnectIdlesOnLoginState()
-    {
-        List<IClient> toDisconnect = new();
 
-        Monitor.Enter(srvLock);
-        try
-        {
-            var timeNow = DateTimeOffset.Now;
-
-            foreach (var mc in inLoginState)
-            {
-                if (timeNow > mc.Value)
-                {
-                    toDisconnect.Add(mc.Key);
-                }
-            }
-
-            foreach (IClient c in toDisconnect)
-            {
-                inLoginState.Remove(c);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(srvLock);
-        }
-
-        foreach (IClient c in toDisconnect)
-        {
-            // thanks Lei for pointing a deadlock issue with srvLock
-            if (c.isLoggedIn())
-            {
-                c.disconnect(false, false);
-            }
-            else
-            {
-                SessionCoordinator.getInstance().closeSession(c, true);
-            }
-        }
-    }
-
-    private void disconnectIdlesOnLoginTask()
-    {
-        TimerManager.getInstance().register(() => disconnectIdlesOnLoginState(), TimeSpan.FromMinutes(5));
-    }
 
     public Action shutdown(bool restart)
     {

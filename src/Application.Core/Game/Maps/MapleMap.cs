@@ -361,7 +361,7 @@ public class MapleMap : IMap
         return this.selfDestructives.Remove(mapobjectid);
     }
 
-    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IClient>? packetbakery, Func<IPlayer, bool>? condition = null)
+    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, Func<IPlayer, bool>? condition = null)
     {
         List<IPlayer> inRangeCharacters = new();
         int curOID = getUsableOID();
@@ -392,7 +392,7 @@ public class MapleMap : IMap
 
         foreach (IPlayer chr in inRangeCharacters)
         {
-            packetbakery?.Invoke(chr.getClient());
+            packetbakery?.Invoke(chr.Client);
         }
     }
 
@@ -2802,7 +2802,7 @@ public class MapleMap : IMap
             broadcastSpawnPlayerMapObjectMessage(chr, chr, true);
         }
 
-        sendObjectPlacement(chr.getClient());
+        sendObjectPlacement(chr.Client);
 
         if (isStartingEventMap() && !eventStarted())
         {
@@ -3199,7 +3199,7 @@ public class MapleMap : IMap
                     {
                         if (chr != source)
                         {
-                            chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.getClient(), player, enteringField));
+                            chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
                         }
                     }
                 }
@@ -3210,7 +3210,7 @@ public class MapleMap : IMap
                 {
                     if (chr != source)
                     {
-                        chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.getClient(), player, enteringField));
+                        chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
                     }
                 }
             }
@@ -3230,7 +3230,7 @@ public class MapleMap : IMap
             {
                 if (chr != source)
                 {
-                    chr.sendPacket(PacketCreator.updateCharLook(chr.getClient(), player));
+                    chr.sendPacket(PacketCreator.updateCharLook(chr.Client, player));
                 }
             }
         }
@@ -3267,7 +3267,7 @@ public class MapleMap : IMap
         }
     }
 
-    private void sendObjectPlacement(IClient c)
+    private void sendObjectPlacement(IChannelClient c)
     {
         var allMapObjects = getMapObjects();
 
@@ -3299,7 +3299,7 @@ public class MapleMap : IMap
                 if (o.getType() == MapObjectType.REACTOR && o is Reactor reactor && !reactor.isAlive())
                     continue;
 
-                o.sendSpawnData(chr.getClient());
+                o.sendSpawnData(chr.Client);
                 chr.addVisibleMapObject(o);
 
                 if (o.getType() == MapObjectType.MONSTER && o is Monster monster)
@@ -3551,13 +3551,13 @@ public class MapleMap : IMap
             if (mo.getType() == MapObjectType.SUMMON || mo.getPosition().distanceSq(chr.getPosition()) <= getRangedDistance())
             {
                 chr.addVisibleMapObject(mo);
-                mo.sendSpawnData(chr.getClient());
+                mo.sendSpawnData(chr.Client);
             }
         }
         else if (mo.getType() != MapObjectType.SUMMON && mo.getPosition().distanceSq(chr.getPosition()) > getRangedDistance())
         {
             chr.removeVisibleMapObject(mo);
-            mo.sendDestroyData(chr.getClient());
+            mo.sendDestroyData(chr.Client);
         }
     }
 
@@ -3603,7 +3603,7 @@ public class MapleMap : IMap
         {
             if (!player.isMapObjectVisible(mo))
             {
-                mo.sendSpawnData(player.getClient());
+                mo.sendSpawnData(player.Client);
                 player.addVisibleMapObject(mo);
             }
         }

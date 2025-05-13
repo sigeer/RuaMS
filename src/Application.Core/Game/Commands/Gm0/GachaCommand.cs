@@ -13,7 +13,7 @@ public class GachaCommand : CommandBase
         Description = "Show gachapon rewards.";
     }
 
-    public override void Execute(IClient c, string[] paramValues)
+    public override void Execute(IChannelClient c, string[] paramValues)
     {
         GachaponPool? gacha = null;
         string search = c.OnlinedCharacter.getLastCommandMessage();

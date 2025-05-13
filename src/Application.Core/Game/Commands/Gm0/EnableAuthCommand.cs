@@ -1,4 +1,4 @@
-﻿using net.server.coordinator.login;
+using net.server.coordinator.login;
 
 namespace Application.Core.Game.Commands.Gm0;
 
@@ -8,7 +8,7 @@ public class EnableAuthCommand : CommandBase
     {
     }
 
-    public override void Execute(IClient c, string[] paramValues)
+    public override void Execute(IChannelClient c, string[] paramValues)
     {
         if (c.tryacquireClient())
         {

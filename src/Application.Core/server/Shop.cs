@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Client;
 using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
@@ -76,13 +77,13 @@ public class Shop
         items.Add(item);
     }
 
-    public void sendShop(IClient c)
+    public void sendShop(IChannelClient c)
     {
         c.OnlinedCharacter.setShop(this);
         c.sendPacket(PacketCreator.getNPCShop(c, getNpcId(), items));
     }
 
-    public void buy(IClient c, short slot, int itemId, short quantity)
+    public void buy(IChannelClient c, short slot, int itemId, short quantity)
     {
         ShopItem item = findBySlot(slot);
         if (item != null)
@@ -227,7 +228,7 @@ public class Shop
         return quantity;
     }
 
-    public void sell(IClient c, InventoryType type, short slot, short quantity)
+    public void sell(IChannelClient c, InventoryType type, short slot, short quantity)
     {
         if (quantity <= 0)
         {
@@ -257,7 +258,7 @@ public class Shop
         }
     }
 
-    public void recharge(IClient c, short slot)
+    public void recharge(IChannelClient c, short slot)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         var item = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);

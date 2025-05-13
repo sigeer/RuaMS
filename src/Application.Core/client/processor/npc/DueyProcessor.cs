@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Trades;
 using Application.Core.model;
 using client.autoban;
@@ -185,7 +186,7 @@ public class DueyProcessor
         return false;
     }
 
-    private static int addPackageItemFromInventory(int packageId, IClient c, sbyte invTypeId, short itemPos, short amount)
+    private static int addPackageItemFromInventory(int packageId, IChannelClient c, sbyte invTypeId, short itemPos, short amount)
     {
         if (invTypeId > 0)
         {
@@ -239,7 +240,7 @@ public class DueyProcessor
         return 0;
     }
 
-    public static void dueySendItem(IClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
+    public static void dueySendItem(IChannelClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
     {
         if (c.tryacquireClient())
         {
@@ -258,7 +259,7 @@ public class DueyProcessor
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                     log.Warning("Chr {CharacterName} tried to use duey with too long of a text", c.OnlinedCharacter.getName());
-                    c.disconnect(true, false);
+                    c.Disconnect(true, false);
                     return;
                 }
                 if (!quick)
@@ -269,7 +270,7 @@ public class DueyProcessor
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                     log.Warning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                    c.disconnect(true, false);
+                    c.Disconnect(true, false);
                     return;
                 }
 
@@ -278,7 +279,7 @@ public class DueyProcessor
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
                     log.Warning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                    c.disconnect(true, false);
+                    c.Disconnect(true, false);
                     return;
                 }
 
@@ -298,7 +299,7 @@ public class DueyProcessor
                     return;
                 }
 
-                if (recipientAccId == c.getAccID())
+                if (recipientAccId == c.AccountEntity?.Id)
                 {
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
                     return;
@@ -358,7 +359,7 @@ public class DueyProcessor
         }
     }
 
-    public static void dueyRemovePackage(IClient c, int packageid, bool playerRemove)
+    public static void dueyRemovePackage(IChannelClient c, int packageid, bool playerRemove)
     {
         if (c.tryacquireClient())
         {
@@ -374,7 +375,7 @@ public class DueyProcessor
         }
     }
 
-    public static void dueyClaimPackage(IClient c, int packageId)
+    public static void dueyClaimPackage(IChannelClient c, int packageId)
     {
         if (c.tryacquireClient())
         {

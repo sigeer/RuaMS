@@ -13,5 +13,11 @@ namespace Application.Core.Servers
         AbstractServer NettyServer { get; }
         bool IsRunning { get; }
         int Port { get; set; }
+        /// <summary>
+        /// 已运行时长
+        /// </summary>
+        /// <returns></returns>
+        int getCurrentTimestamp();
+        long getCurrentTime();
     }
 }

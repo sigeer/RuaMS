@@ -9,7 +9,7 @@ namespace Application.Core.Game.Commands.Gm5
             Description = "调用Npc脚本";
         }
 
-        public override void Execute(IClient client, string[] values)
+        public override void Execute(IChannelClient client, string[] values)
         {
             client.OpenNpc(NpcId.Administrator, GetParam("jsname"));
         }

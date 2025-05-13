@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -9,7 +9,7 @@ public class SetEqStatCommand : CommandBase
         Description = "Set stats of all equips in inventory.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

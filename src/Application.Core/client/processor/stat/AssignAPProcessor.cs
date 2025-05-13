@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
@@ -659,7 +660,7 @@ public class AssignAPProcessor
         }
     }
 
-    public static void APAssignAction(IClient c, int num)
+    public static void APAssignAction(IChannelClient c, int num)
     {
         c.lockClient();
         try

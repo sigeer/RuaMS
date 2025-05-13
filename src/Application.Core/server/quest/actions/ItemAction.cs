@@ -159,7 +159,7 @@ public class ItemAction : AbstractQuestAction
                 }
             }
 
-            InventoryManipulator.removeById(chr.getClient(), type, itemid, quantity, true, false);
+            InventoryManipulator.removeById(chr.Client, type, itemid, quantity, true, false);
             chr.sendPacket(PacketCreator.getShowItemGain(itemid, (short)count, true));
         }
 
@@ -167,7 +167,7 @@ public class ItemAction : AbstractQuestAction
         {
             int itemid = iEntry.getId(), count = iEntry.getCount(), period = iEntry.getPeriod();    // thanks Vcoc for noticing quest milestone item not getting removed from inventory after a while
 
-            InventoryManipulator.addById(chr.getClient(), itemid, (short)count, "", -1, expiration: period > 0 ? (DateTimeOffset.Now.AddMinutes(period).ToUnixTimeMilliseconds()) : -1);
+            InventoryManipulator.addById(chr.Client, itemid, (short)count, "", -1, expiration: period > 0 ? (DateTimeOffset.Now.AddMinutes(period).ToUnixTimeMilliseconds()) : -1);
             chr.sendPacket(PacketCreator.getShowItemGain(itemid, (short)count, true));
         }
     }
@@ -370,7 +370,7 @@ public class ItemAction : AbstractQuestAction
                         return false;
                     }
 
-                    InventoryManipulator.addById(chr.getClient(), item.getId(), (short)missingQty);
+                    InventoryManipulator.addById(chr.Client, item.getId(), (short)missingQty);
                     log.Debug("Chr {CharacterId} obtained {ItemId}x {ItemQuantility} from questId {QuestId}", chr.getId(), itemid, missingQty, questID);
                 }
                 return true;

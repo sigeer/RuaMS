@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Gachapon;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -80,19 +81,19 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return talk;
     }
 
-    public NPCConversationManager(IClient c, int npc, string? scriptName) : this(c, npc, -1, scriptName, false)
+    public NPCConversationManager(IChannelClient c, int npc, string? scriptName) : this(c, npc, -1, scriptName, false)
     {
 
     }
 
-    public NPCConversationManager(IClient c, int npc, List<IPlayer> otherParty, bool test) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, List<IPlayer> otherParty, bool test) : base(c)
     {
         this.c = c;
         this.npc = npc;
         this.otherParty = otherParty;
     }
 
-    public NPCConversationManager(IClient c, int npc, int oid, string? scriptName, bool itemScript) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, int oid, string? scriptName, bool itemScript) : base(c)
     {
         this.npc = npc;
         this.npcOid = oid;
@@ -329,7 +330,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public override void resetMap(int mapid)
     {
-        getClient().getChannelServer().getMapFactory().getMap(mapid).resetReactors();
+        getClient().CurrentServer.getMapFactory().getMap(mapid).resetReactors();
     }
 
     public void gainTameness(int tameness)
@@ -431,7 +432,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         int mapId = maps[(getNpc() != NpcId.GACHAPON_NAUTILUS && getNpc() != NpcId.GACHAPON_NLC)
             ? (getNpc() - NpcId.GACHAPON_HENESYS)
             : getNpc() == NpcId.GACHAPON_NLC ? 8 : 9];
-        string map = c.getChannelServer().getMapFactory().getMap(mapId).getMapName();
+        string map = c.CurrentServer.getMapFactory().getMap(mapId).getMapName();
 
         LogFactory.GetLogger(LogType.Gachapon).Information(
             "{CharacterName} got a {ItemName} ({ItemId}) from the {MapName} gachapon.",
@@ -440,7 +441,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         if (item.Level > 0)
         {
             //Uncommon and Rare
-            Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
+            c.CurrentServer.BroadcastWorldPacket(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
         }
     }
 
@@ -509,7 +510,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public server.events.gm.Event? getEvent()
     {
-        return c.getChannelServer().getEvent();
+        return c.CurrentServer.getEvent();
     }
 
     public void divideTeams()
@@ -522,7 +523,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public IPlayer? getMapleCharacter(string player)
     {
-        return Server.getInstance().getWorld(c.getWorld()).getChannel(c.getChannel()).getPlayerStorage().getCharacterByName(player);
+        return c.CurrentServer.getPlayerStorage().getCharacterByName(player);
     }
 
     public void logLeaf(string prize)
@@ -536,7 +537,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         PyramidMode mod = Enum.Parse<PyramidMode>(mode);
 
         var partyz = getPlayer().getParty();
-        var mapManager = c.getChannelServer().getMapFactory();
+        var mapManager = c.CurrentServer.getMapFactory();
 
         IMap? map = null;
         int mapid = MapId.NETTS_PYRAMID_SOLO_BASE;
@@ -671,7 +672,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         int num = 0;
         int avg = 0;
-        foreach (var mmo in c.getChannelServer().getMapFactory().getMap(map).getAllPlayers())
+        foreach (var mmo in c.CurrentServer.getMapFactory().getMap(map).getAllPlayers())
         {
             avg += mmo.getLevel();
             num++;
@@ -722,24 +723,24 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public bool fieldTaken(int field)
     {
-        if (!c.getChannelServer().canInitMonsterCarnival(true, field))
+        if (!c.CurrentServer.canInitMonsterCarnival(true, field))
         {
             return true;
         }
-        if (c.getChannelServer().getMapFactory().getMap(980000100 + field * 100).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayer().Count > 0)
         {
             return true;
         }
-        if (c.getChannelServer().getMapFactory().getMap(980000101 + field * 100).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980000101 + field * 100).getAllPlayer().Count > 0)
         {
             return true;
         }
-        return c.getChannelServer().getMapFactory().getMap(980000102 + field * 100).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980000102 + field * 100).getAllPlayer().Count > 0;
     }
 
     public bool fieldLobbied(int field)
     {
-        return c.getChannelServer().getMapFactory().getMap(980000100 + field * 100).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980000100 + field * 100).getAllPlayer().Count > 0;
     }
 
     public void cpqLobby(int field)
@@ -747,7 +748,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         try
         {
             IMap map, mapExit;
-            var cs = c.getChannelServer();
+            var cs = c.CurrentServer;
 
             map = cs.getMapFactory().getMap(980000100 + 100 * field);
             mapExit = cs.getMapFactory().getMap(980000000);
@@ -773,7 +774,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public IPlayer? getChrById(int id)
     {
-        return c.getChannelServer().getPlayerStorage().getCharacterById(id);
+        return c.CurrentServer.getPlayerStorage().getCharacterById(id);
     }
 
     public void cancelCPQLobby()
@@ -1023,24 +1024,24 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public bool fieldTaken2(int field)
     {
-        if (!c.getChannelServer().canInitMonsterCarnival(false, field))
+        if (!c.CurrentServer.canInitMonsterCarnival(false, field))
         {
             return true;
         }
-        if (c.getChannelServer().getMapFactory().getMap(980031000 + field * 1000).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayer().Count > 0)
         {
             return true;
         }
-        if (c.getChannelServer().getMapFactory().getMap(980031100 + field * 1000).getAllPlayer().Count > 0)
+        if (c.CurrentServer.getMapFactory().getMap(980031100 + field * 1000).getAllPlayer().Count > 0)
         {
             return true;
         }
-        return c.getChannelServer().getMapFactory().getMap(980031200 + field * 1000).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980031200 + field * 1000).getAllPlayer().Count > 0;
     }
 
     public bool fieldLobbied2(int field)
     {
-        return c.getChannelServer().getMapFactory().getMap(980031000 + field * 1000).getAllPlayer().Count > 0;
+        return c.CurrentServer.getMapFactory().getMap(980031000 + field * 1000).getAllPlayer().Count > 0;
     }
 
     public void cpqLobby2(int field)
@@ -1048,7 +1049,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         try
         {
             IMap map, mapExit;
-            var cs = c.getChannelServer();
+            var cs = c.CurrentServer;
 
             mapExit = cs.getMapFactory().getMap(980030000);
             map = cs.getMapFactory().getMap(980031000 + 1000 * field);
@@ -1083,7 +1084,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         cpqLeaders.Add(leaderid);
         cpqLeaders.Add(getPlayer().getId());
 
-        return c.getWorldServer().getMatchCheckerCoordinator().createMatchConfirmation(MatchCheckerType.CPQ_CHALLENGE, c.getWorld(), getPlayer().getId(), cpqLeaders, cpqType);
+        return c.getWorldServer().getMatchCheckerCoordinator().createMatchConfirmation(MatchCheckerType.CPQ_CHALLENGE, 0, getPlayer().getId(), cpqLeaders, cpqType);
     }
 
     public void answerCPQChallenge(bool accept)
@@ -1094,7 +1095,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public void challengeParty2(int field)
     {
         IPlayer? leader = null;
-        var map = c.getChannelServer().getMapFactory().getMap(980031000 + 1000 * field);
+        var map = c.CurrentServer.getMapFactory().getMap(980031000 + 1000 * field);
         foreach (var mmo in map.getAllPlayer())
         {
             var mc = (IPlayer)mmo;
@@ -1132,7 +1133,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public void challengeParty(int field)
     {
         IPlayer? leader = null;
-        var map = c.getChannelServer().getMapFactory().getMap(980000100 + 100 * field);
+        var map = c.CurrentServer.getMapFactory().getMap(980000100 + 100 * field);
         if (map.getAllPlayer().Count != getPlayer().getParty()!.getMembers().Count)
         {
             sendOk("An unexpected error regarding the other party has occurred.");
@@ -1251,12 +1252,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
             {
                 if (chr.getId() == player.getId())
                 {
-                    player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, marriage.getWishlistItems(groom), marriage.getGiftItems(player.getClient(), groom)));
+                    player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
                 }
                 else
                 {
                     marriage.setIntProperty("wishlistSelection", groom ? 0 : 1);
-                    player.sendPacket(WeddingPackets.onWeddingGiftResult(0x09, marriage.getWishlistItems(groom), marriage.getGiftItems(player.getClient(), groom)));
+                    player.sendPacket(WeddingPackets.onWeddingGiftResult(0x09, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
                 }
             }
         }

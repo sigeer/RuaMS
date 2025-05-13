@@ -1,0 +1,1 @@
+global using Application.Core.Client;

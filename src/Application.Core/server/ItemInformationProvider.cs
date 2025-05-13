@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Client;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using client;
@@ -375,7 +376,7 @@ public class ItemInformationProvider
         return ret;
     }
 
-    private static int getExtraSlotMaxFromPlayer(IClient c, int itemId)
+    private static int getExtraSlotMaxFromPlayer(IChannelClient c, int itemId)
     {
         int ret = 0;
 
@@ -399,7 +400,7 @@ public class ItemInformationProvider
         return ret;
     }
 
-    public short getSlotMax(IClient c, int itemId)
+    public short getSlotMax(IChannelClient c, int itemId)
     {
         if (slotMaxCache.TryGetValue(itemId, out var slotMax))
             return (short)(slotMax + getExtraSlotMaxFromPlayer(c, itemId));

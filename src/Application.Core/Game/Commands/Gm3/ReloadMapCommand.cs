@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class ReloadMapCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class ReloadMapCommand : CommandBase
         Description = "Reload the map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var newMap = c.getChannelServer().getMapFactory().resetMap(player.getMapId());

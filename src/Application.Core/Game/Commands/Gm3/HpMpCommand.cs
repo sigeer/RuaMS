@@ -7,7 +7,7 @@ public class HpMpCommand : CommandBase
         Description = "Set HP/MP of a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var victim = player;

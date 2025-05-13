@@ -1,3 +1,4 @@
+using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
@@ -17,7 +18,7 @@ public class ItemCommand : CommandBase
         Description = "Spawn an item into your inventory.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -62,7 +63,7 @@ public class ItemCommand : CommandBase
         SendItem(c, itemId, paramsValue);
     }
 
-    private void SendItem(IClient c, int itemId, string[] paramsValue)
+    private void SendItem(IChannelClient c, int itemId, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();

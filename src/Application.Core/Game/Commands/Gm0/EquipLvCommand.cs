@@ -9,7 +9,7 @@ public class EquipLvCommand : CommandBase
         Description = "Show levels of all equipped items.";
     }
 
-    public override void Execute(IClient c, string[] paramValues)
+    public override void Execute(IChannelClient c, string[] paramValues)
     {
         CharacterManager.ShowAllEquipFeatures(c.OnlinedCharacter);
     }

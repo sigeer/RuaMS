@@ -1,4 +1,4 @@
-﻿using client.inventory;
+using client.inventory;
 using constants.inventory;
 using server;
 
@@ -11,7 +11,7 @@ public class RechargeCommand : CommandBase
         Description = "Recharge and refill all USE items.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();

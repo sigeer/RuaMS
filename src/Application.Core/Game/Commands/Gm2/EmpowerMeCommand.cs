@@ -10,7 +10,7 @@ public class EmpowerMeCommand : CommandBase
         Description = "Activate all useful buffs.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int[] array = { 

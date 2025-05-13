@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using client.inventory;
 using constants.inventory;
 using server;
@@ -12,7 +12,7 @@ public class ItemDropCommand : CommandBase
         Description = "Spawn an item onto the ground.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 

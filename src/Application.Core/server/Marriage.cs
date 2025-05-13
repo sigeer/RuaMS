@@ -59,7 +59,7 @@ public class Marriage : EventInstanceManager
         this.setObjectProperty("brideGiftlist", brideGifts);
     }
 
-    public List<Item> getGiftItems(IClient c, bool groom)
+    public List<Item> getGiftItems(IChannelClient c, bool groom)
     {
         List<Item> gifts = getGiftItemsList(groom);
         lock (gifts)
@@ -73,7 +73,7 @@ public class Marriage : EventInstanceManager
         return (List<Item>)this.getObjectProperty(groom ? "groomGiftlist" : "brideGiftlist");
     }
 
-    public Item? getGiftItem(IClient c, bool groom, int idx)
+    public Item? getGiftItem(IChannelClient c, bool groom, int idx)
     {
         try
         {
@@ -127,9 +127,9 @@ public class Marriage : EventInstanceManager
         return groom;
     }
 
-    public static bool claimGiftItems(IClient c, IPlayer chr)
+    public static bool claimGiftItems(IPlayer chr)
     {
-        List<Item> gifts = loadGiftItemsFromDb(c, chr.getId());
+        List<Item> gifts = loadGiftItemsFromDb(chr.getId());
         if (Inventory.checkSpot(chr, gifts))
         {
             try
@@ -146,7 +146,7 @@ public class Marriage : EventInstanceManager
 
             foreach (Item item in gifts)
             {
-                InventoryManipulator.addFromDrop(chr.getClient(), item, false);
+                InventoryManipulator.addFromDrop(chr.Client, item, false);
             }
 
             return true;
@@ -155,7 +155,7 @@ public class Marriage : EventInstanceManager
         return false;
     }
 
-    public static List<Item> loadGiftItemsFromDb(IClient c, int cid)
+    public static List<Item> loadGiftItemsFromDb(int cid)
     {
         List<Item> items = new();
 
@@ -174,12 +174,12 @@ public class Marriage : EventInstanceManager
         return items;
     }
 
-    public void saveGiftItemsToDb(IClient c, bool groom, int cid)
+    public void saveGiftItemsToDb(IChannelClient c, bool groom, int cid)
     {
         Marriage.saveGiftItemsToDb(c, getGiftItems(c, groom), cid);
     }
 
-    public static void saveGiftItemsToDb(IClient c, List<Item> giftItems, int cid)
+    public static void saveGiftItemsToDb(IChannelClient c, List<Item> giftItems, int cid)
     {
         try
         {

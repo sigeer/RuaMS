@@ -1,5 +1,9 @@
 using Application.Core;
+using Application.Core.Channel;
+using Application.Core.Channel.ServerTransports;
+using Application.Core.Game.TheWorld;
 using Application.Core.Login;
+using Application.Core.Login.Net;
 using Application.Core.OpenApi;
 using Application.Core.Servers;
 using Application.EF;
@@ -48,6 +52,11 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
+builder.Services.RegisterChannelServer();
+
+builder.Services.AddSingleton<LoginPacketProcessor>();
+builder.Services.AddSingleton<LoginServer>();
+builder.Services.AddSingleton<LoginServerInitializer>();
 builder.Services.AddSingleton<IMasterServer, MasterServer>();
 builder.Services.AddHostedService<GameHost>();
 if (YamlConfig.config.server.ENABLE_OPENAPI)

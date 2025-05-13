@@ -9,7 +9,7 @@ public class TimeCommand : CommandBase
         Description = "Show current server time.";
     }
 
-    public override void Execute(IClient client, string[] paramsValue)
+    public override void Execute(IChannelClient client, string[] paramsValue)
     {
         client.OnlinedCharacter.yellowMessage("Server Time: " + DateTimeOffset.FromUnixTimeMilliseconds(Server.getInstance().getCurrentTime()).ToString("yyyy-MM-dd HH:mm:ss"));
     }

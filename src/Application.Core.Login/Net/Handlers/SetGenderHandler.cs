@@ -1,0 +1,68 @@
+/*
+	This file is part of the OdinMS Maple Story NewServer
+    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
+		       Matthias Butz <matze@odinms.de>
+		       Jan Christian Meyer <vimes@odinms.de>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation version 3 as published by
+    the Free Software Foundation. You may not use, modify or distribute
+    this program under any other version of the GNU Affero General Public
+    License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+
+using Application.Core.Client;
+using Application.Core.Login.Database;
+using Application.Core.Login.Net;
+using Application.Core.Login.Net.Packets;
+using Application.Core.Servers;
+using Application.Shared.Login;
+using Microsoft.Extensions.Logging;
+using net.packet;
+using net.server.coordinator.session;
+using tools;
+
+namespace Application.Core.Login.Net.Handlers;
+
+/**
+ * @author kevintjuh93
+ */
+public class SetGenderHandler : LoginHandlerBase
+{
+    public SetGenderHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger) : base(server, accountManager, logger)
+    {
+    }
+
+    public override void HandlePacket(InPacket p, ILoginClient c)
+    {
+        if (c.AccountEntity?.Gender == 10)
+        { 
+            //Packet shouldn't come if Gender isn't 10.
+            byte confirmed = p.readByte();
+            if (confirmed == 0x01)
+            {
+                c.AccountEntity.Gender = p.ReadSByte();
+                c.sendPacket(_packetCreator.GetAuthSuccess(c));
+
+                _server.RegisterLoginState(c);
+            }
+            else
+            {
+                SessionCoordinator.getInstance().closeSession(c);
+                c.updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+            }
+        }
+    }
+
+}

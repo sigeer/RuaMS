@@ -1,4 +1,4 @@
-﻿using net.server;
+using net.server;
 using server.events.gm;
 using tools;
 
@@ -11,7 +11,7 @@ public class StartEventCommand : CommandBase
         Description = "Start an event on current map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int players = 50;

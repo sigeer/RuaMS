@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm6;
+namespace Application.Core.Game.Commands.Gm6;
 
 public class GetAccCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class GetAccCommand : CommandBase
         Description = "Show account name of an online player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

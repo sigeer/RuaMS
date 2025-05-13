@@ -728,7 +728,7 @@ public class Equip : Item
     }
 
     object gainExpLock = new object();
-    public void gainItemExp(IClient c, int gain)
+    public void gainItemExp(IChannelClient c, int gain)
     {
         lock (gainExpLock)
         {

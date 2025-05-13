@@ -9,7 +9,7 @@ public class HelpCommand : CommandBase
         Description = "Show available commands.";
     }
 
-    public override void Execute(IClient client, string[] paramsValue)
+    public override void Execute(IChannelClient client, string[] paramsValue)
     {
         client.OpenNpc(NpcId.STEWARD, "commands");
     }

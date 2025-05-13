@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm0;
+namespace Application.Core.Game.Commands.Gm0;
 
 public class BossHpCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class BossHpCommand : CommandBase
         Description = "Show HP of bosses on current map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var monster in player.getMap().getAllMonsters())

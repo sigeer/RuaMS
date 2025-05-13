@@ -1,3 +1,4 @@
+using Application.Core.Client;
 using constants.net;
 using DotNetty.Buffers;
 using DotNetty.Handlers.Timeout;
@@ -30,7 +31,7 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
         return remoteAddress;
     }
 
-    protected void initPipeline(ISocketChannel socketChannel, Client client)
+    protected void initPipeline(ISocketChannel socketChannel, SocketClient client)
     {
         InitializationVector sendIv = InitializationVector.generateSend();
         InitializationVector recvIv = InitializationVector.generateReceive();
@@ -44,7 +45,7 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
     }
 
     private void setUpHandlers(IChannelPipeline pipeline, InitializationVector sendIv, InitializationVector recvIv,
-                               Client client)
+                               SocketClient client)
     {
         pipeline.AddLast("IdleStateHandler", new IdleStateHandler(0, 0, IDLE_TIME_SECONDS));
         pipeline.AddLast("PacketCodec", new PacketCodec(ClientCyphers.of(sendIv, recvIv)));

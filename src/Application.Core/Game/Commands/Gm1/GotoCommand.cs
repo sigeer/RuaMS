@@ -105,7 +105,7 @@ public class GotoCommand : CommandBase
     public string GOTO_TOWNS_INFO = "";
     public string GOTO_AREAS_INFO = "";
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

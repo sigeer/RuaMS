@@ -1,4 +1,4 @@
-﻿using constants.id;
+using constants.id;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -9,7 +9,7 @@ public class JailCommand : CommandBase
         Description = "Move a player to the jail.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

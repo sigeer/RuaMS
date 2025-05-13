@@ -19,11 +19,13 @@
 */
 
 
+using Application.Core.Client;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
 using constants.id;
 using net.server.coordinator.login;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace net.server.coordinator.session;
 
@@ -54,9 +56,9 @@ public class SessionCoordinator
 
     private SessionInitialization sessionInit = new SessionInitialization();
     private LoginStorage loginStorage = new LoginStorage();
-    private Dictionary<int, IClient> onlineClients = new(); // Key: account id
+    private Dictionary<int, IClientBase> onlineClients = new(); // Key: account id
     private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
-    private ConcurrentDictionary<string, IClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
+    private ConcurrentDictionary<string, IClientBase> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
     private HostHwidCache hostHwidCache = new HostHwidCache();
 
     private SessionCoordinator()
@@ -114,33 +116,30 @@ public class SessionCoordinator
     /**
      * Overwrites any existing online client for the account id, making sure to disconnect it as well.
      */
-    public void updateOnlineClient(IClient client)
+    public void updateOnlineClient(IClientBase? client)
     {
-        if (client != null)
+        if (client != null && client.AccountEntity != null)
         {
-            int accountId = client.getAccID();
-            disconnectClientIfOnline(accountId);
-            onlineClients.AddOrUpdate(accountId, client);
+            int accountId = client.AccountEntity.Id;
+
+            var ingameClient = onlineClients.GetValueOrDefault(accountId);
+            if (ingameClient != null)
+            {
+                // thanks MedicOP for finding out a loss of loggedin account uniqueness when using the CMS "Unstuck" feature
+                ingameClient.ForceDisconnect();
+            }
+            onlineClients[accountId] = client;
         }
     }
 
-    private void disconnectClientIfOnline(int accountId)
-    {
-        var ingameClient = onlineClients.GetValueOrDefault(accountId);
-        if (ingameClient != null)
-        {     // thanks MedicOP for finding out a loss of loggedin account uniqueness when using the CMS "Unstuck" feature
-            ingameClient.forceDisconnect();
-        }
-    }
-
-    public bool canStartLoginSession(IClient client)
+    public bool canStartLoginSession(ILoginClient client)
     {
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
         {
             return true;
         }
 
-        string remoteHost = getSessionRemoteHost(client);
+        string remoteHost = client.GetSessionRemoteHost();
         InitializationResult initResult = sessionInit.initialize(remoteHost);
         switch (initResult.getAntiMulticlientResult())
         {
@@ -158,7 +157,7 @@ public class SessionCoordinator
             else if (loginRemoteHosts.ContainsKey(remoteHost))
                 return false;
 
-            loginRemoteHosts.AddOrUpdate(remoteHost, client);
+            loginRemoteHosts[remoteHost] = client;
             return true;
         }
         finally
@@ -167,45 +166,41 @@ public class SessionCoordinator
         }
     }
 
-    public void closeLoginSession(IClient client)
+    public void closeLoginSession(ILoginClient client)
     {
-        clearLoginRemoteHost(client);
+        string remoteHost = client.GetSessionRemoteHost();
+        loginRemoteHosts.Remove(client.RemoteAddress);
+        loginRemoteHosts.Remove(remoteHost);
 
-        Hwid? nibbleHwid = client.getHwid();
-        client.setHwid(null);
+        Hwid? nibbleHwid = client.Hwid;
+        client.Hwid = null;
         if (nibbleHwid != null)
         {
             onlineRemoteHwids.Remove(nibbleHwid);
 
-            if (client != null)
+            if (client != null && client.AccountEntity != null)
             {
-                var loggedClient = onlineClients.GetValueOrDefault(client.getAccID());
+                var loggedClient = onlineClients.GetValueOrDefault(client.AccountEntity.Id);
 
                 // do not remove an online game session here, only login session
-                if (loggedClient != null && loggedClient.getSessionId() == client.getSessionId())
+                if (loggedClient != null && loggedClient.SessionId == client.SessionId)
                 {
-                    onlineClients.Remove(client.getAccID());
+                    onlineClients.Remove(client.AccountEntity.Id);
                 }
             }
         }
     }
 
-    private void clearLoginRemoteHost(IClient client)
-    {
-        string remoteHost = getSessionRemoteHost(client);
-        loginRemoteHosts.Remove(client.getRemoteAddress());
-        loginRemoteHosts.Remove(remoteHost);
-    }
 
-    public AntiMulticlientResult attemptLoginSession(IClient client, Hwid hwid, int accountId, bool routineCheck)
+    public AntiMulticlientResult attemptLoginSession(IClientBase client, Hwid hwid, int accountId, bool routineCheck)
     {
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
         {
-            client.setHwid(hwid);
+            client.Hwid = hwid;
             return AntiMulticlientResult.SUCCESS;
         }
 
-        string remoteHost = getSessionRemoteHost(client);
+        string remoteHost = client.GetSessionRemoteHost();
         InitializationResult initResult = sessionInit.initialize(remoteHost);
         if (initResult != InitializationResult.SUCCESS)
         {
@@ -231,7 +226,7 @@ public class SessionCoordinator
                 return AntiMulticlientResult.REMOTE_REACHED_LIMIT;
             }
 
-            client.setHwid(hwid);
+            client.Hwid = hwid;
             onlineRemoteHwids.Add(hwid);
 
             return AntiMulticlientResult.SUCCESS;
@@ -242,13 +237,13 @@ public class SessionCoordinator
         }
     }
 
-    public AntiMulticlientResult attemptGameSession(IClient client, int accountId, Hwid hwid)
+    public AntiMulticlientResult attemptGameSession(ILoginClient client, int accountId, Hwid hwid)
     {
-        string remoteHost = getSessionRemoteHost(client);
+        string remoteHost = client.GetSessionRemoteHost();
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
         {
             hostHwidCache.addEntry(remoteHost, hwid);
-            hostHwidCache.addEntry(client.getRemoteAddress(), hwid); // no HWID information on the loggedin newcomer session...
+            hostHwidCache.addEntry(client.RemoteAddress, hwid); // no HWID information on the loggedin newcomer session...
             return AntiMulticlientResult.SUCCESS;
         }
 
@@ -260,7 +255,7 @@ public class SessionCoordinator
 
         try
         {
-            var clientHwid = client.getHwid(); // thanks Paxum for noticing account stuck after PIC failure
+            var clientHwid = client.Hwid; // thanks Paxum for noticing account stuck after PIC failure
             if (clientHwid == null)
             {
                 return AntiMulticlientResult.REMOTE_NO_MATCH;
@@ -282,7 +277,7 @@ public class SessionCoordinator
             // updated session CLIENT_HWID attribute will be set when the player log in the game
             onlineRemoteHwids.Add(hwid);
             hostHwidCache.addEntry(remoteHost, hwid);
-            hostHwidCache.addEntry(client.getRemoteAddress(), hwid);
+            hostHwidCache.addEntry(client.RemoteAddress, hwid);
             associateHwidAccountIfAbsent(hwid, accountId);
 
             return AntiMulticlientResult.SUCCESS;
@@ -318,68 +313,45 @@ public class SessionCoordinator
         }
     }
 
-    private static IClient? fetchInTransitionSessionClient(IClient? client)
+    /// <summary>
+    /// 与closeLoginSession的区别？
+    /// </summary>
+    /// <param name="client">ChannelClient</param>
+    /// <param name="immediately"></param>
+    public void closeSession(IClientBase? client, bool immediately = false)
     {
-        Hwid hwid = SessionCoordinator.getInstance().getGameSessionHwid(client);
-        if (hwid == null)
-        {
-            // maybe this session was currently in-transition?
-            return null;
-        }
-
-        var fakeClient = Client.createMock();
-        fakeClient.setHwid(hwid);
-        var chrId = Server.getInstance().freeCharacteridInTransition(client);
-        if (chrId != null)
-        {
-            try
-            {
-                fakeClient.setAccID(CharacterManager.LoadPlayerFromDB(chrId.Value, client, false).getAccountID());
-            }
-            catch (Exception sqle)
-            {
-                log.Error(sqle.ToString());
-            }
-        }
-
-        return fakeClient;
-    }
-
-    public void closeSession(IClient? client, bool immediately = false)
-    {
-        if (client == null)
-        {
-            client = fetchInTransitionSessionClient(client);
-        }
         if (client == null)
             return;
 
-        var hwid = client.getHwid();
-        client.setHwid(null); // making sure to clean up calls to this function on login phase
+        var hwid = client.Hwid;
+        client.Hwid = null;
         if (hwid != null)
         {
             onlineRemoteHwids.Remove(hwid);
         }
 
-        bool isGameSession = hwid != null;
-        if (isGameSession)
+        if (client.AccountEntity != null)
         {
-            onlineClients.Remove(client.getAccID());
-        }
-        else
-        {
-            var loggedClient = onlineClients.GetValueOrDefault(client.getAccID());
-
-            // do not remove an online game session here, only login session
-            if (loggedClient != null && loggedClient.getSessionId() == client.getSessionId())
+            bool isGameSession = hwid != null;
+            if (isGameSession)
             {
-                onlineClients.Remove(client.getAccID());
+                onlineClients.Remove(client.AccountEntity.Id);
+            }
+            else
+            {
+                var loggedClient = onlineClients.GetValueOrDefault(client.AccountEntity.Id);
+
+                // do not remove an online game session here, only login session
+                if (loggedClient != null && loggedClient.SessionId == client.SessionId)
+                {
+                    onlineClients.Remove(client.AccountEntity.Id);
+                }
             }
         }
 
         if (immediately)
         {
-            client.closeSession();
+            client.CloseSocket();
         }
     }
 
@@ -388,12 +360,6 @@ public class SessionCoordinator
         string remoteHost = client.getRemoteAddress();
         // thanks BHB, resinate for noticing players from same network not being able to login
         return hostHwidCache.removeEntryAndGetItsHwid(remoteHost);
-    }
-
-    public Hwid getGameSessionHwid(IClient? client)
-    {
-        string remoteHost = getSessionRemoteHost(client);
-        return hostHwidCache.getEntryHwid(remoteHost);
     }
 
     public void clearExpiredHwidHistory()
@@ -468,7 +434,7 @@ public class SessionCoordinator
             str += ("Current login sessions:\r\n");
             foreach (var e in elist)
             {
-                str += ("  " + e.Key + ", IP: " + e.Value.getRemoteAddress() + "\r\n");
+                str += ("  " + e.Key + ", IP: " + e.Value.RemoteAddress + "\r\n");
             }
         }
 

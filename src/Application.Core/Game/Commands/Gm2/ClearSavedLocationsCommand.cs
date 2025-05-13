@@ -1,4 +1,4 @@
-﻿using server.maps;
+using server.maps;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -9,7 +9,7 @@ public class ClearSavedLocationsCommand : CommandBase
         Description = "Clear saved locations for a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         IPlayer? victim;

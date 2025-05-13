@@ -1,3 +1,4 @@
+using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
@@ -14,16 +15,16 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : AbstractAnimatedMapObject, IPlayer
     {
-        public int Channel => awayFromWorld ? -1 : Client.getChannel();
-        public IClient Client { get; private set; }
-        public bool IsOnlined => Client.IsGameOnlined;
+        public int Channel => awayFromWorld ? -1 : Client.CurrentServer.getId();
+        public IChannelClient Client { get; private set; }
+        public bool IsOnlined => Client.IsOnlined;
 
         public PlayerBag Bag { get; set; }
         public BuddyList BuddyList { get; set; }
 
 
         public PlayerKeyMap KeyMap { get; set; }
-        public MapManager MapManager => Client.getChannelServer().getMapFactory();
+        public MapManager MapManager => Client.CurrentServer.getMapFactory();
 
         public object SaveToDBLock { get; set; } = new object();
 
@@ -47,7 +48,7 @@ namespace Application.Core.Game.Players
             Level = level;
         }
 
-        public Player(IClient client)
+        public Player(IChannelClient client)
         {
             Client = client;
 

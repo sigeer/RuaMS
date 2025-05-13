@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class StartMapEventCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class StartMapEventCommand : CommandBase
         Description = "Start a \"classic\" event on current map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.getMap().startEvent(c.OnlinedCharacter);
     }

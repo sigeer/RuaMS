@@ -125,7 +125,16 @@ namespace Application.Core.Game.TheWorld
         void setEvent(Event? evt);
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
-        Task Shutdown();
         void unregisterOwnedMap(IMap map);
+
+        void AccountLogout(int account);
+        void BroadcastWorldPacket(Packet p);
+        void StashCharacterBuff(IPlayer player);
+        void StashCharacterDisease(IPlayer player);
+
+        void LoadCharacterBuff(int character);
+        void LoadCharacterDisease(int character);
+
+        void BuddyChanged(int characterId);
     }
 }

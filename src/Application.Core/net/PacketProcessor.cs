@@ -21,11 +21,9 @@
  */
 
 
-using net.netty;
 using net.opcodes;
 using net.server.channel.handlers;
 using net.server.handlers;
-using net.server.handlers.login;
 
 namespace net;
 
@@ -113,49 +111,16 @@ public class PacketProcessor
     {
         handlers = new IPacketHandler[handlers.Length];
 
-        registerCommonHandlers();
 
         if (isLogin)
         {
-            registerLoginHandlers();
+
         }
         else
         {
             registerChannelHandlers();
         }
     }
-
-    private void registerCommonHandlers()
-    {
-        registerHandler(RecvOpcode.PONG, new KeepAliveHandler());
-        registerHandler(RecvOpcode.CUSTOM_PACKET, new CustomPacketHandler());
-    }
-
-    private void registerLoginHandlers()
-    {
-        registerHandler(RecvOpcode.ACCEPT_TOS, new AcceptToSHandler());
-        registerHandler(RecvOpcode.AFTER_LOGIN, new AfterLoginHandler());
-        registerHandler(RecvOpcode.SERVERLIST_REREQUEST, new ServerlistRequestHandler());
-        registerHandler(RecvOpcode.CHARLIST_REQUEST, new CharlistRequestHandler());
-        registerHandler(RecvOpcode.CHAR_SELECT, new CharSelectedHandler());
-        registerHandler(RecvOpcode.LOGIN_PASSWORD, new LoginPasswordHandler());
-        registerHandler(RecvOpcode.RELOG, new RelogRequestHandler());
-        registerHandler(RecvOpcode.SERVERLIST_REQUEST, new ServerlistRequestHandler());
-        registerHandler(RecvOpcode.SERVERSTATUS_REQUEST, new ServerStatusRequestHandler());
-        registerHandler(RecvOpcode.CHECK_CHAR_NAME, new CheckCharNameHandler());
-        registerHandler(RecvOpcode.CREATE_CHAR, new CreateCharHandler());
-        registerHandler(RecvOpcode.DELETE_CHAR, new DeleteCharHandler());
-        registerHandler(RecvOpcode.VIEW_ALL_CHAR, new ViewAllCharHandler());
-        registerHandler(RecvOpcode.PICK_ALL_CHAR, new ViewAllCharSelectedHandler());
-        registerHandler(RecvOpcode.REGISTER_PIN, new RegisterPinHandler());
-        registerHandler(RecvOpcode.GUEST_LOGIN, new GuestLoginHandler());
-        registerHandler(RecvOpcode.REGISTER_PIC, new RegisterPicHandler());
-        registerHandler(RecvOpcode.CHAR_SELECT_WITH_PIC, new CharSelectedWithPicHandler());
-        registerHandler(RecvOpcode.SET_GENDER, new SetGenderHandler());
-        registerHandler(RecvOpcode.VIEW_ALL_WITH_PIC, new ViewAllCharSelectedWithPicHandler());
-        registerHandler(RecvOpcode.VIEW_ALL_PIC_REGISTER, new ViewAllCharRegisterPicHandler());
-    }
-
     private void registerChannelHandlers()
     {
         registerHandler(RecvOpcode.NAME_TRANSFER, new TransferNameHandler());

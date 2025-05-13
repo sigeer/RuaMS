@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class NightCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class NightCommand : CommandBase
         Description = "Set sky background to black.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.getMap().broadcastNightEffect();

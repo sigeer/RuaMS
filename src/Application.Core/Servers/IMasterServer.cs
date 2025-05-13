@@ -1,8 +1,10 @@
+using Application.Core.Client;
 using Application.Core.Game.Tasks;
 using Application.Core.Gameplay.Wedding;
 using Application.Core.Gameplay.WorldEvents;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using System.Net;
 
 namespace Application.Core.Servers
 {
@@ -32,13 +34,24 @@ namespace Application.Core.Servers
         int AddChannel(ChannelServerWrapper channel);
         bool RemoveChannel(string instanceId);
         ChannelServerWrapper GetChannel(int channelId);
+        IPEndPoint GetChannelIPEndPoint(int channelId);
 
         WeddingService WeddingInstance { get; }
 
         bool IsGuildQueued(int guildId);
         void PutGuildQueued(int guildId);
         void RemoveGuildQueued(int guildId);
+        void UpdateAccountState(int state);
 
         //void resetDisabledServerMessages();
+        int GetWorldCapacityStatus();
+        bool IsWorldCapacityFull();
+
+        void RegisterLoginState(ILoginClient c);
+        void UnregisterLoginState(ILoginClient c);
+
+        void SetCharacteridInTransition(ILoginClient client, int charId);
+        bool ValidateCharacteridInTransition(ILoginClient client, int charId);
+        bool HasCharacteridInTransition(ILoginClient client);
     }
 }

@@ -51,7 +51,7 @@ public class MonsterBook
         }
     }
 
-    public void addCard(IClient c, int cardid)
+    public void addCard(IChannelClient c, int cardid)
     {
         c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showForeignCardEffect(c.OnlinedCharacter.Id), false);
 

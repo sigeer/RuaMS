@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 
 public class SpCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class SpCommand : CommandBase
         Description = "Set available SP.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

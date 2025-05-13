@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
 using client;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -9,7 +9,7 @@ public class ResetSkillCommand : CommandBase
         Description = "Set all skill levels to 0.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (Data skill_ in DataProviderFactory.getDataProvider(WZFiles.STRING).getData("Skill.img").getChildren())

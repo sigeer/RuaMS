@@ -72,7 +72,7 @@ public class Trade
         foreach (Item item in PartnerTrade.ItemList)
         {
             KarmaManipulator.toggleKarmaFlagToUntradeable(item);
-            InventoryManipulator.addFromDrop(chr.getClient(), item, show);
+            InventoryManipulator.addFromDrop(chr.Client, item, show);
         }
 
         if (PartnerTrade.Meso > 0)
@@ -108,7 +108,7 @@ public class Trade
 
         foreach (Item item in ItemList)
         {
-            InventoryManipulator.addFromDrop(chr.getClient(), item, show);
+            InventoryManipulator.addFromDrop(chr.Client, item, show);
         }
         if (Meso > 0)
         {

@@ -494,7 +494,7 @@ public class World : IWorld
                 target.setParty(null);
                 if (target.IsOnlined)
                 {
-                    target.sendPacket(PacketCreator.updateParty(target.Client.getChannel(), party, operation, target));
+                    target.sendPacket(PacketCreator.updateParty(target.Client.CurrentServer.getId(), party, operation, target));
                 }
                 break;
             default:

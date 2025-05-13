@@ -55,11 +55,11 @@ public abstract class AbstractMapObject : IMapObject
         this.position = null;
     }
 
-    public virtual void sendSpawnData(IClient client) { }
-    public virtual void sendDestroyData(IClient client) { }
+    public virtual void sendSpawnData(IChannelClient client) { }
+    public virtual void sendDestroyData(IChannelClient client) { }
 
     /// <summary>
-    /// ÏàÍ¬MapId£¬²»Í¬ÆµµÀµÄMapÒ²²»Ò»Ñù
+    /// ç›¸åŒMapIdï¼Œä¸åŒé¢‘é“çš„Mapä¹Ÿä¸ä¸€æ ·
     /// </summary>
     public IMap MapModel { get; private set; } = null!;
     public virtual IMap getMap()

@@ -974,7 +974,7 @@ public class StatEffect
                     applyto.sendPacket(PacketCreator.enableActions());
                     return false;
                 }
-                InventoryManipulator.removeById(applyto.getClient(), ItemConstants.getInventoryType(itemCon), itemCon, itemConNo, false, true);
+                InventoryManipulator.removeById(applyto.Client, ItemConstants.getInventoryType(itemCon), itemCon, itemConNo, false, true);
             }
         }
         else
@@ -1073,7 +1073,7 @@ public class StatEffect
                 }
                 else
                 {
-                    InventoryManipulator.removeFromSlot(applyto.getClient(), InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
+                    InventoryManipulator.removeFromSlot(applyto.Client, InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
                 }
             }
             finally
@@ -1142,7 +1142,7 @@ public class StatEffect
             }
             else
             {
-                InventoryManipulator.addFromDrop(applyto.getClient(), new Item(ItemId.MAGIC_ROCK, 0, 1), false);
+                InventoryManipulator.addFromDrop(applyto.Client, new Item(ItemId.MAGIC_ROCK, 0, 1), false);
 
                 if (door.getOwnerId() == -3)
                 {

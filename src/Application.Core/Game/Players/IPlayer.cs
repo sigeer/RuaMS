@@ -1,4 +1,5 @@
 using Application.Core.client.Characters;
+using Application.Core.Client;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -34,9 +35,9 @@ namespace Application.Core.Game.Players
 {
     public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife
     {
-        public IClient Client { get; }
+        public IChannelClient Client { get; }
         public int Channel { get; }
-        public bool IsOnlined => Client.IsGameOnlined;
+        public bool IsOnlined => Client.IsOnlined;
         public BuddyList BuddyList { get; set; }
         public PlayerBag Bag { get; set; }
         public Storage Storage { get; set; }
@@ -603,7 +604,6 @@ namespace Application.Core.Game.Players
         void setInventory(InventoryType type, Inventory inv);
         void setItemEffect(int itemEffect);
         void setJob(Job job);
-        void setLanguage(int num);
         void setLastCombo(long time);
         void setLastCommandMessage(string text);
         void setLastHealed(long time);
@@ -652,8 +652,7 @@ namespace Application.Core.Game.Players
         void setWorld(int world);
         void shiftPetsRight();
         void showDojoClock();
-        void showHint(string msg);
-        void showHint(string msg, int length);
+        void showHint(string msg, int length = 500);
 
         void showUnderleveledInfo(Monster mob);
         void silentApplyDiseases(Dictionary<Disease, DiseaseExpiration> diseaseMap);

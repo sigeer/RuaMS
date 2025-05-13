@@ -1,4 +1,4 @@
-﻿using constants.id;
+using constants.id;
 using net.server;
 using server.life;
 using tools;
@@ -12,7 +12,7 @@ public class BombCommand : CommandBase
         Description = "Bomb a player, dealing damage.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length > 0)
