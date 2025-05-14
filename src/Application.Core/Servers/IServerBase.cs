@@ -19,5 +19,8 @@ namespace Application.Core.Servers
         /// <returns></returns>
         int getCurrentTimestamp();
         long getCurrentTime();
+        void SetCharacteridInTransition(string v, int cid);
+        bool HasCharacteridInTransition(string clientSession);
+        void UpdateAccountState(int accId, sbyte state);
     }
 }

@@ -37,10 +37,6 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MobDamageMobFriendlyHandler : ChannelHandlerBase
 {
-    public MobDamageMobFriendlyHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int attacker = p.readInt();

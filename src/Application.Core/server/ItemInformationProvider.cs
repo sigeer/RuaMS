@@ -2062,7 +2062,7 @@ public class ItemInformationProvider
         {
             equip.wear(false);
             var itemName = ItemInformationProvider.getInstance().getName(equip.getItemId());
-            Server.getInstance().broadcastGMMessage(chr.getWorld(), PacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
+            chr.Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
             AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to forcibly equip an item.");
             log.Warning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
             return false;

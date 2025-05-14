@@ -27,7 +27,7 @@ public class DcCommand : CommandBase
                 {
                     try
                     {//sometimes bugged because the map = null
-                        victim.getClient().disconnect(true, false);
+                        victim.getClient().Disconnect(true, false);
                         player.getMap().removePlayer(victim);
                     }
                     catch (Exception e)
@@ -45,6 +45,6 @@ public class DcCommand : CommandBase
         {
             victim = player;
         }
-        victim.getClient().disconnect(false, false);
+        victim.getClient().Disconnect(false, false);
     }
 }

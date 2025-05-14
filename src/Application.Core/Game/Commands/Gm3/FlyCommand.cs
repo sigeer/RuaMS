@@ -18,7 +18,7 @@ public class FlyCommand : CommandBase
             return;
         }
 
-        int accid = c.getAccID();
+        int accid = c.AccountEntity!.Id;
         Server srv = Server.getInstance();
         string sendStr = "";
         if (paramsValue[0].Equals("on", StringComparison.OrdinalIgnoreCase))
@@ -29,7 +29,7 @@ public class FlyCommand : CommandBase
                 sendStr += " Re-login to take effect.";
             }
 
-            srv.changeFly(c.getAccID(), true);
+            srv.changeFly(accid, true);
         }
         else
         {
@@ -39,7 +39,7 @@ public class FlyCommand : CommandBase
                 sendStr += " Re-login to take effect.";
             }
 
-            srv.changeFly(c.getAccID(), false);
+            srv.changeFly(accid, false);
         }
 
         player.dropMessage(6, sendStr);

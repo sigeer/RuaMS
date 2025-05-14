@@ -36,19 +36,15 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RemoteStoreHandler : ChannelHandlerBase
 {
-    public RemoteStoreHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
-        var hmChannel =  _server.Transport.FindPlayerShopChannel(chr.Id);
+        var hmChannel =  c.CurrentServer.Transport.FindPlayerShopChannel(chr.Id);
         if (hmChannel != null)
         {
             if (hmChannel.Value == chr.getClient().getChannel())
             {
-                var hm = _server.HiredMerchantController.getHiredMerchant(chr.Id);
+                var hm = c.CurrentServer.HiredMerchantController.getHiredMerchant(chr.Id);
                 hm!.visitShop(chr);
             }
             else

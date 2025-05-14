@@ -34,22 +34,18 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class PetFoodHandler : ChannelHandlerBase
 {
-    public PetFoodHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
-        if (abm.getLastSpam(2) + 500 > currentServerTime())
+        if (abm.getLastSpam(2) + 500 > c.CurrentServer.getCurrentTime())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
         }
         abm.spam(2);
         p.readInt(); // timestamp issue detected thanks to Masterrulax
-        abm.setTimestamp(1, Server.getInstance().getCurrentTimestamp(), 3);
+        abm.setTimestamp(1, c.CurrentServer.getCurrentTimestamp(), 3);
         if (chr.getNoPets() == 0)
         {
             c.sendPacket(PacketCreator.enableActions());

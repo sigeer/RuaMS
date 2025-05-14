@@ -43,7 +43,7 @@ public class SpouseChatHandler : ChannelHandlerBase
             {
                 spouse.sendPacket(PacketCreator.OnCoupleMessage(c.OnlinedCharacter.getName(), msg, true));
                 c.sendPacket(PacketCreator.OnCoupleMessage(c.OnlinedCharacter.getName(), msg, true));
-                ChatLogger.log(c, "Spouse", msg);
+                // ChatLogger.log(c, "Spouse", msg);
             }
             else
             {

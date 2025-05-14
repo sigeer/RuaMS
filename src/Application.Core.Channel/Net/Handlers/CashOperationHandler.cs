@@ -21,11 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Players;
 using Application.Core.Managers;
+using Application.Utility.Configs;
+using Application.Utility.Exceptions;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
 using constants.inventory;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
 using service;
@@ -36,10 +40,12 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class CashOperationHandler : ChannelHandlerBase
 {
+    readonly ILogger<CashOperationHandler> _logger;
     private NoteService noteService;
 
-    public CashOperationHandler(NoteService noteService)
+    public CashOperationHandler(ILogger<CashOperationHandler> logger, NoteService noteService)
     {
+        _logger = logger;
         this.noteService = noteService;
     }
 
@@ -67,7 +73,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     var cItem = CashItemFactory.getItem(snCS);
                     if (!canBuy(chr, cItem, cs.getCash(useNX)))
                     {
-                        log.Error("Denied to sell cash item with SN {ItemSN}", snCS); // preventing NPE here thanks to MedicOP
+                        _logger.LogError("Denied to sell cash item with SN {ItemSN}", snCS); // preventing NPE here thanks to MedicOP
                         c.enableCSActions();
                         return;
                     }
@@ -94,7 +100,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         Item item = cItem.toItem();
                         cs.gainCash(useNX, cItem, chr.getWorld());  // thanks Rohenn for noticing cash operations after item acquisition
                         cs.addToInventory(item);
-                        c.sendPacket(PacketCreator.showBoughtCashItem(item, c.getAccID()));
+                        c.sendPacket(PacketCreator.showBoughtCashItem(item, c.AccountEntity!.Id));
                     }
                     else
                     {
@@ -106,7 +112,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         {
                             cs.addToInventory(item);
                         }
-                        c.sendPacket(PacketCreator.showBoughtCashPackage(cashPackage, c.getAccID()));
+                        c.sendPacket(PacketCreator.showBoughtCashPackage(cashPackage, c.AccountEntity!.Id));
                     }
                     c.sendPacket(PacketCreator.showCash(chr));
                 }
@@ -132,7 +138,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.sendPacket(PacketCreator.showCashShopMessage(0xA9));
                         return;
                     }
-                    else if (recipient.AccountId == c.getAccID())
+                    else if (recipient.AccountId == c.AccountEntity!.Id)
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0xA8));
                         return;
@@ -145,7 +151,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     string noteMessage = chr.getName() + " has sent you a gift! Go check out the Cash Shop.";
                     noteService.sendNormal(noteMessage, chr.getName(), recipient.CharacterName);
 
-                    var receiver = c.getChannelServer().getPlayerStorage().getCharacterByName(recipient.CharacterName);
+                    var receiver = c.CurrentServer.getPlayerStorage().getCharacterByName(recipient.CharacterName);
                     if (receiver != null)
                     {
                         noteService.show(receiver);
@@ -193,7 +199,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, CharacterManager.makeMapleReadable(chr.getName()));
+                            _logger.LogWarning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                     else
@@ -219,7 +225,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, CharacterManager.makeMapleReadable(chr.getName()));
+                            _logger.LogWarning("Could not add {Slot} slots of type {ItemType} for chr {CharacterName}", qty, type, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                 }
@@ -245,14 +251,14 @@ public class CashOperationHandler : ChannelHandlerBase
                         cs.gainCash(cash, -4000);
                         if (chr.getStorage().gainSlots(qty))
                         {
-                            log.Debug("Chr {CharacterName} bought {Slots} slots to their account storage.", c.OnlinedCharacter.getName(), qty);
+                            _logger.LogDebug("Chr {CharacterName} bought {Slots} slots to their account storage.", c.OnlinedCharacter.getName(), qty);
 
                             c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.getStorage().getSlots()));
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots to {CharacterName}'s account.", qty, CharacterManager.makeMapleReadable(chr.getName()));
+                            _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account.", qty, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                     else
@@ -274,14 +280,14 @@ public class CashOperationHandler : ChannelHandlerBase
                         if (chr.getStorage().gainSlots(qty))
                         {
                             // thanks ABaldParrot & Thora for detecting storage issues here
-                            log.Debug("Chr {CharacterName} bought {Slot} slots to their account storage", c.OnlinedCharacter.getName(), qty);
+                            _logger.LogDebug("Chr {CharacterName} bought {Slot} slots to their account storage", c.OnlinedCharacter.getName(), qty);
 
                             c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.getStorage().getSlots()));
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
-                            log.Warning("Could not add {Slot} slots to {CharacterName}'s account", qty, CharacterManager.makeMapleReadable(chr.getName()));
+                            _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account", qty, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
                 }
@@ -297,21 +303,21 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.enableCSActions();
                         return;
                     }
-                    if (!c.canGainCharacterSlot())
+                    if (!c.CanGainCharacterSlot())
                     {
                         chr.dropMessage(1, "You have already used up all 12 extra character slots.");
                         c.enableCSActions();
                         return;
                     }
                     cs.gainCash(cash, cItem, chr.getWorld());
-                    if (c.gainCharacterSlot())
+                    if (c.GainCharacterSlot())
                     {
-                        c.sendPacket(PacketCreator.showBoughtCharacterSlot(c.getCharacterSlots()));
+                        c.sendPacket(PacketCreator.showBoughtCharacterSlot(c.AccountEntity!.Characterslots));
                         c.sendPacket(PacketCreator.showCash(chr));
                     }
                     else
                     {
-                        log.Warning("Could not add a chr slot to {CharacterName}'s account", CharacterManager.makeMapleReadable(chr.getName()));
+                        _logger.LogWarning("Could not add a chr slot to {CharacterName}'s account", CharacterManager.makeMapleReadable(chr.getName()));
                         c.enableCSActions();
                         return;
                     }
@@ -349,7 +355,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     sbyte invType = p.ReadSByte();
                     if (invType < 1 || invType > 5)
                     {
-                        c.disconnect(false, false);
+                        c.Disconnect(false, false);
                         return;
                     }
 
@@ -374,7 +380,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
                     cs.addToInventory(item);
                     mi.removeSlot(item.getPosition());
-                    c.sendPacket(PacketCreator.putIntoCashInventory(item, c.getAccID()));
+                    c.sendPacket(PacketCreator.putIntoCashInventory(item, c.AccountEntity!.Id));
                 }
                 else if (action == 0x1D)
                 {
@@ -387,7 +393,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         string recipientName = p.readString();
                         string text = p.readString();
                         var itemRing = CashItemFactory.getItem(SN);
-                        var partner = c.getChannelServer().getPlayerStorage().getCharacterByName(recipientName);
+                        var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(recipientName);
                         if (partner == null)
                         {
                             chr.sendPacket(PacketCreator.serverNotice(1, "The partner you specified cannot be found.\r\nPlease make sure your partner is online and in the same channel."));
@@ -406,7 +412,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
                                 cs.addToInventory(eqp);
-                                c.sendPacket(PacketCreator.showBoughtCashItem(eqp, c.getAccID()));
+                                c.sendPacket(PacketCreator.showBoughtCashItem(eqp, c.AccountEntity!.Id));
                                 cs.gainCash(toCharge, itemRing, chr.getWorld());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
                                 chr.addCrushRing(RingManager.LoadFromDb(rings.MyRingId)!);
@@ -468,7 +474,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         var itemRing = CashItemFactory.getItem(snID);
                         string sentTo = p.readString();
                         string text = p.readString();
-                        var partner = c.getChannelServer().getPlayerStorage().getCharacterByName(sentTo);
+                        var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(sentTo);
                         if (partner == null)
                         {
                             c.sendPacket(PacketCreator.showCashShopMessage(0xBE));
@@ -481,7 +487,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
                                 cs.addToInventory(eqp);
-                                c.sendPacket(PacketCreator.showBoughtCashRing(eqp, partner.getName(), c.getAccID()));
+                                c.sendPacket(PacketCreator.showBoughtCashRing(eqp, partner.getName(), c.AccountEntity!.Id));
                                 cs.gainCash(payment, -itemRing.getPrice());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
                                 chr.addFriendshipRing(RingManager.LoadFromDb(rings.MyRingId)!);
@@ -516,7 +522,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
-                        else if (c.getTempBanCalendar() != null && (c.getTempBanCalendar()!.Value.AddDays(30)) > DateTimeOffset.Now)
+                        else if (c.AccountEntity?.Tempban != null && (c.AccountEntity.Tempban!.Value.AddDays(30)) > DateTimeOffset.Now)
                         {
                             c.sendPacket(PacketCreator.showCashShopMessage(0));
                             c.enableCSActions();
@@ -525,7 +531,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         if (chr.registerNameChange(newName))
                         { //success
                             Item item = cItem.toItem();
-                            c.sendPacket(PacketCreator.showNameChangeSuccess(item, c.getAccID()));
+                            c.sendPacket(PacketCreator.showNameChangeSuccess(item, c.AccountEntity!.Id));
                             cs.gainCash(4, cItem, chr.getWorld());
                             cs.addToInventory(item);
                         }
@@ -554,7 +560,7 @@ public class CashOperationHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    log.Warning("Unhandled action: {Action}, packet: {Packet}", action, p);
+                    _logger.LogWarning("Unhandled action: {Action}, packet: {Packet}", action, p);
                 }
             }
             finally
@@ -572,7 +578,7 @@ public class CashOperationHandler : ChannelHandlerBase
     {
         if (item != null && item.isOnSale() && item.getPrice() <= cash)
         {
-            log.Debug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}",
+            _logger.LogDebug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}",
                 chr,
                 ItemInformationProvider.getInstance().getName(item.getItemId()),
                 item.getSN(),

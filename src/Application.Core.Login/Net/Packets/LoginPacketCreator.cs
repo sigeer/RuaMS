@@ -319,5 +319,18 @@ namespace Application.Core.Login.Net.Packets
             }
         }
 
+        public static Packet showAllCharacterInfo(ILoginClient client, int worldid, List<IPlayer> chars, bool usePic)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
+            p.writeByte(0);
+            p.writeByte(worldid);
+            p.writeByte(chars.Count);
+            foreach (IPlayer chr in chars)
+            {
+                AddCharEntry(p, client, chr, true);
+            }
+            p.writeByte(usePic ? 1 : 2);
+            return p;
+        }
     }
 }

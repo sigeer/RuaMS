@@ -158,7 +158,7 @@ public class Expedition
     private void log()
     {
         string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(startTime);
-        Server.getInstance().broadcastGMMessage(getLeader().getWorld(), PacketCreator.serverNotice(6, gmMessage));
+        getLeader().Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, gmMessage));
 
         string log = type + " EXPEDITION\r\n";
         log += TimeUtils.GetTimeString(startTime) + "\r\n";
@@ -193,7 +193,7 @@ public class Expedition
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
         }
         startTime = DateTimeOffset.Now;
-        startMap.ChannelServer.Transport.BroadcastGMMessage(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
+        startMap.ChannelServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
     }
 
     public string addMember(IPlayer player)

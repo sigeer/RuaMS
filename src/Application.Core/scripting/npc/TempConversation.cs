@@ -20,7 +20,7 @@ namespace Application.Core.scripting.npc
         Action<TempConversation>? _onNo;
         TempConversationType _type;
 
-        private TempConversation(IClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc, null)
+        private TempConversation(IChannelClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc, null)
         {
         }
 
@@ -31,7 +31,7 @@ namespace Application.Core.scripting.npc
         /// <param name="npc"></param>
         /// <param name="force"></param>
         /// <returns></returns>
-        public static TempConversation? Create(IClient c, int npc = NpcId.MAPLE_ADMINISTRATOR, bool force = true)
+        public static TempConversation? Create(IChannelClient c, int npc = NpcId.MAPLE_ADMINISTRATOR, bool force = true)
         {
             if (force)
                 c.NPCConversationManager?.dispose();
@@ -44,6 +44,22 @@ namespace Application.Core.scripting.npc
             var value = new TempConversation(c, npc);
             c.NPCConversationManager = value;
             return value;
+        }
+
+        public static bool TryCreate(IChannelClient c, out TempConversation? data, int npc = NpcId.MAPLE_ADMINISTRATOR, bool force = true)
+        {
+            data = null;
+            if (force)
+                c.NPCConversationManager?.dispose();
+            else if (c.NPCConversationManager != null)
+            {
+                c.sendPacket(PacketCreator.sendYellowTip("有正在进行的对话，使用!dispose解卡"));
+                return false;
+            }
+
+            data = new TempConversation(c, npc);
+            c.NPCConversationManager = data;
+            return true;
         }
 
         public void RegisterTalk(string text)

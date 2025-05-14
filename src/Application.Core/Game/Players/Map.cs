@@ -258,7 +258,7 @@ namespace Application.Core.Game.Players
             else
             {
                 Log.Warning("Chr {CharacterName} got stuck when moving to map {MapId}", getName(), MapModel.getId());
-                Client.disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
+                Client.Disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
                 return;
             }
 

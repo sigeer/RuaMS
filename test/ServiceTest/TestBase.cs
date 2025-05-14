@@ -10,6 +10,7 @@ using Serilog.Events;
 using Serilog;
 using server;
 using System.Text;
+using Application.Core.Client;
 
 namespace ServiceTest
 {
@@ -46,10 +47,10 @@ namespace ServiceTest
                 Server.getInstance().InitWorld(testWorldConfig).Wait();
         }
 
-        private IClient? _client;
-        protected IClient MockClient => _client ??= GetOnlinedTestClient();
+        private IChannelClient? _client;
+        protected IChannelClient MockClient => _client ??= GetOnlinedTestClient();
 
-        protected IClient GetOnlinedTestClient(int charId = 1)
+        protected IChannelClient GetOnlinedTestClient(int charId = 1)
         {
             Server.getInstance().forceUpdateCurrentTime();
             var mockClient = Client.createMock();
@@ -59,10 +60,10 @@ namespace ServiceTest
             return mockClient;
         }
 
-        private IPlayer GetMockPlayer(IClient client, int charId = 1)
+        private IPlayer GetMockPlayer(IChannelClient client, int charId = 1)
         {
             var player = CharacterManager.LoadPlayerFromDB(charId, client, true)!;
-            client.setPlayer(player);
+            client.SetPlayer(player);
             player.setClient(client);
             player.setMap(Server.getInstance().getChannel(0, 1).getMapFactory().getMap(MapId.HENESYS));
             player.setEnteredChannelWorld(1);

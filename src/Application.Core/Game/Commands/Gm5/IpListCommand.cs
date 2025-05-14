@@ -30,7 +30,7 @@ public class IpListCommand : CommandBase
 
                 foreach (var chr in chars)
                 {
-                    str += "  " + chr.getName() + " - " + chr.getClient().getRemoteAddress() + "\r\n";
+                    str += "  " + chr.getName() + " - " + chr.getClient().RemoteAddress + "\r\n";
                 }
             }
         }

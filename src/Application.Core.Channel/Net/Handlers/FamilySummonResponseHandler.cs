@@ -2,6 +2,7 @@
 
 using Application.Core.Game.Invites;
 using Application.Core.Game.Maps;
+using Application.Utility.Configs;
 using client;
 using net.packet;
 using net.server.coordinator.world;

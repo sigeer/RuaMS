@@ -112,11 +112,11 @@ public class WhisperHandler : ChannelHandlerBase
         {
             AutobanFactory.PACKET_EDIT.alert(user, user.getName() + " tried to packet edit with whispers.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {MessageLength}", user.getName(), message.Length);
-            user.getClient().disconnect(true, false);
+            user.getClient().Disconnect(true, false);
             return;
         }
 
-        ChatLogger.log(user.getClient(), "Whisper To " + target.getName(), message);
+        // ChatLogger.log(user.getClient(), "Whisper To " + target.getName(), message);
 
         target.sendPacket(PacketCreator.getWhisperReceive(user.getName(), user.getClient().getChannel() - 1, user.isGM(), message));
 

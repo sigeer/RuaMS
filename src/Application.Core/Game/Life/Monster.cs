@@ -1241,7 +1241,7 @@ public class Monster : AbstractLifeObject
         return isBoss() && getTagColor() > 0;
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         if (hp.get() <= 0)
         { // mustn't monsterLock this function
@@ -1262,7 +1262,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.killMonster(getObjectId(), false));
         client.sendPacket(PacketCreator.killMonster(getObjectId(), true));
@@ -2589,7 +2589,7 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    private static void aggroMonsterControl(IClient c, Monster mob, bool immediateAggro)
+    private static void aggroMonsterControl(IChannelClient c, Monster mob, bool immediateAggro)
     {
         c.sendPacket(PacketCreator.controlMonster(mob, false, immediateAggro));
     }

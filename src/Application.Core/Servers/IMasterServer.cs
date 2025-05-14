@@ -41,7 +41,6 @@ namespace Application.Core.Servers
         bool IsGuildQueued(int guildId);
         void PutGuildQueued(int guildId);
         void RemoveGuildQueued(int guildId);
-        void UpdateAccountState(int state);
 
         //void resetDisabledServerMessages();
         int GetWorldCapacityStatus();
@@ -49,9 +48,8 @@ namespace Application.Core.Servers
 
         void RegisterLoginState(ILoginClient c);
         void UnregisterLoginState(ILoginClient c);
-
-        void SetCharacteridInTransition(ILoginClient client, int charId);
-        bool ValidateCharacteridInTransition(ILoginClient client, int charId);
-        bool HasCharacteridInTransition(ILoginClient client);
+        bool ValidateCharacteridInTransition(string clientSession, int charId);
+        bool WarpPlayer(string name, int? channel, int mapId, int? portal);
+        AccountEntity? GetAccountEntity(int accId);
     }
 }

@@ -74,10 +74,6 @@ namespace Application.Core.Login
             }
         }
 
-        public void SendServerMessage()
-        {
-            throw new NotImplementedException();
-        }
 
         public void SendWorldConfig(WorldConfigPatch patch)
         {
@@ -86,6 +82,29 @@ namespace Application.Core.Login
             {
                 ch.UpdateWorldConfig(patch);
             }
+        }
+
+        public bool WrapPlayer(string name, int? channel, int mapId, int? portal)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.getChannels())
+            {
+                var target = ch.Players.getCharacterByName(name);
+                if (target != null)
+                {
+                    if (portal != null)
+                        target.changeMap(mapId, portal.Value);
+                    else
+                        target.changeMap(mapId);
+
+                    if (channel != null && target.Channel != channel)
+                    {
+                        target.Client.ChangeChannel(channel.Value);
+                    }
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

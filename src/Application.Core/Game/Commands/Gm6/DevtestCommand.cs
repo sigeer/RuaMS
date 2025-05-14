@@ -26,7 +26,7 @@ public class DevtestCommand : CommandBase
         var scriptEngine = scriptManager.GetScriptEngine("devtest.js");
         try
         {
-            scriptEngine?.CallFunction("run", client.getPlayer());
+            scriptEngine?.CallFunction("run", client.Character);
         }
         catch (Exception e)
         {

@@ -21,6 +21,7 @@
 */
 
 
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server.movement;
 using tools;
@@ -32,6 +33,10 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MovePetHandler : AbstractMovementPacketHandler
 {
+    public MovePetHandler(ILogger<AbstractMovementPacketHandler> logger) : base(logger)
+    {
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int petId = p.readInt();
@@ -45,7 +50,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
         }
         catch (EmptyMovementException e)
         {
-            log.Error(e.ToString());
+            _logger.LogError(e.ToString());
             return;
         }
         var player = c.OnlinedCharacter;

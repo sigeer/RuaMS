@@ -456,7 +456,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         c.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue
     }
 
-    public void disbandAlliance(IClient c, int allianceId)
+    public void disbandAlliance(IChannelClient c, int allianceId)
     {
         AllAllianceStorage.GetAllianceById(allianceId)?.Disband();
     }

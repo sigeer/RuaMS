@@ -46,7 +46,7 @@ public class ReactorScriptManager : AbstractScriptManager
         return instance;
     }
 
-    public void onHit(IClient c, Reactor reactor)
+    public void onHit(IChannelClient c, Reactor reactor)
     {
         try
         {
@@ -64,7 +64,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
     }
 
-    public void act(IClient c, Reactor reactor)
+    public void act(IChannelClient c, Reactor reactor)
     {
         try
         {
@@ -122,17 +122,17 @@ public class ReactorScriptManager : AbstractScriptManager
         drops.Clear();
     }
 
-    public void touch(IClient c, Reactor reactor)
+    public void touch(IChannelClient c, Reactor reactor)
     {
         touching(c, reactor, true);
     }
 
-    public void untouch(IClient c, Reactor reactor)
+    public void untouch(IChannelClient c, Reactor reactor)
     {
         touching(c, reactor, false);
     }
 
-    private void touching(IClient c, Reactor reactor, bool touching)
+    private void touching(IChannelClient c, Reactor reactor, bool touching)
     {
         string functionName = touching ? "touch" : "untouch";
         try
@@ -151,7 +151,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
     }
 
-    private IEngine? initializeInvocable(IClient c, Reactor reactor)
+    private IEngine? initializeInvocable(IChannelClient c, Reactor reactor)
     {
         var engine = getInvocableScriptEngine(GetReactorScriptPath(reactor.getId().ToString()), c);
         if (engine == null)

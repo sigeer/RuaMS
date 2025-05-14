@@ -1,7 +1,10 @@
+using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using client.inventory;
+using net.packet;
 using scripting;
+using scripting.Event;
 using scripting.npc;
 
 namespace Application.Core.Client
@@ -10,13 +13,15 @@ namespace Application.Core.Client
     {
         new IWorldChannel CurrentServer { get; }
         int Channel { get; }
+        int ActualChannel { get; }
         IPlayer? Character { get; }
         IPlayer OnlinedCharacter { get; }
-        bool IsServerTransition { get; }
+
         NPCConversationManager? NPCConversationManager { get; set; }
         EngineStorage ScriptEngines { get; set; }
 
         void Disconnect(bool isShutdown, bool fromCashShop = false);
+        void ForceDisconnect();
 
         void enableCSActions();
         AbstractPlayerInteraction getAbstractPlayerInteraction();
@@ -33,5 +38,18 @@ namespace Application.Core.Client
         void announceServerMessage();
         void closePlayerScriptInteractions();
         void announceHint(string msg, int length);
+        bool CanGainCharacterSlot();
+        bool GainCharacterSlot();
+        void ChangeChannel(int channel);
+        bool attemptCsCoupon();
+        void resetCsCoupon();
+        void SetPlayer(IPlayer? player);
+        void SetAccount(AccountEntity? accountEntity);
+        IWorldChannel getChannelServer();
+        int getChannel();
+        void announceBossHpBar(Monster mm, int mobHash, Packet packet);
+        int GetAvailableCharacterSlots();
+        EventManager? getEventManager(string @event);
+        void removeClickedNPC();
     }
 }

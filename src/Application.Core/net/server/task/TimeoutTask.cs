@@ -9,14 +9,14 @@ public class TimeoutTask : BaseTask
 {
     public override void HandleRun()
     {
-        long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        var time = DateTimeOffset.Now;
         var chars = wserv.getPlayerStorage().GetAllOnlinedPlayers();
         foreach (var chr in chars)
         {
-            if (time - chr.getClient().getLastPacket() > YamlConfig.config.server.TIMEOUT_DURATION)
+            if (time - chr.getClient().LastPacket > TimeSpan.FromMilliseconds(YamlConfig.config.server.TIMEOUT_DURATION))
             {
                 log.Information("Chr {CharacterName} auto-disconnected due to inactivity", chr.getName());
-                chr.getClient().disconnect(true, chr.getCashShop().isOpened());
+                chr.getClient().Disconnect(true, chr.getCashShop().isOpened());
             }
         }
     }

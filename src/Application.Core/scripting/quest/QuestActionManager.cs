@@ -36,7 +36,7 @@ public class QuestActionManager : NPCConversationManager
     private bool start; // this is if the script in question is start or end
     private int quest;
 
-    public QuestActionManager(IClient c, int quest, int npc, bool start) : base(c, npc, null)
+    public QuestActionManager(IChannelClient c, int quest, int npc, bool start) : base(c, npc, null)
     {
         this.quest = quest;
         this.start = start;

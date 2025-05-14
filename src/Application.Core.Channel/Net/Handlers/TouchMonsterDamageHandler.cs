@@ -22,12 +22,17 @@
 
 
 using client;
+using Microsoft.Extensions.Logging;
 using net.packet;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 public class TouchMonsterDamageHandler : AbstractDealDamageHandler
 {
+    public TouchMonsterDamageHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
+    {
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;

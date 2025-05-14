@@ -21,7 +21,9 @@
  */
 
 
+using Microsoft.Extensions.Logging;
 using net.packet;
+using System.Drawing;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -33,6 +35,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ItemPickupHandler : ChannelHandlerBase
 {
+    readonly ILogger<ItemPickupHandler> _logger;
+
+    public ItemPickupHandler(ILogger<ItemPickupHandler> logger)
+    {
+        _logger = logger;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt(); //Timestamp
@@ -50,7 +59,7 @@ public class ItemPickupHandler : ChannelHandlerBase
         Point obPos = ob.getPosition();
         if (Math.Abs(charPos.X - obPos.X) > 800 || Math.Abs(charPos.Y - obPos.Y) > 600)
         {
-            log.Warning("Chr {CharacterName} tried to pick up an item too far away. Mapid: {MapId}, player pos: {PlayerPosition}, object pos: {ObjectPosition}",
+            _logger.LogWarning("Chr {CharacterName} tried to pick up an item too far away. Mapid: {MapId}, player pos: {PlayerPosition}, object pos: {ObjectPosition}",
                     c.OnlinedCharacter.getName(), chr.getMapId(), charPos, obPos);
             return;
         }

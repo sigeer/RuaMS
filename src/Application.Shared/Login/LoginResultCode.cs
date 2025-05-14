@@ -48,7 +48,7 @@ namespace Application.Shared.Login
         /// </summary>
         public const int LOGIN_NOTLOGGEDIN = 0;
         /// <summary>
-        /// 已登录，但是未选择角色进入游戏
+        /// 已登录，正在切换服务器，比如切换频道、从登录服务器转到频道服务器的过程中
         /// </summary>
         public const int LOGIN_SERVER_TRANSITION = 1;
         /// <summary>

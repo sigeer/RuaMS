@@ -22,9 +22,11 @@
 
 
 using Application.Core.Game.Skills;
+using Application.Utility.Configs;
 using constants.skills;
 using net.packet;
 using server;
+using System.Drawing;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -36,7 +38,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
-        chr.getAutobanManager().setTimestamp(4, Server.getInstance().getCurrentTimestamp(), 28);
+        chr.getAutobanManager().setTimestamp(4, c.CurrentServer.getCurrentTimestamp(), 28);
         int skillid = p.readInt();
 
         /*
@@ -84,7 +86,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
                 }
 
                 c.sendPacket(PacketCreator.skillCooldown(skillid, cooldownTime));
-                chr.addCooldown(skillid, currentServerTime(), 1000 * (cooldownTime));
+                chr.addCooldown(skillid, c.CurrentServer.getCurrentTime(), 1000 * (cooldownTime));
             }
         }
         if (skillid == Hero.MONSTER_MAGNET || skillid == Paladin.MONSTER_MAGNET || skillid == DarkKnight.MONSTER_MAGNET)

@@ -21,25 +21,27 @@
  */
 
 
-using Application.Core.Client;
+using Application.Core.Channel.Services;
+using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
+using Application.EF;
 using Application.Shared.KeyMaps;
+using Application.Shared.Login;
+using Application.Utility.Compatible;
+using Application.Utility.Configs;
 using client;
 using client.inventory;
-using constants.game;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.packet;
+using net.server;
 using net.server.coordinator.session;
 using net.server.coordinator.world;
 using net.server.guild;
 using net.server.world;
 using service;
-using System.Net;
 using tools;
-using tools.packets;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -49,10 +51,14 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
     private static HashSet<int> attemptingLoginAccounts = new();
 
     private NoteService noteService;
+    readonly ILogger<ChannelHandlerBase> _logger;
+    readonly CharacterService _characterSrv;
 
-    public PlayerLoggedinHandler(NoteService noteService, IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
+    public PlayerLoggedinHandler(NoteService noteService, ILogger<ChannelHandlerBase> logger, CharacterService characterSrv)
     {
         this.noteService = noteService;
+        _logger = logger;
+        _characterSrv = characterSrv;
     }
 
     private bool tryAcquireAccount(int accId)
@@ -95,72 +101,58 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
         try
         {
-            var wserv = server.getWorld(c.getWorld());
-            if (wserv == null)
-            {
-                c.disconnect(true, false);
-                return;
-            }
-
-            var cserv = c.CurrentServer as IWorldChannel;
+            var cserv = c.CurrentServer;
             if (cserv == null)
             {
-                c.disconnect(true, false);
+                c.Disconnect(true, false);
                 return;
             }
-            else
-            {
-                c.setChannel(cserv.getId());
-            }
 
-            var storage = wserv.getPlayerStorage();
-            var player = storage.getCharacterById(cid);
-
-            Hwid? hwid;
-            if (player == null || !player.IsOnlined)
+            var playerObject = c.CurrentServer.GetPlayerData(cid);
+            if (playerObject == null)
             {
-                hwid = SessionCoordinator.getInstance().pickLoginSessionHwid(c);
-                if (hwid == null)
-                {
-                    c.disconnect(true, false);
-                    return;
-                }
-            }
-            else
-            {
-                hwid = player.getClient().getHwid();
-            }
-
-            c.setHwid(hwid);
-
-            if (!server.validateCharacteridInTransition(c, cid))
-            {
-                c.disconnect(true, false);
+                c.Disconnect(true, false);
                 return;
             }
+
+            if (!playerObject.SessionInfo.IsAccountOnlined)
+            {
+                c.Disconnect(true, false);
+                return;
+            }
+
+            Hwid? hwid = SessionCoordinator.getInstance().pickLoginSessionHwid(c);
+            if (hwid == null)
+            {
+                c.Disconnect(true, false);
+                return;
+            }
+
+            c.Hwid = hwid;
+
+            // c.CurrentServer.GetPlayerData(cid) 时一并判断
+            //if (!server.validateCharacteridInTransition(c, cid))
+            //{
+            //    c.Disconnect(true, false);
+            //    return;
+            //}
 
             bool newcomer = false;
-            if (player == null || !player.IsOnlined)
+            var player = _characterSrv.GetPlayerByCharacerValueObject(c, playerObject);
+            if (player == null)
             {
-                try
-                {
-                    player = CharacterManager.LoadPlayerFromDB(cid, c, true);
-                    newcomer = true;
-                }
-                catch (Exception e)
-                {
-                    log.Error(e.ToString());
-                }
-
-                if (player == null)
-                {
-                    //If you are still getting null here then please just uninstall the game >.>, we dont need you fucking with the logs
-                    c.disconnect(true, false);
-                    return;
-                }
+                //If you are still getting null here then please just uninstall the game >.>, we dont need you fucking with the logs
+                c.Disconnect(true, false);
+                return;
             }
-            c.SetAccountInfoFromClient(player.Client);
-            c.setPlayer(player);
+
+            if (!player.IsOnlined)
+            {
+                newcomer = true;
+            }
+
+            c.SetAccount(playerObject!.AccountEntity);
+            c.SetPlayer(player);
 
 
             /*  is this check really necessary?
@@ -178,21 +170,22 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
             }
             */
+            var wserv = Server.getInstance().getWorld(0);
 
-            int accId = c.getAccID();
+            int accId = c.AccountEntity!.Id;
             if (tryAcquireAccount(accId))
             { // Sync this to prevent wrong login state for double loggedin handling
                 try
                 {
-                    int currentState = c.getLoginState();
-                    if (currentState != Client.LOGIN_SERVER_TRANSITION)
+                    int currentState = playerObject.AccountEntity.Loggedin;
+                    if (currentState != AccountStage.LOGIN_SERVER_TRANSITION)
                     {
-                        c.setPlayer(null);
-                        c.setAccID(0);
+                        c.SetPlayer(null);
+                        c.SetAccount(null);
 
-                        if (currentState == Client.LOGIN_LOGGEDIN)
+                        if (currentState == AccountStage.LOGIN_LOGGEDIN)
                         {
-                            c.disconnect(true, false);
+                            c.Disconnect(true, false);
                         }
                         else
                         {
@@ -201,7 +194,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
                         return;
                     }
-                    c.updateLoginState(Client.LOGIN_LOGGEDIN);
+                    c.CurrentServer.UpdateAccountState(accId, AccountStage.LOGIN_LOGGEDIN);
                 }
                 finally
                 {
@@ -210,8 +203,8 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
             else
             {
-                c.setPlayer(null);
-                c.setAccID(0);
+                c.SetPlayer(null);
+                c.SetAccount(null);
                 c.sendPacket(PacketCreator.getAfterLoginError(10));
                 return;
             }
@@ -224,20 +217,12 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             cserv.addPlayer(player);
 
-            player.setEnteredChannelWorld(c.getChannel());
+            player.setEnteredChannelWorld(c.Channel);
 
-            var buffs = server.getPlayerBuffStorage().getBuffsFromStorage(cid);
-            if (buffs != null)
-            {
-                var timedBuffs = getLocalStartTimes(buffs);
-                player.silentGiveBuffs(timedBuffs);
-            }
 
-            var diseases = server.getPlayerBuffStorage().getDiseasesFromStorage(cid);
-            if (diseases != null)
-            {
-                player.silentApplyDiseases(diseases);
-            }
+            c.CurrentServer.RecoverCharacterBuff(player);
+            c.CurrentServer.RecoverCharacterDisease(player);
+
 
             c.sendPacket(PacketCreator.getCharInfo(player));
             if (!player.isHidden())
@@ -262,7 +247,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             player.visitMap(player.getMap());
 
             int[] buddyIds = player.BuddyList.getBuddyIds();
-            wserv.loggedOn(player.getName(), player.getId(), c.getChannel(), buddyIds);
+            c.CurrentServer.UpdateBuddyByLoggedIn(player.getId(), c.Channel, buddyIds);
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
             c.sendPacket(PacketCreator.loadFamily(player));
@@ -282,12 +267,12 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        log.Error("Chr {CharacterName}'s family doesn't have an entry for them. (familyId {FamilyId})", player.getName(), f.getID());
+                        _logger.LogError("Chr {CharacterName}'s family doesn't have an entry for them. (familyId {FamilyId})", player.getName(), f.getID());
                     }
                 }
                 else
                 {
-                    log.Error("Chr {CharacterName} has an invalid family ID ({FamilyId})", player.getName(), player.getFamilyId());
+                    _logger.LogError("Chr {CharacterName} has an invalid family ID ({FamilyId})", player.getName(), player.getFamilyId());
                     c.sendPacket(PacketCreator.getFamilyInfo(null));
                 }
             }
@@ -304,7 +289,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    player.GuildModel.setOnline(player.Id, true, c.getChannel());
+                    player.GuildModel.setOnline(player.Id, true, c.Channel);
                     c.sendPacket(GuildPackets.showGuildInfo(player));
                     if (player.AllianceModel != null)
                     {
@@ -367,7 +352,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 {
                     if (pet != null)
                     {
-                        wserv.registerPetHunger(player, player.getPetIndex(pet));
+                        c.CurrentServer.PetHungerController.registerPetHunger(player, player.getPetIndex(pet));
                     }
                 }
 
@@ -386,16 +371,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 */
                 if (player.isGM())
                 {
-                    Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
-                }
-
-                if (diseases != null)
-                {
-                    foreach (var e in diseases)
-                    {
-                        var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Key, e.Value.MobSkill.getX()));
-                        c.sendPacket(PacketCreator.giveDebuff(debuff, e.Value.MobSkill));
-                    }
+                    c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
                 }
             }
             else
@@ -422,13 +398,14 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (player.PartnerId > 0)
             {
-                var partner = wserv.getPlayerStorage().getCharacterById(player.PartnerId);
+                c.CurrentServer.NotifyPartner(player.Id);
+                //var partner = wserv.getPlayerStorage().getCharacterById(player.PartnerId);
 
-                if (partner != null && partner.isLoggedinWorld())
-                {
-                    player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.getMapId()));
-                    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
-                }
+                //if (partner != null && partner.isLoggedinWorld())
+                //{
+                //    player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.getMapId()));
+                //    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
+                //}
             }
 
             if (newcomer)
@@ -454,7 +431,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            _logger.LogError(e.ToString());
         }
         finally
         {
@@ -479,13 +456,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            _logger.LogError(e.ToString());
         }
-    }
-
-    private List<KeyValuePair<long, PlayerBuffValueHolder>> getLocalStartTimes(List<PlayerBuffValueHolder> lpbvl)
-    {
-        long curtime = currentServerTime();
-        return lpbvl.Select(x => new KeyValuePair<long, PlayerBuffValueHolder>(curtime - x.usedTime, x)).OrderBy(x => x.Key).ToList();
     }
 }

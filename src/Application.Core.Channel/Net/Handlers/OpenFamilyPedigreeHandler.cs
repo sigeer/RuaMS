@@ -19,6 +19,7 @@
 */
 
 
+using Application.Utility.Configs;
 using net.packet;
 using tools;
 
@@ -35,7 +36,7 @@ public class OpenFamilyPedigreeHandler : ChannelHandlerBase
         {
             return;
         }
-        var target = c.getChannelServer().getPlayerStorage().getCharacterByName(p.readString());
+        var target = c.CurrentServer.getPlayerStorage().getCharacterByName(p.readString());
         if (target != null && target.getFamily() != null)
         {
             c.sendPacket(PacketCreator.showPedigree(target.getFamilyEntry()!));

@@ -164,7 +164,7 @@ namespace Application.Core.Managers
 
             return alliance;
         }
-        public static void sendInvitation(IClient c, string targetGuildName, int allianceId)
+        public static void sendInvitation(IChannelClient c, string targetGuildName, int allianceId)
         {
             var mg = AllGuildStorage.GetGuildByName(targetGuildName);
             if (mg == null)

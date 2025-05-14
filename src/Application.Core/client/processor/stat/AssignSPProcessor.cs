@@ -51,7 +51,7 @@ public class AssignSPProcessor
             AutobanFactory.PACKET_EDIT.alert(player, "tried to packet edit in distributing sp.");
             player.Log.Warning("Chr {CharacterName} tried to use skill {SkillId} without it being in their job.", player.getName(), skillid);
 
-            player.Client.disconnect(true, false);
+            player.Client.Disconnect(true, false);
             return false;
         }
 
@@ -59,7 +59,7 @@ public class AssignSPProcessor
     }
 
     /// <summary>
-    /// ´Ó<paramref name="SPFrom"/>Ï´µã¼Óµ½<paramref name="SPTo"/>ÉÏ
+    /// ä»Ž<paramref name="SPFrom"/>æ´—ç‚¹åŠ åˆ°<paramref name="SPTo"/>ä¸Š
     /// </summary>
     /// <param name="player"></param>
     /// <param name="SPTo"></param>
@@ -121,7 +121,7 @@ public class AssignSPProcessor
             }
         }
     }
-    public static void SPAssignAction(IClient c, int skillid)
+    public static void SPAssignAction(IChannelClient c, int skillid)
     {
         c.lockClient();
         try

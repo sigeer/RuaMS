@@ -38,10 +38,6 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class QuestActionHandler : ChannelHandlerBase
 {
-    public QuestActionHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     // isNpcNearby thanks to GabrielSin
     private static bool isNpcNearby(InPacket p, IPlayer player, Quest quest, int npcId)
     {

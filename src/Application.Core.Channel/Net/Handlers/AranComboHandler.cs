@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Skills;
+using Application.Shared.Constants;
 using client;
 using constants.game;
 using constants.skills;
@@ -38,7 +39,7 @@ public class AranComboHandler : ChannelHandlerBase
         int skillLevel = player.getSkillLevel(SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY));
         if (player.JobModel.IsAran() && (skillLevel > 0 || player.JobModel.Id == JobId.LEGEND))
         {
-            long currentTime = currentServerTime();
+            long currentTime = c.CurrentServer.getCurrentTime();
             short combo = player.getCombo();
             if ((currentTime - player.getLastCombo()) > 3000 && combo > 0)
             {

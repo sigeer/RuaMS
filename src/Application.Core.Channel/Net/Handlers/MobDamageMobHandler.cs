@@ -42,8 +42,11 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class MobDamageMobHandler : ChannelHandlerBase
 {
-    public MobDamageMobHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
+    readonly ILogger<MobDamageMobHandler> _logger;
+
+    public MobDamageMobHandler(ILogger<MobDamageMobHandler> logger)
     {
+        _logger = logger;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)

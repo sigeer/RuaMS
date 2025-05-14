@@ -28,9 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MobBanishPlayerHandler : ChannelHandlerBase
 {
-    public MobBanishPlayerHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
+
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {

@@ -605,7 +605,7 @@ public class Equip : Item
         return new(lvupStr, new(gotSlot, gotVicious));
     }
 
-    private void gainLevel(IClient c)
+    private void gainLevel(IChannelClient c)
     {
         List<KeyValuePair<StatUpgrade, int>> stats = new();
 
@@ -796,7 +796,7 @@ public class Equip : Item
         return itemLevel >= YamlConfig.config.server.USE_EQUIPMNT_LVLUP;
     }
 
-    private static void showLevelupMessage(string msg, IClient c)
+    private static void showLevelupMessage(string msg, IChannelClient c)
     {
         c.OnlinedCharacter.showHint(msg, 300);
     }

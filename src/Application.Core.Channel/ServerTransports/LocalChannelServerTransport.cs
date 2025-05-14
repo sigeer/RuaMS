@@ -1,4 +1,3 @@
-using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
@@ -9,11 +8,14 @@ using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
-using constants.id;
 using net.packet;
 using net.server;
-using System.Security.Cryptography;
+using net.server.guild;
+using server.expeditions;
+using System.Net;
+using System.Text;
 using tools;
+using tools.packets;
 
 namespace Application.Core.Channel.ServerTransports
 {
@@ -64,7 +66,7 @@ namespace Application.Core.Channel.ServerTransports
                 var chr = _world.getPlayerStorage().getCharacterById(playerId);
                 if (chr != null && chr.IsOnlined)
                 {
-                    chr.getClient().forceDisconnect();
+                    chr.getClient().ForceDisconnect();
                 }
             }
         }
@@ -202,7 +204,7 @@ namespace Application.Core.Channel.ServerTransports
             foreach (var ch in Server.getInstance().getChannelsFromWorld(0))
             {
                 var map = ch.getMapFactory().getMap(mapId);
-                
+
 
                 foreach (var pn in playerNpcObjectId)
                 {
@@ -220,7 +222,10 @@ namespace Application.Core.Channel.ServerTransports
 
         public void BroadcastGMMessage(Packet p)
         {
-            Server.getInstance().broadcastGMMessage(0, p);
+            foreach (var ch in _world.getChannels())
+            {
+                ch.broadcastGMPacket(p);
+            }
         }
 
         public void SendTimer(int seconds)
@@ -332,7 +337,129 @@ namespace Application.Core.Channel.ServerTransports
 
         public void SendAccountLogout(int accountId)
         {
-            _server.UpdateAccountState(AccountStage.LOGIN_NOTLOGGEDIN);
+            _server.UpdateAccountState(accountId, AccountStage.LOGIN_NOTLOGGEDIN);
+        }
+
+        public IPEndPoint GetChannelEndPoint(int channel)
+        {
+            return _world.getChannel(channel).getIP();
+        }
+
+        public void NotifyPartner(int id)
+        {
+            IPlayer? player = null;
+            int partnerId = 0;
+            IPlayer? partner = null;
+            foreach (var ch in _world.getChannels())
+            {
+                player = ch.Players.getCharacterById(id);
+                if (player != null)
+                {
+                    partnerId = player.PartnerId;
+                }
+            }
+
+            foreach (var ch in _world.getChannels())
+            {
+                partner = ch.Players.getCharacterById(partnerId);
+                if (partner != null)
+                    break;
+            }
+
+            if (player != null && partner != null)
+            {
+                player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.getMapId()));
+                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
+            }
+
+        }
+
+        public void UpdateAccountState(int accId, sbyte state)
+        {
+            _server.UpdateAccountState(accId, state);
+        }
+
+        public void SetCharacteridInTransition(string v, int cid)
+        {
+            _server.SetCharacteridInTransition(v, cid);
+        }
+
+        public bool HasCharacteridInTransition(string clientSession)
+        {
+            return _server.HasCharacteridInTransition(clientSession);
+        }
+
+        public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
+        {
+            return _server.WarpPlayer(name, channel, mapId, portal);
+
+        }
+
+        public string LoadExpeditionInfo()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var ch in _world.Channels)
+            {
+                sb.Append("==== 频道");
+                sb.Append(ch.getId());
+                sb.Append(" ====");
+                sb.Append("\r\n\r\n");
+                List<Expedition> expeds = ch.getExpeditions();
+                if (expeds.Count == 0)
+                {
+                    sb.Append("无");
+                    continue;
+                }
+
+                int id = 0;
+                foreach (Expedition exped in expeds)
+                {
+                    id++;
+                    sb.Append("> Expedition " + id);
+                    sb.Append(">> Type: " + exped.getType().ToString());
+                    sb.Append(">> Status: " + (exped.isRegistering() ? "REGISTERING" : "UNDERWAY"));
+                    sb.Append(">> Size: " + exped.getMembers().Count);
+                    sb.Append(">> Leader: " + exped.getLeader().getName());
+                    int memId = 2;
+                    foreach (var e in exped.getMembers())
+                    {
+                        if (exped.isLeader(e.Key))
+                        {
+                            continue;
+                        }
+                        sb.Append(">>> Member " + memId + ": " + e.Value);
+                        memId++;
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+
+        public void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise)
+        {
+            foreach (var ch in _world.Channels)
+            {
+                var chr = ch.Players.getCharacterById(targetCharacterId);
+                if (chr != null)
+                {
+                    var alliance = chr.getAlliance();
+                    if (alliance == null)
+                        return;
+
+                    int newRank = chr.getAllianceRank() + (isRaise ? -1 : 1);
+                    if (newRank < 3 || newRank > 5)
+                    {
+                        return;
+                    }
+
+                    chr.setAllianceRank(newRank);
+                    chr.saveGuildStatus();
+
+
+                    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
+                    alliance.dropMessage("'" + chr.getName() + "' has been reassigned to '" + alliance.getRankTitle(newRank) + "' in this Alliance.");
+                }
+            }
         }
     }
 }

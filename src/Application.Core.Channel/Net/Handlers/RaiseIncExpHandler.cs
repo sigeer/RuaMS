@@ -21,9 +21,6 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RaiseIncExpHandler : ChannelHandlerBase
 {
-    public RaiseIncExpHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {

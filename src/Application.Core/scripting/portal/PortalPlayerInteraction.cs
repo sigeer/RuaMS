@@ -30,7 +30,7 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
 {
     private Portal portal;
 
-    public PortalPlayerInteraction(IClient c, Portal portal) : base(c)
+    public PortalPlayerInteraction(IChannelClient c, Portal portal) : base(c)
     {
         this.portal = portal;
     }

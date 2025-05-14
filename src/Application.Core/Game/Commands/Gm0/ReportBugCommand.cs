@@ -21,8 +21,8 @@ public class ReportBugCommand : CommandBase
             return;
         }
         string message = player.getLastCommandMessage();
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[Bug]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(1, message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[Bug]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(1, message));
         log.Information("{CharacterName}: {LastCommand}", CharacterManager.makeMapleReadable(player.getName()), message);
         player.dropMessage(5, "Your bug '" + message + "' was submitted successfully to our developers. Thank you!");
 

@@ -33,7 +33,7 @@ public class UseMapleLifeHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
-        long timeNow = currentServerTime();
+        long timeNow = c.CurrentServer.getCurrentTime();
 
         if (timeNow - player.getLastUsedCashItem() < 3000)
         {

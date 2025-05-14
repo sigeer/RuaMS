@@ -81,7 +81,7 @@ public class MonitoredChrLogger
         }
 
         string packet = packetContent.Length > 0 ? HexTool.toHexString(packetContent) : "<empty>";
-        log.Information("{AccountId}.{CharacterName} {PacketId}-{Packet}", c.AccountId, chr.getName(), packetId, packet);
+        log.Information("{AccountId}.{CharacterName} {PacketId}-{Packet}", c.AccountEntity!.Id, chr.getName(), packetId, packet);
     }
 
     private static bool isRecvBlocked(RecvOpcode op)

@@ -58,7 +58,7 @@ public class PortalScriptManager : AbstractScriptManager
         return script;
     }
 
-    public bool executePortalScript(Portal portal, IClient c)
+    public bool executePortalScript(Portal portal, IChannelClient c)
     {
         try
         {

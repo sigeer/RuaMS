@@ -19,11 +19,11 @@ public class KillCommand : CommandBase
             return;
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = c.CurrentServer.getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             victim.KilledBy(player);
-            Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(5, player.getName() + " used !kill on " + victim.getName()));
+            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, player.getName() + " used !kill on " + victim.getName()));
         }
         else
         {

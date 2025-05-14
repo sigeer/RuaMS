@@ -37,14 +37,12 @@ using constants.net;
 using database.note;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
-using net.server.coordinator.session;
 using net.server.task;
 using server;
 using server.expeditions;
 using server.quest;
 using service;
 using System.Diagnostics;
-using System.Net;
 using static server.CashShop;
 
 namespace net.server;
@@ -68,22 +66,18 @@ public class Server
     /// </summary>
     private Dictionary<int, HashSet<AccountInfo>> AccountCharacterCache = new();
 
-    private Dictionary<string, int> transitioningChars = new();
-
-    private Dictionary<IClient, DateTimeOffset> inLoginState = new(100);
 
     private PlayerBuffStorage buffStorage = new PlayerBuffStorage();
 
     private Dictionary<int, NewYearCardRecord> newyears = new();
-    private Queue<IClient> processDiseaseAnnouncePlayers = new();
-    private Queue<IClient> registeredDiseaseAnnouncePlayers = new();
+    private Queue<IChannelClient> processDiseaseAnnouncePlayers = new();
+    private Queue<IChannelClient> registeredDiseaseAnnouncePlayers = new();
 
     /// <summary>
     /// World - Data
     /// </summary>
     private Dictionary<int, List<RankedCharacterInfo>> playerRanking = new();
 
-    private object srvLock = new object();
     private object disLock = new object();
 
     private AtomicLong currentTime = new AtomicLong(0);
@@ -198,26 +192,6 @@ public class Server
     {
         return getWorld(world).getChannels().Select(x => x.getId()).ToHashSet();
     }
-
-    public IPEndPoint? GetChannelEndPoint(IClient client, int world, int channel)
-    {
-        if (client.NettyChannel.RemoteAddress is IPEndPoint clientIPEndPoint)
-        {
-            var hostAddress = getWorld(world).getChannel(channel).getIP();
-
-            if (IPAddress.IsLoopback(clientIPEndPoint.Address))
-            {
-                hostAddress.Address = IPAddress.Parse(YamlConfig.config.server.LOCALHOST);
-            }
-            else if (clientIPEndPoint.Address.IsPrivateIP())
-            {
-                hostAddress.Address = IPAddress.Parse(YamlConfig.config.server.LANHOST);
-            }
-            return hostAddress;
-        }
-        return null;
-    }
-
 
     public bool AddWorld(WorldConfigEntity worldConfig)
     {
@@ -337,7 +311,7 @@ public class Server
     #endregion
     public void runAnnouncePlayerDiseasesSchedule()
     {
-        Queue<IClient> processDiseaseAnnounceClients;
+        Queue<IChannelClient> processDiseaseAnnounceClients;
         Monitor.Enter(disLock);
         try
         {
@@ -351,7 +325,7 @@ public class Server
 
         while (processDiseaseAnnounceClients.TryDequeue(out var c))
         {
-            var player = c.getPlayer();
+            var player = c.Character;
             if (player != null && player.isLoggedinWorld())
             {
                 player.announceDiseases();
@@ -374,7 +348,7 @@ public class Server
         }
     }
 
-    public void registerAnnouncePlayerDiseases(IClient c)
+    public void registerAnnouncePlayerDiseases(IChannelClient c)
     {
         Monitor.Enter(disLock);
         try
@@ -550,8 +524,6 @@ public class Server
         FredrickProcessor fredrickProcessor = new FredrickProcessor(noteService);
         ChannelDependencies channelDependencies = new ChannelDependencies(noteService, fredrickProcessor);
 
-        PacketProcessor.registerGameHandlerDependencies(channelDependencies);
-
         return channelDependencies;
     }
 
@@ -600,14 +572,6 @@ public class Server
         foreach (var ch in getChannelsFromWorld(world))
         {
             ch.broadcastPacket(packet);
-        }
-    }
-
-    public void broadcastGMMessage(int world, Packet packet)
-    {
-        foreach (var ch in getChannelsFromWorld(world))
-        {
-            ch.broadcastGMPacket(packet);
         }
     }
 
@@ -801,131 +765,6 @@ public class Server
             throw;
         }
     }
-
-    public void loadAccountStorages(IClient c)
-    {
-        int accountId = c.getAccID();
-        var accWorlds = AccountCharacterCache.GetValueOrDefault(accountId, []).Select(x => x.World).ToHashSet();
-
-        foreach (int worldid in accWorlds)
-        {
-            if (RunningWorlds.TryGetValue(worldid, out var wserv))
-            {
-                wserv.loadAccountStorage(accountId);
-            }
-        }
-    }
-
-    private static string getRemoteHost(IClient client)
-    {
-        return SessionCoordinator.getSessionRemoteHost(client);
-    }
-
-    public void setCharacteridInTransition(IClient client, int charId)
-    {
-        string remoteIp = getRemoteHost(client);
-
-        lgnLock.EnterWriteLock();
-        try
-        {
-            transitioningChars.AddOrUpdate(remoteIp, charId);
-        }
-        finally
-        {
-            lgnLock.ExitWriteLock();
-        }
-    }
-
-    public bool validateCharacteridInTransition(IClient client, int charId)
-    {
-        if (!YamlConfig.config.server.USE_IP_VALIDATION)
-        {
-            return true;
-        }
-
-        string remoteIp = getRemoteHost(client);
-
-        lgnLock.EnterWriteLock();
-        try
-        {
-            return transitioningChars.Remove(remoteIp, out var cid) && cid == charId;
-        }
-        finally
-        {
-            lgnLock.ExitWriteLock();
-        }
-    }
-
-    public int? freeCharacteridInTransition(IClient client)
-    {
-        if (!YamlConfig.config.server.USE_IP_VALIDATION)
-        {
-            return null;
-        }
-
-        string remoteIp = getRemoteHost(client);
-
-        lgnLock.EnterWriteLock();
-        try
-        {
-            if (transitioningChars.Remove(remoteIp, out var d))
-                return d;
-            return null;
-        }
-        finally
-        {
-            lgnLock.ExitWriteLock();
-        }
-    }
-
-    public bool hasCharacteridInTransition(IClient client)
-    {
-        if (!YamlConfig.config.server.USE_IP_VALIDATION)
-        {
-            return true;
-        }
-
-        string remoteIp = getRemoteHost(client);
-
-        lgnLock.EnterReadLock();
-        try
-        {
-            return transitioningChars.ContainsKey(remoteIp);
-        }
-        finally
-        {
-            lgnLock.ExitReadLock();
-        }
-    }
-
-    public void registerLoginState(IClient c)
-    {
-        Monitor.Enter(srvLock);
-        try
-        {
-            inLoginState.AddOrUpdate(c, DateTimeOffset.Now.AddMinutes(10));
-        }
-        finally
-        {
-            Monitor.Exit(srvLock);
-        }
-    }
-
-    public void unregisterLoginState(IClient c)
-    {
-        Monitor.Enter(srvLock);
-        try
-        {
-            inLoginState.Remove(c);
-        }
-        finally
-        {
-            Monitor.Exit(srvLock);
-        }
-    }
-
-
-
     public Action shutdown(bool restart)
     {
         //no player should be online when trying to shutdown!

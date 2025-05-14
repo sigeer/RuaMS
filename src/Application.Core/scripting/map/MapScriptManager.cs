@@ -41,7 +41,7 @@ public class MapScriptManager : AbstractScriptManager
         _scripts.Clear();
     }
 
-    public bool runMapScript(IClient c, string mapScriptPath, bool firstUser)
+    public bool runMapScript(IChannelClient c, string mapScriptPath, bool firstUser)
     {
         if (firstUser)
         {

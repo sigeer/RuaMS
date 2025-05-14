@@ -1,10 +1,8 @@
 using Application.Core.Client;
-using Application.Core.Net.netty;
 using Application.Core.Servers;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using net;
 using net.netty;
 using net.server.coordinator.session;
 using Serilog;
@@ -27,10 +25,9 @@ public class LoginServerInitializer : ServerChannelInitializer
         string remoteAddress = getRemoteAddress(socketChannel);
         Log.Logger.Debug("Client connected to login server from {ClientIP} ", remoteAddress);
 
-        var packetProcessor = PacketProcessor.getLoginServerProcessor(masterServer.InstanceId);
         long clientSessionId = sessionId.getAndIncrement();
 
-        var client = new LoginClient(sessionId, masterServer, socketChannel, 
+        var client = new LoginClient(sessionId, masterServer, socketChannel,
             _serviceProvider.GetRequiredService<LoginPacketProcessor>(),
             _serviceProvider.GetRequiredService<ILogger<IClientBase>>()!);
 

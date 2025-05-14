@@ -23,10 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Players;
 using Application.Core.Game.Trades;
+using Application.Utility.Extensions;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.id;
+using Microsoft.Extensions.Logging;
 using net.packet;
+using System.Drawing;
 using System.Net;
 using tools;
 
@@ -34,6 +37,13 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class ChangeMapHandler : ChannelHandlerBase
 {
+    readonly ILogger<ChangeMapHandler> _logger;
+
+    public ChangeMapHandler(ILogger<ChangeMapHandler> logger)
+    {
+        _logger = logger;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
@@ -42,7 +52,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         {
             if (chr.isChangingMaps())
             {
-                log.Warning("Chr {CharacterName} got stuck when changing maps. Last visited mapids: {LastVisitedMapId}", chr.getName(), chr.getLastVisitedMapids());
+                _logger.LogWarning("Chr {CharacterName} got stuck when changing maps. Last visited mapids: {LastVisitedMapId}", chr.getName(), chr.getLastVisitedMapids());
             }
 
             c.sendPacket(PacketCreator.enableActions());
@@ -60,7 +70,7 @@ public class ChangeMapHandler : ChannelHandlerBase
 
         if (chr.getCashShop().isOpened())
         {
-            c.disconnect(false, false);
+            c.Disconnect(false, false);
             return;
         }
 
@@ -208,7 +218,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            _logger.LogError(e.ToString());
         }
 
     }
@@ -219,10 +229,10 @@ public class ChangeMapHandler : ChannelHandlerBase
 
         if (!chr.getCashShop().isOpened())
         {
-            c.disconnect(false, false);
+            c.Disconnect(false, false);
             return;
         }
-        var socket = Server.getInstance().GetChannelEndPoint(c, c.getWorld(), c.getChannel());
+        var socket = c.CurrentServer.getIP();
         if (socket == null)
         {
             c.enableCSActions();
@@ -237,7 +247,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         }
         catch (Exception ex)
         {
-            log.Error(ex.ToString());
+            _logger.LogError(ex.ToString());
         }
     }
 }

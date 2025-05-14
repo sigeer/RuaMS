@@ -16,7 +16,7 @@ public class RockPaperScissor
     private bool ableAnswer = true;
     private bool win = false;
 
-    public RockPaperScissor(IClient c, byte mode)
+    public RockPaperScissor(IChannelClient c, byte mode)
     {
         c.sendPacket(PacketCreator.rpsMode((byte)(9 + mode)));
         if (mode == 0)

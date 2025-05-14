@@ -44,7 +44,7 @@ public class SkillMacroHandler : ChannelHandlerBase
             if (name.Length > 12)
             {
                 AutobanFactory.PACKET_EDIT.alert(chr, "Invalid name length " + name + " (" + name.Length + ") for skill macro.");
-                c.disconnect(false, false);
+                c.Disconnect(false, false);
                 break;
             }
 

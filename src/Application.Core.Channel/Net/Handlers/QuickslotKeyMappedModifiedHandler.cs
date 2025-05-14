@@ -11,10 +11,6 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class QuickslotKeyMappedModifiedHandler : ChannelHandlerBase
 {
-    public QuickslotKeyMappedModifiedHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         // Invalid size for the packet.

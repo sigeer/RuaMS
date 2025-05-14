@@ -133,7 +133,7 @@ public class AutobanManager
             {
                 if (YamlConfig.config.server.USE_AUTOBAN)
                 {
-                    chr.getClient().disconnect(false, false);
+                    chr.getClient().Disconnect(false, false);
                 }
 
                 log.Information("Autoban - Chr {CharacterName} was caught spamming TYPE {AutoBanType} and has been disconnected", chr.getName(), type);

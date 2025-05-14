@@ -37,10 +37,6 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RemoteGachaponHandler : ChannelHandlerBase
 {
-    public RemoteGachaponHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int ticket = p.readInt();
@@ -48,19 +44,19 @@ public class RemoteGachaponHandler : ChannelHandlerBase
         if (ticket != ItemId.REMOTE_GACHAPON_TICKET)
         {
             AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with item id: " + ticket);
-            c.disconnect(false, false);
+            c.Disconnect(false, false);
             return;
         }
         else if (gacha < 0 || gacha > 11)
         {
             AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with mode: " + gacha);
-            c.disconnect(false, false);
+            c.Disconnect(false, false);
             return;
         }
         else if (c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(ticket)).countById(ticket) < 1)
         {
             AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler without a ticket.");
-            c.disconnect(false, false);
+            c.Disconnect(false, false);
             return;
         }
         int npcId = NpcId.GACHAPON_HENESYS;

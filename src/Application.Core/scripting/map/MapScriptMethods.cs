@@ -36,7 +36,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
 
     private string rewardstring = " title has been rewarded. Please see NPC Dalair to receive your Medal.";
 
-    public MapScriptMethods(IClient c) : base(c)
+    public MapScriptMethods(IChannelClient c) : base(c)
     {
     }
 

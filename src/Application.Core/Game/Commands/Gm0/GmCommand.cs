@@ -28,8 +28,8 @@ public class GmCommand : CommandBase
             return;
         }
         string message = player.getLastCommandMessage();
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[GM Message]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(1, message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[GM Message]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(1, message));
         log.Information("{CharacterName}: {Message}", CharacterManager.makeMapleReadable(player.getName()), message);
         player.dropMessage(5, "Your message '" + message + "' was sent to GMs.");
         player.dropMessage(5, tips[Randomizer.nextInt(tips.Length)]);

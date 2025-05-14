@@ -22,6 +22,10 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
+using Application.Utility.Configs;
+using Application.Utility.Exceptions;
+using Application.Utility.Extensions;
 using client.creator.veteran;
 using client.inventory;
 using client.inventory.manipulator;
@@ -30,6 +34,7 @@ using client.processor.stat;
 using constants.game;
 using constants.id;
 using constants.inventory;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using net.packet.outs;
 using server;
@@ -45,17 +50,19 @@ public class UseCashItemHandler : ChannelHandlerBase
 {
 
     private NoteService noteService;
+    readonly ILogger<UseCashItemHandler> _logger;
 
-    public UseCashItemHandler(NoteService noteService)
+    public UseCashItemHandler(NoteService noteService, ILogger<UseCashItemHandler> logger)
     {
         this.noteService = noteService;
+        _logger = logger;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
 
-        long timeNow = currentServerTime();
+        long timeNow = c.CurrentServer.getCurrentTime();
         if (timeNow - player.getLastUsedCashItem() < 3000)
         {
             player.dropMessage(1, "You have used a cash item recently. Wait a moment, then try again.");
@@ -109,7 +116,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 if (itemId / 1000 >= 5041 || mapId / 100000000 == player.getMapId() / 100000000)
                 {
                     //check vip or same continent
-                    var targetMap = c.getChannelServer().getMapFactory().getMap(mapId);
+                    var targetMap = c.CurrentServer.getMapFactory().getMap(mapId);
                     if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(mapId)))
                     {
                         player.forceChangeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
@@ -128,7 +135,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             else
             {
                 string name = p.readString();
-                var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(name);
+                var victim = c.CurrentServer.getPlayerStorage().getCharacterByName(name);
 
                 if (victim != null)
                 {
@@ -239,7 +246,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                 if (period > 0)
                 {
-                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : currentServerTime();
+                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : c.CurrentServer.getCurrentTime();
                     eq.setExpiration(expiration + 24 * 3600 * 1000 * (period));
                 }
 
@@ -285,7 +292,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     }
                     break;
                 case 2: // Super megaphone
-                    Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
+                    c.CurrentServer.BroadcastWorldPacket(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -309,7 +316,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                         }
                         if (tvType != 4)
                         {
-                            victim = c.getChannelServer().getPlayerStorage().getCharacterByName(p.readString());
+                            victim = c.CurrentServer.getPlayerStorage().getCharacterByName(p.readString());
                         }
                     }
                     List<string> messages = new();
@@ -333,7 +340,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                     if (megassenger)
                     {
-                        Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + builder, ear));
+                        c.CurrentServer.BroadcastWorldPacket(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + builder, ear));
                     }
 
                     break;
@@ -351,7 +358,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.itemMegaphone(msg, whisper, c.getChannel(), item));
+                    c.CurrentServer.BroadcastWorldPacket(PacketCreator.itemMegaphone(msg, whisper, c.ActualChannel, item));
                     break;
                 case 7: //triple megaphone
                     int lines = p.ReadSByte();
@@ -365,7 +372,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                         msg2[i] = medal + player.getName() + " : " + p.readString();
                     }
                     whisper = p.readByte() == 1;
-                    Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.getMultiMegaphone(msg2, c.getChannel(), whisper));
+                    c.CurrentServer.BroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, c.ActualChannel, whisper));
                     break;
             }
             remove(c, position, itemId);
@@ -513,9 +520,8 @@ public class UseCashItemHandler : ChannelHandlerBase
                 strLines.Add(p.readString());
             }
 
-            int world = c.getWorld();
-            Server.getInstance().broadcastMessage(world, PacketCreator.getAvatarMega(player, medal, c.getChannel(), itemId, strLines, (p.readByte() != 0)));
-            TimerManager.getInstance().schedule(() => Server.getInstance().broadcastMessage(world, PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
+            c.CurrentServer.BroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, c.ActualChannel, itemId, strLines, (p.readByte() != 0)));
+            TimerManager.getInstance().schedule(() => c.CurrentServer.BroadcastWorldPacket(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
         else if (itemType == 540)
@@ -535,7 +541,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 543)
         {
-            if (itemId == ItemId.MAPLE_LIFE_B && !c.gainCharacterSlot())
+            if (itemId == ItemId.MAPLE_LIFE_B && !c.GainCharacterSlot())
             {
                 player.dropMessage(1, "You have already used up all 12 extra character slots.");
                 c.sendPacket(PacketCreator.enableActions());
@@ -711,7 +717,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else
         {
-            log.Warning("NEW CASH ITEM TYPE: {ItemType}, packet: {Packet}", itemType, p);
+            _logger.LogWarning("NEW CASH ITEM TYPE: {ItemType}, packet: {Packet}", itemType, p);
             c.sendPacket(PacketCreator.enableActions());
         }
     }

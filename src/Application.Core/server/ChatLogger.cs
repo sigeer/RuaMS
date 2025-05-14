@@ -7,7 +7,7 @@ public class ChatLogger
     /**
      * Log a chat message (if enabled in the config)
      */
-    public static void log(IClient c, string chatType, string message)
+    public static void log(IChannelClient c, string chatType, string message)
     {
         if (YamlConfig.config.server.USE_ENABLE_CHAT_LOG)
         {

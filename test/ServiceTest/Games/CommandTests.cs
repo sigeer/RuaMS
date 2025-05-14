@@ -1,5 +1,4 @@
-using Application.Core.Compatible.Extensions;
-using Application.Core.Game;
+using Application.Core.Client;
 using Application.Core.Game.Commands;
 using Application.Scripting.JS;
 
@@ -48,7 +47,7 @@ namespace ServiceTest.Games
         {
         }
 
-        public override void Execute(IClient client, string[] values)
+        public override void Execute(IChannelClient client, string[] values)
         {
             throw new NotImplementedException();
         }
@@ -60,7 +59,7 @@ namespace ServiceTest.Games
         {
         }
 
-        public override void Execute(IClient client, string[] values)
+        public override void Execute(IChannelClient client, string[] values)
         {
             var id = GetIntParam("id");
             Assert.That(id, Is.EqualTo(123));

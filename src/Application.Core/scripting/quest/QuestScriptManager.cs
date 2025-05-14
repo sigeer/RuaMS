@@ -38,14 +38,14 @@ public class QuestScriptManager : AbstractScriptManager
 {
     private static QuestScriptManager instance = new QuestScriptManager();
 
-    readonly EngineStorate<IClient> _scripts = new EngineStorate<IClient>();
+    readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
     public static QuestScriptManager getInstance()
     {
         return instance;
     }
 
-    private IEngine? getQuestScriptEngine(IClient c, short questid)
+    private IEngine? getQuestScriptEngine(IChannelClient c, short questid)
     {
         var engine = getInvocableScriptEngine(GetQuestScriptPath(questid.ToString()), c);
         if (engine == null && GameConstants.isMedalQuest(questid))
@@ -56,7 +56,7 @@ public class QuestScriptManager : AbstractScriptManager
         return engine;
     }
 
-    public void start(IClient c, short questid, int npc)
+    public void start(IChannelClient c, short questid, int npc)
     {
         Quest quest = Quest.getInstance(questid);
         try
@@ -102,7 +102,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void start(IClient c, sbyte mode, sbyte type, int selection)
+    public void start(IChannelClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -120,7 +120,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void end(IClient c, short questid, int npc)
+    public void end(IChannelClient c, short questid, int npc)
     {
         Quest quest = Quest.getInstance(questid);
         if (!c.OnlinedCharacter.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED) || (!c.OnlinedCharacter.getMap().containsNPC(npc) && !quest.isAutoComplete()))
@@ -170,7 +170,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void end(IClient c, sbyte mode, sbyte type, int selection)
+    public void end(IChannelClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -188,7 +188,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void raiseOpen(IClient c, short questid, int npc)
+    public void raiseOpen(IChannelClient c, short questid, int npc)
     {
         try
         {
@@ -225,7 +225,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
     }
 
-    public void dispose(QuestActionManager qm, IClient c)
+    public void dispose(QuestActionManager qm, IChannelClient c)
     {
         c.NPCConversationManager = null;
         _scripts.Remove(c);
@@ -234,7 +234,7 @@ public class QuestScriptManager : AbstractScriptManager
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 
-    public QuestActionManager? getQM(IClient c)
+    public QuestActionManager? getQM(IChannelClient c)
     {
         return c.NPCConversationManager as QuestActionManager;
     }

@@ -83,7 +83,7 @@ public class KeymapChangeHandler : ChannelHandlerBase
                 int itemID = p.readInt();
                 if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
-                    c.disconnect(false, false); // Don't let them send a packet with a use item they dont have.
+                    c.Disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
                 c.OnlinedCharacter.changeKeybinding((int)KeyCode.VirtualAutoPotionHP, new KeyBinding(KeyBindingType.AutoPotion, itemID));
@@ -94,7 +94,7 @@ public class KeymapChangeHandler : ChannelHandlerBase
                 int itemID = p.readInt();
                 if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
-                    c.disconnect(false, false); // Don't let them send a packet with a use item they dont have.
+                    c.Disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
                 c.OnlinedCharacter.changeKeybinding((int)KeyCode.VirtualAutoPotionMP, new KeyBinding(KeyBindingType.AutoPotion, itemID));

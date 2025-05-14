@@ -1,4 +1,5 @@
 using Application.Core.Channel.Net;
+using Application.Core.Datas;
 using Application.Core.Game;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
@@ -14,9 +15,9 @@ using Application.Utility.Configs;
 using Application.Utility.Loggers;
 using net.netty;
 using net.packet;
+using net.server.guild;
 using net.server.services;
 using net.server.services.type;
-using Org.BouncyCastle.Asn1.Mozilla;
 using scripting.Event;
 using Serilog;
 using server.events.gm;
@@ -104,6 +105,7 @@ public partial class WorldChannel : IWorldChannel
     public MapObjectController MapObjectController { get; }
     public MountTirednessController MountTirednessController { get; }
     public HiredMerchantController HiredMerchantController { get; }
+    public PetHungerController PetHungerController { get; }
     public WorldChannel(ChannelServerConfig config, IChannelServerTransport transport, ChannelServer channelServer)
     {
         InstanceId = Guid.NewGuid().ToString();
@@ -127,6 +129,7 @@ public partial class WorldChannel : IWorldChannel
         MapObjectController = new MapObjectController(this);
         MountTirednessController = new MountTirednessController(this);
         HiredMerchantController = new HiredMerchantController(this);
+        PetHungerController = new PetHungerController(this);
 
         DojoInstance = new DojoInstance(this);
         WeddingInstance = new WeddingChannelInstance(this);
@@ -209,6 +212,7 @@ public partial class WorldChannel : IWorldChannel
         MapObjectController.Register();
         MountTirednessController.Register();
         HiredMerchantController.Register();
+        PetHungerController.Register();
 
         IsRunning = true;
     }
@@ -682,30 +686,110 @@ public partial class WorldChannel : IWorldChannel
         return !usedMC.Contains(getMonsterCarnivalRoom(cpq1, field));
     }
 
-    public void AccountLogout(int account)
-    {
-        Transport.SendAccountLogout(account);
-    }
-
     public void BroadcastWorldPacket(Packet p)
     {
-        throw new NotImplementedException();
+        Transport.BroadcastMessage(p);
     }
-
-
-
-    public void BuddyChanged(int characterId)
+    public void BroadcastWorldGMPacket(Packet packet)
     {
-        throw new NotImplementedException();
+        Transport.BroadcastGMMessage(packet);
     }
+
 
     public int getCurrentTimestamp()
     {
-        throw new NotImplementedException();
+        return (int)((DateTimeOffset.Now - StartupTime).TotalMilliseconds);
     }
 
     public long getCurrentTime()
     {
-        throw new NotImplementedException();
+        return DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
+
+    public IPEndPoint GetChannelEndPoint(int channel)
+    {
+        if (channel == getId())
+            return getIP();
+
+        return Transport.GetChannelEndPoint(channel);
+    }
+
+
+    public void NotifyPartner(int id)
+    {
+        Transport.NotifyPartner(id);
+    }
+
+    public CharacterValueObject GetPlayerData(int cid)
+    {
+        return Transport.GetPlayerData(cid);
+    }
+
+    public void UpdateBuddyByLoggedOff(int characterId, int channel, int[] buddies)
+    {
+        UpdateBuddyChannel(characterId, channel, buddies, true);
+    }
+
+    public void UpdateBuddyByLoggedIn(int characterId, int channel, int[] buddies)
+    {
+        UpdateBuddyChannel(characterId, channel, buddies, false);
+    }
+
+    private void UpdateBuddyChannel(int characterId, int channel, int[] buddies, bool offline)
+    {
+        var playerStorage = getPlayerStorage();
+        foreach (int buddy in buddies)
+        {
+            var chr = playerStorage.getCharacterById(buddy);
+            if (chr != null && chr.IsOnlined)
+            {
+                var ble = chr.getBuddylist().get(characterId);
+                if (ble != null && ble.Visible)
+                {
+                    int mcChannel;
+                    if (offline)
+                    {
+                        mcChannel = -1;
+                    }
+                    else
+                    {
+                        mcChannel = (byte)(channel - 1);
+                    }
+                    chr.getBuddylist().put(ble);
+                    chr.sendPacket(PacketCreator.updateBuddyChannel(ble.getCharacterId(), mcChannel));
+                }
+            }
+        }
+    }
+
+    public void SetCharacteridInTransition(string v, int cid)
+    {
+        Transport.SetCharacteridInTransition(v, cid);
+    }
+
+    public bool HasCharacteridInTransition(string clientSession)
+    {
+        return Transport.HasCharacteridInTransition(clientSession);
+    }
+
+    public void UpdateAccountState(int accId, sbyte state)
+    {
+        Transport.UpdateAccountState(accId, state);
+    }
+
+    public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
+    {
+        return Transport.WarpPlayer(name, channel, mapId, portal);
+    }
+
+    public string GetExpeditionInfo()
+    {
+        return Transport.LoadExpeditionInfo();
+    }
+
+    public void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise)
+    {
+        Transport.ChangePlayerAllianceRank(targetCharacterId, isRaise);
+    }
+
 }

@@ -277,10 +277,10 @@ namespace Application.Core.Managers
         }
 
 
-        public static IPlayer NewPlayer(int world, int accountId)
+        public static IPlayer NewPlayer(int accountId)
         {
             var m = new Player(
-                world: world,
+                world: 0,
                 accountId: accountId,
                 hp: 50,
                 mp: 5,
@@ -348,7 +348,7 @@ namespace Application.Core.Managers
         /// <param name="client"></param>
         /// <param name="login"></param>
         /// <returns></returns>
-        public static IPlayer? LoadPlayerFromDB(int charid, IClient client, bool login)
+        public static IPlayer? LoadPlayerFromDB(int charid, IChannelClient client, bool login)
         {
             try
             {
@@ -431,7 +431,7 @@ namespace Application.Core.Managers
 
                 if (login)
                 {
-                    client.setPlayer(ret);
+                    client.SetPlayer(ret);
 
                     var mapManager = client.getChannelServer().getMapFactory();
                     ret.setMap(mapManager.getMap(ret.Map) ?? mapManager.getMap(MapId.HENESYS));
@@ -464,7 +464,7 @@ namespace Application.Core.Managers
                 var accountFromDB = dbContext.Accounts.Where(x => x.Id == ret.AccountId).AsNoTracking().FirstOrDefault();
                 if (accountFromDB != null)
                 {
-                    client.LoadAccountInfo(accountFromDB);
+                    client.SetAccount(accountFromDB);
                 }
 
                 var areaInfoFromDB = dbContext.AreaInfos.Where(x => x.Charid == ret.Id).Select(x => new { x.Area, x.Info }).ToList();

@@ -32,10 +32,6 @@ using tools;
 
 public class MessengerHandler : ChannelHandlerBase
 {
-    public MessengerHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
@@ -103,7 +99,7 @@ public class MessengerHandler : ChannelHandlerBase
                         else if (messenger.getMembers().Count < 3)
                         {
                             input = p.readString();
-                            var target = c.getChannelServer().getPlayerStorage().getCharacterByName(input);
+                            var target = c.CurrentServer.getPlayerStorage().getCharacterByName(input);
                             if (target != null)
                             {
                                 if (target.Messenger == null)
@@ -127,7 +123,7 @@ public class MessengerHandler : ChannelHandlerBase
                             {
                                 if (world.find(input) > -1)
                                 {
-                                    world.messengerInvite(c.OnlinedCharacter.getName(), messenger.getId(), input, c.getChannel());
+                                    world.messengerInvite(c.OnlinedCharacter.getName(), messenger.getId(), input, c.Channel);
                                 }
                                 else
                                 {

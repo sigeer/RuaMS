@@ -69,7 +69,7 @@ public class StorageProcessor
                             { // removal starts at zero
                                 AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with storage.");
                                 log.Warning("Chr {CharacterName} tried to work with storage slot {Slot}", chr.getName(), slot);
-                                c.disconnect(true, false);
+                                c.Disconnect(true, false);
                                 return;
                             }
 
@@ -141,7 +141,7 @@ public class StorageProcessor
                                 AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter,
                                         c.OnlinedCharacter.getName() + " tried to packet edit with storage.");
                                 log.Warning("Chr {ChracterName} tried to store item at slot {Slot}", c.OnlinedCharacter.getName(), slot);
-                                c.disconnect(true, false);
+                                c.Disconnect(true, false);
                                 return;
                             }
 

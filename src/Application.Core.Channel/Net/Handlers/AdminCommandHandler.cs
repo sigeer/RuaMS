@@ -23,9 +23,12 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.Managers;
+using Application.Utility.Compatible;
 using client.inventory;
 using client.inventory.manipulator;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
 using server.life;
@@ -38,6 +41,12 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class AdminCommandHandler : ChannelHandlerBase
 {
+    readonly ILogger<AdminCommandHandler> _logger;
+
+    public AdminCommandHandler(ILogger<AdminCommandHandler> logger)
+    {
+        _logger = logger;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -89,11 +98,11 @@ public class AdminCommandHandler : ChannelHandlerBase
                 int duration = p.readInt();
                 string description = p.readString();
                 string reason = c.OnlinedCharacter.getName() + " used /ban to ban";
-                target = c.getChannelServer().getPlayerStorage().getCharacterByName(victim);
+                target = c.CurrentServer.getPlayerStorage().getCharacterByName(victim);
                 if (target != null)
                 {
                     string readableTargetName = CharacterManager.makeMapleReadable(target.getName());
-                    string ip = target.getClient().getRemoteAddress();
+                    string ip = target.Client.RemoteAddress;
                     reason += readableTargetName + " (IP: " + ip + ")";
                     if (duration == -1)
                     {
@@ -145,7 +154,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 List<IMapObject> monsterx = c.OnlinedCharacter.getMap().getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.MONSTER));
                 for (int x = 0; x < amount; x++)
                 {
-                    var monster = (Monster)monsterx.get(x);
+                    var monster = (Monster)monsterx[x];
                     if (monster.getId() == mobToKill)
                     {
                         c.OnlinedCharacter.getMap().killMonster(monster, c.OnlinedCharacter, true);
@@ -195,15 +204,15 @@ public class AdminCommandHandler : ChannelHandlerBase
             case 0x77: //Testing purpose
                 if (p.available() == 4)
                 {
-                    log.Debug("int: {0}", p.readInt());
+                    _logger.LogDebug("int: {0}", p.readInt());
                 }
                 else if (p.available() == 2)
                 {
-                    log.Debug("short: {0}", p.readShort());
+                    _logger.LogDebug("short: {0}", p.readShort());
                 }
                 break;
             default:
-                log.Information("New GM packet encountered (MODE: {Mode}): {0}", mode, p);
+                _logger.LogInformation("New GM packet encountered (MODE: {Mode}): {0}", mode, p);
                 break;
         }
     }

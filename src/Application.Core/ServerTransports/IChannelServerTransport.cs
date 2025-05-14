@@ -1,9 +1,12 @@
+using Application.Core.Datas;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
 using Application.Shared.MapObjects;
 using net.packet;
+using server.maps;
+using System.Net;
 
 namespace Application.Core.ServerTransports
 {
@@ -89,6 +92,16 @@ namespace Application.Core.ServerTransports
 
         #region login
         void SendAccountLogout(int accountId);
+        IPEndPoint GetChannelEndPoint(int channel);
+        void NotifyPartner(int id);
+        void UpdateAccountState(int accId, sbyte state);
+        void SetCharacteridInTransition(string v, int cid);
+        bool HasCharacteridInTransition(string clientSession);
+        bool WarpPlayer(string name, int? channel, int mapId, int? portal);
+        string LoadExpeditionInfo();
+        void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
+        CharacterValueObject GetPlayerData(int cid);
+
         #endregion
     }
 }

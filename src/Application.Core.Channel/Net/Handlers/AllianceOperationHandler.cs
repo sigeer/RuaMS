@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
@@ -193,10 +194,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     int int1 = p.readInt();
                     sbyte byte1 = p.ReadSByte();
 
-                    //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeRank(chr.getGuild().getAllianceId(), chr.getId(), int1, byte1), -1, -1);
-                    var player = Server.getInstance().getWorld(c.getWorld()).getPlayerStorage().getCharacterById(int1);
-                    changePlayerAllianceRank(alliance!, player, (byte1 > 0));
-
+                    c.CurrentServer.ChangePlayerAllianceRank(int1, byte1 > 0);
                     break;
                 }
             case 0x0A:

@@ -327,7 +327,7 @@ public class MTSHandler : ChannelHandlerBase
                                 if (c.OnlinedCharacter.getCashShop().getCash(CashShop.NX_PREPAID) >= price)
                                 { // FIX
                                     bool alwaysnull = true;
-                                    foreach (var cserv in Server.getInstance().getAllChannels())
+                                    foreach (var cserv in c.getWorldServer().getChannels())
                                     {
                                         var victim = cserv.getPlayerStorage().getCharacterById(dbModel.Seller);
                                         if (victim != null)
@@ -383,7 +383,7 @@ public class MTSHandler : ChannelHandlerBase
                                 int price = dbModel.Price + 100 + (int)(dbModel.Price * 0.1);
                                 if (c.OnlinedCharacter.getCashShop().getCash(CashShop.NX_PREPAID) >= price)
                                 {
-                                    foreach (var cserv in Server.getInstance().getAllChannels())
+                                    foreach (var cserv in c.getWorldServer().getChannels())
                                     {
                                         var victim = cserv.getPlayerStorage().getCharacterById(dbModel.Seller);
                                         if (victim != null)

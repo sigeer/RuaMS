@@ -29,10 +29,9 @@ namespace Application.Core.Client
         void UpdateMacs(string macData);
 
         void CommitAccount();
-
-        void SetCharacterOnSessionTransitionState(int cid);
         void SendCharList();
         List<IPlayer> LoadCharacters();
-
+        bool CanRequestCharlist();
+        void UpdateRequestCharListTick();
     }
 }

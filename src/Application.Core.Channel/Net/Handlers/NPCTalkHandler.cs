@@ -22,8 +22,10 @@
 
 
 using Application.Core.Game.Life;
+using Application.Utility.Configs;
 using client.processor.npc;
 using constants.id;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using scripting.npc;
 using tools;
@@ -32,6 +34,12 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class NPCTalkHandler : ChannelHandlerBase
 {
+    readonly ILogger<NPCTalkHandler> _logger;
+
+    public NPCTalkHandler(ILogger<NPCTalkHandler> logger)
+    {
+        _logger = logger;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -41,7 +49,7 @@ public class NPCTalkHandler : ChannelHandlerBase
             return;
         }
 
-        if (currentServerTime() - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
+        if (c.CurrentServer.getCurrentTime() - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
         {
             c.sendPacket(PacketCreator.enableActions());
             return;
@@ -84,7 +92,7 @@ public class NPCTalkHandler : ChannelHandlerBase
                     {
                         if (!npc.hasShop())
                         {
-                            log.Warning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
+                            _logger.LogWarning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
                             return;
                         }
                         else if (c.OnlinedCharacter.getShop() != null)

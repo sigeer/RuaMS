@@ -48,7 +48,7 @@ public class MapEffect
         return PacketCreator.startMapEffect(msg, itemId, active);
     }
 
-    public void sendStartData(IClient client)
+    public void sendStartData(IChannelClient client)
     {
         client.sendPacket(makeStartData());
     }

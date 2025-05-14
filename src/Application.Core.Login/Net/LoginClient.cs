@@ -23,10 +23,9 @@ using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Login.Net
 {
-    public class LoginClient : SocketClient, ILoginClient
+    public class LoginClient : ClientBase, ILoginClient
     {
-        public AccountEntity? AccountEntity { get; set; }
-        public override bool IsOnlined => AccountEntity?.Loggedin == AccountStage.LOGIN_LOGGEDIN;
+        public override bool IsOnlined => AccountEntity?.Loggedin > AccountStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;
         public LoginClient(long sessionId, IMasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, ILogger<IClientBase> log)
             : base(sessionId, currentServer, nettyChannel, log)
@@ -59,17 +58,29 @@ namespace Application.Core.Login.Net
             SessionCoordinator.getInstance().closeLoginSession(this);
         }
 
-        public override void ForceDisconnect()
-        {
-            throw new NotImplementedException();
-        }
-
         public void Disconnect()
         {
             SessionCoordinator.getInstance().closeSession(this, false);
 
             updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
             CurrentServer.UnregisterLoginState(this);
+
+            Dispose();
+        }
+
+        public override void ForceDisconnect()
+        {
+            Disconnect();
+        }
+
+        public override void updateLoginState(sbyte newState)
+        {
+            if (newState == AccountStage.LOGIN_LOGGEDIN)
+            {
+                SessionCoordinator.getInstance().updateOnlineClient(this);
+            }
+
+            base.updateLoginState(newState);
         }
 
         public override void Dispose()
@@ -78,25 +89,6 @@ namespace Application.Core.Login.Net
             this.packetChannel.Writer.TryComplete();
         }
 
-        public void updateLoginState(sbyte newState)
-        {
-            if (AccountEntity == null)
-                return;
-
-            // rules out possibility of multiple account entries
-            if (newState == AccountStage.LOGIN_LOGGEDIN)
-            {
-                SessionCoordinator.getInstance().updateOnlineClient(this);
-            }
-
-            AccountEntity.Loggedin = newState;
-            AccountEntity.Lastlogin = DateTimeOffset.Now;
-
-            if (newState == AccountStage.LOGIN_NOTLOGGEDIN)
-            {
-                AccountEntity = null;
-            }
-        }
         public bool CanBypassPin()
         {
             return LoginBypassCoordinator.getInstance().canLoginBypass(Hwid, AccountEntity!.Id, false);
@@ -158,7 +150,7 @@ namespace Application.Core.Login.Net
 
             if (AccountEntity.Loggedin == AccountStage.LOGIN_SERVER_TRANSITION)
             {
-                if (AccountEntity.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < Server.getInstance().getCurrentTime())
+                if (AccountEntity.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
                 {
                     updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
                     return AccountStage.LOGIN_NOTLOGGEDIN;
@@ -187,8 +179,7 @@ namespace Application.Core.Login.Net
             int accId = -2;
             try
             {
-                using var dbContext = new DBContext();
-                var dbModel = dbContext.Accounts.Where(x => x.Name == login).AsNoTracking().FirstOrDefault();
+                var dbModel = CurrentServer.GetAccountEntity(accId);
                 if (dbModel != null)
                 {
                     accId = dbModel.Id;
@@ -281,14 +272,6 @@ namespace Application.Core.Login.Net
             return dbContext.Ipbans.Any(x => x.Ip.Contains(RemoteAddress));
         }
 
-        private HashSet<string> GetMac()
-        {
-            if (AccountEntity == null || string.IsNullOrEmpty(AccountEntity.Macs))
-                return [];
-
-            return AccountEntity.Macs.Split(",").Select(x => x.Trim()).ToHashSet();
-        }
-
         public void UpdateMacs(string macData)
         {
             if (AccountEntity == null)
@@ -334,7 +317,7 @@ namespace Application.Core.Login.Net
                     if (accid == chr.getAccountID())
                     {
                         log.LogWarning("Chr {CharacterName} has been removed from world {WorldName}. Possible Dupe attempt.", chr.getName(), w.Name);
-                        chr.getClient().forceDisconnect();
+                        chr.getClient().ForceDisconnect();
                         return false;
                     }
                 }
@@ -359,12 +342,6 @@ namespace Application.Core.Login.Net
             }
         }
 
-        public void SetCharacterOnSessionTransitionState(int cid)
-        {
-            this.updateLoginState(AccountStage.LOGIN_SERVER_TRANSITION);
-            CurrentServer.SetCharacteridInTransition(this, cid);
-        }
-
         public void SendCharList()
         {
             this.sendPacket(LoginPacketCreator.GetCharListPacket(this));
@@ -378,6 +355,16 @@ namespace Application.Core.Login.Net
         public List<IPlayer> LoadCharacters()
         {
             return Server.getInstance().LoadAccountCharList(AccountEntity!.Id,  1).GetValueOrDefault(0, []);
+        }
+
+        DateTimeOffset lastRequestCharList;
+        public bool CanRequestCharlist()
+        {
+            return lastRequestCharList.AddMilliseconds(877) < DateTimeOffset.Now;
+        }
+        public void UpdateRequestCharListTick()
+        {
+            lastRequestCharList = DateTimeOffset.Now;
         }
     }
 }

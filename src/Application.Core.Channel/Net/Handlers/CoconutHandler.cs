@@ -23,6 +23,7 @@
 
 
 using Application.Core.Game.Maps.Specials;
+using Application.Utility;
 using net.packet;
 using tools;
 
@@ -51,7 +52,7 @@ public class CoconutHandler : ChannelHandlerBase
         {
             return;
         }
-        if (currentServerTime() < nut.getHitTime())
+        if (c.CurrentServer.getCurrentTime() < nut.getHitTime())
         {
             return;
         }

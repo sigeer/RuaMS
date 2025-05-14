@@ -60,7 +60,7 @@ public class DueyProcessor
         }
     }
 
-    private static void showDueyNotification(IClient c, IPlayer player)
+    private static void showDueyNotification(IChannelClient c, IPlayer player)
     {
         try
         {
@@ -332,7 +332,7 @@ public class DueyProcessor
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                 }
 
-                IClient? rClient = null;
+                IChannelClient? rClient = null;
                 int channel = c.getWorldServer().find(recipient);
                 if (channel > -1)
                 {
@@ -347,7 +347,7 @@ public class DueyProcessor
                     }
                 }
 
-                if (rClient != null && rClient.isLoggedIn() && !rClient.OnlinedCharacter.isAwayFromWorld())
+                if (rClient != null && rClient.IsOnlined && !rClient.OnlinedCharacter.isAwayFromWorld())
                 {
                     showDueyNotification(rClient, rClient.OnlinedCharacter);
                 }
@@ -450,7 +450,7 @@ public class DueyProcessor
         }
     }
 
-    public static void dueySendTalk(IClient c, bool quickDelivery)
+    public static void dueySendTalk(IChannelClient c, bool quickDelivery)
     {
         if (c.tryacquireClient())
         {

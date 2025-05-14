@@ -70,7 +70,7 @@ public class LoginPasswordHandler : LoginHandlerBase
             try
             {
                 //Jayd: Added birthday, tempban
-                var newAccountId = _accountManager.CreateAccount(login, pwd);
+                _accountManager.CreateAccount(login, pwd);
                 loginok = c.Login(login, pwd, hwid);
             }
             catch (Exception e)

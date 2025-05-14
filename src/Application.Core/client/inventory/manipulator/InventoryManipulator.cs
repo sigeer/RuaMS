@@ -370,7 +370,7 @@ public class InventoryManipulator
         }
     }
 
-    public static int checkSpaceProgressively(IClient c, int itemid, int quantity, string owner, int usedSlots, bool useProofInv)
+    public static int checkSpaceProgressively(IChannelClient c, int itemid, int quantity, string owner, int usedSlots, bool useProofInv)
     {
         // return value --> bit0: if has space for this one;
         //                  value after: new slots filled;

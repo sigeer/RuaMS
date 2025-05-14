@@ -32,11 +32,11 @@ namespace server;
  */
 public class StorageInventory
 {
-    private IClient c;
+    private IChannelClient c;
     private Dictionary<short, Item> inventory = new();
     private byte slotLimit;
 
-    public StorageInventory(IClient c, List<Item> toSort)
+    public StorageInventory(IChannelClient c, List<Item> toSort)
     {
         this.inventory = new();
         this.slotLimit = (byte)toSort.Count;

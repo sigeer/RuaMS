@@ -23,9 +23,12 @@
 */
 
 
+using Application.Core.Game.Players;
+using Application.EF;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
 using tools;
@@ -39,6 +42,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class CouponCodeHandler : ChannelHandlerBase
 {
+    readonly ILogger<CouponCodeHandler> _logger;
+
+    public CouponCodeHandler(ILogger<CouponCodeHandler> logger)
+    {
+        _logger = logger;
+    }
+
     private List<TypedItemQuantity> getNXCodeItems(IPlayer chr, DBContext dbContext, int codeid)
     {
         Dictionary<int, int> couponItems = new();
@@ -50,9 +60,9 @@ public class CouponCodeHandler : ChannelHandlerBase
             int type = rs.Type, quantity = rs.Quantity;
 
             if (type < 5)
-                couponPoints.AddOrUpdate(type, couponPoints.GetValueOrDefault(type) + quantity);
+                couponPoints[type] = couponPoints.GetValueOrDefault(type) + quantity;
             else
-                couponItems.AddOrUpdate(type, couponItems.GetValueOrDefault(rs.Item) + quantity);
+                couponItems[type] =  couponItems.GetValueOrDefault(rs.Item) + quantity;
         }
 
         List<TypedItemQuantity> ret = new();
@@ -67,7 +77,7 @@ public class CouponCodeHandler : ChannelHandlerBase
                     item = 4000000;
                     qty = 1;
 
-                    log.Warning("Error trying to redeem itemid {ItemId} from coupon codeid {ItemCodeId}", item, codeid);
+                    _logger.LogWarning("Error trying to redeem itemid {ItemId} from coupon codeid {ItemCodeId}", item, codeid);
                 }
 
                 if (!chr.canHold(item, qty))
@@ -92,7 +102,7 @@ public class CouponCodeHandler : ChannelHandlerBase
 
     private StatuedTypedItemQuantity getNXCodeResult(IPlayer chr, string code)
     {
-        var c = chr.getClient();
+        var c = chr.Client;
         List<TypedItemQuantity> ret = new List<TypedItemQuantity>();
         try
         {
@@ -113,7 +123,7 @@ public class CouponCodeHandler : ChannelHandlerBase
                 return new StatuedTypedItemQuantity(-2, []);
             }
 
-            if (dbModel.Expiration < Server.getInstance().getCurrentTime())
+            if (dbModel.Expiration < c.CurrentServer.getCurrentTime())
             {
                 return new StatuedTypedItemQuantity(-3, []);
             }
@@ -131,7 +141,7 @@ public class CouponCodeHandler : ChannelHandlerBase
         }
         catch (Exception ex)
         {
-            log.Error(ex.ToString());
+            _logger.LogError(ex.ToString());
         }
 
         c.resetCsCoupon();
@@ -257,7 +267,7 @@ public class CouponCodeHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        c.sendPacket(PacketCreator.showCouponRedeemedItems(c.getAccID(), maplePoints, mesos, cashItems, items));
+                        c.sendPacket(PacketCreator.showCouponRedeemedItems(c.AccountEntity!.Id, maplePoints, mesos, cashItems, items));
                     }
                     c.enableCSActions();
                 }

@@ -40,10 +40,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ScrollHandler : ChannelHandlerBase
 {
-    public ScrollHandler(ILogger<ChannelHandlerBase> logger) : base(logger)
-    {
-    }
-
+    
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())

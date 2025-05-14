@@ -36,7 +36,7 @@ public class DenyPartyRequestHandler : ChannelHandlerBase
         p.readByte();
         string[] cname = p.readString().Split("PS: ");
 
-        var cfrom = c.getChannelServer().getPlayerStorage().getCharacterByName(cname[cname.Length - 1]);
+        var cfrom = c.CurrentServer.getPlayerStorage().getCharacterByName(cname[cname.Length - 1]);
         if (cfrom != null)
         {
             var chr = c.OnlinedCharacter;

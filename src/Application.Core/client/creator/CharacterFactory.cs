@@ -48,7 +48,7 @@ public abstract class CharacterFactory
     /// <param name="recipe"></param>
     /// <param name="newchar"></param>
     /// <returns>0=成功</returns>
-    public static int CreateCharacter(int world, int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
+    public static int CreateCharacter(int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
     {
         lock (createNewLock)
         {
@@ -58,7 +58,7 @@ public abstract class CharacterFactory
                 return CreateCharResult.NameInvalid;
             }
 
-            newCharacter = CharacterManager.NewPlayer(world, accountId);
+            newCharacter = CharacterManager.NewPlayer(accountId);
             newCharacter.setSkinColor(SkinColorUtils.getById(skin));
             newCharacter.setGender(gender);
             newCharacter.setName(name);
@@ -115,24 +115,24 @@ public abstract class CharacterFactory
             return CreateCharResult.Success;
         }
     }
-    protected static int createNewCharacter(IClient c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
+    protected static int createNewCharacter(IChannelClient c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
     {
         lock (createNewLock)
         {
-            if (YamlConfig.config.server.COLLECTIVE_CHARSLOT ? c.getAvailableCharacterSlots() <= 0 : c.getAvailableCharacterWorldSlots() <= 0)
+            if (c.GetAvailableCharacterSlots() <= 0)
             {
                 return CreateCharResult.CharSlotLimited;
             }
 
-            var result = CreateCharacter(c.getWorld(), c.getAccID(), name, face, hair, skin, gender, recipe, out var newCharacter);
+            var result = CreateCharacter(c.AccountEntity!.Id, name, face, hair, skin, gender, recipe, out var newCharacter);
             if (result == CreateCharResult.Success && newCharacter != null)
             {
                 newCharacter.setClient(c);
                 c.sendPacket(PacketCreator.addNewCharEntry(c, newCharacter));
 
                 Server.getInstance().createCharacterEntry(newCharacter);
-                Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[New Char]: " + c.getAccountName() + " has created a new character with IGN " + name));
-                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.getAccountName(), name);
+                c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountEntity!.Name + " has created a new character with IGN " + name));
+                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.AccountEntity!.Name, name);
 
                 return CreateCharResult.Success;
             }

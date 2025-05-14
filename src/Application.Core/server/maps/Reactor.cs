@@ -172,7 +172,7 @@ public class Reactor : AbstractMapObject
         this.alive = alive;
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(makeDestroyData());
     }
@@ -182,7 +182,7 @@ public class Reactor : AbstractMapObject
         return PacketCreator.destroyReactor(this);
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         if (this.isAlive())
         {
@@ -264,7 +264,7 @@ public class Reactor : AbstractMapObject
         }
     }
 
-    public void delayedHitReactor(IClient c, long delay)
+    public void delayedHitReactor(IChannelClient c, long delay)
     {
         TimerManager.getInstance().schedule(() =>
         {
@@ -272,12 +272,12 @@ public class Reactor : AbstractMapObject
         }, delay);
     }
 
-    public void hitReactor(IClient c)
+    public void hitReactor(IChannelClient c)
     {
         hitReactor(false, 0, 0, 0, c);
     }
 
-    public void hitReactor(bool wHit, int charPos, short stance, int skillid, IClient c)
+    public void hitReactor(bool wHit, int charPos, short stance, int skillid, IChannelClient c)
     {
         try
         {

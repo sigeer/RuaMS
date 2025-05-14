@@ -18,7 +18,7 @@ public class GetAccCommand : CommandBase
         var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
-            player.message(victim.getName() + "'s account name is " + victim.getClient().getAccountName() + ".");
+            player.message(victim.getName() + "'s account name is " + victim.getClient().AccountEntity!.Name + ".");
         }
         else
         {

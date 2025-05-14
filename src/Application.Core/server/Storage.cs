@@ -247,7 +247,7 @@ public class Storage
         }
     }
 
-    public void sendStorage(IClient c, int npcId)
+    public void sendStorage(IChannelClient c, int npcId)
     {
         if (c.OnlinedCharacter.getLevel() < 15)
         {
@@ -287,7 +287,7 @@ public class Storage
         }
     }
 
-    public void sendStored(IClient c, InventoryType type)
+    public void sendStored(IChannelClient c, InventoryType type)
     {
         Monitor.Enter(lockObj);
         try
@@ -300,7 +300,7 @@ public class Storage
         }
     }
 
-    public void sendTakenOut(IClient c, InventoryType type)
+    public void sendTakenOut(IChannelClient c, InventoryType type)
     {
         Monitor.Enter(lockObj);
         try
@@ -313,7 +313,7 @@ public class Storage
         }
     }
 
-    public void arrangeItems(IClient c)
+    public void arrangeItems(IChannelClient c)
     {
         Monitor.Enter(lockObj);
         try
@@ -350,7 +350,7 @@ public class Storage
         IsChanged = true;
     }
 
-    public void sendMeso(IClient c)
+    public void sendMeso(IChannelClient c)
     {
         c.sendPacket(PacketCreator.mesoStorage(slots, meso));
     }

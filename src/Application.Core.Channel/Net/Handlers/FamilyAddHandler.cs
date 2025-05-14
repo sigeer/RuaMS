@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Invites;
+using Application.Utility.Configs;
 using net.packet;
 using net.server.coordinator.world;
 using tools;
@@ -41,7 +42,7 @@ public class FamilyAddHandler : ChannelHandlerBase
             return;
         }
         string toAdd = p.readString();
-        var addChr = c.getChannelServer().getPlayerStorage().getCharacterByName(toAdd);
+        var addChr = c.CurrentServer.getPlayerStorage().getCharacterByName(toAdd);
         var chr = c.OnlinedCharacter;
         if (addChr == null)
         {

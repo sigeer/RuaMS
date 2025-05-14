@@ -330,7 +330,7 @@ public partial class Player
 
     public void setSessionTransitionState()
     {
-        Client.setCharacterOnSessionTransitionState(this.getId());
+        Client.SetCharacterOnSessionTransitionState(this.getId());
     }
 
     public bool getCS()
@@ -573,7 +573,7 @@ public partial class Player
         allowExpGain = !allowExpGain;
     }
 
-    public void setClient(IClient c)
+    public void setClient(IChannelClient c)
     {
         this.Client = c;
     }
@@ -599,15 +599,14 @@ public partial class Player
         channelServer.OnWorldQuestRateChanged += UpdateActualQuestMesoRate;
     }
 
-    public void LinkNewChannelClient(IClient newClient)
+    public void LinkNewChannelClient(IChannelClient newClient)
     {
         RemoveWorldWatcher();
 
-        newClient.SetAccountInfoFromClient(Client);
         this.setClient(newClient);
 
         AddWorldWatcher();
-        this.setMap(newClient.getChannelServer().getMapFactory().getMap(getMapId()));
+        this.setMap(newClient.CurrentServer.getMapFactory().getMap(getMapId()));
         var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;
         this.setPosition(portal.getPosition());
         this.InitialSpawnPoint = portal.getId();
@@ -1993,7 +1992,7 @@ public partial class Player
         return this.chalktext;
     }
 
-    public IClient getClient()
+    public IChannelClient getClient()
     {
         return Client;
     }
@@ -2262,7 +2261,7 @@ public partial class Player
         }
     }
 
-    public void exportExcludedItems(IClient c)
+    public void exportExcludedItems(IChannelClient c)
     {
         Dictionary<int, HashSet<int>> petExcluded = this.getExcluded();
         foreach (var pe in petExcluded)
@@ -4354,8 +4353,9 @@ public partial class Player
     {
         string message = getName() + " received this - " + text;
         if (Server.getInstance().isGmOnline(this.getWorld()))
-        { //Alert and log if a GM is online
-            Server.getInstance().broadcastGMMessage(this.getWorld(), PacketCreator.sendYellowTip(message));
+        {
+            //Alert and log if a GM is online
+            Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
         }
         else
         { //Auto DC and log if no GM is online
@@ -5145,7 +5145,7 @@ public partial class Player
 
         }, 5000);
 
-        Server.getInstance().broadcastGMMessage(this.getWorld(), PacketCreator.serverNotice(6, CharacterManager.makeMapleReadable(Name) + " was autobanned for " + reason));
+        Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, CharacterManager.makeMapleReadable(Name) + " was autobanned for " + reason));
     }
 
     public void block(int reason, int days, string desc)

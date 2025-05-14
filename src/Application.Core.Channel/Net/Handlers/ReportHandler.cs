@@ -24,6 +24,8 @@
 using Application.Core.Client;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
+using Application.EF;
+using Application.EF.Entities;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;
@@ -37,10 +39,6 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ReportHandler : ChannelHandlerBase
 {
-    public ReportHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
-    {
-    }
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int type = p.ReadSByte(); //00 = Illegal program claim, 01 = Conversation claim
@@ -67,7 +65,7 @@ public class ReportHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.reportResponse(2));
                 return;
             }
-            Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, victim + " was reported for: " + description));
+            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
             addReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, "");
         }
         else if (type == 1)
@@ -90,12 +88,12 @@ public class ReportHandler : ChannelHandlerBase
                     return;
                 }
             }
-            Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, victim + " was reported for: " + description));
+            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
             addReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), reason, description, chatlog);
         }
         else
         {
-            Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(6, c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type, which is impossible."));
+            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type, which is impossible."));
         }
     }
 

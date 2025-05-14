@@ -15,9 +15,6 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RPSActionHandler : ChannelHandlerBase
 {
-    public RPSActionHandler(ILogger<ChannelHandlerBase> logger) : base(logger)
-    {
-    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {

@@ -1,21 +1,19 @@
 using Application.Core.Client;
-using Application.Core.Game;
-using Application.Core.Game.Tasks;
 using Application.Core.Gameplay.Wedding;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
-using Application.Scripting.JS;
+using Application.EF.Entities;
 using Application.Shared.Configs;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
-using Jint;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using net.netty;
+using net.server;
 using net.server.coordinator.session;
 using server;
-using System.Collections.Generic;
 using System.Net;
 
 
@@ -41,6 +39,7 @@ namespace Application.Core.Login
         public DateTimeOffset StartupTime { get; }
 
         private HashSet<int> queuedGuilds = new();
+        public PlayerStorage Players { get; }
 
         #region world config
         private float _mobRate;
@@ -94,6 +93,9 @@ namespace Application.Core.Login
 
             EventMessage = serverSection.GetValue<string>("EventMessage");
             ServerMessage = serverSection.GetValue<string>("ServerMessage");
+
+            Players = new PlayerStorage();
+            BuffStorage = new PlayerBuffStorage();
         }
 
         public async Task Shutdown()
@@ -212,14 +214,14 @@ namespace Application.Core.Login
         public int GetWorldCapacityStatus()
         {
             int worldCap = ChannelServerList.Count * YamlConfig.config.server.CHANNEL_LOAD;
-            int num = Players.Count();
+            int num = Players.Count;
 
             int status;
             if (num >= worldCap)
             {
                 status = 2;
             }
-            else if (num >= worldCap *  0.8)
+            else if (num >= worldCap * 0.8)
             {
                 // More than 80 percent o___o
                 status = 1;
@@ -232,34 +234,7 @@ namespace Application.Core.Login
             return status;
         }
 
-        private object srvLock = new object();
 
-        private Dictionary<ILoginClient, DateTimeOffset> inLoginState = new(100);
-        public void RegisterLoginState(ILoginClient c)
-        {
-            Monitor.Enter(srvLock);
-            try
-            {
-                inLoginState[c] = DateTimeOffset.Now.AddMinutes(10);
-            }
-            finally
-            {
-                Monitor.Exit(srvLock);
-            }
-        }
-
-        public void UnregisterLoginState(ILoginClient c)
-        {
-            Monitor.Enter(srvLock);
-            try
-            {
-                inLoginState.Remove(c);
-            }
-            finally
-            {
-                Monitor.Exit(srvLock);
-            }
-        }
 
         private void DisconnectIdlesOnLoginState()
         {
@@ -302,88 +277,20 @@ namespace Application.Core.Login
             }
         }
 
-        ReaderWriterLockSlim lgnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-        private Dictionary<string, int> transitioningChars = new();
-        public void SetCharacteridInTransition(ILoginClient client, int charId)
-        {
-            string remoteIp = client.GetSessionRemoteHost();
 
-            lgnLock.EnterWriteLock();
-            try
-            {
-                transitioningChars[remoteIp] = charId;
-            }
-            finally
-            {
-                lgnLock.ExitWriteLock();
-            }
+        public int getCurrentTimestamp()
+        {
+            return Server.getInstance().getCurrentTimestamp();
         }
 
-        public bool ValidateCharacteridInTransition(ILoginClient client, int charId)
+        public long getCurrentTime()
         {
-            if (!YamlConfig.config.server.USE_IP_VALIDATION)
-            {
-                return true;
-            }
-
-            var remoteIp = client.GetSessionRemoteHost();
-
-            lgnLock.EnterWriteLock();
-            try
-            {
-                return transitioningChars.Remove(remoteIp, out var cid) && cid == charId;
-            }
-            finally
-            {
-                lgnLock.ExitWriteLock();
-            }
+            return Server.getInstance().getCurrentTime();
         }
 
-        public int? FreeCharacteridInTransition(ILoginClient client)
+        public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
         {
-            if (!YamlConfig.config.server.USE_IP_VALIDATION)
-            {
-                return null;
-            }
-
-            string remoteIp = client.GetSessionRemoteHost();
-
-            lgnLock.EnterWriteLock();
-            try
-            {
-                if (transitioningChars.Remove(remoteIp, out var d))
-                    return d;
-                return null;
-            }
-            finally
-            {
-                lgnLock.ExitWriteLock();
-            }
-        }
-
-        public bool HasCharacteridInTransition(ILoginClient client)
-        {
-            if (!YamlConfig.config.server.USE_IP_VALIDATION)
-            {
-                return true;
-            }
-
-            string remoteIp = client.GetSessionRemoteHost();
-
-            lgnLock.EnterReadLock();
-            try
-            {
-                return transitioningChars.ContainsKey(remoteIp);
-            }
-            finally
-            {
-                lgnLock.ExitReadLock();
-            }
-        }
-
-        public void UpdateAccountState(int state)
-        {
-            
+            return Transport.WrapPlayer(name, channel, mapId, portal);
         }
     }
 }

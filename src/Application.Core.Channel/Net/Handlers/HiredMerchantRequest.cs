@@ -22,10 +22,15 @@
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
+using Application.Utility.Compatible;
+using Application.Utility.Extensions;
 using client.inventory;
 using constants.game;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server.maps;
+using System.Drawing;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -36,6 +41,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class HiredMerchantRequest : ChannelHandlerBase
 {
+    readonly ILogger<HiredMerchantRequest> _logger;
+
+    public HiredMerchantRequest(ILogger<HiredMerchantRequest> logger)
+    {
+        _logger = logger;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
@@ -71,7 +83,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            _logger.LogError(e.ToString());
         }
 
         if (GameConstants.isFreeMarketRoom(chr.getMapId()))
@@ -91,7 +103,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
                 }
                 catch (Exception ex)
                 {
-                    log.Error(ex.ToString());
+                    _logger.LogError(ex.ToString());
                 }
             }
             else

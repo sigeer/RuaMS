@@ -27,8 +27,8 @@ namespace Application.Core.Game
         public int LoginStage { get; private set; }
 
         readonly ILogger _logger;
-        public IClient Client;
-        public Account(IClient client)
+        public IChannelClient Client;
+        public Account(IChannelClient client)
         {
             Client = client;
             Id = -2;

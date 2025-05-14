@@ -14,7 +14,7 @@ public class EnableAuthCommand : CommandBase
         {
             try
             {
-                LoginBypassCoordinator.getInstance().unregisterLoginBypassEntry(c.getHwid(), c.getAccID());
+                LoginBypassCoordinator.getInstance().unregisterLoginBypassEntry(c.Hwid, c.AccountEntity.Id);
             }
             finally
             {

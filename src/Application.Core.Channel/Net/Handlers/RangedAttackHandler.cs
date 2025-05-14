@@ -25,6 +25,8 @@ using Application.Core.Client;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Net;
+using Application.Utility;
+using Application.Utility.Configs;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -41,7 +43,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class RangedAttackHandler : AbstractDealDamageHandler
 {
-    public RangedAttackHandler(IWorldChannel server, ILogger<ChannelHandlerBase> logger) : base(server, logger)
+    public RangedAttackHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
     {
     }
 
@@ -62,7 +64,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
             {
                 // How are they attacking when the client won't let them?
-                chr.getClient().disconnect(false, false);
+                chr.getClient().Disconnect(false, false);
                 return;
             }
         }
@@ -213,7 +215,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
 
                     if (slot < 0)
                     {
-                        log.Warning("<ERROR> Projectile to use was unable to be found.");
+                        _logger.LogWarning("<ERROR> Projectile to use was unable to be found.");
                     }
                     else
                     {
@@ -287,7 +289,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                         else
                         {
                             c.sendPacket(PacketCreator.skillCooldown(attack.skill, effectCooldown));
-                            chr.addCooldown(attack.skill, currentServerTime(), 1000 * effectCooldown);
+                            chr.addCooldown(attack.skill, c.CurrentServer.getCurrentTime(), 1000 * effectCooldown);
                         }
                     }
                 }

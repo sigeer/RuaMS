@@ -21,12 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Datas;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Tasks;
-using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
-using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
@@ -41,7 +40,7 @@ using System.Net;
 
 namespace Application.Core.Game.TheWorld
 {
-    public interface IWorldChannel: IServerBase<IChannelServerTransport>
+    public interface IWorldChannel : IServerBase<IChannelServerTransport>
     {
         public event Action? OnWorldMobRateChanged;
         public float WorldMobRate { get; }
@@ -67,6 +66,7 @@ namespace Application.Core.Game.TheWorld
         MapObjectController MapObjectController { get; }
         MountTirednessController MountTirednessController { get; }
         HiredMerchantController HiredMerchantController { get; }
+        PetHungerController PetHungerController { get; }
 
         void UpdateWorldConfig(WorldConfigPatch updatePatch);
 
@@ -126,15 +126,56 @@ namespace Application.Core.Game.TheWorld
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
         void unregisterOwnedMap(IMap map);
-
-        void AccountLogout(int account);
         void BroadcastWorldPacket(Packet p);
         void StashCharacterBuff(IPlayer player);
         void StashCharacterDisease(IPlayer player);
 
-        void LoadCharacterBuff(int character);
-        void LoadCharacterDisease(int character);
-
-        void BuddyChanged(int characterId);
+        void RecoverCharacterBuff(IPlayer character);
+        void RecoverCharacterDisease(IPlayer character);
+        IPEndPoint GetChannelEndPoint(int channel);
+        void BroadcastWorldGMPacket(Packet packet);
+        /// <summary>
+        /// 向id的partner推送通知
+        /// </summary>
+        /// <param name="id"></param>
+        void NotifyPartner(int id);
+        /// <summary>
+        /// 获取一个正在准备进入游戏的CharacterValueObject
+        /// <para>1. 既是cid的player数据</para>
+        /// <para>2. 且该account正处于LOGIN_SERVER_TRANSITION</para>
+        /// </summary>
+        /// <param name="cid"></param>
+        /// <returns></returns>
+        CharacterValueObject GetPlayerData(int cid);
+        /// <summary>
+        /// 下线时，更新好友窗口
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="channel"></param>
+        /// <param name="buddies"></param>
+        void UpdateBuddyByLoggedOff(int characterId, int channel, int[] buddies);
+        /// <summary>
+        /// 上线时，更新好友窗口
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="channel"></param>
+        /// <param name="buddies"></param>
+        void UpdateBuddyByLoggedIn(int characterId, int channel, int[] buddies);
+        /// <summary>
+        /// 将name传送到频道channel的mapId
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="channel"></param>
+        /// <param name="mapId"></param>
+        /// <param name="portal"></param>
+        /// <returns></returns>
+        bool WarpPlayer(string name, int? channel, int mapId, int? portal);
+        string GetExpeditionInfo();
+        /// <summary>
+        /// 修改玩家的alliance等级
+        /// </summary>
+        /// <param name="targetCharacterId"></param>
+        /// <param name="isRaise"></param>
+        void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
     }
 }

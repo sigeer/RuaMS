@@ -2450,7 +2450,7 @@ public class MapleMap : IMap
 
     private void registerMapSchedule(Action r, long delay) => registerMapSchedule(TempRunnable.Parse(r), delay);
 
-    private void activateItemReactors(MapItem drop, IClient c)
+    private void activateItemReactors(MapItem drop, IChannelClient c)
     {
         Item item = drop.getItem();
 
@@ -3858,9 +3858,9 @@ public class MapleMap : IMap
 
         private MapItem mapitem;
         private Reactor reactor;
-        private IClient c;
+        private IChannelClient c;
         private IMap _map;
-        public ActivateItemReactor(IMap map, MapItem mapitem, Reactor reactor, IClient c)
+        public ActivateItemReactor(IMap map, MapItem mapitem, Reactor reactor, IChannelClient c)
         {
             _map = map;
             this.mapitem = mapitem;

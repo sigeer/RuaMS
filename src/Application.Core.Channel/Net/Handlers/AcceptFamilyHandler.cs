@@ -98,7 +98,7 @@ public class AcceptFamilyHandler : ChannelHandlerBase
                         return;
                     }
                     Family newFamily = new Family(-1, 0);
-                    c.CurrentServer.addFamily(newFamily.getID(), newFamily);
+                    c.getWorldServer().addFamily(newFamily.getID(), newFamily);
                     FamilyEntry inviterEntry = new FamilyEntry(newFamily, inviter.getId(), inviter.getName(), inviter.getLevel(), inviter.getJob());
                     inviterEntry.setCharacter(inviter);
                     newFamily.setLeader(inviter.getFamilyEntry());

@@ -55,7 +55,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
             {
                 // How are they attacking when the client won't let them?
-                chr.getClient().disconnect(false, false);
+                chr.getClient().Disconnect(false, false);
                 return;
             }
         }

@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.Net;
+using Application.Utility;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
@@ -73,7 +74,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
             case ItemId.POUCH:
                 if (mob.getId() == MobId.GHOST)
                 {
-                    if ((abm.getLastSpam(10) + 1000) < currentServerTime())
+                    if ((abm.getLastSpam(10) + 1000) < c.CurrentServer.getCurrentTime())
                     {
                         if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
                         {
@@ -94,7 +95,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
             case ItemId.ARPQ_ELEMENT_ROCK:
                 if (mob.getId() == MobId.ARPQ_SCORPION)
                 {
-                    if ((abm.getLastSpam(10) + 800) < currentServerTime())
+                    if ((abm.getLastSpam(10) + 800) < c.CurrentServer.getCurrentTime())
                     {
                         if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
                         {
@@ -216,7 +217,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
             case ItemId.FISH_NET:
                 if (mob.getId() == MobId.P_JUNIOR)
                 {
-                    if ((abm.getLastSpam(10) + 3000) < currentServerTime())
+                    if ((abm.getLastSpam(10) + 3000) < c.CurrentServer.getCurrentTime())
                     {
                         abm.spam(10);
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
@@ -243,7 +244,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                     int timeCatch = ii.getUseDelay(itemId);
                     int mobHp = ii.getMobHP(itemId);
 
-                    if (timeCatch != 0 && (abm.getLastSpam(10) + timeCatch) < currentServerTime())
+                    if (timeCatch != 0 && (abm.getLastSpam(10) + timeCatch) < c.CurrentServer.getCurrentTime())
                     {
                         if (mobHp != 0 && mob.getHp() < ((mob.getMaxHp() / 100) * mobHp))
                         {

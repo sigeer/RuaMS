@@ -18,7 +18,7 @@ public class DCAllCommand : CommandBase
             {
                 if (!chr.isGM())
                 {
-                    chr.getClient().disconnect(false, false);
+                    chr.getClient().Disconnect(false, false);
                 }
             }
         }

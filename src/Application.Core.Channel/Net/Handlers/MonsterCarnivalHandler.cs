@@ -22,6 +22,9 @@
 
 
 using Application.Core.Game.Maps.Specials;
+using Application.Shared;
+using Application.Utility;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server.life;
 using server.partyquest;
@@ -35,6 +38,12 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MonsterCarnivalHandler : ChannelHandlerBase
 {
+    readonly ILogger<MonsterCarnivalHandler> _logger;
+
+    public MonsterCarnivalHandler(ILogger<MonsterCarnivalHandler> logger)
+    {
+        _logger = logger;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -79,7 +88,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             c.sendPacket(PacketCreator.enableActions());
                         }
 
-                        neededCP = mobs.get(num).Value;
+                        neededCP = mobs[num].Value;
                     }
                     else if (tab == 1)
                     {
@@ -92,7 +101,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             c.sendPacket(PacketCreator.enableActions());
                             return;
                         }
-                        var skill = CarnivalFactory.getInstance().getSkill(skillid.get(num)); //ugh wtf
+                        var skill = CarnivalFactory.getInstance().getSkill(skillid[num]); //ugh wtf
                         if (skill == null || c.OnlinedCharacter.AvailableCP < skill.cpLoss)
                         {
                             c.sendPacket(PacketCreator.CPQMessage(1));
@@ -194,7 +203,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                 }
                 catch (Exception e)
                 {
-                    log.Error(e.ToString());
+                    _logger.LogError(e.ToString());
                 }
             }
             finally

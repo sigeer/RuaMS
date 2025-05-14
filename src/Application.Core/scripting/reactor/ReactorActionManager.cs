@@ -44,7 +44,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
     private Reactor reactor;
     private IEngine iv;
 
-    public ReactorActionManager(IClient c, Reactor reactor, IEngine iv) : base(c)
+    public ReactorActionManager(IChannelClient c, Reactor reactor, IEngine iv) : base(c)
     {
         this.reactor = reactor;
         this.iv = iv;
@@ -138,7 +138,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
             posX -= 12;
         }
         Point dropPos = new Point(posX, posY);
-        var worldMesoRate = c.getChannelServer().WorldMesoRate;
+        var worldMesoRate = c.CurrentServer.WorldMesoRate;
 
         if (!delayed)
         {
@@ -231,7 +231,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     public void createMapMonitor(int mapId, string portal)
     {
-        new MapMonitor(c.getChannelServer().getMapFactory().getMap(mapId), portal);
+        new MapMonitor(c.CurrentServer.getMapFactory().getMap(mapId), portal);
     }
 
     public void spawnMonster(int id, int qty)

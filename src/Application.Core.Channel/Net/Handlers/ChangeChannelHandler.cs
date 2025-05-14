@@ -36,11 +36,11 @@ public class ChangeChannelHandler : ChannelHandlerBase
     {
         int channel = p.readByte() + 1;
         p.readInt();
-        c.OnlinedCharacter.getAutobanManager().setTimestamp(6, Server.getInstance().getCurrentTimestamp(), 3);
-        if (c.getChannel() == channel)
+        c.OnlinedCharacter.getAutobanManager().setTimestamp(6, c.CurrentServer.getCurrentTimestamp(), 3);
+        if (c.Channel == channel)
         {
             AutobanFactory.GENERAL.alert(c.OnlinedCharacter, "CCing to same channel.");
-            c.disconnect(false, false);
+            c.Disconnect(false, false);
             return;
         }
         else if (c.OnlinedCharacter.getCashShop().isOpened() || c.OnlinedCharacter.getMiniGame() != null || c.OnlinedCharacter.getPlayerShop() != null)
@@ -48,6 +48,6 @@ public class ChangeChannelHandler : ChannelHandlerBase
             return;
         }
 
-        c.changeChannel(channel);
+        c.ChangeChannel(channel);
     }
 }

@@ -28,7 +28,7 @@ namespace server.maps;
 
 
 /// <summary>
-/// ÁúÉñµÄÁú
+/// é¾™ç¥žçš„é¾™
 /// </summary>
 public class Dragon : AbstractAnimatedMapObject
 {
@@ -47,7 +47,7 @@ public class Dragon : AbstractAnimatedMapObject
         return MapObjectType.DRAGON;
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.spawnDragon(this));
     }
@@ -57,7 +57,7 @@ public class Dragon : AbstractAnimatedMapObject
         return owner.getId();
     }
 
-    public override void sendDestroyData(IClient c)
+    public override void sendDestroyData(IChannelClient c)
     {
         c.sendPacket(PacketCreator.removeDragon(owner.getId()));
     }

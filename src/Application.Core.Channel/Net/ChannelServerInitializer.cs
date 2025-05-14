@@ -30,7 +30,6 @@ public class ChannelServerInitializer : ServerChannelInitializer
         string clientIp = getRemoteAddress(socketChannel);
         Log.Logger.Debug("{ClientIP} 发起连接到频道{Channel}", clientIp, worldChannel.getId());
 
-        PacketProcessor packetProcessor = PacketProcessor.getChannelServerProcessor(worldChannel.InstanceId);
         long clientSessionId = sessionId.getAndIncrement();
         var client = new ChannelClient(clientSessionId, worldChannel, socketChannel,
                         _serviceProvider.GetRequiredService<ChannelPacketProcessor>(),

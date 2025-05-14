@@ -99,7 +99,7 @@ public class LoginBypassCoordinator
                     var c = chr.getClient();
                     if (c != null)
                     {
-                        onlineAccounts.Add(c.getAccID());
+                        onlineAccounts.Add(c.AccountEntity.Id);
                     }
                 }
             }

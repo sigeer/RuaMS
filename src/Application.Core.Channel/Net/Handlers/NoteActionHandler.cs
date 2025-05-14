@@ -21,6 +21,7 @@
 */
 
 
+using Microsoft.Extensions.Logging;
 using net.packet;
 using service;
 using tools;
@@ -34,10 +35,12 @@ public class NoteActionHandler : ChannelHandlerBase
 
 
     private NoteService noteService;
+    readonly ILogger<NoteActionHandler> _logger;
 
-    public NoteActionHandler(NoteService noteService)
+    public NoteActionHandler(NoteService noteService, ILogger<NoteActionHandler> logger)
     {
         this.noteService = noteService;
+        _logger = logger;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -72,7 +75,7 @@ public class NoteActionHandler : ChannelHandlerBase
                 var discardedNote = noteService.delete(id);
                 if (discardedNote == null)
                 {
-                    log.Warning("Note with id {NoteId} not able to be discarded. Already discarded?", id);
+                    _logger.LogWarning("Note with id {NoteId} not able to be discarded. Already discarded?", id);
                     continue;
                 }
 

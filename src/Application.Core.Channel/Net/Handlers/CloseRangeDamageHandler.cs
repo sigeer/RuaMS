@@ -22,10 +22,13 @@
 
 
 using Application.Core.Game.Skills;
+using Application.Shared.Constants;
+using Application.Utility.Configs;
 using client;
 using constants.game;
 using constants.id;
 using constants.skills;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
 using tools;
@@ -34,6 +37,9 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class CloseRangeDamageHandler : AbstractDealDamageHandler
 {
+    public CloseRangeDamageHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
+    {
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -51,7 +57,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             if (chr.getBuffEffect(BuffStat.MORPH)!.isMorphWithoutAttack())
             {
                 // How are they attacking when the client won't let them?
-                chr.getClient().disconnect(false, false);
+                chr.getClient().Disconnect(false, false);
                 return;
             }
         }
@@ -135,7 +141,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                         int duration = combo.getEffect(olv).getDuration();
                         var stat = new BuffStatValue(BuffStat.COMBO, neworbcount);
                         chr.setBuffedValue(BuffStat.COMBO, neworbcount);
-                        duration -= (int)(currentServerTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
+                        duration -= (int)(c.CurrentServer.getCurrentTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
                         c.sendPacket(PacketCreator.giveBuff(oid, duration, stat));
                         chr.getMap().broadcastMessage(chr, PacketCreator.giveForeignBuff(chr.getId(), stat), false);
                     }
@@ -203,7 +209,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 else
                 {
                     c.sendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
-                    chr.addCooldown(attack.skill, currentServerTime(), 1000 * (effect_.getCooldown()));
+                    chr.addCooldown(attack.skill, c.CurrentServer.getCurrentTime(), 1000 * (effect_.getCooldown()));
                 }
             }
         }

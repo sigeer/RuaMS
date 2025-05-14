@@ -99,20 +99,6 @@ public class SessionCoordinator
         return false;
     }
 
-    public static string getSessionRemoteHost(IClient client)
-    {
-        var hwid = client.getHwid();
-
-        if (hwid != null)
-        {
-            return client.getRemoteAddress() + "-" + hwid.hwid;
-        }
-        else
-        {
-            return client.getRemoteAddress();
-        }
-    }
-
     /**
      * Overwrites any existing online client for the account id, making sure to disconnect it as well.
      */
@@ -355,9 +341,9 @@ public class SessionCoordinator
         }
     }
 
-    public Hwid pickLoginSessionHwid(IClient client)
+    public Hwid pickLoginSessionHwid(IChannelClient client)
     {
-        string remoteHost = client.getRemoteAddress();
+        string remoteHost = client.RemoteAddress;
         // thanks BHB, resinate for noticing players from same network not being able to login
         return hostHwidCache.removeEntryAndGetItsHwid(remoteHost);
     }
@@ -401,7 +387,7 @@ public class SessionCoordinator
         }
     }
 
-    public void printSessionTrace(IClient c)
+    public void printSessionTrace(IChannelClient c)
     {
         string str = "Opened server sessions:\r\n\r\n";
 

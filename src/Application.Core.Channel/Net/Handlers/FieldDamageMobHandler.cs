@@ -20,6 +20,7 @@
 
 
 using constants.game;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using server.life;
 using tools;
@@ -28,6 +29,13 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class FieldDamageMobHandler : ChannelHandlerBase
 {
+    readonly ILogger<FieldDamageMobHandler> _logger;
+
+    public FieldDamageMobHandler(ILogger<FieldDamageMobHandler> logger)
+    {
+        _logger = logger;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int mobOid = p.readInt();    // packet structure found thanks to Darter (Rajan)
@@ -37,8 +45,9 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         var map = chr.getMap();
 
         if (map.getEnvironment().Count == 0)
-        {   // no environment objects activated to actually hit the mob
-            log.Warning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack", c.OnlinedCharacter.getName(), map.getId());
+        {   
+            // no environment objects activated to actually hit the mob
+            _logger.LogWarning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack", c.OnlinedCharacter.getName(), map.getId());
             return;
         }
 
@@ -47,7 +56,7 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         {
             if (dmg < 0 || dmg > GameConstants.MAX_FIELD_MOB_DAMAGE)
             {
-                log.Warning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack {MobName} with damage {Damage}", c.OnlinedCharacter.getName(),
+                _logger.LogWarning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack {MobName} with damage {Damage}", c.OnlinedCharacter.getName(),
                         map.getId(), MonsterInformationProvider.getInstance().getMobNameFromId(mob.getId()), dmg);
                 return;
             }

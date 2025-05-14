@@ -1,5 +1,3 @@
-using Application.Core.Channel;
-using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerTransports;
 using Application.Core.Game.TheWorld;
 using Application.Core.Servers;
@@ -11,9 +9,11 @@ namespace Application.Host
     {
         readonly IMasterServer _server;
         readonly IServiceProvider _serviceProvider;
-        public GameHost(IMasterServer server)
+
+        public GameHost(IMasterServer server, IServiceProvider serviceProvider)
         {
             _server = server;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -23,11 +23,10 @@ namespace Application.Host
             var world = Server.getInstance().getWorld(0);
             for (int j = 1; j <= 3; j++)
             {
-                var scope = _serviceProvider.CreateScope();
-                var channel = scope.ServiceProvider.GetRequiredService<IWorldChannel>();
+                var channel = _serviceProvider.GetRequiredService<IWorldChannel>();
 
                 int channelid = j;
-                ActivatorUtilities.CreateInstance<IWorldChannel>(scope.ServiceProvider, new ChannelServerConfig
+                ActivatorUtilities.CreateInstance<IWorldChannel>(_serviceProvider, new ChannelServerConfig
                 {
                     Port = 7574 + channelid
                 }, new LocalChannelServerTransport(_server, world));

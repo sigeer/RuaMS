@@ -53,7 +53,7 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
 
         Item usedCashShopSurprise = result.usedCashShopSurprise;
         Item reward = result.reward;
-        c.sendPacket(PacketCreator.onCashGachaponOpenSuccess(c.getAccID(), usedCashShopSurprise.getCashId(),
+        c.sendPacket(PacketCreator.onCashGachaponOpenSuccess(c.AccountEntity!.Id, usedCashShopSurprise.getCashId(),
                 usedCashShopSurprise.getQuantity(), reward, reward.getItemId(), reward.getQuantity(), true));
     }
 }

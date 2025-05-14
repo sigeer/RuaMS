@@ -201,7 +201,7 @@ namespace Application.Core.Game.Players
         void equipChanged();
         void equippedItem(Equip equip);
         void expirationTask();
-        void exportExcludedItems(IClient c);
+        void exportExcludedItems(IChannelClient c);
         int fetchDoorSlot();
         void flushDelayedUpdateQuests();
 
@@ -253,7 +253,7 @@ namespace Application.Core.Game.Players
         string? getChalkboard();
         IWorldChannel getChannelServer();
         int getCleanItemQuantity(int itemid, bool checkEquipped);
-        IClient getClient();
+        IChannelClient getClient();
         short getCombo();
         List<QuestStatus> getCompletedQuests();
         ICollection<Monster> getControlledMonsters();
@@ -506,7 +506,7 @@ namespace Application.Core.Game.Players
         void message(string m);
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
-        void LinkNewChannelClient(IClient newClient);
+        void LinkNewChannelClient(IChannelClient newClient);
         void notifyMapTransferToPartner(int mapid);
         void partyOperationUpdate(ITeam party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
@@ -574,7 +574,7 @@ namespace Application.Core.Game.Players
         void setChalkboard(string? text);
         void setChallenged(bool challenged);
         void setChasing(bool chasing);
-        void setClient(IClient c);
+        void setClient(IChannelClient c);
         void setCombo(short count);
         void setCpqTimer(ScheduledFuture timer);
         void setCS(bool cs);

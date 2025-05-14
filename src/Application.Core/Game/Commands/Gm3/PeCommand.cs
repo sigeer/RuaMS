@@ -1,3 +1,4 @@
+using Application.Core.Net;
 using DotNetty.Buffers;
 using net;
 using net.packet;
@@ -9,9 +10,11 @@ namespace Application.Core.Game.Commands.Gm3;
 
 public class PeCommand : CommandBase
 {
-    public PeCommand() : base(3, "pe")
+    readonly IPacketProcessor<IChannelClient> _processor;
+    public PeCommand(IPacketProcessor<IChannelClient> processor) : base(3, "pe")
     {
         Description = "Handle synthesized packets from file, and handle them as if sent from a client";
+        _processor = processor;
     }
 
 
@@ -34,7 +37,7 @@ public class PeCommand : CommandBase
         byte[] packetContent = HexTool.toBytes(packet);
         InPacket inPacket = new ByteBufInPacket(Unpooled.WrappedBuffer(packetContent));
         short packetId = inPacket.readShort();
-        var packetHandler = PacketProcessor.getProcessor(c.getChannelServer().InstanceId, false).getHandler(packetId);
+        var packetHandler = _processor.GetPacketHandler(packetId);
         if (packetHandler != null && packetHandler.ValidateState(c))
         {
             try
@@ -46,7 +49,7 @@ public class PeCommand : CommandBase
             {
                 string chrInfo = player != null ? player.getName() + " on map " + player.getMapId() : "?";
                 log.Warning(t, "Error in packet handler {HandlerName}. Chr {CharacterName}, account {AccountName}. Packet: {Packet}", packetHandler.GetType().Name,
-                        chrInfo, c.getAccountName(), packet);
+                        chrInfo, c.AccountEntity.Id, packet);
             }
         }
     }

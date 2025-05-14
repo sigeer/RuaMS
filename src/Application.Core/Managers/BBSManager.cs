@@ -7,7 +7,7 @@ namespace Application.Core.Managers
     public class BBSManager
     {
         readonly static ILogger log = LogFactory.GetLogger(LogType.BBS);
-        public static void listBBSThreads(IClient c, int start)
+        public static void listBBSThreads(IChannelClient c, int start)
         {
             try
             {
@@ -22,7 +22,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void newBBSReply(IClient c, int localthreadid, string text)
+        public static void newBBSReply(IChannelClient c, int localthreadid, string text)
         {
             if (c.OnlinedCharacter.GuildId <= 0)
             {
@@ -55,7 +55,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void editBBSThread(IClient client, string title, string text, int icon, int localthreadid)
+        public static void editBBSThread(IChannelClient client, string title, string text, int icon, int localthreadid)
         {
             var chr = client.OnlinedCharacter;
             if (chr.getGuildId() < 1)
@@ -79,7 +79,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void newBBSThread(IClient client, string title, string text, int icon, bool bNotice)
+        public static void newBBSThread(IChannelClient client, string title, string text, int icon, bool bNotice)
         {
             var chr = client.OnlinedCharacter;
             if (chr.GuildId <= 0)
@@ -118,7 +118,7 @@ namespace Application.Core.Managers
 
         }
 
-        public static void deleteBBSThread(IClient client, int localthreadid)
+        public static void deleteBBSThread(IChannelClient client, int localthreadid)
         {
             var mc = client.OnlinedCharacter;
             if (mc.getGuildId() <= 0)
@@ -154,7 +154,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void deleteBBSReply(IClient client, int replyid)
+        public static void deleteBBSReply(IChannelClient client, int replyid)
         {
             var mc = client.OnlinedCharacter;
             if (mc.getGuildId() <= 0)
@@ -191,7 +191,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void displayThread(DBContext dbContext, IClient client, int threadid, bool bIsThreadIdLocal = true)
+        public static void displayThread(DBContext dbContext, IChannelClient client, int threadid, bool bIsThreadIdLocal = true)
         {
             var mc = client.OnlinedCharacter;
             if (mc.GuildId <= 0)

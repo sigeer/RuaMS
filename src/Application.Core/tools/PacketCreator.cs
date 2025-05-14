@@ -337,7 +337,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addCharEntry(OutPacket p, IClient playerClient, IPlayer chr, bool viewall)
+    private static void addCharEntry(OutPacket p, IChannelClient playerClient, IPlayer chr, bool viewall)
     {
         addCharStats(p, chr);
         addCharLook(p, chr, false);
@@ -345,7 +345,7 @@ public class PacketCreator
         {
             p.writeByte(0);
         }
-        if (playerClient.getGMLevel() > 1 || chr.isGmJob())
+        if (playerClient.AccountEntity.GMLevel > 1 || chr.isGmJob())
         {  // thanks Daddy Egg (Ubaware), resinate for noticing GM jobs crashing on non-GM players account
             p.writeByte(0);
             return;
@@ -728,41 +728,7 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a successful authentication packet.
-     *
-     * @param c
-     * @return the successful authentication packet
-     */
-    public static Packet getAuthSuccess(IClient c)
-    {
-        Server.getInstance().loadAccountStorages(c);
 
-        OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);
-        p.writeInt(0);
-        p.writeShort(0);
-        p.writeInt(c.getAccID());
-        p.writeByte(c.getGender());
-
-        bool canFly = Server.getInstance().canFly(c.getAccID());
-        p.writeBool((YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.getGMLevel() > 1);    // thanks Steve(kaito1410) for pointing the GM account bool here
-        p.writeByte(((YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.getGMLevel() > 1) ? 0x80 : 0);  // Admin Byte. 0x80,0x40,0x20.. Rubbish.
-        p.writeByte(0); // Country Code.
-
-        p.writeString(c.getAccountName());
-        p.writeByte(0);
-
-        p.writeByte(0); // IsQuietBan
-        p.writeLong(0);//IsQuietBanTimeStamp
-        p.writeLong(0); //CreationTimeStamp
-
-        p.writeInt(1); // 1: Remove the "Select the world you want to play in"
-
-        p.writeByte(YamlConfig.config.server.ENABLE_PIN && !c.canBypassPin() ? 0 : 1); // 0 = Pin-System Enabled, 1 = Disabled
-        p.writeByte(YamlConfig.config.server.ENABLE_PIC && !c.canBypassPic() ? (c.getPic() == null || c.getPic().Equals("") ? 0 : 1) : 2); // 0 = Register PIC, 1 = Ask for PIC, 2 = Disabled
-
-        return p;
-    }
 
     /**
      * Gets a packet detailing a PIN operation.
@@ -913,44 +879,6 @@ public class PacketCreator
         byte[] addr = iPEndPoint.Address.GetAddressBytes();
         p.writeBytes(addr);
         p.writeShort(iPEndPoint.Port);
-        return p;
-    }
-
-    /// <summary>
-    ///  Gets a packet with a list of characters.
-    /// </summary>
-    /// <param name="c">The IClient to load characters of.</param>
-    /// <param name="serverId">The ID of the server requested.</param>
-    /// <param name="status">The charlist request result.
-    /// Possible values for <paramref name="status"/>:
-    /// <para> 2: ID deleted or blocked</para>
-    /// <para> 3: ID deleted or blocked</para>
-    /// <para> 4: Incorrect password</para>
-    /// <para> 5: Not an registered ID</para>
-    /// <para> 6: Trouble logging in?</para>
-    /// <para> 10: Server handling too many connections</para>
-    /// <para> 11: Only 20 years or older</para>
-    /// <para> 13: Unable to log as master at IP</para>
-    /// <para> 14: Wrong gateway or personal info</para>
-    /// <para> 15: Still processing request</para>
-    /// <para> 16: Verify account via email</para>
-    /// <para> 17: Wrong gateway or personal info</para>
-    /// <para> 21: Verify account via email</para>
-    /// </param>
-    /// <returns>The character list packet.</returns>
-    public static Packet getCharList(IClient c, int serverId, int status)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CHARLIST);
-        p.writeByte(status);
-        List<IPlayer> chars = c.loadCharacters(serverId);
-        p.writeByte((byte)chars.Count);
-        foreach (IPlayer chr in chars)
-        {
-            addCharEntry(p, c, chr, false);
-        }
-
-        p.writeByte(YamlConfig.config.server.ENABLE_PIC && !c.canBypassPic() ? (string.IsNullOrEmpty(c.getPic()) ? 0 : 1) : 2);
-        p.writeInt(YamlConfig.config.server.COLLECTIVE_CHARSLOT ? chars.Count + c.getAvailableCharacterSlots() : c.getCharacterSlots());
         return p;
     }
 
@@ -2924,7 +2852,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet addNewCharEntry(IClient client, IPlayer chr)
+    public static Packet addNewCharEntry(IChannelClient client, IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.ADD_NEW_CHAR_ENTRY);
         p.writeByte(0);
@@ -3543,7 +3471,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getTradeStart(IClient c, Trade trade, byte number)
+    public static Packet getTradeStart(IChannelClient c, Trade trade, byte number)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.ROOM.getCode());
@@ -5056,19 +4984,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showAllCharacterInfo(IClient client, int worldid, List<IPlayer> chars, bool usePic)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
-        p.writeByte(0);
-        p.writeByte(worldid);
-        p.writeByte(chars.Count);
-        foreach (IPlayer chr in chars)
-        {
-            addCharEntry(p, client, chr, true);
-        }
-        p.writeByte(usePic ? 1 : 2);
-        return p;
-    }
+
 
     public static Packet updateMount(int charid, IMount mount, bool levelup)
     {
@@ -5610,7 +5526,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet owlOfMinerva(IClient c, int itemId, List<KeyValuePair<PlayerShopItem, AbstractMapObject>> hmsAvailable)
+    public static Packet owlOfMinerva(IChannelClient c, int itemId, List<KeyValuePair<PlayerShopItem, AbstractMapObject>> hmsAvailable)
     {
         sbyte itemType = ItemConstants.getInventoryType(itemId).getType();
 
@@ -6136,7 +6052,7 @@ public class PacketCreator
     /// </param>
     /// <param name="c"></param>
     /// <returns></returns>
-    public static Packet sendWorldTransferRules(int error, IClient c)
+    public static Packet sendWorldTransferRules(int error, IChannelClient c)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_CHECK_TRANSFER_WORLD_POSSIBLE_RESULT);
         p.writeInt(0); //ignored

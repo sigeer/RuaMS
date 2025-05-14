@@ -464,7 +464,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet addGuildToAlliance(IAlliance alliance, IGuild newGuild, IClient c)
+    public static Packet addGuildToAlliance(IAlliance alliance, IGuild newGuild, IChannelClient c)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x12);

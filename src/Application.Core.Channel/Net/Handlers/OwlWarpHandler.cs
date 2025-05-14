@@ -43,7 +43,7 @@ public class OwlWarpHandler : ChannelHandlerBase
             return;
         }
 
-        var dto = c.getChannelServer().Transport.SendOwlWarp(mapid, ownerid, c.OnlinedCharacter.getOwlSearch());
+        var dto = c.CurrentServer.Transport.SendOwlWarp(mapid, ownerid, c.OnlinedCharacter.getOwlSearch());
         if (dto == null)
         {
             c.sendPacket(PacketCreator.getOwlMessage(1));
@@ -59,14 +59,14 @@ public class OwlWarpHandler : ChannelHandlerBase
 
         if (GameConstants.isFreeMarketRoom(mapid))
         {
-            if (dto.Channel == c.getChannel())
+            if (dto.Channel == c.Channel)
             {
                 c.OnlinedCharacter.changeMap(mapid);
 
                 if (dto.IsOpen)
                 {
                     IPlayerShop? ps = c.getWorldServer().getPlayerShop(ownerid);
-                    ps ??= c.getChannelServer().HiredMerchantController.getHiredMerchant(ownerid);
+                    ps ??= c.CurrentServer.HiredMerchantController.getHiredMerchant(ownerid);
                     if (ps == null)
                     {
                         c.sendPacket(PacketCreator.getOwlMessage(1));

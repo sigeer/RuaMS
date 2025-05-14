@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Game;
+using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Net;
@@ -9,6 +10,7 @@ using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.EF.Entities;
 using Application.Scripting;
+using Application.Shared.Constants;
 using Application.Shared.Login;
 using Application.Utility.Compatible;
 using Application.Utility.Configs;
@@ -25,9 +27,12 @@ using net.server.coordinator.session;
 using net.server.guild;
 using net.server.world;
 using scripting;
+using scripting.Event;
 using scripting.npc;
 using Serilog;
 using server;
+using server.maps;
+using System.Text;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -44,7 +49,7 @@ namespace Application.Core.Channel.Net
             _packetProcessor = packetProcessor;
         }
 
-        public override bool IsOnlined => false;
+        public override bool IsOnlined => Character != null;
 
         public int AccountId { get; set; }
 
@@ -53,17 +58,22 @@ namespace Application.Core.Channel.Net
         public IPlayer OnlinedCharacter { get; private set; }
 
         public new IWorldChannel CurrentServer { get; }
-        public bool IsServerTransition { get; private set; }
+
         /// <summary>
         /// CashShop
         /// </summary>
         public bool IsAwayWorld { get; private set; }
-        public int Channel => IsAwayWorld ? -1 : CurrentServer.getId();
-
+        public int Channel => IsAwayWorld ? -1 : ActualChannel;
+        public int ActualChannel => CurrentServer.getId();
         public NPCConversationManager? NPCConversationManager { get; set; }
 
+        bool _isDisconnecting = false;
         public void Disconnect(bool isShutdown, bool fromCashShop = false)
         {
+            if (_isDisconnecting)
+                return;
+
+            _isDisconnecting = true;
             //once per Client instance
             if (Character != null && Character.isLoggedin() && Character.getClient() != null)
             {
@@ -104,7 +114,7 @@ namespace Application.Core.Channel.Net
 
                             if (Character.BuddyList.Count > 0)
                             {
-                                wserv.loggedOff(Character.Name, Character.Id, CurrentServer.getId(), Character.BuddyList.getBuddyIds());
+                                CurrentServer.UpdateBuddyByLoggedOff(Character.Id, CurrentServer.getId(), Character.BuddyList.getBuddyIds());
                             }
                         }
                     }
@@ -129,7 +139,7 @@ namespace Application.Core.Channel.Net
                         {
                             Character.doPendingNameChange();
                         }
-                        Clear();
+
                     }
                     else
                     {
@@ -144,20 +154,27 @@ namespace Application.Core.Channel.Net
 
             SessionCoordinator.getInstance().closeSession(this, false);
 
+            // 为什么不直接  updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+            // 如果正在切换频道，这边把状态改成了LOGIN_NOTLOGGEDIN，PlayerLoggedin无法找到正在切换频道的账户
+
+            // 为什么要用CurrentServer.HasCharacteridInTransition判断而不是IsServerTransition
+            // 比如切换频道，IsServerTransition=true，如果使用HasCharacteridInTransition则可以很好的知道PlayerLoggedinHandler的流程情况，
+            // 反之如果只是卡顿，旧client在这里退出了登录，新client在PlayerLoggedinHandler里也会变成登出态
             if (!IsServerTransition && IsOnlined)
             {
-                CurrentServer.AccountLogout(AccountEntity!.Id);
-                Clear();
+                updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
             }
             else
             {
-                if (!CurrentServer.HasCharacteridInTransition(this))
+                //比如切换频道  但是还没有成功进入新频道
+                if (!CurrentServer.HasCharacteridInTransition(GetSessionRemoteHost()))
                 {
-                    CurrentServer.AccountLogout(AccountEntity!.Id);
+                    updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
                 }
-
-                ScriptEngines.Clear();
             }
+            Dispose();
+
+            _isDisconnecting = false;
         }
 
         private void RemovePlayer(IPlayer player, IWorld wserv, bool serverTransition)
@@ -238,7 +255,7 @@ namespace Application.Core.Channel.Net
         }
 
 
-        private void Clear()
+        public override void Dispose()
         {
             // player hard reference removal thanks to Steve (kaito1410)
             if (this.Character != null)
@@ -251,11 +268,6 @@ namespace Application.Core.Channel.Net
             this.Character = null;
             this.ScriptEngines.Dispose();
             this.packetChannel.Writer.TryComplete();
-        }
-
-        public override void Dispose()
-        {
-            Clear();
         }
 
 
@@ -338,6 +350,14 @@ namespace Application.Core.Channel.Net
             this.removeClickedNPC();
             NPCConversationManager?.dispose();
         }
+
+        private void announceDisableServerMessage()
+        {
+            if (!this.getChannelServer().ServerMessageController.registerDisabledServerMessage(OnlinedCharacter.getId()))
+            {
+                sendPacket(PacketCreator.serverMessage(""));
+            }
+        }
         public void announceServerMessage()
         {
             sendPacket(PacketCreator.serverMessage(this.CurrentServer.WorldServerMessage));
@@ -347,6 +367,36 @@ namespace Application.Core.Channel.Net
         {
             sendPacket(PacketCreator.sendHint(msg, length, 10));
             sendPacket(PacketCreator.enableActions());
+        }
+
+        object announceBossHPLock = new object();
+        public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
+        {
+            lock (announceBossHPLock)
+            {
+                long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                int targetHash = OnlinedCharacter.getTargetHpBarHash();
+
+                if (mobHash != targetHash)
+                {
+                    if (timeNow - OnlinedCharacter.getTargetHpBarTime() >= 5 * 1000)
+                    {
+                        // is there a way to INTERRUPT this annoying thread running on the client that drops the boss bar after some time at every attack?
+                        announceDisableServerMessage();
+                        sendPacket(packet);
+
+                        OnlinedCharacter.setTargetHpBarHash(mobHash);
+                        OnlinedCharacter.setTargetHpBarTime(timeNow);
+                    }
+                }
+                else
+                {
+                    announceDisableServerMessage();
+                    sendPacket(packet);
+
+                    OnlinedCharacter.setTargetHpBarTime(timeNow);
+                }
+            }
         }
 
         public void setScriptEngine(string name, IEngine e)
@@ -362,6 +412,126 @@ namespace Application.Core.Channel.Net
         public void removeScriptEngine(string name)
         {
             ScriptEngines.Remove(name);
+        }
+
+        public bool CanGainCharacterSlot()
+        {
+            return AccountEntity!.Characterslots < Limits.MaxCharacterSlots;
+        }
+        public bool GainCharacterSlot()
+        {
+            if (CanGainCharacterSlot())
+            {
+                AccountEntity!.Characterslots += 1;
+                return true;
+            }
+            return false;
+        }
+
+        public void ChangeChannel(int channel)
+        {
+            if (Character == null)
+                return;
+
+
+            if (Character.isBanned())
+            {
+                Disconnect(false, false);
+                return;
+            }
+            if (!Character.isAlive() || FieldLimit.CANNOTMIGRATE.check(Character.getMap().getFieldLimit()))
+            {
+                sendPacket(PacketCreator.enableActions());
+                return;
+            }
+            else if (MiniDungeonInfo.isDungeonMap(Character.getMapId()))
+            {
+                sendPacket(PacketCreator.serverNotice(5, "Changing channels or entering Cash Shop or MTS are disabled when inside a Mini-Dungeon."));
+                sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            var socket = CurrentServer.GetChannelEndPoint(channel);
+            if (socket == null)
+            {
+                sendPacket(PacketCreator.serverNotice(1, "Channel " + channel + " is currently disabled. Try another channel."));
+                sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            Character.closePlayerInteractions();
+            Character.closePartySearchInteractions();
+
+            Character.unregisterChairBuff();
+            CurrentServer.StashCharacterBuff(Character);
+            CurrentServer.StashCharacterDisease(Character);
+            Character.setDisconnectedFromChannelWorld();
+            Character.notifyMapTransferToPartner(-1);
+            Character.removeIncomingInvites();
+            Character.cancelAllBuffs(true);
+            Character.cancelAllDebuffs();
+            Character.cancelBuffExpireTask();
+            Character.cancelDiseaseExpireTask();
+            Character.cancelSkillCooldownTask();
+            Character.cancelQuestExpirationTask();
+            //Cancelling magicdoor? Nope
+            //Cancelling mounts? Noty
+
+            Character.getInventory(InventoryType.EQUIPPED).SetChecked(false); //test
+            Character.getMap().removePlayer(Character);
+            Character.getChannelServer().removePlayer(Character);
+            Character.saveCharToDB();
+
+            SetCharacterOnSessionTransitionState(Character.getId());
+            try
+            {
+                sendPacket(PacketCreator.getChannelChange(socket));
+            }
+            catch (IOException e)
+            {
+                log.LogError(e.ToString());
+            }
+        }
+
+        int csattempt = 0;
+        public bool attemptCsCoupon()
+        {
+            if (csattempt > 2)
+            {
+                resetCsCoupon();
+                return false;
+            }
+
+            csattempt++;
+            return true;
+        }
+
+        public void resetCsCoupon()
+        {
+            csattempt = 0;
+        }
+
+        public void SetPlayer(IPlayer? player)
+        {
+            Character = player;
+        }
+
+        public void SetAccount(AccountEntity? accountEntity)
+        {
+            AccountEntity = accountEntity;
+        }
+
+        public IWorldChannel getChannelServer() => CurrentServer;
+        public int getChannel() => ActualChannel;
+
+        public int GetAvailableCharacterSlots()
+        {
+            throw new NotImplementedException();
+        }
+
+        public EventManager? getEventManager(string @event)
+        {
+            return CurrentServer.getEventSM().getEventManager(@event);
         }
     }
 }

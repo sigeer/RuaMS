@@ -19,10 +19,13 @@
 */
 
 
+using Application.Core.Game.Players;
+using Application.EF;
 using client.newyear;
 using constants.id;
 using constants.inventory;
 using net.packet;
+using net.server;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -55,7 +58,7 @@ public class NewYearCardHandler : ChannelHandlerBase
                     {
                         string receiver = p.readString();  //[04 00 54 65 73 74] -> sReceiverName (person to send to)
 
-                        int receiverid = getReceiverId(receiver, c.getWorld());
+                        int receiverid = getReceiverId(receiver);
                         if (receiverid != -1)
                         {
                             if (receiverid != c.OnlinedCharacter.getId())
@@ -151,10 +154,10 @@ public class NewYearCardHandler : ChannelHandlerBase
         }
     }
 
-    private static int getReceiverId(string receiver, int world)
+    private static int getReceiverId(string receiver)
     {
         using var dbContext = new DBContext();
-        return dbContext.Characters.Where(x => x.Name == receiver && x.World == world).Select(x => new { x.Id })?.FirstOrDefault()?.Id ?? -1;
+        return dbContext.Characters.Where(x => x.Name == receiver && x.World == 0).Select(x => new { x.Id })?.FirstOrDefault()?.Id ?? -1;
     }
 
 

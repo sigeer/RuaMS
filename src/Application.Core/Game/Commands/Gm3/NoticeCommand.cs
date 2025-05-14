@@ -13,6 +13,6 @@ public class NoticeCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[Notice] " + player.getLastCommandMessage()));
+        c.CurrentServer.BroadcastWorldPacket(PacketCreator.serverNotice(6, "[Notice] " + player.getLastCommandMessage()));
     }
 }

@@ -27,7 +27,7 @@ namespace scripting.item;
  */
 public class ItemScriptMethods : AbstractPlayerInteraction
 {
-    public ItemScriptMethods(Client c) : base(c)
+    public ItemScriptMethods(IChannelClient c) : base(c)
     {
     }
 }

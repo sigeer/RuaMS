@@ -33,7 +33,7 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class CheckCharNameHandler : LoginHandlerBase
 {
-    public CheckCharNameHandler(IMasterServer server, LoginPacketCreator packetCreator, Database.AccountManager accountManager, ILogger<LoginHandlerBase> logger)
+    public CheckCharNameHandler(IMasterServer server, Database.AccountManager accountManager, ILogger<LoginHandlerBase> logger)
         : base(server, accountManager, logger)
     {
     }

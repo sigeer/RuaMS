@@ -23,12 +23,19 @@
 
 using Application.Core.Channel.Net;
 using constants.skills;
-using net;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;
 
 public class SkillEffectHandler : ChannelHandlerBase
 {
+    readonly ILogger<SkillEffectHandler> _logger;
+
+    public SkillEffectHandler(ILogger<SkillEffectHandler> logger)
+    {
+        _logger = logger;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int skillId = p.readInt();
@@ -59,7 +66,7 @@ public class SkillEffectHandler : ChannelHandlerBase
                 c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.skillEffect(c.OnlinedCharacter, skillId, level, flags, speed, aids), false);
                 return;
             default:
-                log.Warning("Chr {CharacterName} entered SkillEffectHandler without being handled using {SkillId}", c.OnlinedCharacter, skillId);
+                _logger.LogWarning("Chr {CharacterName} entered SkillEffectHandler without being handled using {SkillId}", c.OnlinedCharacter, skillId);
                 return;
         }
     }

@@ -16,9 +16,18 @@ namespace Application.Core.Client
         /// </summary>
         bool IsOnlined { get; }
         bool IsActive { get; }
+        /// <summary>
+        /// 正在切换连接的服务器
+        /// <para>从登录->频道服务器</para>
+        /// <para>切换频道</para>
+        /// <para>每次切换服务器都会创建新的client，这也意味着当IsServerTransition为true时，这个client也将停止使用</para>
+        /// </summary>
+        bool IsServerTransition { get; }
         AccountEntity? AccountEntity { get; set; }
 
+        void BanMacs();
         bool CheckBirthday(DateTime date);
         bool CheckBirthday(int date);
+        void SetCharacterOnSessionTransitionState(int cid);
     }
 }

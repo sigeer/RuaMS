@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Maps.Specials;
+using Application.Utility;
 using net.packet;
 using tools;
 
@@ -50,7 +51,7 @@ public class SnowballHandler : ChannelHandlerBase
         {
             return;
         }
-        if ((currentServerTime() - chr.getLastSnowballAttack()) < 500)
+        if ((c.CurrentServer.getCurrentTime() - chr.getLastSnowballAttack()) < 500)
         {
             return;
         }
@@ -59,7 +60,7 @@ public class SnowballHandler : ChannelHandlerBase
             return;
         }
 
-        chr.setLastSnowballAttack(currentServerTime());
+        chr.setLastSnowballAttack(c.CurrentServer.getCurrentTime());
         int damage = 0;
         if (what < 2 && othersnowball.getSnowmanHP() > 0)
         {

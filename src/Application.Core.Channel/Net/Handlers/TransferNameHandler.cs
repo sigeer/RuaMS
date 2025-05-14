@@ -20,6 +20,9 @@
 
 
 
+using Application.EF;
+using Application.Utility.Configs;
+using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;
 
@@ -31,6 +34,12 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class TransferNameHandler : ChannelHandlerBase
 {
+    readonly ILogger<TransferNameHandler> _logger;
+
+    public TransferNameHandler(ILogger<TransferNameHandler> logger)
+    {
+        _logger = logger;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -53,7 +62,7 @@ public class TransferNameHandler : ChannelHandlerBase
             c.sendPacket(PacketCreator.sendNameTransferRules(4));
             return;
         }
-        else if (c.getTempBanCalendar() != null && c.getTempBanCalendar()!.Value.AddDays(30) < DateTimeOffset.Now)
+        else if (c.AccountEntity?.Tempban != null && c.AccountEntity?.Tempban.Value.AddDays(30) < DateTimeOffset.Now)
         {
             c.sendPacket(PacketCreator.sendNameTransferRules(2));
             return;
@@ -79,7 +88,7 @@ public class TransferNameHandler : ChannelHandlerBase
         }
         catch (Exception e)
         {
-            log.Error(e.ToString());
+            _logger.LogError(e.ToString());
             return;
         }
         c.sendPacket(PacketCreator.sendNameTransferRules(0));
