@@ -11,6 +11,7 @@ using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Net;
 using Application.Shared.Servers;
 using Application.Utility.Configs;
 using Application.Utility.Loggers;
@@ -799,4 +800,8 @@ public partial class WorldChannel : IWorldChannel
         Transport.ChangePlayerAllianceRank(targetCharacterId, isRaise);
     }
 
+    public int GetAccountCharcterCount(int accId)
+    {
+        return Transport.GetAccountCharacterCount(accId);
+    }
 }

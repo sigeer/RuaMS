@@ -21,3 +21,4 @@ global using XmlWzReader;
 global using XmlWzReader.wz;
 global using Application.Scripting;
 global using Application.Core.Client;
+global using Application.Shared.Net;

@@ -176,9 +176,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        c.SetPlayer(null);
-                        c.SetAccount(null);
-
                         if (currentState == LoginStage.LOGIN_LOGGEDIN)
                         {
                             c.Disconnect(true, false);

@@ -19,6 +19,7 @@
 */
 
 
+using Application.Shared.Net;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
 using net.server;

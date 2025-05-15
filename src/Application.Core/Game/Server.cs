@@ -28,6 +28,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
+using Application.Shared.Net;
 using client;
 using client.inventory.manipulator;
 using client.newyear;

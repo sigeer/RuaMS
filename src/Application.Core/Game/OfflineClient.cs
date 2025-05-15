@@ -1,6 +1,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
+using Application.Shared.Characters;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using net.packet;
@@ -44,7 +45,15 @@ namespace Application.Core.Game
 
         public DateTimeOffset LastPacket => throw new BusinessCharacterOfflineException();
 
+        public int AccountId => throw new NotImplementedException();
+
+        public string AccountName => throw new NotImplementedException();
+
+        public int AccountGMLevel => throw new NotImplementedException();
+
         IServerBase<IServerTransport> IClientBase.CurrentServer => CurrentServer;
+
+        AccountDto IChannelClient.AccountEntity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
@@ -201,9 +210,9 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void SetAccount(AccountEntity? accountEntity)
+        public void SetAccount(AccountDto accountEntity)
         {
-            throw new BusinessCharacterOfflineException();
+            throw new NotImplementedException();
         }
 
         public void SetCharacterOnSessionTransitionState(int cid)

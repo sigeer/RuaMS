@@ -291,7 +291,7 @@ public class SessionCoordinator
     /// </summary>
     /// <param name="client">ChannelClient</param>
     /// <param name="immediately"></param>
-    public void closeSession(IClientBase? client, bool immediately = false)
+    public void closeSession(ILoginClient? client, bool immediately = false)
     {
         if (client == null)
             return;

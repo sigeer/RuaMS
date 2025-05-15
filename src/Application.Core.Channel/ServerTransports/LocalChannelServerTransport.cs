@@ -9,6 +9,7 @@ using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
+using Application.Shared.Net;
 using net.packet;
 using net.server;
 using net.server.guild;
@@ -466,6 +467,11 @@ namespace Application.Core.Channel.ServerTransports
         public CharacterValueObject GetPlayerData(int cid)
         {
             throw new NotImplementedException();
+        }
+
+        public int GetAccountCharacterCount(int accId)
+        {
+            return _server.GetAccountCharacters(accId).Count;
         }
     }
 }

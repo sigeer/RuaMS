@@ -21,17 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Maps;
+using Application.Shared.Net;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
 using server;
 using server.maps;
-using System.Reflection.Metadata;
 using tools;
 
 namespace Application.Core.Game.Trades;

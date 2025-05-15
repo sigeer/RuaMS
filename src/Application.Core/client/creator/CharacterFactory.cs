@@ -124,7 +124,7 @@ public abstract class CharacterFactory
                 return CreateCharResult.CharSlotLimited;
             }
 
-            var result = CreateCharacter(c.AccountEntity!.Id, name, face, hair, skin, gender, recipe, out var newCharacter);
+            var result = CreateCharacter(c.AccountId, name, face, hair, skin, gender, recipe, out var newCharacter);
             if (result == CreateCharResult.Success && newCharacter != null)
             {
                 if (c is IChannelClient channelClient)
@@ -134,8 +134,8 @@ public abstract class CharacterFactory
                 }
 
                 Server.getInstance().createCharacterEntry(newCharacter);
-                c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountEntity!.Name + " has created a new character with IGN " + name));
-                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.AccountEntity!.Name, name);
+                c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountName + " has created a new character with IGN " + name));
+                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.AccountName, name);
 
                 return CreateCharResult.Success;
             }

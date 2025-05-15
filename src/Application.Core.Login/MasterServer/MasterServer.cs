@@ -7,7 +7,9 @@ using Application.Core.Login.Tasks;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.EF.Entities;
+using Application.Shared.Characters;
 using Application.Shared.Configs;
+using Application.Shared.Net;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Configs;
@@ -306,6 +308,16 @@ namespace Application.Core.Login
         public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
         {
             return Transport.WrapPlayer(name, channel, mapId, portal);
+        }
+
+        public List<CharacterDto> GetAccountCharacters(int accId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BroadcastWorldGMPacket(Packet packet)
+        {
+            Transport.BroadcastWorldGMPacket(packet);
         }
     }
 }

@@ -1,4 +1,5 @@
 using Application.Shared.Characters;
+using Application.Shared.Net;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;

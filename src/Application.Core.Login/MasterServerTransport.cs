@@ -2,6 +2,7 @@ using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Net;
 using net.server;
 using tools;
 
@@ -14,6 +15,15 @@ namespace Application.Core.Login
         public MasterServerTransport(IMasterServer masterServer)
         {
             this._server = masterServer;
+        }
+
+        public void BroadcastWorldGMPacket(Packet packet)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.Channels)
+            {
+                ch.broadcastGMPacket(packet);
+            }
         }
 
         public CoupleIdPair? GetAllWeddingCoupleForGuest(int guestId, bool cathedral)

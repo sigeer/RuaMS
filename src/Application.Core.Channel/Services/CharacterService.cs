@@ -219,7 +219,7 @@ namespace Application.Core.Channel.Services
 
             player.BuddyList.LoadFromDb(o.BuddyList);
 
-            c.SetAccount(_mapper.Map<AccountEntity>(o.Account));
+            c.SetAccount(o.Account);
             c.SetPlayer(player);
             return player;
         }

@@ -72,7 +72,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             || attack.skill == ILArchMage.BIG_BANG
             || attack.skill == Bishop.BIG_BANG) ? attack.charge : -1;
 
-        Packet packet = PacketCreator.magicAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, charge, attack.speed, attack.direction, attack.display);
+        var packet = PacketCreator.magicAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, charge, attack.speed, attack.direction, attack.display);
 
         chr.getMap().broadcastMessage(chr, packet, false, true);
         var effect = attack.getAttackEffect(chr, null);

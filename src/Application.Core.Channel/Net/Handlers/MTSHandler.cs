@@ -24,6 +24,7 @@
 using Application.Core.Managers;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Net;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.inventory;

@@ -101,6 +101,7 @@ namespace Application.Core.ServerTransports
         string LoadExpeditionInfo();
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
         CharacterValueObject GetPlayerData(int cid);
+        int GetAccountCharacterCount(int accId);
 
         #endregion
     }

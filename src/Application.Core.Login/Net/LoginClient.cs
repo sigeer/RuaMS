@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.Game.TheWorld;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Net;
@@ -24,6 +25,7 @@ namespace Application.Core.Login.Net
 {
     public class LoginClient : ClientBase, ILoginClient
     {
+        public AccountEntity? AccountEntity { get; set; }
         public override bool IsOnlined => AccountEntity?.Loggedin > LoginStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;
         readonly SessionCoordinator _sessionCoordinator;
@@ -37,6 +39,11 @@ namespace Application.Core.Login.Net
 
         public new IMasterServer CurrentServer { get; set; }
         public int SelectedChannel { get; set; }
+
+        public override int AccountId => AccountEntity?.Id ?? 0;
+
+        public override string AccountName => AccountEntity?.Name ?? "-";
+        public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
 
         protected override void ProcessPacket(InPacket packet)
         {
@@ -64,6 +71,14 @@ namespace Application.Core.Login.Net
             this.updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
             CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
+
+        public override int GetAvailableCharacterSlots()
+        {
+            if (AccountEntity == null)
+                return 0;
+
+            return AccountEntity.Characterslots - CurrentServer.GetAccountCharacters(AccountEntity.Id).Count;
+        }
         public void Disconnect()
         {
             _sessionCoordinator.closeSession(this, false);
@@ -79,20 +94,38 @@ namespace Application.Core.Login.Net
             Disconnect();
         }
 
-        public override void updateLoginState(sbyte newState)
+
+        public virtual void updateLoginState(sbyte newState)
         {
+            if (AccountEntity == null)
+                return;
+
             if (newState == LoginStage.LOGIN_LOGGEDIN)
             {
                 _sessionCoordinator.updateOnlineClient(this);
             }
 
-            base.updateLoginState(newState);
+            CurrentServer.UpdateAccountState(AccountEntity.Id, newState);
+
+            if (newState == LoginStage.LOGIN_NOTLOGGEDIN)
+            {
+                AccountEntity = null;
+            }
+            IsServerTransition = newState == LoginStage.LOGIN_SERVER_TRANSITION;
         }
 
         public override void Dispose()
         {
             AccountEntity = null;
             this.packetChannel.Writer.TryComplete();
+        }
+
+        protected override HashSet<string> GetMac()
+        {
+            if (AccountEntity == null || string.IsNullOrEmpty(AccountEntity.Macs))
+                return [];
+
+            return AccountEntity.Macs.Split(",").Select(x => x.Trim()).ToHashSet();
         }
 
         public bool CanBypassPin()

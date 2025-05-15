@@ -25,6 +25,7 @@ using Application.Core.Client;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Net;
+using Application.Shared.Net;
 using Application.Utility;
 using Application.Utility.Configs;
 using client;

@@ -19,7 +19,7 @@ public class AdminChatHandler : ChannelHandlerBase
         byte mode = p.readByte();
         //not saving slides...
         string message = p.readString();
-        Packet packet = PacketCreator.serverNotice(p.readByte(), message);//maybe I should make a check for the slea.readByte()... but I just hope gm's don't fuck things up :)
+        var packet = PacketCreator.serverNotice(p.readByte(), message);//maybe I should make a check for the slea.readByte()... but I just hope gm's don't fuck things up :)
         switch (mode)
         {
             case 0:

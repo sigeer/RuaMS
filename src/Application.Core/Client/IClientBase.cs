@@ -1,14 +1,8 @@
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
 using Application.Shared.Servers;
-using DotNetty.Transport.Channels;
-using net.packet;
-using net.server.coordinator.session;
-using System.Net;
 
 namespace Application.Core.Client
 {
-    public interface IClientBase: ISocketClient, IDisposable
+    public interface IClientBase : ISocketClient, IDisposable
     {
         IServerBase<IServerTransport> CurrentServer { get; }
         /// <summary>
@@ -24,11 +18,11 @@ namespace Application.Core.Client
         /// <para>每次切换服务器都会创建新的client，这也意味着当IsServerTransition为true时，这个client也将停止使用</para>
         /// </summary>
         bool IsServerTransition { get; }
-        AccountEntity? AccountEntity { get; set; }
+        int AccountId { get; }
+        string AccountName { get; }
+        int AccountGMLevel { get; }
         int GetAvailableCharacterSlots();
-        void BanMacs();
-        bool CheckBirthday(DateTime date);
-        bool CheckBirthday(int date);
+
         void SetCharacterOnSessionTransitionState(int cid);
     }
 }

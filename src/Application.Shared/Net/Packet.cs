@@ -1,4 +1,4 @@
-namespace net.packet;
+namespace Application.Shared.Net;
 
 public interface Packet
 {

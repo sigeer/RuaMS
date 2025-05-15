@@ -1,5 +1,6 @@
 using Application.Core.Gameplay.Wedding;
 using Application.Core.ServerTransports;
+using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
 using System.Net;
@@ -51,5 +52,6 @@ namespace Application.Core.Servers
         bool ValidateCharacteridInTransition(string clientSession, int charId);
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
         AccountEntity? GetAccountEntity(int accId);
+        List<CharacterDto> GetAccountCharacters(int accId);
     }
 }

@@ -3,10 +3,13 @@ using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Net;
 using Application.Core.Scripting.Infrastructure;
+using Application.EF;
 using Application.EF.Entities;
 using Application.Scripting;
+using Application.Shared.Characters;
 using Application.Shared.Constants;
 using Application.Shared.Login;
+using Application.Shared.Net;
 using Application.Utility.Configs;
 using client.inventory;
 using constants.id;
@@ -21,12 +24,14 @@ using scripting;
 using scripting.Event;
 using scripting.npc;
 using server.maps;
+using System.Text.RegularExpressions;
 using tools;
 
 namespace Application.Core.Channel.Net
 {
     public class ChannelClient : ClientBase, IChannelClient
     {
+        public AccountDto AccountEntity { get; set; }
         IPacketProcessor<IChannelClient> _packetProcessor;
         public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
         public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log)
@@ -52,9 +57,15 @@ namespace Application.Core.Channel.Net
         public int ActualChannel => CurrentServer.getId();
         public NPCConversationManager? NPCConversationManager { get; set; }
 
+        public override int AccountId => AccountEntity.Id;
+
+        public override string AccountName => AccountName;
+        public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
+
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
-            this.updateLoginState(LoginStage.PlayerServerTransition);
+            CurrentServer.UpdateAccountState(AccountEntity!.Id, LoginStage.PlayerServerTransition);
+            IsServerTransition = true;
             CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
 
@@ -153,14 +164,15 @@ namespace Application.Core.Channel.Net
             // 反之如果只是卡顿，旧client在这里退出了登录，新client在PlayerLoggedinHandler里也会变成登出态
             if (!IsServerTransition && IsOnlined)
             {
-                updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
+                CurrentServer.Transport.SendAccountLogout(AccountEntity.Id);
             }
             else
             {
                 //比如切换频道  但是还没有成功进入新频道
-                if (!CurrentServer.HasCharacteridInTransition(GetSessionRemoteHost()))
+                if (YamlConfig.config.server.USE_IP_VALIDATION && !CurrentServer.HasCharacteridInTransition(GetSessionRemoteHost()))
                 {
-                    updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
+                    CurrentServer.Transport.SendAccountLogout(AccountEntity.Id);
+                    IsServerTransition = false;
                 }
             }
             Dispose();
@@ -507,25 +519,69 @@ namespace Application.Core.Channel.Net
             Character = player;
         }
 
-        public void SetAccount(AccountEntity? accountEntity)
+        public void SetAccount(AccountDto accountEntity)
         {
             AccountEntity = accountEntity;
 
-            if (accountEntity != null)
-                CurrentServer.ClientStorage.Register(accountEntity.Id, this);
+            CurrentServer.ClientStorage.Register(accountEntity.Id, this);
         }
 
         public IWorldChannel getChannelServer() => CurrentServer;
         public int getChannel() => ActualChannel;
 
-        public int GetAvailableCharacterSlots()
+        public override int GetAvailableCharacterSlots()
         {
-            throw new NotImplementedException();
+            return AccountEntity.Characterslots - CurrentServer.GetAccountCharcterCount(AccountEntity.Id);
         }
 
         public EventManager? getEventManager(string @event)
         {
             return CurrentServer.getEventSM().getEventManager(@event);
+        }
+
+        public bool CheckBirthday(DateTime date)
+        {
+            if (AccountEntity == null)
+                return false;
+
+            return date.Month == AccountEntity.Birthday.Month && date.Day == AccountEntity.Birthday.Day;
+        }
+
+        public bool CheckBirthday(int dateInt)
+        {
+            if (DateTime.TryParse(dateInt.ToString(), out var d))
+                return CheckBirthday(d);
+            return false;
+        }
+
+        public void BanMacs()
+        {
+            try
+            {
+                using var dbContext = new DBContext();
+                List<string> filtered = dbContext.Macfilters.Select(x => x.Filter).ToList();
+
+                foreach (string mac in GetMac())
+                {
+                    if (!filtered.Any(x => Regex.IsMatch(mac, x)))
+                    {
+                        dbContext.Macbans.Add(new Macban(mac, AccountEntity!.Id.ToString()));
+                    }
+                }
+                dbContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                log.LogError(e.ToString());
+            }
+        }
+
+        protected override HashSet<string> GetMac()
+        {
+            if (AccountEntity == null || string.IsNullOrEmpty(AccountEntity.Macs))
+                return [];
+
+            return AccountEntity.Macs.Split(",").Select(x => x.Trim()).ToHashSet();
         }
     }
 }

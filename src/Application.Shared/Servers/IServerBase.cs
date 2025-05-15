@@ -1,3 +1,4 @@
+using Application.Shared.Net;
 using System.Net.Sockets;
 
 namespace Application.Shared.Servers

@@ -29,6 +29,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
+using Application.Shared.Net;
 using Application.Shared.WzEntity;
 using client;
 using client.autoban;

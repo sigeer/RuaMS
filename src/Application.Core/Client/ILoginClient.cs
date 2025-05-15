@@ -6,6 +6,7 @@ namespace Application.Core.Client
 {
     public interface ILoginClient : IClientBase
     {
+        AccountEntity? AccountEntity { get; set; }
         new IMasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         void Disconnect();
@@ -33,6 +34,5 @@ namespace Application.Core.Client
         List<IPlayer> LoadCharacters();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
-        bool DeleteCharacter(int cid, int id);
     }
 }

@@ -29,6 +29,7 @@ using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using net.packet;
@@ -183,5 +184,6 @@ namespace Application.Core.Game.TheWorld
         /// <param name="targetCharacterId"></param>
         /// <param name="isRaise"></param>
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
+        int GetAccountCharcterCount(int accId);
     }
 }

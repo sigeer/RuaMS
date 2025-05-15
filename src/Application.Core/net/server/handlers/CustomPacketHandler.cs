@@ -32,7 +32,7 @@ public class CustomPacketHandler<TClient> : IPacketHandlerBase<TClient> where TC
 {
     public void HandlePacket(InPacket p, TClient c)
     {
-        if (p.available() > 0 && c.AccountEntity?.GMLevel == 4)
+        if (p.available() > 0 && c.AccountGMLevel == 4)
         {
             //w/e
             c.sendPacket(PacketCreator.customPacket(p.readBytes(p.available())));

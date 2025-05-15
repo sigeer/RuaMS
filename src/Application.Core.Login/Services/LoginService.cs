@@ -3,6 +3,7 @@ using Application.Core.Login.Session;
 using Application.Core.Servers;
 using Application.Shared.Characters;
 using Application.Shared.Login;
+using Application.Utility.Configs;
 using AutoMapper;
 
 namespace Application.Core.Login.Services
@@ -35,6 +36,9 @@ namespace Application.Core.Login.Services
                 return null;
 
             if (characterObj.Account.Loggedin != LoginStage.LOGIN_SERVER_TRANSITION)
+                return null;
+
+            if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
             return characterObj;
