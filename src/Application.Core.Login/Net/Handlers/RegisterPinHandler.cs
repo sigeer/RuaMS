@@ -24,6 +24,7 @@
 using Application.Core.Client;
 using Application.Core.Login.Database;
 using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Servers;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
@@ -38,9 +39,11 @@ namespace Application.Core.Login.Net.Handlers;
  */
 public class RegisterPinHandler : LoginHandlerBase
 {
-    public RegisterPinHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
+    readonly SessionCoordinator _sessionCoordinator;
+    public RegisterPinHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator )
         : base(server, accountManager, logger)
     {
+        _sessionCoordinator = sessionCoordinator;
     }
 
     public override void HandlePacket(InPacket p, ILoginClient c)
@@ -48,8 +51,8 @@ public class RegisterPinHandler : LoginHandlerBase
         byte c2 = p.readByte();
         if (c2 == 0)
         {
-            SessionCoordinator.getInstance().closeSession(c);
-            c.updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+            _sessionCoordinator.closeSession(c);
+            c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
         }
         else
         {
@@ -62,8 +65,8 @@ public class RegisterPinHandler : LoginHandlerBase
                     c.sendPacket(PacketCreator.pinRegistered());
                 }
 
-                SessionCoordinator.getInstance().closeSession(c);
-                c.updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+                _sessionCoordinator.closeSession(c);
+                c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             }
         }
     }

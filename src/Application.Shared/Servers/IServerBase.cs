@@ -1,10 +1,10 @@
-using Application.Core.ServerTransports;
-using net.netty;
+using System.Net.Sockets;
 
-namespace Application.Core.Servers
+namespace Application.Shared.Servers
 {
     public interface IServerBase<out TServerTransport> where TServerTransport : IServerTransport
     {
+
         string InstanceId { get; }
         TServerTransport Transport { get; }
         Task StartServer();
@@ -22,5 +22,7 @@ namespace Application.Core.Servers
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
         void UpdateAccountState(int accId, sbyte state);
+
+        void BroadcastWorldGMPacket(Packet packet);
     }
 }

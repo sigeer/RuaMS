@@ -2,6 +2,7 @@ using Application.Core.Net;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
+using Application.Shared.Servers;
 using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;

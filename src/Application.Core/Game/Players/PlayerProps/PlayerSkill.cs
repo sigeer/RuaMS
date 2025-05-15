@@ -1,4 +1,5 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
+using Application.Shared.Characters;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
@@ -9,7 +10,18 @@ namespace Application.Core.Game.Players.PlayerProps
         {
             _dataSource = [];
         }
+        public void LoadData(SkillDto[] skills)
+        {
+            foreach (var item in skills)
+            {
+                var pSkill = SkillFactory.getSkill(item.SkillId);
+                if (pSkill != null)
+                {
+                    _dataSource[pSkill] = new SkillEntry((sbyte)item.Level, item.MasterLevel, item.Expiration);
+                }
+            }
 
+        }
 
         public override void LoadData(DBContext dbContext)
         {

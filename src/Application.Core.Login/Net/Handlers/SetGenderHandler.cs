@@ -26,6 +26,7 @@ using Application.Core.Client;
 using Application.Core.Login.Database;
 using Application.Core.Login.Net;
 using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Servers;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
@@ -40,8 +41,10 @@ namespace Application.Core.Login.Net.Handlers;
  */
 public class SetGenderHandler : LoginHandlerBase
 {
-    public SetGenderHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger) : base(server, accountManager, logger)
+    readonly SessionCoordinator _sessionCoordinator;
+    public SetGenderHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator) : base(server, accountManager, logger)
     {
+        _sessionCoordinator = sessionCoordinator;
     }
 
     public override void HandlePacket(InPacket p, ILoginClient c)
@@ -53,14 +56,14 @@ public class SetGenderHandler : LoginHandlerBase
             if (confirmed == 0x01)
             {
                 c.AccountEntity.Gender = p.ReadSByte();
-                c.sendPacket(_packetCreator.GetAuthSuccess(c));
+                c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));
 
                 _server.RegisterLoginState(c);
             }
             else
             {
-                SessionCoordinator.getInstance().closeSession(c);
-                c.updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+                _sessionCoordinator.closeSession(c);
+                c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             }
         }
     }

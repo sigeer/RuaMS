@@ -1,7 +1,9 @@
+using Application.Shared.Characters;
 using Application.Shared.KeyMaps;
 using client.keybind;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
@@ -18,6 +20,16 @@ namespace Application.Core.Game.Players.PlayerProps
             for (int i = 0; i < selectedKey.Length; i++)
             {
                 _dataSource.AddOrUpdate(selectedKey[i], new KeyBinding(selectedType[i], selectedAction[i]));
+            }
+        }
+
+        public void LoadData(KeyMapDto[] keyMapFromDB)
+        {
+            _dataSource.Clear();
+
+            foreach (var item in keyMapFromDB)
+            {
+                _dataSource.AddOrUpdate(item.Key, new KeyBinding(item.Type, item.Action));
             }
         }
 

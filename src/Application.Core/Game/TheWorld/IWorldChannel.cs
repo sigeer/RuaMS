@@ -29,6 +29,8 @@ using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Servers;
+using Microsoft.Extensions.DependencyInjection;
 using net.packet;
 using net.server.services;
 using net.server.services.type;
@@ -42,6 +44,10 @@ namespace Application.Core.Game.TheWorld
 {
     public interface IWorldChannel : IServerBase<IChannelServerTransport>
     {
+        IServiceScope LifeScope { get; }
+
+        ChannelClientStorage ClientStorage { get; }
+
         public event Action? OnWorldMobRateChanged;
         public float WorldMobRate { get; }
         public event Action? OnWorldMesoRateChanged;
@@ -133,7 +139,7 @@ namespace Application.Core.Game.TheWorld
         void RecoverCharacterBuff(IPlayer character);
         void RecoverCharacterDisease(IPlayer character);
         IPEndPoint GetChannelEndPoint(int channel);
-        void BroadcastWorldGMPacket(Packet packet);
+
         /// <summary>
         /// 向id的partner推送通知
         /// </summary>

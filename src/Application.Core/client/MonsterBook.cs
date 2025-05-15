@@ -21,7 +21,10 @@
 */
 
 
+using Application.EF;
+using Application.Shared.Characters;
 using Microsoft.EntityFrameworkCore;
+using System;
 using tools;
 
 
@@ -37,6 +40,25 @@ public class MonsterBook
     private int bookLevel = 1;
     private Dictionary<int, int> cards = new();
     private object lockObj = new object();
+
+    public MonsterBook(MonsterbookDto[] dataList)
+    {
+        foreach (var item in dataList)
+        {
+            var cardid = item.Cardid;
+            var level = item.Level;
+            if (cardid / 1000 >= 2388)
+            {
+                specialCard++;
+            }
+            else
+            {
+                normalCard++;
+            }
+            cards[cardid] = level;
+        }
+        calculateLevel();
+    }
 
     public HashSet<KeyValuePair<int, int>> getCardSet()
     {

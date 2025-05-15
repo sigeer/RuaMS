@@ -20,14 +20,17 @@
 
 
 using Application.Core.Client;
-using Application.Core.Managers;
 using Application.Core.scripting.npc;
+using Application.EF;
+using Application.Shared.Sessions;
+using Application.Utility.Configs;
 using constants.id;
+using Microsoft.Extensions.Logging;
 using net.server.coordinator.login;
+using net.server.coordinator.session;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
-namespace net.server.coordinator.session;
+namespace Application.Core.Login.Session;
 
 
 /**
@@ -35,37 +38,21 @@ namespace net.server.coordinator.session;
  */
 public class SessionCoordinator
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.Session);
-    private static SessionCoordinator instance = new SessionCoordinator();
-
-    public static SessionCoordinator getInstance()
-    {
-        return instance;
-    }
-
-    public enum AntiMulticlientResult
-    {
-        SUCCESS,
-        REMOTE_LOGGEDIN,
-        REMOTE_REACHED_LIMIT,
-        REMOTE_PROCESSING,
-        REMOTE_NO_MATCH,
-        MANY_ACCOUNT_ATTEMPTS,
-        COORDINATOR_ERROR
-    }
+    readonly ILogger<SessionCoordinator> _logger;
 
     private SessionInitialization sessionInit = new SessionInitialization();
     private LoginStorage loginStorage = new LoginStorage();
-    private Dictionary<int, IClientBase> onlineClients = new(); // Key: account id
+    private Dictionary<int, ILoginClient> onlineClients = new(); // Key: account id
     private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
-    private ConcurrentDictionary<string, IClientBase> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
+    private ConcurrentDictionary<string, ILoginClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
     private HostHwidCache hostHwidCache = new HostHwidCache();
 
-    private SessionCoordinator()
+    public SessionCoordinator(ILogger<SessionCoordinator> logger)
     {
+        _logger = logger;
     }
 
-    private static bool attemptAccountAccess(int accountId, Hwid hwid, bool routineCheck)
+    private bool attemptAccountAccess(int accountId, Hwid hwid, bool routineCheck)
     {
         try
         {
@@ -93,7 +80,7 @@ public class SessionCoordinator
         }
         catch (Exception e)
         {
-            log.Warning(e, "Failed to update account access. Account id: {AccountId}, nibbleHwid: {HWID}", accountId, hwid);
+            _logger.LogWarning(e, "Failed to update account access. Account id: {AccountId}, nibbleHwid: {HWID}", accountId, hwid);
         }
 
         return false;
@@ -102,7 +89,7 @@ public class SessionCoordinator
     /**
      * Overwrites any existing online client for the account id, making sure to disconnect it as well.
      */
-    public void updateOnlineClient(IClientBase? client)
+    public void updateOnlineClient(ILoginClient? client)
     {
         if (client != null && client.AccountEntity != null)
         {
@@ -155,8 +142,8 @@ public class SessionCoordinator
     public void closeLoginSession(ILoginClient client)
     {
         string remoteHost = client.GetSessionRemoteHost();
-        loginRemoteHosts.Remove(client.RemoteAddress);
-        loginRemoteHosts.Remove(remoteHost);
+        loginRemoteHosts.TryRemove(client.RemoteAddress, out var _);
+        loginRemoteHosts.TryRemove(remoteHost, out var _);
 
         Hwid? nibbleHwid = client.Hwid;
         client.Hwid = null;
@@ -274,7 +261,7 @@ public class SessionCoordinator
         }
     }
 
-    private static void associateHwidAccountIfAbsent(Hwid hwid, int accountId)
+    private void associateHwidAccountIfAbsent(Hwid hwid, int accountId)
     {
         try
         {
@@ -295,7 +282,7 @@ public class SessionCoordinator
         }
         catch (Exception ex)
         {
-            log.Warning(ex, "Failed to associate hwid {HWID} with account id {AccountId}", hwid, accountId);
+            _logger.LogWarning(ex, "Failed to associate hwid {HWID} with account id {AccountId}", hwid, accountId);
         }
     }
 
@@ -341,7 +328,7 @@ public class SessionCoordinator
         }
     }
 
-    public Hwid pickLoginSessionHwid(IChannelClient client)
+    public Hwid pickLoginSessionHwid(ILoginClient client)
     {
         string remoteHost = client.RemoteAddress;
         // thanks BHB, resinate for noticing players from same network not being able to login
@@ -369,21 +356,21 @@ public class SessionCoordinator
                     .OrderBy(x => x)
                     .Select(x => x.ToString()));
 
-            log.Debug("Current online clients: {Clients}", commaSeparatedClients);
+            _logger.LogDebug("Current online clients: {Clients}", commaSeparatedClients);
         }
 
         if (onlineRemoteHwids.Count > 0)
         {
             List<Hwid> hwids = onlineRemoteHwids.OrderBy(x => x.hwid).ToList();
 
-            log.Debug("Current online HWIDs: {HWIDs}", string.Join(" ", hwids.Select(x => x.hwid)));
+            _logger.LogDebug("Current online HWIDs: {HWIDs}", string.Join(" ", hwids.Select(x => x.hwid)));
         }
 
         if (loginRemoteHosts.Count > 0)
         {
             var elist = loginRemoteHosts.OrderBy(x => x.Key).ToList();
 
-            log.Debug("Current login sessions: {0}", string.Join(", ", elist.Select(x => $"({x.Key}, client: {x.Value})")));
+            _logger.LogDebug("Current login sessions: {0}", string.Join(", ", elist.Select(x => $"({x.Key}, client: {x.Value})")));
         }
     }
 

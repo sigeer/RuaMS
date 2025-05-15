@@ -1,6 +1,7 @@
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
+using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using net.server;
@@ -45,21 +46,17 @@ namespace Application.Core.Client
 
             CurrentServer.UpdateAccountState(AccountEntity.Id, newState);
 
-            if (newState == AccountStage.LOGIN_NOTLOGGEDIN)
+            if (newState == LoginStage.LOGIN_NOTLOGGEDIN)
             {
                 AccountEntity = null;
             }
-            IsServerTransition = newState == AccountStage.LOGIN_SERVER_TRANSITION;
+            IsServerTransition = newState == LoginStage.LOGIN_SERVER_TRANSITION;
         }
         /// <summary>
         /// q
         /// </summary>
         /// <param name="cid"></param>
-        public void SetCharacterOnSessionTransitionState(int cid)
-        {
-            this.updateLoginState(AccountStage.LOGIN_SERVER_TRANSITION);
-            CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
-        }
+        public abstract void SetCharacterOnSessionTransitionState(int cid);
         protected HashSet<string> GetMac()
         {
             if (AccountEntity == null || string.IsNullOrEmpty(AccountEntity.Macs))

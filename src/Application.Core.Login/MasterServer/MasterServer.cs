@@ -2,13 +2,18 @@ using Application.Core.Client;
 using Application.Core.Gameplay.Wedding;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
+using Application.Core.Login.Session;
+using Application.Core.Login.Tasks;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.EF.Entities;
 using Application.Shared.Configs;
+using Application.Shared.Servers;
+using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.netty;
 using net.server;
@@ -69,30 +74,36 @@ namespace Application.Core.Login
         public string EventMessage { get; set; }
         #endregion
 
-
-        public MasterServer(LoginServer loginServer, ILogger<MasterServer> logger, IConfiguration configuration)
+        public IServiceProvider ServiceProvider { get; }
+        SessionCoordinator _sessionCoordinator;
+        public MasterServer(IServiceProvider sp)
         {
-            _logger = logger;
+            ServiceProvider = sp;
+            _sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
+            _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
 
             InstanceId = Guid.NewGuid().ToString();
             ChannelServerList = new List<ChannelServerWrapper>();
             StartupTime = DateTimeOffset.Now;
             Transport = new MasterServerTransport(this);
-            NettyServer = loginServer;
+            NettyServer = new LoginServer(this);
 
             WeddingInstance = new WeddingService(this);
 
+            var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
             var serverSection = configuration.GetSection("WorldConfig");
-            MobRate = serverSection.GetValue<float>("MobRate");
-            ExpRate = serverSection.GetValue<float>("ExpRate");
-            MesoRate = serverSection.GetValue<float>("MesoRate");
-            DropRate = serverSection.GetValue<float>("DropRate");
-            BossDropRate = serverSection.GetValue<float>("BossDropRate");
-            TravelRate = serverSection.GetValue<float>("TravelRate");
-            FishingRate = serverSection.GetValue<float>("FishingRate");
+            MobRate = serverSection.GetValue<float>("MobRate", 1);
+            ExpRate = serverSection.GetValue<float>("ExpRate", 1);
+            MesoRate = serverSection.GetValue<float>("MesoRate", 1);
+            DropRate = serverSection.GetValue<float>("DropRate", 1);
+            BossDropRate = serverSection.GetValue<float>("BossDropRate", 1);
+            TravelRate = serverSection.GetValue<float>("TravelRate", 1);
+            FishingRate = serverSection.GetValue<float>("FishingRate", 1);
 
-            EventMessage = serverSection.GetValue<string>("EventMessage");
-            ServerMessage = serverSection.GetValue<string>("ServerMessage");
+            Name = serverSection.GetValue<string>("Name", "");
+            EventMessage = serverSection.GetValue<string>("EventMessage", "");
+            ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
+            WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
 
             Players = new PlayerStorage();
             BuffStorage = new PlayerBuffStorage();
@@ -101,6 +112,7 @@ namespace Application.Core.Login
         public async Task Shutdown()
         {
             await NettyServer.Stop();
+
             IsRunning = false;
         }
 
@@ -198,11 +210,14 @@ namespace Application.Core.Login
         private async Task RegisterTask()
         {
             _logger.LogInformation("定时任务加载中...");
+            var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             await TimerManager.InitializeAsync(TaskEngine.Quartz);
             var tMan = TimerManager.getInstance();
             await tMan.Start();
             tMan.register(new NamedRunnable("Purge", TimerManager.purge), YamlConfig.config.server.PURGING_INTERVAL);
             tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            tMan.register(new LoginCoordinatorTask(_sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
+            tMan.register(new LoginStorageTask(_sessionCoordinator), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             _logger.LogInformation("定时任务加载完成");
         }
 
@@ -272,7 +287,7 @@ namespace Application.Core.Login
                 }
                 else
                 {
-                    SessionCoordinator.getInstance().closeSession(c, true);
+                    _sessionCoordinator.closeSession(c, true);
                 }
             }
         }

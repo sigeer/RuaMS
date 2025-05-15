@@ -1,32 +1,24 @@
 using Application.Core.Client;
 using Application.Core.Login.Database;
-using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Servers;
+using Application.Shared.Sessions;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using net.server.coordinator.session;
 using tools;
-using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Login.Net.Handlers;
 
 
 public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 {
-    public ViewAllCharRegisterPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger) : base(server, accountManager, logger)
+    readonly SessionCoordinator _sessionCoordinator;
+    public ViewAllCharRegisterPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+        : base(server, accountManager, logger)
     {
-    }
+        _sessionCoordinator = sessionCoordinator;
 
-    private static int parseAntiMulticlientError(AntiMulticlientResult res)
-    {
-        return (res) switch
-        {
-            AntiMulticlientResult.REMOTE_PROCESSING => 10,
-            AntiMulticlientResult.REMOTE_LOGGEDIN => 7,
-            AntiMulticlientResult.REMOTE_NO_MATCH => 17,
-            AntiMulticlientResult.COORDINATOR_ERROR => 8,
-            _ => 9
-        };
     }
 
     public override void HandlePacket(InPacket p, ILoginClient c)
@@ -45,65 +37,73 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
         }
         catch (ArgumentException e)
         {
-            log.Warning(e, "Invalid host string: {Host}", hostString);
+            _logger.LogWarning(e, "Invalid host string: {Host}", hostString);
             c.sendPacket(PacketCreator.getAfterLoginError(17));
             return;
         }
 
-        c.updateMacs(mac);
-        c.updateHwid(hwid);
+        c.UpdateMacs(mac);
+        c.Hwid = hwid;
 
-        if (c.hasBannedMac() || c.hasBannedHWID())
+        if (c.HasBannedMac() || c.HasBannedHWID())
         {
-            SessionCoordinator.getInstance().closeSession(c, true);
+            _sessionCoordinator.closeSession(c, true);
             return;
         }
 
-        AntiMulticlientResult res = SessionCoordinator.getInstance().attemptGameSession(c, c.getAccID(), hwid);
+        AntiMulticlientResult res = _sessionCoordinator.attemptGameSession(c, c.AccountEntity!.Id, hwid);
         if (res != AntiMulticlientResult.SUCCESS)
         {
-            c.sendPacket(PacketCreator.getAfterLoginError(parseAntiMulticlientError(res)));
+            c.sendPacket(PacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
             return;
         }
 
-        Server server = Server.getInstance();
-        if (!server.haveCharacterEntry(c.getAccID(), charId))
+        if (!_accountManager.IsAccountHasCharacter(c.AccountEntity.Id, charId))
         {
-            SessionCoordinator.getInstance().closeSession(c, true);
+            _sessionCoordinator.closeSession(c, true);
             return;
         }
 
-        c.setWorld(server.getCharacterWorld(charId));
-        var wserv = c.getWorldServer();
-        if (wserv == null || wserv.isWorldCapacityFull())
+        if (_server.IsWorldCapacityFull())
         {
             c.sendPacket(PacketCreator.getAfterLoginError(10));
             return;
         }
 
-        int channel = Randomizer.rand(1, server.getWorld(c.getWorld()).getChannelsSize());
-        c.setChannel(channel);
 
         string pic = p.readString();
-        c.setPic(pic);
-
-        var socket = server.GetChannelEndPoint(c, c.getWorld(), channel);
-        if (socket == null)
+        if (string.IsNullOrEmpty(c.AccountEntity.Pic))
         {
-            c.sendPacket(PacketCreator.getAfterLoginError(10));
-            return;
+            c.AccountEntity.Pic = pic;
+
+            if (_server.IsWorldCapacityFull())
+            {
+                c.sendPacket(PacketCreator.getAfterLoginError(10));
+                return;
+            }
+
+            var socket = _server.GetChannelIPEndPoint(c.SelectedChannel);
+            if (socket == null)
+            {
+                c.sendPacket(PacketCreator.getAfterLoginError(10));
+                return;
+            }
+
+            _server.UnregisterLoginState(c);
+            c.SetCharacterOnSessionTransitionState(charId);
+
+            try
+            {
+                c.sendPacket(PacketCreator.getServerIP(socket, charId));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+            }
         }
-
-        server.unregisterLoginState(c);
-        c.setCharacterOnSessionTransitionState(charId);
-
-        try
+        else
         {
-            c.sendPacket(PacketCreator.getServerIP(socket, charId));
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
+            _sessionCoordinator.closeSession(c, true);
         }
     }
 }

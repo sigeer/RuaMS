@@ -33,5 +33,6 @@ namespace Application.Core.Client
         List<IPlayer> LoadCharacters();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
+        bool DeleteCharacter(int cid, int id);
     }
 }

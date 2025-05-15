@@ -25,8 +25,11 @@ using Application.Core.Client;
 using Application.Core.Login.Database;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Servers;
+using Application.EF;
+using Application.Utility.Exceptions;
 using Microsoft.Extensions.Logging;
 using net.packet;
+using net.server;
 using tools;
 
 namespace Application.Core.Login.Net.Handlers;
@@ -68,13 +71,13 @@ public class DeleteCharHandler : LoginHandlerBase
             }
             catch (Exception e)
             {
-                log.Error(e, "Failed to delete chrId {CharacterId}", cid);
+                _logger.LogError(e, "Failed to delete chrId {CharacterId}", cid);
                 c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x09));
                 return;
             }
-            if (c.deleteCharacter(cid, c.getAccID()))
+            if (c.DeleteCharacter(cid, c.AccountEntity!.Id))
             {
-                log.Information("Account {AccountName} deleted chrId {CharacterId}", c.getAccountName(), cid);
+                _logger.LogInformation("Account {AccountName} deleted chrId {CharacterId}", c.AccountEntity!.Name, cid);
                 c.sendPacket(PacketCreator.deleteCharResponse(cid, 0));
             }
             else

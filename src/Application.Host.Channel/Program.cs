@@ -4,7 +4,7 @@ using Application.Host.Channel;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<RemoteChannelServerTransport>();
-builder.Services.RegisterChannelServer();
+builder.Services.AddChannelServer();
 // Add services to the container.
 builder.Services.AddHostedService<ChannelHost>();
 

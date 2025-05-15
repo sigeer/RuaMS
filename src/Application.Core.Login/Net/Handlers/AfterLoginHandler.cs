@@ -25,6 +25,7 @@ using Application.Core.Client;
 using Application.Core.Login.Database;
 using Application.Core.Login.Net;
 using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Net;
 using Application.Core.Servers;
 using Application.Shared.Login;
@@ -37,9 +38,11 @@ namespace Application.Core.Net.Handlers;
 
 public class AfterLoginHandler : LoginHandlerBase
 {
-    public AfterLoginHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger) 
+    readonly SessionCoordinator _sessionCoordinator;
+    public AfterLoginHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator) 
         : base(server, accountManager, logger)
     {
+        _sessionCoordinator = sessionCoordinator;
     }
 
     public override void HandlePacket(InPacket p, ILoginClient c)
@@ -87,8 +90,8 @@ public class AfterLoginHandler : LoginHandlerBase
         }
         else if (c2 == 0 && c3 == 5)
         {
-            SessionCoordinator.getInstance().closeSession(c);
-            c.updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+            _sessionCoordinator.closeSession(c);
+            c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
         }
     }
 }

@@ -1,24 +1,40 @@
+using Application.Shared.Characters;
+using Application.Shared.Items;
 using net.server.coordinator.session;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Datas
 {
     public class CharacterValueObject
     {
-        public CharacterEntity CharacterEntity { get; set; }
+        public CharacterDto Character { get; set; }
         public CharacterLoginInfo SessionInfo { get; set; }
-        public AccountEntity AccountEntity { get; }
+        public AccountDto Account { get; set; }
+        public MonsterbookDto[] MonsterBooks { get; set; }
+        public PetIgnoreDto[] PetIgnores { get; set; }
+        public TrockLocationDto[] TrockLocations { get; set; }
+        public AreaDto[] Areas { get; set; }
+        public EventDto[] Events { get; set; }
 
+        public QuestStatusDto[] QuestStatuses { get; set; }
+        public QuestProgressDto[] QuestProgresses { get; set; }
+        public MedalMapDto[] MedalMaps { get; set; }
+        public SkillDto[] Skills { get; set; }
+        public SkillMacroDto[] SkillMacros { get; set; }
+        public CoolDownDto[] CoolDowns { get; set; }
+        public KeyMapDto[] KeyMaps { get; set; }
+        public SavedLocationDto[] SavedLocations { get; set; }
+        public RecentFameRecordDto FameRecord { get; set; }
+
+        public QuickSlotDto? QuickSlot { get; set; }
+        public ItemDto[] Items { get; set; }
+        public StorageDto StorageInfo { get; set; }
+        public BuddyDto[] BuddyList { get; set; }
     }
 
     public class CharacterLoginInfo
     {
-        public bool IsAccountOnlined { get; }
-        public bool IsPlayerOnlined { get; }
-        public Hwid Hwid { get; }
+        public bool IsAccountOnlined { get; set; }
+        public bool IsPlayerOnlined { get; set; }
+        public Hwid Hwid { get; set; }
     }
 }

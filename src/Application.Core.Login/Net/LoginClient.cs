@@ -1,41 +1,42 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Net;
 using Application.Core.Servers;
 using Application.Core.tools;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Login;
+using Application.Shared.Sessions;
 using Application.Utility.Configs;
 using DotNetty.Transport.Channels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net;
 using net.packet;
 using net.packet.logging;
 using net.server;
 using net.server.coordinator.login;
 using net.server.coordinator.session;
 using tools;
-using XmlWzReader;
-using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Login.Net
 {
     public class LoginClient : ClientBase, ILoginClient
     {
-        public override bool IsOnlined => AccountEntity?.Loggedin > AccountStage.LOGIN_NOTLOGGEDIN;
+        public override bool IsOnlined => AccountEntity?.Loggedin > LoginStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;
-        public LoginClient(long sessionId, IMasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, ILogger<IClientBase> log)
+        readonly SessionCoordinator _sessionCoordinator;
+        public LoginClient(long sessionId, IMasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, SessionCoordinator sessionCoordinator, ILogger<IClientBase> log)
             : base(sessionId, currentServer, nettyChannel, log)
         {
+            _sessionCoordinator = sessionCoordinator;
             CurrentServer = currentServer;
             _packetProcessor = packetProcessor;
         }
 
         public new IMasterServer CurrentServer { get; set; }
-        public int SelectedChannel { get ; set; }
+        public int SelectedChannel { get; set; }
 
         protected override void ProcessPacket(InPacket packet)
         {
@@ -55,14 +56,19 @@ namespace Application.Core.Login.Net
 
         protected override void CloseSessionInternal()
         {
-            SessionCoordinator.getInstance().closeLoginSession(this);
+            _sessionCoordinator.closeLoginSession(this);
         }
 
+        public override void SetCharacterOnSessionTransitionState(int cid)
+        {
+            this.updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
+            CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
+        }
         public void Disconnect()
         {
-            SessionCoordinator.getInstance().closeSession(this, false);
+            _sessionCoordinator.closeSession(this, false);
 
-            updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+            updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             CurrentServer.UnregisterLoginState(this);
 
             Dispose();
@@ -75,9 +81,9 @@ namespace Application.Core.Login.Net
 
         public override void updateLoginState(sbyte newState)
         {
-            if (newState == AccountStage.LOGIN_LOGGEDIN)
+            if (newState == LoginStage.LOGIN_LOGGEDIN)
             {
-                SessionCoordinator.getInstance().updateOnlineClient(this);
+                _sessionCoordinator.updateOnlineClient(this);
             }
 
             base.updateLoginState(newState);
@@ -104,7 +110,7 @@ namespace Application.Core.Login.Net
             pinattempt++;
             if (pinattempt > 5)
             {
-                SessionCoordinator.getInstance().closeSession(this, false);
+                _sessionCoordinator.closeSession(this, false);
             }
             if (AccountEntity?.Pin == other)
             {
@@ -130,7 +136,7 @@ namespace Application.Core.Login.Net
             picattempt++;
             if (picattempt > 5)
             {
-                SessionCoordinator.getInstance().closeSession(this, false);
+                _sessionCoordinator.closeSession(this, false);
             }
             if (AccountEntity?.Pic == other)
             {    // thanks ryantpayton (HeavenClient) for noticing null pics being checked here
@@ -148,20 +154,20 @@ namespace Application.Core.Login.Net
                 return 0;
 
 
-            if (AccountEntity.Loggedin == AccountStage.LOGIN_SERVER_TRANSITION)
+            if (AccountEntity.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION)
             {
                 if (AccountEntity.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
                 {
-                    updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
-                    return AccountStage.LOGIN_NOTLOGGEDIN;
+                    updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
+                    return LoginStage.LOGIN_NOTLOGGEDIN;
                 }
                 else
                 {
-                    return AccountStage.LOGIN_SERVER_TRANSITION;
+                    return LoginStage.LOGIN_SERVER_TRANSITION;
                 }
             }
 
-            AccountEntity.Loggedin = AccountStage.LOGIN_LOGGEDIN;
+            AccountEntity.Loggedin = LoginStage.LOGIN_LOGGEDIN;
             return AccountEntity.Loggedin;
         }
 
@@ -172,7 +178,7 @@ namespace Application.Core.Login.Net
             loginattempt++;
             if (loginattempt > 4)
             {
-                SessionCoordinator.getInstance().closeSession(this, false);
+                _sessionCoordinator.closeSession(this, false);
                 return LoginResultCode.Fail_Count;   // thanks Survival_Project for finding out an issue with AUTOMATIC_REGISTER here
             }
 
@@ -195,7 +201,7 @@ namespace Application.Core.Login.Net
                     if (dbModel.Banned == 1)
                         return LoginResultCode.Fail_Banned;
 
-                    if (GetLoginState() > AccountStage.LOGIN_NOTLOGGEDIN)
+                    if (GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
                     {
                         loginok = LoginResultCode.Fail_AlreadyLoggedIn;
                     }
@@ -221,7 +227,7 @@ namespace Application.Core.Login.Net
 
             if (loginok == LoginResultCode.Success || loginok == LoginResultCode.Fail_IncorrectPassword)
             {
-                AntiMulticlientResult res = SessionCoordinator.getInstance().attemptLoginSession(this, nibbleHwid, accId, loginok == LoginResultCode.Fail_IncorrectPassword);
+                AntiMulticlientResult res = _sessionCoordinator.attemptLoginSession(this, nibbleHwid, accId, loginok == LoginResultCode.Fail_IncorrectPassword);
 
                 switch (res)
                 {
@@ -257,11 +263,11 @@ namespace Application.Core.Login.Net
 
         public LoginResultCode FinishLogin()
         {
-            if (GetLoginState() > AccountStage.LOGIN_NOTLOGGEDIN)
+            if (GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
             {
                 return LoginResultCode.Fail_AlreadyLoggedIn;
             }
-            updateLoginState(AccountStage.LOGIN_LOGGEDIN);
+            updateLoginState(LoginStage.LOGIN_LOGGEDIN);
 
             return LoginResultCode.Success;
         }
@@ -354,7 +360,7 @@ namespace Application.Core.Login.Net
         /// <returns></returns>
         public List<IPlayer> LoadCharacters()
         {
-            return Server.getInstance().LoadAccountCharList(AccountEntity!.Id,  1).GetValueOrDefault(0, []);
+            return Server.getInstance().LoadAccountCharList(AccountEntity!.Id, 1).GetValueOrDefault(0, []);
         }
 
         DateTimeOffset lastRequestCharList;

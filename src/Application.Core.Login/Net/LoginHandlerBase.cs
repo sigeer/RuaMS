@@ -1,11 +1,10 @@
 using Application.Core.Client;
 using Application.Core.Login.Database;
-using Application.Core.Login.Net.Packets;
 using Application.Core.Net;
 using Application.Core.Servers;
+using Application.Shared.Sessions;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Login.Net
 {

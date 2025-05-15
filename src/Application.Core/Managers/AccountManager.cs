@@ -1,8 +1,4 @@
-using Application.Shared.Login;
-using Microsoft.EntityFrameworkCore;
-using net.server.coordinator.session;
 using tools;
-using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Managers
 {

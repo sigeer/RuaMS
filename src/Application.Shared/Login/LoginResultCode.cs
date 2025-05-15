@@ -41,19 +41,28 @@ namespace Application.Shared.Login
         CheckTOS = -23
     }
 
-    public class AccountStage
+    public class LoginStage
     {
         /// <summary>
-        /// 尚未登录
+        /// 账号尚未登录
         /// </summary>
         public const int LOGIN_NOTLOGGEDIN = 0;
         /// <summary>
-        /// 已登录，正在切换服务器，比如切换频道、从登录服务器转到频道服务器的过程中
+        /// 账号正在切换服务器：由登录服务器 -> 频道服务器
         /// </summary>
         public const int LOGIN_SERVER_TRANSITION = 1;
         /// <summary>
-        /// 已登录，在线
+        /// 账号已登录
         /// </summary>
         public const int LOGIN_LOGGEDIN = 2;
+        /// <summary>
+        /// 玩家正在切换服务器：由频道服务器->频道服务器
+        /// </summary>
+
+        public const int PlayerServerTransition = 3;
+        /// <summary>
+        /// 小于0 ：相应的playerid表示正在登录的玩家id
+        /// </summary>
+        public const int PlayerLoggedIn = -999999;
     }
 }

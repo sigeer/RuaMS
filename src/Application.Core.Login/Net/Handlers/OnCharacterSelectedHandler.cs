@@ -1,20 +1,23 @@
 using Application.Core.Client;
 using Application.Core.Login.Database;
 using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Servers;
+using Application.Shared.Sessions;
 using Application.Utility;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.session;
 using tools;
-using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Login.Net.Handlers
 {
     public abstract class OnCharacterSelectedHandler : LoginHandlerBase
     {
-        protected OnCharacterSelectedHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
+        readonly SessionCoordinator _sessionCoordinator;
+        protected OnCharacterSelectedHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
             : base(server, accountManager, logger)
         {
+            _sessionCoordinator = sessionCoordinator;
         }
 
 
@@ -38,7 +41,7 @@ namespace Application.Core.Login.Net.Handlers
             c.UpdateMacs(macs);
             c.Hwid = hwid;
 
-            AntiMulticlientResult res = SessionCoordinator.getInstance().attemptGameSession(c, c.AccountEntity.Id, hwid);
+            AntiMulticlientResult res = _sessionCoordinator.attemptGameSession(c, c.AccountEntity.Id, hwid);
             if (res != AntiMulticlientResult.SUCCESS)
             {
                 c.sendPacket(PacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
@@ -47,14 +50,14 @@ namespace Application.Core.Login.Net.Handlers
 
             if (c.HasBannedMac() || c.HasBannedHWID())
             {
-                SessionCoordinator.getInstance().closeSession(c, true);
+                _sessionCoordinator.closeSession(c, true);
                 return;
             }
 
 
             if (!_accountManager.IsAccountHasCharacter(c.AccountEntity.Id, charId))
             {
-                SessionCoordinator.getInstance().closeSession(c, true);
+                _sessionCoordinator.closeSession(c, true);
                 return;
             }
 
@@ -87,8 +90,8 @@ namespace Application.Core.Login.Net.Handlers
 
     public abstract class OnCharacterSelectedWithPicHandler : OnCharacterSelectedHandler
     {
-        protected OnCharacterSelectedWithPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-            : base(server, accountManager, logger)
+        protected OnCharacterSelectedWithPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+            : base(server, accountManager, logger, sessionCoordinator)
         {
         }
 

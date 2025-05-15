@@ -21,7 +21,6 @@ namespace Application.Core.Client
         EngineStorage ScriptEngines { get; set; }
 
         void Disconnect(bool isShutdown, bool fromCashShop = false);
-        void ForceDisconnect();
 
         void enableCSActions();
         AbstractPlayerInteraction getAbstractPlayerInteraction();
@@ -48,7 +47,7 @@ namespace Application.Core.Client
         IWorldChannel getChannelServer();
         int getChannel();
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);
-        int GetAvailableCharacterSlots();
+
         EventManager? getEventManager(string @event);
         void removeClickedNPC();
     }

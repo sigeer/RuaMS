@@ -1,9 +1,9 @@
 using Application.Core;
 using Application.Core.Channel;
+using Application.Core.Channel.ServerTransports;
 using Application.Core.Login;
-using Application.Core.Login.Net;
 using Application.Core.OpenApi;
-using Application.Core.Servers;
+using Application.Core.ServerTransports;
 using Application.EF;
 using Application.Host;
 using Application.Host.Middlewares;
@@ -50,12 +50,13 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
-builder.Services.RegisterChannelServer();
+builder.Services.AddChannelServer();
+builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
+builder.Services.AddSingleton<MultiRunner>();
 
-builder.Services.AddSingleton<LoginPacketProcessor>();
-builder.Services.AddSingleton<LoginServer>();
-builder.Services.AddSingleton<LoginServerInitializer>();
-builder.Services.AddSingleton<IMasterServer, MasterServer>();
+builder.Services.AddLoginServer();
+
+
 builder.Services.AddHostedService<GameHost>();
 if (YamlConfig.config.server.ENABLE_OPENAPI)
 {

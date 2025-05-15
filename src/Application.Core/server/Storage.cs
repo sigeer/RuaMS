@@ -18,6 +18,8 @@
  */
 
 
+using Application.Shared.Characters;
+using Application.Shared.Items;
 using client.inventory;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +53,18 @@ public class Storage
         this.id = id;
         this.slots = slots;
         this.meso = meso;
+    }
+
+    public Storage(int accId, StorageDto? info, Item[] itemList)
+    {
+        id = accId;
+        slots = info?.Slots ?? 4;
+        meso = info?.Meso ?? 0;
+
+        foreach (var item in itemList)
+        {
+            items.Add(item);
+        }
     }
 
 

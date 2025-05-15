@@ -1,3 +1,4 @@
+using Application.Shared.Characters;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.packet;
@@ -94,6 +95,23 @@ public class BuddyList
             if (chr != null && chr.isLoggedinWorld())
             {
                 chr.sendPacket(packet);
+            }
+        }
+    }
+
+    public void LoadFromDb(BuddyDto[] dbList)
+    {
+        List<int> buddyPlayerList = dbList.Where(x => x.Pending != 1).Select(x => x.CharacterId).ToList();
+        var buddies = Owner.getWorldServer().Players.GetPlayersByIds(buddyPlayerList);
+        foreach (var x in dbList)
+        {
+            if (x.Pending == 1)
+                _pendingRequests.Enqueue(new CharacterNameAndId(x.CharacterId, x.CharacterName));
+            else
+            {
+                var player = buddies.FirstOrDefault(y => y.Id == x.CharacterId);
+                if (player != null)
+                    put(new BuddylistEntry(player, x.Group, true));
             }
         }
     }

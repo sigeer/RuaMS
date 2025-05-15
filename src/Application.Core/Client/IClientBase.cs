@@ -1,5 +1,6 @@
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
+using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using net.packet;
 using net.server.coordinator.session;
@@ -24,7 +25,7 @@ namespace Application.Core.Client
         /// </summary>
         bool IsServerTransition { get; }
         AccountEntity? AccountEntity { get; set; }
-
+        int GetAvailableCharacterSlots();
         void BanMacs();
         bool CheckBirthday(DateTime date);
         bool CheckBirthday(int date);

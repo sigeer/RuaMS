@@ -11,11 +11,11 @@ using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Servers;
 using Application.Utility.Configs;
 using Application.Utility.Loggers;
-using net.netty;
+using Microsoft.Extensions.DependencyInjection;
 using net.packet;
-using net.server.guild;
 using net.server.services;
 using net.server.services.type;
 using scripting.Event;
@@ -106,12 +106,18 @@ public partial class WorldChannel : IWorldChannel
     public MountTirednessController MountTirednessController { get; }
     public HiredMerchantController HiredMerchantController { get; }
     public PetHungerController PetHungerController { get; }
-    public WorldChannel(ChannelServerConfig config, IChannelServerTransport transport, ChannelServer channelServer)
+    public IServiceScope LifeScope { get; }
+
+    public ChannelClientStorage ClientStorage { get; }
+    public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
     {
+        LifeScope = scope;
         InstanceId = Guid.NewGuid().ToString();
         ServerConfig = config;
         WorldServerMessage = "";
         Transport = transport;
+
+        ClientStorage = new ChannelClientStorage(this);
 
         this.world = 0;
 
@@ -121,7 +127,7 @@ public partial class WorldChannel : IWorldChannel
         this.Port = config.Port;
         this.ipEndPoint = new IPEndPoint(IPAddress.Parse(config.Host), Port);
 
-        NettyServer = channelServer;
+        NettyServer = new ChannelServer(this);
         log = LogFactory.GetLogger($"Channel_{InstanceId}");
 
         ServerMessageController = new ServerMessageController(this);
@@ -253,6 +259,7 @@ public partial class WorldChannel : IWorldChannel
             await NettyServer.Stop();
             log.Information("频道{Channel}停止监听", channel);
 
+            LifeScope.Dispose();
 
             IsRunning = false;
             log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);

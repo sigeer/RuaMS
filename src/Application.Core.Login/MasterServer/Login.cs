@@ -24,12 +24,7 @@ namespace Application.Core.Login
             }
             return dbModel;
         }
-        public void CommitAccountData()
-        {
-            using var dbContext = new DBContext();
-            dbContext.Accounts.UpdateRange(_accStorage.Values);
-            dbContext.SaveChanges();
-        }
+
         public void UpdateAccountState(int accId, sbyte newState)
         {
             if (_accStorage.TryGetValue(accId, out var accountEntity))

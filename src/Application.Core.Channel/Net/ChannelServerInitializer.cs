@@ -1,8 +1,6 @@
 using Application.Core.Game.TheWorld;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using net;
 using net.netty;
 using Serilog;
 
@@ -10,13 +8,11 @@ namespace Application.Core.Channel.Net;
 
 public class ChannelServerInitializer : ServerChannelInitializer
 {
-    readonly IServiceProvider _serviceProvider;
-    readonly IWorldChannel worldChannel;
-    public ChannelServerInitializer(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
+    IWorldChannel worldChannel;
 
-        worldChannel = _serviceProvider.GetRequiredService<IWorldChannel>();
+    public ChannelServerInitializer(IWorldChannel channel)
+    {
+        this.worldChannel = channel;
     }
 
     protected override void InitChannel(ISocketChannel socketChannel)
@@ -31,10 +27,7 @@ public class ChannelServerInitializer : ServerChannelInitializer
         Log.Logger.Debug("{ClientIP} 发起连接到频道{Channel}", clientIp, worldChannel.getId());
 
         long clientSessionId = sessionId.getAndIncrement();
-        var client = new ChannelClient(clientSessionId, worldChannel, socketChannel,
-                        _serviceProvider.GetRequiredService<ChannelPacketProcessor>(),
-            _serviceProvider.GetRequiredService<ILogger<IClientBase>>()!);
-
+        var client = ActivatorUtilities.CreateInstance<ChannelClient>(worldChannel.LifeScope.ServiceProvider, sessionId, socketChannel, worldChannel);
         initPipeline(socketChannel, client);
     }
 }

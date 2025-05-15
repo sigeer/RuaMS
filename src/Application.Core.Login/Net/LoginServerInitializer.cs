@@ -1,4 +1,5 @@
 using Application.Core.Client;
+using Application.Core.Login.Session;
 using Application.Core.Servers;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,13 +12,13 @@ namespace Application.Core.Login.Net;
 
 public class LoginServerInitializer : ServerChannelInitializer
 {
-    IServiceProvider _serviceProvider;
     readonly IMasterServer masterServer;
+    readonly SessionCoordinator sessionCoordinator;
 
-    public LoginServerInitializer(IServiceProvider serviceProvider)
+    public LoginServerInitializer(IMasterServer masterServer)
     {
-        _serviceProvider = serviceProvider;
-        masterServer = _serviceProvider.GetRequiredService<IMasterServer>()!;
+        this.masterServer = masterServer;
+        this.sessionCoordinator = masterServer.ServiceProvider.GetRequiredService<SessionCoordinator>();
     }
 
     protected override void InitChannel(ISocketChannel socketChannel)
@@ -27,11 +28,8 @@ public class LoginServerInitializer : ServerChannelInitializer
 
         long clientSessionId = sessionId.getAndIncrement();
 
-        var client = new LoginClient(sessionId, masterServer, socketChannel,
-            _serviceProvider.GetRequiredService<LoginPacketProcessor>(),
-            _serviceProvider.GetRequiredService<ILogger<IClientBase>>()!);
-
-        if (!SessionCoordinator.getInstance().canStartLoginSession(client))
+        var client = ActivatorUtilities.CreateInstance<LoginClient>(masterServer.ServiceProvider, sessionId, socketChannel, masterServer);
+        if (!sessionCoordinator.canStartLoginSession(client))
         {
             client.CloseSocket();
             return;

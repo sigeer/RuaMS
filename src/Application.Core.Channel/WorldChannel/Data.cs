@@ -16,6 +16,7 @@ namespace Application.Core.Channel
 {
     public partial class WorldChannel
     {
+
         public void StashCharacterBuff(IPlayer player)
         {
             Server.getInstance().getPlayerBuffStorage().addBuffsToStorage(player.getId(), player.getAllBuffs());

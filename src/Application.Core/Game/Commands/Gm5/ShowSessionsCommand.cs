@@ -14,6 +14,6 @@ public class ShowSessionsCommand : CommandBase
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        SessionCoordinator.getInstance().printSessionTrace(c);
+        // SessionCoordinator.getInstance().printSessionTrace(c);
     }
 }

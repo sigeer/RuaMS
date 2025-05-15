@@ -1,3 +1,4 @@
+using Application.Core.Datas;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
@@ -337,7 +338,7 @@ namespace Application.Core.Channel.ServerTransports
 
         public void SendAccountLogout(int accountId)
         {
-            _server.UpdateAccountState(accountId, AccountStage.LOGIN_NOTLOGGEDIN);
+            _server.UpdateAccountState(accountId, LoginStage.LOGIN_NOTLOGGEDIN);
         }
 
         public IPEndPoint GetChannelEndPoint(int channel)
@@ -460,6 +461,11 @@ namespace Application.Core.Channel.ServerTransports
                     alliance.dropMessage("'" + chr.getName() + "' has been reassigned to '" + alliance.getRankTitle(newRank) + "' in this Alliance.");
                 }
             }
+        }
+
+        public CharacterValueObject GetPlayerData(int cid)
+        {
+            throw new NotImplementedException();
         }
     }
 }

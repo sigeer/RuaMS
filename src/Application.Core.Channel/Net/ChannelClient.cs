@@ -1,38 +1,26 @@
-using Application.Core.Client;
-using Application.Core.Game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Net;
-using Application.Core.scripting.npc;
 using Application.Core.Scripting.Infrastructure;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
 using Application.EF.Entities;
 using Application.Scripting;
 using Application.Shared.Constants;
 using Application.Shared.Login;
-using Application.Utility.Compatible;
 using Application.Utility.Configs;
 using client.inventory;
-using client.inventory.manipulator;
 using constants.id;
-using constants.inventory;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using net.packet.logging;
 using net.server;
-using net.server.coordinator.session;
 using net.server.guild;
 using net.server.world;
 using scripting;
 using scripting.Event;
 using scripting.npc;
-using Serilog;
-using server;
 using server.maps;
-using System.Text;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -45,13 +33,10 @@ namespace Application.Core.Channel.Net
             : base(sessionId, currentServer, nettyChannel, log)
         {
             CurrentServer = currentServer;
-
             _packetProcessor = packetProcessor;
         }
 
         public override bool IsOnlined => Character != null;
-
-        public int AccountId { get; set; }
 
         public IPlayer? Character { get; private set; }
 
@@ -66,6 +51,12 @@ namespace Application.Core.Channel.Net
         public int Channel => IsAwayWorld ? -1 : ActualChannel;
         public int ActualChannel => CurrentServer.getId();
         public NPCConversationManager? NPCConversationManager { get; set; }
+
+        public override void SetCharacterOnSessionTransitionState(int cid)
+        {
+            this.updateLoginState(LoginStage.PlayerServerTransition);
+            CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
+        }
 
         bool _isDisconnecting = false;
         public void Disconnect(bool isShutdown, bool fromCashShop = false)
@@ -152,7 +143,7 @@ namespace Application.Core.Channel.Net
                 }
             }
 
-            SessionCoordinator.getInstance().closeSession(this, false);
+            CurrentServer.ClientStorage.RemoveClient(AccountEntity!.Id);
 
             // 为什么不直接  updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
             // 如果正在切换频道，这边把状态改成了LOGIN_NOTLOGGEDIN，PlayerLoggedin无法找到正在切换频道的账户
@@ -162,14 +153,14 @@ namespace Application.Core.Channel.Net
             // 反之如果只是卡顿，旧client在这里退出了登录，新client在PlayerLoggedinHandler里也会变成登出态
             if (!IsServerTransition && IsOnlined)
             {
-                updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+                updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             }
             else
             {
                 //比如切换频道  但是还没有成功进入新频道
                 if (!CurrentServer.HasCharacteridInTransition(GetSessionRemoteHost()))
                 {
-                    updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
+                    updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
                 }
             }
             Dispose();
@@ -279,7 +270,7 @@ namespace Application.Core.Channel.Net
 
         protected override void CloseSessionInternal()
         {
-            SessionCoordinator.getInstance().closeSession(this);
+            CurrentServer.ClientStorage.RemoveClient(AccountEntity!.Id);
 
             // client freeze issues on session transition states found thanks to yolinlin, Omo Oppa, Nozphex
             if (!IsServerTransition)
@@ -519,6 +510,9 @@ namespace Application.Core.Channel.Net
         public void SetAccount(AccountEntity? accountEntity)
         {
             AccountEntity = accountEntity;
+
+            if (accountEntity != null)
+                CurrentServer.ClientStorage.Register(accountEntity.Id, this);
         }
 
         public IWorldChannel getChannelServer() => CurrentServer;

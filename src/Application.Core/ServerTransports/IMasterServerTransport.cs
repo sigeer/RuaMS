@@ -1,6 +1,6 @@
 using Application.Core.model;
 using Application.Shared.Configs;
-using net.server;
+using Application.Shared.Servers;
 
 namespace Application.Core.ServerTransports
 {

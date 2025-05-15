@@ -1,8 +1,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
+using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using net.packet;
 using net.server.coordinator.session;

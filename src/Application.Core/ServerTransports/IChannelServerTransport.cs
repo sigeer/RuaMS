@@ -4,8 +4,8 @@ using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
 using Application.Shared.MapObjects;
+using Application.Shared.Servers;
 using net.packet;
-using server.maps;
 using System.Net;
 
 namespace Application.Core.ServerTransports

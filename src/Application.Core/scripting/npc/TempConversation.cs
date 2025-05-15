@@ -65,7 +65,7 @@ namespace Application.Core.scripting.npc
         public void RegisterTalk(string text)
         {
             _type = TempConversationType.Default;
-            sendSimple(text);
+            sendOk(text);
         }
 
         public void RegisterSelect(string text, Action<int, TempConversation> onSelect)

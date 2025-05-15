@@ -121,7 +121,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 return;
             }
 
-            Hwid? hwid = SessionCoordinator.getInstance().pickLoginSessionHwid(c);
+            Hwid? hwid = playerObject.SessionInfo.Hwid;
             if (hwid == null)
             {
                 c.Disconnect(true, false);
@@ -137,22 +137,14 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             //    return;
             //}
 
-            bool newcomer = false;
-            var player = _characterSrv.GetPlayerByCharacerValueObject(c, playerObject);
+            bool newcomer = !playerObject.SessionInfo.IsPlayerOnlined;
+            var player = _characterSrv.GeneratePlayerByDto(c, playerObject);
             if (player == null)
             {
-                //If you are still getting null here then please just uninstall the game >.>, we dont need you fucking with the logs
+                // 1. 玩家不存在 2. 玩家并不处于切换服务器状态
                 c.Disconnect(true, false);
                 return;
             }
-
-            if (!player.IsOnlined)
-            {
-                newcomer = true;
-            }
-
-            c.SetAccount(playerObject!.AccountEntity);
-            c.SetPlayer(player);
 
 
             /*  is this check really necessary?
@@ -177,13 +169,17 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             { // Sync this to prevent wrong login state for double loggedin handling
                 try
                 {
-                    int currentState = playerObject.AccountEntity.Loggedin;
-                    if (currentState != AccountStage.LOGIN_SERVER_TRANSITION)
+                    int currentState = playerObject.Account.Loggedin;
+                    if (currentState == LoginStage.LOGIN_SERVER_TRANSITION || currentState == LoginStage.PlayerServerTransition)
+                    {
+                        c.CurrentServer.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
+                    }
+                    else
                     {
                         c.SetPlayer(null);
                         c.SetAccount(null);
 
-                        if (currentState == AccountStage.LOGIN_LOGGEDIN)
+                        if (currentState == LoginStage.LOGIN_LOGGEDIN)
                         {
                             c.Disconnect(true, false);
                         }
@@ -194,7 +190,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
                         return;
                     }
-                    c.CurrentServer.UpdateAccountState(accId, AccountStage.LOGIN_LOGGEDIN);
+
                 }
                 finally
                 {

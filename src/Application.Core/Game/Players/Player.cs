@@ -71,7 +71,7 @@ namespace Application.Core.Game.Players
             SavedLocations = new(this);
 
             Bag = new PlayerBag(this);
-            Monsterbook = new MonsterBook();
+            Monsterbook = new MonsterBook([]);
 
             setStance(0);
 

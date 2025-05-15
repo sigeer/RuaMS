@@ -115,7 +115,7 @@ public abstract class CharacterFactory
             return CreateCharResult.Success;
         }
     }
-    protected static int createNewCharacter(IChannelClient c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
+    protected static int createNewCharacter(IClientBase c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
     {
         lock (createNewLock)
         {
@@ -127,8 +127,11 @@ public abstract class CharacterFactory
             var result = CreateCharacter(c.AccountEntity!.Id, name, face, hair, skin, gender, recipe, out var newCharacter);
             if (result == CreateCharResult.Success && newCharacter != null)
             {
-                newCharacter.setClient(c);
-                c.sendPacket(PacketCreator.addNewCharEntry(c, newCharacter));
+                if (c is IChannelClient channelClient)
+                {
+                    newCharacter.setClient(channelClient);
+                    channelClient.sendPacket(PacketCreator.addNewCharEntry(channelClient, newCharacter));
+                }
 
                 Server.getInstance().createCharacterEntry(newCharacter);
                 c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountEntity!.Name + " has created a new character with IGN " + name));

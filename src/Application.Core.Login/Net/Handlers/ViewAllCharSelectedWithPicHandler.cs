@@ -1,15 +1,9 @@
 using Application.Core.Client;
 using Application.Core.Login.Database;
-using Application.Core.Login.Net;
-using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Servers;
-using Application.Utility;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using net.server.coordinator.session;
-using System.Net;
-using tools;
-using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -19,8 +13,8 @@ namespace Application.Core.Login.Net.Handlers;
 /// </summary>
 public class ViewAllCharSelectedWithPicHandler : OnCharacterSelectedWithPicHandler
 {
-    public ViewAllCharSelectedWithPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public ViewAllCharSelectedWithPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+        : base(server, accountManager, logger, sessionCoordinator)
     {
     }
 

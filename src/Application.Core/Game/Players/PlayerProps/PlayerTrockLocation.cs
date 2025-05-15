@@ -1,4 +1,5 @@
-﻿using constants.id;
+using Application.Shared.Characters;
+using constants.id;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players.PlayerProps
@@ -18,7 +19,28 @@ namespace Application.Core.Game.Players.PlayerProps
             _vipDataSouce = Enumerable.Repeat(MapId.NONE, _vipSize).ToArray();
         }
 
+        public void LoadData(TrockLocationDto[] trockLocList)
+        {
+            _dataSouce = Enumerable.Repeat(MapId.NONE, _size).ToArray();
+            _vipDataSouce = Enumerable.Repeat(MapId.NONE, _vipSize).ToArray();
 
+            byte vip = 0;
+            byte reg = 0;
+
+            foreach (var item in trockLocList)
+            {
+                if (item.Vip == 1)
+                {
+                    _vipDataSouce[vip] = item.MapId;
+                    vip++;
+                }
+                else
+                {
+                    _dataSouce[reg] = item.MapId;
+                    reg++;
+                }
+            }
+        }
         public override void LoadData(DBContext dbContext)
         {
             _dataSouce = Enumerable.Repeat(MapId.NONE, _size).ToArray();

@@ -1,9 +1,7 @@
-using Application.Core.Client;
-using Application.Core.Game.Tasks;
 using Application.Core.Gameplay.Wedding;
-using Application.Core.Gameplay.WorldEvents;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Servers;
 using System.Net;
 
 namespace Application.Core.Servers
@@ -30,6 +28,8 @@ namespace Application.Core.Servers
         public float MobRate { get; set; }
         void UpdateWorldConfig(WorldConfigPatch updatePatch);
         #endregion
+
+        IServiceProvider ServiceProvider { get; }
         List<ChannelServerWrapper> ChannelServerList { get; }
         int AddChannel(ChannelServerWrapper channel);
         bool RemoveChannel(string instanceId);

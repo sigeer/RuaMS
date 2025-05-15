@@ -1,14 +1,12 @@
 using Application.Core.Client;
 using Application.Core.Login.Database;
-using Application.Core.Login.Net;
-using Application.Core.Login.Net.Packets;
+using Application.Core.Login.Session;
 using Application.Core.Servers;
+using Application.Shared.Sessions;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using net.server.coordinator.session;
-using System.Net;
 using tools;
-using static net.server.coordinator.session.SessionCoordinator;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -17,9 +15,11 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class RegisterPicHandler : LoginHandlerBase
 {
-    public RegisterPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger) 
+    readonly SessionCoordinator sessionCoordinator;
+    public RegisterPicHandler(IMasterServer server, AccountManager accountManager, SessionCoordinator sessionCoordinator, ILogger<LoginHandlerBase> logger)
         : base(server, accountManager, logger)
     {
+        this.sessionCoordinator = sessionCoordinator;
     }
 
     public override void HandlePacket(InPacket p, ILoginClient c)
@@ -52,7 +52,7 @@ public class RegisterPicHandler : LoginHandlerBase
         c.UpdateMacs(macs);
         c.Hwid = hwid;
 
-        AntiMulticlientResult res = SessionCoordinator.getInstance().attemptGameSession(c, c.AccountEntity.Id, hwid);
+        AntiMulticlientResult res = sessionCoordinator.attemptGameSession(c, c.AccountEntity.Id, hwid);
         if (res != AntiMulticlientResult.SUCCESS)
         {
             c.sendPacket(PacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
@@ -61,13 +61,13 @@ public class RegisterPicHandler : LoginHandlerBase
 
         if (c.HasBannedMac() || c.HasBannedHWID())
         {
-            SessionCoordinator.getInstance().closeSession(c, true);
+            sessionCoordinator.closeSession(c, true);
             return;
         }
 
         if (!_accountManager.IsAccountHasCharacter(c.AccountEntity.Id, charId))
         {
-            SessionCoordinator.getInstance().closeSession(c, true);
+            sessionCoordinator.closeSession(c, true);
             return;
         }
 
@@ -103,7 +103,7 @@ public class RegisterPicHandler : LoginHandlerBase
         }
         else
         {
-            SessionCoordinator.getInstance().closeSession(c, true);
+            sessionCoordinator.closeSession(c, true);
         }
     }
 }

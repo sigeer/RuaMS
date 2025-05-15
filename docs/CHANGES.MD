@@ -24,3 +24,10 @@
 
 ##### 2025年3月4日
 - 提取了World、Channel类中的dojo、wedding相关代码
+
+
+##### 2025年5月15日
+
+登录的client、session的相关代码没有看懂，暂时是将其保留在LoginClient相关操作里（可能是为了反作弊，但是没有相关经验暂且搁置）
+
+> 正常来说登录相关限制、控制有LoginClient就可以了，ChannelClient只需要在PlayerLogdin时不出错就行

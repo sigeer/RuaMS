@@ -1,3 +1,4 @@
+using Application.Shared.Characters;
 using Microsoft.EntityFrameworkCore;
 using server.maps;
 
@@ -13,6 +14,14 @@ namespace Application.Core.Game.Players.PlayerProps
         }
 
         SavedLocation?[] _dataSource;
+        public void LoadData(SavedLocationDto[] savedLocFromDB)
+        {
+            foreach (var item in savedLocFromDB)
+            {
+                _dataSource[(int)Enum.Parse<SavedLocationType>(item.Type)] = new SavedLocation(item.MapId, item.Portal);
+            }
+
+        }
         public override void LoadData(DBContext dbContext)
         {
             var savedLocFromDB = dbContext.Savedlocations.Where(x => x.Characterid == Owner.Id).Select(x => new { x.Locationtype, x.Map, x.Portal }).ToList();
