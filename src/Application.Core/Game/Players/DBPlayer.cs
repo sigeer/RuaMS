@@ -281,7 +281,7 @@ namespace Application.Core.Game.Players
                         var macro = SkillMacros[i];
                         if (macro != null)
                         {
-                            dbContext.Skillmacros.Add(new Skillmacro(Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
+                            dbContext.Skillmacros.Add(new SkillMacroEntity(Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
                         }
                     }
                     dbContext.SaveChanges();

@@ -79,15 +79,15 @@ public class NPCTalkHandler : ChannelHandlerBase
                 // Custom handling to reduce the amount of scripts needed.
                 if (npc.getId() >= NpcId.GACHAPON_MIN && npc.getId() <= NpcId.GACHAPON_MAX)
                 {
-                    NPCScriptManager.getInstance().start(c, npc.getId(), "gachapon", null);
+                    c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "gachapon", null);
                 }
                 else if (npc.getName().EndsWith("Maple TV"))
                 {
-                    NPCScriptManager.getInstance().start(c, npc.getId(), "mapleTV", null);
+                    c.CurrentServer.NPCScriptManager.start(c, npc.getId(), "mapleTV", null);
                 }
                 else
                 {
-                    bool hasNpcScript = NPCScriptManager.getInstance().start(c, npc.getId(), oid, null);
+                    bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, null);
                     if (!hasNpcScript)
                     {
                         if (!npc.hasShop())
@@ -108,15 +108,13 @@ public class NPCTalkHandler : ChannelHandlerBase
         }
         else if (obj is PlayerNPC pnpc)
         {
-            NPCScriptManager nsm = NPCScriptManager.getInstance();
-
-            if (pnpc.getScriptId() < NpcId.CUSTOM_DEV && !nsm.isNpcScriptAvailable(c, "" + pnpc.getScriptId()))
+            if (pnpc.getScriptId() < NpcId.CUSTOM_DEV && !c.CurrentServer.NPCScriptManager.isNpcScriptAvailable(c, "" + pnpc.getScriptId()))
             {
-                nsm.start(c, pnpc.getScriptId(), "rank_user", null);
+                c.CurrentServer.NPCScriptManager.start(c, pnpc.getScriptId(), "rank_user", null);
             }
             else
             {
-                nsm.start(c, pnpc.getScriptId(), null);
+                c.CurrentServer.NPCScriptManager.start(c, pnpc.getScriptId(), null);
             }
         }
     }

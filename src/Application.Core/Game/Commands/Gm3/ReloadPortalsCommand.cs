@@ -11,7 +11,7 @@ public class ReloadPortalsCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        PortalScriptManager.getInstance().reloadPortalScripts();
+        c.CurrentServer.PortalScriptManager.reloadPortalScripts();
         player.dropMessage(5, "Reloaded Portals");
     }
 }

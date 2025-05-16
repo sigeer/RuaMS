@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Application.Shared.Characters
 {
-    public class CoolDownDto
+    public class AreaDto
     {
-        public int SkillId { get; set; }
-        public long StartTime { get; set; }
-        public long Length { get; set; }
+        public short Area { get; set; }
+
+        public string Info { get; set; } = null!;
     }
 }

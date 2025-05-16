@@ -48,17 +48,29 @@ public abstract class CharacterFactory
     /// <param name="recipe"></param>
     /// <param name="newchar"></param>
     /// <returns>0=成功</returns>
-    public static int CreateCharacter(int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
+    public static int CreateCharacter(IClientBase c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
     {
         lock (createNewLock)
         {
             newCharacter = null;
-            if (!CharacterManager.CheckCharacterName(name))
+            if (!c.CurrentServer.CheckCharacterName(name))
             {
                 return CreateCharResult.NameInvalid;
             }
 
-            newCharacter = CharacterManager.NewPlayer(accountId);
+            newCharacter = new Player(
+                world: 0,
+                accountId: c.AccountId,
+                hp: 50,
+                mp: 5,
+                str: 12,
+                dex: 5,
+                @int: 4,
+                luk: 4,
+                job: Job.BEGINNER,
+                level: 1
+             );
+            ;
             newCharacter.setSkinColor(SkinColorUtils.getById(skin));
             newCharacter.setGender(gender);
             newCharacter.setName(name);
@@ -124,16 +136,16 @@ public abstract class CharacterFactory
                 return CreateCharResult.CharSlotLimited;
             }
 
-            var result = CreateCharacter(c.AccountId, name, face, hair, skin, gender, recipe, out var newCharacter);
+            var result = CreateCharacter(c, name, face, hair, skin, gender, recipe, out var newCharacter);
             if (result == CreateCharResult.Success && newCharacter != null)
             {
                 if (c is IChannelClient channelClient)
                 {
                     newCharacter.setClient(channelClient);
-                    channelClient.sendPacket(PacketCreator.addNewCharEntry(channelClient, newCharacter));
                 }
+                c.sendPacket(PacketCreator.addNewCharEntry(c, newCharacter));
 
-                Server.getInstance().createCharacterEntry(newCharacter);
+                c.UpdateAccountChracterByAdd(newCharacter.Id);
                 c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountName + " has created a new character with IGN " + name));
                 Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.AccountName, name);
 

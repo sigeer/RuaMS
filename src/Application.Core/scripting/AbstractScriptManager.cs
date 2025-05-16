@@ -31,8 +31,8 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using constants.id;
+using Microsoft.Extensions.Logging;
 using net.server;
-using net.server.channel;
 using server;
 using server.expeditions;
 using server.life;
@@ -47,12 +47,14 @@ namespace scripting;
  */
 public abstract class AbstractScriptManager
 {
-    protected ILogger log;
     static ConcurrentDictionary<string, ScriptPrepareWrapper> JsCache { get; set; } = new();
+    protected readonly ILogger<AbstractScriptManager> _logger;
+    readonly CommandExecutor _commandExecutor;
 
-    protected AbstractScriptManager()
+    protected AbstractScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor)
     {
-        log = LogFactory.GetLogger($"Script/{GetType().Name}");
+        _logger = logger;
+        _commandExecutor = commandExecutor;
     }
 
     protected IEngine? getInvocableScriptEngine(string path)
@@ -62,7 +64,7 @@ public abstract class AbstractScriptManager
         {
             if (!File.Exists(path))
             {
-                log.Warning($"script {path} not found");
+                _logger.LogWarning($"script {path} not found");
                 return null;
             }
         }
@@ -89,7 +91,7 @@ public abstract class AbstractScriptManager
         }
         catch (Exception ex)
         {
-            log.Error(ex, "File: {ScriptPath}", path);
+            _logger.LogWarning(ex, "File: {ScriptPath}", path);
             throw;
         }
     }
@@ -111,7 +113,7 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("Rectangle", typeof(Rectangle));
             engine.AddHostedType("RingManager", typeof(RingManager));
             engine.AddHostedType("CommonManager", typeof(CommonManager));
-            engine.AddHostedType("CommandExecutor", typeof(CommandExecutor));
+            engine.AddHostedObject("CommandExecutor", _commandExecutor);
             engine.AddHostedType("CharacterManager", typeof(CharacterManager));
             engine.AddHostedType("GachaponManager", typeof(GachaponManager));
             engine.AddHostedType("ItemInformationProvider", typeof(ItemInformationProvider));
@@ -146,7 +148,7 @@ public abstract class AbstractScriptManager
         if (engine == null)
         {
             engine = getInvocableScriptEngine(path)!;
-            c.ScriptEngines[path] =  engine;
+            c.ScriptEngines[path] = engine;
         }
 
         return engine;

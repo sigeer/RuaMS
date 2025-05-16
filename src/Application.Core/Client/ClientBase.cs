@@ -25,5 +25,9 @@ namespace Application.Core.Client
 
 
         public abstract int GetAvailableCharacterSlots();
+        public void UpdateAccountChracterByAdd(int id)
+        {
+            CurrentServer.UpdateAccountChracterByAdd(AccountId, id);
+        }
     }
 }

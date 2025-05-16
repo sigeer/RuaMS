@@ -24,5 +24,6 @@ namespace Application.Core.Client
         int GetAvailableCharacterSlots();
 
         void SetCharacterOnSessionTransitionState(int cid);
+        void UpdateAccountChracterByAdd(int id);
     }
 }

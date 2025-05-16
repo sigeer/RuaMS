@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Shared.Characters
+namespace Application.Shared.Characters.PlayerView
 {
-    public class CharacterDto
+    public interface IPlayerView
     {
         public int Id { get; set; }
 
@@ -14,7 +8,7 @@ namespace Application.Shared.Characters
 
         public int World { get; set; }
 
-        public string Name { get; set; } = null!;
+        public string Name { get; set; }
 
         public int Level { get; set; }
 
@@ -30,19 +24,16 @@ namespace Application.Shared.Characters
 
         public int Int { get; set; }
 
-        public int Hp { get; set; }
-
-        public int Mp { get; set; }
-
-        public int Maxhp { get; set; }
-
-        public int Maxmp { get; set; }
+        int MaxHP { get; }
+        int HP { get; }
+        int MaxMP { get; }
+        int MP { get; }
 
         public int Meso { get; set; }
 
         public int HpMpUsed { get; set; }
 
-        public int JobId { get; private set; }
+        public int JobId { get; }
 
         public int Skincolor { get; set; }
 
@@ -58,16 +49,15 @@ namespace Application.Shared.Characters
 
         public int Ap { get; set; }
 
-        public string Sp { get; set; } = null!;
+        public string Sp { get; set; }
 
         public int Map { get; set; }
 
         public int Spawnpoint { get; set; }
 
-
         public int Party { get; set; }
 
-        public int BuddyCapacity { get; set; } = 25;
+        public int BuddyCapacity { get; set; }
 
         public DateTimeOffset CreateDate { get; set; }
 
@@ -85,7 +75,7 @@ namespace Application.Shared.Characters
 
         public int MessengerId { get; set; }
 
-        public int MessengerPosition { get; set; } = 4;
+        public int MessengerPosition { get; set; }
 
         public int MountLevel { get; set; }
 
@@ -117,7 +107,7 @@ namespace Application.Shared.Characters
 
         public int Etcslots { get; set; }
 
-        public int FamilyId { get; set; } = -1;
+        public int FamilyId { get; set; }
 
         public int Monsterbookcover { get; set; }
 
@@ -145,13 +135,13 @@ namespace Application.Shared.Characters
 
         public int Pqpoints { get; set; }
 
-        public string DataString { get; set; } = null!;
+        public string DataString { get; set; }
 
         public DateTimeOffset LastLogoutTime { get; set; }
 
         public DateTimeOffset LastExpGainTime { get; set; }
 
-        public bool PartySearch { get; set; } = true;
+        public bool PartySearch { get; set; }
 
         public long Jailexpire { get; set; }
     }

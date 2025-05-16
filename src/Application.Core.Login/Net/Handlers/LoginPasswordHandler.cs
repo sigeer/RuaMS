@@ -22,7 +22,7 @@
 
 
 using Application.Core.Client;
-using Application.Core.Login.Database;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Servers;
 using Application.Shared.Login;
@@ -84,14 +84,12 @@ public class LoginPasswordHandler : LoginHandlerBase
             c.sendPacket(LoginPacketCreator.GetLoginFailed(3));
             return;
         }
-        if (c.AccountEntity!.Tempban != null)
+        if (c.AccountEntity!.Tempban != null && c.AccountEntity.Tempban > DateTimeOffset.Now)
         {
-            if (c.AccountEntity!.Tempban > DateTimeOffset.Now)
-            {
-                c.sendPacket(LoginPacketCreator.GetTempBan(c.AccountEntity!.Tempban.Value.ToUnixTimeMilliseconds(), (byte)c.AccountEntity!.Greason));
-                return;
-            }
+            c.sendPacket(LoginPacketCreator.GetTempBan(c.AccountEntity!.Tempban.Value.ToUnixTimeMilliseconds(), (byte)c.AccountEntity!.Greason));
+            return;
         }
+
         if (loginok == LoginResultCode.Fail_Banned)
         {
             c.sendPacket(LoginPacketCreator.GetPermBan((byte)c.AccountEntity!.Greason));//crashes but idc :D

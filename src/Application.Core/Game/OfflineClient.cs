@@ -29,7 +29,7 @@ namespace Application.Core.Game
         public NPCConversationManager? NPCConversationManager { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
         public EngineStorage ScriptEngines { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
 
-        public bool IsOnlined => throw new BusinessCharacterOfflineException();
+        public bool IsOnlined => false;
 
         public bool IsActive => throw new BusinessCharacterOfflineException();
 
@@ -238,6 +238,11 @@ namespace Application.Core.Game
         public void unlockClient()
         {
             throw new BusinessCharacterOfflineException();
+        }
+
+        public void UpdateAccountChracterByAdd(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

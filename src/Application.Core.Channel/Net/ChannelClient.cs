@@ -346,7 +346,7 @@ namespace Application.Core.Channel.Net
                 return;
 
             removeClickedNPC();
-            NPCScriptManager.getInstance().start(this, npcid, script, Character);
+            CurrentServer.NPCScriptManager.start(this, npcid, script, Character);
         }
         public void closePlayerScriptInteractions()
         {
@@ -583,5 +583,6 @@ namespace Application.Core.Channel.Net
 
             return AccountEntity.Macs.Split(",").Select(x => x.Trim()).ToHashSet();
         }
+
     }
 }

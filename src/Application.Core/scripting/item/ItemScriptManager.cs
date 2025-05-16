@@ -21,8 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Client;
-using scripting.npc;
 using static server.ItemInformationProvider;
 
 namespace scripting.item;
@@ -39,6 +37,6 @@ public class ItemScriptManager
 
     public void runItemScript(IChannelClient c, ScriptedItem scriptItem)
     {
-        NPCScriptManager.getInstance().start(c, scriptItem, null);
+        c.CurrentServer.NPCScriptManager.start(c, scriptItem, null);
     }
 }

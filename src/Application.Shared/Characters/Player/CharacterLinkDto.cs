@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace Application.Shared.Characters
 {
-    public class SkillDto
+    public class CharacterLinkDto
     {
-        public int SkillId { get; set; }
         public int Level { get; set; }
-        public int MasterLevel { get; set; }
-        public long Expiration { get; set; }
+        public string Name { get; set; }
     }
 }

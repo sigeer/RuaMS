@@ -71,15 +71,13 @@ public class Server
     private PlayerBuffStorage buffStorage = new PlayerBuffStorage();
 
     private Dictionary<int, NewYearCardRecord> newyears = new();
-    private Queue<IChannelClient> processDiseaseAnnouncePlayers = new();
-    private Queue<IChannelClient> registeredDiseaseAnnouncePlayers = new();
+
 
     /// <summary>
     /// World - Data
     /// </summary>
     private Dictionary<int, List<RankedCharacterInfo>> playerRanking = new();
 
-    private object disLock = new object();
 
     private AtomicLong currentTime = new AtomicLong(0);
     private long serverCurrentTime = 0;
@@ -310,57 +308,7 @@ public class Server
         }
     }
     #endregion
-    public void runAnnouncePlayerDiseasesSchedule()
-    {
-        Queue<IChannelClient> processDiseaseAnnounceClients;
-        Monitor.Enter(disLock);
-        try
-        {
-            processDiseaseAnnounceClients = new(processDiseaseAnnouncePlayers);
-            processDiseaseAnnouncePlayers.Clear();
-        }
-        finally
-        {
-            Monitor.Exit(disLock);
-        }
 
-        while (processDiseaseAnnounceClients.TryDequeue(out var c))
-        {
-            var player = c.Character;
-            if (player != null && player.isLoggedinWorld())
-            {
-                player.announceDiseases();
-                player.collectDiseases();
-            }
-        }
-
-        Monitor.Enter(disLock);
-        try
-        {
-            // this is to force the system to wait for at least one complete tick before releasing disease info for the registered clients
-            while (registeredDiseaseAnnouncePlayers.TryDequeue(out var c))
-            {
-                processDiseaseAnnouncePlayers.Enqueue(c);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(disLock);
-        }
-    }
-
-    public void registerAnnouncePlayerDiseases(IChannelClient c)
-    {
-        Monitor.Enter(disLock);
-        try
-        {
-            registeredDiseaseAnnouncePlayers.Enqueue(c);
-        }
-        finally
-        {
-            Monitor.Exit(disLock);
-        }
-    }
 
     public List<RankedCharacterInfo> getWorldPlayerRanking(int worldId)
     {
@@ -447,7 +395,6 @@ public class Server
         });
 
         OpcodeConstants.generateOpcodeNames();
-        CommandExecutor.getInstance();
 
         basedCached = true;
     }
@@ -519,14 +466,6 @@ public class Server
         }
     }
 
-    private ChannelDependencies registerChannelDependencies()
-    {
-        NoteService noteService = new NoteService(new NoteDao());
-        FredrickProcessor fredrickProcessor = new FredrickProcessor(noteService);
-        ChannelDependencies channelDependencies = new ChannelDependencies(noteService, fredrickProcessor);
-
-        return channelDependencies;
-    }
 
     private static void setAllLoggedOut(DBContext dbContext)
     {
@@ -540,20 +479,18 @@ public class Server
 
     public async Task InitializeTimelyTasks(TaskEngine engine)
     {
-        var channelDependencies = registerChannelDependencies();
 
         await TimerManager.InitializeAsync(engine);
         var tMan = TimerManager.getInstance();
         await tMan.Start();
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-        tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
         tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
         tMan.register(new RankingCommandTask(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
         tMan.register(new RankingLoginTask(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
 
         tMan.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
-        tMan.register(new DueyFredrickTask(channelDependencies.fredrickProcessor), TimeSpan.FromHours(1), timeLeft);
+
         tMan.register(new InvitationTask(), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         tMan.register(new RespawnTask(), YamlConfig.config.server.RESPAWN_INTERVAL, YamlConfig.config.server.RESPAWN_INTERVAL);
 
@@ -597,43 +534,6 @@ public class Server
         return activeFly.Contains(accountid);
     }
 
-    public int getCharacterWorld(int chrid)
-    {
-        lgnLock.EnterReadLock();
-        try
-        {
-            return AllPlayerStorage.GetOrAddCharacterById(chrid)?.World ?? -1;
-        }
-        finally
-        {
-            lgnLock.ExitReadLock();
-        }
-    }
-
-    public bool haveCharacterEntry(int accountid, int chrid)
-    {
-        lgnLock.EnterReadLock();
-        try
-        {
-            var accChars = AccountCharacterCache.GetValueOrDefault(accountid) ?? [];
-            return accChars.Any(x => x.Id == chrid);
-        }
-        finally
-        {
-            lgnLock.ExitReadLock();
-        }
-    }
-
-    public int getAccountCharacterCount(int accountid)
-    {
-        return AccountCharacterCache.GetValueOrDefault(accountid, []).Count;
-    }
-
-    public int getAccountWorldCharacterCount(int accountid, int worldid)
-    {
-        return AccountCharacterCache.GetValueOrDefault(accountid, []).Count(x => x.World == worldid);
-    }
-
     private HashSet<IPlayer> getAccountCharacterEntries(int accountid, int loadLevel = 0)
     {
         lgnLock.EnterReadLock();
@@ -647,68 +547,6 @@ public class Server
         {
             lgnLock.ExitReadLock();
         }
-    }
-
-    public void createCharacterEntry(IPlayer chr)
-    {
-        int accountid = chr.getAccountID();
-
-        lgnLock.EnterWriteLock();
-        try
-        {
-            if (!AccountCharacterCache.ContainsKey(accountid))
-                AccountCharacterCache.Add(accountid, new());
-
-            AccountCharacterCache[accountid].Add(new AccountInfo(chr.Id, chr.World, chr.AccountId));
-        }
-        finally
-        {
-            lgnLock.ExitWriteLock();
-        }
-    }
-
-    public void deleteCharacterEntry(int accountid, int chrid)
-    {
-        lgnLock.EnterWriteLock();
-        try
-        {
-            var accChars = AccountCharacterCache.GetValueOrDefault(accountid);
-            if (accChars != null)
-                accChars = accChars.Where(x => x.Id != chrid).ToHashSet();
-        }
-        finally
-        {
-            lgnLock.ExitWriteLock();
-        }
-    }
-
-
-    /// <summary>
-    /// world - players
-    /// </summary>
-    /// <param name="accountId"></param>
-    /// <param name="visibleWorlds"></param>
-    /// <returns></returns>
-    public SortedDictionary<int, List<IPlayer>> LoadAccountCharList(int accountId, int visibleWorlds)
-    {
-        var accountData = getAccountCharacterEntries(accountId, 1);
-        SortedDictionary<int, List<IPlayer>> worldChrs = new();
-
-        lgnLock.EnterReadLock();
-        try
-        {
-            for (int worldId = 0; worldId < visibleWorlds; worldId++)
-            {
-                var chrs = accountData.Where(x => x.World == worldId).ToList();
-                worldChrs.Add(worldId, chrs);
-            }
-        }
-        finally
-        {
-            lgnLock.ExitReadLock();
-        }
-
-        return worldChrs;
     }
 
     private Dictionary<int, HashSet<AccountInfo>> LoadAccountCharacterCache(DBContext dbContext)

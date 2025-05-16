@@ -338,7 +338,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addCharEntry(OutPacket p, IChannelClient playerClient, IPlayer chr, bool viewall)
+    private static void addCharEntry(OutPacket p, IClientBase playerClient, IPlayer chr, bool viewall)
     {
         addCharStats(p, chr);
         addCharLook(p, chr, false);
@@ -346,7 +346,7 @@ public class PacketCreator
         {
             p.writeByte(0);
         }
-        if (playerClient.AccountEntity.GMLevel > 1 || chr.isGmJob())
+        if (playerClient.AccountGMLevel > 1 || chr.isGmJob())
         {  // thanks Daddy Egg (Ubaware), resinate for noticing GM jobs crashing on non-GM players account
             p.writeByte(0);
             return;
@@ -2853,7 +2853,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet addNewCharEntry(IChannelClient client, IPlayer chr)
+    public static Packet addNewCharEntry(IClientBase client, IPlayer chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.ADD_NEW_CHAR_ENTRY);
         p.writeByte(0);

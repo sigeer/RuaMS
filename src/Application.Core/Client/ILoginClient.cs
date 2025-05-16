@@ -1,4 +1,5 @@
 using Application.Core.Servers;
+using Application.Shared.Characters.PlayerView;
 using Application.Shared.Login;
 using net.server.coordinator.session;
 
@@ -31,7 +32,7 @@ namespace Application.Core.Client
 
         void CommitAccount();
         void SendCharList();
-        List<IPlayer> LoadCharacters();
+        List<IPlayer> LoadCharactersView();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
     }

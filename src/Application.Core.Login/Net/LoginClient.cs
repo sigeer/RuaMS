@@ -8,6 +8,7 @@ using Application.Core.Servers;
 using Application.Core.tools;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Characters.PlayerView;
 using Application.Shared.Login;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
@@ -77,7 +78,7 @@ namespace Application.Core.Login.Net
             if (AccountEntity == null)
                 return 0;
 
-            return AccountEntity.Characterslots - CurrentServer.GetAccountCharacters(AccountEntity.Id).Count;
+            return AccountEntity.Characterslots - CurrentServer.GetAccountCharacterCount(AccountEntity.Id);
         }
         public void Disconnect()
         {
@@ -95,7 +96,7 @@ namespace Application.Core.Login.Net
         }
 
 
-        public virtual void updateLoginState(sbyte newState)
+        public void updateLoginState(sbyte newState)
         {
             if (AccountEntity == null)
                 return;
@@ -111,7 +112,7 @@ namespace Application.Core.Login.Net
             {
                 AccountEntity = null;
             }
-            IsServerTransition = newState == LoginStage.LOGIN_SERVER_TRANSITION;
+            IsServerTransition = newState == LoginStage.LOGIN_SERVER_TRANSITION || newState == LoginStage.PlayerServerTransition;
         }
 
         public override void Dispose()
@@ -161,7 +162,7 @@ namespace Application.Core.Login.Net
         int picattempt = 0;
         public bool CheckPic(string other)
         {
-            if (!(YamlConfig.config.server.ENABLE_PIC && !CanBypassPic()))
+            if (!YamlConfig.config.server.ENABLE_PIC || CanBypassPic())
             {
                 return true;
             }
@@ -187,7 +188,7 @@ namespace Application.Core.Login.Net
                 return 0;
 
 
-            if (AccountEntity.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION)
+            if (AccountEntity.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION || AccountEntity.Loggedin == LoginStage.PlayerServerTransition)
             {
                 if (AccountEntity.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
                 {
@@ -196,7 +197,7 @@ namespace Application.Core.Login.Net
                 }
                 else
                 {
-                    return LoginStage.LOGIN_SERVER_TRANSITION;
+                    return AccountEntity.Loggedin;
                 }
             }
 
@@ -391,9 +392,9 @@ namespace Application.Core.Login.Net
         /// </summary>
         /// <param name="worldId"></param>
         /// <returns></returns>
-        public List<IPlayer> LoadCharacters()
+        public List<IPlayer> LoadCharactersView()
         {
-            return Server.getInstance().LoadAccountCharList(AccountEntity!.Id, 1).GetValueOrDefault(0, []);
+            return CurrentServer.LoadAccountCharactersView(AccountEntity!.Id);
         }
 
         DateTimeOffset lastRequestCharList;

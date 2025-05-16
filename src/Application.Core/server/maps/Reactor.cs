@@ -298,7 +298,7 @@ public class Reactor : AbstractMapObject
                     {
                         c.OnlinedCharacter.dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
                     }
-                    ReactorScriptManager.getInstance().onHit(c, this);
+                    c.CurrentServer.ReactorScriptManager.onHit(c, this);
 
                     int reactorType = stats.getType(state);
                     if (reactorType < 999 && reactorType != -1)
@@ -344,7 +344,7 @@ public class Reactor : AbstractMapObject
                                         MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                                     }
 
-                                    ReactorScriptManager.getInstance().act(c, this);
+                                    c.CurrentServer.ReactorScriptManager.act(c, this);
                                 }
                                 else
                                 {
@@ -353,7 +353,7 @@ public class Reactor : AbstractMapObject
                                     if (state == stats.getNextState(state, b))
                                     {
                                         //current state = next state, looping reactor
-                                        ReactorScriptManager.getInstance().act(c, this);
+                                        c.CurrentServer.ReactorScriptManager.act(c, this);
                                     }
 
                                     setShouldCollect(true);     // refresh collectability on item drop-based reactors
@@ -373,7 +373,7 @@ public class Reactor : AbstractMapObject
                         MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                         if (this.getId() != 9980000 && this.getId() != 9980001)
                         {
-                            ReactorScriptManager.getInstance().act(c, this);
+                            c.CurrentServer.ReactorScriptManager.act(c, this);
                         }
 
                         setShouldCollect(true);

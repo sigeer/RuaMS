@@ -197,7 +197,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     private List<DropEntry> getDropChances()
     {
-        return ReactorScriptManager.getInstance().getDrops(reactor.getId());
+        return c.CurrentServer.ReactorScriptManager.getDrops(reactor.getId());
     }
 
     private List<DropEntry> generateDropList(List<DropEntry> drops, float dropRate, bool meso, int mesoChance, int minItems)

@@ -1,5 +1,5 @@
 using Application.Core.Client;
-using Application.Core.Login.Database;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Servers;
@@ -55,7 +55,7 @@ namespace Application.Core.Login.Net.Handlers
             }
 
 
-            if (!_accountManager.IsAccountHasCharacter(c.AccountEntity.Id, charId))
+            if (!_accountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
             {
                 _sessionCoordinator.closeSession(c, true);
                 return;

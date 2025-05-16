@@ -31,12 +31,12 @@ namespace Application.Core.Game.Players.PlayerProps
             {
                 if (item.Vip == 1)
                 {
-                    _vipDataSouce[vip] = item.MapId;
+                    _vipDataSouce[vip] = item.Mapid;
                     vip++;
                 }
                 else
                 {
-                    _dataSouce[reg] = item.MapId;
+                    _dataSouce[reg] = item.Mapid;
                     reg++;
                 }
             }

@@ -30,11 +30,11 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
 
             if (message == ("cpq1"))
             {
-                NPCScriptManager.getInstance().start("cpqchallenge", ldr.getClient(), npcid, chrMembers);
+                leader.getClient().CurrentServer.NPCScriptManager.start("cpqchallenge", ldr.getClient(), npcid, chrMembers);
             }
             else
             {
-                NPCScriptManager.getInstance().start("cpqchallenge2", ldr.getClient(), npcid, chrMembers);
+                leader.getClient().CurrentServer.NPCScriptManager.start("cpqchallenge2", ldr.getClient(), npcid, chrMembers);
             }
 
             cm.sendOk(LanguageConstants.getMessage(chr, LanguageConstants.CPQChallengeRoomSent));

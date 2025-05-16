@@ -21,6 +21,7 @@
  */
 
 
+using Microsoft.Extensions.DependencyInjection;
 using scripting.map;
 using server.maps;
 using tools;
@@ -42,7 +43,7 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
 
     public void runMapScript()
     {
-        MapScriptManager msm = MapScriptManager.getInstance();
+        MapScriptManager msm = c.CurrentServer.MapScriptManager;
         msm.runMapScript(c, "onUserEnter/" + portal.getScriptName(), false);
     }
 

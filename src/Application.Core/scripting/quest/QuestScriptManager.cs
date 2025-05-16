@@ -21,9 +21,11 @@
  */
 
 
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
 using client;
 using constants.game;
+using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Bcpg.Sig;
 using server.quest;
 
@@ -36,13 +38,11 @@ namespace scripting.quest;
  */
 public class QuestScriptManager : AbstractScriptManager
 {
-    private static QuestScriptManager instance = new QuestScriptManager();
 
     readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public static QuestScriptManager getInstance()
+    public QuestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
-        return instance;
     }
 
     private IEngine? getQuestScriptEngine(IChannelClient c, short questid)
@@ -83,7 +83,7 @@ public class QuestScriptManager : AbstractScriptManager
                 var engine = getQuestScriptEngine(c, questid);
                 if (engine == null)
                 {
-                    log.Warning("START Quest {QuestId} is uncoded.", questid);
+                    _logger.LogWarning("START Quest {QuestId} is uncoded.", questid);
                     c.NPCConversationManager.dispose();
                     return;
                 }
@@ -97,7 +97,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
         catch (Exception t)
         {
-            log.Error(t, "Error starting quest script: {QuestId}", questid);
+            _logger.LogError(t, "Error starting quest script: {QuestId}", questid);
             c.NPCConversationManager?.dispose();
         }
     }
@@ -114,7 +114,7 @@ public class QuestScriptManager : AbstractScriptManager
             }
             catch (Exception e)
             {
-                log.Error(e, "Error starting quest script: {QuestId}", getQM(c)?.getQuest());
+                _logger.LogError(e, "Error starting quest script: {QuestId}", getQM(c)?.getQuest());
                 c.NPCConversationManager?.dispose();
             }
         }
@@ -151,7 +151,7 @@ public class QuestScriptManager : AbstractScriptManager
                 var engine = getQuestScriptEngine(c, questid);
                 if (engine == null)
                 {
-                    log.Warning("END Quest {QuestId} is uncoded.", questid);
+                    _logger.LogWarning("END Quest {QuestId} is uncoded.", questid);
                     c.NPCConversationManager.dispose();
                     return;
                 }
@@ -165,7 +165,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
         catch (Exception t)
         {
-            log.Error(t, "Error starting quest script: {QuestId}", questid);
+            _logger.LogError(t, "Error starting quest script: {QuestId}", questid);
             c.NPCConversationManager?.dispose();
         }
     }
@@ -182,7 +182,7 @@ public class QuestScriptManager : AbstractScriptManager
             }
             catch (Exception e)
             {
-                log.Error(e, "Error ending quest script: {QuestId}", getQM(c)?.getQuest());
+                _logger.LogError(e, "Error ending quest script: {QuestId}", getQM(c)?.getQuest());
                 c.NPCConversationManager?.dispose();
             }
         }
@@ -206,7 +206,7 @@ public class QuestScriptManager : AbstractScriptManager
                 var engine = getQuestScriptEngine(c, questid);
                 if (engine == null)
                 {
-                    log.Error("RAISE Quest " + questid + " is uncoded.");
+                    _logger.LogError("RAISE Quest " + questid + " is uncoded.");
                     c.NPCConversationManager.dispose();
                     return;
                 }
@@ -220,7 +220,7 @@ public class QuestScriptManager : AbstractScriptManager
         }
         catch (Exception t)
         {
-            log.Error(t, "Error during quest script raiseOpen for quest: {QuestId}", questid);
+            _logger.LogError(t, "Error during quest script raiseOpen for quest: {QuestId}", questid);
             c.NPCConversationManager?.dispose();
         }
     }

@@ -20,6 +20,11 @@ using net.packet;
 using net.server.services;
 using net.server.services.type;
 using scripting.Event;
+using scripting.map;
+using scripting.npc;
+using scripting.portal;
+using scripting.quest;
+using scripting.reactor;
 using Serilog;
 using server.events.gm;
 using server.expeditions;
@@ -45,6 +50,11 @@ public partial class WorldChannel : IWorldChannel
 
     private MapManager mapManager;
     private EventScriptManager eventSM;
+    public MapScriptManager MapScriptManager { get; }
+    public ReactorScriptManager ReactorScriptManager { get; }
+    public NPCScriptManager NPCScriptManager { get; }
+    public PortalScriptManager PortalScriptManager { get; }
+    public QuestScriptManager QuestScriptManager { get; }
     private ServicesManager<ChannelServices> services;
     private Dictionary<int, HiredMerchant> hiredMerchants = new();
     private Dictionary<int, int> storedVars = new();
@@ -107,6 +117,7 @@ public partial class WorldChannel : IWorldChannel
     public MountTirednessController MountTirednessController { get; }
     public HiredMerchantController HiredMerchantController { get; }
     public PetHungerController PetHungerController { get; }
+    public CharacterDiseaseController CharacterDiseaseController { get; }
     public IServiceScope LifeScope { get; }
 
     public ChannelClientStorage ClientStorage { get; }
@@ -137,12 +148,18 @@ public partial class WorldChannel : IWorldChannel
         MountTirednessController = new MountTirednessController(this);
         HiredMerchantController = new HiredMerchantController(this);
         PetHungerController = new PetHungerController(this);
+        CharacterDiseaseController = new CharacterDiseaseController(this);
 
         DojoInstance = new DojoInstance(this);
         WeddingInstance = new WeddingChannelInstance(this);
 
         services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
-        eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
+        eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
+        MapScriptManager = LifeScope.ServiceProvider.GetRequiredService<MapScriptManager>();
+        ReactorScriptManager = LifeScope.ServiceProvider.GetRequiredService<ReactorScriptManager>();
+        NPCScriptManager = LifeScope.ServiceProvider.GetRequiredService<NPCScriptManager>();
+        PortalScriptManager = LifeScope.ServiceProvider.GetRequiredService<PortalScriptManager>();
+        QuestScriptManager = LifeScope.ServiceProvider.GetRequiredService<QuestScriptManager>();
 
         StartupTime = DateTimeOffset.Now;
     }
@@ -201,7 +218,7 @@ public partial class WorldChannel : IWorldChannel
 
             eventSM.cancel();
             eventSM.dispose();
-            eventSM = new EventScriptManager(this, ScriptResFactory.GetEvents());
+            eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         }
     }
 
@@ -220,6 +237,7 @@ public partial class WorldChannel : IWorldChannel
         MountTirednessController.Register();
         HiredMerchantController.Register();
         PetHungerController.Register();
+        CharacterDiseaseController.Register();
 
         IsRunning = true;
     }
@@ -237,7 +255,7 @@ public partial class WorldChannel : IWorldChannel
             }
 
             isShuttingDown = true;
-            log.Information("正在停止频道{Channel}", channel);
+            log.Information("正在停止频道{Channel}...", channel);
 
             log.Information("频道{Channel}停止定时任务...", channel);
             await ServerMessageController.StopAsync();
@@ -245,6 +263,7 @@ public partial class WorldChannel : IWorldChannel
             await MapObjectController.StopAsync();
             await MountTirednessController.StopAsync();
             await HiredMerchantController.StopAsync();
+            await CharacterDiseaseController.StopAsync();
             log.Information("频道{Channel}停止定时任务...完成", channel);
 
             closeAllMerchants();
@@ -263,11 +282,11 @@ public partial class WorldChannel : IWorldChannel
             LifeScope.Dispose();
 
             IsRunning = false;
-            log.Information("Successfully shut down channel {ChannelId} in world {WorldId}", channel, world);
+            log.Information("频道{Channel}已停止", channel);
         }
         catch (Exception e)
         {
-            log.Error(e, "Error while shutting down channel {ChannelId} in world {WorldId}", channel, world);
+            log.Error(e, "停止频道{Channel}时出错", channel);
         }
         finally
         {
@@ -706,12 +725,12 @@ public partial class WorldChannel : IWorldChannel
 
     public int getCurrentTimestamp()
     {
-        return (int)((DateTimeOffset.Now - StartupTime).TotalMilliseconds);
+        return Transport.GetCurrentTimestamp();
     }
 
     public long getCurrentTime()
     {
-        return DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        return Transport.GetCurrentTime();
     }
 
     public IPEndPoint GetChannelEndPoint(int channel)
@@ -728,9 +747,9 @@ public partial class WorldChannel : IWorldChannel
         Transport.NotifyPartner(id);
     }
 
-    public CharacterValueObject GetPlayerData(int cid)
+    public CharacterValueObject? GetPlayerData(string clientSession, int cid)
     {
-        return Transport.GetPlayerData(cid);
+        return Transport.GetPlayerData(clientSession, cid);
     }
 
     public void UpdateBuddyByLoggedOff(int characterId, int channel, int[] buddies)
@@ -772,7 +791,8 @@ public partial class WorldChannel : IWorldChannel
 
     public void SetCharacteridInTransition(string v, int cid)
     {
-        Transport.SetCharacteridInTransition(v, cid);
+        if (YamlConfig.config.server.USE_IP_VALIDATION)
+            Transport.SetCharacteridInTransition(v, cid);
     }
 
     public bool HasCharacteridInTransition(string clientSession)
@@ -803,5 +823,15 @@ public partial class WorldChannel : IWorldChannel
     public int GetAccountCharcterCount(int accId)
     {
         return Transport.GetAccountCharacterCount(accId);
+    }
+
+    public bool CheckCharacterName(string name)
+    {
+        return Transport.CheckCharacterName(name);
+    }
+
+    public void UpdateAccountChracterByAdd(int accountId, int id)
+    {
+        Transport.UpdateAccountChracterByAdd(accountId, id);
     }
 }

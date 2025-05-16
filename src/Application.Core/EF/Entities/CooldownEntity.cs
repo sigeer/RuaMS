@@ -1,12 +1,12 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Cooldown
+public partial class CooldownEntity
 {
-    private Cooldown()
+    private CooldownEntity()
     {
     }
 
-    public Cooldown(int charid, int skillId, long length, long startTime)
+    public CooldownEntity(int charid, int skillId, long length, long startTime)
     {
         Charid = charid;
         SkillId = skillId;

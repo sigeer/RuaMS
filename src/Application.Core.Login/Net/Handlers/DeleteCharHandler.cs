@@ -22,7 +22,7 @@
 
 
 using Application.Core.Client;
-using Application.Core.Login.Database;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Services;
 using Application.Core.Servers;
 using Application.EF;
@@ -36,8 +36,8 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class DeleteCharHandler : LoginHandlerBase
 {
-    readonly CharacterManager _chrManager;
-    public DeleteCharHandler(IMasterServer server, AccountManager accountManager, CharacterManager characterManager, ILogger<LoginHandlerBase> logger)
+    readonly CharacterService _chrManager;
+    public DeleteCharHandler(IMasterServer server, AccountManager accountManager, CharacterService characterManager, ILogger<LoginHandlerBase> logger)
         : base(server, accountManager, logger)
     {
         _chrManager = characterManager;
@@ -47,9 +47,12 @@ public class DeleteCharHandler : LoginHandlerBase
     {
         string pic = p.readString();
         int cid = p.readInt();
+
+
         if (c.CheckPic(pic))
         {
             //check for family, guild leader, pending marriage, world transfer
+            // 可以让用户手动退出队伍、工会后再删除
             try
             {
                 using var dbContext = new DBContext();
@@ -77,6 +80,7 @@ public class DeleteCharHandler : LoginHandlerBase
                 c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x09));
                 return;
             }
+
             if (_chrManager.DeleteChar(cid, c.AccountEntity!.Id))
             {
                 _logger.LogInformation("Account {AccountName} deleted chrId {CharacterId}", c.AccountEntity!.Name, cid);

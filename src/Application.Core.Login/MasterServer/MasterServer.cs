@@ -1,7 +1,9 @@
 using Application.Core.Client;
+using Application.Core.Game.Players;
 using Application.Core.Gameplay.Wedding;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
+using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Core.Servers;
@@ -14,9 +16,11 @@ using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
+using client.processor.npc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using net;
 using net.netty;
 using net.server;
 using net.server.coordinator.session;
@@ -78,11 +82,16 @@ namespace Application.Core.Login
 
         public IServiceProvider ServiceProvider { get; }
         SessionCoordinator _sessionCoordinator;
-        public MasterServer(IServiceProvider sp)
+
+
+        CharacterService _characterSevice;
+        public MasterServer(IServiceProvider sp, AccountManager accountManager, CharacterService characterManager)
         {
             ServiceProvider = sp;
             _sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
+            this.accountManager = accountManager;
+            _characterSevice = characterManager;
 
             InstanceId = Guid.NewGuid().ToString();
             ChannelServerList = new List<ChannelServerWrapper>();
@@ -109,6 +118,7 @@ namespace Application.Core.Login
 
             Players = new PlayerStorage();
             BuffStorage = new PlayerBuffStorage();
+            this.accountManager = accountManager;
         }
 
         public async Task Shutdown()
@@ -213,13 +223,13 @@ namespace Application.Core.Login
         {
             _logger.LogInformation("定时任务加载中...");
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-            await TimerManager.InitializeAsync(TaskEngine.Quartz);
             var tMan = TimerManager.getInstance();
             await tMan.Start();
             tMan.register(new NamedRunnable("Purge", TimerManager.purge), YamlConfig.config.server.PURGING_INTERVAL);
             tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
             tMan.register(new LoginCoordinatorTask(_sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
             tMan.register(new LoginStorageTask(_sessionCoordinator), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
+            tMan.register(new DueyFredrickTask(ServiceProvider.GetRequiredService<FredrickProcessor>()), TimeSpan.FromHours(1), timeLeft);
             _logger.LogInformation("定时任务加载完成");
         }
 
@@ -253,46 +263,7 @@ namespace Application.Core.Login
 
 
 
-        private void DisconnectIdlesOnLoginState()
-        {
-            List<ILoginClient> toDisconnect = new();
 
-            Monitor.Enter(srvLock);
-            try
-            {
-                var timeNow = DateTimeOffset.Now;
-
-                foreach (var mc in inLoginState)
-                {
-                    if (timeNow > mc.Value)
-                    {
-                        toDisconnect.Add(mc.Key);
-                    }
-                }
-
-                foreach (var c in toDisconnect)
-                {
-                    inLoginState.Remove(c);
-                }
-            }
-            finally
-            {
-                Monitor.Exit(srvLock);
-            }
-
-            foreach (var c in toDisconnect)
-            {
-                // thanks Lei for pointing a deadlock issue with srvLock
-                if (c.IsOnlined)
-                {
-                    c.Disconnect();
-                }
-                else
-                {
-                    _sessionCoordinator.closeSession(c, true);
-                }
-            }
-        }
 
 
         public int getCurrentTimestamp()
@@ -310,14 +281,16 @@ namespace Application.Core.Login
             return Transport.WrapPlayer(name, channel, mapId, portal);
         }
 
-        public List<CharacterDto> GetAccountCharacters(int accId)
-        {
-            throw new NotImplementedException();
-        }
+
 
         public void BroadcastWorldGMPacket(Packet packet)
         {
             Transport.BroadcastWorldGMPacket(packet);
+        }
+
+        public bool CheckCharacterName(string name)
+        {
+            return _characterSevice.CheckCharacterName(name);
         }
     }
 }

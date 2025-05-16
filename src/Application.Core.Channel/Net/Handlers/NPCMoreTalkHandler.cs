@@ -49,11 +49,11 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                     {
                         if (q.isStart())
                         {
-                            QuestScriptManager.getInstance().start(c, action, lastMsg, -1);
+                            c.CurrentServer.QuestScriptManager.start(c, action, lastMsg, -1);
                         }
                         else
                         {
-                            QuestScriptManager.getInstance().end(c, action, lastMsg, -1);
+                            c.CurrentServer.QuestScriptManager.end(c, action, lastMsg, -1);
                         }
                     }
                     else if (c.NPCConversationManager is TempConversation temp)
@@ -62,7 +62,7 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        NPCScriptManager.getInstance().action(c, action, lastMsg, -1);
+                        c.CurrentServer.NPCScriptManager.action(c, action, lastMsg, -1);
                     }
                 }
             }
@@ -86,11 +86,11 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
             {
                 if (q.isStart())
                 {
-                    QuestScriptManager.getInstance().start(c, action, lastMsg, selection);
+                    c.CurrentServer.QuestScriptManager.start(c, action, lastMsg, selection);
                 }
                 else
                 {
-                    QuestScriptManager.getInstance().end(c, action, lastMsg, selection);
+                    c.CurrentServer.QuestScriptManager.end(c, action, lastMsg, selection);
                 }
             }
             else if (c.NPCConversationManager is TempConversation temp)
@@ -99,7 +99,7 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
             }
             else if (c.NPCConversationManager != null)
             {
-                NPCScriptManager.getInstance().action(c, action, lastMsg, selection);
+                c.CurrentServer.NPCScriptManager.action(c, action, lastMsg, selection);
             }
         }
     }

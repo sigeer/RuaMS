@@ -4,10 +4,14 @@ using net.server.coordinator.session;
 
 namespace Application.Core.Datas
 {
-    public class CharacterValueObject
+    public class CharacterViewObject
     {
         public CharacterDto Character { get; set; }
-        public CharacterLoginInfo SessionInfo { get; set; }
+        public ItemDto[] Items { get; set; }
+    }
+    public class CharacterValueObject: CharacterViewObject
+    {
+        public CharacterLinkDto? Link { get; set; }
         public AccountDto Account { get; set; }
         public MonsterbookDto[] MonsterBooks { get; set; }
         public PetIgnoreDto[] PetIgnores { get; set; }
@@ -26,8 +30,8 @@ namespace Application.Core.Datas
         public RecentFameRecordDto FameRecord { get; set; }
 
         public QuickSlotDto? QuickSlot { get; set; }
-        public ItemDto[] Items { get; set; }
-        public StorageDto StorageInfo { get; set; }
+
+        public StorageDto? StorageInfo { get; set; }
         public BuddyDto[] BuddyList { get; set; }
     }
 

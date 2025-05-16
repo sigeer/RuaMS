@@ -39,11 +39,11 @@ public class ClickGuideHandler : ChannelHandlerBase
     {
         if (c.OnlinedCharacter.getJob().Equals(Job.NOBLESSE))
         {
-            NPCScriptManager.getInstance().start(c, NpcId.MIMO, null);
+            c.CurrentServer.NPCScriptManager.start(c, NpcId.MIMO, null);
         }
         else
         {
-            NPCScriptManager.getInstance().start(c, NpcId.LILIN, null);
+            c.CurrentServer.NPCScriptManager.start(c, NpcId.LILIN, null);
         }
     }
 

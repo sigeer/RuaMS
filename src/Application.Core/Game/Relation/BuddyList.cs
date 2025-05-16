@@ -146,7 +146,7 @@ public class BuddyList
         {
             if (entry.Visible)
             {
-                dbContext.Buddies.Add(new Buddy(Owner.Id, entry.getCharacterId(), 0, entry.Group));
+                dbContext.Buddies.Add(new BuddyEntity(Owner.Id, entry.getCharacterId(), 0, entry.Group));
             }
         }
         dbContext.SaveChanges();

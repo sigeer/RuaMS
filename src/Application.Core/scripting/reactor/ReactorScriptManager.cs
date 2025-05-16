@@ -21,8 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Infrastructure;
+using Microsoft.Extensions.Logging;
 using server.maps;
 
 namespace scripting.reactor;
@@ -33,17 +35,12 @@ namespace scripting.reactor;
  */
 public class ReactorScriptManager : AbstractScriptManager
 {
-    private static ReactorScriptManager instance = new ReactorScriptManager();
 
     private Dictionary<int, List<DropEntry>> drops = new();
-    private ReactorScriptManager()
+
+    public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
         LoadAllReactorDrops();
-    }
-
-    public static ReactorScriptManager getInstance()
-    {
-        return instance;
     }
 
     public void onHit(IChannelClient c, Reactor reactor)
@@ -60,7 +57,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error during onHit script for reactor: {ReactorId}", reactor.getId());
+            _logger.LogError(e, "Error during onHit script for reactor: {ReactorId}", reactor.getId());
         }
     }
 
@@ -78,7 +75,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error during act script for reactor: {ReactorId}", reactor.getId());
+            _logger.LogError(e, "Error during act script for reactor: {ReactorId}", reactor.getId());
         }
     }
 
@@ -99,7 +96,7 @@ public class ReactorScriptManager : AbstractScriptManager
             }
             catch (Exception e)
             {
-                log.Error(e, "Error getting drops for reactor: {ReactorId}", reactorId);
+                _logger.LogError(e, "Error getting drops for reactor: {ReactorId}", reactorId);
             }
             drops.AddOrUpdate(reactorId, ret);
         }
@@ -147,7 +144,7 @@ public class ReactorScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error during {ScriptFunction} script for reactor: {ReactorId}", functionName, reactor.getId());
+            _logger.LogError(e, "Error during {ScriptFunction} script for reactor: {ReactorId}", functionName, reactor.getId());
         }
     }
 

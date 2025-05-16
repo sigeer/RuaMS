@@ -36,6 +36,11 @@ using net.packet;
 using net.server.services;
 using net.server.services.type;
 using scripting.Event;
+using scripting.map;
+using scripting.npc;
+using scripting.portal;
+using scripting.quest;
+using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
@@ -74,7 +79,13 @@ namespace Application.Core.Game.TheWorld
         MountTirednessController MountTirednessController { get; }
         HiredMerchantController HiredMerchantController { get; }
         PetHungerController PetHungerController { get; }
+        CharacterDiseaseController CharacterDiseaseController { get; }
 
+        MapScriptManager MapScriptManager { get; }
+        ReactorScriptManager ReactorScriptManager { get; }
+        NPCScriptManager NPCScriptManager { get; }
+        PortalScriptManager PortalScriptManager { get; }
+        QuestScriptManager QuestScriptManager { get; }
         void UpdateWorldConfig(WorldConfigPatch updatePatch);
 
         int getTransportationTime(double travelTime);
@@ -153,7 +164,7 @@ namespace Application.Core.Game.TheWorld
         /// </summary>
         /// <param name="cid"></param>
         /// <returns></returns>
-        CharacterValueObject GetPlayerData(int cid);
+        CharacterValueObject? GetPlayerData(string clientSession, int cid);
         /// <summary>
         /// 下线时，更新好友窗口
         /// </summary>
@@ -185,5 +196,6 @@ namespace Application.Core.Game.TheWorld
         /// <param name="isRaise"></param>
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
         int GetAccountCharcterCount(int accId);
+        bool CheckCharacterName(string name);
     }
 }

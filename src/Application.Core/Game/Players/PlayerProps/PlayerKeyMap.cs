@@ -46,7 +46,7 @@ namespace Application.Core.Game.Players.PlayerProps
         public override void SaveData(DBContext dbContext)
         {
             dbContext.Keymaps.Where(x => x.Characterid == Owner.Id).ExecuteDelete();
-            dbContext.Keymaps.AddRange(_dataSource.Select(x => new Keymap() { Characterid = Owner.Id, Key = x.Key, Type = x.Value.getType(), Action = x.Value.getAction() }));
+            dbContext.Keymaps.AddRange(_dataSource.Select(x => new KeyMapEntity() { Characterid = Owner.Id, Key = x.Key, Type = x.Value.getType(), Action = x.Value.getAction() }));
             dbContext.SaveChanges();
         }
 

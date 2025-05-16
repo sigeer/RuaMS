@@ -48,8 +48,6 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class PlayerLoggedinHandler : ChannelHandlerBase
 {
-    private static HashSet<int> attemptingLoginAccounts = new();
-
     private NoteService noteService;
     readonly ILogger<ChannelHandlerBase> _logger;
     readonly CharacterService _characterSrv;
@@ -60,29 +58,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         _logger = logger;
         _characterSrv = characterSrv;
     }
-
-    private bool tryAcquireAccount(int accId)
-    {
-        lock (attemptingLoginAccounts)
-        {
-            if (attemptingLoginAccounts.Contains(accId))
-            {
-                return false;
-            }
-
-            attemptingLoginAccounts.Add(accId);
-            return true;
-        }
-    }
-
-    private void releaseAccount(int accId)
-    {
-        lock (attemptingLoginAccounts)
-        {
-            attemptingLoginAccounts.Remove(accId);
-        }
-    }
-
     public override bool ValidateState(IChannelClient c)
     {
         return !c.IsOnlined;
@@ -102,42 +77,21 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         try
         {
             var cserv = c.CurrentServer;
-            if (cserv == null)
+            if (cserv == null || !cserv.IsRunning)
             {
                 c.Disconnect(true, false);
                 return;
             }
 
-            var playerObject = c.CurrentServer.GetPlayerData(cid);
+            var playerObject = c.CurrentServer.GetPlayerData(c.GetSessionRemoteHost(), cid);
             if (playerObject == null)
             {
                 c.Disconnect(true, false);
                 return;
             }
 
-            if (!playerObject.SessionInfo.IsAccountOnlined)
-            {
-                c.Disconnect(true, false);
-                return;
-            }
+            c.Hwid = Hwid.fromHostString(playerObject.Account.Hwid);
 
-            Hwid? hwid = playerObject.SessionInfo.Hwid;
-            if (hwid == null)
-            {
-                c.Disconnect(true, false);
-                return;
-            }
-
-            c.Hwid = hwid;
-
-            // c.CurrentServer.GetPlayerData(cid) 时一并判断
-            //if (!server.validateCharacteridInTransition(c, cid))
-            //{
-            //    c.Disconnect(true, false);
-            //    return;
-            //}
-
-            bool newcomer = !playerObject.SessionInfo.IsPlayerOnlined;
             var player = _characterSrv.GeneratePlayerByDto(c, playerObject);
             if (player == null)
             {
@@ -162,46 +116,11 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
             }
             */
+
+
             var wserv = Server.getInstance().getWorld(0);
 
-            int accId = c.AccountEntity!.Id;
-            if (tryAcquireAccount(accId))
-            { // Sync this to prevent wrong login state for double loggedin handling
-                try
-                {
-                    int currentState = playerObject.Account.Loggedin;
-                    if (currentState == LoginStage.LOGIN_SERVER_TRANSITION || currentState == LoginStage.PlayerServerTransition)
-                    {
-                        c.CurrentServer.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
-                    }
-                    else
-                    {
-                        if (currentState == LoginStage.LOGIN_LOGGEDIN)
-                        {
-                            c.Disconnect(true, false);
-                        }
-                        else
-                        {
-                            c.sendPacket(PacketCreator.getAfterLoginError(7));
-                        }
-
-                        return;
-                    }
-
-                }
-                finally
-                {
-                    releaseAccount(accId);
-                }
-            }
-            else
-            {
-                c.SetPlayer(null);
-                c.SetAccount(null);
-                c.sendPacket(PacketCreator.getAfterLoginError(10));
-                return;
-            }
-
+            bool newcomer = playerObject.Account.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION;
             // 换线，离开商城拍卖回到主世界
             if (!newcomer)
             {

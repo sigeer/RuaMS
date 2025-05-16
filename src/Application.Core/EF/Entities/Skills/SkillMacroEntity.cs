@@ -1,12 +1,12 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Skillmacro
+public partial class SkillMacroEntity
 {
-    public Skillmacro()
+    public SkillMacroEntity()
     {
     }
 
-    public Skillmacro(int characterid, sbyte position, int skill1, int skill2, int skill3, string? name, sbyte shout)
+    public SkillMacroEntity(int characterid, sbyte position, int skill1, int skill2, int skill3, string? name, sbyte shout)
     {
         Characterid = characterid;
         Position = position;

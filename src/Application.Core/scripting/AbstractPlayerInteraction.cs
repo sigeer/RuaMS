@@ -55,7 +55,6 @@ public class AbstractPlayerInteraction
 {
 
     public IChannelClient c;
-
     public AbstractPlayerInteraction(IChannelClient c)
     {
         this.c = c;

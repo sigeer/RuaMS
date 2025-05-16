@@ -1,12 +1,12 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Buddy
+public partial class BuddyEntity
 {
-    public Buddy()
+    public BuddyEntity()
     {
     }
 
-    public Buddy(int characterId, int buddyId, sbyte pending, string? group)
+    public BuddyEntity(int characterId, int buddyId, sbyte pending, string? group)
     {
         CharacterId = characterId;
         BuddyId = buddyId;

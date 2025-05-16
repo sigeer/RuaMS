@@ -43,11 +43,11 @@ public class TouchReactorHandler : ChannelHandlerBase
 
         if (p.readByte() != 0)
         {
-            ReactorScriptManager.getInstance().touch(c, reactor);
+            c.CurrentServer.ReactorScriptManager.touch(c, reactor);
         }
         else
         {
-            ReactorScriptManager.getInstance().untouch(c, reactor);
+            c.CurrentServer.ReactorScriptManager.untouch(c, reactor);
         }
     }
 }

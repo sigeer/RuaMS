@@ -68,6 +68,6 @@ public class RemoteGachaponHandler : ChannelHandlerBase
         {
             npcId = gacha == 8 ? NpcId.GACHAPON_NLC : NpcId.GACHAPON_NAUTILUS;
         }
-        NPCScriptManager.getInstance().start(c, npcId, "gachaponRemote", null);
+        c.CurrentServer.NPCScriptManager.start(c, npcId, "gachaponRemote", null);
     }
 }

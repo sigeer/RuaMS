@@ -129,7 +129,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public virtual void dispose()
     {
         NextLevelContext.Clear();
-        NPCScriptManager.getInstance().dispose(this);
+        c.CurrentServer.NPCScriptManager.dispose(this);
         getClient().sendPacket(PacketCreator.enableActions());
     }
 

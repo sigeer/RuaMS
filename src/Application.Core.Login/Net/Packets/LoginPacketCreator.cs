@@ -150,7 +150,7 @@ namespace Application.Core.Login.Net.Packets
         {
             OutPacket p = OutPacket.create(SendOpcode.CHARLIST);
             p.writeByte(0);
-            List<IPlayer> chars = c.LoadCharacters();
+            List<IPlayer> chars = c.LoadCharactersView();
             p.writeByte((byte)chars.Count);
             foreach (IPlayer chr in chars)
             {

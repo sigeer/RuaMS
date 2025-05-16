@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class DB_Storage
+public partial class StorageEntity
 {
     public int Storageid { get; set; }
 

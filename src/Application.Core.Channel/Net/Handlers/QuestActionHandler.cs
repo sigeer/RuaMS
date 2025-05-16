@@ -137,7 +137,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     }
                     if (quest.canStart(player, npc))
                     {
-                        QuestScriptManager.getInstance().start(c, questid, npc);
+                        c.CurrentServer.QuestScriptManager.start(c, questid, npc);
                     }
                     break;
                 }
@@ -150,7 +150,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     }
                     if (quest.canComplete(player, npc))
                     {
-                        QuestScriptManager.getInstance().end(c, questid, npc);
+                        c.CurrentServer.QuestScriptManager.end(c, questid, npc);
                     }
                     break;
                 }

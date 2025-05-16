@@ -1,16 +1,27 @@
+using Application.Core.Servers;
+using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
-namespace net.server.coordinator.session;
+namespace Application.Core.Login.Session;
 
 public class HostHwidCache
 {
     private ConcurrentDictionary<string, HostHwid> hostHwidCache = new(); // Key: remoteHost
 
+    readonly IMasterServer _server;
+    readonly SessionDAO _sessionDAO;
+
+    public HostHwidCache(IMasterServer server, SessionDAO sessionDAO)
+    {
+        _server = server;
+        _sessionDAO = sessionDAO;
+    }
+
     public void clearExpired()
     {
-        SessionDAO.deleteExpiredHwidAccounts();
+        _sessionDAO.deleteExpiredHwidAccounts();
 
-        DateTimeOffset now = DateTimeOffset.FromUnixTimeMilliseconds(Server.getInstance().getCurrentTime());
+        DateTimeOffset now = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
         List<string> remoteHostsToRemove = new();
         foreach (var entry in hostHwidCache)
         {
@@ -22,13 +33,13 @@ public class HostHwidCache
 
         foreach (string remoteHost in remoteHostsToRemove)
         {
-            hostHwidCache.Remove(remoteHost);
+            hostHwidCache.Remove(remoteHost, out _);
         }
     }
 
     public void addEntry(string remoteHost, Hwid hwid)
     {
-        hostHwidCache.AddOrUpdate(remoteHost, HostHwid.createWithDefaultExpiry(hwid));
+        hostHwidCache[remoteHost] = HostHwid.createWithDefaultExpiry(hwid);
     }
 
     public HostHwid? getEntry(string remoteHost)

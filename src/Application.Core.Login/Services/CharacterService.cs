@@ -1,10 +1,13 @@
 using Application.Core.Datas;
+using Application.Core.Game.Commands.Gm4;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
+using Application.Core.Login.Datas;
 using Application.EF;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using AutoMapper;
+using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
@@ -12,71 +15,55 @@ using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using net.server;
 using Serilog;
+using System.Text.RegularExpressions;
 
 namespace Application.Core.Login.Services
 {
-    public class CharacterManager
+    public class CharacterService
     {
         readonly IMapper _mapper;
+        readonly CharacterManager _characterManager;
+        readonly AccountManager _accountManager;
 
-        public CharacterManager(IMapper mapper)
+
+
+        private static string[] BLOCKED_NAMES = {
+            "admin", "owner", "moderator", "intern", "donor", "administrator", "FREDRICK", "help", "helper", "alert", "notice", "maplestory", "fuck", "wizet", "fucking",
+            "negro", "fuk", "fuc", "penis", "pussy", "asshole", "gay", "nigger", "homo", "suck", "cum", "shit", "shitty", "condom", "security", "official", "rape", "nigga",
+            "sex", "tit", "boner", "orgy", "clit", "asshole", "fatass", "bitch", "support", "gamemaster", "cock", "gaay", "gm", "operate", "master",
+            "sysop", "party", "GameMaster", "community", "message", "event", "test", "meso", "Scania", "yata", "AsiaSoft", "henesys"};
+
+        public CharacterService(IMapper mapper, CharacterManager characterManager, AccountManager accountManager)
         {
             _mapper = mapper;
+            _characterManager = characterManager;
+            _accountManager = accountManager;
         }
-        /// <summary>
-        /// 角色登录
-        /// </summary>
-        /// <param name="clientSession"></param>
-        /// <param name="characterId"></param>
-        /// <returns></returns>
-        public async Task<CharacterValueObject?> GetCharacter(int characterId)
+
+        public bool CheckCharacterName(string name)
         {
-            using var dbContext = new DBContext();
-            var characterEntity = await dbContext.Characters.FirstOrDefaultAsync(x => x.Id == characterId);
-            if (characterEntity == null)
-                return null;
+            // 禁用名
+            if (BLOCKED_NAMES.Any(x => x.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                return false;
 
-            var accountEntity = await dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == characterEntity.AccountId);
-            if (accountEntity == null)
-                return null;
+            var bLength = GlobalTools.Encoding.GetBytes(name).Length;
+            if (bLength < 3 || bLength > 12)
+                return false;
 
-            var now = DateTimeOffset.Now;
-            var fameRecords = await dbContext.Famelogs.Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToListAsync();
+            if (!Regex.IsMatch(name, "^[a-zA-Z0-9\\u4e00-\\u9fa5]+$"))
+                return false;
 
-            var petIgnores = await (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
-                                    let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
-                                    select new PetIgnoreDto { PetId = a.Petid, ExcludedItems = excluded }).ToArrayAsync();
+            using DBContext dbContext = new DBContext();
+            if (dbContext.Characters.Any(x => x.Name == name))
+                return false;
 
-            return new CharacterValueObject
-            {
-                Character = _mapper.Map<CharacterDto>(characterEntity),
-                Account = _mapper.Map<AccountDto>(accountEntity),
-                PetIgnores = petIgnores,
-                Areas = _mapper.Map<AreaDto[]>(await dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArrayAsync()),
-                BuddyList = _mapper.Map<BuddyDto[]>(await dbContext.Buddies.AsNoTracking().Where(x => x.CharacterId == characterId).ToArrayAsync()),
-                CoolDowns = _mapper.Map<CoolDownDto[]>(await dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArrayAsync()),
-                Events = _mapper.Map<EventDto[]>(await dbContext.Eventstats.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                Items = _mapper.Map<ItemDto[]>(await dbContext.Inventoryitems.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                KeyMaps = _mapper.Map<KeyMapDto[]>(await dbContext.Keymaps.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                MedalMaps = _mapper.Map<MedalMapDto[]>(await dbContext.Medalmaps.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                MonsterBooks = _mapper.Map<MonsterbookDto[]>(await dbContext.Monsterbooks.Where(x => x.Charid == characterId).ToArrayAsync()),
-
-                QuestProgresses = _mapper.Map<QuestProgressDto[]>(await dbContext.Questprogresses.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                QuestStatuses = _mapper.Map<QuestStatusDto[]>(await dbContext.Queststatuses.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                QuickSlot = _mapper.Map<QuickSlotDto>(await dbContext.Quickslotkeymappeds.Where(x => x.Accountid == characterEntity.AccountId).ToArrayAsync()),
-                SavedLocations = _mapper.Map<SavedLocationDto[]>(await dbContext.Savedlocations.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                SkillMacros = _mapper.Map<SkillMacroDto[]>(await dbContext.Skillmacros.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                Skills = _mapper.Map<SkillDto[]>(await dbContext.Skills.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                StorageInfo = _mapper.Map<StorageDto>(await dbContext.Storages.Where(x => x.Accountid == characterEntity.AccountId).FirstOrDefaultAsync()),
-                TrockLocations = _mapper.Map<TrockLocationDto[]>(await dbContext.Trocklocations.Where(x => x.Characterid == characterId).ToArrayAsync()),
-                FameRecord = new RecentFameRecordDto { ChararacterIds = fameRecords.Select(x => x.Characterid).ToArray(), LastUpdateTime = fameRecords.Count == 0 ? 0 : fameRecords.Max(x => x.When).ToUnixTimeMilliseconds() }
-            };
+            return true;
         }
 
 
         public bool DeleteChar(int cid, int senderAccId)
         {
-            if (!Server.getInstance().haveCharacterEntry(senderAccId, cid))
+            if (!_accountManager.ValidAccountCharacter(senderAccId, cid))
             {    // thanks zera (EpiphanyMS) for pointing a critical exploit with non-authed character deletion request
                 return false;
             }
@@ -110,6 +97,7 @@ namespace Application.Core.Login.Services
                 dbContext.Buddies.Where(x => x.CharacterId == cid).ExecuteDelete();
 
                 // TODO: 退出队伍
+
                 // TODO: 退出家族
 
                 var threadIdList = dbContext.BbsThreads.Where(x => x.Postercid == cid).Select(x => x.Threadid).ToList();
@@ -164,8 +152,9 @@ namespace Application.Core.Login.Services
                 }
                 dbContext.SaveChanges();
                 dbTrans.Commit();
-                Server.getInstance().deleteCharacterEntry(accId, cid);
-                AllPlayerStorage.DeleteCharacter(cid);
+
+                _accountManager.UpdateAccountCharacterCacheByRemove(accId, cid);
+                _characterManager.Remove(cid);
                 return true;
             }
             catch (Exception e)
@@ -174,5 +163,24 @@ namespace Application.Core.Login.Services
                 return false;
             }
         }
+
+        public List<IPlayer> GetCharactersView(int[] idList)
+        {
+            var dataList = _characterManager.GetCharactersView(idList);
+
+            List<IPlayer> list = new List<IPlayer>();
+            foreach (var c in dataList)
+            {
+                var player = _mapper.Map<IPlayer>(c.Character);
+                Inventory inv = player.Bag[InventoryType.EQUIPPED];
+                foreach (var equip in c.Items)
+                {
+                    var item = _mapper.Map<Equip>(equip);
+                    inv.addItemFromDB(item);
+                }
+            }
+            return list;
+        }
+
     }
 }

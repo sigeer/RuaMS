@@ -154,7 +154,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
                             }
                             else if (buddyAddResult != BuddyAddResult.ALREADY_ON_LIST && channel == -1)
                             {
-                                dbContext.Buddies.Add(new Buddy
+                                dbContext.Buddies.Add(new BuddyEntity
                                 {
                                     CharacterId = charWithId.id,
                                     BuddyId = player.getId(),

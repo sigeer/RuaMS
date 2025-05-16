@@ -46,6 +46,8 @@ namespace Application.Core.Channel.Services
             var player = _mapper.Map<Player>(o.Character);
             player.Monsterbook = new MonsterBook(o.MonsterBooks);
 
+            player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
+
             short sandboxCheck = 0x0;
             foreach (var item in o.Items.Where(x => x.Type == ItemFactory.INVENTORY.getValue()))
             {

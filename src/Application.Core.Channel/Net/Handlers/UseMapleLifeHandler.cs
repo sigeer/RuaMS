@@ -45,7 +45,7 @@ public class UseMapleLifeHandler : ChannelHandlerBase
         player.setLastUsedCashItem(timeNow);
 
         string name = p.readString();
-        if (CharacterManager.CheckCharacterName(name))
+        if (c.CurrentServer.CheckCharacterName(name))
         {
             c.sendPacket(PacketCreator.sendMapleLifeCharacterInfo());
         }

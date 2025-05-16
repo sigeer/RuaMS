@@ -28,7 +28,7 @@ public class RaiseUIStateHandler : ChannelHandlerBase
                 Quest quest = Quest.getInstanceFromInfoNumber(infoNumber);
                 QuestStatus mqs = chr.getQuest(quest);
 
-                QuestScriptManager.getInstance().raiseOpen(c, (short)infoNumber, mqs.getNpc());
+                c.CurrentServer.QuestScriptManager.raiseOpen(c, (short)infoNumber, mqs.getNpc());
 
                 if (mqs.getStatus() == QuestStatus.Status.NOT_STARTED)
                 {

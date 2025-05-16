@@ -22,7 +22,9 @@
 
 
 using Application.Core.Client;
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
+using Microsoft.Extensions.Logging;
 using tools;
 using static server.ItemInformationProvider;
 
@@ -33,13 +35,11 @@ namespace scripting.npc;
  */
 public class NPCScriptManager : AbstractScriptManager
 {
-    private static NPCScriptManager instance = new NPCScriptManager();
 
     readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public static NPCScriptManager getInstance()
+    public NPCScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
-        return instance;
     }
 
     public bool isNpcScriptAvailable(IChannelClient c, string fileName)
@@ -101,7 +101,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", filename, npc);
+            _logger.LogError(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", filename, npc);
             c.NPCConversationManager?.dispose();
         }
     }
@@ -157,7 +157,7 @@ public class NPCScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", fileName, npc);
+            _logger.LogError(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", fileName, npc);
             c.NPCConversationManager?.dispose();
 
             return false;
@@ -193,7 +193,7 @@ public class NPCScriptManager : AbstractScriptManager
             {
                 if (c.NPCConversationManager != null)
                 {
-                    log.Error(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.getScriptName(), c.NPCConversationManager.getNpc());
+                    _logger.LogError(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.getScriptName(), c.NPCConversationManager.getNpc());
                     c.NPCConversationManager.dispose();
                 }
             }

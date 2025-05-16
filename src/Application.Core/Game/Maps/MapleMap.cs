@@ -2662,7 +2662,7 @@ public class MapleMap : IMap
             getChannelServer().CharacterHpDecreaseController.removePlayerHpDecrease(chr);
         }
 
-        MapScriptManager msm = MapScriptManager.getInstance();
+        MapScriptManager msm = ChannelServer.MapScriptManager;
         if (chrSize == 1)
         {
             if (!hasItemMonitor())
@@ -2895,7 +2895,7 @@ public class MapleMap : IMap
         }
 
         chr.receivePartyMemberHP();
-        Server.getInstance().registerAnnouncePlayerDiseases(chr.getClient());
+        ChannelServer.CharacterDiseaseController.registerAnnouncePlayerDiseases(chr.getClient());
     }
 
     public Portal getRandomPlayerSpawnpoint()

@@ -33,10 +33,19 @@ namespace Application.Core.Channel.Net.Handlers;
 public class GeneralChatHandler : ChannelHandlerBase
 {
     readonly ILogger<GeneralChatHandler> _logger;
+    readonly CommandExecutor commandExecutor;
 
-    public GeneralChatHandler(ILogger<GeneralChatHandler> logger)
+    public GeneralChatHandler(ILogger<GeneralChatHandler> logger, CommandExecutor commandExecutor)
     {
         _logger = logger;
+        this.commandExecutor = commandExecutor;
+    }
+
+    private const char COMMAND_HEADING = '!';
+    bool isCommand(string content)
+    {
+        char heading = content.ElementAt(0);
+        return heading == COMMAND_HEADING;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -56,9 +65,9 @@ public class GeneralChatHandler : ChannelHandlerBase
             return;
         }
         char heading = s.ElementAt(0);
-        if (CommandExecutor.isCommand(s))
+        if (isCommand(s))
         {
-            CommandExecutor.getInstance().handle(c, s);
+            commandExecutor.handle(c, s);
         }
         else if (heading != '/')
         {

@@ -144,7 +144,7 @@ public class GenericPortal : Portal
                 Monitor.Enter(scriptLock!);
                 try
                 {
-                    changed = PortalScriptManager.getInstance().executePortalScript(this, c);
+                    changed = c.CurrentServer.PortalScriptManager.executePortalScript(this, c);
                 }
                 finally
                 {

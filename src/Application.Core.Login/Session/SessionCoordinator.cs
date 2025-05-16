@@ -25,6 +25,7 @@ using Application.EF;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
 using constants.id;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.login;
 using net.server.coordinator.session;
@@ -45,19 +46,25 @@ public class SessionCoordinator
     private Dictionary<int, ILoginClient> onlineClients = new(); // Key: account id
     private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
     private ConcurrentDictionary<string, ILoginClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
-    private HostHwidCache hostHwidCache = new HostHwidCache();
 
-    public SessionCoordinator(ILogger<SessionCoordinator> logger)
+    private HostHwidCache hostHwidCache;
+    readonly SessionDAO _sessionDAO;
+    readonly IDbContextFactory<DBContext> _dbContextFactory;
+
+    public SessionCoordinator(ILogger<SessionCoordinator> logger, HostHwidCache hostHwidCache, SessionDAO sessionDAO, IDbContextFactory<DBContext> dbContextFactory)
     {
         _logger = logger;
+        this.hostHwidCache = hostHwidCache;
+        _sessionDAO = sessionDAO;
+        _dbContextFactory = dbContextFactory;
     }
 
     private bool attemptAccountAccess(int accountId, Hwid hwid, bool routineCheck)
     {
         try
         {
-            using var dbContext = new DBContext();
-            List<HwidRelevance> hwidRelevances = SessionDAO.getHwidRelevance(dbContext, accountId);
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            List<HwidRelevance> hwidRelevances = _sessionDAO.getHwidRelevance(dbContext, accountId);
             foreach (HwidRelevance hwidRelevance in hwidRelevances)
             {
                 if (hwidRelevance.hwid.EndsWith(hwid.hwid))
@@ -66,7 +73,7 @@ public class SessionCoordinator
                     {
                         // better update HWID relevance as soon as the login is authenticated
                         var expiry = HwidAssociationExpiry.getHwidAccountExpiry(hwidRelevance.relevance);
-                        SessionDAO.updateAccountAccess(dbContext, hwid, accountId, expiry, hwidRelevance.getIncrementedRelevance());
+                        _sessionDAO.updateAccountAccess(dbContext, hwid, accountId, expiry, hwidRelevance.getIncrementedRelevance());
                     }
 
                     return true;
@@ -265,8 +272,8 @@ public class SessionCoordinator
     {
         try
         {
-            using var dbContext = new DBContext();
-            List<Hwid> hwids = SessionDAO.getHwidsForAccount(dbContext, accountId);
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            List<Hwid> hwids = _sessionDAO.getHwidsForAccount(dbContext, accountId);
 
             bool containsRemoteHwid = hwids.Any(accountHwid => accountHwid.Equals(hwid));
             if (containsRemoteHwid)
@@ -277,7 +284,7 @@ public class SessionCoordinator
             if (hwids.Count < YamlConfig.config.server.MAX_ALLOWED_ACCOUNT_HWID)
             {
                 var expiry = HwidAssociationExpiry.getHwidAccountExpiry(0);
-                SessionDAO.registerAccountAccess(dbContext, accountId, hwid, expiry);
+                _sessionDAO.registerAccountAccess(dbContext, accountId, hwid, expiry);
             }
         }
         catch (Exception ex)

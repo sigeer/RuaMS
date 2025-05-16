@@ -3,6 +3,7 @@ using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
+using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
@@ -16,30 +17,28 @@ using net.server.guild;
 using server.expeditions;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using tools;
 using tools.packets;
 
-namespace Application.Core.Channel.ServerTransports
+namespace Application.Core.Login.ServerTransports
 {
     /// <summary>
     /// 登录服务器 与 频道服务器在同一个进程中时，直接与MasterServer交互
     /// </summary>
     public class LocalChannelServerTransport : IChannelServerTransport
     {
+        readonly LoginService _loginService;
         readonly IMasterServer _server;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
-        readonly IWorld _world;
-        /// <summary>
-        /// 因为在同一个进程，所以能够取到masterserver和world
-        /// </summary>
-        /// <param name="server"></param>
-        /// <param name="world"></param>
-        public LocalChannelServerTransport(IMasterServer server, IWorld world)
+        IWorld _world => Server.getInstance().getWorld(0);
+
+        public LocalChannelServerTransport(IMasterServer server, LoginService loginService)
         {
             _server = server;
-            _world = world;
+            _loginService = loginService;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -57,8 +56,8 @@ namespace Application.Core.Channel.ServerTransports
                 FishingRate = _server.FishingRate,
                 ServerMessage = _server.ServerMessage
             });
+            _server.AddChannel(new InternalWorldChannel(server));
             return Task.FromResult(channelId);
-            return Task.FromResult(_server.AddChannel(new InternalWorldChannel(server)));
         }
 
         public void DisconnectPlayers(IEnumerable<int> playerIdList)
@@ -80,12 +79,12 @@ namespace Application.Core.Channel.ServerTransports
 
         public long GetCurrentTime()
         {
-            return Server.getInstance().getCurrentTime();
+            return _server.getCurrentTime();
         }
 
         public int GetCurrentTimestamp()
         {
-            return Server.getInstance().getCurrentTimestamp();
+            return _server.getCurrentTimestamp();
         }
 
         public CoupleIdPair? GetMarriageQueuedCouple(int weddingId)
@@ -464,14 +463,24 @@ namespace Application.Core.Channel.ServerTransports
             }
         }
 
-        public CharacterValueObject GetPlayerData(int cid)
+        public CharacterValueObject? GetPlayerData(string clientSession, int cid)
         {
-            throw new NotImplementedException();
+            return _loginService.PlayerLogin(clientSession, cid);
         }
 
         public int GetAccountCharacterCount(int accId)
         {
-            return _server.GetAccountCharacters(accId).Count;
+            return _server.GetAccountCharacterCount(accId);
+        }
+
+        public bool CheckCharacterName(string name)
+        {
+            return _server.CheckCharacterName(name);
+        }
+
+        public void UpdateAccountChracterByAdd(int accountId, int id)
+        {
+            _server.UpdateAccountChracterByAdd(accountId, id);
         }
     }
 }

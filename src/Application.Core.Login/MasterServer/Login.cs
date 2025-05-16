@@ -1,39 +1,36 @@
 using Application.Core.Client;
-using Application.EF;
+using Application.Core.Game.Players;
+using Application.Core.Login.Datas;
 using Application.EF.Entities;
 using Application.Utility.Configs;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login
 {
     public partial class MasterServer
     {
-        Dictionary<int, AccountEntity> _accStorage = new Dictionary<int, AccountEntity>();
+        AccountManager accountManager;
+        public int GetAccountCharacterCount(int accId)
+        {
+            return accountManager.GetAccountPlayerIds(accId).Count;
+        }
         public AccountEntity? GetAccountEntity(int accId)
         {
-            if (_accStorage.TryGetValue(accId, out var account)) 
-            {
-                return account;
-            }
-
-            using var dbContext = new DBContext();
-            var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == accId);
-            if (dbModel != null)
-            {
-                _accStorage[accId] = dbModel;
-            }
-            return dbModel;
+            return accountManager.GetAccountEntity(accId);
         }
 
         public void UpdateAccountState(int accId, sbyte newState)
         {
-            if (_accStorage.TryGetValue(accId, out var accountEntity))
-            {
-                // rules out possibility of multiple account entries
+            accountManager.UpdateAccountState(accId, newState);
+        }
 
-                accountEntity.Loggedin = newState;
-                accountEntity.Lastlogin = DateTimeOffset.Now;
-            }
+        public List<IPlayer> LoadAccountCharactersView(int id)
+        {
+            return _characterSevice.GetCharactersView(accountManager.GetAccountPlayerIds(id).ToArray());
+        }
+
+        public void UpdateAccountChracterByAdd(int accountId, int id)
+        {
+            accountManager.UpdateAccountCharacterCacheByAdd(accountId, id);
         }
 
 
@@ -115,6 +112,47 @@ namespace Application.Core.Login
             finally
             {
                 Monitor.Exit(srvLock);
+            }
+        }
+
+        private void DisconnectIdlesOnLoginState()
+        {
+            List<ILoginClient> toDisconnect = new();
+
+            Monitor.Enter(srvLock);
+            try
+            {
+                var timeNow = DateTimeOffset.Now;
+
+                foreach (var mc in inLoginState)
+                {
+                    if (timeNow > mc.Value)
+                    {
+                        toDisconnect.Add(mc.Key);
+                    }
+                }
+
+                foreach (var c in toDisconnect)
+                {
+                    inLoginState.Remove(c);
+                }
+            }
+            finally
+            {
+                Monitor.Exit(srvLock);
+            }
+
+            foreach (var c in toDisconnect)
+            {
+                // thanks Lei for pointing a deadlock issue with srvLock
+                if (c.IsOnlined)
+                {
+                    c.Disconnect();
+                }
+                else
+                {
+                    _sessionCoordinator.closeSession(c, true);
+                }
             }
         }
 

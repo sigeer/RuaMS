@@ -22,7 +22,7 @@
 
 
 using Application.Core.Client;
-using Application.Core.Login.Database;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Servers;
 using Application.Utility.Configs;
@@ -52,7 +52,7 @@ public class ViewAllCharHandler : LoginHandlerBase
                 return;
             }
 
-            var worldChrs = c.LoadCharacters();
+            var worldChrs = c.LoadCharactersView();
 
             int totalWorlds = worldChrs.Count;
             c.sendPacket(PacketCreator.showAllCharacter(totalWorlds, worldChrs.Count));

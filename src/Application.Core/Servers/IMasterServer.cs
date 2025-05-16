@@ -52,6 +52,7 @@ namespace Application.Core.Servers
         bool ValidateCharacteridInTransition(string clientSession, int charId);
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
         AccountEntity? GetAccountEntity(int accId);
-        List<CharacterDto> GetAccountCharacters(int accId);
+        int GetAccountCharacterCount(int accId);
+        List<IPlayer> LoadAccountCharactersView(int id);
     }
 }

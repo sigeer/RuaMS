@@ -516,7 +516,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         p.readString(); //old name
                         string newName = p.readString();
-                        if (!CharacterManager.CheckCharacterName(newName) || chr.getLevel() < 10)
+                        if (!c.CurrentServer.CheckCharacterName(newName) || chr.getLevel() < 10)
                         { //(longest ban duration isn't tracked currently)
                             c.sendPacket(PacketCreator.showCashShopMessage(0));
                             c.enableCSActions();

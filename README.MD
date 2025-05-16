@@ -79,7 +79,7 @@ rua-ms
 
 # 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
 # 非docker compose运行需要设置连接字符串
--e "RUA_MS_DB_CONNECTIONSTRING=" \
+-e "RUA_MS_ConnectionStrings__MySql=" \
 
 # 公网运行运行需要修改Host
 -e "RUA_MS_HOST=" \

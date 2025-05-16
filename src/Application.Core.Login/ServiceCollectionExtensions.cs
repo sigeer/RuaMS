@@ -1,8 +1,12 @@
+using Application.Core.Client;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
+using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Net;
 using Application.Core.Servers;
 using Microsoft.Extensions.DependencyInjection;
+using net.server.handlers;
 
 namespace Application.Core.Login
 {
@@ -10,7 +14,7 @@ namespace Application.Core.Login
     {
         private static IServiceCollection AddLoginHandlers(this IServiceCollection services)
         {
-            services.AddSingleton<LoginPacketProcessor>();
+            services.AddSingleton<IPacketProcessor<ILoginClient>, LoginPacketProcessor>();
 
             var interfaceType = typeof(ILoginHandler);
             var implementations = interfaceType.Assembly.GetTypes()
@@ -18,8 +22,18 @@ namespace Application.Core.Login
 
             foreach (var impl in implementations)
             {
-                services.Add(new ServiceDescriptor(interfaceType, impl, ServiceLifetime.Singleton));
+                services.AddSingleton(impl);
             }
+            services.AddSingleton<KeepAliveHandler<ILoginClient>>();
+            services.AddSingleton<CustomPacketHandler<ILoginClient>>();
+            return services;
+        }
+
+        public static IServiceCollection AddSessionManager(this IServiceCollection services)
+        {
+            services.AddSingleton<SessionCoordinator>();
+            services.AddSingleton<HostHwidCache>();
+            services.AddSingleton<SessionDAO>();
             return services;
         }
 
@@ -27,7 +41,12 @@ namespace Application.Core.Login
         {
             services.AddLoginHandlers();
 
-            services.AddSingleton<SessionCoordinator>();
+            services.AddSessionManager();
+
+            services.AddSingleton<AccountManager>();
+            services.AddSingleton<CharacterManager>();
+            services.AddSingleton<CharacterService>();
+            services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();
             return services;
         }

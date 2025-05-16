@@ -77,7 +77,7 @@ public class Storage
             var accountStorage = dbContext.Storages.Where(x => x.Accountid == id && x.World == world).FirstOrDefault();
             if (accountStorage == null)
             {
-                accountStorage = new DB_Storage()
+                accountStorage = new StorageEntity()
                 {
                     Accountid = id,
                     World = world,

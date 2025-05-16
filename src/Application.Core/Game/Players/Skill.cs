@@ -280,7 +280,7 @@ namespace Application.Core.Game.Players
                 if (listcd.Count > 0)
                 {
                     dbContext.Cooldowns.Where(x => x.Charid == Id).ExecuteDelete();
-                    dbContext.Cooldowns.AddRange(listcd.Select(x => new Cooldown(getId(), x.skillId, x.length, x.startTime)));
+                    dbContext.Cooldowns.AddRange(listcd.Select(x => new CooldownEntity(getId(), x.skillId, x.length, x.startTime)));
                 }
                 var listds = getAllDiseases();
                 if (listds.Count != 0)

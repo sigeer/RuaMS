@@ -1,49 +1,45 @@
 using constants.id;
-using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Game.Commands;
 
 public class CommandExecutor
 {
-    private ILogger log = LogFactory.CommandLogger;
-    private const char COMMAND_HEADING = '!';
-
+    bool loaded = false;
     private Dictionary<string, CommandBase> registeredCommands = new();
-
-    private static CommandExecutor instance = new CommandExecutor();
-    public static CommandExecutor getInstance()
-    {
-        return instance;
-    }
-
+    readonly IServiceProvider _sp;
     public List<List<CommandInfo>> getGmCommands()
     {
         return registeredCommands.OrderBy(x => x.Value.Rank).GroupBy(x => x.Value.Rank).Select(x => x.Select(y => new CommandInfo(y.Key, y.Value.Description)).ToList()).ToList();
     }
+    private ILogger<CommandExecutor> log;
 
-    public static bool isCommand(string content)
+    public CommandExecutor(ILogger<CommandExecutor> log, IServiceProvider sp)
     {
-        char heading = content.ElementAt(0);
-        return heading == COMMAND_HEADING;
+        this.log = log;
+        _sp = sp;
     }
 
-    private CommandExecutor()
+    private void RegisterCommands()
     {
-        var commandBase = typeof(CommandBase);
-        var assembly = Assembly.GetAssembly(commandBase)!;
-        var commands = assembly.GetTypes().Where(x => x.IsSubclassOf(commandBase) && !x.IsAbstract);
-        foreach (var item in commands)
+        foreach (var obj in _sp.GetServices<CommandBase>())
         {
-            var obj = (Activator.CreateInstance(item) as CommandBase)!;
             foreach (var sytax in obj.AllSupportedCommand)
             {
                 registeredCommands.Add(sytax, obj);
+                log.LogDebug("命令{CommandName}加载成功", sytax);
             }
         }
+        loaded = true;
     }
 
     public void handle(IChannelClient client, string message)
     {
+        if (!loaded)
+        {
+            RegisterCommands();
+        }
         if (client.tryacquireClient())
         {
             try
@@ -102,7 +98,7 @@ public class CommandExecutor
 
         command.CurrentCommand = commandName;
         command.Run(client, paramsValue);
-        log.Information("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
+        log.LogInformation("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }
 }
 

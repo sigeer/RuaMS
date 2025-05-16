@@ -21,7 +21,9 @@
  */
 
 
+using Application.Core.Game.Commands;
 using Application.Core.Game.TheWorld;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
 namespace scripting.Event;
@@ -40,11 +42,10 @@ public class EventScriptManager : AbstractScriptManager
     public IWorldChannel LinkedWorldChannel { get; }
     readonly string[] eventScripts;
 
-
-    public EventScriptManager(IWorldChannel channel, string[] scripts)
+    public EventScriptManager(IWorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
         LinkedWorldChannel = channel;
-        eventScripts = scripts;
+        eventScripts = ScriptResFactory.GetEvents();
 
         ReloadEventScript();
     }
@@ -77,7 +78,7 @@ public class EventScriptManager : AbstractScriptManager
                 {
                     throw new BusinessFatalException($"事件名重复，名称：{eventName}");
                 }
-                log.Debug("频道服务器{InstanceId}事件 {EventName} 加载成功，脚本 {ScriptPath} ", LinkedWorldChannel.InstanceId, eventName, script);
+                _logger.LogDebug("频道服务器{InstanceId}事件 {EventName} 加载成功，脚本 {ScriptPath} ", LinkedWorldChannel.InstanceId, eventName, script);
             }
         }
         active = events.Count > 0;

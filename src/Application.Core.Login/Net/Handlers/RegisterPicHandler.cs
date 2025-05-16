@@ -1,5 +1,5 @@
 using Application.Core.Client;
-using Application.Core.Login.Database;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
 using Application.Core.Servers;
 using Application.Shared.Sessions;
@@ -65,7 +65,7 @@ public class RegisterPicHandler : LoginHandlerBase
             return;
         }
 
-        if (!_accountManager.IsAccountHasCharacter(c.AccountEntity.Id, charId))
+        if (!_accountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
         {
             sessionCoordinator.closeSession(c, true);
             return;
