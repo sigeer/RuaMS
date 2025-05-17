@@ -37,10 +37,4 @@ namespace Application.Core.Datas
         public LoginInfo LoginInfo { get; set; } = null!;
     }
 
-    public class CharacterLoginInfo
-    {
-        public bool IsAccountOnlined { get; set; }
-        public bool IsPlayerOnlined { get; set; }
-        public Hwid Hwid { get; set; }
-    }
 }

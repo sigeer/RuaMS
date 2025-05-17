@@ -20,7 +20,7 @@ namespace Application.Core.Login.Datas
                 .ReverseMap();
 
             CreateMap<AccountEntity, AccountDto>().ReverseMap();
-
+            CreateMap<Monsterbook, MonsterbookDto>().ReverseMap();
             CreateMap<Trocklocation, TrockLocationDto>()
                 .ReverseMap();
             CreateMap<AreaInfo, AreaDto>().ReverseMap();

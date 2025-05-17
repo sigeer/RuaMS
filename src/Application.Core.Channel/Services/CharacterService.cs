@@ -100,6 +100,9 @@ namespace Application.Core.Channel.Services
 
             player.Storage = new server.Storage(player.AccountId, o.StorageInfo, _mapper.Map<Item[]>(o.Items.Where(x => x.Type == ItemFactory.STORAGE.getValue())));
 
+            c.SetAccount(o.Account);
+            c.SetPlayer(player);
+
             var mapManager = c.CurrentServer.getMapFactory();
             player.setMap(mapManager.getMap(player.Map) ?? mapManager.getMap(MapId.HENESYS));
 
@@ -206,8 +209,6 @@ namespace Application.Core.Channel.Services
             player.LastFameTime = o.FameRecord.LastUpdateTime;
             player.LastFameCIds = o.FameRecord.ChararacterIds.ToList();
 
-            player.UpdateLocalStats(true);
-
             var mountItem = player.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.Mount);
             if (mountItem != null)
             {
@@ -222,14 +223,12 @@ namespace Application.Core.Channel.Services
             // Quickslot key config
             if (o.QuickSlot != null)
             {
-                player.QuickSlotLoaded = LongTool.LongToBytes(o.QuickSlot.Value);
+                player.QuickSlotLoaded = o.QuickSlot.QuickSlotLoaded;
                 player.QuickSlotKeyMapped = new QuickslotBinding(o.QuickSlot.QuickSlotLoaded);
             }
 
             player.BuddyList.LoadFromDb(o.BuddyList);
-
-            c.SetAccount(o.Account);
-            c.SetPlayer(player);
+            player.UpdateLocalStats(true);
             return player;
         }
 

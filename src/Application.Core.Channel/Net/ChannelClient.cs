@@ -25,6 +25,7 @@ using scripting;
 using scripting.Event;
 using scripting.npc;
 using server.maps;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using tools;
 
@@ -132,11 +133,6 @@ namespace Application.Core.Channel.Net
                     {
                         wserv.removePlayer(Character);
                         //getChannelServer().removePlayer(player); already being done
-
-                        Character.saveCooldowns();
-                        Character.cancelAllDebuffs();
-                        Character.saveCharToDB(true);
-
                         Character.logOff();
                         if (YamlConfig.config.server.INSTANT_NAME_CHANGE)
                         {
@@ -147,11 +143,10 @@ namespace Application.Core.Channel.Net
                     else
                     {
                         CurrentServer.removePlayer(Character);
-
-                        Character.saveCooldowns();
-                        Character.cancelAllDebuffs();
-                        Character.saveCharToDB();
                     }
+                    Character.saveCooldowns();
+                    Character.cancelAllDebuffs();
+                    Character.saveCharToDB();
                 }
             }
 
@@ -177,6 +172,7 @@ namespace Application.Core.Channel.Net
                 }
             }
             Dispose();
+            log.LogDebug($"disconnect: " + new StackTrace().ToString());
 
             _isDisconnecting = false;
         }

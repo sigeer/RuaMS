@@ -9,6 +9,7 @@ using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.EntityFrameworkCore.Extensions;
+using Mysqlx.Crud;
 
 namespace Application.Core.Login.Datas
 {
@@ -78,23 +79,30 @@ namespace Application.Core.Login.Datas
                          from cs in css.DefaultIfEmpty()
                          select new ItemEntityPair(a, bs, cs)).ToList();
 
+            var buddyData = (from a in dbContext.Buddies
+                             join b in dbContext.Characters on a.BuddyId equals b.Id
+                             where a.CharacterId == characterId
+                             select new BuddyDto { CharacterId = a.BuddyId, CharacterName = b.Name, Pending = a.Pending, Group = a.Group }).ToArray();
+
             var obj = new CharacterValueObject
             {
                 Character = _mapper.Map<CharacterDto>(characterEntity),
                 Link  = characterLink,
                 PetIgnores = petIgnores,
                 Areas = _mapper.Map<AreaDto[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                BuddyList = _mapper.Map<BuddyDto[]>(dbContext.Buddies.AsNoTracking().Where(x => x.CharacterId == characterId).ToArray()),
+                BuddyList = buddyData,
                 CoolDowns = _mapper.Map<CoolDownDto[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                 Events = _mapper.Map<EventDto[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 Items = _mapper.Map<ItemDto[]>(items),
                 KeyMaps = _mapper.Map<KeyMapDto[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                MedalMaps = _mapper.Map<MedalMapDto[]>(dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                QuickSlot = _mapper.Map<QuickSlotDto>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == characterEntity.AccountId).FirstOrDefault()),
+
                 MonsterBooks = _mapper.Map<MonsterbookDto[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
 
+                MedalMaps = _mapper.Map<MedalMapDto[]>(dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 QuestProgresses = _mapper.Map<QuestProgressDto[]>(dbContext.Questprogresses.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 QuestStatuses = _mapper.Map<QuestStatusDto[]>(dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                QuickSlot = _mapper.Map<QuickSlotDto>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == characterEntity.AccountId).FirstOrDefault()),
+
                 SavedLocations = _mapper.Map<SavedLocationDto[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 SkillMacros = _mapper.Map<SkillMacroDto[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 Skills = _mapper.Map<SkillDto[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
