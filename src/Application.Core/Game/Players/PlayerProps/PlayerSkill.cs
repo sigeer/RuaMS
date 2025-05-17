@@ -14,10 +14,10 @@ namespace Application.Core.Game.Players.PlayerProps
         {
             foreach (var item in skills)
             {
-                var pSkill = SkillFactory.getSkill(item.SkillId);
+                var pSkill = SkillFactory.getSkill(item.Skillid);
                 if (pSkill != null)
                 {
-                    _dataSource[pSkill] = new SkillEntry((sbyte)item.Level, item.MasterLevel, item.Expiration);
+                    _dataSource[pSkill] = new SkillEntry((sbyte)item.Skilllevel, item.Masterlevel, item.Expiration);
                 }
             }
 

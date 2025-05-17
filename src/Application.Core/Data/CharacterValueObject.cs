@@ -33,6 +33,8 @@ namespace Application.Core.Datas
 
         public StorageDto? StorageInfo { get; set; }
         public BuddyDto[] BuddyList { get; set; }
+
+        public LoginInfo LoginInfo { get; set; } = null!;
     }
 
     public class CharacterLoginInfo

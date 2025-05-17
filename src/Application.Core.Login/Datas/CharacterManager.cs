@@ -71,10 +71,12 @@ namespace Application.Core.Login.Datas
                               let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                               select new PetIgnoreDto { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
-            var items = (from a in dbContext.Inventoryitems.AsNoTracking().Where(x => x.Characterid == characterId)
+            var items = (from a in dbContext.Inventoryitems.AsNoTracking().Where(x => x.Characterid == characterId || (x.Characterid == null && x.Accountid == characterEntity.AccountId))
                          join b in dbContext.Inventoryequipments.AsNoTracking() on a.Inventoryitemid equals b.Inventoryitemid into bss
                          from bs in bss.DefaultIfEmpty()
-                         select new ItemEntityPair(a, bs)).ToList();
+                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
+                         from cs in css.DefaultIfEmpty()
+                         select new ItemEntityPair(a, bs, cs)).ToList();
 
             var obj = new CharacterValueObject
             {
@@ -139,21 +141,21 @@ namespace Application.Core.Login.Datas
             }
 
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var characters = dbContext.Characters.Where(x => needLoadFromDB.Contains(x.Id));
+            var characters = dbContext.Characters.Where(x => needLoadFromDB.Contains(x.Id)).ToList();
 
             var equipedType = InventoryType.EQUIPPED.getType();
             var dataList = (from a in dbContext.Inventoryitems.Where(x => x.Characterid != null && needLoadFromDB.Contains(x.Characterid.Value))
                             join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
                             from bs in bss.DefaultIfEmpty()
                             where a.Inventorytype == equipedType
-                            select new { a, bs }).ToList();
+                            select new ItemEntityPair(a, bs, null)).ToList();
 
             foreach (var character in characters)
             {
                 var obj = new CharacterViewObject()
                 {
                     Character = _mapper.Map<CharacterDto>(character),
-                    Items = _mapper.Map<ItemDto[]>(dataList.Where(x => x.a.Characterid == character.Id))
+                    Items = _mapper.Map<ItemDto[]>(dataList.Where(x => x.Item.Characterid == character.Id))
                 };
                 _charcterViewCache[obj.Character.Id] = obj;
                 list.Add(obj);

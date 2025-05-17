@@ -54,5 +54,7 @@ namespace Application.Core.Servers
         AccountEntity? GetAccountEntity(int accId);
         int GetAccountCharacterCount(int accId);
         List<IPlayer> LoadAccountCharactersView(int id);
+        int GetAccountIdByAccountName(string name);
+        void CommitAccountEntity(AccountEntity accountEntity);
     }
 }

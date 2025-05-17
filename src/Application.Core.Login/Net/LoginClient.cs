@@ -195,13 +195,8 @@ namespace Application.Core.Login.Net
                     updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
                     return LoginStage.LOGIN_NOTLOGGEDIN;
                 }
-                else
-                {
-                    return AccountEntity.Loggedin;
-                }
             }
 
-            AccountEntity.Loggedin = LoginStage.LOGIN_LOGGEDIN;
             return AccountEntity.Loggedin;
         }
 
@@ -216,7 +211,7 @@ namespace Application.Core.Login.Net
                 return LoginResultCode.Fail_Count;   // thanks Survival_Project for finding out an issue with AUTOMATIC_REGISTER here
             }
 
-            int accId = -2;
+            int accId = CurrentServer.GetAccountIdByAccountName(login);
             try
             {
                 var dbModel = CurrentServer.GetAccountEntity(accId);
@@ -375,11 +370,8 @@ namespace Application.Core.Login.Net
             if (AccountEntity == null)
                 return;
 
-            using (var dbContext = new DBContext())
-            {
-                dbContext.Accounts.Attach(AccountEntity).State = EntityState.Modified;
-                dbContext.SaveChanges();
-            }
+            if (Hwid != null)
+                AccountEntity.Hwid = Hwid.hwid;    
         }
 
         public void SendCharList()

@@ -7,13 +7,11 @@ namespace Application.Host
     public class GameHost : IHostedService
     {
         readonly IMasterServer _server;
-        readonly IServiceProvider _serviceProvider;
         readonly MultiRunner _channelRunner;
 
-        public GameHost(IMasterServer server, IServiceProvider serviceProvider, MultiRunner channelRunner)
+        public GameHost(IMasterServer server, MultiRunner channelRunner)
         {
             _server = server;
-            _serviceProvider = serviceProvider;
             _channelRunner = channelRunner;
         }
 
@@ -21,7 +19,7 @@ namespace Application.Host
         {
             await Server.getInstance().Start();
             await _server.StartServer();
-            await _channelRunner.Start(3);
+            await _channelRunner.Start(7674, 3);
             return;
         }
 

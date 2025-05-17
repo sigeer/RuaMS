@@ -1,4 +1,5 @@
 using Application.Core.Game.TheWorld;
+using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using net.netty;
@@ -27,7 +28,7 @@ public class ChannelServerInitializer : ServerChannelInitializer
         Log.Logger.Debug("{ClientIP} 发起连接到频道{Channel}", clientIp, worldChannel.getId());
 
         long clientSessionId = sessionId.getAndIncrement();
-        var client = ActivatorUtilities.CreateInstance<ChannelClient>(worldChannel.LifeScope.ServiceProvider, sessionId, socketChannel, worldChannel);
+        var client = ActivatorUtilities.CreateInstance<ChannelClient>(worldChannel.LifeScope.ServiceProvider, clientSessionId, worldChannel, socketChannel);
         initPipeline(socketChannel, client);
     }
 }

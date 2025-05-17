@@ -1,3 +1,5 @@
+using Application.Shared.Characters;
+
 namespace Application.Shared.Items
 {
     public class ItemDto
@@ -28,5 +30,6 @@ namespace Application.Shared.Items
         public string GiftFrom { get; set; } = null!;
 
         public EquipDto? EquipInfo { get; set; }
+        public PetDto? PetInfo { get; set; }
     }
 }

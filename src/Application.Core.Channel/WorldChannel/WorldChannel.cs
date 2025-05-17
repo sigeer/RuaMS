@@ -834,4 +834,6 @@ public partial class WorldChannel : IWorldChannel
     {
         Transport.UpdateAccountChracterByAdd(accountId, id);
     }
+
+
 }

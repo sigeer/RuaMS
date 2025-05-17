@@ -48,6 +48,8 @@ namespace Application.Core.Login.Services
             if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
+            characterObj.LoginInfo = new LoginInfo { IsNewCommer = accountModel.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION };
+
             _accManager.UpdateAccountState(accountModel, LoginStage.LOGIN_LOGGEDIN);
             characterObj.Account = _mapper.Map<AccountDto>(accountModel);
             return characterObj;

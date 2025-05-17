@@ -76,6 +76,7 @@ namespace Application.Core.Login.Net.Handlers
 
             _server.UnregisterLoginState(c);
             c.SetCharacterOnSessionTransitionState(charId);
+            c.CommitAccount();
 
             try
             {

@@ -26,6 +26,8 @@ using Microsoft.EntityFrameworkCore;
 using Application.Core.Game.Skills;
 using Application.EF.Entities;
 using Application.Core.Game.Relation;
+using System.Text.Json.Serialization;
+using Application.Shared.Characters;
 
 namespace Application.Core.Channel.Services
 {
@@ -38,12 +40,14 @@ namespace Application.Core.Channel.Services
             _mapper = mapper;
         }
 
-        public IPlayer? GeneratePlayerByDto(IChannelClient c, CharacterValueObject? o)
+        public IPlayer? Serialize(IChannelClient c, CharacterValueObject? o)
         {
             if (o == null)
                 return null;
 
-            var player = _mapper.Map<Player>(o.Character);
+            var player = new Player(c);
+            _mapper.Map(o.Character, player);
+
             player.Monsterbook = new MonsterBook(o.MonsterBooks);
 
             player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
@@ -53,25 +57,14 @@ namespace Application.Core.Channel.Services
             {
                 sandboxCheck |= item.Flag;
 
-                var itemObj = _mapper.Map<Item>(item);
-                player.Bag[item.Type].addItemFromDB(itemObj);
-                if (itemObj.getPetId() > -1)
-                {
-                    var pet = itemObj.getPet();
-                    if (pet != null && pet.isSummoned())
-                    {
-                        player.addPet(pet);
-                    }
-                    continue;
-                }
-
                 InventoryType mit = item.InventoryType.getByType();
                 if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
                 {
-                    Equip equip = (Equip)itemObj;
-                    if (equip.getRingId() > -1)
+                    var equipObj = _mapper.Map<Equip>(item);
+                    player.Bag[item.Type].addItemFromDB(equipObj);
+                    if (equipObj.getRingId() > -1)
                     {
-                        var ring = RingManager.LoadFromDb(equip.getRingId())!;
+                        var ring = RingManager.LoadFromDb(equipObj.getRingId())!;
                         if (ring != null)
                         {
                             if (item.Type.Equals(InventoryType.EQUIPPED))
@@ -81,6 +74,20 @@ namespace Application.Core.Channel.Services
 
                             player.addPlayerRing(ring);
                         }
+                    }
+                }
+                else
+                {
+                    var itemObj = _mapper.Map<Item>(item);
+                    player.Bag[item.Type].addItemFromDB(itemObj);
+                    if (itemObj.getPetId() > -1)
+                    {
+                        var pet = itemObj.getPet();
+                        if (pet != null && pet.isSummoned())
+                        {
+                            player.addPet(pet);
+                        }
+                        continue;
                     }
                 }
             }
@@ -224,6 +231,14 @@ namespace Application.Core.Channel.Services
             c.SetAccount(o.Account);
             c.SetPlayer(player);
             return player;
+        }
+
+        public CharacterValueObject Deserialize(IPlayer player)
+        {
+            return new CharacterValueObject()
+            {
+                Character = _mapper.Map<CharacterDto>(player)
+            };
         }
 
         /// <summary>

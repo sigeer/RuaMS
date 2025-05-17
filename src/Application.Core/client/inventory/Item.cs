@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Items;
 using Application.Core.Managers;
+using Application.Shared.Characters;
 using client.inventory.manipulator;
 using constants.id;
 using constants.inventory;
@@ -96,6 +97,12 @@ public class Item : IComparable<Item>, IItemProp
     public virtual void setQuantity(short quantity)
     {
         this.quantity = quantity;
+    }
+
+    public void SetPet(Pet? pet)
+    {
+        this.pet = pet;
+        this.petid = pet?.petid ?? -1;
     }
 
     public int getItemId()

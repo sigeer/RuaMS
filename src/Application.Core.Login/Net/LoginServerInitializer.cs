@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Login.Session;
 using Application.Core.Servers;
+using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,7 +29,7 @@ public class LoginServerInitializer : ServerChannelInitializer
 
         long clientSessionId = sessionId.getAndIncrement();
 
-        var client = ActivatorUtilities.CreateInstance<LoginClient>(masterServer.ServiceProvider, sessionId, socketChannel, masterServer);
+        var client = ActivatorUtilities.CreateInstance<LoginClient>(masterServer.ServiceProvider, clientSessionId, masterServer, socketChannel as IChannel);
         if (!sessionCoordinator.canStartLoginSession(client))
         {
             client.CloseSocket();

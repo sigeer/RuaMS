@@ -1,6 +1,9 @@
 using Application.Core.tools;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Characters;
+using AutoMapper;
+using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Policy;
@@ -15,11 +18,13 @@ namespace Application.Core.Login.Datas
         Dictionary<int, HashSet<int>> _accPlayerCache = new ();
         readonly ILogger<AccountManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
+        readonly IMapper _maaper;
 
-        public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory)
+        public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maaper)
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
+            _maaper = maaper;
         }
 
         public AccountEntity? GetAccountEntity(int accId)
@@ -36,6 +41,17 @@ namespace Application.Core.Login.Datas
                 _accStorage[accId] = dbModel;
             }
             return dbModel;
+        }
+
+        public int GetAccountEntityByName(string accName)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            return dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Name == accName)?.Id ?? -2;
+        }
+
+        public AccountDto? GetAccountDto(int accId)
+        {
+            return _maaper.Map<AccountDto>(GetAccountEntity(accId));
         }
 
         public void UpdateAccountState(int accId, sbyte newState)

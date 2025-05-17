@@ -59,7 +59,11 @@ public class Equip : Item
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
 
-    public Equip(int id, short position, int slots = 0) : base(id, position, 1)
+    public Equip(int id, short position) : this(id, position,0)
+    {
+    }
+
+    public Equip(int id, short position, int slots ) : base(id, position, 1)
     {
         log = LogFactory.GetLogger(LogType.Equip);
         this.upgradeSlots = (byte)slots;

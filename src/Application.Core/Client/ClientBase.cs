@@ -1,3 +1,4 @@
+using Application.Shared.Characters;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;

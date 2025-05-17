@@ -11,6 +11,7 @@ using Application.Shared.Constants;
 using Application.Shared.Login;
 using Application.Shared.Net;
 using Application.Utility.Configs;
+using Application.Utility.Exceptions;
 using client.inventory;
 using constants.id;
 using DotNetty.Transport.Channels;
@@ -45,7 +46,7 @@ namespace Application.Core.Channel.Net
 
         public IPlayer? Character { get; private set; }
 
-        public IPlayer OnlinedCharacter { get; private set; }
+        public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
 
         public new IWorldChannel CurrentServer { get; }
 
@@ -282,6 +283,9 @@ namespace Application.Core.Channel.Net
 
         protected override void CloseSessionInternal()
         {
+            if (AccountEntity == null)
+                return;
+
             CurrentServer.ClientStorage.RemoveClient(AccountEntity!.Id);
 
             // client freeze issues on session transition states found thanks to yolinlin, Omo Oppa, Nozphex

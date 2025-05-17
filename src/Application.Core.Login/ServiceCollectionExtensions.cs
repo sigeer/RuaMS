@@ -16,7 +16,7 @@ namespace Application.Core.Login
         {
             services.AddSingleton<IPacketProcessor<ILoginClient>, LoginPacketProcessor>();
 
-            var interfaceType = typeof(ILoginHandler);
+            var interfaceType = typeof(LoginHandlerBase);
             var implementations = interfaceType.Assembly.GetTypes()
                 .Where(t => !t.IsAbstract && !t.IsInterface && interfaceType.IsAssignableFrom(t));
 
@@ -39,6 +39,8 @@ namespace Application.Core.Login
 
         public static IServiceCollection AddLoginServer(this IServiceCollection services)
         {
+            services.AddAutoMapper(typeof(DtoMapper));
+
             services.AddLoginHandlers();
 
             services.AddSessionManager();
@@ -46,6 +48,7 @@ namespace Application.Core.Login
             services.AddSingleton<AccountManager>();
             services.AddSingleton<CharacterManager>();
             services.AddSingleton<CharacterService>();
+
             services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();
             return services;

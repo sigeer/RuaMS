@@ -18,7 +18,7 @@ namespace Application.Core.Game.Players.PlayerProps
         {
             foreach (var item in savedLocFromDB)
             {
-                _dataSource[(int)Enum.Parse<SavedLocationType>(item.Type)] = new SavedLocation(item.MapId, item.Portal);
+                _dataSource[(int)Enum.Parse<SavedLocationType>(item.Locationtype)] = new SavedLocation(item.Map, item.Portal);
             }
 
         }

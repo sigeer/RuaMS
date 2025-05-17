@@ -19,13 +19,13 @@ namespace Application.Core.Channel
             _localChannels = new List<IWorldChannel>();
         }
 
-        public async Task Start(int count)
+        public async Task Start(int startPort = 7574, int count = 3)
         {
             for (int j = 1; j <= count; j++)
             {
                 var config = new ChannelServerConfig
                 {
-                    Port = 7574 + j
+                    Port = startPort + j
                 };
                 var scope = _sp.CreateScope();
                 var channel = new WorldChannel(scope, config, _transport);

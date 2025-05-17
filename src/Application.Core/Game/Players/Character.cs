@@ -5433,10 +5433,9 @@ public partial class Player
     public void logOff()
     {
         RemoveWorldWatcher();
+        Client.CurrentServer.SendLogoff(AccountId);
 
         setClient(new OfflineClient());
-        using var dbContext = new DBContext();
-        dbContext.Characters.Where(x => x.Id == getId()).ExecuteUpdate(x => x.SetProperty(y => y.LastLogoutTime, DateTimeOffset.Now));
     }
 
     public void setLoginTime(DateTimeOffset time)

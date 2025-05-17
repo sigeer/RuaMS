@@ -1,8 +1,10 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.Login.Datas;
+using Application.Core.Login.Session;
 using Application.EF.Entities;
 using Application.Utility.Configs;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Core.Login
 {
@@ -16,6 +18,11 @@ namespace Application.Core.Login
         public AccountEntity? GetAccountEntity(int accId)
         {
             return accountManager.GetAccountEntity(accId);
+        }
+
+        public int GetAccountIdByAccountName(string name)
+        {
+            return accountManager.GetAccountEntityByName(name);
         }
 
         public void UpdateAccountState(int accId, sbyte newState)
@@ -142,6 +149,7 @@ namespace Application.Core.Login
                 Monitor.Exit(srvLock);
             }
 
+            var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
             foreach (var c in toDisconnect)
             {
                 // thanks Lei for pointing a deadlock issue with srvLock
@@ -151,7 +159,7 @@ namespace Application.Core.Login
                 }
                 else
                 {
-                    _sessionCoordinator.closeSession(c, true);
+                    sessionCoordinator.closeSession(c, true);
                 }
             }
         }

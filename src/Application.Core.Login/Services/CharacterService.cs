@@ -171,13 +171,14 @@ namespace Application.Core.Login.Services
             List<IPlayer> list = new List<IPlayer>();
             foreach (var c in dataList)
             {
-                var player = _mapper.Map<IPlayer>(c.Character);
+                var player = _mapper.Map<Player>(c.Character);
                 Inventory inv = player.Bag[InventoryType.EQUIPPED];
-                foreach (var equip in c.Items)
+                foreach (var equip in c.Items.Where(x => x.InventoryType == (sbyte)InventoryType.EQUIPPED))
                 {
                     var item = _mapper.Map<Equip>(equip);
                     inv.addItemFromDB(item);
                 }
+                list.Add(player);
             }
             return list;
         }

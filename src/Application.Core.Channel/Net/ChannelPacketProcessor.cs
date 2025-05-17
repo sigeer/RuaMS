@@ -159,7 +159,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.REMOTE_STORE, sp.GetRequiredService<RemoteStoreHandler>()},
                 {(short)RecvOpcode.WEDDING_ACTION, sp.GetRequiredService<WeddingHandler>()},
                 {(short)RecvOpcode.WEDDING_TALK, sp.GetRequiredService<WeddingTalkHandler>()},
-                {(short)RecvOpcode.WEDDING_TALK_MORE, sp.GetRequiredService<WeddingTalkMoreHandler>()},
+                // {(short)RecvOpcode.WEDDING_TALK_MORE, sp.GetRequiredService<WeddingTalkMoreHandler>()},
                 {(short)RecvOpcode.WATER_OF_LIFE, sp.GetRequiredService<UseWaterOfLifeHandler>()},
                 {(short)RecvOpcode.ADMIN_CHAT, sp.GetRequiredService<AdminChatHandler>()},
                 {(short)RecvOpcode.MOVE_DRAGON, sp.GetRequiredService<MoveDragonHandler>()},

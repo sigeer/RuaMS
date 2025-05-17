@@ -7,7 +7,7 @@ namespace Application.Core.Client
 {
     public interface ILoginClient : IClientBase
     {
-        AccountEntity? AccountEntity { get; set; }
+        AccountEntity? AccountEntity { get; protected set; }
         new IMasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         void Disconnect();
@@ -30,10 +30,10 @@ namespace Application.Core.Client
 
         void UpdateMacs(string macData);
 
-        void CommitAccount();
         void SendCharList();
         List<IPlayer> LoadCharactersView();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
+        void CommitAccount();
     }
 }

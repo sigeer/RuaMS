@@ -81,14 +81,12 @@ namespace Application.Core.Login
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
-        SessionCoordinator _sessionCoordinator;
 
 
         CharacterService _characterSevice;
         public MasterServer(IServiceProvider sp, AccountManager accountManager, CharacterService characterManager)
         {
             ServiceProvider = sp;
-            _sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
             this.accountManager = accountManager;
             _characterSevice = characterManager;
@@ -225,10 +223,11 @@ namespace Application.Core.Login
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             var tMan = TimerManager.getInstance();
             await tMan.Start();
+            var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
             tMan.register(new NamedRunnable("Purge", TimerManager.purge), YamlConfig.config.server.PURGING_INTERVAL);
             tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
-            tMan.register(new LoginCoordinatorTask(_sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
-            tMan.register(new LoginStorageTask(_sessionCoordinator), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
+            tMan.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
+            tMan.register(new LoginStorageTask(sessionCoordinator), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             tMan.register(new DueyFredrickTask(ServiceProvider.GetRequiredService<FredrickProcessor>()), TimeSpan.FromHours(1), timeLeft);
             _logger.LogInformation("定时任务加载完成");
         }
@@ -291,6 +290,11 @@ namespace Application.Core.Login
         public bool CheckCharacterName(string name)
         {
             return _characterSevice.CheckCharacterName(name);
+        }
+
+        public void CommitAccountEntity(AccountEntity accountEntity)
+        {
+            
         }
     }
 }

@@ -90,16 +90,16 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 return;
             }
 
-            c.Hwid = Hwid.fromHostString(playerObject.Account.Hwid);
+            c.Hwid = new Hwid(playerObject.Account.Hwid);
 
-            var player = _characterSrv.GeneratePlayerByDto(c, playerObject);
+            var player = _characterSrv.Serialize(c, playerObject);
             if (player == null)
             {
                 // 1. 玩家不存在 2. 玩家并不处于切换服务器状态
                 c.Disconnect(true, false);
                 return;
             }
-
+            bool newcomer = playerObject.LoginInfo!.IsNewCommer;
 
             /*  is this check really necessary?
             if (state == IChannelClient.LOGIN_SERVER_TRANSITION || state == IChannelClient.LOGIN_NOTLOGGEDIN) {
@@ -120,7 +120,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             var wserv = Server.getInstance().getWorld(0);
 
-            bool newcomer = playerObject.Account.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION;
             // 换线，离开商城拍卖回到主世界
             if (!newcomer)
             {

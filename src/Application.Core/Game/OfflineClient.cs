@@ -54,7 +54,6 @@ namespace Application.Core.Game
         IServerBase<IServerTransport> IClientBase.CurrentServer => CurrentServer;
 
         AccountDto IChannelClient.AccountEntity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
             throw new BusinessCharacterOfflineException();

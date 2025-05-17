@@ -1,22 +1,28 @@
 using Application.Core.EF.Entities.Items;
+using Application.Core.Game.Players;
+using Application.EF;
+using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using AutoMapper;
-using System.Diagnostics.Tracing;
 using tools;
 
-namespace Application.Core.DtoMappers
+namespace Application.Core.Login.Datas
 {
-    public class CharacterDtoMapper : Profile
+    /// <summary>
+    /// 实体与DTO
+    /// </summary>
+    public class DtoMapper : Profile
     {
-        public CharacterDtoMapper()
+        public DtoMapper()
         {
             CreateMap<CharacterEntity, CharacterDto>()
                 .ReverseMap();
 
             CreateMap<AccountEntity, AccountDto>().ReverseMap();
 
-            CreateMap<Trocklocation, TrockLocationDto>().ReverseMap();
+            CreateMap<Trocklocation, TrockLocationDto>()
+                .ReverseMap();
             CreateMap<AreaInfo, AreaDto>().ReverseMap();
             CreateMap<Eventstat, EventDto>().ReverseMap();
 
@@ -39,8 +45,10 @@ namespace Application.Core.DtoMappers
 
             CreateMap<Inventoryitem, ItemDto>();
             CreateMap<Inventoryequipment, EquipDto>();
+            CreateMap<PetEntity, PetDto>();
             CreateMap<ItemEntityPair, ItemDto>()
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
+                .ForMember(des =>des.PetInfo, source => source.MapFrom(x => x.Pet))
                 .IncludeMembers(source => source.Item);
         }
     }

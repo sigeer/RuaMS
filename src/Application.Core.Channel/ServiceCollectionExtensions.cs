@@ -1,5 +1,6 @@
+using Application.Core.Channel.Mappers;
 using Application.Core.Channel.Net;
-using Application.Core.DtoMappers;
+using Application.Core.Channel.Services;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Net;
@@ -32,7 +33,7 @@ namespace Application.Core.Channel
         {
             services.AddScoped<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
 
-            var interfaceType = typeof(IChannelHandler);
+            var interfaceType = typeof(ChannelHandlerBase);
             var implementations = interfaceType.Assembly.GetTypes()
                 .Where(t => !t.IsAbstract && !t.IsInterface && interfaceType.IsAssignableFrom(t));
 
@@ -70,7 +71,9 @@ namespace Application.Core.Channel
             services.AddSingleton<NoteService>();
             services.AddSingleton<FredrickProcessor>();
 
-            services.AddAutoMapper(typeof(CharacterDtoMapper));
+            services.AddScoped<CharacterService>();
+
+            services.AddAutoMapper(typeof(ObjectMapper));
             return services;
         }
     }

@@ -1,4 +1,5 @@
 using Application.Core.Game.Players;
+using Application.Shared.Login;
 using Application.Utility.Compatible;
 using client;
 using net.server;
@@ -16,7 +17,10 @@ namespace Application.Core.Channel
 {
     public partial class WorldChannel
     {
-
+        public void SendLogoff(int id)
+        {
+            Transport.UpdateAccountState(id, LoginStage.LOGIN_NOTLOGGEDIN);
+        }
         public void StashCharacterBuff(IPlayer player)
         {
             Server.getInstance().getPlayerBuffStorage().addBuffsToStorage(player.getId(), player.getAllBuffs());
