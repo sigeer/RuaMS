@@ -67,7 +67,7 @@ namespace Application.Core.Channel.Mappers
                     //dest.setFlag(rs.Flag);
                     //dest.setExpiration(rs.Expiration);
                     //dest.setGiftFrom(rs.GiftFrom);
-                    dest.setName(rs.PetInfo!.Name);
+                    dest.setName(rs.PetInfo!.Name ?? "");
                 })
                 .ReverseMap()
                 .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => new PetDto
@@ -90,7 +90,8 @@ namespace Application.Core.Channel.Mappers
                     dest.setFlag(rs.Flag);
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
-                    dest.SetPet(ctx.Mapper.Map<Pet>(rs));
+                    if (rs.PetInfo != null)
+                        dest.SetPet(ctx.Mapper.Map<Pet>(rs));
                 })
                 .ReverseMap()
                 .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
