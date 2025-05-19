@@ -1,11 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Application.Shared.Characters
 {
+    public class RingDto
+    {
+        public int Id { get; set; }
+        public int ItemId { get; set; }
+
+        public int PartnerRingId { get; set; }
+
+        public int PartnerChrId { get; set; }
+        public string PartnerName { get; set; } = null!;
+    }
     public class PetDto
     {
         public int Petid { get; set; }

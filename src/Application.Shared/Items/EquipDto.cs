@@ -1,3 +1,4 @@
+using Application.Shared.Characters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,5 +55,6 @@ namespace Application.Shared.Items
         public int Itemexp { get; set; }
 
         public int RingId { get; set; } = -1;
+        public RingDto? RingInfo { get; set; }
     }
 }

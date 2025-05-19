@@ -48,6 +48,7 @@ namespace Application.Core.Login
             services.AddSingleton<AccountManager>();
             services.AddSingleton<CharacterManager>();
             services.AddSingleton<CharacterService>();
+            services.AddSingleton<StorageService>();
 
             services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();

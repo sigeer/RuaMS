@@ -1,3 +1,4 @@
+using Application.Shared.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,15 @@ namespace Application.Shared.Characters
     public class StorageDto
     {
 
+        public StorageDto() { }
+
+        public StorageDto(int accountid)
+        {
+            Accountid = accountid;
+            Slots = 4;
+            Meso = 0;
+        }
+
         public int Id { get; set; }
         public int Accountid { get; set; }
 
@@ -16,5 +26,6 @@ namespace Application.Shared.Characters
         public byte Slots { get; set; }
 
         public int Meso { get; set; }
+        public ItemDto[] Items { get; set; }
     }
 }

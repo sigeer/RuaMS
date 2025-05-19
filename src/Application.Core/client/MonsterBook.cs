@@ -257,6 +257,16 @@ public class MonsterBook
         }
     }
 
+    public MonsterbookDto[] ToDto(int charId)
+    {
+        return cards.Select(x => new MonsterbookDto()
+        {
+            Cardid = x.Key,
+            Charid = charId,
+            Level = x.Value
+        }).ToArray();
+    }
+
     public static int[] getCardTierSize()
     {
         try

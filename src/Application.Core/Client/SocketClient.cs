@@ -1,8 +1,3 @@
-using Application.Core.Net;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
-using Application.Shared.Login;
-using Application.Shared.Net;
 using Application.Shared.Servers;
 using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
@@ -10,7 +5,6 @@ using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using net.netty;
 using net.packet;
-using net.packet.logging;
 using net.server;
 using net.server.coordinator.session;
 using tools;
@@ -185,7 +179,7 @@ namespace Application.Core.Client
 
         private void CloseSession()
         {
-           
+
             try
             {
                 CloseSessionInternal();

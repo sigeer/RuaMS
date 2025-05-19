@@ -2,32 +2,26 @@ using Application.Core.Datas;
 using Application.Core.Game.Items;
 using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
+using Application.Core.Game.Relation;
+using Application.Core.Game.Skills;
 using Application.Core.Managers;
-using Application.Shared;
+using Application.EF;
+using Application.Shared.Characters;
+using Application.Shared.Items;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
+using client;
 using client.inventory;
 using client.keybind;
-using client.newyear;
-using client;
 using constants.id;
 using constants.inventory;
-using MySql.EntityFrameworkCore.Extensions;
 using net.server;
 using Serilog;
+using server;
 using server.events;
-using server.life;
+using server.maps;
 using server.quest;
-using tools;
-using Org.BouncyCastle.Ocsp;
-using Application.EF;
-using Microsoft.EntityFrameworkCore;
-using Application.Core.Game.Skills;
-using Application.EF.Entities;
-using Application.Core.Game.Relation;
-using System.Text.Json.Serialization;
-using Application.Shared.Characters;
 
 namespace Application.Core.Channel.Services
 {
@@ -53,7 +47,7 @@ namespace Application.Core.Channel.Services
             player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
 
             short sandboxCheck = 0x0;
-            foreach (var item in o.Items.Where(x => x.Type == ItemFactory.INVENTORY.getValue()))
+            foreach (var item in o.InventoryItems)
             {
                 sandboxCheck |= item.Flag;
 
@@ -61,13 +55,13 @@ namespace Application.Core.Channel.Services
                 if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
                 {
                     var equipObj = _mapper.Map<Equip>(item);
-                    player.Bag[item.Type].addItemFromDB(equipObj);
-                    if (equipObj.getRingId() > -1)
+                    player.Bag[mit.ordinal()].addItemFromDB(equipObj);
+                    if (item.EquipInfo!.RingInfo != null)
                     {
-                        var ring = RingManager.LoadFromDb(equipObj.getRingId())!;
+                        var ring = _mapper.Map<Ring>(item.EquipInfo.RingInfo);
                         if (ring != null)
                         {
-                            if (item.Type.Equals(InventoryType.EQUIPPED))
+                            if (item.InventoryType.Equals(InventoryType.EQUIPPED))
                             {
                                 ring.equip();
                             }
@@ -79,7 +73,7 @@ namespace Application.Core.Channel.Services
                 else
                 {
                     var itemObj = _mapper.Map<Item>(item);
-                    player.Bag[item.Type].addItemFromDB(itemObj);
+                    player.Bag[item.InventoryType].addItemFromDB(itemObj);
                     if (itemObj.getPetId() > -1)
                     {
                         var pet = itemObj.getPet();
@@ -98,7 +92,7 @@ namespace Application.Core.Channel.Services
             }
             player.CheckMarriageData();
 
-            player.Storage = new server.Storage(player.AccountId, o.StorageInfo, _mapper.Map<Item[]>(o.Items.Where(x => x.Type == ItemFactory.STORAGE.getValue())));
+            player.Storage = _mapper.Map<Storage>(o.StorageInfo);
 
             c.SetAccount(o.Account);
             c.SetPlayer(player);
@@ -236,7 +230,10 @@ namespace Application.Core.Channel.Services
         {
             return new CharacterValueObject()
             {
-                Character = _mapper.Map<CharacterDto>(player)
+                Character = _mapper.Map<CharacterDto>(player),
+                Areas = player.AreaInfo.Select(x => new AreaDto() { Area = x.Key, Info = x.Value}).ToArray(),
+                MonsterBooks = player.Monsterbook.ToDto(player.Id),
+                SavedLocations = player.SavedLocations.ToDto(),
             };
         }
 

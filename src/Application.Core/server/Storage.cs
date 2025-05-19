@@ -55,18 +55,13 @@ public class Storage
         this.meso = meso;
     }
 
-    public Storage(int accId, StorageDto? info, Item[] itemList)
+    public Storage(int id, byte slots, int meso, Item[] itemList):this(id, slots, meso)
     {
-        id = accId;
-        slots = info?.Slots ?? 4;
-        meso = info?.Meso ?? 0;
-
         foreach (var item in itemList)
         {
             items.Add(item);
         }
     }
-
 
     public static Storage loadOrCreateFromDB(int id, int world)
     {

@@ -74,5 +74,14 @@ namespace Application.Core.Game.Players.PlayerProps
         public SavedLocation? GetData(int key) => _dataSource.ElementAtOrDefault(key);
         public SavedLocation? GetData(string typeName) => _dataSource.ElementAtOrDefault(GetKey(typeName));
         public SavedLocation? GetData(SavedLocationType type) => _dataSource.ElementAtOrDefault(GetKey(type));
+        public SavedLocationDto[] ToDto()
+        {
+            return _dataSource.Select((x, idx) => new SavedLocationDto { 
+                Locationtype = ((SavedLocationType)idx).ToString(),
+                Map = x.getMapId(), 
+                Portal = x.getPortal(),
+                Characterid = Owner.Id,
+            }).ToArray();
+        }
     }
 }

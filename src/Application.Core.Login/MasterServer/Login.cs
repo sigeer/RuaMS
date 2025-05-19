@@ -3,6 +3,7 @@ using Application.Core.Game.Players;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
 using Application.EF.Entities;
+using Application.Shared.Characters;
 using Application.Utility.Configs;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,9 +16,9 @@ namespace Application.Core.Login
         {
             return accountManager.GetAccountPlayerIds(accId).Count;
         }
-        public AccountEntity? GetAccountEntity(int accId)
+        public AccountDto? GetAccountDto(int accId)
         {
-            return accountManager.GetAccountEntity(accId);
+            return accountManager.GetAccountDto(accId);
         }
 
         public int GetAccountIdByAccountName(string name)

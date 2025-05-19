@@ -43,9 +43,19 @@ namespace Application.Core.Login.Datas
             CreateMap<SavedLocationEntity, SavedLocationDto>().ReverseMap();
             CreateMap<StorageEntity, StorageDto>().ReverseMap();
 
-            CreateMap<Inventoryitem, ItemDto>();
-            CreateMap<Inventoryequipment, EquipDto>();
             CreateMap<PetEntity, PetDto>();
+            CreateMap<Ring_Entity, RingDto>();
+
+            CreateMap<Inventoryequipment, EquipDto>()
+                .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
+                .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Inventoryequipmentid));
+            CreateMap<EquipEntityPair, EquipDto>()
+                .ForMember(dest => dest.RingInfo, source => source.MapFrom(x => x.Ring))
+                .IncludeMembers(source => source.Equip);
+
+            CreateMap<Inventoryitem, ItemDto>()
+                .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
+                .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => x.Inventorytype));
             CreateMap<ItemEntityPair, ItemDto>()
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
                 .ForMember(des =>des.PetInfo, source => source.MapFrom(x => x.Pet))

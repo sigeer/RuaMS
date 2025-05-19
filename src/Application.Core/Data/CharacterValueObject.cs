@@ -7,10 +7,14 @@ namespace Application.Core.Datas
     public class CharacterViewObject
     {
         public CharacterDto Character { get; set; }
-        public ItemDto[] Items { get; set; }
+        public ItemDto[] InventoryItems { get; set; } = [];
     }
     public class CharacterValueObject: CharacterViewObject
     {
+        public ItemDto[] CashShopItems { get; set; } = [];
+        public ItemDto[] MerchantItems { get; set; } = [];
+        public ItemDto[] DueyItems { get; set; } = [];
+        public ItemDto[] MarriageGiftItems { get; set; } = [];
         public CharacterLinkDto? Link { get; set; }
         public AccountDto Account { get; set; }
         public MonsterbookDto[] MonsterBooks { get; set; }

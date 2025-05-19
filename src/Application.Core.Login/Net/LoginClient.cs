@@ -1,14 +1,12 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
-using Application.Core.Game.TheWorld;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Net;
 using Application.Core.Servers;
 using Application.Core.tools;
 using Application.EF;
-using Application.EF.Entities;
-using Application.Shared.Characters.PlayerView;
+using Application.Shared.Characters;
 using Application.Shared.Login;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
@@ -26,7 +24,7 @@ namespace Application.Core.Login.Net
 {
     public class LoginClient : ClientBase, ILoginClient
     {
-        public AccountEntity? AccountEntity { get; set; }
+        public AccountDto? AccountEntity { get; set; }
         public override bool IsOnlined => AccountEntity?.Loggedin > LoginStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;
         readonly SessionCoordinator _sessionCoordinator;
@@ -214,7 +212,7 @@ namespace Application.Core.Login.Net
             int accId = CurrentServer.GetAccountIdByAccountName(login);
             try
             {
-                var dbModel = CurrentServer.GetAccountEntity(accId);
+                var dbModel = CurrentServer.GetAccountDto(accId);
                 if (dbModel != null)
                 {
                     accId = dbModel.Id;
@@ -371,7 +369,7 @@ namespace Application.Core.Login.Net
                 return;
 
             if (Hwid != null)
-                AccountEntity.Hwid = Hwid.hwid;    
+                AccountEntity.Hwid = Hwid.hwid;
         }
 
         public void SendCharList()

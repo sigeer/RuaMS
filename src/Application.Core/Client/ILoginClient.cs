@@ -1,4 +1,5 @@
 using Application.Core.Servers;
+using Application.Shared.Characters;
 using Application.Shared.Characters.PlayerView;
 using Application.Shared.Login;
 using net.server.coordinator.session;
@@ -7,7 +8,7 @@ namespace Application.Core.Client
 {
     public interface ILoginClient : IClientBase
     {
-        AccountEntity? AccountEntity { get; protected set; }
+        AccountDto? AccountEntity { get; protected set; }
         new IMasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         void Disconnect();

@@ -408,7 +408,7 @@ public class PacketCreator
             p.writeShort(pet.Tameness);
             p.writeByte(pet.Fullness);
             addExpirationTime(p, item.getExpiration());
-            p.writeShort(pet.getPetAttribute()); // PetAttribute noticed by lrenex & Spoon
+            p.writeShort(pet.PetAttribute); // PetAttribute noticed by lrenex & Spoon
             p.writeShort(0); // PetSkill
             p.writeInt(18000); // RemainLife
             p.writeShort(0); // attribute

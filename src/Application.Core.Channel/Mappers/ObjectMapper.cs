@@ -1,5 +1,6 @@
 using Application.Core.Game.Items;
 using Application.Core.Game.Players;
+using Application.Core.Game.Relation;
 using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Constants;
@@ -7,6 +8,7 @@ using Application.Shared.Items;
 using Application.Utility.Compatible.Atomics;
 using AutoMapper;
 using client.inventory;
+using server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,22 +47,42 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(x => x.MountLevel, opt => opt.MapFrom(x => x.MountModel == null ? 1 : x.MountModel.getLevel()))
                 .ForMember(x => x.MountExp, opt => opt.MapFrom(x => x.MountModel == null ? 0 : x.MountModel.getExp()))
                 .ForMember(x => x.Mounttiredness, opt => opt.MapFrom(x => x.MountModel == null ? 0 : x.MountModel.getTiredness()))
+                .ForMember(x => x.MessengerId, opt => opt.MapFrom(x => x.Messenger == null ? 0 : x.Messenger.getId()))
+                .ForMember(x => x.MessengerPosition, opt => opt.MapFrom(x => x.Messenger == null ? 4 : x.MessengerPosition))
                 .ForMember(x => x.Hp, opt => opt.MapFrom(x => x.HP))
                 .ForMember(x => x.Mp, opt => opt.MapFrom(x => x.MP))
                 .ForMember(x => x.Maxhp, opt => opt.MapFrom(x => x.MaxHP))
                 .ForMember(x => x.Maxmp, opt => opt.MapFrom(x => x.MaxMP));
 
-            CreateMap<PetDto, Pet>()
-                .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.Fullness)))
-                .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.Level)))
-                .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.Closeness)))
+            CreateMap<ItemDto, Pet>()
+                 .ConstructUsing(source => new Pet(source.Itemid, source.Position, source.Petid))
+                .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
+                .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.PetInfo!.Level)))
+                .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
+                .ForMember(x => x.PetAttribute, opt => opt.MapFrom(x => x.PetInfo!.Flag))
+                .AfterMap((rs, dest) =>
+                {
+                    //dest.setOwner(rs.Owner);
+                    //dest.setQuantity(rs.Quantity);
+                    //dest.setFlag(rs.Flag);
+                    //dest.setExpiration(rs.Expiration);
+                    //dest.setGiftFrom(rs.GiftFrom);
+                    dest.setName(rs.PetInfo!.Name);
+                })
                 .ReverseMap()
-                .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.Fullness)))
-                .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, (int)x.Level)))
-                .ForMember(x => x.Closeness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.Tameness)));
+                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => new PetDto
+                {
+                    Closeness = Math.Min(Limits.MaxTameness, x.Tameness),
+                    Fullness = Math.Min(Limits.MaxFullness, x.Fullness),
+                    Level = Math.Min(Limits.MaxLevel, (int)x.Level),
+                    Flag = x.PetAttribute,
+                    Name = x.getName(),
+                    Summoned = x.Summoned,
+                    Petid = x.getUniqueId()
+                }));
 
             CreateMap<ItemDto, Item>()
-                .ConstructUsing(source => new Item(source.Itemid,  source.Position, source.Quantity))
+                .ConstructUsing(source => new Item(source.Itemid, source.Position, source.Quantity))
                 .AfterMap((rs, dest, ctx) =>
                 {
                     dest.setOwner(rs.Owner);
@@ -68,11 +90,27 @@ namespace Application.Core.Channel.Mappers
                     dest.setFlag(rs.Flag);
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
-                    dest.SetPet(ctx.Mapper.Map<Pet>(rs.PetInfo));
-                });
+                    dest.SetPet(ctx.Mapper.Map<Pet>(rs));
+                })
+                .ReverseMap()
+                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
+                .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
+                .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
+                .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
+                .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
+                .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()));
+
+            CreateMap<RingDto, Ring>()
+                .ConstructUsing(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName))
+                .ReverseMap()
+                .ForMember(dest => dest.ItemId, source => source.MapFrom(x => x.getItemId()))
+                .ForMember(dest => dest.PartnerRingId, source => source.MapFrom(x => x.getPartnerRingId()))
+                .ForMember(dest => dest.PartnerChrId, source => source.MapFrom(x => x.getPartnerChrId()))
+                .ForMember(dest => dest.PartnerName, source => source.MapFrom(x => x.getPartnerName()))
+                .ForMember(dest => dest.Id, source => source.MapFrom(x => x.getRingId()));
 
             CreateMap<ItemDto, Equip>()
-                    .ConstructUsing(source => new Equip(source.Itemid, source.Position, 0))
+                    .ConstructUsing(source => new Equip(source.Itemid, source.Position))
                     .AfterMap((rs, dest) =>
                     {
                         dest.setOwner(rs.Owner);
@@ -101,12 +139,37 @@ namespace Application.Core.Channel.Mappers
                         dest.setExpiration(rs.Expiration);
                         dest.setGiftFrom(rs.GiftFrom);
                         dest.setRingId(rs!.EquipInfo!.RingId);
-                    });
+                    })
+                    .ReverseMap()
+                    .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
+                    .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
+                    .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
+                    .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
+                    .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
+
+                    .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x));
+
+            CreateMap<StorageDto, Storage>()
+                .ConstructUsing((x, ctx) =>
+                {
+                    return new Storage(x.Accountid, x.Slots, x.Meso, x.Items.Select(y => MapToItem(ctx.Mapper, y)).ToArray());
+                })
+                .ReverseMap()
+                .ForMember(dest => dest.Items, source => source.MapFrom(x => x.getItems()));
         }
 
         private int[] TranslateArray(string str)
         {
             return str.Split(",").Select(int.Parse).ToArray();
+        }
+
+        private Item MapToItem(IRuntimeMapper mapper, ItemDto itemDto)
+        {
+            InventoryType mit = itemDto.InventoryType.getByType();
+            if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
+                return mapper.Map<Equip>(itemDto);
+            else
+                return mapper.Map<Item>(itemDto);
         }
     }
 }

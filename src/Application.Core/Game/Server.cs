@@ -399,6 +399,14 @@ public class Server
         basedCached = true;
     }
 
+    public void LoadWorld()
+    {
+        var worlds = ServerManager.LoadAllWorld().ToList();
+        foreach (var worldConfig in worlds)
+        {
+            InitWorld(worldConfig);
+        }
+    }
 
     public bool IsStarting { get; set; }
     public async Task Start(bool ignoreCache = false)
@@ -420,11 +428,7 @@ public class Server
 
             var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
 
-            var worlds = ServerManager.LoadAllWorld().ToList();
-            foreach (var worldConfig in worlds)
-            {
-                InitWorld(worldConfig);
-            }
+            LoadWorld();
 
             using var dbContext = new DBContext();
             LoadAccountCharacterCache(dbContext);

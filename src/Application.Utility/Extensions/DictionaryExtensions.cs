@@ -1,4 +1,7 @@
+using Quartz;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Application.Utility.Extensions
 {
@@ -43,6 +46,22 @@ namespace Application.Utility.Extensions
                 dictionary.Add(key, newVal);
                 return newVal;
             }
+        }
+
+        public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value) where TKey : notnull
+        {
+            ref TValue? v = ref CollectionsMarshal.GetValueRefOrAddDefault(dictionary, key, out var exisits);
+            if (exisits)
+                return v;
+            v = value;
+            return v;
+        }
+
+        public static void UpdateOnly<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value) where TKey : notnull
+        {
+            ref var valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(dictionary, key);
+            if (!Unsafe.IsNullRef(ref valueRef))
+                valueRef = value;
         }
     }
 

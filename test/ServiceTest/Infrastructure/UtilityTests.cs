@@ -1,5 +1,5 @@
-using Application.Core.Compatible;
-using tools;
+using Application.Utility;
+using Application.Utility.Compatible;
 
 namespace ServiceTest.Infrastructure
 {

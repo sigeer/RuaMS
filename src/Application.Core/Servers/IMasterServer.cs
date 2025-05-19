@@ -51,7 +51,7 @@ namespace Application.Core.Servers
         void UnregisterLoginState(ILoginClient c);
         bool ValidateCharacteridInTransition(string clientSession, int charId);
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
-        AccountEntity? GetAccountEntity(int accId);
+        AccountDto? GetAccountDto(int accId);
         int GetAccountCharacterCount(int accId);
         List<IPlayer> LoadAccountCharactersView(int id);
         int GetAccountIdByAccountName(string name);

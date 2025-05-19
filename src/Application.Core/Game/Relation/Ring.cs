@@ -20,8 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
-
 namespace Application.Core.Game.Relation;
 
 
@@ -37,8 +35,6 @@ public class Ring : IComparable<Ring>
     private string partnerName;
     private bool _equipped = false;
     public int PartnerRingId => ringId2;
-    private IPlayer? _partner;
-    public IPlayer Partner => _partner ??= AllPlayerStorage.GetOrAddCharacterByIdOrThrow(partnerId);
 
     public Ring(int id, int id2, int partnerId, int itemid, string partnername)
     {

@@ -29,15 +29,29 @@ namespace client.inventory;
  */
 public class ItemFactory
 {
-
+    /// <summary>
+    /// 背包（已装备）
+    /// </summary>
     public static readonly ItemFactory INVENTORY = new ItemFactory(1, false);
+    /// <summary>
+    /// 仓库
+    /// </summary>
     public static readonly ItemFactory STORAGE = new ItemFactory(2, true);
+    /// <summary>
+    /// 现金道具仓库？
+    /// </summary>
     public static readonly ItemFactory CASH_EXPLORER = new ItemFactory(3, true);
     public static readonly ItemFactory CASH_CYGNUS = new ItemFactory(4, true);
     public static readonly ItemFactory CASH_ARAN = new ItemFactory(5, true);
+    /// <summary>
+    /// 雇佣商人
+    /// </summary>
     public static readonly ItemFactory MERCHANT = new ItemFactory(6, false);
     public static readonly ItemFactory CASH_OVERALL = new ItemFactory(7, true);
     public static readonly ItemFactory MARRIAGE_GIFTS = new ItemFactory(8, false);
+    /// <summary>
+    /// 快递
+    /// </summary>
     public static readonly ItemFactory DUEY = new(9, false);
     private int value;
     private bool account;
@@ -129,7 +143,7 @@ public class ItemFactory
     }
 
     /// <summary>
-    /// �����Ѵ�����װ��
+    /// 加载已穿戴的装备
     /// </summary>
     /// <param name="characterId"></param>
     /// <returns>Item</returns>

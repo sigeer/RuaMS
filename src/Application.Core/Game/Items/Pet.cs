@@ -40,13 +40,13 @@ public class Pet : Item
     private int Fh;
     private Point pos;
     private int stance;
-    private int petAttribute = 0;
 
     public string Name { get; set; } = null!;
     public int Fullness { get; set; } = MaxFullness;
     public int Tameness { get; set; }
     public byte Level { get; set; } = 1;
     public bool Summoned { get; set; }
+    public int PetAttribute { get; set; }
 
     public const int MaxFullness = 100;
     public const int MaxTameness = 30000;
@@ -66,7 +66,7 @@ public class Pet : Item
             using var dbContext = new DBContext();
             dbContext.Pets.Where(x => x.Petid == getUniqueId())
                 .ExecuteUpdate(x =>
-                    x.SetProperty(y => y.Flag, getPetAttribute())
+                    x.SetProperty(y => y.Flag, PetAttribute)
                     .SetProperty(y => y.Name, Name)
                     .SetProperty(y => y.Level, Level)
                     .SetProperty(y => y.Closeness, Tameness)
@@ -234,17 +234,17 @@ public class Pet : Item
 
     public int getPetAttribute()
     {
-        return petAttribute;
+        return PetAttribute;
     }
 
     public void setPetAttribute(int flag)
     {
-        petAttribute = flag;
+        PetAttribute = flag;
     }
 
     public void addPetAttribute(IPlayer owner, PetAttribute flag)
     {
-        petAttribute |= (int)flag;
+        PetAttribute |= (int)flag;
         saveToDb();
 
         var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
@@ -256,7 +256,7 @@ public class Pet : Item
 
     public void removePetAttribute(IPlayer owner, PetAttribute flag)
     {
-        petAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
+        PetAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
         saveToDb();
 
         var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());

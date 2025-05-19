@@ -173,7 +173,7 @@ namespace Application.Core.Login.Services
             {
                 var player = _mapper.Map<Player>(c.Character);
                 Inventory inv = player.Bag[InventoryType.EQUIPPED];
-                foreach (var equip in c.Items.Where(x => x.InventoryType == (sbyte)InventoryType.EQUIPPED))
+                foreach (var equip in c.InventoryItems.Where(x => x.InventoryType == (sbyte)InventoryType.EQUIPPED))
                 {
                     var item = _mapper.Map<Equip>(equip);
                     inv.addItemFromDB(item);

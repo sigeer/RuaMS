@@ -35,7 +35,7 @@ namespace Application.Core.Login.Services
             if (characterObj == null || characterObj.Character == null)
                 return null;
 
-            var accountModel = _accManager.GetAccountEntity(characterObj.Character.AccountId);
+            var accountModel = characterObj.Account;
             if (accountModel == null)
                 return null;
 
@@ -51,7 +51,6 @@ namespace Application.Core.Login.Services
             characterObj.LoginInfo = new LoginInfo { IsNewCommer = accountModel.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION };
 
             _accManager.UpdateAccountState(accountModel, LoginStage.LOGIN_LOGGEDIN);
-            characterObj.Account = _mapper.Map<AccountDto>(accountModel);
             return characterObj;
         }
     }
