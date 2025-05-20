@@ -151,7 +151,6 @@ namespace Application.Core.Channel.Net
                     }
                     Character.saveCooldowns();
                     Character.cancelAllDebuffs();
-                    Character.saveCharToDB();
 
                     CurrentServer.SendPlayerObject(Character);
                 }
