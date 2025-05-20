@@ -174,9 +174,7 @@ public partial class Player
 
     private Trade? trade = null;
     public MonsterBook Monsterbook { get; set; }
-
-    CashShop? _cashShop = null;
-    public CashShop CashShopModel => _cashShop ?? (_cashShop = new CashShop(AccountId, Id, getJobType()));
+    public CashShop CashShopModel { get; set; }
     public PlayerSavedLocation SavedLocations { get; set; }
 
     private List<WeakReference<IMap>> lastVisitedMaps = new();
@@ -1511,7 +1509,7 @@ public partial class Player
 
                 if (ItemId.isMonsterCard(itemId))
                 {
-                    this.Monsterbook.addCard(Client, itemId);
+                    this.Monsterbook.addCard(itemId);
                 }
                 return true;
             }

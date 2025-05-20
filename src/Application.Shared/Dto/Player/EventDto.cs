@@ -8,6 +8,8 @@ namespace Application.Shared.Characters
 {
     public class EventDto
     {
+        public int Characterid { get; set; }
+
         public string Name { get; set; } = null!;
 
         public int Info { get; set; }

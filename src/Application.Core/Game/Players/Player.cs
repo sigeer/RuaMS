@@ -8,6 +8,7 @@ using client.autoban;
 using client.inventory;
 using DotNetty.Handlers.Tls;
 using Microsoft.EntityFrameworkCore;
+using server;
 using server.events;
 using server.maps;
 
@@ -71,7 +72,8 @@ namespace Application.Core.Game.Players
             SavedLocations = new(this);
 
             Bag = new PlayerBag(this);
-            Monsterbook = new MonsterBook([]);
+            Monsterbook = new MonsterBook(this);
+            CashShopModel = new CashShop(this);
 
             setStance(0);
 

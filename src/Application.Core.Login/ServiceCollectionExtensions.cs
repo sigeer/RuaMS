@@ -37,6 +37,14 @@ namespace Application.Core.Login
             return services;
         }
 
+        static IServiceCollection AddStorage(this IServiceCollection services)
+        {
+            services.AddSingleton<DataStorage>();
+
+            services.AddSingleton<StorageService>();
+            return services;
+        }
+
         public static IServiceCollection AddLoginServer(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(DtoMapper));
@@ -48,7 +56,8 @@ namespace Application.Core.Login
             services.AddSingleton<AccountManager>();
             services.AddSingleton<CharacterManager>();
             services.AddSingleton<CharacterService>();
-            services.AddSingleton<StorageService>();
+
+            services.AddStorage();
 
             services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();

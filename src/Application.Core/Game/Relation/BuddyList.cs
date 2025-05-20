@@ -139,6 +139,17 @@ public class BuddyList
         dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 1).ExecuteDelete();
     }
 
+    public BuddyDto[] ToDto()
+    {
+        return getBuddies().Where(x => x.Visible).Select(x => new BuddyDto
+        {
+            CharacterId = x.getCharacterId(),
+            CharacterName = x.getName(),
+            Group = x.Group,
+            Pending = 0
+        }).ToArray();
+    }
+
     public void Save(DBContext dbContext)
     {
         dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 0).ExecuteDelete();

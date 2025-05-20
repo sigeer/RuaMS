@@ -334,7 +334,7 @@ namespace Application.Core.Managers
         //            // Cooldowns (delete)
         //            dbContext.Cooldowns.Where(x => x.Charid == ret.getId()).ExecuteDelete();
 
-        //            // Debuffs (load)
+        //            // Debuffs (load) 那buff呢？
         //            #region Playerdiseases
         //            Dictionary<Disease, DiseaseExpiration> loadedDiseases = new();
         //            var playerDiseaseFromDB = dbContext.Playerdiseases.Where(x => x.Charid == ret.getId()).ToList();
@@ -664,7 +664,7 @@ namespace Application.Core.Managers
                 var m = dbContext.Quickslotkeymappeds.Where(x => x.Accountid == player.AccountId).FirstOrDefault();
                 if (m == null)
                 {
-                    m = new Quickslotkeymapped() { Accountid = player.AccountId, Keymap = nQuickslotKeymapped };
+                    m = new Quickslotkeymapped(player.AccountId, nQuickslotKeymapped);
                     dbContext.Quickslotkeymappeds.Add(m);
                 }
                 else
@@ -742,7 +742,7 @@ namespace Application.Core.Managers
 
                     var ignoresPetIds = player.getExcluded().Select(x => x.Key).ToList();
                     dbContext.Petignores.Where(x => ignoresPetIds.Contains(x.Petid)).ExecuteDelete();
-                    dbContext.Petignores.AddRange(player.getExcluded().SelectMany(x => x.Value.Select(y => new Petignore() { Petid = x.Key, Itemid = y })).ToList());
+                    dbContext.Petignores.AddRange(player.getExcluded().SelectMany(x => x.Value.Select(y => new Petignore(x.Key, y))).ToList());
                     dbContext.SaveChanges();
 
 

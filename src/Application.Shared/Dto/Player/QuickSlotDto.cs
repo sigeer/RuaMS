@@ -8,7 +8,6 @@ namespace Application.Shared.Characters
 {
     public class QuickSlotDto
     {
-        public long Value { get; set; }
-        public byte[] QuickSlotLoaded { get; set; }
+        public long LongValue { get; set; }
     }
 }

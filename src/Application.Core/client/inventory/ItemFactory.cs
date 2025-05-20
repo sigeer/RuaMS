@@ -27,7 +27,7 @@ namespace client.inventory;
 /**
  * @author Flav
  */
-public class ItemFactory
+public class ItemFactory: EnumClass
 {
     /// <summary>
     /// 背包（已装备）
@@ -73,10 +73,34 @@ public class ItemFactory
         this.account = account;
     }
 
+    public static ItemFactory GetItemFactory(int value)
+    {
+        if (value == 1)
+            return INVENTORY;
+        if (value == 2)
+            return STORAGE;
+        if (value == 3)
+            return CASH_EXPLORER;
+        if (value == 4)
+            return CASH_CYGNUS;
+        if (value == 5)
+            return CASH_ARAN;
+        if (value == 6)
+            return MERCHANT;
+        if (value == 7)
+            return CASH_OVERALL;
+        if (value == 8)
+            return MARRIAGE_GIFTS;
+        if (value == 9)
+            return DUEY;
+        throw new BusinessFatalException($"不存在的道具分类 {value}" );
+    }
+
     public int getValue()
     {
         return value;
     }
+    public bool IsAccount => account;
 
     public List<ItemInventoryType> loadItems(int id, bool login)
     {
@@ -86,7 +110,7 @@ public class ItemFactory
         }
         else
         {
-            return loadItemsMerchant(id, login);
+            return loadItemsMerchant(id);
         }
     }
 
@@ -275,7 +299,7 @@ public class ItemFactory
         }
     }
 
-    private List<ItemInventoryType> loadItemsMerchant(int id, bool login)
+    private List<ItemInventoryType> loadItemsMerchant(int id)
     {
         List<ItemInventoryType> items = new();
 
@@ -285,7 +309,6 @@ public class ItemFactory
                             join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
                             from bs in bss.DefaultIfEmpty()
                             where a.Type == value && (account ? a.Accountid == id : a.Characterid == id)
-                            where (!login || a.Inventorytype == InventoryType.EQUIPPED.getType())
                             select new EquipItemModelFromDB(a, bs)).ToList();
 
         var allItemIdList = queryExpress.Select(x => x.Inventoryitemid).ToList();

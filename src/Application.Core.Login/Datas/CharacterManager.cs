@@ -1,7 +1,7 @@
 using Application.Core.Datas;
 using Application.Core.EF.Entities.Items;
+using Application.Core.EF.Entities.Quests;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using AutoMapper;
@@ -9,7 +9,7 @@ using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.EntityFrameworkCore.Extensions;
-using System.Threading.Tasks;
+using System.Configuration;
 
 namespace Application.Core.Login.Datas
 {
@@ -23,28 +23,45 @@ namespace Application.Core.Login.Datas
 
         Dictionary<int, CharacterViewObject> _charcterViewCache = new();
 
-        Dictionary<int, CharacterValueObject> _needUpdate = new Dictionary<int, CharacterValueObject>();
-
         readonly IMapper _mapper;
         readonly ILogger<CharacterManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly AccountManager _accManager;
+        readonly DataStorage _chrStorage;
 
-        public CharacterManager(IMapper mapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, AccountManager accountManager)
+        public CharacterManager(IMapper mapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, AccountManager accountManager, DataStorage chrStorage)
         {
             _mapper = mapper;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
             _accManager = accountManager;
+            _chrStorage = chrStorage;
         }
 
         public void Update(CharacterValueObject obj)
         {
-            _idDataSource[obj.Character.Id] = obj;
-            _nameDataSource[obj.Character.Name] = obj;
-            _charcterViewCache[obj.Character.Id] = obj;
+            if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
+            {
+                origin.Account = obj.Account;
+                origin.Character = obj.Character;
+                origin.CashShop = obj.CashShop;
+                origin.BuddyList = obj.BuddyList;
+                origin.InventoryItems = obj.InventoryItems;
+                origin.KeyMaps = obj.KeyMaps;
+                origin.SkillMacros = obj.SkillMacros;
+                origin.Skills = obj.Skills;
+                origin.Areas = obj.Areas;
+                origin.Events = obj.Events;
+                origin.MonsterBooks = obj.MonsterBooks;
+                origin.PetIgnores = obj.PetIgnores;
+                origin.QuestStatuses = obj.QuestStatuses;
+                origin.QuickSlot = obj.QuickSlot;
+                origin.SavedLocations = obj.SavedLocations;
+                origin.StorageInfo = obj.StorageInfo;
+                origin.TrockLocations = obj.TrockLocations;
+            }
 
-            _idDataSource[obj.Character.Id] = obj;
+            _chrStorage.Set(obj);
         }
 
         public bool Remove(int characterId)
@@ -80,7 +97,10 @@ namespace Application.Core.Login.Datas
 
 
             #region 所有道具加载
-            var items = (from a in dbContext.Inventoryitems.AsNoTracking().Where(x => x.Characterid == characterId || (x.Characterid == null && x.Accountid == characterEntity.AccountId))
+            int[] exceptedType = new int[] { ItemFactory.MERCHANT.getValue(), ItemFactory.DUEY.getValue(), ItemFactory.MARRIAGE_GIFTS.getValue() };
+            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
+                            .Where(x => x.Characterid == characterId || (x.Characterid == null && x.Accountid == characterEntity.AccountId))
+                            .Where(x => !exceptedType.Contains(x.Type))
                          join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
                          from cs in css.DefaultIfEmpty()
                          select new { Item = a, Pet = cs }).ToList();
@@ -98,22 +118,13 @@ namespace Application.Core.Login.Datas
 
             List<ItemEntityPair> invItems = [];
             List<ItemEntityPair> storageItems = [];
-            List<ItemEntityPair> merchantItems = [];
             List<ItemEntityPair> cashItems = [];
-            List<ItemEntityPair> dueyItems = [];
-            List<ItemEntityPair> marriageItems = [];
             foreach (var item in itemObj)
             {
                 if (item.Item.Type == ItemFactory.INVENTORY.getValue())
                     invItems.Add(item);
                 else if (item.Item.Type == ItemFactory.STORAGE.getValue())
                     storageItems.Add(item);
-                else if (item.Item.Type == ItemFactory.MERCHANT.getValue())
-                    merchantItems.Add(item);
-                else if (item.Item.Type == ItemFactory.DUEY.getValue())
-                    dueyItems.Add(item);
-                else if (item.Item.Type == ItemFactory.MARRIAGE_GIFTS.getValue())
-                    marriageItems.Add(item);
                 else if (item.Item.Type == ItemFactory.CASH_OVERALL.getValue()
                     || item.Item.Type == ItemFactory.CASH_ARAN.getValue()
                     || item.Item.Type == ItemFactory.CASH_CYGNUS.getValue()
@@ -132,6 +143,23 @@ namespace Application.Core.Login.Datas
                              where a.CharacterId == characterId
                              select new BuddyDto { CharacterId = a.BuddyId, CharacterName = b.Name, Pending = a.Pending, Group = a.Group }).ToArray();
 
+            #region quest
+            var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
+                                   let bs = dbContext.Questprogresses.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
+                                   let cs = dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId && a.Queststatusid == x.Queststatusid).ToArray()
+                                   select new QuestStatusEntityPair(a, bs, cs)).ToArray();
+            #endregion
+
+            var cashShopDto = new CashShopDto
+            {
+                WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
+                Items = _mapper.Map<ItemDto[]>(cashItems)
+            };
+
+            var cooldownList = dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray();
+            dbContext.Cooldowns.RemoveRange(cooldownList);
+            dbContext.SaveChanges();
+
             var obj = new CharacterValueObject
             {
                 Character = _mapper.Map<CharacterDto>(characterEntity),
@@ -140,21 +168,16 @@ namespace Application.Core.Login.Datas
                 PetIgnores = petIgnores,
                 Areas = _mapper.Map<AreaDto[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                 BuddyList = buddyData,
-                CoolDowns = _mapper.Map<CoolDownDto[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                CoolDowns = _mapper.Map<CoolDownDto[]>(cooldownList),
                 Events = _mapper.Map<EventDto[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 InventoryItems = _mapper.Map<ItemDto[]>(invItems),
-                CashShopItems = _mapper.Map<ItemDto[]>(cashItems),
-                MarriageGiftItems = _mapper.Map<ItemDto[]>(marriageItems),
-                DueyItems = _mapper.Map<ItemDto[]>(dueyItems),
-                MerchantItems = _mapper.Map<ItemDto[]>(merchantItems),
+                CashShop = cashShopDto,
                 KeyMaps = _mapper.Map<KeyMapDto[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 QuickSlot = _mapper.Map<QuickSlotDto>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == characterEntity.AccountId).FirstOrDefault()),
 
                 MonsterBooks = _mapper.Map<MonsterbookDto[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
 
-                MedalMaps = _mapper.Map<MedalMapDto[]>(dbContext.Medalmaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                QuestProgresses = _mapper.Map<QuestProgressDto[]>(dbContext.Questprogresses.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                QuestStatuses = _mapper.Map<QuestStatusDto[]>(dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                QuestStatuses = _mapper.Map<QuestStatusDto[]>(questStatusData),
 
                 SavedLocations = _mapper.Map<SavedLocationDto[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 SkillMacros = _mapper.Map<SkillMacroDto[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
@@ -174,52 +197,7 @@ namespace Application.Core.Login.Datas
             return obj;
         }
 
-        /// <summary>
-        /// CharacterValueObject 保存到数据库
-        /// </summary>
-        public async Task CommitAsync()
-        {
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
 
-            dbContext.Monsterbooks.Where(x => _needUpdate.Keys.Contains(x.Charid)).ExecuteDelete();
-            await dbContext.Petignores.Where(x => _needUpdate.Values.SelectMany(x => x.PetIgnores.Select(x => x.PetId)).Contains(x.Petid)).ExecuteDeleteAsync();
-            await dbContext.Keymaps.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-            await dbContext.Skillmacros.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-            await dbContext.Savedlocations.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-            await dbContext.Trocklocations.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-            await dbContext.Buddies.Where(x => _needUpdate.Keys.Contains(x.CharacterId)).ExecuteDeleteAsync();
-            await dbContext.AreaInfos.Where(x => _needUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
-            await dbContext.Eventstats.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-
-            await dbContext.Questprogresses.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-            await dbContext.Queststatuses.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-            await dbContext.Medalmaps.Where(x => _needUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-            foreach (var obj in _needUpdate.Values)
-            {
-                dbContext.Characters.Update(_mapper.Map<CharacterEntity>(obj.Character));
-
-                await dbContext.Monsterbooks.AddRangeAsync(_mapper.Map<Monsterbook[]>(obj.MonsterBooks));
-                dbContext.Pets.UpdateRange(_mapper.Map<PetEntity[]>(obj.InventoryItems.Where(x => x.PetInfo != null).Select(x => x.PetInfo)));
-                await dbContext.Petignores.AddRangeAsync(_mapper.Map<Petignore[]>(obj.PetIgnores));
-                await dbContext.Keymaps.AddRangeAsync(_mapper.Map<KeyMapEntity[]>(obj.KeyMaps));
-
-                await dbContext.Skillmacros.AddRangeAsync(_mapper.Map<SkillMacroEntity[]>(obj.SkillMacros));
-                await dbContext.Savedlocations.AddRangeAsync(_mapper.Map<SavedLocationEntity[]>(obj.SavedLocations));
-                await dbContext.Trocklocations.AddRangeAsync(_mapper.Map<Trocklocation[]>(obj.TrockLocations));
-                await dbContext.Buddies.AddRangeAsync(_mapper.Map<BuddyEntity[]>(obj.BuddyList));
-                await dbContext.AreaInfos.AddRangeAsync(_mapper.Map<AreaInfo[]>(obj.Areas));
-                await dbContext.Eventstats.AddRangeAsync(_mapper.Map<Eventstat[]>(obj.Events));
-
-                await dbContext.Questprogresses.AddRangeAsync(_mapper.Map<Questprogress[]>(obj.QuestProgresses));
-                await dbContext.Queststatuses.AddRangeAsync(_mapper.Map<QuestStatusEntity[]>(obj.QuestStatuses));
-                await dbContext.Medalmaps.AddRangeAsync(_mapper.Map<Medalmap[]>(obj.MedalMaps));
-
-            }
-
-            await dbTrans.CommitAsync();
-            _needUpdate.Clear();
-        }
         /// <summary>
         /// 获取用于展示的角色object
         /// </summary>

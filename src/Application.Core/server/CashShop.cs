@@ -27,7 +27,6 @@ using constants.id;
 using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using net.server;
-using tools;
 
 namespace server;
 
@@ -46,56 +45,50 @@ public class CashShop
 
     private int accountId;
     private int characterId;
-    private int nxCredit;
-    private int maplePoint;
-    private int nxPrepaid;
+
     private bool opened;
-    private ItemFactory factory;
     private List<Item> inventory = new();
     private List<int> wishList = new();
     private int notes = 0;
     private object lockObj = new object();
+    public ItemFactory Factory { get; }
+    public IPlayer Owner { get; set; }
 
-    public CashShop(int accountId, int characterId, int jobType)
+    public CashShop(IPlayer player)
     {
-        this.accountId = accountId;
-        this.characterId = characterId;
+        Owner = player;
+
+        this.accountId = player.AccountId;
+        this.characterId = player.Id;
 
         if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)
         {
-            switch (jobType)
+            switch (player.getJobType())
             {
                 case 0:
-                    factory = ItemFactory.CASH_EXPLORER;
+                    Factory = ItemFactory.CASH_EXPLORER;
                     break;
                 case 1:
-                    factory = ItemFactory.CASH_CYGNUS;
+                    Factory = ItemFactory.CASH_CYGNUS;
                     break;
                 case 2:
-                    factory = ItemFactory.CASH_ARAN;
+                    Factory = ItemFactory.CASH_ARAN;
+                    break;
+                default:
+                    Factory = ItemFactory.CASH_OVERALL;
                     break;
             }
         }
         else
         {
-            factory = ItemFactory.CASH_OVERALL;
+            Factory = ItemFactory.CASH_OVERALL;
         }
+    }
 
-        using var dbContext = new DBContext();
-        var dbModel = dbContext.Accounts.Where(x => x.Id == accountId).Select(x => new { x.NxCredit, x.MaplePoint, x.NxPrepaid }).FirstOrDefault();
-        if (dbModel != null)
-        {
-            this.nxCredit = dbModel.NxCredit ?? 0;
-            this.maplePoint = dbModel.MaplePoint ?? 0;
-            this.nxPrepaid = dbModel.NxPrepaid ?? 0;
-        }
-
-        foreach (var item in factory!.loadItems(accountId, false))
-        {
-            inventory.Add(item.Item);
-        }
-        var wishListFromDB = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToList();
-        wishList.AddRange(wishListFromDB);
+    public void LoadData(List<int> characterWishList, List<Item> items)
+    {
+        inventory = items.Where(x => x.getItemType() == Factory.getValue()).ToList();
+        wishList = characterWishList;
     }
 
 
@@ -318,9 +311,9 @@ public class CashShop
     {
         return (type) switch
         {
-            NX_CREDIT => nxCredit,
-            MAPLE_POINT => maplePoint,
-            NX_PREPAID => nxPrepaid,
+            NX_CREDIT => Owner.Client.AccountEntity.NxCredit ?? 0,
+            MAPLE_POINT => Owner.Client.AccountEntity.MaplePoint ?? 0,
+            NX_PREPAID => Owner.Client.AccountEntity.NxPrepaid ?? 0,
             _ => 0
         };
 
@@ -331,13 +324,13 @@ public class CashShop
         switch (type)
         {
             case NX_CREDIT:
-                nxCredit += cash;
+                Owner.Client.AccountEntity.NxCredit += cash;
                 break;
             case MAPLE_POINT:
-                maplePoint += cash;
+                Owner.Client.AccountEntity.MaplePoint += cash;
                 break;
             case NX_PREPAID:
-                nxPrepaid += cash;
+                Owner.Client.AccountEntity.NxPrepaid += cash;
                 break;
         }
     }
@@ -526,9 +519,9 @@ public class CashShop
     public void save(DBContext dbContext)
     {
         dbContext.Accounts.Where(x => x.Id == accountId).ExecuteUpdate(x =>
-                x.SetProperty(y => y.NxCredit, nxCredit)
-                .SetProperty(y => y.MaplePoint, maplePoint)
-                .SetProperty(y => y.NxPrepaid, nxPrepaid)
+                x.SetProperty(y => y.NxCredit, Owner.Client.AccountEntity.NxCredit)
+                .SetProperty(y => y.MaplePoint, Owner.Client.AccountEntity.MaplePoint)
+                .SetProperty(y => y.NxPrepaid, Owner.Client.AccountEntity.NxPrepaid)
                 );
 
         List<ItemInventoryType> itemsWithType = new();
@@ -539,11 +532,11 @@ public class CashShop
             itemsWithType.Add(new(item, item.getInventoryType()));
         }
 
-        factory.saveItems(itemsWithType, accountId, dbContext);
+        Factory.saveItems(itemsWithType, accountId, dbContext);
 
         dbContext.Wishlists.Where(x => x.CharId == characterId).ExecuteDelete();
 
-        dbContext.Wishlists.AddRange(wishList.Select(x => new Wishlist(characterId, x)));
+        dbContext.Wishlists.AddRange(wishList.Select(x => new WishlistEntity(characterId, x)));
         dbContext.SaveChanges();
     }
 

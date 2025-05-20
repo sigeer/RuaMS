@@ -1,5 +1,6 @@
 using Application.Core.Login.Datas;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {
@@ -9,30 +10,32 @@ namespace Application.Core.Login.Services
     public class StorageService
     {
         protected System.Threading.Channels.Channel<StorageType> packetChannel;
-        readonly CharacterManager _chrManager;
+        readonly DataStorage _dataStorage;
         readonly AccountManager _accountManager;
-        readonly ILogger<StorageService> _logger;
-        public StorageService(CharacterManager characterManager,  ILogger<StorageService> logger, AccountManager accountManager)
+
+        protected readonly ILogger<StorageService> _logger;
+        public StorageService(DataStorage chrStorage,  ILogger<StorageService> logger, AccountManager accountManager)
         {
-            _chrManager = characterManager;
+            _dataStorage = chrStorage;
             _accountManager = accountManager;
             _logger = logger;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<StorageType>();
+            // 定时触发、特殊事件触发、关闭服务器触发
             Task.Run(async () =>
             {
                 await foreach (var p in packetChannel.Reader.ReadAllAsync())
                 {
                     switch (p)
                     {
-                        case StorageType.Full:
-                            await _chrManager.CommitAsync();
+                        case StorageType.All:
+                            await CommitAllImmediately();
                             break;
                         case StorageType.AccountOnly:
-                            await _accountManager.CommitAsync();
                             break;
                         case StorageType.CharcterOnly:
+                            await _dataStorage.CommitCharacterAsync();
                             break;
-                        case StorageType.InventoryOnly:
+                        case StorageType.MerchantOnly:
                             break;
                         default:
                             break;
@@ -42,34 +45,43 @@ namespace Application.Core.Login.Services
             });
         }
 
-        public bool CommitAll()
+        private bool CommitType(StorageType type)
         {
-            if (!packetChannel.Writer.TryWrite(StorageType.Full))
+            if (!packetChannel.Writer.TryWrite(type))
             {
-                _logger.LogCritical("CommitByAuto");
+                _logger.LogCritical("CommitType {Type}", type);
                 return false;
             }
             return true;
+        }
+        public bool CommitAll()
+        {
+            return CommitType(StorageType.All);
+        }
+
+        public async Task CommitAllImmediately()
+        {
+            await _dataStorage.CommitCharacterAsync();
         }
     }
 
     public enum StorageType
     {
         /// <summary>
-        /// 全部 完整的 CharacterValueObject
+        /// 全部，其他所有项
         /// </summary>
-        Full,
+        All,
         /// <summary>
-        /// 仅更新Account数据 CharacterValueObject.Account
+        /// 仅更新Account数据
         /// </summary>
         AccountOnly,
         /// <summary>
-        /// 仅更新角色数据 CharacterValueObject.Character
+        /// 仅更新角色及相关数据（包含Account）
         /// </summary>
         CharcterOnly,
         /// <summary>
-        /// 仅更新背包数据 CharacterValueObject.Items
+        /// 更新玩家商店道具、雇佣商人道具
         /// </summary>
-        InventoryOnly,
+        MerchantOnly,
     }
 }

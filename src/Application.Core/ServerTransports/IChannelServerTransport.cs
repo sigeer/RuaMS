@@ -104,6 +104,7 @@ namespace Application.Core.ServerTransports
         int GetAccountCharacterCount(int accId);
         bool CheckCharacterName(string name);
         void UpdateAccountChracterByAdd(int accountId, int id);
+        void SendPlayerObject(CharacterValueObject characterValueObject);
 
         #endregion
     }

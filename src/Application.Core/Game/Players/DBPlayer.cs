@@ -265,7 +265,7 @@ namespace Application.Core.Game.Players
 
                     var ignoresPetIds = getExcluded().Select(x => x.Key).ToList();
                     dbContext.Petignores.Where(x => ignoresPetIds.Contains(x.Petid)).ExecuteDelete();
-                    dbContext.Petignores.AddRange(getExcluded().SelectMany(x => x.Value.Select(y => new Petignore() { Petid = x.Key, Itemid = y })).ToList());
+                    dbContext.Petignores.AddRange(getExcluded().SelectMany(x => x.Value.Select(y => new Petignore(x.Key, y))).ToList());
                     dbContext.SaveChanges();
 
 

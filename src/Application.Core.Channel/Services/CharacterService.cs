@@ -6,6 +6,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.EF;
+using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using Application.Utility.Exceptions;
@@ -16,12 +17,14 @@ using client.inventory;
 using client.keybind;
 using constants.id;
 using constants.inventory;
+using Microsoft.EntityFrameworkCore;
 using net.server;
 using Serilog;
 using server;
 using server.events;
 using server.maps;
 using server.quest;
+using tools;
 
 namespace Application.Core.Channel.Services
 {
@@ -34,6 +37,15 @@ namespace Application.Core.Channel.Services
             _mapper = mapper;
         }
 
+        private Item MapToItem(ItemDto itemDto)
+        {
+            InventoryType mit = itemDto.InventoryType.getByType();
+            if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
+                return _mapper.Map<Equip>(itemDto);
+            else
+                return _mapper.Map<Item>(itemDto);
+        }
+
         public IPlayer? Serialize(IChannelClient c, CharacterValueObject? o)
         {
             if (o == null)
@@ -42,7 +54,8 @@ namespace Application.Core.Channel.Services
             var player = new Player(c);
             _mapper.Map(o.Character, player);
 
-            player.Monsterbook = new MonsterBook(o.MonsterBooks);
+            player.Monsterbook.LoadData(o.MonsterBooks);
+            player.CashShopModel.LoadData(o.CashShop.WishItems.ToList(), o.CashShop.Items.Select(MapToItem).ToList());
 
             player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
 
@@ -138,8 +151,6 @@ namespace Application.Core.Channel.Services
             player.AreaInfo = o.Areas.ToDictionary(x => x.Area, x => x.Info);
             player.Events = o.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as Events);
 
-            Dictionary<int, QuestStatus> loadedQuestStatus = new();
-
             var statusFromDB = o.QuestStatuses;
             foreach (var item in statusFromDB)
             {
@@ -160,22 +171,17 @@ namespace Application.Core.Channel.Services
                 status.setForfeited(item.Forfeited);
                 status.setCompleted(item.Completed);
                 player.Quests.AddOrUpdate(q.getId(), status);
-                loadedQuestStatus.AddOrUpdate(item.Id, status);
+
+
+                foreach (var progress in item.Progress)
+                {
+                    status.setProgress(item.Id, progress.Progress);
+                }
+                foreach (var medalMap in item.MedalMap)
+                {
+                    status.addMedalMap(medalMap.MapId);
+                }
             }
-
-
-            foreach (var item in o.QuestProgresses)
-            {
-                var status = loadedQuestStatus.GetValueOrDefault(item.QuestStatusId);
-                status?.setProgress(item.Id, item.Progress);
-            }
-
-            foreach (var item in o.MedalMaps)
-            {
-                var status = loadedQuestStatus.GetValueOrDefault(item.QuestStatusId);
-                status?.addMedalMap(item.MapId);
-            }
-
 
             player.Skills.LoadData(o.Skills);
 
@@ -189,8 +195,9 @@ namespace Application.Core.Channel.Services
                     continue;
                 }
                 player.giveCoolDowns(skillid, startTime, length);
-
             }
+
+            // TODO Disease
 
             foreach (var item in o.SkillMacros)
             {
@@ -217,8 +224,9 @@ namespace Application.Core.Channel.Services
             // Quickslot key config
             if (o.QuickSlot != null)
             {
-                player.QuickSlotLoaded = o.QuickSlot.QuickSlotLoaded;
-                player.QuickSlotKeyMapped = new QuickslotBinding(o.QuickSlot.QuickSlotLoaded);
+                var bytes = LongTool.LongToBytes(o.QuickSlot.LongValue);
+                player.QuickSlotLoaded = bytes;
+                player.QuickSlotKeyMapped = new QuickslotBinding(bytes);
             }
 
             player.BuddyList.LoadFromDb(o.BuddyList);
@@ -228,12 +236,94 @@ namespace Application.Core.Channel.Services
 
         public CharacterValueObject Deserialize(IPlayer player)
         {
+            List<QuestStatusDto> questStatusList = new();
+            foreach (var qs in player.getQuests())
+            {
+                var questDto = new QuestStatusDto()
+                {
+                    Characterid = player.Id,
+                    Expires = qs.getExpirationTime(),
+                    Status = (int)qs.getStatus(),
+                    Time = (int)(qs.getCompletionTime() / 1000),
+                    QuestId = qs.getQuestID(),
+                    Completed = qs.getCompleted(),
+                    Forfeited = qs.getForfeited(),
+                    MedalMap = qs.getMedalMaps().Select(x => new MedalMapDto { MapId = x }).ToArray(),
+                    Progress = qs.getProgress().Select(x => new QuestProgressDto { ProgressId = x.Key, Progress = x.Value }).ToArray()
+                };
+            }
+
+            bool hasQuickSlotChanged = player.QuickSlotLoaded == null
+                ? player.QuickSlotKeyMapped != null
+                : !player.QuickSlotKeyMapped!.GetKeybindings().SequenceEqual(player.QuickSlotLoaded);
+
+            var quickSlotDto = hasQuickSlotChanged
+                ? new QuickSlotDto()
+                {
+                    LongValue = LongTool.BytesToLong(player.QuickSlotKeyMapped!.GetKeybindings()),
+                }
+                : null;
+
+            var cashShopDto = new CashShopDto()
+            {
+                Items = _mapper.Map<ItemDto[]>(player.CashShopModel.getInventory()),
+                WishItems = player.CashShopModel.getWishList().ToArray(),
+                FactoryType = player.CashShopModel.Factory.getValue()
+            };
+
+            var playerDto = _mapper.Map<CharacterDto>(player);
+            if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
+            {
+                playerDto.Map = player.Map;
+            }
+            else
+            {
+                if (player.MapModel.getForcedReturnId() != MapId.NONE)
+                {
+                    playerDto.Map = player.MapModel.getForcedReturnId();
+                }
+                else
+                {
+                    playerDto.Map = player.HP < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
+                }
+            }
+            if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)
+            {  
+                // reset to first spawnpoint on those maps
+                playerDto.Spawnpoint = 0;
+            }
+            else
+            {
+                var closest = player.MapModel.findClosestPlayerSpawnpoint(player.getPosition());
+                if (closest != null)
+                {
+                    playerDto.Spawnpoint = closest.getId();
+                }
+                else
+                {
+                    playerDto.Spawnpoint = 0;
+                }
+            }
+
             return new CharacterValueObject()
             {
-                Character = _mapper.Map<CharacterDto>(player),
-                Areas = player.AreaInfo.Select(x => new AreaDto() { Area = x.Key, Info = x.Value}).ToArray(),
-                MonsterBooks = player.Monsterbook.ToDto(player.Id),
+                Character = playerDto,
+                Areas = player.AreaInfo.Select(x => new AreaDto() { Area = x.Key, Info = x.Value }).ToArray(),
+                MonsterBooks = player.Monsterbook.ToDto(),
                 SavedLocations = player.SavedLocations.ToDto(),
+                Events = player.Events.Select(x => new EventDto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }).ToArray(),
+                Skills = player.Skills.ToDto(),
+                TrockLocations = player.PlayerTrockLocation.ToDto(),
+                PetIgnores = player.getExcluded().Select(x => new PetIgnoreDto { PetId = x.Key, ExcludedItems = x.Value.ToArray() }).ToArray(),
+                KeyMaps = player.KeyMap.ToDto(),
+                QuestStatuses = questStatusList.ToArray(),
+                SkillMacros = _mapper.Map<SkillMacroDto[]>(player.SkillMacros),
+                BuddyList = player.BuddyList.ToDto(),
+                StorageInfo = _mapper.Map<StorageDto>(player.Storage),
+                InventoryItems = _mapper.Map<ItemDto[]>(player.Bag.GetValues().SelectMany(x => x.list())),
+                CashShop = cashShopDto,
+                QuickSlot = quickSlotDto,
+                Account = player.Client.AccountEntity,
             };
         }
 

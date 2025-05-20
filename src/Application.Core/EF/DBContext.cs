@@ -96,7 +96,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Medalmap> Medalmaps { get; set; }
 
-    public virtual DbSet<Monsterbook> Monsterbooks { get; set; }
+    public virtual DbSet<MonsterbookEntity> Monsterbooks { get; set; }
 
     public virtual DbSet<Monstercarddatum> Monstercarddata { get; set; }
 
@@ -166,7 +166,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Trocklocation> Trocklocations { get; set; }
 
-    public virtual DbSet<Wishlist> Wishlists { get; set; }
+    public virtual DbSet<WishlistEntity> Wishlists { get; set; }
     #endregion
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -1011,7 +1011,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("queststatusid");
         });
 
-        modelBuilder.Entity<Monsterbook>(entity =>
+        modelBuilder.Entity<MonsterbookEntity>(entity =>
         {
             entity.HasKey(e => new { e.Cardid, e.Charid });
             entity
@@ -2067,7 +2067,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("vip");
         });
 
-        modelBuilder.Entity<Wishlist>(entity =>
+        modelBuilder.Entity<WishlistEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

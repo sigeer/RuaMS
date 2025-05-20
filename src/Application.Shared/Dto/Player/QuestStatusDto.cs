@@ -16,18 +16,19 @@ namespace Application.Shared.Characters
         public int Completed { get; set; }
 
         public sbyte Info { get; set; }
+        public int Characterid { get; set; }
+        public QuestProgressDto[] Progress { get; set; }
+        public MedalMapDto[] MedalMap { get; set; }
     }
 
     public class QuestProgressDto
     {
-        public int Id { get; set; }
-        public int QuestStatusId { get; set; }
+        public int ProgressId { get; set; }
         public string Progress { get; set; }
     }
 
     public class MedalMapDto
     {
-        public int QuestStatusId { get; set; }
         public int MapId { get; set; }
     }
 }

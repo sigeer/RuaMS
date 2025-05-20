@@ -6,6 +6,9 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
+        /// <summary>
+        /// 正在访问的雇佣商人，而不是自己的雇佣商人
+        /// </summary>
         private HiredMerchant? hiredMerchant = null;
         public void setHasMerchant(bool set)
         {

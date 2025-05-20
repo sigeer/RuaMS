@@ -1,7 +1,14 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class Petignore
 {
+    protected Petignore() { }
+    public Petignore(int petid, int itemid)
+    {
+        Petid = petid;
+        Itemid = itemid;
+    }
+
     public int Id { get; set; }
 
     public int Petid { get; set; }

@@ -42,7 +42,7 @@ namespace Application.Core.Game.Players
         public BuddyList BuddyList { get; set; }
         public PlayerBag Bag { get; set; }
         public Storage Storage { get; set; }
-        public CashShop CashShopModel { get; }
+        public CashShop CashShopModel { get; set; }
         public PlayerSavedLocation SavedLocations { get; set; }
         public PlayerKeyMap KeyMap { get; set; }
         public PlayerSkill Skills { get; set; }

@@ -119,20 +119,35 @@ namespace Application.Core.Login
             this.accountManager = accountManager;
         }
 
+        bool isShuttingdown = false;
         public async Task Shutdown()
         {
+            if (isShuttingdown)
+            {
+                _logger.LogInformation("正在停止服务器[{ServerName}]", InstanceId);
+                return;
+            }
+            isShuttingdown = true;
+            _logger.LogInformation("[{ServerName}] 停止中...", "登录服务器");
             await NettyServer.Stop();
 
+            var storageService = ServiceProvider.GetRequiredService<StorageService>();
+            _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", "服务器");
+            await storageService.CommitAllImmediately();
+            _logger.LogInformation("[{ServerName}] 玩家数据已保存", "服务器");
+
             IsRunning = false;
+            isShuttingdown = false;
+            _logger.LogInformation("[{ServerName}] 已停止", "服务器");
         }
 
         public async Task StartServer()
         {
             await RegisterTask();
 
-            _logger.LogInformation("登录服务器启动中...");
+            _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
             await NettyServer.Start();
-            _logger.LogInformation("登录服务器启动成功, 监听端口{Port}", Port);
+            _logger.LogInformation("[{ServerName}] 启动成功, 监听端口{Port}", "登录服务器", Port);
             IsRunning = true;
         }
 

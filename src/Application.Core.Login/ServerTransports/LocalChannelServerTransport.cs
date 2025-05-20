@@ -3,6 +3,7 @@ using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.Servers;
@@ -30,15 +31,17 @@ namespace Application.Core.Login.ServerTransports
     {
         readonly LoginService _loginService;
         readonly IMasterServer _server;
+        readonly CharacterManager _chrManager;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
         IWorld _world => Server.getInstance().getWorld(0);
 
-        public LocalChannelServerTransport(IMasterServer server, LoginService loginService)
+        public LocalChannelServerTransport(IMasterServer server, LoginService loginService, CharacterManager chrManager)
         {
             _server = server;
             _loginService = loginService;
+            _chrManager = chrManager;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -481,6 +484,11 @@ namespace Application.Core.Login.ServerTransports
         public void UpdateAccountChracterByAdd(int accountId, int id)
         {
             _server.UpdateAccountChracterByAdd(accountId, id);
+        }
+
+        public void SendPlayerObject(CharacterValueObject characterValueObject)
+        {
+            _chrManager.Update(characterValueObject);
         }
     }
 }

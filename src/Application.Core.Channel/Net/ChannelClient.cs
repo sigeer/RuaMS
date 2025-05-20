@@ -1,3 +1,4 @@
+using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
@@ -36,11 +37,15 @@ namespace Application.Core.Channel.Net
         public AccountDto AccountEntity { get; set; }
         IPacketProcessor<IChannelClient> _packetProcessor;
         public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
-        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log)
+
+        readonly CharacterService _chrSrv;
+        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log, CharacterService characterService)
             : base(sessionId, currentServer, nettyChannel, log)
         {
             CurrentServer = currentServer;
             _packetProcessor = packetProcessor;
+
+            _chrSrv = characterService;
         }
 
         public override bool IsOnlined => Character != null;
@@ -147,6 +152,8 @@ namespace Application.Core.Channel.Net
                     Character.saveCooldowns();
                     Character.cancelAllDebuffs();
                     Character.saveCharToDB();
+
+                    CurrentServer.SendPlayerObject(Character);
                 }
             }
 

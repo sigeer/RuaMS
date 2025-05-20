@@ -1,4 +1,5 @@
 using Application.Core.Channel.Net;
+using Application.Core.Channel.Services;
 using Application.Core.Datas;
 using Application.Core.Game;
 using Application.Core.Game.Maps;
@@ -121,6 +122,7 @@ public partial class WorldChannel : IWorldChannel
     public IServiceScope LifeScope { get; }
 
     public ChannelClientStorage ClientStorage { get; }
+    readonly CharacterService _chrSrv;
     public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
     {
         LifeScope = scope;
@@ -161,6 +163,7 @@ public partial class WorldChannel : IWorldChannel
         PortalScriptManager = LifeScope.ServiceProvider.GetRequiredService<PortalScriptManager>();
         QuestScriptManager = LifeScope.ServiceProvider.GetRequiredService<QuestScriptManager>();
 
+        _chrSrv = LifeScope.ServiceProvider.GetRequiredService<CharacterService>();
         StartupTime = DateTimeOffset.Now;
     }
 
@@ -835,5 +838,8 @@ public partial class WorldChannel : IWorldChannel
         Transport.UpdateAccountChracterByAdd(accountId, id);
     }
 
-
+    public void SendPlayerObject(IPlayer character)
+    {
+        Transport.SendPlayerObject(_chrSrv.Deserialize(character));
+    }
 }

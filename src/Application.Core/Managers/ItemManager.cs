@@ -38,16 +38,7 @@ namespace Application.Core.Managers
             try
             {
                 using var dbContext = new DBContext();
-                var dbModel = new PetEntity
-                {
-                    Petid = CashIdGenerator.generateCashId(),
-                    Name = ItemInformationProvider.getInstance().getName(itemid),
-                    Level = level,
-                    Closeness = tameness,
-                    Fullness = fullness,
-                    Summoned = false,
-                    Flag = 0
-                };
+                var dbModel = new PetEntity(CashIdGenerator.generateCashId(), ItemInformationProvider.getInstance().getName(itemid), level, tameness, fullness, false, 0);
                 dbContext.Pets.Add(dbModel);
                 dbContext.SaveChanges();
                 return dbModel.Petid;

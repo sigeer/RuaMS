@@ -41,6 +41,12 @@ namespace Application.Core.Game.Players.PlayerProps
                 }
             }
         }
+
+        public TrockLocationDto[] ToDto()
+        {
+            return _dataSouce.Select(x => new TrockLocationDto() { Characterid = Owner.Id, Mapid = x, Vip = 0 })
+                .Concat(_vipDataSouce.Select(x => new TrockLocationDto() { Characterid = Owner.Id, Mapid = x, Vip = 1 })).ToArray();
+        }
         public override void LoadData(DBContext dbContext)
         {
             _dataSouce = Enumerable.Repeat(MapId.NONE, _size).ToArray();

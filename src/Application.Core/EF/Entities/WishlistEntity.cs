@@ -1,12 +1,12 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Wishlist
+public partial class WishlistEntity
 {
-    private Wishlist()
+    private WishlistEntity()
     {
     }
 
-    public Wishlist(int charId, int sn)
+    public WishlistEntity(int charId, int sn)
     {
         CharId = charId;
         Sn = sn;

@@ -1,6 +1,5 @@
 using Application.Core.Servers;
 using Application.Shared.Characters;
-using Application.Shared.Characters.PlayerView;
 using Application.Shared.Login;
 using net.server.coordinator.session;
 

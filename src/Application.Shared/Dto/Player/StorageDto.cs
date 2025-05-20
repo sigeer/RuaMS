@@ -17,6 +17,7 @@ namespace Application.Shared.Characters
             Accountid = accountid;
             Slots = 4;
             Meso = 0;
+            Items = [];
         }
 
         public int Id { get; set; }

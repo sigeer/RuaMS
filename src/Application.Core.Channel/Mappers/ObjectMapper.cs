@@ -1,12 +1,14 @@
 using Application.Core.Game.Items;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Skills;
 using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Utility.Compatible.Atomics;
 using AutoMapper;
+using client;
 using client.inventory;
 using server;
 using System;
@@ -156,7 +158,12 @@ namespace Application.Core.Channel.Mappers
                     return new Storage(x.Accountid, x.Slots, x.Meso, x.Items.Select(y => MapToItem(ctx.Mapper, y)).ToArray());
                 })
                 .ReverseMap()
-                .ForMember(dest => dest.Items, source => source.MapFrom(x => x.getItems()));
+                .ForMember(dest => dest.Items, source => source.MapFrom(x => x.getItems()))
+                .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
+                .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.getSlots()))
+                .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId));
+
+            CreateMap<SkillMacroDto, SkillMacro>().ReverseMap();
         }
 
         private int[] TranslateArray(string str)
