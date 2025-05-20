@@ -33,7 +33,6 @@ namespace Application.Core.Game
 
         public bool IsActive => throw new BusinessCharacterOfflineException();
 
-        public AccountEntity? AccountEntity { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
 
         public long SessionId => throw new BusinessCharacterOfflineException();
 
@@ -53,7 +52,7 @@ namespace Application.Core.Game
 
         IServerBase<IServerTransport> IClientBase.CurrentServer => CurrentServer;
 
-        AccountDto IChannelClient.AccountEntity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public AccountDto AccountEntity { get; set; }
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
             throw new BusinessCharacterOfflineException();

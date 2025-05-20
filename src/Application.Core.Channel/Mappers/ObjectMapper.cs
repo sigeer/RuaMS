@@ -101,7 +101,8 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
                 .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
                 .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
-                .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()));
+                .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()))
+                .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => (sbyte)x.getInventoryType()));
 
             CreateMap<RingDto, Ring>()
                 .ConstructUsing(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName))

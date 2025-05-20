@@ -51,7 +51,8 @@ namespace Application.Core.Login.Datas
                 var accList = dbContext.Characters.AsNoTracking().Where(x => _chrUpdate.Keys.Contains(x.Id)).Select(x => x.AccountId).ToArray();
 
                 await dbContext.Monsterbooks.Where(x => _chrUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
-                await dbContext.Petignores.Where(x => _chrUpdate.Values.SelectMany(x => x.PetIgnores.Select(x => x.PetId)).Contains(x.Petid)).ExecuteDeleteAsync();
+                var petIdList = _chrUpdate.Values.SelectMany(x => x.PetIgnores.Select(x => x.PetId)).ToArray();
+                await dbContext.Petignores.Where(x => petIdList.Contains(x.Petid)).ExecuteDeleteAsync();
                 await dbContext.Keymaps.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Skills.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Skillmacros.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
@@ -80,7 +81,7 @@ namespace Application.Core.Login.Datas
                     await dbContext.Keymaps.AddRangeAsync(obj.KeyMaps.Select(x => new KeyMapEntity(obj.Character.Id, x.Key, x.Type, x.Action)));
 
                     await dbContext.Skillmacros.AddRangeAsync(
-                        obj.SkillMacros.Select(x => new SkillMacroEntity(obj.Character.Id, (sbyte)x.Position, x.Skill1, x.Skill2, x.Skill3, x.Name, (sbyte)x.Shout)));
+                        obj.SkillMacros.Where(x => x != null).Select(x => new SkillMacroEntity(obj.Character.Id, (sbyte)x.Position, x.Skill1, x.Skill2, x.Skill3, x.Name, (sbyte)x.Shout)));
 
                     await CommitInventoryByType(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
 

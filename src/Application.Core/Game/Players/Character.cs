@@ -5432,8 +5432,8 @@ public partial class Player
     {
         RemoveWorldWatcher();
         Client.CurrentServer.SendLogoff(AccountId);
-
-        setClient(new OfflineClient());
+        var offlineClient = new OfflineClient() { AccountEntity = Client.AccountEntity };
+        setClient(offlineClient);
     }
 
     public void setLoginTime(DateTimeOffset time)
