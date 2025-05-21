@@ -113,7 +113,7 @@ namespace Application.Core.Login
             Monitor.Enter(srvLock);
             try
             {
-                inLoginState[c] = DateTimeOffset.Now.AddMinutes(10);
+                inLoginState[c] = DateTimeOffset.UtcNow.AddMinutes(10);
             }
             finally
             {
@@ -141,7 +141,7 @@ namespace Application.Core.Login
             Monitor.Enter(srvLock);
             try
             {
-                var timeNow = DateTimeOffset.Now;
+                var timeNow = DateTimeOffset.UtcNow;
 
                 foreach (var mc in inLoginState)
                 {

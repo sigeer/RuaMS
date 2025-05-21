@@ -117,7 +117,7 @@ namespace Application.Core.Client
             }
 
             ProcessPacket(packet);
-            LastPacket = DateTimeOffset.Now;
+            LastPacket = DateTimeOffset.UtcNow;
         }
 
         public override void UserEventTriggered(IChannelHandlerContext ctx, object evt)
@@ -130,7 +130,7 @@ namespace Application.Core.Client
 
         private void CheckIfIdle(IdleStateEvent evt)
         {
-            var pingedAt = DateTimeOffset.Now;
+            var pingedAt = DateTimeOffset.UtcNow;
             sendPacket(PacketCreator.getPing());
             Task.Delay(15000).ContinueWith(_ =>
             {
@@ -217,7 +217,7 @@ namespace Application.Core.Client
 
         public void PongReceived()
         {
-            LastPong = DateTimeOffset.Now;
+            LastPong = DateTimeOffset.UtcNow;
         }
     }
 }

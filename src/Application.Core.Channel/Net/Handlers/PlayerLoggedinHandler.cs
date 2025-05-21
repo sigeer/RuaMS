@@ -337,7 +337,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (newcomer)
             {
-                player.setLoginTime(DateTimeOffset.Now);
+                player.setLoginTime(DateTimeOffset.UtcNow);
             }
         }
         catch (Exception e)

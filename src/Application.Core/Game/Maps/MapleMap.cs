@@ -163,7 +163,7 @@ public class MapleMap : IMap
         ChannelServer = worldChannel;
         this.returnMapId = returnMapId;
         this.MonsterRate = 1;
-        aggroMonitor = new MonsterAggroCoordinator();
+        aggroMonitor = new MonsterAggroCoordinator(worldChannel);
         onFirstUserEnter = mapid.ToString();
         onUserEnter = mapid.ToString();
         mapName = "";
@@ -978,7 +978,7 @@ public class MapleMap : IMap
 
     private void registerItemDrop(MapItem mdrop)
     {
-        droppedItems.AddOrUpdate(mdrop, !everlast ? Server.getInstance().getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
+        droppedItems.AddOrUpdate(mdrop, !everlast ? ChannelServer.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
     }
 
     public void unregisterItemDrop(MapItem mdrop)
@@ -1001,7 +1001,7 @@ public class MapleMap : IMap
         objectLock.EnterReadLock();
         try
         {
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = ChannelServer.getCurrentTime();
 
             foreach (var it in droppedItems)
             {
@@ -1170,7 +1170,7 @@ public class MapleMap : IMap
     private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, byte droptype, short questid, short dropDelay)
     {
         MapItem mdrop = new MapItem(idrop, dropPos, dropper, chr, droptype, false, questid);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ChannelServer.getCurrentTime());
         spawnAndAddRangedMapObject(mdrop, c =>
         {
             var chr1 = c.OnlinedCharacter;
@@ -1197,7 +1197,7 @@ public class MapleMap : IMap
     {
         Point droppos = calcDropPos(position, position);
         MapItem mdrop = new MapItem(meso, droppos, dropper, owner, droptype, playerDrop);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ChannelServer.getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, c =>
         {
@@ -2414,7 +2414,7 @@ public class MapleMap : IMap
 
         Point droppos = calcDropPos(pos, pos);
         MapItem mdrop = new MapItem(item, droppos, dropper, owner, dropType, playerDrop);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ChannelServer.getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, c =>
         {
@@ -2886,7 +2886,7 @@ public class MapleMap : IMap
 
         if (hasClock())
         {
-            DateTimeOffset cal = DateTimeOffset.Now;
+            DateTimeOffset cal = DateTimeOffset.UtcNow;
             chr.sendPacket(PacketCreator.getClockTime(cal.Hour, cal.Minute, cal.Second));
         }
         if (hasBoat() > 0)
@@ -4636,7 +4636,7 @@ public class MapleMap : IMap
             this.mapOwner = chr;
             chr.setOwnedMap(this);
 
-            mapOwnerLastActivityTime = Server.getInstance().getCurrentTime();
+            mapOwnerLastActivityTime = ChannelServer.getCurrentTime();
 
             getChannelServer().registerOwnedMap(this);
             return true;
@@ -4673,7 +4673,7 @@ public class MapleMap : IMap
 
     private void refreshOwnership()
     {
-        mapOwnerLastActivityTime = Server.getInstance().getCurrentTime();
+        mapOwnerLastActivityTime = ChannelServer.getCurrentTime();
     }
 
     public bool isOwnershipRestricted(IPlayer chr)
@@ -4698,7 +4698,7 @@ public class MapleMap : IMap
 
     public void checkMapOwnerActivity()
     {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ChannelServer.getCurrentTime();
         if (timeNow - mapOwnerLastActivityTime > 60000)
         {
             if (unclaimOwnership() != null)

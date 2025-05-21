@@ -71,7 +71,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     public HiredMerchant(IPlayer owner, string desc, int itemId)
     {
         setPosition(owner.getPosition());
-        start = DateTimeOffset.Now;
+        start = DateTimeOffset.UtcNow;
         Owner = owner;
         ownerId = owner.getId();
         channel = owner.getClient().getChannel();
@@ -146,7 +146,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             int i = getFreeSlot();
             if (i > -1)
             {
-                visitors[i] = new Visitor(visitor, DateTimeOffset.Now);
+                visitors[i] = new Visitor(visitor, DateTimeOffset.UtcNow);
                 broadcastToVisitors(PacketCreator.hiredMerchantVisitorAdd(visitor, i + 1));
                 getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
 
@@ -190,7 +190,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     private void addVisitorToHistory(Visitor visitor)
     {
-        TimeSpan visitDuration = visitor.enteredAt - DateTimeOffset.Now;
+        TimeSpan visitDuration = visitor.enteredAt - DateTimeOffset.UtcNow;
         visitorHistory.Insert(0, new PastVisitor(visitor.chr.getName(), visitDuration));
         while (visitorHistory.Count > VISITOR_HISTORY_LIMIT)
         {
@@ -802,7 +802,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public int getTimeOpen()
     {
-        double openTime = (DateTimeOffset.Now - start).TotalMinutes;
+        double openTime = (DateTimeOffset.UtcNow - start).TotalMinutes;
         openTime /= 1440;   // heuristics since engineered method to count time here is unknown
         openTime *= 1318;
 

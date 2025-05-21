@@ -124,7 +124,7 @@ public class Expedition
     private void scheduleRegistrationEnd()
     {
         Expedition exped = this;
-        startTime = DateTimeOffset.Now.AddMinutes(type.getRegistrationMinutes());
+        startTime = DateTimeOffset.UtcNow.AddMinutes(type.getRegistrationMinutes());
 
         schedule = TimerManager.getInstance().schedule(() =>
         {
@@ -192,7 +192,7 @@ public class Expedition
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
         }
-        startTime = DateTimeOffset.Now;
+        startTime = DateTimeOffset.UtcNow;
         startMap.ChannelServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
     }
 
@@ -218,7 +218,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.Now).Seconds));
+        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.UtcNow).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -242,7 +242,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.Now).Seconds));
+        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.UtcNow).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -319,7 +319,7 @@ public class Expedition
         {
             if (mob.getId() == expeditionBoss)
             {
-                bossLogs.Add(">" + mob.getName() + " was killed after " + TimeUtils.GetTimeString(startTime) + " - " + DateTimeOffset.Now.ToString("HH:mm:ss") + "\r\n");
+                bossLogs.Add(">" + mob.getName() + " was killed after " + TimeUtils.GetTimeString(startTime) + " - " + DateTimeOffset.UtcNow.ToString("HH:mm:ss") + "\r\n");
                 return;
             }
         }

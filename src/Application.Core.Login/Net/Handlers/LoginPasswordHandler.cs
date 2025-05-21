@@ -84,7 +84,7 @@ public class LoginPasswordHandler : LoginHandlerBase
             c.sendPacket(LoginPacketCreator.GetLoginFailed(3));
             return;
         }
-        if (c.AccountEntity!.Tempban != null && c.AccountEntity.Tempban > DateTimeOffset.Now)
+        if (c.AccountEntity!.Tempban != null && c.AccountEntity.Tempban > DateTimeOffset.UtcNow)
         {
             c.sendPacket(LoginPacketCreator.GetTempBan(c.AccountEntity!.Tempban.Value.ToUnixTimeMilliseconds(), (byte)c.AccountEntity!.Greason));
             return;

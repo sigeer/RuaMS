@@ -38,7 +38,7 @@ namespace net.server.task;
 /// </summary>
 public class RankingLoginTask : AbstractRunnable
 {
-    private DateTimeOffset lastUpdate = DateTimeOffset.Now;
+    private DateTimeOffset lastUpdate = DateTimeOffset.UtcNow;
 
     private void resetMoveRank(DBContext dbContext, bool job)
     {
@@ -106,7 +106,7 @@ public class RankingLoginTask : AbstractRunnable
             }
             dbTrans.Commit();
 
-            lastUpdate = DateTimeOffset.Now;
+            lastUpdate = DateTimeOffset.UtcNow;
         }
         catch (Exception e)
         {

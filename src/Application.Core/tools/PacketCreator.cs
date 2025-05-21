@@ -562,7 +562,7 @@ public class PacketCreator
         foreach (PlayerCoolDownValueHolder cooling in chr.getAllCooldowns())
         {
             p.writeInt(cooling.skillId);
-            int timeLeft = (int)(cooling.length + cooling.startTime - DateTimeOffset.Now.ToUnixTimeMilliseconds());
+            int timeLeft = (int)(cooling.length + cooling.startTime - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
             p.writeShort(timeLeft / 1000);
         }
     }
@@ -587,7 +587,7 @@ public class PacketCreator
         p.writeInt(Randomizer.nextInt(999999));
         p.writeLong(0);
         p.writeLong(getTime(-2));
-        p.writeLong(getTime(DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+        p.writeLong(getTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
         p.writeInt(0);
         p.writeString("http://maplesolaxia.com");
         return p;
@@ -965,7 +965,7 @@ public class PacketCreator
             p.writeInt(Randomizer.nextInt());
         }
         addCharacterInfo(p, chr);
-        p.writeLong(getTime(DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+        p.writeLong(getTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
         return p;
     }
 
@@ -1064,7 +1064,7 @@ public class PacketCreator
             p.writeInt(chr.getPosition().X);
             p.writeInt(chr.getPosition().Y);
         }
-        p.writeLong(getTime(Server.getInstance().getCurrentTime()));
+        p.writeLong(getTime(chr.Client.CurrentServer.getCurrentTime()));
         return p;
     }
 
@@ -1080,7 +1080,7 @@ public class PacketCreator
         p.writeBool(true);
         p.writeInt(spawnPosition.X);    // spawn position placement thanks to Arnah (Vertisy)
         p.writeInt(spawnPosition.Y);
-        p.writeLong(getTime(Server.getInstance().getCurrentTime()));
+        p.writeLong(getTime(chr.Client.CurrentServer.getCurrentTime()));
         return p;
     }
 

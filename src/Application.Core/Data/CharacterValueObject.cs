@@ -10,11 +10,17 @@ namespace Application.Core.Datas
     }
     public class CharacterValueObject : CharacterViewObject
     {
+        /// <summary>
+        /// 与Account关联，即时保存
+        /// </summary>
         public CashShopDto CashShop { get; set; }
         /// <summary>
-        /// 账号下的其他玩家数据
+        /// 账号下的其他玩家数据，仅读取用
         /// </summary>
         public CharacterLinkDto? Link { get; set; }
+        /// <summary>
+        /// 避免同一账号下的不同角色读取结果不同，采用即时保存
+        /// </summary>
         public AccountDto Account { get; set; }
         public MonsterbookDto[] MonsterBooks { get; set; }
         public PetIgnoreDto[] PetIgnores { get; set; }

@@ -522,7 +522,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
-                        else if (c.AccountEntity?.Tempban != null && (c.AccountEntity.Tempban!.Value.AddDays(30)) > DateTimeOffset.Now)
+                        else if (c.AccountEntity?.Tempban != null && (c.AccountEntity.Tempban!.Value.AddDays(30)) > DateTimeOffset.UtcNow)
                         {
                             c.sendPacket(PacketCreator.showCashShopMessage(0));
                             c.enableCSActions();

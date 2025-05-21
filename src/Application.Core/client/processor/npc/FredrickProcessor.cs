@@ -125,7 +125,7 @@ public class FredrickProcessor
             {
                 Cid = cid,
                 Daynotes = 0,
-                Timestamp = DateTimeOffset.Now
+                Timestamp = DateTimeOffset.UtcNow
             };
 
             dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
@@ -167,7 +167,7 @@ public class FredrickProcessor
             {
                 int daynotes = Math.Min(dailyReminders.Length - 1, x.data.Daynotes);
 
-                int elapsedDays = TimeUtils.DayDiff(x.data.Timestamp, DateTimeOffset.Now);
+                int elapsedDays = TimeUtils.DayDiff(x.data.Timestamp, DateTimeOffset.UtcNow);
                 if (elapsedDays > 100)
                 {
                     expiredCids.Add(new(x.CId, x.Name, x.World));
@@ -184,7 +184,7 @@ public class FredrickProcessor
                             notifDay = dailyReminders[daynotes];
                         } while (elapsedDays >= notifDay);
 
-                        int inactivityDays = TimeUtils.DayDiff(x.LastLogoutTime, DateTimeOffset.Now);
+                        int inactivityDays = TimeUtils.DayDiff(x.LastLogoutTime, DateTimeOffset.UtcNow);
 
                         if (inactivityDays < 7 || daynotes >= dailyReminders.Length - 1)
                         {  // don't spam inactive players

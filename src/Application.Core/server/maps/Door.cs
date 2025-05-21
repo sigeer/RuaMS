@@ -61,7 +61,7 @@ public class Door
             {
                 this.town = this.target.getReturnMap();
                 this.townPortal = getTownDoorPortal(owner.getDoorSlot());
-                this.deployTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                this.deployTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 this.active = true;
 
                 if (townPortal != null)
@@ -207,7 +207,7 @@ public class Door
 
     public long getElapsedDeployTime()
     {
-        return DateTimeOffset.Now.ToUnixTimeMilliseconds() - deployTime;
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - deployTime;
     }
 
     private bool dispose()

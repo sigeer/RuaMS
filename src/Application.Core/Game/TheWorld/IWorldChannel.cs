@@ -198,5 +198,6 @@ namespace Application.Core.Game.TheWorld
         int GetAccountCharcterCount(int accId);
         void SendLogoff(int id);
         void SendPlayerObject(IPlayer character);
+
     }
 }

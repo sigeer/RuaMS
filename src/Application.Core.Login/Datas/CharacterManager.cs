@@ -215,7 +215,7 @@ namespace Application.Core.Login.Datas
 
             d.QuickSlot = _mapper.Map<QuickSlotDto>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == d.Character.AccountId).FirstOrDefault());
 
-            var now = DateTimeOffset.Now;
+            var now = DateTimeOffset.UtcNow;
             var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
 
             d.FameRecord = new RecentFameRecordDto

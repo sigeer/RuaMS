@@ -337,7 +337,7 @@ public class MiniGame : AbstractMapObject
 
         owner.setMiniGamePoints(visitor, 3, isOmok());
 
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = owner.Client.CurrentServer.getCurrentTime();
         if (nextavailabletie <= timeNow)
         {
             visitorscore += 10;

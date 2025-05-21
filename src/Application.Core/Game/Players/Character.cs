@@ -735,7 +735,7 @@ public partial class Player
         {
             return FameStatus.OK;
         }
-        else if (LastFameTime >= DateTimeOffset.Now.AddDays(-1).ToUnixTimeMilliseconds())
+        else if (LastFameTime >= DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeMilliseconds())
         {
             return FameStatus.NOT_TODAY;
         }
@@ -1568,7 +1568,7 @@ public partial class Player
             Skill battleship = SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
             sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
-            addCooldown(Corsair.BATTLE_SHIP, Server.getInstance().getCurrentTime(), cooldown * 1000);
+            addCooldown(Corsair.BATTLE_SHIP, getChannelServer().getCurrentTime(), cooldown * 1000);
             removeCooldown(5221999);
             cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
         }
@@ -1754,7 +1754,7 @@ public partial class Player
     /// <param name="emote"></param>
     public void changeFaceExpression(int emote)
     {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = getChannelServer().getCurrentTime();
         // IClient allows changing every 2 seconds. Give it a little bit of overhead for packet delays.
         if (timeNow - lastExpression > 1500)
         {
@@ -2645,7 +2645,7 @@ public partial class Player
     public void setPlayerAggro(int mobHash)
     {
         setTargetHpBarHash(mobHash);
-        setTargetHpBarTime(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        setTargetHpBarTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
     }
 
     public void resetPlayerAggro()
@@ -3012,7 +3012,7 @@ public partial class Player
         setBuffedValue(BuffStat.COMBO, 1);
         sendPacket(PacketCreator.giveBuff(
             skillid,
-            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.Now.ToUnixTimeMilliseconds()),
+            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
             stat));
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
     }
@@ -3031,7 +3031,7 @@ public partial class Player
     {
         try
         {
-            LastFameTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            LastFameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             LastFameCIds.Add(to.getId());
 
             using var dbContext = new DBContext();
@@ -3815,7 +3815,7 @@ public partial class Player
 
         cancelAllBuffs(false);
         dispelDebuffs();
-        lastDeathtime = Server.getInstance().getCurrentTime();
+        lastDeathtime = getChannelServer().getCurrentTime();
 
         EventInstanceManager? eim = getEventInstance();
         if (eim != null)
@@ -4945,7 +4945,7 @@ public partial class Player
 
     private long getDojoTimeLeft()
     {
-        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - Server.getInstance().getCurrentTime();
+        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - getChannelServer().getCurrentTime();
     }
 
     public void showDojoClock()
@@ -4958,7 +4958,7 @@ public partial class Player
 
     public void showUnderleveledInfo(Monster mob)
     {
-        long curTime = Server.getInstance().getCurrentTime();
+        long curTime = getChannelServer().getCurrentTime();
         if (nextWarningTime < curTime)
         {
             nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds);   // show underlevel info again after 1 minute
@@ -5072,7 +5072,7 @@ public partial class Player
 
     public void portalDelay(long delay)
     {
-        this.portaldelay = DateTimeOffset.Now.AddMilliseconds(delay).ToUnixTimeMilliseconds();
+        this.portaldelay = DateTimeOffset.UtcNow.AddMilliseconds(delay).ToUnixTimeMilliseconds();
     }
 
     public long portalDelay()
@@ -5150,7 +5150,7 @@ public partial class Player
     {
         try
         {
-            var tempBan = DateTimeOffset.Now.AddDays(days);
+            var tempBan = DateTimeOffset.UtcNow.AddDays(days);
             using var dbContext = new DBContext();
             dbContext.Accounts.Where(x => x.Id == AccountId).ExecuteUpdate(x => x.SetProperty(y => y.Banreason, desc)
                 .SetProperty(y => y.Tempban, tempBan)
@@ -5451,7 +5451,7 @@ public partial class Player
     /// <returns></returns>
     public TimeSpan getLoggedInTime()
     {
-        return DateTimeOffset.Now - loginTime;
+        return DateTimeOffset.UtcNow - loginTime;
     }
 
     public bool isLoggedin()
@@ -5511,7 +5511,7 @@ public partial class Player
         {
             using var dbContext = new DBContext();
             //check for pending name change
-            var currentTimeMillis = DateTimeOffset.Now;
+            var currentTimeMillis = DateTimeOffset.UtcNow;
 
             try
             {

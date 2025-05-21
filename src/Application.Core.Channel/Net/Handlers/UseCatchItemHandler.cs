@@ -45,7 +45,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
         p.readInt();
-        abm.setTimestamp(5, Server.getInstance().getCurrentTimestamp(), 4);
+        abm.setTimestamp(5, c.CurrentServer.getCurrentTimestamp(), 4);
         p.readShort();
         int itemId = p.readInt();
         int monsterid = p.readInt();

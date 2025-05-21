@@ -94,7 +94,7 @@ public class ItemCommand : CommandBase
                 // thanks to istreety & TacoBell
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
-                long expiration = DateTimeOffset.Now.AddDays(days).ToUnixTimeMilliseconds();
+                long expiration = DateTimeOffset.UtcNow.AddDays(days).ToUnixTimeMilliseconds();
                 int petid = ItemManager.CreatePet(itemId);
 
                 InventoryManipulator.addById(c, itemId, quantity, player.getName(), petid, expiration: expiration);

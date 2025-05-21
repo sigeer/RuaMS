@@ -4,9 +4,8 @@ using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Managers;
+using Application.Core.Game.TheWorld;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using Application.Utility.Exceptions;
@@ -17,12 +16,10 @@ using client.inventory;
 using client.keybind;
 using constants.id;
 using constants.inventory;
-using Microsoft.EntityFrameworkCore;
 using net.server;
 using Serilog;
 using server;
 using server.events;
-using server.maps;
 using server.quest;
 using tools;
 
@@ -190,7 +187,7 @@ namespace Application.Core.Channel.Services
                 int skillid = item.SkillId;
                 long length = item.Length;
                 long startTime = item.StartTime;
-                if (skillid != 5221999 && (length + startTime < Server.getInstance().getCurrentTime()))
+                if (skillid != 5221999 && (length + startTime < c.CurrentServer.getCurrentTime()))
                 {
                     continue;
                 }

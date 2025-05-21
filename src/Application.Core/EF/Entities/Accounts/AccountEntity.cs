@@ -7,7 +7,7 @@ public partial class AccountEntity
     {
         Name = name;
         Password = password;
-        Createdat = DateTimeOffset.Now;
+        Createdat = DateTimeOffset.UtcNow;
         Birthday = DateTime.Now.Date;
         Nick = name;
     }

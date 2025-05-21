@@ -20,6 +20,7 @@
 
 
 using Application.Core.Game.Life;
+using Application.Core.Game.TheWorld;
 using server;
 
 namespace net.server.coordinator.world;
@@ -31,9 +32,10 @@ namespace net.server.coordinator.world;
  */
 public class MonsterAggroCoordinator
 {
+    readonly IWorldChannel _channelServer;
     private object lockObj = new object();
     private object idleLock = new object();
-    private long lastStopTime = Server.getInstance().getCurrentTime();
+    private long lastStopTime;
 
     private ScheduledFuture? aggroMonitor = null;
 
@@ -41,6 +43,12 @@ public class MonsterAggroCoordinator
     private Dictionary<Monster, List<PlayerAggroEntry>> mobSortedAggros = new();
 
     private HashSet<int> mapPuppetEntries = new();
+
+    public MonsterAggroCoordinator(IWorldChannel channelServer)
+    {
+        _channelServer = channelServer;
+        lastStopTime = _channelServer.getCurrentTime();
+    }
 
     private class PlayerAggroEntry(int cid)
     {
@@ -73,7 +81,7 @@ public class MonsterAggroCoordinator
             Monitor.Exit(idleLock);
         }
 
-        lastStopTime = Server.getInstance().getCurrentTime();
+        lastStopTime = _channelServer.getCurrentTime();
     }
 
     public void startAggroCoordinator()
@@ -97,7 +105,7 @@ public class MonsterAggroCoordinator
             Monitor.Exit(idleLock);
         }
 
-        int timeDelta = (int)Math.Ceiling((double)(Server.getInstance().getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
+        int timeDelta = (int)Math.Ceiling((double)(_channelServer.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
         if (timeDelta > 0)
         {
             runAggroUpdate(timeDelta);

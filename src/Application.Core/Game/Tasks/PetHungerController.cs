@@ -6,14 +6,13 @@ namespace Application.Core.Game.Tasks
     {
         private object activePetsLock = new object();
         private Dictionary<int, int> activePets = new();
-        private ScheduledFuture? petsSchedule;
         private DateTimeOffset petUpdate;
 
         readonly IWorldChannel worldChannel;
 
         public PetHungerController(IWorldChannel worldChannel) : base($"PetHungerController_{worldChannel.InstanceId}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
-            petUpdate = DateTimeOffset.Now;
+            petUpdate = DateTimeOffset.UtcNow;
             this.worldChannel = worldChannel;
         }
 
@@ -37,7 +36,7 @@ namespace Application.Core.Game.Tasks
             try
             {
                 int initProc;
-                if (DateTimeOffset.Now - petUpdate > TimeSpan.FromSeconds(55))
+                if (DateTimeOffset.UtcNow - petUpdate > TimeSpan.FromSeconds(55))
                 {
                     initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 2;
                 }
@@ -76,7 +75,7 @@ namespace Application.Core.Game.Tasks
             Monitor.Enter(activePetsLock);
             try
             {
-                petUpdate = DateTimeOffset.Now;
+                petUpdate = DateTimeOffset.UtcNow;
                 deployedPets = new(activePets);   // exception here found thanks to MedicOP
             }
             finally

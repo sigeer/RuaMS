@@ -84,7 +84,7 @@ public class Server
 
     private volatile bool availableDeveloperRoom = false;
     public bool IsOnline { get; set; }
-    public static DateTimeOffset uptime = DateTimeOffset.Now;
+    public static DateTimeOffset uptime = DateTimeOffset.UtcNow;
     ReaderWriterLockSlim lgnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     private Server()
     {
@@ -107,7 +107,7 @@ public class Server
 
     public long forceUpdateCurrentTime()
     {
-        long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         serverCurrentTime = timeNow;
         currentTime.set(timeNow);
 
@@ -230,7 +230,7 @@ public class Server
             return;
         }
 
-        long timeClear = DateTimeOffset.Now.AddDays(-14).ToUnixTimeMilliseconds();
+        long timeClear = DateTimeOffset.UtcNow.AddDays(-14).ToUnixTimeMilliseconds();
 
         using var dbTrans = dbContext.Database.BeginTransaction();
         var codeList = dbContext.Nxcodes.Where(x => x.Expiration <= timeClear).ToList();
@@ -295,7 +295,7 @@ public class Server
         lock (activeCoupons)
         {
             activeCoupons.Clear();
-            var d = DateTimeOffset.Now;
+            var d = DateTimeOffset.UtcNow;
 
             int weekDay = (int)d.DayOfWeek;
             weekDay = weekDay == 0 ? 7 : weekDay;

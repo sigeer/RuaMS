@@ -62,7 +62,7 @@ public class TransferNameHandler : ChannelHandlerBase
             c.sendPacket(PacketCreator.sendNameTransferRules(4));
             return;
         }
-        else if (c.AccountEntity?.Tempban != null && c.AccountEntity?.Tempban.Value.AddDays(30) < DateTimeOffset.Now)
+        else if (c.AccountEntity?.Tempban != null && c.AccountEntity?.Tempban.Value.AddDays(30) < DateTimeOffset.UtcNow)
         {
             c.sendPacket(PacketCreator.sendNameTransferRules(2));
             return;
@@ -79,7 +79,7 @@ public class TransferNameHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.sendNameTransferRules(1));
                     return;
                 }
-                else if (rs.CompletionTime.Value.AddMilliseconds(YamlConfig.config.server.NAME_CHANGE_COOLDOWN) > DateTimeOffset.Now)
+                else if (rs.CompletionTime.Value.AddMilliseconds(YamlConfig.config.server.NAME_CHANGE_COOLDOWN) > DateTimeOffset.UtcNow)
                 {
                     c.sendPacket(PacketCreator.sendNameTransferRules(3));
                     return;

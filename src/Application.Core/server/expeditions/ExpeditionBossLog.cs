@@ -97,13 +97,13 @@ public class ExpeditionBossLog
         /*
         Boss logs resets 12am, weekly thursday 12AM - thanks Smitty Werbenjagermanjensen (superadlez) - https://www.reddit.com/r/Maplestory/comments/61tiup/about_reset_time/
         */
-        var thursday = DateTimeOffset.Now.Date;
+        var thursday = DateTimeOffset.UtcNow.Date;
         int delta = DayOfWeek.Thursday - thursday.DayOfWeek;
         //if (delta <= 0)
         //    delta += 7; // 如加7天到下一个周四
         thursday.AddDays(delta);
 
-        DateTimeOffset now = DateTimeOffset.Now;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         var deltaTime = now - thursday;    // 2x time: get Date into millis
         if (deltaTime.TotalHours < 12)
         {

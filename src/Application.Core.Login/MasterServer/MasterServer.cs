@@ -14,6 +14,7 @@ using Application.Shared.Configs;
 using Application.Shared.Net;
 using Application.Shared.Servers;
 using Application.Utility;
+using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
 using client.processor.npc;
@@ -47,7 +48,7 @@ namespace Application.Core.Login
 
         public IMasterServerTransport Transport { get; }
 
-        public DateTimeOffset StartupTime { get; }
+        public DateTimeOffset StartupTime { get; private set; }
 
         private HashSet<int> queuedGuilds = new();
         public PlayerStorage Players { get; }
@@ -93,7 +94,7 @@ namespace Application.Core.Login
 
             InstanceId = Guid.NewGuid().ToString();
             ChannelServerList = new List<ChannelServerWrapper>();
-            StartupTime = DateTimeOffset.Now;
+            StartupTime = DateTimeOffset.UtcNow;
             Transport = new MasterServerTransport(this);
             NettyServer = new LoginServer(this);
 
@@ -117,6 +118,7 @@ namespace Application.Core.Login
             Players = new PlayerStorage();
             BuffStorage = new PlayerBuffStorage();
             this.accountManager = accountManager;
+
         }
 
         bool isShuttingdown = false;
@@ -127,28 +129,37 @@ namespace Application.Core.Login
                 _logger.LogInformation("正在停止服务器[{ServerName}]", InstanceId);
                 return;
             }
+
             isShuttingdown = true;
-            _logger.LogInformation("[{ServerName}] 停止中...", "登录服务器");
+            _logger.LogInformation("[{ServerName}] 停止中...", "登录/中心服务器");
             await NettyServer.Stop();
+            _logger.LogInformation("[{ServerName}] 停止监听", "登录服务器");
 
             var storageService = ServiceProvider.GetRequiredService<StorageService>();
-            _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", "服务器");
+            _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", "中心服务器");
             await storageService.CommitAllImmediately();
-            _logger.LogInformation("[{ServerName}] 玩家数据已保存", "服务器");
+            _logger.LogInformation("[{ServerName}] 玩家数据已保存", "中心服务器");
 
             IsRunning = false;
             isShuttingdown = false;
-            _logger.LogInformation("[{ServerName}] 已停止", "服务器");
+            _logger.LogInformation("[{ServerName}] 已停止", "登录/中心服务器");
         }
 
         public async Task StartServer()
         {
-            await RegisterTask();
-
             _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
             await NettyServer.Start();
             _logger.LogInformation("[{ServerName}] 启动成功, 监听端口{Port}", "登录服务器", Port);
+
+            await RegisterTask();
+
             IsRunning = true;
+            _logger.LogInformation("[{ServerName}] 已启动", "登录/中心服务器");
+
+            StartupTime = DateTimeOffset.UtcNow;
+            ForceUpdateServerTime();
+            _logger.LogInformation("[{ServerName}] 服务器时间：{CurrentTime}", "登录/中心服务器", DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
+            _logger.LogInformation("[{ServerName}] 服务器系统时间：{CurrentTime}", "登录/中心服务器", DateTimeOffset.UtcNow.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
         public int AddChannel(ChannelServerWrapper channel)
@@ -234,18 +245,20 @@ namespace Application.Core.Login
 
         private async Task RegisterTask()
         {
-            _logger.LogInformation("定时任务加载中...");
+            _logger.LogInformation("[{ServerName}] 定时任务加载中...", "中心服务器");
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             var tMan = TimerManager.getInstance();
             await tMan.Start();
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
-            tMan.register(new NamedRunnable("Purge", TimerManager.purge), YamlConfig.config.server.PURGING_INTERVAL);
+            tMan.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            tMan.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
+
             tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
             tMan.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
             tMan.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
             tMan.register(new LoginStorageTask(sessionCoordinator), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             tMan.register(new DueyFredrickTask(ServiceProvider.GetRequiredService<FredrickProcessor>()), TimeSpan.FromHours(1), timeLeft);
-            _logger.LogInformation("定时任务加载完成");
+            _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");
         }
 
         public bool IsWorldCapacityFull()
@@ -276,15 +289,7 @@ namespace Application.Core.Login
             return status;
         }
 
-        public int getCurrentTimestamp()
-        {
-            return Server.getInstance().getCurrentTimestamp();
-        }
 
-        public long getCurrentTime()
-        {
-            return Server.getInstance().getCurrentTime();
-        }
 
         public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
         {
@@ -301,6 +306,29 @@ namespace Application.Core.Login
         public bool CheckCharacterName(string name)
         {
             return _characterSevice.CheckCharacterName(name);
+        }
+
+        private AtomicLong currentTime = new AtomicLong(0);
+        private long serverCurrentTime = 0;
+        public int getCurrentTimestamp()
+        {
+            return (int)(getCurrentTime() - StartupTime.ToUnixTimeMilliseconds());
+        }
+
+        public long getCurrentTime()
+        {
+            return serverCurrentTime;
+        }
+        public void UpdateServerTime()
+        {
+            serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+        }
+
+        public void ForceUpdateServerTime()
+        {
+            var forceTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            serverCurrentTime = forceTime;
+            currentTime.set(forceTime);
         }
     }
 }

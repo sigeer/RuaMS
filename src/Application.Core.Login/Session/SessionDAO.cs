@@ -24,7 +24,7 @@ public class SessionDAO
         try
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            dbContext.Hwidaccounts.Where(X => X.ExpiresAt < DateTimeOffset.Now).ExecuteDelete();
+            dbContext.Hwidaccounts.Where(X => X.ExpiresAt < DateTimeOffset.UtcNow).ExecuteDelete();
         }
         catch (Exception e)
         {

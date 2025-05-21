@@ -101,7 +101,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     private int visibleWorlds;
     private long lastNpcClick;
-    private long lastPacket = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    private long lastPacket = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private int lang = 0;
 
     public IServerBase<IServerTransport> CurrentServer { get; }
@@ -271,7 +271,7 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public void updateLastPacket()
     {
-        lastPacket = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        lastPacket = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     }
 
     public long getLastPacket()
@@ -672,7 +672,7 @@ public class Client : ChannelHandlerAdapter, IClient
         }
 
         using var dbContext = new DBContext();
-        dbContext.Accounts.Where(x => x.Id == getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Loggedin, (sbyte)newState).SetProperty(y => y.Lastlogin, DateTimeOffset.Now));
+        dbContext.Accounts.Where(x => x.Id == getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Loggedin, (sbyte)newState).SetProperty(y => y.Lastlogin, DateTimeOffset.UtcNow));
 
         if (newState == LOGIN_NOTLOGGEDIN)
         {
@@ -1154,12 +1154,12 @@ public class Client : ChannelHandlerAdapter, IClient
 
     public void pongReceived()
     {
-        lastPong = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        lastPong = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     }
 
     public void checkIfIdle(IdleStateEvent evt)
     {
-        long pingedAt = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        long pingedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         sendPacket(PacketCreator.getPing());
         TimerManager.getInstance().schedule(() =>
         {
@@ -1399,7 +1399,7 @@ public class Client : ChannelHandlerAdapter, IClient
     {
         lock (announceBossHPLock)
         {
-            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             int targetHash = OnlinedCharacter.getTargetHpBarHash();
 
             if (mobHash != targetHash)

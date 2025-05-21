@@ -40,7 +40,7 @@ namespace Application.Core.Managers
                 int threadid = dbModel.Threadid;
 
 
-                var newModel = new BbsReply(threadid, c.OnlinedCharacter.Id, Server.getInstance().getCurrentTime(), text);
+                var newModel = new BbsReply(threadid, c.OnlinedCharacter.Id, c.CurrentServer.getCurrentTime(), text);
                 dbContext.BbsReplies.Add(newModel);
                 dbContext.SaveChanges();
 
@@ -68,7 +68,9 @@ namespace Application.Core.Managers
                 using var dbContext = new DBContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
                 dbContext.BbsThreads.Where(x => x.Guildid == chr.GuildId && x.Localthreadid == localthreadid && x.Postercid == chr.Id || chr.GuildRank < 3)
-                    .ExecuteUpdate(x => x.SetProperty(y => y.Name, title).SetProperty(y => y.Timestamp, Server.getInstance().getCurrentTime()).SetProperty(y => y.Icon, icon).SetProperty(y => y.Startpost, text));
+                    .ExecuteUpdate(x => x.SetProperty(y => y.Name, title)
+                    .SetProperty(y => y.Timestamp, client.CurrentServer.getCurrentTime())
+                    .SetProperty(y => y.Icon, icon).SetProperty(y => y.Startpost, text));
 
                 displayThread(dbContext, client, localthreadid);
                 dbTrans.Commit();
@@ -97,7 +99,7 @@ namespace Application.Core.Managers
                     var newModel = new BbsThread()
                     {
                         Postercid = chr.Id,
-                        Timestamp = Server.getInstance().getCurrentTime(),
+                        Timestamp = client.CurrentServer.getCurrentTime(),
                         Name = title,
                         Icon = (short)icon,
                         Startpost = text,

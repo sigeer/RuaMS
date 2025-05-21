@@ -419,7 +419,7 @@ namespace Application.Core.Game.Players
 
         public void showMapOwnershipInfo(IPlayer mapOwner)
         {
-            long curTime = Server.getInstance().getCurrentTime();
+            long curTime = getChannelServer().getCurrentTime();
             if (nextWarningTime < curTime)
             {
                 nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds); // show underlevel info again after 1 minute

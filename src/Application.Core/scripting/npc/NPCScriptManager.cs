@@ -204,7 +204,7 @@ public class NPCScriptManager : AbstractScriptManager
     {
         var c = cm.getClient();
         c.OnlinedCharacter.setCS(false);
-        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         c.NPCConversationManager = null;
         _scripts.Remove(c);
 

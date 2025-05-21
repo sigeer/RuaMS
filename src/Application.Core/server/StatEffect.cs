@@ -1374,7 +1374,7 @@ public class StatEffect
     {
         applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
 
-        long starttime = Server.getInstance().getCurrentTime();
+        long starttime = applyto.getChannelServer().getCurrentTime();
         //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
         //	ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + 99999) - Server.getInstance().getCurrentTime()));
         applyto.registerEffect(this, starttime, long.MaxValue, false);
@@ -1385,7 +1385,7 @@ public class StatEffect
         // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
         applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
 
-        long starttime = Server.getInstance().getCurrentTime();
+        long starttime = applyto.getChannelServer().getCurrentTime();
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
@@ -1394,7 +1394,7 @@ public class StatEffect
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
 
-        long leftDuration = (starttime + localDuration) - Server.getInstance().getCurrentTime();
+        long leftDuration = (starttime + localDuration) - target.getChannelServer().getCurrentTime();
         if (leftDuration > 0)
         {
             if (isDash() || isInfusion())
@@ -1561,7 +1561,7 @@ public class StatEffect
                 applyto.sendPacket(buff);
             }
 
-            long starttime = Server.getInstance().getCurrentTime();
+            long starttime = applyto.getChannelServer().getCurrentTime();
             //CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
             //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, localDuration);
             applyto.registerEffect(this, starttime, starttime + localDuration, false);

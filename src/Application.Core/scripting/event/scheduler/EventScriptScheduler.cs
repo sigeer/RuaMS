@@ -19,6 +19,7 @@
  */
 
 
+using Application.Core.Game.TheWorld;
 using net.server;
 
 namespace scripting.Event.scheduler;
@@ -36,6 +37,13 @@ public class EventScriptScheduler
     private object schedulerLock = new object();
 
     CancellationTokenSource? cancellationTokenSource;
+
+    readonly IWorldChannel _channelServer;
+
+    public EventScriptScheduler(IWorldChannel channelServer)
+    {
+        _channelServer = channelServer;
+    }
 
     private void runBaseSchedule()
     {
@@ -65,7 +73,7 @@ public class EventScriptScheduler
             registeredEntriesCopy = new(registeredEntries);
 
 
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = _channelServer.getCurrentTime();
             toRemove = new();
             foreach (var rmd in registeredEntriesCopy)
             {
@@ -111,7 +119,7 @@ public class EventScriptScheduler
                 }, cancellationTokenSource.Token);
             }
 
-            registeredEntries.Add(scheduledAction, Server.getInstance().getCurrentTime() + duration);
+            registeredEntries.Add(scheduledAction, _channelServer.getCurrentTime() + duration);
         }
         finally
         {

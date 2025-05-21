@@ -42,7 +42,7 @@ public class Fishing
 
     public static double[] fetchFishingLikelihood()
     {
-        var dt = DateTimeOffset.Now;
+        var dt = DateTimeOffset.UtcNow;
         int dayOfYear = dt.DayOfYear;
 
         int hours = dt.Hour;

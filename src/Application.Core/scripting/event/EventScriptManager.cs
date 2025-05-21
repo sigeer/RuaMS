@@ -78,7 +78,6 @@ public class EventScriptManager : AbstractScriptManager
                 {
                     throw new BusinessFatalException($"事件名重复，名称：{eventName}");
                 }
-                _logger.LogDebug("频道服务器{InstanceId}事件 {EventName} 加载成功，脚本 {ScriptPath} ", LinkedWorldChannel.InstanceId, eventName, script);
             }
         }
         active = events.Count > 0;

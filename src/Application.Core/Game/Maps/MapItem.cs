@@ -132,7 +132,7 @@ public class MapItem : AbstractMapObject, IItemProp
 
     public bool hasExpiredOwnershipTime()
     {
-        return DateTimeOffset.Now.ToUnixTimeMilliseconds() - dropTime >= 15 * 1000;
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - dropTime >= 15 * 1000;
     }
 
     public bool canBePickedBy(IPlayer chr)

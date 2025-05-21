@@ -56,7 +56,7 @@ public class Fitness
     {
         chr.getMap().startEvent();
         chr.getClient().sendPacket(PacketCreator.getClock(900));
-        this.timeStarted = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        this.timeStarted = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         this.time = 900000;
         checkAndMessage();
 
@@ -84,7 +84,7 @@ public class Fitness
 
     public long getTimeLeft()
     {
-        return time - (DateTimeOffset.Now.ToUnixTimeMilliseconds() - timeStarted);
+        return time - (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timeStarted);
     }
 
     public void checkAndMessage()

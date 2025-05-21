@@ -64,7 +64,7 @@ public class NewYearCardRecord
 
         this.stringContent = message;
 
-        this.dateSent = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        this.dateSent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         this.dateReceived = 0;
     }
 
@@ -163,7 +163,7 @@ public class NewYearCardRecord
     public static void updateNewYearCard(NewYearCardRecord newyear)
     {
         newyear.receiverReceivedCard = true;
-        newyear.dateReceived = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        newyear.dateReceived = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         using var dbContext = new DBContext();
         dbContext.Newyears.Where(x => x.Id == newyear.id)
             .ExecuteUpdate(x => x.SetProperty(y => y.TimeReceived, newyear.dateReceived).SetProperty(y => y.Received, true));

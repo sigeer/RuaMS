@@ -14,6 +14,7 @@ using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Net;
 using Application.Shared.Servers;
+using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Loggers;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ using Serilog;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
+using System.Diagnostics;
 using System.Net;
 using tools;
 
@@ -66,7 +68,7 @@ public partial class WorldChannel : IWorldChannel
     private Event? @event;
     private HashSet<int> usedMC = new();
 
-    public DateTimeOffset StartupTime { get; }
+    public DateTimeOffset StartupTime { get; private set; }
 
     public DojoInstance DojoInstance { get; }
 
@@ -164,7 +166,7 @@ public partial class WorldChannel : IWorldChannel
         QuestScriptManager = LifeScope.ServiceProvider.GetRequiredService<QuestScriptManager>();
 
         _chrSrv = LifeScope.ServiceProvider.GetRequiredService<CharacterService>();
-        StartupTime = DateTimeOffset.Now;
+
     }
 
     public int getTransportationTime(double travelTime)
@@ -243,6 +245,11 @@ public partial class WorldChannel : IWorldChannel
         CharacterDiseaseController.Register();
 
         IsRunning = true;
+        StartupTime = DateTimeOffset.UtcNow;
+        ForceUpdateServerTime();
+
+        log.Information("[{ServerName}] 服务器时间：{CurrentTime}", $"频道{channel}", DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
+        log.Information("[{ServerName}] 服务器系统时间：{CurrentTime}", $"频道{channel}", DateTimeOffset.UtcNow.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
     bool isShuttingDown = false;
@@ -726,15 +733,6 @@ public partial class WorldChannel : IWorldChannel
     }
 
 
-    public int getCurrentTimestamp()
-    {
-        return Transport.GetCurrentTimestamp();
-    }
-
-    public long getCurrentTime()
-    {
-        return Transport.GetCurrentTime();
-    }
 
     public IPEndPoint GetChannelEndPoint(int channel)
     {
@@ -841,5 +839,29 @@ public partial class WorldChannel : IWorldChannel
     public void SendPlayerObject(IPlayer character)
     {
         Transport.SendPlayerObject(_chrSrv.Deserialize(character));
+    }
+
+    private AtomicLong currentTime = new AtomicLong(0);
+    private long serverCurrentTime = 0;
+
+    public int getCurrentTimestamp()
+    {
+        return Transport.GetCurrentTimestamp();
+    }
+
+    public long getCurrentTime()
+    {
+        return serverCurrentTime;
+    }
+    public void UpdateServerTime()
+    {
+        serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+    }
+
+    public void ForceUpdateServerTime()
+    {
+        var forceTime = Transport.GetCurrentTime();
+        serverCurrentTime = forceTime;
+        currentTime.set(forceTime);
     }
 }

@@ -97,7 +97,7 @@ public class AbstractPlayerInteraction
 
     public int getHourOfDay()
     {
-        return DateTimeOffset.Now.Hour;
+        return DateTimeOffset.UtcNow.Hour;
     }
 
     public int getMarketPortalId(int mapId)
@@ -663,11 +663,11 @@ public class AbstractPlayerInteraction
                     evolved.Tameness = from.Tameness;
                     evolved.Fullness = from.Fullness;
                     evolved.Level = from.Level;
-                    evolved.setExpiration(DateTimeOffset.Now.AddMilliseconds(expires).ToUnixTimeMilliseconds());
+                    evolved.setExpiration(DateTimeOffset.UtcNow.AddMilliseconds(expires).ToUnixTimeMilliseconds());
                     evolved.saveToDb();
                 }
 
-                //InventoryManipulator.addById(c, id, (short) 1, null, petId, expires == -1 ? -1 : DateTimeOffset.Now.ToUnixTimeMilliseconds() + expires);
+                //InventoryManipulator.addById(c, id, (short) 1, null, petId, expires == -1 ? -1 : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + expires);
             }
 
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -702,7 +702,7 @@ public class AbstractPlayerInteraction
 
             if (expires >= 0)
             {
-                item!.setExpiration(DateTimeOffset.Now.ToUnixTimeMilliseconds() + expires);
+                item!.setExpiration(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + expires);
             }
 
             if (!InventoryManipulator.checkSpace(c, id, quantity, ""))
@@ -1296,7 +1296,7 @@ public class AbstractPlayerInteraction
     {
         List<Pet> list = new();
 
-        long curTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        long curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         foreach (Item it in getPlayer().getInventory(InventoryType.CASH).list())
         {
             if (ItemConstants.isPet(it.getItemId()) && it.getExpiration() < curTime)
@@ -1360,7 +1360,7 @@ public class AbstractPlayerInteraction
 
     public long getCurrentTime()
     {
-        return Server.getInstance().getCurrentTime();
+        return c.CurrentServer.getCurrentTime();
     }
 
     public void weakenAreaBoss(int monsterId, string message)

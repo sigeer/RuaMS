@@ -376,7 +376,7 @@ namespace Application.Core.Managers
         //            ret.SavedLocations.LoadData(dbContext);
 
         //            // Fame history
-        //            var now = DateTimeOffset.Now;
+        //            var now = DateTimeOffset.UtcNow;
         //            var fameLogFromDB = dbContext.Famelogs.Where(x => x.Characterid == ret.Id && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
         //            if (fameLogFromDB.Count > 0)
         //            {
@@ -643,7 +643,7 @@ namespace Application.Core.Managers
             {
                 try
                 {
-                    dbContext.Namechanges.Where(x => x.Id == nameChangeId).ExecuteUpdate(x => x.SetProperty(y => y.CompletionTime, DateTimeOffset.Now));
+                    dbContext.Namechanges.Where(x => x.Id == nameChangeId).ExecuteUpdate(x => x.SetProperty(y => y.CompletionTime, DateTimeOffset.UtcNow));
                 }
                 catch (Exception e)
                 {

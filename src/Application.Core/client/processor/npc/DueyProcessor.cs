@@ -456,7 +456,7 @@ public class DueyProcessor
         {
             try
             {
-                long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 if (timeNow - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
                 {
                     c.sendPacket(PacketCreator.enableActions());
@@ -494,7 +494,7 @@ public class DueyProcessor
 
         try
         {
-            var dayBefore30 = DateTimeOffset.Now.AddDays(-30);
+            var dayBefore30 = DateTimeOffset.UtcNow.AddDays(-30);
             using var dbContext = new DBContext();
             var toRemove = dbContext.Dueypackages.Where(x => x.TimeStamp < dayBefore30).Select(X => X.PackageId).ToList();
 

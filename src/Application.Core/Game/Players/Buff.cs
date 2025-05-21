@@ -128,7 +128,7 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                long curtime = Server.getInstance().getCurrentTime();
+                long curtime = getChannelServer().getCurrentTime();
 
                 Dictionary<int, PlayerBuffValueHolder> ret = new();
                 foreach (Dictionary<BuffStat, BuffStatValueHolder> bel in buffEffects.Values)
@@ -223,7 +223,7 @@ namespace Application.Core.Game.Players
                     {
                         es = new(buffExpires);
 
-                        long curTime = Server.getInstance().getCurrentTime();
+                        long curTime = getChannelServer().getCurrentTime();
                         foreach (var bel in es)
                         {
                             if (curTime >= bel.Value)

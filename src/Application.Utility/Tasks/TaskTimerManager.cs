@@ -96,12 +96,12 @@ public class TaskTimerManager : ITimerManager
 
     public ScheduledFuture scheduleAtTimestamp(AbstractRunnable r, DateTimeOffset time)
     {
-        return schedule(r, (time - DateTimeOffset.Now));
+        return schedule(r, (time - DateTimeOffset.UtcNow));
     }
 
     public ScheduledFuture scheduleAtTimestamp(Action r, DateTimeOffset time)
     {
-        return schedule(TempRunnable.Parse(r), time - DateTimeOffset.Now);
+        return schedule(TempRunnable.Parse(r), time - DateTimeOffset.UtcNow);
     }
 
 }

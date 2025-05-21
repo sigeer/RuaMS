@@ -28,7 +28,7 @@ namespace Application.Core.Game.Players
                 {
                     bool deletedCoupon = false;
 
-                    long expiration, currenttime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    long expiration, currenttime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     foreach (var skill in getSkills())
                     {
                         if (skill.Value.expiration != -1 && skill.Value.expiration < currenttime)

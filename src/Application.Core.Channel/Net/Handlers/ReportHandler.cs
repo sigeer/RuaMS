@@ -102,7 +102,7 @@ public class ReportHandler : ChannelHandlerBase
         using var dbContext = new DBContext();
         dbContext.Reports.Add(new Report
         {
-            Reporttime = DateTimeOffset.Now,
+            Reporttime = DateTimeOffset.UtcNow,
             Reporterid = reporterid,
             Victimid = victimid,
             Reason = (sbyte)reason,

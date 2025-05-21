@@ -38,14 +38,11 @@ namespace Application.Core.Channel.Net
         IPacketProcessor<IChannelClient> _packetProcessor;
         public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
 
-        readonly CharacterService _chrSrv;
-        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log, CharacterService characterService)
+        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log)
             : base(sessionId, currentServer, nettyChannel, log)
         {
             CurrentServer = currentServer;
             _packetProcessor = packetProcessor;
-
-            _chrSrv = characterService;
         }
 
         public override bool IsOnlined => Character != null;
@@ -333,7 +330,7 @@ namespace Application.Core.Channel.Net
         long lastNpcClick;
         public bool canClickNPC()
         {
-            return lastNpcClick + 500 < Server.getInstance().getCurrentTime();
+            return lastNpcClick + 500 < CurrentServer.getCurrentTime();
         }
 
         public void setClickedNPC()
@@ -383,7 +380,7 @@ namespace Application.Core.Channel.Net
         {
             lock (announceBossHPLock)
             {
-                long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 int targetHash = OnlinedCharacter.getTargetHpBarHash();
 
                 if (mobHash != targetHash)

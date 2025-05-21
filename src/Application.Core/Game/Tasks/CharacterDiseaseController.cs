@@ -1,5 +1,4 @@
 using Application.Core.Game.TheWorld;
-using Application.Utility.Configs;
 
 namespace Application.Core.Game.Tasks
 {
@@ -34,6 +33,8 @@ namespace Application.Core.Game.Tasks
 
         protected override void HandleRun()
         {
+            worldChannel.UpdateServerTime();
+
             Queue<IChannelClient> processDiseaseAnnounceClients;
             Monitor.Enter(disLock);
             try

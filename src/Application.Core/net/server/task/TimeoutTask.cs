@@ -9,7 +9,7 @@ public class TimeoutTask : BaseTask
 {
     public override void HandleRun()
     {
-        var time = DateTimeOffset.Now;
+        var time = DateTimeOffset.UtcNow;
         var chars = wserv.getPlayerStorage().GetAllOnlinedPlayers();
         foreach (var chr in chars)
         {

@@ -139,7 +139,7 @@ public class MTSHandler : ChannelHandlerBase
                                     return;
                                 }
 
-                                var date = DateTimeOffset.Now.AddDays(7).ToString("yyyy-MM-dd");
+                                var date = DateTimeOffset.UtcNow.AddDays(7).ToString("yyyy-MM-dd");
 
                                 if (!i.getInventoryType().Equals(InventoryType.EQUIP))
                                 {

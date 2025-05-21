@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Maps;
 using Application.Core.Managers;
 using client.inventory.manipulator;
 using constants.id;
@@ -75,7 +75,7 @@ namespace Application.Core.Gameplay
             }
 
             // 掉落物捡取时间限制
-            if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (DateTimeOffset.Now.ToUnixTimeMilliseconds() - mapItem.getDropTime() < 400))
+            if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - mapItem.getDropTime() < 400))
             {
                 _player.sendPacket(PacketCreator.enableActions());
                 return false;

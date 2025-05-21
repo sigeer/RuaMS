@@ -393,11 +393,11 @@ namespace Application.Core.Login.Net
         DateTimeOffset lastRequestCharList;
         public bool CanRequestCharlist()
         {
-            return lastRequestCharList.AddMilliseconds(877) < DateTimeOffset.Now;
+            return lastRequestCharList.AddMilliseconds(877) < DateTimeOffset.UtcNow;
         }
         public void UpdateRequestCharListTick()
         {
-            lastRequestCharList = DateTimeOffset.Now;
+            lastRequestCharList = DateTimeOffset.UtcNow;
         }
     }
 }

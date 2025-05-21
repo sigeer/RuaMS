@@ -123,7 +123,7 @@ namespace Application.Core.Login.Datas
 
                 _chrUpdate.Clear();
                 await dbTrans.CommitAsync();
-                _logger.LogInformation("保存用户数据{Status}", "成功");
+                _logger.LogInformation("保存了{Count}个用户数据", _chrUpdate.Keys.Count);
             }
             catch(Exception ex)
             {

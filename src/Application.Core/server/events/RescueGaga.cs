@@ -51,7 +51,7 @@ public class RescueGaga : Events
                 break;
         }
 
-        long expiration = DateTimeOffset.Now.AddDays(20).ToUnixTimeMilliseconds(); //20 days
+        long expiration = DateTimeOffset.UtcNow.AddDays(20).ToUnixTimeMilliseconds(); //20 days
         if (completed < 20)
         {
             chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid), 1, 1, expiration);

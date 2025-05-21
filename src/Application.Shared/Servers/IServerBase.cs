@@ -10,16 +10,24 @@ namespace Application.Shared.Servers
         TServerTransport Transport { get; }
         Task StartServer();
         Task Shutdown();
+        /// <summary>
+        /// 当前服务器的启动时间(StartServer之后)
+        /// </summary>
         DateTimeOffset StartupTime { get; }
         AbstractServer NettyServer { get; }
         bool IsRunning { get; }
         int Port { get; set; }
         /// <summary>
-        /// 已运行时长
+        /// 已运行时长（已主服务器为准）
         /// </summary>
         /// <returns></returns>
         int getCurrentTimestamp();
         long getCurrentTime();
+        void UpdateServerTime();
+        /// <summary>
+        /// 主服务器强制更新、频道服务器强制从主服务器获取
+        /// </summary>
+        void ForceUpdateServerTime();
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
         void UpdateAccountState(int accId, sbyte state);

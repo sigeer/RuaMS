@@ -725,7 +725,7 @@ public class FamilyEntry
             {
                 Entitlementid = id,
                 Charid = getChrId(),
-                Timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds()
+                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             });
             dbContext.SaveChanges();
         }

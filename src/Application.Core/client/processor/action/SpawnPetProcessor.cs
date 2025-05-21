@@ -107,7 +107,7 @@ public class SpawnPetProcessor
                     c.sendPacket(PacketCreator.enableActions());
 
                     chr.commitExcludedItems();
-                    chr.getClient().getWorldServer().registerPetHunger(chr, chr.getPetIndex(pet));
+                    chr.getClient().getChannelServer().PetHungerController.registerPetHunger(chr, chr.getPetIndex(pet));
                 }
             }
             finally

@@ -51,7 +51,7 @@ public class EventManager
     private IEngine iv;
     private IWorldChannel cserv;
     private Server server;
-    private EventScriptScheduler ess = new EventScriptScheduler();
+    private EventScriptScheduler ess;
     private ConcurrentDictionary<string, EventInstanceManager> instances = new();
     private Dictionary<string, int> instanceLocks = new();
     private Queue<int> queuedGuilds = new();
@@ -83,6 +83,8 @@ public class EventManager
         this.iv = iv;
         this.cserv = cserv;
         this.name = name;
+
+        this.ess = new EventScriptScheduler(cserv);
     }
 
     private bool isDisposed()
