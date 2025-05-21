@@ -2,6 +2,7 @@ using Application.Core.Gameplay.Wedding;
 using Application.Core.ServerTransports;
 using Application.Shared.Characters;
 using Application.Shared.Configs;
+using Application.Shared.Login;
 using Application.Shared.Servers;
 using System.Net;
 
@@ -55,6 +56,7 @@ namespace Application.Core.Servers
         int GetAccountCharacterCount(int accId);
         List<IPlayer> LoadAccountCharactersView(int id);
         int GetAccountIdByAccountName(string name);
-        void CommitAccountEntity(AccountEntity accountEntity);
+        void CommitAccountEntity(AccountDto accountEntity);
+        AccountLoginStatus GetAccountLoginStatus(int accId);
     }
 }

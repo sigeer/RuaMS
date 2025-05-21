@@ -35,22 +35,19 @@ namespace Application.Core.Login.Services
             if (characterObj == null || characterObj.Character == null)
                 return null;
 
-            var accountModel = characterObj.Account;
-            if (accountModel == null)
+            if (characterObj.Account == null || characterObj.Account.Hwid == null)
                 return null;
 
-            if (accountModel.Loggedin != LoginStage.LOGIN_SERVER_TRANSITION && accountModel.Loggedin != LoginStage.PlayerServerTransition)
-                return null;
-
-            if (accountModel.Hwid == null)
+            var accountModel = _accManager.GetAccountLoginStatus(characterObj.Account.Id);
+            if (accountModel.State != LoginStage.LOGIN_SERVER_TRANSITION && accountModel.State != LoginStage.PlayerServerTransition)
                 return null;
 
             if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
-            characterObj.LoginInfo = new LoginInfo { IsNewCommer = accountModel.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION };
+            characterObj.LoginInfo = new LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
 
-            _accManager.UpdateAccountState(accountModel, LoginStage.LOGIN_LOGGEDIN);
+            _accManager.UpdateAccountState(characterObj.Account.Id, LoginStage.LOGIN_LOGGEDIN);
             return characterObj;
         }
     }

@@ -138,7 +138,7 @@ namespace Application.Shared.Constants
 
             HasSPTable = IsEvan();
 
-            Type = (JobType)(Id / 1000);
+            Type = JobFactory.GetJobTypeById(Id);
 
             if (Id % 1000 == 0)
             {

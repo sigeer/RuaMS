@@ -433,7 +433,6 @@ public class Server
             using var dbContext = new DBContext();
             LoadAccountCharacterCache(dbContext);
 
-            setAllLoggedOut(dbContext);
             setAllMerchantsInactive(dbContext);
             cleanNxcodeCoupons(dbContext);
             loadCouponRates(dbContext);
@@ -470,11 +469,6 @@ public class Server
         }
     }
 
-
-    private static void setAllLoggedOut(DBContext dbContext)
-    {
-        dbContext.Accounts.ExecuteUpdate(x => x.SetProperty(y => y.Loggedin, 0));
-    }
 
     private static void setAllMerchantsInactive(DBContext dbContext)
     {

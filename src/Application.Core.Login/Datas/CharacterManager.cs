@@ -1,9 +1,13 @@
 using Application.Core.Datas;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
+using Application.Core.Game.Players;
 using Application.EF;
+using Application.EF.Entities;
 using Application.Shared.Characters;
+using Application.Shared.Constants;
 using Application.Shared.Items;
+using Application.Utility.Configs;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +31,7 @@ namespace Application.Core.Login.Datas
         readonly ILogger<CharacterManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly AccountManager _accManager;
-        readonly DataStorage _chrStorage;
+        readonly DataStorage _dataStorage;
 
         public CharacterManager(IMapper mapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, AccountManager accountManager, DataStorage chrStorage)
         {
@@ -35,14 +39,13 @@ namespace Application.Core.Login.Datas
             _logger = logger;
             _dbContextFactory = dbContextFactory;
             _accManager = accountManager;
-            _chrStorage = chrStorage;
+            _dataStorage = chrStorage;
         }
 
         public void Update(CharacterValueObject obj)
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
-                origin.Account = obj.Account;
                 origin.Character = obj.Character;
                 origin.CashShop = obj.CashShop;
                 origin.BuddyList = obj.BuddyList;
@@ -61,7 +64,7 @@ namespace Application.Core.Login.Datas
                 origin.TrockLocations = obj.TrockLocations;
             }
 
-            _chrStorage.Set(obj);
+            _dataStorage.SetCharacter(obj);
         }
 
         public bool Remove(int characterId)
@@ -75,62 +78,95 @@ namespace Application.Core.Login.Datas
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="targetId"></param>
+        /// <param name="isAccount"></param>
+        /// <param name="itemType">需要满足IsAccount == isAccount</param>
+        /// <returns></returns>
+        private List<ItemEntityPair> LoadItems(DBContext dbContext, int characterId, params ItemFactory[] itemFactories)
+        {
+            var itemType = itemFactories.Select(x => x.getValue()).ToArray();
+            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
+                .Where(x =>  x.Characterid == characterId)
+                .Where(x => itemType.Contains(x.Type))
+                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
+                         from cs in css.DefaultIfEmpty()
+                         select new { Item = a, Pet = cs }).ToList();
+
+            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
+            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
+                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
+                          from es in ess.DefaultIfEmpty()
+                          select new EquipEntityPair(a, es)).ToList();
+
+            return (from a in items
+                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
+                    from bs in bss.DefaultIfEmpty()
+                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
+        }
+
+        private List<ItemEntityPair> LoadAccountItems(DBContext dbContext, int accountId, params ItemFactory[] itemFactories)
+        {
+            var itemType = itemFactories.Select(x => x.getValue()).ToArray();
+            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
+                .Where(x => x.Accountid == accountId)
+                .Where(x => itemType.Contains(x.Type))
+                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
+                         from cs in css.DefaultIfEmpty()
+                         select new { Item = a, Pet = cs }).ToList();
+
+            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
+            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
+                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
+                          from es in ess.DefaultIfEmpty()
+                          select new EquipEntityPair(a, es)).ToList();
+
+            return (from a in items
+                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
+                    from bs in bss.DefaultIfEmpty()
+                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
+        }
+
+        private ItemFactory GetCashshopFactory(int jobId)
+        {
+            if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)
+            {
+                switch (JobFactory.GetJobTypeById(jobId))
+                {
+                    case JobType.Adventurer:
+                        return ItemFactory.CASH_EXPLORER;
+                    case JobType.Cygnus:
+                        return ItemFactory.CASH_CYGNUS;
+                    case JobType.Legend:
+                        return ItemFactory.CASH_ARAN;
+                    default:
+                        return ItemFactory.CASH_OVERALL;
+                }
+            }
+            else
+            {
+                return ItemFactory.CASH_OVERALL;
+            }
+        }
+
         public CharacterValueObject? GetCharacter(int characterId)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-
-            var characterEntity = dbContext.Characters.FirstOrDefault(x => x.Id == characterId);
-            if (characterEntity == null)
-                return null;
-
             CharacterValueObject? d;
             if (!_idDataSource.TryGetValue(characterId, out d))
             {
+                var characterEntity = dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId);
+                if (characterEntity == null)
+                    return null;
+
                 var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreDto { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
-                #region 所有道具加载
-                int[] exceptedType = new int[] { ItemFactory.MERCHANT.getValue(), ItemFactory.DUEY.getValue(), ItemFactory.MARRIAGE_GIFTS.getValue() };
-                var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                                .Where(x => x.Characterid == characterId || (x.Characterid == null && x.Accountid == characterEntity.AccountId))
-                                .Where(x => !exceptedType.Contains(x.Type))
-                             join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
-                             from cs in css.DefaultIfEmpty()
-                             select new { Item = a, Pet = cs }).ToList();
-
-                var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
-                var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
-                              join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
-                              from es in ess.DefaultIfEmpty()
-                              select new EquipEntityPair(a, es)).ToList();
-
-                var itemObj = (from a in items
-                               join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
-                               from bs in bss.DefaultIfEmpty()
-                               select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
-
-                List<ItemEntityPair> invItems = [];
-                List<ItemEntityPair> storageItems = [];
-                List<ItemEntityPair> cashItems = [];
-                foreach (var item in itemObj)
-                {
-                    if (item.Item.Type == ItemFactory.INVENTORY.getValue())
-                        invItems.Add(item);
-                    else if (item.Item.Type == ItemFactory.STORAGE.getValue())
-                        storageItems.Add(item);
-                    else if (item.Item.Type == ItemFactory.CASH_OVERALL.getValue()
-                        || item.Item.Type == ItemFactory.CASH_ARAN.getValue()
-                        || item.Item.Type == ItemFactory.CASH_CYGNUS.getValue()
-                        || item.Item.Type == ItemFactory.CASH_EXPLORER.getValue())
-                        cashItems.Add(item);
-                }
-
-                var storageDto = _mapper.Map<StorageDto>(dbContext.Storages.AsNoTracking().Where(x => x.Accountid == characterEntity.AccountId).FirstOrDefault());
-                if (storageDto == null)
-                    storageDto = new StorageDto(characterEntity.AccountId);
-                storageDto.Items = _mapper.Map<ItemDto[]>(storageItems);
-                #endregion
+                var invItems = LoadItems(dbContext, characterId, ItemFactory.INVENTORY);
 
                 var buddyData = (from a in dbContext.Buddies
                                  join b in dbContext.Characters on a.BuddyId equals b.Id
@@ -144,24 +180,15 @@ namespace Application.Core.Login.Datas
                                        select new QuestStatusEntityPair(a, bs, cs)).ToArray();
                 #endregion
 
-                var cashShopDto = new CashShopDto
-                {
-                    WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
-                    Items = _mapper.Map<ItemDto[]>(cashItems)
-                };
-
                 d = new CharacterValueObject()
                 {
                     Character = _mapper.Map<CharacterDto>(characterEntity),
-                    Account = _accManager.GetAccountDto(characterEntity.AccountId)!,
                     PetIgnores = petIgnores,
                     Areas = _mapper.Map<AreaDto[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                     BuddyList = buddyData,
                     Events = _mapper.Map<EventDto[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     InventoryItems = _mapper.Map<ItemDto[]>(invItems),
-                    CashShop = cashShopDto,
                     KeyMaps = _mapper.Map<KeyMapDto[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    QuickSlot = _mapper.Map<QuickSlotDto>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == characterEntity.AccountId).FirstOrDefault()),
 
                     MonsterBooks = _mapper.Map<MonsterbookDto[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
 
@@ -170,7 +197,6 @@ namespace Application.Core.Login.Datas
                     SavedLocations = _mapper.Map<SavedLocationDto[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     SkillMacros = _mapper.Map<SkillMacroDto[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     Skills = _mapper.Map<SkillDto[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    StorageInfo = storageDto,
                     TrockLocations = _mapper.Map<TrockLocationDto[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                 };
 
@@ -179,10 +205,15 @@ namespace Application.Core.Login.Datas
                 _charcterViewCache[characterId] = d;
             }
 
-            var characterLink = dbContext.Characters.Where(x => x.AccountId == characterEntity.AccountId && x.Id != characterEntity.Id).OrderByDescending(x => x.Level)
+            var accountDto = _accManager.GetAccountDto(d.Character.AccountId);
+            if (accountDto == null)
+                return null;
+            d.Account = accountDto;
+
+            d.Link = dbContext.Characters.Where(x => x.AccountId == d.Character.AccountId && x.Id != d.Character.Id).OrderByDescending(x => x.Level)
                     .Select(x => new CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
-            d.Link = characterLink;
+            d.QuickSlot = _mapper.Map<QuickSlotDto>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == d.Character.AccountId).FirstOrDefault());
 
             var now = DateTimeOffset.Now;
             var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
@@ -195,6 +226,26 @@ namespace Application.Core.Login.Datas
 
             var cooldownList = dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray();
             d.CoolDowns = _mapper.Map<CoolDownDto[]>(cooldownList);
+
+            var cashFactory = GetCashshopFactory(d.Character.JobId);
+            var allAccountItems = LoadAccountItems(dbContext, d.Character.AccountId, ItemFactory.STORAGE, cashFactory);
+
+            var storageDto = _mapper.Map<StorageDto>(dbContext.Storages.AsNoTracking().Where(x => x.Accountid == d.Character.AccountId).FirstOrDefault());
+            if (storageDto == null)
+                storageDto = new StorageDto(d.Character.AccountId);
+            storageDto.Items = _mapper.Map<ItemDto[]>(allAccountItems.Where(x => x.Item.Type == ItemFactory.STORAGE.getValue()));
+            d.StorageInfo = storageDto;
+
+            var cashShopDto = new CashShopDto
+            {
+                NxCredit = accountDto.NxCredit ?? 0,
+                MaplePoint = accountDto.MaplePoint ?? 0,
+                NxPrepaid = accountDto.NxPrepaid ?? 0,
+                WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
+                Items = _mapper.Map<ItemDto[]>(allAccountItems.Where(x => x.Item.Type == cashFactory.getValue()))
+            };
+            d.CashShop = cashShopDto;
+
             return d;
         }
 

@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.Login.Datas;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Net;
@@ -25,7 +26,8 @@ namespace Application.Core.Login.Net
     public class LoginClient : ClientBase, ILoginClient
     {
         public AccountDto? AccountEntity { get; set; }
-        public override bool IsOnlined => AccountEntity?.Loggedin > LoginStage.LOGIN_NOTLOGGEDIN;
+        public AccountLoginStatus AccountLoginStatus { get; private set; }
+        public override bool IsOnlined => AccountLoginStatus.State > LoginStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;
         readonly SessionCoordinator _sessionCoordinator;
         public LoginClient(long sessionId, IMasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, SessionCoordinator sessionCoordinator, ILogger<IClientBase> log)
@@ -179,14 +181,13 @@ namespace Application.Core.Login.Net
             return false;
         }
 
-        int loginattempt = 0;
-        public int GetLoginState()
+        private int GetLoginState()
         {
             if (AccountEntity == null)
                 return 0;
 
-
-            if (AccountEntity.Loggedin == LoginStage.LOGIN_SERVER_TRANSITION || AccountEntity.Loggedin == LoginStage.PlayerServerTransition)
+            AccountLoginStatus = CurrentServer.GetAccountLoginStatus(AccountEntity.Id);
+            if (AccountLoginStatus.State == LoginStage.LOGIN_SERVER_TRANSITION || AccountLoginStatus.State == LoginStage.PlayerServerTransition)
             {
                 if (AccountEntity.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
                 {
@@ -195,9 +196,9 @@ namespace Application.Core.Login.Net
                 }
             }
 
-            return AccountEntity.Loggedin;
+            return AccountLoginStatus.State;
         }
-
+        int loginattempt = 0;
         public LoginResultCode Login(string login, string pwd, Hwid nibbleHwid)
         {
             LoginResultCode loginok = LoginResultCode.Fail_AccountNotExsited;
@@ -370,6 +371,8 @@ namespace Application.Core.Login.Net
 
             if (Hwid != null)
                 AccountEntity.Hwid = Hwid.hwid;
+
+            CurrentServer.CommitAccountEntity(AccountEntity);
         }
 
         public void SendCharList()

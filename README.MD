@@ -4,7 +4,7 @@
 基于 Cosmic 的C#版。
 截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
-初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。
+当前分支进行了重度的重构，可能出现大量BUG，不建议搭建游玩。
 
 
 ## 开发环境
@@ -16,7 +16,8 @@
 
 ### src
 
-- Application.Host 入口应用
+- Application.Host 主服务器入口
+- Application.Host.Channel 频道服务器入口
 - Application.Core 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
 - Application.Utility 工具类
 - Application.Resource 资源：js、初始化数据sql、配置文件
@@ -58,7 +59,10 @@ dotnet ef database update --startup-project ../Application.Host
 #### 步骤
 
 1. 配置 `config.yaml`，主要是连接字符串`DB_CONNECTIONSTRING`、`HOST`
-2. 运行`Application.Host.exe`
+2. 配置 Application.Host 下的 appsettings.json 中的连接字符串以及其他设置
+3. 运行`Application.Host.exe`
+
+#### 单机部署
 
 #### docker
 
@@ -91,3 +95,7 @@ rua-ms
 ```
 docker compose up -d
 ```
+
+#### 分布式部署
+
+开发中...

@@ -3,16 +3,23 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Items;
+using Application.Shared.Login;
+using Application.Utility.Exceptions;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Datas
 {
     public class DataStorage
     {
         Dictionary<int, CharacterValueObject> _chrUpdate = new Dictionary<int, CharacterValueObject>();
+        Dictionary<int, AccountDto> _accUpdate = new Dictionary<int, AccountDto>();
+
+        Dictionary<int, AccountLoginStatus> _accLoginUpdate = new ();
 
 
         Dictionary<int, ItemDto[]> _merchantUpdate = new();
@@ -65,10 +72,7 @@ namespace Application.Core.Login.Datas
                 await dbContext.Questprogresses.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Queststatuses.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Medalmaps.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Wishlists.Where(x => _chrUpdate.Keys.Contains(x.CharId)).ExecuteDeleteAsync();
 
-                await dbContext.Storages.Where(x => accList.Contains(x.Accountid)).ExecuteDeleteAsync();
-                await dbContext.Quickslotkeymappeds.Where(x => accList.Contains(x.Accountid)).ExecuteDeleteAsync();
                 foreach (var obj in _chrUpdate.Values)
                 {
                     dbContext.Characters.Update(_mapper.Map<CharacterEntity>(obj.Character));
@@ -89,11 +93,6 @@ namespace Application.Core.Login.Datas
                     await dbContext.Skills.AddRangeAsync(
                         obj.Skills.Select(x => new SkillEntity(obj.Character.Id, x.Skillid, x.Skilllevel, x.Masterlevel, x.Expiration))
                         );
-
-                    if (obj.QuickSlot != null)
-                    {
-                        await dbContext.Quickslotkeymappeds.AddAsync(new Quickslotkeymapped(obj.Character.AccountId, obj.QuickSlot.LongValue));
-                    }
 
                     await dbContext.Savedlocations.AddRangeAsync(obj.SavedLocations.Select(x => new SavedLocationEntity(x.Map, x.Portal, obj.Character.Id, x.Locationtype)));
                     await dbContext.Trocklocations.AddRangeAsync(obj.TrockLocations.Select(x => new Trocklocation(obj.Character.Id, x.Mapid, x.Vip)));
@@ -120,12 +119,6 @@ namespace Application.Core.Login.Datas
                     // family
 
                     // cashshop
-                    await CommitInventoryByType(dbContext, obj.Account.Id, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
-                    await dbContext.Wishlists.AddRangeAsync(obj.CashShop.WishItems.Select(x => new WishlistEntity(obj.Character.Id, x)));
-
-                    var m = obj.StorageInfo ?? new StorageDto(obj.Character.AccountId);
-                    await dbContext.Storages.AddAsync(new StorageEntity(m.Accountid, m.Slots, m.Meso));
-                    await CommitInventoryByType(dbContext, obj.Account.Id, m.Items, ItemFactory.STORAGE);
                 }
 
                 _chrUpdate.Clear();
@@ -142,9 +135,58 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        internal void Set(CharacterValueObject characterValueObject)
+        public async Task UpdateStorage(DBContext dbContext, int accId, StorageDto? storage)
         {
-            _chrUpdate[characterValueObject.Character.Id] = characterValueObject;
+            var m = storage ?? new StorageDto(accId);
+            var dbStorage = await dbContext.Storages.Where(x => x.Accountid == accId).FirstOrDefaultAsync();
+            if (dbStorage == null)
+            {
+                dbStorage = new StorageEntity(m.Accountid, m.Slots, m.Meso);
+                await dbContext.Storages.AddAsync(dbStorage);
+            }
+            else
+            {
+                dbStorage.Slots = m.Slots;
+                dbStorage.Meso = m.Meso;
+            }
+            await CommitInventoryByType(dbContext, accId, m.Items, ItemFactory.STORAGE);
+        }
+
+        public async Task SetCharacter(CharacterValueObject obj)
+        {
+            _chrUpdate[obj.Character.Id] = obj;
+
+            // Account相关的数据要即时更新
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+
+            await dbContext.Quickslotkeymappeds.Where(x => x.Accountid == obj.Character.AccountId).ExecuteDeleteAsync();
+            if (obj.QuickSlot != null)
+            {
+                await dbContext.Quickslotkeymappeds.AddAsync(new Quickslotkeymapped(obj.Character.AccountId, obj.QuickSlot.LongValue));
+            }
+
+            // cash shop
+            await CommitInventoryByType(dbContext, obj.Account.Id, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
+            await dbContext.Wishlists.Where(x => obj.Character.Id == x.CharId).ExecuteDeleteAsync();
+            await dbContext.Wishlists.AddRangeAsync(obj.CashShop.WishItems.Select(x => new WishlistEntity(obj.Character.Id, x)));
+
+            // account
+            var dbAccount = await dbContext.Accounts.Where(x => x.Id == obj.Character.AccountId).FirstOrDefaultAsync();
+            if (dbAccount == null)
+                throw new BusinessException("");
+
+            dbAccount.NxCredit = obj.CashShop.NxCredit;
+            dbAccount.MaplePoint = obj.CashShop.MaplePoint;
+            dbAccount.NxPrepaid = obj.CashShop.NxPrepaid;
+
+
+            // storage
+            await UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
+
+            await dbContext.SaveChangesAsync();
+
+            await dbTrans.CommitAsync();
         }
 
         private async Task CommitInventoryByType(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
@@ -178,5 +220,29 @@ namespace Application.Core.Login.Datas
             await dbContext.SaveChangesAsync();
         }
 
+        internal void SetAccountLoginRecord(KeyValuePair<int, AccountLoginStatus> item)
+        {
+            _accLoginUpdate[item.Key] = item.Value;
+        }
+
+        internal async Task CommitAccountLoginRecord()
+        {
+            if (_accLoginUpdate.Count == 0)
+                return;
+
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+
+            var idsToUpdate = _accLoginUpdate.Keys.ToList();
+            var accounts = await dbContext.Accounts.Where(x => idsToUpdate.Contains(x.Id)).ToListAsync();
+
+            foreach (var acc in accounts)
+            {
+                acc.Lastlogin = _accLoginUpdate[acc.Id].DateTime;
+            }
+
+            await dbContext.SaveChangesAsync();
+            _accLoginUpdate.Clear();
+        }
     }
 }

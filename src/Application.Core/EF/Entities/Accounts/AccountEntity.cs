@@ -20,8 +20,10 @@ public partial class AccountEntity
     public string Pin { get; set; } = null!;
 
     public string Pic { get; set; } = null!;
-
-    public sbyte Loggedin { get; set; }
+    /// <summary>
+    /// 账户的登录态完全可以由服务器内存控制-- 服务器停止时必定不在线
+    /// </summary>
+    //public sbyte Loggedin { get; set; }
 
     public DateTimeOffset? Lastlogin { get; set; }
 

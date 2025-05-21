@@ -30,8 +30,6 @@ namespace Application.Core.Login.Services
                         case StorageType.All:
                             await CommitAllImmediately();
                             break;
-                        case StorageType.AccountOnly:
-                            break;
                         case StorageType.CharcterOnly:
                             await _dataStorage.CommitCharacterAsync();
                             break;
@@ -62,6 +60,7 @@ namespace Application.Core.Login.Services
         public async Task CommitAllImmediately()
         {
             await _dataStorage.CommitCharacterAsync();
+            await _dataStorage.CommitAccountLoginRecord();
         }
     }
 
@@ -72,11 +71,7 @@ namespace Application.Core.Login.Services
         /// </summary>
         All,
         /// <summary>
-        /// 仅更新Account数据
-        /// </summary>
-        AccountOnly,
-        /// <summary>
-        /// 仅更新角色及相关数据（包含Account）
+        /// 仅更新角色及相关数据
         /// </summary>
         CharcterOnly,
         /// <summary>

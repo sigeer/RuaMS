@@ -43,6 +43,7 @@ public class CashShop
     public const int MAPLE_POINT = 2;
     public const int NX_PREPAID = 4;
 
+
     private int accountId;
     private int characterId;
 
@@ -53,6 +54,9 @@ public class CashShop
     private object lockObj = new object();
     public ItemFactory Factory { get; }
     public IPlayer Owner { get; set; }
+    public int NxCredit { get; set; }
+    public int MaplePoint { get; set; }
+    public int NxPrepaid { get; set; }
 
     public CashShop(IPlayer player)
     {
@@ -85,9 +89,13 @@ public class CashShop
         }
     }
 
-    public void LoadData(List<int> characterWishList, List<Item> items)
+    public void LoadData(int nxCredit, int maplePoint, int nxPrepaid, List<int> characterWishList, List<Item> items)
     {
-        inventory = items.Where(x => x.getItemType() == Factory.getValue()).ToList();
+        NxCredit = nxCredit;
+        MaplePoint = maplePoint;
+        NxPrepaid = nxPrepaid;
+
+        inventory = items;
         wishList = characterWishList;
     }
 
@@ -519,9 +527,9 @@ public class CashShop
     public void save(DBContext dbContext)
     {
         dbContext.Accounts.Where(x => x.Id == accountId).ExecuteUpdate(x =>
-                x.SetProperty(y => y.NxCredit, Owner.Client.AccountEntity.NxCredit)
-                .SetProperty(y => y.MaplePoint, Owner.Client.AccountEntity.MaplePoint)
-                .SetProperty(y => y.NxPrepaid, Owner.Client.AccountEntity.NxPrepaid)
+                x.SetProperty(y => y.NxCredit, NxCredit)
+                .SetProperty(y => y.MaplePoint, MaplePoint)
+                .SetProperty(y => y.NxPrepaid, NxPrepaid)
                 );
 
         List<ItemInventoryType> itemsWithType = new();

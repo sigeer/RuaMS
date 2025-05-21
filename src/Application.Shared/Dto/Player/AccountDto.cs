@@ -18,7 +18,6 @@ namespace Application.Shared.Characters
 
         public string Pic { get; set; } = null!;
 
-        public sbyte Loggedin { get; set; }
 
         public DateTimeOffset? Lastlogin { get; set; }
 

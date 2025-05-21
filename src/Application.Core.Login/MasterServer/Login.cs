@@ -4,6 +4,7 @@ using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
 using Application.EF.Entities;
 using Application.Shared.Characters;
+using Application.Shared.Login;
 using Application.Utility.Configs;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +24,7 @@ namespace Application.Core.Login
 
         public int GetAccountIdByAccountName(string name)
         {
-            return accountManager.GetAccountEntityByName(name);
+            return accountManager.GetAccountIdByName(name);
         }
 
         public void UpdateAccountState(int accId, sbyte newState)
@@ -39,6 +40,16 @@ namespace Application.Core.Login
         public void UpdateAccountChracterByAdd(int accountId, int id)
         {
             accountManager.UpdateAccountCharacterCacheByAdd(accountId, id);
+        }
+
+        public AccountLoginStatus GetAccountLoginStatus(int accId)
+        {
+            return accountManager.GetAccountLoginStatus(accId);
+        }
+
+        public void CommitAccountEntity(AccountDto accountEntity)
+        {
+            accountManager.UpdateAccount(accountEntity);
         }
 
 

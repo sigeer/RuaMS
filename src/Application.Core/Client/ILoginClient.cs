@@ -19,8 +19,6 @@ namespace Application.Core.Client
         bool CheckPic(string other);
 
         bool isLoggedIn();
-
-        int GetLoginState();
         LoginResultCode Login(string login, string pwd, Hwid nibbleHwid);
         LoginResultCode FinishLogin();
         bool CheckChar(int accid);

@@ -2199,9 +2199,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Lastlogin)
                 .HasColumnType("timestamp")
                 .HasColumnName("lastlogin");
-            entity.Property(e => e.Loggedin)
-                .HasColumnType("tinyint(4)")
-                .HasColumnName("loggedin");
             entity.Property(e => e.Macs)
                 .HasColumnType("tinytext")
                 .HasColumnName("macs");

@@ -3,14 +3,6 @@ using Application.Shared.Login;
 using Application.Utility.Compatible;
 using client;
 using net.server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel
@@ -19,7 +11,7 @@ namespace Application.Core.Channel
     {
         public void SendLogoff(int id)
         {
-            Transport.UpdateAccountState(id, LoginStage.LOGIN_NOTLOGGEDIN);
+            UpdateAccountState(id, LoginStage.LOGIN_NOTLOGGEDIN);
         }
         public void StashCharacterBuff(IPlayer player)
         {

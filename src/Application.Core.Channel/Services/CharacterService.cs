@@ -55,7 +55,7 @@ namespace Application.Core.Channel.Services
             _mapper.Map(o.Character, player);
 
             player.Monsterbook.LoadData(o.MonsterBooks);
-            player.CashShopModel.LoadData(o.CashShop.WishItems.ToList(), o.CashShop.Items.Select(MapToItem).ToList());
+            player.CashShopModel.LoadData(o.CashShop.NxCredit, o.CashShop.MaplePoint, o.CashShop.NxPrepaid, o.CashShop.WishItems.ToList(), o.CashShop.Items.Select(MapToItem).ToList());
 
             player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
 
@@ -268,7 +268,10 @@ namespace Application.Core.Channel.Services
             {
                 Items = _mapper.Map<ItemDto[]>(player.CashShopModel.getInventory()),
                 WishItems = player.CashShopModel.getWishList().ToArray(),
-                FactoryType = player.CashShopModel.Factory.getValue()
+                FactoryType = player.CashShopModel.Factory.getValue(),
+                NxCredit = player.CashShopModel.NxCredit,
+                NxPrepaid = player.CashShopModel.NxPrepaid,
+                MaplePoint = player.CashShopModel.MaplePoint
             };
 
             var playerDto = _mapper.Map<CharacterDto>(player);
@@ -288,7 +291,7 @@ namespace Application.Core.Channel.Services
                 }
             }
             if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)
-            {  
+            {
                 // reset to first spawnpoint on those maps
                 playerDto.Spawnpoint = 0;
             }

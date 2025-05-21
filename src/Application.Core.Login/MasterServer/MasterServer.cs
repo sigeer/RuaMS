@@ -276,11 +276,6 @@ namespace Application.Core.Login
             return status;
         }
 
-
-
-
-
-
         public int getCurrentTimestamp()
         {
             return Server.getInstance().getCurrentTimestamp();
@@ -306,11 +301,6 @@ namespace Application.Core.Login
         public bool CheckCharacterName(string name)
         {
             return _characterSevice.CheckCharacterName(name);
-        }
-
-        public void CommitAccountEntity(AccountEntity accountEntity)
-        {
-            
         }
     }
 }
