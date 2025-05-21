@@ -860,7 +860,11 @@ public partial class WorldChannel : IWorldChannel
 
     public void ForceUpdateServerTime()
     {
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
         var forceTime = Transport.GetCurrentTime();
+        sw.Stop();
+        forceTime = forceTime + sw.ElapsedMilliseconds;
         serverCurrentTime = forceTime;
         currentTime.set(forceTime);
     }
