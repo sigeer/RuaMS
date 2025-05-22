@@ -15,6 +15,7 @@ using Application.Utility.Exceptions;
 using client.inventory;
 using constants.id;
 using DotNetty.Transport.Channels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using net.packet.logging;
@@ -33,17 +34,15 @@ namespace Application.Core.Channel.Net
 {
     public class ChannelClient : ClientBase, IChannelClient
     {
-        public IChannelService Service { get; }
         public AccountDto AccountEntity { get; set; }
         IPacketProcessor<IChannelClient> _packetProcessor;
         public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
 
-        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log, IChannelService service)
+        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log)
             : base(sessionId, currentServer, nettyChannel, log)
         {
             CurrentServer = currentServer;
             _packetProcessor = packetProcessor;
-            Service = service;
         }
 
         public override bool IsOnlined => Character != null;

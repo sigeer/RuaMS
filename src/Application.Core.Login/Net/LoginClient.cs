@@ -36,6 +36,8 @@ namespace Application.Core.Login.Net
             _sessionCoordinator = sessionCoordinator;
             _packetProcessor = packetProcessor;
             _loginBypassCoordinator = loginBypassCoordinator;
+
+            AccountLoginStatus = AccountLoginStatus.Default;
         }
 
         public IMasterServer CurrentServer { get; set; }
@@ -107,6 +109,7 @@ namespace Application.Core.Login.Net
             }
 
             CurrentServer.UpdateAccountState(AccountEntity.Id, newState);
+            AccountLoginStatus = CurrentServer.GetAccountLoginStatus(AccountEntity.Id);
 
             if (newState == LoginStage.LOGIN_NOTLOGGEDIN)
             {

@@ -205,7 +205,21 @@ namespace Application.Core.Login.Datas
 
             foreach (var item in items)
             {
-                var model = _mapper.Map<Inventoryitem>(item);
+                var model = new Inventoryitem()
+                {
+                    Itemid = item.Itemid,
+                    Accountid = type.IsAccount ? targetId : null,
+                    Characterid = type.IsAccount ? null : targetId,
+                    Expiration = item.Expiration,
+                    Flag = item.Flag,
+                    GiftFrom = item.GiftFrom,
+                    Inventorytype = item.InventoryType,
+                    Owner = item.Owner,
+                    Petid = item.PetInfo == null ? -1 :item.PetInfo .Petid,
+                    Position = item.Position,
+                    Quantity = item.Quantity,
+                    Type = item.Type,
+                };
                 await dbContext.Inventoryitems.AddAsync(model);
                 await dbContext.SaveChangesAsync();
 
@@ -236,7 +250,21 @@ namespace Application.Core.Login.Datas
 
             foreach (var item in items)
             {
-                var model = _mapper.Map<Inventoryitem>(item);
+                var model = new Inventoryitem()
+                {
+                    Itemid = item.Itemid,
+                    Accountid = type.IsAccount ? targetId : null,
+                    Characterid = type.IsAccount ? null : targetId,
+                    Expiration = item.Expiration,
+                    Flag = item.Flag,
+                    GiftFrom = item.GiftFrom,
+                    Inventorytype = item.InventoryType,
+                    Owner = item.Owner,
+                    Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
+                    Position = item.Position,
+                    Quantity = item.Quantity,
+                    Type = item.Type,
+                };
                 dbContext.Inventoryitems.AddAsync(model);
                 dbContext.SaveChanges();
 

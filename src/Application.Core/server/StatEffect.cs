@@ -75,6 +75,7 @@ public class StatEffect
     private short bulletCount, bulletConsume;
     private byte mapProtection;
     private CardItemupStats? cardStats;
+    public int SkillLevel { get; set; }
 
     public class CardItemupStats
     {
@@ -156,9 +157,9 @@ public class StatEffect
         return 0;
     }
 
-    public static StatEffect loadSkillEffectFromData(Data? source, int skillid, bool overtime)
+    public static StatEffect loadSkillEffectFromData(Data source, int skillid, bool overtime)
     {
-        return new(source, skillid, true, overtime);
+        return new(source, skillid, true, overtime) { SkillLevel = int.Parse(source.getName() ?? "0") };
     }
 
     public static StatEffect loadItemEffectFromData(Data? source, int itemid)

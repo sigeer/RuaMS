@@ -4,6 +4,7 @@ using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Login;
 using Application.Utility.Exceptions;
+using Application.Utility.Extensions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -50,18 +51,17 @@ namespace Application.Core.Login.Datas
 
         public AccountLoginStatus GetAccountLoginStatus(int accId)
         {
-            if (_accStageCache.TryGetValue(accId, out var d))
-                return d;
-
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == accId);
-            if (dbModel != null)
+            return _accStageCache.GetOrAdd(accId, () =>
             {
-                d = new AccountLoginStatus(0, dbModel.Lastlogin ?? DateTimeOffset.MinValue);
-                return d;
-            }
-            else
-                throw new BusinessException($"账号不存在，Id = {accId}");
+                using var dbContext = _dbContextFactory.CreateDbContext();
+                var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == accId);
+                if (dbModel != null)
+                {
+                    return new AccountLoginStatus(0, dbModel.Lastlogin ?? DateTimeOffset.MinValue);
+                }
+                else
+                    throw new BusinessException($"账号不存在，Id = {accId}");
+            });
         }
 
         /// <summary>

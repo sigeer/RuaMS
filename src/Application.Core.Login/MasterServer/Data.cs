@@ -6,13 +6,13 @@ namespace Application.Core.Login
 {
     public partial class MasterServer
     {
-        public PlayerBuffStorageNew BuffStorageNew { get; }
+        public PlayerBuffStorage BuffStorage { get; }
 
         public void SaveBuff(int v, PlayerBuffSaveDto playerBuffSaveDto)
         {
-            BuffStorageNew.Save(v, playerBuffSaveDto);
+            BuffStorage.Save(v, playerBuffSaveDto);
         }
 
-        public PlayerBuffSaveDto GetBuff(int v) => BuffStorageNew.Get(v);
+        public PlayerBuffSaveDto GetBuff(int v) => BuffStorage.Get(v);
     }
 }

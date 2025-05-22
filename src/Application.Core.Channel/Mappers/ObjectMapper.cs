@@ -96,13 +96,22 @@ namespace Application.Core.Channel.Mappers
                         dest.SetPet(ctx.Mapper.Map<Pet>(rs));
                 })
                 .ReverseMap()
-                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
+                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner() + "FromItem"))
+                .ForMember(dest => dest.Itemid, source => source.MapFrom(x => x.getItemId()))
                 .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
                 .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
                 .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
                 .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
                 .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()))
-                .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => (sbyte)x.getInventoryType()));
+                .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
+                .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
+                {
+                    return context.Items.TryGetValue("InventoryType", out var invType) ? Convert.ToSByte(invType) : (sbyte)src.getInventoryType();
+                }))
+                .ForMember(dest => dest.Type, source => source.MapFrom((src, dest, destMember, context) =>
+                {
+                    return context.Items.TryGetValue("Type", out var type) ? Convert.ToByte(type) : ItemFactory.INVENTORY.getValue();
+                }));
 
             CreateMap<RingDto, Ring>()
                 .ConstructUsing(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName))
@@ -119,6 +128,10 @@ namespace Application.Core.Channel.Mappers
                     {
                         dest.setOwner(rs.Owner);
                         dest.setQuantity(rs.Quantity);
+                        dest.setFlag(rs.Flag);
+                        dest.setExpiration(rs.Expiration);
+                        dest.setGiftFrom(rs.GiftFrom);
+
                         dest.setAcc(rs.EquipInfo!.Acc);
                         dest.setAvoid(rs.EquipInfo!.Avoid);
                         dest.setDex(rs.EquipInfo!.Dex);
@@ -127,7 +140,6 @@ namespace Application.Core.Channel.Mappers
                         dest.setInt(rs.EquipInfo!.Int);
                         dest.setJump(rs.EquipInfo!.Jump);
                         dest.setVicious(rs.EquipInfo!.Vicious);
-                        dest.setFlag(rs.Flag);
                         dest.setLuk(rs.EquipInfo!.Luk);
                         dest.setMatk(rs.EquipInfo!.Matk);
                         dest.setMdef(rs.EquipInfo!.Mdef);
@@ -140,18 +152,52 @@ namespace Application.Core.Channel.Mappers
                         dest.setLevel(rs.EquipInfo!.Level);
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel(rs.EquipInfo!.Itemlevel);
-                        dest.setExpiration(rs.Expiration);
-                        dest.setGiftFrom(rs.GiftFrom);
                         dest.setRingId(rs!.EquipInfo!.RingId);
                     })
                     .ReverseMap()
-                    .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
-                    .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
-                    .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
-                    .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
-                    .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
 
-                    .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x));
+                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner() + "FromEquip"))
+                .ForMember(dest => dest.Itemid, source => source.MapFrom(x => x.getItemId()))
+                .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
+                .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
+                .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
+                .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
+                .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()))
+                .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
+
+
+                    .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x))
+                    .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
+                    {
+                        return context.Items.TryGetValue("InventoryType", out var invType) ? Convert.ToSByte(invType) : (sbyte)src.getInventoryType();
+                    }))
+                    .ForMember(dest => dest.Type, source => source.MapFrom((src, dest, destMember, context) =>
+                    {
+                        return context.Items.TryGetValue("Type", out var type) ? Convert.ToByte(type) : ItemFactory.INVENTORY.getValue();
+                    }));
+
+            CreateMap<Equip, EquipDto>()
+                .ForMember(dest => dest.Acc, source => source.MapFrom(x => x.getAcc()))
+                .ForMember(dest => dest.Avoid, source => source.MapFrom(x => x.getAvoid()))
+                .ForMember(dest => dest.Dex, source => source.MapFrom(x => x.getDex()))
+                .ForMember(dest => dest.Hands, source => source.MapFrom(x => x.getHands()))
+                .ForMember(dest => dest.Hp, source => source.MapFrom(x => x.getHp()))
+                .ForMember(dest => dest.Int, source => source.MapFrom(x => x.getInt()))
+                .ForMember(dest => dest.Jump, source => source.MapFrom(x => x.getJump()))
+                .ForMember(dest => dest.Vicious, source => source.MapFrom(x => x.getVicious()))
+                .ForMember(dest => dest.Luk, source => source.MapFrom(x => x.getLuk()))
+                .ForMember(dest => dest.Matk, source => source.MapFrom(x => x.getMatk()))
+                .ForMember(dest => dest.Mdef, source => source.MapFrom(x => x.getMdef()))
+                .ForMember(dest => dest.Mp, source => source.MapFrom(x => x.getMp()))
+                .ForMember(dest => dest.Speed, source => source.MapFrom(x => x.getSpeed()))
+                .ForMember(dest => dest.Str, source => source.MapFrom(x => x.getStr()))
+                .ForMember(dest => dest.Watk, source => source.MapFrom(x => x.getWatk()))
+                .ForMember(dest => dest.Wdef, source => source.MapFrom(x => x.getWdef()))
+                .ForMember(dest => dest.Upgradeslots, source => source.MapFrom(x => x.getUpgradeSlots()))
+                .ForMember(dest => dest.Level, source => source.MapFrom(x => x.getLevel()))
+                .ForMember(dest => dest.Itemlevel, source => source.MapFrom(x => x.getItemLevel()))
+                .ForMember(dest => dest.Itemexp, source => source.MapFrom(x => x.getItemExp()))
+                .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.getRingId()));
 
             CreateMap<StorageDto, Storage>()
                 .ConstructUsing((x, ctx) =>
@@ -159,7 +205,6 @@ namespace Application.Core.Channel.Mappers
                     return new Storage(x.Accountid, x.Slots, x.Meso, x.Items.Select(y => MapToItem(ctx.Mapper, y)).ToArray());
                 })
                 .ReverseMap()
-                .ForMember(dest => dest.Items, source => source.MapFrom(x => x.getItems()))
                 .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
                 .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.getSlots()))
                 .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId));

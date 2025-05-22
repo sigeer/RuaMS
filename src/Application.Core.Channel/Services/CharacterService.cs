@@ -266,7 +266,10 @@ namespace Application.Core.Channel.Services
 
             var cashShopDto = new CashShopDto()
             {
-                Items = _mapper.Map<ItemDto[]>(player.CashShopModel.getInventory()),
+                Items = _mapper.Map<ItemDto[]>(player.CashShopModel.getInventory(), opt =>
+                {
+                    opt.Items["Type"] = player.CashShopModel.Factory.getValue();
+                }),
                 WishItems = player.CashShopModel.getWishList().ToArray(),
                 FactoryType = player.CashShopModel.Factory.getValue(),
                 NxCredit = player.CashShopModel.NxCredit,
@@ -308,6 +311,20 @@ namespace Application.Core.Channel.Services
                 }
             }
 
+            #region inventory mapping
+            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<List<ItemDto>>(x.list(), opt =>
+            {
+                opt.Items["InventoryType"] = (int)x.getType();
+                opt.Items["Type"] = 1;
+            })).ToArray();
+
+            var storageDto = _mapper.Map<StorageDto>(player.Storage);
+            storageDto.Items = _mapper.Map<ItemDto[]>(player.Storage.getItems(), opt =>
+            {
+                opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+            });
+            #endregion
+
             return new PlayerSaveDto()
             {
                 Character = playerDto,
@@ -322,8 +339,8 @@ namespace Application.Core.Channel.Services
                 QuestStatuses = questStatusList.ToArray(),
                 SkillMacros = _mapper.Map<SkillMacroDto[]>(player.SkillMacros),
                 BuddyList = player.BuddyList.ToDto(),
-                StorageInfo = _mapper.Map<StorageDto>(player.Storage),
-                InventoryItems = _mapper.Map<ItemDto[]>(player.Bag.GetValues().SelectMany(x => x.list())),
+                StorageInfo = storageDto,
+                InventoryItems = _mapper.Map<ItemDto[]>(d),
                 CashShop = cashShopDto,
                 QuickSlot = quickSlotDto,
                 CoolDowns = _mapper.Map<CoolDownDto[]>(player.getAllCooldowns())
@@ -337,7 +354,7 @@ namespace Application.Core.Channel.Services
                 Buffs = player.getAllBuffs().Select(x => new BuffDto
                 {
                     IsSkill = x.effect.isSkill(),
-                    SkillLevel = 1,
+                    SkillLevel = x.effect.SkillLevel,
                     SourceId = x.effect.getSourceId(),
                     UsedTime = x.usedTime,
                 }).ToArray(),

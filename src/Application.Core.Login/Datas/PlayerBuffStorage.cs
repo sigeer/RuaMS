@@ -2,11 +2,11 @@ using Application.Shared.Dto;
 
 namespace Application.Core.Login.Datas
 {
-    public class PlayerBuffStorageNew
+    public class PlayerBuffStorage
     {
         Dictionary<int, PlayerBuffSaveDto> _datasource;
 
-        public PlayerBuffStorageNew()
+        public PlayerBuffStorage()
         {
             _datasource = new Dictionary<int, PlayerBuffSaveDto>();
         }

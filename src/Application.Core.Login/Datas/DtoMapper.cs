@@ -66,9 +66,7 @@ namespace Application.Core.Login.Datas
 
             CreateMap<Inventoryitem, ItemDto>()
                 .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
-                .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => x.Inventorytype))
-                .ReverseMap()
-                .ForMember(dest => dest.Inventorytype, source => source.MapFrom(x => x.InventoryType));
+                .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => x.Inventorytype));
             CreateMap<ItemEntityPair, ItemDto>()
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
                 .ForMember(des => des.PetInfo, source => source.MapFrom(x => x.Pet))
