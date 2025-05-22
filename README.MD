@@ -4,7 +4,8 @@
 基于 Cosmic 的C#版。
 截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
-初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。
+初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。  
+当前分支**v0**将仅更新影响游玩中前期内容部分的BUG
 
 
 ## 开发环境
