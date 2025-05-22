@@ -131,7 +131,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             player.setEnteredChannelWorld(c.Channel);
 
             c.CurrentServer.RecoverCharacterBuff(player);
-            c.CurrentServer.RecoverCharacterDisease(player);
 
             c.sendPacket(PacketCreator.getCharInfo(player));
             if (!player.isHidden())

@@ -493,5 +493,15 @@ namespace Application.Core.Login.ServerTransports
         {
             _server.InvitationController.RemovePlayerIncomingInvites(id);
         }
+
+        public void SendBuffObject(int v, PlayerBuffSaveDto playerBuffSaveDto)
+        {
+            _server.SaveBuff(v, playerBuffSaveDto);
+        }
+
+        public PlayerBuffSaveDto GetBuffObject(int id)
+        {
+            return _server.GetBuff(id);
+        }
     }
 }

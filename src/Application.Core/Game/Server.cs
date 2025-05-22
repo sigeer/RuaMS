@@ -67,9 +67,6 @@ public class Server
     /// </summary>
     private Dictionary<int, HashSet<AccountInfo>> AccountCharacterCache = new();
 
-
-    private PlayerBuffStorage buffStorage = new PlayerBuffStorage();
-
     private Dictionary<int, NewYearCardRecord> newyears = new();
 
 
@@ -470,10 +467,6 @@ public class Server
         tMan.register(new BossLogTask(), TimeSpan.FromDays(1), timeLeft);
     }
 
-    public PlayerBuffStorage getPlayerBuffStorage()
-    {
-        return buffStorage;
-    }
 
     public void broadcastMessage(int world, Packet packet)
     {

@@ -76,7 +76,6 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
             mc.unregisterChairBuff();
             c.CurrentServer.StashCharacterBuff(mc);
-            c.CurrentServer.StashCharacterDisease(mc);
             mc.setAwayFromChannelWorld();
             mc.notifyMapTransferToPartner(-1);
             mc.removeIncomingInvites();

@@ -107,6 +107,8 @@ namespace Application.Core.ServerTransports
         void UpdateAccountChracterByAdd(int accountId, int id);
         void SendPlayerObject(PlayerSaveDto characterValueObject);
         void SendRemovePlayerIncomingInvites(int id);
+        void SendBuffObject(int v, PlayerBuffSaveDto playerBuffSaveDto);
+        PlayerBuffSaveDto GetBuffObject(int id);
 
         #endregion
     }

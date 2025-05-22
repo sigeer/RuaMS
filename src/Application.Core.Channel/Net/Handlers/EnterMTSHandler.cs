@@ -89,7 +89,6 @@ public class EnterMTSHandler : ChannelHandlerBase
 
         chr.unregisterChairBuff();
         c.CurrentServer.StashCharacterBuff(chr);
-        c.CurrentServer.StashCharacterDisease(chr);
         chr.setAwayFromChannelWorld();
         chr.notifyMapTransferToPartner(-1);
         chr.removeIncomingInvites();

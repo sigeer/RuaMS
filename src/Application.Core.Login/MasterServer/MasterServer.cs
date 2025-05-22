@@ -79,7 +79,6 @@ namespace Application.Core.Login
 
         public InvitationController InvitationController { get; }
 
-
         CharacterService _characterSevice;
         public MasterServer(IServiceProvider sp, AccountManager accountManager, CharacterService characterManager)
         {

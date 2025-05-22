@@ -7,6 +7,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared;
 using Application.Shared.Characters;
 using Application.Shared.Dto;
 using Application.Shared.Items;
@@ -326,6 +327,27 @@ namespace Application.Core.Channel.Services
                 CashShop = cashShopDto,
                 QuickSlot = quickSlotDto,
                 CoolDowns = _mapper.Map<CoolDownDto[]>(player.getAllCooldowns())
+            };
+        }
+
+        public PlayerBuffSaveDto DeserializeBuff(IPlayer player)
+        {
+            return new PlayerBuffSaveDto
+            {
+                Buffs = player.getAllBuffs().Select(x => new BuffDto
+                {
+                    IsSkill = x.effect.isSkill(),
+                    SkillLevel = 1,
+                    SourceId = x.effect.getSourceId(),
+                    UsedTime = x.usedTime,
+                }).ToArray(),
+                Diseases = player.getAllDiseases().Select(x => new DiseaseDto
+                {
+                    DiseaseOrdinal = x.Key.ordinal(),
+                    LeftTime = x.Value.LeftTime,
+                    MobSkillId = x.Value.MobSkill.getId().type.getId(),
+                    MobSkillLevel = x.Value.MobSkill.getId().level
+                }).ToArray()
             };
         }
 

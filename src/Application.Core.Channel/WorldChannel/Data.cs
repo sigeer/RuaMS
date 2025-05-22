@@ -1,8 +1,12 @@
 using Application.Core.Game.Players;
+using Application.Core.Game.Skills;
+using Application.Shared;
 using Application.Shared.Login;
 using Application.Utility.Compatible;
 using client;
 using net.server;
+using server;
+using server.life;
 using tools;
 
 namespace Application.Core.Channel
@@ -15,12 +19,7 @@ namespace Application.Core.Channel
         }
         public void StashCharacterBuff(IPlayer player)
         {
-            Server.getInstance().getPlayerBuffStorage().addBuffsToStorage(player.getId(), player.getAllBuffs());
-        }
-
-        public void StashCharacterDisease(IPlayer player)
-        {
-            Server.getInstance().getPlayerBuffStorage().addDiseasesToStorage(player.getId(), player.getAllDiseases());
+            Service.SaveBuff(player);
         }
 
         private List<KeyValuePair<long, PlayerBuffValueHolder>> getLocalStartTimes(List<PlayerBuffValueHolder> lpbvl)
@@ -31,26 +30,23 @@ namespace Application.Core.Channel
 
         public void RecoverCharacterBuff(IPlayer player)
         {
-            var buffs = Server.getInstance().getPlayerBuffStorage().getBuffsFromStorage(player.Id);
-            if (buffs != null)
-            {
-                var timedBuffs = getLocalStartTimes(buffs);
-                player.silentGiveBuffs(timedBuffs);
-            }
-        }
+            var buffdto = Service.GetBuffFromStorage(player);
+            var buffs = buffdto.Buffs.Select(x => new PlayerBuffValueHolder(x.UsedTime,
+                x.IsSkill ? SkillFactory.GetSkillTrust(x.SourceId).getEffect(x.SkillLevel) : ItemInformationProvider.getInstance().getItemEffect(x.SourceId)!)).ToList();
 
-        public void RecoverCharacterDisease(IPlayer player)
-        {
-            var diseases = Server.getInstance().getPlayerBuffStorage().getDiseasesFromStorage(player.Id);
-            if (diseases != null)
-            {
-                player.silentApplyDiseases(diseases);
+            var timedBuffs = getLocalStartTimes(buffs);
+            player.silentGiveBuffs(timedBuffs);
 
-                foreach (var e in diseases)
-                {
-                    var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Key, e.Value.MobSkill.getX()));
-                    player.sendPacket(PacketCreator.giveDebuff(debuff, e.Value.MobSkill));
-                }
+            var diseases = buffdto.Diseases.ToDictionary(
+                x => Disease.ordinal(x.DiseaseOrdinal),
+                x => new DiseaseExpiration(x.LeftTime, MobSkillFactory.getMobSkillOrThrow((MobSkillType)x.MobSkillId, x.MobSkillLevel)));
+
+            player.silentApplyDiseases(diseases);
+
+            foreach (var e in diseases)
+            {
+                var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Key, e.Value.MobSkill.getX()));
+                player.sendPacket(PacketCreator.giveDebuff(debuff, e.Value.MobSkill));
             }
         }
     }

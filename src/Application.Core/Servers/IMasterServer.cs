@@ -3,8 +3,10 @@ using Application.Core.Gameplay.Wedding;
 using Application.Core.ServerTransports;
 using Application.Shared.Characters;
 using Application.Shared.Configs;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Shared.Servers;
+using net.server;
 using System.Net;
 
 namespace Application.Core.Servers
@@ -61,5 +63,7 @@ namespace Application.Core.Servers
         int GetAccountIdByAccountName(string name);
         void CommitAccountEntity(AccountDto accountEntity);
         AccountLoginStatus GetAccountLoginStatus(int accId);
+        void SaveBuff(int v, PlayerBuffSaveDto playerBuffSaveDto);
+        PlayerBuffSaveDto GetBuff(int v);
     }
 }

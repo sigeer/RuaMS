@@ -148,12 +148,12 @@ namespace Application.Core.Game.TheWorld
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
         void unregisterOwnedMap(IMap map);
-        void BroadcastWorldMessage(Packet p);
+        /// <summary>
+        /// 合并了disease
+        /// </summary>
+        /// <param name="player"></param>
         void StashCharacterBuff(IPlayer player);
-        void StashCharacterDisease(IPlayer player);
-
         void RecoverCharacterBuff(IPlayer character);
-        void RecoverCharacterDisease(IPlayer character);
         IPEndPoint GetChannelEndPoint(int channel);
 
         /// <summary>

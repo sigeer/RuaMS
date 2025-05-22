@@ -475,7 +475,6 @@ namespace Application.Core.Channel.Net
 
             Character.unregisterChairBuff();
             CurrentServer.StashCharacterBuff(Character);
-            CurrentServer.StashCharacterDisease(Character);
             Character.setDisconnectedFromChannelWorld();
             Character.notifyMapTransferToPartner(-1);
             Character.removeIncomingInvites();

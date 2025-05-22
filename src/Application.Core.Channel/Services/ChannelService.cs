@@ -2,6 +2,7 @@ using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.ServerTransports;
+using Application.Shared.Dto;
 using client.inventory;
 using constants.id;
 using constants.inventory;
@@ -32,6 +33,16 @@ namespace Application.Core.Channel.Services
         public void SaveChar(Player player)
         {
             _tranport.SendPlayerObject(_characteService.Deserialize(player));
+        }
+
+        public void SaveBuff(IPlayer player)
+        {
+            _tranport.SendBuffObject(player.getId(), _characteService.DeserializeBuff(player));
+        }
+
+        public PlayerBuffSaveDto GetBuffFromStorage(IPlayer player)
+        {
+            return _tranport.GetBuffObject(player.Id);
         }
 
         public Item GenerateCouponItem(int itemId, short quantity)
