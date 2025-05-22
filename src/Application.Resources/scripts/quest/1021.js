@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -50,8 +50,8 @@ function start(mode, type, selection) {
         } else if (status == 2) {
             qm.sendAcceptDecline("来。。。开个小玩笑怎么样？咦！");
         } else if (status == 3) {
-            if (qm.getPlayer().getHp() >= 50) {
-                qm.getPlayer().updateHp(25);
+            if (qm.getPlayer().HP >= 50) {
+                qm.getPlayer().SetHP(25);
             }
 
             if (!qm.haveItem(2010007)) {
@@ -85,7 +85,7 @@ function end(mode, type, selection) {
         }
 
         if (status == 0) {
-            if (qm.c.getPlayer().getHp() < 50) {
+            if (qm.getPlayer().HP < 50) {
                 qm.sendNext("嗨，你的HP还没有完全恢复，使用我给你的苹果来补充吧！快去试试！");
                 qm.dispose();
             } else {
