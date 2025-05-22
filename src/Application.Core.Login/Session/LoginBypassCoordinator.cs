@@ -20,24 +20,27 @@
 
 
 using Application.Core.model;
+using Application.Core.Servers;
+using Application.Utility.Configs;
 using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
-namespace net.server.coordinator.login;
+namespace Application.Core.Login.Session;
 
 /**
  * @author Ronan
  */
 public class LoginBypassCoordinator
 {
-    private static LoginBypassCoordinator instance = new LoginBypassCoordinator();
 
-    public static LoginBypassCoordinator getInstance()
-    {
-        return instance;
-    }
+    readonly IMasterServer _server;
 
     private ConcurrentDictionary<HwidAccountPair, KeyValuePair<bool, long>> loginBypass = new();   // optimized PIN & PIC check
+
+    public LoginBypassCoordinator(IMasterServer server)
+    {
+        _server = server;
+    }
 
     public bool canLoginBypass(Hwid hwid, int accId, bool pic)
     {
@@ -60,7 +63,7 @@ public class LoginBypassCoordinator
         if (expireTime > 0)
         {
             var entry = new HwidAccountPair(hwid, accId);
-            expireTime = Server.getInstance().getCurrentTime() + 60 * 1000 * (expireTime);
+            expireTime = _server.getCurrentTime() + 60 * 1000 * (expireTime);
             try
             {
                 var value = loginBypass.GetValueOrDefault(entry);
@@ -71,7 +74,7 @@ public class LoginBypassCoordinator
             {
             }
 
-            loginBypass.AddOrUpdate(entry, new(pic, expireTime));
+            loginBypass[entry] = new(pic, expireTime);
         }
     }
 
@@ -81,7 +84,7 @@ public class LoginBypassCoordinator
             return;
 
         var entry = new HwidAccountPair(hwid, accId);
-        loginBypass.Remove(entry);
+        loginBypass.TryRemove(entry, out _);
     }
 
     public void runUpdateLoginBypass()
@@ -90,19 +93,19 @@ public class LoginBypassCoordinator
         {
             List<HwidAccountPair> toRemove = new();
             HashSet<int> onlineAccounts = new();
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = _server.getCurrentTime();
 
-            foreach (var w in Server.getInstance().getWorlds())
-            {
-                foreach (var chr in w.getPlayerStorage().GetAllOnlinedPlayers())
-                {
-                    var c = chr.getClient();
-                    if (c != null)
-                    {
-                        onlineAccounts.Add(c.AccountEntity.Id);
-                    }
-                }
-            }
+            //foreach (var w in _server.getWorlds())
+            //{
+            //    foreach (var chr in w.getPlayerStorage().GetAllOnlinedPlayers())
+            //    {
+            //        var c = chr.getClient();
+            //        if (c != null)
+            //        {
+            //            onlineAccounts.Add(c.AccountEntity.Id);
+            //        }
+            //    }
+            //}
 
             foreach (var e in loginBypass)
             {
@@ -111,7 +114,7 @@ public class LoginBypassCoordinator
                     long expireTime = timeNow + 60 * 1000 * 2;
                     if (expireTime > e.Value.Value)
                     {
-                        loginBypass.AddOrUpdate(e.Key, new(e.Value.Key, expireTime));
+                        loginBypass[e.Key]  = new(e.Value.Key, expireTime);
                     }
                 }
                 else if (e.Value.Value < timeNow)
@@ -124,7 +127,7 @@ public class LoginBypassCoordinator
             {
                 foreach (var p in toRemove)
                 {
-                    loginBypass.Remove(p);
+                    loginBypass.TryRemove(p, out _);
                 }
             }
         }

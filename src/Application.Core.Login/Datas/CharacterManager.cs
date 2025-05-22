@@ -1,11 +1,10 @@
 using Application.Core.Datas;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
-using Application.Core.Game.Players;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Constants;
+using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Utility.Configs;
 using AutoMapper;
@@ -13,7 +12,6 @@ using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.EntityFrameworkCore.Extensions;
-using System.Configuration;
 
 namespace Application.Core.Login.Datas
 {
@@ -42,7 +40,7 @@ namespace Application.Core.Login.Datas
             _dataStorage = chrStorage;
         }
 
-        public void Update(CharacterValueObject obj)
+        public void Update(PlayerSaveDto obj)
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
@@ -62,6 +60,7 @@ namespace Application.Core.Login.Datas
                 origin.SavedLocations = obj.SavedLocations;
                 origin.StorageInfo = obj.StorageInfo;
                 origin.TrockLocations = obj.TrockLocations;
+                origin.CoolDowns = obj.CoolDowns;
             }
 
             _dataStorage.SetCharacter(obj);
@@ -90,7 +89,7 @@ namespace Application.Core.Login.Datas
         {
             var itemType = itemFactories.Select(x => x.getValue()).ToArray();
             var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                .Where(x =>  x.Characterid == characterId)
+                .Where(x => x.Characterid == characterId)
                 .Where(x => itemType.Contains(x.Type))
                          join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
                          from cs in css.DefaultIfEmpty()
@@ -198,6 +197,7 @@ namespace Application.Core.Login.Datas
                     SkillMacros = _mapper.Map<SkillMacroDto[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     Skills = _mapper.Map<SkillDto[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     TrockLocations = _mapper.Map<TrockLocationDto[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                    CoolDowns = _mapper.Map<CoolDownDto[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray())
                 };
 
                 _idDataSource[characterId] = d;
@@ -208,6 +208,7 @@ namespace Application.Core.Login.Datas
             var accountDto = _accManager.GetAccountDto(d.Character.AccountId);
             if (accountDto == null)
                 return null;
+            // 虽然传了所有字段，但是只有部分字段可能会发生修改
             d.Account = accountDto;
 
             d.Link = dbContext.Characters.Where(x => x.AccountId == d.Character.AccountId && x.Id != d.Character.Id).OrderByDescending(x => x.Level)
@@ -224,8 +225,6 @@ namespace Application.Core.Login.Datas
                 LastUpdateTime = fameRecords.Count == 0 ? 0 : fameRecords.Max(x => x.When).ToUnixTimeMilliseconds()
             };
 
-            var cooldownList = dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray();
-            d.CoolDowns = _mapper.Map<CoolDownDto[]>(cooldownList);
 
             var cashFactory = GetCashshopFactory(d.Character.JobId);
             var allAccountItems = LoadAccountItems(dbContext, d.Character.AccountId, ItemFactory.STORAGE, cashFactory);

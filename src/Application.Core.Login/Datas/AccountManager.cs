@@ -64,6 +64,11 @@ namespace Application.Core.Login.Datas
                 throw new BusinessException($"账号不存在，Id = {accId}");
         }
 
+        /// <summary>
+        /// account的字段更新都是即时更新，不与character一同处理
+        /// <para>有3种更新：1.仅更新lastlogin，2.更新该方法以下属性，3.更新现金相关，随cashshop更新</para>
+        /// </summary>
+        /// <param name="obj"></param>
         public void UpdateAccount(AccountDto obj)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();

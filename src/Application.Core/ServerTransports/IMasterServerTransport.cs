@@ -12,5 +12,6 @@ namespace Application.Core.ServerTransports
         void SendWorldConfig(WorldConfigPatch patch);
         bool WrapPlayer(string name, int? channel, int mapId, int? portal);
         void BroadcastWorldGMPacket(Packet packet);
+        void BroadcastMessage(Packet p);
     }
 }

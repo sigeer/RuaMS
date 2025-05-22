@@ -1,13 +1,22 @@
-namespace net.server.coordinator.session;
+using Application.Core.Servers;
+
+namespace Application.Core.Login.Session;
 
 public class HwidAssociationExpiry
 {
-    public static DateTimeOffset getHwidAccountExpiry(int relevance)
+    readonly IMasterServer _server;
+
+    public HwidAssociationExpiry(IMasterServer server)
     {
-        return DateTimeOffset.FromUnixTimeMilliseconds(Server.getInstance().getCurrentTime()).Add(hwidExpirationUpdate(relevance));
+        _server = server;
     }
 
-    private static TimeSpan hwidExpirationUpdate(int relevance)
+    public DateTimeOffset getHwidAccountExpiry(int relevance)
+    {
+        return DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()).Add(hwidExpirationUpdate(relevance));
+    }
+
+    private TimeSpan hwidExpirationUpdate(int relevance)
     {
         int degree = getHwidExpirationDegree(relevance);
 
@@ -28,7 +37,7 @@ public class HwidAssociationExpiry
         return TimeSpan.FromHours(baseHours + subdegreeTime);
     }
 
-    private static int getHwidExpirationDegree(int relevance)
+    private int getHwidExpirationDegree(int relevance)
     {
         int degree = 1;
         int subdegree;

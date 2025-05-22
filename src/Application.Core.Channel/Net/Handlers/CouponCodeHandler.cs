@@ -244,7 +244,7 @@ public class CouponCodeHandler : ChannelHandlerBase
 
                                 if (ItemInformationProvider.getInstance().isCash(item))
                                 {
-                                    Item it = CashShop.generateCouponItem(item, qty);
+                                    Item it = c.getChannelServer().Service.GenerateCouponItem(item, qty);
 
                                     cs.addToInventory(it);
                                     cashItems.Add(it);

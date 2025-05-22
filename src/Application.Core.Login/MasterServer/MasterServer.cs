@@ -1,5 +1,4 @@
-using Application.Core.Client;
-using Application.Core.Game.Players;
+using Application.Core.Game.GlobalControllers;
 using Application.Core.Gameplay.Wedding;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
@@ -8,8 +7,6 @@ using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
-using Application.EF.Entities;
-using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Net;
 using Application.Shared.Servers;
@@ -21,10 +18,7 @@ using client.processor.npc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using net;
-using net.netty;
 using net.server;
-using net.server.coordinator.session;
 using server;
 using System.Net;
 
@@ -83,6 +77,8 @@ namespace Application.Core.Login
 
         public IServiceProvider ServiceProvider { get; }
 
+        public InvitationController InvitationController { get; }
+
 
         CharacterService _characterSevice;
         public MasterServer(IServiceProvider sp, AccountManager accountManager, CharacterService characterManager)
@@ -119,6 +115,8 @@ namespace Application.Core.Login
             BuffStorage = new PlayerBuffStorage();
             this.accountManager = accountManager;
 
+            InvitationController = new InvitationController(this);
+
         }
 
         bool isShuttingdown = false;
@@ -134,6 +132,8 @@ namespace Application.Core.Login
             _logger.LogInformation("[{ServerName}] 停止中...", "登录/中心服务器");
             await NettyServer.Stop();
             _logger.LogInformation("[{ServerName}] 停止监听", "登录服务器");
+
+            await InvitationController.DisposeAsync();
 
             var storageService = ServiceProvider.GetRequiredService<StorageService>();
             _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", "中心服务器");
@@ -256,8 +256,10 @@ namespace Application.Core.Login
             tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
             tMan.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
             tMan.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
-            tMan.register(new LoginStorageTask(sessionCoordinator), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
+            tMan.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             tMan.register(new DueyFredrickTask(ServiceProvider.GetRequiredService<FredrickProcessor>()), TimeSpan.FromHours(1), timeLeft);
+            tMan.register(new RankingLoginTask(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            InvitationController.Register();
             _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");
         }
 
@@ -296,8 +298,10 @@ namespace Application.Core.Login
             return Transport.WrapPlayer(name, channel, mapId, portal);
         }
 
-
-
+        public void BroadcastWorldMessage(Packet p)
+        {
+            Transport.BroadcastMessage(p);
+        }
         public void BroadcastWorldGMPacket(Packet packet)
         {
             Transport.BroadcastWorldGMPacket(packet);

@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.services.task.channel;
 
 /**
@@ -28,11 +30,11 @@ public class MobMistService : BaseService
 
     private MobMistScheduler[] mobMistSchedulers = new MobMistScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public MobMistService()
+    public MobMistService(IWorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
-            mobMistSchedulers[i] = new MobMistScheduler();
+            mobMistSchedulers[i] = new MobMistScheduler(worldChannel);
         }
     }
 
@@ -54,6 +56,9 @@ public class MobMistService : BaseService
 
     private class MobMistScheduler : BaseScheduler
     {
+        public MobMistScheduler(IWorldChannel worldChannel) : base(worldChannel)
+        {
+        }
 
         public void registerMistCancelAction(Action runAction, long delay)
         {

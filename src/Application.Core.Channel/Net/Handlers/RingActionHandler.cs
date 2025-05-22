@@ -332,7 +332,7 @@ public class RingActionHandler : ChannelHandlerBase
                                     }
                                     else
                                     {
-                                        noteService.sendNormal(dueyMessage, groom, name);
+                                        noteService.sendNormal(dueyMessage, groom, name, cserv.getCurrentTime());
                                     }
 
                                     Item weddingTicket = new Item(newItemId, 0, 1);

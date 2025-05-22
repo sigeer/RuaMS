@@ -551,7 +551,6 @@ namespace Application.Core.Game.Players
         bool runTirednessSchedule();
         //void saveCharToDB();
         void saveCharToDB(bool notAutosave = true);
-        void saveCooldowns();
         void saveGuildStatus();
         void saveLocation(string type);
         void saveLocationOnWarp();

@@ -21,10 +21,12 @@
 */
 
 
+using Application.EF;
+using Application.Utility.Tasks;
 using client;
 using Microsoft.EntityFrameworkCore;
 
-namespace net.server.task;
+namespace Application.Core.Login.Tasks;
 
 
 
@@ -39,10 +41,11 @@ namespace net.server.task;
 public class RankingLoginTask : AbstractRunnable
 {
     private DateTimeOffset lastUpdate = DateTimeOffset.UtcNow;
+    readonly IDbContextFactory<DBContext> _dbContextFactory;
 
-    private void resetMoveRank(DBContext dbContext, bool job)
+    private void resetMoveRank(DBContext dbContext)
     {
-        dbContext.Characters.ExecuteUpdate(x => job ? x.SetProperty(y => y.JobRankMove, 0) : x.SetProperty(y => y.RankMove, 0));
+        dbContext.Characters.ExecuteUpdate(x => x.SetProperty(y => y.JobRankMove, 0).SetProperty(y => y.RankMove, 0));
     }
 
     private void updateRanking(DBContext dbContext, int job, int world)
@@ -87,22 +90,14 @@ public class RankingLoginTask : AbstractRunnable
     {
         try
         {
-            using var dbContext = new DBContext();
+            using var dbContext = _dbContextFactory.CreateDbContext();
             using var dbTrans = dbContext.Database.BeginTransaction();
 
-            if (YamlConfig.config.server.USE_REFRESH_RANK_MOVE)
+            resetMoveRank(dbContext);
+            updateRanking(dbContext, -1, 0);    //overall ranking
+            for (int i = 0; i <= JobUtils.getMax(); i++)
             {
-                resetMoveRank(dbContext, true);
-                resetMoveRank(dbContext, false);
-            }
-
-            for (int j = 0; j < Server.getInstance().getWorldsSize(); j++)
-            {
-                updateRanking(dbContext, -1, j);    //overall ranking
-                for (int i = 0; i <= JobUtils.getMax(); i++)
-                {
-                    updateRanking(dbContext, i, j);
-                }
+                updateRanking(dbContext, i, 0);
             }
             dbTrans.Commit();
 

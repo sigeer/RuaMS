@@ -18,9 +18,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Servers;
+using Application.Utility.Compatible;
+using Application.Utility.Configs;
 using System.Collections.Concurrent;
 
-namespace net.server.coordinator.login;
+namespace Application.Core.Login.Session;
 
 /**
  * @author Ronan
@@ -28,6 +31,12 @@ namespace net.server.coordinator.login;
 public class LoginStorage
 {
     private ConcurrentDictionary<int, List<DateTimeOffset>> loginHistory = new(); // Key: accountId
+    readonly IMasterServer _server;
+
+    public LoginStorage(IMasterServer server)
+    {
+        _server = server;
+    }
 
     public bool registerLogin(int accountId)
     {
@@ -35,7 +44,7 @@ public class LoginStorage
 
         lock (attempts)
         {
-            DateTimeOffset attemptExpiry = DateTimeOffset.FromUnixTimeMilliseconds(Server.getInstance().getCurrentTime() + YamlConfig.config.server.LOGIN_ATTEMPT_DURATION);
+            DateTimeOffset attemptExpiry = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime() + YamlConfig.config.server.LOGIN_ATTEMPT_DURATION);
 
             if (attempts.Count > YamlConfig.config.server.MAX_ACCOUNT_LOGIN_ATTEMPT)
             {
@@ -50,7 +59,7 @@ public class LoginStorage
 
     public void clearExpiredAttempts()
     {
-        DateTimeOffset now = DateTimeOffset.FromUnixTimeMilliseconds(Server.getInstance().getCurrentTime());
+        DateTimeOffset now = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
         List<int> accountIdsToClear = new();
 
         foreach (var loginEntries in loginHistory)
@@ -76,7 +85,7 @@ public class LoginStorage
 
         foreach (int accountId in accountIdsToClear)
         {
-            loginHistory.Remove(accountId);
+            loginHistory.TryRemove(accountId, out _);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Application.Core.Client
 {
     public interface IClientBase : ISocketClient, IDisposable
     {
-        IServerBase<IServerTransport> CurrentServer { get; }
+        IServerBase<IServerTransport> CurrentServerBase { get; }
         /// <summary>
         /// 对于LoginClient而言，登录后为true
         /// 对于ChannelClient而言，进入游戏后为true

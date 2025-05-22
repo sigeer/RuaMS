@@ -441,7 +441,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         if (item.Level > 0)
         {
             //Uncommon and Rare
-            c.CurrentServer.BroadcastWorldPacket(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
+            c.CurrentServer.BroadcastWorldMessage(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
         }
     }
 

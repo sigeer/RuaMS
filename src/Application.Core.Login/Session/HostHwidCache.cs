@@ -1,4 +1,5 @@
 using Application.Core.Servers;
+using net.server;
 using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
@@ -39,7 +40,7 @@ public class HostHwidCache
 
     public void addEntry(string remoteHost, Hwid hwid)
     {
-        hostHwidCache[remoteHost] = HostHwid.createWithDefaultExpiry(hwid);
+        hostHwidCache[remoteHost] = new HostHwid(hwid, DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()).AddDays(7));
     }
 
     public HostHwid? getEntry(string remoteHost)

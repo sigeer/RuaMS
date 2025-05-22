@@ -1381,7 +1381,7 @@ public partial class Player
 
     public void removeIncomingInvites()
     {
-        InviteCoordinator.removePlayerIncomingInvites(Id);
+        Client.CurrentServer.Service.RemovePlayerIncomingInvites(Id);
     }
 
     public void checkBerserk(bool isHidden)
@@ -4356,7 +4356,8 @@ public partial class Player
             Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
         }
         else
-        { //Auto DC and log if no GM is online
+        { 
+            //Auto DC and log if no GM is online
             Client.Disconnect(false, false);
         }
         Log.Information(message);
@@ -5432,8 +5433,7 @@ public partial class Player
     {
         RemoveWorldWatcher();
         Client.CurrentServer.SendLogoff(AccountId);
-        var offlineClient = new OfflineClient() { AccountEntity = Client.AccountEntity };
-        setClient(offlineClient);
+        setClient(new OfflineClient());
     }
 
     public void setLoginTime(DateTimeOffset time)

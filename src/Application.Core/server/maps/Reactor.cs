@@ -23,10 +23,7 @@
 
 using Application.Core.Game.Maps;
 using client.inventory;
-using net.packet;
 using net.server.services.task.channel;
-using net.server.services.type;
-using scripting.reactor;
 using server.partyquest;
 using tools;
 
@@ -458,7 +455,7 @@ public class Reactor : AbstractMapObject
             respawn();
         };
 
-        OverallService service = (OverallService)MapModel.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+        OverallService service = MapModel.getChannelServer().OverallService;
         service.registerOverallAction(MapModel.getId(), delayedRespawnRun, this.getDelay());
     }
 
@@ -468,7 +465,7 @@ public class Reactor : AbstractMapObject
 
         if (r != null)
         {
-            OverallService service = (OverallService)MapModel.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+            OverallService service = MapModel.getChannelServer().OverallService;
             service.forceRunOverallAction(MapModel.getId(), r);
             return true;
         }

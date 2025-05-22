@@ -1,3 +1,4 @@
+using Application.Core.Game.GlobalControllers;
 using Application.Core.Gameplay.Wedding;
 using Application.Core.ServerTransports;
 using Application.Shared.Characters;
@@ -30,6 +31,8 @@ namespace Application.Core.Servers
         public float MobRate { get; set; }
         void UpdateWorldConfig(WorldConfigPatch updatePatch);
         #endregion
+
+        InvitationController InvitationController { get; }
 
         IServiceProvider ServiceProvider { get; }
         List<ChannelServerWrapper> ChannelServerList { get; }

@@ -34,6 +34,9 @@ namespace Application.Core.Login
             services.AddSingleton<SessionCoordinator>();
             services.AddSingleton<HostHwidCache>();
             services.AddSingleton<SessionDAO>();
+            services.AddSingleton<HwidAssociationExpiry>();
+            services.AddSingleton<LoginStorage>();
+            services.AddSingleton<LoginBypassCoordinator>();
             return services;
         }
 

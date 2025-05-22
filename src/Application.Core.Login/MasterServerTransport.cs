@@ -1,3 +1,4 @@
+using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
@@ -15,6 +16,15 @@ namespace Application.Core.Login
         public MasterServerTransport(IMasterServer masterServer)
         {
             this._server = masterServer;
+        }
+
+        public void BroadcastMessage(Packet p)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.Channels)
+            {
+                ch.broadcastPacket(p);
+            }
         }
 
         public void BroadcastWorldGMPacket(Packet packet)

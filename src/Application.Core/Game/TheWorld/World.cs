@@ -8,14 +8,11 @@ using Application.Core.Managers;
 using client;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
 using net.server.coordinator.partysearch;
 using net.server.guild;
-using net.server.services;
-using net.server.services.type;
 using net.server.task;
 using net.server.world;
 using server;
@@ -49,7 +46,6 @@ public class World : IWorld
     private Dictionary<int, Family> families = new();
     public FishingWorldInstance FishingInstance { get; }
 
-    private ServicesManager<WorldServices> services = new ServicesManager<WorldServices>(WorldServices.SAVE_CHARACTER);
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
     private PartySearchCoordinator partySearch = new PartySearchCoordinator();
 
@@ -1242,21 +1238,9 @@ public class World : IWorld
         partySearch.runPartySearch();
     }
 
-    public BaseService getServiceAccess(WorldServices sv)
-    {
-        return services.getAccess(sv).getService();
-    }
-
-    private void closeWorldServices()
-    {
-        services.shutdown();
-    }
-
     private void clearWorldData()
     {
         TeamStorage.Clear();
-
-        closeWorldServices();
     }
 
     public async Task Shutdown()

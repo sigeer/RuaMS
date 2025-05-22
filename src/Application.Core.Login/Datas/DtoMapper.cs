@@ -6,6 +6,7 @@ using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using AutoMapper;
+using net.server;
 using tools;
 
 namespace Application.Core.Login.Datas
@@ -72,6 +73,11 @@ namespace Application.Core.Login.Datas
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
                 .ForMember(des => des.PetInfo, source => source.MapFrom(x => x.Pet))
                 .IncludeMembers(source => source.Item);
+
+            CreateMap<PlayerCoolDownValueHolder, CoolDownDto>()
+                .ForMember(dest => dest.SkillId, source => source.MapFrom(x => x.skillId))
+                .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
+                .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
         }
     }
 }

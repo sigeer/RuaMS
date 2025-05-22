@@ -53,7 +53,7 @@ public abstract class CharacterFactory
         lock (createNewLock)
         {
             newCharacter = null;
-            if (!c.CurrentServer.CheckCharacterName(name))
+            if (!c.CurrentServerBase.CheckCharacterName(name))
             {
                 return CreateCharResult.NameInvalid;
             }
@@ -146,7 +146,7 @@ public abstract class CharacterFactory
                 c.sendPacket(PacketCreator.addNewCharEntry(c, newCharacter));
 
                 c.UpdateAccountChracterByAdd(newCharacter.Id);
-                c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountName + " has created a new character with IGN " + name));
+                c.CurrentServerBase.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountName + " has created a new character with IGN " + name));
                 Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.AccountName, name);
 
                 return CreateCharResult.Success;

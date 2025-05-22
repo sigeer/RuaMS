@@ -27,7 +27,6 @@ using Application.Utility.Configs;
 using constants.id;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.login;
 using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
@@ -42,7 +41,7 @@ public class SessionCoordinator
     readonly ILogger<SessionCoordinator> _logger;
 
     private SessionInitialization sessionInit = new SessionInitialization();
-    private LoginStorage loginStorage = new LoginStorage();
+    private LoginStorage loginStorage;
     private Dictionary<int, ILoginClient> onlineClients = new(); // Key: account id
     private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
     private ConcurrentDictionary<string, ILoginClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
@@ -50,13 +49,21 @@ public class SessionCoordinator
     private HostHwidCache hostHwidCache;
     readonly SessionDAO _sessionDAO;
     readonly IDbContextFactory<DBContext> _dbContextFactory;
-
-    public SessionCoordinator(ILogger<SessionCoordinator> logger, HostHwidCache hostHwidCache, SessionDAO sessionDAO, IDbContextFactory<DBContext> dbContextFactory)
+    readonly HwidAssociationExpiry _hwidAssociationExpiry;
+    public SessionCoordinator(
+        ILogger<SessionCoordinator> logger,
+        HostHwidCache hostHwidCache,
+        SessionDAO sessionDAO,
+        IDbContextFactory<DBContext> dbContextFactory,
+        HwidAssociationExpiry hwidAssociationExpiry,
+        LoginStorage loginStorage)
     {
         _logger = logger;
         this.hostHwidCache = hostHwidCache;
         _sessionDAO = sessionDAO;
         _dbContextFactory = dbContextFactory;
+        _hwidAssociationExpiry = hwidAssociationExpiry;
+        this.loginStorage = loginStorage;
     }
 
     private bool attemptAccountAccess(int accountId, Hwid hwid, bool routineCheck)
@@ -72,7 +79,7 @@ public class SessionCoordinator
                     if (!routineCheck)
                     {
                         // better update HWID relevance as soon as the login is authenticated
-                        var expiry = HwidAssociationExpiry.getHwidAccountExpiry(hwidRelevance.relevance);
+                        var expiry = _hwidAssociationExpiry.getHwidAccountExpiry(hwidRelevance.relevance);
                         _sessionDAO.updateAccountAccess(dbContext, hwid, accountId, expiry, hwidRelevance.getIncrementedRelevance());
                     }
 
@@ -283,7 +290,7 @@ public class SessionCoordinator
 
             if (hwids.Count < YamlConfig.config.server.MAX_ALLOWED_ACCOUNT_HWID)
             {
-                var expiry = HwidAssociationExpiry.getHwidAccountExpiry(0);
+                var expiry = _hwidAssociationExpiry.getHwidAccountExpiry(0);
                 _sessionDAO.registerAccountAccess(dbContext, accountId, hwid, expiry);
             }
         }

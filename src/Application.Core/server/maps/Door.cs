@@ -23,7 +23,6 @@
 
 using Application.Core.Game.Maps;
 using net.server.services.task.channel;
-using net.server.services.type;
 
 namespace server.maps;
 
@@ -152,7 +151,7 @@ public class Door
             {
                 IMap town = destroyDoor.getTown();
 
-                OverallService service = (OverallService)town.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+                OverallService service = town.getChannelServer().OverallService;
                 service.registerOverallAction(town.getId(), () =>
                 {
                     destroyDoor.broadcastRemoveDoor(owner);   // thanks BHB88 for noticing doors crashing players when instantly cancelling buff

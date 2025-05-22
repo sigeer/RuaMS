@@ -231,7 +231,7 @@ public class FredrickProcessor
 
 
                     string msg = fredrickReminderMessage(cid.Value - 1);
-                    noteService.sendNormal(msg, "FREDRICK", cid.Key.Name);
+                    noteService.sendNormal(msg, "FREDRICK", cid.Key.Name, 0);
                 }
 
             }

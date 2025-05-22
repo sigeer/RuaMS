@@ -2,7 +2,7 @@ using server;
 
 namespace Application.Core.Game.Tasks
 {
-    public abstract class TimelyControllerBase
+    public abstract class TimelyControllerBase: IAsyncDisposable
     {
         protected ScheduledFuture? _scheduler;
 
@@ -16,6 +16,11 @@ namespace Application.Core.Game.Tasks
             _repeatDuration = repeatDuration;
             _repeatDelay = repeatDelay;
             _taskName = taskName;
+        }
+
+        public virtual async ValueTask DisposeAsync()
+        {
+            await StopAsync();
         }
 
         public virtual void Register()

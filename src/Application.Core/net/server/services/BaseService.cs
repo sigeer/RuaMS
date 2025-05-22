@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.services;
 
 /**
@@ -25,6 +27,12 @@ namespace net.server.services;
  */
 public abstract class BaseService
 {
+    protected IWorldChannel _channelServer;
+
+    protected BaseService(IWorldChannel channelServer)
+    {
+        _channelServer = channelServer;
+    }
 
     protected static int getChannelSchedulerIndex(int mapid)
     {

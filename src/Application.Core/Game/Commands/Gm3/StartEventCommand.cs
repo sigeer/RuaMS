@@ -20,13 +20,13 @@ public class StartEventCommand : CommandBase
             players = int.Parse(paramsValue[0]);
         }
         c.getChannelServer().setEvent(new Event(player.getMapId(), players));
-        c.CurrentServer.BroadcastWorldPacket(PacketCreator.earnTitleMessage(
+        c.CurrentServer.BroadcastWorldMessage(PacketCreator.earnTitleMessage(
                 "[Event] An event has started on "
                         + player.getMap().getMapName()
                         + " and will allow "
                         + players
                         + " players to join. Type @joinevent to participate."));
-        c.CurrentServer.BroadcastWorldPacket(
+        c.CurrentServer.BroadcastWorldMessage(
                 PacketCreator.serverNotice(6, "[Event] An event has started on "
                         + player.getMap().getMapName()
                         + " and will allow "

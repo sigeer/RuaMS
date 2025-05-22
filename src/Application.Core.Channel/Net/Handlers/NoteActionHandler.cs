@@ -55,7 +55,7 @@ public class NoteActionHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.showCashInventory(c));
             }
 
-            bool sendNoteSuccess = noteService.sendWithFame(message, c.OnlinedCharacter.getName(), charname);
+            bool sendNoteSuccess = noteService.sendWithFame(message, c.OnlinedCharacter.getName(), charname, c.getChannelServer().getCurrentTime());
             if (sendNoteSuccess)
             {
                 c.OnlinedCharacter.getCashShop().decreaseNotes();

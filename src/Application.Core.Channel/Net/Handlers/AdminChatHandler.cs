@@ -24,7 +24,7 @@ public class AdminChatHandler : ChannelHandlerBase
         {
             case 0:
                 {// /alertall, /noticeall, /slideall
-                    c.CurrentServer.BroadcastWorldPacket(packet);
+                    c.CurrentServer.BroadcastWorldMessage(packet);
                     // ChatLogger.log(c, "Alert All", message);
                     break;
                 }

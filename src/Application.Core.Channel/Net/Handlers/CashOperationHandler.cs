@@ -97,7 +97,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             return;
                         }
 
-                        Item item = cItem.toItem();
+                        Item item = chr.getChannelServer().Service.CashItem2Item(cItem);
                         cs.gainCash(useNX, cItem, chr.getWorld());  // thanks Rohenn for noticing cash operations after item acquisition
                         cs.addToInventory(item);
                         c.sendPacket(PacketCreator.showBoughtCashItem(item, c.AccountEntity!.Id));
@@ -107,7 +107,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         // Package
                         cs.gainCash(useNX, cItem, chr.getWorld());
 
-                        List<Item> cashPackage = CashItemFactory.getPackage(cItem.getItemId());
+                        List<Item> cashPackage = CashItemFactory.getPackage(cItem.getItemId(), chr.getChannelServer().Service);
                         foreach (Item item in cashPackage)
                         {
                             cs.addToInventory(item);
@@ -149,7 +149,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.showCash(chr));
 
                     string noteMessage = chr.getName() + " has sent you a gift! Go check out the Cash Shop.";
-                    noteService.sendNormal(noteMessage, chr.getName(), recipient.CharacterName);
+                    noteService.sendNormal(noteMessage, chr.getName(), recipient.CharacterName, chr.getChannelServer().getCurrentTime());
 
                     var receiver = c.CurrentServer.getPlayerStorage().getCharacterByName(recipient.CharacterName);
                     if (receiver != null)
@@ -407,7 +407,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                   return;
                               }*/ //Gotta let them faggots marry too, hence why this is commented out <3 
 
-                            if (itemRing?.toItem() is Equip eqp)
+                            if (chr.getChannelServer().Service.CashItem2Item(itemRing) is Equip eqp)
                             {
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
@@ -416,7 +416,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 cs.gainCash(toCharge, itemRing, chr.getWorld());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
                                 chr.addCrushRing(RingManager.LoadFromDb(rings.MyRingId)!);
-                                noteService.sendWithFame(text, chr.getName(), partner.getName());
+                                noteService.sendWithFame(text, chr.getName(), partner.getName(), chr.getChannelServer().getCurrentTime());
                                 noteService.show(partner);
                             }
                         }
@@ -482,7 +482,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         else
                         {
                             // Need to check to make sure its actually an equip and the right SN...
-                            if (itemRing?.toItem() is Equip eqp)
+                            if (chr.getChannelServer().Service.CashItem2Item(itemRing) is Equip eqp)
                             {
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 eqp.setRingId(rings.MyRingId);
@@ -491,7 +491,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 cs.gainCash(payment, -itemRing.getPrice());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
                                 chr.addFriendshipRing(RingManager.LoadFromDb(rings.MyRingId)!);
-                                noteService.sendWithFame(text, chr.getName(), partner.getName());
+                                noteService.sendWithFame(text, chr.getName(), partner.getName(), chr.getChannelServer().getCurrentTime());
                                 noteService.show(partner);
                             }
                         }
@@ -530,7 +530,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         }
                         if (chr.registerNameChange(newName))
                         { //success
-                            Item item = cItem.toItem();
+                            Item item = chr.getChannelServer().Service.CashItem2Item(cItem);
                             c.sendPacket(PacketCreator.showNameChangeSuccess(item, c.AccountEntity!.Id));
                             cs.gainCash(4, cItem, chr.getWorld());
                             cs.addToInventory(item);

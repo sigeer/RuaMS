@@ -6,7 +6,9 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.EF;
+using Application.EF.Entities;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
@@ -231,7 +233,7 @@ namespace Application.Core.Channel.Services
             return player;
         }
 
-        public CharacterValueObject Deserialize(IPlayer player)
+        public PlayerSaveDto Deserialize(IPlayer player)
         {
             List<QuestStatusDto> questStatusList = new();
             foreach (var qs in player.getQuests())
@@ -305,7 +307,7 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            return new CharacterValueObject()
+            return new PlayerSaveDto()
             {
                 Character = playerDto,
                 Areas = player.AreaInfo.Select(x => new AreaDto() { Area = x.Key, Info = x.Value }).ToArray(),
@@ -323,9 +325,10 @@ namespace Application.Core.Channel.Services
                 InventoryItems = _mapper.Map<ItemDto[]>(player.Bag.GetValues().SelectMany(x => x.list())),
                 CashShop = cashShopDto,
                 QuickSlot = quickSlotDto,
-                Account = player.Client.AccountEntity,
+                CoolDowns = _mapper.Map<CoolDownDto[]>(player.getAllCooldowns())
             };
         }
+
 
         /// <summary>
         /// 角色
@@ -343,14 +346,6 @@ namespace Application.Core.Channel.Services
                 var dbModel = dbContext.Characters.FirstOrDefault(x => x.Id == charid) ?? throw new BusinessCharacterNotFoundException(charid);
 
                 var wserv = Server.getInstance().getWorld(ret.World);
-
-                // Blessing of the Fairy
-                //var otherCharFromDB = dbContext.Characters.Where(x => x.AccountId == ret.AccountId && x.Id != charid)
-                //    .OrderByDescending(x => x.Level).Select(x => new { x.Name, x.Level }).FirstOrDefault();
-                //if (otherCharFromDB != null)
-                //{
-                //    ret.Link = new CharacterLink(otherCharFromDB.Name, otherCharFromDB.Level);
-                //}
 
                 if (login)
                 {

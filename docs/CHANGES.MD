@@ -26,8 +26,30 @@
 - 提取了World、Channel类中的dojo、wedding相关代码
 
 
-##### 2025年5月15日
+### Server、World、Channel拆分
 
-登录的client、session的相关代码没有看懂，暂时是将其保留在LoginClient相关操作里（可能是为了反作弊，但是没有相关经验暂且搁置）
+#### 交互流程
 
-> 正常来说登录相关限制、控制有LoginClient就可以了，ChannelClient只需要在PlayerLogdin时不出错就行
+不再需要分区，`Server`和`World`合并成新的 `MasterServer`  
+对于`Party`， `Guild`等需要全服互通的数据，不允许频道直接更新，由于目前代码没有进行物理隔离，可以直接互相取到数据，需要注意
+1. 在`WorldChannel中调用（相当于原先的`world.xxx`）
+2. 通过`Transport`对`MasterServer`发起请求
+3. `MasterServer`更新后，再通过`Transport`更新到`Channel`
+
+#### 登录相关
+
+登录的client、session的相关代码没有看懂，暂时是将其保留在LoginClient相关操作里（可能是为了反作弊，但是不了解相关情况暂且搁置）
+
+正常来说登录相关限制、控制有LoginClient就可以了，ChannelClient只需要在PlayerLogdin时确保和LoginClient是同一个人操作就行
+
+#### 数据保存
+
+原逻辑：`saveCharToDB`直接更新数据库。  
+新逻辑：`saveCharToDB`推送给`MasterServer`，`MasterServer`更新缓存
+并标记需要更新角色id，不过对于`Account`相关的数据则是立即保存到数据库。`MasterServer`然后再定时保存或者特殊事件保存到数据库。
+
+#### 注意事项
+
+目前都是用的单进程部署，Transport的实现都选择使用local实现，再加上代码没有物理隔离，看似是可以直接交互的，
+但是为了后期的拆分不能这样做  
+同样 有些代码是静态方法，也影响了一些调用的判断

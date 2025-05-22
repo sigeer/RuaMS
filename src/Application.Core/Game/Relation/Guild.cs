@@ -509,7 +509,7 @@ public class Guild : IGuild
                         }
                         else
                         {
-                            noteService.sendNormal("You have been expelled from the guild.", initiator.getName(), mgc.getName());
+                            noteService.sendNormal("You have been expelled from the guild.", initiator.getName(), mgc.getName(), initiator.getChannelServer().getCurrentTime());
                             mgc.getWorldServer().setOfflineGuildStatus(0, 5, cid);
                         }
                     }

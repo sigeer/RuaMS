@@ -9,6 +9,7 @@ using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Net;
@@ -221,15 +222,12 @@ namespace Application.Core.Login.ServerTransports
 
         public void BroadcastMessage(Packet p)
         {
-            Server.getInstance().broadcastMessage(0, p);
+            _server.BroadcastWorldMessage(p);
         }
 
         public void BroadcastGMMessage(Packet p)
         {
-            foreach (var ch in _world.getChannels())
-            {
-                ch.broadcastGMPacket(p);
-            }
+            _server.BroadcastWorldGMPacket(p);
         }
 
         public void SendTimer(int seconds)
@@ -486,9 +484,14 @@ namespace Application.Core.Login.ServerTransports
             _server.UpdateAccountChracterByAdd(accountId, id);
         }
 
-        public void SendPlayerObject(CharacterValueObject characterValueObject)
+        public void SendPlayerObject(PlayerSaveDto characterValueObject)
         {
             _chrManager.Update(characterValueObject);
+        }
+
+        public void SendRemovePlayerIncomingInvites(int id)
+        {
+            _server.InvitationController.RemovePlayerIncomingInvites(id);
         }
     }
 }

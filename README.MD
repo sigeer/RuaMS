@@ -4,8 +4,10 @@
 基于 Cosmic 的C#版。
 截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
-当前分支进行了重度的重构，可能出现大量BUG，不建议搭建游玩。
 
+### 注意 ❗
+
+当前分支(master)正在对`Server`, `World`, `Channel`进行拆分，可能出现大量BUG，不建议搭建游玩。本次重构之前的代码位于分支 [v0](https://github.com/sigeer/RuaMS/tree/v0)上。
 
 ## 开发环境
 
@@ -19,6 +21,8 @@
 - Application.Host 主服务器入口
 - Application.Host.Channel 频道服务器入口
 - Application.Core 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
+- Application.Core.Channel 频道服务器实现
+- Application.Core.Login 登录服务器、主服务器实现
 - Application.Utility 工具类
 - Application.Resource 资源：js、初始化数据sql、配置文件
  > 当前使用的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，可以使用该项目中的wz、以及客户端。    

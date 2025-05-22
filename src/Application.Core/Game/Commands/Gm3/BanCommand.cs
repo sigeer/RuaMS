@@ -56,12 +56,12 @@ public class BanCommand : CommandBase
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
             var rip = target;
             TimerManager.getInstance().schedule(() => rip.getClient().Disconnect(false, false), TimeSpan.FromSeconds(5)); //5 Seconds
-            c.CurrentServer.BroadcastWorldPacket(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
         else if (CharacterManager.Ban(ign, reason, false))
         {
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
-            c.CurrentServer.BroadcastWorldPacket(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
         else
         {

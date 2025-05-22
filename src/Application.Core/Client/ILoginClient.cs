@@ -8,7 +8,7 @@ namespace Application.Core.Client
     public interface ILoginClient : IClientBase
     {
         AccountDto? AccountEntity { get; protected set; }
-        new IMasterServer CurrentServer { get; protected set; }
+        IMasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         void Disconnect();
 

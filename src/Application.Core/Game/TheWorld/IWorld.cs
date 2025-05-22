@@ -3,22 +3,16 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
-using Application.Core.model;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
 using client;
-using net.packet;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
 using net.server.coordinator.partysearch;
-using net.server.services;
-using net.server.services.type;
 using net.server.world;
 using server;
 
 namespace Application.Core.Game.TheWorld
 {
-    public interface IWorld 
+    public interface IWorld
     {
         WorldConfigEntity Configs { get; set; }
         public List<IWorldChannel> Channels { get; }
@@ -82,7 +76,6 @@ namespace Application.Core.Game.TheWorld
         int getPlayerNpcMapStep(int mapid);
         PlayerShop? getPlayerShop(int ownerid);
         WorldPlayerStorage getPlayerStorage();
-        BaseService getServiceAccess(WorldServices sv);
         int getWorldCapacityStatus();
         bool isConnected(string charName);
         bool isWorldCapacityFull();

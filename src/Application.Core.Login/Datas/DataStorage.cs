@@ -2,6 +2,7 @@ using Application.Core.Datas;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Utility.Exceptions;
@@ -16,7 +17,7 @@ namespace Application.Core.Login.Datas
 {
     public class DataStorage
     {
-        Dictionary<int, CharacterValueObject> _chrUpdate = new Dictionary<int, CharacterValueObject>();
+        Dictionary<int, PlayerSaveDto> _chrUpdate = new Dictionary<int, PlayerSaveDto>();
         Dictionary<int, AccountDto> _accUpdate = new Dictionary<int, AccountDto>();
 
         Dictionary<int, AccountLoginStatus> _accLoginUpdate = new ();
@@ -68,6 +69,7 @@ namespace Application.Core.Login.Datas
                 await dbContext.Buddies.Where(x => _chrUpdate.Keys.Contains(x.CharacterId)).ExecuteDeleteAsync();
                 await dbContext.AreaInfos.Where(x => _chrUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
                 await dbContext.Eventstats.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Cooldowns.Where(x => _chrUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
 
                 await dbContext.Questprogresses.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Queststatuses.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
@@ -76,7 +78,6 @@ namespace Application.Core.Login.Datas
                 foreach (var obj in _chrUpdate.Values)
                 {
                     dbContext.Characters.Update(_mapper.Map<CharacterEntity>(obj.Character));
-                    dbContext.Accounts.Update(_mapper.Map<AccountEntity>(obj.Account));
 
                     await dbContext.Monsterbooks.AddRangeAsync(obj.MonsterBooks.Select(x => new MonsterbookEntity(obj.Character.Id, x.Cardid, x.Level)));
                     dbContext.Pets.UpdateRange(obj.InventoryItems.Where(x => x.PetInfo != null)
@@ -87,7 +88,10 @@ namespace Application.Core.Login.Datas
                     await dbContext.Skillmacros.AddRangeAsync(
                         obj.SkillMacros.Where(x => x != null).Select(x => new SkillMacroEntity(obj.Character.Id, (sbyte)x.Position, x.Skill1, x.Skill2, x.Skill3, x.Name, (sbyte)x.Shout)));
 
-                    await CommitInventoryByType(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
+                    await CommitInventoryByTypeAsync(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
+
+                    await dbContext.Cooldowns.AddRangeAsync(
+                        obj.CoolDowns.Select(x => new CooldownEntity(obj.Character.Id, x.SkillId, x.Length, x.StartTime)));
 
                     // Skill
                     await dbContext.Skills.AddRangeAsync(
@@ -135,44 +139,44 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public async Task UpdateStorage(DBContext dbContext, int accId, StorageDto? storage)
+        private void UpdateStorage(DBContext dbContext, int accId, StorageDto? storage)
         {
             var m = storage ?? new StorageDto(accId);
-            var dbStorage = await dbContext.Storages.Where(x => x.Accountid == accId).FirstOrDefaultAsync();
+            var dbStorage = dbContext.Storages.Where(x => x.Accountid == accId).FirstOrDefault();
             if (dbStorage == null)
             {
                 dbStorage = new StorageEntity(m.Accountid, m.Slots, m.Meso);
-                await dbContext.Storages.AddAsync(dbStorage);
+                dbContext.Storages.Add(dbStorage);
             }
             else
             {
                 dbStorage.Slots = m.Slots;
                 dbStorage.Meso = m.Meso;
             }
-            await CommitInventoryByType(dbContext, accId, m.Items, ItemFactory.STORAGE);
+            CommitInventoryByType(dbContext, accId, m.Items, ItemFactory.STORAGE);
         }
 
-        public async Task SetCharacter(CharacterValueObject obj)
+        public void SetCharacter(PlayerSaveDto obj)
         {
             _chrUpdate[obj.Character.Id] = obj;
 
             // Account相关的数据要即时更新
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
 
-            await dbContext.Quickslotkeymappeds.Where(x => x.Accountid == obj.Character.AccountId).ExecuteDeleteAsync();
+            dbContext.Quickslotkeymappeds.Where(x => x.Accountid == obj.Character.AccountId).ExecuteDelete();
             if (obj.QuickSlot != null)
             {
-                await dbContext.Quickslotkeymappeds.AddAsync(new Quickslotkeymapped(obj.Character.AccountId, obj.QuickSlot.LongValue));
+                dbContext.Quickslotkeymappeds.Add(new Quickslotkeymapped(obj.Character.AccountId, obj.QuickSlot.LongValue));
             }
 
             // cash shop
-            await CommitInventoryByType(dbContext, obj.Account.Id, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
-            await dbContext.Wishlists.Where(x => obj.Character.Id == x.CharId).ExecuteDeleteAsync();
-            await dbContext.Wishlists.AddRangeAsync(obj.CashShop.WishItems.Select(x => new WishlistEntity(obj.Character.Id, x)));
+            CommitInventoryByType(dbContext, obj.Character.AccountId, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
+            dbContext.Wishlists.Where(x => obj.Character.Id == x.CharId).ExecuteDelete();
+            dbContext.Wishlists.AddRange(obj.CashShop.WishItems.Select(x => new WishlistEntity(obj.Character.Id, x)));
 
             // account
-            var dbAccount = await dbContext.Accounts.Where(x => x.Id == obj.Character.AccountId).FirstOrDefaultAsync();
+            var dbAccount = dbContext.Accounts.Where(x => x.Id == obj.Character.AccountId).FirstOrDefault();
             if (dbAccount == null)
                 throw new BusinessException("");
 
@@ -182,14 +186,14 @@ namespace Application.Core.Login.Datas
 
 
             // storage
-            await UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
+            UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
 
-            await dbContext.SaveChangesAsync();
+            dbContext.SaveChanges();
 
-            await dbTrans.CommitAsync();
+            dbTrans.Commit();
         }
 
-        private async Task CommitInventoryByType(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
+        private async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
         {
             var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
             var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
@@ -218,6 +222,37 @@ namespace Application.Core.Login.Datas
             }
 
             await dbContext.SaveChangesAsync();
+        }
+
+        private void CommitInventoryByType(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
+        {
+            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
+            var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
+
+            var petIds = allItems.Select(x => x.Petid).ToArray();
+            dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
+            dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
+            dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
+
+            foreach (var item in items)
+            {
+                var model = _mapper.Map<Inventoryitem>(item);
+                dbContext.Inventoryitems.AddAsync(model);
+                dbContext.SaveChanges();
+
+                if (item.EquipInfo != null)
+                {
+                    var temp = _mapper.Map<Inventoryequipment>(item.EquipInfo);
+                    temp.Inventoryitemid = model.Inventoryitemid;
+                    dbContext.Inventoryequipments.Add(temp);
+                }
+                if (item.PetInfo != null)
+                {
+                    dbContext.Pets.Add(_mapper.Map<PetEntity>(item.PetInfo));
+                }
+            }
+
+            dbContext.SaveChanges();
         }
 
         internal void SetAccountLoginRecord(KeyValuePair<int, AccountLoginStatus> item)

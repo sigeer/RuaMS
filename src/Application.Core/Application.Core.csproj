@@ -45,5 +45,10 @@
 		<PackageReference Include="DotNetty.Handlers" Version="0.7.6" />
 		<PackageReference Include="DotNetty.Transport" Version="0.7.6" />
 	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="Net\server\coordinator\login\" />
+	</ItemGroup>
 	
 </Project>

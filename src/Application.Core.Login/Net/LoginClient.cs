@@ -1,6 +1,5 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
-using Application.Core.Login.Datas;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Net;
@@ -17,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using net.packet;
 using net.packet.logging;
 using net.server;
-using net.server.coordinator.login;
 using net.server.coordinator.session;
 using tools;
 
@@ -30,15 +28,17 @@ namespace Application.Core.Login.Net
         public override bool IsOnlined => AccountLoginStatus.State > LoginStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;
         readonly SessionCoordinator _sessionCoordinator;
-        public LoginClient(long sessionId, IMasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, SessionCoordinator sessionCoordinator, ILogger<IClientBase> log)
+        readonly LoginBypassCoordinator _loginBypassCoordinator;
+        public LoginClient(long sessionId, IMasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, SessionCoordinator sessionCoordinator, ILogger<IClientBase> log, LoginBypassCoordinator loginBypassCoordinator)
             : base(sessionId, currentServer, nettyChannel, log)
         {
-            _sessionCoordinator = sessionCoordinator;
             CurrentServer = currentServer;
+            _sessionCoordinator = sessionCoordinator;
             _packetProcessor = packetProcessor;
+            _loginBypassCoordinator = loginBypassCoordinator;
         }
 
-        public new IMasterServer CurrentServer { get; set; }
+        public IMasterServer CurrentServer { get; set; }
         public int SelectedChannel { get; set; }
 
         public override int AccountId => AccountEntity?.Id ?? 0;
@@ -131,7 +131,7 @@ namespace Application.Core.Login.Net
 
         public bool CanBypassPin()
         {
-            return LoginBypassCoordinator.getInstance().canLoginBypass(Hwid, AccountEntity!.Id, false);
+            return _loginBypassCoordinator.canLoginBypass(Hwid, AccountEntity!.Id, false);
         }
         int pinattempt = 0;
         public bool CheckPin(string other)
@@ -149,7 +149,7 @@ namespace Application.Core.Login.Net
             if (AccountEntity?.Pin == other)
             {
                 pinattempt = 0;
-                LoginBypassCoordinator.getInstance().registerLoginBypassEntry(Hwid, AccountEntity!.Id, false);
+                _loginBypassCoordinator.registerLoginBypassEntry(Hwid, AccountEntity!.Id, false);
                 return true;
             }
             return false;
@@ -157,7 +157,7 @@ namespace Application.Core.Login.Net
 
         public bool CanBypassPic()
         {
-            return LoginBypassCoordinator.getInstance().canLoginBypass(Hwid, AccountEntity!.Id, true);
+            return _loginBypassCoordinator.canLoginBypass(Hwid, AccountEntity!.Id, true);
         }
         int picattempt = 0;
         public bool CheckPic(string other)
@@ -175,7 +175,7 @@ namespace Application.Core.Login.Net
             if (AccountEntity?.Pic == other)
             {    // thanks ryantpayton (HeavenClient) for noticing null pics being checked here
                 picattempt = 0;
-                LoginBypassCoordinator.getInstance().registerLoginBypassEntry(Hwid, AccountEntity!.Id, true);
+                _loginBypassCoordinator.registerLoginBypassEntry(Hwid, AccountEntity!.Id, true);
                 return true;
             }
             return false;

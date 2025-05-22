@@ -1,6 +1,5 @@
 using Application.Core.Login.Session;
 using Application.Utility.Tasks;
-using net.server.coordinator.login;
 
 namespace Application.Core.Login.Tasks
 {
@@ -8,16 +7,18 @@ namespace Application.Core.Login.Tasks
     {
 
         readonly SessionCoordinator sessionCoordinator;
+        readonly LoginBypassCoordinator loginBypassCoordinator;
 
-        public LoginStorageTask(SessionCoordinator sessionCoordinator)
+        public LoginStorageTask(SessionCoordinator sessionCoordinator, LoginBypassCoordinator loginBypassCoordinator)
         {
             this.sessionCoordinator = sessionCoordinator;
+            this.loginBypassCoordinator = loginBypassCoordinator;
         }
 
         public override void HandleRun()
         {
             sessionCoordinator.runUpdateLoginHistory();
-            LoginBypassCoordinator.getInstance().runUpdateLoginBypass();
+            loginBypassCoordinator.runUpdateLoginBypass();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Application.Core.Client
     public abstract class SocketClient : ChannelHandlerAdapter, ISocketClient
     {
         public long SessionId { get; }
-        public IServerBase<IServerTransport> CurrentServer { get; protected set; }
+
         public IChannel NettyChannel { get; protected set; }
         public string RemoteAddress { get; }
         public Hwid? Hwid { get; set; }
@@ -27,10 +27,9 @@ namespace Application.Core.Client
         public bool IsActive { get; protected set; }
 
         protected string _clientInfo;
-        protected SocketClient(long sessionId, IServerBase<IServerTransport> currentServer, IChannel nettyChannel, ILogger<IClientBase> log)
+        protected SocketClient(long sessionId, IChannel nettyChannel, ILogger<IClientBase> log)
         {
             SessionId = sessionId;
-            CurrentServer = currentServer;
             NettyChannel = nettyChannel;
             RemoteAddress = NettyChannel.RemoteAddress.GetIPAddressString();
 

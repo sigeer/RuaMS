@@ -4,7 +4,6 @@ using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Characters;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
-using net.packet;
 using net.server.coordinator.session;
 using scripting;
 using scripting.Event;
@@ -44,15 +43,18 @@ namespace Application.Core.Game
 
         public DateTimeOffset LastPacket => throw new BusinessCharacterOfflineException();
 
-        public int AccountId => throw new NotImplementedException();
+        public int AccountId => throw new BusinessCharacterOfflineException();
 
-        public string AccountName => throw new NotImplementedException();
+        public string AccountName => throw new BusinessCharacterOfflineException();
 
-        public int AccountGMLevel => throw new NotImplementedException();
-
-        IServerBase<IServerTransport> IClientBase.CurrentServer => CurrentServer;
+        public int AccountGMLevel => throw new BusinessCharacterOfflineException();
 
         public AccountDto AccountEntity { get; set; }
+
+        public IChannelService Service => throw new BusinessCharacterOfflineException();
+
+        public IServerBase<IServerTransport> CurrentServerBase => throw new NotImplementedException();
+
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
             throw new BusinessCharacterOfflineException();
@@ -75,7 +77,7 @@ namespace Application.Core.Game
 
         public void BanMacs()
         {
-            throw new NotImplementedException();
+            throw new BusinessCharacterOfflineException();
         }
 
         public bool canClickNPC()
@@ -145,7 +147,7 @@ namespace Application.Core.Game
 
         public int GetAvailableCharacterSlots()
         {
-            throw new NotImplementedException();
+            throw new BusinessCharacterOfflineException();
         }
 
         public int getChannel()
@@ -160,7 +162,7 @@ namespace Application.Core.Game
 
         public EventManager? getEventManager(string @event)
         {
-            throw new NotImplementedException();
+            throw new BusinessCharacterOfflineException();
         }
 
         public string GetSessionRemoteHost()
@@ -195,7 +197,7 @@ namespace Application.Core.Game
 
         public void removeClickedNPC()
         {
-            throw new NotImplementedException();
+            throw new BusinessCharacterOfflineException();
         }
 
         public void resetCsCoupon()
@@ -210,12 +212,12 @@ namespace Application.Core.Game
 
         public void SetAccount(AccountDto accountEntity)
         {
-            throw new NotImplementedException();
+            throw new BusinessCharacterOfflineException();
         }
 
         public void SetCharacterOnSessionTransitionState(int cid)
         {
-            throw new NotImplementedException();
+            throw new BusinessCharacterOfflineException();
         }
 
         public void setClickedNPC()
@@ -240,7 +242,7 @@ namespace Application.Core.Game
 
         public void UpdateAccountChracterByAdd(int id)
         {
-            throw new NotImplementedException();
+            throw new BusinessCharacterOfflineException();
         }
     }
 }

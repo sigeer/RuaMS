@@ -106,7 +106,7 @@ public class CashShop
         private int sn;
         private int itemId;
         private int price;
-        private long period;
+        public long Period { get;}
         private short count;
         private bool onSale;
 
@@ -115,7 +115,7 @@ public class CashShop
             this.sn = sn;
             this.itemId = itemId;
             this.price = price;
-            this.period = (period == 0 ? 90 : period);
+            this.Period = (period == 0 ? 90 : period);
             this.count = count;
             this.onSale = onSale;
         }
@@ -143,57 +143,6 @@ public class CashShop
         public bool isOnSale()
         {
             return onSale;
-        }
-
-        public Item toItem()
-        {
-            Item item;
-
-            int petid = -1;
-            if (ItemConstants.isPet(itemId))
-            {
-                petid = ItemManager.CreatePet(itemId);
-            }
-
-            if (ItemConstants.getInventoryType(itemId).Equals(InventoryType.EQUIP))
-            {
-                item = ItemInformationProvider.getInstance().getEquipById(itemId);
-            }
-            else
-            {
-                item = new Item(itemId, 0, count, petid);
-            }
-
-            if (ItemConstants.EXPIRING_ITEMS)
-            {
-                if (period == 1)
-                {
-                    switch (itemId)
-                    {
-                        case ItemId.DROP_COUPON_2X_4H:
-                        case ItemId.EXP_COUPON_2X_4H: // 4 Hour 2X coupons, the period is 1, but we don't want them to last a day.
-                            item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromHours(4).TotalMilliseconds);
-                            /*
-                            } else if(itemId == 5211047 || itemId == 5360014) { // 3 Hour 2X coupons, unused as of now
-                                    item.setExpiration(Server.getInstance().getCurrentTime() + HOURS.toMillis(3));
-                            */
-                            break;
-                        case ItemId.EXP_COUPON_3X_2H:
-                            item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromHours(2).TotalMilliseconds);
-                            break;
-                        default:
-                            item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromDays(1).TotalMilliseconds);
-                            break;
-                    }
-                }
-                else
-                {
-                    item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromDays(period).TotalMilliseconds);
-                }
-            }
-
-            item.setSN(sn);
-            return item;
         }
     }
 
@@ -295,9 +244,9 @@ public class CashShop
 
         public static CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
 
-        public static List<Item> getPackage(int itemId)
+        public static List<Item> getPackage(int itemId, IChannelService service)
         {
-            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => GetItemTrust(x).toItem()).ToList();
+            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => service.CashItem2Item(GetItemTrust(x))).ToList();
         }
 
         public static bool isPackage(int itemId)
@@ -472,7 +421,7 @@ public class CashShop
             {
                 notes++;
                 var cItem = CashItemFactory.GetItemTrust(rs.Sn);
-                Item item = cItem.toItem();
+                Item item = Owner.Client.getChannelServer().Service.CashItem2Item(cItem);
                 Equip? equip = null;
                 item.setGiftFrom(rs.From);
                 if (item.getInventoryType().Equals(InventoryType.EQUIP))
@@ -489,7 +438,7 @@ public class CashShop
                 if (CashItemFactory.isPackage(cItem.getItemId()))
                 {
                     //Packages never contains a ring
-                    foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId()))
+                    foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId(), Owner.Client.getChannelServer().Service))
                     {
                         packageItem.setGiftFrom(rs.From);
                         addToInventory(packageItem);
@@ -584,7 +533,7 @@ public class CashShop
                 removeFromInventory(cashShopSurprise);
             }
 
-            Item itemReward = cashItemReward.toItem();
+            Item itemReward = Owner.Client.getChannelServer().Service.CashItem2Item(cashItemReward);
             addToInventory(itemReward);
 
             return new CashShopSurpriseResult(cashShopSurprise, itemReward);
@@ -612,11 +561,5 @@ public class CashShop
         {
             Monitor.Exit(lockObj);
         }
-    }
-
-    public static Item generateCouponItem(int itemId, short quantity)
-    {
-        CashItem it = new CashItem(77777777, itemId, 7777, ItemConstants.isPet(itemId) ? 30 : 0, quantity, true);
-        return it.toItem();
     }
 }

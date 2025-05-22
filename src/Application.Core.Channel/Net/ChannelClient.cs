@@ -1,4 +1,3 @@
-using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
@@ -34,15 +33,17 @@ namespace Application.Core.Channel.Net
 {
     public class ChannelClient : ClientBase, IChannelClient
     {
+        public IChannelService Service { get; }
         public AccountDto AccountEntity { get; set; }
         IPacketProcessor<IChannelClient> _packetProcessor;
         public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
 
-        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log)
+        public ChannelClient(long sessionId, IWorldChannel currentServer, IChannel nettyChannel, IPacketProcessor<IChannelClient> packetProcessor, ILogger<IClientBase> log, IChannelService service)
             : base(sessionId, currentServer, nettyChannel, log)
         {
             CurrentServer = currentServer;
             _packetProcessor = packetProcessor;
+            Service = service;
         }
 
         public override bool IsOnlined => Character != null;
@@ -51,7 +52,7 @@ namespace Application.Core.Channel.Net
 
         public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
 
-        public new IWorldChannel CurrentServer { get; }
+        public IWorldChannel CurrentServer { get; }
 
         /// <summary>
         /// CashShop
@@ -135,6 +136,10 @@ namespace Application.Core.Channel.Net
                     {
                         wserv.removePlayer(Character);
                         //getChannelServer().removePlayer(player); already being done
+
+                        Character.cancelAllDebuffs();
+                        Character.saveCharToDB();
+
                         Character.logOff();
                         if (YamlConfig.config.server.INSTANT_NAME_CHANGE)
                         {
@@ -145,11 +150,11 @@ namespace Application.Core.Channel.Net
                     else
                     {
                         CurrentServer.removePlayer(Character);
-                    }
-                    Character.saveCooldowns();
-                    Character.cancelAllDebuffs();
 
-                    CurrentServer.SendPlayerObject(Character);
+                        Character.cancelAllDebuffs();
+                        Character.saveCharToDB();
+                    }
+
                 }
             }
 
@@ -316,7 +321,7 @@ namespace Application.Core.Channel.Net
             sendPacket(PacketCreator.enableCSUse(OnlinedCharacter));
         }
 
-        AbstractPlayerInteraction _pi;
+        AbstractPlayerInteraction? _pi;
         public AbstractPlayerInteraction getAbstractPlayerInteraction()
         {
             return _pi ??= new AbstractPlayerInteraction(this);
@@ -476,6 +481,7 @@ namespace Application.Core.Channel.Net
             Character.removeIncomingInvites();
             Character.cancelAllBuffs(true);
             Character.cancelAllDebuffs();
+
             Character.cancelBuffExpireTask();
             Character.cancelDiseaseExpireTask();
             Character.cancelSkillCooldownTask();

@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.services.task.channel;
 
 
@@ -33,11 +35,11 @@ public class MobAnimationService : BaseService
 
     private MobAnimationScheduler[] mobAnimationSchedulers = new MobAnimationScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public MobAnimationService()
+    public MobAnimationService(IWorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
-            mobAnimationSchedulers[i] = new MobAnimationScheduler();
+            mobAnimationSchedulers[i] = new MobAnimationScheduler(worldChannel);
         }
     }
 
@@ -64,7 +66,7 @@ public class MobAnimationService : BaseService
         HashSet<int> onAnimationMobs = new(1000);
         private object animationLock = new object();
 
-        public MobAnimationScheduler()
+        public MobAnimationScheduler(IWorldChannel worldChannel): base(worldChannel)
         {
             base.addListener((toRemove, update) =>
             {

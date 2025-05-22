@@ -22,9 +22,9 @@ public class NoteService
      *
      * @return Send success
      */
-    public bool sendNormal(string message, string senderName, string receiverName)
+    public bool sendNormal(string message, string senderName, string receiverName, long sendTime)
     {
-        var normalNote = DB_Note.createNormal(message, senderName, receiverName, Server.getInstance().getCurrentTime());
+        var normalNote = DB_Note.createNormal(message, senderName, receiverName, sendTime);
         return send(normalNote);
     }
 
@@ -33,9 +33,9 @@ public class NoteService
      *
      * @return Send success
      */
-    public bool sendWithFame(string message, string senderName, string receiverName)
+    public bool sendWithFame(string message, string senderName, string receiverName, long sendTime)
     {
-        var noteWithFame = DB_Note.createGift(message, senderName, receiverName, Server.getInstance().getCurrentTime());
+        var noteWithFame = DB_Note.createGift(message, senderName, receiverName, sendTime);
         return send(noteWithFame);
     }
 

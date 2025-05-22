@@ -78,8 +78,6 @@ public class Server
     /// </summary>
     private Dictionary<int, List<RankedCharacterInfo>> playerRanking = new();
 
-
-    private AtomicLong currentTime = new AtomicLong(0);
     private long serverCurrentTime = 0;
 
     private volatile bool availableDeveloperRoom = false;
@@ -88,30 +86,6 @@ public class Server
     ReaderWriterLockSlim lgnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     private Server()
     {
-    }
-
-    public int getCurrentTimestamp()
-    {
-        return (int)(getCurrentTime() - Server.uptime.ToUnixTimeMilliseconds());
-    }
-
-    public long getCurrentTime()
-    {  // returns a slightly delayed time value, under frequency of UPDATE_INTERVAL
-        return serverCurrentTime;
-    }
-
-    public void updateCurrentTime()
-    {
-        serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
-    }
-
-    public long forceUpdateCurrentTime()
-    {
-        long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        serverCurrentTime = timeNow;
-        currentTime.set(timeNow);
-
-        return timeNow;
     }
 
     public void setNewYearCard(NewYearCardRecord nyc)
@@ -485,11 +459,10 @@ public class Server
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
         tMan.register(new RankingCommandTask(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-        tMan.register(new RankingLoginTask(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
+
 
         tMan.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
 
-        tMan.register(new InvitationTask(), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         tMan.register(new RespawnTask(), YamlConfig.config.server.RESPAWN_INTERVAL, YamlConfig.config.server.RESPAWN_INTERVAL);
 
         timeLeft = TimeUtils.GetTimeLeftForNextDay();

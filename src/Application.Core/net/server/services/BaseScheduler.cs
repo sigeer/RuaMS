@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.services;
 
 
@@ -36,18 +38,20 @@ public abstract class BaseScheduler
 
     CancellationTokenSource? cancellationTokenSource;
 
-    protected BaseScheduler()
+    IWorldChannel _channelServer;
+    protected BaseScheduler(IWorldChannel worldChannel)
     {
+        _channelServer = worldChannel;
     }
 
     // NOTE: practice EXTREME caution when adding external locks to the scheduler system, if you don't know what you're doing DON'T USE THIS.
-    protected BaseScheduler(List<object> extLocks)
-    {
-        foreach (object lockObj in extLocks)
-        {
-            externalLocks.Add(lockObj);
-        }
-    }
+    //protected BaseScheduler(List<object> extLocks)
+    //{
+    //    foreach (object lockObj in extLocks)
+    //    {
+    //        externalLocks.Add(lockObj);
+    //    }
+    //}
 
     protected void addListener(Action<List<object>, bool> listener)
     {
@@ -112,7 +116,7 @@ public abstract class BaseScheduler
             unlockScheduler();
         }
 
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = _channelServer.getCurrentTime();
         toRemove = new();
         foreach (var rmd in registeredEntriesCopy)
         {
@@ -163,7 +167,7 @@ public abstract class BaseScheduler
                 }, cancellationTokenSource.Token);
             }
 
-            registeredEntries.AddOrUpdate(key, new(removalAction, Server.getInstance().getCurrentTime() + duration));
+            registeredEntries.AddOrUpdate(key, new(removalAction, _channelServer.getCurrentTime() + duration));
         }
         finally
         {

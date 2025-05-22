@@ -29,7 +29,6 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
-using Application.Shared.Net;
 using Application.Shared.WzEntity;
 using client;
 using client.autoban;
@@ -38,11 +37,8 @@ using client.status;
 using constants.game;
 using constants.id;
 using constants.inventory;
-using net.packet;
-using net.server;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
-using net.server.services.type;
 using scripting.Event;
 using scripting.map;
 using server;
@@ -135,7 +131,7 @@ public class MapleMap : IMap
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
     float _monsterRate;
-    public float MonsterRate 
+    public float MonsterRate
     {
         get => _monsterRate;
         set
@@ -898,8 +894,8 @@ public class MapleMap : IMap
                 }
             }, YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops), 
-                YamlConfig.config.server.ITEM_EXPIRE_CHECK, 
+            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops),
+                YamlConfig.config.server.ITEM_EXPIRE_CHECK,
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
             characterStatUpdateTask = TimerManager.getInstance().register(new NamedRunnable($"UpdateMapCharacterStat_Map:{getId()}_{GetHashCode()}", UpdateMapCharacterStat), 200, 200);
@@ -2129,7 +2125,7 @@ public class MapleMap : IMap
         var removeAfterAction = monster.popRemoveAfterAction();
         if (removeAfterAction != null)
         {
-            OverallService service = (OverallService)this.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+            OverallService service = this.getChannelServer().OverallService;
             service.forceRunOverallAction(mapid, removeAfterAction);
         }
     }
@@ -2380,7 +2376,7 @@ public class MapleMap : IMap
             broadcastMessage(mist.makeDestroyData());
         };
 
-        MobMistService service = (MobMistService)this.getChannelServer().getServiceAccess(ChannelServices.MOB_MIST);
+        MobMistService service = this.getChannelServer().MobMistService;
         service.registerMobMistCancelAction(mapid, mistSchedule, duration);
     }
 
@@ -2445,7 +2441,7 @@ public class MapleMap : IMap
 
     private void registerMapSchedule(AbstractRunnable r, long delay)
     {
-        OverallService service = (OverallService)this.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+        OverallService service = this.getChannelServer().OverallService;
         service.registerOverallAction(mapid, r, delay);
     }
 
@@ -3900,7 +3896,7 @@ public class MapleMap : IMap
                             {
                                 var reactorMap = reactor.getMap();
 
-                                OverallService service = (OverallService)reactorMap.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+                                OverallService service = reactorMap.getChannelServer().OverallService;
                                 service.registerOverallAction(reactorMap.getId(), () =>
                                 {
                                     reactor.lockReactor();

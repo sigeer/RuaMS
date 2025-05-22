@@ -3,6 +3,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
+using Application.Shared.Dto;
 using Application.Shared.MapObjects;
 using Application.Shared.Servers;
 using net.packet;
@@ -104,7 +105,8 @@ namespace Application.Core.ServerTransports
         int GetAccountCharacterCount(int accId);
         bool CheckCharacterName(string name);
         void UpdateAccountChracterByAdd(int accountId, int id);
-        void SendPlayerObject(CharacterValueObject characterValueObject);
+        void SendPlayerObject(PlayerSaveDto characterValueObject);
+        void SendRemovePlayerIncomingInvites(int id);
 
         #endregion
     }

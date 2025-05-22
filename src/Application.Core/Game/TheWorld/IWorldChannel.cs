@@ -29,12 +29,9 @@ using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
-using net.packet;
-using net.server.services;
-using net.server.services.type;
+using net.server.services.task.channel;
 using scripting.Event;
 using scripting.map;
 using scripting.npc;
@@ -50,8 +47,16 @@ namespace Application.Core.Game.TheWorld
 {
     public interface IWorldChannel : IServerBase<IChannelServerTransport>
     {
+        #region ChannelServices
+        EventService EventService { get; }
+        MobAnimationService MobAnimationService { get; }
+        MobClearSkillService MobClearSkillService { get; }
+        MobMistService MobMistService { get; }
+        MobStatusService MobStatusService { get; }
+        OverallService OverallService { get; }
+        #endregion
         IServiceScope LifeScope { get; }
-
+        IChannelService Service { get; }
         ChannelClientStorage ClientStorage { get; }
 
         public event Action? OnWorldMobRateChanged;
@@ -115,7 +120,6 @@ namespace Application.Core.Game.TheWorld
         int getOngoingWedding(bool cathedral);
         ChannelPlayerStorage getPlayerStorage();
         string getServerMessage();
-        BaseService getServiceAccess(ChannelServices sv);
         int getStoredVar(int key);
         int getWeddingReservationStatus(int? weddingId, bool cathedral);
         string? getWeddingReservationTimeLeft(int? weddingId);
@@ -144,7 +148,7 @@ namespace Application.Core.Game.TheWorld
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
         void unregisterOwnedMap(IMap map);
-        void BroadcastWorldPacket(Packet p);
+        void BroadcastWorldMessage(Packet p);
         void StashCharacterBuff(IPlayer player);
         void StashCharacterDisease(IPlayer player);
 
@@ -197,7 +201,5 @@ namespace Application.Core.Game.TheWorld
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
         int GetAccountCharcterCount(int accId);
         void SendLogoff(int id);
-        void SendPlayerObject(IPlayer character);
-
     }
 }

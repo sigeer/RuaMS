@@ -33,6 +33,7 @@ namespace Application.Shared.Servers
         void UpdateAccountState(int accId, sbyte state);
 
         void BroadcastWorldGMPacket(Packet packet);
+        void BroadcastWorldMessage(Packet p);
         bool CheckCharacterName(string name);
         void UpdateAccountChracterByAdd(int accountId, int id);
     }

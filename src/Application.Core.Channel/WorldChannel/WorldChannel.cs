@@ -1,7 +1,6 @@
 using Application.Core.Channel.Net;
 using Application.Core.Channel.Services;
 using Application.Core.Datas;
-using Application.Core.Game;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
@@ -18,9 +17,7 @@ using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Loggers;
 using Microsoft.Extensions.DependencyInjection;
-using net.packet;
-using net.server.services;
-using net.server.services.type;
+using net.server.services.task.channel;
 using scripting.Event;
 using scripting.map;
 using scripting.npc;
@@ -58,7 +55,7 @@ public partial class WorldChannel : IWorldChannel
     public NPCScriptManager NPCScriptManager { get; }
     public PortalScriptManager PortalScriptManager { get; }
     public QuestScriptManager QuestScriptManager { get; }
-    private ServicesManager<ChannelServices> services;
+
     private Dictionary<int, HiredMerchant> hiredMerchants = new();
     private Dictionary<int, int> storedVars = new();
     private HashSet<int> playersAway = new();
@@ -123,8 +120,17 @@ public partial class WorldChannel : IWorldChannel
     public CharacterDiseaseController CharacterDiseaseController { get; }
     public IServiceScope LifeScope { get; }
 
+    #region
+    public EventService EventService { get; }
+    public MobAnimationService MobAnimationService { get; }
+    public MobClearSkillService MobClearSkillService { get; }
+    public MobMistService MobMistService { get; }
+    public MobStatusService MobStatusService { get; }
+    public OverallService OverallService { get; }
+    #endregion
+
     public ChannelClientStorage ClientStorage { get; }
-    readonly CharacterService _chrSrv;
+    public IChannelService Service { get; }
     public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
     {
         LifeScope = scope;
@@ -157,7 +163,13 @@ public partial class WorldChannel : IWorldChannel
         DojoInstance = new DojoInstance(this);
         WeddingInstance = new WeddingChannelInstance(this);
 
-        services = new ServicesManager<ChannelServices>(ChannelServices.OVERALL);
+        EventService = new EventService(this);
+        MobAnimationService = new MobAnimationService(this);
+        MobClearSkillService = new MobClearSkillService(this);
+        MobMistService = new MobMistService(this);
+        MobStatusService = new MobStatusService(this);
+        OverallService = new OverallService(this);
+
         eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         MapScriptManager = LifeScope.ServiceProvider.GetRequiredService<MapScriptManager>();
         ReactorScriptManager = LifeScope.ServiceProvider.GetRequiredService<ReactorScriptManager>();
@@ -165,7 +177,7 @@ public partial class WorldChannel : IWorldChannel
         PortalScriptManager = LifeScope.ServiceProvider.GetRequiredService<PortalScriptManager>();
         QuestScriptManager = LifeScope.ServiceProvider.GetRequiredService<QuestScriptManager>();
 
-        _chrSrv = LifeScope.ServiceProvider.GetRequiredService<CharacterService>();
+        Service = ActivatorUtilities.CreateInstance<ChannelService>(LifeScope.ServiceProvider, this);
 
     }
 
@@ -306,7 +318,12 @@ public partial class WorldChannel : IWorldChannel
 
     private void closeChannelServices()
     {
-        services.shutdown();
+        EventService.dispose();
+        MobAnimationService.dispose();
+        MobClearSkillService.dispose();
+        MobMistService.dispose();
+        MobStatusService.dispose();
+        OverallService.dispose();
     }
 
     private async Task closeChannelSchedules()
@@ -347,11 +364,6 @@ public partial class WorldChannel : IWorldChannel
     public MapManager getMapFactory()
     {
         return mapManager;
-    }
-
-    public BaseService getServiceAccess(ChannelServices sv)
-    {
-        return services.getAccess(sv).getService();
     }
 
     public int getWorld()
@@ -723,7 +735,7 @@ public partial class WorldChannel : IWorldChannel
         return !usedMC.Contains(getMonsterCarnivalRoom(cpq1, field));
     }
 
-    public void BroadcastWorldPacket(Packet p)
+    public void BroadcastWorldMessage(Packet p)
     {
         Transport.BroadcastMessage(p);
     }
@@ -731,7 +743,6 @@ public partial class WorldChannel : IWorldChannel
     {
         Transport.BroadcastGMMessage(packet);
     }
-
 
 
     public IPEndPoint GetChannelEndPoint(int channel)
@@ -834,11 +845,6 @@ public partial class WorldChannel : IWorldChannel
     public void UpdateAccountChracterByAdd(int accountId, int id)
     {
         Transport.UpdateAccountChracterByAdd(accountId, id);
-    }
-
-    public void SendPlayerObject(IPlayer character)
-    {
-        Transport.SendPlayerObject(_chrSrv.Deserialize(character));
     }
 
     private AtomicLong currentTime = new AtomicLong(0);

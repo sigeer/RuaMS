@@ -2,9 +2,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Characters;
-using Application.Shared.Net;
-using client.inventory;
-using net.packet;
 using scripting;
 using scripting.Event;
 using scripting.npc;
@@ -13,7 +10,7 @@ namespace Application.Core.Client
 {
     public interface IChannelClient : IClientBase
     {
-        new IWorldChannel CurrentServer { get; }
+        IWorldChannel CurrentServer { get; }
         int Channel { get; }
         int ActualChannel { get; }
         /// <summary>
