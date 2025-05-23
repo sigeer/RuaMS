@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Servers;
+using Microsoft.Extensions.Hosting;
 using net.server;
 
 namespace Application.Host
@@ -8,40 +9,39 @@ namespace Application.Host
     {
         readonly IMasterServer _server;
         readonly MultiRunner _channelRunner;
+        readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-        public GameHost(IMasterServer server, MultiRunner channelRunner)
+        public GameHost(IMasterServer server, MultiRunner channelRunner, IHostApplicationLifetime hostApplicationLifetime)
         {
             _server = server;
             _channelRunner = channelRunner;
+            _hostApplicationLifetime = hostApplicationLifetime;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await Server.getInstance().Start();
-            await _server.StartServer();
-            await _channelRunner.Start(7674, 3);
+            _hostApplicationLifetime.ApplicationStopping.Register(() =>
+            {
+                _server.Shutdown().Wait();
+            });
+
+            await StartNow(true);
             return;
         }
 
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await StopNow();
+        }
         public async Task StartNow(bool ignoreCache)
         {
-            await Server.getInstance().Start(ignoreCache);
+            await _server.StartServer();
+            await _channelRunner.Start(7674, 3);
         }
 
         public async Task StopNow()
         {
             await _server.Shutdown();
-            await Server.getInstance().Stop(false);
-        }
-        public async Task Restart()
-        {
-            await Server.getInstance().Stop(true);
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await _server.Shutdown();
-            await Server.getInstance().Stop(false);
         }
     }
 }

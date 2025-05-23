@@ -1,7 +1,7 @@
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 
-namespace Application.Core.Game.Tasks
+namespace Application.Core.Game.Controllers
 {
     public class HiredMerchantController : TimelyControllerBase
     {

@@ -4,7 +4,7 @@ using Application.Core.Datas;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Tasks;
+using Application.Core.Game.Controllers;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
@@ -31,6 +31,9 @@ using server.maps;
 using System.Diagnostics;
 using System.Net;
 using tools;
+using Application.Core.Channel.Tasks;
+using server;
+using Application.Utility.Tasks;
 
 namespace Application.Core.Channel;
 
@@ -129,6 +132,8 @@ public partial class WorldChannel : IWorldChannel
     public OverallService OverallService { get; }
     #endregion
 
+    RespawnTask _respawnTask;
+
     public ChannelClientStorage ClientStorage { get; }
     public IChannelService Service { get; }
     public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
@@ -159,6 +164,7 @@ public partial class WorldChannel : IWorldChannel
         HiredMerchantController = new HiredMerchantController(this);
         PetHungerController = new PetHungerController(this);
         CharacterDiseaseController = new CharacterDiseaseController(this);
+        _respawnTask = new RespawnTask(this);
 
         DojoInstance = new DojoInstance(this);
         WeddingInstance = new WeddingChannelInstance(this);
@@ -248,6 +254,9 @@ public partial class WorldChannel : IWorldChannel
         channel = await Transport.RegisterServer(this);
         log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
 
+        StartupTime = DateTimeOffset.UtcNow;
+        ForceUpdateServerTime();
+
         ServerMessageController.Register();
         CharacterHpDecreaseController.Register();
         MapObjectController.Register();
@@ -255,13 +264,13 @@ public partial class WorldChannel : IWorldChannel
         HiredMerchantController.Register();
         PetHungerController.Register();
         CharacterDiseaseController.Register();
+        _respawnTask.Register();
 
         IsRunning = true;
-        StartupTime = DateTimeOffset.UtcNow;
-        ForceUpdateServerTime();
-
-        log.Information("[{ServerName}] 服务器时间：{CurrentTime}", $"频道{channel}", DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
-        log.Information("[{ServerName}] 服务器系统时间：{CurrentTime}", $"频道{channel}", DateTimeOffset.UtcNow.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
+        log.Information("[{ServerName} - {Channel}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
+            "频道服务器", channel,
+            DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+            DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
     bool isShuttingDown = false;
@@ -286,6 +295,8 @@ public partial class WorldChannel : IWorldChannel
             await MountTirednessController.StopAsync();
             await HiredMerchantController.StopAsync();
             await CharacterDiseaseController.StopAsync();
+            await _respawnTask.StopAsync();
+
             log.Information("频道{Channel}停止定时任务...完成", channel);
 
             closeAllMerchants();
@@ -873,5 +884,6 @@ public partial class WorldChannel : IWorldChannel
         forceTime = forceTime + sw.ElapsedMilliseconds;
         serverCurrentTime = forceTime;
         currentTime.set(forceTime);
+        
     }
 }

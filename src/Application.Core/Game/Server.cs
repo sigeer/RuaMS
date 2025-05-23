@@ -194,24 +194,6 @@ public class Server
         return couponRates;
     }
 
-    public static void cleanNxcodeCoupons(DBContext dbContext)
-    {
-        if (!YamlConfig.config.server.USE_CLEAR_OUTDATED_COUPONS)
-        {
-            return;
-        }
-
-        long timeClear = DateTimeOffset.UtcNow.AddDays(-14).ToUnixTimeMilliseconds();
-
-        using var dbTrans = dbContext.Database.BeginTransaction();
-        var codeList = dbContext.Nxcodes.Where(x => x.Expiration <= timeClear).ToList();
-        var codeIdList = codeList.Select(x => x.Id).ToList();
-        dbContext.NxcodeItems.Where(x => codeIdList.Contains(x.Codeid)).ExecuteDelete();
-        dbContext.Nxcodes.RemoveRange(codeList);
-        dbContext.SaveChanges();
-        dbTrans.Commit();
-    }
-
     private void loadCouponRates(DBContext dbContext)
     {
         couponRates = dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToList().ToDictionary(x => x.CouponId, x => x.Rate);
@@ -295,39 +277,14 @@ public class Server
         return playerRanking = RankManager.LoadPlayerRankingFromDB(dbContext);
     }
 
-    private async Task InitialDataBase()
-    {
-        log.Information("初始化数据库...");
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
-        using var dbContext = new DBContext();
-
-        try
-        {
-            log.Information("数据库迁移...");
-            await dbContext.Database.MigrateAsync();
-            log.Information("数据库迁移成功");
-
-            sw.Stop();
-            log.Information("初始化数据库成功，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "初始化数据库失败");
-            throw;
-        }
-    }
-
     bool basedCached = false;
-    private async Task Initialize(bool ignoreCache = false)
+    private void Initialize(bool ignoreCache = false)
     {
         if (!ignoreCache && basedCached)
             return;
 
         if (!Directory.Exists(ScriptResFactory.ScriptDirName) || !Directory.Exists(WZFiles.DIRECTORY))
             throw new DirectoryNotFoundException();
-
-        await InitialDataBase();
 
         _ = Task.Run(() =>
         {
@@ -393,9 +350,7 @@ public class Server
 
         try
         {
-            await Initialize(ignoreCache);
-
-            AppDomain.CurrentDomain.ProcessExit += (obj, evt) => shutdown(false);
+            Initialize(ignoreCache);
 
             var startTimelyTask = InitializeTimelyTasks(TaskEngine.Quartz);    // aggregated method for timely tasks thanks to lxconan
 
@@ -404,8 +359,6 @@ public class Server
             using var dbContext = new DBContext();
             LoadAccountCharacterCache(dbContext);
 
-            setAllMerchantsInactive(dbContext);
-            cleanNxcodeCoupons(dbContext);
             loadCouponRates(dbContext);
             updateActiveCoupons(dbContext);
             NewYearCardRecord.startPendingNewYearCardRequests(dbContext);
@@ -441,10 +394,6 @@ public class Server
     }
 
 
-    private static void setAllMerchantsInactive(DBContext dbContext)
-    {
-        dbContext.Characters.ExecuteUpdate(x => x.SetProperty(y => y.HasMerchant, false));
-    }
 
     public async Task InitializeTimelyTasks(TaskEngine engine)
     {
@@ -456,11 +405,7 @@ public class Server
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
         tMan.register(new RankingCommandTask(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-
-
         tMan.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
-
-        tMan.register(new RespawnTask(), YamlConfig.config.server.RESPAWN_INTERVAL, YamlConfig.config.server.RESPAWN_INTERVAL);
 
         timeLeft = TimeUtils.GetTimeLeftForNextDay();
         ExpeditionBossLog.resetBossLogTable();

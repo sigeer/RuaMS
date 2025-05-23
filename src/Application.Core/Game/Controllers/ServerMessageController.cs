@@ -1,9 +1,7 @@
 using Application.Core.Game.TheWorld;
-using Application.Core.Servers;
-using net.server;
 using tools;
 
-namespace Application.Core.Game.Tasks
+namespace Application.Core.Game.Controllers
 {
     public class ServerMessageController : TimelyControllerBase
     {

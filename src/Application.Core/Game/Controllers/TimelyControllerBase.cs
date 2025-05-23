@@ -1,6 +1,6 @@
 using server;
 
-namespace Application.Core.Game.Tasks
+namespace Application.Core.Game.Controllers
 {
     public abstract class TimelyControllerBase: IAsyncDisposable
     {

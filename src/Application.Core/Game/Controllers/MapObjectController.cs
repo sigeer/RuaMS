@@ -1,6 +1,6 @@
 using Application.Core.Game.TheWorld;
 
-namespace Application.Core.Game.Tasks
+namespace Application.Core.Game.Controllers
 {
 
     public class MapObjectController : TimelyControllerBase

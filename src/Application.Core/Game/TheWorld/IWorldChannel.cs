@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Datas;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Tasks;
+using Application.Core.Game.Controllers;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;

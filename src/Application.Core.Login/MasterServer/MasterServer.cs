@@ -80,10 +80,13 @@ namespace Application.Core.Login
         public InvitationController InvitationController { get; }
 
         CharacterService _characterSevice;
+        ServerService _serverService;
         public MasterServer(IServiceProvider sp, AccountManager accountManager, CharacterService characterManager)
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
+            _serverService = ServiceProvider.GetRequiredService<ServerService>();
+
             this.accountManager = accountManager;
             _characterSevice = characterManager;
 
@@ -121,6 +124,12 @@ namespace Application.Core.Login
         bool isShuttingdown = false;
         public async Task Shutdown()
         {
+            if (!IsRunning)
+            {
+                _logger.LogInformation("服务器未启动");
+                return;
+            }
+
             if (isShuttingdown)
             {
                 _logger.LogInformation("正在停止服务器[{ServerName}]", InstanceId);
@@ -134,6 +143,8 @@ namespace Application.Core.Login
 
             await InvitationController.DisposeAsync();
 
+            await Server.getInstance().Stop(false);
+
             var storageService = ServiceProvider.GetRequiredService<StorageService>();
             _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", "中心服务器");
             await storageService.CommitAllImmediately();
@@ -146,20 +157,26 @@ namespace Application.Core.Login
 
         public async Task StartServer()
         {
+            await Server.getInstance().Start();
+
+            await _serverService.SetupDataBase();
+
             _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
             await NettyServer.Start();
             _logger.LogInformation("[{ServerName}] 启动成功, 监听端口{Port}", "登录服务器", Port);
 
+            StartupTime = DateTimeOffset.UtcNow;
+            ForceUpdateServerTime();
+
             await RegisterTask();
 
             IsRunning = true;
-            _logger.LogInformation("[{ServerName}] 已启动", "登录/中心服务器");
-
-            StartupTime = DateTimeOffset.UtcNow;
-            ForceUpdateServerTime();
-            _logger.LogInformation("[{ServerName}] 服务器时间：{CurrentTime}", "登录/中心服务器", DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
-            _logger.LogInformation("[{ServerName}] 服务器系统时间：{CurrentTime}", "登录/中心服务器", DateTimeOffset.UtcNow.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
+            _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
+                "登录/中心服务器",
+                DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+                DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
+
 
         public int AddChannel(ChannelServerWrapper channel)
         {

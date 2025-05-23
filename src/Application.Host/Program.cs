@@ -3,6 +3,7 @@ using Application.Core.Channel;
 using Application.Core.Login;
 using Application.Core.Login.ServerTransports;
 using Application.Core.OpenApi;
+using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.EF;
 using Application.Host;
@@ -162,4 +163,9 @@ if (YamlConfig.config.server.ENABLE_OPENAPI)
     app.MapControllers();
 }
 
+AppDomain.CurrentDomain.ProcessExit += (e, o) =>
+{
+    var server = app.Services.GetRequiredService<IMasterServer>();
+    server.Shutdown().Wait();
+};
 app.Run();
