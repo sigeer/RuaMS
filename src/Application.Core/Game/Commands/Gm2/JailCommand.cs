@@ -1,5 +1,3 @@
-using constants.id;
-
 namespace Application.Core.Game.Commands.Gm2;
 
 public class JailCommand : CommandBase

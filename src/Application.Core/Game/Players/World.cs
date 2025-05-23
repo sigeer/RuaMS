@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace Application.Core.Game.Players
 {
     public partial class Player

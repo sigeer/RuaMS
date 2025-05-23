@@ -1,5 +1,3 @@
-using scripting.npc;
-using scripting.quest;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm0;

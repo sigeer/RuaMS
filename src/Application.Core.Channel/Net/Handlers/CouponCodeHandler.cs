@@ -62,7 +62,7 @@ public class CouponCodeHandler : ChannelHandlerBase
             if (type < 5)
                 couponPoints[type] = couponPoints.GetValueOrDefault(type) + quantity;
             else
-                couponItems[type] =  couponItems.GetValueOrDefault(rs.Item) + quantity;
+                couponItems[type] = couponItems.GetValueOrDefault(rs.Item) + quantity;
         }
 
         List<TypedItemQuantity> ret = new();

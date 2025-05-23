@@ -26,9 +26,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
-using constants.id;
-using net.packet;
-using net.server;
 using System.Collections.Concurrent;
 using tools;
 

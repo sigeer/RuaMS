@@ -21,19 +21,15 @@
 */
 
 
-using Application.Core.Client;
-using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
-using constants.id;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using service;
 using tools;
 using tools.packets;
-using ZstdSharp.Unsafe;
 
 namespace Application.Core.Channel.Net.Handlers;
 

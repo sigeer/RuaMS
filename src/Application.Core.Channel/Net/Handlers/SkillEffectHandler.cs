@@ -22,7 +22,6 @@
 
 
 using Application.Core.Channel.Net;
-using constants.skills;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;

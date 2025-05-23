@@ -26,7 +26,6 @@ using Application.Core.Scripting.Infrastructure;
 using client;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Bcpg.Sig;
 using server.quest;
 
 namespace scripting.quest;

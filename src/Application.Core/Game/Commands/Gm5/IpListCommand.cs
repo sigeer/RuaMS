@@ -1,5 +1,4 @@
 using Application.Core.scripting.npc;
-using constants.game;
 using net.server;
 
 namespace Application.Core.Game.Commands.Gm5;

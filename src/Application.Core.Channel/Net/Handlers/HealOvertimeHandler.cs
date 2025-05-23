@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Game.Players;
 using client.autoban;
 using net.packet;
 using tools;

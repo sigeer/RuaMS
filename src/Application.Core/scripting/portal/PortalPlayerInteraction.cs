@@ -21,7 +21,6 @@
  */
 
 
-using Microsoft.Extensions.DependencyInjection;
 using scripting.map;
 using server.maps;
 using tools;

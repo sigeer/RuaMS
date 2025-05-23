@@ -22,7 +22,6 @@
 
 
 using client.autoban;
-using constants.inventory;
 using Microsoft.Extensions.Logging;
 using net.packet;
 

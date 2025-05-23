@@ -1,10 +1,8 @@
-using Application.Core.Client;
 using Application.Core.Game.Invites;
 using Application.Core.Game.Relation;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.coordinator.matchchecker;
-using net.server.coordinator.world;
 using net.server.guild;
 
 namespace Application.Core.Managers

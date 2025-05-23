@@ -21,7 +21,6 @@
 */
 
 
-using client.inventory;
 using client.inventory.manipulator;
 using net.packet;
 using tools;

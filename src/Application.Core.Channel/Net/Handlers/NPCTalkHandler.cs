@@ -24,10 +24,8 @@
 using Application.Core.Game.Life;
 using Application.Utility.Configs;
 using client.processor.npc;
-using constants.id;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using scripting.npc;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

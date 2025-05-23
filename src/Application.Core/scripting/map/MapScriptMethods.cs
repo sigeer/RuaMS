@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using client;
-using constants.id;
 using server.quest;
 using System.Text;
 using tools;

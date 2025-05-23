@@ -27,8 +27,6 @@ using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using server;

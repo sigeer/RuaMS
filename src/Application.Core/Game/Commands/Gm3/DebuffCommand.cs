@@ -1,6 +1,5 @@
 using client;
 using server.life;
-using server.maps;
 
 namespace Application.Core.Game.Commands.Gm3;
 public class DebuffCommand : CommandBase

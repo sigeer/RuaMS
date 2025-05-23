@@ -21,12 +21,9 @@
  */
 
 
-using Application.Core.Client;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
 using net.packet;
 using server;
 using tools;

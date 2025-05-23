@@ -19,8 +19,6 @@
 */
 
 
-using constants.id;
-using constants.inventory;
 using server;
 
 namespace tools.packets;

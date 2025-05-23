@@ -27,7 +27,6 @@ using Application.Core.Game.Skills;
 using Application.Shared.Battle;
 using client.autoban;
 using client.inventory;
-using constants.skills;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using server;

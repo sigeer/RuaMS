@@ -29,7 +29,6 @@ using client.inventory;
 using constants.game;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using server.maps;
 using System.Drawing;
 using tools;
 

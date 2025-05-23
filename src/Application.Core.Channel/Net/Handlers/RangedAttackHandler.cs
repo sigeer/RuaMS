@@ -21,19 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
-using Application.Core.Net;
 using Application.Shared.Net;
-using Application.Utility;
 using Application.Utility.Configs;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
-using constants.skills;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
@@ -225,12 +218,12 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                 }
             }
 
-            if (projectile != 0 
-                || soulArrow 
-                || attack.skill == DawnWarrior.SOUL_BLADE 
+            if (projectile != 0
+                || soulArrow
+                || attack.skill == DawnWarrior.SOUL_BLADE
                 || attack.skill == ThunderBreaker.SHARK_WAVE
                 || attack.skill == NightWalker.VAMPIRE
-                || attack.skill == Hermit.SHADOW_MESO 
+                || attack.skill == Hermit.SHADOW_MESO
                 || attack.skill == WindArcher.STORM_BREAK)
             {
                 int visProjectile = projectile; //visible projectile sent to players
@@ -250,12 +243,12 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                         }
                     }
                 }
-                else if (soulArrow 
-                    || attack.skill == Ranger.ARROW_RAIN 
-                    || attack.skill == Sniper.ARROW_ERUPTION 
-                    || attack.skill == DawnWarrior.SOUL_BLADE 
-                    || attack.skill == ThunderBreaker.SHARK_WAVE 
-                    || attack.skill == NightWalker.VAMPIRE 
+                else if (soulArrow
+                    || attack.skill == Ranger.ARROW_RAIN
+                    || attack.skill == Sniper.ARROW_ERUPTION
+                    || attack.skill == DawnWarrior.SOUL_BLADE
+                    || attack.skill == ThunderBreaker.SHARK_WAVE
+                    || attack.skill == NightWalker.VAMPIRE
                     || attack.skill == WindArcher.STORM_BREAK)
                 {
                     visProjectile = 0;
@@ -295,16 +288,16 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                     }
                 }
 
-                if (chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 
-                    && chr.getBuffedValue(BuffStat.DARKSIGHT) != null 
-                    && attack.numAttacked > 0 
+                if (chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0
+                    && chr.getBuffedValue(BuffStat.DARKSIGHT) != null
+                    && attack.numAttacked > 0
                     && chr.getBuffSource(BuffStat.DARKSIGHT) != SuperGM.HIDE)
                 {
                     chr.cancelEffectFromBuffStat(BuffStat.DARKSIGHT);
                     chr.cancelBuffStats(BuffStat.DARKSIGHT);
                 }
-                else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0 
-                    && chr.getBuffedValue(BuffStat.WIND_WALK) != null 
+                else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0
+                    && chr.getBuffedValue(BuffStat.WIND_WALK) != null
                     && attack.numAttacked > 0)
                 {
                     chr.cancelEffectFromBuffStat(BuffStat.WIND_WALK);

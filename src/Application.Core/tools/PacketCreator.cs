@@ -20,7 +20,6 @@
  */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -36,16 +35,12 @@ using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Shared.Battle;
-using Application.Shared.Net;
 using client;
 using client.inventory;
 using client.keybind;
 using client.newyear;
 using client.status;
 using constants.game;
-using constants.id;
-using constants.inventory;
-using constants.skills;
 using net.encryption;
 using net.opcodes;
 using net.packet;

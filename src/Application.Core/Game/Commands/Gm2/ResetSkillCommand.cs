@@ -1,5 +1,4 @@
 using Application.Core.Game.Skills;
-using client;
 
 namespace Application.Core.Game.Commands.Gm2;
 public class ResetSkillCommand : CommandBase

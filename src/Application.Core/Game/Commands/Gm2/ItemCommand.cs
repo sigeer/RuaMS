@@ -1,11 +1,6 @@
-using Application.Core.Client;
-using Application.Core.Game.Players;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
-using Application.Shared;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
 using server;
 using System.Text;
 
@@ -90,7 +85,7 @@ public class ItemCommand : CommandBase
         if (ItemConstants.isPet(itemId))
         {
             if (paramsValue.Length >= 2)
-            {   
+            {
                 // thanks to istreety & TacoBell
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));

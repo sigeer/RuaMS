@@ -1,10 +1,3 @@
-using Application.Core.Managers;
-using client.inventory;
-using constants.game;
-using constants.id;
-using Microsoft.EntityFrameworkCore;
-using server;
-
 namespace Application.Core.Game.Players
 {
     public partial class Player

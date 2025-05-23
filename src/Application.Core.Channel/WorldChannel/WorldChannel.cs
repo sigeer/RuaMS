@@ -1,10 +1,10 @@
 using Application.Core.Channel.Net;
 using Application.Core.Channel.Services;
-using Application.Core.Datas;
+using Application.Core.Channel.Tasks;
+using Application.Core.Game.Controllers;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Controllers;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
@@ -31,9 +31,6 @@ using server.maps;
 using System.Diagnostics;
 using System.Net;
 using tools;
-using Application.Core.Channel.Tasks;
-using server;
-using Application.Utility.Tasks;
 
 namespace Application.Core.Channel;
 
@@ -770,11 +767,6 @@ public partial class WorldChannel : IWorldChannel
         Transport.NotifyPartner(id);
     }
 
-    public CharacterValueObject? GetPlayerData(string clientSession, int cid)
-    {
-        return Transport.GetPlayerData(clientSession, cid);
-    }
-
     public void UpdateBuddyByLoggedOff(int characterId, int channel, int[] buddies)
     {
         UpdateBuddyChannel(characterId, channel, buddies, true);
@@ -884,6 +876,6 @@ public partial class WorldChannel : IWorldChannel
         forceTime = forceTime + sw.ElapsedMilliseconds;
         serverCurrentTime = forceTime;
         currentTime.set(forceTime);
-        
+
     }
 }

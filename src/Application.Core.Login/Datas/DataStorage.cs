@@ -1,4 +1,3 @@
-using Application.Core.Datas;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Characters;
@@ -10,8 +9,6 @@ using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Datas
 {
@@ -20,7 +17,7 @@ namespace Application.Core.Login.Datas
         Dictionary<int, PlayerSaveDto> _chrUpdate = new Dictionary<int, PlayerSaveDto>();
         Dictionary<int, AccountDto> _accUpdate = new Dictionary<int, AccountDto>();
 
-        Dictionary<int, AccountLoginStatus> _accLoginUpdate = new ();
+        Dictionary<int, AccountLoginStatus> _accLoginUpdate = new();
 
 
         Dictionary<int, ItemDto[]> _merchantUpdate = new();
@@ -129,7 +126,7 @@ namespace Application.Core.Login.Datas
                 await dbTrans.CommitAsync();
                 _logger.LogInformation("保存了{Count}个用户数据", _chrUpdate.Keys.Count);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "保存用户数据{Status}", "失败");
             }
@@ -214,7 +211,7 @@ namespace Application.Core.Login.Datas
                     GiftFrom = item.GiftFrom,
                     Inventorytype = item.InventoryType,
                     Owner = item.Owner,
-                    Petid = item.PetInfo == null ? -1 :item.PetInfo .Petid,
+                    Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
                     Position = item.Position,
                     Quantity = item.Quantity,
                     Type = item.Type,

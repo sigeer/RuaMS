@@ -27,7 +27,6 @@ using Application.EF.Entities;
 using Application.Shared.Net;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -372,7 +371,7 @@ public class MTSHandler : ChannelHandlerBase
                         break;
                     }
                 case 17:
-                    { 
+                    {
                         //buy from cart
                         int id = p.readInt(); // id of the item
                         try
@@ -549,7 +548,7 @@ public class MTSHandler : ChannelHandlerBase
             }
             else
             {
-                q = q.Where(x =>Microsoft.EntityFrameworkCore.EF.Functions.Like(x.Sellername, $"%{search}%"));
+                q = q.Where(x => Microsoft.EntityFrameworkCore.EF.Functions.Like(x.Sellername, $"%{search}%"));
             }
             items = q.OrderBy(x => x.Id).Skip((page - 1) * 16).Take(16).ToList()
                 .Select(MTSItemInfo.Map)

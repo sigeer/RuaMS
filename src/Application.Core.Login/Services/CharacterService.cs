@@ -1,18 +1,12 @@
-using Application.Core.Datas;
-using Application.Core.Game.Commands.Gm4;
 using Application.Core.Game.Players;
-using Application.Core.Game.TheWorld;
 using Application.Core.Login.Datas;
 using Application.EF;
-using Application.Shared.Characters;
-using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
-using MySql.EntityFrameworkCore.Extensions;
 using net.server;
 using Serilog;
 using System.Text.RegularExpressions;
@@ -24,6 +18,7 @@ namespace Application.Core.Login.Services
         readonly IMapper _mapper;
         readonly CharacterManager _characterManager;
         readonly AccountManager _accountManager;
+        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
 
 
@@ -33,11 +28,12 @@ namespace Application.Core.Login.Services
             "sex", "tit", "boner", "orgy", "clit", "asshole", "fatass", "bitch", "support", "gamemaster", "cock", "gaay", "gm", "operate", "master",
             "sysop", "party", "GameMaster", "community", "message", "event", "test", "meso", "Scania", "yata", "AsiaSoft", "henesys"};
 
-        public CharacterService(IMapper mapper, CharacterManager characterManager, AccountManager accountManager)
+        public CharacterService(IMapper mapper, CharacterManager characterManager, AccountManager accountManager, IDbContextFactory<DBContext> dbContextFactory)
         {
             _mapper = mapper;
             _characterManager = characterManager;
             _accountManager = accountManager;
+            _dbContextFactory = dbContextFactory;
         }
 
         public bool CheckCharacterName(string name)
@@ -53,7 +49,7 @@ namespace Application.Core.Login.Services
             if (!Regex.IsMatch(name, "^[a-zA-Z0-9\\u4e00-\\u9fa5]+$"))
                 return false;
 
-            using DBContext dbContext = new DBContext();
+            using DBContext dbContext = _dbContextFactory.CreateDbContext();
             if (dbContext.Characters.Any(x => x.Name == name))
                 return false;
 
@@ -72,7 +68,7 @@ namespace Application.Core.Login.Services
             int world = 0;
             try
             {
-                using var dbContext = new DBContext();
+                using var dbContext = _dbContextFactory.CreateDbContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
 
                 var characterModel = dbContext.Characters.Where(x => x.Id == cid).FirstOrDefault();
@@ -173,7 +169,7 @@ namespace Application.Core.Login.Services
             {
                 var player = _mapper.Map<Player>(c.Character);
                 Inventory inv = player.Bag[InventoryType.EQUIPPED];
-                foreach (var equip in c.InventoryItems.Where(x => x.InventoryType == (sbyte)InventoryType.EQUIPPED))
+                foreach (var equip in c.InventoryItems)
                 {
                     var item = _mapper.Map<Equip>(equip);
                     inv.addItemFromDB(item);

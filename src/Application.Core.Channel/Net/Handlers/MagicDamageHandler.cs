@@ -24,8 +24,6 @@
 using Application.Core.Game.Skills;
 using Application.Utility.Configs;
 using client;
-using constants.id;
-using constants.skills;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;

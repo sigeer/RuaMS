@@ -1,5 +1,3 @@
-using constants.id;
-using net.server;
 using server.life;
 using tools;
 

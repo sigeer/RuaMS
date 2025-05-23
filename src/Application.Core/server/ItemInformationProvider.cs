@@ -21,17 +21,10 @@
  */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using client;
 using client.autoban;
 using client.inventory;
-using constants.id;
-using constants.inventory;
-using constants.skills;
-using Microsoft.EntityFrameworkCore;
-using net.server;
 using server.life;
 using tools;
 using static server.MakerItemFactory;
@@ -2416,7 +2409,7 @@ public class ItemInformationProvider
         try
         {
             using var dbContext = new DBContext();
-            var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == itemId && x.ReqItem >= ItemId.BASIC_MONSTER_CRYSTAL_1&& x.Itemid < 4270000).ToList();
+            var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == itemId && x.ReqItem >= ItemId.BASIC_MONSTER_CRYSTAL_1 && x.Itemid < 4270000).ToList();
             return dataList.Select(x => new ItemQuantity(x.ReqItem, x.Count)).ToList();
         }
         catch (Exception e)

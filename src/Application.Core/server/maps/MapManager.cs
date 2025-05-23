@@ -27,7 +27,7 @@ using System.Collections.Concurrent;
 
 namespace server.maps;
 
-public class MapManager: IDisposable
+public class MapManager : IDisposable
 {
     private EventInstanceManager? evt;
     readonly IWorldChannel _channelServer;

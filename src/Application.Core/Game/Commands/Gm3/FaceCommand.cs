@@ -1,5 +1,4 @@
 using client;
-using constants.inventory;
 using server;
 
 namespace Application.Core.Game.Commands.Gm3;

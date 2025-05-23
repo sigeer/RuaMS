@@ -1,4 +1,3 @@
-using constants.id;
 using server.life;
 
 namespace Application.Core.Game.Commands.Gm4;

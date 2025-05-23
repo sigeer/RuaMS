@@ -1,6 +1,5 @@
 using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
 using tools;
 
 namespace server.minigame;

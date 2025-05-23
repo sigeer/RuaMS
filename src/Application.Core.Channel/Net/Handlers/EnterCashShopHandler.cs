@@ -23,7 +23,6 @@
 
 using Microsoft.Extensions.Logging;
 using net.packet;
-using server.maps;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

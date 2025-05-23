@@ -45,7 +45,7 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         var map = chr.getMap();
 
         if (map.getEnvironment().Count == 0)
-        {   
+        {
             // no environment objects activated to actually hit the mob
             _logger.LogWarning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack", c.OnlinedCharacter.getName(), map.getId());
             return;

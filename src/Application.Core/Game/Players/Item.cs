@@ -1,7 +1,6 @@
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.inventory;
 using server;
 using tools;
 

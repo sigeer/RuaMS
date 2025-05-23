@@ -1,4 +1,3 @@
-using Application.Shared.Net;
 using net.opcodes;
 
 namespace net.packet;

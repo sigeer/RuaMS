@@ -24,7 +24,6 @@ using Application.Core.scripting.npc;
 using Application.EF;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
-using constants.id;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.server.coordinator.session;

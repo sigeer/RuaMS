@@ -1,7 +1,5 @@
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
-using Application.Shared;
-using constants.id;
 using server.life;
 using System.Text;
 

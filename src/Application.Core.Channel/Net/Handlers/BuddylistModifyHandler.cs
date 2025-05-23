@@ -26,7 +26,6 @@ using Application.Core.Game.TheWorld;
 using Application.EF;
 using Application.EF.Entities;
 using client;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;

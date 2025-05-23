@@ -21,10 +21,6 @@
 */
 
 
-using Application.Core.Client;
-using net.packet;
-using net.server;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps;

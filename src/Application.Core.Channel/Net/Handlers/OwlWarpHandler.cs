@@ -50,7 +50,7 @@ public class OwlWarpHandler : ChannelHandlerBase
             return;
         }
 
-        if(!dto.IsOpen)
+        if (!dto.IsOpen)
         {
             c.sendPacket(PacketCreator.getOwlMessage(18));
             return;

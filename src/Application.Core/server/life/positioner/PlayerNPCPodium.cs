@@ -22,7 +22,6 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using net.server;
-using server.maps;
 using tools;
 
 namespace server.life.positioner;
@@ -126,7 +125,7 @@ public class PlayerNPCPodium
     }
 
     private static Point? getNextPlayerNpcPosition(IMap map, int podiumData)
-    {  
+    {
         // automated playernpc position thanks to Ronan
         int podiumStep = podiumData % (1 << 5), podiumCount = (podiumData / (1 << 5));
 

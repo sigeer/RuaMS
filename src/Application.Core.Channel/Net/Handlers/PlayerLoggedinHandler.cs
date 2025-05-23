@@ -27,10 +27,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.EF;
 using Application.Shared.KeyMaps;
-using Application.Shared.Login;
-using Application.Utility.Compatible;
 using Application.Utility.Configs;
-using client;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -51,7 +48,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
     private NoteService noteService;
     readonly ILogger<ChannelHandlerBase> _logger;
     readonly CharacterService _characterSrv;
-
     public PlayerLoggedinHandler(NoteService noteService, ILogger<ChannelHandlerBase> logger, CharacterService characterSrv)
     {
         this.noteService = noteService;
@@ -83,7 +79,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 return;
             }
 
-            var playerObject = c.CurrentServer.GetPlayerData(c.GetSessionRemoteHost(), cid);
+            var playerObject = c.CurrentServer.Service.GetPlayerData(c.GetSessionRemoteHost(), cid);
             if (playerObject == null)
             {
                 c.Disconnect(true, false);

@@ -1,8 +1,6 @@
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using client;
-using constants.id;
-using constants.skills;
 using net.server;
 using server;
 using server.maps;

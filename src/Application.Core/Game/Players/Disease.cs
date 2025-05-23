@@ -1,6 +1,4 @@
 using client;
-using constants.skills;
-using net.server;
 using server;
 using server.life;
 using tools;

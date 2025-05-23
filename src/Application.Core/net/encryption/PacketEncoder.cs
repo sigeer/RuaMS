@@ -1,8 +1,6 @@
-using Application.Shared.Net;
 using DotNetty.Buffers;
 using DotNetty.Codecs;
 using DotNetty.Transport.Channels;
-using net.packet;
 
 namespace net.encryption;
 

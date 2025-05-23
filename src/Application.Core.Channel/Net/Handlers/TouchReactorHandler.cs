@@ -22,7 +22,6 @@
 
 
 using net.packet;
-using scripting.reactor;
 
 namespace Application.Core.Channel.Net.Handlers;
 

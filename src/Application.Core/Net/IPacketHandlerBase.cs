@@ -1,4 +1,3 @@
-using Application.Core.Client;
 using net.packet;
 
 namespace Application.Core.Net

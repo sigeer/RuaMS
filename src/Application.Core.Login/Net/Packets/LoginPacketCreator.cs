@@ -1,7 +1,5 @@
 using Application.Core.Client;
-using Application.Core.Game;
 using Application.Core.Game.Players;
-using Application.Core.Game.TheWorld;
 using Application.Core.Servers;
 using Application.Shared.Net;
 using Application.Utility.Configs;
@@ -12,12 +10,7 @@ using net.opcodes;
 using net.packet;
 using net.server;
 using server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Login.Net.Packets
@@ -171,7 +164,7 @@ namespace Application.Core.Login.Net.Packets
                 p.writeByte(0);
             }
             if (playerClient.AccountEntity!.GMLevel > 1 || chr.isGmJob())
-            {  
+            {
                 // thanks Daddy Egg (Ubaware), resinate for noticing GM jobs crashing on non-GM players account
                 p.writeByte(0);
                 return;

@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Gachapon;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -33,16 +32,12 @@ using Application.Core.scripting.Infrastructure;
 using client;
 using client.inventory;
 using constants.game;
-using constants.id;
-using constants.inventory;
 using constants.String;
-using net.server;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
 using server;
 using server.expeditions;
 using server.life;
-using server.maps;
 using server.partyquest;
 using tools;
 using tools.packets;

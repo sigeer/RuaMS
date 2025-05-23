@@ -23,7 +23,6 @@
 
 using Application.Core.scripting.npc;
 using net.packet;
-using scripting.npc;
 using scripting.quest;
 
 namespace Application.Core.Channel.Net.Handlers;

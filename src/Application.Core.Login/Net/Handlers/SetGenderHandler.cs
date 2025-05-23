@@ -24,15 +24,12 @@
 
 using Application.Core.Client;
 using Application.Core.Login.Datas;
-using Application.Core.Login.Net;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Servers;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using net.server.coordinator.session;
-using tools;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -50,7 +47,7 @@ public class SetGenderHandler : LoginHandlerBase
     public override void HandlePacket(InPacket p, ILoginClient c)
     {
         if (c.AccountEntity?.Gender == 10)
-        { 
+        {
             //Packet shouldn't come if Gender isn't 10.
             byte confirmed = p.readByte();
             if (confirmed == 0x01)

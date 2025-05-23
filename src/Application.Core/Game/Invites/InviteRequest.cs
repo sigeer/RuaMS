@@ -1,5 +1,4 @@
 using Application.Core.Game.Maps;
-using net.server;
 
 namespace Application.Core.Game.Invites
 {
@@ -17,7 +16,7 @@ namespace Application.Core.Game.Invites
         public IPlayer To { get; }
     }
 
-    public class GuildInviteRequest: InviteRequest
+    public class GuildInviteRequest : InviteRequest
     {
         public GuildInviteRequest(IPlayer from, IPlayer to) : base(from, to)
         {
@@ -27,7 +26,7 @@ namespace Application.Core.Game.Invites
         public int GuildId { get; set; }
     }
 
-    public class AllianceInviteRequest: InviteRequest
+    public class AllianceInviteRequest : InviteRequest
     {
         public AllianceInviteRequest(IPlayer from, IPlayer to) : base(from, to)
         {

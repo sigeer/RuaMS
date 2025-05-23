@@ -1,6 +1,5 @@
 using Application.Core.Managers;
 using client.inventory;
-using constants.inventory;
 using server;
 
 namespace Application.Core.Game.Commands.Gm2;

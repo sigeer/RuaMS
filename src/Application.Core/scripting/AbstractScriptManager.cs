@@ -30,7 +30,6 @@ using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
-using constants.id;
 using Microsoft.Extensions.Logging;
 using net.server;
 using server;

@@ -21,10 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Datas;
+using Application.Core.Game.Controllers;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Controllers;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
@@ -161,14 +160,7 @@ namespace Application.Core.Game.TheWorld
         /// </summary>
         /// <param name="id"></param>
         void NotifyPartner(int id);
-        /// <summary>
-        /// 获取一个正在准备进入游戏的CharacterValueObject
-        /// <para>1. 既是cid的player数据</para>
-        /// <para>2. 且该account正处于LOGIN_SERVER_TRANSITION</para>
-        /// </summary>
-        /// <param name="cid"></param>
-        /// <returns></returns>
-        CharacterValueObject? GetPlayerData(string clientSession, int cid);
+
         /// <summary>
         /// 下线时，更新好友窗口
         /// </summary>

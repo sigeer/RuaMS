@@ -22,11 +22,7 @@
 
 
 
-using Application.Shared.Constants;
-using client;
-using constants.id;
 using net.packet;
-using scripting.npc;
 
 namespace Application.Core.Channel.Net.Handlers;
 

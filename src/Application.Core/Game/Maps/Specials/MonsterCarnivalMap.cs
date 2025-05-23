@@ -3,7 +3,6 @@ using Application.Shared.Events;
 using Application.Shared.MapObjects;
 using server.maps;
 using server.partyquest;
-using tools;
 using static server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Game.Maps.Specials

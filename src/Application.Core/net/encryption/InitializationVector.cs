@@ -1,5 +1,3 @@
-using tools;
-
 namespace net.encryption;
 
 public class InitializationVector

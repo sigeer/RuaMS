@@ -1,5 +1,3 @@
-﻿using server.maps;
-
 namespace Application.EF.Entities;
 
 public class SavedLocationEntity

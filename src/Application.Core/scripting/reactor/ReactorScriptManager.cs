@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
-using Application.Core.Scripting.Infrastructure;
 using Microsoft.Extensions.Logging;
 using server.maps;
 

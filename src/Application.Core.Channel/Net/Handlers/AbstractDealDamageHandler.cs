@@ -21,18 +21,13 @@
  */
 
 
-using Application.Core.Channel.Net;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
-using Application.Core.Net;
 using Application.Shared;
-using Application.Shared.Constants;
-using Application.Utility;
 using Application.Utility.Compatible;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
@@ -40,8 +35,6 @@ using client;
 using client.autoban;
 using client.status;
 using constants.game;
-using constants.id;
-using constants.skills;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using scripting;
@@ -58,7 +51,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
     private const int EXPLODED_MESO_MAX_DELAY = 1000;
 
     protected readonly ILogger<AbstractDealDamageHandler> _logger;
-    protected AbstractDealDamageHandler(ILogger<AbstractDealDamageHandler> logger) 
+    protected AbstractDealDamageHandler(ILogger<AbstractDealDamageHandler> logger)
     {
         _logger = logger;
     }
@@ -1098,7 +1091,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             {
                 p.skip(4);
             }
-            ret.targets[oid]  = new(delay, damageLines);
+            ret.targets[oid] = new(delay, damageLines);
         }
         if (ret.skill == NightWalker.POISON_BOMB)
         {

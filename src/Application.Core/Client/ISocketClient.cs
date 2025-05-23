@@ -1,6 +1,4 @@
-using Application.Shared.Net;
 using DotNetty.Transport.Channels;
-using net.packet;
 using net.server.coordinator.session;
 
 namespace Application.Core.Client

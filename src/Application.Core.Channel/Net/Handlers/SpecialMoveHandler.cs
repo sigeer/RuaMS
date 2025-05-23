@@ -23,7 +23,6 @@
 
 using Application.Core.Game.Skills;
 using Application.Utility.Configs;
-using constants.skills;
 using net.packet;
 using server;
 using System.Drawing;

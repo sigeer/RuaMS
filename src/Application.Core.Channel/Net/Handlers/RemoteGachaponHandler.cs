@@ -21,14 +21,8 @@
  */
 
 
-using Application.Core.Client;
-using Application.Core.Game.TheWorld;
 using client.autoban;
-using constants.id;
-using constants.inventory;
-using Microsoft.Extensions.Logging;
 using net.packet;
-using scripting.npc;
 
 namespace Application.Core.Channel.Net.Handlers;
 

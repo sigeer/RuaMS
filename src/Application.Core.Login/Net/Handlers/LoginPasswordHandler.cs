@@ -29,7 +29,6 @@ using Application.Shared.Login;
 using Application.Utility.Configs;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using net.server;
 using net.server.coordinator.session;
 using tools;
 
@@ -37,7 +36,7 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class LoginPasswordHandler : LoginHandlerBase
 {
-    public LoginPasswordHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger) 
+    public LoginPasswordHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
         : base(server, accountManager, logger)
     {
     }

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using net.server;
 using net.server.guild;
 
 namespace Application.Core.Managers

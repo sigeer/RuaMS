@@ -1,7 +1,5 @@
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
-using constants.id;
-using server.maps;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;

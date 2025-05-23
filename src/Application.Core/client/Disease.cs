@@ -21,9 +21,7 @@
 */
 
 
-using constants.game;
 using server.life;
-using tools;
 
 namespace client;
 public class Disease : EnumClass

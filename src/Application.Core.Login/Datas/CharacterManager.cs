@@ -3,7 +3,6 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.EF;
 using Application.Shared.Characters;
-using Application.Shared.Constants;
 using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Utility.Configs;
@@ -275,7 +274,7 @@ namespace Application.Core.Login.Datas
             using var dbContext = _dbContextFactory.CreateDbContext();
             var characters = dbContext.Characters.Where(x => needLoadFromDB.Contains(x.Id)).ToList();
 
-            #region 所有道具加载
+            #region 仅需要加载装备栏
             var equipedType = InventoryType.EQUIPPED.getType();
             var items = (from a in dbContext.Inventoryitems.AsNoTracking().Where(x => x.Characterid != null && needLoadFromDB.Contains(x.Characterid.Value))
                          where a.Inventorytype == equipedType

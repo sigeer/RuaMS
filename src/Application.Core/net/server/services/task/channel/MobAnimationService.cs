@@ -66,7 +66,7 @@ public class MobAnimationService : BaseService
         HashSet<int> onAnimationMobs = new(1000);
         private object animationLock = new object();
 
-        public MobAnimationScheduler(IWorldChannel worldChannel): base(worldChannel)
+        public MobAnimationScheduler(IWorldChannel worldChannel) : base(worldChannel)
         {
             base.addListener((toRemove, update) =>
             {

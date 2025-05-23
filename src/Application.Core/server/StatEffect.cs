@@ -32,11 +32,6 @@ using client;
 using client.inventory;
 using client.inventory.manipulator;
 using client.status;
-using constants.id;
-using constants.inventory;
-using constants.skills;
-using net.packet;
-using net.server;
 using server.life;
 using server.maps;
 using server.partyquest;
@@ -202,7 +197,7 @@ public class StatEffect
         hpCon = (short)DataTool.getInt("hpCon", source, 0);
         int iprop = DataTool.getInt("prop", source, 100);
         prop = iprop / 100.0;
-        ExpBuff = DataTool.getInt("expBuff", source, 0) ;
+        ExpBuff = DataTool.getInt("expBuff", source, 0);
 
         cp = DataTool.getInt("cp", source, 0);
         List<Disease> cure = new(5);
@@ -911,7 +906,7 @@ public class StatEffect
                             {
                                 applyto.ChangeMP(absorbMp);
                             });
-                            
+
                             applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
                             applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), false);
                         }
@@ -1176,7 +1171,7 @@ public class StatEffect
             applyto.gainCP(cp);
         }
         else if (nuffSkill != 0 && applyto.getParty() != null && applyto.getMap().isCPQMap())
-        { 
+        {
             // added by Drago (Dragohe4rt)
             var skill = CarnivalFactory.getInstance().getSkill(nuffSkill);
             if (skill != null)

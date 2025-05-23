@@ -21,8 +21,8 @@
  */
 
 
+using Application.Core.Game.Relation;
 using constants.game;
-using constants.inventory;
 using server;
 using tools;
 
@@ -58,6 +58,7 @@ public class Equip : Item
     private bool _wear = false;
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
+    public Ring? Ring { get; set; }
 
     public Equip(int id, short position) : this(id, position, 0)
     {

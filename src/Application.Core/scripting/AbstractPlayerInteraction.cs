@@ -21,7 +21,6 @@
  */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -34,15 +33,10 @@ using client.inventory;
 using client.inventory.manipulator;
 using client.keybind;
 using constants.game;
-using constants.id;
-using constants.inventory;
-using net.server;
 using scripting.Event;
-using scripting.npc;
 using server;
 using server.expeditions;
 using server.life;
-using server.maps;
 using server.partyquest;
 using server.quest;
 using tools;
@@ -1055,9 +1049,9 @@ public class AbstractPlayerInteraction
         {
             if (!force && level > -1)
             {
-                getPlayer().changeSkillLevel(skill, 
-                    Math.Max(skillEntry.skillevel, level), 
-                    Math.Max(skillEntry.masterlevel, masterLevel), 
+                getPlayer().changeSkillLevel(skill,
+                    Math.Max(skillEntry.skillevel, level),
+                    Math.Max(skillEntry.masterlevel, masterLevel),
                     expiration == -1 ? -1 : Math.Max(skillEntry.expiration, expiration));
                 return;
             }

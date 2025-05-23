@@ -1,4 +1,3 @@
-using Application.Shared.Characters;
 using Application.Shared.Servers;
 
 namespace Application.Core.Client

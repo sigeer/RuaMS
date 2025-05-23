@@ -1,13 +1,9 @@
-using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using client;
 using client.autoban;
-using client.inventory;
-using DotNetty.Handlers.Tls;
-using Microsoft.EntityFrameworkCore;
 using server;
 using server.events;
 using server.maps;

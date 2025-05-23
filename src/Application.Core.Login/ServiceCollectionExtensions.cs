@@ -62,6 +62,7 @@ namespace Application.Core.Login
 
             services.AddStorage();
 
+            services.AddSingleton<ServerService>();
             services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();
             return services;

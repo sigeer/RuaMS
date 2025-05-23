@@ -1,5 +1,4 @@
 using Application.Shared.Characters;
-using constants.id;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players.PlayerProps

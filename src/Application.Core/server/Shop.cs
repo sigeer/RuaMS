@@ -21,12 +21,9 @@
 */
 
 
-using Application.Core.Client;
 using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
 using tools;
 
 namespace server;

@@ -21,10 +21,8 @@
 */
 
 
-using Application.Utility;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.inventory;
 using net.packet;
 using server;
 using tools;

@@ -114,7 +114,7 @@ public class LoginBypassCoordinator
                     long expireTime = timeNow + 60 * 1000 * 2;
                     if (expireTime > e.Value.Value)
                     {
-                        loginBypass[e.Key]  = new(e.Value.Key, expireTime);
+                        loginBypass[e.Key] = new(e.Value.Key, expireTime);
                     }
                 }
                 else if (e.Value.Value < timeNow)

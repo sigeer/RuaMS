@@ -1,5 +1,3 @@
-using net.packet;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists;

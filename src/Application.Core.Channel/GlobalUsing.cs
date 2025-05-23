@@ -1,2 +1,11 @@
 global using Application.Core.Client;
+global using Application.Shared.Constants;
+global using Application.Shared.Constants.Inventory;
+global using Application.Shared.Constants.Item;
+global using Application.Shared.Constants.Job;
+global using Application.Shared.Constants.Map;
+global using Application.Shared.Constants.Mob;
+global using Application.Shared.Constants.Npc;
+global using Application.Shared.Constants.Skill;
+global using Application.Shared.MapObjects;
 global using Application.Utility;

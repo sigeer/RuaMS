@@ -23,14 +23,11 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Scripting.Infrastructure;
 using client.inventory;
-using constants.inventory;
 using server;
 using server.life;
 using server.maps;
 using server.partyquest;
-using tools;
 
 namespace scripting.reactor;
 
@@ -62,7 +59,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     private static List<DropEntry> assembleReactorDropEntries(IPlayer chr, List<DropEntry> items)
     {
-        DropEntry.ClassifyDropEntries(items,out var dropEntry, out var visibleQuestEntry,out var otherQuestEntry, chr);
+        DropEntry.ClassifyDropEntries(items, out var dropEntry, out var visibleQuestEntry, out var otherQuestEntry, chr);
 
         Collections.shuffle(dropEntry);
         Collections.shuffle(visibleQuestEntry);

@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Skills;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps.AnimatedObjects;

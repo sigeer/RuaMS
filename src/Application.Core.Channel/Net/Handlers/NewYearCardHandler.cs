@@ -22,8 +22,6 @@
 using Application.Core.Game.Players;
 using Application.EF;
 using client.newyear;
-using constants.id;
-using constants.inventory;
 using net.packet;
 using net.server;
 using tools;

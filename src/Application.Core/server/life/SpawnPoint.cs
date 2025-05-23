@@ -23,8 +23,6 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using net.server;
-using tools;
 
 namespace server.life;
 
@@ -162,7 +160,7 @@ public class SpawnPoint
 
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
-        var  rate = _map.ActualMonsterRate;
+        var rate = _map.ActualMonsterRate;
         if (_map.getEventInstance() != null || _monsterMeta.isBoss())
             rate = 1;
 

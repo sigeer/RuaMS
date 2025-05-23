@@ -25,7 +25,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
-using Application.Core.Scripting.Infrastructure;
 using constants.game;
 using net.server;
 using scripting.Event.scheduler;
@@ -34,7 +33,6 @@ using server.expeditions;
 using server.life;
 using server.quest;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using tools.exceptions;
 
 //using jdk.nashorn.api.scripting;

@@ -1,6 +1,4 @@
-using constants.id;
 using server;
-using tools;
 
 namespace Application.Core.Game.Life
 {
@@ -25,9 +23,9 @@ namespace Application.Core.Game.Life
     /// <summary>
     /// 物品掉落
     /// </summary>
-    public class DropEntry: DropItemEntry
+    public class DropEntry : DropItemEntry
     {
-        private DropEntry(int itemId, int chance, int itemMinCount, int itemMaxCount) :base(itemId, chance, itemMinCount, itemMaxCount){ }
+        private DropEntry(int itemId, int chance, int itemMinCount, int itemMaxCount) : base(itemId, chance, itemMinCount, itemMaxCount) { }
 
         public static DropEntry Global(int continentId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)
         {
@@ -97,7 +95,7 @@ namespace Application.Core.Game.Life
             return Randomizer.nextInt(1000000) < Chance;
         }
 
-        public static void ClassifyDropEntries(List<DropEntry> allData,out List<DropEntry> item, out List<DropEntry> visibleQuest, out List<DropEntry> otherQuest, IPlayer chr)
+        public static void ClassifyDropEntries(List<DropEntry> allData, out List<DropEntry> item, out List<DropEntry> visibleQuest, out List<DropEntry> otherQuest, IPlayer chr)
         {
             item = [];
             visibleQuest = [];

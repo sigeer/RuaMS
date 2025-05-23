@@ -1,5 +1,3 @@
-using Application.Core.constants.game;
-
 namespace Application.Core.Game.Commands.Gm4;
 
 public class PmobRemoveCommand : CommandBase

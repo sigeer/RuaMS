@@ -23,11 +23,9 @@
 */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
-using constants.skills;
 using net.packet;
 using tools;
 

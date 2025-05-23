@@ -21,10 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Managers;
 using client.inventory;
-using constants.id;
-using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 
@@ -106,7 +103,7 @@ public class CashShop
         private int sn;
         private int itemId;
         private int price;
-        public long Period { get;}
+        public long Period { get; }
         private short count;
         private bool onSale;
 

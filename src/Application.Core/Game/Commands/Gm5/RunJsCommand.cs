@@ -1,5 +1,3 @@
-using constants.id;
-
 namespace Application.Core.Game.Commands.Gm5
 {
     public class RunJsCommand : ParamsCommandBase

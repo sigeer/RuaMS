@@ -1,7 +1,6 @@
 using database;
 using database.note;
 using net.packet.outs;
-using net.server;
 
 namespace service;
 

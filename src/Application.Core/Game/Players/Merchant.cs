@@ -1,5 +1,4 @@
 using Application.Core.Game.Trades;
-using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players

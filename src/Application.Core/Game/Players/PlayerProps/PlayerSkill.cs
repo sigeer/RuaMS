@@ -57,7 +57,7 @@ namespace Application.Core.Game.Players.PlayerProps
                 var dbSkill = characterSkills.FirstOrDefault(x => x.Skillid == skill.Key.getId());
                 if (dbSkill == null)
                 {
-                    dbSkill = new SkillEntity(skill.Key.getId(), Owner.Id, skill.Value.skillevel, skill.Value.masterlevel, skill.Value.expiration );
+                    dbSkill = new SkillEntity(skill.Key.getId(), Owner.Id, skill.Value.skillevel, skill.Value.masterlevel, skill.Value.expiration);
                     dbContext.Skills.Add(dbSkill);
                 }
                 else

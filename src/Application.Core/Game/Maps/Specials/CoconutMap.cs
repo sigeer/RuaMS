@@ -1,5 +1,4 @@
 using Application.Shared.MapObjects;
-using constants.id;
 using server.events.gm;
 
 namespace Application.Core.Game.Maps.Specials

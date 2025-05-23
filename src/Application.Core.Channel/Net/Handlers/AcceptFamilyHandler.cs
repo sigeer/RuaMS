@@ -1,6 +1,4 @@
-using Application.Core.Client;
 using Application.Core.Game.Invites;
-using Application.Core.Game.TheWorld;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility.Configs;
@@ -8,7 +6,6 @@ using client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using net.server.coordinator.world;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

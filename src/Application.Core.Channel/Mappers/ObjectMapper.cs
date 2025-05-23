@@ -2,21 +2,13 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.EF.Entities;
 using Application.Shared.Characters;
-using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Utility.Compatible.Atomics;
 using AutoMapper;
-using client;
 using client.inventory;
 using net.server;
 using server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Channel.Mappers
 {
@@ -126,7 +118,7 @@ namespace Application.Core.Channel.Mappers
 
             CreateMap<ItemDto, Equip>()
                     .ConstructUsing(source => new Equip(source.Itemid, source.Position))
-                    .AfterMap((rs, dest) =>
+                    .AfterMap((rs, dest, ctx) =>
                     {
                         dest.setOwner(rs.Owner);
                         dest.setQuantity(rs.Quantity);
@@ -155,6 +147,9 @@ namespace Application.Core.Channel.Mappers
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel(rs.EquipInfo!.Itemlevel);
                         dest.setRingId(rs!.EquipInfo!.RingId);
+
+                        if (rs.EquipInfo!.RingInfo != null)
+                            dest.Ring = ctx.Mapper.Map<Ring>(rs.EquipInfo!.RingInfo);
                     })
                     .ReverseMap()
                     .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x));
@@ -180,7 +175,8 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.Level, source => source.MapFrom(x => x.getLevel()))
                 .ForMember(dest => dest.Itemlevel, source => source.MapFrom(x => x.getItemLevel()))
                 .ForMember(dest => dest.Itemexp, source => source.MapFrom(x => x.getItemExp()))
-                .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.getRingId()));
+                .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.getRingId()))
+                .ForMember(dest => dest.RingInfo, source => source.MapFrom(x => x.Ring));
 
             CreateMap<StorageDto, Storage>()
                 .ConstructUsing((x, ctx) =>

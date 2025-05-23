@@ -21,7 +21,6 @@
 
 using Application.Core.Game.Items;
 using client.inventory;
-using constants.inventory;
 
 namespace server;
 

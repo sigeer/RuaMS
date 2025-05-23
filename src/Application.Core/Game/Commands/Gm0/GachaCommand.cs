@@ -1,7 +1,6 @@
 using Application.Core.EF.Entities.Gachapons;
 using Application.Core.Game.Gachapon;
 using Application.Core.scripting.npc;
-using constants.id;
 using server;
 
 namespace Application.Core.Game.Commands.Gm0;

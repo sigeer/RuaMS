@@ -3,7 +3,6 @@ using Application.Shared.KeyMaps;
 using client.keybind;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
 
 namespace Application.Core.Game.Players.PlayerProps
 {

@@ -1,6 +1,5 @@
 using Application.Shared.Characters;
 using Microsoft.EntityFrameworkCore;
-using server.maps;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
@@ -76,9 +75,10 @@ namespace Application.Core.Game.Players.PlayerProps
         public SavedLocation? GetData(SavedLocationType type) => _dataSource.ElementAtOrDefault(GetKey(type));
         public SavedLocationDto[] ToDto()
         {
-            return _dataSource.Where(x => x != null).Select((x, idx) => new SavedLocationDto { 
+            return _dataSource.Where(x => x != null).Select((x, idx) => new SavedLocationDto
+            {
                 Locationtype = ((SavedLocationType)idx).ToString(),
-                Map = x.getMapId(), 
+                Map = x.getMapId(),
                 Portal = x.getPortal(),
                 Characterid = Owner.Id,
             }).ToArray();

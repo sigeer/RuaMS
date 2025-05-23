@@ -1,5 +1,3 @@
-using client;
-
 namespace Application.Core.Game.Commands.Gm2;
 
 public class MaxStatCommand : CommandBase

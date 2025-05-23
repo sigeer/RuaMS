@@ -22,10 +22,6 @@
 
 
 
-using Application.Core.Client;
-using Application.Core.Game.TheWorld;
-using Application.Core.Game.Trades;
-using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;
 
@@ -39,7 +35,7 @@ public class RemoteStoreHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
-        var hmChannel =  c.CurrentServer.Transport.FindPlayerShopChannel(chr.Id);
+        var hmChannel = c.CurrentServer.Transport.FindPlayerShopChannel(chr.Id);
         if (hmChannel != null)
         {
             if (hmChannel.Value == chr.getClient().getChannel())

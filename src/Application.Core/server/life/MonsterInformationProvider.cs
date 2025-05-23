@@ -21,7 +21,6 @@
 
 
 using Application.Core.Game.Life;
-using constants.inventory;
 using System.Collections.Concurrent;
 
 namespace server.life;
@@ -87,7 +86,7 @@ public class MonsterInformationProvider
                 .ToList()
                 .GroupBy(x => x.Dropperid)
                 .Select(x => new KeyValuePair<int, List<DropEntry>>(
-                    x.Key, 
+                    x.Key,
                     x.Select(y => DropEntry.MobDrop(y.Dropperid, y.Itemid, y.Chance, y.MinimumQuantity, y.MaximumQuantity, (short)y.Questid)).ToList()))
                 .ToDictionary();
         }

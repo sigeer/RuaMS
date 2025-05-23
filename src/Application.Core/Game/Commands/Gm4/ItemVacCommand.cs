@@ -1,5 +1,3 @@
-using server.maps;
-
 namespace Application.Core.Game.Commands.Gm4;
 
 public class ItemVacCommand : CommandBase

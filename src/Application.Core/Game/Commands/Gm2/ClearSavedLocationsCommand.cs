@@ -1,5 +1,3 @@
-using server.maps;
-
 namespace Application.Core.Game.Commands.Gm2;
 
 public class ClearSavedLocationsCommand : CommandBase

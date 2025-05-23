@@ -1,8 +1,6 @@
-using Application.Core.Client;
 using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.inventory;
 using server;
 
 namespace Application.Core.Game.Commands.Gm4;

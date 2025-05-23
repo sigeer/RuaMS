@@ -1,10 +1,5 @@
 using Application.Core.Game.Maps;
 using Application.Core.Gameplay;
-using Application.Core.Managers;
-using client.inventory.manipulator;
-using constants.id;
-using server.maps;
-using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
 

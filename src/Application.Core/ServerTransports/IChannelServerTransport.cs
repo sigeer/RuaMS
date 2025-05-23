@@ -6,7 +6,6 @@ using Application.Shared.Configs;
 using Application.Shared.Dto;
 using Application.Shared.MapObjects;
 using Application.Shared.Servers;
-using net.packet;
 using System.Net;
 
 namespace Application.Core.ServerTransports

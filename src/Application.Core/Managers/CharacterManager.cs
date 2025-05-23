@@ -1,26 +1,8 @@
-using Application.Core.Game.Items;
-using Application.Core.Game.Players.Models;
-using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
 using Application.Core.model;
-using Application.Core.scripting.npc;
 using AutoMapper;
-using client;
 using client.inventory;
-using client.inventory.manipulator;
-using client.keybind;
-using client.newyear;
-using client.processor.npc;
-using constants.id;
-using constants.inventory;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
-using MySql.EntityFrameworkCore.Extensions;
-using net.server;
 using server;
-using server.events;
-using server.life;
-using server.quest;
 using System.Text.RegularExpressions;
 using tools;
 

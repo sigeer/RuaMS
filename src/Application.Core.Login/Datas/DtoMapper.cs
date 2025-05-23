@@ -1,13 +1,10 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
-using Application.Core.Game.Players;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using AutoMapper;
-using net.server;
-using tools;
 
 namespace Application.Core.Login.Datas
 {

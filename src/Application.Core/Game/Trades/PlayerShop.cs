@@ -21,13 +21,10 @@
 */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Shared.MapObjects;
 using client.inventory;
 using client.inventory.manipulator;
-using net.packet;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Trades;

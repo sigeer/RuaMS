@@ -1,5 +1,3 @@
-using server.maps;
-
 namespace Application.Core.Game.Maps
 {
     public interface IMapObject

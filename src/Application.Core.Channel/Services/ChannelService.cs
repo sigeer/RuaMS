@@ -1,12 +1,11 @@
+using Application.Core.Datas;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.ServerTransports;
 using Application.Shared.Dto;
+using AutoMapper;
 using client.inventory;
-using constants.id;
-using constants.inventory;
-using net.server;
 using server;
 using static server.CashShop;
 
@@ -17,14 +16,20 @@ namespace Application.Core.Channel.Services
         readonly IChannelServerTransport _tranport;
         readonly CharacterService _characteService;
         readonly IWorldChannel _server;
+        readonly IMapper _mapper;
 
-        public ChannelService(IChannelServerTransport tranport, CharacterService characteService, IWorldChannel server)
+        public ChannelService(IChannelServerTransport tranport, CharacterService characteService, IWorldChannel server, IMapper mapper)
         {
             _tranport = tranport;
             _characteService = characteService;
             _server = server;
+            _mapper = mapper;
         }
 
+        public CharacterValueObject? GetPlayerData(string clientSession, int cid)
+        {
+            return _tranport.GetPlayerData(clientSession, cid);
+        }
         public void RemovePlayerIncomingInvites(int id)
         {
             _tranport.SendRemovePlayerIncomingInvites(id);
@@ -71,7 +76,7 @@ namespace Application.Core.Channel.Services
             }
 
             if (ItemConstants.EXPIRING_ITEMS)
-            { 
+            {
                 if (cashItem.Period == 1)
                 {
                     switch (cashItem.getItemId())
@@ -101,7 +106,5 @@ namespace Application.Core.Channel.Services
             item.setSN(cashItem.getSN());
             return item;
         }
-
-
     }
 }

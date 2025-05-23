@@ -22,15 +22,12 @@
 
 
 using Application.Core.Game.Maps;
-using client;
 using client.inventory;
 using constants.game;
-using constants.id;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using server.life;
 using server.life.positioner;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Life;

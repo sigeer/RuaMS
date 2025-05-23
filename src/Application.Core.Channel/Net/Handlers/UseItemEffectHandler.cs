@@ -22,7 +22,6 @@
 
 
 using client.inventory;
-using constants.id;
 using net.packet;
 using tools;
 

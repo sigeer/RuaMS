@@ -1,4 +1,3 @@
-using constants.id;
 using scripting.npc;
 using tools;
 

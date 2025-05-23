@@ -35,8 +35,6 @@ using client.autoban;
 using client.inventory;
 using client.status;
 using constants.game;
-using constants.id;
-using constants.inventory;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using scripting.Event;

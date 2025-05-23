@@ -11,15 +11,12 @@ using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
 using Application.Shared.Login;
-using Application.Shared.MapObjects;
 using Application.Shared.Net;
-using net.packet;
 using net.server;
 using net.server.guild;
 using server.expeditions;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using tools;
 using tools.packets;
 

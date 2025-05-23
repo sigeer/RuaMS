@@ -23,7 +23,6 @@
 
 using Application.Core.model;
 using client.inventory.manipulator;
-using constants.inventory;
 using server;
 using System.Collections;
 

@@ -20,7 +20,6 @@
 
 
 using client.inventory;
-using constants.id;
 using server;
 
 namespace client.creator.veteran;

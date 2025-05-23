@@ -1,5 +1,3 @@
-using net.server;
-
 namespace Application.Core.Game.Commands.Gm0;
 
 public class TimeCommand : CommandBase

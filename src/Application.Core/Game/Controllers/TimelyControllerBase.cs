@@ -2,7 +2,7 @@ using server;
 
 namespace Application.Core.Game.Controllers
 {
-    public abstract class TimelyControllerBase: IAsyncDisposable
+    public abstract class TimelyControllerBase : IAsyncDisposable
     {
         protected ScheduledFuture? _scheduler;
 

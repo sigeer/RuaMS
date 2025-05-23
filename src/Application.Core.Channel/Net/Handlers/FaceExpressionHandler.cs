@@ -21,8 +21,6 @@
 */
 
 
-using constants.id;
-using constants.inventory;
 using net.packet;
 
 namespace Application.Core.Channel.Net.Handlers;

@@ -22,12 +22,9 @@
 
 
 using Application.Core.Game.Skills;
-using Application.Shared.Constants;
 using Application.Utility.Configs;
 using client;
 using constants.game;
-using constants.id;
-using constants.skills;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
@@ -62,7 +59,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             }
         }
 
-        if (chr.getDojoEnergy() < 10000 
+        if (chr.getDojoEnergy() < 10000
             && (attack.skill == Beginner.BAMBOO_RAIN || attack.skill == Noblesse.BAMBOO_RAIN || attack.skill == Legend.BAMBOO_THRUST)) // PE hacking or maybe just lagging
         {
             return;
@@ -73,9 +70,9 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        chr.getMap().broadcastMessage(chr, 
-            PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display), 
-            false, 
+        chr.getMap().broadcastMessage(chr,
+            PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display),
+            false,
             true);
         int numFinisherOrbs = 0;
         var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
@@ -147,7 +144,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                     }
                 }
             }
-            else if (chr.getSkillLevel(chr.isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE)) > 0 
+            else if (chr.getSkillLevel(chr.isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE)) > 0
                 && (chr.getJob().isA(Job.MARAUDER) || chr.getJob().isA(Job.THUNDERBREAKER2)))
             {
                 for (int i = 0; i < attack.numAttacked; i++)
@@ -213,7 +210,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 }
             }
         }
-        if ((chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 || chr.getSkillLevel(SkillFactory.GetSkillTrust(Rogue.DARK_SIGHT)) > 0) 
+        if ((chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 || chr.getSkillLevel(SkillFactory.GetSkillTrust(Rogue.DARK_SIGHT)) > 0)
             && chr.getBuffedValue(BuffStat.DARKSIGHT) != null)
         {
             // && chr.getBuffSource(BuffStat.DARKSIGHT) != 9101004

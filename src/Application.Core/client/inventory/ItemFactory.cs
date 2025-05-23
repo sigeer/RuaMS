@@ -27,7 +27,7 @@ namespace client.inventory;
 /**
  * @author Flav
  */
-public class ItemFactory: EnumClass
+public class ItemFactory : EnumClass
 {
     /// <summary>
     /// 背包（已装备）
@@ -93,7 +93,7 @@ public class ItemFactory: EnumClass
             return MARRIAGE_GIFTS;
         if (value == 9)
             return DUEY;
-        throw new BusinessFatalException($"不存在的道具分类 {value}" );
+        throw new BusinessFatalException($"不存在的道具分类 {value}");
     }
 
     public int getValue()

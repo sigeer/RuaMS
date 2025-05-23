@@ -1,6 +1,3 @@
-using constants.id;
-using server.maps;
-
 namespace Application.Core.Game.Commands.Gm0;
 
 public class JoinEventCommand : CommandBase

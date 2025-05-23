@@ -1,5 +1,3 @@
-using tools;
-
 namespace Application.Core.Managers
 {
     public class RandomManager

@@ -1,8 +1,6 @@
 using Application.Core.Game.Maps;
 using Application.Core.Managers;
 using client.inventory.manipulator;
-using constants.id;
-using net.packet;
 using scripting.item;
 using server;
 using tools;
@@ -21,7 +19,7 @@ namespace Application.Core.Gameplay
             Flags = PickupCheckFlags.CoolDown | PickupCheckFlags.Owner;
         }
 
-        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup? 5 : 2, _player.Id, IsPetPickup, _petIndex);
+        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? 5 : 2, _player.Id, IsPetPickup, _petIndex);
 
         protected override void Process(MapItem mapItem)
         {
@@ -149,7 +147,7 @@ namespace Application.Core.Gameplay
             {
                 mapItem.unlockItem();
             }
-            
+
         }
 
         private bool PickupMeso(MapItem mapItem)

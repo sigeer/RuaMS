@@ -1,5 +1,4 @@
 using Application.Core.scripting.npc;
-using constants.id;
 using server;
 using server.quest;
 using System.Diagnostics;

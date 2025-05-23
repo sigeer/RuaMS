@@ -20,7 +20,6 @@
 
 
 using Application.Core.Tools;
-using client;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;

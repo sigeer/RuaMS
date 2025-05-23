@@ -22,8 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using constants.game;
-using constants.id;
-using scripting.portal;
 using tools;
 
 namespace server.maps;

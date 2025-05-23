@@ -8,7 +8,6 @@
 
 using Application.Core.Managers;
 using client.inventory;
-using constants.id;
 using net.opcodes;
 using net.packet;
 

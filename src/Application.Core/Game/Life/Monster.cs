@@ -29,14 +29,11 @@ using Application.Core.Game.Skills;
 using Application.Shared.WzEntity;
 using client;
 using client.status;
-using constants.id;
-using constants.skills;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
 using server;
 using server.life;
 using server.loot;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Life;

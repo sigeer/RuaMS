@@ -1,4 +1,3 @@
-using Application.Shared.Servers;
 using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;

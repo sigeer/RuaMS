@@ -1,7 +1,5 @@
 using client.inventory;
 using client.inventory.manipulator;
-using constants.inventory;
-using Mysqlx.Crud;
 
 namespace Application.Core.Game.Players
 {

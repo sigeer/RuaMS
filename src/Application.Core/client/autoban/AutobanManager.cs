@@ -4,7 +4,6 @@
  */
 
 using Application.Core.Managers;
-using net.server;
 
 namespace client.autoban;
 

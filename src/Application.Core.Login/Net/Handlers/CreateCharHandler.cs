@@ -23,7 +23,6 @@
 
 using Application.Core.Client;
 using Application.Core.Login.Datas;
-using Application.Core.Login.Net.Packets;
 using Application.Core.Servers;
 using client.creator.novice;
 using Microsoft.Extensions.Logging;
@@ -34,7 +33,7 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class CreateCharHandler : LoginHandlerBase
 {
-    public CreateCharHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger) 
+    public CreateCharHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
         : base(server, accountManager, logger)
     {
     }

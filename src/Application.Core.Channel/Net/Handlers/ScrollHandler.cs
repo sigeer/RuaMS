@@ -21,13 +21,8 @@
  */
 
 
-using Application.Core.Client;
 using Application.Core.Game.Skills;
 using client.inventory;
-using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
-using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
 using tools;
@@ -40,7 +35,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ScrollHandler : ChannelHandlerBase
 {
-    
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
@@ -128,8 +123,8 @@ public class ScrollHandler : ChannelHandlerBase
                 {
                     scrollSuccess = Equip.ScrollResult.CURSE;
                 }
-                else if (scrolled.getLevel() > oldLevel 
-                    || (ItemConstants.isCleanSlate(scroll.getItemId()) && scrolled.getUpgradeSlots() == oldSlots + 1) 
+                else if (scrolled.getLevel() > oldLevel
+                    || (ItemConstants.isCleanSlate(scroll.getItemId()) && scrolled.getUpgradeSlots() == oldSlots + 1)
                     || ItemConstants.isFlagModifier(scroll.getItemId(), scrolled.getFlag()))
                 {
                     scrollSuccess = Equip.ScrollResult.SUCCESS;

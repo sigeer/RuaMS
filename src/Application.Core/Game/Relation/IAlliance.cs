@@ -21,7 +21,6 @@
 */
 
 
-using net.packet;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Game.Relation

@@ -22,10 +22,6 @@
 
 
 using Application.Core.Game.Skills;
-using Application.Shared.Constants;
-using client;
-using constants.game;
-using constants.skills;
 using net.packet;
 
 namespace Application.Core.Channel.Net.Handlers;

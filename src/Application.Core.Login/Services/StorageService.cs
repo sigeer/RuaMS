@@ -1,6 +1,5 @@
 using Application.Core.Login.Datas;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {
@@ -14,7 +13,7 @@ namespace Application.Core.Login.Services
         readonly AccountManager _accountManager;
 
         protected readonly ILogger<StorageService> _logger;
-        public StorageService(DataStorage chrStorage,  ILogger<StorageService> logger, AccountManager accountManager)
+        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, AccountManager accountManager)
         {
             _dataStorage = chrStorage;
             _accountManager = accountManager;

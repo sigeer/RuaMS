@@ -21,9 +21,6 @@
 */
 
 
-using Application.Core.Client;
-using constants.inventory;
-using Microsoft.Extensions.Logging;
 using net.packet;
 using scripting.item;
 using server;

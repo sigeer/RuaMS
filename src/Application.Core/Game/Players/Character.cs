@@ -43,14 +43,8 @@ using client.inventory.manipulator;
 using client.keybind;
 using client.processor.action;
 using constants.game;
-using constants.id;
-using constants.inventory;
-using constants.skills;
-using Jint.Runtime;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
-using net.server.coordinator.world;
 using net.server.guild;
 using net.server.world;
 using scripting;
@@ -4356,7 +4350,7 @@ public partial class Player
             Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
         }
         else
-        { 
+        {
             //Auto DC and log if no GM is online
             Client.Disconnect(false, false);
         }

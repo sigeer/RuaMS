@@ -1,6 +1,5 @@
 using constants.String;
 using net.server.coordinator.matchchecker;
-using scripting.npc;
 
 namespace Application.Core.net.server.coordinator.matchchecker.listener
 {

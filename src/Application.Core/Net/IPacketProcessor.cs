@@ -1,5 +1,3 @@
-using Application.Core.Client;
-
 namespace Application.Core.Net
 {
     public interface IPacketProcessor<TClient> where TClient : IClientBase

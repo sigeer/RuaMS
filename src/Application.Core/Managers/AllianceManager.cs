@@ -1,9 +1,6 @@
 using Application.Core.Game.Invites;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
-using Microsoft.EntityFrameworkCore;
-using net.server;
-using net.server.coordinator.world;
 using net.server.guild;
 
 namespace Application.Core.Managers

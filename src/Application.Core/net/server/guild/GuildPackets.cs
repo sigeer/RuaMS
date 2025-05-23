@@ -1,5 +1,4 @@
 using Application.Core.Game.Relation;
-using Application.Core.model;
 using net.opcodes;
 using net.packet;
 using tools;

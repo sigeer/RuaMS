@@ -23,8 +23,6 @@
 */
 
 
-using Application.Core.Client;
-using Application.Core.Managers;
 using Application.Core.model;
 using client.inventory;
 using client.inventory.manipulator;
@@ -143,7 +141,7 @@ public class FredrickProcessor
         List<string> expiredCnames = expiredCids.Select(x => x.Name).ToList();
         try
         {
-            dbContext.Notes.Where(x =>  x.From == "FREDRICK" && expiredCnames.Contains(x.To)).ExecuteDelete();
+            dbContext.Notes.Where(x => x.From == "FREDRICK" && expiredCnames.Contains(x.To)).ExecuteDelete();
         }
         catch (Exception e)
         {

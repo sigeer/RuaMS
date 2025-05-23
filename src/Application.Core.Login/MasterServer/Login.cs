@@ -2,7 +2,6 @@ using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
-using Application.EF.Entities;
 using Application.Shared.Characters;
 using Application.Shared.Login;
 using Application.Utility.Configs;

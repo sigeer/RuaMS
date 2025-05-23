@@ -23,8 +23,6 @@
 
 using Application.Core.Game.Skills;
 using Application.Shared.KeyMaps;
-using client;
-using client.inventory;
 using client.keybind;
 using constants.game;
 using net.packet;

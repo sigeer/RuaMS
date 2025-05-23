@@ -32,8 +32,6 @@ using client.inventory.manipulator;
 using client.processor.npc;
 using client.processor.stat;
 using constants.game;
-using constants.id;
-using constants.inventory;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using net.packet.outs;

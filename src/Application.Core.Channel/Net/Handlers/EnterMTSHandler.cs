@@ -23,11 +23,9 @@
 
 using Application.EF;
 using Application.Utility.Configs;
-using constants.id;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
-using server.maps;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

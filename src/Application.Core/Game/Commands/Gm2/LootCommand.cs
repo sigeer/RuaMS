@@ -1,5 +1,4 @@
 using Application.Core.Game.Maps;
-using server.maps;
 
 namespace Application.Core.Game.Commands.Gm2;
 public class LootCommand : CommandBase

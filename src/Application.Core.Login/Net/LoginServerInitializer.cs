@@ -1,12 +1,9 @@
-using Application.Core.Client;
 using Application.Core.Login.Session;
 using Application.Core.Servers;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using net.netty;
-using net.server.coordinator.session;
 using Serilog;
 
 namespace Application.Core.Login.Net;

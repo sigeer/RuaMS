@@ -11,7 +11,6 @@ using Application.Utility.Compatible;
 using Application.Utility.Configs;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.inventory;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using server;

@@ -1,4 +1,3 @@
-using Application.Core.Client;
 using constants.net;
 using DotNetty.Buffers;
 using DotNetty.Handlers.Timeout;
