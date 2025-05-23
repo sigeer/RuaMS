@@ -10,6 +10,7 @@ using Application.Utility.Compatible.Atomics;
 using AutoMapper;
 using client;
 using client.inventory;
+using net.server;
 using server;
 using System;
 using System.Collections.Generic;
@@ -96,7 +97,7 @@ namespace Application.Core.Channel.Mappers
                         dest.SetPet(ctx.Mapper.Map<Pet>(rs));
                 })
                 .ReverseMap()
-                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner() + "FromItem"))
+                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
                 .ForMember(dest => dest.Itemid, source => source.MapFrom(x => x.getItemId()))
                 .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
                 .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
@@ -111,7 +112,8 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.Type, source => source.MapFrom((src, dest, destMember, context) =>
                 {
                     return context.Items.TryGetValue("Type", out var type) ? Convert.ToByte(type) : ItemFactory.INVENTORY.getValue();
-                }));
+                }))
+                .Include<Equip, ItemDto>();
 
             CreateMap<RingDto, Ring>()
                 .ConstructUsing(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName))
@@ -155,26 +157,7 @@ namespace Application.Core.Channel.Mappers
                         dest.setRingId(rs!.EquipInfo!.RingId);
                     })
                     .ReverseMap()
-
-                .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner() + "FromEquip"))
-                .ForMember(dest => dest.Itemid, source => source.MapFrom(x => x.getItemId()))
-                .ForMember(dest => dest.Quantity, source => source.MapFrom(x => x.getQuantity()))
-                .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
-                .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
-                .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
-                .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()))
-                .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
-
-
-                    .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x))
-                    .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
-                    {
-                        return context.Items.TryGetValue("InventoryType", out var invType) ? Convert.ToSByte(invType) : (sbyte)src.getInventoryType();
-                    }))
-                    .ForMember(dest => dest.Type, source => source.MapFrom((src, dest, destMember, context) =>
-                    {
-                        return context.Items.TryGetValue("Type", out var type) ? Convert.ToByte(type) : ItemFactory.INVENTORY.getValue();
-                    }));
+                    .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x));
 
             CreateMap<Equip, EquipDto>()
                 .ForMember(dest => dest.Acc, source => source.MapFrom(x => x.getAcc()))
@@ -207,9 +190,19 @@ namespace Application.Core.Channel.Mappers
                 .ReverseMap()
                 .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
                 .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.getSlots()))
-                .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId));
+                .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId))
+                .ForMember(dest => dest.Items, opt => opt.MapFrom((src, dest, destMember, context) =>
+                {
+                    context.Items["Type"] = ItemFactory.STORAGE.getValue();
+                    return context.Mapper.Map<ItemDto[]>(src.getItems());
+                }));
 
             CreateMap<SkillMacroDto, SkillMacro>().ReverseMap();
+
+            CreateMap<PlayerCoolDownValueHolder, CoolDownDto>()
+                .ForMember(dest => dest.SkillId, source => source.MapFrom(x => x.skillId))
+                .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
+                .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
         }
 
         private int[] TranslateArray(string str)

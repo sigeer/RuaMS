@@ -269,6 +269,9 @@ namespace Application.Core.Login.Datas
                     needLoadFromDB.Add(item);
             }
 
+            if (needLoadFromDB.Count == 0)
+                return list;
+
             using var dbContext = _dbContextFactory.CreateDbContext();
             var characters = dbContext.Characters.Where(x => needLoadFromDB.Contains(x.Id)).ToList();
 

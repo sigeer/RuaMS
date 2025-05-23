@@ -21,7 +21,7 @@ namespace Application.Core.Login.Datas
             CreateMap<CharacterEntity, CharacterDto>()
                 .ReverseMap();
 
-            CreateMap<AccountEntity, AccountDto>().ReverseMap();
+            CreateMap<AccountEntity, AccountDto>();
             CreateMap<MonsterbookEntity, MonsterbookDto>();
             CreateMap<Trocklocation, TrockLocationDto>();
             CreateMap<AreaInfo, AreaDto>();
@@ -36,14 +36,13 @@ namespace Application.Core.Login.Datas
                 .ForMember(dest => dest.Progress, source => source.MapFrom(x => x.Progress))
                 .IncludeMembers(source => source.QuestStatus);
 
-            CreateMap<SkillEntity, SkillDto>().ReverseMap();
+            CreateMap<SkillEntity, SkillDto>();
             CreateMap<SkillMacroEntity, SkillMacroDto>();
-            CreateMap<CooldownEntity, CoolDownDto>().ReverseMap();
+            CreateMap<CooldownEntity, CoolDownDto>();
 
             CreateMap<KeyMapEntity, KeyMapDto>();
             CreateMap<Quickslotkeymapped, QuickSlotDto>()
-                .ForMember(dest => dest.LongValue, source => source.MapFrom(x => x.Keymap))
-                .ReverseMap();
+                .ForMember(dest => dest.LongValue, source => source.MapFrom(x => x.Keymap));
 
             CreateMap<SavedLocationEntity, SavedLocationDto>();
             CreateMap<StorageEntity, StorageDto>();
@@ -71,11 +70,6 @@ namespace Application.Core.Login.Datas
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
                 .ForMember(des => des.PetInfo, source => source.MapFrom(x => x.Pet))
                 .IncludeMembers(source => source.Item);
-
-            CreateMap<PlayerCoolDownValueHolder, CoolDownDto>()
-                .ForMember(dest => dest.SkillId, source => source.MapFrom(x => x.skillId))
-                .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
-                .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
         }
     }
 }

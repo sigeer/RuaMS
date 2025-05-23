@@ -319,10 +319,10 @@ namespace Application.Core.Channel.Services
             })).ToArray();
 
             var storageDto = _mapper.Map<StorageDto>(player.Storage);
-            storageDto.Items = _mapper.Map<ItemDto[]>(player.Storage.getItems(), opt =>
-            {
-                opt.Items["Type"] = ItemFactory.STORAGE.getValue();
-            });
+            //storageDto.Items = _mapper.Map<ItemDto[]>(player.Storage.getItems(), opt =>
+            //{
+            //    opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+            //});
             #endregion
 
             return new PlayerSaveDto()

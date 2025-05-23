@@ -184,7 +184,6 @@ namespace Application.Core.Login.Datas
             dbAccount.MaplePoint = obj.CashShop.MaplePoint;
             dbAccount.NxPrepaid = obj.CashShop.NxPrepaid;
 
-
             // storage
             UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
 
