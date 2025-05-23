@@ -13,9 +13,9 @@ namespace Application.Core.Channel
 {
     public partial class WorldChannel
     {
-        public void SendLogoff(int id)
+        public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
         {
-            UpdateAccountState(id, LoginStage.LOGIN_NOTLOGGEDIN);
+            return Transport.UpdateAccountState(accId, state);
         }
         public void StashCharacterBuff(IPlayer player)
         {

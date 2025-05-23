@@ -25,7 +25,10 @@ namespace Application.Core.Channel.Services
             _server = server;
             _mapper = mapper;
         }
-
+        public void SetPlayerOnlined(int id)
+        {
+            _tranport.SetPlayerOnlined(id, _server.getId());
+        }
         public CharacterValueObject? GetPlayerData(string clientSession, int cid)
         {
             return _tranport.GetPlayerData(clientSession, cid);
@@ -35,9 +38,14 @@ namespace Application.Core.Channel.Services
             _tranport.SendRemovePlayerIncomingInvites(id);
         }
 
-        public void SaveChar(Player player)
+        public void SaveChar(Player player, bool isLogoff = false)
         {
-            _tranport.SendPlayerObject(_characteService.Deserialize(player));
+            var dto = _characteService.Deserialize(player);
+            if (isLogoff)
+            {
+                dto.Channel = 0;
+            }
+            _tranport.SendPlayerObject(dto);
         }
 
         public void SaveBuff(IPlayer player)

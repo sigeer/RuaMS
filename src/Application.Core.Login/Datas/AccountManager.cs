@@ -86,13 +86,14 @@ namespace Application.Core.Login.Datas
             dbContext.SaveChanges();
         }
 
-        public void UpdateAccountState(int accId, sbyte newState)
+        public AccountLoginStatus UpdateAccountState(int accId, sbyte newState)
         {
             var d = GetAccountLoginStatus(accId);
             d.State = newState;
             d.DateTime = DateTimeOffset.UtcNow;
 
             _dataStorage.SetAccountLoginRecord(new KeyValuePair<int, AccountLoginStatus>(accId, d));
+            return d;
         }
 
         public void CreateAccount(string loginAccount, string pwd)
@@ -102,6 +103,13 @@ namespace Application.Core.Login.Datas
             var newAccModel = new AccountEntity(loginAccount, password);
             dbContext.Accounts.Add(newAccModel);
             dbContext.SaveChanges();
+        }
+
+        public async Task SetupAccountPlayerCache(DBContext dbContext)
+        {
+            _accPlayerCache = (await dbContext.Characters.AsNoTracking().Select(x => new { Id = x.Id, AccountId = x.AccountId }).ToListAsync())
+                .GroupBy(x => x.AccountId)
+                .ToDictionary(x => x.Key, x => x.Select(y => y.Id).ToHashSet());
         }
 
         public HashSet<int> GetAccountPlayerIds(int accId)

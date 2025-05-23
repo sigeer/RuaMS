@@ -192,6 +192,5 @@ namespace Application.Core.Game.TheWorld
         /// <param name="isRaise"></param>
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
         int GetAccountCharcterCount(int accId);
-        void SendLogoff(int id);
     }
 }

@@ -1,3 +1,4 @@
+using Application.Core.Login.Datas;
 using Application.EF;
 using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +11,14 @@ namespace Application.Core.Login.Services
     {
         readonly ILogger<ServerService> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
+        readonly AccountManager _accountManager;
 
-        public ServerService(ILogger<ServerService> logger, IDbContextFactory<DBContext> dbContextFactory)
+        public ServerService(ILogger<ServerService> logger, IDbContextFactory<DBContext> dbContextFactory, AccountManager accountManager)
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
+
+            _accountManager = accountManager;
         }
 
         public async Task SetupDataBase()
@@ -25,6 +29,8 @@ namespace Application.Core.Login.Services
             await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
             await SetAllMerchantsInactive(dbContext);
             await CleanNxcodeCoupons(dbContext);
+
+            await _accountManager.SetupAccountPlayerCache(dbContext);
 
             await dbTrans.CommitAsync();
         }

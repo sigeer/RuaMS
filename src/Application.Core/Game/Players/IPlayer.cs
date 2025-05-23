@@ -34,6 +34,11 @@ namespace Application.Core.Game.Players
     public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife
     {
         public IChannelClient Client { get; }
+        /// <summary>
+        /// <para>-1 在cashshop</para>
+        /// <para>0 离线</para>
+        /// <para>&gt;0 频道号</para>
+        /// </summary>
         public int Channel { get; }
         public bool IsOnlined => Client.IsOnlined;
         public BuddyList BuddyList { get; set; }
@@ -547,7 +552,7 @@ namespace Application.Core.Game.Players
         void runFullnessSchedule(int petSlot);
         bool runTirednessSchedule();
         //void saveCharToDB();
-        void saveCharToDB(bool notAutosave = true);
+        void saveCharToDB(bool notAutosave = true, bool isLogoff = false);
         void saveGuildStatus();
         void saveLocation(string type);
         void saveLocationOnWarp();

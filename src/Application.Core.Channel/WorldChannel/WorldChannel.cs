@@ -815,11 +815,6 @@ public partial class WorldChannel : IWorldChannel
         return Transport.HasCharacteridInTransition(clientSession);
     }
 
-    public void UpdateAccountState(int accId, sbyte state)
-    {
-        Transport.UpdateAccountState(accId, state);
-    }
-
     public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
     {
         return Transport.WarpPlayer(name, channel, mapId, portal);

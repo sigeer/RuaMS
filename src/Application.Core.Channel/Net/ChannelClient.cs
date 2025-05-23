@@ -132,7 +132,7 @@ namespace Application.Core.Channel.Net
                         //getChannelServer().removePlayer(player); already being done
 
                         Character.cancelAllDebuffs();
-                        Character.saveCharToDB();
+                        Character.saveCharToDB(isLogoff: true);
 
                         Character.logOff();
                         if (YamlConfig.config.server.INSTANT_NAME_CHANGE)

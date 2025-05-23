@@ -1,11 +1,13 @@
 using Application.Core.Datas;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
+using Application.Core.Game.Players;
 using Application.EF;
 using Application.Shared.Characters;
 using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Utility.Configs;
+using Application.Utility.Exceptions;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
@@ -27,15 +29,13 @@ namespace Application.Core.Login.Datas
         readonly IMapper _mapper;
         readonly ILogger<CharacterManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly AccountManager _accManager;
         readonly DataStorage _dataStorage;
 
-        public CharacterManager(IMapper mapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, AccountManager accountManager, DataStorage chrStorage)
+        public CharacterManager(IMapper mapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, DataStorage chrStorage)
         {
             _mapper = mapper;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
-            _accManager = accountManager;
             _dataStorage = chrStorage;
         }
 
@@ -60,6 +60,8 @@ namespace Application.Core.Login.Datas
                 origin.StorageInfo = obj.StorageInfo;
                 origin.TrockLocations = obj.TrockLocations;
                 origin.CoolDowns = obj.CoolDowns;
+
+                origin.Channel = obj.Channel;
             }
 
             _dataStorage.SetCharacter(obj);
@@ -204,7 +206,7 @@ namespace Application.Core.Login.Datas
                 _charcterViewCache[characterId] = d;
             }
 
-            var accountDto = _accManager.GetAccountDto(d.Character.AccountId);
+            var accountDto = _mapper.Map<AccountDto>(dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == d.Character.AccountId));
             if (accountDto == null)
                 return null;
             // 虽然传了所有字段，但是只有部分字段可能会发生修改
@@ -304,6 +306,18 @@ namespace Application.Core.Login.Datas
             }
             return list;
 
+        }
+        internal void SetPlayerChannel(int playerId, int channel, out int accountId)
+        {
+            if (_idDataSource.TryGetValue(playerId, out var d))
+            {
+                d.Channel = channel;
+                accountId = d.Character.AccountId;
+            }
+            else
+            {
+                throw new BusinessFatalException($"未验证的玩家Id {playerId}。{nameof(_idDataSource)} 中包含了所有登录过的玩家，而设置频道的玩家必然登录过。");
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Application.Core.Client
     {
         Item GenerateCouponItem(int itemId, short quantity);
         void RemovePlayerIncomingInvites(int id);
-        void SaveChar(Player player);
+        void SaveChar(Player player, bool isLogoff = false);
         Item CashItem2Item(CashShop.CashItem cashItem);
         void SaveBuff(IPlayer player);
         PlayerBuffSaveDto GetBuffFromStorage(IPlayer player);
@@ -20,5 +20,6 @@ namespace Application.Core.Client
         /// <param name="cid"></param>
         /// <returns></returns>
         CharacterValueObject? GetPlayerData(string clientSession, int cid);
+        void SetPlayerOnlined(int id);
     }
 }

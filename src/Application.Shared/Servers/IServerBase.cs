@@ -1,3 +1,4 @@
+using Application.Shared.Login;
 using Application.Shared.Net;
 using System.Net.Sockets;
 
@@ -30,7 +31,7 @@ namespace Application.Shared.Servers
         void ForceUpdateServerTime();
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
-        void UpdateAccountState(int accId, sbyte state);
+        AccountLoginStatus UpdateAccountState(int accId, sbyte state);
 
         void BroadcastWorldGMPacket(Packet packet);
         void BroadcastWorldMessage(Packet p);

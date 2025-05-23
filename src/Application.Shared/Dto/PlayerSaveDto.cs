@@ -5,6 +5,7 @@ namespace Application.Shared.Dto
 {
     public class PlayerSaveDto
     {
+        public int Channel { get; set; }
         public CharacterDto Character { get; set; }
         public ItemDto[] InventoryItems { get; set; } = [];
         /// <summary>

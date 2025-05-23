@@ -373,9 +373,9 @@ namespace Application.Core.Login.ServerTransports
 
         }
 
-        public void UpdateAccountState(int accId, sbyte state)
+        public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
         {
-            _server.UpdateAccountState(accId, state);
+            return _server.UpdateAccountState(accId, state);
         }
 
         public void SetCharacteridInTransition(string v, int cid)
@@ -499,6 +499,11 @@ namespace Application.Core.Login.ServerTransports
         public PlayerBuffSaveDto GetBuffObject(int id)
         {
             return _server.GetBuff(id);
+        }
+
+        public void SetPlayerOnlined(int id, int v)
+        {
+            _loginService.SetPlayerLogedIn(id, v);
         }
     }
 }

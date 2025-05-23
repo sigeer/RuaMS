@@ -108,8 +108,7 @@ namespace Application.Core.Login.Net
                 _sessionCoordinator.updateOnlineClient(this);
             }
 
-            CurrentServer.UpdateAccountState(AccountEntity.Id, newState);
-            AccountLoginStatus = CurrentServer.GetAccountLoginStatus(AccountEntity.Id);
+            AccountLoginStatus = CurrentServer.UpdateAccountState(AccountEntity.Id, newState);
 
             if (newState == LoginStage.LOGIN_NOTLOGGEDIN)
             {

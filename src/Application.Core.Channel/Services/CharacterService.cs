@@ -323,6 +323,7 @@ namespace Application.Core.Channel.Services
 
             return new PlayerSaveDto()
             {
+                Channel = player.Channel,
                 Character = playerDto,
                 Areas = player.AreaInfo.Select(x => new AreaDto() { Area = x.Key, Info = x.Value }).ToArray(),
                 MonsterBooks = player.Monsterbook.ToDto(),

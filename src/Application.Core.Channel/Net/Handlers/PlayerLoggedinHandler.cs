@@ -332,6 +332,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             {
                 player.setLoginTime(DateTimeOffset.UtcNow);
             }
+            c.CurrentServer.Service.SetPlayerOnlined(player.Id);
         }
         catch (Exception e)
         {

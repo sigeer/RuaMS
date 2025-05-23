@@ -26,9 +26,9 @@ namespace Application.Core.Login
             return accountManager.GetAccountIdByName(name);
         }
 
-        public void UpdateAccountState(int accId, sbyte newState)
+        public AccountLoginStatus UpdateAccountState(int accId, sbyte newState)
         {
-            accountManager.UpdateAccountState(accId, newState);
+            return accountManager.UpdateAccountState(accId, newState);
         }
 
         public List<IPlayer> LoadAccountCharactersView(int id)

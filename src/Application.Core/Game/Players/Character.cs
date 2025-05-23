@@ -5426,7 +5426,7 @@ public partial class Player
     public void logOff()
     {
         RemoveWorldWatcher();
-        Client.CurrentServer.SendLogoff(AccountId);
+        Client.CurrentServer.Transport.SendAccountLogout(AccountId);
         setClient(new OfflineClient());
     }
 

@@ -4,6 +4,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
+using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Servers;
 using System.Net;
@@ -94,7 +95,7 @@ namespace Application.Core.ServerTransports
         void SendAccountLogout(int accountId);
         IPEndPoint GetChannelEndPoint(int channel);
         void NotifyPartner(int id);
-        void UpdateAccountState(int accId, sbyte state);
+        AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
@@ -108,6 +109,12 @@ namespace Application.Core.ServerTransports
         void SendRemovePlayerIncomingInvites(int id);
         void SendBuffObject(int v, PlayerBuffSaveDto playerBuffSaveDto);
         PlayerBuffSaveDto GetBuffObject(int id);
+        /// <summary>
+        /// 设置玩家在线
+        /// </summary>
+        /// <param name="id">玩家id</param>
+        /// <param name="v">频道号</param>
+        void SetPlayerOnlined(int id, int v);
 
         #endregion
     }

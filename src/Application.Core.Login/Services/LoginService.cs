@@ -1,10 +1,12 @@
 using Application.Core.Datas;
+using Application.Core.Game.Players;
 using Application.Core.Login.Datas;
 using Application.Core.Servers;
 using Application.Shared.Characters;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
+using System.Threading.Channels;
 
 namespace Application.Core.Login.Services
 {
@@ -47,8 +49,13 @@ namespace Application.Core.Login.Services
 
             characterObj.LoginInfo = new LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
 
-            _accManager.UpdateAccountState(characterObj.Account.Id, LoginStage.LOGIN_LOGGEDIN);
             return characterObj;
+        }
+
+        public void SetPlayerLogedIn(int playerId, int channel)
+        {
+            _characterManager.SetPlayerChannel(playerId, channel, out var accId);
+            _accManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
         }
     }
 }

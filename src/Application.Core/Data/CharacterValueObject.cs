@@ -51,6 +51,10 @@ namespace Application.Core.Datas
         /// 仅在登录时返回的额外字段，不参与保存
         /// </summary>
         public LoginInfo LoginInfo { get; set; } = null!;
+        /// <summary>
+        /// 仅在MasterServer使用
+        /// </summary>
+        public int Channel { get; set; }
     }
 
 }
