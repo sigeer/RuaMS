@@ -73,18 +73,12 @@ namespace Application.Host.Services
 
         public async Task<bool> ToggleWorldServerState(WorldServerState data)
         {
-            return (await _dbContext.WorldConfigs.Where(x => x.Id == data.Id).ExecuteUpdateAsync(x => x.SetProperty(y => y.Enable, data.Enable))) > 0;
+            return await Task.FromResult(true);
         }
 
         public async Task<bool> UpdateConfig(WorldServerConfig data)
         {
-            var dbModel = await _dbContext.WorldConfigs.FirstOrDefaultAsync(x => x.Id == data.Id);
-            if (dbModel == null)
-                return false;
-
-            dbModel = _mapper.Map(data, dbModel);
-            await _dbContext.SaveChangesAsync();
-            return true;
+            return await Task.FromResult(true);
         }
 
         public bool Apply()

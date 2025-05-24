@@ -157,9 +157,8 @@ namespace Application.Core.Login
 
         public async Task StartServer()
         {
-            await Server.getInstance().Start();
-
             await _serverService.SetupDataBase();
+            await Server.getInstance().Start();
 
             _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
             await NettyServer.Start();
