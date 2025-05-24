@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Managers;
-using net.server;
 using tools;
 
 namespace client.autoban;
@@ -92,11 +91,11 @@ public class AutobanFactory : EnumClass
     {
         if (YamlConfig.config.server.USE_AUTOBAN)
         {
-            if (chr != null && isIgnored(chr.getId()))
+            if (chr == null || isIgnored(chr.getId()))
             {
                 return;
             }
-            Server.getInstance().broadcastGMMessage((chr != null ? chr.getWorld() : 0), 
+            chr.Client.CurrentServer.BroadcastWorldGMPacket(
                 PacketCreator.sendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason));
         }
         if (YamlConfig.config.server.USE_AUTOBAN_LOG)

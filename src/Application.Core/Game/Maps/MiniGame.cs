@@ -21,9 +21,6 @@
 */
 
 
-using net.packet;
-using net.server;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps;
@@ -336,7 +333,7 @@ public class MiniGame : AbstractMapObject
 
         owner.setMiniGamePoints(visitor, 3, isOmok());
 
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = owner.Client.CurrentServer.getCurrentTime();
         if (nextavailabletie <= timeNow)
         {
             visitorscore += 10;
@@ -539,24 +536,24 @@ public class MiniGame : AbstractMapObject
         broadcastToVisitor(packet);
     }
 
-    public void chat(IClient c, string chat)
+    public void chat(IChannelClient c, string chat)
     {
         broadcast(PacketCreator.getPlayerShopChat(c.OnlinedCharacter, chat, isOwner(c.OnlinedCharacter)));
     }
 
-    public void SendGameInfo(IClient c)
+    public void SendGameInfo(IChannelClient c)
     {
         if (GameType == MiniGameType.OMOK)
             sendOmok(c, piecetype);
         if (GameType == MiniGameType.MATCH_CARD)
             sendMatchCard(c, piecetype);
     }
-    public void sendOmok(IClient c, int type)
+    public void sendOmok(IChannelClient c, int type)
     {
         c.sendPacket(PacketCreator.getMiniGame(c, this, isOwner(c.OnlinedCharacter), type));
     }
 
-    public void sendMatchCard(IClient c, int type)
+    public void sendMatchCard(IChannelClient c, int type)
     {
         c.sendPacket(PacketCreator.getMatchCard(c, this, isOwner(c.OnlinedCharacter), type));
     }

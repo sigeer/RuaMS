@@ -1,5 +1,3 @@
-using constants.game;
-using constants.id;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -176,7 +174,7 @@ public class MusicCommand : CommandBase
         return songList;
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
 
         var player = c.OnlinedCharacter;

@@ -1,7 +1,5 @@
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Items;
-using Application.Core.Game.Maps;
-using Application.Core.Game.Maps.Specials;
 using AutoMapper;
 using System.Text;
 
@@ -15,7 +13,6 @@ namespace Application.Core
             cfg.AddProfile<CharacterMapper>();
             cfg.AddProfile<AllianceMapper>();
             cfg.AddProfile<ItemMapper>();
-            cfg.AddProfile<AccountMapper>();
         }).CreateMapper();
 
         public static Encoding Encoding { get; set; } = null!;

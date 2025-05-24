@@ -417,12 +417,12 @@ public class Quest
 
         if (timeLimit > 0)
         {
-            newStatus.setExpirationTime(DateTimeOffset.Now.AddSeconds(timeLimit).ToUnixTimeMilliseconds());
+            newStatus.setExpirationTime(DateTimeOffset.UtcNow.AddSeconds(timeLimit).ToUnixTimeMilliseconds());
             chr.questTimeLimit(this, timeLimit);
         }
         if (timeLimit2 > 0)
         {
-            newStatus.setExpirationTime(DateTimeOffset.Now.AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
+            newStatus.setExpirationTime(DateTimeOffset.UtcNow.AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
             chr.questTimeLimit2(this, newStatus.getExpirationTime());
         }
 
@@ -441,7 +441,7 @@ public class Quest
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.COMPLETED, npc);
         newStatus.setForfeited(chr.getQuest(this).getForfeited());
         newStatus.setCompleted(chr.getQuest(this).getCompleted());
-        newStatus.setCompletionTime(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        newStatus.setCompletionTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         chr.updateQuestStatus(newStatus);
 
         chr.sendPacket(PacketCreator.showSpecialEffect(9)); // Quest completion

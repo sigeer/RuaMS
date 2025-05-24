@@ -22,7 +22,6 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using net.server;
-using server.maps;
 using tools;
 
 namespace server.life.positioner;

@@ -1,8 +1,6 @@
-﻿using Application.Core.Game.Maps;
+using Application.Core.Game.Maps;
 using Application.Core.Managers;
 using client.inventory.manipulator;
-using constants.id;
-using net.packet;
 using scripting.item;
 using server;
 using tools;
@@ -21,7 +19,7 @@ namespace Application.Core.Gameplay
             Flags = PickupCheckFlags.CoolDown | PickupCheckFlags.Owner;
         }
 
-        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup? 5 : 2, _player.Id, IsPetPickup, _petIndex);
+        protected virtual Packet GetPickupPacket(MapItem mapItem) => PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? 5 : 2, _player.Id, IsPetPickup, _petIndex);
 
         protected override void Process(MapItem mapItem)
         {
@@ -75,7 +73,7 @@ namespace Application.Core.Gameplay
             }
 
             // 掉落物捡取时间限制
-            if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (DateTimeOffset.Now.ToUnixTimeMilliseconds() - mapItem.getDropTime() < 400))
+            if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - mapItem.getDropTime() < 400))
             {
                 _player.sendPacket(PacketCreator.enableActions());
                 return false;
@@ -149,7 +147,7 @@ namespace Application.Core.Gameplay
             {
                 mapItem.unlockItem();
             }
-            
+
         }
 
         private bool PickupMeso(MapItem mapItem)

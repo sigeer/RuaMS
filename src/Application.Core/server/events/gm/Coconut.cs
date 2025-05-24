@@ -24,7 +24,6 @@
 
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using constants.id;
 using tools;
 
 namespace server.events.gm;

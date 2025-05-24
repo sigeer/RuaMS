@@ -1,7 +1,5 @@
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
-using constants.id;
-using net.server;
 using server;
 
 namespace Application.Core.Gameplay.ChannelEvents
@@ -241,7 +239,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 Monitor.Exit(lockObj);
             }
 
-            dojoFinishTime[slot] = Server.getInstance().getCurrentTime() + clockTime;
+            dojoFinishTime[slot] = this.Channel.getCurrentTime() + clockTime;
         }
 
         public void DismissDojoSchedule(int dojoMapId, ITeam party)

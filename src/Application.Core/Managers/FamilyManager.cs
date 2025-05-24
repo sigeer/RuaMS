@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.TheWorld;
+using Application.Core.Game.TheWorld;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Managers
@@ -8,7 +8,7 @@ namespace Application.Core.Managers
         static readonly ILogger log = LogFactory.GetLogger(LogType.Family);
         public static void resetEntitlementUsage(IWorld world)
         {
-            var resetTime = DateTimeOffset.Now.AddMinutes(1).ToUnixTimeMilliseconds();
+            var resetTime = DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeMilliseconds();
             try
             {
                 using var dbContext = new DBContext();

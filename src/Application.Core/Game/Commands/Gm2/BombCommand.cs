@@ -1,5 +1,3 @@
-﻿using constants.id;
-using net.server;
 using server.life;
 using tools;
 
@@ -12,7 +10,7 @@ public class BombCommand : CommandBase
         Description = "Bomb a player, dealing damage.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length > 0)
@@ -21,7 +19,7 @@ public class BombCommand : CommandBase
             if (victim != null && victim.IsOnlined)
             {
                 victim.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(MobId.ARPQ_BOMB), victim.getPosition());
-                Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(5, player.getName() + " used !bomb on " + victim.getName()));
+                c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, player.getName() + " used !bomb on " + victim.getName()));
             }
             else
             {

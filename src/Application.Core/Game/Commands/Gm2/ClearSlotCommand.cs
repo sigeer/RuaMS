@@ -1,4 +1,3 @@
-﻿using client.inventory;
 using client.inventory.manipulator;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -10,7 +9,7 @@ public class ClearSlotCommand : CommandBase
         Description = "Clear all items in an inventory tab.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -56,7 +55,7 @@ public class ClearSlotCommand : CommandBase
         }
     }
 
-    private void RemovePlayerSlot(IClient c, InventoryType type)
+    private void RemovePlayerSlot(IChannelClient c, InventoryType type)
     {
         for (int i = 0; i < 101; i++)
         {

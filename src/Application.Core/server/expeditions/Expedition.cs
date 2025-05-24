@@ -26,9 +26,6 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
-using constants.id;
-using net.packet;
-using net.server;
 using System.Collections.Concurrent;
 using tools;
 
@@ -124,7 +121,7 @@ public class Expedition
     private void scheduleRegistrationEnd()
     {
         Expedition exped = this;
-        startTime = DateTimeOffset.Now.AddMinutes(type.getRegistrationMinutes());
+        startTime = DateTimeOffset.UtcNow.AddMinutes(type.getRegistrationMinutes());
 
         schedule = TimerManager.getInstance().schedule(() =>
         {
@@ -158,7 +155,7 @@ public class Expedition
     private void log()
     {
         string gmMessage = type + " Expedition with leader " + leader.getName() + " finished after " + TimeUtils.GetTimeString(startTime);
-        Server.getInstance().broadcastGMMessage(getLeader().getWorld(), PacketCreator.serverNotice(6, gmMessage));
+        getLeader().Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, gmMessage));
 
         string log = type + " EXPEDITION\r\n";
         log += TimeUtils.GetTimeString(startTime) + "\r\n";
@@ -192,8 +189,8 @@ public class Expedition
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
         }
-        startTime = DateTimeOffset.Now;
-        startMap.ChannelServer.Transport.BroadcastGMMessage(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
+        startTime = DateTimeOffset.UtcNow;
+        startMap.ChannelServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName()));
     }
 
     public string addMember(IPlayer player)
@@ -218,7 +215,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.Now).Seconds));
+        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.UtcNow).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -242,7 +239,7 @@ public class Expedition
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.Now).Seconds));
+        player.sendPacket(PacketCreator.getClock((startTime - DateTimeOffset.UtcNow).Seconds));
         if (!silent)
         {
             broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
@@ -319,7 +316,7 @@ public class Expedition
         {
             if (mob.getId() == expeditionBoss)
             {
-                bossLogs.Add(">" + mob.getName() + " was killed after " + TimeUtils.GetTimeString(startTime) + " - " + DateTimeOffset.Now.ToString("HH:mm:ss") + "\r\n");
+                bossLogs.Add(">" + mob.getName() + " was killed after " + TimeUtils.GetTimeString(startTime) + " - " + DateTimeOffset.UtcNow.ToString("HH:mm:ss") + "\r\n");
                 return;
             }
         }

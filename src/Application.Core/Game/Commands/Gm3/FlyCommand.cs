@@ -1,4 +1,4 @@
-﻿
+
 using net.server;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -9,7 +9,7 @@ public class FlyCommand : CommandBase
         Description = "Enable/disable fly feature.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     { // fly option will become available for any character of that account
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -18,7 +18,7 @@ public class FlyCommand : CommandBase
             return;
         }
 
-        int accid = c.getAccID();
+        int accid = c.AccountEntity!.Id;
         Server srv = Server.getInstance();
         string sendStr = "";
         if (paramsValue[0].Equals("on", StringComparison.OrdinalIgnoreCase))
@@ -29,7 +29,7 @@ public class FlyCommand : CommandBase
                 sendStr += " Re-login to take effect.";
             }
 
-            srv.changeFly(c.getAccID(), true);
+            srv.changeFly(accid, true);
         }
         else
         {
@@ -39,7 +39,7 @@ public class FlyCommand : CommandBase
                 sendStr += " Re-login to take effect.";
             }
 
-            srv.changeFly(c.getAccID(), false);
+            srv.changeFly(accid, false);
         }
 
         player.dropMessage(6, sendStr);

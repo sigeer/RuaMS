@@ -1,4 +1,3 @@
-using net.server;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -10,7 +9,7 @@ public class KillCommand : CommandBase
         Description = "Kill a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -19,11 +18,11 @@ public class KillCommand : CommandBase
             return;
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = c.CurrentServer.getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             victim.KilledBy(player);
-            Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(5, player.getName() + " used !kill on " + victim.getName()));
+            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, player.getName() + " used !kill on " + victim.getName()));
         }
         else
         {

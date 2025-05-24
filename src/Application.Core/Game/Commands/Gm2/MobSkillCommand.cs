@@ -8,7 +8,7 @@ public class MobSkillCommand : CommandBase
         Description = "Apply a mob skill to all mobs on the map. Args: <mob skill id> <skill level>";
     }
 
-    public override void Execute(IClient client, string[] paramsValue)
+    public override void Execute(IChannelClient client, string[] paramsValue)
     {
         if (paramsValue.Length < 2)
         {

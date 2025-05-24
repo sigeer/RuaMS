@@ -1,4 +1,3 @@
-﻿using constants.id;
 using server;
 using server.life;
 
@@ -11,7 +10,7 @@ public class WhoDropsCommand : CommandBase
         Description = "Show what drops an item.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

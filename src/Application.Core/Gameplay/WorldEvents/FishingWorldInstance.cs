@@ -6,7 +6,7 @@ namespace Application.Core.Gameplay.WorldEvents
 {
     public class FishingWorldInstance
     {
-        private ConcurrentDictionary<IPlayer, int> fishingAttempters = new ();
+        private ConcurrentDictionary<IPlayer, int> fishingAttempters = new();
 
         public FishingWorldInstance(IWorld worldServer)
         {

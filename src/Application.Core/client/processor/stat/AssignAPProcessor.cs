@@ -26,7 +26,6 @@
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
-using constants.skills;
 using net.packet;
 using tools;
 
@@ -39,7 +38,7 @@ namespace client.processor.stat;
 public class AssignAPProcessor
 {
 
-    public static void APAutoAssignAction(InPacket inPacket, IClient c)
+    public static void APAutoAssignAction(InPacket inPacket, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (chr.getRemainingAp() < 1)
@@ -427,7 +426,7 @@ public class AssignAPProcessor
                 {
                     AutobanFactory.PACKET_EDIT.alert(chr, "Didn't send full packet for Auto Assign.");
 
-                    c.disconnect(true, false);
+                    c.Disconnect(true, false);
                     return;
                 }
 
@@ -515,7 +514,7 @@ public class AssignAPProcessor
         return Stat.STR;
     }
 
-    public static bool APResetAction(IClient c, int APFrom, int APTo)
+    public static bool APResetAction(IChannelClient c, int APFrom, int APTo)
     {
         c.lockClient();
         try
@@ -659,7 +658,7 @@ public class AssignAPProcessor
         }
     }
 
-    public static void APAssignAction(IClient c, int num)
+    public static void APAssignAction(IChannelClient c, int num)
     {
         c.lockClient();
         try

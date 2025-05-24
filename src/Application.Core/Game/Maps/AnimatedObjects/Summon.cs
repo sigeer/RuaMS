@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Skills;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps.AnimatedObjects;
@@ -51,12 +50,12 @@ public class Summon : AbstractAnimatedMapObject
         setPosition(pos);
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.spawnSummon(this, false));
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removeSummon(this, true));
     }

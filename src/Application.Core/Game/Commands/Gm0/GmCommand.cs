@@ -1,5 +1,4 @@
-﻿using Application.Core.Managers;
-using net.server;
+using Application.Core.Managers;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm0;
@@ -19,7 +18,7 @@ public class GmCommand : CommandBase
                 "Do not ask if you can receive help, just state your issue.",
                 "Do not say 'I have a bug to report', just state it.",
         };
-    public override void Execute(IClient c, string[] paramValues)
+    public override void Execute(IChannelClient c, string[] paramValues)
     {
         var player = c.OnlinedCharacter;
         if (paramValues.Length < 1 || paramValues[0].Length < 3)
@@ -28,8 +27,8 @@ public class GmCommand : CommandBase
             return;
         }
         string message = player.getLastCommandMessage();
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[GM Message]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(1, message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[GM Message]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(1, message));
         log.Information("{CharacterName}: {Message}", CharacterManager.makeMapleReadable(player.getName()), message);
         player.dropMessage(5, "Your message '" + message + "' was sent to GMs.");
         player.dropMessage(5, tips[Randomizer.nextInt(tips.Length)]);

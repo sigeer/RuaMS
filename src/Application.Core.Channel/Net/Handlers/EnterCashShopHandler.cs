@@ -1,0 +1,100 @@
+/*
+	This file is part of the OdinMS Maple Story NewServer
+    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
+                       Matthias Butz <matze@odinms.de>
+                       Jan Christian Meyer <vimes@odinms.de>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License version 3
+    as published by the Free Software Foundation. You may not use, modify
+    or distribute this program under any other version of the
+    GNU Affero General Public License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+
+using Microsoft.Extensions.Logging;
+using net.packet;
+using tools;
+
+namespace Application.Core.Channel.Net.Handlers;
+
+/**
+ * @author Flav
+ */
+public class EnterCashShopHandler : ChannelHandlerBase
+{
+    readonly ILogger<EnterCashShopHandler> _logger;
+
+    public EnterCashShopHandler(ILogger<EnterCashShopHandler> logger)
+    {
+        _logger = logger;
+    }
+
+    public override void HandlePacket(InPacket p, IChannelClient c)
+    {
+        try
+        {
+            var mc = c.OnlinedCharacter;
+
+            if (mc.cannotEnterCashShop())
+            {
+                c.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            if (mc.getEventInstance() != null)
+            {
+                c.sendPacket(PacketCreator.serverNotice(5, "Entering Cash Shop or MTS are disabled when registered on an event."));
+                c.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            if (MiniDungeonInfo.isDungeonMap(mc.getMapId()))
+            {
+                c.sendPacket(PacketCreator.serverNotice(5, "Changing channels or entering Cash Shop or MTS are disabled when inside a Mini-Dungeon."));
+                c.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            if (mc.getCashShop().isOpened())
+            {
+                return;
+            }
+
+            mc.closePlayerInteractions();
+            mc.closePartySearchInteractions();
+
+            mc.unregisterChairBuff();
+            c.CurrentServer.StashCharacterBuff(mc);
+            mc.setAwayFromChannelWorld();
+            mc.notifyMapTransferToPartner(-1);
+            mc.removeIncomingInvites();
+
+            mc.StopPlayerTask();
+
+            c.sendPacket(PacketCreator.openCashShop(c, false));
+            c.sendPacket(PacketCreator.showCashInventory(c));
+            c.sendPacket(PacketCreator.showGifts(mc.getCashShop().loadGifts()));
+            c.sendPacket(PacketCreator.showWishList(mc, false));
+            c.sendPacket(PacketCreator.showCash(mc));
+
+            c.CurrentServer.removePlayer(mc);
+            mc.getMap().removePlayer(mc);
+            mc.getCashShop().open(true);
+            mc.saveCharToDB();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.ToString());
+        }
+    }
+}

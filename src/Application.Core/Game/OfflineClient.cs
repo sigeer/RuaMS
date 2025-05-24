@@ -1,57 +1,59 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
-using DotNetty.Handlers.Timeout;
+using Application.Shared.Characters;
+using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
-using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server.coordinator.session;
 using scripting;
 using scripting.Event;
 using scripting.npc;
-using scripting.quest;
-using static Mysqlx.Notice.Warning.Types;
-using System.Reflection;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
 
 namespace Application.Core.Game
 {
-    public class OfflineClient : IClient
+    public class OfflineClient : IChannelClient
     {
-        public int World { get; set; } = -1;
-        public int Channel { get; set; } = -1;
-        public string ClientInfo => $"OfflineClient";
-        public IChannel NettyChannel { get; private set; } = null!;
-        public IPlayer? Character => null;
-        public int AccountId { get; set; }
-        public string AccountName { get; set; }
-        public string Pic { get; set; }
-        public string Pin { get; set; }
-        public sbyte Slots { get; set; }
-        public int GmLevel { get; set; }
-        public int Gender { get; set; }
-        public int Language { get; set; }
-        public AccountEntity? AccountInfo { get; set; }
+        public IWorldChannel CurrentServer => throw new BusinessCharacterOfflineException();
 
-        public NPCConversationManager? NPCConversationManager { get ; set; }
+        public int Channel => throw new BusinessCharacterOfflineException();
 
-        public IServerBase<IServerTransport> CurrentServer => throw new BusinessCharacterOfflineException();
+        public int ActualChannel => throw new BusinessCharacterOfflineException();
 
-        public void LoadAccountInfo(AccountEntity? dbModel)
-        {
-            AccountInfo = dbModel;
-        }
+        public IPlayer? Character => throw new BusinessCharacterOfflineException();
 
-        public bool acceptToS()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+        public IPlayer OnlinedCharacter => throw new BusinessCharacterOfflineException();
 
-        public void addVotePoints(int points)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+        public bool IsServerTransition => throw new BusinessCharacterOfflineException();
+
+        public NPCConversationManager? NPCConversationManager { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
+        public EngineStorage ScriptEngines { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
+
+        public bool IsOnlined => false;
+
+        public bool IsActive => throw new BusinessCharacterOfflineException();
+
+
+        public long SessionId => throw new BusinessCharacterOfflineException();
+
+        public IChannel NettyChannel => throw new BusinessCharacterOfflineException();
+
+        public Hwid? Hwid { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
+
+        public string RemoteAddress => throw new BusinessCharacterOfflineException();
+
+        public DateTimeOffset LastPacket => throw new BusinessCharacterOfflineException();
+
+        public int AccountId => throw new BusinessCharacterOfflineException();
+
+        public string AccountName => throw new BusinessCharacterOfflineException();
+
+        public int AccountGMLevel => throw new BusinessCharacterOfflineException();
+
+        public AccountDto AccountEntity { get; set; }
+
+        public IChannelService Service => throw new BusinessCharacterOfflineException();
+
+        public IServerBase<IServerTransport> CurrentServerBase => throw new NotImplementedException();
 
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
@@ -73,22 +75,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void banHWID()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void banMacs()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool canBypassPic()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool canBypassPin()
+        public void BanMacs()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -98,42 +85,22 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool canGainCharacterSlot()
+        public bool CanGainCharacterSlot()
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool canRequestCharlist()
+        public void ChangeChannel(int channel)
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public void changeChannel(int channel)
+        public bool CheckBirthday(DateTime date)
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool checkBirthDate(DateTime date)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void checkChar(int accid)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void checkIfIdle(IdleStateEvent evt)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool checkPic(string other)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool checkPin(string other)
+        public bool CheckBirthday(int date)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -143,22 +110,17 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void closeSession()
+        public void CloseSocket()
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool deleteCharacter(int cid, int senderAccId)
+        public void Disconnect(bool isShutdown, bool fromCashShop = false)
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public void disconnect(bool shutdown, bool cashshop)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void disconnectSession()
+        public void Dispose()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -168,22 +130,12 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
+        public void ForceDisconnect()
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public int finishLogin()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void forceDisconnect()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool gainCharacterSlot()
+        public bool GainCharacterSlot()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -193,27 +145,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public int getAccID()
-        {
-            return AccountId;
-        }
-
-        public string getAccountName()
-        {
-            return AccountName;
-        }
-
-        public short getAvailableCharacterSlots()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public short getAvailableCharacterWorldSlots()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public short getAvailableCharacterWorldSlots(int world)
+        public int GetAvailableCharacterSlots()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -228,122 +160,12 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public IWorldChannel getChannelServer(byte channel)
+        public EventManager? getEventManager(string @event)
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public short getCharacterSlots()
-        {
-            return Slots;
-        }
-
-        public NPCConversationManager? getCM()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public EventManager? getEventManager(string evt)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public sbyte getGender()
-        {
-            return (sbyte)Gender;
-        }
-
-        public int getGMLevel()
-        {
-            return GmLevel;
-        }
-
-        public sbyte getGReason()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public Hwid getHwid()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public int getLanguage()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public long getLastPacket()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public int getLoginState()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public HashSet<string> getMacs()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public string getPic()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public string getPin()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public IPlayer? getPlayer()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public QuestActionManager? getQM()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public string getRemoteAddress()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public IEngine? getScriptEngine(string name)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public long getSessionId()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public DateTimeOffset? getTempBanCalendar()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public DateTimeOffset? getTempBanCalendarFromDB()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public int getVisibleWorlds()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public int getVotePoints()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public int getWorld()
+        public string GetSessionRemoteHost()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -353,57 +175,17 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool hasBannedHWID()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool hasBannedIP()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool hasBannedMac()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool hasBeenBanned()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool isInTransition()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool isLoggedIn()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public List<string> loadCharacterNames(int worldId)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public List<IPlayer> loadCharacters(int serverId)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
         public void lockClient()
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public int login(string login, string pwd, Hwid nibbleHwid)
+        public void OpenNpc(int npcid, string? script = null)
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public void pongReceived()
+        public void PongReceived()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -418,22 +200,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void removeScriptEngine(string name)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void requestedServerlist(int worlds)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
         public void resetCsCoupon()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void sendCharList(int server)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -443,27 +210,12 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void setAccID(int id)
+        public void SetAccount(AccountDto accountEntity)
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public void setAccountName(string a)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setChannel(int channel)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setCharacterOnSessionTransitionState(int cid)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setCharacterSlots(sbyte slots)
+        public void SetCharacterOnSessionTransitionState(int cid)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -473,47 +225,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void setGender(sbyte m)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setGMLevel(int level)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setHwid(Hwid? hwid)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setLanguage(int lingua)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setPic(string pic)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setPin(string pin)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setPlayer(IPlayer? player)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setScriptEngine(string name, IEngine e)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void setWorld(int world)
+        public void SetPlayer(IPlayer? player)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -523,79 +235,14 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool tryacquireEncoder()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
         public void unlockClient()
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public void unlockEncoder()
+        public void UpdateAccountChracterByAdd(int id)
         {
             throw new BusinessCharacterOfflineException();
-        }
-
-        public void updateHwid(Hwid hwid)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void updateLastPacket()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void updateLoginState(int newState)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void updateMacs(string macData)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void UserEventTriggered(IChannelHandlerContext ctx, object evt)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void useVotePoints(int points)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public override string ToString()
-        {
-            return ClientInfo;
-        }
-
-        public void OpenNpc(int npcid, string? script = null)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public bool CheckBirthday(int dateInt)
-        {
-            throw new BusinessCharacterOfflineException();
-        }
-
-        public void SetAccountInfoFromClient(IClient? client)
-        {
-            if (client == null)
-                return;
-
-            AccountId = client.getAccID();
-            AccountName = client.getAccountName();
-            GmLevel = client.getGMLevel();
-            Pin = client.getPin();
-            Pic = client.getPic();
-            Gender = client.getGender();
-            Slots = (sbyte)client.getCharacterSlots();
-            Language = client.getLanguage();
         }
     }
 }

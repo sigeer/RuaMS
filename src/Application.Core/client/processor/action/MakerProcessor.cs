@@ -19,12 +19,9 @@
 */
 
 
-using client;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
-using constants.id;
-using constants.inventory;
 using net.packet;
 using server;
 using tools;
@@ -39,7 +36,7 @@ public class MakerProcessor
     private static ILogger log = LogFactory.GetLogger(LogType.Maker);
     private static ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-    public static void makerAction(InPacket p, IClient c)
+    public static void makerAction(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
         {
@@ -376,7 +373,7 @@ public class MakerProcessor
         return chr.getSkillLevel((chr.getJob().getId() / 1000) * 10000000 + 1007);
     }
 
-    private static short getCreateStatus(IClient c, MakerItemCreateEntry recipe)
+    private static short getCreateStatus(IChannelClient c, MakerItemCreateEntry recipe)
     {
         if (recipe.isInvalid())
         {
@@ -428,7 +425,7 @@ public class MakerProcessor
         return 0;
     }
 
-    private static bool hasItems(IClient c, MakerItemCreateEntry recipe)
+    private static bool hasItems(IChannelClient c, MakerItemCreateEntry recipe)
     {
         foreach (var p in recipe.getReqItems())
         {
@@ -441,7 +438,7 @@ public class MakerProcessor
         return true;
     }
 
-    private static bool addBoostedMakerItem(IClient c, int itemid, int stimulantid, Dictionary<int, short> reagentids)
+    private static bool addBoostedMakerItem(IChannelClient c, int itemid, int stimulantid, Dictionary<int, short> reagentids)
     {
         if (stimulantid != -1 && !ItemInformationProvider.rollSuccessChance(90.0))
         {

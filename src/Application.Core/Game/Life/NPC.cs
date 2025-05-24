@@ -23,7 +23,6 @@
 
 using server;
 using server.life;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Life;
@@ -42,18 +41,18 @@ public class NPC : AbstractLifeObject
         return ShopFactory.getInstance().getShopForNPC(getId()) != null;
     }
 
-    public void sendShop(IClient c)
+    public void sendShop(IChannelClient c)
     {
         ShopFactory.getInstance().getShopForNPC(getId())?.sendShop(c);
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.spawnNPC(this));
         client.sendPacket(PacketCreator.spawnNPCRequestController(this, true));
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removeNPCController(getObjectId()));
         client.sendPacket(PacketCreator.removeNPC(getObjectId()));

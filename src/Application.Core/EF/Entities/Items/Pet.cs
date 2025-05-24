@@ -1,7 +1,19 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class PetEntity
+public class PetEntity
 {
+    public PetEntity(int petid, string? name, int level, int closeness, int fullness, bool summoned, int flag)
+    {
+        Petid = petid;
+        Name = name;
+        Level = level;
+        Closeness = closeness;
+        Fullness = fullness;
+        Summoned = summoned;
+        Flag = flag;
+    }
+
+    protected PetEntity() { }
     public int Petid { get; set; }
 
     public string? Name { get; set; }

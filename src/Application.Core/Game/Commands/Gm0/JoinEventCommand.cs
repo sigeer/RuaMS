@@ -1,6 +1,3 @@
-﻿using constants.id;
-using server.maps;
-
 namespace Application.Core.Game.Commands.Gm0;
 
 public class JoinEventCommand : CommandBase
@@ -10,7 +7,7 @@ public class JoinEventCommand : CommandBase
         Description = "Join active event.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (!FieldLimit.CANNOTMIGRATE.check(player.getMap().getFieldLimit()))

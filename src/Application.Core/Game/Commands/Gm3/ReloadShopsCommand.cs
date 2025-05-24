@@ -1,4 +1,4 @@
-﻿using server;
+using server;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -9,7 +9,7 @@ public class ReloadShopsCommand : CommandBase
         Description = "Reload popup shops and NPC shops.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         ShopFactory.getInstance().reloadShops();
     }

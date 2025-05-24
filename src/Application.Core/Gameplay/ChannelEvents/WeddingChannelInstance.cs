@@ -33,7 +33,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             log = LogFactory.GetLogger(LogType.Wedding);
 
             // rude approach to a world's last channel boot time, placeholder for the 1st wedding reservation ever
-            this.ongoingStartTime = DateTimeOffset.Now.AddSeconds(10).ToUnixTimeMilliseconds();
+            this.ongoingStartTime = DateTimeOffset.UtcNow.AddSeconds(10).ToUnixTimeMilliseconds();
         }
 
 
@@ -233,7 +233,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 Monitor.Exit(lockObj);
             }
 
-            ongoingStartTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            ongoingStartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             if (weddingId != null)
             {
                 ScheduledFuture? weddingTask = TimerManager.getInstance().schedule(() => CloseOngoingWedding(cathedral), TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_TIMEOUT));
@@ -284,7 +284,7 @@ namespace Application.Core.Gameplay.ChannelEvents
         private static string? GetTimeLeft(long futureTime)
         {
             StringBuilder str = new StringBuilder();
-            long leftTime = futureTime - DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            long leftTime = futureTime - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             if (leftTime < 0)
             {

@@ -9,7 +9,7 @@ namespace Application.Core.Game.Relation
     {
         void addDoor(int owner, Door door);
         void addMember(IPlayer member);
-        void assignNewLeader(IClient c);
+        void assignNewLeader(IChannelClient c);
         bool containsMembers(IPlayer member);
         bool Equals(object? obj);
         Dictionary<int, Door> getDoors();

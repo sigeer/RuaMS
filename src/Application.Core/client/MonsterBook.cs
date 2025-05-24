@@ -21,6 +21,7 @@
 */
 
 
+using Application.Shared.Characters;
 using Microsoft.EntityFrameworkCore;
 using tools;
 
@@ -37,6 +38,31 @@ public class MonsterBook
     private int bookLevel = 1;
     private Dictionary<int, int> cards = new();
     private object lockObj = new object();
+    public IPlayer Owner { get; }
+
+    public MonsterBook(IPlayer owner)
+    {
+        Owner = owner;
+    }
+
+    public void LoadData(MonsterbookDto[] dataList)
+    {
+        foreach (var item in dataList)
+        {
+            var cardid = item.Cardid;
+            var level = item.Level;
+            if (cardid / 1000 >= 2388)
+            {
+                specialCard++;
+            }
+            else
+            {
+                normalCard++;
+            }
+            cards[cardid] = level;
+        }
+        calculateLevel();
+    }
 
     public HashSet<KeyValuePair<int, int>> getCardSet()
     {
@@ -51,9 +77,9 @@ public class MonsterBook
         }
     }
 
-    public void addCard(IClient c, int cardid)
+    public void addCard(int cardid)
     {
-        c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showForeignCardEffect(c.OnlinedCharacter.Id), false);
+        Owner.getMap().broadcastMessage(Owner, PacketCreator.showForeignCardEffect(Owner.Id), false);
 
         int qty;
         Monitor.Enter(lockObj);
@@ -91,12 +117,12 @@ public class MonsterBook
                 calculateLevel();
             }
 
-            c.sendPacket(PacketCreator.addCard(false, cardid, qty + 1));
-            c.sendPacket(PacketCreator.showGainCard());
+            Owner.sendPacket(PacketCreator.addCard(false, cardid, qty + 1));
+            Owner.sendPacket(PacketCreator.showGainCard());
         }
         else
         {
-            c.sendPacket(PacketCreator.addCard(true, cardid, CardMaxCount));
+            Owner.sendPacket(PacketCreator.addCard(true, cardid, CardMaxCount));
         }
     }
 
@@ -221,18 +247,22 @@ public class MonsterBook
         try
         {
             dbContext.Monsterbooks.Where(x => x.Charid == chrId).ExecuteDelete();
-            dbContext.Monsterbooks.AddRange(cards.Select(x => new Monsterbook()
-            {
-                Cardid = x.Key,
-                Charid = chrId,
-                Level = x.Value
-            }));
+            dbContext.Monsterbooks.AddRange(cards.Select(x => new MonsterbookEntity(chrId, x.Key, x.Value)));
             dbContext.SaveChanges();
         }
         catch (Exception e)
         {
             Log.Logger.Error(e.ToString());
         }
+    }
+
+    public MonsterbookDto[] ToDto()
+    {
+        return cards.Select(x => new MonsterbookDto()
+        {
+            Cardid = x.Key,
+            Level = x.Value
+        }).ToArray();
     }
 
     public static int[] getCardTierSize()

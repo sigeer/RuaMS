@@ -1,5 +1,4 @@
-﻿using Application.Core.Game.Life;
-using net.packet;
+using Application.Core.Game.Life;
 using server.life;
 using tools;
 

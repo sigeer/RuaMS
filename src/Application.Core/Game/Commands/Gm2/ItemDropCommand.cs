@@ -1,6 +1,5 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using client.inventory;
-using constants.inventory;
 using server;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -12,7 +11,7 @@ public class ItemDropCommand : CommandBase
         Description = "Spawn an item onto the ground.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -50,7 +49,7 @@ public class ItemDropCommand : CommandBase
                 // thanks to istreety & TacoBell
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
-                long expiration = DateTimeOffset.Now.AddDays(days).ToUnixTimeMilliseconds();
+                long expiration = DateTimeOffset.UtcNow.AddDays(days).ToUnixTimeMilliseconds();
                 int petid = ItemManager.CreatePet(itemId);
 
                 var toDropTemp = new Item(itemId, 0, quantity, petid);

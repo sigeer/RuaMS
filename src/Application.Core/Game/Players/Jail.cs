@@ -1,15 +1,15 @@
-﻿namespace Application.Core.Game.Players
+namespace Application.Core.Game.Players
 {
     public partial class Player
     {
         public long getJailExpirationTimeLeft()
         {
-            return Jailexpire - DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            return Jailexpire - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
 
         private void setFutureJailExpiration(long time)
         {
-            Jailexpire = DateTimeOffset.Now.ToUnixTimeMilliseconds() + time;
+            Jailexpire = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + time;
         }
 
         public void addJailExpirationTime(long time)

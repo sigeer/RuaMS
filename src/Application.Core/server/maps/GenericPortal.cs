@@ -22,8 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using constants.game;
-using constants.id;
-using scripting.portal;
 using tools;
 
 namespace server.maps;
@@ -134,7 +132,7 @@ public class GenericPortal : Portal
         }
     }
 
-    public void enterPortal(IClient c)
+    public void enterPortal(IChannelClient c)
     {
         bool changed = false;
         if (getScriptName() != null)
@@ -144,7 +142,7 @@ public class GenericPortal : Portal
                 Monitor.Enter(scriptLock!);
                 try
                 {
-                    changed = PortalScriptManager.getInstance().executePortalScript(this, c);
+                    changed = c.CurrentServer.PortalScriptManager.executePortalScript(this, c);
                 }
                 finally
                 {
@@ -161,7 +159,7 @@ public class GenericPortal : Portal
             var chr = c.OnlinedCharacter;
             if (!(chr.getChalkboard() != null && GameConstants.isFreeMarketRoom(getTargetMapId())))
             {
-                var to = chr.getEventInstance() == null ? c.getChannelServer().getMapFactory().getMap(getTargetMapId()) : chr.getEventInstance()!.getMapInstance(getTargetMapId());
+                var to = chr.getEventInstance() == null ? c.CurrentServer.getMapFactory().getMap(getTargetMapId()) : chr.getEventInstance()!.getMapInstance(getTargetMapId());
                 var pto = to.getPortal(getTarget());
                 if (pto == null)
                 {// fallback for missing portals - no real life case anymore - interesting for not implemented areas

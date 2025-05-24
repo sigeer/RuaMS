@@ -25,7 +25,6 @@ using Application.Core.Game.Invites;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
-using net.server.coordinator.world;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -72,7 +71,7 @@ public class Trade
         foreach (Item item in PartnerTrade.ItemList)
         {
             KarmaManipulator.toggleKarmaFlagToUntradeable(item);
-            InventoryManipulator.addFromDrop(chr.getClient(), item, show);
+            InventoryManipulator.addFromDrop(chr.Client, item, show);
         }
 
         if (PartnerTrade.Meso > 0)
@@ -108,7 +107,7 @@ public class Trade
 
         foreach (Item item in ItemList)
         {
-            InventoryManipulator.addFromDrop(chr.getClient(), item, show);
+            InventoryManipulator.addFromDrop(chr.Client, item, show);
         }
         if (Meso > 0)
         {

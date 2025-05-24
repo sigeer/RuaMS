@@ -1,5 +1,4 @@
-﻿using net.packet.logging;
-using net.server;
+using net.packet.logging;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -11,7 +10,7 @@ public class MonitorCommand : CommandBase
         Description = "Toggle monitored packet logging of a character.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -28,7 +27,7 @@ public class MonitorCommand : CommandBase
         bool monitored = MonitoredChrLogger.toggleMonitored(victim.getId());
         player.yellowMessage(victim.getId() + " is " + (monitored ? "now being monitored." : "no longer being monitored."));
         string message = player.getName() + (monitored ? " has started monitoring " : " has stopped monitoring ") + victim.getId() + ".";
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(5, message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message));
 
     }
 }

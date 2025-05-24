@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm0;
+namespace Application.Core.Game.Commands.Gm0;
 public class MobHpCommand : CommandBase
 {
     public MobHpCommand() : base(0, "mobhp")
@@ -6,7 +6,7 @@ public class MobHpCommand : CommandBase
         Description = "Show HP of mobs on current map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var monster in player.getMap().getAllMonsters())

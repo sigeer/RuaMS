@@ -27,17 +27,31 @@ namespace client.inventory;
 /**
  * @author Flav
  */
-public class ItemFactory
+public class ItemFactory : EnumClass
 {
-
+    /// <summary>
+    /// 背包（已装备）
+    /// </summary>
     public static readonly ItemFactory INVENTORY = new ItemFactory(1, false);
+    /// <summary>
+    /// 仓库
+    /// </summary>
     public static readonly ItemFactory STORAGE = new ItemFactory(2, true);
+    /// <summary>
+    /// 现金道具仓库？
+    /// </summary>
     public static readonly ItemFactory CASH_EXPLORER = new ItemFactory(3, true);
     public static readonly ItemFactory CASH_CYGNUS = new ItemFactory(4, true);
     public static readonly ItemFactory CASH_ARAN = new ItemFactory(5, true);
+    /// <summary>
+    /// 雇佣商人
+    /// </summary>
     public static readonly ItemFactory MERCHANT = new ItemFactory(6, false);
     public static readonly ItemFactory CASH_OVERALL = new ItemFactory(7, true);
     public static readonly ItemFactory MARRIAGE_GIFTS = new ItemFactory(8, false);
+    /// <summary>
+    /// 快递
+    /// </summary>
     public static readonly ItemFactory DUEY = new(9, false);
     private int value;
     private bool account;
@@ -59,10 +73,34 @@ public class ItemFactory
         this.account = account;
     }
 
+    public static ItemFactory GetItemFactory(int value)
+    {
+        if (value == 1)
+            return INVENTORY;
+        if (value == 2)
+            return STORAGE;
+        if (value == 3)
+            return CASH_EXPLORER;
+        if (value == 4)
+            return CASH_CYGNUS;
+        if (value == 5)
+            return CASH_ARAN;
+        if (value == 6)
+            return MERCHANT;
+        if (value == 7)
+            return CASH_OVERALL;
+        if (value == 8)
+            return MARRIAGE_GIFTS;
+        if (value == 9)
+            return DUEY;
+        throw new BusinessFatalException($"不存在的道具分类 {value}");
+    }
+
     public int getValue()
     {
         return value;
     }
+    public bool IsAccount => account;
 
     public List<ItemInventoryType> loadItems(int id, bool login)
     {
@@ -72,7 +110,7 @@ public class ItemFactory
         }
         else
         {
-            return loadItemsMerchant(id, login);
+            return loadItemsMerchant(id);
         }
     }
 
@@ -129,7 +167,7 @@ public class ItemFactory
     }
 
     /// <summary>
-    /// �����Ѵ�����װ��
+    /// 加载已穿戴的装备
     /// </summary>
     /// <param name="characterId"></param>
     /// <returns>Item</returns>
@@ -261,7 +299,7 @@ public class ItemFactory
         }
     }
 
-    private List<ItemInventoryType> loadItemsMerchant(int id, bool login)
+    private List<ItemInventoryType> loadItemsMerchant(int id)
     {
         List<ItemInventoryType> items = new();
 
@@ -271,7 +309,6 @@ public class ItemFactory
                             join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
                             from bs in bss.DefaultIfEmpty()
                             where a.Type == value && (account ? a.Accountid == id : a.Characterid == id)
-                            where (!login || a.Inventorytype == InventoryType.EQUIPPED.getType())
                             select new EquipItemModelFromDB(a, bs)).ToList();
 
         var allItemIdList = queryExpress.Select(x => x.Inventoryitemid).ToList();

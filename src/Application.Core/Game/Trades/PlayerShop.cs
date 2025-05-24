@@ -25,8 +25,6 @@ using Application.Core.Game.Maps;
 using Application.Shared.MapObjects;
 using client.inventory;
 using client.inventory.manipulator;
-using net.packet;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -252,7 +250,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         items.RemoveAt(slot);
     }
 
-    private static bool canBuy(IClient c, Item newItem)
+    private static bool canBuy(IChannelClient c, Item newItem)
     {
         return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && InventoryManipulator.addFromDrop(c, newItem, false);
     }
@@ -292,7 +290,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
      * @param item
      * @param quantity
      */
-    public bool buy(IClient c, int item, short quantity)
+    public bool buy(IChannelClient c, int item, short quantity)
     {
         lock (items)
         {
@@ -485,7 +483,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return (byte)(Array.FindIndex(getVisitors(), x => x?.Id == chr.Id) + 1);
     }
 
-    public void chat(IClient c, string chat)
+    public void chat(IChannelClient c, string chat)
     {
         byte s = getVisitorSlot(c.OnlinedCharacter);
 
@@ -531,7 +529,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         owner.getMap().broadcastMessage(PacketCreator.removePlayerShopBox(this));
     }
 
-    public void sendShop(IClient c)
+    public void sendShop(IChannelClient c)
     {
         Monitor.Enter(visitorLock);
         try
@@ -667,12 +665,12 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removePlayerShopBox(this));
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.updatePlayerShopBox(this));
     }

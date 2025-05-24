@@ -1,5 +1,3 @@
-using tools;
-
 namespace Application.Core.tools.RandomUtils
 {
     public class LotteryMachine<TKey>

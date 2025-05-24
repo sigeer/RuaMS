@@ -1,4 +1,4 @@
-﻿using client.inventory;
+using client.inventory;
 
 namespace Application.EF.Entities;
 
@@ -27,7 +27,7 @@ public partial class Dueypackage
         ReceiverId = receiverId;
         SenderName = senderName;
         Mesos = mesos;
-        TimeStamp = DateTimeOffset.Now;
+        TimeStamp = DateTimeOffset.UtcNow;
         Message = message;
         Checked = @checked;
         Type = type;
@@ -45,7 +45,7 @@ public partial class Dueypackage
 
     public bool isDeliveringTime()
     {
-        return TimeStamp >= DateTimeOffset.Now;
+        return TimeStamp >= DateTimeOffset.UtcNow;
     }
 
     public void UpdateSentTime()
@@ -54,7 +54,7 @@ public partial class Dueypackage
 
         if (Type)
         {
-            if (DateTimeOffset.Now - TimeStamp < TimeSpan.FromDays(1))
+            if (DateTimeOffset.UtcNow - TimeStamp < TimeSpan.FromDays(1))
             {
                 // thanks inhyuk for noticing quick delivery packages unavailable to retrieve from the get-go
                 cal.AddDays(-1);

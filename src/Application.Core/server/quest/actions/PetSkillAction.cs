@@ -22,7 +22,6 @@
 
 
 using client;
-using constants.inventory;
 
 namespace server.quest.actions;
 

@@ -1,10 +1,3 @@
-using Application.Core.Managers;
-using client.inventory;
-using constants.game;
-using constants.id;
-using Microsoft.EntityFrameworkCore;
-using server;
-
 namespace Application.Core.Game.Players
 {
     public partial class Player
@@ -175,7 +168,7 @@ namespace Application.Core.Game.Players
         //}
 
         object saveCharLock = new object();
-        public void saveCharToDB(bool notAutosave = true)
+        public void saveCharToDB(bool notAutosave = true, bool isLogoff = false)
         {
             lock (saveCharLock)
             {
@@ -184,177 +177,7 @@ namespace Application.Core.Game.Players
                     return;
                 }
 
-                Log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", Name);
-
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                var entity = dbContext.Characters.FirstOrDefault(x => x.Id == getId());
-                if (entity == null)
-                    throw new BusinessCharacterNotFoundException(getId());
-
-                try
-                {
-                    Monitor.Enter(effLock);
-                    statLock.EnterWriteLock();
-                    try
-                    {
-                        GlobalTools.Mapper.Map(this, entity);
-                    }
-                    finally
-                    {
-                        statLock.ExitWriteLock();
-                        Monitor.Exit(effLock);
-                    }
-
-                    if (base.MapModel == null || CashShopModel.isOpened())
-                    {
-                        entity.Map = Map;
-                    }
-                    else
-                    {
-                        if (MapModel.getForcedReturnId() != MapId.NONE)
-                        {
-                            entity.Map = MapModel.getForcedReturnId();
-                        }
-                        else
-                        {
-                            entity.Map = HP < 1 ? MapModel.getReturnMapId() : MapModel.getId();
-                        }
-                    }
-                    if (base.MapModel == null || MapModel.getId() == MapId.CRIMSONWOOD_VALLEY_1 || MapModel.getId() == MapId.CRIMSONWOOD_VALLEY_2)
-                    {  // reset to first spawnpoint on those maps
-                        entity.Spawnpoint = 0;
-                    }
-                    else
-                    {
-                        var closest = MapModel.findClosestPlayerSpawnpoint(base.getPosition());
-                        if (closest != null)
-                        {
-                            entity.Spawnpoint = closest.getId();
-                        }
-                        else
-                        {
-                            entity.Spawnpoint = 0;
-                        }
-                    }
-
-                    entity.MessengerId = Messenger?.getId() ?? 0;
-                    entity.MessengerPosition = Messenger == null ? 4 : MessengerPosition;
-
-                    entity.MountLevel = MountModel?.getLevel() ?? 1;
-                    entity.MountExp = MountModel?.getExp() ?? 0;
-                    entity.Mounttiredness = MountModel?.getTiredness() ?? 0;
-
-                    Monsterbook.saveCards(dbContext, getId());
-
-                    Monitor.Enter(petLock);
-                    try
-                    {
-                        for (int i = 0; i < 3; i++)
-                        {
-                            if (pets[i] != null)
-                            {
-                                pets[i]!.saveToDb();
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        Monitor.Exit(petLock);
-                    }
-
-                    var ignoresPetIds = getExcluded().Select(x => x.Key).ToList();
-                    dbContext.Petignores.Where(x => ignoresPetIds.Contains(x.Petid)).ExecuteDelete();
-                    dbContext.Petignores.AddRange(getExcluded().SelectMany(x => x.Value.Select(y => new Petignore() { Petid = x.Key, Itemid = y })).ToList());
-                    dbContext.SaveChanges();
-
-
-                    KeyMap.SaveData(dbContext);
-
-                    // No quickslots, or no change.
-                    CharacterManager.SaveQuickSlotMapped(dbContext, this);
-
-
-                    dbContext.Skillmacros.Where(x => x.Characterid == getId()).ExecuteDelete();
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var macro = SkillMacros[i];
-                        if (macro != null)
-                        {
-                            dbContext.Skillmacros.Add(new Skillmacro(Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
-                        }
-                    }
-                    dbContext.SaveChanges();
-
-                    List<ItemInventoryType> itemsWithType = new();
-                    foreach (Inventory iv in Bag.GetValues())
-                    {
-                        foreach (Item item in iv.list())
-                        {
-                            itemsWithType.Add(new(item, iv.getType()));
-                        }
-                    }
-
-                    ItemFactory.INVENTORY.saveItems(itemsWithType, Id, dbContext);
-
-                    Skills.SaveData(dbContext);
-
-                    SavedLocations.SaveData(dbContext);
-
-                    PlayerTrockLocation.SaveData(dbContext);
-
-                    BuddyList.Save(dbContext);
-
-                    dbContext.AreaInfos.Where(x => x.Charid == getId()).ExecuteDelete();
-                    dbContext.AreaInfos.AddRange(AreaInfo.Select(x => new AreaInfo(getId(), x.Key, x.Value)));
-                    dbContext.SaveChanges();
-
-                    dbContext.Eventstats.Where(x => x.Characterid == getId()).ExecuteDelete();
-                    dbContext.Eventstats.AddRange(Events.Select(x => new Eventstat(getId(), x.Key, x.Value.getInfo())));
-                    dbContext.SaveChanges();
-
-                    CharacterManager.deleteQuestProgressWhereCharacterId(dbContext, Id);
-                    CharacterManager.SavePlayerQuestInfo(dbContext, this);
-
-                    var familyEntry = getFamilyEntry(); //save family rep
-                    if (familyEntry != null)
-                    {
-                        if (familyEntry.saveReputation(dbContext))
-                            familyEntry.savedSuccessfully();
-                        var senior = familyEntry.getSenior();
-                        if (senior != null && senior.getChr() == null)
-                        {
-                            //only save for offline family members
-                            if (senior.saveReputation(dbContext))
-                                senior.savedSuccessfully();
-
-                            senior = senior.getSenior(); //save one level up as well
-                            if (senior != null && senior.getChr() == null)
-                            {
-                                if (senior.saveReputation(dbContext))
-                                    senior.savedSuccessfully();
-                            }
-                        }
-
-                    }
-
-                    if (CashShopModel != null)
-                    {
-                        CashShopModel.save(dbContext);
-                    }
-
-                    if (Storage != null && Storage.IsChanged)
-                    {
-                        Storage.saveToDB(dbContext);
-                    }
-
-                    dbTrans.Commit();
-
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", Name, Level, JobId);
-                }
+                Client.CurrentServer.Service.SaveChar(this, isLogoff);
             }
         }
     }

@@ -1,14 +1,8 @@
-using constants.id;
 using server.events.gm;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Game.Maps.Specials
 {
-    public interface ISnowBallMap: IMap
+    public interface ISnowBallMap : IMap
     {
         public int DamageSnowBall { get; set; }
         public int DamageSnowMan0 { get; set; }
@@ -20,7 +14,7 @@ namespace Application.Core.Game.Maps.Specials
         void setSnowball(int team, Snowball? ball);
     }
 
-    public class SnowBallMap: MapleMap, ISnowBallMap
+    public class SnowBallMap : MapleMap, ISnowBallMap
     {
         public int DamageSnowBall { get; set; }
         public int DamageSnowMan0 { get; set; }

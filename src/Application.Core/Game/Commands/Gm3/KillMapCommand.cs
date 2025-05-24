@@ -7,7 +7,7 @@ public class KillMapCommand : CommandBase
         Description = "Kill all players in the map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var mch in player.getMap().getCharacters())

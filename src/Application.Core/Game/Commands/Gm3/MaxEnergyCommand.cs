@@ -1,4 +1,4 @@
-﻿using tools;
+using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -9,7 +9,7 @@ public class MaxEnergyCommand : CommandBase
         Description = "Set dojo energy to max value.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         c.OnlinedCharacter.setDojoEnergy(10000);

@@ -2,7 +2,6 @@ using Application.Core.Game.Items;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
-using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using server;
 using static client.inventory.Equip;
@@ -38,16 +37,7 @@ namespace Application.Core.Managers
             try
             {
                 using var dbContext = new DBContext();
-                var dbModel = new PetEntity
-                {
-                    Petid = CashIdGenerator.generateCashId(),
-                    Name = ItemInformationProvider.getInstance().getName(itemid),
-                    Level = level,
-                    Closeness = tameness,
-                    Fullness = fullness,
-                    Summoned = false,
-                    Flag = 0
-                };
+                var dbModel = new PetEntity(CashIdGenerator.generateCashId(), ItemInformationProvider.getInstance().getName(itemid), level, tameness, fullness, false, 0);
                 dbContext.Pets.Add(dbModel);
                 dbContext.SaveChanges();
                 return dbModel.Petid;

@@ -1,4 +1,3 @@
-﻿using constants.id;
 using server.life;
 
 namespace Application.Core.Game.Commands.Gm4;
@@ -10,7 +9,7 @@ public class CakeCommand : CommandBase
         Description = "Spawn Cake boss with specified HP.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var monster = LifeFactory.getMonster(MobId.GIANT_CAKE)!;

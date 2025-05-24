@@ -10,7 +10,7 @@ public class GachaListCommand : CommandBase
         Description = "Show gachapon rewards.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         c.OpenNpc(10000, "gachaponInfo");
     }

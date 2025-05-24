@@ -1,5 +1,5 @@
+using Application.Shared.Characters;
 using Microsoft.EntityFrameworkCore;
-using server.maps;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
@@ -13,6 +13,14 @@ namespace Application.Core.Game.Players.PlayerProps
         }
 
         SavedLocation?[] _dataSource;
+        public void LoadData(SavedLocationDto[] savedLocFromDB)
+        {
+            foreach (var item in savedLocFromDB)
+            {
+                _dataSource[(int)Enum.Parse<SavedLocationType>(item.Locationtype)] = new SavedLocation(item.Map, item.Portal);
+            }
+
+        }
         public override void LoadData(DBContext dbContext)
         {
             var savedLocFromDB = dbContext.Savedlocations.Where(x => x.Characterid == Owner.Id).Select(x => new { x.Locationtype, x.Map, x.Portal }).ToList();
@@ -65,5 +73,15 @@ namespace Application.Core.Game.Players.PlayerProps
         public SavedLocation? GetData(int key) => _dataSource.ElementAtOrDefault(key);
         public SavedLocation? GetData(string typeName) => _dataSource.ElementAtOrDefault(GetKey(typeName));
         public SavedLocation? GetData(SavedLocationType type) => _dataSource.ElementAtOrDefault(GetKey(type));
+        public SavedLocationDto[] ToDto()
+        {
+            return _dataSource.Where(x => x != null).Select((x, idx) => new SavedLocationDto
+            {
+                Locationtype = ((SavedLocationType)idx).ToString(),
+                Map = x.getMapId(),
+                Portal = x.getPortal(),
+                Characterid = Owner.Id,
+            }).ToArray();
+        }
     }
 }

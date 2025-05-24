@@ -1,7 +1,5 @@
 using Application.Core.Game.Packets;
 using client;
-using constants.id;
-using net.server;
 using server;
 using server.quest;
 
@@ -380,7 +378,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(evtLock);
             try
             {
-                long timeNow = Server.getInstance().getCurrentTime();
+                long timeNow = getChannelServer().getCurrentTime();
                 List<Quest> expireList = new();
 
                 foreach (var qe in questExpirations)
@@ -426,7 +424,7 @@ namespace Application.Core.Game.Players
                     }, TimeSpan.FromSeconds(10));
                 }
 
-                questExpirations.AddOrUpdate(quest, (long)(Server.getInstance().getCurrentTime() + time.TotalMilliseconds));
+                questExpirations.AddOrUpdate(quest, (long)(getChannelServer().getCurrentTime() + time.TotalMilliseconds));
             }
             finally
             {
@@ -442,7 +440,7 @@ namespace Application.Core.Game.Players
 
         public void questTimeLimit2(Quest quest, long expires)
         {
-            long timeLeft = expires - DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            long timeLeft = expires - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             if (timeLeft <= 0)
             {

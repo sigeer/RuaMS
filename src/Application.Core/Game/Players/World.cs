@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace Application.Core.Game.Players
 {
     public partial class Player
@@ -27,11 +25,11 @@ namespace Application.Core.Game.Players
 
             if (!disconnect)
             {
-                Client.getChannelServer().insertPlayerAway(Id);
+                Client.CurrentServer.insertPlayerAway(Id);
             }
             else
             {
-                Client.getChannelServer().removePlayerAway(Id);
+                Client.CurrentServer.removePlayerAway(Id);
             }
         }
         public bool isLoggedinWorld()
@@ -47,7 +45,7 @@ namespace Application.Core.Game.Players
         public void setEnteredChannelWorld(int channel)
         {
             awayFromWorld.Set(false);
-            Client.getChannelServer().removePlayerAway(Id);
+            Client.CurrentServer.removePlayerAway(Id);
 
             if (PartySearch)
             {

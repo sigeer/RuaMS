@@ -1,8 +1,5 @@
 using Application.Core.Managers;
 using constants.game;
-using constants.id;
-using net.packet;
-using net.server;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
 

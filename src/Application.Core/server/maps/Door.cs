@@ -23,7 +23,6 @@
 
 using Application.Core.Game.Maps;
 using net.server.services.task.channel;
-using net.server.services.type;
 
 namespace server.maps;
 
@@ -61,7 +60,7 @@ public class Door
             {
                 this.town = this.target.getReturnMap();
                 this.townPortal = getTownDoorPortal(owner.getDoorSlot());
-                this.deployTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                this.deployTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 this.active = true;
 
                 if (townPortal != null)
@@ -152,7 +151,7 @@ public class Door
             {
                 IMap town = destroyDoor.getTown();
 
-                OverallService service = (OverallService)town.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+                OverallService service = town.getChannelServer().OverallService;
                 service.registerOverallAction(town.getId(), () =>
                 {
                     destroyDoor.broadcastRemoveDoor(owner);   // thanks BHB88 for noticing doors crashing players when instantly cancelling buff
@@ -207,7 +206,7 @@ public class Door
 
     public long getElapsedDeployTime()
     {
-        return DateTimeOffset.Now.ToUnixTimeMilliseconds() - deployTime;
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - deployTime;
     }
 
     private bool dispose()

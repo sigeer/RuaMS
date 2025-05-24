@@ -109,7 +109,7 @@ namespace Application.Core.Game.Players
                     }
                     else
                     {
-                        LastExpGainTime = DateTimeOffset.Now;
+                        LastExpGainTime = DateTimeOffset.UtcNow;
 
                         if (YamlConfig.config.server.USE_EXP_GAIN_LOG)
                         {

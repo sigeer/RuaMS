@@ -1,5 +1,4 @@
 using Application.Core.scripting.npc;
-using constants.game;
 using net.server;
 
 namespace Application.Core.Game.Commands.Gm5;
@@ -16,7 +15,7 @@ public class IpListCommand : CommandBase
         Description = "Show IP of all players.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         string str = "Player-IP relation:";
 
@@ -30,7 +29,7 @@ public class IpListCommand : CommandBase
 
                 foreach (var chr in chars)
                 {
-                    str += "  " + chr.getName() + " - " + chr.getClient().getRemoteAddress() + "\r\n";
+                    str += "  " + chr.getName() + " - " + chr.getClient().RemoteAddress + "\r\n";
                 }
             }
         }

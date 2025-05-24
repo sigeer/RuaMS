@@ -41,12 +41,12 @@ public class MiniDungeon
         expireTime = timeLimit * 1000;
 
         timeoutTask = TimerManager.getInstance().schedule(() => close(), expireTime);
-        expireTime += DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        expireTime += DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     }
 
     public bool registerPlayer(IPlayer chr)
     {
-        int time = (int)((expireTime - DateTimeOffset.Now.ToUnixTimeMilliseconds()) / 1000);
+        int time = (int)((expireTime - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) / 1000);
         if (time > 0)
         {
             chr.sendPacket(PacketCreator.getClock(time));

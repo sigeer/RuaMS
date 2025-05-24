@@ -1,4 +1,3 @@
-using net.server;
 using Quartz.Impl;
 
 namespace server;
@@ -35,9 +34,9 @@ public class TimerManager
     }
 
 
-    public static void purge()
-    {
-        //Yay?
-        Server.getInstance().forceUpdateCurrentTime();
-    }
+    //public static void purge()
+    //{
+    //    //Yay?
+    //    Server.getInstance().forceUpdateCurrentTime();
+    //}
 }

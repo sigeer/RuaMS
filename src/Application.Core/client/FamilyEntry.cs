@@ -20,7 +20,6 @@
 
 
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
 using tools;
 
@@ -724,7 +723,7 @@ public class FamilyEntry
             {
                 Entitlementid = id,
                 Charid = getChrId(),
-                Timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds()
+                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             });
             dbContext.SaveChanges();
         }

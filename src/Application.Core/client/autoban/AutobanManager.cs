@@ -4,7 +4,6 @@
  */
 
 using Application.Core.Managers;
-using net.server;
 
 namespace client.autoban;
 
@@ -44,14 +43,14 @@ public class AutobanManager
 
             if (lastTime.TryGetValue(fac, out var value))
             {
-                if (value < (Server.getInstance().getCurrentTime() - fac.getExpire()))
+                if (value < (chr.getChannelServer().getCurrentTime() - fac.getExpire()))
                 {
                     points.AddOrUpdate(fac, points.GetValueOrDefault(fac) / 2); //So the points are not completely gone.
                 }
             }
             if (fac.getExpire() != -1)
             {
-                lastTime.AddOrUpdate(fac, Server.getInstance().getCurrentTime());
+                lastTime.AddOrUpdate(fac, chr.getChannelServer().getCurrentTime());
             }
 
             points.AddOrUpdate(fac, points.GetValueOrDefault(fac) + 1);
@@ -94,7 +93,7 @@ public class AutobanManager
     //Don't use the same type for more than 1 thing
     public void spam(int type)
     {
-        this._spam[type] = Server.getInstance().getCurrentTime();
+        this._spam[type] = chr.getChannelServer().getCurrentTime();
     }
 
     public void spam(int type, int timestamp)
@@ -133,7 +132,7 @@ public class AutobanManager
             {
                 if (YamlConfig.config.server.USE_AUTOBAN)
                 {
-                    chr.getClient().disconnect(false, false);
+                    chr.getClient().Disconnect(false, false);
                 }
 
                 log.Information("Autoban - Chr {CharacterName} was caught spamming TYPE {AutoBanType} and has been disconnected", chr.getName(), type);

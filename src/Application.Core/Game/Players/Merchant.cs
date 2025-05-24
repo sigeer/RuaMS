@@ -1,11 +1,13 @@
 using Application.Core.Game.Trades;
-using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
+        /// <summary>
+        /// 正在访问的雇佣商人，而不是自己的雇佣商人
+        /// </summary>
         private HiredMerchant? hiredMerchant = null;
         public void setHasMerchant(bool set)
         {
@@ -92,7 +94,7 @@ namespace Application.Core.Game.Players
             using var dbContext = new DBContext();
             var dbModel = dbContext.Fredstorages.Where(x => x.Cid == getId()).Select(x => new { x.Timestamp }).FirstOrDefault();
             if (dbModel != null)
-                elapsedDays = TimeUtils.DayDiff(dbModel.Timestamp, DateTimeOffset.Now);
+                elapsedDays = TimeUtils.DayDiff(dbModel.Timestamp, DateTimeOffset.UtcNow);
 
             if (elapsedDays > 100)
             {

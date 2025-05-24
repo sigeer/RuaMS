@@ -1,5 +1,4 @@
-﻿using net.server;
-using server.expeditions;
+using Application.Core.scripting.npc;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -10,38 +9,12 @@ public class ExpedsCommand : CommandBase
         Description = "Show all ongoing boss expeditions.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var ch in Server.getInstance().getChannelsFromWorld(c.getWorld()))
+        if (TempConversation.TryCreate(c, out var p))
         {
-            List<Expedition> expeds = ch.getExpeditions();
-            if (expeds.Count == 0)
-            {
-                player.yellowMessage("No Expeditions in Channel " + ch.getId());
-                continue;
-            }
-            player.yellowMessage("Expeditions in Channel " + ch.getId());
-            int id = 0;
-            foreach (Expedition exped in expeds)
-            {
-                id++;
-                player.yellowMessage("> Expedition " + id);
-                player.yellowMessage(">> Type: " + exped.getType().ToString());
-                player.yellowMessage(">> Status: " + (exped.isRegistering() ? "REGISTERING" : "UNDERWAY"));
-                player.yellowMessage(">> Size: " + exped.getMembers().Count);
-                player.yellowMessage(">> Leader: " + exped.getLeader().getName());
-                int memId = 2;
-                foreach (var e in exped.getMembers())
-                {
-                    if (exped.isLeader(e.Key))
-                    {
-                        continue;
-                    }
-                    player.yellowMessage(">>> Member " + memId + ": " + e.Value);
-                    memId++;
-                }
-            }
+            p.RegisterTalk(c.CurrentServer.GetExpeditionInfo());
         }
     }
 }

@@ -23,10 +23,7 @@
 
 using Application.Core.Game.Maps;
 using client.inventory;
-using net.packet;
 using net.server.services.task.channel;
-using net.server.services.type;
-using scripting.reactor;
 using server.partyquest;
 using tools;
 
@@ -172,7 +169,7 @@ public class Reactor : AbstractMapObject
         this.alive = alive;
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(makeDestroyData());
     }
@@ -182,7 +179,7 @@ public class Reactor : AbstractMapObject
         return PacketCreator.destroyReactor(this);
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         if (this.isAlive())
         {
@@ -264,7 +261,7 @@ public class Reactor : AbstractMapObject
         }
     }
 
-    public void delayedHitReactor(IClient c, long delay)
+    public void delayedHitReactor(IChannelClient c, long delay)
     {
         TimerManager.getInstance().schedule(() =>
         {
@@ -272,12 +269,12 @@ public class Reactor : AbstractMapObject
         }, delay);
     }
 
-    public void hitReactor(IClient c)
+    public void hitReactor(IChannelClient c)
     {
         hitReactor(false, 0, 0, 0, c);
     }
 
-    public void hitReactor(bool wHit, int charPos, short stance, int skillid, IClient c)
+    public void hitReactor(bool wHit, int charPos, short stance, int skillid, IChannelClient c)
     {
         try
         {
@@ -298,7 +295,7 @@ public class Reactor : AbstractMapObject
                     {
                         c.OnlinedCharacter.dropMessage(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
                     }
-                    ReactorScriptManager.getInstance().onHit(c, this);
+                    c.CurrentServer.ReactorScriptManager.onHit(c, this);
 
                     int reactorType = stats.getType(state);
                     if (reactorType < 999 && reactorType != -1)
@@ -344,7 +341,7 @@ public class Reactor : AbstractMapObject
                                         MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                                     }
 
-                                    ReactorScriptManager.getInstance().act(c, this);
+                                    c.CurrentServer.ReactorScriptManager.act(c, this);
                                 }
                                 else
                                 {
@@ -353,7 +350,7 @@ public class Reactor : AbstractMapObject
                                     if (state == stats.getNextState(state, b))
                                     {
                                         //current state = next state, looping reactor
-                                        ReactorScriptManager.getInstance().act(c, this);
+                                        c.CurrentServer.ReactorScriptManager.act(c, this);
                                     }
 
                                     setShouldCollect(true);     // refresh collectability on item drop-based reactors
@@ -373,7 +370,7 @@ public class Reactor : AbstractMapObject
                         MapModel.broadcastMessage(PacketCreator.triggerReactor(this, stance));
                         if (this.getId() != 9980000 && this.getId() != 9980001)
                         {
-                            ReactorScriptManager.getInstance().act(c, this);
+                            c.CurrentServer.ReactorScriptManager.act(c, this);
                         }
 
                         setShouldCollect(true);
@@ -458,7 +455,7 @@ public class Reactor : AbstractMapObject
             respawn();
         };
 
-        OverallService service = (OverallService)MapModel.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+        OverallService service = MapModel.getChannelServer().OverallService;
         service.registerOverallAction(MapModel.getId(), delayedRespawnRun, this.getDelay());
     }
 
@@ -468,7 +465,7 @@ public class Reactor : AbstractMapObject
 
         if (r != null)
         {
-            OverallService service = (OverallService)MapModel.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+            OverallService service = MapModel.getChannelServer().OverallService;
             service.forceRunOverallAction(MapModel.getId(), r);
             return true;
         }

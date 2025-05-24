@@ -1,8 +1,6 @@
 using Application.Core.Game.Items;
 using client.inventory;
-using constants.id;
 using server;
-using server.maps;
 using tools;
 
 
@@ -10,7 +8,7 @@ namespace Application.Core.Game.Maps;
 
 public class MapItem : AbstractMapObject, IItemProp
 {
-    protected IClient ownerClient;
+    protected IChannelClient ownerClient;
     protected Item? item;
     protected IMapObject dropper;
     protected int character_ownerid, party_ownerid, meso, questid = -1;
@@ -39,7 +37,7 @@ public class MapItem : AbstractMapObject, IItemProp
     }
 
     /// <summary>
-    /// 任务道具掉落
+    /// 浠诲姟閬撳叿鎺夎惤
     /// </summary>
     /// <param name="item"></param>
     /// <param name="position"></param>
@@ -132,7 +130,7 @@ public class MapItem : AbstractMapObject, IItemProp
 
     public bool hasExpiredOwnershipTime()
     {
-        return DateTimeOffset.Now.ToUnixTimeMilliseconds() - dropTime >= 15 * 1000;
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - dropTime >= 15 * 1000;
     }
 
     public bool canBePickedBy(IPlayer chr)
@@ -170,9 +168,9 @@ public class MapItem : AbstractMapObject, IItemProp
         return hasExpiredOwnershipTime();
     }
 
-    public IClient? getOwnerClient()
+    public IChannelClient? getOwnerClient()
     {
-        return (ownerClient.isLoggedIn() && !ownerClient.OnlinedCharacter.isAwayFromWorld()) ? ownerClient : null;
+        return (ownerClient.IsOnlined && !ownerClient.OnlinedCharacter.isAwayFromWorld()) ? ownerClient : null;
     }
 
     public int getMeso()
@@ -225,7 +223,7 @@ public class MapItem : AbstractMapObject, IItemProp
         return MapObjectType.ITEM;
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         var chr = client.OnlinedCharacter;
 
@@ -243,7 +241,7 @@ public class MapItem : AbstractMapObject, IItemProp
         }
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(), 1, 0));
     }

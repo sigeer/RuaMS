@@ -1,5 +1,4 @@
-﻿using Application.Core.Managers;
-using net.server;
+using Application.Core.Managers;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm0;
@@ -11,7 +10,7 @@ public class ReportBugCommand : CommandBase
         Description = "Send in a bug report.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -21,8 +20,8 @@ public class ReportBugCommand : CommandBase
             return;
         }
         string message = player.getLastCommandMessage();
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[Bug]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(1, message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[Bug]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(1, message));
         log.Information("{CharacterName}: {LastCommand}", CharacterManager.makeMapleReadable(player.getName()), message);
         player.dropMessage(5, "Your bug '" + message + "' was submitted successfully to our developers. Thank you!");
 

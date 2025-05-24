@@ -46,7 +46,7 @@ public class QuestStatus
     {
         this.questID = quest.getId();
         this.setStatus(status);
-        this.completionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        this.completionTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         this.expirationTime = 0;
         //this.updated = true;
         if (status == Status.STARTED)

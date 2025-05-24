@@ -1,7 +1,5 @@
-using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using constants.String;
-using server.maps;
 using tools;
 
 namespace server.partyquest;

@@ -10,7 +10,7 @@ public class ClearCacheCommand : ParamsCommandBase
         Description = "Clear all cache.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var p = GetParamByIndex(0);
         if (string.IsNullOrEmpty(p))

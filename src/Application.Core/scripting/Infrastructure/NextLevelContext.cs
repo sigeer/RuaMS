@@ -52,7 +52,7 @@ namespace Application.Core.scripting.Infrastructure
         private string? lastLevel;
         private string? nextLevel;
 
-        public bool TryGetInvokeFunction(IClient c, sbyte mode, sbyte type, int selection, out NextLevelFunction? nextLevelFunction)
+        public bool TryGetInvokeFunction(IChannelClient c, sbyte mode, sbyte type, int selection, out NextLevelFunction? nextLevelFunction)
         {
             nextLevelFunction = null;
             switch (LevelType)

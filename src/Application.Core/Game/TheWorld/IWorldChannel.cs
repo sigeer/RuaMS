@@ -21,19 +21,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Controllers;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Tasks;
-using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
-using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using net.packet;
-using net.server.services;
-using net.server.services.type;
+using Application.Shared.Servers;
+using Microsoft.Extensions.DependencyInjection;
+using net.server.services.task.channel;
 using scripting.Event;
+using scripting.map;
+using scripting.npc;
+using scripting.portal;
+using scripting.quest;
+using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
@@ -41,8 +44,20 @@ using System.Net;
 
 namespace Application.Core.Game.TheWorld
 {
-    public interface IWorldChannel: IServerBase<IChannelServerTransport>
+    public interface IWorldChannel : IServerBase<IChannelServerTransport>
     {
+        #region ChannelServices
+        EventService EventService { get; }
+        MobAnimationService MobAnimationService { get; }
+        MobClearSkillService MobClearSkillService { get; }
+        MobMistService MobMistService { get; }
+        MobStatusService MobStatusService { get; }
+        OverallService OverallService { get; }
+        #endregion
+        IServiceScope LifeScope { get; }
+        IChannelService Service { get; }
+        ChannelClientStorage ClientStorage { get; }
+
         public event Action? OnWorldMobRateChanged;
         public float WorldMobRate { get; }
         public event Action? OnWorldMesoRateChanged;
@@ -67,7 +82,14 @@ namespace Application.Core.Game.TheWorld
         MapObjectController MapObjectController { get; }
         MountTirednessController MountTirednessController { get; }
         HiredMerchantController HiredMerchantController { get; }
+        PetHungerController PetHungerController { get; }
+        CharacterDiseaseController CharacterDiseaseController { get; }
 
+        MapScriptManager MapScriptManager { get; }
+        ReactorScriptManager ReactorScriptManager { get; }
+        NPCScriptManager NPCScriptManager { get; }
+        PortalScriptManager PortalScriptManager { get; }
+        QuestScriptManager QuestScriptManager { get; }
         void UpdateWorldConfig(WorldConfigPatch updatePatch);
 
         int getTransportationTime(double travelTime);
@@ -97,7 +119,6 @@ namespace Application.Core.Game.TheWorld
         int getOngoingWedding(bool cathedral);
         ChannelPlayerStorage getPlayerStorage();
         string getServerMessage();
-        BaseService getServiceAccess(ChannelServices sv);
         int getStoredVar(int key);
         int getWeddingReservationStatus(int? weddingId, bool cathedral);
         string? getWeddingReservationTimeLeft(int? weddingId);
@@ -125,7 +146,51 @@ namespace Application.Core.Game.TheWorld
         void setEvent(Event? evt);
         void setServerMessage(string message);
         void setStoredVar(int key, int val);
-        Task Shutdown();
         void unregisterOwnedMap(IMap map);
+        /// <summary>
+        /// 合并了disease
+        /// </summary>
+        /// <param name="player"></param>
+        void StashCharacterBuff(IPlayer player);
+        void RecoverCharacterBuff(IPlayer character);
+        IPEndPoint GetChannelEndPoint(int channel);
+
+        /// <summary>
+        /// 向id的partner推送通知
+        /// </summary>
+        /// <param name="id"></param>
+        void NotifyPartner(int id);
+
+        /// <summary>
+        /// 下线时，更新好友窗口
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="channel"></param>
+        /// <param name="buddies"></param>
+        void UpdateBuddyByLoggedOff(int characterId, int channel, int[] buddies);
+        /// <summary>
+        /// 上线时，更新好友窗口
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="channel"></param>
+        /// <param name="buddies"></param>
+        void UpdateBuddyByLoggedIn(int characterId, int channel, int[] buddies);
+        /// <summary>
+        /// 将name传送到频道channel的mapId
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="channel"></param>
+        /// <param name="mapId"></param>
+        /// <param name="portal"></param>
+        /// <returns></returns>
+        bool WarpPlayer(string name, int? channel, int mapId, int? portal);
+        string GetExpeditionInfo();
+        /// <summary>
+        /// 修改玩家的alliance等级
+        /// </summary>
+        /// <param name="targetCharacterId"></param>
+        /// <param name="isRaise"></param>
+        void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
+        int GetAccountCharcterCount(int accId);
     }
 }

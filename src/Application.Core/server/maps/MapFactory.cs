@@ -21,16 +21,12 @@
  */
 
 
-using Application.Core.constants.game;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.Game.TheWorld;
-using Application.Shared.Constants;
 using Application.Shared.MapObjects;
 using Application.Shared.WzEntity;
-using constants.id;
-using Google.Protobuf.WellKnownTypes;
 using scripting.Event;
 using server.life;
 using server.partyquest;
@@ -333,9 +329,9 @@ public class MapFactory
         {
             snowBallMap.DamageSnowBall = DataTool.getIntConvert("damageSnowBall", eventInfo, 0);
             snowBallMap.DamageSnowMan0 = DataTool.getIntConvert("damageSnowMan0", eventInfo, 0);
-            snowBallMap.DamageSnowMan1= DataTool.getIntConvert("damageSnowMan1", eventInfo, 0);
+            snowBallMap.DamageSnowMan1 = DataTool.getIntConvert("damageSnowMan1", eventInfo, 0);
             snowBallMap.RecoveryAmount = DataTool.getIntConvert("recoveryAmount", eventInfo, 0);
-            snowBallMap.SnowManHP= DataTool.getIntConvert("snowManHP", eventInfo, 0);
+            snowBallMap.SnowManHP = DataTool.getIntConvert("snowManHP", eventInfo, 0);
             snowBallMap.SnowManWait = DataTool.getIntConvert("snowManWait", eventInfo, 0);
             snowBallMap.RecoveryAmount = DataTool.getIntConvert("recoveryAmount", eventInfo, 0);
         }

@@ -1,4 +1,4 @@
-﻿using server;
+using server;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -9,7 +9,7 @@ public class GmShopCommand : CommandBase
         Description = "Open the GM shop.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         ShopFactory.getInstance().getShop(1337)!.sendShop(c);
     }

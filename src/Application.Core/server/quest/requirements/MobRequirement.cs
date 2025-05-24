@@ -22,7 +22,6 @@
 
 
 using client;
-using Serilog;
 
 namespace server.quest.requirements;
 

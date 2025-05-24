@@ -1,14 +1,19 @@
 using Application.Core;
+using Application.Core.Channel;
 using Application.Core.Login;
+using Application.Core.Login.ServerTransports;
 using Application.Core.OpenApi;
 using Application.Core.Servers;
+using Application.Core.ServerTransports;
 using Application.EF;
 using Application.Host;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
+using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
@@ -18,6 +23,7 @@ using System.Text;
 // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);
 
 // 支持GBK
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -25,12 +31,14 @@ GlobalTools.Encoding = Encoding.GetEncoding("GBK");
 
 // 日志配置
 Log.Logger = new LoggerConfiguration()
+#if !DEBUG
+    .MinimumLevel.Information()
+#else
     .MinimumLevel.Debug()
+#endif
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-#if !DEBUG
     .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-#endif
     .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .WriteTo.Console()
@@ -48,13 +56,20 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
-builder.Services.AddSingleton<IMasterServer, MasterServer>();
+builder.Services.AddDbContextFactory<DBContext>(o =>
+{
+    o.UseMySQL(builder.Configuration.GetConnectionString("MySQL"));
+});
+builder.Services.AddChannelServer();
+builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
+builder.Services.AddSingleton<MultiRunner>();
+
+builder.Services.AddLoginServer();
+
+
 builder.Services.AddHostedService<GameHost>();
 if (YamlConfig.config.server.ENABLE_OPENAPI)
 {
-    // 数据库配置
-    builder.Services.AddDbContext<DBContext>();
-
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("cors", p =>
@@ -150,4 +165,9 @@ if (YamlConfig.config.server.ENABLE_OPENAPI)
     app.MapControllers();
 }
 
+AppDomain.CurrentDomain.ProcessExit += (e, o) =>
+{
+    var server = app.Services.GetRequiredService<IMasterServer>();
+    server.Shutdown().Wait();
+};
 app.Run();

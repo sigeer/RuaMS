@@ -21,8 +21,8 @@
  */
 
 
+using Application.Core.Game.Relation;
 using constants.game;
-using constants.inventory;
 using server;
 using tools;
 
@@ -58,8 +58,13 @@ public class Equip : Item
     private bool _wear = false;
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
+    public Ring? Ring { get; set; }
 
-    public Equip(int id, short position, int slots = 0) : base(id, position, 1)
+    public Equip(int id, short position) : this(id, position, 0)
+    {
+    }
+
+    public Equip(int id, short position, int slots) : base(id, position, 1)
     {
         log = LogFactory.GetLogger(LogType.Equip);
         this.upgradeSlots = (byte)slots;
@@ -605,7 +610,7 @@ public class Equip : Item
         return new(lvupStr, new(gotSlot, gotVicious));
     }
 
-    private void gainLevel(IClient c)
+    private void gainLevel(IChannelClient c)
     {
         List<KeyValuePair<StatUpgrade, int>> stats = new();
 
@@ -728,7 +733,7 @@ public class Equip : Item
     }
 
     object gainExpLock = new object();
-    public void gainItemExp(IClient c, int gain)
+    public void gainItemExp(IChannelClient c, int gain)
     {
         lock (gainExpLock)
         {
@@ -796,7 +801,7 @@ public class Equip : Item
         return itemLevel >= YamlConfig.config.server.USE_EQUIPMNT_LVLUP;
     }
 
-    private static void showLevelupMessage(string msg, IClient c)
+    private static void showLevelupMessage(string msg, IChannelClient c)
     {
         c.OnlinedCharacter.showHint(msg, 300);
     }

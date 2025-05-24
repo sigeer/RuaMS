@@ -21,18 +21,19 @@
 */
 
 
+using Application.Core.Net;
 using net.packet;
 
 namespace net.server.handlers;
 
-public class KeepAliveHandler : IPacketHandler
+public class KeepAliveHandler<TClient> : IPacketHandlerBase<TClient> where TClient : IClientBase
 {
-    public void HandlePacket(InPacket p, IClient c)
+    public void HandlePacket(InPacket p, TClient c)
     {
-        c.pongReceived();
+        c.PongReceived();
     }
 
-    public bool ValidateState(IClient c)
+    public bool ValidateState(TClient c)
     {
         return true;
     }

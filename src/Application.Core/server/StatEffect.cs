@@ -32,11 +32,6 @@ using client;
 using client.inventory;
 using client.inventory.manipulator;
 using client.status;
-using constants.id;
-using constants.inventory;
-using constants.skills;
-using net.packet;
-using net.server;
 using server.life;
 using server.maps;
 using server.partyquest;
@@ -75,6 +70,7 @@ public class StatEffect
     private short bulletCount, bulletConsume;
     private byte mapProtection;
     private CardItemupStats? cardStats;
+    public int SkillLevel { get; set; }
 
     public class CardItemupStats
     {
@@ -156,9 +152,9 @@ public class StatEffect
         return 0;
     }
 
-    public static StatEffect loadSkillEffectFromData(Data? source, int skillid, bool overtime)
+    public static StatEffect loadSkillEffectFromData(Data source, int skillid, bool overtime)
     {
-        return new(source, skillid, true, overtime);
+        return new(source, skillid, true, overtime) { SkillLevel = int.Parse(source.getName() ?? "0") };
     }
 
     public static StatEffect loadItemEffectFromData(Data? source, int itemid)
@@ -201,7 +197,7 @@ public class StatEffect
         hpCon = (short)DataTool.getInt("hpCon", source, 0);
         int iprop = DataTool.getInt("prop", source, 100);
         prop = iprop / 100.0;
-        ExpBuff = DataTool.getInt("expBuff", source, 0) ;
+        ExpBuff = DataTool.getInt("expBuff", source, 0);
 
         cp = DataTool.getInt("cp", source, 0);
         List<Disease> cure = new(5);
@@ -910,7 +906,7 @@ public class StatEffect
                             {
                                 applyto.ChangeMP(absorbMp);
                             });
-                            
+
                             applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
                             applyto.getMap().broadcastMessage(applyto, PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), false);
                         }
@@ -974,7 +970,7 @@ public class StatEffect
                     applyto.sendPacket(PacketCreator.enableActions());
                     return false;
                 }
-                InventoryManipulator.removeById(applyto.getClient(), ItemConstants.getInventoryType(itemCon), itemCon, itemConNo, false, true);
+                InventoryManipulator.removeById(applyto.Client, ItemConstants.getInventoryType(itemCon), itemCon, itemConNo, false, true);
             }
         }
         else
@@ -1073,7 +1069,7 @@ public class StatEffect
                 }
                 else
                 {
-                    InventoryManipulator.removeFromSlot(applyto.getClient(), InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
+                    InventoryManipulator.removeFromSlot(applyto.Client, InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
                 }
             }
             finally
@@ -1142,7 +1138,7 @@ public class StatEffect
             }
             else
             {
-                InventoryManipulator.addFromDrop(applyto.getClient(), new Item(ItemId.MAGIC_ROCK, 0, 1), false);
+                InventoryManipulator.addFromDrop(applyto.Client, new Item(ItemId.MAGIC_ROCK, 0, 1), false);
 
                 if (door.getOwnerId() == -3)
                 {
@@ -1175,7 +1171,7 @@ public class StatEffect
             applyto.gainCP(cp);
         }
         else if (nuffSkill != 0 && applyto.getParty() != null && applyto.getMap().isCPQMap())
-        { 
+        {
             // added by Drago (Dragohe4rt)
             var skill = CarnivalFactory.getInstance().getSkill(nuffSkill);
             if (skill != null)
@@ -1374,7 +1370,7 @@ public class StatEffect
     {
         applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
 
-        long starttime = Server.getInstance().getCurrentTime();
+        long starttime = applyto.getChannelServer().getCurrentTime();
         //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
         //	ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + 99999) - Server.getInstance().getCurrentTime()));
         applyto.registerEffect(this, starttime, long.MaxValue, false);
@@ -1385,7 +1381,7 @@ public class StatEffect
         // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
         applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
 
-        long starttime = Server.getInstance().getCurrentTime();
+        long starttime = applyto.getChannelServer().getCurrentTime();
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
@@ -1394,7 +1390,7 @@ public class StatEffect
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
 
-        long leftDuration = (starttime + localDuration) - Server.getInstance().getCurrentTime();
+        long leftDuration = (starttime + localDuration) - target.getChannelServer().getCurrentTime();
         if (leftDuration > 0)
         {
             if (isDash() || isInfusion())
@@ -1561,7 +1557,7 @@ public class StatEffect
                 applyto.sendPacket(buff);
             }
 
-            long starttime = Server.getInstance().getCurrentTime();
+            long starttime = applyto.getChannelServer().getCurrentTime();
             //CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
             //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, localDuration);
             applyto.registerEffect(this, starttime, starttime + localDuration, false);

@@ -35,13 +35,8 @@ using client.autoban;
 using client.inventory;
 using client.status;
 using constants.game;
-using constants.id;
-using constants.inventory;
-using net.packet;
-using net.server;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
-using net.server.services.type;
 using scripting.Event;
 using scripting.map;
 using server;
@@ -134,7 +129,7 @@ public class MapleMap : IMap
     private bool _isOxQuiz = false;
     public OxQuiz? Ox { get; set; }
     float _monsterRate;
-    public float MonsterRate 
+    public float MonsterRate
     {
         get => _monsterRate;
         set
@@ -162,7 +157,7 @@ public class MapleMap : IMap
         ChannelServer = worldChannel;
         this.returnMapId = returnMapId;
         this.MonsterRate = 1;
-        aggroMonitor = new MonsterAggroCoordinator();
+        aggroMonitor = new MonsterAggroCoordinator(worldChannel);
         onFirstUserEnter = mapid.ToString();
         onUserEnter = mapid.ToString();
         mapName = "";
@@ -361,7 +356,7 @@ public class MapleMap : IMap
         return this.selfDestructives.Remove(mapobjectid);
     }
 
-    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IClient>? packetbakery, Func<IPlayer, bool>? condition = null)
+    private void spawnAndAddRangedMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, Func<IPlayer, bool>? condition = null)
     {
         List<IPlayer> inRangeCharacters = new();
         int curOID = getUsableOID();
@@ -392,7 +387,7 @@ public class MapleMap : IMap
 
         foreach (IPlayer chr in inRangeCharacters)
         {
-            packetbakery?.Invoke(chr.getClient());
+            packetbakery?.Invoke(chr.Client);
         }
     }
 
@@ -897,8 +892,8 @@ public class MapleMap : IMap
                 }
             }, YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops), 
-                YamlConfig.config.server.ITEM_EXPIRE_CHECK, 
+            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops),
+                YamlConfig.config.server.ITEM_EXPIRE_CHECK,
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
             characterStatUpdateTask = TimerManager.getInstance().register(new NamedRunnable($"UpdateMapCharacterStat_Map:{getId()}_{GetHashCode()}", UpdateMapCharacterStat), 200, 200);
@@ -977,7 +972,7 @@ public class MapleMap : IMap
 
     private void registerItemDrop(MapItem mdrop)
     {
-        droppedItems.AddOrUpdate(mdrop, !everlast ? Server.getInstance().getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
+        droppedItems.AddOrUpdate(mdrop, !everlast ? ChannelServer.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
     }
 
     public void unregisterItemDrop(MapItem mdrop)
@@ -1000,7 +995,7 @@ public class MapleMap : IMap
         objectLock.EnterReadLock();
         try
         {
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = ChannelServer.getCurrentTime();
 
             foreach (var it in droppedItems)
             {
@@ -1169,7 +1164,7 @@ public class MapleMap : IMap
     private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, byte droptype, short questid, short dropDelay)
     {
         MapItem mdrop = new MapItem(idrop, dropPos, dropper, chr, droptype, false, questid);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ChannelServer.getCurrentTime());
         spawnAndAddRangedMapObject(mdrop, c =>
         {
             var chr1 = c.OnlinedCharacter;
@@ -1196,7 +1191,7 @@ public class MapleMap : IMap
     {
         Point droppos = calcDropPos(position, position);
         MapItem mdrop = new MapItem(meso, droppos, dropper, owner, droptype, playerDrop);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ChannelServer.getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, c =>
         {
@@ -2128,7 +2123,7 @@ public class MapleMap : IMap
         var removeAfterAction = monster.popRemoveAfterAction();
         if (removeAfterAction != null)
         {
-            OverallService service = (OverallService)this.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+            OverallService service = this.getChannelServer().OverallService;
             service.forceRunOverallAction(mapid, removeAfterAction);
         }
     }
@@ -2379,7 +2374,7 @@ public class MapleMap : IMap
             broadcastMessage(mist.makeDestroyData());
         };
 
-        MobMistService service = (MobMistService)this.getChannelServer().getServiceAccess(ChannelServices.MOB_MIST);
+        MobMistService service = this.getChannelServer().MobMistService;
         service.registerMobMistCancelAction(mapid, mistSchedule, duration);
     }
 
@@ -2413,7 +2408,7 @@ public class MapleMap : IMap
 
         Point droppos = calcDropPos(pos, pos);
         MapItem mdrop = new MapItem(item, droppos, dropper, owner, dropType, playerDrop);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ChannelServer.getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, c =>
         {
@@ -2444,13 +2439,13 @@ public class MapleMap : IMap
 
     private void registerMapSchedule(AbstractRunnable r, long delay)
     {
-        OverallService service = (OverallService)this.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+        OverallService service = this.getChannelServer().OverallService;
         service.registerOverallAction(mapid, r, delay);
     }
 
     private void registerMapSchedule(Action r, long delay) => registerMapSchedule(TempRunnable.Parse(r), delay);
 
-    private void activateItemReactors(MapItem drop, IClient c)
+    private void activateItemReactors(MapItem drop, IChannelClient c)
     {
         Item item = drop.getItem();
 
@@ -2661,7 +2656,7 @@ public class MapleMap : IMap
             getChannelServer().CharacterHpDecreaseController.removePlayerHpDecrease(chr);
         }
 
-        MapScriptManager msm = MapScriptManager.getInstance();
+        MapScriptManager msm = ChannelServer.MapScriptManager;
         if (chrSize == 1)
         {
             if (!hasItemMonitor())
@@ -2802,7 +2797,7 @@ public class MapleMap : IMap
             broadcastSpawnPlayerMapObjectMessage(chr, chr, true);
         }
 
-        sendObjectPlacement(chr.getClient());
+        sendObjectPlacement(chr.Client);
 
         if (isStartingEventMap() && !eventStarted())
         {
@@ -2885,7 +2880,7 @@ public class MapleMap : IMap
 
         if (hasClock())
         {
-            DateTimeOffset cal = DateTimeOffset.Now;
+            DateTimeOffset cal = DateTimeOffset.UtcNow;
             chr.sendPacket(PacketCreator.getClockTime(cal.Hour, cal.Minute, cal.Second));
         }
         if (hasBoat() > 0)
@@ -2894,7 +2889,7 @@ public class MapleMap : IMap
         }
 
         chr.receivePartyMemberHP();
-        Server.getInstance().registerAnnouncePlayerDiseases(chr.getClient());
+        ChannelServer.CharacterDiseaseController.registerAnnouncePlayerDiseases(chr.getClient());
     }
 
     public Portal getRandomPlayerSpawnpoint()
@@ -3199,7 +3194,7 @@ public class MapleMap : IMap
                     {
                         if (chr != source)
                         {
-                            chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.getClient(), player, enteringField));
+                            chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
                         }
                     }
                 }
@@ -3210,7 +3205,7 @@ public class MapleMap : IMap
                 {
                     if (chr != source)
                     {
-                        chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.getClient(), player, enteringField));
+                        chr.sendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, player, enteringField));
                     }
                 }
             }
@@ -3230,7 +3225,7 @@ public class MapleMap : IMap
             {
                 if (chr != source)
                 {
-                    chr.sendPacket(PacketCreator.updateCharLook(chr.getClient(), player));
+                    chr.sendPacket(PacketCreator.updateCharLook(chr.Client, player));
                 }
             }
         }
@@ -3267,7 +3262,7 @@ public class MapleMap : IMap
         }
     }
 
-    private void sendObjectPlacement(IClient c)
+    private void sendObjectPlacement(IChannelClient c)
     {
         var allMapObjects = getMapObjects();
 
@@ -3299,7 +3294,7 @@ public class MapleMap : IMap
                 if (o.getType() == MapObjectType.REACTOR && o is Reactor reactor && !reactor.isAlive())
                     continue;
 
-                o.sendSpawnData(chr.getClient());
+                o.sendSpawnData(chr.Client);
                 chr.addVisibleMapObject(o);
 
                 if (o.getType() == MapObjectType.MONSTER && o is Monster monster)
@@ -3551,13 +3546,13 @@ public class MapleMap : IMap
             if (mo.getType() == MapObjectType.SUMMON || mo.getPosition().distanceSq(chr.getPosition()) <= getRangedDistance())
             {
                 chr.addVisibleMapObject(mo);
-                mo.sendSpawnData(chr.getClient());
+                mo.sendSpawnData(chr.Client);
             }
         }
         else if (mo.getType() != MapObjectType.SUMMON && mo.getPosition().distanceSq(chr.getPosition()) > getRangedDistance())
         {
             chr.removeVisibleMapObject(mo);
-            mo.sendDestroyData(chr.getClient());
+            mo.sendDestroyData(chr.Client);
         }
     }
 
@@ -3603,7 +3598,7 @@ public class MapleMap : IMap
         {
             if (!player.isMapObjectVisible(mo))
             {
-                mo.sendSpawnData(player.getClient());
+                mo.sendSpawnData(player.Client);
                 player.addVisibleMapObject(mo);
             }
         }
@@ -3858,9 +3853,9 @@ public class MapleMap : IMap
 
         private MapItem mapitem;
         private Reactor reactor;
-        private IClient c;
+        private IChannelClient c;
         private IMap _map;
-        public ActivateItemReactor(IMap map, MapItem mapitem, Reactor reactor, IClient c)
+        public ActivateItemReactor(IMap map, MapItem mapitem, Reactor reactor, IChannelClient c)
         {
             _map = map;
             this.mapitem = mapitem;
@@ -3899,7 +3894,7 @@ public class MapleMap : IMap
                             {
                                 var reactorMap = reactor.getMap();
 
-                                OverallService service = (OverallService)reactorMap.getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+                                OverallService service = reactorMap.getChannelServer().OverallService;
                                 service.registerOverallAction(reactorMap.getId(), () =>
                                 {
                                     reactor.lockReactor();
@@ -4635,7 +4630,7 @@ public class MapleMap : IMap
             this.mapOwner = chr;
             chr.setOwnedMap(this);
 
-            mapOwnerLastActivityTime = Server.getInstance().getCurrentTime();
+            mapOwnerLastActivityTime = ChannelServer.getCurrentTime();
 
             getChannelServer().registerOwnedMap(this);
             return true;
@@ -4672,7 +4667,7 @@ public class MapleMap : IMap
 
     private void refreshOwnership()
     {
-        mapOwnerLastActivityTime = Server.getInstance().getCurrentTime();
+        mapOwnerLastActivityTime = ChannelServer.getCurrentTime();
     }
 
     public bool isOwnershipRestricted(IPlayer chr)
@@ -4697,7 +4692,7 @@ public class MapleMap : IMap
 
     public void checkMapOwnerActivity()
     {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ChannelServer.getCurrentTime();
         if (timeNow - mapOwnerLastActivityTime > 60000)
         {
             if (unclaimOwnership() != null)

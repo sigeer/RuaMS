@@ -21,9 +21,7 @@
 
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
-using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
 using tools;
 
 namespace client.processor.action;
@@ -37,7 +35,7 @@ public class SpawnPetProcessor
 {
     private static DataProvider dataRoot = DataProviderFactory.getDataProvider(WZFiles.ITEM);
 
-    public static void processSpawnPet(IClient c, byte slot, bool lead)
+    public static void processSpawnPet(IChannelClient c, byte slot, bool lead)
     {
         if (c.tryacquireClient())
         {
@@ -106,7 +104,7 @@ public class SpawnPetProcessor
                     c.sendPacket(PacketCreator.enableActions());
 
                     chr.commitExcludedItems();
-                    chr.getClient().getWorldServer().registerPetHunger(chr, chr.getPetIndex(pet));
+                    chr.getClient().getChannelServer().PetHungerController.registerPetHunger(chr, chr.getPetIndex(pet));
                 }
             }
             finally

@@ -21,19 +21,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace scripting.map;
 
 public class MapScriptManager : AbstractScriptManager
 {
-    private static MapScriptManager instance = new MapScriptManager();
-
     readonly EngineStorage _scripts = new EngineStorage();
 
-    public static MapScriptManager getInstance()
+    public MapScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
-        return instance;
     }
 
     public void reloadScripts()
@@ -41,7 +40,7 @@ public class MapScriptManager : AbstractScriptManager
         _scripts.Clear();
     }
 
-    public bool runMapScript(IClient c, string mapScriptPath, bool firstUser)
+    public bool runMapScript(IChannelClient c, string mapScriptPath, bool firstUser)
     {
         if (firstUser)
         {
@@ -67,7 +66,7 @@ public class MapScriptManager : AbstractScriptManager
             }
             catch (Exception ex)
             {
-                log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "start", mapScriptPath);
+                _logger.LogError(ex, "Invoke {JsFunction} from {ScriptName}", "start", mapScriptPath);
             }
         }
 
@@ -85,7 +84,7 @@ public class MapScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error running map script {ScriptPath}", mapScriptPath);
+            _logger.LogError(e, "Error running map script {ScriptPath}", mapScriptPath);
         }
 
         return false;

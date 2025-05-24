@@ -169,7 +169,7 @@ namespace Application.Core.Game.Players
                 chrPet.saveToDb();
             }
 
-            this.getClient().getWorldServer().unregisterPetHunger(this, petIdx);
+            this.getClient().getChannelServer().PetHungerController.unregisterPetHunger(this, petIdx);
             MapModel.broadcastMessage(this, PacketCreator.showPet(this, pet, true, hunger), true);
 
             removePet(pet, shift_left);

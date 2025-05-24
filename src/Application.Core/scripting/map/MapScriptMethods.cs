@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using client;
-using constants.id;
 using server.quest;
 using System.Text;
 using tools;
@@ -36,7 +35,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
 
     private string rewardstring = " title has been rewarded. Please see NPC Dalair to receive your Medal.";
 
-    public MapScriptMethods(IClient c) : base(c)
+    public MapScriptMethods(IChannelClient c) : base(c)
     {
     }
 

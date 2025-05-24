@@ -1,5 +1,3 @@
-using net.packet;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists;
@@ -62,12 +60,12 @@ public abstract class Mist : AbstractMapObject
     public abstract Packet makeSpawnData();
     public abstract Packet makeFakeSpawnData(int level);
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(makeSpawnData());
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(makeDestroyData());
     }

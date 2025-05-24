@@ -21,8 +21,6 @@
 */
 
 
-using client;
-using constants.skills;
 using server;
 using server.life;
 

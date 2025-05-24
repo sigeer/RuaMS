@@ -1,9 +1,6 @@
 using Application.Core.Game.Invites;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
-using Microsoft.EntityFrameworkCore;
-using net.server;
-using net.server.coordinator.world;
 using net.server.guild;
 
 namespace Application.Core.Managers
@@ -164,7 +161,7 @@ namespace Application.Core.Managers
 
             return alliance;
         }
-        public static void sendInvitation(IClient c, string targetGuildName, int allianceId)
+        public static void sendInvitation(IChannelClient c, string targetGuildName, int allianceId)
         {
             var mg = AllGuildStorage.GetGuildByName(targetGuildName);
             if (mg == null)

@@ -1,6 +1,6 @@
+using Application.Shared.Characters;
 using client;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using System.Collections.Concurrent;
 using tools;
 
@@ -98,6 +98,23 @@ public class BuddyList
         }
     }
 
+    public void LoadFromDb(BuddyDto[] dbList)
+    {
+        List<int> buddyPlayerList = dbList.Where(x => x.Pending != 1).Select(x => x.CharacterId).ToList();
+        var buddies = Owner.getWorldServer().Players.GetPlayersByIds(buddyPlayerList);
+        foreach (var x in dbList)
+        {
+            if (x.Pending == 1)
+                _pendingRequests.Enqueue(new CharacterNameAndId(x.CharacterId, x.CharacterName));
+            else
+            {
+                var player = buddies.FirstOrDefault(y => y.Id == x.CharacterId);
+                if (player != null)
+                    put(new BuddylistEntry(player, x.Group, true));
+            }
+        }
+    }
+
     public void LoadFromDb(DBContext dbContext)
     {
         var dbList = (from a in dbContext.Buddies
@@ -120,6 +137,17 @@ public class BuddyList
         dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 1).ExecuteDelete();
     }
 
+    public BuddyDto[] ToDto()
+    {
+        return getBuddies().Where(x => x.Visible).Select(x => new BuddyDto
+        {
+            CharacterId = x.getCharacterId(),
+            CharacterName = x.getName(),
+            Group = x.Group,
+            Pending = 0
+        }).ToArray();
+    }
+
     public void Save(DBContext dbContext)
     {
         dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 0).ExecuteDelete();
@@ -127,7 +155,7 @@ public class BuddyList
         {
             if (entry.Visible)
             {
-                dbContext.Buddies.Add(new Buddy(Owner.Id, entry.getCharacterId(), 0, entry.Group));
+                dbContext.Buddies.Add(new BuddyEntity(Owner.Id, entry.getCharacterId(), 0, entry.Group));
             }
         }
         dbContext.SaveChanges();
@@ -140,7 +168,7 @@ public class BuddyList
         return null;
     }
 
-    public void addBuddyRequest(IClient c, int cidFrom, string nameFrom, int channelFrom)
+    public void addBuddyRequest(IChannelClient c, int cidFrom, string nameFrom, int channelFrom)
     {
         // 只是申请为什么要加数据？
         put("Default Group", cidFrom, false);

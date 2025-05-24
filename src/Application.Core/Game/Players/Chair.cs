@@ -1,7 +1,6 @@
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using client;
-using constants.inventory;
 using server;
 using tools;
 

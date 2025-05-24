@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using net.packet.logging;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -9,7 +9,7 @@ public class MonitorsCommand : CommandBase
         Description = "Show all characters being monitored for packet logging";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (int chrId in MonitoredChrLogger.getMonitoredChrIds())

@@ -21,7 +21,9 @@
  */
 
 
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
+using Microsoft.Extensions.Logging;
 using tools;
 using static server.ItemInformationProvider;
 
@@ -32,16 +34,14 @@ namespace scripting.npc;
  */
 public class NPCScriptManager : AbstractScriptManager
 {
-    private static NPCScriptManager instance = new NPCScriptManager();
 
-    readonly EngineStorate<IClient> _scripts = new EngineStorate<IClient>();
+    readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public static NPCScriptManager getInstance()
+    public NPCScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
-        return instance;
     }
 
-    public bool isNpcScriptAvailable(IClient c, string fileName)
+    public bool isNpcScriptAvailable(IChannelClient c, string fileName)
     {
         IEngine? engine = null;
         if (fileName != null)
@@ -52,32 +52,32 @@ public class NPCScriptManager : AbstractScriptManager
         return engine != null;
     }
 
-    public bool start(IClient c, int npc, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, IPlayer? chr)
     {
         return start(c, npc, -1, chr);
     }
 
-    public bool start(IClient c, int npc, int oid, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, int oid, IPlayer? chr)
     {
         return start(c, npc, oid, null, chr);
     }
 
-    public bool start(IClient c, int npc, string? fileName, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, string? fileName, IPlayer? chr)
     {
         return start(c, npc, -1, fileName, chr);
     }
 
-    public bool start(IClient c, int npc, int oid, string? fileName, IPlayer? chr)
+    public bool start(IChannelClient c, int npc, int oid, string? fileName, IPlayer? chr)
     {
         return start(c, npc, oid, fileName, chr, false, "cm");
     }
 
-    public bool start(IClient c, ScriptedItem scriptItem, IPlayer? chr)
+    public bool start(IChannelClient c, ScriptedItem scriptItem, IPlayer? chr)
     {
         return start(c, scriptItem.getNpc(), -1, scriptItem.getScript(), chr, true, "im");
     }
 
-    public void start(string filename, IClient c, int npc, List<IPlayer> chrs)
+    public void start(string filename, IChannelClient c, int npc, List<IPlayer> chrs)
     {
         try
         {
@@ -100,12 +100,12 @@ public class NPCScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", filename, npc);
+            _logger.LogError(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", filename, npc);
             c.NPCConversationManager?.dispose();
         }
     }
 
-    private bool start(IClient c, int npc, int oid, string? fileName, IPlayer? chr, bool itemScript, string engineName)
+    private bool start(IChannelClient c, int npc, int oid, string? fileName, IPlayer? chr, bool itemScript, string engineName)
     {
         try
         {
@@ -156,14 +156,14 @@ public class NPCScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", fileName, npc);
+            _logger.LogError(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", fileName, npc);
             c.NPCConversationManager?.dispose();
 
             return false;
         }
     }
 
-    public void action(IClient c, sbyte mode, sbyte type, int selection)
+    public void action(IChannelClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -192,7 +192,7 @@ public class NPCScriptManager : AbstractScriptManager
             {
                 if (c.NPCConversationManager != null)
                 {
-                    log.Error(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.getScriptName(), c.NPCConversationManager.getNpc());
+                    _logger.LogError(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.getScriptName(), c.NPCConversationManager.getNpc());
                     c.NPCConversationManager.dispose();
                 }
             }
@@ -201,9 +201,9 @@ public class NPCScriptManager : AbstractScriptManager
 
     public void dispose(NPCConversationManager cm)
     {
-        IClient c = cm.getClient();
+        var c = cm.getClient();
         c.OnlinedCharacter.setCS(false);
-        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         c.NPCConversationManager = null;
         _scripts.Remove(c);
 

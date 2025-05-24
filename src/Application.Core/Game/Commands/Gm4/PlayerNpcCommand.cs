@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -9,7 +9,7 @@ public class PlayerNpcCommand : CommandBase
         Description = "Spawn a player NPC of an online player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

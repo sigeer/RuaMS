@@ -1,6 +1,6 @@
 using Application.Core.Channel;
-using Application.Core.Channel.ServerTransports;
 using Application.Core.Servers;
+using Microsoft.Extensions.Hosting;
 using net.server;
 
 namespace Application.Host
@@ -8,48 +8,40 @@ namespace Application.Host
     public class GameHost : IHostedService
     {
         readonly IMasterServer _server;
+        readonly MultiRunner _channelRunner;
+        readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-        public GameHost(IMasterServer server)
+        public GameHost(IMasterServer server, MultiRunner channelRunner, IHostApplicationLifetime hostApplicationLifetime)
         {
             _server = server;
+            _channelRunner = channelRunner;
+            _hostApplicationLifetime = hostApplicationLifetime;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await Server.getInstance().Start();
-            await _server.StartServer();
-            var world = Server.getInstance().getWorld(0);
-            for (int j = 1; j <= 3; j++)
+            _hostApplicationLifetime.ApplicationStopping.Register(() =>
             {
-                int channelid = j;
-                var channel = new WorldChannel(new ChannelServerConfig
-                {
-                    Port = 7574 + channelid
-                }, new LocalChannelServerTransport(_server, world));
-                await channel.StartServer();
-            }
+                _server.Shutdown().Wait();
+            });
+
+            await StartNow(true);
             return;
         }
 
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await StopNow();
+        }
         public async Task StartNow(bool ignoreCache)
         {
-            await Server.getInstance().Start(ignoreCache);
+            await _server.StartServer();
+            await _channelRunner.Start(7674, 3);
         }
 
         public async Task StopNow()
         {
             await _server.Shutdown();
-            await Server.getInstance().Stop(false);
-        }
-        public async Task Restart()
-        {
-            await Server.getInstance().Stop(true);
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await _server.Shutdown();
-            await Server.getInstance().Stop(false);
         }
     }
 }

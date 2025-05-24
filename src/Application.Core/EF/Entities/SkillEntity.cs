@@ -1,7 +1,17 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class SkillEntity
 {
+    protected SkillEntity() { }
+    public SkillEntity(int skillid, int characterid, int skilllevel, int masterlevel, long expiration)
+    {
+        Skillid = skillid;
+        Characterid = characterid;
+        Skilllevel = skilllevel;
+        Masterlevel = masterlevel;
+        Expiration = expiration;
+    }
+
     public int Id { get; set; }
 
     public int Skillid { get; set; }

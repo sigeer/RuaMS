@@ -1,5 +1,4 @@
-﻿using client.autoban;
-using net.server;
+using client.autoban;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -11,7 +10,7 @@ public class IgnoreCommand : CommandBase
         Description = "Toggle ignore a character from auto-ban alerts.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -29,7 +28,7 @@ public class IgnoreCommand : CommandBase
         bool ignored = AutobanFactory.toggleIgnored(victim.getId());
         player.yellowMessage(victim.getName() + " is " + (ignored ? "now being ignored." : "no longer being ignored."));
         string message_ = player.getName() + (ignored ? " has started ignoring " : " has stopped ignoring ") + victim.getName() + ".";
-        Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.serverNotice(5, message_));
+        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message_));
 
     }
 }

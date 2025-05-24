@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 
 public class HealCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class HealCommand : CommandBase
         Description = "Fully heal your HP/MP.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.healHpMp();

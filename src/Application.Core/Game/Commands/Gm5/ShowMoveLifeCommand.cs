@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm5;
+namespace Application.Core.Game.Commands.Gm5;
 
 public class ShowMoveLifeCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class ShowMoveLifeCommand : CommandBase
         Description = "Toggle show move life in console.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_MVLIFE = !YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_MVLIFE;
     }

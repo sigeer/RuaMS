@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 
 public class DcCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class DcCommand : CommandBase
         Description = "Disconnect a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -27,7 +27,7 @@ public class DcCommand : CommandBase
                 {
                     try
                     {//sometimes bugged because the map = null
-                        victim.getClient().disconnect(true, false);
+                        victim.getClient().Disconnect(true, false);
                         player.getMap().removePlayer(victim);
                     }
                     catch (Exception e)
@@ -45,6 +45,6 @@ public class DcCommand : CommandBase
         {
             victim = player;
         }
-        victim.getClient().disconnect(false, false);
+        victim.getClient().Disconnect(false, false);
     }
 }

@@ -1,5 +1,3 @@
-﻿using Application.Core.constants.game;
-
 namespace Application.Core.Game.Commands.Gm4;
 
 public class PnpcRemoveCommand : CommandBase
@@ -9,7 +7,7 @@ public class PnpcRemoveCommand : CommandBase
         Description = "Remove a permanent NPC on the map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 

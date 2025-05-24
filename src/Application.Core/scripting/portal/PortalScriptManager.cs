@@ -21,7 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
+using Microsoft.Extensions.Logging;
 using server.maps;
 
 namespace scripting.portal;
@@ -30,13 +32,10 @@ namespace scripting.portal;
 
 public class PortalScriptManager : AbstractScriptManager
 {
-    private static PortalScriptManager instance = new PortalScriptManager();
-
     readonly EngineStorage _scripts = new EngineStorage();
 
-    public static PortalScriptManager getInstance()
+    public PortalScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
-        return instance;
     }
 
     private IEngine? getPortalScript(string scriptName)
@@ -58,7 +57,7 @@ public class PortalScriptManager : AbstractScriptManager
         return script;
     }
 
-    public bool executePortalScript(Portal portal, IClient c)
+    public bool executePortalScript(Portal portal, IChannelClient c)
     {
         try
         {
@@ -70,7 +69,7 @@ public class PortalScriptManager : AbstractScriptManager
         }
         catch (Exception e)
         {
-            log.Error(e, "Portal script error in: {ScriptName}", portal.getScriptName());
+            _logger.LogError(e, "Portal script error in: {ScriptName}", portal.getScriptName());
         }
         return false;
     }

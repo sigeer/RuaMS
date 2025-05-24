@@ -1,9 +1,6 @@
 
 
 using Application.Core.Game.Maps;
-using constants.id;
-using constants.skills;
-using server.maps;
 using server.quest;
 using System.Globalization;
 

@@ -185,7 +185,7 @@ namespace Application.Core.Game.Players
                         Monitor.Exit(effLock);
                     }
 
-                    long curTime = Server.getInstance().getCurrentTime();
+                    long curTime = getChannelServer().getCurrentTime();
                     foreach (var bel in es)
                     {
                         CooldownValueHolder mcdvh = bel.Value;
@@ -262,41 +262,11 @@ namespace Application.Core.Game.Players
             }
             else
             {
-                long timeNow = Server.getInstance().getCurrentTime();
+                long timeNow = getChannelServer().getCurrentTime();
                 int time = (int)((length + starttime) - timeNow);
                 addCooldown(skillid, timeNow, time);
             }
         }
-
-        object saveCdLock = new object();
-        public void saveCooldowns()
-        {
-            lock (saveCdLock)
-            {
-                List<PlayerCoolDownValueHolder> listcd = getAllCooldowns();
-
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                if (listcd.Count > 0)
-                {
-                    dbContext.Cooldowns.Where(x => x.Charid == Id).ExecuteDelete();
-                    dbContext.Cooldowns.AddRange(listcd.Select(x => new Cooldown(getId(), x.skillId, x.length, x.startTime)));
-                }
-                var listds = getAllDiseases();
-                if (listds.Count != 0)
-                {
-                    dbContext.Playerdiseases.Where(x => x.Charid == Id).ExecuteDelete();
-                    dbContext.Playerdiseases.AddRange(listds.Select(x =>
-                    {
-                        var ms = x.Value.MobSkill.getId();
-                        return new Playerdisease(getId(), x.Key.ordinal(), (int)ms.type, ms.level, (int)x.Value.LeftTime);
-                    }));
-                }
-                dbContext.SaveChanges();
-                dbTrans.Commit();
-            }
-        }
-
         #endregion
     }
 }

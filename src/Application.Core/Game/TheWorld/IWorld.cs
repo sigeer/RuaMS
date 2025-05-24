@@ -3,22 +3,16 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
-using Application.Core.model;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
 using client;
-using net.packet;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
 using net.server.coordinator.partysearch;
-using net.server.services;
-using net.server.services.type;
 using net.server.world;
 using server;
 
 namespace Application.Core.Game.TheWorld
 {
-    public interface IWorld 
+    public interface IWorld
     {
         WorldConfigEntity Configs { get; set; }
         public List<IWorldChannel> Channels { get; }
@@ -82,7 +76,6 @@ namespace Application.Core.Game.TheWorld
         int getPlayerNpcMapStep(int mapid);
         PlayerShop? getPlayerShop(int ownerid);
         WorldPlayerStorage getPlayerStorage();
-        BaseService getServiceAccess(WorldServices sv);
         int getWorldCapacityStatus();
         bool isConnected(string charName);
         bool isWorldCapacityFull();
@@ -96,7 +89,6 @@ namespace Application.Core.Game.TheWorld
         void messengerInvite(string sender, int messengerid, string target, int fromchannel);
         CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds);
         void partyChat(ITeam party, string chattext, string namefrom);
-        void registerPetHunger(IPlayer chr, sbyte petSlot);
         void registerPlayerShop(PlayerShop ps);
         void removeFamily(int id);
         void removeMapPartyMembers(int partyid);
@@ -105,7 +97,6 @@ namespace Application.Core.Game.TheWorld
         BuddyList.BuddyAddResult requestBuddyAdd(string addName, int channelFrom, int cidFrom, string nameFrom);
         void resetPlayerNpcMapData();
         void runPartySearchUpdateSchedule();
-        void runPetSchedule();
         void sendPacket(List<int> targetIds, Packet packet, int exception);
         void setGuildAndRank(int cid, int guildid, int rank);
         void setGuildAndRank(List<int> cids, int guildid, int rank, int exception);
@@ -118,7 +109,6 @@ namespace Application.Core.Game.TheWorld
         void silentJoinMessenger(int messengerid, MessengerCharacter target, int position);
         void silentLeaveMessenger(int messengerid, MessengerCharacter target);
         void unregisterAccountStorage(int accountId);
-        void unregisterPetHunger(IPlayer chr, sbyte petSlot);
         void unregisterPlayerShop(PlayerShop ps);
         void updateMessenger(int messengerid, string namefrom, int fromchannel);
         void updateMessenger(Messenger messenger, string namefrom, int position, int fromchannel);

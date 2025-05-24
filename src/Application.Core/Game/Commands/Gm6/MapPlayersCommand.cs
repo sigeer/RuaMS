@@ -9,7 +9,7 @@ public class MapPlayersCommand : CommandBase
         Description = "Show all players on the map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         string names = "";

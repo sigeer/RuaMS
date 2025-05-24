@@ -1,4 +1,5 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
+using Application.Shared.Characters;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
@@ -9,7 +10,30 @@ namespace Application.Core.Game.Players.PlayerProps
         {
             _dataSource = [];
         }
+        public void LoadData(SkillDto[] skills)
+        {
+            foreach (var item in skills)
+            {
+                var pSkill = SkillFactory.getSkill(item.Skillid);
+                if (pSkill != null)
+                {
+                    _dataSource[pSkill] = new SkillEntry((sbyte)item.Skilllevel, item.Masterlevel, item.Expiration);
+                }
+            }
 
+        }
+
+        public SkillDto[] ToDto()
+        {
+            return _dataSource.Select(x => new SkillDto
+            {
+                Skillid = x.Key.getId(),
+                Expiration = x.Value.expiration,
+                Masterlevel = x.Value.masterlevel,
+                Skilllevel = x.Value.skillevel,
+                Characterid = Owner.Id
+            }).ToArray();
+        }
 
         public override void LoadData(DBContext dbContext)
         {
@@ -33,12 +57,15 @@ namespace Application.Core.Game.Players.PlayerProps
                 var dbSkill = characterSkills.FirstOrDefault(x => x.Skillid == skill.Key.getId());
                 if (dbSkill == null)
                 {
-                    dbSkill = new SkillEntity() { Characterid = Owner.Id, Skillid = skill.Key.getId() };
+                    dbSkill = new SkillEntity(skill.Key.getId(), Owner.Id, skill.Value.skillevel, skill.Value.masterlevel, skill.Value.expiration);
                     dbContext.Skills.Add(dbSkill);
                 }
-                dbSkill.Skilllevel = skill.Value.skillevel;
-                dbSkill.Masterlevel = skill.Value.masterlevel;
-                dbSkill.Expiration = skill.Value.expiration;
+                else
+                {
+                    dbSkill.Skilllevel = skill.Value.skillevel;
+                    dbSkill.Masterlevel = skill.Value.masterlevel;
+                    dbSkill.Expiration = skill.Value.expiration;
+                }
             }
             dbContext.SaveChanges();
         }

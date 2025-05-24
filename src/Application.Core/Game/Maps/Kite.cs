@@ -1,5 +1,3 @@
-using net.packet;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps;
@@ -37,12 +35,12 @@ public class Kite : AbstractMapObject
         return owner;
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(makeDestroyData());
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(makeSpawnData());
     }

@@ -8,18 +8,14 @@ using Application.Core.Managers;
 using client;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
 using net.server.coordinator.partysearch;
 using net.server.guild;
-using net.server.services;
-using net.server.services.type;
 using net.server.task;
 using net.server.world;
 using server;
-using server.maps;
 using tools;
 using static Application.Core.Game.Relation.BuddyList;
 
@@ -49,7 +45,6 @@ public class World : IWorld
     private Dictionary<int, Family> families = new();
     public FishingWorldInstance FishingInstance { get; }
 
-    private ServicesManager<WorldServices> services = new ServicesManager<WorldServices>(WorldServices.SAVE_CHARACTER);
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
     private PartySearchCoordinator partySearch = new PartySearchCoordinator();
 
@@ -62,12 +57,6 @@ public class World : IWorld
     private Dictionary<int, int> owlSearched = new();
     private List<Dictionary<int, int>> cashItemBought = new(9);
     private ReaderWriterLockSlim suggestLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-    private object activePetsLock = new object();
-    private Dictionary<int, int> activePets = new();
-    private ScheduledFuture? petsSchedule;
-    private long petUpdate;
-
 
     private object activePlayerShopsLock = new object();
     /// <summary>
@@ -93,7 +82,6 @@ public class World : IWorld
         TeamStorage = new Dictionary<int, ITeam>();
         runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
         runningMessengerId.set(1);
-        petUpdate = Server.getInstance().getCurrentTime();
         GuildStorage = new WorldGuildStorage();
 
         for (int i = 0; i < 9; i++)
@@ -109,15 +97,17 @@ public class World : IWorld
         this.EventMessage = config.EventMessage;
 
         var tman = TimerManager.getInstance();
-        petsSchedule = tman.register(new PetFullnessTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
+
+        // charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
         marriagesSchedule = tman.register(new WeddingReservationTask(this),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
         mapOwnershipSchedule = tman.register(new MapOwnershipTask(this), TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
         fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         partySearchSchedule = tman.register(new PartySearchTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+#if !DEBUG
         timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+#endif
 
         FishingInstance = new FishingWorldInstance(this);
 
@@ -494,7 +484,7 @@ public class World : IWorld
                 target.setParty(null);
                 if (target.IsOnlined)
                 {
-                    target.sendPacket(PacketCreator.updateParty(target.Client.getChannel(), party, operation, target));
+                    target.sendPacket(PacketCreator.updateParty(target.Client.CurrentServer.getId(), party, operation, target));
                 }
                 break;
             default:
@@ -1057,94 +1047,6 @@ public class World : IWorld
 
         return cashLeaderboards;
     }
-    #region Pet
-    public void registerPetHunger(IPlayer chr, sbyte petSlot)
-    {
-        if (chr.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
-        {
-            return;
-        }
-
-        int key = getPetKey(chr, petSlot);
-
-        Monitor.Enter(activePetsLock);
-        try
-        {
-            int initProc;
-            if (Server.getInstance().getCurrentTime() - petUpdate > 55000)
-            {
-                initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 2;
-            }
-            else
-            {
-                initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 1;
-            }
-
-            activePets.AddOrUpdate(key, initProc);
-        }
-        finally
-        {
-            Monitor.Exit(activePetsLock);
-        }
-    }
-
-    public void unregisterPetHunger(IPlayer chr, sbyte petSlot)
-    {
-        int key = getPetKey(chr, petSlot);
-
-        Monitor.Enter(activePetsLock);
-        try
-        {
-            activePets.Remove(key);
-        }
-        finally
-        {
-            Monitor.Exit(activePetsLock);
-        }
-    }
-
-    public void runPetSchedule()
-    {
-        Dictionary<int, int> deployedPets;
-
-        Monitor.Enter(activePetsLock);
-        try
-        {
-            petUpdate = Server.getInstance().getCurrentTime();
-            deployedPets = new(activePets);   // exception here found thanks to MedicOP
-        }
-        finally
-        {
-            Monitor.Exit(activePetsLock);
-        }
-
-        foreach (var dp in deployedPets)
-        {
-            var chr = this.getPlayerStorage().getCharacterById(dp.Key / 4);
-            if (chr == null || !chr.isLoggedinWorld())
-            {
-                continue;
-            }
-
-            int dpVal = dp.Value + 1;
-            if (dpVal == YamlConfig.config.server.PET_EXHAUST_COUNT)
-            {
-                chr.runFullnessSchedule(dp.Key % 4);
-                dpVal = 0;
-            }
-
-            Monitor.Enter(activePetsLock);
-            try
-            {
-                activePets.AddOrUpdate(dp.Key, dpVal);
-            }
-            finally
-            {
-                Monitor.Exit(activePetsLock);
-            }
-        }
-    }
-    #endregion
 
     #region
     public void registerPlayerShop(PlayerShop ps)
@@ -1337,21 +1239,9 @@ public class World : IWorld
         partySearch.runPartySearch();
     }
 
-    public BaseService getServiceAccess(WorldServices sv)
-    {
-        return services.getAccess(sv).getService();
-    }
-
-    private void closeWorldServices()
-    {
-        services.shutdown();
-    }
-
     private void clearWorldData()
     {
         TeamStorage.Clear();
-
-        closeWorldServices();
     }
 
     public async Task Shutdown()
@@ -1359,12 +1249,6 @@ public class World : IWorld
         foreach (var ch in getChannels())
         {
             await ch.Shutdown();
-        }
-
-        if (petsSchedule != null)
-        {
-            await petsSchedule.CancelAsync(false);
-            petsSchedule = null;
         }
 
         if (charactersSchedule != null)

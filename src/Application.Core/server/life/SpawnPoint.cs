@@ -23,8 +23,6 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using net.server;
-using tools;
 
 namespace server.life;
 
@@ -57,7 +55,7 @@ public class SpawnPoint
         this.f = monster.getF();
         this.immobile = immobile;
         this.mobInterval = mobInterval;
-        this.nextPossibleSpawn = Server.getInstance().getCurrentTime();
+        this.nextPossibleSpawn = _map.ChannelServer.getCurrentTime();
     }
 
     public int getSpawned()
@@ -81,7 +79,7 @@ public class SpawnPoint
         {
             return false;
         }
-        return nextPossibleSpawn <= Server.getInstance().getCurrentTime();
+        return nextPossibleSpawn <= _map.ChannelServer.getCurrentTime();
     }
 
     public bool shouldForceSpawn()
@@ -101,7 +99,7 @@ public class SpawnPoint
         {
             monsterKilled = (int aniTime) =>
             {
-                nextPossibleSpawn = Server.getInstance().getCurrentTime();
+                nextPossibleSpawn = _map.ChannelServer.getCurrentTime();
                 if (mobTime > 0)
                 {
                     nextPossibleSpawn += mobTime * 1000;
@@ -115,7 +113,7 @@ public class SpawnPoint
         });
         if (mobTime == 0)
         {
-            nextPossibleSpawn = Server.getInstance().getCurrentTime() + mobInterval;
+            nextPossibleSpawn = _map.ChannelServer.getCurrentTime() + mobInterval;
         }
         return mob;
     }
@@ -162,7 +160,7 @@ public class SpawnPoint
 
     public void SpawnMonster(int difficulty = 1, bool isPq = false)
     {
-        var  rate = _map.ActualMonsterRate;
+        var rate = _map.ActualMonsterRate;
         if (_map.getEventInstance() != null || _monsterMeta.isBoss())
             rate = 1;
 

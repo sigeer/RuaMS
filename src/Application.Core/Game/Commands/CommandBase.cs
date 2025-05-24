@@ -29,7 +29,7 @@ namespace Application.Core.Game.Commands
             set => _currentCommand = value;
         }
 
-        public virtual void Run(IClient client, string[] values)
+        public virtual void Run(IChannelClient client, string[] values)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace Application.Core.Game.Commands
         {
             return true;
         }
-        public abstract void Execute(IClient client, string[] values);
+        public abstract void Execute(IChannelClient client, string[] values);
         protected string joinStringFrom(string[] arr, int start)
         {
             return string.Join(' ', arr, start, arr.Length - start);

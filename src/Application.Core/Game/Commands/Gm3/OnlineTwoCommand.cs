@@ -1,4 +1,4 @@
-﻿using Application.Core.Managers;
+using Application.Core.Managers;
 using net.server;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -10,7 +10,7 @@ public class OnlineTwoCommand : CommandBase
         Description = "Show all online players.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int total = 0;

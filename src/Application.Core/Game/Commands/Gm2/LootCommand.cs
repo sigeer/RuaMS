@@ -1,5 +1,4 @@
-﻿using Application.Core.Game.Maps;
-using server.maps;
+using Application.Core.Game.Maps;
 
 namespace Application.Core.Game.Commands.Gm2;
 public class LootCommand : CommandBase
@@ -9,7 +8,7 @@ public class LootCommand : CommandBase
         Description = "Loots all items that belong to you.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var items = c.OnlinedCharacter.getMap().getMapObjectsInRange(c.OnlinedCharacter.getPosition(), double.PositiveInfinity, Arrays.asList(MapObjectType.ITEM));
         foreach (var item in items)

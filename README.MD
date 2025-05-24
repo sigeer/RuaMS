@@ -4,8 +4,11 @@
 基于 Cosmic 的C#版。
 截至 [Commit: a5b572023b8bab68ab5f4ce1478cf2fcdb969770](https://github.com/P0nk/Cosmic/commit/a5b572023b8bab68ab5f4ce1478cf2fcdb969770)
 
-初期代码来自字符串替换，可能存在大量bug，不建议搭建游玩。
 
+### 注意 ❗
+
+当前分支(master)正在对`Server`, `World`, `Channel`进行拆分，可能出现大量BUG，不建议搭建游玩。
+可以尝试使用本次重构之前的[代码（位于分支 v0）](https://github.com/sigeer/RuaMS/tree/v0)。
 
 ## 开发环境
 
@@ -16,19 +19,22 @@
 
 ### src
 
-- Application.Host 入口应用
+- Application.Host 主服务器入口
+- Application.Host.Channel 频道服务器入口
 - Application.Core 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
+- Application.Core.Channel 频道服务器实现
+- Application.Core.Login 登录服务器、主服务器实现
 - Application.Utility 工具类
 - Application.Resource 资源：js、初始化数据sql、配置文件
  > 当前使用的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，可以使用该项目中的wz、以及客户端。    
 也可以使用[Commit:ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1](https://github.com/sigeer/RuaMS/commit/ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1) 之前的 `scripts`
-（来自于 [Cosmic](https://github.com/P0nk/Cosmic)）  
+（来自于 [Cosmic](https://github.com/P0nk/Cosmic)） 但是代码发生了多次更新可能存在BUG
 如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/RuaMS/blob/master/docs/CodeMigration.MD#js)对js进行处理
 - Application.Shared 一些公用数据结构、类型
 - XmlWzReader xml格式的wz读取工具
 - Application.Scripting 脚本引擎
 - Application.Scripting.JS js脚本引擎
-- Application.Scripting.Lua lua脚本引擎（未启用）
+- Application.Scripting.Lua lua脚本引擎（目前事件脚本使用lua重写的版本，文件夹`/scripts/event-lua`）
 - Application.Benchmark 重构代码时，在该项目测试新代码的性能是否优于旧代码
 
 ### tools
@@ -39,6 +45,7 @@
 ### test
 
 - ServiceTest 测试
+
 
 ### 数据库迁移
 
@@ -58,7 +65,11 @@ dotnet ef database update --startup-project ../Application.Host
 #### 步骤
 
 1. 配置 `config.yaml`，主要是连接字符串`DB_CONNECTIONSTRING`、`HOST`
-2. 运行`Application.Host.exe`
+2. 配置 Application.Host 下的 `appsettings.json` 中的连接字符串以及其他设置
+3. 检查wz路径，需要放在当前应用根目录，或者设置环境变量`ms-wz`
+4. 运行`Application.Host.exe`
+
+#### 单机部署
 
 #### docker
 
@@ -79,7 +90,7 @@ rua-ms
 
 # 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
 # 非docker compose运行需要设置连接字符串
--e "RUA_MS_DB_CONNECTIONSTRING=" \
+-e "RUA_MS_ConnectionStrings__MySql=" \
 
 # 公网运行运行需要修改Host
 -e "RUA_MS_HOST=" \
@@ -91,3 +102,7 @@ rua-ms
 ```
 docker compose up -d
 ```
+
+#### 分布式部署
+
+开发中...

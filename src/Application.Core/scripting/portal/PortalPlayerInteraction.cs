@@ -30,7 +30,7 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
 {
     private Portal portal;
 
-    public PortalPlayerInteraction(IClient c, Portal portal) : base(c)
+    public PortalPlayerInteraction(IChannelClient c, Portal portal) : base(c)
     {
         this.portal = portal;
     }
@@ -42,7 +42,7 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
 
     public void runMapScript()
     {
-        MapScriptManager msm = MapScriptManager.getInstance();
+        MapScriptManager msm = c.CurrentServer.MapScriptManager;
         msm.runMapScript(c, "onUserEnter/" + portal.getScriptName(), false);
     }
 

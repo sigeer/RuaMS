@@ -1,5 +1,4 @@
-﻿using Application.Core.Managers;
-using net.server;
+using Application.Core.Managers;
 using server;
 using System.Text.RegularExpressions;
 using tools;
@@ -13,7 +12,7 @@ public class BanCommand : CommandBase
         Description = "Ban a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
@@ -27,7 +26,7 @@ public class BanCommand : CommandBase
         if (target != null)
         {
             string readableTargetName = CharacterManager.makeMapleReadable(target.getName());
-            string ip = target.getClient().getRemoteAddress();
+            string ip = target.getClient().RemoteAddress;
             //Ban ip
             try
             {
@@ -37,7 +36,7 @@ public class BanCommand : CommandBase
                     dbConetxt.Ipbans.Add(new Ipban
                     {
                         Ip = ip,
-                        Aid = target.getClient().getAccID().ToString()
+                        Aid = target.getClient().AccountEntity.Id.ToString()
                     });
                     dbConetxt.SaveChanges();
                 }
@@ -48,20 +47,20 @@ public class BanCommand : CommandBase
                 c.OnlinedCharacter.message("Error occured while banning IP address");
                 c.OnlinedCharacter.message(target.getName() + "'s IP was not banned: " + ip);
             }
-            target.getClient().banMacs();
-            reason = c.OnlinedCharacter.getName() + " banned " + readableTargetName + " for " + reason + " (IP: " + ip + ") " + "(MAC: " + c.getMacs() + ")";
+            target.getClient().BanMacs();
+            reason = c.OnlinedCharacter.getName() + " banned " + readableTargetName + " for " + reason + " (IP: " + ip + ") " + "(MAC: " + c.AccountEntity.Macs + ")";
             target.ban(reason);
             target.yellowMessage("You have been banned by #b" + c.OnlinedCharacter.getName() + " #k.");
             target.yellowMessage("Reason: " + reason);
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
             var rip = target;
-            TimerManager.getInstance().schedule(() => rip.getClient().disconnect(false, false), TimeSpan.FromSeconds(5)); //5 Seconds
-            Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            TimerManager.getInstance().schedule(() => rip.getClient().Disconnect(false, false), TimeSpan.FromSeconds(5)); //5 Seconds
+            c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
         else if (CharacterManager.Ban(ign, reason, false))
         {
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
-            Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
         else
         {

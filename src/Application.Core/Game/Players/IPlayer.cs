@@ -15,7 +15,6 @@ using client.creator;
 using client.inventory;
 using client.keybind;
 using client.newyear;
-using net.packet;
 using net.server;
 using net.server.world;
 using scripting;
@@ -34,13 +33,18 @@ namespace Application.Core.Game.Players
 {
     public interface IPlayer : IDB_Character, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife
     {
-        public IClient Client { get; }
+        public IChannelClient Client { get; }
+        /// <summary>
+        /// <para>-1 在cashshop</para>
+        /// <para>0 离线</para>
+        /// <para>&gt;0 频道号</para>
+        /// </summary>
         public int Channel { get; }
-        public bool IsOnlined => Client.IsGameOnlined;
+        public bool IsOnlined => Client.IsOnlined;
         public BuddyList BuddyList { get; set; }
         public PlayerBag Bag { get; set; }
         public Storage Storage { get; set; }
-        public CashShop CashShopModel { get; }
+        public CashShop CashShopModel { get; set; }
         public PlayerSavedLocation SavedLocations { get; set; }
         public PlayerKeyMap KeyMap { get; set; }
         public PlayerSkill Skills { get; set; }
@@ -200,7 +204,7 @@ namespace Application.Core.Game.Players
         void equipChanged();
         void equippedItem(Equip equip);
         void expirationTask();
-        void exportExcludedItems(IClient c);
+        void exportExcludedItems(IChannelClient c);
         int fetchDoorSlot();
         void flushDelayedUpdateQuests();
 
@@ -252,7 +256,7 @@ namespace Application.Core.Game.Players
         string? getChalkboard();
         IWorldChannel getChannelServer();
         int getCleanItemQuantity(int itemid, bool checkEquipped);
-        IClient getClient();
+        IChannelClient getClient();
         short getCombo();
         List<QuestStatus> getCompletedQuests();
         ICollection<Monster> getControlledMonsters();
@@ -505,7 +509,7 @@ namespace Application.Core.Game.Players
         void message(string m);
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
-        void LinkNewChannelClient(IClient newClient);
+        void LinkNewChannelClient(IChannelClient newClient);
         void notifyMapTransferToPartner(int mapid);
         void partyOperationUpdate(ITeam party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
@@ -548,8 +552,7 @@ namespace Application.Core.Game.Players
         void runFullnessSchedule(int petSlot);
         bool runTirednessSchedule();
         //void saveCharToDB();
-        void saveCharToDB(bool notAutosave = true);
-        void saveCooldowns();
+        void saveCharToDB(bool notAutosave = true, bool isLogoff = false);
         void saveGuildStatus();
         void saveLocation(string type);
         void saveLocationOnWarp();
@@ -573,7 +576,7 @@ namespace Application.Core.Game.Players
         void setChalkboard(string? text);
         void setChallenged(bool challenged);
         void setChasing(bool chasing);
-        void setClient(IClient c);
+        void setClient(IChannelClient c);
         void setCombo(short count);
         void setCpqTimer(ScheduledFuture timer);
         void setCS(bool cs);
@@ -603,7 +606,6 @@ namespace Application.Core.Game.Players
         void setInventory(InventoryType type, Inventory inv);
         void setItemEffect(int itemEffect);
         void setJob(Job job);
-        void setLanguage(int num);
         void setLastCombo(long time);
         void setLastCommandMessage(string text);
         void setLastHealed(long time);
@@ -652,8 +654,7 @@ namespace Application.Core.Game.Players
         void setWorld(int world);
         void shiftPetsRight();
         void showDojoClock();
-        void showHint(string msg);
-        void showHint(string msg, int length);
+        void showHint(string msg, int length = 500);
 
         void showUnderleveledInfo(Monster mob);
         void silentApplyDiseases(Dictionary<Disease, DiseaseExpiration> diseaseMap);

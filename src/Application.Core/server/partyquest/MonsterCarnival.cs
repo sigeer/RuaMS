@@ -42,7 +42,7 @@ public class MonsterCarnival
 
         if (CheckMembers())
         {
-            endingTime = DateTimeOffset.Now.AddSeconds(map.TimeDefault);
+            endingTime = DateTimeOffset.UtcNow.AddSeconds(map.TimeDefault);
 
             effectTimer = TimerManager.getInstance().schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
             respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
@@ -164,7 +164,7 @@ public class MonsterCarnival
 
     public int getTimeLeftSeconds()
     {
-        return (int)(endingTime - DateTimeOffset.Now).TotalSeconds;
+        return (int)(endingTime - DateTimeOffset.UtcNow).TotalSeconds;
     }
 
     private void ExtendTime()
@@ -173,7 +173,7 @@ public class MonsterCarnival
         {
             chrMap.dropMessage(5, LanguageConstants.getMessage(chrMap, LanguageConstants.CPQExtendTime));
         }
-        endingTime = DateTimeOffset.Now.AddSeconds(map.TimeExpand);
+        endingTime = DateTimeOffset.UtcNow.AddSeconds(map.TimeExpand);
 
         map.broadcastMessage(PacketCreator.getClock(map.TimeExpand));
 

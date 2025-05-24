@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Life;
+using Application.Core.Game.Life;
 
 namespace Application.Core.Game.Commands.Gm6;
 
@@ -9,7 +9,7 @@ public class EraseAllPNpcsCommand : CommandBase
         Description = "Remove all player NPCs.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         PlayerNPC.removeAllPlayerNPC();
     }

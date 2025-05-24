@@ -23,14 +23,11 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Scripting.Infrastructure;
 using client.inventory;
-using constants.inventory;
 using server;
 using server.life;
 using server.maps;
 using server.partyquest;
-using tools;
 
 namespace scripting.reactor;
 
@@ -44,7 +41,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
     private Reactor reactor;
     private IEngine iv;
 
-    public ReactorActionManager(IClient c, Reactor reactor, IEngine iv) : base(c)
+    public ReactorActionManager(IChannelClient c, Reactor reactor, IEngine iv) : base(c)
     {
         this.reactor = reactor;
         this.iv = iv;
@@ -62,7 +59,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     private static List<DropEntry> assembleReactorDropEntries(IPlayer chr, List<DropEntry> items)
     {
-        DropEntry.ClassifyDropEntries(items,out var dropEntry, out var visibleQuestEntry,out var otherQuestEntry, chr);
+        DropEntry.ClassifyDropEntries(items, out var dropEntry, out var visibleQuestEntry, out var otherQuestEntry, chr);
 
         Collections.shuffle(dropEntry);
         Collections.shuffle(visibleQuestEntry);
@@ -138,7 +135,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
             posX -= 12;
         }
         Point dropPos = new Point(posX, posY);
-        var worldMesoRate = c.getChannelServer().WorldMesoRate;
+        var worldMesoRate = c.CurrentServer.WorldMesoRate;
 
         if (!delayed)
         {
@@ -197,7 +194,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     private List<DropEntry> getDropChances()
     {
-        return ReactorScriptManager.getInstance().getDrops(reactor.getId());
+        return c.CurrentServer.ReactorScriptManager.getDrops(reactor.getId());
     }
 
     private List<DropEntry> generateDropList(List<DropEntry> drops, float dropRate, bool meso, int mesoChance, int minItems)
@@ -231,7 +228,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     public void createMapMonitor(int mapId, string portal)
     {
-        new MapMonitor(c.getChannelServer().getMapFactory().getMap(mapId), portal);
+        new MapMonitor(c.CurrentServer.getMapFactory().getMap(mapId), portal);
     }
 
     public void spawnMonster(int id, int qty)

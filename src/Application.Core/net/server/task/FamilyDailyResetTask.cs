@@ -8,7 +8,7 @@ public class FamilyDailyResetTask : BaseTask
 {
     private IWorld world;
 
-    public FamilyDailyResetTask(IWorld world): base(world)
+    public FamilyDailyResetTask(IWorld world) : base(world)
     {
         this.world = world;
     }

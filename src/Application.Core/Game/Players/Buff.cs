@@ -1,8 +1,6 @@
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using client;
-using constants.id;
-using constants.skills;
 using net.server;
 using server;
 using server.maps;
@@ -128,7 +126,7 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                long curtime = Server.getInstance().getCurrentTime();
+                long curtime = getChannelServer().getCurrentTime();
 
                 Dictionary<int, PlayerBuffValueHolder> ret = new();
                 foreach (Dictionary<BuffStat, BuffStatValueHolder> bel in buffEffects.Values)
@@ -223,7 +221,7 @@ namespace Application.Core.Game.Players
                     {
                         es = new(buffExpires);
 
-                        long curTime = Server.getInstance().getCurrentTime();
+                        long curTime = getChannelServer().getCurrentTime();
                         foreach (var bel in es)
                         {
                             if (curTime >= bel.Value)

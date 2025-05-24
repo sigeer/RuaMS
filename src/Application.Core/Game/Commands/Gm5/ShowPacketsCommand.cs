@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm5;
+namespace Application.Core.Game.Commands.Gm5;
 
 public class ShowPacketsCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class ShowPacketsCommand : CommandBase
         Description = "Toggle show received packets in console.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_PACKET = !YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_PACKET;
     }

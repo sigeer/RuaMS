@@ -38,11 +38,11 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<BosslogWeekly> BosslogWeeklies { get; set; }
 
-    public virtual DbSet<Buddy> Buddies { get; set; }
+    public virtual DbSet<BuddyEntity> Buddies { get; set; }
 
     public virtual DbSet<CharacterEntity> Characters { get; set; }
 
-    public virtual DbSet<Cooldown> Cooldowns { get; set; }
+    public virtual DbSet<CooldownEntity> Cooldowns { get; set; }
 
     public virtual DbSet<DropDataGlobal> DropDataGlobals { get; set; }
 
@@ -78,7 +78,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Ipban> Ipbans { get; set; }
 
-    public virtual DbSet<Keymap> Keymaps { get; set; }
+    public virtual DbSet<KeyMapEntity> Keymaps { get; set; }
 
     public virtual DbSet<Macban> Macbans { get; set; }
 
@@ -96,7 +96,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Medalmap> Medalmaps { get; set; }
 
-    public virtual DbSet<Monsterbook> Monsterbooks { get; set; }
+    public virtual DbSet<MonsterbookEntity> Monsterbooks { get; set; }
 
     public virtual DbSet<Monstercarddatum> Monstercarddata { get; set; }
 
@@ -158,15 +158,15 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<SkillEntity> Skills { get; set; }
 
-    public virtual DbSet<Skillmacro> Skillmacros { get; set; }
+    public virtual DbSet<SkillMacroEntity> Skillmacros { get; set; }
 
     public virtual DbSet<Specialcashitem> Specialcashitems { get; set; }
 
-    public virtual DbSet<DB_Storage> Storages { get; set; }
+    public virtual DbSet<StorageEntity> Storages { get; set; }
 
     public virtual DbSet<Trocklocation> Trocklocations { get; set; }
 
-    public virtual DbSet<Wishlist> Wishlists { get; set; }
+    public virtual DbSet<WishlistEntity> Wishlists { get; set; }
     #endregion
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -371,7 +371,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("characterid");
         });
 
-        modelBuilder.Entity<Buddy>(entity =>
+        modelBuilder.Entity<BuddyEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -395,7 +395,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("pending");
         });
 
-        modelBuilder.Entity<Cooldown>(entity =>
+        modelBuilder.Entity<CooldownEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -823,7 +823,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("ip");
         });
 
-        modelBuilder.Entity<Keymap>(entity =>
+        modelBuilder.Entity<KeyMapEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1011,7 +1011,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("queststatusid");
         });
 
-        modelBuilder.Entity<Monsterbook>(entity =>
+        modelBuilder.Entity<MonsterbookEntity>(entity =>
         {
             entity.HasKey(e => new { e.Cardid, e.Charid });
             entity
@@ -1975,7 +1975,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("skilllevel");
         });
 
-        modelBuilder.Entity<Skillmacro>(entity =>
+        modelBuilder.Entity<SkillMacroEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -2024,7 +2024,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("sn");
         });
 
-        modelBuilder.Entity<DB_Storage>(entity =>
+        modelBuilder.Entity<StorageEntity>(entity =>
         {
             entity.HasKey(e => e.Storageid).HasName("PRIMARY");
 
@@ -2067,7 +2067,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("vip");
         });
 
-        modelBuilder.Entity<Wishlist>(entity =>
+        modelBuilder.Entity<WishlistEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -2199,9 +2199,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Lastlogin)
                 .HasColumnType("timestamp")
                 .HasColumnName("lastlogin");
-            entity.Property(e => e.Loggedin)
-                .HasColumnType("tinyint(4)")
-                .HasColumnName("loggedin");
             entity.Property(e => e.Macs)
                 .HasColumnType("tinytext")
                 .HasColumnName("macs");

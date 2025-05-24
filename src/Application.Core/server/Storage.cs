@@ -19,7 +19,6 @@
 
 
 using client.inventory;
-using constants.game;
 using Microsoft.EntityFrameworkCore;
 using tools;
 
@@ -36,7 +35,7 @@ public class Storage
     private static Dictionary<int, int> trunkGetCache = new();
     private static Dictionary<int, int> trunkPutCache = new();
 
-    private int id;
+    public int AccountId { get; set; }
     private int currentNpcid;
     private int meso;
     private byte slots;
@@ -48,11 +47,18 @@ public class Storage
     private Storage(int id, byte slots, int meso)
     {
         log = LogFactory.GetLogger(LogType.Storage);
-        this.id = id;
+        this.AccountId = id;
         this.slots = slots;
         this.meso = meso;
     }
 
+    public Storage(int id, byte slots, int meso, Item[] itemList) : this(id, slots, meso)
+    {
+        foreach (var item in itemList)
+        {
+            items.Add(item);
+        }
+    }
 
     public static Storage loadOrCreateFromDB(int id, int world)
     {
@@ -60,22 +66,16 @@ public class Storage
         try
         {
             using var dbContext = new DBContext();
-            var accountStorage = dbContext.Storages.Where(x => x.Accountid == id && x.World == world).FirstOrDefault();
+            var accountStorage = dbContext.Storages.Where(x => x.Accountid == id).FirstOrDefault();
             if (accountStorage == null)
             {
-                accountStorage = new DB_Storage()
-                {
-                    Accountid = id,
-                    World = world,
-                    Slots = 4,
-                    Meso = 0
-                };
+                accountStorage = new StorageEntity(id, 4, 0);
                 dbContext.Storages.Add(accountStorage);
                 dbContext.SaveChanges();
             }
 
-            ret = new Storage(accountStorage.Storageid, (byte)accountStorage.Slots, accountStorage.Meso);
-            foreach (var item in ItemFactory.STORAGE.loadItems(ret.id, false))
+            ret = new Storage(accountStorage.Accountid, (byte)accountStorage.Slots, accountStorage.Meso);
+            foreach (var item in ItemFactory.STORAGE.loadItems(ret.AccountId, false))
             {
                 ret.items.Add(item.Item);
             }
@@ -124,7 +124,7 @@ public class Storage
 
     public void saveToDB(DBContext dbContext)
     {
-        dbContext.Storages.Where(x => x.Storageid == id).
+        dbContext.Storages.Where(x => x.Accountid == AccountId).
             ExecuteUpdate(x => x.SetProperty(y => y.Slots, slots)
                 .SetProperty(y => y.Meso, meso));
 
@@ -136,7 +136,7 @@ public class Storage
             itemsWithType.Add(new(item, item.getInventoryType()));
         }
 
-        ItemFactory.STORAGE.saveItems(itemsWithType, id, dbContext);
+        ItemFactory.STORAGE.saveItems(itemsWithType, AccountId, dbContext);
         IsChanged = false;
     }
 
@@ -247,7 +247,7 @@ public class Storage
         }
     }
 
-    public void sendStorage(IClient c, int npcId)
+    public void sendStorage(IChannelClient c, int npcId)
     {
         if (c.OnlinedCharacter.getLevel() < 15)
         {
@@ -287,7 +287,7 @@ public class Storage
         }
     }
 
-    public void sendStored(IClient c, InventoryType type)
+    public void sendStored(IChannelClient c, InventoryType type)
     {
         Monitor.Enter(lockObj);
         try
@@ -300,7 +300,7 @@ public class Storage
         }
     }
 
-    public void sendTakenOut(IClient c, InventoryType type)
+    public void sendTakenOut(IChannelClient c, InventoryType type)
     {
         Monitor.Enter(lockObj);
         try
@@ -313,7 +313,7 @@ public class Storage
         }
     }
 
-    public void arrangeItems(IClient c)
+    public void arrangeItems(IChannelClient c)
     {
         Monitor.Enter(lockObj);
         try
@@ -350,7 +350,7 @@ public class Storage
         IsChanged = true;
     }
 
-    public void sendMeso(IClient c)
+    public void sendMeso(IChannelClient c)
     {
         c.sendPacket(PacketCreator.mesoStorage(slots, meso));
     }

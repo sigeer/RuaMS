@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm3;
+namespace Application.Core.Game.Commands.Gm3;
 
 public class StopMapEventCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class StopMapEventCommand : CommandBase
         Description = "Stop ongoing \"classic\" event.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.getMap().setEventStarted(false);
     }

@@ -1,4 +1,3 @@
-using Application.Shared;
 using server;
 
 namespace Application.Core.Managers
@@ -47,7 +46,7 @@ namespace Application.Core.Managers
                     mapName = DataTool.getString(searchData.getChildByPath("mapName")) ?? "NO-NAME";
                     streetName = DataTool.getString(searchData.getChildByPath("streetName")) ?? "NO-NAME";
 
-                    if (int.TryParse(searchData.getName(), out var id) 
+                    if (int.TryParse(searchData.getName(), out var id)
                         && (mapName.Contains(name, StringComparison.OrdinalIgnoreCase) || streetName.Contains(name, StringComparison.OrdinalIgnoreCase)))
                     {
                         list.Add(new WzFindMapResultItem(id, mapName, streetName));

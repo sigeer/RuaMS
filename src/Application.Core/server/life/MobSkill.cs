@@ -27,12 +27,7 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using client;
 using client.status;
-using constants.id;
-using constants.skills;
 using net.server.services.task.channel;
-using net.server.services.type;
-using server.maps;
-using tools;
 
 namespace server.life;
 
@@ -194,7 +189,7 @@ public class MobSkill : ISkill
             }
         };
 
-        OverallService service = (OverallService)monster.getMap().getChannelServer().getServiceAccess(ChannelServices.OVERALL);
+        OverallService service = monster.getMap().getChannelServer().OverallService;
         service.registerOverallAction(monster.getMap().getId(), toRun, animationTime);
     }
 

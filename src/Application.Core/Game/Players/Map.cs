@@ -1,11 +1,6 @@
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
 using Application.Shared.WzEntity;
-using client.inventory;
-using constants.id;
-using constants.inventory;
-using net.packet;
-using net.server;
 using net.server.world;
 using server;
 using server.maps;
@@ -258,7 +253,7 @@ namespace Application.Core.Game.Players
             else
             {
                 Log.Warning("Chr {CharacterName} got stuck when moving to map {MapId}", getName(), MapModel.getId());
-                Client.disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
+                Client.Disconnect(true, false);     // thanks BHB for noticing a player storage stuck case here
                 return;
             }
 
@@ -419,7 +414,7 @@ namespace Application.Core.Game.Players
 
         public void showMapOwnershipInfo(IPlayer mapOwner)
         {
-            long curTime = Server.getInstance().getCurrentTime();
+            long curTime = getChannelServer().getCurrentTime();
             if (nextWarningTime < curTime)
             {
                 nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds); // show underlevel info again after 1 minute

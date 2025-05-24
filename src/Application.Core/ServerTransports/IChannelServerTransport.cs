@@ -1,9 +1,13 @@
+using Application.Core.Datas;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
+using Application.Shared.Dto;
+using Application.Shared.Login;
 using Application.Shared.MapObjects;
-using net.packet;
+using Application.Shared.Servers;
+using System.Net;
 
 namespace Application.Core.ServerTransports
 {
@@ -84,6 +88,33 @@ namespace Application.Core.ServerTransports
         #endregion
 
         #region Guild
+
+        #endregion
+
+        #region login
+        void SendAccountLogout(int accountId);
+        IPEndPoint GetChannelEndPoint(int channel);
+        void NotifyPartner(int id);
+        AccountLoginStatus UpdateAccountState(int accId, sbyte state);
+        void SetCharacteridInTransition(string v, int cid);
+        bool HasCharacteridInTransition(string clientSession);
+        bool WarpPlayer(string name, int? channel, int mapId, int? portal);
+        string LoadExpeditionInfo();
+        void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
+        CharacterValueObject? GetPlayerData(string clientSession, int cid);
+        int GetAccountCharacterCount(int accId);
+        bool CheckCharacterName(string name);
+        void UpdateAccountChracterByAdd(int accountId, int id);
+        void SendPlayerObject(PlayerSaveDto characterValueObject);
+        void SendRemovePlayerIncomingInvites(int id);
+        void SendBuffObject(int v, PlayerBuffSaveDto playerBuffSaveDto);
+        PlayerBuffSaveDto GetBuffObject(int id);
+        /// <summary>
+        /// 设置玩家在线
+        /// </summary>
+        /// <param name="id">玩家id</param>
+        /// <param name="v">频道号</param>
+        void SetPlayerOnlined(int id, int v);
 
         #endregion
     }

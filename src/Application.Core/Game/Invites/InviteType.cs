@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 
 namespace Application.Core.Game.Invites
 {
-    public class InviteType : EnumClass
+    public class InviteType : EnumClass, IDisposable
     {
         const long Expired = 3 * 60 * 1000;
         //BUDDY, (not needed)
@@ -81,6 +81,11 @@ namespace Application.Core.Game.Invites
                 return true;
 
             return input == request.From.Id;
+        }
+
+        public void Dispose()
+        {
+            _data.Clear();
         }
     }
 }

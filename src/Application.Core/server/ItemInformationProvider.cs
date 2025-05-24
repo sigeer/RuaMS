@@ -23,14 +23,8 @@
 
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using client;
 using client.autoban;
 using client.inventory;
-using constants.id;
-using constants.inventory;
-using constants.skills;
-using Microsoft.EntityFrameworkCore;
-using net.server;
 using server.life;
 using tools;
 using static server.MakerItemFactory;
@@ -375,7 +369,7 @@ public class ItemInformationProvider
         return ret;
     }
 
-    private static int getExtraSlotMaxFromPlayer(IClient c, int itemId)
+    private static int getExtraSlotMaxFromPlayer(IChannelClient c, int itemId)
     {
         int ret = 0;
 
@@ -399,7 +393,7 @@ public class ItemInformationProvider
         return ret;
     }
 
-    public short getSlotMax(IClient c, int itemId)
+    public short getSlotMax(IChannelClient c, int itemId)
     {
         if (slotMaxCache.TryGetValue(itemId, out var slotMax))
             return (short)(slotMax + getExtraSlotMaxFromPlayer(c, itemId));
@@ -2061,7 +2055,7 @@ public class ItemInformationProvider
         {
             equip.wear(false);
             var itemName = ItemInformationProvider.getInstance().getName(equip.getItemId());
-            Server.getInstance().broadcastGMMessage(chr.getWorld(), PacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
+            chr.Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
             AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to forcibly equip an item.");
             log.Warning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
             return false;
@@ -2415,7 +2409,7 @@ public class ItemInformationProvider
         try
         {
             using var dbContext = new DBContext();
-            var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == itemId && x.ReqItem >= ItemId.BASIC_MONSTER_CRYSTAL_1&& x.Itemid < 4270000).ToList();
+            var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == itemId && x.ReqItem >= ItemId.BASIC_MONSTER_CRYSTAL_1 && x.Itemid < 4270000).ToList();
             return dataList.Select(x => new ItemQuantity(x.ReqItem, x.Count)).ToList();
         }
         catch (Exception e)

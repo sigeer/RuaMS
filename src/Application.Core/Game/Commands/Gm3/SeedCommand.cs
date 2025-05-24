@@ -1,5 +1,4 @@
 using client.inventory;
-using constants.id;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -10,7 +9,7 @@ public class SeedCommand : CommandBase
         Description = "Drop all seeds inside Henesys PQ.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (player.getMapId() != MapId.HENESYS_PQ)
@@ -18,19 +17,19 @@ public class SeedCommand : CommandBase
             player.yellowMessage("This command can only be used in HPQ.");
             return;
         }
-        Point[] pos = { 
-            new Point(7, -207), 
-            new Point(179, -447), 
-            new Point(-3, -687), 
-            new Point(-357, -687), 
-            new Point(-538, -447), 
+        Point[] pos = {
+            new Point(7, -207),
+            new Point(179, -447),
+            new Point(-3, -687),
+            new Point(-357, -687),
+            new Point(-538, -447),
             new Point(-359, -207) };
         int[] seed = {
-            ItemId.PINK_PRIMROSE_SEED, 
-            ItemId.PURPLE_PRIMROSE_SEED, 
+            ItemId.PINK_PRIMROSE_SEED,
+            ItemId.PURPLE_PRIMROSE_SEED,
             ItemId.GREEN_PRIMROSE_SEED,
-            ItemId.BLUE_PRIMROSE_SEED, 
-            ItemId.YELLOW_PRIMROSE_SEED, 
+            ItemId.BLUE_PRIMROSE_SEED,
+            ItemId.YELLOW_PRIMROSE_SEED,
             ItemId.BROWN_PRIMROSE_SEED};
         for (int i = 0; i < pos.Length; i++)
         {

@@ -23,7 +23,6 @@
 */
 
 
-using Application.Core.Managers;
 using Application.Core.model;
 using client.inventory;
 using client.inventory.manipulator;
@@ -124,7 +123,7 @@ public class FredrickProcessor
             {
                 Cid = cid,
                 Daynotes = 0,
-                Timestamp = DateTimeOffset.Now
+                Timestamp = DateTimeOffset.UtcNow
             };
 
             dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
@@ -142,7 +141,7 @@ public class FredrickProcessor
         List<string> expiredCnames = expiredCids.Select(x => x.Name).ToList();
         try
         {
-            dbContext.Notes.Where(x =>  x.From == "FREDRICK" && expiredCnames.Contains(x.To)).ExecuteDelete();
+            dbContext.Notes.Where(x => x.From == "FREDRICK" && expiredCnames.Contains(x.To)).ExecuteDelete();
         }
         catch (Exception e)
         {
@@ -166,7 +165,7 @@ public class FredrickProcessor
             {
                 int daynotes = Math.Min(dailyReminders.Length - 1, x.data.Daynotes);
 
-                int elapsedDays = TimeUtils.DayDiff(x.data.Timestamp, DateTimeOffset.Now);
+                int elapsedDays = TimeUtils.DayDiff(x.data.Timestamp, DateTimeOffset.UtcNow);
                 if (elapsedDays > 100)
                 {
                     expiredCids.Add(new(x.CId, x.Name, x.World));
@@ -183,7 +182,7 @@ public class FredrickProcessor
                             notifDay = dailyReminders[daynotes];
                         } while (elapsedDays >= notifDay);
 
-                        int inactivityDays = TimeUtils.DayDiff(x.LastLogoutTime, DateTimeOffset.Now);
+                        int inactivityDays = TimeUtils.DayDiff(x.LastLogoutTime, DateTimeOffset.UtcNow);
 
                         if (inactivityDays < 7 || daynotes >= dailyReminders.Length - 1)
                         {  // don't spam inactive players
@@ -230,7 +229,7 @@ public class FredrickProcessor
 
 
                     string msg = fredrickReminderMessage(cid.Value - 1);
-                    noteService.sendNormal(msg, "FREDRICK", cid.Key.Name);
+                    noteService.sendNormal(msg, "FREDRICK", cid.Key.Name, 0);
                 }
 
             }
@@ -257,7 +256,7 @@ public class FredrickProcessor
         }
     }
 
-    public void fredrickRetrieveItems(IClient c)
+    public void fredrickRetrieveItems(IChannelClient c)
     {     // thanks Gustav for pointing out the dupe on Fredrick handling
         if (c.tryacquireClient())
         {
@@ -292,7 +291,7 @@ public class FredrickProcessor
                         foreach (var it in items)
                         {
                             Item item = it.Item;
-                            InventoryManipulator.addFromDrop(chr.getClient(), item, false);
+                            InventoryManipulator.addFromDrop(chr.Client, item, false);
                             var itemName = ItemInformationProvider.getInstance().getName(item.getItemId());
                             log.Debug("Chr {CharacterName} gained {ItemQuantity}x {ItemName} ({CharacterId})", chr.getName(), item.getQuantity(), itemName, item.getItemId());
                         }

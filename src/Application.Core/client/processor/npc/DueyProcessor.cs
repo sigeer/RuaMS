@@ -28,8 +28,6 @@ using Application.Core.model;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using server;
 using tools;
@@ -59,7 +57,7 @@ public class DueyProcessor
         }
     }
 
-    private static void showDueyNotification(IClient c, IPlayer player)
+    private static void showDueyNotification(IChannelClient c, IPlayer player)
     {
         try
         {
@@ -185,7 +183,7 @@ public class DueyProcessor
         return false;
     }
 
-    private static int addPackageItemFromInventory(int packageId, IClient c, sbyte invTypeId, short itemPos, short amount)
+    private static int addPackageItemFromInventory(int packageId, IChannelClient c, sbyte invTypeId, short itemPos, short amount)
     {
         if (invTypeId > 0)
         {
@@ -239,7 +237,7 @@ public class DueyProcessor
         return 0;
     }
 
-    public static void dueySendItem(IClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
+    public static void dueySendItem(IChannelClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
     {
         if (c.tryacquireClient())
         {
@@ -258,7 +256,7 @@ public class DueyProcessor
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                     log.Warning("Chr {CharacterName} tried to use duey with too long of a text", c.OnlinedCharacter.getName());
-                    c.disconnect(true, false);
+                    c.Disconnect(true, false);
                     return;
                 }
                 if (!quick)
@@ -269,7 +267,7 @@ public class DueyProcessor
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                     log.Warning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                    c.disconnect(true, false);
+                    c.Disconnect(true, false);
                     return;
                 }
 
@@ -278,7 +276,7 @@ public class DueyProcessor
                 {
                     AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
                     log.Warning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                    c.disconnect(true, false);
+                    c.Disconnect(true, false);
                     return;
                 }
 
@@ -298,7 +296,7 @@ public class DueyProcessor
                     return;
                 }
 
-                if (recipientAccId == c.getAccID())
+                if (recipientAccId == c.AccountEntity?.Id)
                 {
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
                     return;
@@ -331,7 +329,7 @@ public class DueyProcessor
                     c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                 }
 
-                IClient? rClient = null;
+                IChannelClient? rClient = null;
                 int channel = c.getWorldServer().find(recipient);
                 if (channel > -1)
                 {
@@ -346,7 +344,7 @@ public class DueyProcessor
                     }
                 }
 
-                if (rClient != null && rClient.isLoggedIn() && !rClient.OnlinedCharacter.isAwayFromWorld())
+                if (rClient != null && rClient.IsOnlined && !rClient.OnlinedCharacter.isAwayFromWorld())
                 {
                     showDueyNotification(rClient, rClient.OnlinedCharacter);
                 }
@@ -358,7 +356,7 @@ public class DueyProcessor
         }
     }
 
-    public static void dueyRemovePackage(IClient c, int packageid, bool playerRemove)
+    public static void dueyRemovePackage(IChannelClient c, int packageid, bool playerRemove)
     {
         if (c.tryacquireClient())
         {
@@ -374,7 +372,7 @@ public class DueyProcessor
         }
     }
 
-    public static void dueyClaimPackage(IClient c, int packageId)
+    public static void dueyClaimPackage(IChannelClient c, int packageId)
     {
         if (c.tryacquireClient())
         {
@@ -449,13 +447,13 @@ public class DueyProcessor
         }
     }
 
-    public static void dueySendTalk(IClient c, bool quickDelivery)
+    public static void dueySendTalk(IChannelClient c, bool quickDelivery)
     {
         if (c.tryacquireClient())
         {
             try
             {
-                long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 if (timeNow - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
                 {
                     c.sendPacket(PacketCreator.enableActions());
@@ -493,7 +491,7 @@ public class DueyProcessor
 
         try
         {
-            var dayBefore30 = DateTimeOffset.Now.AddDays(-30);
+            var dayBefore30 = DateTimeOffset.UtcNow.AddDays(-30);
             using var dbContext = new DBContext();
             var toRemove = dbContext.Dueypackages.Where(x => x.TimeStamp < dayBefore30).Select(X => X.PackageId).ToList();
 

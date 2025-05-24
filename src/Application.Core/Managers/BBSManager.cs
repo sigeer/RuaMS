@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using net.server;
 using net.server.guild;
 
 namespace Application.Core.Managers
@@ -7,7 +6,7 @@ namespace Application.Core.Managers
     public class BBSManager
     {
         readonly static ILogger log = LogFactory.GetLogger(LogType.BBS);
-        public static void listBBSThreads(IClient c, int start)
+        public static void listBBSThreads(IChannelClient c, int start)
         {
             try
             {
@@ -22,7 +21,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void newBBSReply(IClient c, int localthreadid, string text)
+        public static void newBBSReply(IChannelClient c, int localthreadid, string text)
         {
             if (c.OnlinedCharacter.GuildId <= 0)
             {
@@ -40,7 +39,7 @@ namespace Application.Core.Managers
                 int threadid = dbModel.Threadid;
 
 
-                var newModel = new BbsReply(threadid, c.OnlinedCharacter.Id, Server.getInstance().getCurrentTime(), text);
+                var newModel = new BbsReply(threadid, c.OnlinedCharacter.Id, c.CurrentServer.getCurrentTime(), text);
                 dbContext.BbsReplies.Add(newModel);
                 dbContext.SaveChanges();
 
@@ -55,7 +54,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void editBBSThread(IClient client, string title, string text, int icon, int localthreadid)
+        public static void editBBSThread(IChannelClient client, string title, string text, int icon, int localthreadid)
         {
             var chr = client.OnlinedCharacter;
             if (chr.getGuildId() < 1)
@@ -68,7 +67,9 @@ namespace Application.Core.Managers
                 using var dbContext = new DBContext();
                 using var dbTrans = dbContext.Database.BeginTransaction();
                 dbContext.BbsThreads.Where(x => x.Guildid == chr.GuildId && x.Localthreadid == localthreadid && x.Postercid == chr.Id || chr.GuildRank < 3)
-                    .ExecuteUpdate(x => x.SetProperty(y => y.Name, title).SetProperty(y => y.Timestamp, Server.getInstance().getCurrentTime()).SetProperty(y => y.Icon, icon).SetProperty(y => y.Startpost, text));
+                    .ExecuteUpdate(x => x.SetProperty(y => y.Name, title)
+                    .SetProperty(y => y.Timestamp, client.CurrentServer.getCurrentTime())
+                    .SetProperty(y => y.Icon, icon).SetProperty(y => y.Startpost, text));
 
                 displayThread(dbContext, client, localthreadid);
                 dbTrans.Commit();
@@ -79,7 +80,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void newBBSThread(IClient client, string title, string text, int icon, bool bNotice)
+        public static void newBBSThread(IChannelClient client, string title, string text, int icon, bool bNotice)
         {
             var chr = client.OnlinedCharacter;
             if (chr.GuildId <= 0)
@@ -97,7 +98,7 @@ namespace Application.Core.Managers
                     var newModel = new BbsThread()
                     {
                         Postercid = chr.Id,
-                        Timestamp = Server.getInstance().getCurrentTime(),
+                        Timestamp = client.CurrentServer.getCurrentTime(),
                         Name = title,
                         Icon = (short)icon,
                         Startpost = text,
@@ -118,7 +119,7 @@ namespace Application.Core.Managers
 
         }
 
-        public static void deleteBBSThread(IClient client, int localthreadid)
+        public static void deleteBBSThread(IChannelClient client, int localthreadid)
         {
             var mc = client.OnlinedCharacter;
             if (mc.getGuildId() <= 0)
@@ -154,7 +155,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void deleteBBSReply(IClient client, int replyid)
+        public static void deleteBBSReply(IChannelClient client, int replyid)
         {
             var mc = client.OnlinedCharacter;
             if (mc.getGuildId() <= 0)
@@ -191,7 +192,7 @@ namespace Application.Core.Managers
             }
         }
 
-        public static void displayThread(DBContext dbContext, IClient client, int threadid, bool bIsThreadIdLocal = true)
+        public static void displayThread(DBContext dbContext, IChannelClient client, int threadid, bool bIsThreadIdLocal = true)
         {
             var mc = client.OnlinedCharacter;
             if (mc.GuildId <= 0)

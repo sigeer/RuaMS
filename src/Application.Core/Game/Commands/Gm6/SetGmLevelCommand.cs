@@ -7,7 +7,7 @@ public class SetGmLevelCommand : CommandBase
         Description = "Set GM level of a player.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
@@ -17,10 +17,10 @@ public class SetGmLevelCommand : CommandBase
         }
 
         int newLevel = int.Parse(paramsValue[1]);
-        var target = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (target != null)
+        var target = c.CurrentServer.getPlayerStorage().getCharacterByName(paramsValue[0]);
+        if (target != null && target.Client.AccountEntity != null)
         {
-            target.getClient().setGMLevel(newLevel);
+            target.Client.AccountEntity.GMLevel = (sbyte)newLevel;
 
             target.dropMessage("You are now a level " + newLevel + " GM. See @commands for a list of available commands.");
             player.dropMessage(target + " is now a level " + newLevel + " GM.");

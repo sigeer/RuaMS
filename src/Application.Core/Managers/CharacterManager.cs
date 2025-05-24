@@ -1,32 +1,14 @@
-using Application.Core.Game.Items;
-using Application.Core.Game.Players.Models;
-using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
 using Application.Core.model;
-using Application.Core.scripting.npc;
 using AutoMapper;
-using client;
 using client.inventory;
-using client.inventory.manipulator;
-using client.keybind;
-using client.newyear;
-using client.processor.npc;
-using constants.id;
-using constants.inventory;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
-using MySql.EntityFrameworkCore.Extensions;
-using net.server;
 using server;
-using server.events;
-using server.life;
-using server.quest;
 using System.Text.RegularExpressions;
 using tools;
 
 namespace Application.Core.Managers
 {
-    public partial class CharacterManager
+    public class CharacterManager
     {
         static IMapper Mapper = GlobalTools.Mapper;
         public static string makeMapleReadable(string input)
@@ -40,211 +22,6 @@ namespace Application.Core.Managers
             return i;
         }
 
-        private static string[] BLOCKED_NAMES = {
-            "admin", "owner", "moderator", "intern", "donor", "administrator", "FREDRICK", "help", "helper", "alert", "notice", "maplestory", "fuck", "wizet", "fucking",
-            "negro", "fuk", "fuc", "penis", "pussy", "asshole", "gay", "nigger", "homo", "suck", "cum", "shit", "shitty", "condom", "security", "official", "rape", "nigga",
-            "sex", "tit", "boner", "orgy", "clit", "asshole", "fatass", "bitch", "support", "gamemaster", "cock", "gaay", "gm", "operate", "master",
-            "sysop", "party", "GameMaster", "community", "message", "event", "test", "meso", "Scania", "yata", "AsiaSoft", "henesys"};
-
-        [GeneratedRegex("^[a-zA-Z0-9\\u4e00-\\u9fa5]+$")]
-        private static partial Regex CheckNameReg();
-        public static bool CheckCharacterName(string name)
-        {
-            // 禁用名
-            if (BLOCKED_NAMES.Any(x => x.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                return false;
-
-            var bLength = GlobalTools.Encoding.GetBytes(name).Length;
-            if (bLength < 3 || bLength > 12)
-                return false;
-
-            if (!CheckNameReg().IsMatch(name))
-                return false;
-
-            using DBContext dbContext = new DBContext();
-            if (dbContext.Characters.Any(x => x.Name == name))
-                return false;
-
-            return true;
-        }
-
-        public static bool DeleteCharacterFromDB(int cid)
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                var charModel = dbContext.Characters.FirstOrDefault(x => x.Id == cid);
-                if (charModel == null)
-                    return false;
-
-                if (charModel.GuildId > 0 && charModel.GuildRank < 1)
-                {
-                    var guildInfo = dbContext.Guilds.FirstOrDefault(x => x.GuildId == charModel.GuildId);
-                    if (guildInfo != null)
-                    {
-                        if (guildInfo.AllianceId > 0)
-                        {
-                            var allianceInfo = dbContext.Alliances.FirstOrDefault(x => x.Id == guildInfo.AllianceId);
-                            if (allianceInfo != null)
-                            {
-                                if (charModel.AllianceRank == 1)
-                                {
-                                    dbContext.AllianceGuilds.Where(x => x.AllianceId == allianceInfo.Id).ExecuteDelete();
-                                    dbContext.Alliances.Where(x => x.Id == allianceInfo.Id).ExecuteDelete();
-                                }
-                                else
-                                {
-                                    dbContext.AllianceGuilds.Where(x => x.GuildId == guildInfo.GuildId).ExecuteDelete();
-                                }
-                            }
-                        }
-                        dbContext.Guilds.Remove(guildInfo);
-                    }
-                }
-                dbContext.Buddies.Where(x => x.CharacterId == cid || x.BuddyId == cid).ExecuteDelete();
-                var threadIdList = dbContext.BbsThreads.Where(x => x.Postercid == cid).Select(x => x.Threadid).ToList();
-                dbContext.BbsReplies.Where(x => threadIdList.Contains(x.Threadid)).ExecuteDelete();
-                dbContext.BbsThreads.Where(x => x.Postercid == cid).ExecuteDelete();
-
-                dbContext.Wishlists.Where(x => x.CharId == cid).ExecuteDelete();
-                dbContext.Cooldowns.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.Playerdiseases.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.AreaInfos.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.Monsterbooks.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.Characters.Where(x => x.Id == cid).ExecuteDelete();
-                dbContext.FamilyCharacters.Where(x => x.Cid == cid).ExecuteDelete();
-                dbContext.Famelogs.Where(x => x.CharacteridTo == cid).ExecuteDelete();
-
-                var inventoryItems = dbContext.Inventoryitems.Where(x => x.Characterid == cid).ToList();
-
-                var inventoryItemIdList = inventoryItems.Select(x => x.Inventoryitemid).ToList();
-                var ringIdList = dbContext.Inventoryequipments.Where(x => inventoryItemIdList.Contains(x.Inventoryitemid)).Select(x => x.RingId).ToList();
-                dbContext.Rings.Where(x => ringIdList.Contains(x.Id)).ExecuteDelete();
-
-                var inventoryPetIdList = inventoryItems.Select(x => x.Petid).ToList();
-                dbContext.Pets.Where(x => inventoryPetIdList.Contains(x.Petid)).ExecuteDelete();
-
-                dbContext.Inventoryequipments.Where(x => inventoryItemIdList.Contains(x.Inventoryitemid)).ExecuteDelete();
-                dbContext.Inventoryitems.Where(x => x.Characterid == cid).ExecuteDelete();
-
-                dbContext.Medalmaps.Where(x => x.Characterid == cid).ExecuteDelete();
-
-                dbContext.Questprogresses.Where(x => x.Characterid == cid).ExecuteDelete();
-
-                dbContext.Queststatuses.Where(x => x.Characterid == cid).ExecuteDelete();
-
-                dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
-
-                var mtsCartIdList = dbContext.MtsCarts.Where(x => x.Cid == cid).Select(x => x.Id).ToList();
-                dbContext.MtsItems.Where(x => mtsCartIdList.Contains(x.Id)).ExecuteDelete();
-                dbContext.MtsCarts.Where(x => x.Cid == cid).ExecuteDelete();
-
-
-                string[] toDel = { "famelog", "inventoryitems", "keymap", "queststatus", "savedlocations", "trocklocations", "skillmacros", "skills", "eventstats", "server_queue" };
-                foreach (string s in toDel)
-                {
-                    dbContext.Database.ExecuteSqlRaw("DELETE FROM `" + s + "` WHERE characterid = @cid", new MySqlParameter("cid", cid));
-                }
-                dbContext.SaveChanges();
-                dbTrans.Commit();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-                return false;
-            }
-        }
-
-        public static bool deleteCharFromDB(IPlayer player, int senderAccId)
-        {
-            int cid = player.getId();
-            if (!Server.getInstance().haveCharacterEntry(senderAccId, cid))
-            {    // thanks zera (EpiphanyMS) for pointing a critical exploit with non-authed character deletion request
-                return false;
-            }
-
-            int accId = senderAccId;
-            int world = 0;
-            try
-            {
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                world = dbContext.Characters.Where(x => x.Id == cid).Select(x => x.World).FirstOrDefault();
-
-                var storage = Server.getInstance().getWorld(world).getPlayerStorage();
-                var dbBuddyIdList = dbContext.Buddies.Where(x => x.CharacterId == cid).Select(x => x.BuddyId).ToList();
-                dbBuddyIdList.ForEach(buddyid =>
-                {
-                    var buddy = storage.getCharacterById(buddyid);
-                    if (buddy != null && buddy.IsOnlined)
-                    {
-                        buddy.deleteBuddy(cid);
-                    }
-                });
-
-                dbContext.Buddies.Where(x => x.CharacterId == cid).ExecuteDelete();
-
-                var threadIdList = dbContext.BbsThreads.Where(x => x.Postercid == cid).Select(x => x.Threadid).ToList();
-                dbContext.BbsReplies.Where(x => threadIdList.Contains(x.Threadid)).ExecuteDelete();
-                dbContext.BbsThreads.Where(x => x.Postercid == cid).ExecuteDelete();
-
-                player.LeaveGuild();
-                dbContext.Wishlists.Where(x => x.CharId == cid).ExecuteDelete();
-                dbContext.Cooldowns.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.Playerdiseases.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.AreaInfos.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.Monsterbooks.Where(x => x.Charid == cid).ExecuteDelete();
-                dbContext.Characters.Where(x => x.Id == cid).ExecuteDelete();
-                dbContext.FamilyCharacters.Where(x => x.Cid == cid).ExecuteDelete();
-                dbContext.Famelogs.Where(x => x.CharacteridTo == cid).ExecuteDelete();
-
-                var inventoryItems = dbContext.Inventoryitems.Where(x => x.Characterid == cid).ToList();
-                var inventoryItemIdList = inventoryItems.Select(x => x.Inventoryitemid).ToList();
-                var inventoryEquipList = dbContext.Inventoryequipments.Where(x => inventoryItemIdList.Contains(x.Inventoryitemid)).ToList();
-                inventoryItems.ForEach(rs =>
-                {
-                    var ringsList = inventoryEquipList.Where(x => x.Inventoryitemid == rs.Inventoryitemid).Select(x => x.RingId).ToList();
-                    ringsList.ForEach(ringid =>
-                    {
-                        if (ringid > -1)
-                        {
-                            dbContext.Rings.Where(x => x.Id == ringid).ExecuteDelete();
-                            CashIdGenerator.freeCashId(ringid);
-                        }
-                    });
-
-                    dbContext.Pets.Where(x => x.Petid == rs.Petid).ExecuteDelete();
-                    CashIdGenerator.freeCashId(rs.Petid);
-                });
-                dbContext.Inventoryitems.RemoveRange(inventoryItems);
-                dbContext.Inventoryequipments.RemoveRange(inventoryEquipList);
-
-                deleteQuestProgressWhereCharacterId(dbContext, cid);
-                FredrickProcessor.removeFredrickLog(dbContext, cid);   // thanks maple006 for pointing out the player's Fredrick items are not being deleted at character deletion
-
-                var mtsCartIdList = dbContext.MtsCarts.Where(x => x.Cid == cid).Select(x => x.Id).ToList();
-                dbContext.MtsItems.Where(x => mtsCartIdList.Contains(x.Id)).ExecuteDelete();
-                dbContext.MtsCarts.Where(x => x.Cid == cid).ExecuteDelete();
-
-                string[] toDel = { "famelog", "inventoryitems", "keymap", "queststatus", "savedlocations", "trocklocations", "skillmacros", "skills", "eventstats", "server_queue" };
-                foreach (string s in toDel)
-                {
-                    dbContext.Database.ExecuteSqlRaw("DELETE FROM `" + s + "` WHERE characterid = @cid", new MySqlParameter("cid", cid));
-                }
-                dbContext.SaveChanges();
-                dbTrans.Commit();
-                Server.getInstance().deleteCharacterEntry(accId, cid);
-                AllPlayerStorage.DeleteCharacter(cid);
-                return true;
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-                return false;
-            }
-        }
 
         public static void deleteQuestProgressWhereCharacterId(DBContext dbContext, int cid)
         {
@@ -274,25 +51,6 @@ namespace Application.Core.Managers
                 }
             }
             dbContext.SaveChanges();
-        }
-
-
-        public static IPlayer NewPlayer(int world, int accountId)
-        {
-            var m = new Player(
-                world: world,
-                accountId: accountId,
-                hp: 50,
-                mp: 5,
-                str: 12,
-                dex: 5,
-                @int: 4,
-                luk: 4,
-                job: Job.BEGINNER,
-                level: 1
-             );
-
-            return m;
         }
 
 
@@ -341,307 +99,307 @@ namespace Application.Core.Managers
             return dbContext.Characters.Where(x => x.Id == id).Select(x => x.Name).FirstOrDefault()!;
         }
 
-        /// <summary>
-        /// 角色
-        /// </summary>
-        /// <param name="charid"></param>
-        /// <param name="client"></param>
-        /// <param name="login"></param>
-        /// <returns></returns>
-        public static IPlayer? LoadPlayerFromDB(int charid, IClient client, bool login)
-        {
-            try
-            {
-                var ret = new Player(client);
-                using var dbContext = new DBContext();
-                var dbModel = dbContext.Characters.FirstOrDefault(x => x.Id == charid) ?? throw new BusinessCharacterNotFoundException(charid);
+        ///// <summary>
+        ///// 角色
+        ///// </summary>
+        ///// <param name="charid"></param>
+        ///// <param name="client"></param>
+        ///// <param name="login"></param>
+        ///// <returns></returns>
+        //public static IPlayer? LoadPlayerFromDB(int charid, IChannelClient client, bool login)
+        //{
+        //    try
+        //    {
+        //        var ret = new Player(client);
+        //        using var dbContext = new DBContext();
+        //        var dbModel = dbContext.Characters.FirstOrDefault(x => x.Id == charid) ?? throw new BusinessCharacterNotFoundException(charid);
 
-                Mapper.Map(dbModel, ret);
+        //        Mapper.Map(dbModel, ret);
 
-                ret.Monsterbook.loadCards(dbContext, ret.Id);
+        //        ret.Monsterbook.loadCards(dbContext, ret.Id);
 
-                var wserv = Server.getInstance().getWorld(ret.World);
+        //        var wserv = Server.getInstance().getWorld(ret.World);
 
-                short sandboxCheck = 0x0;
-                foreach (var item in ItemFactory.INVENTORY.loadItems(ret.Id, !login))
-                {
-                    sandboxCheck |= item.Item.getFlag();
+        //        short sandboxCheck = 0x0;
+        //        foreach (var item in ItemFactory.INVENTORY.loadItems(ret.Id, !login))
+        //        {
+        //            sandboxCheck |= item.Item.getFlag();
 
-                    ret.Bag[item.Type].addItemFromDB(item.Item);
-                    Item itemz = item.Item;
-                    if (itemz.getPetId() > -1)
-                    {
-                        var pet = itemz.getPet();
-                        if (pet != null && pet.isSummoned())
-                        {
-                            ret.addPet(pet);
-                        }
-                        continue;
-                    }
+        //            ret.Bag[item.Type].addItemFromDB(item.Item);
+        //            Item itemz = item.Item;
+        //            if (itemz.getPetId() > -1)
+        //            {
+        //                var pet = itemz.getPet();
+        //                if (pet != null && pet.isSummoned())
+        //                {
+        //                    ret.addPet(pet);
+        //                }
+        //                continue;
+        //            }
 
-                    InventoryType mit = item.Type;
-                    if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
-                    {
-                        Equip equip = (Equip)item.Item;
-                        if (equip.getRingId() > -1)
-                        {
-                            var ring = RingManager.LoadFromDb(equip.getRingId())!;
-                            if (ring != null)
-                            {
-                                if (item.Type.Equals(InventoryType.EQUIPPED))
-                                {
-                                    ring.equip();
-                                }
+        //            InventoryType mit = item.Type;
+        //            if (mit.Equals(InventoryType.EQUIP) || mit.Equals(InventoryType.EQUIPPED))
+        //            {
+        //                Equip equip = (Equip)item.Item;
+        //                if (equip.getRingId() > -1)
+        //                {
+        //                    var ring = RingManager.LoadFromDb(equip.getRingId())!;
+        //                    if (ring != null)
+        //                    {
+        //                        if (item.Type.Equals(InventoryType.EQUIPPED))
+        //                        {
+        //                            ring.equip();
+        //                        }
 
-                                ret.addPlayerRing(ring);
-                            }
-                        }
-                    }
-                }
+        //                        ret.addPlayerRing(ring);
+        //                    }
+        //                }
+        //            }
+        //        }
 
-                if ((sandboxCheck & ItemConstants.SANDBOX) == ItemConstants.SANDBOX)
-                {
-                    ret.setHasSandboxItem();
-                }
+        //        if ((sandboxCheck & ItemConstants.SANDBOX) == ItemConstants.SANDBOX)
+        //        {
+        //            ret.setHasSandboxItem();
+        //        }
 
-                ret.CheckMarriageData();
+        //        ret.CheckMarriageData();
 
-                NewYearCardRecord.loadPlayerNewYearCards(ret);
+        //        NewYearCardRecord.loadPlayerNewYearCards(ret);
 
-                //PreparedStatement ps2, ps3;
-                //ResultSet rs2, rs3;
+        //        //PreparedStatement ps2, ps3;
+        //        //ResultSet rs2, rs3;
 
-                // Items excluded from pet loot
-                var petDataFromDB = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == charid && x.Petid > -1)
-                                     let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).ToList()
-                                     select new { a.Petid, excluded }).ToList();
-                foreach (var item in petDataFromDB)
-                {
-                    int petId = item.Petid;
-                    ret.resetExcluded(petId);
+        //        // Items excluded from pet loot
+        //        var petDataFromDB = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == charid && x.Petid > -1)
+        //                             let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).ToList()
+        //                             select new { a.Petid, excluded }).ToList();
+        //        foreach (var item in petDataFromDB)
+        //        {
+        //            int petId = item.Petid;
+        //            ret.resetExcluded(petId);
 
-                    foreach (var ex in item.excluded)
-                    {
-                        ret.addExcluded(petId, ex.Itemid);
-                    }
-                }
+        //            foreach (var ex in item.excluded)
+        //            {
+        //                ret.addExcluded(petId, ex.Itemid);
+        //            }
+        //        }
 
-                ret.commitExcludedItems();
-
-
-                if (login)
-                {
-                    client.setPlayer(ret);
-
-                    var mapManager = client.getChannelServer().getMapFactory();
-                    ret.setMap(mapManager.getMap(ret.Map) ?? mapManager.getMap(MapId.HENESYS));
-
-                    var portal = ret.MapModel.getPortal(ret.InitialSpawnPoint);
-                    if (portal == null)
-                    {
-                        portal = ret.MapModel.getPortal(0)!;
-                        ret.InitialSpawnPoint = 0;
-                    }
-                    ret.setPosition(portal.getPosition());
-
-                    ret.setParty(wserv.getParty(dbModel.Party));
-
-                    int messengerid = dbModel.MessengerId;
-                    int position = dbModel.MessengerPosition;
-                    if (messengerid > 0 && position < 4 && position > -1)
-                    {
-                        var messenger = wserv.getMessenger(messengerid);
-                        if (messenger != null)
-                        {
-                            ret.Messenger = messenger;
-                        }
-                    }
-                }
+        //        ret.commitExcludedItems();
 
 
-                ret.PlayerTrockLocation.LoadData(dbContext);
+        //        if (login)
+        //        {
+        //            client.SetPlayer(ret);
 
-                var accountFromDB = dbContext.Accounts.Where(x => x.Id == ret.AccountId).AsNoTracking().FirstOrDefault();
-                if (accountFromDB != null)
-                {
-                    client.LoadAccountInfo(accountFromDB);
-                }
+        //            var mapManager = client.getChannelServer().getMapFactory();
+        //            ret.setMap(mapManager.getMap(ret.Map) ?? mapManager.getMap(MapId.HENESYS));
 
-                var areaInfoFromDB = dbContext.AreaInfos.Where(x => x.Charid == ret.Id).Select(x => new { x.Area, x.Info }).ToList();
-                foreach (var item in areaInfoFromDB)
-                {
-                    ret.AreaInfo.AddOrUpdate((short)item.Area, item.Info);
-                }
+        //            var portal = ret.MapModel.getPortal(ret.InitialSpawnPoint);
+        //            if (portal == null)
+        //            {
+        //                portal = ret.MapModel.getPortal(0)!;
+        //                ret.InitialSpawnPoint = 0;
+        //            }
+        //            ret.setPosition(portal.getPosition());
 
-                var eventStatsFromDB = dbContext.Eventstats.Where(x => x.Characterid == ret.Id).Select(x => new { x.Name, x.Info }).ToList();
-                foreach (var item in eventStatsFromDB)
-                {
-                    if (item.Name == "rescueGaga")
-                    {
-                        ret.Events.AddOrUpdate(item.Name, new RescueGaga(item.Info));
-                    }
-                }
+        //            ret.setParty(wserv.getParty(dbModel.Party));
 
-                // Blessing of the Fairy
-                var otherCharFromDB = dbContext.Characters.Where(x => x.AccountId == ret.AccountId && x.Id != charid)
-                    .OrderByDescending(x => x.Level).Select(x => new { x.Name, x.Level }).FirstOrDefault();
-                if (otherCharFromDB != null)
-                {
-                    ret.Link = new CharacterLink(otherCharFromDB.Name, otherCharFromDB.Level);
-                }
-
-                if (login)
-                {
-                    Dictionary<int, QuestStatus> loadedQuestStatus = new();
-
-                    var statusFromDB = dbContext.Queststatuses.Where(x => x.Characterid == charid).ToList();
-                    foreach (var item in statusFromDB)
-                    {
-                        var q = Quest.getInstance(item.Quest);
-                        QuestStatus status = new QuestStatus(q, (QuestStatus.Status)item.Status);
-                        long cTime = item.Time;
-                        if (cTime > -1)
-                        {
-                            status.setCompletionTime(cTime * 1000);
-                        }
-
-                        long eTime = item.Expires;
-                        if (eTime > 0)
-                        {
-                            status.setExpirationTime(eTime);
-                        }
-
-                        status.setForfeited(item.Forfeited);
-                        status.setCompleted(item.Completed);
-                        ret.Quests.AddOrUpdate(q.getId(), status);
-                        loadedQuestStatus.AddOrUpdate(item.Queststatusid, status);
-                    }
+        //            int messengerid = dbModel.MessengerId;
+        //            int position = dbModel.MessengerPosition;
+        //            if (messengerid > 0 && position < 4 && position > -1)
+        //            {
+        //                var messenger = wserv.getMessenger(messengerid);
+        //                if (messenger != null)
+        //                {
+        //                    ret.Messenger = messenger;
+        //                }
+        //            }
+        //        }
 
 
-                    // Quest progress
-                    // opportunity for improvement on questprogress/medalmaps calls to DB
-                    var questProgressFromDB = dbContext.Questprogresses.Where(x => x.Characterid == charid).ToList();
-                    foreach (var item in questProgressFromDB)
-                    {
-                        var status = loadedQuestStatus.GetValueOrDefault(item.Queststatusid);
-                        status?.setProgress(item.Progressid, item.Progress);
-                    }
+        //        ret.PlayerTrockLocation.LoadData(dbContext);
 
-                    // Medal map visit progress
-                    var medalMapFromDB = dbContext.Medalmaps.Where(x => x.Characterid == charid).ToList();
-                    foreach (var item in medalMapFromDB)
-                    {
-                        var status = loadedQuestStatus.GetValueOrDefault(item.Queststatusid);
-                        status?.addMedalMap(item.Mapid);
-                    }
+        //        var accountFromDB = dbContext.Accounts.Where(x => x.Id == ret.AccountId).AsNoTracking().FirstOrDefault();
+        //        if (accountFromDB != null)
+        //        {
+        //            client.SetAccount(accountFromDB);
+        //        }
 
-                    loadedQuestStatus.Clear();
+        //        var areaInfoFromDB = dbContext.AreaInfos.Where(x => x.Charid == ret.Id).Select(x => new { x.Area, x.Info }).ToList();
+        //        foreach (var item in areaInfoFromDB)
+        //        {
+        //            ret.AreaInfo.AddOrUpdate((short)item.Area, item.Info);
+        //        }
 
-                    // Skills
-                    ret.Skills.LoadData(dbContext);
+        //        var eventStatsFromDB = dbContext.Eventstats.Where(x => x.Characterid == ret.Id).Select(x => new { x.Name, x.Info }).ToList();
+        //        foreach (var item in eventStatsFromDB)
+        //        {
+        //            if (item.Name == "rescueGaga")
+        //            {
+        //                ret.Events.AddOrUpdate(item.Name, new RescueGaga(item.Info));
+        //            }
+        //        }
 
-                    // Cooldowns (load)
-                    var cdFromDB = dbContext.Cooldowns.Where(x => x.Charid == ret.getId()).ToList();
-                    foreach (var item in cdFromDB)
-                    {
-                        int skillid = item.SkillId;
-                        long length = item.Length;
-                        long startTime = item.StartTime;
-                        if (skillid != 5221999 && (length + startTime < Server.getInstance().getCurrentTime()))
-                        {
-                            continue;
-                        }
-                        ret.giveCoolDowns(skillid, startTime, length);
+        //        // Blessing of the Fairy
+        //        var otherCharFromDB = dbContext.Characters.Where(x => x.AccountId == ret.AccountId && x.Id != charid)
+        //            .OrderByDescending(x => x.Level).Select(x => new { x.Name, x.Level }).FirstOrDefault();
+        //        if (otherCharFromDB != null)
+        //        {
+        //            ret.Link = new CharacterLink(otherCharFromDB.Name, otherCharFromDB.Level);
+        //        }
 
-                    }
+        //        if (login)
+        //        {
+        //            Dictionary<int, QuestStatus> loadedQuestStatus = new();
 
-                    // Cooldowns (delete)
-                    dbContext.Cooldowns.Where(x => x.Charid == ret.getId()).ExecuteDelete();
+        //            var statusFromDB = dbContext.Queststatuses.Where(x => x.Characterid == charid).ToList();
+        //            foreach (var item in statusFromDB)
+        //            {
+        //                var q = Quest.getInstance(item.Quest);
+        //                QuestStatus status = new QuestStatus(q, (QuestStatus.Status)item.Status);
+        //                long cTime = item.Time;
+        //                if (cTime > -1)
+        //                {
+        //                    status.setCompletionTime(cTime * 1000);
+        //                }
 
-                    // Debuffs (load)
-                    #region Playerdiseases
-                    Dictionary<Disease, DiseaseExpiration> loadedDiseases = new();
-                    var playerDiseaseFromDB = dbContext.Playerdiseases.Where(x => x.Charid == ret.getId()).ToList();
-                    foreach (var item in playerDiseaseFromDB)
-                    {
-                        Disease disease = Disease.ordinal(item.Disease);
-                        if (disease == Disease.NULL)
-                        {
-                            continue;
-                        }
+        //                long eTime = item.Expires;
+        //                if (eTime > 0)
+        //                {
+        //                    status.setExpirationTime(eTime);
+        //                }
 
-                        int skillid = item.Mobskillid, skilllv = item.Mobskilllv;
-                        long length = item.Length;
+        //                status.setForfeited(item.Forfeited);
+        //                status.setCompleted(item.Completed);
+        //                ret.Quests.AddOrUpdate(q.getId(), status);
+        //                loadedQuestStatus.AddOrUpdate(item.Queststatusid, status);
+        //            }
 
-                        var ms = MobSkillFactory.getMobSkill(MobSkillTypeUtils.from(skillid), skilllv);
-                        if (ms != null)
-                        {
-                            loadedDiseases.AddOrUpdate(disease, new(length, ms));
-                        }
-                    }
 
-                    dbContext.Playerdiseases.Where(x => x.Charid == ret.getId()).ExecuteDelete();
-                    if (loadedDiseases.Count > 0)
-                    {
-                        Server.getInstance().getPlayerBuffStorage().addDiseasesToStorage(ret.Id, loadedDiseases);
-                    }
-                    #endregion
+        //            // Quest progress
+        //            // opportunity for improvement on questprogress/medalmaps calls to DB
+        //            var questProgressFromDB = dbContext.Questprogresses.Where(x => x.Characterid == charid).ToList();
+        //            foreach (var item in questProgressFromDB)
+        //            {
+        //                var status = loadedQuestStatus.GetValueOrDefault(item.Queststatusid);
+        //                status?.setProgress(item.Progressid, item.Progress);
+        //            }
 
-                    // Skill macros
-                    var dbSkillMacros = dbContext.Skillmacros.Where(x => x.Characterid == ret.Id).OrderBy(x => x.Position).ToList();
-                    dbSkillMacros.ForEach(o =>
-                    {
-                        ret.SkillMacros[o.Position] = new SkillMacro(o.Skill1, o.Skill2, o.Skill3, o.Name, o.Shout, o.Position);
-                    });
+        //            // Medal map visit progress
+        //            var medalMapFromDB = dbContext.Medalmaps.Where(x => x.Characterid == charid).ToList();
+        //            foreach (var item in medalMapFromDB)
+        //            {
+        //                var status = loadedQuestStatus.GetValueOrDefault(item.Queststatusid);
+        //                status?.addMedalMap(item.Mapid);
+        //            }
 
-                    // Key config
-                    ret.KeyMap.LoadData(dbContext);
+        //            loadedQuestStatus.Clear();
 
-                    ret.SavedLocations.LoadData(dbContext);
+        //            // Skills
+        //            ret.Skills.LoadData(dbContext);
 
-                    // Fame history
-                    var now = DateTimeOffset.Now;
-                    var fameLogFromDB = dbContext.Famelogs.Where(x => x.Characterid == ret.Id && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
-                    if (fameLogFromDB.Count > 0)
-                    {
-                        ret.LastFameTime = fameLogFromDB.Max(x => x.When).ToUnixTimeMilliseconds();
-                        ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
-                    }
+        //            // Cooldowns (load)
+        //            var cdFromDB = dbContext.Cooldowns.Where(x => x.Charid == ret.getId()).ToList();
+        //            foreach (var item in cdFromDB)
+        //            {
+        //                int skillid = item.SkillId;
+        //                long length = item.Length;
+        //                long startTime = item.StartTime;
+        //                if (skillid != 5221999 && (length + startTime < Server.getInstance().getCurrentTime()))
+        //                {
+        //                    continue;
+        //                }
+        //                ret.giveCoolDowns(skillid, startTime, length);
 
-                    ret.BuddyList.LoadFromDb(dbContext);
-                    ret.Storage = wserv.getAccountStorage(ret.AccountId);
+        //            }
 
-                    ret.UpdateLocalStats(true);
-                    //ret.resetBattleshipHp();
-                }
+        //            // Cooldowns (delete)
+        //            dbContext.Cooldowns.Where(x => x.Charid == ret.getId()).ExecuteDelete();
 
-                var mountItem = ret.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.Mount);
-                if (mountItem != null)
-                {
-                    var mountModel = new Mount(ret, mountItem.getItemId());
-                    mountModel.setExp(ret.MountExp);
-                    mountModel.setLevel(ret.MountLevel);
-                    mountModel.setTiredness(ret.Mounttiredness);
-                    mountModel.setActive(false);
-                    ret.SetMount(mountModel);
-                }
+        //            // Debuffs (load) 那buff呢？
+        //            #region Playerdiseases
+        //            Dictionary<Disease, DiseaseExpiration> loadedDiseases = new();
+        //            var playerDiseaseFromDB = dbContext.Playerdiseases.Where(x => x.Charid == ret.getId()).ToList();
+        //            foreach (var item in playerDiseaseFromDB)
+        //            {
+        //                Disease disease = Disease.ordinal(item.Disease);
+        //                if (disease == Disease.NULL)
+        //                {
+        //                    continue;
+        //                }
 
-                // Quickslot key config
-                var accKeyMapFromDB = dbContext.Quickslotkeymappeds.Where(x => x.Accountid == ret.getAccountID()).Select(x => (long?)x.Keymap).FirstOrDefault();
-                if (accKeyMapFromDB != null)
-                {
-                    ret.QuickSlotLoaded = LongTool.LongToBytes(accKeyMapFromDB.Value);
-                    ret.QuickSlotKeyMapped = new QuickslotBinding(ret.QuickSlotLoaded);
-                }
+        //                int skillid = item.Mobskillid, skilllv = item.Mobskilllv;
+        //                long length = item.Length;
 
-                return ret;
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-            }
-            return null;
-        }
+        //                var ms = MobSkillFactory.getMobSkill(MobSkillTypeUtils.from(skillid), skilllv);
+        //                if (ms != null)
+        //                {
+        //                    loadedDiseases.AddOrUpdate(disease, new(length, ms));
+        //                }
+        //            }
+
+        //            dbContext.Playerdiseases.Where(x => x.Charid == ret.getId()).ExecuteDelete();
+        //            if (loadedDiseases.Count > 0)
+        //            {
+        //                Server.getInstance().getPlayerBuffStorage().addDiseasesToStorage(ret.Id, loadedDiseases);
+        //            }
+        //            #endregion
+
+        //            // Skill macros
+        //            var dbSkillMacros = dbContext.Skillmacros.Where(x => x.Characterid == ret.Id).OrderBy(x => x.Position).ToList();
+        //            dbSkillMacros.ForEach(o =>
+        //            {
+        //                ret.SkillMacros[o.Position] = new SkillMacro(o.Skill1, o.Skill2, o.Skill3, o.Name, o.Shout, o.Position);
+        //            });
+
+        //            // Key config
+        //            ret.KeyMap.LoadData(dbContext);
+
+        //            ret.SavedLocations.LoadData(dbContext);
+
+        //            // Fame history
+        //            var now = DateTimeOffset.UtcNow;
+        //            var fameLogFromDB = dbContext.Famelogs.Where(x => x.Characterid == ret.Id && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
+        //            if (fameLogFromDB.Count > 0)
+        //            {
+        //                ret.LastFameTime = fameLogFromDB.Max(x => x.When).ToUnixTimeMilliseconds();
+        //                ret.LastFameCIds = fameLogFromDB.Select(x => x.CharacteridTo).ToList();
+        //            }
+
+        //            ret.BuddyList.LoadFromDb(dbContext);
+        //            ret.Storage = wserv.getAccountStorage(ret.AccountId);
+
+        //            ret.UpdateLocalStats(true);
+        //            //ret.resetBattleshipHp();
+        //        }
+
+        //        var mountItem = ret.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.Mount);
+        //        if (mountItem != null)
+        //        {
+        //            var mountModel = new Mount(ret, mountItem.getItemId());
+        //            mountModel.setExp(ret.MountExp);
+        //            mountModel.setLevel(ret.MountLevel);
+        //            mountModel.setTiredness(ret.Mounttiredness);
+        //            mountModel.setActive(false);
+        //            ret.SetMount(mountModel);
+        //        }
+
+        //        // Quickslot key config
+        //        var accKeyMapFromDB = dbContext.Quickslotkeymappeds.Where(x => x.Accountid == ret.getAccountID()).Select(x => (long?)x.Keymap).FirstOrDefault();
+        //        if (accKeyMapFromDB != null)
+        //        {
+        //            ret.QuickSlotLoaded = LongTool.LongToBytes(accKeyMapFromDB.Value);
+        //            ret.QuickSlotKeyMapped = new QuickslotBinding(ret.QuickSlotLoaded);
+        //        }
+
+        //        return ret;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Log.Logger.Error(e.ToString());
+        //    }
+        //    return null;
+        //}
 
 
         public static IPlayer? GetPlayerById(int chrId, bool showEquipped = false)
@@ -867,7 +625,7 @@ namespace Application.Core.Managers
             {
                 try
                 {
-                    dbContext.Namechanges.Where(x => x.Id == nameChangeId).ExecuteUpdate(x => x.SetProperty(y => y.CompletionTime, DateTimeOffset.Now));
+                    dbContext.Namechanges.Where(x => x.Id == nameChangeId).ExecuteUpdate(x => x.SetProperty(y => y.CompletionTime, DateTimeOffset.UtcNow));
                 }
                 catch (Exception e)
                 {
@@ -888,7 +646,7 @@ namespace Application.Core.Managers
                 var m = dbContext.Quickslotkeymappeds.Where(x => x.Accountid == player.AccountId).FirstOrDefault();
                 if (m == null)
                 {
-                    m = new Quickslotkeymapped() { Accountid = player.AccountId, Keymap = nQuickslotKeymapped };
+                    m = new Quickslotkeymapped(player.AccountId, nQuickslotKeymapped);
                     dbContext.Quickslotkeymappeds.Add(m);
                 }
                 else
@@ -966,7 +724,7 @@ namespace Application.Core.Managers
 
                     var ignoresPetIds = player.getExcluded().Select(x => x.Key).ToList();
                     dbContext.Petignores.Where(x => ignoresPetIds.Contains(x.Petid)).ExecuteDelete();
-                    dbContext.Petignores.AddRange(player.getExcluded().SelectMany(x => x.Value.Select(y => new Petignore() { Petid = x.Key, Itemid = y })).ToList());
+                    dbContext.Petignores.AddRange(player.getExcluded().SelectMany(x => x.Value.Select(y => new Petignore(x.Key, y))).ToList());
                     dbContext.SaveChanges();
 
 
@@ -982,7 +740,7 @@ namespace Application.Core.Managers
                         var macro = player.SkillMacros[i];
                         if (macro != null)
                         {
-                            dbContext.Skillmacros.Add(new Skillmacro(player.Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
+                            dbContext.Skillmacros.Add(new SkillMacroEntity(player.Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
                         }
                     }
                     dbContext.SaveChanges();

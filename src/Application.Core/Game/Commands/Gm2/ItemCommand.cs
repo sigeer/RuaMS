@@ -1,10 +1,6 @@
-using Application.Core.Game.Players;
 using Application.Core.Managers;
 using Application.Core.scripting.npc;
-using Application.Shared;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
 using server;
 using System.Text;
 
@@ -17,7 +13,7 @@ public class ItemCommand : CommandBase
         Description = "Spawn an item into your inventory.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -62,7 +58,7 @@ public class ItemCommand : CommandBase
         SendItem(c, itemId, paramsValue);
     }
 
-    private void SendItem(IClient c, int itemId, string[] paramsValue)
+    private void SendItem(IChannelClient c, int itemId, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -89,11 +85,11 @@ public class ItemCommand : CommandBase
         if (ItemConstants.isPet(itemId))
         {
             if (paramsValue.Length >= 2)
-            {   
+            {
                 // thanks to istreety & TacoBell
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
-                long expiration = DateTimeOffset.Now.AddDays(days).ToUnixTimeMilliseconds();
+                long expiration = DateTimeOffset.UtcNow.AddDays(days).ToUnixTimeMilliseconds();
                 int petid = ItemManager.CreatePet(itemId);
 
                 InventoryManipulator.addById(c, itemId, quantity, player.getName(), petid, expiration: expiration);

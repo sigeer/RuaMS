@@ -1,5 +1,4 @@
 using AutoMapper;
-using client.inventory;
 
 namespace Application.Core.EF.Entities
 {

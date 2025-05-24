@@ -1,4 +1,3 @@
-﻿using net.server;
 using server.events.gm;
 using tools;
 
@@ -11,7 +10,7 @@ public class StartEventCommand : CommandBase
         Description = "Start an event on current map.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int players = 50;
@@ -20,13 +19,13 @@ public class StartEventCommand : CommandBase
             players = int.Parse(paramsValue[0]);
         }
         c.getChannelServer().setEvent(new Event(player.getMapId(), players));
-        Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.earnTitleMessage(
+        c.CurrentServer.BroadcastWorldMessage(PacketCreator.earnTitleMessage(
                 "[Event] An event has started on "
                         + player.getMap().getMapName()
                         + " and will allow "
                         + players
                         + " players to join. Type @joinevent to participate."));
-        Server.getInstance().broadcastMessage(c.getWorld(),
+        c.CurrentServer.BroadcastWorldMessage(
                 PacketCreator.serverNotice(6, "[Event] An event has started on "
                         + player.getMap().getMapName()
                         + " and will allow "

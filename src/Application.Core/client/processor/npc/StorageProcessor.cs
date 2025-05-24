@@ -24,8 +24,6 @@
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
-using constants.id;
-using constants.inventory;
 using net.packet;
 using server;
 using tools;
@@ -38,7 +36,7 @@ public class StorageProcessor
 {
     private static ILogger log = LogFactory.GetLogger(LogType.StorageProcessor);
 
-    public static void storageAction(InPacket p, IClient c)
+    public static void storageAction(InPacket p, IChannelClient c)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         var chr = c.OnlinedCharacter;
@@ -68,7 +66,7 @@ public class StorageProcessor
                             { // removal starts at zero
                                 AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with storage.");
                                 log.Warning("Chr {CharacterName} tried to work with storage slot {Slot}", chr.getName(), slot);
-                                c.disconnect(true, false);
+                                c.Disconnect(true, false);
                                 return;
                             }
 
@@ -140,7 +138,7 @@ public class StorageProcessor
                                 AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter,
                                         c.OnlinedCharacter.getName() + " tried to packet edit with storage.");
                                 log.Warning("Chr {ChracterName} tried to store item at slot {Slot}", c.OnlinedCharacter.getName(), slot);
-                                c.disconnect(true, false);
+                                c.Disconnect(true, false);
                                 return;
                             }
 

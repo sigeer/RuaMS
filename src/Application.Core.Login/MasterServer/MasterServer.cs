@@ -1,13 +1,26 @@
-using Application.Core.Game.Tasks;
+using Application.Core.Game.GlobalControllers;
 using Application.Core.Gameplay.Wedding;
+using Application.Core.Login.Datas;
+using Application.Core.Login.Net;
+using Application.Core.Login.Services;
+using Application.Core.Login.Session;
+using Application.Core.Login.Tasks;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
-using Application.Scripting.JS;
 using Application.Shared.Configs;
+using Application.Shared.Net;
+using Application.Shared.Servers;
+using Application.Utility;
+using Application.Utility.Compatible.Atomics;
+using Application.Utility.Configs;
 using Application.Utility.Tasks;
+using client.processor.npc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using net.netty;
+using net.server;
+using server;
+using System.Net;
 
 
 namespace Application.Core.Login
@@ -29,9 +42,10 @@ namespace Application.Core.Login
 
         public IMasterServerTransport Transport { get; }
 
-        public DateTimeOffset StartupTime { get; }
+        public DateTimeOffset StartupTime { get; private set; }
 
         private HashSet<int> queuedGuilds = new();
+        public PlayerStorage Players { get; }
 
         #region world config
         private float _mobRate;
@@ -61,45 +75,108 @@ namespace Application.Core.Login
         public string EventMessage { get; set; }
         #endregion
 
+        public IServiceProvider ServiceProvider { get; }
 
-        public MasterServer(ILogger<MasterServer> logger, IConfiguration configuration)
+        public InvitationController InvitationController { get; }
+
+        CharacterService _characterSevice;
+        ServerService _serverService;
+        public MasterServer(IServiceProvider sp, AccountManager accountManager, CharacterService characterManager)
         {
-            _logger = logger;
+            ServiceProvider = sp;
+            _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
+            _serverService = ServiceProvider.GetRequiredService<ServerService>();
+
+            this.accountManager = accountManager;
+            _characterSevice = characterManager;
 
             InstanceId = Guid.NewGuid().ToString();
             ChannelServerList = new List<ChannelServerWrapper>();
-            StartupTime = DateTimeOffset.Now;
+            StartupTime = DateTimeOffset.UtcNow;
             Transport = new MasterServerTransport(this);
             NettyServer = new LoginServer(this);
 
             WeddingInstance = new WeddingService(this);
 
+            var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
             var serverSection = configuration.GetSection("WorldConfig");
-            MobRate = serverSection.GetValue<float>("MobRate");
-            ExpRate = serverSection.GetValue<float>("ExpRate");
-            MesoRate = serverSection.GetValue<float>("MesoRate");
-            DropRate = serverSection.GetValue<float>("DropRate");
-            BossDropRate = serverSection.GetValue<float>("BossDropRate");
-            TravelRate = serverSection.GetValue<float>("TravelRate");
-            FishingRate = serverSection.GetValue<float>("FishingRate");
+            MobRate = serverSection.GetValue<float>("MobRate", 1);
+            ExpRate = serverSection.GetValue<float>("ExpRate", 1);
+            MesoRate = serverSection.GetValue<float>("MesoRate", 1);
+            DropRate = serverSection.GetValue<float>("DropRate", 1);
+            BossDropRate = serverSection.GetValue<float>("BossDropRate", 1);
+            TravelRate = serverSection.GetValue<float>("TravelRate", 1);
+            FishingRate = serverSection.GetValue<float>("FishingRate", 1);
 
-            EventMessage = serverSection.GetValue<string>("EventMessage");
-            ServerMessage = serverSection.GetValue<string>("ServerMessage");
+            Name = serverSection.GetValue<string>("Name", "");
+            EventMessage = serverSection.GetValue<string>("EventMessage", "");
+            ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
+            WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
+
+            Players = new PlayerStorage();
+            BuffStorage = new PlayerBuffStorage();
+            this.accountManager = accountManager;
+
+            InvitationController = new InvitationController(this);
+
         }
 
+        bool isShuttingdown = false;
         public async Task Shutdown()
         {
+            if (!IsRunning)
+            {
+                _logger.LogInformation("服务器未启动");
+                return;
+            }
+
+            if (isShuttingdown)
+            {
+                _logger.LogInformation("正在停止服务器[{ServerName}]", InstanceId);
+                return;
+            }
+
+            isShuttingdown = true;
+            _logger.LogInformation("[{ServerName}] 停止中...", "登录/中心服务器");
             await NettyServer.Stop();
+            _logger.LogInformation("[{ServerName}] 停止监听", "登录服务器");
+
+            await InvitationController.DisposeAsync();
+
+            await Server.getInstance().Stop(false);
+
+            var storageService = ServiceProvider.GetRequiredService<StorageService>();
+            _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", "中心服务器");
+            await storageService.CommitAllImmediately();
+            _logger.LogInformation("[{ServerName}] 玩家数据已保存", "中心服务器");
+
             IsRunning = false;
+            isShuttingdown = false;
+            _logger.LogInformation("[{ServerName}] 已停止", "登录/中心服务器");
         }
 
         public async Task StartServer()
         {
-            _logger.LogInformation("登录服务器启动中...");
+            await Server.getInstance().Start();
+
+            await _serverService.SetupDataBase();
+
+            _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
             await NettyServer.Start();
-            _logger.LogInformation("登录服务器启动成功, 监听端口{Port}", Port);
+            _logger.LogInformation("[{ServerName}] 启动成功, 监听端口{Port}", "登录服务器", Port);
+
+            StartupTime = DateTimeOffset.UtcNow;
+            ForceUpdateServerTime();
+
+            await RegisterTask();
+
             IsRunning = true;
+            _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
+                "登录/中心服务器",
+                DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+                DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
+
 
         public int AddChannel(ChannelServerWrapper channel)
         {
@@ -119,6 +196,12 @@ namespace Application.Core.Login
         public ChannelServerWrapper GetChannel(int channelId)
         {
             return ChannelServerList[channelId - 1];
+        }
+
+        public IPEndPoint GetChannelIPEndPoint(int channelId)
+        {
+            var channel = GetChannel(channelId);
+            return new IPEndPoint(IPAddress.Parse(channel.ServerConfig.Host), channel.ServerConfig.Port);
         }
 
         public bool IsGuildQueued(int guildId)
@@ -176,6 +259,96 @@ namespace Application.Core.Login
             Transport.SendWorldConfig(updatePatch);
         }
 
+        private async Task RegisterTask()
+        {
+            _logger.LogInformation("[{ServerName}] 定时任务加载中...", "中心服务器");
+            var timeLeft = TimeUtils.GetTimeLeftForNextHour();
+            var tMan = TimerManager.getInstance();
+            await tMan.Start();
+            var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
+            tMan.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            tMan.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
+            tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            tMan.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
+            tMan.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
+            tMan.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
+            tMan.register(new DueyFredrickTask(ServiceProvider.GetRequiredService<FredrickProcessor>()), TimeSpan.FromHours(1), timeLeft);
+            tMan.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            InvitationController.Register();
+            _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");
+        }
+
+        public bool IsWorldCapacityFull()
+        {
+            return GetWorldCapacityStatus() == 2;
+        }
+
+        public int GetWorldCapacityStatus()
+        {
+            int worldCap = ChannelServerList.Count * YamlConfig.config.server.CHANNEL_LOAD;
+            int num = Players.Count;
+
+            int status;
+            if (num >= worldCap)
+            {
+                status = 2;
+            }
+            else if (num >= worldCap * 0.8)
+            {
+                // More than 80 percent o___o
+                status = 1;
+            }
+            else
+            {
+                status = 0;
+            }
+
+            return status;
+        }
+
+
+
+        public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
+        {
+            return Transport.WrapPlayer(name, channel, mapId, portal);
+        }
+
+        public void BroadcastWorldMessage(Packet p)
+        {
+            Transport.BroadcastMessage(p);
+        }
+        public void BroadcastWorldGMPacket(Packet packet)
+        {
+            Transport.BroadcastWorldGMPacket(packet);
+        }
+
+        public bool CheckCharacterName(string name)
+        {
+            return _characterSevice.CheckCharacterName(name);
+        }
+
+        private AtomicLong currentTime = new AtomicLong(0);
+        private long serverCurrentTime = 0;
+        public int getCurrentTimestamp()
+        {
+            return (int)(getCurrentTime() - StartupTime.ToUnixTimeMilliseconds());
+        }
+
+        public long getCurrentTime()
+        {
+            return serverCurrentTime;
+        }
+        public void UpdateServerTime()
+        {
+            serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
+        }
+
+        public void ForceUpdateServerTime()
+        {
+            var forceTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            serverCurrentTime = forceTime;
+            currentTime.set(forceTime);
+        }
     }
 }

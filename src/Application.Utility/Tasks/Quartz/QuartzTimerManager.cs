@@ -52,7 +52,7 @@ public class QuartzTimerManager : ITimerManager
         if (delay == null)
             builder.StartNow();
         else
-            builder.StartAt(DateTimeOffset.Now.Add(delay.Value));
+            builder.StartAt(DateTimeOffset.UtcNow.Add(delay.Value));
 
         var trigger = builder
                         .WithSimpleSchedule(x => x
@@ -76,7 +76,7 @@ public class QuartzTimerManager : ITimerManager
 
         var trigger = TriggerBuilder.Create()
             .WithIdentity("T_" + r.Name)
-            .StartAt(DateTimeOffset.Now.Add(delay))
+            .StartAt(DateTimeOffset.UtcNow.Add(delay))
             .Build();
 
         _scheduler.ScheduleJob(job, trigger).Wait();
@@ -92,12 +92,12 @@ public class QuartzTimerManager : ITimerManager
 
     public ScheduledFuture scheduleAtTimestamp(AbstractRunnable r, DateTimeOffset time)
     {
-        return schedule(r, (time - DateTimeOffset.Now));
+        return schedule(r, (time - DateTimeOffset.UtcNow));
     }
 
     public ScheduledFuture scheduleAtTimestamp(Action r, DateTimeOffset time)
     {
-        return schedule(TempRunnable.Parse(r), time - DateTimeOffset.Now);
+        return schedule(TempRunnable.Parse(r), time - DateTimeOffset.UtcNow);
     }
 
     public bool isShutdown()

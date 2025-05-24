@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Game.TheWorld;
+
 namespace net.server.services.task.channel;
 
 /**
@@ -28,11 +30,11 @@ public class MobClearSkillService : BaseService
 
     private MobClearSkillScheduler[] mobClearSkillSchedulers = new MobClearSkillScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public MobClearSkillService()
+    public MobClearSkillService(IWorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
-            mobClearSkillSchedulers[i] = new MobClearSkillScheduler();
+            mobClearSkillSchedulers[i] = new MobClearSkillScheduler(worldChannel);
         }
     }
 
@@ -54,6 +56,9 @@ public class MobClearSkillService : BaseService
 
     private class MobClearSkillScheduler : BaseScheduler
     {
+        public MobClearSkillScheduler(IWorldChannel worldChannel) : base(worldChannel)
+        {
+        }
 
         public void registerClearSkillAction(Action runAction, long delay)
         {

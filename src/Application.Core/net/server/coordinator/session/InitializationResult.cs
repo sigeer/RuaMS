@@ -1,4 +1,4 @@
-using static net.server.coordinator.session.SessionCoordinator;
+using Application.Shared.Sessions;
 
 namespace net.server.coordinator.session;
 

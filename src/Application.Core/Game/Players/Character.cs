@@ -43,14 +43,8 @@ using client.inventory.manipulator;
 using client.keybind;
 using client.processor.action;
 using constants.game;
-using constants.id;
-using constants.inventory;
-using constants.skills;
-using Jint.Runtime;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
-using net.server.coordinator.world;
 using net.server.guild;
 using net.server.world;
 using scripting;
@@ -174,9 +168,7 @@ public partial class Player
 
     private Trade? trade = null;
     public MonsterBook Monsterbook { get; set; }
-
-    CashShop? _cashShop = null;
-    public CashShop CashShopModel => _cashShop ?? (_cashShop = new CashShop(AccountId, Id, getJobType()));
+    public CashShop CashShopModel { get; set; }
     public PlayerSavedLocation SavedLocations { get; set; }
 
     private List<WeakReference<IMap>> lastVisitedMaps = new();
@@ -330,7 +322,7 @@ public partial class Player
 
     public void setSessionTransitionState()
     {
-        Client.setCharacterOnSessionTransitionState(this.getId());
+        Client.SetCharacterOnSessionTransitionState(this.getId());
     }
 
     public bool getCS()
@@ -573,14 +565,14 @@ public partial class Player
         allowExpGain = !allowExpGain;
     }
 
-    public void setClient(IClient c)
+    public void setClient(IChannelClient c)
     {
         this.Client = c;
     }
 
     private void RemoveWorldWatcher()
     {
-        var channelServer = Client.getChannelServer();
+        var channelServer = Client.CurrentServer;
         channelServer.OnWorldExpRateChanged -= UpdateActualExpRate;
         channelServer.OnWorldMesoRateChanged -= UpdateActualMesoRate;
         channelServer.OnWorldDropRateChanged -= UpdateActualDropRate;
@@ -590,7 +582,7 @@ public partial class Player
     }
     private void AddWorldWatcher()
     {
-        var channelServer = Client.getChannelServer();
+        var channelServer = Client.CurrentServer;
         channelServer.OnWorldExpRateChanged += UpdateActualExpRate;
         channelServer.OnWorldMesoRateChanged += UpdateActualMesoRate;
         channelServer.OnWorldDropRateChanged += UpdateActualDropRate;
@@ -599,15 +591,14 @@ public partial class Player
         channelServer.OnWorldQuestRateChanged += UpdateActualQuestMesoRate;
     }
 
-    public void LinkNewChannelClient(IClient newClient)
+    public void LinkNewChannelClient(IChannelClient newClient)
     {
         RemoveWorldWatcher();
 
-        newClient.SetAccountInfoFromClient(Client);
         this.setClient(newClient);
 
         AddWorldWatcher();
-        this.setMap(newClient.getChannelServer().getMapFactory().getMap(getMapId()));
+        this.setMap(newClient.CurrentServer.getMapFactory().getMap(getMapId()));
         var portal = MapModel.findClosestPlayerSpawnpoint(getPosition()) ?? MapModel.getPortal(0)!;
         this.setPosition(portal.getPosition());
         this.InitialSpawnPoint = portal.getId();
@@ -738,7 +729,7 @@ public partial class Player
         {
             return FameStatus.OK;
         }
-        else if (LastFameTime >= DateTimeOffset.Now.AddDays(-1).ToUnixTimeMilliseconds())
+        else if (LastFameTime >= DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeMilliseconds())
         {
             return FameStatus.NOT_TODAY;
         }
@@ -871,7 +862,7 @@ public partial class Player
     {
         foreach (IPlayer chr in MapModel.getAllPlayers())
         {
-            IClient chrC = chr.getClient();
+            var chrC = chr.Client;
 
             if (chrC != null)
             {     // propagate new job 3rd-person effects (FJ, Aran 1st strike, etc)
@@ -1142,7 +1133,7 @@ public partial class Player
     private bool buffMapProtection()
     {
         int thisMapid = getMapId();
-        int returnMapid = Client.getChannelServer().getMapFactory().getMap(thisMapid).getReturnMapId();
+        int returnMapid = Client.CurrentServer.getMapFactory().getMap(thisMapid).getReturnMapId();
 
         Monitor.Enter(effLock);
         chLock.EnterReadLock();
@@ -1384,7 +1375,7 @@ public partial class Player
 
     public void removeIncomingInvites()
     {
-        InviteCoordinator.removePlayerIncomingInvites(Id);
+        Client.CurrentServer.Service.RemovePlayerIncomingInvites(Id);
     }
 
     public void checkBerserk(bool isHidden)
@@ -1427,7 +1418,7 @@ public partial class Player
         {
             var worldz = getWorldServer();
             worldz.silentJoinMessenger(Messenger.getId(), new MessengerCharacter(this, MessengerPosition), MessengerPosition);
-            worldz.updateMessenger(Messenger.getId(), Name, Client.getChannel());
+            worldz.updateMessenger(Messenger.getId(), Name, Client.Channel);
         }
     }
 
@@ -1512,7 +1503,7 @@ public partial class Player
 
                 if (ItemId.isMonsterCard(itemId))
                 {
-                    this.Monsterbook.addCard(Client, itemId);
+                    this.Monsterbook.addCard(itemId);
                 }
                 return true;
             }
@@ -1571,7 +1562,7 @@ public partial class Player
             Skill battleship = SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
             sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
-            addCooldown(Corsair.BATTLE_SHIP, Server.getInstance().getCurrentTime(), cooldown * 1000);
+            addCooldown(Corsair.BATTLE_SHIP, getChannelServer().getCurrentTime(), cooldown * 1000);
             removeCooldown(5221999);
             cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
         }
@@ -1588,7 +1579,7 @@ public partial class Player
     }
 
 
-    private void nextPendingRequest(IClient c)
+    private void nextPendingRequest(IChannelClient c)
     {
         CharacterNameAndId? pendingBuddyRequest = c.OnlinedCharacter.getBuddylist().pollPendingRequest();
         if (pendingBuddyRequest != null)
@@ -1597,12 +1588,12 @@ public partial class Player
         }
     }
 
-    private void notifyRemoteChannel(IClient c, int remoteChannel, int otherCid, BuddyList.BuddyOperation operation)
+    private void notifyRemoteChannel(IChannelClient c, int remoteChannel, int otherCid, BuddyList.BuddyOperation operation)
     {
         var player = c.OnlinedCharacter;
         if (remoteChannel != -1)
         {
-            c.getWorldServer().buddyChanged(otherCid, player.getId(), player.getName(), c.getChannel(), operation);
+            c.getWorldServer().buddyChanged(otherCid, player.getId(), player.getName(), c.Channel, operation);
         }
     }
 
@@ -1757,7 +1748,7 @@ public partial class Player
     /// <param name="emote"></param>
     public void changeFaceExpression(int emote)
     {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = getChannelServer().getCurrentTime();
         // IClient allows changing every 2 seconds. Give it a little bit of overhead for packet delays.
         if (timeNow - lastExpression > 1500)
         {
@@ -1794,7 +1785,7 @@ public partial class Player
         UpdateLocalStats();
         if (Messenger != null)
         {
-            getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.getChannel());
+            getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.Channel);
         }
     }
 
@@ -1993,7 +1984,7 @@ public partial class Player
         return this.chalktext;
     }
 
-    public IClient getClient()
+    public IChannelClient getClient()
     {
         return Client;
     }
@@ -2262,7 +2253,7 @@ public partial class Player
         }
     }
 
-    public void exportExcludedItems(IClient c)
+    public void exportExcludedItems(IChannelClient c)
     {
         Dictionary<int, HashSet<int>> petExcluded = this.getExcluded();
         foreach (var pe in petExcluded)
@@ -2648,7 +2639,7 @@ public partial class Player
     public void setPlayerAggro(int mobHash)
     {
         setTargetHpBarHash(mobHash);
-        setTargetHpBarTime(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        setTargetHpBarTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
     }
 
     public void resetPlayerAggro()
@@ -2743,11 +2734,11 @@ public partial class Player
                 {
                     Item iItem = mpsi.getItem().copy();
                     iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
-                    InventoryManipulator.addFromDrop(this.getClient(), iItem, false);
+                    InventoryManipulator.addFromDrop(this.Client, iItem, false);
                 }
                 else if (mpsi.isExist())
                 {
-                    InventoryManipulator.addFromDrop(this.getClient(), mpsi.getItem(), true);
+                    InventoryManipulator.addFromDrop(this.Client, mpsi.getItem(), true);
                 }
             }
             mps.closeShop();
@@ -2942,7 +2933,7 @@ public partial class Player
 
     public int gmLevel()
     {
-        return Client.getGMLevel();
+        return Client.AccountEntity!.GMLevel;
     }
 
     private void guildUpdate()
@@ -3015,7 +3006,7 @@ public partial class Player
         setBuffedValue(BuffStat.COMBO, 1);
         sendPacket(PacketCreator.giveBuff(
             skillid,
-            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.Now.ToUnixTimeMilliseconds()),
+            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
             stat));
         MapModel.broadcastMessage(this, PacketCreator.giveForeignBuff(getId(), stat), false);
     }
@@ -3034,7 +3025,7 @@ public partial class Player
     {
         try
         {
-            LastFameTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            LastFameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             LastFameCIds.Add(to.getId());
 
             using var dbContext = new DBContext();
@@ -3818,7 +3809,7 @@ public partial class Player
 
         cancelAllBuffs(false);
         dispelDebuffs();
-        lastDeathtime = Server.getInstance().getCurrentTime();
+        lastDeathtime = getChannelServer().getCurrentTime();
 
         EventInstanceManager? eim = getEventInstance();
         if (eim != null)
@@ -4346,7 +4337,7 @@ public partial class Player
         this.isbanned = true;
         TimerManager.getInstance().schedule(() =>
         {
-            Client.disconnect(false, false);
+            Client.Disconnect(false, false);
         }, duration);
     }
 
@@ -4354,12 +4345,14 @@ public partial class Player
     {
         string message = getName() + " received this - " + text;
         if (Server.getInstance().isGmOnline(this.getWorld()))
-        { //Alert and log if a GM is online
-            Server.getInstance().broadcastGMMessage(this.getWorld(), PacketCreator.sendYellowTip(message));
+        {
+            //Alert and log if a GM is online
+            Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
         }
         else
-        { //Auto DC and log if no GM is online
-            Client.disconnect(false, false);
+        {
+            //Auto DC and log if no GM is online
+            Client.Disconnect(false, false);
         }
         Log.Information(message);
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
@@ -4683,7 +4676,7 @@ public partial class Player
                 {
                     continue;
                 }
-                mesoGain += standaloneSell(getClient(), ii, type, i, inv.getItem(i)!.getQuantity());
+                mesoGain += standaloneSell(ii, type, i, inv.getItem(i)!.getQuantity());
             }
         }
         finally
@@ -4694,7 +4687,7 @@ public partial class Player
         return (mesoGain);
     }
 
-    private int standaloneSell(IClient c, ItemInformationProvider ii, InventoryType type, short slot, short quantity)
+    private int standaloneSell(ItemInformationProvider ii, InventoryType type, short slot, short quantity)
     {
         // quantity == 0xFFFF || 这里quantity永远小于0xFFFF，有什么意义？
         if (quantity == 0)
@@ -4730,7 +4723,7 @@ public partial class Player
 
             if (quantity <= iQuant && iQuant > 0)
             {
-                InventoryManipulator.removeFromSlot(c, type, (byte)slot, quantity, false);
+                InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
                 int recvMesos = ii.getPrice(itemid, quantity);
                 if (recvMesos > 0)
                 {
@@ -4855,7 +4848,7 @@ public partial class Player
         {
             for (short i = pos; i <= inv.getSlotLimit(); i++)
             {
-                standaloneMerge(statups, getClient(), InventoryType.EQUIP, i, inv.getItem(i));
+                standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i));
             }
         }
         finally
@@ -4864,7 +4857,7 @@ public partial class Player
         }
     }
 
-    private void standaloneMerge(Dictionary<StatUpgrade, float> statups, IClient c, InventoryType type, short slot, Item? item)
+    private void standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Item? item)
     {
         short quantity;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -4899,7 +4892,7 @@ public partial class Player
             statups.AddOrUpdate(s.Key, newVal);
         }
 
-        InventoryManipulator.removeFromSlot(c, type, (byte)slot, quantity, false);
+        InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
     }
 
     public void setShop(Shop? shop)
@@ -4947,7 +4940,7 @@ public partial class Player
 
     private long getDojoTimeLeft()
     {
-        return Client.getChannelServer().getDojoFinishTime(MapModel.getId()) - Server.getInstance().getCurrentTime();
+        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - getChannelServer().getCurrentTime();
     }
 
     public void showDojoClock()
@@ -4960,7 +4953,7 @@ public partial class Player
 
     public void showUnderleveledInfo(Monster mob)
     {
-        long curTime = Server.getInstance().getCurrentTime();
+        long curTime = getChannelServer().getCurrentTime();
         if (nextWarningTime < curTime)
         {
             nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds);   // show underlevel info again after 1 minute
@@ -4969,14 +4962,7 @@ public partial class Player
         }
     }
 
-
-
-    public void showHint(string msg)
-    {
-        showHint(msg, 500);
-    }
-
-    public void showHint(string msg, int length)
+    public void showHint(string msg, int length = 500)
     {
         Client.announceHint(msg, length);
     }
@@ -5034,14 +5020,14 @@ public partial class Player
         return MapObjectType.PLAYER;
     }
 
-    public override void sendDestroyData(IClient Client)
+    public override void sendDestroyData(IChannelClient Client)
     {
         Client.sendPacket(PacketCreator.removePlayerFromMap(this.getObjectId()));
     }
 
-    public override void sendSpawnData(IClient Client)
+    public override void sendSpawnData(IChannelClient Client)
     {
-        if (!this.isHidden() || Client.getGMLevel() > 1)
+        if (!this.isHidden() || Client.AccountEntity!.GMLevel > 1)
         {
             Client.sendPacket(PacketCreator.spawnPlayerMapObject(Client, this, false));
 
@@ -5081,7 +5067,7 @@ public partial class Player
 
     public void portalDelay(long delay)
     {
-        this.portaldelay = DateTimeOffset.Now.AddMilliseconds(delay).ToUnixTimeMilliseconds();
+        this.portaldelay = DateTimeOffset.UtcNow.AddMilliseconds(delay).ToUnixTimeMilliseconds();
     }
 
     public long portalDelay()
@@ -5148,18 +5134,18 @@ public partial class Player
         sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for HACK reason.#k", "Cosmic")));
         TimerManager.getInstance().schedule(() =>
         {
-            Client.disconnect(false, false);
+            Client.Disconnect(false, false);
 
         }, 5000);
 
-        Server.getInstance().broadcastGMMessage(this.getWorld(), PacketCreator.serverNotice(6, CharacterManager.makeMapleReadable(Name) + " was autobanned for " + reason));
+        Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, CharacterManager.makeMapleReadable(Name) + " was autobanned for " + reason));
     }
 
     public void block(int reason, int days, string desc)
     {
         try
         {
-            var tempBan = DateTimeOffset.Now.AddDays(days);
+            var tempBan = DateTimeOffset.UtcNow.AddDays(days);
             using var dbContext = new DBContext();
             dbContext.Accounts.Where(x => x.Id == AccountId).ExecuteUpdate(x => x.SetProperty(y => y.Banreason, desc)
                 .SetProperty(y => y.Tempban, tempBan)
@@ -5440,10 +5426,8 @@ public partial class Player
     public void logOff()
     {
         RemoveWorldWatcher();
-
+        Client.CurrentServer.Transport.SendAccountLogout(AccountId);
         setClient(new OfflineClient());
-        using var dbContext = new DBContext();
-        dbContext.Characters.Where(x => x.Id == getId()).ExecuteUpdate(x => x.SetProperty(y => y.LastLogoutTime, DateTimeOffset.Now));
     }
 
     public void setLoginTime(DateTimeOffset time)
@@ -5461,7 +5445,7 @@ public partial class Player
     /// <returns></returns>
     public TimeSpan getLoggedInTime()
     {
-        return DateTimeOffset.Now - loginTime;
+        return DateTimeOffset.UtcNow - loginTime;
     }
 
     public bool isLoggedin()
@@ -5521,7 +5505,7 @@ public partial class Player
         {
             using var dbContext = new DBContext();
             //check for pending name change
-            var currentTimeMillis = DateTimeOffset.Now;
+            var currentTimeMillis = DateTimeOffset.UtcNow;
 
             try
             {
@@ -5665,16 +5649,9 @@ public partial class Player
         this.challenged = challenged;
     }
 
-    public void setLanguage(int num)
-    {
-        Client.setLanguage(num);
-        using var dbContext = new DBContext();
-        dbContext.Accounts.Where(x => x.Id == Client.getAccID()).ExecuteUpdate(x => x.SetProperty(y => y.Language, num));
-    }
-
     public int getLanguage()
     {
-        return Client.getLanguage();
+        return Client.AccountEntity!.Language;
     }
 
     public bool isChasing()
@@ -5689,7 +5666,7 @@ public partial class Player
 
     public IWorldChannel getChannelServer()
     {
-        return Client.getChannelServer();
+        return Client.CurrentServer;
     }
 
     public void LeaveGuild()

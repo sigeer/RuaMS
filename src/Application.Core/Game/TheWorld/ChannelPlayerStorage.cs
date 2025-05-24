@@ -97,7 +97,7 @@ namespace Application.Core.Game.TheWorld
             {
                 if (mc.IsOnlined)
                 {
-                    mc.Client.forceDisconnect();
+                    mc.Client.ForceDisconnect();
                 }
             }
 

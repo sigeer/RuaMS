@@ -18,10 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using client.inventory;
-using constants.id;
-
 namespace client.creator.novice;
 
 /**
@@ -42,7 +38,7 @@ public class NoblesseCreator : CharacterFactory
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(IClient c, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
+    public static int createCharacter(IClientBase c, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
     {
         return createNewCharacter(c, name, face, hair, skin, gender, createRecipe(Job.NOBLESSE, 1, MapId.STARTING_MAP_NOBLESSE, top, bottom, shoes, weapon));
     }

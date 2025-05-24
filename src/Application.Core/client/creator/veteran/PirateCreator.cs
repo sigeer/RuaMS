@@ -20,7 +20,6 @@
 
 
 using client.inventory;
-using constants.id;
 using server;
 
 namespace client.creator.veteran;
@@ -75,7 +74,7 @@ public class PirateCreator : CharacterFactory
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(IClient c, string name, int face, int hair, int skin, int gender, int improveSp)
+    public static int createCharacter(IChannelClient c, string name, int face, int hair, int skin, int gender, int improveSp)
     {
         return createNewCharacter(c, name, face, hair, skin, gender, createRecipe(Job.PIRATE, 30, MapId.NAUTILUS_HARBOR, equips[gender], equips[2 + gender], equips[4], weapons[0]));
     }

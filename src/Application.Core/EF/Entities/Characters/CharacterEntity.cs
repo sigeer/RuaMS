@@ -33,9 +33,9 @@ public class CharacterEntity : IDB_Character
         Sp = sp;
         Map = map;
         Spawnpoint = spawnpoint;
-        CreateDate = DateTimeOffset.Now;
-        LastLogoutTime = DateTimeOffset.Now;
-        LastExpGainTime = DateTimeOffset.Now;
+        CreateDate = DateTimeOffset.UtcNow;
+        LastLogoutTime = DateTimeOffset.UtcNow;
+        LastExpGainTime = DateTimeOffset.UtcNow;
     }
 
     public int Id { get; set; }

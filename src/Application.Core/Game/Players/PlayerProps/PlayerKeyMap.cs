@@ -1,3 +1,4 @@
+using Application.Shared.Characters;
 using Application.Shared.KeyMaps;
 using client.keybind;
 using constants.game;
@@ -21,6 +22,16 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
+        public void LoadData(KeyMapDto[] keyMapFromDB)
+        {
+            _dataSource.Clear();
+
+            foreach (var item in keyMapFromDB)
+            {
+                _dataSource.AddOrUpdate(item.Key, new KeyBinding(item.Type, item.Action));
+            }
+        }
+
         public override void LoadData(DBContext dbContext)
         {
             _dataSource.Clear();
@@ -31,10 +42,20 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
+        public KeyMapDto[] ToDto()
+        {
+            return _dataSource.Select(x => new KeyMapDto
+            {
+                Key = x.Key,
+                Action = x.Value.getAction(),
+                Type = x.Value.getType()
+            }).ToArray();
+        }
+
         public override void SaveData(DBContext dbContext)
         {
             dbContext.Keymaps.Where(x => x.Characterid == Owner.Id).ExecuteDelete();
-            dbContext.Keymaps.AddRange(_dataSource.Select(x => new Keymap() { Characterid = Owner.Id, Key = x.Key, Type = x.Value.getType(), Action = x.Value.getAction() }));
+            dbContext.Keymaps.AddRange(_dataSource.Select(x => new KeyMapEntity(Owner.Id, x.Key, x.Value.getType(), x.Value.getAction())));
             dbContext.SaveChanges();
         }
 

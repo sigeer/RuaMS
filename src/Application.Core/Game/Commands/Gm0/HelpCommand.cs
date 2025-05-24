@@ -1,5 +1,3 @@
-using constants.id;
-
 namespace Application.Core.Game.Commands.Gm0;
 
 public class HelpCommand : CommandBase
@@ -9,7 +7,7 @@ public class HelpCommand : CommandBase
         Description = "Show available commands.";
     }
 
-    public override void Execute(IClient client, string[] paramsValue)
+    public override void Execute(IChannelClient client, string[] paramsValue)
     {
         client.OpenNpc(NpcId.STEWARD, "commands");
     }

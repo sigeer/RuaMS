@@ -1,14 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace database.note;
 
 
 public class NoteDao
 {
+    readonly IDbContextFactory<DBContext> _dbContextFactory;
+
+    public NoteDao(IDbContextFactory<DBContext> dbContextFactory)
+    {
+        _dbContextFactory = dbContextFactory;
+    }
 
     public void save(DB_Note note)
     {
         try
         {
-            using var dbContext = new DBContext();
+            using var dbContext = _dbContextFactory.CreateDbContext();
             dbContext.Notes.Add(note);
             dbContext.SaveChanges();
         }
@@ -22,7 +30,7 @@ public class NoteDao
     {
         try
         {
-            using var dbContext = new DBContext();
+            using var dbContext = _dbContextFactory.CreateDbContext();
             return dbContext.Notes.Where(x => x.To == to && x.Deleted == 0).ToList();
         }
         catch (Exception e)
@@ -35,7 +43,7 @@ public class NoteDao
     {
         try
         {
-            using var dbContext = new DBContext();
+            using var dbContext = _dbContextFactory.CreateDbContext();
             var note = dbContext.Notes.FirstOrDefault(x => x.Id == id && x.Deleted == 0);
             if (note == null)
             {

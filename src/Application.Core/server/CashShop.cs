@@ -21,13 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-using Application.Core.Managers;
 using client.inventory;
-using constants.id;
-using constants.inventory;
 using Microsoft.EntityFrameworkCore;
 using net.server;
-using tools;
 
 namespace server;
 
@@ -44,58 +40,60 @@ public class CashShop
     public const int MAPLE_POINT = 2;
     public const int NX_PREPAID = 4;
 
+
     private int accountId;
     private int characterId;
-    private int nxCredit;
-    private int maplePoint;
-    private int nxPrepaid;
+
     private bool opened;
-    private ItemFactory factory;
     private List<Item> inventory = new();
     private List<int> wishList = new();
     private int notes = 0;
     private object lockObj = new object();
+    public ItemFactory Factory { get; }
+    public IPlayer Owner { get; set; }
+    public int NxCredit { get; set; }
+    public int MaplePoint { get; set; }
+    public int NxPrepaid { get; set; }
 
-    public CashShop(int accountId, int characterId, int jobType)
+    public CashShop(IPlayer player)
     {
-        this.accountId = accountId;
-        this.characterId = characterId;
+        Owner = player;
+
+        this.accountId = player.AccountId;
+        this.characterId = player.Id;
 
         if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)
         {
-            switch (jobType)
+            switch (player.getJobType())
             {
                 case 0:
-                    factory = ItemFactory.CASH_EXPLORER;
+                    Factory = ItemFactory.CASH_EXPLORER;
                     break;
                 case 1:
-                    factory = ItemFactory.CASH_CYGNUS;
+                    Factory = ItemFactory.CASH_CYGNUS;
                     break;
                 case 2:
-                    factory = ItemFactory.CASH_ARAN;
+                    Factory = ItemFactory.CASH_ARAN;
+                    break;
+                default:
+                    Factory = ItemFactory.CASH_OVERALL;
                     break;
             }
         }
         else
         {
-            factory = ItemFactory.CASH_OVERALL;
+            Factory = ItemFactory.CASH_OVERALL;
         }
+    }
 
-        using var dbContext = new DBContext();
-        var dbModel = dbContext.Accounts.Where(x => x.Id == accountId).Select(x => new { x.NxCredit, x.MaplePoint, x.NxPrepaid }).FirstOrDefault();
-        if (dbModel != null)
-        {
-            this.nxCredit = dbModel.NxCredit ?? 0;
-            this.maplePoint = dbModel.MaplePoint ?? 0;
-            this.nxPrepaid = dbModel.NxPrepaid ?? 0;
-        }
+    public void LoadData(int nxCredit, int maplePoint, int nxPrepaid, List<int> characterWishList, List<Item> items)
+    {
+        NxCredit = nxCredit;
+        MaplePoint = maplePoint;
+        NxPrepaid = nxPrepaid;
 
-        foreach (var item in factory!.loadItems(accountId, false))
-        {
-            inventory.Add(item.Item);
-        }
-        var wishListFromDB = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToList();
-        wishList.AddRange(wishListFromDB);
+        inventory = items;
+        wishList = characterWishList;
     }
 
 
@@ -105,7 +103,7 @@ public class CashShop
         private int sn;
         private int itemId;
         private int price;
-        private long period;
+        public long Period { get; }
         private short count;
         private bool onSale;
 
@@ -114,7 +112,7 @@ public class CashShop
             this.sn = sn;
             this.itemId = itemId;
             this.price = price;
-            this.period = (period == 0 ? 90 : period);
+            this.Period = (period == 0 ? 90 : period);
             this.count = count;
             this.onSale = onSale;
         }
@@ -142,57 +140,6 @@ public class CashShop
         public bool isOnSale()
         {
             return onSale;
-        }
-
-        public Item toItem()
-        {
-            Item item;
-
-            int petid = -1;
-            if (ItemConstants.isPet(itemId))
-            {
-                petid = ItemManager.CreatePet(itemId);
-            }
-
-            if (ItemConstants.getInventoryType(itemId).Equals(InventoryType.EQUIP))
-            {
-                item = ItemInformationProvider.getInstance().getEquipById(itemId);
-            }
-            else
-            {
-                item = new Item(itemId, 0, count, petid);
-            }
-
-            if (ItemConstants.EXPIRING_ITEMS)
-            {
-                if (period == 1)
-                {
-                    switch (itemId)
-                    {
-                        case ItemId.DROP_COUPON_2X_4H:
-                        case ItemId.EXP_COUPON_2X_4H: // 4 Hour 2X coupons, the period is 1, but we don't want them to last a day.
-                            item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromHours(4).TotalMilliseconds);
-                            /*
-                            } else if(itemId == 5211047 || itemId == 5360014) { // 3 Hour 2X coupons, unused as of now
-                                    item.setExpiration(Server.getInstance().getCurrentTime() + HOURS.toMillis(3));
-                            */
-                            break;
-                        case ItemId.EXP_COUPON_3X_2H:
-                            item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromHours(2).TotalMilliseconds);
-                            break;
-                        default:
-                            item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromDays(1).TotalMilliseconds);
-                            break;
-                    }
-                }
-                else
-                {
-                    item.setExpiration(Server.getInstance().getCurrentTime() + (long)TimeSpan.FromDays(period).TotalMilliseconds);
-                }
-            }
-
-            item.setSN(sn);
-            return item;
         }
     }
 
@@ -294,9 +241,9 @@ public class CashShop
 
         public static CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
 
-        public static List<Item> getPackage(int itemId)
+        public static List<Item> getPackage(int itemId, IChannelService service)
         {
-            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => GetItemTrust(x).toItem()).ToList();
+            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => service.CashItem2Item(GetItemTrust(x))).ToList();
         }
 
         public static bool isPackage(int itemId)
@@ -318,9 +265,9 @@ public class CashShop
     {
         return (type) switch
         {
-            NX_CREDIT => nxCredit,
-            MAPLE_POINT => maplePoint,
-            NX_PREPAID => nxPrepaid,
+            NX_CREDIT => Owner.Client.AccountEntity.NxCredit ?? 0,
+            MAPLE_POINT => Owner.Client.AccountEntity.MaplePoint ?? 0,
+            NX_PREPAID => Owner.Client.AccountEntity.NxPrepaid ?? 0,
             _ => 0
         };
 
@@ -331,13 +278,13 @@ public class CashShop
         switch (type)
         {
             case NX_CREDIT:
-                nxCredit += cash;
+                Owner.Client.AccountEntity.NxCredit += cash;
                 break;
             case MAPLE_POINT:
-                maplePoint += cash;
+                Owner.Client.AccountEntity.MaplePoint += cash;
                 break;
             case NX_PREPAID:
-                nxPrepaid += cash;
+                Owner.Client.AccountEntity.NxPrepaid += cash;
                 break;
         }
     }
@@ -471,7 +418,7 @@ public class CashShop
             {
                 notes++;
                 var cItem = CashItemFactory.GetItemTrust(rs.Sn);
-                Item item = cItem.toItem();
+                Item item = Owner.Client.getChannelServer().Service.CashItem2Item(cItem);
                 Equip? equip = null;
                 item.setGiftFrom(rs.From);
                 if (item.getInventoryType().Equals(InventoryType.EQUIP))
@@ -488,7 +435,7 @@ public class CashShop
                 if (CashItemFactory.isPackage(cItem.getItemId()))
                 {
                     //Packages never contains a ring
-                    foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId()))
+                    foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId(), Owner.Client.getChannelServer().Service))
                     {
                         packageItem.setGiftFrom(rs.From);
                         addToInventory(packageItem);
@@ -526,9 +473,9 @@ public class CashShop
     public void save(DBContext dbContext)
     {
         dbContext.Accounts.Where(x => x.Id == accountId).ExecuteUpdate(x =>
-                x.SetProperty(y => y.NxCredit, nxCredit)
-                .SetProperty(y => y.MaplePoint, maplePoint)
-                .SetProperty(y => y.NxPrepaid, nxPrepaid)
+                x.SetProperty(y => y.NxCredit, NxCredit)
+                .SetProperty(y => y.MaplePoint, MaplePoint)
+                .SetProperty(y => y.NxPrepaid, NxPrepaid)
                 );
 
         List<ItemInventoryType> itemsWithType = new();
@@ -539,11 +486,11 @@ public class CashShop
             itemsWithType.Add(new(item, item.getInventoryType()));
         }
 
-        factory.saveItems(itemsWithType, accountId, dbContext);
+        Factory.saveItems(itemsWithType, accountId, dbContext);
 
         dbContext.Wishlists.Where(x => x.CharId == characterId).ExecuteDelete();
 
-        dbContext.Wishlists.AddRange(wishList.Select(x => new Wishlist(characterId, x)));
+        dbContext.Wishlists.AddRange(wishList.Select(x => new WishlistEntity(characterId, x)));
         dbContext.SaveChanges();
     }
 
@@ -583,7 +530,7 @@ public class CashShop
                 removeFromInventory(cashShopSurprise);
             }
 
-            Item itemReward = cashItemReward.toItem();
+            Item itemReward = Owner.Client.getChannelServer().Service.CashItem2Item(cashItemReward);
             addToInventory(itemReward);
 
             return new CashShopSurpriseResult(cashShopSurprise, itemReward);
@@ -611,11 +558,5 @@ public class CashShop
         {
             Monitor.Exit(lockObj);
         }
-    }
-
-    public static Item generateCouponItem(int itemId, short quantity)
-    {
-        CashItem it = new CashItem(77777777, itemId, 7777, ItemConstants.isPet(itemId) ? 30 : 0, quantity, true);
-        return it.toItem();
     }
 }

@@ -7,7 +7,7 @@ namespace Application.Core.Game.Commands.Gm3
             Description = "设置全局怪物倍率，范围：(0, 5]";
         }
 
-        public override void Execute(IClient client, string[] values)
+        public override void Execute(IChannelClient client, string[] values)
         {
             var cs = client.OnlinedCharacter.getChannelServer();
             var p = GetFloatParam("mobrate");

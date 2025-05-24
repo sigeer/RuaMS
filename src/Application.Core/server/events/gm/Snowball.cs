@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using constants.id;
 using tools;
 
 namespace server.events.gm;

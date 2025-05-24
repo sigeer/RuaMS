@@ -26,11 +26,8 @@ using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
-using net.packet;
 using net.server;
 using server;
-using server.maps;
-using System.Reflection.Metadata;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -72,7 +69,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     public HiredMerchant(IPlayer owner, string desc, int itemId)
     {
         setPosition(owner.getPosition());
-        start = DateTimeOffset.Now;
+        start = DateTimeOffset.UtcNow;
         Owner = owner;
         ownerId = owner.getId();
         channel = owner.getClient().getChannel();
@@ -147,7 +144,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             int i = getFreeSlot();
             if (i > -1)
             {
-                visitors[i] = new Visitor(visitor, DateTimeOffset.Now);
+                visitors[i] = new Visitor(visitor, DateTimeOffset.UtcNow);
                 broadcastToVisitors(PacketCreator.hiredMerchantVisitorAdd(visitor, i + 1));
                 getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
 
@@ -191,7 +188,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     private void addVisitorToHistory(Visitor visitor)
     {
-        TimeSpan visitDuration = visitor.enteredAt - DateTimeOffset.Now;
+        TimeSpan visitDuration = visitor.enteredAt - DateTimeOffset.UtcNow;
         visitorHistory.Insert(0, new PastVisitor(visitor.chr.getName(), visitDuration));
         while (visitorHistory.Count > VISITOR_HISTORY_LIMIT)
         {
@@ -284,7 +281,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                         return;
                     }
 
-                    InventoryManipulator.addFromDrop(chr.getClient(), iitem, true);
+                    InventoryManipulator.addFromDrop(chr.Client, iitem, true);
                 }
 
                 removeFromSlot(slot);
@@ -298,7 +295,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    private static bool canBuy(IClient c, Item newItem)
+    private static bool canBuy(IChannelClient c, Item newItem)
     {
         // thanks xiaokelvin (Conrad) for noticing a leaked test code here
         return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && InventoryManipulator.addFromDrop(c, newItem, false);
@@ -322,7 +319,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void buy(IClient c, int item, short quantity)
+    public void buy(IChannelClient c, int item, short quantity)
     {
         lock (items)
         {
@@ -475,16 +472,16 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     {
         if (isOwner(chr))
         {
-            closeShop(chr.getClient(), false);
+            closeShop(chr.Client, false);
             chr.setHasMerchant(false);
         }
     }
 
-    private void closeShop(IClient c, bool timeout)
+    private void closeShop(IChannelClient c, bool timeout)
     {
         MapModel.removeMapObject(this);
         MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(ownerId));
-        c.getChannelServer().HiredMerchantController.unregisterHiredMerchant(ownerId);
+        c.CurrentServer.HiredMerchantController.unregisterHiredMerchant(ownerId);
 
         removeAllVisitors();
         removeOwner(c.OnlinedCharacter);
@@ -803,7 +800,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public int getTimeOpen()
     {
-        double openTime = (DateTimeOffset.Now - start).TotalMinutes;
+        double openTime = (DateTimeOffset.UtcNow - start).TotalMinutes;
         openTime /= 1440;   // heuristics since engineered method to count time here is unknown
         openTime *= 1318;
 
@@ -907,9 +904,9 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return MapObjectType.HIRED_MERCHANT;
     }
 
-    public override void sendDestroyData(IClient client) { }
+    public override void sendDestroyData(IChannelClient client) { }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.spawnHiredMerchantBox(this));
     }

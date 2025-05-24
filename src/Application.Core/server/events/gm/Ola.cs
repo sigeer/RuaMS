@@ -21,7 +21,6 @@
 */
 
 
-using constants.id;
 using tools;
 
 namespace server.events.gm;
@@ -55,7 +54,7 @@ public class Ola
     { // TODO: Messages
         chr.getMap().startEvent();
         chr.sendPacket(PacketCreator.getClock(360));
-        this.timeStarted = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        this.timeStarted = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         this.time = 360000;
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
@@ -81,6 +80,6 @@ public class Ola
 
     public long getTimeLeft()
     {
-        return time - (DateTimeOffset.Now.ToUnixTimeMilliseconds() - timeStarted);
+        return time - (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timeStarted);
     }
 }

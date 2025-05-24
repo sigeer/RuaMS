@@ -92,7 +92,7 @@ public class DueyPackage
 
     public bool isDeliveringTime()
     {
-        return timestamp >= DateTimeOffset.Now;
+        return timestamp >= DateTimeOffset.UtcNow;
     }
 
     public void setSentTime(DateTimeOffset ts, bool quick)
@@ -101,7 +101,7 @@ public class DueyPackage
 
         if (quick)
         {
-            if (DateTimeOffset.Now - ts < TimeSpan.FromDays(1))
+            if (DateTimeOffset.UtcNow - ts < TimeSpan.FromDays(1))
             {  // thanks inhyuk for noticing quick delivery packages unavailable to retrieve from the get-go
                 cal.AddDays(-1);
             }

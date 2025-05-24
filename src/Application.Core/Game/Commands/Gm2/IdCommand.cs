@@ -1,5 +1,4 @@
 using constants.game;
-using constants.id;
 using server;
 using System.Collections.Concurrent;
 using tools.exceptions;
@@ -74,7 +73,7 @@ public class IdCommand : CommandBase
         }
     }
 
-    public override void Execute(IClient client, string[] paramsValue)
+    public override void Execute(IChannelClient client, string[] paramsValue)
     {
         var chr = client.OnlinedCharacter;
         if (paramsValue.Length < 2)

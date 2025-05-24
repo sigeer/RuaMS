@@ -18,15 +18,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using constants.inventory;
-
 namespace client.inventory.manipulator;
 
 
 /// <summary>
 /// @author RonanLana
-/// --²»ÖªµÀÊ²Ã´¹¦ÄÜ
+/// --ä¸çŸ¥é“ä»€ä¹ˆåŠŸèƒ½
 /// </summary>
 public class KarmaManipulator
 {

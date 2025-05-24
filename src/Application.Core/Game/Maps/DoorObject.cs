@@ -19,8 +19,6 @@
 */
 
 
-using constants.id;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps;
@@ -115,12 +113,12 @@ public class DoorObject : AbstractMapObject
         }
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         sendSpawnData(client, true);
     }
 
-    public void sendSpawnData(IClient client, bool launched)
+    public void sendSpawnData(IChannelClient client, bool launched)
     {
         var chr = client.OnlinedCharacter;
         if (getFrom().getId() == chr.getMapId())
@@ -138,7 +136,7 @@ public class DoorObject : AbstractMapObject
         }
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         var chr = client.OnlinedCharacter;
         if (from.getId() == chr.getMapId())
@@ -152,7 +150,7 @@ public class DoorObject : AbstractMapObject
         }
     }
 
-    public void sendDestroyData(IClient client, bool partyUpdate)
+    public void sendDestroyData(IChannelClient client, bool partyUpdate)
     {
         if (client != null && from.getId() == client.OnlinedCharacter.getMapId())
         {

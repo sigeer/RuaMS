@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm4;
+namespace Application.Core.Game.Commands.Gm4;
 
 public class HorntailCommand : CommandBase
 {
@@ -7,7 +7,7 @@ public class HorntailCommand : CommandBase
         Description = "Spawn Horntail on your location.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var targetPoint = player.getPosition();

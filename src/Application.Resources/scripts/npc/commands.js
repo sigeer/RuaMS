@@ -15,7 +15,7 @@ var levels = ["通用", "贡献者", "小GM", "GM", "大GM", "开发者", "超�
 var commands;
 
 function writeHeavenMSCommands() {
-    commands = CommandExecutor.getInstance().getGmCommands();
+    commands = CommandExecutor.getGmCommands();
 }
 
 function start() {

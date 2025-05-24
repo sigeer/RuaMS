@@ -21,10 +21,11 @@
  */
 
 
+using Application.Core.Game.Commands;
 using Application.Core.Scripting.Infrastructure;
 using client;
 using constants.game;
-using Org.BouncyCastle.Bcpg.Sig;
+using Microsoft.Extensions.Logging;
 using server.quest;
 
 namespace scripting.quest;
@@ -36,16 +37,14 @@ namespace scripting.quest;
  */
 public class QuestScriptManager : AbstractScriptManager
 {
-    private static QuestScriptManager instance = new QuestScriptManager();
 
-    readonly EngineStorate<IClient> _scripts = new EngineStorate<IClient>();
+    readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public static QuestScriptManager getInstance()
+    public QuestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
     {
-        return instance;
     }
 
-    private IEngine? getQuestScriptEngine(IClient c, short questid)
+    private IEngine? getQuestScriptEngine(IChannelClient c, short questid)
     {
         var engine = getInvocableScriptEngine(GetQuestScriptPath(questid.ToString()), c);
         if (engine == null && GameConstants.isMedalQuest(questid))
@@ -56,7 +55,7 @@ public class QuestScriptManager : AbstractScriptManager
         return engine;
     }
 
-    public void start(IClient c, short questid, int npc)
+    public void start(IChannelClient c, short questid, int npc)
     {
         Quest quest = Quest.getInstance(questid);
         try
@@ -83,7 +82,7 @@ public class QuestScriptManager : AbstractScriptManager
                 var engine = getQuestScriptEngine(c, questid);
                 if (engine == null)
                 {
-                    log.Warning("START Quest {QuestId} is uncoded.", questid);
+                    _logger.LogWarning("START Quest {QuestId} is uncoded.", questid);
                     c.NPCConversationManager.dispose();
                     return;
                 }
@@ -97,12 +96,12 @@ public class QuestScriptManager : AbstractScriptManager
         }
         catch (Exception t)
         {
-            log.Error(t, "Error starting quest script: {QuestId}", questid);
+            _logger.LogError(t, "Error starting quest script: {QuestId}", questid);
             c.NPCConversationManager?.dispose();
         }
     }
 
-    public void start(IClient c, sbyte mode, sbyte type, int selection)
+    public void start(IChannelClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -114,13 +113,13 @@ public class QuestScriptManager : AbstractScriptManager
             }
             catch (Exception e)
             {
-                log.Error(e, "Error starting quest script: {QuestId}", getQM(c)?.getQuest());
+                _logger.LogError(e, "Error starting quest script: {QuestId}", getQM(c)?.getQuest());
                 c.NPCConversationManager?.dispose();
             }
         }
     }
 
-    public void end(IClient c, short questid, int npc)
+    public void end(IChannelClient c, short questid, int npc)
     {
         Quest quest = Quest.getInstance(questid);
         if (!c.OnlinedCharacter.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED) || (!c.OnlinedCharacter.getMap().containsNPC(npc) && !quest.isAutoComplete()))
@@ -151,7 +150,7 @@ public class QuestScriptManager : AbstractScriptManager
                 var engine = getQuestScriptEngine(c, questid);
                 if (engine == null)
                 {
-                    log.Warning("END Quest {QuestId} is uncoded.", questid);
+                    _logger.LogWarning("END Quest {QuestId} is uncoded.", questid);
                     c.NPCConversationManager.dispose();
                     return;
                 }
@@ -165,12 +164,12 @@ public class QuestScriptManager : AbstractScriptManager
         }
         catch (Exception t)
         {
-            log.Error(t, "Error starting quest script: {QuestId}", questid);
+            _logger.LogError(t, "Error starting quest script: {QuestId}", questid);
             c.NPCConversationManager?.dispose();
         }
     }
 
-    public void end(IClient c, sbyte mode, sbyte type, int selection)
+    public void end(IChannelClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -182,13 +181,13 @@ public class QuestScriptManager : AbstractScriptManager
             }
             catch (Exception e)
             {
-                log.Error(e, "Error ending quest script: {QuestId}", getQM(c)?.getQuest());
+                _logger.LogError(e, "Error ending quest script: {QuestId}", getQM(c)?.getQuest());
                 c.NPCConversationManager?.dispose();
             }
         }
     }
 
-    public void raiseOpen(IClient c, short questid, int npc)
+    public void raiseOpen(IChannelClient c, short questid, int npc)
     {
         try
         {
@@ -206,7 +205,7 @@ public class QuestScriptManager : AbstractScriptManager
                 var engine = getQuestScriptEngine(c, questid);
                 if (engine == null)
                 {
-                    log.Error("RAISE Quest " + questid + " is uncoded.");
+                    _logger.LogError("RAISE Quest " + questid + " is uncoded.");
                     c.NPCConversationManager.dispose();
                     return;
                 }
@@ -220,21 +219,21 @@ public class QuestScriptManager : AbstractScriptManager
         }
         catch (Exception t)
         {
-            log.Error(t, "Error during quest script raiseOpen for quest: {QuestId}", questid);
+            _logger.LogError(t, "Error during quest script raiseOpen for quest: {QuestId}", questid);
             c.NPCConversationManager?.dispose();
         }
     }
 
-    public void dispose(QuestActionManager qm, IClient c)
+    public void dispose(QuestActionManager qm, IChannelClient c)
     {
         c.NPCConversationManager = null;
         _scripts.Remove(c);
-        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.Now.ToUnixTimeMilliseconds());
+        c.OnlinedCharacter.setNpcCooldown(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         resetContext(GetQuestScriptPath(qm.getQuest().ToString()), c);
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 
-    public QuestActionManager? getQM(IClient c)
+    public QuestActionManager? getQM(IChannelClient c)
     {
         return c.NPCConversationManager as QuestActionManager;
     }

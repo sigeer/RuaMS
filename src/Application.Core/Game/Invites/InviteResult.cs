@@ -1,5 +1,3 @@
-using net.server.coordinator.world;
-
 namespace Application.Core.Game.Invites
 {
     public enum InviteResultType

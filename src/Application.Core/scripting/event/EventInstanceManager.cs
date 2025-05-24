@@ -26,7 +26,6 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using constants.inventory;
 using net.server.coordinator.world;
 using scripting.Event.scheduler;
 using server;
@@ -88,7 +87,7 @@ public class EventInstanceManager
     {
         this.em = em;
         this.name = name;
-        this.ess = new EventScriptScheduler();
+        this.ess = new EventScriptScheduler(em.getChannelServer());
         this.mapManager = new MapManager(this, em.getChannelServer());
     }
 
@@ -309,7 +308,7 @@ public class EventInstanceManager
 
     public void startEventTimer(long time)
     {
-        timeStarted = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        timeStarted = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         eventTime = time;
 
         foreach (IPlayer chr in getPlayers())
@@ -392,7 +391,7 @@ public class EventInstanceManager
 
     public long getTimeLeft()
     {
-        return eventTime - (DateTimeOffset.Now.ToUnixTimeMilliseconds() - timeStarted);
+        return eventTime - (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timeStarted);
     }
 
     public void registerParty(IPlayer chr)

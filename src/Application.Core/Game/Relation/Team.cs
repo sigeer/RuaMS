@@ -249,7 +249,7 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void assignNewLeader(IClient c)
+        public void assignNewLeader(IChannelClient c)
         {
             var world = c.getWorldServer();
             IPlayer? newLeadr = null;

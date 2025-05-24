@@ -29,7 +29,7 @@ public class Coconuts
     private int id;
     private int hits = 0;
     private bool hittable = false;
-    private long hittime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    private long hittime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     public Coconuts(int id)
     {
@@ -38,7 +38,7 @@ public class Coconuts
 
     public void hit()
     {
-        this.hittime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + 750;
+        this.hittime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + 750;
         hits++;
     }
 

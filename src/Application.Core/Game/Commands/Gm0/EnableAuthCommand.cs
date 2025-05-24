@@ -1,5 +1,3 @@
-﻿using net.server.coordinator.login;
-
 namespace Application.Core.Game.Commands.Gm0;
 
 public class EnableAuthCommand : CommandBase
@@ -8,13 +6,14 @@ public class EnableAuthCommand : CommandBase
     {
     }
 
-    public override void Execute(IClient c, string[] paramValues)
+    public override void Execute(IChannelClient c, string[] paramValues)
     {
         if (c.tryacquireClient())
         {
             try
             {
-                LoginBypassCoordinator.getInstance().unregisterLoginBypassEntry(c.getHwid(), c.getAccID());
+                //
+                // LoginBypassCoordinator.getInstance().unregisterLoginBypassEntry(c.Hwid, c.AccountEntity.Id);
             }
             finally
             {

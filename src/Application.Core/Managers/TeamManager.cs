@@ -150,7 +150,7 @@ namespace Application.Core.Managers
             return false;
         }
 
-        public static void expelFromParty(ITeam? party, IClient c, int expelCid)
+        public static void expelFromParty(ITeam? party, IChannelClient c, int expelCid)
         {
             var world = c.getWorldServer();
             var player = c.OnlinedCharacter;

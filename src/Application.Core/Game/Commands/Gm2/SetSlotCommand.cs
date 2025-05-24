@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Game.Commands.Gm2;
+namespace Application.Core.Game.Commands.Gm2;
 public class SetSlotCommand : CommandBase
 {
     public SetSlotCommand() : base(2, "setslot")
@@ -6,7 +6,7 @@ public class SetSlotCommand : CommandBase
         Description = "Set amount of inventory slots in all tabs.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)

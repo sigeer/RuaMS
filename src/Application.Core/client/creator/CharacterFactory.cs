@@ -19,10 +19,8 @@
 */
 
 
-using Application.Core.Managers;
 using Application.Core.Managers.Constants;
 using client.inventory;
-using net.server;
 using server;
 using tools;
 
@@ -48,17 +46,29 @@ public abstract class CharacterFactory
     /// <param name="recipe"></param>
     /// <param name="newchar"></param>
     /// <returns>0=成功</returns>
-    public static int CreateCharacter(int world, int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
+    public static int CreateCharacter(IClientBase c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
     {
         lock (createNewLock)
         {
             newCharacter = null;
-            if (!CharacterManager.CheckCharacterName(name))
+            if (!c.CurrentServerBase.CheckCharacterName(name))
             {
                 return CreateCharResult.NameInvalid;
             }
 
-            newCharacter = CharacterManager.NewPlayer(world, accountId);
+            newCharacter = new Player(
+                world: 0,
+                accountId: c.AccountId,
+                hp: 50,
+                mp: 5,
+                str: 12,
+                dex: 5,
+                @int: 4,
+                luk: 4,
+                job: Job.BEGINNER,
+                level: 1
+             );
+            ;
             newCharacter.setSkinColor(SkinColorUtils.getById(skin));
             newCharacter.setGender(gender);
             newCharacter.setName(name);
@@ -115,24 +125,27 @@ public abstract class CharacterFactory
             return CreateCharResult.Success;
         }
     }
-    protected static int createNewCharacter(IClient c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
+    protected static int createNewCharacter(IClientBase c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
     {
         lock (createNewLock)
         {
-            if (YamlConfig.config.server.COLLECTIVE_CHARSLOT ? c.getAvailableCharacterSlots() <= 0 : c.getAvailableCharacterWorldSlots() <= 0)
+            if (c.GetAvailableCharacterSlots() <= 0)
             {
                 return CreateCharResult.CharSlotLimited;
             }
 
-            var result = CreateCharacter(c.getWorld(), c.getAccID(), name, face, hair, skin, gender, recipe, out var newCharacter);
+            var result = CreateCharacter(c, name, face, hair, skin, gender, recipe, out var newCharacter);
             if (result == CreateCharResult.Success && newCharacter != null)
             {
-                newCharacter.setClient(c);
+                if (c is IChannelClient channelClient)
+                {
+                    newCharacter.setClient(channelClient);
+                }
                 c.sendPacket(PacketCreator.addNewCharEntry(c, newCharacter));
 
-                Server.getInstance().createCharacterEntry(newCharacter);
-                Server.getInstance().broadcastGMMessage(c.getWorld(), PacketCreator.sendYellowTip("[New Char]: " + c.getAccountName() + " has created a new character with IGN " + name));
-                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.getAccountName(), name);
+                c.UpdateAccountChracterByAdd(newCharacter.Id);
+                c.CurrentServerBase.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountName + " has created a new character with IGN " + name));
+                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.AccountName, name);
 
                 return CreateCharResult.Success;
             }

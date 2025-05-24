@@ -5,7 +5,6 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.TheWorld;
 using Application.Shared.WzEntity;
 using client.inventory;
-using net.packet;
 using net.server.coordinator.world;
 using scripting.Event;
 using server.events.gm;
@@ -14,7 +13,7 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap: IDisposable
+    public interface IMap : IDisposable
     {
         int Id { get; }
         XiGuai? XiGuai { get; set; }

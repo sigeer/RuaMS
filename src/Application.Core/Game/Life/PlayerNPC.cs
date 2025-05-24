@@ -22,15 +22,12 @@
 
 
 using Application.Core.Game.Maps;
-using client;
 using client.inventory;
 using constants.game;
-using constants.id;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using server.life;
 using server.life.positioner;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Life;
@@ -213,13 +210,13 @@ public class PlayerNPC : AbstractMapObject
         return MapObjectType.PLAYER_NPC;
     }
 
-    public override void sendSpawnData(IClient client)
+    public override void sendSpawnData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.spawnPlayerNPC(this));
         client.sendPacket(PacketCreator.getPlayerNPC(this));
     }
 
-    public override void sendDestroyData(IClient client)
+    public override void sendDestroyData(IChannelClient client)
     {
         client.sendPacket(PacketCreator.removeNPCController(this.getObjectId()));
         client.sendPacket(PacketCreator.removePlayerNPC(this.getObjectId()));
@@ -623,13 +620,8 @@ public class PlayerNPC : AbstractMapObject
             return;
         }
 
-        var c = Client.createMock();
-        c.setWorld(world);
-        c.setChannel(1);
-
         foreach (IPlayer mc in wserv.loadAndGetAllCharactersView())
         {
-            mc.setClient(c);
             spawnPlayerNPC(mapid, mc);
         }
     }

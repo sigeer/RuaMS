@@ -1,4 +1,3 @@
-﻿using net.server;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -10,9 +9,9 @@ public class NoticeCommand : CommandBase
         Description = "Send a blue message to everyone on the server.";
     }
 
-    public override void Execute(IClient c, string[] paramsValue)
+    public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        Server.getInstance().broadcastMessage(c.getWorld(), PacketCreator.serverNotice(6, "[Notice] " + player.getLastCommandMessage()));
+        c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[Notice] " + player.getLastCommandMessage()));
     }
 }

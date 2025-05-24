@@ -4,9 +4,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using client;
 using client.autoban;
-using client.inventory;
-using DotNetty.Handlers.Tls;
-using Microsoft.EntityFrameworkCore;
+using server;
 using server.events;
 using server.maps;
 
@@ -14,16 +12,16 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : AbstractAnimatedMapObject, IPlayer
     {
-        public int Channel => awayFromWorld ? -1 : Client.getChannel();
-        public IClient Client { get; private set; }
-        public bool IsOnlined => Client.IsGameOnlined;
+        public int Channel => awayFromWorld ? -1 : Client.CurrentServer.getId();
+        public IChannelClient Client { get; private set; }
+        public bool IsOnlined => Client.IsOnlined;
 
         public PlayerBag Bag { get; set; }
         public BuddyList BuddyList { get; set; }
 
 
         public PlayerKeyMap KeyMap { get; set; }
-        public MapManager MapManager => Client.getChannelServer().getMapFactory();
+        public MapManager MapManager => Client.CurrentServer.getMapFactory();
 
         public object SaveToDBLock { get; set; } = new object();
 
@@ -47,7 +45,7 @@ namespace Application.Core.Game.Players
             Level = level;
         }
 
-        public Player(IClient client)
+        public Player(IChannelClient client)
         {
             Client = client;
 
@@ -70,7 +68,8 @@ namespace Application.Core.Game.Players
             SavedLocations = new(this);
 
             Bag = new PlayerBag(this);
-            Monsterbook = new MonsterBook();
+            Monsterbook = new MonsterBook(this);
+            CashShopModel = new CashShop(this);
 
             setStance(0);
 
