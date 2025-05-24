@@ -43,7 +43,8 @@ namespace Application.Core.Login.Datas
         /// </summary>
         public async Task CommitCharacterAsync()
         {
-            if (_chrUpdate.Count == 0)
+            var updateCount = _chrUpdate.Count;
+            if (updateCount == 0)
                 return;
 
             _logger.LogInformation("正在保存用户数据...");
@@ -126,7 +127,7 @@ namespace Application.Core.Login.Datas
                 await dbContext.SaveChangesAsync();
                 _chrUpdate.Clear();
                 await dbTrans.CommitAsync();
-                _logger.LogInformation("保存了{Count}个用户数据", _chrUpdate.Keys.Count);
+                _logger.LogInformation("保存了{Count}个用户数据", updateCount);
             }
             catch (Exception ex)
             {

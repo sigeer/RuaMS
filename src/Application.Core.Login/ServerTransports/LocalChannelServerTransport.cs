@@ -30,16 +30,18 @@ namespace Application.Core.Login.ServerTransports
         readonly LoginService _loginService;
         readonly IMasterServer _server;
         readonly CharacterManager _chrManager;
+        readonly StorageService _storageService;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
         IWorld _world => Server.getInstance().getWorld(0);
 
-        public LocalChannelServerTransport(IMasterServer server, LoginService loginService, CharacterManager chrManager)
+        public LocalChannelServerTransport(IMasterServer server, LoginService loginService, CharacterManager chrManager, StorageService storageService)
         {
             _server = server;
             _loginService = loginService;
             _chrManager = chrManager;
+            _storageService = storageService;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -504,6 +506,11 @@ namespace Application.Core.Login.ServerTransports
         public void SetPlayerOnlined(int id, int v)
         {
             _loginService.SetPlayerLogedIn(id, v);
+        }
+
+        public void CallSaveDB()
+        {
+            _ = _storageService.CommitAllImmediately();
         }
     }
 }

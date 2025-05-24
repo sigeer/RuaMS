@@ -27,7 +27,6 @@ public class CommandExecutor
             foreach (var sytax in obj.AllSupportedCommand)
             {
                 registeredCommands.Add(sytax, obj);
-                log.LogDebug("命令{CommandName}加载成功", sytax);
             }
         }
         loaded = true;

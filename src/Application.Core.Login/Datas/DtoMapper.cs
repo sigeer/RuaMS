@@ -24,7 +24,9 @@ namespace Application.Core.Login.Datas
             CreateMap<AreaInfo, AreaDto>();
             CreateMap<Eventstat, EventDto>();
 
-            CreateMap<QuestStatusEntity, QuestStatusDto>();
+            CreateMap<QuestStatusEntity, QuestStatusDto>()
+                .ForMember(x => x.QuestId, src => src.MapFrom(x => x.Quest))
+                .ForMember(x => x.Id, src => src.MapFrom(x => x.Queststatusid));
             CreateMap<Questprogress, QuestProgressDto>()
                 .ForMember(dest => dest.ProgressId, source => source.MapFrom(x => x.Progressid));
             CreateMap<Medalmap, MedalMapDto>();
