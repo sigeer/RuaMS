@@ -165,9 +165,9 @@ if (YamlConfig.config.server.ENABLE_OPENAPI)
     app.MapControllers();
 }
 
-AppDomain.CurrentDomain.ProcessExit += (e, o) =>
-{
-    var server = app.Services.GetRequiredService<IMasterServer>();
-    server.Shutdown().Wait();
-};
+//AppDomain.CurrentDomain.ProcessExit += (e, o) =>
+//{
+//    var server = app.Services.GetService<IMasterServer>();
+//        server.Shutdown().Wait();
+//};
 app.Run();

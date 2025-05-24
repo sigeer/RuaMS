@@ -17,7 +17,6 @@ public partial class DBContext : DbContext
     }
 
     #region Entities
-    public DbSet<WorldConfigEntity> WorldConfigs { get; set; }
     public DbSet<GachaponPoolLevelChance> GachaponPoolLevelChances { get; set; }
     public DbSet<GachaponPool> GachaponPools { get; set; }
     public DbSet<GachaponPoolItem> GachaponPoolItems { get; set; }
@@ -2133,7 +2132,6 @@ public partial class DBContext : DbContext
             entity.HasKey(e => e.Id).HasName("PRIMARY");
         });
 
-        ConfigWorldConfig(modelBuilder);
 
         OnModelCreatingPartial(modelBuilder);
     }
@@ -2662,47 +2660,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Inventoryitemid)
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("inventoryitemid");
-        });
-    }
-
-    private void ConfigWorldConfig(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<WorldConfigEntity>(entity =>
-        {
-            entity.ToTable("sys_world_config");
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Name).HasColumnType("varchar(50)").IsRequired().HasDefaultValue("");
-            entity.Property(e => e.ServerMessage).HasColumnType("varchar(200)").IsRequired().HasDefaultValue("Welcome");
-            entity.Property(e => e.EventMessage).HasColumnType("varchar(200)").IsRequired().HasDefaultValue("");
-            entity.Property(e => e.RecommendMessage).HasColumnType("varchar(200)").IsRequired().HasDefaultValue("");
-            entity.Property(e => e.MesoRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.ExpRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.DropRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.FishingRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.TravelRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.BossDropRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.MobRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.QuestRate).IsRequired().HasDefaultValue(1);
-            entity.Property(e => e.ChannelCount).IsRequired().HasDefaultValue(3);
-            entity.Property(e => e.StartPort).IsRequired();
-
-            entity.HasData(new WorldConfigEntity(0, "Scania")
-            {
-                Enable = true,
-                ServerMessage = "Welcome to Scania!",
-                EventMessage = "Scania!",
-                RecommendMessage = "Welcome to Scania!",
-                ExpRate = 10,
-                DropRate = 10,
-                MobRate = 1,
-                TravelRate = 10,
-                QuestRate = 5,
-                FishingRate = 10,
-                BossDropRate = 10,
-                MesoRate = 10,
-                StartPort = 7575
-            });
         });
     }
 }

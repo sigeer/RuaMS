@@ -53,7 +53,9 @@ namespace Application.Core.Login.Datas
                 await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
 
-                var accList = dbContext.Characters.AsNoTracking().Where(x => _chrUpdate.Keys.Contains(x.Id)).Select(x => x.AccountId).ToArray();
+                
+                var updateCharacters = await dbContext.Characters.Where(x => _chrUpdate.Keys.Contains(x.Id)).ToListAsync();
+                var accList = updateCharacters.Select(x => x.AccountId).ToArray();
 
                 await dbContext.Monsterbooks.Where(x => _chrUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
                 var petIdList = _chrUpdate.Values.SelectMany(x => x.PetIgnores.Select(x => x.PetId)).ToArray();
@@ -74,11 +76,11 @@ namespace Application.Core.Login.Datas
 
                 foreach (var obj in _chrUpdate.Values)
                 {
-                    dbContext.Characters.Update(_mapper.Map<CharacterEntity>(obj.Character));
+                    var character = updateCharacters.FirstOrDefault(x => x.Id == obj.Character.Id)!;
+                    _mapper.Map(obj.Character, character);
 
                     await dbContext.Monsterbooks.AddRangeAsync(obj.MonsterBooks.Select(x => new MonsterbookEntity(obj.Character.Id, x.Cardid, x.Level)));
-                    dbContext.Pets.UpdateRange(obj.InventoryItems.Where(x => x.PetInfo != null)
-                        .Select(x => new PetEntity(x.PetInfo!.Petid, x.PetInfo.Name, x.PetInfo.Level, x.PetInfo.Closeness, x.PetInfo.Fullness, x.PetInfo.Summoned, x.PetInfo.Flag)));
+
                     await dbContext.Petignores.AddRangeAsync(obj.PetIgnores.SelectMany(x => x.ExcludedItems.Select(y => new Petignore(x.PetId, y))));
                     await dbContext.Keymaps.AddRangeAsync(obj.KeyMaps.Select(x => new KeyMapEntity(obj.Character.Id, x.Key, x.Type, x.Action)));
 
@@ -92,7 +94,7 @@ namespace Application.Core.Login.Datas
 
                     // Skill
                     await dbContext.Skills.AddRangeAsync(
-                        obj.Skills.Select(x => new SkillEntity(obj.Character.Id, x.Skillid, x.Skilllevel, x.Masterlevel, x.Expiration))
+                        obj.Skills.Select(x => new SkillEntity(x.Skillid, obj.Character.Id, x.Skilllevel, x.Masterlevel, x.Expiration))
                         );
 
                     await dbContext.Savedlocations.AddRangeAsync(obj.SavedLocations.Select(x => new SavedLocationEntity(x.Map, x.Portal, obj.Character.Id, x.Locationtype)));
@@ -121,7 +123,7 @@ namespace Application.Core.Login.Datas
 
                     // cashshop
                 }
-
+                await dbContext.SaveChangesAsync();
                 _chrUpdate.Clear();
                 await dbTrans.CommitAsync();
                 _logger.LogInformation("保存了{Count}个用户数据", _chrUpdate.Keys.Count);
@@ -227,7 +229,8 @@ namespace Application.Core.Login.Datas
                 }
                 if (item.PetInfo != null)
                 {
-                    await dbContext.Pets.AddAsync(_mapper.Map<PetEntity>(item.PetInfo));
+                    await dbContext.Pets.AddAsync(
+                        new PetEntity(item.PetInfo!.Petid, item.PetInfo.Name, item.PetInfo.Level, item.PetInfo.Closeness, item.PetInfo.Fullness, item.PetInfo.Summoned, item.PetInfo.Flag));
                 }
             }
 
