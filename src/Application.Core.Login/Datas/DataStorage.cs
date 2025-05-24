@@ -48,7 +48,13 @@ namespace Application.Core.Login.Datas
                 return;
 
             _logger.LogInformation("正在保存用户数据...");
-            await _semaphore.WaitAsync();
+
+            if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(5)))
+            {
+                _logger.LogInformation("失败：已经有一个保存操作正在进行中");
+                return;
+            }
+
             try
             {
                 await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
