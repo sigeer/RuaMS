@@ -63,7 +63,7 @@ namespace Application.Core.Login.Datas
 
                 origin.Channel = obj.Channel;
             }
-
+            _logger.LogDebug("玩家{PlayerName}已缓存", obj.Character.Name);
             _dataStorage.SetCharacter(obj);
         }
 

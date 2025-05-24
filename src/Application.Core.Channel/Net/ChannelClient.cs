@@ -174,7 +174,6 @@ namespace Application.Core.Channel.Net
                 }
             }
             Dispose();
-            log.LogDebug($"disconnect: " + new StackTrace().ToString());
 
             _isDisconnecting = false;
         }

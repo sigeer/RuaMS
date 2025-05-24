@@ -31,12 +31,14 @@ GlobalTools.Encoding = Encoding.GetEncoding("GBK");
 
 // 日志配置
 Log.Logger = new LoggerConfiguration()
+#if !DEBUG
+    .MinimumLevel.Information()
+#else
     .MinimumLevel.Debug()
+#endif
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-#if !DEBUG
     .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-#endif
     .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .WriteTo.Console()

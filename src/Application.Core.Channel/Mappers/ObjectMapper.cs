@@ -186,12 +186,7 @@ namespace Application.Core.Channel.Mappers
                 .ReverseMap()
                 .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
                 .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.getSlots()))
-                .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId))
-                .ForMember(dest => dest.Items, opt => opt.MapFrom((src, dest, destMember, context) =>
-                {
-                    context.Items["Type"] = ItemFactory.STORAGE.getValue();
-                    return context.Mapper.Map<ItemDto[]>(src.getItems());
-                }));
+                .ForMember(dest => dest.Accountid, source => source.MapFrom(x => x.AccountId));
 
             CreateMap<SkillMacroDto, SkillMacro>().ReverseMap();
 

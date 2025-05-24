@@ -3,6 +3,7 @@ using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
+using Application.Core.Login.Tasks;
 using Application.Core.Net;
 using Application.Core.Servers;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,12 @@ namespace Application.Core.Login
             return services;
         }
 
+        static IServiceCollection AddScheduleTask(this IServiceCollection services)
+        {
+            services.AddSingleton<RankingLoginTask>();
+            return services;
+        }
+
         public static IServiceCollection AddLoginServer(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(DtoMapper));
@@ -65,6 +72,8 @@ namespace Application.Core.Login
             services.AddSingleton<ServerService>();
             services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();
+
+            services.AddScheduleTask();
             return services;
         }
     }

@@ -43,6 +43,11 @@ public class RankingLoginTask : AbstractRunnable
     private DateTimeOffset lastUpdate = DateTimeOffset.UtcNow;
     readonly IDbContextFactory<DBContext> _dbContextFactory;
 
+    public RankingLoginTask(IDbContextFactory<DBContext> dbContextFactory)
+    {
+        _dbContextFactory = dbContextFactory;
+    }
+
     private void resetMoveRank(DBContext dbContext)
     {
         dbContext.Characters.ExecuteUpdate(x => x.SetProperty(y => y.JobRankMove, 0).SetProperty(y => y.RankMove, 0));

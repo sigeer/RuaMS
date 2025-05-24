@@ -67,6 +67,11 @@ namespace Application.Core.Login.Net
         protected override void CloseSessionInternal()
         {
             _sessionCoordinator.closeLoginSession(this);
+
+            if (!IsServerTransition)
+            {
+                Disconnect();
+            }
         }
 
         public override void SetCharacterOnSessionTransitionState(int cid)
@@ -114,7 +119,7 @@ namespace Application.Core.Login.Net
             {
                 AccountEntity = null;
             }
-            IsServerTransition = newState == LoginStage.LOGIN_SERVER_TRANSITION || newState == LoginStage.PlayerServerTransition;
+            IsServerTransition = newState == LoginStage.LOGIN_SERVER_TRANSITION;
         }
 
         public override void Dispose()
@@ -188,17 +193,17 @@ namespace Application.Core.Login.Net
             if (AccountEntity == null)
                 return 0;
 
-            AccountLoginStatus = CurrentServer.GetAccountLoginStatus(AccountEntity.Id);
-            if (AccountLoginStatus.State == LoginStage.LOGIN_SERVER_TRANSITION || AccountLoginStatus.State == LoginStage.PlayerServerTransition)
+            var localState = CurrentServer.GetAccountLoginStatus(AccountEntity.Id);
+            if (localState.State == LoginStage.LOGIN_SERVER_TRANSITION || localState.State == LoginStage.PlayerServerTransition)
             {
-                if (AccountEntity.Lastlogin!.Value.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
+                if (localState.DateTime.AddSeconds(30).ToUnixTimeMilliseconds() < CurrentServer.getCurrentTime())
                 {
                     updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
                     return LoginStage.LOGIN_NOTLOGGEDIN;
                 }
             }
 
-            return AccountLoginStatus.State;
+            return localState.State;
         }
         int loginattempt = 0;
         public LoginResultCode Login(string login, string pwd, Hwid nibbleHwid)

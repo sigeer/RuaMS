@@ -247,6 +247,7 @@ namespace Application.Core.Channel.Services
                     MedalMap = qs.getMedalMaps().Select(x => new MedalMapDto { MapId = x }).ToArray(),
                     Progress = qs.getProgress().Select(x => new QuestProgressDto { ProgressId = x.Key, Progress = x.Value }).ToArray()
                 };
+                questStatusList.Add(questDto);
             }
 
             bool hasQuickSlotChanged = player.QuickSlotLoaded == null
@@ -315,10 +316,10 @@ namespace Application.Core.Channel.Services
             })).ToArray();
 
             var storageDto = _mapper.Map<StorageDto>(player.Storage);
-            //storageDto.Items = _mapper.Map<ItemDto[]>(player.Storage.getItems(), opt =>
-            //{
-            //    opt.Items["Type"] = ItemFactory.STORAGE.getValue();
-            //});
+            storageDto.Items = _mapper.Map<ItemDto[]>(player.Storage.getItems(), opt =>
+            {
+                opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+            });
             #endregion
 
             return new PlayerSaveDto()
@@ -334,7 +335,7 @@ namespace Application.Core.Channel.Services
                 PetIgnores = player.getExcluded().Select(x => new PetIgnoreDto { PetId = x.Key, ExcludedItems = x.Value.ToArray() }).ToArray(),
                 KeyMaps = player.KeyMap.ToDto(),
                 QuestStatuses = questStatusList.ToArray(),
-                SkillMacros = _mapper.Map<SkillMacroDto[]>(player.SkillMacros),
+                SkillMacros = _mapper.Map<SkillMacroDto[]>(player.SkillMacros.Where(x => x != null)),
                 BuddyList = player.BuddyList.ToDto(),
                 StorageInfo = storageDto,
                 InventoryItems = _mapper.Map<ItemDto[]>(d),

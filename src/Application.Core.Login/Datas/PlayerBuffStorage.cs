@@ -13,12 +13,14 @@ namespace Application.Core.Login.Datas
 
         public void Save(int playerId, PlayerBuffSaveDto data)
         {
-
+            _datasource[playerId] = data;
         }
 
         public PlayerBuffSaveDto Get(int playerId)
         {
-            return new PlayerBuffSaveDto();
+            if (_datasource.Remove(playerId, out var d))
+                return d;
+            return new();
         }
     }
 }
