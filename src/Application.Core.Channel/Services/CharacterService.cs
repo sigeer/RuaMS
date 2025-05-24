@@ -171,7 +171,7 @@ namespace Application.Core.Channel.Services
 
                 foreach (var progress in item.Progress)
                 {
-                    status.setProgress(item.Id, progress.Progress);
+                    status.setProgress(progress.ProgressId, progress.Progress);
                 }
                 foreach (var medalMap in item.MedalMap)
                 {

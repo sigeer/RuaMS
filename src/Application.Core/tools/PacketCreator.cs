@@ -2888,18 +2888,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet sendRecommended(List<IWorld> worlds)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.RECOMMENDED_WORLD_MESSAGE);
-        p.writeByte(worlds.Count);//size
-        foreach (var world in worlds)
-        {
-            p.writeInt(world.Id);
-            p.writeString(world.WhyAmIRecommended);
-        }
-        return p;
-    }
-
     /**
      * @param chr
      * @param isSelf

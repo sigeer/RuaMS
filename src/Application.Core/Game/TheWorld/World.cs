@@ -26,10 +26,6 @@ public class World : IWorld
     private ILogger log;
     public int Id { get; set; }
     public string Name { get; set; }
-    public string WhyAmIRecommended { get; set; }
-    public int Flag { get; set; }
-
-    public string EventMessage { get; set; }
 
     public List<IWorldChannel> Channels { get; }
     WorldPlayerStorage? _players;
@@ -73,8 +69,6 @@ public class World : IWorld
     private ScheduledFuture? partySearchSchedule;
     private ScheduledFuture? timeoutSchedule;
 
-    public WorldConfigEntity Configs { get; set; }
-
     public World(WorldConfigEntity config)
     {
         log = LogFactory.GetLogger("World_" + Id);
@@ -89,12 +83,8 @@ public class World : IWorld
             cashItemBought.Add(new());
         }
 
-        Configs = config;
         this.Id = config.Id;
-        this.Flag = config.Flag;
         Name = config.Name;
-        WhyAmIRecommended = config.RecommendMessage;
-        this.EventMessage = config.EventMessage;
 
         var tman = TimerManager.getInstance();
 

@@ -14,17 +14,13 @@ namespace Application.Core.Game.TheWorld
 {
     public interface IWorld
     {
-        WorldConfigEntity Configs { get; set; }
         public List<IWorldChannel> Channels { get; }
         WorldGuildStorage GuildStorage { get; }
         WorldPlayerStorage Players { get; }
         Dictionary<int, ITeam> TeamStorage { get; }
 
         public int Id { get; set; }
-        public int Flag { get; set; }
         public string Name { get; set; }
-        public string WhyAmIRecommended { get; set; }
-        public string EventMessage { get; set; }
         public FishingWorldInstance FishingInstance { get; }
 
         void addCashItemBought(int snid);

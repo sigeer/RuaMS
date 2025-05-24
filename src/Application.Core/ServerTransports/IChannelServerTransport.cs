@@ -115,6 +115,7 @@ namespace Application.Core.ServerTransports
         /// <param name="id">玩家id</param>
         /// <param name="v">频道号</param>
         void SetPlayerOnlined(int id, int v);
+        void CallSaveDB();
 
         #endregion
     }
