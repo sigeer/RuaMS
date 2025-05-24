@@ -6,24 +6,15 @@ namespace Application.Core.Managers
 {
     public class ServerManager
     {
-        public static List<WorldConfigEntity> LoadAllWorld()
-        {
-            using var dbContext = new DBContext();
-            return dbContext.WorldConfigs.AsNoTracking().Take(1).ToList();
-        }
 
         public static WorldConfigEntity? GetWorld(int worldId)
         {
-            return LoadAllWorld().FirstOrDefault(x => x.Id == worldId);
+            return null;
         }
 
         public static string? GetWorldName(int worldId)
         {
-            var srv = Server.getInstance();
-            if (srv.RunningWorlds.TryGetValue(worldId, out var runningWorldSrv))
-                return runningWorldSrv.Name;
-
-            return LoadAllWorld().FirstOrDefault(x => x.Id == worldId)?.Name;
+            return "";
         }
 
         public static void ApplyWorldServer(WorldConfigEntity worldConfig)
@@ -55,12 +46,7 @@ namespace Application.Core.Managers
 
         public static void ApplyWorldServer()
         {
-            var worlds = LoadAllWorld();
 
-            foreach (var worldConfig in worlds)
-            {
-                ApplyWorldServer(worldConfig);
-            }
 
         }
     }

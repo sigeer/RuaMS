@@ -35,7 +35,7 @@ namespace Application.Host.Services
 
         public List<KeyValuePair<int, string>> GetWorldsData()
         {
-            return ServerManager.LoadAllWorld().Select((x, index) => new KeyValuePair<int, string>(index, x.Name)).ToList();
+            return [];
         }
     }
 }

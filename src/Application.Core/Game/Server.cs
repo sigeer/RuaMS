@@ -322,11 +322,22 @@ public class Server
 
     public void LoadWorld()
     {
-        var worlds = ServerManager.LoadAllWorld().ToList();
-        foreach (var worldConfig in worlds)
+        InitWorld(new WorldConfigEntity(0, "Scania")
         {
-            InitWorld(worldConfig);
-        }
+            Enable = true,
+            ServerMessage = "Welcome to Scania!",
+            EventMessage = "Scania!",
+            RecommendMessage = "Welcome to Scania!",
+            ExpRate = 10,
+            DropRate = 10,
+            MobRate = 1,
+            TravelRate = 10,
+            QuestRate = 5,
+            FishingRate = 10,
+            BossDropRate = 10,
+            MesoRate = 10,
+            StartPort = 7575
+        });
     }
 
     public bool IsStarting { get; set; }
