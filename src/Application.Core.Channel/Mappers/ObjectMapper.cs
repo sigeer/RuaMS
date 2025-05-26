@@ -1,10 +1,12 @@
 using Application.Core.Game.Items;
+using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Shared.Characters;
 using Application.Shared.Items;
 using Application.Utility.Compatible.Atomics;
+using Application.Utility.Exceptions;
 using AutoMapper;
 using client.inventory;
 using net.server;
@@ -194,6 +196,18 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.SkillId, source => source.MapFrom(x => x.skillId))
                 .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
                 .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
+
+            CreateMap<DropDto, DropEntry>()
+                .ConstructUsing((src, ctx) =>
+                {
+                    if (src.Type == DropType.ReactorDrop)
+                        return DropEntry.ReactorDrop(src.DropperId, src.ItemId, src.Chance, src.QuestId);
+                    if (src.Type == DropType.MonsterDrop)
+                        return DropEntry.MobDrop(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, src.QuestId);
+                    if (src.Type == DropType.GlobalDrop)
+                        return DropEntry.Global(0, src.ItemId, src.Chance, src.MinCount, src.MaxCount, src.QuestId);
+                    throw new BusinessFatalException("不支持的掉落类型");
+                });
         }
 
         private int[] TranslateArray(string str)

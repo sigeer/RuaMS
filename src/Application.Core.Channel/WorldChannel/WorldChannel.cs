@@ -1,6 +1,7 @@
 using Application.Core.Channel.Net;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
+using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Controllers;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
@@ -25,6 +26,7 @@ using scripting.portal;
 using scripting.quest;
 using scripting.reactor;
 using Serilog;
+using server;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
@@ -55,6 +57,7 @@ public partial class WorldChannel : IWorldChannel
     public NPCScriptManager NPCScriptManager { get; }
     public PortalScriptManager PortalScriptManager { get; }
     public QuestScriptManager QuestScriptManager { get; }
+    public DevtestScriptManager DevtestScriptManager { get; }
 
     private Dictionary<int, HiredMerchant> hiredMerchants = new();
     private Dictionary<int, int> storedVars = new();
@@ -119,6 +122,7 @@ public partial class WorldChannel : IWorldChannel
     public PetHungerController PetHungerController { get; }
     public CharacterDiseaseController CharacterDiseaseController { get; }
     public IServiceScope LifeScope { get; }
+    public SkillbookInformationProvider SkillbookInformationProvider { get; }
 
     #region
     public EventService EventService { get; }
@@ -142,6 +146,7 @@ public partial class WorldChannel : IWorldChannel
         Transport = transport;
 
         ClientStorage = new ChannelClientStorage(this);
+        Service = ActivatorUtilities.CreateInstance<ChannelService>(LifeScope.ServiceProvider, this);
 
         this.world = 0;
 
@@ -174,13 +179,14 @@ public partial class WorldChannel : IWorldChannel
         OverallService = new OverallService(this);
 
         eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
-        MapScriptManager = LifeScope.ServiceProvider.GetRequiredService<MapScriptManager>();
-        ReactorScriptManager = LifeScope.ServiceProvider.GetRequiredService<ReactorScriptManager>();
-        NPCScriptManager = LifeScope.ServiceProvider.GetRequiredService<NPCScriptManager>();
-        PortalScriptManager = LifeScope.ServiceProvider.GetRequiredService<PortalScriptManager>();
-        QuestScriptManager = LifeScope.ServiceProvider.GetRequiredService<QuestScriptManager>();
+        MapScriptManager = ActivatorUtilities.CreateInstance<MapScriptManager>(LifeScope.ServiceProvider, this);
+        ReactorScriptManager = ActivatorUtilities.CreateInstance<ReactorScriptManager>(LifeScope.ServiceProvider, this);
+        NPCScriptManager = ActivatorUtilities.CreateInstance<NPCScriptManager>(LifeScope.ServiceProvider, this);
+        PortalScriptManager = ActivatorUtilities.CreateInstance<PortalScriptManager>(LifeScope.ServiceProvider, this);
+        QuestScriptManager = ActivatorUtilities.CreateInstance<QuestScriptManager>(LifeScope.ServiceProvider, this);
+        DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
 
-        Service = ActivatorUtilities.CreateInstance<ChannelService>(LifeScope.ServiceProvider, this);
+        SkillbookInformationProvider = LifeScope.ServiceProvider.GetRequiredService<SkillbookInformationProvider>();
 
     }
 
@@ -248,8 +254,20 @@ public partial class WorldChannel : IWorldChannel
         await NettyServer.Start();
         log.Information("频道服务器{InstanceId}启动成功：监听端口{Port}", InstanceId, Port);
 
+        _ = Task.Run(() =>
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            log.Information("频道服务器{InstanceId}加载WZ - 能手册...", InstanceId);
+            SkillbookInformationProvider.LoadAllSkillbookInformation();
+            log.Information("频道服务器{InstanceId}WZ - 能手册加载完成, 耗时{Cost}", InstanceId, sw.Elapsed.TotalSeconds);
+        });
+
+
         channel = await Transport.RegisterServer(this);
         log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
+
+
 
         StartupTime = DateTimeOffset.UtcNow;
         ForceUpdateServerTime();

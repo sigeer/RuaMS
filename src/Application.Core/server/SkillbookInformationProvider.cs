@@ -19,7 +19,10 @@
 */
 
 
+using Application.Core.ServerTransports;
 using Application.Core.Tools;
+using Application.Shared.Items;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -35,36 +38,44 @@ namespace server;
  */
 public class SkillbookInformationProvider
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.SkillData);
-    private static volatile Dictionary<int, SkillBookEntry> foundSkillbooks = new();
+    private volatile Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
-    public enum SkillBookEntry
+    readonly IChannelServerTransport _transport;
+    readonly ILogger<SkillbookInformationProvider> _logger;
+    bool loaded = false;
+    bool isLoading = false;
+    public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<SkillbookInformationProvider> logger)
     {
-        UNAVAILABLE,
-        QUEST,
-        QUEST_BOOK,
-        QUEST_REWARD,
-        REACTOR,
-        SCRIPT
+        _transport = transport;
+        _logger = logger;
     }
 
-    private const int SKILLBOOK_MIN_ITEMID = 2280000;
-    private const int SKILLBOOK_MAX_ITEMID = 2300000;  // exclusively
-
-    public static void loadAllSkillbookInformation()
+    public void LoadAllSkillbookInformation()
     {
+        if (isLoading)
+            return;
+
+        if (loaded)
+        {
+            _logger.LogInformation("资源已加载");
+            return;
+        }
+
+        isLoading = true;
         Stopwatch sw = new Stopwatch();
         Dictionary<int, SkillBookEntry> loadedSkillbooks = new();
         sw.Start();
         loadedSkillbooks.putAll(fetchSkillbooksFromQuests());
-        log.Debug("fetchSkillbooksFromQuests 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
+        _logger.LogDebug("fetchSkillbooksFromQuests 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
         sw.Restart();
         loadedSkillbooks.putAll(fetchSkillbooksFromReactors());
-        log.Debug("fetchSkillbooksFromReactors 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
+        _logger.LogDebug("fetchSkillbooksFromReactors 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
         sw.Restart();
         loadedSkillbooks.putAll(fetchSkillbooksFromScripts());
-        log.Debug("fetchSkillbooksFromScripts 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
-        SkillbookInformationProvider.foundSkillbooks = loadedSkillbooks;
+        _logger.LogDebug("fetchSkillbooksFromScripts 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
+        foundSkillbooks = loadedSkillbooks;
+        loaded = true;
+        isLoading = false;
     }
 
     private static bool is4thJobSkill(int itemid)
@@ -74,7 +85,7 @@ public class SkillbookInformationProvider
 
     private static bool isSkillBook(int itemid)
     {
-        return itemid >= SKILLBOOK_MIN_ITEMID && itemid < SKILLBOOK_MAX_ITEMID;
+        return itemid >= ItemId.SKILLBOOK_MIN_ITEMID && itemid < ItemId.SKILLBOOK_MAX_ITEMID;
     }
 
     private static bool isQuestBook(int itemid)
@@ -189,16 +200,13 @@ public class SkillbookInformationProvider
         return loadedSkillbooks;
     }
 
-    private static Dictionary<int, SkillBookEntry> fetchSkillbooksFromReactors()
+    private Dictionary<int, SkillBookEntry> fetchSkillbooksFromReactors()
     {
         Dictionary<int, SkillBookEntry> loadedSkillbooks = new();
 
         try
         {
-            using var dbContext = new DBContext();
-            var dataList = dbContext.Reactordrops.Where(x => x.Itemid >= SKILLBOOK_MIN_ITEMID && x.Itemid < SKILLBOOK_MAX_ITEMID)
-                .Select(x => x.Itemid)
-                .ToList();
+            var dataList = _transport.RequestReactorSkillBooks();
 
             foreach (var item in dataList)
             {
@@ -234,7 +242,7 @@ public class SkillbookInformationProvider
         return File.ReadAllText(file.FullName, Encoding.GetEncoding(encoding));
     }
 
-    private static Dictionary<int, SkillBookEntry> fileSearchMatchingData(FileInfo file)
+    private Dictionary<int, SkillBookEntry> fileSearchMatchingData(FileInfo file)
     {
         Dictionary<int, SkillBookEntry> scriptFileSkillbooks = new();
 
@@ -250,13 +258,13 @@ public class SkillbookInformationProvider
         }
         catch (IOException ioe)
         {
-            log.Error(ioe, "Failed to read file:{FileName}", file.FullName);
+            _logger.LogError(ioe, "Failed to read file:{FileName}", file.FullName);
         }
 
         return scriptFileSkillbooks;
     }
 
-    private static Dictionary<int, SkillBookEntry> fetchSkillbooksFromScripts()
+    private Dictionary<int, SkillBookEntry> fetchSkillbooksFromScripts()
     {
         return FileCache.GetOrCreate("skillbookinformation_script", () =>
         {
@@ -273,12 +281,12 @@ public class SkillbookInformationProvider
         }) ?? [];
     }
 
-    public static SkillBookEntry getSkillbookAvailability(int itemId)
+    public SkillBookEntry getSkillbookAvailability(int itemId)
     {
         return foundSkillbooks.GetValueOrDefault(itemId, SkillBookEntry.UNAVAILABLE);
     }
 
-    public static List<int> getTeachableSkills(IPlayer chr)
+    public List<int> getTeachableSkills(IPlayer chr)
     {
         List<int> list = new();
 

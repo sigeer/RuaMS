@@ -1,8 +1,8 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public class Gift
+public class GiftEntity
 {
-    public Gift(int to, string from, string message, int sn, int ringid)
+    public GiftEntity(int to, string from, string message, int sn, int ringid)
     {
         To = to;
         From = from;
@@ -11,7 +11,7 @@ public class Gift
         Ringid = ringid;
     }
 
-    private Gift() { }
+    private GiftEntity() { }
 
     public int Id { get; set; }
 

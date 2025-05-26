@@ -31,7 +31,7 @@ namespace Application.Host.Services
             var dbModel = await _dbContext.DropData.FirstOrDefaultAsync(x => x.Id == model.Id);
             if (dbModel == null)
             {
-                dbModel = _mapper.Map<DropData>(model);
+                dbModel = _mapper.Map<DropDataEntity>(model);
 
                 await _dbContext.DropData.AddAsync(dbModel);
             }

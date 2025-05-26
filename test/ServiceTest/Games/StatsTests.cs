@@ -1,8 +1,3 @@
-using Application.Core.Game.Players;
-using Application.Core.Game.Skills;
-using client;
-using constants.skills;
-
 namespace ServiceTest.Games
 {
     public class StatsTests : TestBase

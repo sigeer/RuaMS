@@ -21,6 +21,9 @@ public class ItemId
     public const int ARPQ_SHIELD = 2022269;
     public const int ROARING_TIGER_MESSENGER = 5390006;
 
+    public const int SKILLBOOK_MIN_ITEMID = 2280000;
+    public const int SKILLBOOK_MAX_ITEMID = 2300000;  // exclusively
+
     public static bool isExpIncrease(int itemId)
     {
         return itemId >= 2022450 && itemId <= 2022452;

@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
+using Application.Core.Game.TheWorld;
 using Microsoft.Extensions.Logging;
 using server.maps;
 
@@ -34,10 +35,9 @@ namespace scripting.reactor;
  */
 public class ReactorScriptManager : AbstractScriptManager
 {
-
     private Dictionary<int, List<DropEntry>> drops = new();
 
-    public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
+    public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IWorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
     {
         LoadAllReactorDrops();
     }
@@ -80,37 +80,12 @@ public class ReactorScriptManager : AbstractScriptManager
 
     public List<DropEntry> getDrops(int reactorId)
     {
-        var ret = drops.GetValueOrDefault(reactorId);
-        if (ret == null)
-        {
-            ret = new();
-            try
-            {
-                using var dbContext = new DBContext();
-                ret = dbContext.Reactordrops.Where(x => x.Reactorid == reactorId && x.Chance >= 0)
-                    .Select(x => new { x.Itemid, x.Chance, x.Questid, x.Reactorid })
-                    .ToList()
-                    .Select(x => DropEntry.ReactorDrop(x.Reactorid, x.Itemid, x.Chance, (short)x.Questid))
-                    .ToList();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error getting drops for reactor: {ReactorId}", reactorId);
-            }
-            drops.AddOrUpdate(reactorId, ret);
-        }
-        return ret;
+        return drops.GetValueOrDefault(reactorId) ?? [];
     }
 
     public void LoadAllReactorDrops()
     {
-        using var dbContext = new DBContext();
-        drops = dbContext.Reactordrops.Where(x => x.Chance >= 0)
-            .Select(x => new { x.Itemid, x.Chance, x.Questid, x.Reactorid })
-            .ToList()
-            .GroupBy(x => x.Reactorid)
-            .Select(x => new KeyValuePair<int, List<DropEntry>>(x.Key, x.Select(y => DropEntry.ReactorDrop(y.Reactorid, y.Itemid, y.Chance, (short)y.Questid)).ToList()))
-            .ToDictionary();
+        drops = _channelServer.Service.RequestAllReactorDrops();
     }
 
     public void clearDrops()

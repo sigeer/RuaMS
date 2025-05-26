@@ -1,4 +1,5 @@
 using Application.Core.Datas;
+using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
@@ -113,6 +114,11 @@ namespace Application.Core.Channel.Services
 
             item.setSN(cashItem.getSN());
             return item;
+        }
+
+        public Dictionary<int, List<DropEntry>> RequestAllReactorDrops()
+        {
+            return _mapper.Map<Dictionary<int, List<DropEntry>>>(_tranport.RequestAllReactorDrops());
         }
     }
 }

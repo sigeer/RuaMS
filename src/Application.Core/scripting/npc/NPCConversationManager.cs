@@ -29,6 +29,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.scripting.Infrastructure;
+using Application.Shared.Items;
 using client;
 using client.inventory;
 using constants.game;
@@ -42,7 +43,6 @@ using server.partyquest;
 using tools;
 using tools.packets;
 using static server.partyquest.Pyramid;
-using static server.SkillbookInformationProvider;
 
 
 namespace scripting.npc;
@@ -627,7 +627,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public int[] getAvailableSkillBooks()
     {
         List<int> ret = ItemInformationProvider.getInstance().usableSkillBooks(this.getPlayer());
-        ret.AddRange(SkillbookInformationProvider.getTeachableSkills(this.getPlayer()));
+        ret.AddRange(c.CurrentServer.SkillbookInformationProvider.getTeachableSkills(this.getPlayer()));
 
         return ret.ToArray();
     }
@@ -639,7 +639,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public string getSkillBookInfo(int itemid)
     {
-        SkillBookEntry sbe = SkillbookInformationProvider.getSkillbookAvailability(itemid);
+        var sbe = c.CurrentServer.SkillbookInformationProvider.getSkillbookAvailability(itemid);
         switch (sbe)
         {
             case SkillBookEntry.UNAVAILABLE:

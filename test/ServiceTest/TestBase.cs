@@ -1,35 +1,27 @@
 using Application.Core;
-using Application.Core.Game;
-using Application.Core.Game.Players;
-using Application.EF;
-using Application.Utility.Tasks;
-using constants.id;
-using net.server;
-using Serilog.Events;
-using Serilog;
-using server;
-using System.Text;
-using Application.Core.Client;
-using Microsoft.Extensions.DependencyInjection;
-using Application.Core.Login;
 using Application.Core.Channel;
-using Application.Core.Login.ServerTransports;
-using Application.Core.ServerTransports;
-using Microsoft.EntityFrameworkCore;
-using Application.Utility.Configs;
-using Application.Core.Servers;
-using DotNetty.Transport.Channels.Local;
 using Application.Core.Channel.Net;
-using Application.Core.Login.Services;
-using tools;
-using Application.Core.Login.Datas;
-using DotNetty.Transport.Channels;
-using ServiceTest.TestUtilities;
-using Moq;
-using Microsoft.Extensions.Configuration;
+using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
+using Application.Core.Login;
+using Application.Core.Login.Datas;
+using Application.Core.Login.ServerTransports;
+using Application.Core.Servers;
+using Application.Core.ServerTransports;
+using Application.EF;
+using Application.Utility.Configs;
+using Application.Utility.Tasks;
 using AutoMapper;
-using Application.Shared.Characters;
+using DotNetty.Transport.Channels;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using net.server;
+using Serilog;
+using Serilog.Events;
+using server;
+using ServiceTest.TestUtilities;
+using System.Text;
 
 namespace ServiceTest
 {
@@ -54,21 +46,19 @@ namespace ServiceTest
             var sc = new ServiceCollection();
             sc.AddSingleton<IConfiguration>(config);
             sc.AddLogging();
-            sc.AddDbContextFactory<DBContext>(o =>
-            {
-                o.UseMySQL(YamlConfig.config.server.DB_CONNECTIONSTRING);
-            });
+
             sc.AddChannelServer();
             sc.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
             sc.AddSingleton<MultiRunner>();
 
             sc.AddScoped<IChannel, MockChannel>();
 
+            sc.AddDbFactory(YamlConfig.config.server.DB_CONNECTIONSTRING);
             sc.AddLoginServer();
 
             _sp = sc.BuildServiceProvider();
 
-            Environment.SetEnvironmentVariable("ms-wz", "C:\\Demo\\MS\\wz");
+            Environment.SetEnvironmentVariable("ms-wz", "D:\\walker\\demo\\MS\\Cosmic\\wz");
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             GlobalTools.Encoding = Encoding.GetEncoding("GBK");
@@ -87,13 +77,11 @@ namespace ServiceTest
             var scope = _sp.CreateScope();
             var transport = _sp.GetRequiredService<IChannelServerTransport>();
             IWorldChannel channel = new WorldChannel(scope, config, transport);
-            
+
             channel.GetType().GetField("channel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(channel, 1);
             var charManager = _sp.GetRequiredService<CharacterManager>();
             var obj = charManager.GetCharacter(1);
-            var accManager = _sp.GetRequiredService<AccountManager>();
             var mapper = _sp.GetRequiredService<IMapper>();
-            obj.Account = mapper.Map<AccountDto>(accManager.GetAccountEntity(obj.Character.AccountId));
             var charSrv = _sp.GetRequiredService<Application.Core.Channel.Services.CharacterService>();
 
             var client = ActivatorUtilities.CreateInstance<ChannelClient>(_sp, (long)1, channel);

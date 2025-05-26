@@ -22,6 +22,7 @@
 
 
 using Application.Core.Game.Commands;
+using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -37,7 +38,7 @@ public class NPCScriptManager : AbstractScriptManager
 
     readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public NPCScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
+    public NPCScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IWorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
     {
     }
 

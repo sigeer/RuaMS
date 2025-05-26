@@ -1,9 +1,11 @@
 using Application.Core.Datas;
+using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
+using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Servers;
@@ -116,6 +118,12 @@ namespace Application.Core.ServerTransports
         /// <param name="v">频道号</param>
         void SetPlayerOnlined(int id, int v);
         void CallSaveDB();
+        Dictionary<int, List<DropDto>> RequestAllReactorDrops();
+        int[] RequestReactorSkillBooks();
+        List<SpecialCashItem> RequestSpecialCashItems();
+        void SendGift(int recipient, string from, string message, int sn, int ringid);
+        GiftDto[] LoadPlayerGifts(int playerId);
+        void ClearGifts(int[] giftIdArray);
 
         #endregion
     }

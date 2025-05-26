@@ -6,6 +6,8 @@ using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Core.Net;
 using Application.Core.Servers;
+using Application.EF;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.handlers;
 
@@ -13,6 +15,14 @@ namespace Application.Core.Login
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceCollection AddDbFactory(this IServiceCollection services, string connectionString)
+        {
+            services.AddDbContextFactory<DBContext>(o =>
+            {
+                o.UseMySQL(connectionString);
+            });
+            return services;
+        }
         private static IServiceCollection AddLoginHandlers(this IServiceCollection services)
         {
             services.AddSingleton<IPacketProcessor<ILoginClient>, LoginPacketProcessor>();
@@ -55,6 +65,18 @@ namespace Application.Core.Login
             return services;
         }
 
+        static IServiceCollection AddServices(this IServiceCollection services)
+        {
+            services.AddSingleton<AccountManager>();
+            services.AddSingleton<CharacterManager>();
+
+            services.AddSingleton<CharacterService>();
+            services.AddSingleton<ServerService>();
+            services.AddSingleton<LoginService>();
+            services.AddSingleton<ItemService>();
+            return services;
+        }
+
         public static IServiceCollection AddLoginServer(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(DtoMapper));
@@ -63,14 +85,8 @@ namespace Application.Core.Login
 
             services.AddSessionManager();
 
-            services.AddSingleton<AccountManager>();
-            services.AddSingleton<CharacterManager>();
-            services.AddSingleton<CharacterService>();
-
+            services.AddServices();
             services.AddStorage();
-
-            services.AddSingleton<ServerService>();
-            services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();
 
             services.AddScheduleTask();

@@ -10,6 +10,7 @@ using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
+using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.Net;
 using net.server;
@@ -31,17 +32,19 @@ namespace Application.Core.Login.ServerTransports
         readonly IMasterServer _server;
         readonly CharacterManager _chrManager;
         readonly StorageService _storageService;
+        readonly ItemService _itemService;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
         IWorld _world => Server.getInstance().getWorld(0);
 
-        public LocalChannelServerTransport(IMasterServer server, LoginService loginService, CharacterManager chrManager, StorageService storageService)
+        public LocalChannelServerTransport(IMasterServer server, LoginService loginService, CharacterManager chrManager, StorageService storageService, ItemService itemService)
         {
             _server = server;
             _loginService = loginService;
             _chrManager = chrManager;
             _storageService = storageService;
+            _itemService = itemService;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -511,6 +514,35 @@ namespace Application.Core.Login.ServerTransports
         public void CallSaveDB()
         {
             _ = _storageService.CommitAllImmediately();
+        }
+
+        public Dictionary<int, List<DropDto>> RequestAllReactorDrops()
+        {
+            return _itemService.LoadAllReactorDrops();
+        }
+
+        public int[] RequestReactorSkillBooks()
+        {
+            return _itemService.LoadReactorSkillBooks();
+        }
+
+        public SpecialCashItem[] RequestSpecialCashItems()
+        {
+            return _itemService.LoadSpecialCashItems();
+        }
+
+        public void SendGift(int recipient, string from, string message, int sn, int ringid)
+        {
+            _itemService.InsertGift(recipient, from, message, sn, ringid);
+        }
+
+        public GiftDto[] LoadPlayerGifts(int playerId)
+        {
+            return _itemService.LoadPlayerGifts(playerId);
+        }
+        public void ClearGifts(int[] giftIdArray)
+        {
+            _itemService.ClearGifts(giftIdArray);
         }
     }
 }

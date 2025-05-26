@@ -1,3 +1,4 @@
+using Application.Shared.Items;
 using server;
 
 namespace Application.Core.Game.Life
@@ -124,10 +125,5 @@ namespace Application.Core.Game.Life
         }
     }
 
-    public enum DropType
-    {
-        GlobalDrop,
-        MonsterDrop,
-        ReactorDrop
-    }
+
 }

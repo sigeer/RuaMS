@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Commands;
+using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
 using Microsoft.Extensions.Logging;
 using server.maps;
@@ -34,7 +35,7 @@ public class PortalScriptManager : AbstractScriptManager
 {
     readonly EngineStorage _scripts = new EngineStorage();
 
-    public PortalScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
+    public PortalScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IWorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
     {
     }
 

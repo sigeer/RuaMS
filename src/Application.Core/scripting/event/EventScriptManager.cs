@@ -39,12 +39,10 @@ public class EventScriptManager : AbstractScriptManager
 
     private ConcurrentDictionary<string, EventManager> events = new();
     private bool active = false;
-    public IWorldChannel LinkedWorldChannel { get; }
     readonly string[] eventScripts;
 
-    public EventScriptManager(IWorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor)
+    public EventScriptManager(IWorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor, channel)
     {
-        LinkedWorldChannel = channel;
         eventScripts = ScriptResFactory.GetEvents();
 
         ReloadEventScript();
@@ -103,7 +101,7 @@ public class EventScriptManager : AbstractScriptManager
     private EventManager initializeEventEntry(string script)
     {
         var engine = getInvocableScriptEngine(GetEventScriptPath(script));
-        EventManager eventManager = new EventManager(LinkedWorldChannel, engine, script);
+        EventManager eventManager = new EventManager(_channelServer, engine, script);
         engine.AddHostedObject(INJECTED_VARIABLE_NAME, eventManager);
         return eventManager;
     }

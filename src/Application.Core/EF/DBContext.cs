@@ -45,7 +45,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<DropDataGlobal> DropDataGlobals { get; set; }
 
-    public virtual DbSet<DropData> DropData { get; set; }
+    public virtual DbSet<DropDataEntity> DropData { get; set; }
 
     public virtual DbSet<Dueyitem> Dueyitems { get; set; }
 
@@ -61,7 +61,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Fredstorage> Fredstorages { get; set; }
 
-    public virtual DbSet<Gift> Gifts { get; set; }
+    public virtual DbSet<GiftEntity> Gifts { get; set; }
 
     public virtual DbSet<GuildEntity> Guilds { get; set; }
 
@@ -139,7 +139,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Quickslotkeymapped> Quickslotkeymappeds { get; set; }
 
-    public virtual DbSet<Reactordrop> Reactordrops { get; set; }
+    public virtual DbSet<ReactorDropEntity> Reactordrops { get; set; }
 
     public virtual DbSet<Report> Reports { get; set; }
 
@@ -453,7 +453,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("questid");
         });
 
-        modelBuilder.Entity<DropData>(entity =>
+        modelBuilder.Entity<DropDataEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -671,7 +671,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("timestamp");
         });
 
-        modelBuilder.Entity<Gift>(entity =>
+        modelBuilder.Entity<GiftEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1752,7 +1752,7 @@ public partial class DBContext : DbContext
                 .HasConstraintName("quickslotkeymapped_accountid_fk");
         });
 
-        modelBuilder.Entity<Reactordrop>(entity =>
+        modelBuilder.Entity<ReactorDropEntity>(entity =>
         {
             entity.HasKey(e => e.Reactordropid).HasName("PRIMARY");
 

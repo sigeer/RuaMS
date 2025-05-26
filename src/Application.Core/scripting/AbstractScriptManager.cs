@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
+using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Scripting.JS;
 using Application.Scripting.Lua;
@@ -48,12 +49,14 @@ public abstract class AbstractScriptManager
 {
     static ConcurrentDictionary<string, ScriptPrepareWrapper> JsCache { get; set; } = new();
     protected readonly ILogger<AbstractScriptManager> _logger;
-    readonly CommandExecutor _commandExecutor;
+    protected readonly CommandExecutor _commandExecutor;
+    protected readonly IWorldChannel _channelServer;
 
-    protected AbstractScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor)
+    protected AbstractScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IWorldChannel worldChannel)
     {
         _logger = logger;
         _commandExecutor = commandExecutor;
+        _channelServer = worldChannel;
     }
 
     protected IEngine? getInvocableScriptEngine(string path)

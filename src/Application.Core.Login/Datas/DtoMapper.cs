@@ -69,6 +69,27 @@ namespace Application.Core.Login.Datas
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
                 .ForMember(des => des.PetInfo, source => source.MapFrom(x => x.Pet))
                 .IncludeMembers(source => source.Item);
+
+            CreateMap<ReactorDropEntity, DropDto>()
+                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
+                .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
+                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Reactorid))
+                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.ReactorDrop))
+                .ForMember(dest => dest.MinCount, src => src.MapFrom(x => 1))
+                .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => 1))
+                .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
+
+            CreateMap<DropDataEntity, DropDto>()
+                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
+                .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
+                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Dropperid))
+                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.ReactorDrop))
+                .ForMember(dest => dest.MinCount, src => src.MapFrom(x => x.MinimumQuantity))
+                .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
+                .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
+
+            CreateMap<GiftEntity, GiftDto>()
+                .ForMember(dest => dest.RingId, src => src.MapFrom(x => x.Ringid));
         }
     }
 }

@@ -56,14 +56,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
-builder.Services.AddDbContextFactory<DBContext>(o =>
-{
-    o.UseMySQL(builder.Configuration.GetConnectionString("MySQL"));
-});
+
 builder.Services.AddChannelServer();
 builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
 builder.Services.AddSingleton<MultiRunner>();
 
+builder.Services.AddDbFactory(builder.Configuration.GetConnectionString("MySQL"));
 builder.Services.AddLoginServer();
 
 
