@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class DoorHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int ownerid = p.readInt();
         p.readByte(); // specifies if backwarp or not, 1 town to target, 0 target to town

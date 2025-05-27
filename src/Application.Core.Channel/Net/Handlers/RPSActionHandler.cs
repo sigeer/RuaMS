@@ -12,7 +12,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RPSActionHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var rps = chr.getRPS();

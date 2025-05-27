@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class HealOvertimeHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (!chr.isLoggedinWorld())

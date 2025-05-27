@@ -47,7 +47,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -55,7 +55,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
         {
             foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
             {
-                if (mmo is IPlayer mc)
+                if (mmo is Player mc)
                 {
 
                     var shop = mc.getPlayerShop();

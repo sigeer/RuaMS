@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PetExcludeItemsHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int petId = p.readInt();
         p.skip(4); // timestamp

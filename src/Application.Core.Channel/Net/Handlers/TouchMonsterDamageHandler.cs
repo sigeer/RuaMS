@@ -33,7 +33,7 @@ public class TouchMonsterDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (chr.getEnergyBar() == 15000 || chr.getBuffedValue(BuffStat.BODY_PRESSURE) != null)

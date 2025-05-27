@@ -17,7 +17,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RaiseIncExpHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         sbyte inventorytype = p.ReadSByte();//nItemIT
         short slot = p.readShort();//nSlotPosition

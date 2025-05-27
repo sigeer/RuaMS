@@ -36,7 +36,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ReportHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int type = p.ReadSByte(); //00 = Illegal program claim, 01 = Conversation claim
         string victim = p.readString();

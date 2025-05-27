@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class SpawnPetHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readInt();
         byte slot = p.readByte();

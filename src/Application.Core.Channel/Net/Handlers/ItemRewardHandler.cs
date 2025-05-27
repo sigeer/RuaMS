@@ -37,7 +37,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ItemRewardHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         byte slot = (byte)p.readShort();
         int itemId = p.readInt(); // will load from xml I don't care.

@@ -1,18 +1,18 @@
-using Application.Core.Datas;
+using Application.Core.Channel.Client.inventory;
+using Application.Core.Channel.ServerTransports;
 using Application.Core.Game.Life;
-using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
-using Application.Core.ServerTransports;
+using Application.Core.Shared.Dto;
 using Application.Shared.Dto;
+using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
 using server;
-using static server.CashShop;
 
 namespace Application.Core.Channel.Services
 {
-    internal class ChannelService : IChannelService
+    public class ChannelService
     {
         readonly IChannelServerTransport _tranport;
         readonly CharacterService _characteService;
@@ -49,12 +49,12 @@ namespace Application.Core.Channel.Services
             _tranport.SendPlayerObject(dto);
         }
 
-        public void SaveBuff(IPlayer player)
+        public void SaveBuff(Player player)
         {
             _tranport.SendBuffObject(player.getId(), _characteService.DeserializeBuff(player));
         }
 
-        public PlayerBuffSaveDto GetBuffFromStorage(IPlayer player)
+        public PlayerBuffSaveDto GetBuffFromStorage(Player player)
         {
             return _tranport.GetBuffObject(player.Id);
         }
@@ -120,5 +120,16 @@ namespace Application.Core.Channel.Services
         {
             return _mapper.Map<Dictionary<int, List<DropEntry>>>(_tranport.RequestAllReactorDrops());
         }
+
+        internal DueyPackageObject? GetDueyPackage(int packageId)
+        {
+            return _mapper.Map<DueyPackageObject>(_tranport.GetDueyPackage(packageId));
+        }
+
+        internal DueyPackageObject[] LoadPlayerDueyPackages(int id)
+        {
+            return _mapper.Map<DueyPackageObject[]>(_tranport.LoadPlayerDueyPackages(id));
+        }
+
     }
 }

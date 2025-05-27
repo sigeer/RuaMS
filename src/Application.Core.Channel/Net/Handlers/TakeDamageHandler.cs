@@ -49,9 +49,9 @@ public class TakeDamageHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
-        List<IPlayer> banishPlayers = new();
+        List<Player> banishPlayers = new();
 
         var chr = c.OnlinedCharacter;
         p.readInt();

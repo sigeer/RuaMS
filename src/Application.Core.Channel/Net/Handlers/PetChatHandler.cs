@@ -37,7 +37,7 @@ public class PetChatHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int petId = p.readInt();
         p.readInt();

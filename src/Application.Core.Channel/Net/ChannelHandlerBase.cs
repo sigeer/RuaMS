@@ -5,8 +5,8 @@ namespace Application.Core.Channel.Net
 {
     public abstract class ChannelHandlerBase : IChannelHandler
     {
-        public abstract void HandlePacket(InPacket p, IChannelClient c);
-        public virtual bool ValidateState(IChannelClient c)
+        public abstract void HandlePacket(InPacket p, ChannelClient c);
+        public virtual bool ValidateState(ChannelClient c)
         {
             return c.IsOnlined;
         }

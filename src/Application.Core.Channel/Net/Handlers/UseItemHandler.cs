@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -102,7 +102,7 @@ public class UseItemHandler : ChannelHandlerBase
         }
     }
 
-    private void remove(IChannelClient c, short slot)
+    private void remove(ChannelClient c, short slot)
     {
         InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
         c.sendPacket(PacketCreator.enableActions());

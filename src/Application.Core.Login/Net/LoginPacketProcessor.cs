@@ -1,24 +1,22 @@
-using Application.Core.Client;
 using Application.Core.Login.Net.Handlers;
 using Application.Core.Net;
 using Application.Core.Net.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using net.opcodes;
-using net.server.handlers;
 using net.server.handlers.login;
 
 namespace Application.Core.Login.Net
 {
-    public class LoginPacketProcessor : IPacketProcessor<ILoginClient>
+    public class LoginPacketProcessor : IPacketProcessor<LoginClient>
     {
-        readonly Dictionary<short, IPacketHandlerBase<ILoginClient>> _dataSource;
+        readonly Dictionary<short, IPacketHandlerBase<LoginClient>> _dataSource;
 
         public LoginPacketProcessor(IServiceProvider sp)
         {
-            _dataSource = new Dictionary<short, IPacketHandlerBase<ILoginClient>>
+            _dataSource = new Dictionary<short, IPacketHandlerBase<LoginClient>>
             {
-                { (short)RecvOpcode.PONG, sp.GetRequiredService<KeepAliveHandler<ILoginClient>>() },
-                { (short)RecvOpcode.CUSTOM_PACKET, sp.GetRequiredService<CustomPacketHandler<ILoginClient>>() },
+                { (short)RecvOpcode.PONG, sp.GetRequiredService<KeepAliveHandler<LoginClient>>() },
+                { (short)RecvOpcode.CUSTOM_PACKET, sp.GetRequiredService<CustomPacketHandler<LoginClient>>() },
 
                 { (short)RecvOpcode.LOGIN_PASSWORD, sp.GetRequiredService<LoginPasswordHandler>() },
                 { (short)RecvOpcode.ACCEPT_TOS, sp.GetRequiredService<AcceptToSHandler>() },
@@ -46,7 +44,7 @@ namespace Application.Core.Login.Net
             };
         }
 
-        public IPacketHandlerBase<ILoginClient>? GetPacketHandler(short code)
+        public IPacketHandlerBase<LoginClient>? GetPacketHandler(short code)
         {
             return _dataSource.GetValueOrDefault(code);
         }

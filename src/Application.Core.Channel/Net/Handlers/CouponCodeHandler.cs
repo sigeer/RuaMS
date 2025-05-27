@@ -49,7 +49,7 @@ public class CouponCodeHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    private List<TypedItemQuantity> getNXCodeItems(IPlayer chr, DBContext dbContext, int codeid)
+    private List<TypedItemQuantity> getNXCodeItems(Player chr, DBContext dbContext, int codeid)
     {
         Dictionary<int, int> couponItems = new();
         Dictionary<int, int> couponPoints = new(5);
@@ -100,7 +100,7 @@ public class CouponCodeHandler : ChannelHandlerBase
         return ret;
     }
 
-    private StatuedTypedItemQuantity getNXCodeResult(IPlayer chr, string code)
+    private StatuedTypedItemQuantity getNXCodeResult(Player chr, string code)
     {
         var c = chr.Client;
         List<TypedItemQuantity> ret = new List<TypedItemQuantity>();
@@ -170,7 +170,7 @@ public class CouponCodeHandler : ChannelHandlerBase
         }
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.skip(2);
         string code = p.readString();

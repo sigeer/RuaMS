@@ -20,7 +20,7 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 
-// Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
+Environment.SetEnvironmentVariable("ms-wz", "D:\\walker\\demo\\MS\\Cosmic\\wz");
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);

@@ -22,7 +22,7 @@ namespace Application.Core.Channel
     {
         private static IServiceCollection AddChannelHandlers(this IServiceCollection services)
         {
-            services.AddScoped<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
+            services.AddScoped<IPacketProcessor<ChannelClient>, ChannelPacketProcessor>();
 
             var interfaceType = typeof(ChannelHandlerBase);
             var implementations = interfaceType.Assembly.GetTypes()
@@ -32,8 +32,8 @@ namespace Application.Core.Channel
             {
                 services.AddScoped(impl);
             }
-            services.AddScoped<KeepAliveHandler<IChannelClient>>();
-            services.AddScoped<CustomPacketHandler<IChannelClient>>();
+            services.AddScoped<KeepAliveHandler<ChannelClient>>();
+            services.AddScoped<CustomPacketHandler<ChannelClient>>();
             return services;
         }
 

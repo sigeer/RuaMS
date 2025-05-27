@@ -37,7 +37,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int petId = p.readInt();
         p.readLong();

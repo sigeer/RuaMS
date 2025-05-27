@@ -1,11 +1,9 @@
-using Application.Core.Game.GlobalControllers;
-using Application.Core.Gameplay.Wedding;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
+using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
-using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Net;
@@ -14,12 +12,9 @@ using Application.Utility;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
-using client.processor.npc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using net.server;
-using server;
 using System.Net;
 
 
@@ -28,7 +23,7 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IMasterServer
+    public partial class MasterServer : IServerBase<IServerTransport>
     {
         public int Id { get; } = 0;
         readonly ILogger<MasterServer> _logger;
@@ -78,6 +73,8 @@ namespace Application.Core.Login
         public IServiceProvider ServiceProvider { get; }
 
         public InvitationController InvitationController { get; }
+
+        IServerTransport IServerBase<IServerTransport>.Transport => Transport;
 
         CharacterService _characterSevice;
         ServerService _serverService;
@@ -262,7 +259,7 @@ namespace Application.Core.Login
         {
             _logger.LogInformation("[{ServerName}] 定时任务加载中...", "中心服务器");
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-            var tMan = TimerManager.getInstance();
+            var tMan = ServiceProvider.GetRequiredService<ITimerManager>();
             await tMan.Start();
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
             tMan.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);

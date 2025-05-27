@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseMapleLifeHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var player = c.OnlinedCharacter;
         long timeNow = c.CurrentServer.getCurrentTime();

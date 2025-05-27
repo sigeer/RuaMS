@@ -14,7 +14,7 @@ public class CharSelectedHandler : OnCharacterSelectedHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         int charId = p.readInt();
 

@@ -1,7 +1,9 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
+using Application.Core.Shared.Dto;
 using Application.Shared.Characters;
 using Application.Shared.Login;
 using Application.Utility.Configs;
@@ -31,7 +33,7 @@ namespace Application.Core.Login
             return accountManager.UpdateAccountState(accId, newState);
         }
 
-        public List<IPlayer> LoadAccountCharactersView(int id)
+        public List<CharacterViewObject> LoadAccountCharactersView(int id)
         {
             return _characterSevice.GetCharactersView(accountManager.GetAccountPlayerIds(id).ToArray());
         }
@@ -106,8 +108,8 @@ namespace Application.Core.Login
 
         private object srvLock = new object();
 
-        private Dictionary<ILoginClient, DateTimeOffset> inLoginState = new(100);
-        public void RegisterLoginState(ILoginClient c)
+        private Dictionary<LoginClient, DateTimeOffset> inLoginState = new(100);
+        public void RegisterLoginState(LoginClient c)
         {
             Monitor.Enter(srvLock);
             try
@@ -120,7 +122,7 @@ namespace Application.Core.Login
             }
         }
 
-        public void UnregisterLoginState(ILoginClient c)
+        public void UnregisterLoginState(LoginClient c)
         {
             Monitor.Enter(srvLock);
             try
@@ -135,7 +137,7 @@ namespace Application.Core.Login
 
         private void DisconnectIdlesOnLoginState()
         {
-            List<ILoginClient> toDisconnect = new();
+            List<LoginClient> toDisconnect = new();
 
             Monitor.Enter(srvLock);
             try

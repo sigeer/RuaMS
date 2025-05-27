@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DamageSummonHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int oid = p.readInt();
         p.skip(1);   // -1

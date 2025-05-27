@@ -44,7 +44,7 @@ public class RegisterPinHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         byte c2 = p.readByte();
         if (c2 == 0)

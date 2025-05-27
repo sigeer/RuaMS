@@ -34,7 +34,7 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.skip(9);
         try

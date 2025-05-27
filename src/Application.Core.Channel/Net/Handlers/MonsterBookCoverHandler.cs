@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MonsterBookCoverHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int id = p.readInt();
         if (id == 0 || ItemId.isMonsterCard(id))

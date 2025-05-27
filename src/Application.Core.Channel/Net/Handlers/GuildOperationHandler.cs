@@ -46,7 +46,7 @@ public class GuildOperationHandler : ChannelHandlerBase
         _noteService = noteService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var mc = c.OnlinedCharacter;
         byte type = p.readByte();
@@ -73,7 +73,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                HashSet<IPlayer> eligibleMembers = new(GuildManager.getEligiblePlayersForGuild(mc));
+                HashSet<Player> eligibleMembers = new(GuildManager.getEligiblePlayersForGuild(mc));
                 if (eligibleMembers.Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
                 {
                     if (mc.getMap().getAllPlayers().Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)

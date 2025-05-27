@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ScriptedItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readInt(); // trash stamp, thanks RMZero213
         short itemSlot = p.readShort(); // item slot, thanks RMZero213

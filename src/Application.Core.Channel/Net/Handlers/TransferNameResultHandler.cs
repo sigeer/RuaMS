@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TransferNameResultHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         string name = p.readString();
         c.sendPacket(PacketCreator.sendNameTransferCheck(name, c.CurrentServer.CheckCharacterName(name)));

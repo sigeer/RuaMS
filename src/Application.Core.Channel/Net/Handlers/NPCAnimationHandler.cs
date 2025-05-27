@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class NPCAnimationHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (c.OnlinedCharacter.isChangingMaps())
         {   // possible cause of error 38 in some map transition scenarios, thanks Arnah

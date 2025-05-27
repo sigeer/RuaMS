@@ -1,10 +1,12 @@
 using Application.Core.Client;
+using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Core.Net;
+using Application.Core.Net.Handlers;
 using Application.Core.Servers;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +27,7 @@ namespace Application.Core.Login
         }
         private static IServiceCollection AddLoginHandlers(this IServiceCollection services)
         {
-            services.AddSingleton<IPacketProcessor<ILoginClient>, LoginPacketProcessor>();
+            services.AddSingleton<IPacketProcessor<LoginClient>, LoginPacketProcessor>();
 
             var interfaceType = typeof(LoginHandlerBase);
             var implementations = interfaceType.Assembly.GetTypes()
@@ -35,8 +37,8 @@ namespace Application.Core.Login
             {
                 services.AddSingleton(impl);
             }
-            services.AddSingleton<KeepAliveHandler<ILoginClient>>();
-            services.AddSingleton<CustomPacketHandler<ILoginClient>>();
+            services.AddSingleton<KeepAliveHandler<LoginClient>>();
+            services.AddSingleton<CustomPacketHandler<LoginClient>>();
             return services;
         }
 

@@ -20,13 +20,13 @@
 
 
 using Application.Core.Client;
-using Application.Core.scripting.npc;
+using Application.Core.Login.Client;
+using Application.Core.Session;
 using Application.EF;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Session;
@@ -41,9 +41,9 @@ public class SessionCoordinator
 
     private SessionInitialization sessionInit = new SessionInitialization();
     private LoginStorage loginStorage;
-    private Dictionary<int, ILoginClient> onlineClients = new(); // Key: account id
+    private Dictionary<int, LoginClient> onlineClients = new(); // Key: account id
     private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
-    private ConcurrentDictionary<string, ILoginClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
+    private ConcurrentDictionary<string, LoginClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
 
     private HostHwidCache hostHwidCache;
     readonly SessionDAO _sessionDAO;
@@ -102,7 +102,7 @@ public class SessionCoordinator
     /**
      * Overwrites any existing online client for the account id, making sure to disconnect it as well.
      */
-    public void updateOnlineClient(ILoginClient? client)
+    public void updateOnlineClient(LoginClient? client)
     {
         if (client != null && client.AccountEntity != null)
         {
@@ -118,7 +118,7 @@ public class SessionCoordinator
         }
     }
 
-    public bool canStartLoginSession(ILoginClient client)
+    public bool canStartLoginSession(LoginClient client)
     {
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
         {
@@ -152,7 +152,7 @@ public class SessionCoordinator
         }
     }
 
-    public void closeLoginSession(ILoginClient client)
+    public void closeLoginSession(LoginClient client)
     {
         string remoteHost = client.GetSessionRemoteHost();
         loginRemoteHosts.TryRemove(client.RemoteAddress, out var _);
@@ -187,7 +187,7 @@ public class SessionCoordinator
         }
 
         string remoteHost = client.GetSessionRemoteHost();
-        InitializationResult initResult = sessionInit.initialize(remoteHost);
+        var initResult = sessionInit.initialize(remoteHost);
         if (initResult != InitializationResult.SUCCESS)
         {
             return initResult.getAntiMulticlientResult();
@@ -223,7 +223,7 @@ public class SessionCoordinator
         }
     }
 
-    public AntiMulticlientResult attemptGameSession(ILoginClient client, int accountId, Hwid hwid)
+    public AntiMulticlientResult attemptGameSession(LoginClient client, int accountId, Hwid hwid)
     {
         string remoteHost = client.GetSessionRemoteHost();
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
@@ -304,7 +304,7 @@ public class SessionCoordinator
     /// </summary>
     /// <param name="client">ChannelClient</param>
     /// <param name="immediately"></param>
-    public void closeSession(ILoginClient? client, bool immediately = false)
+    public void closeSession(LoginClient? client, bool immediately = false)
     {
         if (client == null)
             return;
@@ -341,7 +341,7 @@ public class SessionCoordinator
         }
     }
 
-    public Hwid pickLoginSessionHwid(ILoginClient client)
+    public Hwid pickLoginSessionHwid(LoginClient client)
     {
         string remoteHost = client.RemoteAddress;
         // thanks BHB, resinate for noticing players from same network not being able to login
@@ -387,43 +387,43 @@ public class SessionCoordinator
         }
     }
 
-    public void printSessionTrace(IChannelClient c)
-    {
-        string str = "Opened server sessions:\r\n\r\n";
+    //public void printSessionTrace(IChannelClient c)
+    //{
+    //    string str = "Opened server sessions:\r\n\r\n";
 
-        if (onlineClients.Count > 0)
-        {
-            var elist = onlineClients.OrderBy(x => x.Key).ToList();
+    //    if (onlineClients.Count > 0)
+    //    {
+    //        var elist = onlineClients.OrderBy(x => x.Key).ToList();
 
-            str += ("Current online clients:\r\n");
-            foreach (var e in elist)
-            {
-                str += ("  " + e.Key + "\r\n");
-            }
-        }
+    //        str += ("Current online clients:\r\n");
+    //        foreach (var e in elist)
+    //        {
+    //            str += ("  " + e.Key + "\r\n");
+    //        }
+    //    }
 
-        if (onlineRemoteHwids.Count > 0)
-        {
-            List<Hwid> hwids = onlineRemoteHwids.OrderBy(x => x.hwid).ToList();
+    //    if (onlineRemoteHwids.Count > 0)
+    //    {
+    //        List<Hwid> hwids = onlineRemoteHwids.OrderBy(x => x.hwid).ToList();
 
-            str += ("Current online HWIDs:\r\n");
-            foreach (Hwid s in hwids)
-            {
-                str += ("  " + s + "\r\n");
-            }
-        }
+    //        str += ("Current online HWIDs:\r\n");
+    //        foreach (Hwid s in hwids)
+    //        {
+    //            str += ("  " + s + "\r\n");
+    //        }
+    //    }
 
-        if (loginRemoteHosts.Count > 0)
-        {
-            var elist = loginRemoteHosts.OrderBy(x => x.Key).ToList();
+    //    if (loginRemoteHosts.Count > 0)
+    //    {
+    //        var elist = loginRemoteHosts.OrderBy(x => x.Key).ToList();
 
-            str += ("Current login sessions:\r\n");
-            foreach (var e in elist)
-            {
-                str += ("  " + e.Key + ", IP: " + e.Value.RemoteAddress + "\r\n");
-            }
-        }
+    //        str += ("Current login sessions:\r\n");
+    //        foreach (var e in elist)
+    //        {
+    //            str += ("  " + e.Key + ", IP: " + e.Value.RemoteAddress + "\r\n");
+    //        }
+    //    }
 
-        TempConversation.Create(c, NpcId.TEMPLE_KEEPER)?.RegisterTalk(str);
-    }
+    //    TempConversation.Create(c, NpcId.TEMPLE_KEEPER)?.RegisterTalk(str);
+    //}
 }

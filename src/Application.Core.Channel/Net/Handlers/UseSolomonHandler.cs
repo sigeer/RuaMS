@@ -37,7 +37,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class UseSolomonHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readInt();
         short slot = p.readShort();

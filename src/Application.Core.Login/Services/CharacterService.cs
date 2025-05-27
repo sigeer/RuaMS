@@ -1,13 +1,10 @@
-using Application.Core.Game.Players;
 using Application.Core.Login.Datas;
+using Application.Core.Shared.Dto;
 using Application.EF;
+using Application.Utility.Configs;
 using AutoMapper;
-using client.inventory;
-using client.inventory.manipulator;
-using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
-using net.server;
 using Serilog;
 using System.Text.RegularExpressions;
 
@@ -160,23 +157,33 @@ namespace Application.Core.Login.Services
             }
         }
 
-        public List<IPlayer> GetCharactersView(int[] idList)
+        public List<CharacterViewObject> GetCharactersView(int[] idList)
         {
-            var dataList = _characterManager.GetCharactersView(idList);
+            return _characterManager.GetCharactersView(idList);
+        }
 
-            List<IPlayer> list = new List<IPlayer>();
-            foreach (var c in dataList)
+        public bool ChangeRemainingAp(string characterName, int newAp)
+        {
+            var victim = _characterManager.GetCharacterByName(characterName);
+            if (victim != null && victim.Channel > 0)
             {
-                var player = _mapper.Map<Player>(c.Character);
-                Inventory inv = player.Bag[InventoryType.EQUIPPED];
-                foreach (var equip in c.InventoryItems.Where(x => x.InventoryType == InventoryType.EQUIPPED.getType()))
+                if (newAp < 0)
                 {
-                    var item = _mapper.Map<Equip>(equip);
-                    inv.addItemFromDB(item);
+                    newAp = 0;
                 }
-                list.Add(player);
+                else if (newAp > YamlConfig.config.server.MAX_AP)
+                {
+                    newAp = YamlConfig.config.server.MAX_AP;
+                }
+
+                // 让 victim.Channel 的服务器去调用 victim.changeRemainingAp(newAp, false);
+
+                return true;
             }
-            return list;
+            else
+            {
+                return false;
+            }
         }
 
     }

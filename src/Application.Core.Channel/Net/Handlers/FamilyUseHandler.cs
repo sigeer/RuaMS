@@ -36,7 +36,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class FamilyUseHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {
@@ -50,7 +50,7 @@ public class FamilyUseHandler : ChannelHandlerBase
             return; // shouldn't even be able to request it
         }
         c.sendPacket(PacketCreator.getFamilyInfo(entry));
-        IPlayer? victim;
+        Player? victim;
         if (type == FamilyEntitlement.FAMILY_REUINION || type == FamilyEntitlement.SUMMON_FAMILY)
         {
             victim = c.CurrentServer.getPlayerStorage().getCharacterByName(p.readString());

@@ -16,7 +16,7 @@ public class CharSelectedWithPicHandler : OnCharacterSelectedWithPicHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         string pic = p.readString();
         int charId = p.readInt();

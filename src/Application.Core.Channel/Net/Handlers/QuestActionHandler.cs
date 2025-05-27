@@ -35,7 +35,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class QuestActionHandler : ChannelHandlerBase
 {
     // isNpcNearby thanks to GabrielSin
-    private static bool isNpcNearby(InPacket p, IPlayer player, Quest quest, int npcId)
+    private static bool isNpcNearby(InPacket p, Player player, Quest quest, int npcId)
     {
         Point playerP;
         Point pos = player.getPosition();
@@ -72,7 +72,7 @@ public class QuestActionHandler : ChannelHandlerBase
         return true;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         byte action = p.readByte();
         short questid = p.readShort();

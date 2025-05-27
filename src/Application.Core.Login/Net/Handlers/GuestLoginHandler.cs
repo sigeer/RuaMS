@@ -42,7 +42,7 @@ public class GuestLoginHandler : LoginHandlerBase
         _loginHandler = loginPasswordHandler;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         c.sendPacket(PacketCreator.sendGuestTOS());
         //Console.WriteLine(slea.ToString());

@@ -39,7 +39,7 @@ public class NPCShopHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var playerShop = c.OnlinedCharacter.getShop();
         if (playerShop == null)

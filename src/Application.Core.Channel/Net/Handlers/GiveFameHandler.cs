@@ -39,9 +39,9 @@ public class GiveFameHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
-        var target = c.OnlinedCharacter.getMap().getMapObject(p.readInt()) as IPlayer;
+        var target = c.OnlinedCharacter.getMap().getMapObject(p.readInt()) as Player;
         int mode = p.readByte();
         int famechange = 2 * mode - 1;
         var player = c.OnlinedCharacter;

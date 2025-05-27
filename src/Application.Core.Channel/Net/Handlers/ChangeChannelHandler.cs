@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class ChangeChannelHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int channel = p.readByte() + 1;
         p.readInt();

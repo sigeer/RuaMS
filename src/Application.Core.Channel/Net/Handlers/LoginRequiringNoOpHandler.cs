@@ -27,11 +27,11 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class LoginRequiringNoOpHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
     }
 
-    public override bool ValidateState(IChannelClient c)
+    public override bool ValidateState(ChannelClient c)
     {
         return c.IsOnlined;
     }

@@ -33,7 +33,7 @@ public class MoveDragonHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var startPos = p.readPos();

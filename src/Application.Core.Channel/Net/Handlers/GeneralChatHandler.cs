@@ -47,7 +47,7 @@ public class GeneralChatHandler : ChannelHandlerBase
         return heading == COMMAND_HEADING;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         string s = p.readString();
         var chr = c.OnlinedCharacter;

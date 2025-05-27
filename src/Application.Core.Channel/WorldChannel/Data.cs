@@ -17,7 +17,7 @@ namespace Application.Core.Channel
         {
             return Transport.UpdateAccountState(accId, state);
         }
-        public void StashCharacterBuff(IPlayer player)
+        public void StashCharacterBuff(Player player)
         {
             Service.SaveBuff(player);
         }
@@ -28,7 +28,7 @@ namespace Application.Core.Channel
             return lpbvl.Select(x => new KeyValuePair<long, PlayerBuffValueHolder>(curtime - x.usedTime, x)).OrderBy(x => x.Key).ToList();
         }
 
-        public void RecoverCharacterBuff(IPlayer player)
+        public void RecoverCharacterBuff(Player player)
         {
             var buffdto = Service.GetBuffFromStorage(player);
             var buffs = buffdto.Buffs.Select(x => new PlayerBuffValueHolder(x.UsedTime,

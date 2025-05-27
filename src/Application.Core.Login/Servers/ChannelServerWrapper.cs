@@ -1,0 +1,24 @@
+using Application.Core.Servers;
+
+namespace Application.Core.Login.Servers
+{
+    public abstract class ChannelServerWrapper
+    {
+        protected ChannelServerWrapper(string instanceId, ChannelServerConfig serverNetInfo)
+        {
+            InstanceId = instanceId;
+            ServerConfig = serverNetInfo;
+        }
+
+        public string InstanceId { get; protected set; }
+        public ChannelServerConfig ServerConfig { get; protected set; }
+    }
+
+
+    public class RemoteWorldChannel : ChannelServerWrapper
+    {
+        public RemoteWorldChannel(string instanceId, ChannelServerConfig serverNetInfo) : base(instanceId, serverNetInfo)
+        {
+        }
+    }
+}

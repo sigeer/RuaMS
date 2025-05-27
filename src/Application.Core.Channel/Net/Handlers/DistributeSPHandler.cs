@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DistributeSPHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readInt();
         int skillid = p.readInt();

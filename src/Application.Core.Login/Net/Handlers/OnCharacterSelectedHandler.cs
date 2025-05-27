@@ -21,7 +21,7 @@ namespace Application.Core.Login.Net.Handlers
         }
 
 
-        protected virtual void Process(ILoginClient c, int charId, string hostString, string macs)
+        protected virtual void Process(LoginClient c, int charId, string hostString, string macs)
         {
             if (c.AccountEntity == null)
                 return;
@@ -97,7 +97,7 @@ namespace Application.Core.Login.Net.Handlers
         }
 
 
-        protected virtual void Process(ILoginClient c, int charId, string pic, string hostString, string macs)
+        protected virtual void Process(LoginClient c, int charId, string pic, string hostString, string macs)
         {
             if (!c.CheckPic(pic))
             {

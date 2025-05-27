@@ -42,7 +42,7 @@ public class ItemPickupHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readInt(); //Timestamp
         p.readByte();

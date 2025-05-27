@@ -1,8 +1,8 @@
+using Application.Core.Session;
 using Application.EF;
 using Application.EF.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.session;
 
 namespace Application.Core.Login.Session;
 

@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AranComboHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var player = c.OnlinedCharacter;
         int skillLevel = player.getSkillLevel(SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY));

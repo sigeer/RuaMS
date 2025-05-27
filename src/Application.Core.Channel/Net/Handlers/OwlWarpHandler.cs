@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class OwlWarpHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int ownerid = p.readInt();
         int mapid = p.readInt();

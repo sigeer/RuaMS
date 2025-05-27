@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class CoconutHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         /*CB 00 A6 00 06 01
          * A6 00 = coconut id

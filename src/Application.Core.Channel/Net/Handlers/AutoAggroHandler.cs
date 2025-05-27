@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AutoAggroHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (player.isHidden())

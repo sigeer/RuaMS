@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class DenyPartyRequestHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readByte();
         string[] cname = p.readString().Split("PS: ");

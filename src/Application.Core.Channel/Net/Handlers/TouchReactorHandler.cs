@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TouchReactorHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int oid = p.readInt();
         var reactor = c.OnlinedCharacter.getMap().getReactorByOid(oid);

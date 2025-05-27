@@ -47,7 +47,7 @@ public class CashOperationHandler : ChannelHandlerBase
         this.noteService = noteService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         CashShop cs = chr.getCashShop();
@@ -572,7 +572,7 @@ public class CashOperationHandler : ChannelHandlerBase
         }
     }
 
-    private bool canBuy(IPlayer chr, CashItem? item, int cash)
+    private bool canBuy(Player chr, CashItem? item, int cash)
     {
         if (item != null && item.isOnSale() && item.getPrice() <= cash)
         {

@@ -40,7 +40,7 @@ public class CheckCharNameHandler : LoginHandlerBase
         this.characterManager = characterManager;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         string name = p.readString();
         c.sendPacket(PacketCreator.charNameResponse(name, !characterManager.CheckCharacterName(name)));

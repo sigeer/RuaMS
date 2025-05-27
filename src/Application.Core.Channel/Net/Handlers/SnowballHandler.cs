@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class SnowballHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         //D3 00 02 00 00 A5 01
         var chr = c.OnlinedCharacter;

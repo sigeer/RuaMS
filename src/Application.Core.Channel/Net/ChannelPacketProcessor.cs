@@ -6,16 +6,16 @@ using net.server.handlers;
 
 namespace Application.Core.Channel.Net
 {
-    public class ChannelPacketProcessor : IPacketProcessor<IChannelClient>
+    public class ChannelPacketProcessor : IPacketProcessor<ChannelClient>
     {
-        readonly Dictionary<short, IPacketHandlerBase<IChannelClient>> _dataSource;
+        readonly Dictionary<short, IPacketHandlerBase<ChannelClient>> _dataSource;
 
         public ChannelPacketProcessor(IServiceProvider sp)
         {
-            _dataSource = new Dictionary<short, IPacketHandlerBase<IChannelClient>>()
+            _dataSource = new Dictionary<short, IPacketHandlerBase<ChannelClient>>()
             {
-                { (short)RecvOpcode.PONG, sp.GetRequiredService<KeepAliveHandler<IChannelClient>>() },
-                { (short)RecvOpcode.CUSTOM_PACKET, sp.GetRequiredService<CustomPacketHandler<IChannelClient>>() },
+                { (short)RecvOpcode.PONG, sp.GetRequiredService<KeepAliveHandler<ChannelClient>>() },
+                { (short)RecvOpcode.CUSTOM_PACKET, sp.GetRequiredService<CustomPacketHandler<ChannelClient>>() },
 
                 {(short)RecvOpcode.NAME_TRANSFER, sp.GetRequiredService<TransferNameHandler>()},
                 {(short)RecvOpcode.CHECK_CHAR_NAME, sp.GetRequiredService<TransferNameResultHandler>()},
@@ -169,7 +169,7 @@ namespace Application.Core.Channel.Net
             };
         }
 
-        public IPacketHandlerBase<IChannelClient>? GetPacketHandler(short code)
+        public IPacketHandlerBase<ChannelClient>? GetPacketHandler(short code)
         {
             return _dataSource.GetValueOrDefault(code);
         }

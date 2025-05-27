@@ -1,5 +1,5 @@
 using Application.Core.Servers;
-using net.server.coordinator.session;
+using Application.Core.Session;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Session;

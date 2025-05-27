@@ -31,7 +31,7 @@ public class WeddingHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
 
         if (c.tryacquireClient())

@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class SpouseChatHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readString();//recipient
         string msg = p.readString();

@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class FamilyAddHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
         {

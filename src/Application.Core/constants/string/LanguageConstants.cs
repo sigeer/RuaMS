@@ -73,7 +73,7 @@ public class LanguageConstants
 
     }
 
-    public static string getMessage(IPlayer chr, string[] message)
+    public static string getMessage(Player chr, string[] message)
     {
         return message[chr.getLanguage()];
     }

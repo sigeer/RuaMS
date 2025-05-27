@@ -1,5 +1,5 @@
+using Application.Core.Session;
 using DotNetty.Transport.Channels;
-using net.server.coordinator.session;
 
 namespace Application.Core.Client
 {

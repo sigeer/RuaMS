@@ -27,7 +27,7 @@ public class MobBanishPlayerHandler : ChannelHandlerBase
 {
 
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int mobId = p.readInt();     // mob banish handling detected thanks to MedicOP
 

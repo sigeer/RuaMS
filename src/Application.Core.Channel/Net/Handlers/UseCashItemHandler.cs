@@ -56,7 +56,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var player = c.OnlinedCharacter;
 
@@ -296,7 +296,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     int tvType = itemId % 10;
                     bool megassenger = false;
                     bool ear = false;
-                    IPlayer? victim = null;
+                    Player? victim = null;
                     if (tvType != 1)
                     {
                         if (tvType >= 3)
@@ -688,7 +688,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             InventoryManipulator.removeFromSlot(c, InventoryType.USE, uSlot, 1, false);
             remove(c, position, itemId);
 
-            IChannelClient client = c;
+            ChannelClient client = c;
             TimerManager.getInstance().schedule(() =>
             {
                 if (!player.isLoggedin())
@@ -720,7 +720,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
     }
 
-    private static void remove(IChannelClient c, short position, int itemid)
+    private static void remove(ChannelClient c, short position, int itemid)
     {
         Inventory cashInv = c.OnlinedCharacter.getInventory(InventoryType.CASH);
         cashInv.lockInventory();
@@ -744,7 +744,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
     }
 
-    private static bool getIncubatedItem(IChannelClient c, int id)
+    private static bool getIncubatedItem(ChannelClient c, int id)
     {
         int[] ids = { 1012070, 1302049, 1302063, 1322027, 2000004, 2000005, 2020013, 2020015, 2040307, 2040509, 2040519, 2040521, 2040533, 2040715, 2040717, 2040810, 2040811, 2070005, 2070006, 4020009, };
         int[] quantitys = { 1, 1, 1, 1, 240, 200, 200, 200, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3 };

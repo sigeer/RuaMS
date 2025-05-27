@@ -42,7 +42,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int oid = p.readInt();
         var player = c.OnlinedCharacter;
@@ -113,7 +113,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         }
     }
 
-    private static int calcMaxDamage(StatEffect summonEffect, IPlayer player, bool magic)
+    private static int calcMaxDamage(StatEffect summonEffect, Player player, bool magic)
     {
         double maxDamage;
 

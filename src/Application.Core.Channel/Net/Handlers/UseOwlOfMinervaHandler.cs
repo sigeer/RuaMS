@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class UseOwlOfMinervaHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var owlSearched = c.getWorldServer().getOwlSearchedItems();
         List<int> owlLeaderboards;

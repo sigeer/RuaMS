@@ -37,7 +37,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AllianceOperationHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
 
         var chr = c.OnlinedCharacter;
@@ -212,7 +212,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
         alliance?.saveToDB();
     }
 
-    private void changeLeaderAllianceRank(IAlliance alliance, IPlayer newLeader)
+    private void changeLeaderAllianceRank(IAlliance alliance, Player newLeader)
     {
         var oldLeader = alliance.getLeader();
         oldLeader.setAllianceRank(2);
@@ -225,7 +225,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
         alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
     }
 
-    private void changePlayerAllianceRank(IAlliance alliance, IPlayer chr, bool raise)
+    private void changePlayerAllianceRank(IAlliance alliance, Player chr, bool raise)
     {
         int newRank = chr.getAllianceRank() + (raise ? -1 : 1);
         if (newRank < 3 || newRank > 5)

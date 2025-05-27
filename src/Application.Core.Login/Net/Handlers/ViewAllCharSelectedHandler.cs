@@ -38,7 +38,7 @@ public class ViewAllCharSelectedHandler : OnCharacterSelectedHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         int charId = p.readInt();
         p.readInt(); // please don't let the client choose which world they should login

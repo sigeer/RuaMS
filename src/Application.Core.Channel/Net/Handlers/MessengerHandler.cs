@@ -29,7 +29,7 @@ using tools;
 
 public class MessengerHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (c.tryacquireClient())
         {

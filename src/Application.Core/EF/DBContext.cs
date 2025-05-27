@@ -49,7 +49,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Dueyitem> Dueyitems { get; set; }
 
-    public virtual DbSet<Dueypackage> Dueypackages { get; set; }
+    public virtual DbSet<DueyPackageEntity> Dueypackages { get; set; }
 
     public virtual DbSet<Eventstat> Eventstats { get; set; }
 
@@ -513,7 +513,7 @@ public partial class DBContext : DbContext
                 .HasConstraintName("dueyitems_ibfk_1");
         });
 
-        modelBuilder.Entity<Dueypackage>(entity =>
+        modelBuilder.Entity<DueyPackageEntity>(entity =>
         {
             entity.HasKey(e => e.PackageId).HasName("PRIMARY");
 
@@ -536,7 +536,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Type)
                 .HasDefaultValue(false)
                 .HasColumnType("tinyint(1) unsigned");
-            entity.Ignore(e => e.Item);
         });
 
         modelBuilder.Entity<Eventstat>(entity =>

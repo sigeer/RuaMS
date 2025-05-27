@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ItemMoveHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.skip(4);
         if (c.OnlinedCharacter.getAutobanManager().getLastSpam(6) + 300 > c.CurrentServer.getCurrentTime())

@@ -30,14 +30,14 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CharInfoRequestHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.skip(4);
         int cid = p.readInt();
         var target = c.OnlinedCharacter.getMap().getMapObject(cid);
         if (target != null)
         {
-            if (target is IPlayer player)
+            if (target is Player player)
             {
                 if (c.OnlinedCharacter.getId() != player.getId())
                 {

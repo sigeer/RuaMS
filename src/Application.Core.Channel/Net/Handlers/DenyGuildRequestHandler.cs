@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class DenyGuildRequestHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readByte();
         var cfrom = c.getWorldServer().getPlayerStorage().getCharacterByName(p.readString());

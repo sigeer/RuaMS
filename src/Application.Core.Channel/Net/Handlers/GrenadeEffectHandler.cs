@@ -40,7 +40,7 @@ public class GrenadeEffectHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var position = new Point(p.readInt(), p.readInt());

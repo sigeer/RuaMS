@@ -43,7 +43,7 @@ public class NoteActionHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int action = p.readByte();
         if (action == 0 && c.OnlinedCharacter.getCashShop().getAvailableNotes() > 0)

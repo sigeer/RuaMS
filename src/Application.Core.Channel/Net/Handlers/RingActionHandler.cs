@@ -62,7 +62,7 @@ public class RingActionHandler : ChannelHandlerBase
         };
     }
 
-    public static void sendEngageProposal(IChannelClient c, string name, int itemid)
+    public static void sendEngageProposal(ChannelClient c, string name, int itemid)
     {
         int newBoxId = getEngagementBoxId(itemid);
         var target = c.CurrentServer.getPlayerStorage().getCharacterByName(name);
@@ -175,7 +175,7 @@ public class RingActionHandler : ChannelHandlerBase
 
 
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         byte mode = p.readByte();
         string name;

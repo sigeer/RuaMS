@@ -1,5 +1,6 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
+using Application.Core.Login.Objects;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Characters;
@@ -17,6 +18,10 @@ namespace Application.Core.Login.Datas
         {
             CreateMap<CharacterEntity, CharacterDto>()
                 .ReverseMap();
+
+            CreateMap<CharacterEntity, PlayerPreview>()
+                .ForMember(dest => dest.JobModel, src => src.MapFrom(x => JobFactory.GetById(x.JobId)))
+                .ForMember(x => x.RemaingingSP, opt => opt.MapFrom(x => TranslateArray(x.Sp)));
 
             CreateMap<AccountEntity, AccountDto>();
             CreateMap<MonsterbookEntity, MonsterbookDto>();
@@ -90,6 +95,11 @@ namespace Application.Core.Login.Datas
 
             CreateMap<GiftEntity, GiftDto>()
                 .ForMember(dest => dest.RingId, src => src.MapFrom(x => x.Ringid));
+        }
+
+        private int[] TranslateArray(string str)
+        {
+            return str.Split(",").Select(int.Parse).ToArray();
         }
     }
 }

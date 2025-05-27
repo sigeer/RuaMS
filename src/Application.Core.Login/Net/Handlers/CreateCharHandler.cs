@@ -38,7 +38,7 @@ public class CreateCharHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         string name = p.readString();
         int job = p.readInt();

@@ -43,7 +43,7 @@ public class DeleteCharHandler : LoginHandlerBase
         _chrManager = characterManager;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         string pic = p.readString();
         int cid = p.readInt();

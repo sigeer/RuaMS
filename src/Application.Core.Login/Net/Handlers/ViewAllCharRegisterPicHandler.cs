@@ -21,7 +21,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         p.readByte();
         int charId = p.readInt();

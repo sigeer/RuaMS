@@ -54,12 +54,12 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         _logger = logger;
         _characterSrv = characterSrv;
     }
-    public override bool ValidateState(IChannelClient c)
+    public override bool ValidateState(ChannelClient c)
     {
         return !c.IsOnlined;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int cid = p.readInt(); // TODO: investigate if this is the "client id" supplied in PacketCreator#getServerIP()
         Server server = Server.getInstance();
@@ -98,7 +98,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             bool newcomer = playerObject.LoginInfo!.IsNewCommer;
 
             /*  is this check really necessary?
-            if (state == IChannelClient.LOGIN_SERVER_TRANSITION || state == IChannelClient.LOGIN_NOTLOGGEDIN) {
+            if (state == ChannelClient.LOGIN_SERVER_TRANSITION || state == ChannelClient.LOGIN_NOTLOGGEDIN) {
                 List<string> charNames = c.loadCharacterNames(c.getWorld());
                 if(!newcomer) {
                     charNames.Remove(player.getName());
@@ -344,7 +344,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         }
     }
 
-    private void showDueyNotification(IChannelClient c, IPlayer player)
+    private void showDueyNotification(ChannelClient c, Player player)
     {
         try
         {

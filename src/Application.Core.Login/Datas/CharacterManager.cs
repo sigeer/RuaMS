@@ -1,15 +1,14 @@
-using Application.Core.Datas;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
-using Application.Core.Game.Players;
+using Application.Core.Shared.Dto;
 using Application.EF;
 using Application.Shared.Characters;
+using Application.Shared.Constants.Item;
 using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using AutoMapper;
-using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.EntityFrameworkCore.Extensions;
@@ -108,9 +107,9 @@ namespace Application.Core.Login.Datas
                     select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
         }
 
-        private List<ItemEntityPair> LoadAccountItems(DBContext dbContext, int accountId, params ItemFactory[] itemFactories)
+        private List<ItemEntityPair> LoadAccountItems(DBContext dbContext, int accountId, params ItemType[] itemFactories)
         {
-            var itemType = itemFactories.Select(x => x.getValue()).ToArray();
+            var itemType = itemFactories.Select(x => (int)x).ToArray();
             var items = (from a in dbContext.Inventoryitems.AsNoTracking()
                 .Where(x => x.Accountid == accountId)
                 .Where(x => itemType.Contains(x.Type))
@@ -130,25 +129,25 @@ namespace Application.Core.Login.Datas
                     select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
         }
 
-        private ItemFactory GetCashshopFactory(int jobId)
+        private ItemType GetCashshopFactory(int jobId)
         {
             if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)
             {
                 switch (JobFactory.GetJobTypeById(jobId))
                 {
                     case JobType.Adventurer:
-                        return ItemFactory.CASH_EXPLORER;
+                        return ItemType.CASH_EXPLORER;
                     case JobType.Cygnus:
-                        return ItemFactory.CASH_CYGNUS;
+                        return ItemType.CASH_CYGNUS;
                     case JobType.Legend:
-                        return ItemFactory.CASH_ARAN;
+                        return ItemType.CASH_ARAN;
                     default:
-                        return ItemFactory.CASH_OVERALL;
+                        return ItemType.CASH_OVERALL;
                 }
             }
             else
             {
-                return ItemFactory.CASH_OVERALL;
+                return ItemType.CASH_OVERALL;
             }
         }
 
@@ -318,6 +317,11 @@ namespace Application.Core.Login.Datas
             {
                 throw new BusinessFatalException($"未验证的玩家Id {playerId}。{nameof(_idDataSource)} 中包含了所有登录过的玩家，而设置频道的玩家必然登录过。");
             }
+        }
+
+        internal CharacterValueObject? GetCharacterByName(string characterName)
+        {
+            return _nameDataSource.GetValueOrDefault(characterName);
         }
     }
 }

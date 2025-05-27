@@ -53,7 +53,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    private static int establishMiniroomStatus(IPlayer chr, bool isMinigame)
+    private static int establishMiniroomStatus(Player chr, bool isMinigame)
     {
         if (isMinigame && FieldLimit.CANNOTMINIGAME.check(chr.getMap().getFieldLimit()))
         {
@@ -73,7 +73,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         return 0;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (!c.tryacquireClient())
         {    // thanks GabrielSin for pointing dupes within player interactions
@@ -999,7 +999,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         }
     }
 
-    private bool isTradeOpen(IPlayer chr)
+    private bool isTradeOpen(Player chr)
     {
         if (chr.getTrade() != null)
         {   // thanks to Rien dev team
@@ -1011,13 +1011,13 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         return false;
     }
 
-    private bool canPlaceStore(IPlayer chr)
+    private bool canPlaceStore(Player chr)
     {
         try
         {
             foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
             {
-                if (mmo is IPlayer mc)
+                if (mmo is Player mc)
                 {
                     if (mc.getId() == chr.getId())
                     {

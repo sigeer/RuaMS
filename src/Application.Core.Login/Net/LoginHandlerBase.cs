@@ -21,8 +21,8 @@ namespace Application.Core.Login.Net
             _logger = logger;
         }
 
-        public abstract void HandlePacket(InPacket p, ILoginClient c);
-        public virtual bool ValidateState(ILoginClient c)
+        public abstract void HandlePacket(InPacket p, LoginClient c);
+        public virtual bool ValidateState(LoginClient c)
         {
             return c.IsOnlined;
         }

@@ -9,7 +9,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AdminChatHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (!c.OnlinedCharacter.isGM())
         {//if ( (signed int)CWvsContext::GetAdminLevel((void *)v294) > 2 )

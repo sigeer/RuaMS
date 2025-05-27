@@ -37,7 +37,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class NewYearCardHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var player = c.OnlinedCharacter;
         byte reqMode = p.readByte();                 //[00] -> NewYearReq (0 = Send)
@@ -159,7 +159,7 @@ public class NewYearCardHandler : ChannelHandlerBase
     }
 
 
-    private static int getValidNewYearCardStatus(int itemid, IPlayer player, short slot)
+    private static int getValidNewYearCardStatus(int itemid, Player player, short slot)
     {
         if (!ItemConstants.isNewYearCardUse(itemid))
         {

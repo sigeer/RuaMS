@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class WeddingTalkHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         byte action = p.readByte();
         if (action == 1)

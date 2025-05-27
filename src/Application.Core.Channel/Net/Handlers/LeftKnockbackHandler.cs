@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class LeftKnockbackHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         c.sendPacket(PacketCreator.leftKnockBack());
         c.sendPacket(PacketCreator.enableActions());

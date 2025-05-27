@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CloseChalkboardHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         c.OnlinedCharacter.setChalkboard(null);
         c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.useChalkboard(c.OnlinedCharacter, true));

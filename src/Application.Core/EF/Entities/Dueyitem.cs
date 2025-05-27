@@ -1,4 +1,4 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class Dueyitem
 {
@@ -8,5 +8,5 @@ public partial class Dueyitem
 
     public int Inventoryitemid { get; set; }
 
-    public virtual Dueypackage Package { get; set; } = null!;
+    public virtual DueyPackageEntity Package { get; set; } = null!;
 }

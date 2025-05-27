@@ -35,7 +35,7 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int oid = p.readInt();
         var startPos = p.readPos();

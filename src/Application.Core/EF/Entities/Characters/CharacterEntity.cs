@@ -1,9 +1,6 @@
-
-using Application.Core.client.Characters;
-
 namespace Application.EF.Entities;
 
-public class CharacterEntity : IDB_Character
+public class CharacterEntity
 {
     protected CharacterEntity() { }
 

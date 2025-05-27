@@ -1,22 +1,17 @@
 using Application.Core.Channel.Net;
+using Application.Core.Channel.ServerTransports;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Controllers;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
-using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Net;
 using Application.Shared.Servers;
-using Application.Utility.Compatible.Atomics;
-using Application.Utility.Configs;
-using Application.Utility.Loggers;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
 using scripting.Event;
@@ -25,7 +20,6 @@ using scripting.npc;
 using scripting.portal;
 using scripting.quest;
 using scripting.reactor;
-using Serilog;
 using server;
 using server.events.gm;
 using server.expeditions;
@@ -136,7 +130,7 @@ public partial class WorldChannel : IWorldChannel
     RespawnTask _respawnTask;
 
     public ChannelClientStorage ClientStorage { get; }
-    public IChannelService Service { get; }
+    public ChannelService Service { get; }
     public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
     {
         LifeScope = scope;
@@ -397,7 +391,7 @@ public partial class WorldChannel : IWorldChannel
         return world;
     }
 
-    public void addPlayer(IPlayer chr)
+    public void addPlayer(Player chr)
     {
         Players.AddPlayer(chr);
         chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
@@ -413,7 +407,7 @@ public partial class WorldChannel : IWorldChannel
         return Players;
     }
 
-    public bool removePlayer(IPlayer chr)
+    public bool removePlayer(Player chr)
     {
         return Players.RemovePlayer(chr.Id) != null;
     }

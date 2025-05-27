@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CancelDebuffHandler : ChannelHandlerBase
 {//TIP: BAD STUFF LOL!
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         /*List<Disease> diseases = c.OnlinedCharacter.getDiseases();
          List<Disease> diseases_ = new <Disease>();

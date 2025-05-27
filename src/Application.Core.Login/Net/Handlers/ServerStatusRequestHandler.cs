@@ -38,7 +38,7 @@ public class ServerStatusRequestHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         byte world = (byte)p.readShort();
         var wserv = Server.getInstance().getWorld(world);

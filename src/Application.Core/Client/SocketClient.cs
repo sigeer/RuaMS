@@ -1,12 +1,10 @@
+using Application.Core.Session;
 using DotNetty.Codecs;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using net.netty;
 using net.packet;
-using net.server;
-using net.server.coordinator.session;
-using tools;
 
 namespace Application.Core.Client
 {

@@ -23,6 +23,7 @@
 
 using Application.Core.Client;
 using Application.Core.Login.Datas;
+using Application.Core.Login.Net.Packets;
 using Application.Core.Servers;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -37,14 +38,14 @@ public class CharlistRequestHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         p.readByte();
         int world = p.readByte();
 
         if (_server.IsWorldCapacityFull())
         {
-            c.sendPacket(PacketCreator.getServerStatus(2));
+            c.sendPacket(LoginPacketCreator.getServerStatus(2));
             return;
         }
 
@@ -52,7 +53,7 @@ public class CharlistRequestHandler : LoginHandlerBase
         var ch = _server.GetChannel(channel);
         if (ch == null)
         {
-            c.sendPacket(PacketCreator.getServerStatus(2));
+            c.sendPacket(LoginPacketCreator.getServerStatus(2));
             return;
         }
 

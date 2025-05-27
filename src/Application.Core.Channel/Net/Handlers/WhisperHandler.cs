@@ -42,7 +42,7 @@ public class WhisperHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         byte request = p.readByte();
         string name = p.readString();
@@ -72,7 +72,7 @@ public class WhisperHandler : ChannelHandlerBase
         }
     }
 
-    private void handleFind(IPlayer user, IPlayer target, byte flag)
+    private void handleFind(Player user, Player target, byte flag)
     {
         if (user.gmLevel() >= target.gmLevel())
         {
@@ -96,7 +96,7 @@ public class WhisperHandler : ChannelHandlerBase
         }
     }
 
-    private void handleWhisper(string message, IChannelClient client, IPlayer target)
+    private void handleWhisper(string message, ChannelClient client, Player target)
     {
         var user = client.OnlinedCharacter;
         if (user.getAutobanManager().getLastSpam(7) + 200 > client.CurrentServer.getCurrentTime())

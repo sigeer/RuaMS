@@ -47,7 +47,7 @@ public class MobDamageMobHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int from = p.readInt();
         p.readInt();

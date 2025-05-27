@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TrockAddMapHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         byte type = p.readByte();

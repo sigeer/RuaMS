@@ -35,7 +35,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CashShopSurpriseHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         CashShop cs = c.OnlinedCharacter.getCashShop();
         if (!cs.isOpened())

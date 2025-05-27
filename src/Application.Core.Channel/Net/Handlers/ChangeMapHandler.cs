@@ -40,7 +40,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -219,7 +219,7 @@ public class ChangeMapHandler : ChannelHandlerBase
 
     }
 
-    private void enterFromCashShop(IChannelClient c)
+    private void enterFromCashShop(ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 

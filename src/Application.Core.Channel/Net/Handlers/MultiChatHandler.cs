@@ -37,7 +37,7 @@ public class MultiChatHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (player.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServer.getCurrentTimestamp())

@@ -36,7 +36,7 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int mobOid = p.readInt();    // packet structure found thanks to Darter (Rajan)
         int dmg = p.readInt();

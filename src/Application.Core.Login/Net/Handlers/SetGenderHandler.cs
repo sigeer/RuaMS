@@ -44,7 +44,7 @@ public class SetGenderHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         if (c.AccountEntity?.Gender == 10)
         {

@@ -22,7 +22,7 @@ public class RegisterPicHandler : LoginHandlerBase
         this.sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         p.readByte();
         int charId = p.readInt();

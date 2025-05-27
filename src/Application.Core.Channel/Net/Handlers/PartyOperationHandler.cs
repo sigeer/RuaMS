@@ -35,7 +35,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PartyOperationHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int operation = p.readByte();
         var player = c.OnlinedCharacter;

@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseCatchItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();

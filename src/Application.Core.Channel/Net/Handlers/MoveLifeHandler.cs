@@ -45,7 +45,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var player = c.OnlinedCharacter;
         var map = player.getMap();
@@ -66,7 +66,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         }
 
         var monster = (Monster)mmo;
-        List<IPlayer>? banishPlayers = null;
+        List<Player>? banishPlayers = null;
 
         byte pNibbles = p.readByte();
         sbyte rawActivity = p.ReadSByte();

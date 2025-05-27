@@ -42,7 +42,7 @@ public class AfterLoginHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         byte c2 = p.readByte();
         byte c3 = 5;

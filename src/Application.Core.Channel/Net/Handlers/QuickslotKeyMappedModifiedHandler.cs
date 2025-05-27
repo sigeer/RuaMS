@@ -8,7 +8,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class QuickslotKeyMappedModifiedHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         // Invalid size for the packet.
         if (p.available() != QuickslotBinding.QUICKSLOT_SIZE * sizeof(int) ||

@@ -42,7 +42,7 @@ namespace Application.Core.Channel.Services
                 return _mapper.Map<Item>(itemDto);
         }
 
-        public IPlayer? Serialize(IChannelClient c, CharacterValueObject? o)
+        public Player? Serialize(ChannelClient c, CharacterValueObject? o)
         {
             if (o == null)
                 return null;
@@ -230,7 +230,7 @@ namespace Application.Core.Channel.Services
             return player;
         }
 
-        public PlayerSaveDto Deserialize(IPlayer player)
+        public PlayerSaveDto Deserialize(Player player)
         {
             List<QuestStatusDto> questStatusList = new();
             foreach (var qs in player.getQuests())
@@ -345,7 +345,7 @@ namespace Application.Core.Channel.Services
             };
         }
 
-        public PlayerBuffSaveDto DeserializeBuff(IPlayer player)
+        public PlayerBuffSaveDto DeserializeBuff(Player player)
         {
             return new PlayerBuffSaveDto
             {
@@ -374,7 +374,7 @@ namespace Application.Core.Channel.Services
         /// <param name="client"></param>
         /// <param name="login"></param>
         /// <returns></returns>
-        public static IPlayer? LoadPlayerFromDB(int charid, IChannelClient client, bool login)
+        public static Player? LoadPlayerFromDB(int charid, ChannelClient client, bool login)
         {
             try
             {

@@ -21,16 +21,16 @@
  */
 
 
-using Application.Core.Client;
+using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Servers;
+using Application.Core.Session;
 using Application.Shared.Login;
+using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using net.server.coordinator.session;
-using tools;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -41,12 +41,12 @@ public class LoginPasswordHandler : LoginHandlerBase
     {
     }
 
-    public override bool ValidateState(ILoginClient c)
+    public override bool ValidateState(LoginClient c)
     {
         return !c.IsOnlined;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         string remoteHost = c.RemoteAddress;
         if (string.IsNullOrEmpty(remoteHost) || remoteHost == "null")

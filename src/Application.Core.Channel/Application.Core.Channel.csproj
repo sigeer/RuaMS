@@ -8,8 +8,11 @@
 
   <ItemGroup>
     <Compile Remove="Handlers\**" />
+    <Compile Remove="Map\**" />
     <EmbeddedResource Remove="Handlers\**" />
+    <EmbeddedResource Remove="Map\**" />
     <None Remove="Handlers\**" />
+    <None Remove="Map\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Map\" />
+    <Folder Include="Data\" />
   </ItemGroup>
 
 </Project>

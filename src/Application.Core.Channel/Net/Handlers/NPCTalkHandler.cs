@@ -39,7 +39,7 @@ public class NPCTalkHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (!c.OnlinedCharacter.isAlive())
         {

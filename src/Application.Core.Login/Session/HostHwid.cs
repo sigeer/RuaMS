@@ -1,4 +1,4 @@
-using net.server.coordinator.session;
+using Application.Core.Session;
 
 namespace Application.Core.Login.Session;
 

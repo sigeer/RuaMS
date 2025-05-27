@@ -59,7 +59,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         }
     }
 
-    private void nextPendingRequest(IChannelClient c)
+    private void nextPendingRequest(ChannelClient c)
     {
         var pendingBuddyRequest = c.OnlinedCharacter.getBuddylist().pollPendingRequest();
         if (pendingBuddyRequest != null)
@@ -74,7 +74,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         return p == null ? null : new CharacterIdNameBuddyCapacity(p.Id, p.Name, p.BuddyList.Capacity);
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int mode = p.readByte();
         var player = c.OnlinedCharacter;
@@ -221,7 +221,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         }
     }
 
-    private void notifyRemoteChannel(IChannelClient c, int remoteChannel, int otherCid, BuddyOperation operation)
+    private void notifyRemoteChannel(ChannelClient c, int remoteChannel, int otherCid, BuddyOperation operation)
     {
         var player = c.OnlinedCharacter;
         if (remoteChannel != -1)

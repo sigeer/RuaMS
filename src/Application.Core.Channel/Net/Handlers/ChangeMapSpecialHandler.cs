@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class ChangeMapSpecialHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readByte();
         string startwp = p.readString();

@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MonsterBombHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int oid = p.readInt();
         var monster = c.OnlinedCharacter.getMap().getMonsterByOid(oid);

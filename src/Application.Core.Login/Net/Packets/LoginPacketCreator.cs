@@ -1,22 +1,36 @@
-using Application.Core.Client;
-using Application.Core.Game.Players;
+using Application.Core.Login.Objects;
+using Application.Core.Net;
 using Application.Core.Servers;
+using Application.Shared.Items;
 using Application.Shared.Net;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
-using client.inventory;
 using net.opcodes;
 using net.packet;
-using net.server;
-using server;
 using System.Net;
-using tools;
 
 namespace Application.Core.Login.Net.Packets
 {
     public static class LoginPacketCreator
     {
+        /// <summary>
+        /// Gets a packet detailing a server status message.
+        /// </summary>
+        /// <param name="status">The server status.
+        /// <para>Possible values for <paramref name="status"/>:</para>
+        /// <para>0 - Normal</para>
+        /// <para>1 - Highly populated</para>
+        /// <para>2 - Full</para>
+        /// </param>
+        /// <returns>The server status packet.</returns>
+        public static Packet getServerStatus(int status)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SERVERSTATUS);
+            p.writeShort(status);
+            return p;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -59,7 +73,7 @@ namespace Application.Core.Login.Net.Packets
             p.writeByte(0);
             p.writeInt(0);
             p.writeByte(reason);
-            p.writeLong(PacketCreator.getTime(-1));
+            p.writeLong(CommonPacketCreator.getTime(-1));
             return p;
         }
 
@@ -70,10 +84,10 @@ namespace Application.Core.Login.Net.Packets
             p.writeByte(0);
             p.writeInt(0);
             p.writeByte(reason);
-            p.writeLong(PacketCreator.getTime(timestampTill)); // Tempban date is handled as a 64-bit long, number of 100NS intervals since 1/1/1601. Lulz.
+            p.writeLong(CommonPacketCreator.getTime(timestampTill)); // Tempban date is handled as a 64-bit long, number of 100NS intervals since 1/1/1601. Lulz.
             return p;
         }
-        public static Packet GetAuthSuccess(ILoginClient c)
+        public static Packet GetAuthSuccess(LoginClient c)
         {
             if (c.AccountEntity == null)
                 throw new BusinessException("未获取到账户信息");
@@ -139,13 +153,13 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
-        public static Packet GetCharListPacket(ILoginClient c)
+        public static Packet GetCharListPacket(LoginClient c)
         {
             OutPacket p = OutPacket.create(SendOpcode.CHARLIST);
             p.writeByte(0);
-            List<IPlayer> chars = c.LoadCharactersView();
+            var chars = c.LoadCharactersView();
             p.writeByte((byte)chars.Count);
-            foreach (IPlayer chr in chars)
+            foreach (var chr in chars)
             {
                 AddCharEntry(p, c, chr, false);
             }
@@ -155,7 +169,7 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
-        private static void AddCharEntry(OutPacket p, ILoginClient playerClient, IPlayer chr, bool viewall)
+        private static void AddCharEntry(OutPacket p, LoginClient playerClient, PlayerPreview chr, bool viewall)
         {
             addCharStats(p, chr);
             addCharLook(p, chr, false);
@@ -163,51 +177,43 @@ namespace Application.Core.Login.Net.Packets
             {
                 p.writeByte(0);
             }
-            if (playerClient.AccountEntity!.GMLevel > 1 || chr.isGmJob())
+            if (playerClient.AccountEntity!.GMLevel > 1 || chr.JobModel.IsGmJob())
             {
                 // thanks Daddy Egg (Ubaware), resinate for noticing GM jobs crashing on non-GM players account
                 p.writeByte(0);
                 return;
             }
             p.writeByte(1); // world rank enabled (next 4 ints are not sent if disabled) short??
-            p.writeInt(chr.getRank()); // world rank
-            p.writeInt(chr.getRankMove()); // move (negative is downwards)
-            p.writeInt(chr.getJobRank()); // job rank
-            p.writeInt(chr.getJobRankMove()); // move (negative is downwards)
+            p.writeInt(chr.Rank); // world rank
+            p.writeInt(chr.RankMove); // move (negative is downwards)
+            p.writeInt(chr.JobRank); // job rank
+            p.writeInt(chr.JobRankMove); // move (negative is downwards)
         }
 
-        private static void addCharStats(OutPacket p, IPlayer chr)
+        private static void addCharStats(OutPacket p, PlayerPreview chr)
         {
-            p.writeInt(chr.getId()); // character id
-            p.writeFixedString(chr.getName());
-            p.writeByte(chr.getGender()); // gender (0 = male, 1 = female)
-            p.writeByte((byte)chr.getSkinColor()); // skin color
-            p.writeInt(chr.getFace()); // face
-            p.writeInt(chr.getHair()); // hair
+            p.writeInt(chr.Id); // character id
+            p.writeFixedString(chr.Name);
+            p.writeByte(chr.Gender); // gender (0 = male, 1 = female)
+            p.writeByte((byte)chr.Skincolor); // skin color
+            p.writeInt(chr.Face); // face
+            p.writeInt(chr.Hair); // hair
 
             for (int i = 0; i < 3; i++)
             {
-                var pet = chr.getPet(i);
-                if (pet != null) //Checked GMS.. and your pets stay when going into the cash shop.
-                {
-                    p.writeLong(pet.getUniqueId());
-                }
-                else
-                {
-                    p.writeLong(0);
-                }
+                p.writeLong(0);
             }
 
-            p.writeByte(chr.getLevel()); // level
-            p.writeShort(chr.JobModel.Id); // job
+            p.writeByte(chr.Level); // level
+            p.writeShort(chr.JobId); // job
             p.writeShort(chr.Str); // str
             p.writeShort(chr.Dex); // dex
             p.writeShort(chr.Int); // int
             p.writeShort(chr.Luk); // luk
-            p.writeShort(chr.HP); // hp (?)
-            p.writeShort(chr.MaxHP); // maxhp
-            p.writeShort(chr.MP); // mp (?)
-            p.writeShort(chr.MaxMP); // maxmp
+            p.writeShort(chr.Hp); // hp (?)
+            p.writeShort(chr.Maxhp); // maxhp
+            p.writeShort(chr.Mp); // mp (?)
+            p.writeShort(chr.Maxmp); // maxmp
             p.writeShort(chr.Ap); // remaining ap
             if (chr.JobModel.HasSPTable)
             {
@@ -215,29 +221,29 @@ namespace Application.Core.Login.Net.Packets
             }
             else
             {
-                p.writeShort(chr.getRemainingSp()); // remaining sp
+                p.writeShort(chr.CurrentRemainingSP); // remaining sp
             }
-            p.writeInt(chr.getExp()); // current exp
-            p.writeShort(chr.getFame()); // fame
-            p.writeInt(chr.getGachaExp()); //Gacha Exp
-            p.writeInt(chr.getMapId()); // current map id
-            p.writeByte(chr.getInitialSpawnpoint()); // spawnpoint
+            p.writeInt(chr.Exp); // current exp
+            p.writeShort(chr.Fame); // fame
+            p.writeInt(chr.Gachaexp); //Gacha Exp
+            p.writeInt(chr.Map); // current map id
+            p.writeByte(chr.Spawnpoint); // spawnpoint
             p.writeInt(0);
         }
 
-        public static void addCharLook(OutPacket p, IPlayer chr, bool mega)
+        public static void addCharLook(OutPacket p, PlayerPreview chr, bool mega)
         {
-            p.writeByte(chr.getGender());
-            p.writeByte((int)chr.getSkinColor()); // skin color
-            p.writeInt(chr.getFace()); // face
+            p.writeByte(chr.Gender);
+            p.writeByte((int)chr.Skincolor); // skin color
+            p.writeInt(chr.Face); // face
             p.writeBool(!mega);
-            p.writeInt(chr.getHair()); // hair
+            p.writeInt(chr.Hair); // hair
             addCharEquips(p, chr);
         }
 
-        private static void addRemainingSkillInfo(OutPacket p, IPlayer chr)
+        private static void addRemainingSkillInfo(OutPacket p, PlayerPreview chr)
         {
-            int[] remainingSp = chr.getRemainingSps();
+            int[] remainingSp = chr.RemaingingSP;
             int effectiveLength = 0;
             foreach (int j in remainingSp)
             {
@@ -258,18 +264,21 @@ namespace Application.Core.Login.Net.Packets
             }
         }
 
-        private static void addCharEquips(OutPacket p, IPlayer chr)
+        private static void addCharEquips(OutPacket p, PlayerPreview chr)
         {
-            Inventory equip = chr.getInventory(InventoryType.EQUIPPED);
-            var ii = ItemInformationProvider.getInstance().canWearEquipment(chr, equip.list());
             Dictionary<short, int> myEquip = new();
             Dictionary<short, int> maskedEquip = new();
-            foreach (Item item in ii)
+
+            ItemDto? cWeapon = null;
+            foreach (var item in chr.Equips)
             {
-                short pos = (short)(item.getPosition() * -1);
+                if (item.Position == -111)
+                    cWeapon = item;
+
+                short pos = (short)(item.Position * -1);
                 if (pos < 100 && !myEquip.ContainsKey(pos))
                 {
-                    myEquip.AddOrUpdate(pos, item.getItemId());
+                    myEquip.AddOrUpdate(pos, item.Itemid);
                 }
                 else if (pos > 100 && pos != 111)
                 {
@@ -279,11 +288,11 @@ namespace Application.Core.Login.Net.Packets
                     {
                         maskedEquip.AddOrUpdate(pos, d);
                     }
-                    myEquip.AddOrUpdate(pos, item.getItemId());
+                    myEquip.AddOrUpdate(pos, item.Itemid);
                 }
                 else if (myEquip.ContainsKey(pos))
                 {
-                    maskedEquip.AddOrUpdate(pos, item.getItemId());
+                    maskedEquip.AddOrUpdate(pos, item.Itemid);
                 }
             }
             foreach (var entry in myEquip)
@@ -298,32 +307,34 @@ namespace Application.Core.Login.Net.Packets
                 p.writeInt(entry.Value);
             }
             p.writeByte(0xFF);
-            var cWeapon = equip.getItem(-111);
-            p.writeInt(cWeapon != null ? cWeapon.getItemId() : 0);
+
+            p.writeInt(cWeapon != null ? cWeapon.Itemid : 0);
             for (int i = 0; i < 3; i++)
             {
-                if (chr.getPet(i) != null)
-                {
-                    p.writeInt(chr.getPet(i)!.getItemId());
-                }
-                else
-                {
-                    p.writeInt(0);
-                }
+                p.writeInt(0);
             }
         }
 
-        public static Packet showAllCharacterInfo(ILoginClient client, int worldid, List<IPlayer> chars, bool usePic)
+        public static Packet showAllCharacterInfo(LoginClient client, int worldid, List<PlayerPreview> chars, bool usePic)
         {
             OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
             p.writeByte(0);
             p.writeByte(worldid);
             p.writeByte(chars.Count);
-            foreach (IPlayer chr in chars)
+            foreach (var chr in chars)
             {
                 AddCharEntry(p, client, chr, true);
             }
             p.writeByte(usePic ? 1 : 2);
+            return p;
+        }
+
+        public static Packet showAllCharacter(int totalWorlds, int totalChrs)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
+            p.writeByte(totalChrs > 0 ? 1 : 5); // 2: already connected to server, 3 : unk error (view-all-characters), 5 : cannot find any
+            p.writeInt(totalWorlds);
+            p.writeInt(totalChrs);
             return p;
         }
     }

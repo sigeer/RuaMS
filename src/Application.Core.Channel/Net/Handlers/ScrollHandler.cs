@@ -36,7 +36,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class ScrollHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         if (c.tryacquireClient())
         {
@@ -221,7 +221,7 @@ public class ScrollHandler : ChannelHandlerBase
         }
     }
 
-    private static void announceCannotScroll(IChannelClient c, bool legendarySpirit)
+    private static void announceCannotScroll(ChannelClient c, bool legendarySpirit)
     {
         if (legendarySpirit)
         {

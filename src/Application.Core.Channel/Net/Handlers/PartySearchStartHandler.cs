@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PartySearchStartHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int min = p.readInt();
         int max = p.readInt();

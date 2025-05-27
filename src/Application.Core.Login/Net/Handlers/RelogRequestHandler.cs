@@ -38,12 +38,12 @@ public class RelogRequestHandler : LoginHandlerBase
     {
     }
 
-    public override bool ValidateState(ILoginClient c)
+    public override bool ValidateState(LoginClient c)
     {
         return !c.isLoggedIn();
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override void HandlePacket(InPacket p, LoginClient c)
     {
         c.sendPacket(PacketCreator.getRelogResponse());
     }

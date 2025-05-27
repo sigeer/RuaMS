@@ -41,7 +41,7 @@ public class TransferNameHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.readInt(); //cid
         int birthday = p.readInt();

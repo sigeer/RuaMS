@@ -35,7 +35,7 @@ public class SkillEffectHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         int skillId = p.readInt();
         int level = p.ReadSByte();

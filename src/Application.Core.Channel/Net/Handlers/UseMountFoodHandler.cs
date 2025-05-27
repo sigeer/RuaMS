@@ -35,7 +35,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseMountFoodHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         p.skip(4);
         short pos = p.readShort();

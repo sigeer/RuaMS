@@ -36,7 +36,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override void HandlePacket(InPacket p, ChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 

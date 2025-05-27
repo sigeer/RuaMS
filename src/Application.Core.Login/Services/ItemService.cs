@@ -1,17 +1,11 @@
-using Application.Core.Game.Life;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Item;
+using Application.Shared.Dto.World;
 using Application.Shared.Items;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Org.BouncyCastle.Cms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Intrinsics.Arm;
 using ZLinq;
 
 namespace Application.Core.Login.Services
@@ -71,6 +65,21 @@ namespace Application.Core.Login.Services
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             dbContext.Gifts.Where(x => giftIdArray.Contains(x.Id)).ExecuteDelete();
+        }
+
+        public DueyPackageDto? GetDueyPackage(int packageId)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dataItem = dbContext.Dueypackages.Where(x => x.PackageId == packageId).FirstOrDefault();
+            return _mapper.Map<DueyPackageDto>(dataItem);
+
+        }
+
+        public DueyPackageDto[] LoadPlayerDueyPackages(int id)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dataItem = dbContext.Dueypackages.Where(x => x.ReceiverId == id).ToArray();
+            return _mapper.Map<DueyPackageDto[]>(dataItem);
         }
     }
 }
