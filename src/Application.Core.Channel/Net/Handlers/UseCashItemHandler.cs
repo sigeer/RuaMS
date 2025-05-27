@@ -585,7 +585,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             // MiuMiu's travel store
             if (player.getShop() == null)
             {
-                var shop = ShopFactory.getInstance().getShop(1338);
+                var shop = c.CurrentServer.ShopFactory.getShop(1338);
                 if (shop != null)
                 {
                     shop.sendShop(c);

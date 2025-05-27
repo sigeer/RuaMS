@@ -47,7 +47,9 @@ namespace Application.Core.Channel
         static IServiceCollection AddWZProvider(this IServiceCollection services)
         {
             // 可能同一机器创建多个频道，wz资源读取使用单例
-            return services.AddSingleton<SkillbookInformationProvider>();
+            services.AddSingleton<SkillbookInformationProvider>();
+            services.AddSingleton<ShopFactory>();
+            return services;
         }
 
         public static IServiceCollection AddChannelServer(this IServiceCollection services)

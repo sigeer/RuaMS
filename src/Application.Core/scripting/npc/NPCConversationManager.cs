@@ -376,13 +376,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void openShopNPC(int id)
     {
-        var shop = ShopFactory.getInstance().getShop(id);
+        var shop = c.CurrentServer.ShopFactory.getShop(id);
 
         if (shop == null)
         {
             // check for missing shopids thanks to resinate
             log.Warning("Shop ID: {ShopId} is missing from database.", id);
-            shop = ShopFactory.getInstance().getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
+            shop = c.CurrentServer.ShopFactory.getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
         }
         shop.sendShop(c);
     }

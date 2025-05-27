@@ -14,8 +14,10 @@ using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Net;
+using AutoMapper;
 using net.server;
 using net.server.guild;
+using server;
 using server.expeditions;
 using System.Net;
 using System.Text;
@@ -36,6 +38,8 @@ namespace Application.Core.Channel.Local
         readonly ItemService _itemService;
         readonly DueyService _dueyService;
         readonly NoteService _noteService;
+        readonly ShopService _shopManager;
+        readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
@@ -48,7 +52,9 @@ namespace Application.Core.Channel.Local
             StorageService storageService,
             ItemService itemService,
             DueyService dueyService,
-            NoteService noteService)
+            NoteService noteService,
+            ShopService shopManager,
+            IMapper mapper)
         {
             _server = server;
             _loginService = loginService;
@@ -57,6 +63,8 @@ namespace Application.Core.Channel.Local
             _itemService = itemService;
             _dueyService = dueyService;
             _noteService = noteService;
+            _shopManager = shopManager;
+            _mapper = mapper;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -594,6 +602,11 @@ namespace Application.Core.Channel.Local
         public NoteDto? DeleteNoteMessage(int id)
         {
             return _noteService.delete(id);
+        }
+
+        public Shop? GetShop(int id, bool isShopId)
+        {
+            return _mapper.Map<Shop>(_shopManager.LoadFromDB(id, isShopId));
         }
     }
 }

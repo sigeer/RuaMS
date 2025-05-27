@@ -221,6 +221,10 @@ namespace Application.Core.Channel.Mappers
                 });
             CreateMap<DueyPackageDto, DueyPackageObject>();
             CreateMap<NoteDto, NoteObject>();
+            CreateMap<ShopDto, Shop>()
+                .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
+            CreateMap<ShopItemDto, ShopItem>()
+                .ConstructUsing((src, ctx) => new ShopItem(src.Buyable, src.ItemId, src.Price, src.Pitch));
         }
 
         private int[] TranslateArray(string str)

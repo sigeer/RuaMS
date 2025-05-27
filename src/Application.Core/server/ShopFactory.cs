@@ -19,29 +19,29 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Application.Core.ServerTransports;
+
 namespace server;
-
-
-
 
 /**
  * @author Matze
  */
 public class ShopFactory
 {
-    private static ShopFactory instance = new ShopFactory();
-
-    public static ShopFactory getInstance()
-    {
-        return instance;
-    }
 
     private Dictionary<int, Shop?> shops = new();
     private Dictionary<int, Shop?> npcShops = new();
 
-    private Shop? loadShop(int id, bool isShopId)
+    readonly IChannelServerTransport _transport;
+
+    public ShopFactory(IChannelServerTransport transport)
     {
-        var ret = Shop.createFromDB(id, isShopId);
+        _transport = transport;
+    }
+
+    private Shop? LoadShopFromRemote(int id, bool isShopId)
+    {
+        var ret = _transport.GetShop(id, isShopId);
         if (ret != null)
         {
             shops.AddOrUpdate(ret.getId(), ret);
@@ -63,14 +63,14 @@ public class ShopFactory
         if (shops.TryGetValue(shopId, out var d))
             return d;
 
-        return loadShop(shopId, true);
+        return LoadShopFromRemote(shopId, true);
     }
 
     public Shop? getShopForNPC(int npcId)
     {
         if (npcShops.TryGetValue(npcId, out var d))
             return d;
-        return loadShop(npcId, false);
+        return LoadShopFromRemote(npcId, false);
     }
 
     public void reloadShops()

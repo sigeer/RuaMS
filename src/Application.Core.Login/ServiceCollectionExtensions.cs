@@ -78,6 +78,7 @@ namespace Application.Core.Login
             services.AddSingleton<DueyService>();
             services.AddSingleton<FredrickService>();
             services.AddSingleton<NoteService>();
+            services.AddSingleton<ShopService>();
             return services;
         }
 

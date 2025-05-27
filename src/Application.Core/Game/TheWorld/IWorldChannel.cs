@@ -59,6 +59,7 @@ namespace Application.Core.Game.TheWorld
         #endregion
         IServiceScope LifeScope { get; }
         SkillbookInformationProvider SkillbookInformationProvider { get; }
+        ShopFactory ShopFactory { get; }
         ChannelService Service { get; }
         ChannelClientStorage ClientStorage { get; }
 

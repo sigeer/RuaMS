@@ -151,7 +151,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<ServerQueue> ServerQueues { get; set; }
 
-    public virtual DbSet<DB_Shop> Shops { get; set; }
+    public virtual DbSet<ShopEntity> Shops { get; set; }
 
     public virtual DbSet<Shopitem> Shopitems { get; set; }
 
@@ -1901,7 +1901,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("value");
         });
 
-        modelBuilder.Entity<DB_Shop>(entity =>
+        modelBuilder.Entity<ShopEntity>(entity =>
         {
             entity.HasKey(e => e.ShopId).HasName("PRIMARY");
 

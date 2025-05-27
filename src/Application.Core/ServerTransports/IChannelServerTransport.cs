@@ -7,6 +7,7 @@ using Application.Shared.Duey;
 using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.Servers;
+using server;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -129,6 +130,7 @@ namespace Application.Core.ServerTransports
         bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
         void ShowNoteMessage(string name);
         NoteDto? DeleteNoteMessage(int id);
+        Shop? GetShop(int id, bool isShopId);
 
         #endregion
     }

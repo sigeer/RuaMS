@@ -123,6 +123,7 @@ public partial class WorldChannel : IWorldChannel
     public CharacterDiseaseController CharacterDiseaseController { get; }
     public IServiceScope LifeScope { get; }
     public SkillbookInformationProvider SkillbookInformationProvider { get; }
+    public ShopFactory ShopFactory { get; }
 
     #region
     public EventService EventService { get; }
@@ -187,6 +188,7 @@ public partial class WorldChannel : IWorldChannel
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
 
         SkillbookInformationProvider = LifeScope.ServiceProvider.GetRequiredService<SkillbookInformationProvider>();
+        ShopFactory = LifeScope.ServiceProvider.GetRequiredService<ShopFactory>();
 
     }
 

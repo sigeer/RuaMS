@@ -11,6 +11,6 @@ public class ReloadShopsCommand : CommandBase
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        ShopFactory.getInstance().reloadShops();
+        c.CurrentServer.ShopFactory.reloadShops();
     }
 }

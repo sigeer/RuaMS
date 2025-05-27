@@ -11,6 +11,6 @@ public class GmShopCommand : CommandBase
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        ShopFactory.getInstance().getShop(1337)!.sendShop(c);
+        c.CurrentServer.ShopFactory.getShop(1337)!.sendShop(c);
     }
 }

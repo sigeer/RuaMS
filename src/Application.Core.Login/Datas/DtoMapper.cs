@@ -93,6 +93,7 @@ namespace Application.Core.Login.Datas
 
             CreateMap<DueyPackageEntity, DueyPackageDto>();
             CreateMap<NoteEntity, NoteDto>();
+            CreateMap<ShopEntity, ShopDto>();
         }
     }
 }
