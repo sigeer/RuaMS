@@ -10,8 +10,14 @@ on:
     paths:
       - 'src/Application.Host/**'
       - 'src/Application.Core/**'
+      - 'src/Application.Core.Channel/**'
+      - 'src/Application.Core.Channel.Local/**'
+      - 'src/Application.Core.Login/**'
       - 'src/Application.Utility/**'
       - 'src/Application.Shared/**'
+      - 'src/Application.Scripting/**'
+      - 'src/Application.Scripting.JS/**'
+      - 'src/Application.Scripting.Lua/**'
       - 'src/XmlWzReader/**'
       - 'test/ServiceTest/**'
 

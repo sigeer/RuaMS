@@ -12,6 +12,7 @@ using Application.Shared.Configs;
 using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Shared.Login;
+using Application.Shared.MapObjects;
 using Application.Shared.Net;
 using net.server;
 using net.server.guild;
@@ -21,7 +22,7 @@ using System.Text;
 using tools;
 using tools.packets;
 
-namespace Application.Core.Login.ServerTransports
+namespace Application.Core.Channel.Local
 {
     /// <summary>
     /// 登录服务器 与 频道服务器在同一个进程中时，直接与MasterServer交互
