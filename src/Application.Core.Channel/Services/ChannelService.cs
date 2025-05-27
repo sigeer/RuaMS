@@ -9,6 +9,7 @@ using AutoMapper;
 using client.inventory;
 using server;
 using static server.CashShop;
+using Application.Shared.Items;
 
 namespace Application.Core.Channel.Services
 {

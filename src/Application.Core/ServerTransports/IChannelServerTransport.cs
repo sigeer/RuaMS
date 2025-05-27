@@ -120,7 +120,7 @@ namespace Application.Core.ServerTransports
         void CallSaveDB();
         Dictionary<int, List<DropDto>> RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
-        List<SpecialCashItem> RequestSpecialCashItems();
+        SpecialCashItem[] RequestSpecialCashItems();
         void SendGift(int recipient, string from, string message, int sn, int ringid);
         GiftDto[] LoadPlayerGifts(int playerId);
         void ClearGifts(int[] giftIdArray);

@@ -32,6 +32,7 @@ using net.packet;
 using server;
 using service;
 using tools;
+using Application.Shared.Items;
 using static server.CashShop;
 
 namespace Application.Core.Channel.Net.Handlers;

@@ -35,6 +35,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Shared.Battle;
+using Application.Shared.Items;
 using client;
 using client.inventory;
 using client.keybind;
