@@ -48,6 +48,7 @@ namespace Application.Core.Login
             services.AddSingleton<HwidAssociationExpiry>();
             services.AddSingleton<LoginStorage>();
             services.AddSingleton<LoginBypassCoordinator>();
+            services.AddSingleton<SessionInitialization>();
             return services;
         }
 
