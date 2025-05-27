@@ -49,6 +49,8 @@ namespace Application.Core.Channel
             // 可能同一机器创建多个频道，wz资源读取使用单例
             services.AddSingleton<SkillbookInformationProvider>();
             services.AddSingleton<ShopFactory>();
+
+            services.AddSingleton<ItemService>();
             return services;
         }
 

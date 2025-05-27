@@ -22,7 +22,6 @@
 
 
 using Application.Shared.Characters;
-using Microsoft.EntityFrameworkCore;
 using tools;
 
 

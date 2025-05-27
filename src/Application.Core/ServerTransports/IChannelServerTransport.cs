@@ -1,6 +1,7 @@
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
+using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
 using Application.Shared.Duey;
@@ -132,6 +133,9 @@ namespace Application.Core.ServerTransports
         NoteDto? DeleteNoteMessage(int id);
         Shop? GetShop(int id, bool isShopId);
         int[] GetCardTierSize();
+        void SendUnbanAccount(string playerName);
+        void AddReport(int v1, int v2, int v3, string description, string v4);
+        PetDto CreatePet(string petName, int level, int tameness, int fullness);
 
         #endregion
     }

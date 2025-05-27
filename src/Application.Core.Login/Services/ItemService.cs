@@ -4,15 +4,21 @@ using Application.EF.Entities;
 using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using AutoMapper;
+using client.inventory.manipulator;
+using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Org.BouncyCastle.Cms;
+using server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ZLinq;
+using static Mysqlx.Notice.Warning.Types;
+using Application.Shared.Characters;
+using Application.Core.Game.Items;
 
 namespace Application.Core.Login.Services
 {
@@ -77,6 +83,15 @@ namespace Application.Core.Login.Services
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
+        }
+
+        public PetDto CreatePet(string petName, int level, int tameness, int fullness)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dbModel = new PetEntity(CashIdGenerator.generateCashId(), petName, level, tameness, fullness, false, 0);
+            dbContext.Pets.Add(dbModel);
+            dbContext.SaveChanges();
+            return _mapper.Map<PetDto>(dbModel);
         }
     }
 }

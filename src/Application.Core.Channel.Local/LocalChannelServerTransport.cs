@@ -7,6 +7,7 @@ using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
+using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
 using Application.Shared.Duey;
@@ -39,6 +40,7 @@ namespace Application.Core.Channel.Local
         readonly DueyService _dueyService;
         readonly NoteService _noteService;
         readonly ShopService _shopManager;
+        readonly MessageService _msgService;
         readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
@@ -54,6 +56,7 @@ namespace Application.Core.Channel.Local
             DueyService dueyService,
             NoteService noteService,
             ShopService shopManager,
+            MessageService messageService,
             IMapper mapper)
         {
             _server = server;
@@ -64,6 +67,7 @@ namespace Application.Core.Channel.Local
             _dueyService = dueyService;
             _noteService = noteService;
             _shopManager = shopManager;
+            _msgService = messageService;
             _mapper = mapper;
         }
 
@@ -612,6 +616,21 @@ namespace Application.Core.Channel.Local
         public int[] GetCardTierSize()
         {
             return _itemService.GetCardTierSize();
+        }
+
+        public void SendUnbanAccount(string playerName)
+        {
+            _loginService.UnBanAccount(playerName);
+        }
+
+        public void AddReport(int fromId, int toId, int reason, string description, string chatLog)
+        {
+            _msgService.AddReport(fromId, toId, reason, description, chatLog);
+        }
+
+        public PetDto CreatePet(string petName, int level, int tameness, int fullness)
+        {
+            return _itemService.CreatePet(petName, level, tameness, fullness);
         }
     }
 }

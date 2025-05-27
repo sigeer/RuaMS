@@ -81,12 +81,6 @@ namespace Application.Core.Managers
         }
 
 
-        public static int getAccountIdByName(string name)
-        {
-            using DBContext dbContext = new DBContext();
-            return dbContext.Characters.Where(x => x.Name == name).Select(x => new { x.AccountId }).FirstOrDefault()?.AccountId ?? -1;
-        }
-
         public static int getIdByName(string name)
         {
             using DBContext dbContext = new DBContext();

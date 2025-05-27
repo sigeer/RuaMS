@@ -122,24 +122,6 @@ public class Storage
         }
     }
 
-    public void saveToDB(DBContext dbContext)
-    {
-        dbContext.Storages.Where(x => x.Accountid == AccountId).
-            ExecuteUpdate(x => x.SetProperty(y => y.Slots, slots)
-                .SetProperty(y => y.Meso, meso));
-
-        List<ItemInventoryType> itemsWithType = new();
-
-        var list = getItems();
-        foreach (Item item in list)
-        {
-            itemsWithType.Add(new(item, item.getInventoryType()));
-        }
-
-        ItemFactory.STORAGE.saveItems(itemsWithType, AccountId, dbContext);
-        IsChanged = false;
-    }
-
     public Item getItem(sbyte slot)
     {
         Monitor.Enter(lockObj);

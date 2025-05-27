@@ -55,19 +55,22 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(x => x.Maxhp, opt => opt.MapFrom(x => x.MaxHP))
                 .ForMember(x => x.Maxmp, opt => opt.MapFrom(x => x.MaxMP));
 
+            #region Item
             CreateMap<ItemDto, Pet>()
                  .ConstructUsing(source => new Pet(source.Itemid, source.Position, source.Petid))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
                 .ForMember(x => x.PetAttribute, opt => opt.MapFrom(x => x.PetInfo!.Flag))
+                .ForMember(x => x.Summoned, opt => opt.MapFrom(x => x.PetInfo!.Summoned))
                 .AfterMap((rs, dest) =>
                 {
-                    //dest.setOwner(rs.Owner);
-                    //dest.setQuantity(rs.Quantity);
-                    //dest.setFlag(rs.Flag);
-                    //dest.setExpiration(rs.Expiration);
-                    //dest.setGiftFrom(rs.GiftFrom);
+                    dest.setOwner(rs.Owner);
+                    dest.setQuantity(rs.Quantity);
+                    dest.setFlag(rs.Flag);
+                    dest.setExpiration(rs.Expiration);
+                    dest.setGiftFrom(rs.GiftFrom);
+
                     dest.setName(rs.PetInfo!.Name ?? "");
                 })
                 .ReverseMap()
@@ -88,6 +91,9 @@ namespace Application.Core.Channel.Mappers
                     var mit = src.InventoryType.getByType();
                     if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
                         return ctx.Mapper.Map<Equip>(src);
+
+                    if (src.PetInfo != null)
+                        return ctx.Mapper.Map<Pet>(src);
 
                     return new Item(src.Itemid, src.Position, src.Quantity);
                 })
@@ -118,7 +124,8 @@ namespace Application.Core.Channel.Mappers
                 {
                     return context.Items.TryGetValue("Type", out var type) ? Convert.ToByte(type) : ItemFactory.INVENTORY.getValue();
                 }))
-                .Include<Equip, ItemDto>();
+                .Include<Equip, ItemDto>()
+                .Include<Pet, ItemDto>();
 
             CreateMap<RingDto, Ring>()
                 .ConstructUsing(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName))
@@ -190,6 +197,7 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.Itemexp, source => source.MapFrom(x => x.getItemExp()))
                 .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.getRingId()))
                 .ForMember(dest => dest.RingInfo, source => source.MapFrom(x => x.Ring));
+            #endregion 
 
             CreateMap<StorageDto, Storage>()
                 .ConstructUsing((x, ctx) =>

@@ -80,6 +80,7 @@ namespace Application.Core.Login
             services.AddSingleton<FredrickService>();
             services.AddSingleton<NoteService>();
             services.AddSingleton<ShopService>();
+            services.AddSingleton<MessageService>();
             return services;
         }
 

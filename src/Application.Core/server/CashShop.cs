@@ -388,30 +388,6 @@ public class CashShop
         notes--;
     }
 
-    public void save(DBContext dbContext)
-    {
-        dbContext.Accounts.Where(x => x.Id == accountId).ExecuteUpdate(x =>
-                x.SetProperty(y => y.NxCredit, NxCredit)
-                .SetProperty(y => y.MaplePoint, MaplePoint)
-                .SetProperty(y => y.NxPrepaid, NxPrepaid)
-                );
-
-        List<ItemInventoryType> itemsWithType = new();
-
-        List<Item> inv = getInventory();
-        foreach (Item item in inv)
-        {
-            itemsWithType.Add(new(item, item.getInventoryType()));
-        }
-
-        Factory.saveItems(itemsWithType, accountId, dbContext);
-
-        dbContext.Wishlists.Where(x => x.CharId == characterId).ExecuteDelete();
-
-        dbContext.Wishlists.AddRange(wishList.Select(x => new WishlistEntity(characterId, x)));
-        dbContext.SaveChanges();
-    }
-
     public CashShopSurpriseResult? openCashShopSurprise(long cashId)
     {
         Monitor.Enter(lockObj);

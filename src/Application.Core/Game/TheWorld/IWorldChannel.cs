@@ -60,6 +60,7 @@ namespace Application.Core.Game.TheWorld
         IServiceScope LifeScope { get; }
         SkillbookInformationProvider SkillbookInformationProvider { get; }
         ShopFactory ShopFactory { get; }
+        ItemService ItemService { get; }
         ChannelService Service { get; }
         ChannelClientStorage ClientStorage { get; }
 

@@ -22,13 +22,7 @@ public class UnBanCommand : CommandBase
 
         try
         {
-            int aid = CharacterManager.getAccountIdByName(paramsValue[0]);
-            using var dbContext = new DBContext();
-            dbContext.Accounts.Where(x => x.Id == aid).ExecuteUpdate(x => x.SetProperty(y => y.Banned, -1));
-
-            dbContext.Ipbans.Where(x => x.Aid == aid.ToString()).ExecuteDelete();
-
-            dbContext.Macbans.Where(x => x.Aid == aid.ToString()).ExecuteDelete();
+            c.CurrentServer.Transport.SendUnbanAccount(paramsValue[0]);
         }
         catch (Exception e)
         {
