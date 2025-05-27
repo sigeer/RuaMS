@@ -657,161 +657,161 @@ namespace Application.Core.Managers
             }
         }
 
-        public void saveCharToDB(IPlayer player, bool notAutosave)
-        {
-            lock (player.SaveToDBLock)
-            {
-                if (!player.IsOnlined)
-                {
-                    return;
-                }
+        //public void saveCharToDB(IPlayer player, bool notAutosave)
+        //{
+        //    lock (player.SaveToDBLock)
+        //    {
+        //        if (!player.IsOnlined)
+        //        {
+        //            return;
+        //        }
 
-                // log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", player.Name);
+        //        // log.Debug("Attempting to {SaveMethod} chr {CharacterName}", notAutosave ? "save" : "autosave", player.Name);
 
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                var entity = dbContext.Characters.FirstOrDefault(x => x.Id == player.getId()) ?? throw new BusinessCharacterNotFoundException(player.getId());
-                try
-                {
-                    GlobalTools.Mapper.Map(player, entity);
+        //        using var dbContext = new DBContext();
+        //        using var dbTrans = dbContext.Database.BeginTransaction();
+        //        var entity = dbContext.Characters.FirstOrDefault(x => x.Id == player.getId()) ?? throw new BusinessCharacterNotFoundException(player.getId());
+        //        try
+        //        {
+        //            GlobalTools.Mapper.Map(player, entity);
 
-                    if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
-                    {
-                        entity.Map = player.Map;
-                    }
-                    else
-                    {
-                        if (player.MapModel.getForcedReturnId() != MapId.NONE)
-                        {
-                            entity.Map = player.MapModel.getForcedReturnId();
-                        }
-                        else
-                        {
-                            entity.Map = player.HP < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
-                        }
-                    }
-                    if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)
-                    {  // reset to first spawnpoint on those maps
-                        entity.Spawnpoint = 0;
-                    }
-                    else
-                    {
-                        var closest = player.MapModel.findClosestPlayerSpawnpoint(player.getPosition());
-                        if (closest != null)
-                        {
-                            entity.Spawnpoint = closest.getId();
-                        }
-                        else
-                        {
-                            entity.Spawnpoint = 0;
-                        }
-                    }
+        //            if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
+        //            {
+        //                entity.Map = player.Map;
+        //            }
+        //            else
+        //            {
+        //                if (player.MapModel.getForcedReturnId() != MapId.NONE)
+        //                {
+        //                    entity.Map = player.MapModel.getForcedReturnId();
+        //                }
+        //                else
+        //                {
+        //                    entity.Map = player.HP < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
+        //                }
+        //            }
+        //            if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)
+        //            {  // reset to first spawnpoint on those maps
+        //                entity.Spawnpoint = 0;
+        //            }
+        //            else
+        //            {
+        //                var closest = player.MapModel.findClosestPlayerSpawnpoint(player.getPosition());
+        //                if (closest != null)
+        //                {
+        //                    entity.Spawnpoint = closest.getId();
+        //                }
+        //                else
+        //                {
+        //                    entity.Spawnpoint = 0;
+        //                }
+        //            }
 
-                    entity.MessengerId = player.Messenger?.getId() ?? 0;
-                    entity.MessengerPosition = player.Messenger == null ? 4 : player.MessengerPosition;
+        //            entity.MessengerId = player.Messenger?.getId() ?? 0;
+        //            entity.MessengerPosition = player.Messenger == null ? 4 : player.MessengerPosition;
 
-                    entity.MountLevel = player.MountModel?.getLevel() ?? 1;
-                    entity.MountExp = player.MountModel?.getExp() ?? 0;
-                    entity.Mounttiredness = player.MountModel?.getTiredness() ?? 0;
+        //            entity.MountLevel = player.MountModel?.getLevel() ?? 1;
+        //            entity.MountExp = player.MountModel?.getExp() ?? 0;
+        //            entity.Mounttiredness = player.MountModel?.getTiredness() ?? 0;
 
-                    player.Monsterbook.saveCards(dbContext, player.getId());
+        //            player.Monsterbook.saveCards(dbContext, player.getId());
 
-                    var pets = player.getPets();
-                    foreach (var pet in pets)
-                    {
-                        pet?.saveToDb();
-                    }
+        //            var pets = player.getPets();
+        //            foreach (var pet in pets)
+        //            {
+        //                pet?.saveToDb();
+        //            }
 
-                    var ignoresPetIds = player.getExcluded().Select(x => x.Key).ToList();
-                    dbContext.Petignores.Where(x => ignoresPetIds.Contains(x.Petid)).ExecuteDelete();
-                    dbContext.Petignores.AddRange(player.getExcluded().SelectMany(x => x.Value.Select(y => new Petignore(x.Key, y))).ToList());
-                    dbContext.SaveChanges();
-
-
-                    player.KeyMap.SaveData(dbContext);
-
-                    // No quickslots, or no change.
-                    CharacterManager.SaveQuickSlotMapped(dbContext, player);
+        //            var ignoresPetIds = player.getExcluded().Select(x => x.Key).ToList();
+        //            dbContext.Petignores.Where(x => ignoresPetIds.Contains(x.Petid)).ExecuteDelete();
+        //            dbContext.Petignores.AddRange(player.getExcluded().SelectMany(x => x.Value.Select(y => new Petignore(x.Key, y))).ToList());
+        //            dbContext.SaveChanges();
 
 
-                    dbContext.Skillmacros.Where(x => x.Characterid == player.Id).ExecuteDelete();
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var macro = player.SkillMacros[i];
-                        if (macro != null)
-                        {
-                            dbContext.Skillmacros.Add(new SkillMacroEntity(player.Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
-                        }
-                    }
-                    dbContext.SaveChanges();
+        //            player.KeyMap.SaveData(dbContext);
 
-                    List<ItemInventoryType> itemsWithType = new();
-                    foreach (Inventory iv in player.Bag.GetValues())
-                    {
-                        foreach (Item item in iv.list())
-                        {
-                            itemsWithType.Add(new(item, iv.getType()));
-                        }
-                    }
+        //            // No quickslots, or no change.
+        //            CharacterManager.SaveQuickSlotMapped(dbContext, player);
 
-                    ItemFactory.INVENTORY.saveItems(itemsWithType, player.Id, dbContext);
 
-                    player.Skills.SaveData(dbContext);
+        //            dbContext.Skillmacros.Where(x => x.Characterid == player.Id).ExecuteDelete();
+        //            for (int i = 0; i < 5; i++)
+        //            {
+        //                var macro = player.SkillMacros[i];
+        //                if (macro != null)
+        //                {
+        //                    dbContext.Skillmacros.Add(new SkillMacroEntity(player.Id, (sbyte)i, macro.Skill1, macro.Skill2, macro.Skill3, macro.Name, (sbyte)macro.Shout));
+        //                }
+        //            }
+        //            dbContext.SaveChanges();
 
-                    player.SavedLocations.SaveData(dbContext);
+        //            List<ItemInventoryType> itemsWithType = new();
+        //            foreach (Inventory iv in player.Bag.GetValues())
+        //            {
+        //                foreach (Item item in iv.list())
+        //                {
+        //                    itemsWithType.Add(new(item, iv.getType()));
+        //                }
+        //            }
 
-                    player.PlayerTrockLocation.SaveData(dbContext);
+        //            ItemFactory.INVENTORY.saveItems(itemsWithType, player.Id, dbContext);
 
-                    player.BuddyList.Save(dbContext);
+        //            player.Skills.SaveData(dbContext);
 
-                    dbContext.AreaInfos.Where(x => x.Charid == player.getId()).ExecuteDelete();
-                    dbContext.AreaInfos.AddRange(player.AreaInfo.Select(x => new AreaInfo(player.getId(), x.Key, x.Value)));
-                    dbContext.SaveChanges();
+        //            player.SavedLocations.SaveData(dbContext);
 
-                    dbContext.Eventstats.Where(x => x.Characterid == player.getId()).ExecuteDelete();
-                    dbContext.Eventstats.AddRange(player.Events.Select(x => new Eventstat(player.getId(), x.Key, x.Value.getInfo())));
-                    dbContext.SaveChanges();
+        //            player.PlayerTrockLocation.SaveData(dbContext);
 
-                    deleteQuestProgressWhereCharacterId(dbContext, player.Id);
+        //            player.BuddyList.Save(dbContext);
 
-                    SavePlayerQuestInfo(dbContext, player);
+        //            dbContext.AreaInfos.Where(x => x.Charid == player.getId()).ExecuteDelete();
+        //            dbContext.AreaInfos.AddRange(player.AreaInfo.Select(x => new AreaInfo(player.getId(), x.Key, x.Value)));
+        //            dbContext.SaveChanges();
 
-                    var familyEntry = player.getFamilyEntry(); //save family rep
-                    if (familyEntry != null)
-                    {
-                        if (familyEntry.saveReputation(dbContext))
-                            familyEntry.savedSuccessfully();
-                        var senior = familyEntry.getSenior();
-                        if (senior != null && senior.getChr() == null)
-                        { //only save for offline family members
-                            if (senior.saveReputation(dbContext))
-                                senior.savedSuccessfully();
+        //            dbContext.Eventstats.Where(x => x.Characterid == player.getId()).ExecuteDelete();
+        //            dbContext.Eventstats.AddRange(player.Events.Select(x => new Eventstat(player.getId(), x.Key, x.Value.getInfo())));
+        //            dbContext.SaveChanges();
 
-                            senior = senior.getSenior(); //save one level up as well
-                            if (senior != null && senior.getChr() == null)
-                            {
-                                if (senior.saveReputation(dbContext))
-                                    senior.savedSuccessfully();
-                            }
-                        }
+        //            deleteQuestProgressWhereCharacterId(dbContext, player.Id);
 
-                    }
+        //            SavePlayerQuestInfo(dbContext, player);
 
-                    player.CashShopModel?.save(dbContext);
+        //            var familyEntry = player.getFamilyEntry(); //save family rep
+        //            if (familyEntry != null)
+        //            {
+        //                if (familyEntry.saveReputation(dbContext))
+        //                    familyEntry.savedSuccessfully();
+        //                var senior = familyEntry.getSenior();
+        //                if (senior != null && senior.getChr() == null)
+        //                { //only save for offline family members
+        //                    if (senior.saveReputation(dbContext))
+        //                        senior.savedSuccessfully();
 
-                    if (player.Storage != null && player.Storage.IsChanged)
-                    {
-                        player.Storage.saveToDB(dbContext);
-                    }
-                    dbTrans.Commit();
+        //                    senior = senior.getSenior(); //save one level up as well
+        //                    if (senior != null && senior.getChr() == null)
+        //                    {
+        //                        if (senior.saveReputation(dbContext))
+        //                            senior.savedSuccessfully();
+        //                    }
+        //                }
 
-                }
-                catch (Exception e)
-                {
-                    player.Log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", player.Name, player.Level, player.JobId);
-                }
-            }
-        }
+        //            }
+
+        //            player.CashShopModel?.save(dbContext);
+
+        //            if (player.Storage != null && player.Storage.IsChanged)
+        //            {
+        //                player.Storage.saveToDB(dbContext);
+        //            }
+        //            dbTrans.Commit();
+
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            player.Log.Error(e, "Error saving chr {CharacterName}, level: {Level}, job: {JobId}", player.Name, player.Level, player.JobId);
+        //        }
+        //    }
+        //}
 
         public static void deleteGuild(IPlayer player)
         {

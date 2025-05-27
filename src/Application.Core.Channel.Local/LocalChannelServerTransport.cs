@@ -608,5 +608,10 @@ namespace Application.Core.Channel.Local
         {
             return _mapper.Map<Shop>(_shopManager.LoadFromDB(id, isShopId));
         }
+
+        public int[] GetCardTierSize()
+        {
+            return _itemService.GetCardTierSize();
+        }
     }
 }

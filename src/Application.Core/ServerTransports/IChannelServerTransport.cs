@@ -131,6 +131,7 @@ namespace Application.Core.ServerTransports
         void ShowNoteMessage(string name);
         NoteDto? DeleteNoteMessage(int id);
         Shop? GetShop(int id, bool isShopId);
+        int[] GetCardTierSize();
 
         #endregion
     }

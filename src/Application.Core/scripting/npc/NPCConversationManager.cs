@@ -34,6 +34,7 @@ using client;
 using client.inventory;
 using constants.game;
 using constants.String;
+using Microsoft.EntityFrameworkCore;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
 using server;
@@ -1463,4 +1464,19 @@ public class NPCConversationManager : AbstractPlayerInteraction
         NextLevelContext.TwoOption(NextLevelType.SEND_YES_NO, noLevel, yesLevel);
     }
     #endregion
+
+    public int[] getCardTierSize()
+    {
+        try
+        {
+            return c.CurrentServer.Service.GetCardTierSize();
+            using var dbContext = new DBContext();
+            return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
+        }
+        catch (Exception e)
+        {
+            Log.Logger.Error(e.ToString());
+            return new int[0];
+        }
+    }
 }

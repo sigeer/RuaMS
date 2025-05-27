@@ -143,5 +143,10 @@ namespace Application.Core.Servers.Services
                 chr.sendPacket(new ShowNotesPacket(_mapper.Map<List<NoteObject>>(notes)));
             }
         }
+
+        internal int[] GetCardTierSize()
+        {
+            return _tranport.GetCardTierSize();
+        }
     }
 }

@@ -72,5 +72,11 @@ namespace Application.Core.Login.Services
             using var dbContext = _dbContextFactory.CreateDbContext();
             dbContext.Gifts.Where(x => giftIdArray.Contains(x.Id)).ExecuteDelete();
         }
+
+        public int[] GetCardTierSize()
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
+        }
     }
 }
