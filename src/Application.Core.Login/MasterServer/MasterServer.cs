@@ -108,7 +108,7 @@ namespace Application.Core.Login
             TravelRate = serverSection.GetValue<float>("TravelRate", 1);
             FishingRate = serverSection.GetValue<float>("FishingRate", 1);
 
-            Name = serverSection.GetValue<string>("Name", "");
+            Name = serverSection.GetValue<string>("Name", "RuaMS");
             EventMessage = serverSection.GetValue<string>("EventMessage", "");
             ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
             WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");

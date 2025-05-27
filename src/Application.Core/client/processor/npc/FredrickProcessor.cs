@@ -127,7 +127,7 @@ public class FredrickProcessor
         }
     }
 
-    public void fredrickRetrieveItems(IChannelClient c)
+    public static void fredrickRetrieveItems(IChannelClient c)
     {     // thanks Gustav for pointing out the dupe on Fredrick handling
         if (c.tryacquireClient())
         {

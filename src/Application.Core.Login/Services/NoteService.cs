@@ -1,5 +1,6 @@
 using Application.Core.Login.Datas;
 using Application.Core.model;
+using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.EF;
 using Application.Shared.Dto;
@@ -7,7 +8,6 @@ using Application.Utility.Exceptions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Xml.Linq;
 
 namespace Application.Core.Login.Services;
 
@@ -18,15 +18,14 @@ public class NoteService
     readonly ILogger<NoteService> _logger;
     readonly CharacterManager _chrManager;
     readonly IMapper _mapper;
-    readonly IMasterServerTransport _transport;
-
-    public NoteService(IDbContextFactory<DBContext> dbContextFactory, ILogger<NoteService> logger, CharacterManager chrManager, IMapper mapper, IMasterServerTransport transport)
+    readonly IMasterServer _server;
+    public NoteService(IDbContextFactory<DBContext> dbContextFactory, ILogger<NoteService> logger, CharacterManager chrManager, IMapper mapper, IMasterServer masterServer)
     {
         _dbContextFactory = dbContextFactory;
         _logger = logger;
         _chrManager = chrManager;
         _mapper = mapper;
-        _transport = transport;
+        _server = masterServer;
     }
 
     /**
@@ -84,7 +83,7 @@ public class NoteService
 
         var notes = findAllByTo(chr.Character.Name);
         if (notes.Length > 0)
-            _transport.SendNotes(chr.Channel, chr.Character.Id, notes);
+            _server.Transport.SendNotes(chr.Channel, chr.Character.Id, notes);
     }
 
 

@@ -57,8 +57,6 @@ namespace Application.Core.Channel
             services.AddChannelCommands();
             services.AddChannelHandlers();
 
-            services.AddSingleton<FredrickProcessor>();
-
             services.AddWZProvider();
 
             services.AddScoped<CharacterService>();
