@@ -114,6 +114,14 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public void UpdateHP(int value)
+        {
+            UpdateStatsChunk(() =>
+            {
+                SetHP(value);
+            });
+        }
+
         public void SetMP(int value)
         {
             if (value < 0)

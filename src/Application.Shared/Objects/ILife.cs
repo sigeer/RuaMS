@@ -35,5 +35,10 @@ namespace Application.Shared.Objects
         void SetHP(int value);
         void SetMP(int value);
         void KilledBy(ILife killer);
+        /// <summary>
+        /// 修改HP 并立即发送数据包更新客户端
+        /// </summary>
+        /// <param name="value"></param>
+        void UpdateHP(int value);
     }
 }
