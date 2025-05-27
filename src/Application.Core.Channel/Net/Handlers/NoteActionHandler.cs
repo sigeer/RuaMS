@@ -23,7 +23,6 @@
 
 using Microsoft.Extensions.Logging;
 using net.packet;
-using service;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -32,14 +31,10 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class NoteActionHandler : ChannelHandlerBase
 {
-
-
-    private NoteService noteService;
     readonly ILogger<NoteActionHandler> _logger;
 
-    public NoteActionHandler(NoteService noteService, ILogger<NoteActionHandler> logger)
+    public NoteActionHandler(ILogger<NoteActionHandler> logger)
     {
-        this.noteService = noteService;
         _logger = logger;
     }
 
@@ -55,7 +50,7 @@ public class NoteActionHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.showCashInventory(c));
             }
 
-            bool sendNoteSuccess = noteService.sendWithFame(message, c.OnlinedCharacter.getName(), charname, c.getChannelServer().getCurrentTime());
+            bool sendNoteSuccess = c.CurrentServer.Transport.SendNormalNoteMessage(c.OnlinedCharacter.getName(), charname, message);
             if (sendNoteSuccess)
             {
                 c.OnlinedCharacter.getCashShop().decreaseNotes();
@@ -72,7 +67,7 @@ public class NoteActionHandler : ChannelHandlerBase
                 int id = p.readInt();
                 p.readByte(); //Fame, but we read it from the database :)
 
-                var discardedNote = noteService.delete(id);
+                var discardedNote = c.CurrentServer.Transport.DeleteNoteMessage(id);
                 if (discardedNote == null)
                 {
                     _logger.LogWarning("Note with id {NoteId} not able to be discarded. Already discarded?", id);

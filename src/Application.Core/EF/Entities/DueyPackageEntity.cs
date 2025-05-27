@@ -2,7 +2,7 @@ using client.inventory;
 
 namespace Application.EF.Entities;
 
-public partial class Dueypackage
+public partial class DueyPackageEntity
 {
     public int PackageId { get; set; }
 
@@ -19,10 +19,9 @@ public partial class Dueypackage
     public bool Checked { get; set; } = true;
 
     public bool Type { get; set; } = false;
-    public Item? Item { get; set; }
-    private Dueypackage() { }
+    private DueyPackageEntity() { }
 
-    public Dueypackage(int receiverId, string senderName, int mesos, string? message, bool @checked, bool type)
+    public DueyPackageEntity(int receiverId, string senderName, int mesos, string? message, bool @checked, bool type)
     {
         ReceiverId = receiverId;
         SenderName = senderName;
@@ -38,15 +37,6 @@ public partial class Dueypackage
 
     public virtual ICollection<Dueyitem> Dueyitems { get; set; } = new List<Dueyitem>();
 
-    public long sentTimeInMilliseconds()
-    {
-        return TimeStamp.AddMonths(1).ToUnixTimeMilliseconds();
-    }
-
-    public bool isDeliveringTime()
-    {
-        return TimeStamp >= DateTimeOffset.UtcNow;
-    }
 
     public void UpdateSentTime()
     {

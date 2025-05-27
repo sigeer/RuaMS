@@ -1,9 +1,13 @@
+using Application.Core.Duey;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Models;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
+using Application.Shared.Duey;
 using Application.Shared.Items;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Exceptions;
@@ -79,7 +83,14 @@ namespace Application.Core.Channel.Mappers
                 }));
 
             CreateMap<ItemDto, Item>()
-                .ConstructUsing(source => new Item(source.Itemid, source.Position, source.Quantity))
+                .ConstructUsing((src, ctx) =>
+                {
+                    var mit = src.InventoryType.getByType();
+                    if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
+                        return ctx.Mapper.Map<Equip>(src);
+
+                    return new Item(src.Itemid, src.Position, src.Quantity);
+                })
                 .AfterMap((rs, dest, ctx) =>
                 {
                     dest.setOwner(rs.Owner);
@@ -183,7 +194,7 @@ namespace Application.Core.Channel.Mappers
             CreateMap<StorageDto, Storage>()
                 .ConstructUsing((x, ctx) =>
                 {
-                    return new Storage(x.Accountid, x.Slots, x.Meso, x.Items.Select(y => MapToItem(ctx.Mapper, y)).ToArray());
+                    return new Storage(x.Accountid, x.Slots, x.Meso, ctx.Mapper.Map<Item[]>(x.Items));
                 })
                 .ReverseMap()
                 .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
@@ -208,6 +219,8 @@ namespace Application.Core.Channel.Mappers
                         return DropEntry.Global(0, src.ItemId, src.Chance, src.MinCount, src.MaxCount, src.QuestId);
                     throw new BusinessFatalException("不支持的掉落类型");
                 });
+            CreateMap<DueyPackageDto, DueyPackageObject>();
+            CreateMap<NoteDto, NoteObject>();
         }
 
         private int[] TranslateArray(string str)

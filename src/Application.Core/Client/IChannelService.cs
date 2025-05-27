@@ -1,10 +1,7 @@
-
-using Application.Core.Datas;
 using Application.Core.Game.Life;
 using Application.Shared.Dto;
 using Application.Shared.Items;
 using client.inventory;
-using server;
 
 namespace Application.Core.Client
 {

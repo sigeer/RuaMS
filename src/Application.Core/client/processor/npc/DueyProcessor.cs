@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Duey;
 using Application.Core.Game.Trades;
 using Application.Core.model;
 using client.autoban;
@@ -76,74 +77,16 @@ public class DueyProcessor
         }
     }
 
-    private static void deletePackageFromInventoryDB(DBContext dbContext, int packageId)
-    {
-        ItemFactory.DUEY.saveItems([], packageId, dbContext);
-    }
 
-    private static void removePackageFromDB(int packageId)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-            dbContext.Dueypackages.Where(x => x.PackageId == packageId).ExecuteDelete();
 
-            deletePackageFromInventoryDB(dbContext, packageId);
-            dbTrans.Commit();
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
 
-    private static Dueypackage getPackageFromDB(Dueypackage rs)
-    {
-        try
-        {
-            var dueyItems = ItemFactory.DUEY.loadItems(rs.PackageId, false);
-
-            if (dueyItems.Count > 0)
-            {
-                rs.Item = dueyItems[0].Item;
-            }
-            rs.UpdateSentTime();
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-        return rs;
-    }
-
-    private static List<Dueypackage> loadPackages(IPlayer chr)
-    {
-        List<Dueypackage> packages = new();
-        try
-        {
-            using var dbContext = new DBContext();
-            var dataList = dbContext.Dueypackages.Where(x => x.ReceiverId == chr.getId()).ToList();
-            dataList.ForEach(x =>
-            {
-                packages.Add(getPackageFromDB(x));
-            });
-
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-
-        return packages;
-    }
 
     private static int createPackage(int mesos, string? message, string sender, int toCid, bool quick)
     {
         try
         {
             using var dbContext = new DBContext();
-            var dbModel = new Dueypackage(toCid, sender, mesos, message, true, quick);
+            var dbModel = new DueyPackageEntity(toCid, sender, mesos, message, true, quick);
             dbContext.Dueypackages.Add(dbModel);
 
 
@@ -362,7 +305,7 @@ public class DueyProcessor
         {
             try
             {
-                removePackageFromDB(packageid);
+                c.CurrentServer.Transport.RequestRemovePackage(packageid);
                 c.sendPacket(PacketCreator.removeItemFromDuey(playerRemove, packageid));
             }
             finally
@@ -380,15 +323,7 @@ public class DueyProcessor
             {
                 try
                 {
-                    Dueypackage? dp = null;
-                    using var dbContext = new DBContext();
-                    var dataItem = dbContext.Dueypackages.Where(x => x.PackageId == packageId).FirstOrDefault();
-                    if (dataItem != null)
-                    {
-                        dp = getPackageFromDB(dataItem);
-                    }
-
-
+                    var dp = c.CurrentServer.Service.GetDueyPackageByPackageId(packageId);
                     if (dp == null)
                     {
                         c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
@@ -467,7 +402,7 @@ public class DueyProcessor
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.sendDuey(0x8, loadPackages(c.OnlinedCharacter)));
+                    c.sendPacket(PacketCreator.sendDuey(0x8, c.OnlinedCharacter.GetDueyPackages()));
                 }
             }
             finally
@@ -483,29 +418,6 @@ public class DueyProcessor
         if (packageId != -1)
         {
             insertPackageItem(packageId, item);
-        }
-    }
-
-    public static void runDueyExpireSchedule()
-    {
-
-        try
-        {
-            var dayBefore30 = DateTimeOffset.UtcNow.AddDays(-30);
-            using var dbContext = new DBContext();
-            var toRemove = dbContext.Dueypackages.Where(x => x.TimeStamp < dayBefore30).Select(X => X.PackageId).ToList();
-
-
-            foreach (int pid in toRemove)
-            {
-                removePackageFromDB(pid);
-            }
-
-            dbContext.Dueypackages.Where(x => x.TimeStamp < dayBefore30).ExecuteDelete();
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
         }
     }
 }

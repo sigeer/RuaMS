@@ -1,12 +1,10 @@
-using Application.Core.Datas;
-using Application.Core.Game.Players;
 using Application.Core.Login.Datas;
 using Application.Core.Servers;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
-using System.Threading.Channels;
 
 namespace Application.Core.Login.Services
 {

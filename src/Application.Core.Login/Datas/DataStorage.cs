@@ -94,7 +94,7 @@ namespace Application.Core.Login.Datas
                     await dbContext.Skillmacros.AddRangeAsync(
                         obj.SkillMacros.Where(x => x != null).Select(x => new SkillMacroEntity(obj.Character.Id, (sbyte)x.Position, x.Skill1, x.Skill2, x.Skill3, x.Name, (sbyte)x.Shout)));
 
-                    await CommitInventoryByTypeAsync(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
+                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.Character.Id, obj.InventoryItems, ItemFactory.INVENTORY);
 
                     await dbContext.Cooldowns.AddRangeAsync(
                         obj.CoolDowns.Select(x => new CooldownEntity(obj.Character.Id, x.SkillId, x.Length, x.StartTime)));
@@ -159,7 +159,7 @@ namespace Application.Core.Login.Datas
                 dbStorage.Slots = m.Slots;
                 dbStorage.Meso = m.Meso;
             }
-            CommitInventoryByType(dbContext, accId, m.Items, ItemFactory.STORAGE);
+            InventoryManager.CommitInventoryByType(dbContext, accId, m.Items, ItemFactory.STORAGE);
         }
 
         public void SetCharacter(PlayerSaveDto obj)
@@ -177,7 +177,7 @@ namespace Application.Core.Login.Datas
             }
 
             // cash shop
-            CommitInventoryByType(dbContext, obj.Character.AccountId, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
+            InventoryManager.CommitInventoryByType(dbContext, obj.Character.AccountId, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
             dbContext.Wishlists.Where(x => obj.Character.Id == x.CharId).ExecuteDelete();
             dbContext.Wishlists.AddRange(obj.CashShop.WishItems.Select(x => new WishlistEntity(obj.Character.Id, x)));
 
@@ -198,96 +198,8 @@ namespace Application.Core.Login.Datas
             dbTrans.Commit();
         }
 
-        private async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
-        {
-            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
-            var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
 
-            var petIds = allItems.Select(x => x.Petid).ToArray();
-            await dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
-            await dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
-            await dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDeleteAsync();
 
-            foreach (var item in items)
-            {
-                var model = new Inventoryitem()
-                {
-                    Itemid = item.Itemid,
-                    Accountid = type.IsAccount ? targetId : null,
-                    Characterid = type.IsAccount ? null : targetId,
-                    Expiration = item.Expiration,
-                    Flag = item.Flag,
-                    GiftFrom = item.GiftFrom,
-                    Inventorytype = item.InventoryType,
-                    Owner = item.Owner,
-                    Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
-                    Position = item.Position,
-                    Quantity = item.Quantity,
-                    Type = item.Type,
-                };
-                await dbContext.Inventoryitems.AddAsync(model);
-                await dbContext.SaveChangesAsync();
-
-                if (item.EquipInfo != null)
-                {
-                    var temp = _mapper.Map<Inventoryequipment>(item.EquipInfo);
-                    temp.Inventoryitemid = model.Inventoryitemid;
-                    await dbContext.Inventoryequipments.AddAsync(temp);
-                }
-                if (item.PetInfo != null)
-                {
-                    await dbContext.Pets.AddAsync(
-                        new PetEntity(item.PetInfo!.Petid, item.PetInfo.Name, item.PetInfo.Level, item.PetInfo.Closeness, item.PetInfo.Fullness, item.PetInfo.Summoned, item.PetInfo.Flag));
-                }
-            }
-
-            await dbContext.SaveChangesAsync();
-        }
-
-        private void CommitInventoryByType(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
-        {
-            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
-            var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
-
-            var petIds = allItems.Select(x => x.Petid).ToArray();
-            dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-            dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-            dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
-
-            foreach (var item in items)
-            {
-                var model = new Inventoryitem()
-                {
-                    Itemid = item.Itemid,
-                    Accountid = type.IsAccount ? targetId : null,
-                    Characterid = type.IsAccount ? null : targetId,
-                    Expiration = item.Expiration,
-                    Flag = item.Flag,
-                    GiftFrom = item.GiftFrom,
-                    Inventorytype = item.InventoryType,
-                    Owner = item.Owner,
-                    Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
-                    Position = item.Position,
-                    Quantity = item.Quantity,
-                    Type = item.Type,
-                };
-                dbContext.Inventoryitems.AddAsync(model);
-                dbContext.SaveChanges();
-
-                if (item.EquipInfo != null)
-                {
-                    var temp = _mapper.Map<Inventoryequipment>(item.EquipInfo);
-                    temp.Inventoryitemid = model.Inventoryitemid;
-                    dbContext.Inventoryequipments.Add(temp);
-                }
-                if (item.PetInfo != null)
-                {
-                    dbContext.Pets.Add(_mapper.Map<PetEntity>(item.PetInfo));
-                }
-            }
-
-            dbContext.SaveChanges();
-        }
 
         internal void SetAccountLoginRecord(KeyValuePair<int, AccountLoginStatus> item)
         {

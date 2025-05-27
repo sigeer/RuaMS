@@ -1,4 +1,3 @@
-using Application.Core.Datas;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
@@ -10,6 +9,7 @@ using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
+using Application.Shared.Duey;
 using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
@@ -34,18 +34,29 @@ namespace Application.Core.Channel.Local
         readonly CharacterManager _chrManager;
         readonly StorageService _storageService;
         readonly ItemService _itemService;
+        readonly DueyService _dueyService;
+        readonly NoteService _noteService;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
         IWorld _world => Server.getInstance().getWorld(0);
 
-        public LocalChannelServerTransport(IMasterServer server, LoginService loginService, CharacterManager chrManager, StorageService storageService, ItemService itemService)
+        public LocalChannelServerTransport(
+            IMasterServer server,
+            LoginService loginService,
+            CharacterManager chrManager,
+            StorageService storageService,
+            ItemService itemService,
+            DueyService dueyService,
+            NoteService noteService)
         {
             _server = server;
             _loginService = loginService;
             _chrManager = chrManager;
             _storageService = storageService;
             _itemService = itemService;
+            _dueyService = dueyService;
+            _noteService = noteService;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -544,6 +555,45 @@ namespace Application.Core.Channel.Local
         public void ClearGifts(int[] giftIdArray)
         {
             _itemService.ClearGifts(giftIdArray);
+        }
+
+        public DueyPackageDto[] GetPlayerDueyPackages(int id)
+        {
+            return _dueyService.GetPlayerDueyPackages(id);
+        }
+
+        public DueyPackageDto? GetDueyPackageByPackageId(int id)
+        {
+            return _dueyService.GetDueyPackageByPackageId(id);
+        }
+
+        public void RequestRemovePackage(int packageid)
+        {
+            _dueyService.RemovePackageFromDB(packageid);
+        }
+
+        public bool SendNormalNoteMessage(string fromName, string toName, string noteMessage)
+        {
+            var insertResult = _noteService.sendNormal(noteMessage, fromName, toName, _server.getCurrentTime());
+            _noteService.show(toName);
+            return insertResult;
+        }
+
+        public bool SendFameNoteMessage(string fromName, string toName, string noteMessage)
+        {
+            var insertResult = _noteService.sendWithFame(noteMessage, fromName, toName, _server.getCurrentTime());
+            _noteService.show(toName);
+            return insertResult;
+        }
+
+        public void ShowNoteMessage(string name)
+        {
+            _noteService.show(name);
+        }
+
+        public NoteDto? DeleteNoteMessage(int id)
+        {
+            return _noteService.delete(id);
         }
     }
 }

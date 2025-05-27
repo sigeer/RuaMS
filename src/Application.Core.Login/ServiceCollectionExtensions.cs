@@ -62,6 +62,7 @@ namespace Application.Core.Login
         static IServiceCollection AddScheduleTask(this IServiceCollection services)
         {
             services.AddSingleton<RankingLoginTask>();
+            services.AddSingleton<DueyFredrickTask>();
             return services;
         }
 
@@ -74,6 +75,9 @@ namespace Application.Core.Login
             services.AddSingleton<ServerService>();
             services.AddSingleton<LoginService>();
             services.AddSingleton<ItemService>();
+            services.AddSingleton<DueyService>();
+            services.AddSingleton<FredrickService>();
+            services.AddSingleton<NoteService>();
             return services;
         }
 

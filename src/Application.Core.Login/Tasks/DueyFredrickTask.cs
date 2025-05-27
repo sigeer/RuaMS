@@ -1,21 +1,23 @@
+using Application.Core.Login.Services;
 using Application.Utility.Tasks;
-using client.processor.npc;
 
 namespace Application.Core.Login.Tasks
 {
     public class DueyFredrickTask : AbstractRunnable
     {
-        private FredrickProcessor fredrickProcessor;
+        readonly DueyService _dueyService;
+        readonly FredrickService _fredrickService;
 
-        public DueyFredrickTask(FredrickProcessor fredrickProcessor)
+        public DueyFredrickTask(FredrickService fredrickProcessor, DueyService dueyService)
         {
-            this.fredrickProcessor = fredrickProcessor;
+            this._fredrickService = fredrickProcessor;
+            _dueyService = dueyService;
         }
 
         public override void HandleRun()
         {
-            fredrickProcessor.runFredrickSchedule();
-            DueyProcessor.runDueyExpireSchedule();
+            _fredrickService.runFredrickSchedule();
+            _dueyService.runDueyExpireSchedule();
         }
     }
 

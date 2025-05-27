@@ -27,6 +27,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
@@ -58,7 +59,7 @@ namespace Application.Core.Game.TheWorld
         #endregion
         IServiceScope LifeScope { get; }
         SkillbookInformationProvider SkillbookInformationProvider { get; }
-        IChannelService Service { get; }
+        ChannelService Service { get; }
         ChannelClientStorage ClientStorage { get; }
 
         public event Action? OnWorldMobRateChanged;

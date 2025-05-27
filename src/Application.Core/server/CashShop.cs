@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Items;
 using client.inventory;
@@ -174,7 +175,7 @@ public class CashShop
 
         public static CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
 
-        public static List<Item> getPackage(int itemId, IChannelService service)
+        public static List<Item> getPackage(int itemId, ChannelService service)
         {
             return (packages.GetValueOrDefault(itemId) ?? []).Select(x => service.CashItem2Item(GetItemTrust(x))).ToList();
         }

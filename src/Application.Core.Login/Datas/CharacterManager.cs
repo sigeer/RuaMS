@@ -1,7 +1,5 @@
-using Application.Core.Datas;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
-using Application.Core.Game.Players;
 using Application.EF;
 using Application.Shared.Characters;
 using Application.Shared.Dto;
@@ -38,6 +36,9 @@ namespace Application.Core.Login.Datas
             _dbContextFactory = dbContextFactory;
             _dataStorage = chrStorage;
         }
+
+        public CharacterValueObject? FindPlayerById(int id) => _idDataSource.GetValueOrDefault(id);
+        public CharacterValueObject? FindPlayerByName(string name) => _nameDataSource.GetValueOrDefault(name);
 
         public void Update(PlayerSaveDto obj)
         {
@@ -78,58 +79,6 @@ namespace Application.Core.Login.Datas
             return false;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="targetId"></param>
-        /// <param name="isAccount"></param>
-        /// <param name="itemType">需要满足IsAccount == isAccount</param>
-        /// <returns></returns>
-        private List<ItemEntityPair> LoadItems(DBContext dbContext, int characterId, params ItemFactory[] itemFactories)
-        {
-            var itemType = itemFactories.Select(x => x.getValue()).ToArray();
-            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                .Where(x => x.Characterid == characterId)
-                .Where(x => itemType.Contains(x.Type))
-                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
-                         from cs in css.DefaultIfEmpty()
-                         select new { Item = a, Pet = cs }).ToList();
-
-            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
-            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
-                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
-                          from es in ess.DefaultIfEmpty()
-                          select new EquipEntityPair(a, es)).ToList();
-
-            return (from a in items
-                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
-                    from bs in bss.DefaultIfEmpty()
-                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
-        }
-
-        private List<ItemEntityPair> LoadAccountItems(DBContext dbContext, int accountId, params ItemFactory[] itemFactories)
-        {
-            var itemType = itemFactories.Select(x => x.getValue()).ToArray();
-            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                .Where(x => x.Accountid == accountId)
-                .Where(x => itemType.Contains(x.Type))
-                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
-                         from cs in css.DefaultIfEmpty()
-                         select new { Item = a, Pet = cs }).ToList();
-
-            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
-            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
-                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
-                          from es in ess.DefaultIfEmpty()
-                          select new EquipEntityPair(a, es)).ToList();
-
-            return (from a in items
-                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
-                    from bs in bss.DefaultIfEmpty()
-                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
-        }
-
         private ItemFactory GetCashshopFactory(int jobId)
         {
             if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)
@@ -166,7 +115,7 @@ namespace Application.Core.Login.Datas
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreDto { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
-                var invItems = LoadItems(dbContext, characterId, ItemFactory.INVENTORY);
+                var invItems = InventoryManager.LoadItems(dbContext, characterId, ItemFactory.INVENTORY);
 
                 var buddyData = (from a in dbContext.Buddies
                                  join b in dbContext.Characters on a.BuddyId equals b.Id
@@ -228,7 +177,7 @@ namespace Application.Core.Login.Datas
 
 
             var cashFactory = GetCashshopFactory(d.Character.JobId);
-            var allAccountItems = LoadAccountItems(dbContext, d.Character.AccountId, ItemFactory.STORAGE, cashFactory);
+            var allAccountItems = InventoryManager.LoadAccountItems(dbContext, d.Character.AccountId, ItemFactory.STORAGE, cashFactory);
 
             var storageDto = _mapper.Map<StorageDto>(dbContext.Storages.AsNoTracking().Where(x => x.Accountid == d.Character.AccountId).FirstOrDefault());
             if (storageDto == null)

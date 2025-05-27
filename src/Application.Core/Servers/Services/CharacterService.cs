@@ -1,28 +1,21 @@
-using Application.Core.Datas;
 using Application.Core.Game.Items;
-using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.EF;
-using Application.Shared;
 using Application.Shared.Characters;
 using Application.Shared.Dto;
 using Application.Shared.Items;
-using Application.Utility.Exceptions;
-using Application.Utility.Extensions;
 using AutoMapper;
 using client;
 using client.inventory;
 using client.keybind;
 using net.server;
-using Serilog;
 using server;
 using server.events;
 using server.quest;
 using tools;
 
-namespace Application.Core.Channel.Services
+namespace Application.Core.Servers.Services
 {
     public class CharacterService
     {

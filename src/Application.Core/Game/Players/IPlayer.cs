@@ -1,4 +1,5 @@
 using Application.Core.client.Characters;
+using Application.Core.Duey;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -691,5 +692,6 @@ namespace Application.Core.Game.Players
         void yellowMessage(string m);
 
         List<QuestStatus> getQuests();
+        DueyPackageObject[] GetDueyPackages();
     }
 }

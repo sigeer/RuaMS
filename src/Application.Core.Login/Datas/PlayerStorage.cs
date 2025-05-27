@@ -1,4 +1,4 @@
-using Application.Core.Datas;
+using Application.Shared.Dto;
 
 namespace Application.Core.Login.Datas
 {

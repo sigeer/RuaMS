@@ -1,3 +1,4 @@
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Items;
 using Application.Utility.Exceptions;
@@ -85,7 +86,7 @@ namespace Application.Core.Channel.DataProviders
 
         public CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
 
-        public List<Item> getPackage(int itemId, IChannelService service)
+        public List<Item> getPackage(int itemId, ChannelService service)
         {
             return (packages.GetValueOrDefault(itemId) ?? []).Select(x => service.CashItem2Item(GetItemTrust(x))).ToList();
         }

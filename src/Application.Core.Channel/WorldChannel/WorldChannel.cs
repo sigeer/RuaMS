@@ -1,5 +1,4 @@
 using Application.Core.Channel.Net;
-using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Controllers;
@@ -10,6 +9,7 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Net;
@@ -136,7 +136,7 @@ public partial class WorldChannel : IWorldChannel
     RespawnTask _respawnTask;
 
     public ChannelClientStorage ClientStorage { get; }
-    public IChannelService Service { get; }
+    public ChannelService Service { get; }
     public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
     {
         LifeScope = scope;

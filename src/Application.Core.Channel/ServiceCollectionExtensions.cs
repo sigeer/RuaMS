@@ -1,20 +1,12 @@
 using Application.Core.Channel.Mappers;
 using Application.Core.Channel.Net;
-using Application.Core.Channel.Services;
 using Application.Core.Game.Commands;
-using Application.Core.Game.Commands.Gm6;
 using Application.Core.Net;
+using Application.Core.Servers.Services;
 using client.processor.npc;
-using database.note;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.handlers;
-using scripting.map;
-using scripting.npc;
-using scripting.portal;
-using scripting.quest;
-using scripting.reactor;
 using server;
-using service;
 
 namespace Application.Core.Channel
 {
@@ -63,8 +55,6 @@ namespace Application.Core.Channel
             services.AddChannelCommands();
             services.AddChannelHandlers();
 
-            services.AddSingleton<NoteDao>();
-            services.AddSingleton<NoteService>();
             services.AddSingleton<FredrickProcessor>();
 
             services.AddWZProvider();

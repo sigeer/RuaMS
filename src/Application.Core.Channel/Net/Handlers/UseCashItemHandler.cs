@@ -37,7 +37,6 @@ using net.packet;
 using net.packet.outs;
 using server;
 using server.maps;
-using service;
 using System.Text;
 using tools;
 using static client.inventory.Equip;
@@ -47,12 +46,10 @@ namespace Application.Core.Channel.Net.Handlers;
 public class UseCashItemHandler : ChannelHandlerBase
 {
 
-    private NoteService noteService;
     readonly ILogger<UseCashItemHandler> _logger;
 
-    public UseCashItemHandler(NoteService noteService, ILogger<UseCashItemHandler> logger)
+    public UseCashItemHandler(ILogger<UseCashItemHandler> logger)
     {
-        this.noteService = noteService;
         _logger = logger;
     }
 
@@ -393,7 +390,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             string sendTo = p.readString();
             string msg = p.readString();
-            bool sendSuccess = noteService.sendNormal(msg, player.getName(), sendTo, player.getChannelServer().getCurrentTime());
+            bool sendSuccess = c.CurrentServer.Transport.SendNormalNoteMessage(player.getName(), sendTo, msg);
             if (sendSuccess)
             {
                 remove(c, position, itemId);

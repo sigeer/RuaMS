@@ -27,7 +27,6 @@ using client.inventory.manipulator;
 using client.processor.npc;
 using Microsoft.Extensions.Logging;
 using net.packet;
-using service;
 using tools;
 using tools.packets;
 
@@ -42,12 +41,10 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RingActionHandler : ChannelHandlerBase
 {
     readonly ILogger<RingActionHandler> _logger;
-    private NoteService noteService;
 
-    public RingActionHandler(ILogger<RingActionHandler> logger, NoteService noteService)
+    public RingActionHandler(ILogger<RingActionHandler> logger)
     {
         _logger = logger;
-        this.noteService = noteService;
     }
 
     private static int getEngagementBoxId(int useItemId)
@@ -328,7 +325,7 @@ public class RingActionHandler : ChannelHandlerBase
                                     }
                                     else
                                     {
-                                        noteService.sendNormal(dueyMessage, groom, name, cserv.getCurrentTime());
+                                        c.CurrentServer.Transport.SendNormalNoteMessage(groom, name, dueyMessage);
                                     }
 
                                     Item weddingTicket = new Item(newItemId, 0, 1);
