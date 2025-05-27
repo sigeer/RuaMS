@@ -15,7 +15,7 @@ namespace Application.Host.Models
         {
             CreateMap(typeof(PagedData<>), typeof(PagedData<>));
 
-            CreateMap<DropData, DropDataDto>().ForMember(a => a.QuestId, b => b.MapFrom(x => x.Questid))
+            CreateMap<DropDataEntity, DropDataDto>().ForMember(a => a.QuestId, b => b.MapFrom(x => x.Questid))
                 .ForMember(a => a.ItemId, b => b.MapFrom(x => x.Itemid))
                 .ForMember(a => a.DropperId, b => b.MapFrom(x => x.Dropperid))
                 .ForMember(a => a.ItemName, b => b.MapFrom(x => ItemInformationProvider.getInstance().getName(x.Itemid)))

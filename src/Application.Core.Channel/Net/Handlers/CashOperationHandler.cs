@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Players;
 using Application.Core.Managers;
+using Application.Shared.Items;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using client.inventory;
@@ -30,7 +31,6 @@ using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using server;
-using service;
 using tools;
 using static server.CashShop;
 
@@ -39,12 +39,10 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CashOperationHandler : ChannelHandlerBase
 {
     readonly ILogger<CashOperationHandler> _logger;
-    private NoteService noteService;
 
-    public CashOperationHandler(ILogger<CashOperationHandler> logger, NoteService noteService)
+    public CashOperationHandler(ILogger<CashOperationHandler> logger)
     {
         _logger = logger;
-        this.noteService = noteService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -147,13 +145,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.showCash(chr));
 
                     string noteMessage = chr.getName() + " has sent you a gift! Go check out the Cash Shop.";
-                    noteService.sendNormal(noteMessage, chr.getName(), recipient.CharacterName, chr.getChannelServer().getCurrentTime());
-
-                    var receiver = c.CurrentServer.getPlayerStorage().getCharacterByName(recipient.CharacterName);
-                    if (receiver != null)
-                    {
-                        noteService.show(receiver);
-                    }
+                    c.CurrentServer.Transport.SendNormalNoteMessage(chr.Name, recipient.CharacterName, noteMessage);
                 }
                 else if (action == 0x05)
                 {
@@ -414,8 +406,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 cs.gainCash(toCharge, itemRing, chr.getWorld());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
                                 chr.addCrushRing(RingManager.LoadFromDb(rings.MyRingId)!);
-                                noteService.sendWithFame(text, chr.getName(), partner.getName(), chr.getChannelServer().getCurrentTime());
-                                noteService.show(partner);
+                                c.CurrentServer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
                             }
                         }
                     }
@@ -489,8 +480,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 cs.gainCash(payment, -itemRing.getPrice());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
                                 chr.addFriendshipRing(RingManager.LoadFromDb(rings.MyRingId)!);
-                                noteService.sendWithFame(text, chr.getName(), partner.getName(), chr.getChannelServer().getCurrentTime());
-                                noteService.show(partner);
+                                c.CurrentServer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
                             }
                         }
                     }

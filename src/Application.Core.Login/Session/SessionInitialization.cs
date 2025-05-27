@@ -1,4 +1,6 @@
-namespace net.server.coordinator.session;
+using Microsoft.Extensions.Logging;
+
+namespace Application.Core.Login.Session;
 
 
 
@@ -7,15 +9,16 @@ namespace net.server.coordinator.session;
  */
 public class SessionInitialization
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.Session);
+    readonly ILogger<SessionInitialization> _logger;
     private static int MAX_INIT_TRIES = 2;
     private const int RETRY_DELAY_MILLIS = 1777;
 
     private HashSet<string> remoteHostsInInitState = new();
     private List<object> locks = new(100);
 
-    public SessionInitialization()
+    public SessionInitialization(ILogger<SessionInitialization> logger)
     {
+        _logger = logger;
         for (int i = 0; i < 100; i++)
         {
             locks.Add(new object());
@@ -24,7 +27,7 @@ public class SessionInitialization
 
     private object getLock(string remoteHost)
     {
-        return locks.get(Math.Abs(remoteHost.GetHashCode()) % 100);
+        return locks.ElementAt(Math.Abs(remoteHost.GetHashCode()) % 100);
     }
 
     /**
@@ -74,7 +77,7 @@ public class SessionInitialization
         }
         catch (Exception e)
         {
-            log.Error(e, "Failed to initialize session.");
+            _logger.LogError(e, "Failed to initialize session.");
             return InitializationResult.ERROR;
         }
 

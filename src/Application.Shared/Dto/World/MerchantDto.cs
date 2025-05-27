@@ -5,7 +5,7 @@ namespace Application.Shared.Dto.World
     public class MerchantDto
     {
         public int Meso { get; set; }
-        public ItemDto[] Items { get; set; }
+        public PlayerShopItemDto[] Items { get; set; }
     }
 
     public class PlayerShopItemDto

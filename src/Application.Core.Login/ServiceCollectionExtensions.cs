@@ -6,6 +6,8 @@ using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.Core.Net;
 using Application.Core.Servers;
+using Application.EF;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.handlers;
 
@@ -13,6 +15,14 @@ namespace Application.Core.Login
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceCollection AddDbFactory(this IServiceCollection services, string connectionString)
+        {
+            services.AddDbContextFactory<DBContext>(o =>
+            {
+                o.UseMySQL(connectionString);
+            });
+            return services;
+        }
         private static IServiceCollection AddLoginHandlers(this IServiceCollection services)
         {
             services.AddSingleton<IPacketProcessor<ILoginClient>, LoginPacketProcessor>();
@@ -38,6 +48,7 @@ namespace Application.Core.Login
             services.AddSingleton<HwidAssociationExpiry>();
             services.AddSingleton<LoginStorage>();
             services.AddSingleton<LoginBypassCoordinator>();
+            services.AddSingleton<SessionInitialization>();
             return services;
         }
 
@@ -52,6 +63,24 @@ namespace Application.Core.Login
         static IServiceCollection AddScheduleTask(this IServiceCollection services)
         {
             services.AddSingleton<RankingLoginTask>();
+            services.AddSingleton<DueyFredrickTask>();
+            return services;
+        }
+
+        static IServiceCollection AddServices(this IServiceCollection services)
+        {
+            services.AddSingleton<AccountManager>();
+            services.AddSingleton<CharacterManager>();
+
+            services.AddSingleton<CharacterService>();
+            services.AddSingleton<ServerService>();
+            services.AddSingleton<LoginService>();
+            services.AddSingleton<ItemService>();
+            services.AddSingleton<DueyService>();
+            services.AddSingleton<FredrickService>();
+            services.AddSingleton<NoteService>();
+            services.AddSingleton<ShopService>();
+            services.AddSingleton<MessageService>();
             return services;
         }
 
@@ -63,14 +92,8 @@ namespace Application.Core.Login
 
             services.AddSessionManager();
 
-            services.AddSingleton<AccountManager>();
-            services.AddSingleton<CharacterManager>();
-            services.AddSingleton<CharacterService>();
-
+            services.AddServices();
             services.AddStorage();
-
-            services.AddSingleton<ServerService>();
-            services.AddSingleton<LoginService>();
             services.AddSingleton<IMasterServer, MasterServer>();
 
             services.AddScheduleTask();

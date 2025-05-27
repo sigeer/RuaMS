@@ -31,11 +31,8 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class FredrickHandler : ChannelHandlerBase
 {
-    private FredrickProcessor fredrickProcessor;
-
-    public FredrickHandler(FredrickProcessor fredrickProcessor)
+    public FredrickHandler()
     {
-        this.fredrickProcessor = fredrickProcessor;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -48,7 +45,7 @@ public class FredrickHandler : ChannelHandlerBase
                 //c.sendPacket(PacketCreator.getFredrick((byte) 0x24));
                 break;
             case 0x1A:
-                fredrickProcessor.fredrickRetrieveItems(c);
+                FredrickProcessor.fredrickRetrieveItems(c);
                 break;
             case 0x1C: //Exit
                 break;

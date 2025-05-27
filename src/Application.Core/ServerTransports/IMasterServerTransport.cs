@@ -1,5 +1,6 @@
 using Application.Core.model;
 using Application.Shared.Configs;
+using Application.Shared.Dto;
 using Application.Shared.Servers;
 
 namespace Application.Core.ServerTransports
@@ -13,5 +14,6 @@ namespace Application.Core.ServerTransports
         bool WrapPlayer(string name, int? channel, int mapId, int? portal);
         void BroadcastWorldGMPacket(Packet packet);
         void BroadcastMessage(Packet p);
+        void SendNotes(int channel, int id, NoteDto[] notes);
     }
 }

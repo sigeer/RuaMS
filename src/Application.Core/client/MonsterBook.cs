@@ -22,7 +22,6 @@
 
 
 using Application.Shared.Characters;
-using Microsoft.EntityFrameworkCore;
 using tools;
 
 
@@ -213,49 +212,6 @@ public class MonsterBook
         }
     }
 
-    public void loadCards(DBContext dbContext, int charid)
-    {
-        Monitor.Enter(lockObj);
-        try
-        {
-            var dataList = dbContext.Monsterbooks.Where(x => x.Charid == charid).OrderBy(x => x.Cardid).Select(x => new { x.Cardid, x.Level }).ToList();
-            foreach (var item in dataList)
-            {
-                var cardid = item.Cardid;
-                var level = item.Level;
-                if (cardid / 1000 >= 2388)
-                {
-                    specialCard++;
-                }
-                else
-                {
-                    normalCard++;
-                }
-                cards.AddOrUpdate(cardid, level);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-
-        calculateLevel();
-    }
-
-    public void saveCards(DBContext dbContext, int chrId)
-    {
-        try
-        {
-            dbContext.Monsterbooks.Where(x => x.Charid == chrId).ExecuteDelete();
-            dbContext.Monsterbooks.AddRange(cards.Select(x => new MonsterbookEntity(chrId, x.Key, x.Value)));
-            dbContext.SaveChanges();
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-    }
-
     public MonsterbookDto[] ToDto()
     {
         return cards.Select(x => new MonsterbookDto()
@@ -263,19 +219,5 @@ public class MonsterBook
             Cardid = x.Key,
             Level = x.Value
         }).ToArray();
-    }
-
-    public static int[] getCardTierSize()
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return new int[0];
-        }
     }
 }

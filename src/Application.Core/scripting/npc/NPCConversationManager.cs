@@ -29,10 +29,12 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.scripting.Infrastructure;
+using Application.Shared.Items;
 using client;
 using client.inventory;
 using constants.game;
 using constants.String;
+using Microsoft.EntityFrameworkCore;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
 using server;
@@ -42,7 +44,6 @@ using server.partyquest;
 using tools;
 using tools.packets;
 using static server.partyquest.Pyramid;
-using static server.SkillbookInformationProvider;
 
 
 namespace scripting.npc;
@@ -376,13 +377,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void openShopNPC(int id)
     {
-        var shop = ShopFactory.getInstance().getShop(id);
+        var shop = c.CurrentServer.ShopFactory.getShop(id);
 
         if (shop == null)
         {
             // check for missing shopids thanks to resinate
             log.Warning("Shop ID: {ShopId} is missing from database.", id);
-            shop = ShopFactory.getInstance().getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
+            shop = c.CurrentServer.ShopFactory.getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
         }
         shop.sendShop(c);
     }
@@ -627,7 +628,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public int[] getAvailableSkillBooks()
     {
         List<int> ret = ItemInformationProvider.getInstance().usableSkillBooks(this.getPlayer());
-        ret.AddRange(SkillbookInformationProvider.getTeachableSkills(this.getPlayer()));
+        ret.AddRange(c.CurrentServer.SkillbookInformationProvider.getTeachableSkills(this.getPlayer()));
 
         return ret.ToArray();
     }
@@ -639,7 +640,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public string getSkillBookInfo(int itemid)
     {
-        SkillBookEntry sbe = SkillbookInformationProvider.getSkillbookAvailability(itemid);
+        var sbe = c.CurrentServer.SkillbookInformationProvider.getSkillbookAvailability(itemid);
         switch (sbe)
         {
             case SkillBookEntry.UNAVAILABLE:
@@ -1463,4 +1464,19 @@ public class NPCConversationManager : AbstractPlayerInteraction
         NextLevelContext.TwoOption(NextLevelType.SEND_YES_NO, noLevel, yesLevel);
     }
     #endregion
+
+    public int[] getCardTierSize()
+    {
+        try
+        {
+            return c.CurrentServer.Service.GetCardTierSize();
+            using var dbContext = new DBContext();
+            return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
+        }
+        catch (Exception e)
+        {
+            Log.Logger.Error(e.ToString());
+            return new int[0];
+        }
+    }
 }

@@ -14,15 +14,7 @@ namespace Application.Core.Servers
         public ChannelServerConfig ServerConfig { get; protected set; }
     }
 
-    public class InternalWorldChannel : ChannelServerWrapper
-    {
-        public InternalWorldChannel(IWorldChannel worldChannel) : base(worldChannel.InstanceId, worldChannel.ServerConfig)
-        {
-            WorldChannel = worldChannel;
-        }
 
-        public IWorldChannel WorldChannel { get; }
-    }
     public class RemoteWorldChannel : ChannelServerWrapper
     {
         public RemoteWorldChannel(string instanceId, ChannelServerConfig serverNetInfo) : base(instanceId, serverNetInfo)

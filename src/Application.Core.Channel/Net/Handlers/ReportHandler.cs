@@ -63,7 +63,7 @@ public class ReportHandler : ChannelHandlerBase
                 return;
             }
             c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            addReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, "");
+            c.CurrentServer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, "");
         }
         else if (type == 1)
         {
@@ -86,26 +86,11 @@ public class ReportHandler : ChannelHandlerBase
                 }
             }
             c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            addReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), reason, description, chatlog);
+            c.CurrentServer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, chatlog);
         }
         else
         {
             c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type, which is impossible."));
         }
-    }
-
-    private void addReport(int reporterid, int victimid, int reason, string description, string chatlog)
-    {
-        using var dbContext = new DBContext();
-        dbContext.Reports.Add(new Report
-        {
-            Reporttime = DateTimeOffset.UtcNow,
-            Reporterid = reporterid,
-            Victimid = victimid,
-            Reason = (sbyte)reason,
-            Chatlog = chatlog,
-            Description = description
-        });
-        dbContext.SaveChanges();
     }
 }

@@ -46,7 +46,7 @@ function start(mode, type, selection) {
 	qm.sendAcceptDecline("但是，因为黑魔法师的诅咒而在巨冰里沉睡着，所以，好像英雄的体力都消耗掉了的样子。#b我给你一个恢复体力用的药水，赶紧喝喝看#k");//nexon probably forgot to remove the '.' before '#k', lol	
     } else if (status == 4) {
         if (qm.getPlayer().HP >= 50) {
-            	qm.getPlayer().SetHP(25);
+            qm.getPlayer().UpdateHP(25);
         } 
 	if (!qm.isQuestStarted(21010) && !qm.isQuestCompleted(21010)) {
         	qm.gainItem(2000022, 1);

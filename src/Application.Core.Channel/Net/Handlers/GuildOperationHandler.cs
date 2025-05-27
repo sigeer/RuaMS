@@ -30,7 +30,6 @@ using Microsoft.Extensions.Logging;
 using net.packet;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
-using service;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -38,12 +37,10 @@ namespace Application.Core.Channel.Net.Handlers;
 public class GuildOperationHandler : ChannelHandlerBase
 {
     readonly ILogger<GuildOperationHandler> _logger;
-    readonly NoteService _noteService;
 
-    public GuildOperationHandler(ILogger<GuildOperationHandler> logger, NoteService noteService)
+    public GuildOperationHandler(ILogger<GuildOperationHandler> logger)
     {
         _logger = logger;
-        _noteService = noteService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -190,7 +187,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                mc.GuildModel?.expelMember(mc, name, cid, _noteService);
+                mc.GuildModel?.expelMember(mc, name, cid);
 
                 if (mc.AllianceModel != null)
                 {

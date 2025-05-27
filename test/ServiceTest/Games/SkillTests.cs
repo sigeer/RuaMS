@@ -1,16 +1,3 @@
-using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
-using Application.Core.Managers;
-using client;
-using constants.skills;
-using net.server;
-using server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace ServiceTest.Games
 {
     //internal class SkillTests: TestBase

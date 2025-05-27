@@ -1,12 +1,12 @@
-using Application.Core.Datas;
-using Application.Core.Game.Players;
 using Application.Core.Login.Datas;
 using Application.Core.Servers;
+using Application.EF;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
-using System.Threading.Channels;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Services
 {
@@ -16,13 +16,16 @@ namespace Application.Core.Login.Services
         readonly CharacterManager _characterManager;
         readonly AccountManager _accManager;
         readonly IMasterServer _masterServer;
+        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
-        public LoginService(IMapper mapper, CharacterManager characterManager, AccountManager accountManager, IMasterServer masterServer)
+
+        public LoginService(IMapper mapper, CharacterManager characterManager, AccountManager accountManager, IMasterServer masterServer, IDbContextFactory<DBContext> dbContextFactory)
         {
             _mapper = mapper;
             _characterManager = characterManager;
             _accManager = accountManager;
             _masterServer = masterServer;
+            _dbContextFactory = dbContextFactory;
         }
 
         /// <summary>
@@ -56,6 +59,17 @@ namespace Application.Core.Login.Services
         {
             _characterManager.SetPlayerChannel(playerId, channel, out var accId);
             _accManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
+        }
+
+        public void UnBanAccount(string playerName)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var aid = dbContext.Characters.Where(x => x.Name == playerName).FirstOrDefault()?.AccountId;
+            dbContext.Accounts.Where(x => x.Id == aid).ExecuteUpdate(x => x.SetProperty(y => y.Banned, -1));
+
+            dbContext.Ipbans.Where(x => x.Aid == aid.ToString()).ExecuteDelete();
+
+            dbContext.Macbans.Where(x => x.Aid == aid.ToString()).ExecuteDelete();
         }
     }
 }

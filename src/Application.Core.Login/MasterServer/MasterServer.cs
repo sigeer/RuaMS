@@ -108,7 +108,7 @@ namespace Application.Core.Login
             TravelRate = serverSection.GetValue<float>("TravelRate", 1);
             FishingRate = serverSection.GetValue<float>("FishingRate", 1);
 
-            Name = serverSection.GetValue<string>("Name", "");
+            Name = serverSection.GetValue<string>("Name", "RuaMS");
             EventMessage = serverSection.GetValue<string>("EventMessage", "");
             ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
             WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
@@ -272,7 +272,7 @@ namespace Application.Core.Login
             tMan.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
             tMan.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
             tMan.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
-            tMan.register(new DueyFredrickTask(ServiceProvider.GetRequiredService<FredrickProcessor>()), TimeSpan.FromHours(1), timeLeft);
+            tMan.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
             tMan.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
             InvitationController.Register();
             _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");

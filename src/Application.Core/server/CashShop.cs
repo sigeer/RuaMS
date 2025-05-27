@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Servers.Services;
+using Application.Core.ServerTransports;
+using Application.Shared.Items;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using net.server;
@@ -96,87 +99,18 @@ public class CashShop
         wishList = characterWishList;
     }
 
-
-    public class CashItem
-    {
-
-        private int sn;
-        private int itemId;
-        private int price;
-        public long Period { get; }
-        private short count;
-        private bool onSale;
-
-        public CashItem(int sn, int itemId, int price, long period, short count, bool onSale)
-        {
-            this.sn = sn;
-            this.itemId = itemId;
-            this.price = price;
-            this.Period = (period == 0 ? 90 : period);
-            this.count = count;
-            this.onSale = onSale;
-        }
-
-        public int getSN()
-        {
-            return sn;
-        }
-
-        public int getItemId()
-        {
-            return itemId;
-        }
-
-        public int getPrice()
-        {
-            return price;
-        }
-
-        public short getCount()
-        {
-            return count;
-        }
-
-        public bool isOnSale()
-        {
-            return onSale;
-        }
-    }
-
-    public class SpecialCashItem
-    {
-        private int sn;
-        private int modifier;
-        private byte info; //?
-
-        public SpecialCashItem(int sn, int modifier, byte info)
-        {
-            this.sn = sn;
-            this.modifier = modifier;
-            this.info = info;
-        }
-
-        public int getSN()
-        {
-            return sn;
-        }
-
-        public int getModifier()
-        {
-            return modifier;
-        }
-
-        public byte getInfo()
-        {
-            return info;
-        }
-    }
-
     public class CashItemFactory
     {
         private static volatile Dictionary<int, CashItem> items = new();
         private static volatile Dictionary<int, List<int>> packages = new();
         private static volatile List<SpecialCashItem> specialcashitems = new();
+
+        readonly IChannelServerTransport _transport;
+
+        public CashItemFactory(IChannelServerTransport transport)
+        {
+            _transport = transport;
+        }
 
         public static void loadAllCashItems()
         {
@@ -241,7 +175,7 @@ public class CashShop
 
         public static CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
 
-        public static List<Item> getPackage(int itemId, IChannelService service)
+        public static List<Item> getPackage(int itemId, ChannelService service)
         {
             return (packages.GetValueOrDefault(itemId) ?? []).Select(x => service.CashItem2Item(GetItemTrust(x))).ToList();
         }
@@ -265,9 +199,9 @@ public class CashShop
     {
         return (type) switch
         {
-            NX_CREDIT => Owner.Client.AccountEntity.NxCredit ?? 0,
-            MAPLE_POINT => Owner.Client.AccountEntity.MaplePoint ?? 0,
-            NX_PREPAID => Owner.Client.AccountEntity.NxPrepaid ?? 0,
+            NX_CREDIT => NxCredit,
+            MAPLE_POINT => MaplePoint,
+            NX_PREPAID => NxPrepaid,
             _ => 0
         };
 
@@ -278,13 +212,13 @@ public class CashShop
         switch (type)
         {
             case NX_CREDIT:
-                Owner.Client.AccountEntity.NxCredit += cash;
+                NxCredit += cash;
                 break;
             case MAPLE_POINT:
-                Owner.Client.AccountEntity.MaplePoint += cash;
+                MaplePoint += cash;
                 break;
             case NX_PREPAID:
-                Owner.Client.AccountEntity.NxPrepaid += cash;
+                NxPrepaid += cash;
                 break;
         }
     }
@@ -392,17 +326,7 @@ public class CashShop
 
     public void gift(int recipient, string from, string message, int sn, int ringid = -1)
     {
-        try
-        {
-            var giftModel = new Gift(recipient, from, message, sn, ringid);
-            using var dbContext = new DBContext();
-            dbContext.Gifts.Add(giftModel);
-            dbContext.SaveChanges();
-        }
-        catch (Exception sqle)
-        {
-            log.Error(sqle.ToString());
-        }
+        Owner.Client.CurrentServer.Transport.SendGift(recipient, from, message, sn, ringid);
     }
 
     public List<ItemMessagePair> loadGifts()
@@ -410,10 +334,7 @@ public class CashShop
         List<ItemMessagePair> gifts = new();
         try
         {
-            using var dbContext = new DBContext();
-
-
-            var dataList = dbContext.Gifts.Where(x => x.To == characterId).ToList();
+            var dataList = Owner.Client.CurrentServer.Transport.LoadPlayerGifts(Owner.Id);
             foreach (var rs in dataList)
             {
                 notes++;
@@ -424,7 +345,7 @@ public class CashShop
                 if (item.getInventoryType().Equals(InventoryType.EQUIP))
                 {
                     equip = (Equip)item;
-                    equip.setRingId(rs.Ringid);
+                    equip.setRingId(rs.RingId);
                     gifts.Add(new ItemMessagePair(equip, rs.Message));
                 }
                 else
@@ -447,10 +368,7 @@ public class CashShop
                 }
             }
 
-
-
-            dbContext.Gifts.RemoveRange(dataList);
-            dbContext.SaveChanges();
+            Owner.Client.CurrentServer.Transport.ClearGifts(dataList.Select(x => x.Id).ToArray());
         }
         catch (Exception sqle)
         {
@@ -468,30 +386,6 @@ public class CashShop
     public void decreaseNotes()
     {
         notes--;
-    }
-
-    public void save(DBContext dbContext)
-    {
-        dbContext.Accounts.Where(x => x.Id == accountId).ExecuteUpdate(x =>
-                x.SetProperty(y => y.NxCredit, NxCredit)
-                .SetProperty(y => y.MaplePoint, MaplePoint)
-                .SetProperty(y => y.NxPrepaid, NxPrepaid)
-                );
-
-        List<ItemInventoryType> itemsWithType = new();
-
-        List<Item> inv = getInventory();
-        foreach (Item item in inv)
-        {
-            itemsWithType.Add(new(item, item.getInventoryType()));
-        }
-
-        Factory.saveItems(itemsWithType, accountId, dbContext);
-
-        dbContext.Wishlists.Where(x => x.CharId == characterId).ExecuteDelete();
-
-        dbContext.Wishlists.AddRange(wishList.Select(x => new WishlistEntity(characterId, x)));
-        dbContext.SaveChanges();
     }
 
     public CashShopSurpriseResult? openCashShopSurprise(long cashId)

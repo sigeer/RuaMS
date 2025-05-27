@@ -1,4 +1,3 @@
-using Application.Core.Datas;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
@@ -8,19 +7,25 @@ using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
+using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
+using Application.Shared.Duey;
+using Application.Shared.Items;
 using Application.Shared.Login;
+using Application.Shared.MapObjects;
 using Application.Shared.Net;
+using AutoMapper;
 using net.server;
 using net.server.guild;
+using server;
 using server.expeditions;
 using System.Net;
 using System.Text;
 using tools;
 using tools.packets;
 
-namespace Application.Core.Login.ServerTransports
+namespace Application.Core.Channel.Local
 {
     /// <summary>
     /// 登录服务器 与 频道服务器在同一个进程中时，直接与MasterServer交互
@@ -31,17 +36,39 @@ namespace Application.Core.Login.ServerTransports
         readonly IMasterServer _server;
         readonly CharacterManager _chrManager;
         readonly StorageService _storageService;
+        readonly ItemService _itemService;
+        readonly DueyService _dueyService;
+        readonly NoteService _noteService;
+        readonly ShopService _shopManager;
+        readonly MessageService _msgService;
+        readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
         IWorld _world => Server.getInstance().getWorld(0);
 
-        public LocalChannelServerTransport(IMasterServer server, LoginService loginService, CharacterManager chrManager, StorageService storageService)
+        public LocalChannelServerTransport(
+            IMasterServer server,
+            LoginService loginService,
+            CharacterManager chrManager,
+            StorageService storageService,
+            ItemService itemService,
+            DueyService dueyService,
+            NoteService noteService,
+            ShopService shopManager,
+            MessageService messageService,
+            IMapper mapper)
         {
             _server = server;
             _loginService = loginService;
             _chrManager = chrManager;
             _storageService = storageService;
+            _itemService = itemService;
+            _dueyService = dueyService;
+            _noteService = noteService;
+            _shopManager = shopManager;
+            _msgService = messageService;
+            _mapper = mapper;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -511,6 +538,99 @@ namespace Application.Core.Login.ServerTransports
         public void CallSaveDB()
         {
             _ = _storageService.CommitAllImmediately();
+        }
+
+        public Dictionary<int, List<DropDto>> RequestAllReactorDrops()
+        {
+            return _itemService.LoadAllReactorDrops();
+        }
+
+        public int[] RequestReactorSkillBooks()
+        {
+            return _itemService.LoadReactorSkillBooks();
+        }
+
+        public SpecialCashItem[] RequestSpecialCashItems()
+        {
+            return _itemService.LoadSpecialCashItems();
+        }
+
+        public void SendGift(int recipient, string from, string message, int sn, int ringid)
+        {
+            _itemService.InsertGift(recipient, from, message, sn, ringid);
+        }
+
+        public GiftDto[] LoadPlayerGifts(int playerId)
+        {
+            return _itemService.LoadPlayerGifts(playerId);
+        }
+        public void ClearGifts(int[] giftIdArray)
+        {
+            _itemService.ClearGifts(giftIdArray);
+        }
+
+        public DueyPackageDto[] GetPlayerDueyPackages(int id)
+        {
+            return _dueyService.GetPlayerDueyPackages(id);
+        }
+
+        public DueyPackageDto? GetDueyPackageByPackageId(int id)
+        {
+            return _dueyService.GetDueyPackageByPackageId(id);
+        }
+
+        public void RequestRemovePackage(int packageid)
+        {
+            _dueyService.RemovePackageFromDB(packageid);
+        }
+
+        public bool SendNormalNoteMessage(string fromName, string toName, string noteMessage)
+        {
+            var insertResult = _noteService.sendNormal(noteMessage, fromName, toName, _server.getCurrentTime());
+            _noteService.show(toName);
+            return insertResult;
+        }
+
+        public bool SendFameNoteMessage(string fromName, string toName, string noteMessage)
+        {
+            var insertResult = _noteService.sendWithFame(noteMessage, fromName, toName, _server.getCurrentTime());
+            _noteService.show(toName);
+            return insertResult;
+        }
+
+        public void ShowNoteMessage(string name)
+        {
+            _noteService.show(name);
+        }
+
+        public NoteDto? DeleteNoteMessage(int id)
+        {
+            return _noteService.delete(id);
+        }
+
+        public Shop? GetShop(int id, bool isShopId)
+        {
+            return _mapper.Map<Shop>(_shopManager.LoadFromDB(id, isShopId));
+        }
+
+        public int[] GetCardTierSize()
+        {
+            return _itemService.GetCardTierSize();
+        }
+
+        public void SendUnbanAccount(string playerName)
+        {
+            _loginService.UnBanAccount(playerName);
+        }
+
+        public void AddReport(int fromId, int toId, int reason, string description, string chatLog)
+        {
+            _msgService.AddReport(fromId, toId, reason, description, chatLog);
+        }
+
+        public PetDto CreatePet(string petName, int level, int tameness, int fullness)
+        {
+            return _itemService.CreatePet(petName, level, tameness, fullness);
         }
     }
 }

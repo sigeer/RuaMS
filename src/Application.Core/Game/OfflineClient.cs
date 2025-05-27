@@ -51,7 +51,6 @@ namespace Application.Core.Game
 
         public AccountDto AccountEntity { get; set; }
 
-        public IChannelService Service => throw new BusinessCharacterOfflineException();
 
         public IServerBase<IServerTransport> CurrentServerBase => throw new NotImplementedException();
 

@@ -60,18 +60,13 @@ public class Shop
         }
     }
 
-    private Shop(int id, int npcId)
+    public Shop(int id, int npcId, List<ShopItem> items)
     {
         this.id = id;
         this.npcId = npcId;
-        items = new();
+        this.items = items;
 
         log = LogFactory.GetLogger($"Shop/Shop_{id}_Npc_{npcId}");
-    }
-
-    private void addItem(ShopItem item)
-    {
-        items.Add(item);
     }
 
     public void sendShop(IChannelClient c)
@@ -290,63 +285,6 @@ public class Shop
         return items.get(slot);
     }
 
-    public static Shop? createFromDB(int id, bool isShopId)
-    {
-        Shop? ret = null;
-        int shopId;
-        try
-        {
-            using var dbContext = new DBContext();
-            DB_Shop? tmpModel = null;
-            if (isShopId)
-            {
-                tmpModel = dbContext.Shops.Where(x => x.ShopId == id).FirstOrDefault();
-            }
-            else
-            {
-                tmpModel = dbContext.Shops.Where(x => x.NpcId == id).FirstOrDefault();
-            }
-
-            if (tmpModel != null)
-            {
-                shopId = tmpModel.ShopId;
-                ret = new Shop(tmpModel.ShopId, tmpModel.NpcId);
-            }
-            else
-            {
-                return null;
-            }
-
-            List<int> recharges = new(rechargeableItems);
-            var shopItems = dbContext.Shopitems.Where(x => x.Shopid == shopId).OrderByDescending(x => x.Position).ToList();
-            shopItems.ForEach(x =>
-            {
-                if (ItemConstants.isRechargeable(x.ItemId))
-                {
-                    ShopItem starItem = new ShopItem(1, x.ItemId, x.Price, x.Pitch);
-                    ret.addItem(starItem);
-                    if (rechargeableItems.Contains(starItem.getItemId()))
-                    {
-                        recharges.Remove(starItem.getItemId());
-                    }
-                }
-                else
-                {
-                    ret.addItem(new ShopItem(1000, x.ItemId, x.Price, x.Pitch));
-                }
-            });
-            foreach (int recharge in recharges)
-            {
-                ret.addItem(new ShopItem(1000, recharge, 0, 0));
-            }
-
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-        return ret;
-    }
 
     public int getNpcId()
     {

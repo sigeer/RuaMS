@@ -166,7 +166,6 @@ namespace Application.Core.Game.Players
             if (chrPet != null)
             {
                 chrPet.setSummoned(false);
-                chrPet.saveToDb();
             }
 
             this.getClient().getChannelServer().PetHungerController.unregisterPetHunger(this, petIdx);
@@ -191,14 +190,12 @@ namespace Application.Core.Game.Players
             if (newFullness <= 5)
             {
                 pet.Fullness = 15;
-                pet.saveToDb();
                 unequipPet(pet, true);
                 dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
             }
             else
             {
                 pet.Fullness = newFullness;
-                pet.saveToDb();
                 Item? petz = getInventory(InventoryType.CASH).getItem(pet.getPosition());
                 if (petz != null)
                 {

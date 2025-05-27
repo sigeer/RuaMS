@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -19,6 +19,6 @@
 */
 
 function start() {
-    ShopFactory.getInstance().getShop(11000).sendShop(cm.getClient());
+    cm.getClient().CurrentServer.ShopFactory.getShop(11000).sendShop(cm.getClient());
     cm.dispose();
 }

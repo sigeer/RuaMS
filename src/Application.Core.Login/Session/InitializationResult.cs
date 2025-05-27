@@ -1,6 +1,6 @@
 using Application.Shared.Sessions;
 
-namespace net.server.coordinator.session;
+namespace Application.Core.Login.Session;
 
 public class InitializationResult
 {

@@ -1,11 +1,9 @@
 using Application.Core;
 using Application.Core.Channel;
+using Application.Core.Channel.Local;
 using Application.Core.Login;
-using Application.Core.Login.ServerTransports;
 using Application.Core.OpenApi;
-using Application.Core.Servers;
 using Application.Core.ServerTransports;
-using Application.EF;
 using Application.Host;
 using Application.Host.Middlewares;
 using Application.Host.Models;
@@ -56,14 +54,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
-builder.Services.AddDbContextFactory<DBContext>(o =>
-{
-    o.UseMySQL(builder.Configuration.GetConnectionString("MySQL"));
-});
+
 builder.Services.AddChannelServer();
 builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
 builder.Services.AddSingleton<MultiRunner>();
 
+builder.Services.AddDbFactory(builder.Configuration.GetConnectionString("MySQL"));
 builder.Services.AddLoginServer();
 
 

@@ -1,8 +1,7 @@
-
-using Application.Core.Datas;
+using Application.Core.Game.Life;
 using Application.Shared.Dto;
+using Application.Shared.Items;
 using client.inventory;
-using server;
 
 namespace Application.Core.Client
 {
@@ -11,7 +10,7 @@ namespace Application.Core.Client
         Item GenerateCouponItem(int itemId, short quantity);
         void RemovePlayerIncomingInvites(int id);
         void SaveChar(Player player, bool isLogoff = false);
-        Item CashItem2Item(CashShop.CashItem cashItem);
+        Item CashItem2Item(CashItem cashItem);
         void SaveBuff(IPlayer player);
         PlayerBuffSaveDto GetBuffFromStorage(IPlayer player);
         /// <summary>
@@ -21,5 +20,6 @@ namespace Application.Core.Client
         /// <returns></returns>
         CharacterValueObject? GetPlayerData(string clientSession, int cid);
         void SetPlayerOnlined(int id);
+        Dictionary<int, List<DropEntry>> RequestAllReactorDrops();
     }
 }

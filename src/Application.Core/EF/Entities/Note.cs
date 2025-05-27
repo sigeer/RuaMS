@@ -1,12 +1,12 @@
-﻿namespace Application.EF;
+namespace Application.EF;
 
-public partial class DB_Note
+public partial class NoteEntity
 {
-    private DB_Note()
+    private NoteEntity()
     {
     }
 
-    public DB_Note(string to, string from, string message, long timestamp)
+    public NoteEntity(string to, string from, string message, long timestamp)
     {
         To = to;
         From = from;
@@ -14,7 +14,7 @@ public partial class DB_Note
         Timestamp = timestamp;
     }
 
-    public DB_Note(string to, string from, string message, long timestamp, int fame) : this(to, from, message, timestamp)
+    public NoteEntity(string to, string from, string message, long timestamp, int fame) : this(to, from, message, timestamp)
     {
         Fame = fame;
     }
@@ -34,13 +34,13 @@ public partial class DB_Note
     public int Deleted { get; set; }
 
     private static int PLACEHOLDER_ID = -1;
-    public static DB_Note createNormal(string message, string from, string to, long timestamp)
+    public static NoteEntity createNormal(string message, string from, string to, long timestamp)
     {
-        return new DB_Note(to, from, message, timestamp, 0);
+        return new NoteEntity(to, from, message, timestamp, 0);
     }
 
-    public static DB_Note createGift(string message, string from, string to, long timestamp)
+    public static NoteEntity createGift(string message, string from, string to, long timestamp)
     {
-        return new DB_Note(to, from, message, timestamp, 1);
+        return new NoteEntity(to, from, message, timestamp, 1);
     }
 }

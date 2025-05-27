@@ -3,7 +3,6 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.guild;
-using service;
 using tools;
 
 namespace Application.Core.Game.Relation;
@@ -488,7 +487,7 @@ public class Guild : IGuild
         }
     }
 
-    public void expelMember(IPlayer initiator, string name, int cid, NoteService noteService)
+    public void expelMember(IPlayer initiator, string name, int cid)
     {
         Monitor.Enter(membersLock);
         try
@@ -507,7 +506,8 @@ public class Guild : IGuild
                         }
                         else
                         {
-                            noteService.sendNormal("You have been expelled from the guild.", initiator.getName(), mgc.getName(), initiator.getChannelServer().getCurrentTime());
+
+                            initiator.Client.CurrentServer.Transport.SendNormalNoteMessage(initiator.getName(), mgc.getName(), "You have been expelled from the guild.");
                             mgc.getWorldServer().setOfflineGuildStatus(0, 5, cid);
                         }
                     }

@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of the HeavenMS MapleStory Server
     Copyleft (L) 2016 - 2019 RonanLana
 
@@ -282,7 +282,7 @@ function calculateMobBookBuckets() {
     if (playerLevelTier > 8) {
         playerLevelTier = 8;
     }
-    var tierSize = MonsterBook.getCardTierSize();
+    var tierSize = cm.getCardTierSize();
     var playerCards = getPlayerCardTierPower();
 
     var prevBuckets = calculateMobBookTierBuckets(tierSize, playerCards, playerLevelTier - 1);

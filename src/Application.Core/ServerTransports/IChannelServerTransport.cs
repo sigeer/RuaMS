@@ -1,12 +1,14 @@
-using Application.Core.Datas;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
+using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
+using Application.Shared.Duey;
+using Application.Shared.Items;
 using Application.Shared.Login;
-using Application.Shared.MapObjects;
 using Application.Shared.Servers;
+using server;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -116,6 +118,24 @@ namespace Application.Core.ServerTransports
         /// <param name="v">频道号</param>
         void SetPlayerOnlined(int id, int v);
         void CallSaveDB();
+        Dictionary<int, List<DropDto>> RequestAllReactorDrops();
+        int[] RequestReactorSkillBooks();
+        SpecialCashItem[] RequestSpecialCashItems();
+        void SendGift(int recipient, string from, string message, int sn, int ringid);
+        GiftDto[] LoadPlayerGifts(int playerId);
+        void ClearGifts(int[] giftIdArray);
+        DueyPackageDto[] GetPlayerDueyPackages(int id);
+        DueyPackageDto? GetDueyPackageByPackageId(int id);
+        void RequestRemovePackage(int packageid);
+        bool SendNormalNoteMessage(string fromName, string toName, string noteMessage);
+        bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
+        void ShowNoteMessage(string name);
+        NoteDto? DeleteNoteMessage(int id);
+        Shop? GetShop(int id, bool isShopId);
+        int[] GetCardTierSize();
+        void SendUnbanAccount(string playerName);
+        void AddReport(int v1, int v2, int v3, string description, string v4);
+        PetDto CreatePet(string petName, int level, int tameness, int fullness);
 
         #endregion
     }

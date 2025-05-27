@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class DB_Shop
+public partial class ShopEntity
 {
     public int ShopId { get; set; }
 

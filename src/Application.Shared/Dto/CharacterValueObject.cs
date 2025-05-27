@@ -1,7 +1,7 @@
 using Application.Shared.Characters;
 using Application.Shared.Items;
 
-namespace Application.Core.Datas
+namespace Application.Shared.Dto
 {
     public class CharacterViewObject
     {

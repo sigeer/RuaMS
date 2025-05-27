@@ -21,7 +21,6 @@
 */
 
 
-using server;
 using server.life;
 using tools;
 
@@ -36,14 +35,14 @@ public class NPC : AbstractLifeObject
         this.stats = stats;
     }
 
-    public bool hasShop()
+    public bool hasShop(IChannelClient c)
     {
-        return ShopFactory.getInstance().getShopForNPC(getId()) != null;
+        return c.CurrentServer.ShopFactory.getShopForNPC(getId()) != null;
     }
 
     public void sendShop(IChannelClient c)
     {
-        ShopFactory.getInstance().getShopForNPC(getId())?.sendShop(c);
+        c.CurrentServer.ShopFactory.getShopForNPC(getId())?.sendShop(c);
     }
 
     public override void sendSpawnData(IChannelClient client)

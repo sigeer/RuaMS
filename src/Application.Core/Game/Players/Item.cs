@@ -1,3 +1,4 @@
+using Application.Core.Duey;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -273,6 +274,11 @@ namespace Application.Core.Game.Players
             }
         }
         #endregion
+
+        public DueyPackageObject[] GetDueyPackages()
+        {
+            return Client.CurrentServer.Service.GetDueyPackages(Id);
+        }
 
     }
 }

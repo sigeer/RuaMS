@@ -45,11 +45,11 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<DropDataGlobal> DropDataGlobals { get; set; }
 
-    public virtual DbSet<DropData> DropData { get; set; }
+    public virtual DbSet<DropDataEntity> DropData { get; set; }
 
     public virtual DbSet<Dueyitem> Dueyitems { get; set; }
 
-    public virtual DbSet<Dueypackage> Dueypackages { get; set; }
+    public virtual DbSet<DueyPackageEntity> Dueypackages { get; set; }
 
     public virtual DbSet<Eventstat> Eventstats { get; set; }
 
@@ -61,7 +61,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Fredstorage> Fredstorages { get; set; }
 
-    public virtual DbSet<Gift> Gifts { get; set; }
+    public virtual DbSet<GiftEntity> Gifts { get; set; }
 
     public virtual DbSet<GuildEntity> Guilds { get; set; }
 
@@ -107,7 +107,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Newyear> Newyears { get; set; }
 
-    public virtual DbSet<DB_Note> Notes { get; set; }
+    public virtual DbSet<NoteEntity> Notes { get; set; }
 
     public virtual DbSet<Nxcode> Nxcodes { get; set; }
 
@@ -139,7 +139,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Quickslotkeymapped> Quickslotkeymappeds { get; set; }
 
-    public virtual DbSet<Reactordrop> Reactordrops { get; set; }
+    public virtual DbSet<ReactorDropEntity> Reactordrops { get; set; }
 
     public virtual DbSet<Report> Reports { get; set; }
 
@@ -151,7 +151,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<ServerQueue> ServerQueues { get; set; }
 
-    public virtual DbSet<DB_Shop> Shops { get; set; }
+    public virtual DbSet<ShopEntity> Shops { get; set; }
 
     public virtual DbSet<Shopitem> Shopitems { get; set; }
 
@@ -453,7 +453,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("questid");
         });
 
-        modelBuilder.Entity<DropData>(entity =>
+        modelBuilder.Entity<DropDataEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -513,7 +513,7 @@ public partial class DBContext : DbContext
                 .HasConstraintName("dueyitems_ibfk_1");
         });
 
-        modelBuilder.Entity<Dueypackage>(entity =>
+        modelBuilder.Entity<DueyPackageEntity>(entity =>
         {
             entity.HasKey(e => e.PackageId).HasName("PRIMARY");
 
@@ -536,7 +536,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Type)
                 .HasDefaultValue(false)
                 .HasColumnType("tinyint(1) unsigned");
-            entity.Ignore(e => e.Item);
         });
 
         modelBuilder.Entity<Eventstat>(entity =>
@@ -671,7 +670,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("timestamp");
         });
 
-        modelBuilder.Entity<Gift>(entity =>
+        modelBuilder.Entity<GiftEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1289,7 +1288,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("timesent");
         });
 
-        modelBuilder.Entity<DB_Note>(entity =>
+        modelBuilder.Entity<NoteEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1752,7 +1751,7 @@ public partial class DBContext : DbContext
                 .HasConstraintName("quickslotkeymapped_accountid_fk");
         });
 
-        modelBuilder.Entity<Reactordrop>(entity =>
+        modelBuilder.Entity<ReactorDropEntity>(entity =>
         {
             entity.HasKey(e => e.Reactordropid).HasName("PRIMARY");
 
@@ -1902,7 +1901,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("value");
         });
 
-        modelBuilder.Entity<DB_Shop>(entity =>
+        modelBuilder.Entity<ShopEntity>(entity =>
         {
             entity.HasKey(e => e.ShopId).HasName("PRIMARY");
 

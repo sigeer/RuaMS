@@ -20,6 +20,7 @@
  */
 
 
+using Application.Core.Duey;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -35,6 +36,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Shared.Battle;
+using Application.Shared.Items;
 using client;
 using client.inventory;
 using client.keybind;
@@ -7212,14 +7214,14 @@ public class PacketCreator
         return sendDuey(operation, []);
     }
 
-    public static Packet sendDuey(int operation, List<Dueypackage> packages)
+    public static Packet sendDuey(int operation, DueyPackageObject[] packages)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARCEL);
         p.writeByte(operation);
         if (operation == 8)
         {
             p.writeByte(0);
-            p.writeByte(packages.Count);
+            p.writeByte(packages.Length);
             foreach (var dp in packages)
             {
                 p.writeInt(dp.PackageId);

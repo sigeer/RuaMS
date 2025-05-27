@@ -1,5 +1,3 @@
-using service;
-
 namespace Application.Core.Game.Relation
 {
     /// <summary>
@@ -24,7 +22,7 @@ namespace Application.Core.Game.Relation
         void dropMessage(int type, string message);
         void dropMessage(string message);
         bool Equals(object? other);
-        void expelMember(IPlayer initiator, string name, int cid, NoteService noteService);
+        void expelMember(IPlayer initiator, string name, int cid);
         void gainGP(int amount);
         int getAllianceId();
         int getCapacity();

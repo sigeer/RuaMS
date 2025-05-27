@@ -51,7 +51,7 @@ function start(mode, type, selection) {
             qm.sendAcceptDecline("来。。。开个小玩笑怎么样？咦！");
         } else if (status == 3) {
             if (qm.getPlayer().HP >= 50) {
-                qm.getPlayer().SetHP(25);
+                qm.getPlayer().UpdateHP(25);
             }
 
             if (!qm.haveItem(2010007)) {

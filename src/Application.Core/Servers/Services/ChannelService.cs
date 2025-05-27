@@ -1,17 +1,22 @@
-using Application.Core.Datas;
-using Application.Core.Game.Players;
+using Application.Core.Duey;
+using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
+using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Dto;
+using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
+using net.packet.outs;
 using server;
-using static server.CashShop;
 
-namespace Application.Core.Channel.Services
+namespace Application.Core.Servers.Services
 {
-    internal class ChannelService : IChannelService
+    /// <summary>
+    /// 暂时放在Application.Core，之后会把Application.Core改成Application.Core.Channel
+    /// </summary>
+    public class ChannelService
     {
         readonly IChannelServerTransport _tranport;
         readonly CharacterService _characteService;
@@ -113,6 +118,35 @@ namespace Application.Core.Channel.Services
 
             item.setSN(cashItem.getSN());
             return item;
+        }
+
+        public Dictionary<int, List<DropEntry>> RequestAllReactorDrops()
+        {
+            return _mapper.Map<Dictionary<int, List<DropEntry>>>(_tranport.RequestAllReactorDrops());
+        }
+
+        internal DueyPackageObject[] GetDueyPackages(int id)
+        {
+            return _mapper.Map<DueyPackageObject[]>(_tranport.GetPlayerDueyPackages(id));
+        }
+
+        internal DueyPackageObject? GetDueyPackageByPackageId(int id)
+        {
+            return _mapper.Map<DueyPackageObject?>(_tranport.GetDueyPackageByPackageId(id));
+        }
+
+        public void SendNoteMessage(int id, NoteDto[] notes)
+        {
+            var chr = _server.getPlayerStorage().getCharacterById(id);
+            if (chr != null)
+            {
+                chr.sendPacket(new ShowNotesPacket(_mapper.Map<List<NoteObject>>(notes)));
+            }
+        }
+
+        internal int[] GetCardTierSize()
+        {
+            return _tranport.GetCardTierSize();
         }
     }
 }

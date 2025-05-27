@@ -21,11 +21,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Controllers;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers;
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
@@ -37,6 +39,7 @@ using scripting.npc;
 using scripting.portal;
 using scripting.quest;
 using scripting.reactor;
+using server;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
@@ -55,7 +58,10 @@ namespace Application.Core.Game.TheWorld
         OverallService OverallService { get; }
         #endregion
         IServiceScope LifeScope { get; }
-        IChannelService Service { get; }
+        SkillbookInformationProvider SkillbookInformationProvider { get; }
+        ShopFactory ShopFactory { get; }
+        ItemService ItemService { get; }
+        ChannelService Service { get; }
         ChannelClientStorage ClientStorage { get; }
 
         public event Action? OnWorldMobRateChanged;
@@ -90,6 +96,7 @@ namespace Application.Core.Game.TheWorld
         NPCScriptManager NPCScriptManager { get; }
         PortalScriptManager PortalScriptManager { get; }
         QuestScriptManager QuestScriptManager { get; }
+        DevtestScriptManager DevtestScriptManager { get; }
         void UpdateWorldConfig(WorldConfigPatch updatePatch);
 
         int getTransportationTime(double travelTime);

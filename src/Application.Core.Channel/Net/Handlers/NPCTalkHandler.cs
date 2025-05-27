@@ -34,6 +34,7 @@ public class NPCTalkHandler : ChannelHandlerBase
 {
     readonly ILogger<NPCTalkHandler> _logger;
 
+
     public NPCTalkHandler(ILogger<NPCTalkHandler> logger)
     {
         _logger = logger;
@@ -88,7 +89,7 @@ public class NPCTalkHandler : ChannelHandlerBase
                     bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, null);
                     if (!hasNpcScript)
                     {
-                        if (!npc.hasShop())
+                        if (!npc.hasShop(c))
                         {
                             _logger.LogWarning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
                             return;

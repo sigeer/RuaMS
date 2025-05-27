@@ -23,13 +23,10 @@
 */
 
 
-using Application.Core.model;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.EntityFrameworkCore;
-using net.server;
 using server;
-using service;
 using tools;
 
 namespace client.processor.npc;
@@ -40,14 +37,6 @@ namespace client.processor.npc;
 public class FredrickProcessor
 {
     private static ILogger log = LogFactory.GetLogger(LogType.Fredrick);
-    private static int[] dailyReminders = new int[] { 2, 5, 10, 15, 30, 60, 90, int.MaxValue };
-
-    private NoteService noteService;
-
-    public FredrickProcessor(NoteService noteService)
-    {
-        this.noteService = noteService;
-    }
 
     private static byte canRetrieveFromFredrick(IPlayer chr, List<ItemInventoryType> items)
     {
@@ -88,21 +77,7 @@ public class FredrickProcessor
         return 0x0;
     }
 
-    private static string fredrickReminderMessage(int daynotes)
-    {
-        string msg;
 
-        if (daynotes < 4)
-        {
-            msg = "Hi customer! I am Fredrick, the Union Chief of the Hired Merchant Union. A reminder that " + dailyReminders[daynotes] + " days have passed since you used our service. Please reclaim your stored goods at FM Entrance.";
-        }
-        else
-        {
-            msg = "Hi customer! I am Fredrick, the Union Chief of the Hired Merchant Union. " + dailyReminders[daynotes] + " days have passed since you used our service. Consider claiming back the items before we move them away for refund.";
-        }
-
-        return msg;
-    }
 
     public static void removeFredrickLog(DBContext dbContext, int cid)
     {
@@ -136,110 +111,6 @@ public class FredrickProcessor
         }
     }
 
-    private static void removeFredrickReminders(DBContext dbContext, List<CharacterIdWorldPair> expiredCids)
-    {
-        List<string> expiredCnames = expiredCids.Select(x => x.Name).ToList();
-        try
-        {
-            dbContext.Notes.Where(x => x.From == "FREDRICK" && expiredCnames.Contains(x.To)).ExecuteDelete();
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
-
-    public void runFredrickSchedule()
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-            List<CharacterIdWorldPair> expiredCids = new();
-            List<KeyValuePair<CharacterIdNamePair, int>> notifCids = new();
-            var dataList = (from a in dbContext.Fredstorages
-                            join b in dbContext.Characters on a.Cid equals b.Id
-                            select new { data = a, CId = b.Id, b.Name, b.World, b.LastLogoutTime }).ToList();
-
-            dataList.ForEach(x =>
-            {
-                int daynotes = Math.Min(dailyReminders.Length - 1, x.data.Daynotes);
-
-                int elapsedDays = TimeUtils.DayDiff(x.data.Timestamp, DateTimeOffset.UtcNow);
-                if (elapsedDays > 100)
-                {
-                    expiredCids.Add(new(x.CId, x.Name, x.World));
-                }
-                else
-                {
-                    int notifDay = dailyReminders[daynotes];
-
-                    if (elapsedDays >= notifDay)
-                    {
-                        do
-                        {
-                            daynotes++;
-                            notifDay = dailyReminders[daynotes];
-                        } while (elapsedDays >= notifDay);
-
-                        int inactivityDays = TimeUtils.DayDiff(x.LastLogoutTime, DateTimeOffset.UtcNow);
-
-                        if (inactivityDays < 7 || daynotes >= dailyReminders.Length - 1)
-                        {  // don't spam inactive players
-                            string name = x.Name;
-                            notifCids.Add(new(new(x.CId, name), daynotes));
-                        }
-                    }
-                }
-            });
-
-
-            if (expiredCids.Count > 0)
-            {
-                var cidList = expiredCids.Select(x => x.CharacterId).ToList();
-                var itemType = ItemFactory.MERCHANT.getValue();
-                dbContext.Inventoryitems.Where(x => x.Type == itemType && cidList.Contains(x.Characterid ?? 0)).ExecuteDelete();
-
-                foreach (var cid in expiredCids)
-                {
-                    var wserv = Server.getInstance().getWorld(cid.World);
-                    if (wserv != null)
-                    {
-                        var chr = wserv.getPlayerStorage().getCharacterById(cid.CharacterId);
-                        if (chr != null && chr.IsOnlined)
-                        {
-                            chr.setMerchantMeso(0);
-                        }
-                    }
-                }
-                dbContext.Characters.Where(x => cidList.Contains(x.Id)).ExecuteUpdate(x => x.SetProperty(y => y.MerchantMesos, 0));
-
-
-                removeFredrickReminders(dbContext, expiredCids);
-
-                dbContext.Fredstorages.Where(x => cidList.Contains(x.Cid)).ExecuteDelete();
-            }
-
-            if (notifCids.Count > 0)
-            {
-
-                foreach (var cid in notifCids)
-                {
-                    dbContext.Fredstorages.Where(x => x.Cid == cid.Key.Id).ExecuteUpdate(x => x.SetProperty(y => y.Daynotes, cid.Value));
-
-
-                    string msg = fredrickReminderMessage(cid.Value - 1);
-                    noteService.sendNormal(msg, "FREDRICK", cid.Key.Name, 0);
-                }
-
-            }
-            dbTrans.Commit();
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
 
     private static bool deleteFredrickItems(DBContext dbContext, int cid)
     {
@@ -256,7 +127,7 @@ public class FredrickProcessor
         }
     }
 
-    public void fredrickRetrieveItems(IChannelClient c)
+    public static void fredrickRetrieveItems(IChannelClient c)
     {     // thanks Gustav for pointing out the dupe on Fredrick handling
         if (c.tryacquireClient())
         {

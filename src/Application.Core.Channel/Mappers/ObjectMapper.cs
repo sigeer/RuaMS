@@ -1,10 +1,16 @@
+using Application.Core.Duey;
 using Application.Core.Game.Items;
+using Application.Core.Game.Life;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Models;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
+using Application.Shared.Duey;
 using Application.Shared.Items;
 using Application.Utility.Compatible.Atomics;
+using Application.Utility.Exceptions;
 using AutoMapper;
 using client.inventory;
 using net.server;
@@ -49,19 +55,22 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(x => x.Maxhp, opt => opt.MapFrom(x => x.MaxHP))
                 .ForMember(x => x.Maxmp, opt => opt.MapFrom(x => x.MaxMP));
 
+            #region Item
             CreateMap<ItemDto, Pet>()
                  .ConstructUsing(source => new Pet(source.Itemid, source.Position, source.Petid))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
                 .ForMember(x => x.PetAttribute, opt => opt.MapFrom(x => x.PetInfo!.Flag))
+                .ForMember(x => x.Summoned, opt => opt.MapFrom(x => x.PetInfo!.Summoned))
                 .AfterMap((rs, dest) =>
                 {
-                    //dest.setOwner(rs.Owner);
-                    //dest.setQuantity(rs.Quantity);
-                    //dest.setFlag(rs.Flag);
-                    //dest.setExpiration(rs.Expiration);
-                    //dest.setGiftFrom(rs.GiftFrom);
+                    dest.setOwner(rs.Owner);
+                    dest.setQuantity(rs.Quantity);
+                    dest.setFlag(rs.Flag);
+                    dest.setExpiration(rs.Expiration);
+                    dest.setGiftFrom(rs.GiftFrom);
+
                     dest.setName(rs.PetInfo!.Name ?? "");
                 })
                 .ReverseMap()
@@ -77,7 +86,17 @@ namespace Application.Core.Channel.Mappers
                 }));
 
             CreateMap<ItemDto, Item>()
-                .ConstructUsing(source => new Item(source.Itemid, source.Position, source.Quantity))
+                .ConstructUsing((src, ctx) =>
+                {
+                    var mit = src.InventoryType.getByType();
+                    if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
+                        return ctx.Mapper.Map<Equip>(src);
+
+                    if (src.PetInfo != null)
+                        return ctx.Mapper.Map<Pet>(src);
+
+                    return new Item(src.Itemid, src.Position, src.Quantity);
+                })
                 .AfterMap((rs, dest, ctx) =>
                 {
                     dest.setOwner(rs.Owner);
@@ -105,7 +124,8 @@ namespace Application.Core.Channel.Mappers
                 {
                     return context.Items.TryGetValue("Type", out var type) ? Convert.ToByte(type) : ItemFactory.INVENTORY.getValue();
                 }))
-                .Include<Equip, ItemDto>();
+                .Include<Equip, ItemDto>()
+                .Include<Pet, ItemDto>();
 
             CreateMap<RingDto, Ring>()
                 .ConstructUsing(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName))
@@ -177,11 +197,12 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.Itemexp, source => source.MapFrom(x => x.getItemExp()))
                 .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.getRingId()))
                 .ForMember(dest => dest.RingInfo, source => source.MapFrom(x => x.Ring));
+            #endregion 
 
             CreateMap<StorageDto, Storage>()
                 .ConstructUsing((x, ctx) =>
                 {
-                    return new Storage(x.Accountid, x.Slots, x.Meso, x.Items.Select(y => MapToItem(ctx.Mapper, y)).ToArray());
+                    return new Storage(x.Accountid, x.Slots, x.Meso, ctx.Mapper.Map<Item[]>(x.Items));
                 })
                 .ReverseMap()
                 .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
@@ -194,6 +215,24 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.SkillId, source => source.MapFrom(x => x.skillId))
                 .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
                 .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
+
+            CreateMap<DropDto, DropEntry>()
+                .ConstructUsing((src, ctx) =>
+                {
+                    if (src.Type == DropType.ReactorDrop)
+                        return DropEntry.ReactorDrop(src.DropperId, src.ItemId, src.Chance, src.QuestId);
+                    if (src.Type == DropType.MonsterDrop)
+                        return DropEntry.MobDrop(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, src.QuestId);
+                    if (src.Type == DropType.GlobalDrop)
+                        return DropEntry.Global(0, src.ItemId, src.Chance, src.MinCount, src.MaxCount, src.QuestId);
+                    throw new BusinessFatalException("不支持的掉落类型");
+                });
+            CreateMap<DueyPackageDto, DueyPackageObject>();
+            CreateMap<NoteDto, NoteObject>();
+            CreateMap<ShopDto, Shop>()
+                .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
+            CreateMap<ShopItemDto, ShopItem>()
+                .ConstructUsing((src, ctx) => new ShopItem(src.Buyable, src.ItemId, src.Price, src.Pitch));
         }
 
         private int[] TranslateArray(string str)

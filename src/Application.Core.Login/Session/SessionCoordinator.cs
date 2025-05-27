@@ -39,7 +39,7 @@ public class SessionCoordinator
 {
     readonly ILogger<SessionCoordinator> _logger;
 
-    private SessionInitialization sessionInit = new SessionInitialization();
+    private SessionInitialization sessionInit;
     private LoginStorage loginStorage;
     private Dictionary<int, ILoginClient> onlineClients = new(); // Key: account id
     private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
@@ -55,7 +55,8 @@ public class SessionCoordinator
         SessionDAO sessionDAO,
         IDbContextFactory<DBContext> dbContextFactory,
         HwidAssociationExpiry hwidAssociationExpiry,
-        LoginStorage loginStorage)
+        LoginStorage loginStorage,
+        SessionInitialization sessionInitialization)
     {
         _logger = logger;
         this.hostHwidCache = hostHwidCache;
@@ -63,6 +64,7 @@ public class SessionCoordinator
         _dbContextFactory = dbContextFactory;
         _hwidAssociationExpiry = hwidAssociationExpiry;
         this.loginStorage = loginStorage;
+        sessionInit = sessionInitialization;
     }
 
     private bool attemptAccountAccess(int accountId, Hwid hwid, bool routineCheck)

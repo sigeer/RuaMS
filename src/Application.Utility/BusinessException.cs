@@ -1,9 +1,20 @@
 namespace Application.Utility.Exceptions
 {
-    public class BusinessException(string? message) : Exception(message)
+
+    public class BusinessException : Exception
     {
         public BusinessException() : this("内部错误")
         {
+        }
+
+        public BusinessException(string message) : base(message)
+        {
+
+        }
+
+        public BusinessException(string message, Exception inner) : base(message, inner)
+        {
+
         }
     }
 

@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Reactordrop
+public partial class ReactorDropEntity
 {
     public int Reactordropid { get; set; }
 

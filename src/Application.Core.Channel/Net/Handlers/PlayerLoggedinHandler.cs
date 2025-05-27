@@ -21,10 +21,10 @@
  */
 
 
-using Application.Core.Channel.Services;
 using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
+using Application.Core.Servers.Services;
 using Application.EF;
 using Application.Shared.KeyMaps;
 using Application.Utility.Configs;
@@ -37,7 +37,6 @@ using net.server.coordinator.session;
 using net.server.coordinator.world;
 using net.server.guild;
 using net.server.world;
-using service;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -45,12 +44,10 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class PlayerLoggedinHandler : ChannelHandlerBase
 {
-    private NoteService noteService;
     readonly ILogger<ChannelHandlerBase> _logger;
     readonly CharacterService _characterSrv;
-    public PlayerLoggedinHandler(NoteService noteService, ILogger<ChannelHandlerBase> logger, CharacterService characterSrv)
+    public PlayerLoggedinHandler(ILogger<ChannelHandlerBase> logger, CharacterService characterSrv)
     {
-        this.noteService = noteService;
         _logger = logger;
         _characterSrv = characterSrv;
     }
@@ -212,7 +209,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
             }
 
-            noteService.show(player);
+            c.CurrentServer.Transport.ShowNoteMessage(player.Name);
 
             if (player.getParty() != null)
             {
