@@ -85,6 +85,10 @@ namespace Application.Core.Channel.Mappers
                     Petid = x.getUniqueId()
                 }));
 
+            CreateMap<Pet, PetDto>()
+                .ForMember(dest => dest.Closeness, src => src.MapFrom(x => x.Tameness))
+                .ForMember(dest => dest.Flag, src => src.MapFrom(x => x.PetAttribute));
+
             CreateMap<ItemDto, Item>()
                 .ConstructUsing((src, ctx) =>
                 {
