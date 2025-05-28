@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message BuffDto {
+  int32 usedTime = 1;
+  int32 sourceId = 2;
+  bool isSkill = 3;
+  int32 skillLevel = 4;
+}

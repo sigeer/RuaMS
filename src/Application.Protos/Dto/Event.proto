@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message EventDto {
+  int32 characterid = 1;
+  string name = 2;
+  int32 info = 3;
+}

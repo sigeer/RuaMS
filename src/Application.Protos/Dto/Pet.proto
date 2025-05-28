@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message PetDto {
+  int32 petid = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 closeness = 4;
+  int32 fullness = 5;
+  bool summoned = 6;
+  int32 flag = 7;
+}

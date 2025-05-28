@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/QuestProgress.proto";
+import "Dto/MedalMap.proto";
+
+package Dto;
+
+message QuestStatusDto {
+  int32 id = 1;
+  int32 questId = 2;
+  int32 status = 3;
+  int32 time = 4;
+  int64 expires = 5;
+  int32 forfeited = 6;
+  int32 completed = 7;
+  int32 info = 8;
+  int32 characterid = 9;
+  repeated QuestProgressDto progress = 10;
+  repeated MedalMapDto medalMap = 11;
+}

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message KeyMapDto {
+  int32 key = 1;
+  int32 type = 2;
+  int32 action = 3;
+}

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message QuestProgressDto {
+  int32 progressId = 1;
+  string progress = 2;
+}

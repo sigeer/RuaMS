@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message DropDto {
+  int32 itemId = 1;
+  int32 chance = 2;
+  int32 minCount = 3;
+  int32 maxCount = 4;
+  int32 questId = 5;
+  int32 type = 6;
+  int32 dropperId = 7;
+}
