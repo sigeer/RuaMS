@@ -1,6 +1,7 @@
 using Application.Core.Channel.Mappers;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Commands;
+using Application.Core.Mappers;
 using Application.Core.Net;
 using Application.Core.Servers.Services;
 using client.processor.npc;
@@ -65,7 +66,7 @@ namespace Application.Core.Channel
 
             services.AddScoped<CharacterService>();
 
-            services.AddAutoMapper(typeof(ObjectMapper));
+            services.AddAutoMapper(typeof(ObjectMapper), typeof(ProtoMapper));
             return services;
         }
     }

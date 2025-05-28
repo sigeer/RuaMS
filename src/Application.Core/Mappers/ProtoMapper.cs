@@ -6,9 +6,9 @@ namespace Application.Core.Mappers
     /// <summary>
     /// Proto -&gt; Object
     /// </summary>
-    public class Proto2ObjectMapper : Profile
+    public class ProtoMapper : Profile
     {
-        public Proto2ObjectMapper()
+        public ProtoMapper()
         {
             CreateMap<Rank.RankCharacter, RankedCharacterInfo>()
                 .ForMember(dest => dest.Rank, src => src.MapFrom(x => x.Rank))
