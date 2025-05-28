@@ -21,10 +21,8 @@
  */
 
 
-using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
-using Application.Core.Servers;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using Microsoft.Extensions.Logging;
@@ -36,8 +34,8 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class LoginPasswordHandler : LoginHandlerBase
 {
-    public LoginPasswordHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public LoginPasswordHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
     }
 
@@ -69,7 +67,7 @@ public class LoginPasswordHandler : LoginHandlerBase
             try
             {
                 //Jayd: Added birthday, tempban
-                _accountManager.CreateAccount(login, pwd);
+                _server.AccountManager.CreateAccount(login, pwd);
                 loginok = c.Login(login, pwd, hwid);
             }
             catch (Exception e)

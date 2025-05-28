@@ -1,7 +1,6 @@
 using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login.Client;
 using Application.Core.Login.Session;
-using Application.Core.Servers;
 using Application.Shared.Sessions;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -14,8 +13,8 @@ namespace Application.Core.Login.Net.Handlers;
 public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 {
     readonly SessionCoordinator _sessionCoordinator;
-    public ViewAllCharRegisterPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
-        : base(server, accountManager, logger)
+    public ViewAllCharRegisterPicHandler(MasterServer server, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+        : base(server, logger)
     {
         _sessionCoordinator = sessionCoordinator;
 
@@ -58,7 +57,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
             return;
         }
 
-        if (!_accountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
+        if (!_server.AccountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
         {
             _sessionCoordinator.closeSession(c, true);
             return;

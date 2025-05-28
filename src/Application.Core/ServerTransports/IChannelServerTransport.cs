@@ -22,7 +22,7 @@ namespace Application.Core.ServerTransports
         public int GetCurrentTimestamp();
         public DateTimeOffset GetServerupTime();
 
-        Task<int> RegisterServer(IWorldChannel server);
+        Task<Config.RegisterServerResult> RegisterServer(IWorldChannel server);
         Task<bool> RemoveServer(IWorldChannel server);
 
         void DropWorldMessage(int type, string message);
@@ -137,6 +137,7 @@ namespace Application.Core.ServerTransports
         void AddReport(int v1, int v2, int v3, string description, string v4);
         PetDto CreatePet(string petName, int level, int tameness, int fullness);
         Rank.RankCharacterList LoadPlayerRanking(int topCount);
+        void SendToggleCoupon(int v);
 
         #endregion
     }

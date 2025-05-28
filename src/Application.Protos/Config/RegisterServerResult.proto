@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package Config;
+
+import "Config/WorldConfig.proto";
+import "Config/CouponConfig.proto";
+
+message RegisterServerResult {
+  int32 channel = 1;
+  WorldConfig config = 2;
+  CouponConfig coupon = 3;
+}

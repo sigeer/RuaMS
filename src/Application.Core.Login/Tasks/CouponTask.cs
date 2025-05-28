@@ -18,7 +18,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace net.server.task;
+using Application.Core.Login.Datas;
+using Application.Utility.Tasks;
+
+namespace Application.Core.Login.Tasks;
 
 
 
@@ -29,14 +32,20 @@ namespace net.server.task;
 /// </summary>
 public class CouponTask : AbstractRunnable
 {
+    readonly MasterServer _server;
+
+    public CouponTask(MasterServer server)
+    {
+        _server = server;
+    }
+
     public override void HandleRun()
     {
         try
         {
-            using var dbContext = new DBContext();
-            Server.getInstance().updateActiveCoupons(dbContext);
+            _server.CouponManager.UpdateActiveCoupons();
 
-            Server.getInstance().commitActiveCoupons();
+            _server.CouponManager.CommitActiveCoupons();
         }
         catch (Exception sqle)
         {

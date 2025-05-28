@@ -13,5 +13,21 @@ namespace Application.Core.Login
         }
 
         public PlayerBuffSaveDto GetBuff(int v) => BuffStorage.Get(v);
+
+        public Config.WorldConfig GetWorldConfig()
+        {
+            return new Config.WorldConfig
+            {
+                BossDropRate = BossDropRate,
+                DropRate = DropRate,
+                ExpRate = ExpRate,
+                FishingRate = FishingRate,
+                MesoRate = MesoRate,
+                MobRate = MobRate,
+                QuestRate = QuestRate,
+                ServerMessage = ServerMessage,
+                TravelRate = TravelRate
+            };
+        }
     }
 }

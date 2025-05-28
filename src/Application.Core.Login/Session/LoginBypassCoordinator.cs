@@ -20,7 +20,6 @@
 
 
 using Application.Core.model;
-using Application.Core.Servers;
 using Application.Utility.Configs;
 using net.server.coordinator.session;
 using System.Collections.Concurrent;
@@ -33,11 +32,11 @@ namespace Application.Core.Login.Session;
 public class LoginBypassCoordinator
 {
 
-    readonly IMasterServer _server;
+    readonly MasterServer _server;
 
     private ConcurrentDictionary<HwidAccountPair, KeyValuePair<bool, long>> loginBypass = new();   // optimized PIN & PIC check
 
-    public LoginBypassCoordinator(IMasterServer server)
+    public LoginBypassCoordinator(MasterServer server)
     {
         _server = server;
     }

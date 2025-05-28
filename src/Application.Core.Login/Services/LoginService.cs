@@ -13,17 +13,13 @@ namespace Application.Core.Login.Services
     public class LoginService
     {
         readonly IMapper _mapper;
-        readonly CharacterManager _characterManager;
-        readonly AccountManager _accManager;
-        readonly IMasterServer _masterServer;
+        readonly MasterServer _masterServer;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
 
 
-        public LoginService(IMapper mapper, CharacterManager characterManager, AccountManager accountManager, IMasterServer masterServer, IDbContextFactory<DBContext> dbContextFactory)
+        public LoginService(IMapper mapper, MasterServer masterServer, IDbContextFactory<DBContext> dbContextFactory)
         {
             _mapper = mapper;
-            _characterManager = characterManager;
-            _accManager = accountManager;
             _masterServer = masterServer;
             _dbContextFactory = dbContextFactory;
         }
@@ -36,14 +32,14 @@ namespace Application.Core.Login.Services
         /// <returns></returns>
         public CharacterValueObject? PlayerLogin(string clientSession, int characterId)
         {
-            var characterObj = _characterManager.GetCharacter(characterId);
+            var characterObj = _masterServer.CharacterManager.GetCharacter(characterId);
             if (characterObj == null || characterObj.Character == null)
                 return null;
 
             if (characterObj.Account == null || characterObj.Account.Hwid == null)
                 return null;
 
-            var accountModel = _accManager.GetAccountLoginStatus(characterObj.Account.Id);
+            var accountModel = _masterServer.AccountManager.GetAccountLoginStatus(characterObj.Account.Id);
             if (accountModel.State != LoginStage.LOGIN_SERVER_TRANSITION && accountModel.State != LoginStage.PlayerServerTransition)
                 return null;
 
@@ -57,8 +53,8 @@ namespace Application.Core.Login.Services
 
         public void SetPlayerLogedIn(int playerId, int channel)
         {
-            _characterManager.SetPlayerChannel(playerId, channel, out var accId);
-            _accManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
+            _masterServer.CharacterManager.SetPlayerChannel(playerId, channel, out var accId);
+            _masterServer.AccountManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
         }
 
         public void UnBanAccount(string playerName)

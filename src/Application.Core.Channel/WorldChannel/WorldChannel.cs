@@ -112,6 +112,10 @@ public partial class WorldChannel : IWorldChannel
     public float WorldTravelRate { get; private set; }
     public float WorldFishingRate { get; private set; }
     public string WorldServerMessage { get; private set; }
+
+    public Dictionary<int, int> CouponRates { get; set; } = new(30);
+    public List<int> ActiveCoupons { get; set; } = new();
+
     public IChannelServerTransport Transport { get; }
     public ChannelServerConfig ServerConfig { get; }
     public ServerMessageController ServerMessageController { get; }
@@ -269,10 +273,32 @@ public partial class WorldChannel : IWorldChannel
         });
 
 
-        channel = await Transport.RegisterServer(this);
+        var configs = await Transport.RegisterServer(this);
+        channel = configs.Channel;
         log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
 
+        log.Information("[{ServerName} - {Channel}] 初始化...",
+            "频道服务器", channel);
 
+        UpdateWorldConfig(new WorldConfigPatch
+        {
+            MobRate = configs.Config.MobRate,
+            MesoRate = configs.Config.MesoRate,
+            ExpRate = configs.Config.ExpRate,
+            DropRate = configs.Config.DropRate,
+            BossDropRate = configs.Config.BossDropRate,
+            QuestRate = configs.Config.QuestRate,
+            TravelRate = configs.Config.TravelRate,
+            FishingRate = configs.Config.FishingRate,
+            ServerMessage = configs.Config.ServerMessage
+        });
+        log.Information("[{ServerName} - {Channel}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
+            "频道服务器", channel, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
+
+        UpdateCouponConfig(configs.Coupon);
+
+        log.Information("[{ServerName} - {Channel}] 初始化完成",
+            "频道服务器", channel);
 
         StartupTime = DateTimeOffset.UtcNow;
         ForceUpdateServerTime();

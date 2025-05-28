@@ -22,9 +22,8 @@
 
 
 using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
-using Application.Core.Servers;
 using Application.Utility.Configs;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -36,8 +35,8 @@ public class ViewAllCharHandler : LoginHandlerBase
 {
     private static int CHARACTER_LIMIT = 60; // IClient will crash if sending 61 or more characters
 
-    public ViewAllCharHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public ViewAllCharHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
     }
 

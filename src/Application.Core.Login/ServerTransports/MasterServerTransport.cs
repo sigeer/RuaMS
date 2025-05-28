@@ -4,7 +4,6 @@ using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
 using Application.Shared.Net;
-using net.packet.outs;
 using net.server;
 using tools;
 
@@ -12,9 +11,9 @@ namespace Application.Core.Login
 {
     public class MasterServerTransport : IMasterServerTransport
     {
-        readonly IMasterServer _server;
+        readonly MasterServer _server;
 
-        public MasterServerTransport(IMasterServer masterServer)
+        public MasterServerTransport(MasterServer masterServer)
         {
             this._server = masterServer;
         }
@@ -100,6 +99,24 @@ namespace Application.Core.Login
             }
         }
 
+        public void SendUpdateCouponRates(Config.CouponConfig config)
+        {
+            var world = Server.getInstance().getWorld(0);
+            foreach (var ch in world.Channels)
+            {
+                ch.UpdateCouponConfig(config);
+
+                foreach (var chr in ch.getPlayerStorage().getAllCharacters())
+                {
+                    if (!chr.isLoggedin())
+                    {
+                        continue;
+                    }
+
+                    chr.updateCouponRates();
+                }
+            }
+        }
 
         public void SendWorldConfig(WorldConfigPatch patch)
         {

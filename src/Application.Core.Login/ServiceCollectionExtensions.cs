@@ -1,5 +1,5 @@
 using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login.Client;
 using Application.Core.Login.Mappers;
 using Application.Core.Login.Net;
 using Application.Core.Login.Services;
@@ -66,16 +66,13 @@ namespace Application.Core.Login
             services.AddSingleton<RankingLoginTask>();
             services.AddSingleton<DueyFredrickTask>();
             services.AddSingleton<RankingCommandTask>();
+            services.AddSingleton<CouponTask>();
             return services;
         }
 
         static IServiceCollection AddServices(this IServiceCollection services)
         {
-            services.AddSingleton<AccountManager>();
-            services.AddSingleton<CharacterManager>();
-
             services.AddSingleton<CharacterService>();
-            services.AddSingleton<ServerService>();
             services.AddSingleton<LoginService>();
             services.AddSingleton<ItemService>();
             services.AddSingleton<DueyService>();
@@ -98,7 +95,7 @@ namespace Application.Core.Login
             services.AddServices();
             services.AddStorage();
             services.AddDistributedMemoryCache();
-            services.AddSingleton<IMasterServer, MasterServer>();
+            services.AddSingleton<MasterServer>();
 
             services.AddScheduleTask();
             return services;

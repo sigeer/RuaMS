@@ -1,12 +1,10 @@
-using Application.Core.Servers;
-
 namespace Application.Core.Login.Session;
 
 public class HwidAssociationExpiry
 {
-    readonly IMasterServer _server;
+    readonly MasterServer _server;
 
-    public HwidAssociationExpiry(IMasterServer server)
+    public HwidAssociationExpiry(MasterServer server)
     {
         _server = server;
     }

@@ -3,7 +3,6 @@ using Application.Core.Game.Players;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Net;
-using Application.Core.Servers;
 using Application.Core.tools;
 using Application.EF;
 using Application.Shared.Characters;
@@ -19,7 +18,7 @@ using net.server;
 using net.server.coordinator.session;
 using tools;
 
-namespace Application.Core.Login.Net
+namespace Application.Core.Login.Client
 {
     public class LoginClient : ClientBase, ILoginClient
     {
@@ -29,7 +28,7 @@ namespace Application.Core.Login.Net
         IPacketProcessor<ILoginClient> _packetProcessor;
         readonly SessionCoordinator _sessionCoordinator;
         readonly LoginBypassCoordinator _loginBypassCoordinator;
-        public LoginClient(long sessionId, IMasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, SessionCoordinator sessionCoordinator, ILogger<IClientBase> log, LoginBypassCoordinator loginBypassCoordinator)
+        public LoginClient(long sessionId, MasterServer currentServer, IChannel nettyChannel, IPacketProcessor<ILoginClient> packetProcessor, SessionCoordinator sessionCoordinator, ILogger<IClientBase> log, LoginBypassCoordinator loginBypassCoordinator)
             : base(sessionId, currentServer, nettyChannel, log)
         {
             CurrentServer = currentServer;
@@ -40,7 +39,7 @@ namespace Application.Core.Login.Net
             AccountLoginStatus = AccountLoginStatus.Default;
         }
 
-        public IMasterServer CurrentServer { get; set; }
+        public MasterServer CurrentServer { get; set; }
         public int SelectedChannel { get; set; }
 
         public override int AccountId => AccountEntity?.Id ?? 0;
@@ -76,7 +75,7 @@ namespace Application.Core.Login.Net
 
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
-            this.updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
+            updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
             CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
 
@@ -125,7 +124,7 @@ namespace Application.Core.Login.Net
         public override void Dispose()
         {
             AccountEntity = null;
-            this.packetChannel.Writer.TryComplete();
+            packetChannel.Writer.TryComplete();
         }
 
         protected override HashSet<string> GetMac()
@@ -384,7 +383,7 @@ namespace Application.Core.Login.Net
 
         public void SendCharList()
         {
-            this.sendPacket(LoginPacketCreator.GetCharListPacket(this));
+            sendPacket(LoginPacketCreator.GetCharListPacket(this));
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using Application.Core.Login.Datas;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Characters;
@@ -10,7 +11,7 @@ using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Core.Login.Datas
+namespace Application.Core.Login.Services
 {
     public class DataStorage
     {

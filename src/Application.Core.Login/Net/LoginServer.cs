@@ -14,8 +14,8 @@ public class LoginServer : AbstractServer
     public static int WORLD_ID = -1;
     public static int CHANNEL_ID = -1;
     private IChannel? nettyChannel;
-    readonly IMasterServer server;
-    public LoginServer(IMasterServer server) : base(server.Port)
+    readonly MasterServer server;
+    public LoginServer(MasterServer server) : base(server.Port)
     {
         this.server = server;
     }

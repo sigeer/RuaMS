@@ -16,14 +16,12 @@ public class NoteService
 {
     readonly IDbContextFactory<DBContext> _dbContextFactory;
     readonly ILogger<NoteService> _logger;
-    readonly CharacterManager _chrManager;
     readonly IMapper _mapper;
-    readonly IMasterServer _server;
-    public NoteService(IDbContextFactory<DBContext> dbContextFactory, ILogger<NoteService> logger, CharacterManager chrManager, IMapper mapper, IMasterServer masterServer)
+    readonly MasterServer _server;
+    public NoteService(IDbContextFactory<DBContext> dbContextFactory, ILogger<NoteService> logger, IMapper mapper, MasterServer masterServer)
     {
         _dbContextFactory = dbContextFactory;
         _logger = logger;
-        _chrManager = chrManager;
         _mapper = mapper;
         _server = masterServer;
     }
@@ -77,7 +75,7 @@ public class NoteService
      */
     public void show(string receiverName)
     {
-        var chr = _chrManager.FindPlayerByName(receiverName);
+        var chr = _server.CharacterManager.FindPlayerByName(receiverName);
         if (chr == null || chr.Channel <= 0)
             return;
 

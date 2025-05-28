@@ -1,8 +1,6 @@
-using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
-using Application.Core.Servers;
 using Application.Shared.Sessions;
 using Application.Utility;
 using Microsoft.Extensions.Logging;
@@ -14,8 +12,8 @@ namespace Application.Core.Login.Net.Handlers
     public abstract class OnCharacterSelectedHandler : LoginHandlerBase
     {
         readonly SessionCoordinator _sessionCoordinator;
-        protected OnCharacterSelectedHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
-            : base(server, accountManager, logger)
+        protected OnCharacterSelectedHandler(MasterServer server, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+            : base(server, logger)
         {
             _sessionCoordinator = sessionCoordinator;
         }
@@ -55,7 +53,7 @@ namespace Application.Core.Login.Net.Handlers
             }
 
 
-            if (!_accountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
+            if (!_server.AccountManager.ValidAccountCharacter(c.AccountEntity.Id, charId))
             {
                 _sessionCoordinator.closeSession(c, true);
                 return;
@@ -91,8 +89,8 @@ namespace Application.Core.Login.Net.Handlers
 
     public abstract class OnCharacterSelectedWithPicHandler : OnCharacterSelectedHandler
     {
-        protected OnCharacterSelectedWithPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
-            : base(server, accountManager, logger, sessionCoordinator)
+        protected OnCharacterSelectedWithPicHandler(MasterServer server, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+            : base(server, logger, sessionCoordinator)
         {
         }
 

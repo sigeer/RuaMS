@@ -1,4 +1,5 @@
 using Application.Core.Client;
+using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
 using Application.Core.Servers;
@@ -13,8 +14,8 @@ namespace Application.Core.Login.Net.Handlers;
 /// </summary>
 public class ViewAllCharSelectedWithPicHandler : OnCharacterSelectedWithPicHandler
 {
-    public ViewAllCharSelectedWithPicHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
-        : base(server, accountManager, logger, sessionCoordinator)
+    public ViewAllCharSelectedWithPicHandler(MasterServer server, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+        : base(server, logger, sessionCoordinator)
     {
     }
 

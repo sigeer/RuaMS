@@ -18,7 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Servers;
 using Application.Utility.Compatible;
 using Application.Utility.Configs;
 using System.Collections.Concurrent;
@@ -31,9 +30,9 @@ namespace Application.Core.Login.Session;
 public class LoginStorage
 {
     private ConcurrentDictionary<int, List<DateTimeOffset>> loginHistory = new(); // Key: accountId
-    readonly IMasterServer _server;
+    readonly MasterServer _server;
 
-    public LoginStorage(IMasterServer server)
+    public LoginStorage(MasterServer server)
     {
         _server = server;
     }

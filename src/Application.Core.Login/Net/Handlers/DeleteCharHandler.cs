@@ -21,10 +21,7 @@
  */
 
 
-using Application.Core.Client;
-using Application.Core.Login.Datas;
-using Application.Core.Login.Services;
-using Application.Core.Servers;
+using Application.Core.Login.Client;
 using Application.EF;
 using Application.Utility.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -36,11 +33,9 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class DeleteCharHandler : LoginHandlerBase
 {
-    readonly CharacterService _chrManager;
-    public DeleteCharHandler(IMasterServer server, AccountManager accountManager, CharacterService characterManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public DeleteCharHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
-        _chrManager = characterManager;
     }
 
     public override void HandlePacket(InPacket p, ILoginClient c)
@@ -81,7 +76,7 @@ public class DeleteCharHandler : LoginHandlerBase
                 return;
             }
 
-            if (_chrManager.DeleteChar(cid, c.AccountEntity!.Id))
+            if (_server.CharacterManager.DeleteChar(cid, c.AccountEntity!.Id))
             {
                 _logger.LogInformation("Account {AccountName} deleted chrId {CharacterId}", c.AccountEntity!.Name, cid);
                 c.sendPacket(PacketCreator.deleteCharResponse(cid, 0));

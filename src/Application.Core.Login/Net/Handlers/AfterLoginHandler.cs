@@ -21,11 +21,10 @@
  */
 
 
-using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login;
+using Application.Core.Login.Client;
 using Application.Core.Login.Net;
 using Application.Core.Login.Session;
-using Application.Core.Servers;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -36,8 +35,8 @@ namespace Application.Core.Net.Handlers;
 public class AfterLoginHandler : LoginHandlerBase
 {
     readonly SessionCoordinator _sessionCoordinator;
-    public AfterLoginHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
-        : base(server, accountManager, logger)
+    public AfterLoginHandler(MasterServer server, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+        : base(server, logger)
     {
         _sessionCoordinator = sessionCoordinator;
     }

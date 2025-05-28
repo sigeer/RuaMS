@@ -1,6 +1,5 @@
-using Application.Core.Client;
 using Application.Core.Game.Players;
-using Application.Core.Servers;
+using Application.Core.Login.Client;
 using Application.Shared.Net;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
@@ -130,7 +129,7 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
-        public static Packet SendRecommended(IMasterServer server)
+        public static Packet SendRecommended(MasterServer server)
         {
             OutPacket p = OutPacket.create(SendOpcode.RECOMMENDED_WORLD_MESSAGE);
             p.writeByte(1);//size

@@ -2,12 +2,11 @@ using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
+using Application.Core.Login;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Services;
 using Application.Core.model;
-using Application.Core.Servers;
 using Application.Core.ServerTransports;
-using Application.Shared;
 using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
@@ -34,8 +33,7 @@ namespace Application.Core.Channel.Local
     public class LocalChannelServerTransport : IChannelServerTransport
     {
         readonly LoginService _loginService;
-        readonly IMasterServer _server;
-        readonly CharacterManager _chrManager;
+        readonly MasterServer _server;
         readonly StorageService _storageService;
         readonly ItemService _itemService;
         readonly DueyService _dueyService;
@@ -50,9 +48,8 @@ namespace Application.Core.Channel.Local
         IWorld _world => Server.getInstance().getWorld(0);
 
         public LocalChannelServerTransport(
-            IMasterServer server,
+            MasterServer server,
             LoginService loginService,
-            CharacterManager chrManager,
             StorageService storageService,
             ItemService itemService,
             DueyService dueyService,
@@ -64,7 +61,6 @@ namespace Application.Core.Channel.Local
         {
             _server = server;
             _loginService = loginService;
-            _chrManager = chrManager;
             _storageService = storageService;
             _itemService = itemService;
             _dueyService = dueyService;
@@ -75,23 +71,17 @@ namespace Application.Core.Channel.Local
             _rankService = rankService;
         }
 
-        public Task<int> RegisterServer(IWorldChannel server)
+        public Task<Config.RegisterServerResult> RegisterServer(IWorldChannel server)
         {
             var channelId = _world.addChannel(server);
-            server.UpdateWorldConfig(new WorldConfigPatch
-            {
-                MobRate = _server.MobRate,
-                MesoRate = _server.MesoRate,
-                ExpRate = _server.ExpRate,
-                DropRate = _server.DropRate,
-                BossDropRate = _server.BossDropRate,
-                QuestRate = _server.QuestRate,
-                TravelRate = _server.TravelRate,
-                FishingRate = _server.FishingRate,
-                ServerMessage = _server.ServerMessage
-            });
+
             _server.AddChannel(new InternalWorldChannel(server));
-            return Task.FromResult(channelId);
+            return Task.FromResult(new Config.RegisterServerResult
+            {
+                Channel = channelId,
+                Coupon = _server.CouponManager.GetConfig(),
+                Config = _server.GetWorldConfig()
+            });
         }
 
         public void DisconnectPlayers(IEnumerable<int> playerIdList)
@@ -516,7 +506,7 @@ namespace Application.Core.Channel.Local
 
         public void SendPlayerObject(PlayerSaveDto characterValueObject)
         {
-            _chrManager.Update(characterValueObject);
+            _server.CharacterManager.Update(characterValueObject);
         }
 
         public void SendRemovePlayerIncomingInvites(int id)
@@ -640,6 +630,11 @@ namespace Application.Core.Channel.Local
         public Rank.RankCharacterList LoadPlayerRanking(int topCount)
         {
             return _rankService.LoadPlayerRanking(topCount);
+        }
+
+        public void SendToggleCoupon(int v)
+        {
+            _server.CouponManager.ToggleCoupon(v);
         }
     }
 }
