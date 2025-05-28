@@ -21,10 +21,8 @@
 */
 
 
-using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login.Client;
 using Application.Core.Login.Session;
-using Application.Core.Servers;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -38,8 +36,8 @@ namespace Application.Core.Login.Net.Handlers;
 public class RegisterPinHandler : LoginHandlerBase
 {
     readonly SessionCoordinator _sessionCoordinator;
-    public RegisterPinHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
-        : base(server, accountManager, logger)
+    public RegisterPinHandler(MasterServer server, ILogger<LoginHandlerBase> logger, SessionCoordinator sessionCoordinator)
+        : base(server, logger)
     {
         _sessionCoordinator = sessionCoordinator;
     }

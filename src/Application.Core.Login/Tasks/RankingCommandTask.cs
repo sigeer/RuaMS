@@ -18,17 +18,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace net.server.task;
+using Application.Core.Login.Services;
+using Application.Utility.Tasks;
+
+namespace Application.Core.Login.Tasks;
 
 /**
  * @author Ronan
  */
 public class RankingCommandTask : AbstractRunnable
 {
+    readonly RankService _rankService;
+
+    public RankingCommandTask(RankService rankService)
+    {
+        _rankService = rankService;
+    }
 
     public override void HandleRun()
     {
-        using var dbContext = new DBContext();
-        Server.getInstance().LoadPlayerRanking(dbContext);
+        _rankService.LoadPlayerRanking(ignoreCache: true);
     }
 }

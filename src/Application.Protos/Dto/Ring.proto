@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message RingDto {
+  int32 id = 1;
+  int32 itemId = 2;
+  int32 partnerRingId = 3;
+  int32 partnerChrId = 4;
+  string partnerName = 5;
+}

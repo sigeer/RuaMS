@@ -1,4 +1,3 @@
-using Application.Core.Servers;
 using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
@@ -8,10 +7,10 @@ public class HostHwidCache
 {
     private ConcurrentDictionary<string, HostHwid> hostHwidCache = new(); // Key: remoteHost
 
-    readonly IMasterServer _server;
+    readonly MasterServer _server;
     readonly SessionDAO _sessionDAO;
 
-    public HostHwidCache(IMasterServer server, SessionDAO sessionDAO)
+    public HostHwidCache(MasterServer server, SessionDAO sessionDAO)
     {
         _server = server;
         _sessionDAO = sessionDAO;

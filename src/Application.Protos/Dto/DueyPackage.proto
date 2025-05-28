@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/Item.proto";
+
+package Dto;
+
+message DueyPackageDto {
+  int32 packageId = 1;
+  int32 receiverId = 2;
+  string senderName = 3;
+  int32 mesos = 4;
+  google.protobuf.Timestamp timeStamp = 5;
+  string message = 6;
+  bool checked = 7;
+  bool type = 8;
+  repeated ItemDto item = 9;
+}

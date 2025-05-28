@@ -50,8 +50,6 @@ public class Server
 
     private static HashSet<int> activeFly = new();
 
-    private static Dictionary<int, int> couponRates = new(30);
-    private static List<int> activeCoupons = new();
 
     public Dictionary<int, IWorld> RunningWorlds { get; set; } = new();
 
@@ -62,13 +60,6 @@ public class Server
 
     private Dictionary<int, NewYearCardRecord> newyears = new();
 
-
-    /// <summary>
-    /// World - Data
-    /// </summary>
-    private Dictionary<int, List<RankedCharacterInfo>> playerRanking = new();
-
-    private long serverCurrentTime = 0;
 
     private volatile bool availableDeveloperRoom = false;
     public bool IsOnline { get; set; }
@@ -181,94 +172,6 @@ public class Server
         RunningWorlds.Clear();
     }
 
-    #region coupon
-    public Dictionary<int, int> getCouponRates()
-    {
-        return couponRates;
-    }
-
-    private void loadCouponRates(DBContext dbContext)
-    {
-        couponRates = dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToList().ToDictionary(x => x.CouponId, x => x.Rate);
-    }
-
-    public List<int> getActiveCoupons()
-    {
-        lock (activeCoupons)
-        {
-            return activeCoupons;
-        }
-    }
-
-    public void commitActiveCoupons()
-    {
-        foreach (var world in getWorlds())
-        {
-            foreach (var chr in world.getPlayerStorage().GetAllOnlinedPlayers())
-            {
-                if (!chr.isLoggedin())
-                {
-                    continue;
-                }
-
-                chr.updateCouponRates();
-            }
-        }
-    }
-
-    public void toggleCoupon(int couponId)
-    {
-        if (ItemConstants.isRateCoupon(couponId))
-        {
-            lock (activeCoupons)
-            {
-                if (activeCoupons.Contains(couponId))
-                {
-                    activeCoupons.Remove(couponId);
-                }
-                else
-                {
-                    activeCoupons.Add(couponId);
-                }
-
-                commitActiveCoupons();
-            }
-        }
-    }
-
-    public void updateActiveCoupons(DBContext dbContext)
-    {
-        lock (activeCoupons)
-        {
-            activeCoupons.Clear();
-            var d = DateTimeOffset.UtcNow;
-
-            int weekDay = (int)d.DayOfWeek;
-            weekDay = weekDay == 0 ? 7 : weekDay;
-            int hourDay = d.Hour;
-
-            int weekdayMask = 1 << weekDay;
-            activeCoupons = dbContext.Nxcoupons.Where(x => x.Starthour <= hourDay && x.Endhour > hourDay && (x.Activeday & weekdayMask) == weekdayMask)
-                    .Select(x => x.CouponId).ToList();
-
-        }
-    }
-    #endregion
-
-
-    public List<RankedCharacterInfo> getWorldPlayerRanking(int worldId)
-    {
-        var filteredWorldId = YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? -1 : worldId;
-        if (playerRanking.TryGetValue(filteredWorldId, out var value))
-            return value;
-
-        return [];
-    }
-
-    public Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRanking(DBContext dbContext)
-    {
-        return playerRanking = RankManager.LoadPlayerRankingFromDB(dbContext);
-    }
 
     bool basedCached = false;
     private void Initialize(bool ignoreCache = false)
@@ -354,14 +257,10 @@ public class Server
             using var dbContext = new DBContext();
             LoadAccountCharacterCache(dbContext);
 
-            loadCouponRates(dbContext);
-            updateActiveCoupons(dbContext);
             NewYearCardRecord.startPendingNewYearCardRequests(dbContext);
             CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             PlayerNPC.loadRunningRankData(dbContext);
-
-            LoadPlayerRanking(dbContext);
 
             loadPlayerNpcMapStepFromDb(dbContext);
 
@@ -398,8 +297,6 @@ public class Server
         await tMan.Start();
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-        tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
-        tMan.register(new RankingCommandTask(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
         tMan.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
 
         timeLeft = TimeUtils.GetTimeLeftForNextDay();

@@ -1,14 +1,16 @@
 using Application.Core.model;
-using Application.Core.Servers;
+using Application.EF;
+using Application.EF.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
-namespace Application.Core.Gameplay.Wedding
+namespace Application.Core.Login.Datas
 {
-    public class WeddingService
+    public class WeddingManager
     {
-        public IMasterServer MasterServer { get; }
-        readonly ILogger log;
+        public MasterServer MasterServer { get; }
+        readonly ILogger<WeddingManager> log;
 
         private Dictionary<int, int> relationships = new();
         private Dictionary<int, CoupleIdPair> relationshipCouples = new();
@@ -16,10 +18,10 @@ namespace Application.Core.Gameplay.Wedding
         private Dictionary<int, KeyValuePair<KeyValuePair<bool, bool>, CoupleIdPair>> queuedMarriages = new();
         private ConcurrentDictionary<int, HashSet<int>> marriageGuests = new();
 
-        public WeddingService(IMasterServer server)
+        public WeddingManager(MasterServer server, ILogger<WeddingManager> logger)
         {
             MasterServer = server;
-            log = LogFactory.GetLogger(LogType.Wedding);
+            log = logger;
         }
 
         public bool IsMarriageQueued(int marriageId)
@@ -39,8 +41,8 @@ namespace Application.Core.Gameplay.Wedding
 
         public void PutMarriageQueued(int marriageId, bool cathedral, bool premium, int groomId, int brideId)
         {
-            queuedMarriages.AddOrUpdate(marriageId, new(new(cathedral, premium), new(groomId, brideId)));
-            marriageGuests.AddOrUpdate(marriageId, new());
+            queuedMarriages[marriageId] = new(new(cathedral, premium), new(groomId, brideId));
+            marriageGuests[marriageId] = new();
         }
 
         public KeyValuePair<bool, HashSet<int>> RemoveMarriageQueued(int marriageId)
@@ -97,16 +99,16 @@ namespace Application.Core.Gameplay.Wedding
 
         public void DebugMarriageStatus()
         {
-            log.Debug("Queued marriages: " + queuedMarriages);
-            log.Debug("Guest list: " + marriageGuests);
+            log.LogDebug("Queued marriages: " + queuedMarriages);
+            log.LogDebug("Guest list: " + marriageGuests);
         }
 
         private void PushRelationshipCouple(CoupleTotal couple)
         {
             int mid = couple.MarriageId, hid = couple.HusbandId, wid = couple.WifeId;
-            relationshipCouples.AddOrUpdate(mid, new(hid, wid));
-            relationships.AddOrUpdate(hid, mid);
-            relationships.AddOrUpdate(wid, mid);
+            relationshipCouples[mid] = new(hid, wid);
+            relationships[hid] = mid;
+            relationships[wid] = mid;
         }
 
         public CoupleIdPair? GetRelationshipCouple(int relationshipId)
@@ -164,7 +166,7 @@ namespace Application.Core.Gameplay.Wedding
             }
             catch (Exception se)
             {
-                log.Error(se.ToString());
+                log.LogError(se.ToString());
                 return null;
             }
         }
@@ -193,7 +195,7 @@ namespace Application.Core.Gameplay.Wedding
             }
             catch (Exception e)
             {
-                log.Error(e.ToString());
+                log.LogError(e.ToString());
                 return -1;
             }
         }
@@ -217,7 +219,7 @@ namespace Application.Core.Gameplay.Wedding
             }
             catch (Exception e)
             {
-                log.Error(e.ToString());
+                log.LogError(e.ToString());
             }
         }
 

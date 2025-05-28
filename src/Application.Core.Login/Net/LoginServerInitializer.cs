@@ -1,5 +1,5 @@
+using Application.Core.Login.Client;
 using Application.Core.Login.Session;
-using Application.Core.Servers;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,10 +10,10 @@ namespace Application.Core.Login.Net;
 
 public class LoginServerInitializer : ServerChannelInitializer
 {
-    readonly IMasterServer masterServer;
+    readonly MasterServer masterServer;
     readonly SessionCoordinator sessionCoordinator;
 
-    public LoginServerInitializer(IMasterServer masterServer)
+    public LoginServerInitializer(MasterServer masterServer)
     {
         this.masterServer = masterServer;
         this.sessionCoordinator = masterServer.ServiceProvider.GetRequiredService<SessionCoordinator>();

@@ -3694,8 +3694,8 @@ public partial class Player
     {
         activeCoupons.Clear();
 
-        Dictionary<int, int> coupons = Server.getInstance().getCouponRates();
-        List<int> active = Server.getInstance().getActiveCoupons();
+        Dictionary<int, int> coupons = Client.CurrentServer.CouponRates;
+        List<int> active = Client.CurrentServer.ActiveCoupons;
 
         foreach (Item it in cashItems)
         {

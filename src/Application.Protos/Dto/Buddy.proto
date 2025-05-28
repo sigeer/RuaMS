@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message BuddyDto {
+  int32 characterId = 1;
+  string characterName = 2;
+  int32 pending = 3;
+  string group = 4;
+}

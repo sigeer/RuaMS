@@ -8,6 +8,7 @@ using net.server;
 using server;
 using server.life;
 using tools;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Application.Core.Channel
 {
@@ -48,6 +49,12 @@ namespace Application.Core.Channel
                 var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Key, e.Value.MobSkill.getX()));
                 player.sendPacket(PacketCreator.giveDebuff(debuff, e.Value.MobSkill));
             }
+        }
+
+        public void UpdateCouponConfig(Config.CouponConfig config)
+        {
+            ActiveCoupons = config.ActiveCoupons.ToList();
+            CouponRates = config.CouponRates.ToDictionary();
         }
     }
 }

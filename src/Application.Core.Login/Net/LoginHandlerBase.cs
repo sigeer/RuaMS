@@ -1,7 +1,4 @@
-using Application.Core.Client;
-using Application.Core.Login.Datas;
-using Application.Core.Net;
-using Application.Core.Servers;
+using Application.Core.Login.Client;
 using Application.Shared.Sessions;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -10,14 +7,12 @@ namespace Application.Core.Login.Net
 {
     public abstract class LoginHandlerBase : ILoginHandler
     {
-        protected readonly IMasterServer _server;
-        protected readonly AccountManager _accountManager;
+        protected readonly MasterServer _server;
         protected readonly ILogger<LoginHandlerBase> _logger;
 
-        protected LoginHandlerBase(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
+        protected LoginHandlerBase(MasterServer server, ILogger<LoginHandlerBase> logger)
         {
             _server = server;
-            _accountManager = accountManager;
             _logger = logger;
         }
 

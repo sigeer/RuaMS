@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message CoolDownDto {
+  int32 skillId = 1;
+  int64 length = 2;
+  int64 startTime = 3;
+}

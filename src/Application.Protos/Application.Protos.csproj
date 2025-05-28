@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />
+		<Protobuf Include="Rank\RankCharacter.proto" GrpcServices="None" />
+
+		<Protobuf Include="Config\RegisterServerResult.proto" GrpcServices="None" />
+		<Protobuf Include="Config\WorldConfig.proto" GrpcServices="None" />
+		<Protobuf Include="Config\CouponConfig.proto" GrpcServices="None" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Dto\PlayerShop.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Drop.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Equip.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Gift.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Item.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\DueyPackage.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Account.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Area.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Buddy.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\CashShop.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Character.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\CoolDown.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Event.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\KeyMap.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Monsterbook.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Ring.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Pet.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\PetIgnore.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\QuestStatus.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\QuestProgress.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\MedalMap.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\QuickSlot.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\SavedLocation.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Skill.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\SkillMacro.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Storage.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\TrockLocation.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Note.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\PlayerBuffSave.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Buff.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Disease.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\PlayerSave.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Shop.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\ShopItem.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Merchant.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\PlayerShopItem.proto" GrpcServices="None" />
+	</ItemGroup>
+
+
+</Project>

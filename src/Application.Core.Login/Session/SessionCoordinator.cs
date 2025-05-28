@@ -20,6 +20,7 @@
 
 
 using Application.Core.Client;
+using Application.Core.Login.Client;
 using Application.Core.scripting.npc;
 using Application.EF;
 using Application.Shared.Sessions;

@@ -31,6 +31,7 @@ using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
+using Config;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
 using scripting.Event;
@@ -61,6 +62,7 @@ namespace Application.Core.Game.TheWorld
         SkillbookInformationProvider SkillbookInformationProvider { get; }
         ShopFactory ShopFactory { get; }
         ItemService ItemService { get; }
+        RankService RankService { get; }
         ChannelService Service { get; }
         ChannelClientStorage ClientStorage { get; }
 
@@ -79,6 +81,10 @@ namespace Application.Core.Game.TheWorld
         public float WorldTravelRate { get; }
         public float WorldFishingRate { get; }
         public string WorldServerMessage { get; }
+
+        Dictionary<int, int> CouponRates { get; set; }
+        List<int> ActiveCoupons { get; set; }
+
         ChannelServerConfig ServerConfig { get; }
         ChannelPlayerStorage Players { get; }
         DojoInstance DojoInstance { get; }
@@ -199,5 +205,6 @@ namespace Application.Core.Game.TheWorld
         /// <param name="isRaise"></param>
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
         int GetAccountCharcterCount(int accId);
+        void UpdateCouponConfig(CouponConfig config);
     }
 }

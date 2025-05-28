@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/ShopItem.proto";
+
+package Dto;
+
+message ShopDto {
+  int32 shopId = 1;
+  int32 npcId = 2;
+  repeated ShopItemDto items = 3;
+}

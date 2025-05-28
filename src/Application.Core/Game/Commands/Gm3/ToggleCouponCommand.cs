@@ -17,6 +17,6 @@ public class ToggleCouponCommand : CommandBase
             player.yellowMessage("Syntax: !togglecoupon <itemid>");
             return;
         }
-        Server.getInstance().toggleCoupon(int.Parse(paramsValue[0]));
+        c.CurrentServer.Transport.SendToggleCoupon(int.Parse(paramsValue[0]));
     }
 }

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package Config;
+
+message WorldConfig {
+	float mobRate = 1;
+	float mesoRate = 2;
+	float expRate = 3;
+	float questRate = 4;
+	float dropRate = 5;
+	float bossDropRate = 6;
+	float travelRate = 7;
+	float fishingRate = 8;
+	string serverMessage = 9;
+}

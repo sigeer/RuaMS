@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message DiseaseDto {
+  int64 leftTime = 1;
+  int32 mobSkillId = 2;
+  int32 mobSkillLevel = 3;
+  int32 diseaseOrdinal = 4;
+}

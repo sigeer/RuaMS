@@ -43,7 +43,7 @@ public class BeginnerCreator : CharacterFactory
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(ILoginClient c, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
+    public static int createCharacter(IClientBase c, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
     {
         return createNewCharacter(c, name, face, hair, skin, gender, CreateRecipe(top, bottom, shoes, weapon));
     }

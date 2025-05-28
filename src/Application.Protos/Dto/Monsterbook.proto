@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message MonsterbookDto {
+  int32 cardid = 1;
+  int32 level = 2;
+}

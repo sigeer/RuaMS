@@ -1,3 +1,4 @@
+using Application.Core.Login.Services;
 using Application.Core.tools;
 using Application.EF;
 using Application.EF.Entities;
@@ -28,12 +29,14 @@ namespace Application.Core.Login.Datas
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly IMapper _maaper;
         readonly DataStorage _dataStorage;
-        public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maaper, DataStorage dataStorage)
+        readonly MasterServer _server;
+        public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maaper, DataStorage dataStorage, MasterServer server)
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
             _maaper = maaper;
             _dataStorage = dataStorage;
+            _server = server;
         }
 
         public AccountDto? GetAccountDto(int accId)

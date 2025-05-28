@@ -21,10 +21,9 @@
 */
 
 
-using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login;
+using Application.Core.Login.Client;
 using Application.Core.Login.Net;
-using Application.Core.Servers;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;
@@ -33,8 +32,8 @@ namespace net.server.handlers.login;
 
 public class RelogRequestHandler : LoginHandlerBase
 {
-    public RelogRequestHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public RelogRequestHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
     }
 

@@ -1,5 +1,3 @@
-using Application.Core.Game.GlobalControllers;
-using Application.Core.Gameplay.Wedding;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
 using Application.Core.Login.Services;
@@ -14,7 +12,6 @@ using Application.Utility;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
-using client.processor.npc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,7 +25,7 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IMasterServer
+    public partial class MasterServer : IServerBase<IMasterServerTransport>
     {
         public int Id { get; } = 0;
         readonly ILogger<MasterServer> _logger;
@@ -36,7 +33,7 @@ namespace Application.Core.Login
         public AbstractServer NettyServer { get; }
         public bool IsRunning { get; private set; }
         public List<ChannelServerWrapper> ChannelServerList { get; }
-        public WeddingService WeddingInstance { get; }
+        public WeddingManager WeddingInstance { get; }
 
         public string InstanceId { get; }
 
@@ -45,7 +42,6 @@ namespace Application.Core.Login
         public DateTimeOffset StartupTime { get; private set; }
 
         private HashSet<int> queuedGuilds = new();
-        public PlayerStorage Players { get; }
 
         #region world config
         private float _mobRate;
@@ -75,19 +71,23 @@ namespace Application.Core.Login
         public string EventMessage { get; set; }
         #endregion
 
+        #region Managers
+        public CouponManager CouponManager { get; }
+        public AccountManager AccountManager { get; }
+        public CharacterManager CharacterManager { get; }
+        public ServerManager ServerManager { get; }
+        #endregion
+
         public IServiceProvider ServiceProvider { get; }
 
         public InvitationController InvitationController { get; }
 
         CharacterService _characterSevice;
-        ServerService _serverService;
-        public MasterServer(IServiceProvider sp, AccountManager accountManager, CharacterService characterManager)
+        public MasterServer(IServiceProvider sp, CharacterService characterManager)
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
-            _serverService = ServiceProvider.GetRequiredService<ServerService>();
 
-            this.accountManager = accountManager;
             _characterSevice = characterManager;
 
             InstanceId = Guid.NewGuid().ToString();
@@ -96,7 +96,6 @@ namespace Application.Core.Login
             Transport = new MasterServerTransport(this);
             NettyServer = new LoginServer(this);
 
-            WeddingInstance = new WeddingService(this);
 
             var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
             var serverSection = configuration.GetSection("WorldConfig");
@@ -113,12 +112,14 @@ namespace Application.Core.Login
             ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
             WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
 
-            Players = new PlayerStorage();
             BuffStorage = new PlayerBuffStorage();
-            this.accountManager = accountManager;
 
             InvitationController = new InvitationController(this);
-
+            ServerManager = ActivatorUtilities.CreateInstance<ServerManager>(ServiceProvider, this);
+            CouponManager = ActivatorUtilities.CreateInstance<CouponManager>(ServiceProvider, this);
+            CharacterManager = ActivatorUtilities.CreateInstance<CharacterManager>(ServiceProvider, this);
+            AccountManager = ActivatorUtilities.CreateInstance<AccountManager>(ServiceProvider, this);
+            WeddingInstance = ActivatorUtilities.CreateInstance<WeddingManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;
@@ -157,7 +158,7 @@ namespace Application.Core.Login
 
         public async Task StartServer()
         {
-            await _serverService.SetupDataBase();
+            await ServerManager.SetupDataBase();
             await Server.getInstance().Start();
 
             _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
@@ -274,6 +275,8 @@ namespace Application.Core.Login
             tMan.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             tMan.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
             tMan.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            tMan.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            tMan.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
             InvitationController.Register();
             _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");
         }
@@ -286,7 +289,7 @@ namespace Application.Core.Login
         public int GetWorldCapacityStatus()
         {
             int worldCap = ChannelServerList.Count * YamlConfig.config.server.CHANNEL_LOAD;
-            int num = Players.Count;
+            int num = CharacterManager.GetOnlinedPlayerCount();
 
             int status;
             if (num >= worldCap)

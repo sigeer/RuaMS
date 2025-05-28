@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/Character.proto";
+import "Dto/Item.proto";
+import "Dto/CashShop.proto";
+import "Dto/Monsterbook.proto";
+import "Dto/PetIgnore.proto";
+import "Dto/TrockLocation.proto";
+import "Dto/Area.proto";
+import "Dto/Event.proto";
+import "Dto/QuestStatus.proto";
+import "Dto/Skill.proto";
+import "Dto/SkillMacro.proto";
+import "Dto/CoolDown.proto";
+import "Dto/KeyMap.proto";
+import "Dto/SavedLocation.proto";
+import "Dto/QuickSlot.proto";
+import "Dto/Storage.proto";
+import "Dto/Buddy.proto";
+
+package Dto;
+
+message LoginInfo {
+	bool isNewCommer = 1;
+}
+
+message RecentFameRecordDto {
+  repeated int32 chararacterIds = 1;
+  int64 lastUpdateTime = 2;
+}
+
+message CharacterLinkDto {
+  int32 level = 1;
+  string name = 2;
+}
+
+message PlayerGetterDto {
+  int32 channel = 1;
+  CharacterDto character = 2; // CHECK TYPE
+  repeated ItemDto inventoryItems = 3; // CHECK TYPE
+  CashShopDto cashShop = 4; // CHECK TYPE
+  MonsterbookDto monsterBooks = 5; // CHECK TYPE
+  repeated PetIgnoreDto petIgnores = 6; // CHECK TYPE
+  repeated TrockLocationDto trockLocations = 7; // CHECK TYPE
+  repeated AreaDto areas = 8; // CHECK TYPE
+  repeated EventDto events = 9; // CHECK TYPE
+  repeated QuestStatusDto questStatuses = 10; // CHECK TYPE
+  repeated SkillDto skills = 11; // CHECK TYPE
+  repeated SkillMacroDto skillMacros = 12; // CHECK TYPE
+  repeated CoolDownDto coolDowns = 13; // CHECK TYPE
+  repeated KeyMapDto keyMaps = 14; // CHECK TYPE
+  repeated SavedLocationDto savedLocations = 15; // CHECK TYPE
+  QuickSlotDto quickSlot = 16; // CHECK TYPE
+  StorageDto storageInfo = 17; // CHECK TYPE
+  repeated BuddyDto buddyList = 18; // CHECK TYPE
+  LoginInfo loginInfo = 19;
+  CharacterLinkDto link = 20;
+  RecentFameRecordDto fameRecord = 21;
+}

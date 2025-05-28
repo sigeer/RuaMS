@@ -21,9 +21,7 @@
  */
 
 
-using Application.Core.Client;
-using Application.Core.Login.Datas;
-using Application.Core.Servers;
+using Application.Core.Login.Client;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;
@@ -36,8 +34,8 @@ namespace Application.Core.Login.Net.Handlers;
 public class GuestLoginHandler : LoginHandlerBase
 {
     readonly LoginPasswordHandler _loginHandler;
-    public GuestLoginHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger, LoginPasswordHandler loginPasswordHandler)
-        : base(server, accountManager, logger)
+    public GuestLoginHandler(MasterServer server, ILogger<LoginHandlerBase> logger, LoginPasswordHandler loginPasswordHandler)
+        : base(server, logger)
     {
         _loginHandler = loginPasswordHandler;
     }

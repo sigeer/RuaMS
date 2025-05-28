@@ -1,6 +1,7 @@
 using Application.Core.Channel.Mappers;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Commands;
+using Application.Core.Mappers;
 using Application.Core.Net;
 using Application.Core.Servers.Services;
 using client.processor.npc;
@@ -44,13 +45,15 @@ namespace Application.Core.Channel
             return services;
         }
 
-        static IServiceCollection AddWZProvider(this IServiceCollection services)
+        static IServiceCollection AddChannelService(this IServiceCollection services)
         {
             // 可能同一机器创建多个频道，wz资源读取使用单例
             services.AddSingleton<SkillbookInformationProvider>();
             services.AddSingleton<ShopFactory>();
 
             services.AddSingleton<ItemService>();
+            services.AddSingleton<RankService>();
+            services.AddMemoryCache();
             return services;
         }
 
@@ -59,11 +62,11 @@ namespace Application.Core.Channel
             services.AddChannelCommands();
             services.AddChannelHandlers();
 
-            services.AddWZProvider();
+            services.AddChannelService();
 
             services.AddScoped<CharacterService>();
 
-            services.AddAutoMapper(typeof(ObjectMapper));
+            services.AddAutoMapper(typeof(ObjectMapper), typeof(ProtoMapper));
             return services;
         }
     }

@@ -22,6 +22,7 @@
 
 
 using Application.Core.Client;
+using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Services;
 using Application.Core.Servers;
@@ -34,8 +35,8 @@ namespace Application.Core.Login.Net.Handlers;
 public class CheckCharNameHandler : LoginHandlerBase
 {
     readonly CharacterService characterManager;
-    public CheckCharNameHandler(IMasterServer server, CharacterService characterManager, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public CheckCharNameHandler(MasterServer server, CharacterService characterManager, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
         this.characterManager = characterManager;
     }

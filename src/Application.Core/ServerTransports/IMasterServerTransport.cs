@@ -15,5 +15,6 @@ namespace Application.Core.ServerTransports
         void BroadcastWorldGMPacket(Packet packet);
         void BroadcastMessage(Packet p);
         void SendNotes(int channel, int id, NoteDto[] notes);
+        void SendUpdateCouponRates(Config.CouponConfig config);
     }
 }

@@ -1,4 +1,3 @@
-using net.server;
 using net.server.guild;
 
 namespace Application.Core.Game.Commands.Gm0;
@@ -14,7 +13,6 @@ public class RanksCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
 
-        var worldRanking = Server.getInstance().getWorldPlayerRanking(player.getWorld());
-        player.sendPacket(GuildPackets.showPlayerRanks(NpcId.MAPLE_ADMINISTRATOR, worldRanking));
+        player.sendPacket(GuildPackets.showPlayerRanks(NpcId.MAPLE_ADMINISTRATOR, c.CurrentServer.RankService.LoadPlayerRanking()));
     }
 }

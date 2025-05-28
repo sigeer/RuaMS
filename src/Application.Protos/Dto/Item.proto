@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/Equip.proto";
+import "Dto/Pet.proto";
+
+package Dto;
+
+message ItemDto {
+  int32 inventoryItemId = 1;
+  int32 type = 2;
+  google.protobuf.Int32Value characterid = 3;
+  google.protobuf.Int32Value accountid = 4;
+  int32 itemid = 5;
+  int32 inventoryType = 6;
+  int32 position = 7;
+  int32 quantity = 8;
+  string owner = 9;
+  int32 petid = 10;
+  int32 flag = 11;
+  int64 expiration = 12;
+  string giftFrom = 13;
+  EquipDto equipInfo = 14;
+  PetDto petInfo = 15;
+}

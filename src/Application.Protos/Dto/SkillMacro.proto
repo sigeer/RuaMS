@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message SkillMacroDto {
+  int32 skill1 = 1;
+  int32 skill2 = 2;
+  int32 skill3 = 3;
+  string name = 4;
+  int32 shout = 5;
+  int32 position = 6;
+}

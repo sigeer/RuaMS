@@ -1,4 +1,3 @@
-using Application.Core.Login.Datas;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Services
@@ -10,13 +9,11 @@ namespace Application.Core.Login.Services
     {
         protected System.Threading.Channels.Channel<StorageType> packetChannel;
         readonly DataStorage _dataStorage;
-        readonly AccountManager _accountManager;
 
         protected readonly ILogger<StorageService> _logger;
-        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, AccountManager accountManager)
+        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger)
         {
             _dataStorage = chrStorage;
-            _accountManager = accountManager;
             _logger = logger;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<StorageType>();
             // 定时触发、特殊事件触发、关闭服务器触发

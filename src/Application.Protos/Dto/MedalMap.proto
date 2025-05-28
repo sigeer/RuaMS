@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message MedalMapDto {
+  int32 mapId = 1;
+}

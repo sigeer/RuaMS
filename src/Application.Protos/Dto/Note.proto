@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message NoteDto {
+  int32 id = 1;
+  string to = 2;
+  string from = 3;
+  string message = 4;
+  int64 timestamp = 5;
+  int32 fame = 6;
+  int32 deleted = 7;
+}

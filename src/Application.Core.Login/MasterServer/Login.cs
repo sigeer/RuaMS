@@ -1,8 +1,9 @@
-using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,44 +12,43 @@ namespace Application.Core.Login
 {
     public partial class MasterServer
     {
-        AccountManager accountManager;
         public int GetAccountCharacterCount(int accId)
         {
-            return accountManager.GetAccountPlayerIds(accId).Count;
+            return AccountManager.GetAccountPlayerIds(accId).Count;
         }
         public AccountDto? GetAccountDto(int accId)
         {
-            return accountManager.GetAccountDto(accId);
+            return AccountManager.GetAccountDto(accId);
         }
 
         public int GetAccountIdByAccountName(string name)
         {
-            return accountManager.GetAccountIdByName(name);
+            return AccountManager.GetAccountIdByName(name);
         }
 
         public AccountLoginStatus UpdateAccountState(int accId, sbyte newState)
         {
-            return accountManager.UpdateAccountState(accId, newState);
+            return AccountManager.UpdateAccountState(accId, newState);
         }
 
-        public List<IPlayer> LoadAccountCharactersView(int id)
+        public List<CharacterViewObject> LoadAccountCharactersView(int id)
         {
-            return _characterSevice.GetCharactersView(accountManager.GetAccountPlayerIds(id).ToArray());
+            return CharacterManager.GetCharactersView(AccountManager.GetAccountPlayerIds(id).ToArray());
         }
 
         public void UpdateAccountChracterByAdd(int accountId, int id)
         {
-            accountManager.UpdateAccountCharacterCacheByAdd(accountId, id);
+            AccountManager.UpdateAccountCharacterCacheByAdd(accountId, id);
         }
 
         public AccountLoginStatus GetAccountLoginStatus(int accId)
         {
-            return accountManager.GetAccountLoginStatus(accId);
+            return AccountManager.GetAccountLoginStatus(accId);
         }
 
         public void CommitAccountEntity(AccountDto accountEntity)
         {
-            accountManager.UpdateAccount(accountEntity);
+            AccountManager.UpdateAccount(accountEntity);
         }
 
 

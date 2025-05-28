@@ -1,7 +1,5 @@
-using Application.Core.Client;
-using Application.Core.Login.Datas;
+using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
-using Application.Core.Servers;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
 using net.packet;
@@ -13,8 +11,8 @@ namespace Application.Core.Login.Net.Handlers;
  */
 public class AcceptToSHandler : LoginHandlerBase
 {
-    public AcceptToSHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public AcceptToSHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
     }
 

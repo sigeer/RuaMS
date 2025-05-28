@@ -61,6 +61,11 @@ public static class InventoryTypeUtils
         return (InventoryType)id;
     }
 
+    public static InventoryType GetByType(this int id)
+    {
+        return (InventoryType)id;
+    }
+
     public static InventoryType[] values()
     {
         return Enum.GetValues<InventoryType>();

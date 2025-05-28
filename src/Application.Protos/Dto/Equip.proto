@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "Dto/Ring.proto";
+
+package Dto;
+
+message EquipDto {
+  int32 id = 1;
+  int32 inventoryItemId = 2;
+  int32 upgradeslots = 3;
+  int32 level = 4;
+  int32 str = 5;
+  int32 dex = 6;
+  int32 int = 7;
+  int32 luk = 8;
+  int32 hp = 9;
+  int32 mp = 10;
+  int32 watk = 11;
+  int32 matk = 12;
+  int32 wdef = 13;
+  int32 mdef = 14;
+  int32 acc = 15;
+  int32 avoid = 16;
+  int32 hands = 17;
+  int32 speed = 18;
+  int32 jump = 19;
+  int32 locked = 20;
+  int32 vicious = 21;
+  int32 itemlevel = 22;
+  int32 itemexp = 23;
+  int32 ringId = 24;
+  RingDto ringInfo = 25;
+}

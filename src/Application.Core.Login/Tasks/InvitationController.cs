@@ -1,18 +1,18 @@
 using Application.Core.Game.Controllers;
 using Application.Core.Game.Invites;
-using Application.Core.Servers;
+using Application.Utility;
 
-namespace Application.Core.Game.GlobalControllers
+namespace Application.Core.Login.Tasks
 {
     /// <summary>
     /// 邀请过期检查
     /// </summary>
     public class InvitationController : TimelyControllerBase
     {
-        readonly IMasterServer _server;
+        readonly MasterServer _server;
         public List<InviteType> AllInviteTypes { get; set; } = EnumClassUtils.GetValues<InviteType>();
 
-        public InvitationController(IMasterServer server)
+        public InvitationController(MasterServer server)
             : base("InvitationExpireCheckTask", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30))
         {
             _server = server;

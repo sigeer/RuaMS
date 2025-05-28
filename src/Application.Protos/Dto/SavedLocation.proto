@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package Dto;
+
+message SavedLocationDto {
+  int32 id = 1;
+  int32 characterid = 2;
+  string locationtype = 3;
+  int32 map = 4;
+  int32 portal = 5;
+}

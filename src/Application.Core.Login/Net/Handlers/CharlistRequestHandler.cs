@@ -21,9 +21,7 @@
  */
 
 
-using Application.Core.Client;
-using Application.Core.Login.Datas;
-using Application.Core.Servers;
+using Application.Core.Login.Client;
 using Microsoft.Extensions.Logging;
 using net.packet;
 using tools;
@@ -32,8 +30,8 @@ namespace Application.Core.Login.Net.Handlers;
 
 public class CharlistRequestHandler : LoginHandlerBase
 {
-    public CharlistRequestHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public CharlistRequestHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
     }
 

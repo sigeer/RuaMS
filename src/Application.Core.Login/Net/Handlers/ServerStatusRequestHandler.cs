@@ -22,6 +22,8 @@
 
 
 using Application.Core.Client;
+using Application.Core.Login;
+using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
 using Application.Core.Servers;
@@ -33,8 +35,8 @@ namespace net.server.handlers.login;
 
 public class ServerStatusRequestHandler : LoginHandlerBase
 {
-    public ServerStatusRequestHandler(IMasterServer server, AccountManager accountManager, ILogger<LoginHandlerBase> logger)
-        : base(server, accountManager, logger)
+    public ServerStatusRequestHandler(MasterServer server, ILogger<LoginHandlerBase> logger)
+        : base(server, logger)
     {
     }
 

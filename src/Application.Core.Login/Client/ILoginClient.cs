@@ -1,14 +1,16 @@
-using Application.Core.Servers;
+using Application.Core.Client;
+using Application.Core.Game.Players;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using net.server.coordinator.session;
 
-namespace Application.Core.Client
+namespace Application.Core.Login.Client
 {
     public interface ILoginClient : IClientBase
     {
         AccountDto? AccountEntity { get; protected set; }
-        IMasterServer CurrentServer { get; protected set; }
+        MasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         void Disconnect();
 
@@ -29,7 +31,7 @@ namespace Application.Core.Client
         void UpdateMacs(string macData);
 
         void SendCharList();
-        List<IPlayer> LoadCharactersView();
+        List<CharacterViewObject> LoadCharactersView();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
         void CommitAccount();
