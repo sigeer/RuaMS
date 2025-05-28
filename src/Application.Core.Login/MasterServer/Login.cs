@@ -3,6 +3,7 @@ using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Session;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,7 @@ namespace Application.Core.Login
             return AccountManager.UpdateAccountState(accId, newState);
         }
 
-        public List<IPlayer> LoadAccountCharactersView(int id)
+        public List<CharacterViewObject> LoadAccountCharactersView(int id)
         {
             return CharacterManager.GetCharactersView(AccountManager.GetAccountPlayerIds(id).ToArray());
         }

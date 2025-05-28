@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using net.server.coordinator.session;
 
@@ -30,7 +31,7 @@ namespace Application.Core.Login.Client
         void UpdateMacs(string macData);
 
         void SendCharList();
-        List<IPlayer> LoadCharactersView();
+        List<CharacterViewObject> LoadCharactersView();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
         void CommitAccount();

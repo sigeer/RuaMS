@@ -6,6 +6,7 @@ using Application.Core.Net;
 using Application.Core.tools;
 using Application.EF;
 using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
@@ -391,7 +392,7 @@ namespace Application.Core.Login.Client
         /// </summary>
         /// <param name="worldId"></param>
         /// <returns></returns>
-        public List<IPlayer> LoadCharactersView()
+        public List<CharacterViewObject> LoadCharactersView()
         {
             return CurrentServer.LoadAccountCharactersView(AccountEntity!.Id);
         }

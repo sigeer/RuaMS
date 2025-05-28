@@ -214,7 +214,7 @@ namespace Application.Core.Login.Datas
         /// </summary>
         /// <param name="charIds"></param>
         /// <returns></returns>
-        public List<CharacterViewObject> GetCharactersViewInternal(int[] charIds)
+        public List<CharacterViewObject> GetCharactersView(int[] charIds)
         {
             List<CharacterViewObject> list = new List<CharacterViewObject>();
 
@@ -267,24 +267,6 @@ namespace Application.Core.Login.Datas
 
         }
 
-        public List<IPlayer> GetCharactersView(int[] idList)
-        {
-            var dataList = GetCharactersViewInternal(idList);
-
-            List<IPlayer> list = new List<IPlayer>();
-            foreach (var c in dataList)
-            {
-                var player = _mapper.Map<Player>(c.Character);
-                Inventory inv = player.Bag[InventoryType.EQUIPPED];
-                foreach (var equip in c.InventoryItems.Where(x => x.InventoryType == InventoryType.EQUIPPED.getType()))
-                {
-                    var item = _mapper.Map<Equip>(equip);
-                    inv.addItemFromDB(item);
-                }
-                list.Add(player);
-            }
-            return list;
-        }
         internal void SetPlayerChannel(int playerId, int channel, out int accountId)
         {
             if (_idDataSource.TryGetValue(playerId, out var d))

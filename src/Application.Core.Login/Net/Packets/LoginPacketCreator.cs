@@ -1,5 +1,7 @@
 using Application.Core.Game.Players;
 using Application.Core.Login.Client;
+using Application.Shared.Characters;
+using Application.Shared.Dto;
 using Application.Shared.Net;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
@@ -138,13 +140,27 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
+        public static Packet showAllCharacterInfo(ILoginClient client, int worldid, List<CharacterViewObject> chars, bool usePic)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
+            p.writeByte(0);
+            p.writeByte(worldid);
+            p.writeByte(chars.Count);
+            foreach (var chr in chars)
+            {
+                AddCharEntry(p, client, chr, true);
+            }
+            p.writeByte(usePic ? 1 : 2);
+            return p;
+        }
+
         public static Packet GetCharListPacket(ILoginClient c)
         {
             OutPacket p = OutPacket.create(SendOpcode.CHARLIST);
             p.writeByte(0);
-            List<IPlayer> chars = c.LoadCharactersView();
+            List<CharacterViewObject> chars = c.LoadCharactersView();
             p.writeByte((byte)chars.Count);
-            foreach (IPlayer chr in chars)
+            foreach (var chr in chars)
             {
                 AddCharEntry(p, c, chr, false);
             }
@@ -154,121 +170,82 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
-        private static void AddCharEntry(OutPacket p, ILoginClient playerClient, IPlayer chr, bool viewall)
+        private static void AddCharEntry(OutPacket p, ILoginClient playerClient, CharacterViewObject chr, bool viewall)
         {
-            addCharStats(p, chr);
+            addCharStats(p, chr.Character);
             addCharLook(p, chr, false);
             if (!viewall)
             {
                 p.writeByte(0);
             }
-            if (playerClient.AccountEntity!.GMLevel > 1 || chr.isGmJob())
+            if (playerClient.AccountEntity!.GMLevel > 1 || JobFactory.GetById(chr.Character.JobId).IsGmJob())
             {
                 // thanks Daddy Egg (Ubaware), resinate for noticing GM jobs crashing on non-GM players account
                 p.writeByte(0);
                 return;
             }
             p.writeByte(1); // world rank enabled (next 4 ints are not sent if disabled) short??
-            p.writeInt(chr.getRank()); // world rank
-            p.writeInt(chr.getRankMove()); // move (negative is downwards)
-            p.writeInt(chr.getJobRank()); // job rank
-            p.writeInt(chr.getJobRankMove()); // move (negative is downwards)
+            p.writeInt(chr.Character.Rank); // world rank
+            p.writeInt(chr.Character.RankMove); // move (negative is downwards)
+            p.writeInt(chr.Character.JobRank); // job rank
+            p.writeInt(chr.Character.JobRankMove); // move (negative is downwards)
         }
 
-        private static void addCharStats(OutPacket p, IPlayer chr)
+        private static void addCharStats(OutPacket p, CharacterDto chr)
         {
-            p.writeInt(chr.getId()); // character id
-            p.writeFixedString(chr.getName());
-            p.writeByte(chr.getGender()); // gender (0 = male, 1 = female)
-            p.writeByte((byte)chr.getSkinColor()); // skin color
-            p.writeInt(chr.getFace()); // face
-            p.writeInt(chr.getHair()); // hair
+            p.writeInt(chr.Id); // character id
+            p.writeFixedString(chr.Name);
+            p.writeByte(chr.Gender); // gender (0 = male, 1 = female)
+            p.writeByte((byte)chr.Skincolor); // skin color
+            p.writeInt(chr.Face); // face
+            p.writeInt(chr.Hair); // hair
 
             for (int i = 0; i < 3; i++)
             {
-                var pet = chr.getPet(i);
-                if (pet != null) //Checked GMS.. and your pets stay when going into the cash shop.
-                {
-                    p.writeLong(pet.getUniqueId());
-                }
-                else
-                {
-                    p.writeLong(0);
-                }
+                p.writeLong(0);
             }
 
-            p.writeByte(chr.getLevel()); // level
-            p.writeShort(chr.JobModel.Id); // job
+            p.writeByte(chr.Level); // level
+            p.writeShort(chr.JobId); // job
             p.writeShort(chr.Str); // str
             p.writeShort(chr.Dex); // dex
             p.writeShort(chr.Int); // int
             p.writeShort(chr.Luk); // luk
-            p.writeShort(chr.HP); // hp (?)
-            p.writeShort(chr.MaxHP); // maxhp
-            p.writeShort(chr.MP); // mp (?)
-            p.writeShort(chr.MaxMP); // maxmp
+            p.writeShort(chr.Hp); // hp (?)
+            p.writeShort(chr.Maxhp); // maxhp
+            p.writeShort(chr.Mp); // mp (?)
+            p.writeShort(chr.Maxmp); // maxmp
             p.writeShort(chr.Ap); // remaining ap
-            if (chr.JobModel.HasSPTable)
-            {
-                addRemainingSkillInfo(p, chr);
-            }
-            else
-            {
-                p.writeShort(chr.getRemainingSp()); // remaining sp
-            }
-            p.writeInt(chr.getExp()); // current exp
-            p.writeShort(chr.getFame()); // fame
-            p.writeInt(chr.getGachaExp()); //Gacha Exp
-            p.writeInt(chr.getMapId()); // current map id
-            p.writeByte(chr.getInitialSpawnpoint()); // spawnpoint
+            p.writeShort(0); // remaining sp 只是在登录界面预览，应该不会影响游戏内容吧？
+            p.writeInt(chr.Exp); // current exp
+            p.writeShort(chr.Fame); // fame
+            p.writeInt(chr.Gachaexp); //Gacha Exp
+            p.writeInt(chr.Map); // current map id
+            p.writeByte(chr.Spawnpoint); // spawnpoint
             p.writeInt(0);
         }
 
-        public static void addCharLook(OutPacket p, IPlayer chr, bool mega)
+        public static void addCharLook(OutPacket p, CharacterViewObject chr, bool mega)
         {
-            p.writeByte(chr.getGender());
-            p.writeByte((int)chr.getSkinColor()); // skin color
-            p.writeInt(chr.getFace()); // face
+            p.writeByte(chr.Character.Gender);
+            p.writeByte((int)chr.Character.Skincolor); // skin color
+            p.writeInt(chr.Character.Face); // face
             p.writeBool(!mega);
-            p.writeInt(chr.getHair()); // hair
+            p.writeInt(chr.Character.Hair); // hair
             addCharEquips(p, chr);
         }
 
-        private static void addRemainingSkillInfo(OutPacket p, IPlayer chr)
+        private static void addCharEquips(OutPacket p, CharacterViewObject chr)
         {
-            int[] remainingSp = chr.getRemainingSps();
-            int effectiveLength = 0;
-            foreach (int j in remainingSp)
-            {
-                if (j > 0)
-                {
-                    effectiveLength++;
-                }
-            }
-
-            p.writeByte(effectiveLength);
-            for (int i = 0; i < remainingSp.Length; i++)
-            {
-                if (remainingSp[i] > 0)
-                {
-                    p.writeByte(i + 1);
-                    p.writeByte(remainingSp[i]);
-                }
-            }
-        }
-
-        private static void addCharEquips(OutPacket p, IPlayer chr)
-        {
-            Inventory equip = chr.getInventory(InventoryType.EQUIPPED);
-            var ii = ItemInformationProvider.getInstance().canWearEquipment(chr, equip.list());
             Dictionary<short, int> myEquip = new();
             Dictionary<short, int> maskedEquip = new();
-            foreach (Item item in ii)
+            int weaponItemId = 0;
+            foreach (var item in chr.InventoryItems)
             {
-                short pos = (short)(item.getPosition() * -1);
+                short pos = (short)(item.Position * -1);
                 if (pos < 100 && !myEquip.ContainsKey(pos))
                 {
-                    myEquip.AddOrUpdate(pos, item.getItemId());
+                    myEquip.AddOrUpdate(pos, item.Itemid);
                 }
                 else if (pos > 100 && pos != 111)
                 {
@@ -278,12 +255,15 @@ namespace Application.Core.Login.Net.Packets
                     {
                         maskedEquip.AddOrUpdate(pos, d);
                     }
-                    myEquip.AddOrUpdate(pos, item.getItemId());
+                    myEquip.AddOrUpdate(pos, item.Itemid);
                 }
                 else if (myEquip.ContainsKey(pos))
                 {
-                    maskedEquip.AddOrUpdate(pos, item.getItemId());
+                    maskedEquip.AddOrUpdate(pos, item.Itemid);
                 }
+
+                if (item.Position == -111)
+                    weaponItemId = item.Itemid;
             }
             foreach (var entry in myEquip)
             {
@@ -297,33 +277,13 @@ namespace Application.Core.Login.Net.Packets
                 p.writeInt(entry.Value);
             }
             p.writeByte(0xFF);
-            var cWeapon = equip.getItem(-111);
-            p.writeInt(cWeapon != null ? cWeapon.getItemId() : 0);
+            p.writeInt(weaponItemId);
             for (int i = 0; i < 3; i++)
             {
-                if (chr.getPet(i) != null)
-                {
-                    p.writeInt(chr.getPet(i)!.getItemId());
-                }
-                else
-                {
-                    p.writeInt(0);
-                }
+                p.writeInt(0);
             }
         }
 
-        public static Packet showAllCharacterInfo(ILoginClient client, int worldid, List<IPlayer> chars, bool usePic)
-        {
-            OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
-            p.writeByte(0);
-            p.writeByte(worldid);
-            p.writeByte(chars.Count);
-            foreach (IPlayer chr in chars)
-            {
-                AddCharEntry(p, client, chr, true);
-            }
-            p.writeByte(usePic ? 1 : 2);
-            return p;
-        }
+
     }
 }
