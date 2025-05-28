@@ -7,6 +7,7 @@ using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
+using Application.Shared;
 using Application.Shared.Characters;
 using Application.Shared.Configs;
 using Application.Shared.Dto;
@@ -41,6 +42,7 @@ namespace Application.Core.Channel.Local
         readonly NoteService _noteService;
         readonly ShopService _shopManager;
         readonly MessageService _msgService;
+        readonly RankService _rankService;
         readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
@@ -57,6 +59,7 @@ namespace Application.Core.Channel.Local
             NoteService noteService,
             ShopService shopManager,
             MessageService messageService,
+            RankService rankService,
             IMapper mapper)
         {
             _server = server;
@@ -69,6 +72,7 @@ namespace Application.Core.Channel.Local
             _shopManager = shopManager;
             _msgService = messageService;
             _mapper = mapper;
+            _rankService = rankService;
         }
 
         public Task<int> RegisterServer(IWorldChannel server)
@@ -631,6 +635,11 @@ namespace Application.Core.Channel.Local
         public PetDto CreatePet(string petName, int level, int tameness, int fullness)
         {
             return _itemService.CreatePet(petName, level, tameness, fullness);
+        }
+
+        public Rank.RankCharacterList LoadPlayerRanking(int topCount)
+        {
+            return _rankService.LoadPlayerRanking(topCount);
         }
     }
 }

@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Login.Datas;
+using Application.Core.Login.Mappers;
 using Application.Core.Login.Net;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
@@ -64,6 +65,7 @@ namespace Application.Core.Login
         {
             services.AddSingleton<RankingLoginTask>();
             services.AddSingleton<DueyFredrickTask>();
+            services.AddSingleton<RankingCommandTask>();
             return services;
         }
 
@@ -81,12 +83,13 @@ namespace Application.Core.Login
             services.AddSingleton<NoteService>();
             services.AddSingleton<ShopService>();
             services.AddSingleton<MessageService>();
+            services.AddSingleton<RankService>();
             return services;
         }
 
         public static IServiceCollection AddLoginServer(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(DtoMapper));
+            services.AddAutoMapper(typeof(DtoMapper), typeof(ProtoMapper));
 
             services.AddLoginHandlers();
 
@@ -94,6 +97,7 @@ namespace Application.Core.Login
 
             services.AddServices();
             services.AddStorage();
+            services.AddDistributedMemoryCache();
             services.AddSingleton<IMasterServer, MasterServer>();
 
             services.AddScheduleTask();

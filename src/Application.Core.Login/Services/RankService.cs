@@ -1,18 +1,55 @@
 using Application.EF;
-using Application.Shared;
+using AutoMapper;
+using Google.Protobuf;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Services
 {
     public class RankService
     {
-        public List<RankedCharacterInfo> LoadPlayerRankingFromDB(DBContext dbContext, int topCount = 50)
+        readonly IDistributedCache _cache;
+        readonly IMapper _mapper;
+        readonly ILogger<RankService> _logger;
+        readonly IDbContextFactory<DBContext> _dbContextFactory;
+
+        public RankService(IDistributedCache cache, IMapper mapper, ILogger<RankService> logger, IDbContextFactory<DBContext> dbContextFactory)
         {
-            return (from a in dbContext.Characters
-                    join b in dbContext.Accounts on a.AccountId equals b.Id
-                    where b.GMLevel < 2 && b.Banned != 1
-                    orderby a.Level descending, a.Exp descending, a.LastExpGainTime
-                    select a).Take(topCount)
-                        .Select((x, idx) => new RankedCharacterInfo(idx + 1, 0, x.Level, x.Name)).ToList();
+            _cache = cache;
+            _mapper = mapper;
+            _logger = logger;
+            _dbContextFactory = dbContextFactory;
+        }
+        public Rank.RankCharacterList LoadPlayerRanking(int topCount = 50, bool ignoreCache = false)
+        {
+            var cacheKey = "Rank";
+            if (!ignoreCache && _cache.Get(cacheKey) is byte[] cachedBytes)
+            {
+                return Rank.RankCharacterList.Parser.ParseFrom(cachedBytes);
+            }
+
+            var data = LoadPlayerRankingFromDB(topCount);
+            _cache.Set(cacheKey, data.ToByteArray());
+            return data;
+        }
+
+        private Rank.RankCharacterList LoadPlayerRankingFromDB(int topCount = 50)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            var dataList = (from a in dbContext.Characters
+                            join b in dbContext.Accounts on a.AccountId equals b.Id
+                            where b.GMLevel < 2 && b.Banned != 1
+                            orderby a.Level descending, a.Exp descending, a.LastExpGainTime
+                            select new { a.Level, a.Name }).Take(topCount).ToList();
+            var obj = new Rank.RankCharacterList();
+            for (int i = 0; i < dataList.Count; i++)
+            {
+                var item = dataList[i];
+                obj.DataSource.Add(new Rank.RankCharacter { Rank = i + 1, Name = item.Name, Level = item.Level });
+            }
+            return obj;
         }
     }
 }

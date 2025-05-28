@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package Rank;
+
+message RankCharacter {
+  int32 rank = 1;
+  int32 level = 2;
+  string name = 3;
+}
+
+message RankCharacterList {
+  repeated RankCharacter dataSource = 1;
+}

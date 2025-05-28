@@ -8,7 +8,7 @@ using Application.Shared.Duey;
 using Application.Shared.Items;
 using AutoMapper;
 
-namespace Application.Core.Login.Datas
+namespace Application.Core.Login.Mappers
 {
     /// <summary>
     /// 实体与DTO

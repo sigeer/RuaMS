@@ -61,6 +61,7 @@ namespace Application.Core.Game.TheWorld
         SkillbookInformationProvider SkillbookInformationProvider { get; }
         ShopFactory ShopFactory { get; }
         ItemService ItemService { get; }
+        RankService RankService { get; }
         ChannelService Service { get; }
         ChannelClientStorage ClientStorage { get; }
 

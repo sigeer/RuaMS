@@ -62,12 +62,6 @@ public class Server
 
     private Dictionary<int, NewYearCardRecord> newyears = new();
 
-
-    /// <summary>
-    /// World - Data
-    /// </summary>
-    private Dictionary<int, List<RankedCharacterInfo>> playerRanking = new();
-
     private long serverCurrentTime = 0;
 
     private volatile bool availableDeveloperRoom = false;
@@ -256,20 +250,6 @@ public class Server
     #endregion
 
 
-    public List<RankedCharacterInfo> getWorldPlayerRanking(int worldId)
-    {
-        var filteredWorldId = YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? -1 : worldId;
-        if (playerRanking.TryGetValue(filteredWorldId, out var value))
-            return value;
-
-        return [];
-    }
-
-    public Dictionary<int, List<RankedCharacterInfo>> LoadPlayerRanking(DBContext dbContext)
-    {
-        return playerRanking = RankManager.LoadPlayerRankingFromDB(dbContext);
-    }
-
     bool basedCached = false;
     private void Initialize(bool ignoreCache = false)
     {
@@ -361,8 +341,6 @@ public class Server
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             PlayerNPC.loadRunningRankData(dbContext);
 
-            LoadPlayerRanking(dbContext);
-
             loadPlayerNpcMapStepFromDb(dbContext);
 
             if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
@@ -399,7 +377,6 @@ public class Server
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
-        tMan.register(new RankingCommandTask(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
         tMan.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
 
         timeLeft = TimeUtils.GetTimeLeftForNextDay();

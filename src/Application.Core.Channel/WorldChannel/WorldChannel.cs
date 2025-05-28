@@ -125,6 +125,7 @@ public partial class WorldChannel : IWorldChannel
     public SkillbookInformationProvider SkillbookInformationProvider { get; }
     public ShopFactory ShopFactory { get; }
     public ItemService ItemService { get; }
+    public RankService RankService { get; }
 
     #region
     public EventService EventService { get; }
@@ -191,6 +192,7 @@ public partial class WorldChannel : IWorldChannel
         SkillbookInformationProvider = LifeScope.ServiceProvider.GetRequiredService<SkillbookInformationProvider>();
         ShopFactory = LifeScope.ServiceProvider.GetRequiredService<ShopFactory>();
         ItemService = LifeScope.ServiceProvider.GetRequiredService<ItemService>();
+        RankService = LifeScope.ServiceProvider.GetRequiredService<RankService>();
     }
 
     public int getTransportationTime(double travelTime)
