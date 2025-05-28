@@ -177,6 +177,24 @@ namespace Application.Core.Login.Services
                 dbContext.Quickslotkeymappeds.Add(new Quickslotkeymapped(obj.Character.AccountId, obj.QuickSlot.LongValue));
             }
 
+            // storage
+            UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
+
+            dbContext.SaveChanges();
+
+            dbTrans.Commit();
+        }
+
+        /// <summary>
+        /// 每次进出商城都会重新加载数据 所以
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <exception cref="BusinessException"></exception>
+        public void UpdateCashShop(CharacterValueObject obj)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            using var dbTrans = dbContext.Database.BeginTransaction();
+
             // cash shop
             InventoryManager.CommitInventoryByType(dbContext, obj.Character.AccountId, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
             dbContext.Wishlists.Where(x => obj.Character.Id == x.CharId).ExecuteDelete();
@@ -191,16 +209,9 @@ namespace Application.Core.Login.Services
             dbAccount.MaplePoint = obj.CashShop.MaplePoint;
             dbAccount.NxPrepaid = obj.CashShop.NxPrepaid;
 
-            // storage
-            UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
-
             dbContext.SaveChanges();
-
             dbTrans.Commit();
         }
-
-
-
 
         internal void SetAccountLoginRecord(KeyValuePair<int, AccountLoginStatus> item)
         {

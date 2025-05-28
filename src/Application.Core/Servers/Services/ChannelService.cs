@@ -58,6 +58,12 @@ namespace Application.Core.Servers.Services
             _tranport.SendBuffObject(player.getId(), _characteService.DeserializeBuff(player));
         }
 
+        public void SaveCashShop(IPlayer player)
+        {
+            _tranport.SendCashShopObject(player.getId(), _characteService.DeserializeCashShop(player));
+            
+        }
+
         public PlayerBuffSaveDto GetBuffFromStorage(IPlayer player)
         {
             return _tranport.GetBuffObject(player.Id);
@@ -148,5 +154,7 @@ namespace Application.Core.Servers.Services
         {
             return _tranport.GetCardTierSize();
         }
+
+
     }
 }

@@ -2926,7 +2926,7 @@ public class PacketCreator
             var petObj = pets[i];
             if (petObj != null)
             {
-                p.writeByte(petObj.getUniqueId()); // petObj.getUniqueId() petid肯定不止256个，是没有影响么？
+                p.writeByte(i + 1); // petObj.getUniqueId() petid肯定不止256个，是没有影响么？
                 p.writeInt(petObj.getItemId()); // petid
                 p.writeString(petObj.Name);
                 p.writeByte(petObj.Level); // pet level

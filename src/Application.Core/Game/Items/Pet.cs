@@ -36,7 +36,6 @@ namespace Application.Core.Game.Items;
  */
 public class Pet : Item
 {
-    private int uniqueid;
     private int Fh;
     private Point pos;
     private int stance;
@@ -55,7 +54,7 @@ public class Pet : Item
     public Pet(int id, short position, int uniqueid) : base(id, position, 1)
     {
         log = LogFactory.GetLogger(LogType.Pet);
-        this.uniqueid = uniqueid;
+        this.PetId = uniqueid;
         pos = new Point(0, 0);
     }
 
@@ -91,12 +90,12 @@ public class Pet : Item
 
     public int getUniqueId()
     {
-        return uniqueid;
+        return PetId;
     }
 
     public void setUniqueId(int id)
     {
-        uniqueid = id;
+        PetId = id;
     }
 
     public int getTameness()
