@@ -519,6 +519,11 @@ namespace Application.Core.Channel.Local
             _server.SaveBuff(v, playerBuffSaveDto);
         }
 
+        public void SendCashShopObject(int v, PlayerSaveDto saveDto)
+        {
+            _server.CharacterManager.UpdateCashShop(v, saveDto);
+        }
+
         public PlayerBuffSaveDto GetBuffObject(int id)
         {
             return _server.GetBuff(id);
@@ -636,5 +641,7 @@ namespace Application.Core.Channel.Local
         {
             _server.CouponManager.ToggleCoupon(v);
         }
+
+
     }
 }

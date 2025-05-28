@@ -254,9 +254,10 @@ namespace Application.Core.Servers.Services
                 }
                 : null;
 
+            var cashShopItems = player.CashShopModel.getInventory();
             var cashShopDto = new CashShopDto()
             {
-                Items = _mapper.Map<ItemDto[]>(player.CashShopModel.getInventory(), opt =>
+                Items = _mapper.Map<ItemDto[]>(cashShopItems, opt =>
                 {
                     opt.Items["Type"] = player.CashShopModel.Factory.getValue();
                 }),
@@ -335,6 +336,35 @@ namespace Application.Core.Servers.Services
                 CashShop = cashShopDto,
                 QuickSlot = quickSlotDto,
                 CoolDowns = _mapper.Map<CoolDownDto[]>(player.getAllCooldowns())
+            };
+        }
+
+        public PlayerSaveDto DeserializeCashShop(IPlayer player)
+        {
+            var cashShopItems = player.CashShopModel.getInventory();
+            var cashShopDto  = new CashShopDto()
+            {
+                Items = _mapper.Map<ItemDto[]>(cashShopItems, opt =>
+                {
+                    opt.Items["Type"] = player.CashShopModel.Factory.getValue();
+                }),
+                WishItems = player.CashShopModel.getWishList().ToArray(),
+                FactoryType = player.CashShopModel.Factory.getValue(),
+                NxCredit = player.CashShopModel.NxCredit,
+                NxPrepaid = player.CashShopModel.NxPrepaid,
+                MaplePoint = player.CashShopModel.MaplePoint
+            };
+
+            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<List<ItemDto>>(x.list(), opt =>
+            {
+                opt.Items["InventoryType"] = (int)x.getType();
+                opt.Items["Type"] = 1;
+            })).ToArray();
+
+            return new PlayerSaveDto
+            {
+                CashShop = cashShopDto,
+                InventoryItems = _mapper.Map<ItemDto[]>(d),
             };
         }
 

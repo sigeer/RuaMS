@@ -290,6 +290,7 @@ namespace Application.Core.Channel.Net
             {
                 Disconnect(false);
             }
+
         }
 
         protected override void ProcessPacket(InPacket packet)

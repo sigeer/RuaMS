@@ -87,7 +87,8 @@ namespace Application.Core.Channel.Mappers
 
             CreateMap<Pet, PetDto>()
                 .ForMember(dest => dest.Closeness, src => src.MapFrom(x => x.Tameness))
-                .ForMember(dest => dest.Flag, src => src.MapFrom(x => x.PetAttribute));
+                .ForMember(dest => dest.Flag, src => src.MapFrom(x => x.PetAttribute))
+                .ForMember(dest => dest.Petid, src => src.MapFrom(x => x.PetId));
 
             CreateMap<ItemDto, Item>()
                 .ConstructUsing((src, ctx) =>
@@ -96,8 +97,8 @@ namespace Application.Core.Channel.Mappers
                     if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
                         return ctx.Mapper.Map<Equip>(src);
 
-                    if (src.PetInfo != null)
-                        return ctx.Mapper.Map<Pet>(src);
+                    //if (src.PetInfo != null)
+                    //    return ctx.Mapper.Map<Pet>(src);
 
                     return new Item(src.Itemid, src.Position, src.Quantity);
                 })
@@ -120,6 +121,7 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
                 .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()))
                 .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
+                .ForMember(dest => dest.Petid, source => source.MapFrom(x => x.getPetId()))
                 .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
                 {
                     return context.Items.TryGetValue("InventoryType", out var invType) ? Convert.ToSByte(invType) : (sbyte)src.getInventoryType();

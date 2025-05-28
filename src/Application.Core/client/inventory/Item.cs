@@ -37,7 +37,7 @@ public class Item : IComparable<Item>, IItemProp
     private int sn;
     private short position;
     private short quantity;
-    private int petid = -1;
+    public int PetId { get; set; } = -1;
     private Pet? pet = null;
     private string owner = "";
     protected List<string> itemLog;
@@ -69,12 +69,12 @@ public class Item : IComparable<Item>, IItemProp
                 petid = -1;
             }
         }
-        this.petid = petid;
+        this.PetId = petid;
     }
 
     public virtual Item copy()
     {
-        Item ret = new Item(id, position, quantity, petid);
+        Item ret = new Item(id, position, quantity, PetId);
         ret.flag = flag;
         ret.owner = owner;
         ret.expiration = expiration;
@@ -96,10 +96,10 @@ public class Item : IComparable<Item>, IItemProp
         this.quantity = quantity;
     }
 
-    public void SetPet(Pet? pet)
+    public void SetPet(Pet? petObj)
     {
-        this.pet = pet;
-        this.petid = pet?.petid ?? -1;
+        this.pet = petObj;
+        this.PetId = petObj?.PetId ?? -1;
     }
 
     public int getItemId()
@@ -152,7 +152,7 @@ public class Item : IComparable<Item>, IItemProp
 
     public int getPetId()
     {
-        return petid;
+        return PetId;
     }
 
     public int CompareTo(Item? other)

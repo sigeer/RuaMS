@@ -243,6 +243,8 @@ public class CashShop
     public void open(bool b)
     {
         opened = b;
+
+        Owner.Client.CurrentServer.Service.SaveCashShop(Owner);
     }
 
     public List<Item> getInventory()
