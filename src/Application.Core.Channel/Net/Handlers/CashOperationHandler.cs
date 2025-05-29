@@ -316,7 +316,7 @@ public class CashOperationHandler : ChannelHandlerBase
                 else if (action == 0x0D)
                 {
                     // Take from Cash Inventory
-                    var item = cs.findByCashId(p.readInt());
+                    var item = cs.findByCashId(p.readLong());
                     if (item == null)
                     {
                         c.enableCSActions();
@@ -340,8 +340,7 @@ public class CashOperationHandler : ChannelHandlerBase
                 else if (action == 0x0E)
                 {
                     // Put into Cash Inventory
-                    int cashId = p.readInt();
-                    p.skip(4);
+                    var cashId = p.readLong();
 
                     sbyte invType = p.ReadSByte();
                     if (invType < 1 || invType > 5)

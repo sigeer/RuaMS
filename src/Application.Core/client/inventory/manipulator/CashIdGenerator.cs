@@ -34,10 +34,10 @@ public class CashIdGenerator
 
     private static void loadExistentCashIdsFromQuery(DBContext dbContext, string query)
     {
-        var list = dbContext.Database.SqlQueryRaw<int>(query);
+        var list = dbContext.Database.SqlQueryRaw<long>(query);
         foreach (var id in list)
         {
-            existentCashids.Add(id);
+            existentCashids.Add((int)id);
         }
     }
 

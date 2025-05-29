@@ -240,7 +240,7 @@ namespace Application.Core.Login.Net.Packets
             Dictionary<short, int> myEquip = new();
             Dictionary<short, int> maskedEquip = new();
             int weaponItemId = 0;
-            foreach (var item in chr.InventoryItems)
+            foreach (var item in chr.InventoryItems.Where(x => x.InventoryType == -1))
             {
                 short pos = (short)(item.Position * -1);
                 if (pos < 100 && !myEquip.ContainsKey(pos))
