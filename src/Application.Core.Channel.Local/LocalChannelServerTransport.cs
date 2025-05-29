@@ -484,9 +484,9 @@ namespace Application.Core.Channel.Local
             }
         }
 
-        public CharacterValueObject? GetPlayerData(string clientSession, int cid)
+        public CharacterValueObject? GetPlayerData(string clientSession, int channelId, int cid)
         {
-            return _loginService.PlayerLogin(clientSession, cid);
+            return _loginService.PlayerLogin(clientSession, channelId, cid);
         }
 
         public int GetAccountCharacterCount(int accId)

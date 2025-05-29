@@ -30,7 +30,7 @@ namespace Application.Core.Login.Services
         /// <param name="clientSession"></param>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public CharacterValueObject? PlayerLogin(string clientSession, int characterId)
+        public CharacterValueObject? PlayerLogin(string clientSession, int channelId, int characterId)
         {
             var characterObj = _masterServer.CharacterManager.GetCharacter(characterId);
             if (characterObj == null || characterObj.Character == null)
@@ -47,6 +47,7 @@ namespace Application.Core.Login.Services
                 return null;
 
             characterObj.LoginInfo = new LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
+            characterObj.Channel = channelId;
 
             return characterObj;
         }
