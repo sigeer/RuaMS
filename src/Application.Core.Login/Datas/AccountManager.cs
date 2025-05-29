@@ -121,7 +121,7 @@ namespace Application.Core.Login.Datas
                 return d;
 
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var e = dbContext.Characters.AsNoTracking().Select(x => x.Id).ToHashSet();
+            var e = dbContext.Characters.Where(x => x.AccountId == accId).AsNoTracking().Select(x => x.Id).ToHashSet();
             _accPlayerCache[accId] = e;
             return e;
         }
