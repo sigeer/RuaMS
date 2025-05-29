@@ -698,17 +698,10 @@ public class Inventory : IEnumerable<Item>
         return GetEnumerator();
     }
 
-    public Item? findByCashId(int cashId)
+    public Item? findByCashId(long cashId)
     {
-        bool isRing = false;
-        Equip? equip = null;
         foreach (Item item in list())
         {
-            if (item.getInventoryType().Equals(InventoryType.EQUIP))
-            {
-                equip = (Equip)item;
-                isRing = equip.getRingId() > -1;
-            }
             if (item.getCashId() == cashId)
             {
                 return item;
