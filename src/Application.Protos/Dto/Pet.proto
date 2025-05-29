@@ -5,7 +5,7 @@ import "google/protobuf/wrappers.proto";
 package Dto;
 
 message PetDto {
-  int32 petid = 1;
+  int64 petid = 1;
   string name = 2;
   int32 level = 3;
   int32 closeness = 4;

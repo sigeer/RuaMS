@@ -192,19 +192,19 @@ public class ItemId
     }
 
     // Special effect
-    public static int PHARAOHS_BLESSING_1 = 2022585;
-    public static int PHARAOHS_BLESSING_2 = 2022586;
-    public static int PHARAOHS_BLESSING_3 = 2022587;
-    public static int PHARAOHS_BLESSING_4 = 2022588;
+    public const int PHARAOHS_BLESSING_1 = 2022585;
+    public const int PHARAOHS_BLESSING_2 = 2022586;
+    public const int PHARAOHS_BLESSING_3 = 2022587;
+    public const int PHARAOHS_BLESSING_4 = 2022588;
 
     // Evolve pet
-    public static int DRAGON_PET = 5000028;
-    public static int ROBO_PET = 5000047;
+    public const int DRAGON_PET = 5000028;
+    public const int ROBO_PET = 5000047;
 
     // Pet equip
-    public static int MESO_MAGNET = 1812000;
-    public static int ITEM_POUCH = 1812001;
-    public static int ITEM_IGNORE = 1812007;
+    public const int MESO_MAGNET = 1812000;
+    public const int ITEM_POUCH = 1812001;
+    public const int ITEM_IGNORE = 1812007;
 
     public static bool isPet(int itemId)
     {

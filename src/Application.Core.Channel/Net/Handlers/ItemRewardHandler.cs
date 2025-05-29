@@ -71,7 +71,7 @@ public class ItemRewardHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    InventoryManipulator.addById(c, reward.itemid, reward.quantity, "", -1);
+                    InventoryManipulator.addById(c, reward.itemid, reward.quantity, "");
                 }
                 InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, false, false);
                 if (reward.worldmsg != null)

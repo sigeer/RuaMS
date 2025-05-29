@@ -209,9 +209,7 @@ public class ItemFactory : EnumClass
             }
             else
             {
-                int petid = x.PetId;
-
-                Item item = new Item(x.Itemid, (byte)x.Position, x.Quantity, petid);
+                Item item = new Item(x.Itemid, (byte)x.Position, x.Quantity);
                 item.setOwner(x.Owner);
                 item.setExpiration(x.Expiration);
                 item.setGiftFrom(x.GiftFrom);
@@ -251,7 +249,7 @@ public class ItemFactory : EnumClass
                     dbModel.Position = item.getPosition();
                     dbModel.Quantity = item.getQuantity();
                     dbModel.Owner = item.getOwner();
-                    dbModel.Petid = item.getPetId();
+                    dbModel.Petid = item.PetId;
                     dbModel.Flag = item.getFlag();
                     dbModel.Expiration = item.getExpiration();
                     dbModel.GiftFrom = item.getGiftFrom();
@@ -326,9 +324,7 @@ public class ItemFactory : EnumClass
             {
                 if (bundles > 0)
                 {
-                    int petid = x.PetId;
-
-                    Item item = new Item(x.Itemid, (byte)x.Position, (short)(bundles * x.Quantity), petid);
+                    Item item = new Item(x.Itemid, (byte)x.Position, (short)(bundles * x.Quantity));
                     item.setOwner(x.Owner);
                     item.setExpiration(x.Expiration);
                     item.setGiftFrom(x.GiftFrom);
@@ -374,7 +370,7 @@ public class ItemFactory : EnumClass
                     dbModel.Position = item.getPosition();
                     dbModel.Quantity = item.getQuantity();
                     dbModel.Owner = item.getOwner();
-                    dbModel.Petid = item.getPetId();
+                    dbModel.Petid = item.PetId;
                     dbModel.Flag = item.getFlag();
                     dbModel.Expiration = item.getExpiration();
                     dbModel.GiftFrom = item.getGiftFrom();
@@ -464,7 +460,7 @@ public class EquipItemModelFromDB
     public long Expiration { get; internal set; }
     public int Ringid { get; internal set; } = -1;
     public sbyte Inventorytype { get; set; }
-    public int PetId { get; internal set; }
+    public long PetId { get; internal set; }
     public int Inventoryitemid { get; internal set; }
 
     public EquipItemModelFromDB()

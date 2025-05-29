@@ -71,7 +71,7 @@ namespace Application.Core.Login.Datas
             var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
             var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
 
-            var petIds = items.Select(x => x.Petid).ToArray();
+            var petIds = allItems.Select(x => x.Petid).ToArray();
             dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
             dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
             dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
@@ -137,7 +137,7 @@ namespace Application.Core.Login.Datas
             var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
             var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
 
-            var petIds = items.Select(x => x.Petid).ToArray();
+            var petIds = allItems.Select(x => x.Petid).ToArray();
             await dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
             await dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
             await dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDeleteAsync();

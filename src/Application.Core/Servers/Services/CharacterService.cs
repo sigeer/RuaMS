@@ -76,12 +76,11 @@ namespace Application.Core.Servers.Services
                 {
                     var itemObj = _mapper.Map<Item>(item);
                     player.Bag[item.InventoryType].addItemFromDB(itemObj);
-                    if (itemObj.getPetId() > -1)
+                    if (itemObj is Pet petObj)
                     {
-                        var pet = itemObj.getPet();
-                        if (pet != null && pet.isSummoned())
+                        if (petObj.isSummoned())
                         {
-                            player.addPet(pet);
+                            player.addPet(petObj);
                         }
                         continue;
                     }
@@ -126,7 +125,7 @@ namespace Application.Core.Servers.Services
 
             foreach (var item in o.PetIgnores)
             {
-                int petId = item.PetId;
+                var petId = item.PetId;
                 player.resetExcluded(petId);
 
                 foreach (var itemId in item.ExcludedItems)

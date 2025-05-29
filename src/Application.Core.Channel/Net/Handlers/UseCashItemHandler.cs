@@ -424,7 +424,6 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
             string newName = p.readString();
             pet.setName(newName);
-            pet.saveToDb();
 
             var item = player.getInventory(InventoryType.CASH).getItem(pet.getPosition());
             if (item != null)

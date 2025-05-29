@@ -251,7 +251,7 @@ public class CouponCodeHandler : ChannelHandlerBase
                                 }
                                 else
                                 {
-                                    InventoryManipulator.addById(c, item, qty, "", -1);
+                                    InventoryManipulator.addById(c, item, qty, "");
                                     items.Add(new(item, qty));
                                 }
                                 break;

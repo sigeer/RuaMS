@@ -25,7 +25,7 @@ namespace Application.Core.Login.Datas
     /// <summary>
     /// 不包含Account，Account可能会在登录时被单独修改
     /// </summary>
-    public class CharacterManager
+    public class CharacterManager: IDisposable
     {
         Dictionary<int, CharacterValueObject> _idDataSource = new Dictionary<int, CharacterValueObject>();
         Dictionary<string, CharacterValueObject> _nameDataSource = new Dictionary<string, CharacterValueObject>();
@@ -89,6 +89,13 @@ namespace Application.Core.Login.Datas
                 return true;
             }
             return false;
+        }
+
+        public void Dispose()
+        {
+            _idDataSource.Clear();
+            _nameDataSource.Clear();
+            _charcterViewCache.Clear();
         }
 
         private ItemFactory GetCashshopFactory(int jobId)
@@ -351,7 +358,6 @@ namespace Application.Core.Login.Datas
                     });
 
                     dbContext.Pets.Where(x => x.Petid == rs.Petid).ExecuteDelete();
-                    CashIdGenerator.freeCashId(rs.Petid);
                 });
                 dbContext.Inventoryitems.RemoveRange(inventoryItems);
                 dbContext.Inventoryequipments.RemoveRange(inventoryEquipList);

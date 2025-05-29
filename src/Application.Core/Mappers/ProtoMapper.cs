@@ -104,8 +104,6 @@ namespace Application.Core.Mappers
                     dest.setFlag((short)rs.Flag);
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
-                    if (rs.PetInfo != null)
-                        dest.SetPet(ctx.Mapper.Map<Pet>(rs));
                 })
                 .ReverseMap()
                 .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
@@ -114,7 +112,6 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
                 .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
                 .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
-                .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()))
                 .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
                 .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
                 {

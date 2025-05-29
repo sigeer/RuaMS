@@ -57,12 +57,13 @@ namespace Application.Core.Channel.Mappers
 
             #region Item
             CreateMap<ItemDto, Pet>()
-                 .ConstructUsing(source => new Pet(source.Itemid, source.Position, source.Petid))
+                 .ConstructUsing(source => new Pet(source.Itemid, source.Position, source.PetInfo!.Petid))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
                 .ForMember(x => x.PetAttribute, opt => opt.MapFrom(x => x.PetInfo!.Flag))
                 .ForMember(x => x.Summoned, opt => opt.MapFrom(x => x.PetInfo!.Summoned))
+                .ForMember(x => x.Name, opt => opt.MapFrom(x => x.PetInfo!.Name))
                 .AfterMap((rs, dest) =>
                 {
                     dest.setOwner(rs.Owner);
@@ -70,20 +71,9 @@ namespace Application.Core.Channel.Mappers
                     dest.setFlag(rs.Flag);
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
-
-                    dest.setName(rs.PetInfo!.Name ?? "");
                 })
                 .ReverseMap()
-                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => new PetDto
-                {
-                    Closeness = Math.Min(Limits.MaxTameness, x.Tameness),
-                    Fullness = Math.Min(Limits.MaxFullness, x.Fullness),
-                    Level = Math.Min(Limits.MaxLevel, (int)x.Level),
-                    Flag = x.PetAttribute,
-                    Name = x.getName(),
-                    Summoned = x.Summoned,
-                    Petid = x.getUniqueId()
-                }));
+                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => x));
 
             CreateMap<Pet, PetDto>()
                 .ForMember(dest => dest.Closeness, src => src.MapFrom(x => x.Tameness))
@@ -93,12 +83,11 @@ namespace Application.Core.Channel.Mappers
             CreateMap<ItemDto, Item>()
                 .ConstructUsing((src, ctx) =>
                 {
-                    var mit = src.InventoryType.getByType();
-                    if (mit == InventoryType.EQUIP || mit == InventoryType.EQUIPPED)
+                    if (src.EquipInfo != null)
                         return ctx.Mapper.Map<Equip>(src);
 
-                    //if (src.PetInfo != null)
-                    //    return ctx.Mapper.Map<Pet>(src);
+                    if (src.PetInfo != null)
+                        return ctx.Mapper.Map<Pet>(src);
 
                     return new Item(src.Itemid, src.Position, src.Quantity);
                 })
@@ -109,8 +98,6 @@ namespace Application.Core.Channel.Mappers
                     dest.setFlag(rs.Flag);
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
-                    if (rs.PetInfo != null)
-                        dest.SetPet(ctx.Mapper.Map<Pet>(rs));
                 })
                 .ReverseMap()
                 .ForMember(dest => dest.Owner, source => source.MapFrom(x => x.getOwner()))
@@ -119,9 +106,7 @@ namespace Application.Core.Channel.Mappers
                 .ForMember(dest => dest.Flag, source => source.MapFrom(x => x.getFlag()))
                 .ForMember(dest => dest.Expiration, source => source.MapFrom(x => x.getExpiration()))
                 .ForMember(dest => dest.GiftFrom, source => source.MapFrom(x => x.getGiftFrom()))
-                .ForMember(dest => dest.PetInfo, source => source.MapFrom(x => x.getPet()))
                 .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
-                .ForMember(dest => dest.Petid, source => source.MapFrom(x => x.getPetId()))
                 .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
                 {
                     return context.Items.TryGetValue("InventoryType", out var invType) ? Convert.ToSByte(invType) : (sbyte)src.getInventoryType();

@@ -3,7 +3,7 @@ namespace Application.EF.Entities;
 public partial class Petignore
 {
     protected Petignore() { }
-    public Petignore(int petid, int itemid)
+    public Petignore(long petid, int itemid)
     {
         Petid = petid;
         Itemid = itemid;
@@ -11,7 +11,7 @@ public partial class Petignore
 
     public int Id { get; set; }
 
-    public int Petid { get; set; }
+    public long Petid { get; set; }
 
     public int Itemid { get; set; }
 

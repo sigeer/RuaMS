@@ -100,14 +100,14 @@ public class Shop
                 {
                     if (!ItemConstants.isRechargeable(itemId))
                     { //Pets can't be bought from shops
-                        InventoryManipulator.addById(c, itemId, quantity, "", -1);
+                        InventoryManipulator.addById(c, itemId, quantity, "");
                         c.OnlinedCharacter.gainMeso(-amount, false);
                     }
                     else
                     {
                         short slotMax = ii.getSlotMax(c, item.getItemId());
                         quantity = slotMax;
-                        InventoryManipulator.addById(c, itemId, quantity, "", -1);
+                        InventoryManipulator.addById(c, itemId, quantity, "");
                         c.OnlinedCharacter.gainMeso(-item.getPrice(), false);
                     }
                     c.sendPacket(PacketCreator.shopTransaction(0));
@@ -134,14 +134,14 @@ public class Shop
                 {
                     if (!ItemConstants.isRechargeable(itemId))
                     {
-                        InventoryManipulator.addById(c, itemId, quantity, "", -1);
+                        InventoryManipulator.addById(c, itemId, quantity, "");
                         InventoryManipulator.removeById(c, InventoryType.ETC, ItemId.PERFECT_PITCH, amount, false, false);
                     }
                     else
                     {
                         short slotMax = ii.getSlotMax(c, item.getItemId());
                         quantity = slotMax;
-                        InventoryManipulator.addById(c, itemId, quantity, "", -1);
+                        InventoryManipulator.addById(c, itemId, quantity, "");
                         InventoryManipulator.removeById(c, InventoryType.ETC, ItemId.PERFECT_PITCH, amount, false, false);
                     }
                     c.sendPacket(PacketCreator.shopTransaction(0));
@@ -164,15 +164,7 @@ public class Shop
                 int diff = cardreduce + c.OnlinedCharacter.getMeso();
                 if (InventoryManipulator.checkSpace(c, itemId, quantity, ""))
                 {
-                    if (ItemConstants.isPet(itemId))
-                    {
-                        int petid = ItemManager.CreatePet(itemId);
-                        InventoryManipulator.addById(c, itemId, quantity, "", petid, expiration: -1);
-                    }
-                    else
-                    {
-                        InventoryManipulator.addById(c, itemId, quantity, "", -1, expiration: -1);
-                    }
+                    InventoryManipulator.addById(c, itemId, quantity, "", expiration: -1);
                     c.OnlinedCharacter.gainMeso(diff, false);
                 }
                 else

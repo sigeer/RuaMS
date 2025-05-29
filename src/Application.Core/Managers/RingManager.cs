@@ -83,14 +83,14 @@ namespace Application.Core.Managers
             Equip ringEqp = (Equip)ringObj;
             ringEqp.setRingId(rings.MyRingId);
             player.addMarriageRing(LoadFromDb(rings.MyRingId));
-            InventoryManipulator.addFromDrop(player.Client, ringEqp, false, -1);
+            InventoryManipulator.addFromDrop(player.Client, ringEqp, false);
             player.broadcastMarriageMessage();
 
             ringObj = ii.getEquipById(marriageRingId);
             ringEqp = (Equip)ringObj;
             ringEqp.setRingId(rings.PartnerRingId);
             partner.addMarriageRing(LoadFromDb(rings.PartnerRingId));
-            InventoryManipulator.addFromDrop(partner.Client, ringEqp, false, -1);
+            InventoryManipulator.addFromDrop(partner.Client, ringEqp, false);
             partner.broadcastMarriageMessage();
         }
 

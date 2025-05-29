@@ -2,7 +2,7 @@ namespace Application.EF.Entities;
 
 public class PetEntity
 {
-    public PetEntity(int petid, string? name, int level, int closeness, int fullness, bool summoned, int flag)
+    public PetEntity(long petid, string? name, int level, int closeness, int fullness, bool summoned, int flag)
     {
         Petid = petid;
         Name = name;
@@ -14,7 +14,7 @@ public class PetEntity
     }
 
     protected PetEntity() { }
-    public int Petid { get; set; }
+    public long Petid { get; set; }
 
     public string? Name { get; set; }
 

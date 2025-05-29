@@ -501,7 +501,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                         }
                         else
                         {
-                            InventoryManipulator.addById(c, mpsi.getItem().getItemId(), (short)(mpsi.getBundles() * mpsi.getItem().getQuantity()), mpsi.getItem().getOwner(), -1, mpsi.getItem().getFlag(), mpsi.getItem().getExpiration());
+                            InventoryManipulator.addById(c, mpsi.getItem().getItemId(), (short)(mpsi.getBundles() * mpsi.getItem().getQuantity()), mpsi.getItem().getOwner(), mpsi.getItem().getFlag(), mpsi.getItem().getExpiration());
                         }
                     }
                 }

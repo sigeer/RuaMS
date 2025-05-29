@@ -1,3 +1,4 @@
+using Application.Core.Game.Items;
 using Application.Core.Managers;
 using client.inventory;
 using server;
@@ -50,9 +51,8 @@ public class ItemDropCommand : CommandBase
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
                 long expiration = DateTimeOffset.UtcNow.AddDays(days).ToUnixTimeMilliseconds();
-                int petid = ItemManager.CreatePet(itemId);
 
-                var toDropTemp = new Item(itemId, 0, quantity, petid);
+                var toDropTemp = new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId());
                 toDropTemp.setExpiration(expiration);
 
                 toDropTemp.setOwner("");

@@ -39,7 +39,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public sbyte getPetIndex(int petId)
+        public sbyte getPetIndex(long petId)
         {
             Monitor.Enter(petLock);
             try
@@ -64,25 +64,7 @@ namespace Application.Core.Game.Players
 
         public sbyte getPetIndex(Pet pet)
         {
-            Monitor.Enter(petLock);
-            try
-            {
-                for (sbyte i = 0; i < 3; i++)
-                {
-                    if (pets[i] != null)
-                    {
-                        if (pets[i]!.getUniqueId() == pet.getUniqueId())
-                        {
-                            return i;
-                        }
-                    }
-                }
-                return -1;
-            }
-            finally
-            {
-                Monitor.Exit(petLock);
-            }
+            return getPetIndex(pet.PetId);
         }
         public void addPet(Pet pet)
         {

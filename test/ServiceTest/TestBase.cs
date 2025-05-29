@@ -1,19 +1,17 @@
 using Application.Core;
 using Application.Core.Channel;
+using Application.Core.Channel.Local;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Login;
 using Application.Core.Login.Datas;
-using Application.Core.Login.ServerTransports;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
-using Application.EF;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
 using AutoMapper;
 using DotNetty.Transport.Channels;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using net.server;
@@ -22,6 +20,8 @@ using Serilog.Events;
 using server;
 using ServiceTest.TestUtilities;
 using System.Text;
+using System.Threading.Channels;
+using Yitter.IdGenerator;
 
 namespace ServiceTest
 {
@@ -58,7 +58,10 @@ namespace ServiceTest
 
             _sp = sc.BuildServiceProvider();
 
-            Environment.SetEnvironmentVariable("ms-wz", "D:\\walker\\demo\\MS\\Cosmic\\wz");
+            var idGeneratorOptions = new IdGeneratorOptions(1);
+            YitIdHelper.SetIdGenerator(idGeneratorOptions);
+
+            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             GlobalTools.Encoding = Encoding.GetEncoding("GBK");
@@ -66,8 +69,7 @@ namespace ServiceTest
             TimerManager.InitializeAsync(TaskEngine.Task).Wait();
         }
 
-
-        public void GetPlayer(Action<IPlayer> action)
+        public WorldChannel CreateChannel()
         {
             Server.getInstance().LoadWorld();
             var config = new ChannelServerConfig
@@ -76,19 +78,23 @@ namespace ServiceTest
             };
             var scope = _sp.CreateScope();
             var transport = _sp.GetRequiredService<IChannelServerTransport>();
-            IWorldChannel channel = new WorldChannel(scope, config, transport);
+            return new WorldChannel(scope, config, transport);
+        }
+
+        public IPlayer? GetPlayer()
+        {
+            var channel = CreateChannel();
 
             channel.GetType().GetField("channel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(channel, 1);
-            var charManager = _sp.GetRequiredService<CharacterManager>();
-            var obj = charManager.GetCharacter(1);
-            var mapper = _sp.GetRequiredService<IMapper>();
-            var charSrv = _sp.GetRequiredService<Application.Core.Channel.Services.CharacterService>();
+            var masterServer = _sp.GetRequiredService<MasterServer>();
+            var obj = masterServer.CharacterManager.GetCharacter(1);
+            var charSrv = _sp.GetRequiredService<Application.Core.Servers.Services.CharacterService>();
 
             var client = ActivatorUtilities.CreateInstance<ChannelClient>(_sp, (long)1, channel);
             //var mockChannel = new Mock<ChannelClient>();
             //mockChannel.Setup(x => x.getChannel())
             //    .Returns(1);
-            action(charSrv.Serialize(client, obj));
+            return charSrv.Serialize(client, obj);
         }
 
     }

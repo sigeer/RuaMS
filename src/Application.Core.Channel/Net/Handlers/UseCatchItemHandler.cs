@@ -60,7 +60,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                     chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                     mob.getMap().killMonster(mob, null, false);
                     InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                    InventoryManipulator.addById(c, ItemId.HOG, 1, "", -1);
+                    InventoryManipulator.addById(c, ItemId.HOG, 1, "");
                 }
                 c.sendPacket(PacketCreator.enableActions());
                 break;
@@ -74,7 +74,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                             chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                             mob.getMap().killMonster(mob, null, false);
                             InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                            InventoryManipulator.addById(c, ItemId.GHOST_SACK, 1, "", -1);
+                            InventoryManipulator.addById(c, ItemId.GHOST_SACK, 1, "");
                         }
                         else
                         {
@@ -99,7 +99,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                                     chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                                     mob.getMap().killMonster(mob, null, false);
                                     InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                                    InventoryManipulator.addById(c, ItemId.ARPQ_SPIRIT_JEWEL, 1, "", -1);
+                                    InventoryManipulator.addById(c, ItemId.ARPQ_SPIRIT_JEWEL, 1, "");
                                     chr.updateAriantScore();
                                 }
                                 else
@@ -130,7 +130,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                         mob.getMap().killMonster(mob, null, false);
                         InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.TAMED_RUDOLPH, 1, "", -1);
+                        InventoryManipulator.addById(c, ItemId.TAMED_RUDOLPH, 1, "");
                     }
                     else
                     {
@@ -147,7 +147,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                         mob.getMap().killMonster(mob, null, false);
                         InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_1, 1, "", -1);
+                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_1, 1, "");
                     }
                     else
                     {
@@ -164,7 +164,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                         mob.getMap().killMonster(mob, null, false);
                         InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_2, 1, "", -1);
+                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_2, 1, "");
                     }
                     else
                     {
@@ -181,7 +181,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                         mob.getMap().killMonster(mob, null, false);
                         InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_3, 1, "", -1);
+                        InventoryManipulator.addById(c, ItemId.MONSTER_MARBLE_3, 1, "");
                     }
                     else
                     {
@@ -198,7 +198,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                         mob.getMap().killMonster(mob, null, false);
                         InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.EPQ_MONSTER_MARBLE, 1, "", -1);
+                        InventoryManipulator.addById(c, ItemId.EPQ_MONSTER_MARBLE, 1, "");
                     }
                     else
                     {
@@ -216,7 +216,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                         mob.getMap().killMonster(mob, null, false);
                         InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                        InventoryManipulator.addById(c, ItemId.FISH_NET_WITH_A_CATCH, 1, "", -1);
+                        InventoryManipulator.addById(c, ItemId.FISH_NET_WITH_A_CATCH, 1, "");
                     }
                     else
                     {
@@ -244,7 +244,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                             chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
                             mob.getMap().killMonster(mob, null, false);
                             InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, true, true);
-                            InventoryManipulator.addById(c, itemGanho, 1, "", -1);
+                            InventoryManipulator.addById(c, itemGanho, 1, "");
                         }
                         else if (mob.getId() != MobId.P_JUNIOR)
                         {

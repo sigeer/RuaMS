@@ -19,7 +19,7 @@
 */
 
 
-using Application.Core.Game.Items;
+using Application.Shared.Items;
 
 namespace server.quest.actions;
 
