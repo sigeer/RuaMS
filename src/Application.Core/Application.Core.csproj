@@ -13,11 +13,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.11" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+
 
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.1" />
 		<PackageReference Include="AutoMapper" Version="14.0.0" />
@@ -30,6 +26,7 @@
 
 
 	<ItemGroup>
+		<ProjectReference Include="..\Application.Core.EF\Application.Core.EF.csproj" />
 		<ProjectReference Include="..\Application.Protos\Application.Protos.csproj" />
 		<ProjectReference Include="..\Application.Scripting.JS\Application.Scripting.JS.csproj" />
 		<ProjectReference Include="..\Application.Scripting.Lua\Application.Scripting.Lua.csproj" />

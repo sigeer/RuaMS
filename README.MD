@@ -19,23 +19,25 @@
 
 ### src
 
-- Application.Host 主服务器入口
-- Application.Host.Channel 频道服务器入口
-- Application.Core 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
-- Application.Core.Channel 频道服务器实现
-- Application.Core.Login 登录服务器、主服务器实现
-- Application.Utility 工具类
-- Application.Resource 资源：js、初始化数据sql、配置文件
+- **Application.Host** 主服务器入口
+- **Application.Host.Channel** 频道服务器入口，暂时隐藏
+- **Application.Core** 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
+- **Application.Core.EF** EF
+- **Application.Core.Channel** 频道服务器实现
+- **Application.Core.Login** 登录服务器、主服务器实现
+- **Application.Proto** proto文件
+- **Application.Utility** 工具类
+- **Application.Resource** 资源：js、初始化数据sql、配置文件
  > 当前使用的`scripts`来自[BeiDou](https://github.com/BeiDouMS/BeiDou-Server)，可以使用该项目中的wz、以及客户端。    
 也可以使用[Commit:ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1](https://github.com/sigeer/RuaMS/commit/ba4bbc26a65e76e12c5ae1b2621390ddaef7a4e1) 之前的 `scripts`
 （来自于 [Cosmic](https://github.com/P0nk/Cosmic)） 但是代码发生了多次更新可能存在BUG
 如果有其他配套的资源，也可以参考[CodeMigration.MD](https://github.com/sigeer/RuaMS/blob/master/docs/CodeMigration.MD#js)对js进行处理
-- Application.Shared 一些公用数据结构、类型
-- XmlWzReader xml格式的wz读取工具
-- Application.Scripting 脚本引擎
-- Application.Scripting.JS js脚本引擎
-- Application.Scripting.Lua lua脚本引擎（目前事件脚本使用lua重写的版本，文件夹`/scripts/event-lua`）
-- Application.Benchmark 重构代码时，在该项目测试新代码的性能是否优于旧代码
+- **Application.Shared** 一些公用数据结构、类型
+- **XmlWzReader** xml格式的wz读取工具
+- **Application.Scripting** 脚本引擎
+- **Application.Scripting.JS** js脚本引擎
+- **Application.Scripting.Lua** lua脚本引擎（目前事件脚本使用lua重写的版本，文件夹`/scripts/event-lua`）
+- **Application.Benchmark** 重构代码时，在该项目测试新代码的性能是否优于旧代码
 
 ### tools
 
@@ -50,8 +52,8 @@
 ### 数据库迁移
 
 ```
-// 在 Application.Core 中执行
-dotnet ef migrations add [migration_name] --output-dir EF/Migrations --startup-project ../Application.Host
+// 在 Application.Core.EF 中执行
+dotnet ef migrations add [migration_name] --output-dir Migrations --startup-project ../Application.Host
 
 dotnet ef database update --startup-project ../Application.Host
 ```

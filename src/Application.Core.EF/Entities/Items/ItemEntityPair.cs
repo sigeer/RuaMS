@@ -1,3 +1,6 @@
+using Application.EF;
+using Application.EF.Entities;
+
 namespace Application.Core.EF.Entities.Items
 {
     public class ItemEntityPair

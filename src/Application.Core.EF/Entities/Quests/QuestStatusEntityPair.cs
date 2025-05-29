@@ -1,3 +1,5 @@
+using Application.EF.Entities;
+
 namespace Application.Core.EF.Entities.Quests
 {
     public class QuestStatusEntityPair
