@@ -1,8 +1,8 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class Ring_Entity
 {
-    public Ring_Entity(int id, int itemId, int partnerRingId, int partnerChrId, string partnerName)
+    public Ring_Entity(long id, int itemId, long partnerRingId, int partnerChrId, string partnerName)
     {
         Id = id;
         ItemId = itemId;
@@ -15,10 +15,10 @@ public partial class Ring_Entity
     {
     }
 
-    public int Id { get; set; }
+    public long Id { get; set; }
     public int ItemId { get; set; }
 
-    public int PartnerRingId { get; set; }
+    public long PartnerRingId { get; set; }
 
     public int PartnerChrId { get; set; }
     public string PartnerName { get; set; } = null!;

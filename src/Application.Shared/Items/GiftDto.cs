@@ -18,6 +18,6 @@ namespace Application.Shared.Items
 
         public int Sn { get; set; }
 
-        public int RingId { get; set; } = -1;
+        public long RingId { get; set; } = -1;
     }
 }

@@ -57,7 +57,7 @@ namespace Application.Core.Game.Players
             return getEventInstance() as Marriage;
         }
 
-        public Ring? getRingById(int id)
+        public Ring? getRingById(long id)
         {
             foreach (Ring ring in getCrushRings())
             {

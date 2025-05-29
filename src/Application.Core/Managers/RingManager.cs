@@ -10,7 +10,7 @@ namespace Application.Core.Managers
 {
     public class RingManager
     {
-        public static Ring? LoadFromDb(int ringId)
+        public static Ring? LoadFromDb(long ringId)
         {
             using var dbContext = new DBContext();
             return dbContext.Rings.Where(x => x.Id == ringId).ToList().Select(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName)).FirstOrDefault();
@@ -51,7 +51,7 @@ namespace Application.Core.Managers
                 if (partner2 == null)
                     return new(-2, -2);
 
-                int[] ringID = new int[2];
+                long[] ringID = new long[2];
                 ringID[0] = CashIdGenerator.generateCashId();
                 ringID[1] = CashIdGenerator.generateCashId();
 

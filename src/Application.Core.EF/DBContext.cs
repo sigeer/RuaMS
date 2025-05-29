@@ -688,7 +688,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("tinytext")
                 .HasColumnName("message");
             entity.Property(e => e.Ringid)
-                .HasColumnType("int(10)")
+                .HasColumnType("bigint")
                 .HasColumnName("ringid");
             entity.Property(e => e.Sn)
                 .HasColumnType("int(10) unsigned")
@@ -1175,7 +1175,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("quantity");
             entity.Property(e => e.Ringid)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("bigint")
                 .HasColumnName("ringid");
             entity.Property(e => e.SellEnds)
                 .HasMaxLength(16)
@@ -1834,7 +1834,7 @@ public partial class DBContext : DbContext
             entity.ToTable("rings");
 
             entity.Property(e => e.Id)
-                .HasColumnType("int(11)")
+                .HasColumnType("bigint")
                 .HasColumnName("id");
             entity.Property(e => e.ItemId)
                 .HasColumnType("int(11)")
@@ -1843,7 +1843,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("int(11)")
                 .HasColumnName("partnerChrId");
             entity.Property(e => e.PartnerRingId)
-                .HasColumnType("int(11)")
+                .HasColumnType("bigint")
                 .HasColumnName("partnerRingId");
             entity.Property(e => e.PartnerName)
                 .HasMaxLength(255)
@@ -2619,7 +2619,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("mp");
             entity.Property(e => e.RingId)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("bigint")
                 .HasColumnName("ringid");
             entity.Property(e => e.Speed)
                 .HasColumnType("int(11)")

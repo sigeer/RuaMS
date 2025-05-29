@@ -315,7 +315,7 @@ public class CashShop
         wishList.Add(sn);
     }
 
-    public void gift(int recipient, string from, string message, int sn, int ringid = -1)
+    public void gift(int recipient, string from, string message, int sn, long ringid = -1)
     {
         Owner.Client.CurrentServer.Transport.SendGift(recipient, from, message, sn, ringid);
     }
