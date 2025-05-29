@@ -1,5 +1,3 @@
-using client.inventory;
-
 namespace Application.EF.Entities;
 
 public partial class DueyPackageEntity

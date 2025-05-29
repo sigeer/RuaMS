@@ -1,8 +1,6 @@
-﻿using Application.Core.Game.Relation;
-
 namespace Application.EF.Entities;
 
-public class GuildEntity : IDB_Guild
+public class GuildEntity
 {
     public int GuildId { get; set; }
 

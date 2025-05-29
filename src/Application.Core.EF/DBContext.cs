@@ -1,6 +1,8 @@
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
 using Application.Core.EF.Entities.SystemBase;
+using Application.EF.Entities;
+using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.EF;

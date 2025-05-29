@@ -1,3 +1,5 @@
+using Application.Shared.MapObjects;
+
 namespace Application.EF.Entities;
 
 public class SavedLocationEntity
