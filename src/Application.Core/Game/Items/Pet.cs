@@ -22,6 +22,7 @@
 
 
 using Application.Core.model;
+using Application.Shared.Items;
 using client.inventory;
 using constants.game;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,6 @@ public class Pet : Item
     private int Fh;
     private Point pos;
     private int stance;
-
     public string Name { get; set; } = null!;
     public int Fullness { get; set; } = MaxFullness;
     public int Tameness { get; set; }
@@ -51,7 +51,7 @@ public class Pet : Item
     public const int MaxTameness = 30000;
     public const int MaxLevel = 30;
 
-    public Pet(int id, short position, int uniqueid) : base(id, position, 1)
+    public Pet(int id, short position, long uniqueid) : base(id, position, 1)
     {
         log = LogFactory.GetLogger(LogType.Pet);
         this.PetId = uniqueid;
@@ -88,7 +88,7 @@ public class Pet : Item
         Name = name;
     }
 
-    public int getUniqueId()
+    public long getUniqueId()
     {
         return PetId;
     }
@@ -96,6 +96,10 @@ public class Pet : Item
     public void setUniqueId(int id)
     {
         PetId = id;
+    }
+    public override long getCashId()
+    {
+        return PetId;
     }
 
     public int getTameness()
@@ -111,6 +115,10 @@ public class Pet : Item
     public byte getLevel()
     {
         return Level;
+    }
+    public override sbyte getItemType()
+    {
+        return 3;
     }
 
     public void gainTamenessFullness(IPlayer owner, int incTameness, int incFullness, int type, bool forceEnjoy = false)
@@ -167,7 +175,6 @@ public class Pet : Item
         }
 
         owner.getMap().broadcastMessage(PacketCreator.petFoodResponse(owner.getId(), slot, enjoyed, false));
-        saveToDb();
 
         var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
         if (petz != null)
@@ -244,7 +251,6 @@ public class Pet : Item
     public void addPetAttribute(IPlayer owner, PetAttribute flag)
     {
         PetAttribute |= (int)flag;
-        saveToDb();
 
         var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
         if (petz != null)
@@ -256,7 +262,6 @@ public class Pet : Item
     public void removePetAttribute(IPlayer owner, PetAttribute flag)
     {
         PetAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
-        saveToDb();
 
         var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
         if (petz != null)
@@ -286,7 +291,3 @@ public class Pet : Item
     }
 }
 
-public enum PetAttribute
-{
-    OWNER_SPEED = 0x01
-}

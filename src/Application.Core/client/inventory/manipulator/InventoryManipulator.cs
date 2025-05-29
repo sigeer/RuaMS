@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Items;
 using client.newyear;
 using server;
 using tools;
@@ -35,7 +36,7 @@ namespace client.inventory.manipulator;
  */
 public class InventoryManipulator
 {
-    public static bool addById(IChannelClient c, int itemId, short quantity, string? owner = null, int petid = -1, short flag = 0, long expiration = -1)
+    public static bool addById(IChannelClient c, int itemId, short quantity, string? owner = null, short flag = 0, long expiration = -1)
     {
         IPlayer chr = c.OnlinedCharacter;
         InventoryType type = ItemConstants.getInventoryType(itemId);
@@ -44,7 +45,7 @@ public class InventoryManipulator
         inv.lockInventory();
         try
         {
-            return addByIdInternal(c, chr, type, inv, itemId, quantity, owner, petid, flag, expiration);
+            return addByIdInternal(c, chr, type, inv, itemId, quantity, owner, flag, expiration);
         }
         finally
         {
@@ -52,14 +53,15 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addByIdInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, int petid, short flag, long expiration)
+    private static bool addByIdInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, int itemId, short quantity, string? owner, short flag, long expiration)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         if (!type.Equals(InventoryType.EQUIP))
         {
+            var isPet = ItemConstants.isPet(itemId);
             short slotMax = ii.getSlotMax(c, itemId);
             List<Item> existing = inv.listById(itemId);
-            if (!ItemConstants.isRechargeable(itemId) && petid == -1)
+            if (!ItemConstants.isRechargeable(itemId) && !isPet)
             {
                 if (existing.Count > 0)
                 { // first update all existing slots to slotMax
@@ -85,7 +87,7 @@ public class InventoryManipulator
                     if (newQ != 0)
                     {
                         quantity -= newQ;
-                        Item nItem = new Item(itemId, 0, newQ, petid);
+                        Item nItem = new Item(itemId, 0, newQ);
                         nItem.setFlag(flag);
                         nItem.setExpiration(expiration);
                         short newSlot = inv.addItem(nItem);
@@ -114,7 +116,7 @@ public class InventoryManipulator
             }
             else
             {
-                Item nItem = new Item(itemId, 0, quantity, petid);
+                Item nItem = isPet ? new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : new Item(itemId, 0, quantity);
                 nItem.setFlag(flag);
                 nItem.setExpiration(expiration);
                 short newSlot = inv.addItem(nItem);
@@ -163,11 +165,6 @@ public class InventoryManipulator
 
     public static bool addFromDrop(IChannelClient c, Item item, bool show = true)
     {
-        return addFromDrop(c, item, show, item.getPetId());
-    }
-
-    public static bool addFromDrop(IChannelClient c, Item item, bool show, int petId)
-    {
         var chr = c.OnlinedCharacter;
         InventoryType type = item.getInventoryType();
 
@@ -175,7 +172,7 @@ public class InventoryManipulator
         inv.lockInventory();
         try
         {
-            return addFromDropInternal(c, chr, type, inv, item, show, petId);
+            return addFromDropInternal(c, chr, type, inv, item, show);
         }
         finally
         {
@@ -183,7 +180,7 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addFromDropInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, Item item, bool show, int petId)
+    private static bool addFromDropInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, Item item, bool show)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         int itemid = item.getItemId();
@@ -199,7 +196,7 @@ public class InventoryManipulator
         {
             short slotMax = ii.getSlotMax(c, itemid);
             List<Item> existing = inv.listById(itemid);
-            if (!ItemConstants.isRechargeable(itemid) && petId == -1)
+            if (!ItemConstants.isRechargeable(itemid) && item is not Pet)
             {
                 if (existing.Count > 0)
                 { // first update all existing slots to slotMax
@@ -223,7 +220,7 @@ public class InventoryManipulator
                 {
                     short newQ = Math.Min(quantity, slotMax);
                     quantity -= newQ;
-                    Item nItem = new Item(itemid, 0, newQ, petId);
+                    Item nItem = new Item(itemid, 0, newQ);
                     nItem.setExpiration(item.getExpiration());
                     nItem.setOwner(item.getOwner());
                     nItem.setFlag(item.getFlag());
@@ -246,21 +243,21 @@ public class InventoryManipulator
             }
             else
             {
-                Item nItem = new Item(itemid, 0, quantity, petId);
-                nItem.setExpiration(item.getExpiration());
-                nItem.setFlag(item.getFlag());
+                // 这里为什么要new Item？
+                //Item nItem = item is Pet ? new Pet(itemid, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : new Item(itemid, 0, quantity);
+                //nItem.setExpiration(item.getExpiration());
+                //nItem.setFlag(item.getFlag());
 
-                short newSlot = inv.addItem(nItem);
+                short newSlot = inv.addItem(item);
                 if (newSlot == -1)
                 {
                     c.sendPacket(PacketCreator.getInventoryFull());
                     c.sendPacket(PacketCreator.getShowInventoryFull());
                     return false;
                 }
-                nItem.setPosition(newSlot);
                 item.setPosition(newSlot);
-                c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
-                if (InventoryManipulator.isSandboxItem(nItem))
+                c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, item))));
+                if (InventoryManipulator.isSandboxItem(item))
                 {
                     chr.setHasSandboxItem();
                 }
@@ -470,10 +467,9 @@ public class InventoryManipulator
         }
         else
         {
-            int petid = item.getPetId();
-            if (petid > -1)
+            if (item is Pet petObj)
             { // thanks Vcoc for finding a d/c issue with equipped pets and pets remaining on DB here
-                int petIdx = chr.getPetIndex(petid);
+                int petIdx = chr.getPetIndex(petObj.PetId);
                 if (petIdx > -1)
                 {
                     var pet = chr.getPet(petIdx)!;
@@ -858,10 +854,9 @@ public class InventoryManipulator
             return;
         }
 
-        int petid = source.getPetId();
-        if (petid > -1)
+        if (source is Pet petObj)
         {
-            int petIdx = chr.getPetIndex(petid);
+            int petIdx = chr.getPetIndex(petObj.PetId);
             if (petIdx > -1)
             {
                 var pet = chr.getPet(petIdx);

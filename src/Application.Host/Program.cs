@@ -17,6 +17,7 @@ using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using System.Text;
+using Yitter.IdGenerator;
 
 // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
 
@@ -140,6 +141,9 @@ if (YamlConfig.config.server.ENABLE_OPENAPI)
 }
 
 var app = builder.Build();
+
+var idGeneratorOptions = new IdGeneratorOptions(1);
+YitIdHelper.SetIdGenerator(idGeneratorOptions);
 
 if (YamlConfig.config.server.ENABLE_OPENAPI)
 {

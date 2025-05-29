@@ -277,7 +277,7 @@ public class CashShop
                 isRing = false;
             }
 
-            if ((item.getPetId() > -1 ? item.getPetId() : isRing ? equip!.getRingId() : item.getCashId()) == cashId)
+            if (item.getCashId() == cashId)
             {
                 return item;
             }

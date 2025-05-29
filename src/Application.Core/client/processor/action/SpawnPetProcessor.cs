@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using client.inventory.manipulator;
@@ -43,35 +44,24 @@ public class SpawnPetProcessor
             {
                 var chr = c.OnlinedCharacter;
                 var item = chr.getInventory(InventoryType.CASH).getItem(slot);
-                if (item == null)
+                if (item == null || item is not Pet pet)
                     return;
 
-                var pet = item.getPet();
-                if (pet == null)
+                int petItemId = pet.getItemId();
+                if (petItemId == ItemId.DRAGON_PET || petItemId == ItemId.ROBO_PET)
                 {
-                    return;
-                }
-
-                int petid = pet.getItemId();
-                if (petid == ItemId.DRAGON_PET || petid == ItemId.ROBO_PET)
-                {
-                    if (chr.haveItem(petid + 1))
+                    if (chr.haveItem(petItemId + 1))
                     {
-                        chr.dropMessage(5, "You can't hatch your " + (petid == ItemId.DRAGON_PET ? "Dragon egg" : "Robo egg") + " if you already have a Baby " + (petid == ItemId.DRAGON_PET ? "Dragon." : "Robo."));
+                        chr.dropMessage(5, "You can't hatch your " + (petItemId == ItemId.DRAGON_PET ? "Dragon egg" : "Robo egg") + " if you already have a Baby " + (petItemId == ItemId.DRAGON_PET ? "Dragon." : "Robo."));
                         c.sendPacket(PacketCreator.enableActions());
                         return;
                     }
                     else
                     {
-                        int evolveid = DataTool.getInt("info/evol1", dataRoot.getData("Pet/" + petid + ".img"));
-                        int petId = ItemManager.CreatePet(evolveid);
-                        if (petId == -1)
-                        {
-                            return;
-                        }
+                        int evolveid = DataTool.getInt("info/evol1", dataRoot.getData("Pet/" + petItemId + ".img"));
                         long expiration = item.getExpiration();
-                        InventoryManipulator.removeById(c, InventoryType.CASH, petid, 1, false, false);
-                        InventoryManipulator.addById(c, evolveid, 1, null, petId, expiration: expiration);
+                        InventoryManipulator.removeById(c, InventoryType.CASH, petItemId, 1, false, false);
+                        InventoryManipulator.addById(c, evolveid, 1, null, expiration: expiration);
 
                         c.sendPacket(PacketCreator.enableActions());
                         return;
@@ -97,7 +87,6 @@ public class SpawnPetProcessor
                     pet.setFh(chr.getMap().getFootholds().findBelow(pet.getPos()).getId());
                     pet.setStance(0);
                     pet.setSummoned(true);
-                    pet.saveToDb();
                     chr.addPet(pet);
                     chr.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showPet(chr, pet, false, false), true);
                     c.sendPacket(PacketCreator.petStatUpdate(chr));

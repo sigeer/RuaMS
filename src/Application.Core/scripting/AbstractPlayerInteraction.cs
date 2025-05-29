@@ -632,18 +632,14 @@ public class AbstractPlayerInteraction
     public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
     {
         Item? item = null;
-        Pet evolved;
-        int petId = -1;
 
         if (quantity >= 0)
         {
             if (ItemConstants.isPet(id))
             {
-                petId = ItemManager.CreatePet(id);
-
                 if (from != null)
                 {
-                    evolved = ItemManager.loadFromDb(id, 0, petId)!;
+                    var evolved = new Pet(id, 0, Yitter.IdGenerator.YitIdHelper.NextId());
 
                     Point pos = getPlayer().getPosition();
                     pos.Y -= 12;
@@ -658,7 +654,8 @@ public class AbstractPlayerInteraction
                     evolved.Fullness = from.Fullness;
                     evolved.Level = from.Level;
                     evolved.setExpiration(DateTimeOffset.UtcNow.AddMilliseconds(expires).ToUnixTimeMilliseconds());
-                    evolved.saveToDb();
+
+                    item = evolved;
                 }
 
                 //InventoryManipulator.addById(c, id, (short) 1, null, petId, expires == -1 ? -1 : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + expires);
@@ -666,33 +663,37 @@ public class AbstractPlayerInteraction
 
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
-            if (ItemConstants.getInventoryType(id).Equals(InventoryType.EQUIP))
+            if (item == null)
             {
-                item = ii.getEquipById(id);
-
-                if (item != null)
+                if (ItemConstants.getInventoryType(id).Equals(InventoryType.EQUIP))
                 {
-                    Equip it = (Equip)item;
-                    if (ItemConstants.isAccessory(item.getItemId()) && it.getUpgradeSlots() <= 0)
-                    {
-                        it.setUpgradeSlots(3);
-                    }
+                    item = ii.getEquipById(id);
 
-                    if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && c.OnlinedCharacter.getCS() == true)
+                    if (item != null)
                     {
-                        Equip eqp = (Equip)item;
-                        if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
+                        Equip it = (Equip)item;
+                        if (ItemConstants.isAccessory(item.getItemId()) && it.getUpgradeSlots() <= 0)
                         {
-                            eqp.setUpgradeSlots((byte)(eqp.getUpgradeSlots() + 1));
+                            it.setUpgradeSlots(3);
                         }
-                        item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
+
+                        if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && c.OnlinedCharacter.getCS() == true)
+                        {
+                            Equip eqp = (Equip)item;
+                            if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
+                            {
+                                eqp.setUpgradeSlots((byte)(eqp.getUpgradeSlots() + 1));
+                            }
+                            item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
+                        }
                     }
                 }
+                else
+                {
+                    item = new Item(id, 0, quantity);
+                }
             }
-            else
-            {
-                item = new Item(id, 0, quantity, petId);
-            }
+
 
             if (expires >= 0)
             {
@@ -708,16 +709,16 @@ public class AbstractPlayerInteraction
             {
                 if (randomStats)
                 {
-                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item!), false, petId);
+                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item!), false);
                 }
                 else
                 {
-                    InventoryManipulator.addFromDrop(c, item!, false, petId);
+                    InventoryManipulator.addFromDrop(c, item!, false);
                 }
             }
             else
             {
-                InventoryManipulator.addFromDrop(c, item!, false, petId);
+                InventoryManipulator.addFromDrop(c, item!, false);
             }
         }
         else
@@ -1293,9 +1294,8 @@ public class AbstractPlayerInteraction
         long curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         foreach (Item it in getPlayer().getInventory(InventoryType.CASH).list())
         {
-            if (ItemConstants.isPet(it.getItemId()) && it.getExpiration() < curTime)
+            if (it is Pet pet && pet.getExpiration() < curTime)
             {
-                var pet = it.getPet();
                 if (pet != null)
                 {
                     list.Add(pet);

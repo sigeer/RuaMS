@@ -834,6 +834,11 @@ public class Equip : Item
         return ringid;
     }
 
+    public override long getCashId()
+    {
+        return ringid > 0 ? ringid : base.getCashId();
+    }
+
     public void setRingId(int id)
     {
         this.ringid = id;

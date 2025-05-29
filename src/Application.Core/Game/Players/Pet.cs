@@ -39,7 +39,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public sbyte getPetIndex(int petId)
+        public sbyte getPetIndex(long petId)
         {
             Monitor.Enter(petLock);
             try

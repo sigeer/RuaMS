@@ -1,4 +1,5 @@
 using Application.Core.Duey;
+using Application.Core.Game.Items;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -62,9 +63,8 @@ namespace Application.Core.Game.Players
                                         deletedCoupon = true;
                                     }
                                 }
-                                else
+                                else if (item is Pet pet)
                                 {
-                                    var pet = item.getPet();   // thanks Lame for noticing pets not getting despawned after expiration time
                                     if (pet != null)
                                     {
                                         unequipPet(pet, true);

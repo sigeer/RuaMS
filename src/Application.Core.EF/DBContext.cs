@@ -1402,7 +1402,7 @@ public partial class DBContext : DbContext
             entity.ToTable("pets");
 
             entity.Property(e => e.Petid)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("bigint unsigned")
                 .HasColumnName("petid");
             entity.Property(e => e.Closeness)
                 .HasColumnType("int(10) unsigned")
@@ -1437,7 +1437,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("itemid");
             entity.Property(e => e.Petid)
-                .HasColumnType("int(11) unsigned")
+                .HasColumnType("bigint unsigned")
                 .HasColumnName("petid");
 
             entity.HasOne(d => d.Pet).WithMany(p => p.Petignores)
@@ -2544,7 +2544,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("owner");
             entity.Property(e => e.Petid)
                 .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(11)")
+                .HasColumnType("bigint")
                 .HasColumnName("petid");
             entity.Property(e => e.Position)
                 .HasColumnType("int(11)")

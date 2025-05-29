@@ -90,9 +90,8 @@ public class ItemCommand : CommandBase
                 quantity = 1;
                 long days = Math.Max(1, int.Parse(paramsValue[1]));
                 long expiration = DateTimeOffset.UtcNow.AddDays(days).ToUnixTimeMilliseconds();
-                int petid = ItemManager.CreatePet(itemId);
 
-                InventoryManipulator.addById(c, itemId, quantity, player.getName(), petid, expiration: expiration);
+                InventoryManipulator.addById(c, itemId, quantity, player.getName(), expiration: expiration);
                 return;
             }
             else
@@ -109,6 +108,6 @@ public class ItemCommand : CommandBase
             flag |= ItemConstants.UNTRADEABLE;
         }
 
-        InventoryManipulator.addById(c, itemId, quantity, player.getName(), -1, flag, -1);
+        InventoryManipulator.addById(c, itemId, quantity, player.getName(), flag: flag, expiration: -1);
     }
 }

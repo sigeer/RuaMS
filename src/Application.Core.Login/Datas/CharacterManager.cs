@@ -351,7 +351,6 @@ namespace Application.Core.Login.Datas
                     });
 
                     dbContext.Pets.Where(x => x.Petid == rs.Petid).ExecuteDelete();
-                    CashIdGenerator.freeCashId(rs.Petid);
                 });
                 dbContext.Inventoryitems.RemoveRange(inventoryItems);
                 dbContext.Inventoryequipments.RemoveRange(inventoryEquipList);

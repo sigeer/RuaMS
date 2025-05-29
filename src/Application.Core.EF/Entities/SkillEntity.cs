@@ -24,4 +24,6 @@ public partial class SkillEntity
 
     public long Expiration { get; set; }
 
+    public virtual CharacterEntity Character { get; set; } = null!;
+
 }

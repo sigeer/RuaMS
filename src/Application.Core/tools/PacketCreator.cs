@@ -364,7 +364,6 @@ public class PacketCreator
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         bool isCash = ii.isCash(item.getItemId());
-        bool isPet = item.getPetId() > -1;
         bool isRing = false;
         Equip? equip = null;
         short pos = item.getPosition();
@@ -394,18 +393,17 @@ public class PacketCreator
         p.writeBool(isCash);
         if (isCash)
         {
-            p.writeLong(isPet ? item.getPetId() : isRing ? equip.getRingId() : item.getCashId());
+            p.writeLong(item.getCashId());
         }
         addExpirationTime(p, item.getExpiration());
-        if (isPet)
+        if (item is Pet petObj)
         {
-            Pet pet = item.getPet()!;
-            p.writeFixedString(pet.getName());
-            p.writeByte(pet.Level);
-            p.writeShort(pet.Tameness);
-            p.writeByte(pet.Fullness);
+            p.writeFixedString(petObj.Name);
+            p.writeByte(petObj.Level);
+            p.writeShort(petObj.Tameness);
+            p.writeByte(petObj.Fullness);
             addExpirationTime(p, item.getExpiration());
-            p.writeShort(pet.PetAttribute); // PetAttribute noticed by lrenex & Spoon
+            p.writeShort(petObj.PetAttribute); // PetAttribute noticed by lrenex & Spoon
             p.writeShort(0); // PetSkill
             p.writeInt(18000); // RemainLife
             p.writeShort(0); // attribute
@@ -4865,7 +4863,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet loadExceptionList(int cid, int petId, sbyte petIdx, List<int> data)
+    public static Packet loadExceptionList(int cid, long petId, sbyte petIdx, List<int> data)
     {
         OutPacket p = OutPacket.create(SendOpcode.PET_EXCEPTION_LIST);
         p.writeInt(cid);
@@ -7677,14 +7675,7 @@ public class PacketCreator
     public static void addCashItemInformation(OutPacket p, Item item, int accountId, string? giftMessage)
     {
         bool isGift = giftMessage != null;
-        bool isRing = false;
-        Equip? equip = null;
-        if (item.getInventoryType().Equals(InventoryType.EQUIP))
-        {
-            equip = (Equip)item;
-            isRing = equip.getRingId() > -1;
-        }
-        p.writeLong(item.getPetId() > -1 ? item.getPetId() : isRing ? equip!.getRingId() : item.getCashId());
+        p.writeLong(item.getCashId());
         if (!isGift)
         {
             p.writeInt(accountId);

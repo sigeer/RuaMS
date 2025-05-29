@@ -8,7 +8,7 @@ namespace Application.Shared.Characters
 {
     public class PetIgnoreDto
     {
-        public int PetId { get; set; }
+        public long PetId { get; set; }
         public int[] ExcludedItems { get; set; }
     }
 }

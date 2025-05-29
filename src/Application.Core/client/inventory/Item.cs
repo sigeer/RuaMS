@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Items;
-using Application.Core.Managers;
 using client.inventory.manipulator;
 using server;
 
@@ -30,15 +29,13 @@ namespace client.inventory;
 
 public class Item : IComparable<Item>, IItemProp
 {
-    private static AtomicInteger runningCashId = new AtomicInteger(777000000);  // pets & rings shares cashid values
     protected ILogger log;
     private int id;
-    private int cashId;
     private int sn;
     private short position;
     private short quantity;
-    public int PetId { get; set; } = -1;
-    private Pet? pet = null;
+    public long PetId { get; set; } = -1;
+
     private string owner = "";
     protected List<string> itemLog;
     private short flag;
@@ -58,23 +55,9 @@ public class Item : IComparable<Item>, IItemProp
         this.flag = 0;
     }
 
-    public Item(int id, short position, short quantity, int petid) : this(id, position, quantity)
-    {
-        if (petid > -1)
-        {
-            // issue with null "pet" having petid > -1 found thanks to MedicOP
-            this.pet = ItemManager.loadFromDb(id, position, petid);
-            if (this.pet == null)
-            {
-                petid = -1;
-            }
-        }
-        this.PetId = petid;
-    }
-
     public virtual Item copy()
     {
-        Item ret = new Item(id, position, quantity, PetId);
+        Item ret = new Item(id, position, quantity);
         ret.flag = flag;
         ret.owner = owner;
         ret.expiration = expiration;
@@ -85,10 +68,6 @@ public class Item : IComparable<Item>, IItemProp
     public void setPosition(short position)
     {
         this.position = position;
-        if (this.pet != null)
-        {
-            this.pet.setPosition(position);
-        }
     }
 
     public virtual void setQuantity(short quantity)
@@ -96,24 +75,17 @@ public class Item : IComparable<Item>, IItemProp
         this.quantity = quantity;
     }
 
-    public void SetPet(Pet? petObj)
-    {
-        this.pet = petObj;
-        this.PetId = petObj?.PetId ?? -1;
-    }
 
     public int getItemId()
     {
         return id;
     }
-
-    public int getCashId()
+    long? tempCashId;
+    public virtual long getCashId()
     {
-        if (cashId == 0)
-        {
-            cashId = runningCashId.getAndIncrement();
-        }
-        return cashId;
+        // 非Pet、Ring的一些普通现金道具需要cashid？数据库并没有存放，只是临时使用？
+        //log.Debug("getCashId, PetId: {PetId}, RingId: {RingId}, {StactTrace}", PetId, (this as Equip)?.getRingId(), new StackTrace());
+        return tempCashId ??= Yitter.IdGenerator.YitIdHelper.NextId();
     }
 
     public short getPosition()
@@ -132,11 +104,7 @@ public class Item : IComparable<Item>, IItemProp
     }
 
     public virtual sbyte getItemType()
-    { // 1: equip, 3: pet, 2: other
-        if (getPetId() > -1)
-        {
-            return 3;
-        }
+    {
         return 2;
     }
 
@@ -148,11 +116,6 @@ public class Item : IComparable<Item>, IItemProp
     public void setOwner(string owner)
     {
         this.owner = owner;
-    }
-
-    public int getPetId()
-    {
-        return PetId;
     }
 
     public int CompareTo(Item? other)
@@ -231,12 +194,6 @@ public class Item : IComparable<Item>, IItemProp
     {
         this.giftFrom = giftFrom;
     }
-
-    public Pet? getPet()
-    {
-        return pet;
-    }
-
     public bool isUntradeable()
     {
         return ((this.getFlag() & ItemConstants.UNTRADEABLE) == ItemConstants.UNTRADEABLE)
