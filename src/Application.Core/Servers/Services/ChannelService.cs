@@ -36,7 +36,7 @@ namespace Application.Core.Servers.Services
         }
         public CharacterValueObject? GetPlayerData(string clientSession, int cid)
         {
-            return _tranport.GetPlayerData(clientSession, cid);
+            return _tranport.GetPlayerData(clientSession, _server.getId(), cid);
         }
         public void RemovePlayerIncomingInvites(int id)
         {

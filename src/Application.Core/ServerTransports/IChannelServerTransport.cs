@@ -103,7 +103,7 @@ namespace Application.Core.ServerTransports
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
         string LoadExpeditionInfo();
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
-        CharacterValueObject? GetPlayerData(string clientSession, int cid);
+        CharacterValueObject? GetPlayerData(string clientSession, int channelId, int cid);
         int GetAccountCharacterCount(int accId);
         bool CheckCharacterName(string name);
         void UpdateAccountChracterByAdd(int accountId, int id);
