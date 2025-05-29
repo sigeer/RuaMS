@@ -138,8 +138,6 @@ namespace Application.Core.ServerTransports
         PetDto CreatePet(string petName, int level, int tameness, int fullness);
         Rank.RankCharacterList LoadPlayerRanking(int topCount);
         void SendToggleCoupon(int v);
-        void SendCashShopObject(int v, PlayerSaveDto cashShopDto);
-
         #endregion
     }
 }

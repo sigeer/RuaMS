@@ -244,7 +244,8 @@ public class CashShop
     {
         opened = b;
 
-        Owner.Client.CurrentServer.Service.SaveCashShop(Owner);
+        if (!opened)
+            Owner.saveCharToDB();
     }
 
     public List<Item> getInventory()

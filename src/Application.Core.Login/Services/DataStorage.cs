@@ -180,37 +180,34 @@ namespace Application.Core.Login.Services
             // storage
             UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
 
+            UpdateCashShop(dbContext, obj.Character.AccountId, obj.Character.Id, obj.CashShop);
+
             dbContext.SaveChanges();
 
             dbTrans.Commit();
         }
 
         /// <summary>
-        /// 每次进出商城都会重新加载数据 所以
+        /// 
         /// </summary>
         /// <param name="obj"></param>
         /// <exception cref="BusinessException"></exception>
-        public void UpdateCashShop(CharacterValueObject obj)
+        private void UpdateCashShop(DBContext dbContext, int accId, int charId, CashShopDto obj)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
 
             // cash shop
-            InventoryManager.CommitInventoryByType(dbContext, obj.Character.AccountId, obj.CashShop.Items, ItemFactory.GetItemFactory(obj.CashShop.FactoryType));
-            dbContext.Wishlists.Where(x => obj.Character.Id == x.CharId).ExecuteDelete();
-            dbContext.Wishlists.AddRange(obj.CashShop.WishItems.Select(x => new WishlistEntity(obj.Character.Id, x)));
+            InventoryManager.CommitInventoryByType(dbContext, accId, obj.Items, ItemFactory.GetItemFactory(obj.FactoryType));
+            dbContext.Wishlists.Where(x => charId == x.CharId).ExecuteDelete();
+            dbContext.Wishlists.AddRange(obj.WishItems.Select(x => new WishlistEntity(charId, x)));
 
             // account
-            var dbAccount = dbContext.Accounts.Where(x => x.Id == obj.Character.AccountId).FirstOrDefault();
+            var dbAccount = dbContext.Accounts.Where(x => x.Id == accId).FirstOrDefault();
             if (dbAccount == null)
                 throw new BusinessException("");
 
-            dbAccount.NxCredit = obj.CashShop.NxCredit;
-            dbAccount.MaplePoint = obj.CashShop.MaplePoint;
-            dbAccount.NxPrepaid = obj.CashShop.NxPrepaid;
-
-            dbContext.SaveChanges();
-            dbTrans.Commit();
+            dbAccount.NxCredit = obj.NxCredit;
+            dbAccount.MaplePoint = obj.MaplePoint;
+            dbAccount.NxPrepaid = obj.NxPrepaid;
         }
 
         internal void SetAccountLoginRecord(KeyValuePair<int, AccountLoginStatus> item)
