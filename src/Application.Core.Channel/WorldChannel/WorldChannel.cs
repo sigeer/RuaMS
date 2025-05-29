@@ -274,6 +274,12 @@ public partial class WorldChannel : IWorldChannel
 
 
         var configs = await Transport.RegisterServer(this);
+        if (configs.Channel <= 0)
+        {
+            log.Information("频道服务器{InstanceId}注册{Status}：{ErrorMessage}", InstanceId, "失败", configs.Message);
+            return;
+        }
+
         channel = configs.Channel;
         log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
 

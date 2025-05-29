@@ -3,7 +3,6 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
-using Application.Core.Login.Datas;
 using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.ServerTransports;
@@ -73,6 +72,9 @@ namespace Application.Core.Channel.Local
 
         public Task<Config.RegisterServerResult> RegisterServer(IWorldChannel server)
         {
+            if (!_server.IsRunning)
+                return Task.FromResult(new Config.RegisterServerResult() { Channel = -1, Message = "中心服务器未启动" });
+
             var channelId = _world.addChannel(server);
 
             _server.AddChannel(new InternalWorldChannel(server));
