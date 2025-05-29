@@ -158,8 +158,16 @@ namespace Application.Core.Login
 
         public async Task StartServer()
         {
-            await ServerManager.SetupDataBase();
-            await Server.getInstance().Start();
+            try
+            {
+                await ServerManager.SetupDataBase();
+                await Server.getInstance().Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("[{ServerName}] 启动{Status}", "中心服务器", "失败");
+                return;
+            }
 
             _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
             await NettyServer.Start();
