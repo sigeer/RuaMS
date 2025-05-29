@@ -80,19 +80,6 @@ namespace Application.Core.Login.Datas
 
         }
 
-        public void UpdateCashShop(int characterId, PlayerSaveDto obj)
-        {
-            if (_idDataSource.TryGetValue(characterId, out var origin))
-            {
-                origin.CashShop = obj.CashShop;
-                origin.InventoryItems = obj.InventoryItems;
-
-                _logger.LogDebug("玩家{PlayerName} - 商城, 背包数据已缓存", origin.Character.Name);
-                _dataStorage.UpdateCashShop(origin);
-            }
-
-        }
-
         public bool Remove(int characterId)
         {
             if (_idDataSource.Remove(characterId, out var d))
