@@ -89,7 +89,7 @@ namespace Application.Core.Game.Players
         void addCP(int ammount);
         void addCrushRing(Ring r);
         int addDojoPointsByMap(int mapid);
-        void addExcluded(int petId, int x);
+        void addExcluded(long petId, int x);
         void addFame(int famechange);
         void addFriendshipRing(Ring r);
         void addGachaExp(int gain);
@@ -281,7 +281,7 @@ namespace Application.Core.Game.Players
         int getEnergyBar();
         EventInstanceManager? getEventInstance();
         Dictionary<string, Events> getEvents();
-        Dictionary<int, HashSet<int>> getExcluded();
+        Dictionary<long, HashSet<int>> getExcluded();
         HashSet<int> getExcludedItems();
         int getExp();
         float getExpRate();
@@ -370,7 +370,7 @@ namespace Application.Core.Game.Players
         PartyQuest? getPartyQuest();
         string getPartyQuestItems();
         Pet? getPet(int index);
-        sbyte getPetIndex(int petId);
+        sbyte getPetIndex(long petId);
         sbyte getPetIndex(Pet pet);
         Pet?[] getPets();
         Door? getPlayerDoor();
@@ -544,7 +544,7 @@ namespace Application.Core.Game.Players
         void resetEnteredScript();
         void resetEnteredScript(int mapId);
         void resetEnteredScript(string script);
-        void resetExcluded(int petId);
+        void resetExcluded(long petId);
         void resetPartySearchInvite(int fromLeaderid);
         void resetPlayerAggro();
         void resetStats();

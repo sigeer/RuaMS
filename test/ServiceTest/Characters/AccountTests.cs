@@ -1,6 +1,3 @@
-using Application.Core.Channel.Net;
-using Application.Core.Login.Services;
-using Microsoft.Extensions.DependencyInjection;
 using tools;
 
 namespace ServiceTest.Characters
@@ -17,11 +14,9 @@ namespace ServiceTest.Characters
         [Test]
         public void GetCharInfoPacketTest()
         {
-            GetPlayer(p =>
-            {
-                PacketCreator.getCharInfo(p);
-                Assert.Pass();
-            });
+            var p = GetPlayer();
+            PacketCreator.getCharInfo(p);
+            Assert.Pass();
         }
 
         //[Test]

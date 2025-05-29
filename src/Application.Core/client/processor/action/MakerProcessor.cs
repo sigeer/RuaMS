@@ -533,7 +533,7 @@ public class MakerProcessor
             eqp = ii.randomizeUpgradeStats(eqp);
         }
 
-        InventoryManipulator.addFromDrop(c, item, false, -1);
+        InventoryManipulator.addFromDrop(c, item, false);
         return true;
     }
 }

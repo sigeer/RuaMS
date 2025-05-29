@@ -12,7 +12,7 @@ namespace Application.Shared.Characters
     }
     public class PetDto
     {
-        public int Petid { get; set; }
+        public long Petid { get; set; }
 
         public string? Name { get; set; }
 

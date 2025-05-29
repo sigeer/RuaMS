@@ -709,7 +709,7 @@ public class Inventory : IEnumerable<Item>
                 equip = (Equip)item;
                 isRing = equip.getRingId() > -1;
             }
-            if ((item.getPetId() > -1 ? item.getPetId() : isRing ? equip.getRingId() : item.getCashId()) == cashId)
+            if (item.getCashId() == cashId)
             {
                 return item;
             }

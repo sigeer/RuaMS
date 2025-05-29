@@ -89,7 +89,7 @@ namespace Application.Core.Game.Players
                 }
                 else
                 {
-                    int petid = item.getPetId();
+                    var petid = item.PetId;
                     if (petid > -1)
                     {
                         int petIdx = Owner.getPetIndex(petid);

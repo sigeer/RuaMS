@@ -1,8 +1,9 @@
 namespace client.inventory;
 
-/**
- * @author kevin
- */
+/// <summary>
+/// @author kevin
+/// <para>0: add, 1: update, 2: move, 3: remove</para>
+/// </summary>
 public class ModifyInventory
 {
 

@@ -47,7 +47,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Gameplay\Wedding\" />
-	  <Folder Include="Game\GlobalControllers\" />
 	  <Folder Include="Net\server\coordinator\login\" />
 	  <Folder Include="service\" />
 	</ItemGroup>

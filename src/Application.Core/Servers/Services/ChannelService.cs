@@ -1,4 +1,5 @@
 using Application.Core.Duey;
+using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
@@ -73,19 +74,17 @@ namespace Application.Core.Servers.Services
         {
             Item item;
 
-            int petid = -1;
             if (ItemConstants.isPet(cashItem.getItemId()))
             {
-                petid = ItemManager.CreatePet(cashItem.getItemId());
+                item = new Pet(cashItem.getItemId(), 0, Yitter.IdGenerator.YitIdHelper.NextId());
             }
-
-            if (ItemConstants.getInventoryType(cashItem.getItemId()).Equals(InventoryType.EQUIP))
+            else if (ItemConstants.getInventoryType(cashItem.getItemId()).Equals(InventoryType.EQUIP))
             {
                 item = ItemInformationProvider.getInstance().getEquipById(cashItem.getItemId());
             }
             else
             {
-                item = new Item(cashItem.getItemId(), 0, cashItem.getCount(), petid);
+                item = new Item(cashItem.getItemId(), 0, cashItem.getCount());
             }
 
             if (ItemConstants.EXPIRING_ITEMS)

@@ -207,7 +207,7 @@ public partial class Player
     /// <summary>
     /// PetId -> ItemId
     /// </summary>
-    private Dictionary<int, HashSet<int>> excluded = new();
+    private Dictionary<long, HashSet<int>> excluded = new();
     private HashSet<int> excludedItems = new();
     private HashSet<int> disabledPartySearchInvites = new();
 
@@ -2175,7 +2175,7 @@ public partial class Player
 
 
 
-    public void resetExcluded(int petId)
+    public void resetExcluded(long petId)
     {
         chLock.EnterReadLock();
         try
@@ -2197,7 +2197,7 @@ public partial class Player
         }
     }
 
-    public void addExcluded(int petId, int x)
+    public void addExcluded(long petId, int x)
     {
         chLock.EnterReadLock();
         try
@@ -2212,7 +2212,7 @@ public partial class Player
 
     public void commitExcludedItems()
     {
-        Dictionary<int, HashSet<int>> petExcluded = this.getExcluded();
+        var petExcluded = this.getExcluded();
 
         chLock.EnterReadLock();
         try
@@ -2255,7 +2255,7 @@ public partial class Player
 
     public void exportExcludedItems(IChannelClient c)
     {
-        Dictionary<int, HashSet<int>> petExcluded = this.getExcluded();
+        var petExcluded = this.getExcluded();
         foreach (var pe in petExcluded)
         {
             sbyte petIndex = this.getPetIndex(pe.Key);
@@ -2272,12 +2272,12 @@ public partial class Player
         }
     }
 
-    public Dictionary<int, HashSet<int>> getExcluded()
+    public Dictionary<long, HashSet<int>> getExcluded()
     {
         chLock.EnterReadLock();
         try
         {
-            return excluded;
+            return excluded.ToDictionary();
         }
         finally
         {
@@ -3478,7 +3478,7 @@ public partial class Player
                 //milestones?
                 if (InventoryManipulator.checkSpace(Client, ItemId.PERFECT_PITCH, 1, ""))
                 {
-                    InventoryManipulator.addById(Client, ItemId.PERFECT_PITCH, 1, "", -1);
+                    InventoryManipulator.addById(Client, ItemId.PERFECT_PITCH, 1, "");
                 }
             }
             else if (Level == 10)

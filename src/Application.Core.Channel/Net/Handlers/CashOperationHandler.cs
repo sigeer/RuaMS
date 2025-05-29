@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.Items;
 using Application.Core.Game.Players;
 using Application.Core.Managers;
 using Application.Shared.Items;
@@ -356,7 +357,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.enableCSActions();
                         return;
                     }
-                    else if (c.OnlinedCharacter.getPetIndex(item.getPetId()) > -1)
+                    else if (item is Pet pet && c.OnlinedCharacter.getPetIndex(pet.PetId) > -1)
                     {
                         chr.getClient().sendPacket(PacketCreator.serverNotice(1, "You cannot put the pet you currently equip into the Cash Shop inventory."));
                         c.enableCSActions();
@@ -446,7 +447,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         if (chr.canHold(itemId))
                         {
                             chr.gainMeso(-itemPrice, false);
-                            InventoryManipulator.addById(c, itemId, 1, "", -1);
+                            InventoryManipulator.addById(c, itemId, 1, "");
                             c.sendPacket(PacketCreator.showBoughtQuestItem(itemId));
                         }
                     }

@@ -1,4 +1,4 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class Inventoryitem
 {
@@ -20,7 +20,7 @@ public partial class Inventoryitem
 
     public string Owner { get; set; } = null!;
 
-    public int Petid { get; set; }
+    public long Petid { get; set; }
 
     public short Flag { get; set; }
 
