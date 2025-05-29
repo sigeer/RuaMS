@@ -21,7 +21,6 @@
 
 using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
-using Application.Core.Managers;
 using client.inventory.manipulator;
 using tools;
 
@@ -61,45 +60,52 @@ public class SpawnPetProcessor
                         int evolveid = DataTool.getInt("info/evol1", dataRoot.getData("Pet/" + petItemId + ".img"));
                         long expiration = item.getExpiration();
                         InventoryManipulator.removeById(c, InventoryType.CASH, petItemId, 1, false, false);
-                        InventoryManipulator.addById(c, evolveid, 1, null, expiration: expiration);
+                        InventoryManipulator.addById(c, evolveid, 1, expiration: expiration);
 
                         c.sendPacket(PacketCreator.enableActions());
                         return;
                     }
                 }
-                if (chr.getPetIndex(pet) != -1)
-                {
-                    chr.unequipPet(pet, true);
-                }
-                else
-                {
-                    if (chr.getSkillLevel(SkillFactory.GetSkillTrust(8)) == 0 && chr.getPet(0) != null)
-                    {
-                        chr.unequipPet(chr.getPet(0)!, false);
-                    }
-                    if (lead)
-                    {
-                        chr.shiftPetsRight();
-                    }
-                    Point pos = chr.getPosition();
-                    pos.Y -= 12;
-                    pet.setPos(pos);
-                    pet.setFh(chr.getMap().getFootholds().findBelow(pet.getPos()).getId());
-                    pet.setStance(0);
-                    pet.setSummoned(true);
-                    chr.addPet(pet);
-                    chr.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showPet(chr, pet, false, false), true);
-                    c.sendPacket(PacketCreator.petStatUpdate(chr));
-                    c.sendPacket(PacketCreator.enableActions());
+                TogglePet(chr, pet, lead);
 
-                    chr.commitExcludedItems();
-                    chr.getClient().getChannelServer().PetHungerController.registerPetHunger(chr, chr.getPetIndex(pet));
-                }
             }
             finally
             {
                 c.releaseClient();
             }
+        }
+    }
+
+    public static void TogglePet(IPlayer chr, Pet pet, bool lead)
+    {
+        if (chr.getPetIndex(pet) != -1)
+        {
+            chr.unequipPet(pet, true);
+        }
+        else
+        {
+            var defaultPet = chr.getPet(0);
+            if (chr.getSkillLevel(SkillFactory.GetSkillTrust(8)) == 0 && defaultPet != null)
+            {
+                chr.unequipPet(defaultPet, false);
+            }
+            if (lead)
+            {
+                chr.shiftPetsRight();
+            }
+            Point pos = chr.getPosition();
+            pos.Y -= 12;
+            pet.setPos(pos);
+            pet.setFh(chr.getMap().getFootholds().findBelow(pet.getPos()).getId());
+            pet.setStance(0);
+            pet.setSummoned(true);
+            chr.addPet(pet);
+            chr.getMap().broadcastMessage(chr, PacketCreator.showPet(chr, pet, false, false), true);
+            chr.Client.sendPacket(PacketCreator.petStatUpdate(chr));
+            chr.Client.sendPacket(PacketCreator.enableActions());
+
+            chr.commitExcludedItems();
+            chr.getClient().getChannelServer().PetHungerController.registerPetHunger(chr, chr.getPetIndex(pet));
         }
     }
 }

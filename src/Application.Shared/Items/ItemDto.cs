@@ -21,8 +21,6 @@ namespace Application.Shared.Items
 
         public string Owner { get; set; } = null!;
 
-        public long Petid { get; set; }
-
         public short Flag { get; set; }
 
         public long Expiration { get; set; }

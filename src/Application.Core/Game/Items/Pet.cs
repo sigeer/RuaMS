@@ -22,6 +22,7 @@
 
 
 using Application.Core.model;
+using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using client.inventory;
 using constants.game;
@@ -39,7 +40,7 @@ public class Pet : Item
     private int Fh;
     private Point pos;
     private int stance;
-    public string Name { get; set; } = null!;
+    public string Name { get; set; }
     public int Fullness { get; set; } = MaxFullness;
     public int Tameness { get; set; }
     public byte Level { get; set; } = 1;
@@ -55,6 +56,7 @@ public class Pet : Item
         log = LogFactory.GetLogger(LogType.Pet);
         this.PetId = uniqueid;
         pos = new Point(0, 0);
+        Name = ItemInformationProvider.getInstance().getName(id) ?? "";
     }
 
     public override Item copy()

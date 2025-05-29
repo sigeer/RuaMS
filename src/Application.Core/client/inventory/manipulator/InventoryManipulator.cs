@@ -468,12 +468,12 @@ public class InventoryManipulator
         else
         {
             if (item is Pet petObj)
-            { // thanks Vcoc for finding a d/c issue with equipped pets and pets remaining on DB here
+            {
+                // thanks Vcoc for finding a d/c issue with equipped pets and pets remaining on DB here
                 int petIdx = chr.getPetIndex(petObj.PetId);
                 if (petIdx > -1)
                 {
-                    var pet = chr.getPet(petIdx)!;
-                    chr.unequipPet(pet, true);
+                    chr.unequipPet(petObj, true);
                 }
 
                 inv.removeItem(slot, quantity, allowZero);

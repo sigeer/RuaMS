@@ -57,7 +57,7 @@ namespace Application.Core.Channel.Mappers
 
             #region Item
             CreateMap<ItemDto, Pet>()
-                 .ConstructUsing(source => new Pet(source.Itemid, source.Position, source.Petid))
+                 .ConstructUsing(source => new Pet(source.Itemid, source.Position, source.PetInfo!.Petid))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
@@ -73,8 +73,7 @@ namespace Application.Core.Channel.Mappers
                     dest.setGiftFrom(rs.GiftFrom);
                 })
                 .ReverseMap()
-                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => x))
-                .ForMember(dest => dest.Petid, src => src.MapFrom(x => x.PetId));
+                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => x));
 
             CreateMap<Pet, PetDto>()
                 .ForMember(dest => dest.Closeness, src => src.MapFrom(x => x.Tameness))

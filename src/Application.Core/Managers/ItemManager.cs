@@ -1,8 +1,5 @@
-using Application.Core.Game.Items;
 using client.inventory;
-using client.inventory.manipulator;
 using constants.game;
-using Microsoft.EntityFrameworkCore;
 using server;
 using static client.inventory.Equip;
 
