@@ -51,7 +51,6 @@ public class Equip : Item
 
     private byte upgradeSlots;
     private byte level, itemLevel;
-    private short flag;
     private int str, dex, _int, luk, hp, mp, watk, matk, wdef, mdef, acc, avoid, hands, speed, jump, vicious;
     private float itemExp;
     private int ringid = -1;
@@ -92,17 +91,13 @@ public class Equip : Item
         ret.hands = hands;
         ret.speed = speed;
         ret.jump = jump;
-        ret.flag = flag;
         ret.vicious = vicious;
         ret.upgradeSlots = upgradeSlots;
         ret.itemLevel = itemLevel;
         ret.itemExp = itemExp;
         ret.level = level;
-        ret.itemLog = new(itemLog);
-        ret.setOwner(getOwner());
-        ret.setQuantity(getQuantity());
-        ret.setExpiration(getExpiration());
-        ret.setGiftFrom(getGiftFrom());
+
+        CopyItemProps(ret);
         return ret;
     }
 

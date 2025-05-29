@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Game.Items;
 using client.inventory.manipulator;
+using Org.BouncyCastle.Ocsp;
 using server;
 
 namespace client.inventory;
@@ -30,17 +31,17 @@ namespace client.inventory;
 public class Item : IComparable<Item>, IItemProp
 {
     protected ILogger log;
-    private int id;
-    private int sn;
-    private short position;
-    private short quantity;
+    protected int id;
+    protected int sn;
+    protected short position;
+    protected short quantity;
     public long PetId { get; set; } = -1;
 
-    private string owner = "";
+    protected string owner = "";
     protected List<string> itemLog;
-    private short flag;
-    private long expiration = -1;
-    private string giftFrom = "";
+    protected short flag;
+    protected long expiration = -1;
+    protected string giftFrom = "";
 
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
@@ -58,11 +59,22 @@ public class Item : IComparable<Item>, IItemProp
     public virtual Item copy()
     {
         Item ret = new Item(id, position, quantity);
-        ret.flag = flag;
-        ret.owner = owner;
-        ret.expiration = expiration;
-        ret.itemLog = new(itemLog);
+        CopyItemProps(ret);
         return ret;
+    }
+   
+    protected void CopyItemProps(Item input)
+    {
+        input.quantity = quantity;
+        input.position = position;
+        input.id = id;
+
+        input.flag = flag;
+        input.owner = owner;
+        input.expiration = expiration;
+        input.giftFrom = giftFrom;
+        input.sn = sn;
+        input.itemLog = new(itemLog);
     }
 
     public void setPosition(short position)

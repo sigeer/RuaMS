@@ -73,16 +73,7 @@ namespace Application.Core.Channel.Mappers
                     dest.setGiftFrom(rs.GiftFrom);
                 })
                 .ReverseMap()
-                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => new PetDto
-                {
-                    Closeness = Math.Min(Limits.MaxTameness, x.Tameness),
-                    Fullness = Math.Min(Limits.MaxFullness, x.Fullness),
-                    Level = Math.Min(Limits.MaxLevel, (int)x.Level),
-                    Flag = x.PetAttribute,
-                    Name = x.getName(),
-                    Summoned = x.Summoned,
-                    Petid = x.PetId
-                }))
+                .ForMember(x => x.PetInfo, opt => opt.MapFrom(x => x))
                 .ForMember(dest => dest.Petid, src => src.MapFrom(x => x.PetId));
 
             CreateMap<Pet, PetDto>()

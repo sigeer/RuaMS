@@ -25,7 +25,6 @@ using Application.Core.model;
 using Application.Shared.Items;
 using client.inventory;
 using constants.game;
-using Microsoft.EntityFrameworkCore;
 using server;
 using server.movement;
 using tools;
@@ -58,24 +57,21 @@ public class Pet : Item
         pos = new Point(0, 0);
     }
 
-    public void saveToDb()
+    public override Item copy()
     {
-        try
-        {
-            using var dbContext = new DBContext();
-            dbContext.Pets.Where(x => x.Petid == getUniqueId())
-                .ExecuteUpdate(x =>
-                    x.SetProperty(y => y.Flag, PetAttribute)
-                    .SetProperty(y => y.Name, Name)
-                    .SetProperty(y => y.Level, Level)
-                    .SetProperty(y => y.Closeness, Tameness)
-                    .SetProperty(y => y.Fullness, Fullness)
-                    .SetProperty(y => y.Summoned, Summoned));
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
+        var copyPet = new Pet(getItemId(), getPosition(), PetId);
+        copyPet.Name = Name;
+        copyPet.PetAttribute = PetAttribute;
+        copyPet.Fullness = Fullness;
+        copyPet.Tameness = Tameness;
+        copyPet.Level = Level;
+        copyPet.Summoned = Summoned;
+
+        CopyItemProps(copyPet);
+
+        copyPet.setFh(getFh());
+        copyPet.setStance(getStance());
+        return copyPet;
     }
 
     public string getName()
