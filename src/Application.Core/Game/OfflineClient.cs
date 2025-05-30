@@ -1,7 +1,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
-using Application.Shared.Characters;
+using Application.Shared.Models;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using net.server.coordinator.session;
@@ -49,7 +49,7 @@ namespace Application.Core.Game
 
         public int AccountGMLevel => throw new BusinessCharacterOfflineException();
 
-        public AccountDto AccountEntity { get; set; }
+        public AccountCtrl AccountEntity { get; set; }
 
 
         public IServerBase<IServerTransport> CurrentServerBase => throw new NotImplementedException();
@@ -209,7 +209,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void SetAccount(AccountDto accountEntity)
+        public void SetAccount(AccountCtrl accountEntity)
         {
             throw new BusinessCharacterOfflineException();
         }

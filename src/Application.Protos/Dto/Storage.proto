@@ -3,8 +3,6 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-import "Dto/Item.proto";
-
 package Dto;
 
 message StorageDto {
@@ -12,5 +10,4 @@ message StorageDto {
   int32 accountid = 2;
   int32 slots = 3;
   int32 meso = 4;
-  repeated ItemDto items = 5;
 }

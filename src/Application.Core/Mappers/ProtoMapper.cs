@@ -15,7 +15,7 @@ using server;
 namespace Application.Core.Mappers
 {
     /// <summary>
-    /// Proto -&gt; Object
+    /// Proto &lt;-&gt; Object
     /// </summary>
     public class ProtoMapper : Profile
     {
@@ -199,7 +199,7 @@ namespace Application.Core.Mappers
             CreateMap<Dto.StorageDto, Storage>()
                 .ConstructUsing((x, ctx) =>
                 {
-                    return new Storage(x.Accountid, (byte)x.Slots, x.Meso, ctx.Mapper.Map<Item[]>(x.Items));
+                    return new Storage(x.Accountid, (byte)x.Slots, x.Meso);
                 })
                 .ReverseMap()
                 .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
@@ -213,7 +213,7 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
                 .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
 
-            CreateMap<Dto.DropDto, DropEntry>()
+            CreateMap<Dto.DropItemDto, DropEntry>()
                 .ConstructUsing((src, ctx) =>
                 {
                     if (src.Type == (int)DropType.ReactorDrop)
@@ -232,6 +232,8 @@ namespace Application.Core.Mappers
                 .ConstructUsing((src, ctx) => new ShopItem((short)src.Buyable, src.ItemId, src.Price, src.Pitch));
 
             CreateMap<Dto.GiftDto, GiftModel>();
+            CreateMap<Dto.SpecialCashItemDto, SpecialCashItem>()
+                .ConstructUsing((src, ctx) => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
         }
 
         private int[] TranslateArray(string str)

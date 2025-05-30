@@ -1,5 +1,5 @@
-using Application.Shared.Characters;
 using client;
+using Google.Protobuf.Collections;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using tools;
@@ -98,7 +98,7 @@ public class BuddyList
         }
     }
 
-    public void LoadFromDb(BuddyDto[] dbList)
+    public void LoadFromDb(RepeatedField<Dto.BuddyDto> dbList)
     {
         List<int> buddyPlayerList = dbList.Where(x => x.Pending != 1).Select(x => x.CharacterId).ToList();
         var buddies = Owner.getWorldServer().Players.GetPlayersByIds(buddyPlayerList);
@@ -137,9 +137,9 @@ public class BuddyList
         dbContext.Buddies.Where(x => x.CharacterId == Owner.Id && x.Pending == 1).ExecuteDelete();
     }
 
-    public BuddyDto[] ToDto()
+    public Dto.BuddyDto[] ToDto()
     {
-        return getBuddies().Where(x => x.Visible).Select(x => new BuddyDto
+        return getBuddies().Where(x => x.Visible).Select(x => new Dto.BuddyDto
         {
             CharacterId = x.getCharacterId(),
             CharacterName = x.getName(),

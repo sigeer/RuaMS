@@ -1,4 +1,4 @@
-using Application.Shared.Characters;
+using Google.Protobuf.Collections;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players.PlayerProps
@@ -13,7 +13,7 @@ namespace Application.Core.Game.Players.PlayerProps
         }
 
         SavedLocation?[] _dataSource;
-        public void LoadData(SavedLocationDto[] savedLocFromDB)
+        public void LoadData(RepeatedField<Dto.SavedLocationDto> savedLocFromDB)
         {
             foreach (var item in savedLocFromDB)
             {
@@ -73,9 +73,9 @@ namespace Application.Core.Game.Players.PlayerProps
         public SavedLocation? GetData(int key) => _dataSource.ElementAtOrDefault(key);
         public SavedLocation? GetData(string typeName) => _dataSource.ElementAtOrDefault(GetKey(typeName));
         public SavedLocation? GetData(SavedLocationType type) => _dataSource.ElementAtOrDefault(GetKey(type));
-        public SavedLocationDto[] ToDto()
+        public Dto.SavedLocationDto[] ToDto()
         {
-            return _dataSource.Where(x => x != null).Select((x, idx) => new SavedLocationDto
+            return _dataSource.Where(x => x != null).Select((x, idx) => new Dto.SavedLocationDto
             {
                 Locationtype = ((SavedLocationType)idx).ToString(),
                 Map = x.getMapId(),

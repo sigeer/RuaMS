@@ -1,4 +1,5 @@
 using Application.Core.EF.Entities.Items;
+using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
@@ -44,9 +45,9 @@ namespace Application.Core.Login.Datas
                     select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
         }
 
-        public static List<ItemEntityPair> LoadAccountItems(DBContext dbContext, int targetId, params ItemFactory[] itemFactories)
+        public static List<ItemEntityPair> LoadAccountItems(DBContext dbContext, int targetId, params ItemType[] itemFactories)
         {
-            var itemType = itemFactories.Select(x => x.getValue()).ToArray();
+            var itemType = itemFactories.Select(x => (int)x).ToArray();
             var items = (from a in dbContext.Inventoryitems.AsNoTracking()
                 .Where(x => x.Accountid == targetId)
                 .Where(x => itemType.Contains(x.Type))
@@ -66,7 +67,7 @@ namespace Application.Core.Login.Datas
                     select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
         }
 
-        public static void CommitInventoryByType(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
+        public static void CommitInventoryByType(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
             var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
             if (allItems.Count == 0)
@@ -147,7 +148,7 @@ namespace Application.Core.Login.Datas
             dbContext.SaveChanges();
         }
 
-        public static async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemDto[] items, ItemFactory type)
+        public static async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
             var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
             if (allItems.Count == 0)

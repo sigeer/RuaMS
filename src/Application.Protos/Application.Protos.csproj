@@ -20,16 +20,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Dto\SpecialCashItem.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerShop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Drop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Equip.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Gift.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Item.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\DueyPackage.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\Account.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\AccountCtrl.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\AccountGame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Area.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Buddy.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\CashShop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Character.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\CoolDown.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Event.proto" GrpcServices="None" />
@@ -51,7 +52,7 @@
 		<Protobuf Include="Dto\PlayerBuffSave.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Buff.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Disease.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\PlayerSave.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\PlayerSetter.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Shop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ShopItem.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Merchant.proto" GrpcServices="None" />

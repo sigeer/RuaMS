@@ -1,16 +1,12 @@
-using Application.Core.Game.Players;
 using Application.Core.Login.Client;
-using Application.Shared.Characters;
-using Application.Shared.Dto;
+using Application.Core.Login.Models;
 using Application.Shared.Net;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
-using client.inventory;
 using net.opcodes;
 using net.packet;
 using net.server;
-using server;
 using System.Net;
 using tools;
 
@@ -191,7 +187,7 @@ namespace Application.Core.Login.Net.Packets
             p.writeInt(chr.Character.JobRankMove); // move (negative is downwards)
         }
 
-        private static void addCharStats(OutPacket p, CharacterDto chr)
+        private static void addCharStats(OutPacket p, CharacterModel chr)
         {
             p.writeInt(chr.Id); // character id
             p.writeFixedString(chr.Name);

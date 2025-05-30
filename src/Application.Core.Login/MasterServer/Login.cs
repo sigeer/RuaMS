@@ -1,10 +1,9 @@
-using Application.Core.Game.Players;
 using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
+using Application.Core.Login.Models;
 using Application.Core.Login.Session;
-using Application.Shared.Characters;
-using Application.Shared.Dto;
 using Application.Shared.Login;
+using Application.Shared.Models;
 using Application.Utility.Configs;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +15,7 @@ namespace Application.Core.Login
         {
             return AccountManager.GetAccountPlayerIds(accId).Count;
         }
-        public AccountDto? GetAccountDto(int accId)
+        public AccountCtrl? GetAccountDto(int accId)
         {
             return AccountManager.GetAccountDto(accId);
         }
@@ -46,7 +45,7 @@ namespace Application.Core.Login
             return AccountManager.GetAccountLoginStatus(accId);
         }
 
-        public void CommitAccountEntity(AccountDto accountEntity)
+        public void CommitAccountEntity(AccountCtrl accountEntity)
         {
             AccountManager.UpdateAccount(accountEntity);
         }

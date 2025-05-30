@@ -1,5 +1,5 @@
 using Application.Core.Game.Skills;
-using Application.Shared.Characters;
+using Google.Protobuf.Collections;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
@@ -10,7 +10,7 @@ namespace Application.Core.Game.Players.PlayerProps
         {
             _dataSource = [];
         }
-        public void LoadData(SkillDto[] skills)
+        public void LoadData(RepeatedField<Dto.SkillDto> skills)
         {
             foreach (var item in skills)
             {
@@ -23,9 +23,9 @@ namespace Application.Core.Game.Players.PlayerProps
 
         }
 
-        public SkillDto[] ToDto()
+        public Dto.SkillDto[] ToDto()
         {
-            return _dataSource.Select(x => new SkillDto
+            return _dataSource.Select(x => new Dto.SkillDto
             {
                 Skillid = x.Key.getId(),
                 Expiration = x.Value.expiration,

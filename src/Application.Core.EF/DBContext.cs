@@ -161,7 +161,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<SkillMacroEntity> Skillmacros { get; set; }
 
-    public virtual DbSet<Specialcashitem> Specialcashitems { get; set; }
+    public virtual DbSet<SpecialCashItemEntity> Specialcashitems { get; set; }
 
     public virtual DbSet<StorageEntity> Storages { get; set; }
 
@@ -2003,7 +2003,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("skill3");
         });
 
-        modelBuilder.Entity<Specialcashitem>(entity =>
+        modelBuilder.Entity<SpecialCashItemEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

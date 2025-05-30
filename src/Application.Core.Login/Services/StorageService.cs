@@ -1,3 +1,5 @@
+using Application.EF;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Services
@@ -9,12 +11,14 @@ namespace Application.Core.Login.Services
     {
         protected System.Threading.Channels.Channel<StorageType> packetChannel;
         readonly DataStorage _dataStorage;
+        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
         protected readonly ILogger<StorageService> _logger;
-        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger)
+        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory)
         {
             _dataStorage = chrStorage;
             _logger = logger;
+            _dbContextFactory = dbContextFactory;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<StorageType>();
             // 定时触发、特殊事件触发、关闭服务器触发
             Task.Run(async () =>
@@ -27,7 +31,7 @@ namespace Application.Core.Login.Services
                             await CommitAllImmediately();
                             break;
                         case StorageType.CharcterOnly:
-                            await _dataStorage.CommitCharacterAsync();
+                            await CommitCharacter();
                             break;
                         case StorageType.MerchantOnly:
                             break;
@@ -53,10 +57,28 @@ namespace Application.Core.Login.Services
             return CommitType(StorageType.All);
         }
 
+        public async Task CommitCharacter()
+        {
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+            await _dataStorage.CommitCharacterAsync(dbContext);
+            await _dataStorage.CommitAccountCtrlAsync(dbContext);
+            await _dataStorage.CommitAccountGameAsync(dbContext);
+            await _dataStorage.CommitAccountLoginRecord();
+
+            await dbTrans.CommitAsync();
+        }
+
         public async Task CommitAllImmediately()
         {
-            await _dataStorage.CommitCharacterAsync();
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+            await _dataStorage.CommitCharacterAsync(dbContext);
+            await _dataStorage.CommitAccountCtrlAsync(dbContext);
+            await _dataStorage.CommitAccountGameAsync(dbContext);
             await _dataStorage.CommitAccountLoginRecord();
+
+            await dbTrans.CommitAsync();
         }
     }
 

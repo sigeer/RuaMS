@@ -1,55 +1,50 @@
-using Application.Shared.Characters;
-using Application.Shared.Dto;
-using Application.Shared.Duey;
-using Application.Shared.Items;
+using Application.Core.Login.Models;
+using Application.Shared.Models;
 using AutoMapper;
 
 namespace Application.Core.Login.Mappers
 {
     /// <summary>
-    /// 
+    /// Model &lt;=> proto
     /// </summary>
     public class ProtoMapper : Profile
     {
         public ProtoMapper()
         {
-            CreateMap<CharacterDto, Dto.CharacterDto>().ReverseMap();
+            CreateMap<CharacterModel, Dto.CharacterDto>().ReverseMap();
 
-            CreateMap<EquipDto, Dto.EquipDto>().ReverseMap();
-            CreateMap<PetDto, Dto.PetDto>().ReverseMap();
-            CreateMap<RingDto, Dto.RingDto>().ReverseMap();
-            CreateMap<ItemDto, Dto.ItemDto>().ReverseMap();
+            CreateMap<EquipModel, Dto.EquipDto>().ReverseMap();
+            CreateMap<PetModel, Dto.PetDto>().ReverseMap();
+            CreateMap<RingModel, Dto.RingDto>().ReverseMap();
+            CreateMap<ItemModel, Dto.ItemDto>().ReverseMap();
 
-            CreateMap<AccountDto, Dto.AccountDto>().ReverseMap();
-            CreateMap<MonsterbookDto, Dto.MonsterbookDto>().ReverseMap();
-            CreateMap<TrockLocationDto, Dto.TrockLocationDto>().ReverseMap();
-            CreateMap<AreaDto, Dto.AreaDto>().ReverseMap();
-            CreateMap<EventDto, Dto.EventDto>().ReverseMap();
+            CreateMap<AccountCtrl, Dto.AccountCtrlDto>().ReverseMap();
+            CreateMap<AccountGame, Dto.AccountGameDto>().ReverseMap();
 
-            CreateMap<QuestStatusDto, Dto.QuestStatusDto>().ReverseMap();
-            CreateMap<QuestProgressDto, Dto.QuestProgressDto>().ReverseMap();
-            CreateMap<MedalMapDto, Dto.MedalMapDto>().ReverseMap();
+            CreateMap<MonsterbookModel, Dto.MonsterbookDto>().ReverseMap();
+            CreateMap<TrockLocationModel, Dto.TrockLocationDto>().ReverseMap();
+            CreateMap<AreaModel, Dto.AreaDto>().ReverseMap();
+            CreateMap<EventModel, Dto.EventDto>().ReverseMap();
 
-            CreateMap<SkillDto, Dto.SkillDto>().ReverseMap();
-            CreateMap<SkillMacroDto, Dto.SkillMacroDto>().ReverseMap();
-            CreateMap<CoolDownDto, Dto.CoolDownDto>().ReverseMap();
+            CreateMap<QuestStatusModel, Dto.QuestStatusDto>().ReverseMap();
+            CreateMap<QuestProgressModel, Dto.QuestProgressDto>().ReverseMap();
+            CreateMap<MedalMapModel, Dto.MedalMapDto>().ReverseMap();
 
-            CreateMap<KeyMapDto, Dto.KeyMapDto>().ReverseMap();
-            CreateMap<QuickSlotDto, Dto.QuickSlotDto>().ReverseMap();
+            CreateMap<SkillModel, Dto.SkillDto>().ReverseMap();
+            CreateMap<SkillMacroModel, Dto.SkillMacroDto>().ReverseMap();
+            CreateMap<CoolDownModel, Dto.CoolDownDto>().ReverseMap();
 
-            CreateMap<SavedLocationDto, Dto.SavedLocationDto>();
-            CreateMap<StorageDto, Dto.StorageDto>();
+            CreateMap<KeyMapModel, Dto.KeyMapDto>().ReverseMap();
+            CreateMap<QuickSlotModel, Dto.QuickSlotDto>().ReverseMap();
 
-            CreateMap<DropDto, Dto.DropDto>().ReverseMap(); ;
+            CreateMap<SavedLocationModel, Dto.SavedLocationDto>();
+            CreateMap<StorageModel, Dto.StorageDto>();
 
-            CreateMap<DueyPackageDto, Dto.DueyPackageDto>().ReverseMap();
-            CreateMap<NoteDto, Dto.NoteDto>().ReverseMap();
-            CreateMap<ShopDto, Dto.ShopDto>()
-                .ReverseMap();
-            CreateMap<ShopItemDto, Dto.ShopItemDto>().ReverseMap();
+            CreateMap<DueyPackageModel, Dto.DueyPackageDto>().ReverseMap();
+            CreateMap<ShopModel, Dto.ShopDto>().ReverseMap();
+            CreateMap<ShopItemModel, Dto.ShopItemDto>().ReverseMap();
 
-            CreateMap<Dto.PlayerSaveDto, PlayerSaveDto>();
-            CreateMap<CharacterValueObject, Dto.PlayerGetterDto>();
+            CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>();
         }
     }
 }

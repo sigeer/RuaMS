@@ -1,14 +1,18 @@
+using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.Core.tools;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Shared.Characters;
+using Application.Shared.Items;
 using Application.Shared.Login;
+using Application.Shared.Models;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
+using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Login.Datas
@@ -19,6 +23,9 @@ namespace Application.Core.Login.Datas
         /// 账户登录态记录
         /// </summary>
         Dictionary<int, AccountLoginStatus> _accStageCache = new Dictionary<int, AccountLoginStatus>();
+
+        Dictionary<int, AccountGame?> _accGameDataSource = new ();
+        Dictionary<int, AccountCtrl?> _accDataSource = new ();
 
         /// <summary>
         /// 账户及其拥有的角色id缓存
@@ -39,11 +46,11 @@ namespace Application.Core.Login.Datas
             _server = server;
         }
 
-        public AccountDto? GetAccountDto(int accId)
+        public AccountCtrl? GetAccountDto(int accId)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == accId);
-            return _maaper.Map<AccountDto>(dbModel);
+            return _maaper.Map<AccountCtrl>(dbModel);
         }
 
         public int GetAccountIdByName(string accName)
@@ -67,27 +74,7 @@ namespace Application.Core.Login.Datas
             });
         }
 
-        /// <summary>
-        /// account的字段更新都是即时更新，不与character一同处理
-        /// <para>有3种更新：1.仅更新lastlogin，2.更新该方法以下属性，3.更新现金相关，随cashshop更新</para>
-        /// </summary>
-        /// <param name="obj"></param>
-        public void UpdateAccount(AccountDto obj)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == obj.Id);
-            if (dbModel == null)
-                return;
 
-            dbModel.Macs = obj.Macs;
-            dbModel.Hwid = obj.Hwid;
-            dbModel.Pic = obj.Pic;
-            dbModel.Pin = obj.Pin;
-            dbModel.Ip = obj.Ip;
-            dbModel.GMLevel = obj.GMLevel;
-            dbModel.Characterslots = obj.Characterslots;
-            dbContext.SaveChanges();
-        }
 
         public AccountLoginStatus UpdateAccountState(int accId, sbyte newState)
         {
@@ -145,6 +132,60 @@ namespace Application.Core.Login.Datas
         {
             if (_accPlayerCache.TryGetValue(accId, out var d))
                 d.Remove(charId);
+        }
+
+        internal AccountGame? GetAccountGameData(int accountId)
+        {
+            return _accGameDataSource.GetOrAdd(accountId, () =>
+            {
+                using var dbContext = _dbContextFactory.CreateDbContext();
+                var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
+                if (accountData == null)
+                    return null;
+
+                var allAccountItems = InventoryManager.LoadAccountItems(dbContext, accountId,
+                    ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
+
+                var data = new AccountGame
+                {
+                    Id = accountData.Id,
+                    NxCredit = accountData.NxCredit ?? 0,
+                    MaplePoint = accountData.MaplePoint ?? 0,
+                    NxPrepaid = accountData.NxPrepaid ?? 0,
+
+                    StorageItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.Storage)),
+                    CashOverallItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashOverall)),
+                    CashAranItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashAran)),
+                    CashCygnusItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashCygnus)),
+                    CashExplorerItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashExplorer)),
+                    QuickSlot = _maaper.Map<QuickSlotModel>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == accountId).FirstOrDefault()),
+                    Storage = _maaper.Map<StorageModel>(
+                        dbContext.Storages.FirstOrDefault(x => x.Accountid == accountId)
+                        ) ?? new StorageModel(accountId)
+                };
+                return data;
+            });
+        }
+        internal void UpdateAccountGame(AccountGame accountGame)
+        {
+            _accGameDataSource[accountGame.Id] = accountGame;
+            _dataStorage.SetAccountGame(accountGame);
+        }
+
+        internal AccountCtrl? GetAccount(int accountId)
+        {
+            return _accDataSource.GetOrAdd(accountId, () =>
+            {
+                using var dbContext = _dbContextFactory.CreateDbContext();
+                var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
+                return _maaper.Map<AccountCtrl>(accountData);
+            });
+        }
+
+        public void UpdateAccount(AccountCtrl obj)
+        {
+            _accDataSource[obj.Id] = obj;
+            _dataStorage.SetAccount(obj);
         }
 
     }

@@ -1,10 +1,7 @@
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
-using Application.Shared.Characters;
 using Application.Shared.Configs;
-using Application.Shared.Dto;
-using Application.Shared.Duey;
 using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.Servers;
@@ -103,14 +100,14 @@ namespace Application.Core.ServerTransports
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
         string LoadExpeditionInfo();
         void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
-        CharacterValueObject? GetPlayerData(string clientSession, int channelId, int cid);
+        Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid);
         int GetAccountCharacterCount(int accId);
         bool CheckCharacterName(string name);
         void UpdateAccountChracterByAdd(int accountId, int id);
-        void SendPlayerObject(PlayerSaveDto characterValueObject);
+        void SendPlayerObject(Dto.PlayerSaveDto characterValueObject);
         void SendRemovePlayerIncomingInvites(int id);
-        void SendBuffObject(int v, PlayerBuffSaveDto playerBuffSaveDto);
-        PlayerBuffSaveDto GetBuffObject(int id);
+        void SendBuffObject(int v, Dto.PlayerBuffSaveDto playerBuffSaveDto);
+        Dto.PlayerBuffSaveDto GetBuffObject(int id);
         /// <summary>
         /// 设置玩家在线
         /// </summary>
@@ -118,24 +115,23 @@ namespace Application.Core.ServerTransports
         /// <param name="v">频道号</param>
         void SetPlayerOnlined(int id, int v);
         void CallSaveDB();
-        Dictionary<int, List<DropDto>> RequestAllReactorDrops();
+        Dto.DropAllDto RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
-        SpecialCashItem[] RequestSpecialCashItems();
+        Dto.SpecialCashItemListDto RequestSpecialCashItems();
         void SendGift(int recipient, string from, string message, int sn, long ringid);
         Dto.GiftDto[] LoadPlayerGifts(int playerId);
         void ClearGifts(int[] giftIdArray);
-        DueyPackageDto[] GetPlayerDueyPackages(int id);
-        DueyPackageDto? GetDueyPackageByPackageId(int id);
+        Dto.DueyPackageDto[] GetPlayerDueyPackages(int id);
+        Dto.DueyPackageDto? GetDueyPackageByPackageId(int id);
         void RequestRemovePackage(int packageid);
         bool SendNormalNoteMessage(string fromName, string toName, string noteMessage);
         bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
         void ShowNoteMessage(string name);
-        NoteDto? DeleteNoteMessage(int id);
-        Shop? GetShop(int id, bool isShopId);
+        Dto.NoteDto? DeleteNoteMessage(int id);
+        Dto.ShopDto? GetShop(int id, bool isShopId);
         int[] GetCardTierSize();
         void SendUnbanAccount(string playerName);
         void AddReport(int v1, int v2, int v3, string description, string v4);
-        PetDto CreatePet(string petName, int level, int tameness, int fullness);
         Rank.RankCharacterList LoadPlayerRanking(int topCount);
         void SendToggleCoupon(int v);
         #endregion

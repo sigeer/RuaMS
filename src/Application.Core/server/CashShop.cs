@@ -52,7 +52,7 @@ public class CashShop
     private List<int> wishList = new();
     private int notes = 0;
     private object lockObj = new object();
-    public ItemFactory Factory { get; }
+    public ItemType Factory { get; }
     public IPlayer Owner { get; set; }
     public int NxCredit { get; set; }
     public int MaplePoint { get; set; }
@@ -65,27 +65,24 @@ public class CashShop
         this.accountId = player.AccountId;
         this.characterId = player.Id;
 
+        Factory = ItemType.CashOverall;
         if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)
         {
             switch (player.getJobType())
             {
                 case 0:
-                    Factory = ItemFactory.CASH_EXPLORER;
+                    Factory = ItemType.CashExplorer;
                     break;
                 case 1:
-                    Factory = ItemFactory.CASH_CYGNUS;
+                    Factory = ItemType.CashCygnus;
                     break;
                 case 2:
-                    Factory = ItemFactory.CASH_ARAN;
+                    Factory = ItemType.CashAran;
                     break;
                 default:
-                    Factory = ItemFactory.CASH_OVERALL;
+                    Factory = ItemType.CashOverall;
                     break;
             }
-        }
-        else
-        {
-            Factory = ItemFactory.CASH_OVERALL;
         }
     }
 

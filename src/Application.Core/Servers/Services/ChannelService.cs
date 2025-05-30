@@ -35,7 +35,7 @@ namespace Application.Core.Servers.Services
         {
             _tranport.SetPlayerOnlined(id, _server.getId());
         }
-        public CharacterValueObject? GetPlayerData(string clientSession, int cid)
+        public Dto.PlayerGetterDto? GetPlayerData(string clientSession, int cid)
         {
             return _tranport.GetPlayerData(clientSession, _server.getId(), cid);
         }
@@ -59,7 +59,7 @@ namespace Application.Core.Servers.Services
             _tranport.SendBuffObject(player.getId(), _characteService.DeserializeBuff(player));
         }
 
-        public PlayerBuffSaveDto GetBuffFromStorage(IPlayer player)
+        public Dto.PlayerBuffSaveDto GetBuffFromStorage(IPlayer player)
         {
             return _tranport.GetBuffObject(player.Id);
         }
@@ -121,7 +121,8 @@ namespace Application.Core.Servers.Services
 
         public Dictionary<int, List<DropEntry>> RequestAllReactorDrops()
         {
-            return _mapper.Map<Dictionary<int, List<DropEntry>>>(_tranport.RequestAllReactorDrops());
+            var allItems = _tranport.RequestAllReactorDrops();
+            return allItems.Items.GroupBy(x => x.DropperId).ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x.ToArray()));
         }
 
         internal DueyPackageObject[] GetDueyPackages(int id)
@@ -134,7 +135,7 @@ namespace Application.Core.Servers.Services
             return _mapper.Map<DueyPackageObject?>(_tranport.GetDueyPackageByPackageId(id));
         }
 
-        public void SendNoteMessage(int id, NoteDto[] notes)
+        public void SendNoteMessage(int id, Dto.NoteDto[] notes)
         {
             var chr = _server.getPlayerStorage().getCharacterById(id);
             if (chr != null)

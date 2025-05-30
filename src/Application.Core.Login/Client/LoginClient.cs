@@ -1,13 +1,13 @@
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.Login.Models;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Core.Net;
 using Application.Core.tools;
 using Application.EF;
-using Application.Shared.Characters;
-using Application.Shared.Dto;
 using Application.Shared.Login;
+using Application.Shared.Models;
 using Application.Shared.Sessions;
 using Application.Utility.Configs;
 using DotNetty.Transport.Channels;
@@ -23,7 +23,7 @@ namespace Application.Core.Login.Client
 {
     public class LoginClient : ClientBase, ILoginClient
     {
-        public AccountDto? AccountEntity { get; set; }
+        public AccountCtrl? AccountEntity { get; set; }
         public AccountLoginStatus AccountLoginStatus { get; private set; }
         public override bool IsOnlined => AccountLoginStatus.State > LoginStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;

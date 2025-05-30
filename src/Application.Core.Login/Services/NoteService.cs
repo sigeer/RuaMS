@@ -1,4 +1,5 @@
 using Application.Core.Login.Datas;
+using Application.Core.Login.Models;
 using Application.Core.model;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
@@ -99,12 +100,12 @@ public class NoteService
         }
     }
 
-    public NoteDto[] findAllByTo(string to)
+    public Dto.NoteDto[] findAllByTo(string to)
     {
         try
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            return _mapper.Map<NoteDto[]>(dbContext.Notes.Where(x => x.To == to && x.Deleted == 0).ToList());
+            return _mapper.Map<Dto.NoteDto[]>(dbContext.Notes.Where(x => x.To == to && x.Deleted == 0).ToList());
         }
         catch (Exception e)
         {
@@ -112,7 +113,7 @@ public class NoteService
         }
     }
 
-    public NoteDto? delete(int id)
+    public Dto.NoteDto? delete(int id)
     {
         try
         {
@@ -125,7 +126,7 @@ public class NoteService
             note.Deleted = 1;
             dbContext.SaveChanges();
 
-            return _mapper.Map<NoteDto>(note);
+            return _mapper.Map<Dto.NoteDto>(note);
         }
         catch (Exception e)
         {

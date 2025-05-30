@@ -76,6 +76,7 @@ namespace Application.Core.Login
         public AccountManager AccountManager { get; }
         public CharacterManager CharacterManager { get; }
         public ServerManager ServerManager { get; }
+        public BuffManager BuffManager { get; }
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -112,14 +113,13 @@ namespace Application.Core.Login
             ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
             WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
 
-            BuffStorage = new PlayerBuffStorage();
-
             InvitationController = new InvitationController(this);
             ServerManager = ActivatorUtilities.CreateInstance<ServerManager>(ServiceProvider, this);
             CouponManager = ActivatorUtilities.CreateInstance<CouponManager>(ServiceProvider, this);
             CharacterManager = ActivatorUtilities.CreateInstance<CharacterManager>(ServiceProvider, this);
             AccountManager = ActivatorUtilities.CreateInstance<AccountManager>(ServiceProvider, this);
             WeddingInstance = ActivatorUtilities.CreateInstance<WeddingManager>(ServiceProvider, this);
+            BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;

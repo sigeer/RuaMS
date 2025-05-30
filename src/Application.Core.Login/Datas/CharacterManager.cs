@@ -1,12 +1,8 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
-using Application.Core.Game.Players;
+using Application.Core.Login.Models;
 using Application.Core.Login.Services;
-using Application.Core.Managers;
 using Application.EF;
-using Application.Shared.Characters;
-using Application.Shared.Dto;
-using Application.Shared.Items;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using AutoMapper;
@@ -16,7 +12,6 @@ using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using MySql.EntityFrameworkCore.Extensions;
 using net.server;
 using Serilog;
 
@@ -25,10 +20,10 @@ namespace Application.Core.Login.Datas
     /// <summary>
     /// 不包含Account，Account可能会在登录时被单独修改
     /// </summary>
-    public class CharacterManager: IDisposable
+    public class CharacterManager : IDisposable
     {
-        Dictionary<int, CharacterValueObject> _idDataSource = new Dictionary<int, CharacterValueObject>();
-        Dictionary<string, CharacterValueObject> _nameDataSource = new Dictionary<string, CharacterValueObject>();
+        Dictionary<int, CharacterLiveObject> _idDataSource = new Dictionary<int, CharacterLiveObject>();
+        Dictionary<string, CharacterLiveObject> _nameDataSource = new Dictionary<string, CharacterLiveObject>();
 
         Dictionary<int, CharacterViewObject> _charcterViewCache = new();
 
@@ -47,35 +42,34 @@ namespace Application.Core.Login.Datas
             _masterServer = masterServer;
         }
 
-        public CharacterValueObject? FindPlayerById(int id) => _idDataSource.GetValueOrDefault(id);
-        public CharacterValueObject? FindPlayerByName(string name) => _nameDataSource.GetValueOrDefault(name);
+        public CharacterLiveObject? FindPlayerById(int id) => _idDataSource.GetValueOrDefault(id);
+        public CharacterLiveObject? FindPlayerByName(string name) => _nameDataSource.GetValueOrDefault(name);
 
-        public void Update(PlayerSaveDto obj)
+        public void Update(Dto.PlayerSaveDto obj)
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
-                origin.Character = obj.Character;
-                origin.CashShop = obj.CashShop;
-                origin.BuddyList = obj.BuddyList;
-                origin.InventoryItems = obj.InventoryItems;
-                origin.KeyMaps = obj.KeyMaps;
-                origin.SkillMacros = obj.SkillMacros;
-                origin.Skills = obj.Skills;
-                origin.Areas = obj.Areas;
-                origin.Events = obj.Events;
-                origin.MonsterBooks = obj.MonsterBooks;
-                origin.PetIgnores = obj.PetIgnores;
-                origin.QuestStatuses = obj.QuestStatuses;
-                origin.QuickSlot = obj.QuickSlot;
-                origin.SavedLocations = obj.SavedLocations;
-                origin.StorageInfo = obj.StorageInfo;
-                origin.TrockLocations = obj.TrockLocations;
-                origin.CoolDowns = obj.CoolDowns;
+                origin.Character = _mapper.Map<CharacterModel>(obj.Character);
+                origin.BuddyList = _mapper.Map<BuddyModel[]>(obj.BuddyList);
+                origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
+                origin.KeyMaps = _mapper.Map<KeyMapModel[]>(obj.KeyMaps);
+                origin.SkillMacros = _mapper.Map<SkillMacroModel[]>(obj.SkillMacros);
+                origin.Skills = _mapper.Map<SkillModel[]>(obj.Skills);
+                origin.Areas = _mapper.Map<AreaModel[]>(obj.Areas);
+                origin.Events = _mapper.Map<EventModel[]>(obj.Events);
+                origin.MonsterBooks = _mapper.Map<MonsterbookModel[]>(obj.MonsterBooks);
+                origin.PetIgnores = _mapper.Map<PetIgnoreModel[]>(obj.PetIgnores);
+                origin.QuestStatuses = _mapper.Map<QuestStatusModel[]>(obj.QuestStatuses);
+                origin.SavedLocations = _mapper.Map<SavedLocationModel[]>(obj.SavedLocations);
+                origin.TrockLocations = _mapper.Map<TrockLocationModel[]>(obj.TrockLocations);
+                origin.CoolDowns = _mapper.Map<CoolDownModel[]>(obj.CoolDowns);
 
                 origin.Channel = obj.Channel;
 
+                _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
+
                 _logger.LogDebug("玩家{PlayerName}已缓存", obj.Character.Name);
-                _dataStorage.SetCharacter(obj);
+                _dataStorage.SetCharacter(origin);
             }
 
         }
@@ -98,32 +92,10 @@ namespace Application.Core.Login.Datas
             _charcterViewCache.Clear();
         }
 
-        private ItemFactory GetCashshopFactory(int jobId)
-        {
-            if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)
-            {
-                switch (JobFactory.GetJobTypeById(jobId))
-                {
-                    case JobType.Adventurer:
-                        return ItemFactory.CASH_EXPLORER;
-                    case JobType.Cygnus:
-                        return ItemFactory.CASH_CYGNUS;
-                    case JobType.Legend:
-                        return ItemFactory.CASH_ARAN;
-                    default:
-                        return ItemFactory.CASH_OVERALL;
-                }
-            }
-            else
-            {
-                return ItemFactory.CASH_OVERALL;
-            }
-        }
-
-        public CharacterValueObject? GetCharacter(int characterId)
+        public CharacterLiveObject? GetCharacter(int characterId)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            CharacterValueObject? d;
+            CharacterLiveObject? d;
             if (!_idDataSource.TryGetValue(characterId, out d))
             {
                 var characterEntity = dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId);
@@ -132,14 +104,14 @@ namespace Application.Core.Login.Datas
 
                 var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
-                                  select new PetIgnoreDto { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
+                                  select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
                 var invItems = InventoryManager.LoadItems(dbContext, characterId, ItemFactory.INVENTORY);
 
                 var buddyData = (from a in dbContext.Buddies
                                  join b in dbContext.Characters on a.BuddyId equals b.Id
                                  where a.CharacterId == characterId
-                                 select new BuddyDto { CharacterId = a.BuddyId, CharacterName = b.Name, Pending = a.Pending, Group = a.Group }).ToArray();
+                                 select new BuddyModel { CharacterId = a.BuddyId, CharacterName = b.Name, Pending = a.Pending, Group = a.Group }).ToArray();
 
                 #region quest
                 var questStatusData = (from a in dbContext.Queststatuses.AsNoTracking().Where(x => x.Characterid == characterId)
@@ -148,72 +120,32 @@ namespace Application.Core.Login.Datas
                                        select new QuestStatusEntityPair(a, bs, cs)).ToArray();
                 #endregion
 
-                d = new CharacterValueObject()
+                d = new CharacterLiveObject()
                 {
-                    Character = _mapper.Map<CharacterDto>(characterEntity),
+                    Character = _mapper.Map<CharacterModel>(characterEntity),
+                    Channel = 0,
                     PetIgnores = petIgnores,
-                    Areas = _mapper.Map<AreaDto[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                    Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                     BuddyList = buddyData,
-                    Events = _mapper.Map<EventDto[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    InventoryItems = _mapper.Map<ItemDto[]>(invItems),
-                    KeyMaps = _mapper.Map<KeyMapDto[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                    Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                    InventoryItems = _mapper.Map<ItemModel[]>(invItems),
+                    KeyMaps = _mapper.Map<KeyMapModel[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
 
-                    MonsterBooks = _mapper.Map<MonsterbookDto[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                    MonsterBooks = _mapper.Map<MonsterbookModel[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
 
-                    QuestStatuses = _mapper.Map<QuestStatusDto[]>(questStatusData),
+                    QuestStatuses = _mapper.Map<QuestStatusModel[]>(questStatusData),
 
-                    SavedLocations = _mapper.Map<SavedLocationDto[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    SkillMacros = _mapper.Map<SkillMacroDto[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    Skills = _mapper.Map<SkillDto[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    TrockLocations = _mapper.Map<TrockLocationDto[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    CoolDowns = _mapper.Map<CoolDownDto[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                    SavedLocations = _mapper.Map<SavedLocationModel[]>(dbContext.Savedlocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                    SkillMacros = _mapper.Map<SkillMacroModel[]>(dbContext.Skillmacros.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                    Skills = _mapper.Map<SkillModel[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                    TrockLocations = _mapper.Map<TrockLocationModel[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
+                    CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
+                    WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray()
                 };
 
                 _idDataSource[characterId] = d;
                 _nameDataSource[characterEntity.Name] = d;
-                _charcterViewCache[characterId] = d;
             }
-
-            var accountDto = _mapper.Map<AccountDto>(dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == d.Character.AccountId));
-            if (accountDto == null)
-                return null;
-            // 虽然传了所有字段，但是只有部分字段可能会发生修改
-            d.Account = accountDto;
-
-            d.Link = dbContext.Characters.Where(x => x.AccountId == d.Character.AccountId && x.Id != d.Character.Id).OrderByDescending(x => x.Level)
-                    .Select(x => new CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
-
-            d.QuickSlot = _mapper.Map<QuickSlotDto>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == d.Character.AccountId).FirstOrDefault());
-
-            var now = DateTimeOffset.UtcNow;
-            var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
-
-            d.FameRecord = new RecentFameRecordDto
-            {
-                ChararacterIds = fameRecords.Select(x => x.Characterid).ToArray(),
-                LastUpdateTime = fameRecords.Count == 0 ? 0 : fameRecords.Max(x => x.When).ToUnixTimeMilliseconds()
-            };
-
-
-            var cashFactory = GetCashshopFactory(d.Character.JobId);
-            var allAccountItems = InventoryManager.LoadAccountItems(dbContext, d.Character.AccountId, ItemFactory.STORAGE, cashFactory);
-
-            var storageDto = _mapper.Map<StorageDto>(dbContext.Storages.AsNoTracking().Where(x => x.Accountid == d.Character.AccountId).FirstOrDefault());
-            if (storageDto == null)
-                storageDto = new StorageDto(d.Character.AccountId);
-            storageDto.Items = _mapper.Map<ItemDto[]>(allAccountItems.Where(x => x.Item.Type == ItemFactory.STORAGE.getValue()));
-            d.StorageInfo = storageDto;
-
-            var cashShopDto = new CashShopDto
-            {
-                NxCredit = accountDto.NxCredit ?? 0,
-                MaplePoint = accountDto.MaplePoint ?? 0,
-                NxPrepaid = accountDto.NxPrepaid ?? 0,
-                WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
-                Items = _mapper.Map<ItemDto[]>(allAccountItems.Where(x => x.Item.Type == cashFactory.getValue()))
-            };
-            d.CashShop = cashShopDto;
-
             return d;
         }
 
@@ -230,10 +162,10 @@ namespace Application.Core.Login.Datas
             List<int> needLoadFromDB = new();
             foreach (var item in charIds)
             {
-                if (_charcterViewCache.TryGetValue(item, out var d) && d != null)
-                    list.Add(d);
-                else if (_idDataSource.TryGetValue(item, out var e) && e != null)
+                if (_idDataSource.TryGetValue(item, out var e) && e != null)
                     list.Add(e);
+                else if (_charcterViewCache.TryGetValue(item, out var d) && d != null)
+                    list.Add(d);
                 else
                     needLoadFromDB.Add(item);
             }
@@ -266,8 +198,8 @@ namespace Application.Core.Login.Datas
             {
                 var obj = new CharacterViewObject()
                 {
-                    Character = _mapper.Map<CharacterDto>(character),
-                    InventoryItems = _mapper.Map<ItemDto[]>(itemObj.Where(x => x.Item.Characterid == character.Id))
+                    Character = _mapper.Map<CharacterModel>(character),
+                    InventoryItems = _mapper.Map<ItemModel[]>(itemObj.Where(x => x.Item.Characterid == character.Id))
                 };
                 _charcterViewCache[obj.Character.Id] = obj;
                 list.Add(obj);

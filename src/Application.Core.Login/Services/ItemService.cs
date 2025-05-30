@@ -1,25 +1,13 @@
-using Application.Core.Game.Life;
+using Application.Core.EF.Entities.Items;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using AutoMapper;
-using client.inventory.manipulator;
-using client.inventory;
+using Dto;
+using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Org.BouncyCastle.Cms;
-using server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ZLinq;
-using static Mysqlx.Notice.Warning.Types;
-using Application.Shared.Characters;
-using Application.Core.Game.Items;
-using Application.Core.EF.Entities.Items;
 
 namespace Application.Core.Login.Services
 {
@@ -34,15 +22,13 @@ namespace Application.Core.Login.Services
             _mapper = mapper;
         }
 
-        public Dictionary<int, List<DropDto>> LoadAllReactorDrops()
+        public Dto.DropAllDto LoadAllReactorDrops()
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            return dbContext.Reactordrops.Where(x => x.Chance >= 0)
-                .ToList()
-                .AsValueEnumerable()
-                .GroupBy(x => x.Reactorid)
-                .Select(x => new KeyValuePair<int, List<DropDto>>(x.Key, _mapper.Map<List<DropDto>>(x.ToList())))
-                .ToDictionary();
+            var dbData = dbContext.Reactordrops.Where(x => x.Chance >= 0).AsNoTracking().ToList();
+            var data = new DropAllDto();
+            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(dbData));
+            return data;
         }
 
         public int[] LoadReactorSkillBooks()
@@ -53,11 +39,12 @@ namespace Application.Core.Login.Services
             .ToArray();
         }
 
-        public SpecialCashItem[] LoadSpecialCashItems()
+        public Dto.SpecialCashItemListDto LoadSpecialCashItems()
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            return dbContext.Specialcashitems.AsNoTracking().ToList()
-                   .Select(x => new SpecialCashItem(x.Sn, x.Modifier, (byte)x.Info)).ToArray();
+            var data = new Dto.SpecialCashItemListDto();
+            data.Items.AddRange(_mapper.Map<Dto.SpecialCashItemDto[]>(dbContext.Specialcashitems.AsNoTracking().ToList()));
+            return data;
         }
 
         public void InsertGift(int toId, string from, string message, int sn, long ringid = -1)
@@ -88,15 +75,6 @@ namespace Application.Core.Login.Services
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
-        }
-
-        public PetDto CreatePet(string petName, int level, int tameness, int fullness)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbModel = new PetEntity(CashIdGenerator.generateCashId(), petName, level, tameness, fullness, false, 0);
-            dbContext.Pets.Add(dbModel);
-            dbContext.SaveChanges();
-            return _mapper.Map<PetDto>(dbModel);
         }
     }
 }

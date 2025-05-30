@@ -4,8 +4,8 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "Dto/Character.proto";
+import "Dto/AccountCtrl.proto";
 import "Dto/Item.proto";
-import "Dto/CashShop.proto";
 import "Dto/Monsterbook.proto";
 import "Dto/PetIgnore.proto";
 import "Dto/TrockLocation.proto";
@@ -17,9 +17,8 @@ import "Dto/SkillMacro.proto";
 import "Dto/CoolDown.proto";
 import "Dto/KeyMap.proto";
 import "Dto/SavedLocation.proto";
-import "Dto/QuickSlot.proto";
-import "Dto/Storage.proto";
 import "Dto/Buddy.proto";
+import "Dto/AccountGame.proto";
 
 package Dto;
 
@@ -38,11 +37,11 @@ message CharacterLinkDto {
 }
 
 message PlayerGetterDto {
-  int32 channel = 1;
+  AccountCtrlDto account = 1;
   CharacterDto character = 2; // CHECK TYPE
   repeated ItemDto inventoryItems = 3; // CHECK TYPE
-  CashShopDto cashShop = 4; // CHECK TYPE
-  MonsterbookDto monsterBooks = 5; // CHECK TYPE
+  AccountGameDto accountGame = 4; // CHECK TYPE
+  repeated MonsterbookDto monsterBooks = 5; // CHECK TYPE
   repeated PetIgnoreDto petIgnores = 6; // CHECK TYPE
   repeated TrockLocationDto trockLocations = 7; // CHECK TYPE
   repeated AreaDto areas = 8; // CHECK TYPE
@@ -53,10 +52,9 @@ message PlayerGetterDto {
   repeated CoolDownDto coolDowns = 13; // CHECK TYPE
   repeated KeyMapDto keyMaps = 14; // CHECK TYPE
   repeated SavedLocationDto savedLocations = 15; // CHECK TYPE
-  QuickSlotDto quickSlot = 16; // CHECK TYPE
-  StorageDto storageInfo = 17; // CHECK TYPE
-  repeated BuddyDto buddyList = 18; // CHECK TYPE
-  LoginInfo loginInfo = 19;
-  CharacterLinkDto link = 20;
-  RecentFameRecordDto fameRecord = 21;
+  repeated BuddyDto buddyList = 16; // CHECK TYPE
+  LoginInfo loginInfo = 17;
+  CharacterLinkDto link = 18;
+  RecentFameRecordDto fameRecord = 19;
+  repeated int32 wishItems = 20;
 }

@@ -17,11 +17,11 @@ namespace Application.Core.Channel.DataProviders
         volatile Dictionary<int, List<int>> packages = new();
         volatile List<SpecialCashItem> specialcashitems = new();
 
-        readonly IChannelServerTransport _transport;
+        readonly ItemService _itemService;
 
-        public CashItemProvider(IChannelServerTransport transport)
+        public CashItemProvider(ItemService itemService)
         {
-            _transport = transport;
+            _itemService = itemService;
         }
 
         protected override void LoadDataInternal()
@@ -59,7 +59,7 @@ namespace Application.Core.Channel.DataProviders
             try
             {
 
-                specialcashitems = _transport.RequestSpecialCashItems().ToList();
+                specialcashitems = _itemService.GetSpecialCashItems();
 
             }
             catch (Exception ex)
