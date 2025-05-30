@@ -3,7 +3,6 @@ using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Login;
-using Application.Shared.Models;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;

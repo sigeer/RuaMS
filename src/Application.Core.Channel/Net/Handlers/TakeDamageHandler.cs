@@ -33,7 +33,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using client.status;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using server.life;
 using System.Drawing;
 using tools;

@@ -24,10 +24,10 @@
 using Application.Core.Login;
 using Application.Core.Login.Client;
 using Application.Core.Login.Net;
+using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using tools;
 
 namespace Application.Core.Net.Handlers;
@@ -53,11 +53,11 @@ public class AfterLoginHandler : LoginHandlerBase
         {
             if (string.IsNullOrEmpty(c.AccountEntity?.Pin))
             {
-                c.sendPacket(PacketCreator.registerPin());
+                c.sendPacket(LoginPacketCreator.registerPin());
             }
             else
             {
-                c.sendPacket(PacketCreator.requestPin());
+                c.sendPacket(LoginPacketCreator.requestPin());
             }
         }
         else if (c2 == 1 && c3 == 0)
@@ -65,11 +65,11 @@ public class AfterLoginHandler : LoginHandlerBase
             string pin = p.readString();
             if (c.CheckPin(pin))
             {
-                c.sendPacket(PacketCreator.pinAccepted());
+                c.sendPacket(LoginPacketCreator.pinAccepted());
             }
             else
             {
-                c.sendPacket(PacketCreator.requestPinAfterFailure());
+                c.sendPacket(LoginPacketCreator.requestPinAfterFailure());
             }
         }
         else if (c2 == 2 && c3 == 0)
@@ -77,11 +77,11 @@ public class AfterLoginHandler : LoginHandlerBase
             string pin = p.readString();
             if (c.CheckPin(pin))
             {
-                c.sendPacket(PacketCreator.registerPin());
+                c.sendPacket(LoginPacketCreator.registerPin());
             }
             else
             {
-                c.sendPacket(PacketCreator.requestPinAfterFailure());
+                c.sendPacket(LoginPacketCreator.requestPinAfterFailure());
             }
         }
         else if (c2 == 0 && c3 == 5)

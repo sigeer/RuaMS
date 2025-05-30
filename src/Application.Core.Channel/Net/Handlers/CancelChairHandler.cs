@@ -20,9 +20,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-using net.packet;
-
 namespace Application.Core.Channel.Net.Handlers;
 
 public class CancelChairHandler : ChannelHandlerBase

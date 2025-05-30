@@ -1,23 +1,16 @@
-using Application.Core.Client;
-using Application.Core.Game.Players;
 using Application.Core.Login.Models;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
-using Application.Core.Net;
-using Application.Core.tools;
 using Application.EF;
 using Application.Shared.Login;
-using Application.Shared.Models;
+using Application.Shared.Net.Logging;
 using Application.Shared.Sessions;
+using Application.Utility;
 using Application.Utility.Configs;
 using DotNetty.Transport.Channels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net.packet;
-using net.packet.logging;
 using net.server;
-using net.server.coordinator.session;
-using tools;
 
 namespace Application.Core.Login.Client
 {
@@ -353,7 +346,7 @@ namespace Application.Core.Login.Client
 
             foreach (var w in Server.getInstance().getWorlds())
             {
-                foreach (IPlayer chr in w.getPlayerStorage().GetAllOnlinedPlayers())
+                foreach (var chr in w.getPlayerStorage().GetAllOnlinedPlayers())
                 {
                     if (accid == chr.getAccountID())
                     {

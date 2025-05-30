@@ -22,8 +22,8 @@
 
 
 using Application.Core.Login.Client;
+using Application.Core.Login.Net.Packets;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using tools;
 
 namespace Application.Core.Login.Net.Handlers;
@@ -42,7 +42,7 @@ public class CharlistRequestHandler : LoginHandlerBase
 
         if (_server.IsWorldCapacityFull())
         {
-            c.sendPacket(PacketCreator.getServerStatus(2));
+            c.sendPacket(LoginPacketCreator.getServerStatus(2));
             return;
         }
 
@@ -50,7 +50,7 @@ public class CharlistRequestHandler : LoginHandlerBase
         var ch = _server.GetChannel(channel);
         if (ch == null)
         {
-            c.sendPacket(PacketCreator.getServerStatus(2));
+            c.sendPacket(LoginPacketCreator.getServerStatus(2));
             return;
         }
 

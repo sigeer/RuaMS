@@ -22,11 +22,10 @@
 
 
 using Application.Core.Login.Client;
+using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
-using net.packet;
-using tools;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -58,7 +57,7 @@ public class RegisterPinHandler : LoginHandlerBase
                 if (c.AccountEntity != null)
                 {
                     c.AccountEntity.Pin = pin;
-                    c.sendPacket(PacketCreator.pinRegistered());
+                    c.sendPacket(LoginPacketCreator.pinRegistered());
                 }
 
                 _sessionCoordinator.closeSession(c);

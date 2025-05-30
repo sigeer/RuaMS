@@ -1,7 +1,3 @@
-
-
-using net.opcodes;
-
 namespace net.packet.outs;
 
 public class SendNoteSuccessPacket : ByteBufOutPacket

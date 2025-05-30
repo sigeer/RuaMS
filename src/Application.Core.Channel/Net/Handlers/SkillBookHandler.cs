@@ -24,7 +24,6 @@
 using Application.Core.Game.Skills;
 using client.inventory;
 using client.inventory.manipulator;
-using net.packet;
 using server;
 using tools;
 

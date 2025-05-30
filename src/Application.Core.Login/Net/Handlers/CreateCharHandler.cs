@@ -24,7 +24,6 @@
 using Application.Core.Login.Client;
 using client.creator.novice;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using tools;
 
 namespace Application.Core.Login.Net.Handlers;

@@ -24,7 +24,6 @@
 using Application.Core.Game.Maps.Specials;
 using Application.Shared;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using server.life;
 using server.partyquest;
 using tools;

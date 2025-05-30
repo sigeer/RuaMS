@@ -21,15 +21,11 @@
  */
 
 
-using Application.Core.Client;
 using Application.Core.Login;
 using Application.Core.Login.Client;
-using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
-using Application.Core.Servers;
+using Application.Core.Login.Net.Packets;
 using Microsoft.Extensions.Logging;
-using net.packet;
-using tools;
 
 namespace net.server.handlers.login;
 
@@ -47,11 +43,11 @@ public class ServerStatusRequestHandler : LoginHandlerBase
         if (wserv != null)
         {
             int status = wserv.getWorldCapacityStatus();
-            c.sendPacket(PacketCreator.getServerStatus(status));
+            c.sendPacket(LoginPacketCreator.getServerStatus(status));
         }
         else
         {
-            c.sendPacket(PacketCreator.getServerStatus(2));
+            c.sendPacket(LoginPacketCreator.getServerStatus(2));
         }
     }
 }

@@ -1,12 +1,9 @@
-using Application.Core.Client;
 using Application.Core.Login.Client;
 using Application.Core.Login.Mappers;
 using Application.Core.Login.Net;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
-using Application.Core.Net;
-using Application.Core.Servers;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

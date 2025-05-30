@@ -1,5 +1,4 @@
 using Application.Core.Login.Models;
-using Application.Shared.Models;
 using AutoMapper;
 
 namespace Application.Core.Login.Mappers

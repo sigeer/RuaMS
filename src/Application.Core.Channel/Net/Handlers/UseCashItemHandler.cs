@@ -33,7 +33,6 @@ using client.processor.npc;
 using client.processor.stat;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using net.packet.outs;
 using server;
 using server.maps;

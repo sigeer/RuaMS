@@ -2,7 +2,6 @@ using Application.EF;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
-using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 

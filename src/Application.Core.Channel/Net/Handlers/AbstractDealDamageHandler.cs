@@ -36,7 +36,6 @@ using client.autoban;
 using client.status;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using scripting;
 using server;
 using server.life;

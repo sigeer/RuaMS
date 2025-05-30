@@ -21,8 +21,7 @@
 */
 
 
-using Application.Core.Net;
-using net.packet;
+using Application.Shared.Client;
 
 namespace net.server.handlers;
 

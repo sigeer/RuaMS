@@ -8,8 +8,6 @@
 
 using Application.Core.Managers;
 using client.inventory;
-using net.opcodes;
-using net.packet;
 
 namespace tools.packets;
 

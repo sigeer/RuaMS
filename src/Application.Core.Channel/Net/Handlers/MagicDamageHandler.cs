@@ -25,7 +25,6 @@ using Application.Core.Game.Skills;
 using Application.Utility.Configs;
 using client;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

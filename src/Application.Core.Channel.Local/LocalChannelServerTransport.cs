@@ -10,6 +10,7 @@ using Application.Shared.Configs;
 using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
+using Application.Shared.Models;
 using Application.Shared.Net;
 using AutoMapper;
 using net.server;

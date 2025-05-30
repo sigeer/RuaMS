@@ -8,7 +8,6 @@ using net.server;
 using server;
 using server.life;
 using tools;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Application.Core.Channel
 {

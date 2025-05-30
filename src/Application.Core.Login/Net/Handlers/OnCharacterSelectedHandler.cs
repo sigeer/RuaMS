@@ -4,8 +4,6 @@ using Application.Core.Login.Session;
 using Application.Shared.Sessions;
 using Application.Utility;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.session;
-using tools;
 
 namespace Application.Core.Login.Net.Handlers
 {
@@ -32,7 +30,7 @@ namespace Application.Core.Login.Net.Handlers
             catch (ArgumentException e)
             {
                 _logger.LogWarning(e, "Invalid host string: {Host}", hostString);
-                c.sendPacket(PacketCreator.getAfterLoginError(17));
+                c.sendPacket(LoginPacketCreator.getAfterLoginError(17));
                 return;
             }
 
@@ -42,7 +40,7 @@ namespace Application.Core.Login.Net.Handlers
             AntiMulticlientResult res = _sessionCoordinator.attemptGameSession(c, c.AccountEntity.Id, hwid);
             if (res != AntiMulticlientResult.SUCCESS)
             {
-                c.sendPacket(PacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
+                c.sendPacket(LoginPacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
                 return;
             }
 
@@ -61,14 +59,14 @@ namespace Application.Core.Login.Net.Handlers
 
             if (_server.IsWorldCapacityFull())
             {
-                c.sendPacket(PacketCreator.getAfterLoginError(10));
+                c.sendPacket(LoginPacketCreator.getAfterLoginError(10));
                 return;
             }
 
             var socket = _server.GetChannelIPEndPoint(c.SelectedChannel);
             if (socket == null)
             {
-                c.sendPacket(PacketCreator.getAfterLoginError(10));
+                c.sendPacket(LoginPacketCreator.getAfterLoginError(10));
                 return;
             }
 
@@ -78,7 +76,7 @@ namespace Application.Core.Login.Net.Handlers
 
             try
             {
-                c.sendPacket(PacketCreator.getServerIP(socket, charId));
+                c.sendPacket(LoginPacketCreator.getServerIP(socket, charId));
             }
             catch (Exception e)
             {

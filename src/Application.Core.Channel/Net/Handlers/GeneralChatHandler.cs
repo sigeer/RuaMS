@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Commands;
 using client.autoban;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

@@ -11,6 +11,5 @@ namespace Application.Core
             cfg.AddProfile<OldEntityMapper>();
         }).CreateMapper();
 
-        public static Encoding Encoding { get; set; } = null!;
     }
 }

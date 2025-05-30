@@ -3,7 +3,6 @@ using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.Core.Login.Session;
 using Application.Shared.Login;
-using Application.Shared.Models;
 using Application.Utility.Configs;
 using Microsoft.Extensions.DependencyInjection;
 

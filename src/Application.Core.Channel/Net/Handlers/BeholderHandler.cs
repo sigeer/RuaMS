@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Maps.AnimatedObjects;
-using net.packet;
 
 namespace Application.Core.Channel.Net.Handlers;
 

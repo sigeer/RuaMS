@@ -6,7 +6,6 @@ using Application.Core.Login.Tasks;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Net;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Compatible.Atomics;

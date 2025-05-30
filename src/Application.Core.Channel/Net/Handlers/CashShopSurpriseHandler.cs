@@ -20,7 +20,6 @@
 
 
 using client.inventory;
-using net.packet;
 using server;
 using tools;
 

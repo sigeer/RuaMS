@@ -21,7 +21,6 @@
 
 using Application.Core.Game.Trades;
 using constants.game;
-using net.packet;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

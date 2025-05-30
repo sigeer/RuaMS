@@ -1,19 +1,196 @@
 using Application.Core.Login.Client;
 using Application.Core.Login.Models;
-using Application.Shared.Net;
+using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
-using net.opcodes;
-using net.packet;
 using net.server;
 using System.Net;
-using tools;
 
 namespace Application.Core.Login.Net.Packets
 {
     public static class LoginPacketCreator
     {
+        /// <summary>
+        /// Gets a packet detailing a server status message.
+        /// </summary>
+        /// <param name="status">The server status.
+        /// <para>Possible values for <paramref name="status"/>:</para>
+        /// <para>0 - Normal</para>
+        /// <para>1 - Highly populated</para>
+        /// <para>2 - Full</para>
+        /// </param>
+        /// <returns>The server status packet.</returns>
+        public static Packet getServerStatus(int status)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SERVERSTATUS);
+            p.writeShort(status);
+            return p;
+        }
+        public static Packet sendGuestTOS()
+        {
+            OutPacket p = OutPacket.create(SendOpcode.GUEST_ID_LOGIN);
+            p.writeShort(0x100);
+            p.writeInt(Randomizer.nextInt(999999));
+            p.writeLong(0);
+            p.writeLong(PacketCommon.getTime(-2));
+            p.writeLong(PacketCommon.getTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+            p.writeInt(0);
+            p.writeString("http://maplesolaxia.com");
+            return p;
+        }
+
+        /**
+         * Gets a packet detailing a PIN operation.
+         * <p>
+         * Possible values for <code>mode</code>:<br> 0 - PIN was accepted<br> 1 -
+         * Register a new PIN<br> 2 - Invalid pin / Reenter<br> 3 - Connection
+         * failed due to system error<br> 4 - Enter the pin
+         *
+         * @param mode The mode.
+         * @return
+         */
+        private static Packet pinOperation(byte mode)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.CHECK_PINCODE);
+            p.writeByte(mode);
+            return p;
+        }
+        public static Packet pinRegistered()
+        {
+            OutPacket p = OutPacket.create(SendOpcode.UPDATE_PINCODE);
+            p.writeByte(0);
+            return p;
+        }
+
+        public static Packet requestPin()
+        {
+            return pinOperation(4);
+        }
+
+        public static Packet requestPinAfterFailure()
+        {
+            return pinOperation(2);
+        }
+
+        public static Packet registerPin()
+        {
+            return pinOperation(1);
+        }
+
+        public static Packet pinAccepted()
+        {
+            return pinOperation(0);
+        }
+
+        public static Packet wrongPic()
+        {
+            OutPacket p = OutPacket.create(SendOpcode.CHECK_SPW_RESULT);
+            p.writeByte(0);
+            return p;
+        }
+
+        /**
+ * Gets a server message packet.
+ * <p>
+ * Possible values for <code>type</code>:<br> 0: [Notice]<br> 1: Popup<br>
+ * 2: Megaphone<br> 3: Super Megaphone<br> 4: Scrolling message at top<br>
+ * 5: Pink Text<br> 6: Lightblue Text<br> 7: BroadCasting NPC
+ *
+ * @param type          The type of the notice.
+ * @param channel       The channel this notice was sent on.
+ * @param message       The message to convey.
+ * @param servermessage Is this a scrolling ticker?
+ * @return The server notice packet.
+ */
+        private static Packet serverMessage(int type, int channel, string message, bool servermessage, bool megaEar, int npc)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SERVERMESSAGE);
+            p.writeByte(type);
+            if (servermessage)
+            {
+                p.writeByte(1);
+            }
+            p.writeString(message);
+            if (type == 3)
+            {
+                p.writeByte(channel - 1); // channel
+                p.writeBool(megaEar);
+            }
+            else if (type == 6)
+            {
+                p.writeInt(0);
+            }
+            else if (type == 7)
+            { // npc
+                p.writeInt(npc);
+            }
+            return p;
+        }
+
+        /**
+ * Gets a server message packet.
+ *
+ * @param message The message to convey.
+ * @return The server message packet.
+ */
+        public static Packet serverMessage(string message)
+        {
+            return serverMessage(4, 0, message, true, false, 0);
+        }
+        /// <summary>
+        /// Gets a packet telling the client the IP of the channel server.
+        /// </summary>
+        /// <param name="inetAddr">The InetAddress of the requested channel server.</param>
+        /// <param name="port">The port the channel is on.</param>
+        /// <param name="clientId">The ID of the client.</param>
+        /// <returns>The server IP packet.</returns>
+        public static Packet getServerIP(IPEndPoint iPEndPoint, int clientId)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SERVER_IP);
+            p.writeShort(0);
+            byte[] addr = iPEndPoint.Address.GetAddressBytes();
+            p.writeBytes(addr);
+            p.writeShort(iPEndPoint.Port);
+            p.writeInt(clientId);
+            p.writeBytes(new byte[] { 0, 0, 0, 0, 0 });
+            return p;
+        }
+
+        /// <summary>
+        /// Gets a login failed packet.
+        /// </summary>
+        /// <param name="reason">
+        /// The reason logging in failed.
+        /// <para>Possible values for <paramref name="reason"/>:</para>
+        /// <para>3: ID deleted or blocked</para>
+        /// <para>4: Incorrect password</para>
+        /// <para>5: Not a registered id</para>
+        /// <para>6: Trouble logging into the game?</para>
+        /// <para>7: Already logged in</para>
+        /// <para>8: Trouble logging into the game?</para>
+        /// <para>9: Trouble logging into the game?</para>
+        /// <para>10: Cannot process so many connections</para>
+        /// <para>11: Only users older than 20 can use this channel</para>
+        /// <para>12: Trouble logging into the game?</para>
+        /// <para>13: Unable to log on as master at this ip</para>
+        /// <para>14: Wrong gateway or personal info and weird korean button</para>
+        /// <para>15: Processing request with that korean button!</para>
+        /// <para>16: Please verify your account through email...</para>
+        /// <para>17: Wrong gateway or personal info</para>
+        /// <para>21: Please verify your account through email...</para>
+        /// <para>23: Crashes</para>
+        /// <para>25: Maple Europe notice =[ FUCK YOU NEXON</para>
+        /// <para>27: Some weird full client  notice, probably for trial versions</para>
+        /// </param>
+        /// <returns>The login failed packet.</returns>
+        public static Packet getAfterLoginError(int reason)
+        {//same as above o.o
+            OutPacket p = OutPacket.create(SendOpcode.SELECT_CHARACTER_BY_VAC);
+            p.writeShort(reason);//using other types than stated above = CRASH
+            return p;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -56,7 +233,7 @@ namespace Application.Core.Login.Net.Packets
             p.writeByte(0);
             p.writeInt(0);
             p.writeByte(reason);
-            p.writeLong(PacketCreator.getTime(-1));
+            p.writeLong(PacketCommon.getTime(-1));
             return p;
         }
 
@@ -67,7 +244,7 @@ namespace Application.Core.Login.Net.Packets
             p.writeByte(0);
             p.writeInt(0);
             p.writeByte(reason);
-            p.writeLong(PacketCreator.getTime(timestampTill)); // Tempban date is handled as a 64-bit long, number of 100NS intervals since 1/1/1601. Lulz.
+            p.writeLong(PacketCommon.getTime(timestampTill)); // Tempban date is handled as a 64-bit long, number of 100NS intervals since 1/1/1601. Lulz.
             return p;
         }
         public static Packet GetAuthSuccess(ILoginClient c)

@@ -1,11 +1,6 @@
-using Application.Core.model;
-using Application.Core.Servers;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Dto;
-using Application.Shared.Net;
 using net.server;
-using tools;
 
 namespace Application.Core.Login
 {
@@ -93,7 +88,7 @@ namespace Application.Core.Login
 
                     if (chr != null && chr.isLoggedinWorld())
                     {
-                        chr.sendPacket(PacketCreator.serverMessage(_server.ServerMessage));
+                        chr.sendPacket(PacketCommon.serverMessage(_server.ServerMessage));
                     }
                 }
             }

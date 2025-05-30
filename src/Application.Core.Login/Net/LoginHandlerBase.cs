@@ -1,7 +1,6 @@
 using Application.Core.Login.Client;
 using Application.Shared.Sessions;
 using Microsoft.Extensions.Logging;
-using net.packet;
 
 namespace Application.Core.Login.Net
 {

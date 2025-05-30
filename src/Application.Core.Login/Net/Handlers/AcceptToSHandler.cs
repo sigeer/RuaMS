@@ -2,7 +2,6 @@ using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
 using Application.Shared.Login;
 using Microsoft.Extensions.Logging;
-using net.packet;
 
 namespace Application.Core.Login.Net.Handlers;
 

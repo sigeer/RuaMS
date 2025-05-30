@@ -32,7 +32,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using server;
 using System.Drawing;
 using tools;

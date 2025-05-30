@@ -1,6 +1,5 @@
 using Application.Core.Login.Models;
 using AutoMapper;
-using XmlWzReader;
 
 namespace Application.Core.Login.Datas
 {
