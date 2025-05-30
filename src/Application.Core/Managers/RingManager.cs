@@ -10,86 +10,45 @@ namespace Application.Core.Managers
 {
     public class RingManager
     {
-        public static Ring? LoadFromDb(int ringId)
+        public static RingPair? CreateRing(int itemid, IPlayer partner1, IPlayer partner2)
         {
-            using var dbContext = new DBContext();
-            return dbContext.Rings.Where(x => x.Id == ringId).ToList().Select(x => new Ring(x.Id, x.PartnerRingId, x.PartnerChrId, x.ItemId, x.PartnerName)).FirstOrDefault();
-        }
-
-
-        public static void RemoveRing(Ring? ring)
-        {
-            if (ring == null)
-                return;
-
             try
             {
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                dbContext.Rings.Where(x => x.Id == ring.getRingId() || x.Id == ring.getPartnerRingId()).ExecuteDelete();
+                if (partner1 == null || partner2 == null)
+                    return null;
 
-                CashIdGenerator.freeCashId(ring.getRingId());
-                CashIdGenerator.freeCashId(ring.getPartnerRingId());
+                long[] ringID = new long[2];
+                ringID[0] = Yitter.IdGenerator.YitIdHelper.NextId();
+                ringID[1] = Yitter.IdGenerator.YitIdHelper.NextId();
 
-                dbContext.Inventoryequipments.Where(x => x.RingId == ring.getRingId()).ExecuteUpdate(x => x.SetProperty(y => y.RingId, -1));
-                dbContext.Inventoryequipments.Where(x => x.RingId == ring.getPartnerRingId()).ExecuteUpdate(x => x.SetProperty(y => y.RingId, -1));
-                dbTrans.Commit();
+                return new RingPair(
+                    new Ring(ringID[0], ringID[1], partner2.getId(), itemid, partner2.getName()),
+                    new Ring(ringID[1], ringID[0], partner1.getId(), itemid, partner1.getName()));
             }
             catch (Exception ex)
             {
                 Log.Logger.Error(ex.ToString());
-            }
-        }
-
-        public static RingPair CreateRing(int itemid, IPlayer partner1, IPlayer partner2)
-        {
-            try
-            {
-                if (partner1 == null)
-                    return new(-3, -3);
-
-                if (partner2 == null)
-                    return new(-2, -2);
-
-                int[] ringID = new int[2];
-                ringID[0] = CashIdGenerator.generateCashId();
-                ringID[1] = CashIdGenerator.generateCashId();
-
-                using var dbContext = new DBContext();
-                var dbModel = new Ring_Entity(ringID[0], itemid, ringID[1], partner2.getId(), partner2.getName());
-
-                dbContext.Rings.Add(dbModel);
-
-                var dbRelatedModel = new Ring_Entity(ringID[1], itemid, ringID[0], partner1.getId(), partner1.getName());
-                dbContext.Rings.Add(dbRelatedModel);
-
-                dbContext.SaveChanges();
-                return new(ringID[0], ringID[1]);
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex.ToString());
-                return new(-1, -1);
+                return null;
             }
         }
 
         // js
-        public static void GiveMarriageRings(IPlayer player, IPlayer partner, int marriageRingId)
+        public static void GiveMarriageRings(IPlayer player, IPlayer partner, int marriageRingItemId)
         {
-            var rings = CreateRing(marriageRingId, player, partner);
+            var rings = CreateRing(marriageRingItemId, player, partner);
             var ii = ItemInformationProvider.getInstance();
 
-            Item ringObj = ii.getEquipById(marriageRingId);
+            Item ringObj = ii.getEquipById(marriageRingItemId);
             Equip ringEqp = (Equip)ringObj;
-            ringEqp.setRingId(rings.MyRingId);
-            player.addMarriageRing(LoadFromDb(rings.MyRingId));
+            ringEqp.Ring = rings.MyRing;
+            player.addMarriageRing(rings.MyRing);
             InventoryManipulator.addFromDrop(player.Client, ringEqp, false);
             player.broadcastMarriageMessage();
 
-            ringObj = ii.getEquipById(marriageRingId);
+            ringObj = ii.getEquipById(marriageRingItemId);
             ringEqp = (Equip)ringObj;
-            ringEqp.setRingId(rings.PartnerRingId);
-            partner.addMarriageRing(LoadFromDb(rings.PartnerRingId));
+            ringEqp.Ring = rings.PartnerRing;
+            partner.addMarriageRing(rings.PartnerRing);
             InventoryManipulator.addFromDrop(partner.Client, ringEqp, false);
             partner.broadcastMarriageMessage();
         }
@@ -133,7 +92,7 @@ namespace Application.Core.Managers
                 }
 
                 chr.getChannelServer().Transport.DeleteRelationship(chr.getId(), partnerid);
-                RingManager.RemoveRing(chr.getMarriageRing());
+                var marriageRing = chr.getMarriageRing();
 
                 var partner = chr.getWorldServer().getPlayerStorage().getCharacterById(partnerid);
                 if (partner == null || !partner.IsOnlined)
@@ -171,7 +130,7 @@ namespace Application.Core.Managers
             if (it != null)
             {
                 Equip eqp = (Equip)it;
-                eqp.setRingId(-1);
+                eqp.Ring = null;
             }
         }
 

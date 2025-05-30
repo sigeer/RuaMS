@@ -1,4 +1,6 @@
-﻿namespace Application.Core.model
+using Application.Core.Game.Relation;
+
+namespace Application.Core.model
 {
-    public record RingPair(int MyRingId, int PartnerRingId);
+    public record RingPair(Ring MyRing, Ring PartnerRing);
 }

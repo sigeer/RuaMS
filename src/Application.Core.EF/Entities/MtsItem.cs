@@ -1,4 +1,4 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class MtsItem
 {
@@ -17,7 +17,7 @@ public partial class MtsItem
         SellEnds = sellEnds;
     }
 
-    public MtsItem(int tab, int type, int itemid, int quantity, long expiration, string giftFrom, int seller, int price, int upgradeslots, int level, int str, int dex, int @int, int luk, int hp, int mp, int watk, int matk, int wdef, int mdef, int acc, int avoid, int hands, int speed, int jump, int locked, string owner, string sellername, string sellEnds, int vicious, int flag, int itemexp, int itemlevel, int ringid)
+    public MtsItem(int tab, int type, int itemid, int quantity, long expiration, string giftFrom, int seller, int price, int upgradeslots, int level, int str, int dex, int @int, int luk, int hp, int mp, int watk, int matk, int wdef, int mdef, int acc, int avoid, int hands, int speed, int jump, int locked, string owner, string sellername, string sellEnds, int vicious, int flag, int itemexp, int itemlevel, long ringid)
     {
         Tab = tab;
         Type = type;
@@ -87,7 +87,7 @@ public partial class MtsItem
 
     public int Itemexp { get; set; }
 
-    public int Ringid { get; set; }
+    public long Ringid { get; set; }
 
     public int Str { get; set; }
 

@@ -157,7 +157,6 @@ namespace Application.Core.Channel.Mappers
                         dest.setLevel(rs.EquipInfo!.Level);
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel(rs.EquipInfo!.Itemlevel);
-                        dest.setRingId(rs!.EquipInfo!.RingId);
 
                         if (rs.EquipInfo!.RingInfo != null)
                             dest.Ring = ctx.Mapper.Map<Ring>(rs.EquipInfo!.RingInfo);

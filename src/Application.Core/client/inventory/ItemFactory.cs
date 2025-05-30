@@ -161,7 +161,6 @@ public class ItemFactory : EnumClass
         equip.setItemLevel(rs.Itemlevel);
         equip.setExpiration(rs.Expiration);
         equip.setGiftFrom(rs.GiftFrom);
-        equip.setRingId(rs.Ringid);
 
         return equip;
     }
@@ -458,7 +457,7 @@ public class EquipItemModelFromDB
     public string GiftFrom { get; internal set; } = null!;
     public int Itemexp { get; internal set; }
     public long Expiration { get; internal set; }
-    public int Ringid { get; internal set; } = -1;
+    public long Ringid { get; internal set; } = -1;
     public sbyte Inventorytype { get; set; }
     public long PetId { get; internal set; }
     public int Inventoryitemid { get; internal set; }

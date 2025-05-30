@@ -41,7 +41,6 @@ namespace Application.Core.Login.Mappers
             CreateMap<StorageDto, Dto.StorageDto>();
 
             CreateMap<DropDto, Dto.DropDto>().ReverseMap(); ;
-            CreateMap<GiftDto, Dto.GiftDto>().ReverseMap(); ;
 
             CreateMap<DueyPackageDto, Dto.DueyPackageDto>().ReverseMap();
             CreateMap<NoteDto, Dto.NoteDto>().ReverseMap();

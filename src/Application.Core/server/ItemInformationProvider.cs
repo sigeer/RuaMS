@@ -1317,7 +1317,7 @@ public class ItemInformationProvider
                 }
             }
         }
-        return nEquip.copy();
+        return nEquip.copy(); // 为什么要用copy？
     }
 
     /// <summary>

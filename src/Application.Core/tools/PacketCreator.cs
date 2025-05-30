@@ -364,14 +364,12 @@ public class PacketCreator
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         bool isCash = ii.isCash(item.getItemId());
-        bool isRing = false;
         Equip? equip = null;
         short pos = item.getPosition();
         sbyte itemType = item.getItemType();
         if (itemType == 1)
         {
             equip = (Equip)item;
-            isRing = equip.getRingId() > -1;
         }
         if (!zeroPosition)
         {
@@ -2235,10 +2233,8 @@ public class PacketCreator
                     yes = true;
                     p.writeByte(1);
                 }
-                p.writeInt(ring.getRingId());
-                p.writeInt(0);
-                p.writeInt(ring.getPartnerRingId());
-                p.writeInt(0);
+                p.writeLong(ring.getRingId());
+                p.writeLong(ring.getPartnerRingId());
                 p.writeInt(ring.getItemId());
             }
         }
@@ -7458,20 +7454,16 @@ public class PacketCreator
         {
             p.writeInt(ring.getPartnerChrId());
             p.writeFixedString(ring.getPartnerName());
-            p.writeInt(ring.getRingId());
-            p.writeInt(0);
-            p.writeInt(ring.getPartnerRingId());
-            p.writeInt(0);
+            p.writeLong(ring.getRingId());
+            p.writeLong(ring.getPartnerRingId());
         }
         p.writeShort(chr.getFriendshipRings().Count);
         foreach (Ring ring in chr.getFriendshipRings())
         {
             p.writeInt(ring.getPartnerChrId());
             p.writeFixedString(ring.getPartnerName());
-            p.writeInt(ring.getRingId());
-            p.writeInt(0);
-            p.writeInt(ring.getPartnerRingId());
-            p.writeInt(0);
+            p.writeLong(ring.getRingId());
+            p.writeLong(ring.getPartnerRingId());
             p.writeInt(ring.getItemId());
         }
 

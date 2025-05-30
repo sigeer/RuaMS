@@ -392,7 +392,7 @@ namespace Application.Core.Game.Players
         HashSet<NewYearCardRecord> getReceivedNewYearRecords();
         int getRelationshipId();
         int getRemainingSp();
-        Ring? getRingById(int id);
+        Ring? getRingById(long id);
         RockPaperScissor? getRPS();
         int getSavedLocation(string type);
         string? getSearch();

@@ -19,6 +19,7 @@ using ZLinq;
 using static Mysqlx.Notice.Warning.Types;
 using Application.Shared.Characters;
 using Application.Core.Game.Items;
+using Application.Core.EF.Entities.Items;
 
 namespace Application.Core.Login.Services
 {
@@ -59,7 +60,7 @@ namespace Application.Core.Login.Services
                    .Select(x => new SpecialCashItem(x.Sn, x.Modifier, (byte)x.Info)).ToArray();
         }
 
-        public void InsertGift(int toId, string from, string message, int sn, int ringid = -1)
+        public void InsertGift(int toId, string from, string message, int sn, long ringid = -1)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             var giftModel = new GiftEntity(toId, from, message, sn, ringid);
@@ -67,10 +68,14 @@ namespace Application.Core.Login.Services
             dbContext.SaveChanges();
         }
 
-        public GiftDto[] LoadPlayerGifts(int playerId)
+        public Dto.GiftDto[] LoadPlayerGifts(int playerId)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            return _mapper.Map<GiftDto[]>(dbContext.Gifts.AsNoTracking().Where(x => x.To == playerId).ToArray());
+            var dbData = (from a in dbContext.Gifts.AsNoTracking().Where(x => x.To == playerId)
+                          join b in dbContext.Rings on a.Ringid equals b.Id into bss
+                          from bs in bss.DefaultIfEmpty()
+                          select new GiftRingPair(a, bs)).ToList();
+            return _mapper.Map<Dto.GiftDto[]>(dbData);
         }
 
         public void ClearGifts(int[] giftIdArray)

@@ -29,15 +29,15 @@ namespace client.inventory.manipulator;
  */
 public class CashIdGenerator
 {
-    private static HashSet<int> existentCashids = new(10000);
-    private static int runningCashid = 0;
+    private static HashSet<long> existentCashids = new(10000);
+    private static long runningCashid = 0;
 
     private static void loadExistentCashIdsFromQuery(DBContext dbContext, string query)
     {
         var list = dbContext.Database.SqlQueryRaw<long>(query);
         foreach (var id in list)
         {
-            existentCashids.Add((int)id);
+            existentCashids.Add(id);
         }
     }
 
@@ -77,7 +77,7 @@ public class CashIdGenerator
     }
 
     static object cashIdGenLock = new object();
-    public static int generateCashId()
+    public static long generateCashId()
     {
         lock (cashIdGenLock)
         {
@@ -85,7 +85,7 @@ public class CashIdGenerator
             {
                 if (!existentCashids.Contains(runningCashid))
                 {
-                    int ret = runningCashid;
+                    var ret = runningCashid;
                     getNextAvailableCashId();
 
                     // existentCashids.Add(ret)... no need to do this since the wrap over already refetches already used cashids from the DB
@@ -99,7 +99,7 @@ public class CashIdGenerator
     }
 
     static object cashIdFreeLock = new object();
-    public static void freeCashId(int cashId)
+    public static void freeCashId(long cashId)
     {
         lock (cashIdFreeLock)
         {

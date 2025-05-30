@@ -315,7 +315,7 @@ public class CashShop
         wishList.Add(sn);
     }
 
-    public void gift(int recipient, string from, string message, int sn, int ringid = -1)
+    public void gift(int recipient, string from, string message, int sn, long ringid = -1)
     {
         Owner.Client.CurrentServer.Transport.SendGift(recipient, from, message, sn, ringid);
     }
@@ -325,7 +325,7 @@ public class CashShop
         List<ItemMessagePair> gifts = new();
         try
         {
-            var dataList = Owner.Client.CurrentServer.Transport.LoadPlayerGifts(Owner.Id);
+            var dataList = Owner.Client.CurrentServer.ItemService.LoadPlayerGifts(Owner.Id);
             foreach (var rs in dataList)
             {
                 notes++;
@@ -336,7 +336,7 @@ public class CashShop
                 if (item.getInventoryType().Equals(InventoryType.EQUIP))
                 {
                     equip = (Equip)item;
-                    equip.setRingId(rs.RingId);
+                    equip.Ring = rs.Ring;
                     gifts.Add(new ItemMessagePair(equip, rs.Message));
                 }
                 else

@@ -550,12 +550,12 @@ namespace Application.Core.Channel.Local
             return _itemService.LoadSpecialCashItems();
         }
 
-        public void SendGift(int recipient, string from, string message, int sn, int ringid)
+        public void SendGift(int recipient, string from, string message, int sn, long ringid)
         {
             _itemService.InsertGift(recipient, from, message, sn, ringid);
         }
 
-        public GiftDto[] LoadPlayerGifts(int playerId)
+        public Dto.GiftDto[] LoadPlayerGifts(int playerId)
         {
             return _itemService.LoadPlayerGifts(playerId);
         }
