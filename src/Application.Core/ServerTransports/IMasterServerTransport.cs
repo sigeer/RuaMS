@@ -14,7 +14,7 @@ namespace Application.Core.ServerTransports
         bool WrapPlayer(string name, int? channel, int mapId, int? portal);
         void BroadcastWorldGMPacket(Packet packet);
         void BroadcastMessage(Packet p);
-        void SendNotes(int channel, int id, NoteDto[] notes);
+        void SendNotes(int channel, int id, Dto.NoteDto[] notes);
         void SendUpdateCouponRates(Config.CouponConfig config);
     }
 }

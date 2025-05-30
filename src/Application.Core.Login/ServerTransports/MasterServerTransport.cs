@@ -76,7 +76,7 @@ namespace Application.Core.Login
             return selectedPw;
         }
 
-        public void SendNotes(int channel, int id, NoteDto[] notes)
+        public void SendNotes(int channel, int id, Dto.NoteDto[] notes)
         {
             var world = Server.getInstance().getWorld(0);
             world.Channels[channel - 1].Service.SendNoteMessage(id, notes);

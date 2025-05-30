@@ -1,7 +1,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
-using Application.Shared.Characters;
+using Application.Shared.Models;
 using scripting;
 using scripting.Event;
 using scripting.npc;
@@ -17,7 +17,7 @@ namespace Application.Core.Client
         /// 不和LoginClient一样使用AccountEntity的原因：LoginClient可以与MasterServer直接交互修改AccountEntity
         /// 而ChannelClient可能与MasterServer不在同一个进程，避免出现错误的以为能够直接修改AccountEntity
         /// </summary>
-        AccountDto AccountEntity { get; set; }
+        AccountCtrl AccountEntity { get; set; }
         IPlayer? Character { get; }
         IPlayer OnlinedCharacter { get; }
 
@@ -47,7 +47,7 @@ namespace Application.Core.Client
         bool attemptCsCoupon();
         void resetCsCoupon();
         void SetPlayer(IPlayer? player);
-        void SetAccount(AccountDto accountEntity);
+        void SetAccount(AccountCtrl accountEntity);
         IWorldChannel getChannelServer();
         int getChannel();
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);

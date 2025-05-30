@@ -1,15 +1,14 @@
 using Application.Core.Client;
-using Application.Core.Game.Players;
-using Application.Shared.Characters;
-using Application.Shared.Dto;
+using Application.Core.Login.Models;
 using Application.Shared.Login;
+using Application.Shared.Models;
 using net.server.coordinator.session;
 
 namespace Application.Core.Login.Client
 {
     public interface ILoginClient : IClientBase
     {
-        AccountDto? AccountEntity { get; protected set; }
+        AccountCtrl? AccountEntity { get; protected set; }
         MasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         void Disconnect();

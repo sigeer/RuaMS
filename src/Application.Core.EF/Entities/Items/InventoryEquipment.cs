@@ -3,7 +3,7 @@ namespace Application.EF;
 public partial class Inventoryequipment
 {
     public Inventoryequipment() { }
-    public Inventoryequipment(int inventoryitemid, int upgradeslots, byte level, int str, int dex, int @int, int luk, int hp, int mp, int watk, int matk, int wdef, int mdef, int acc, int avoid, int hands, int speed, int jump, int locked, int vicious, byte itemlevel, int itemexp, int ringId)
+    public Inventoryequipment(int inventoryitemid, int upgradeslots, byte level, int str, int dex, int @int, int luk, int hp, int mp, int watk, int matk, int wdef, int mdef, int acc, int avoid, int hands, int speed, int jump, int locked, int vicious, byte itemlevel, int itemexp, long ringId)
     {
         Inventoryitemid = inventoryitemid;
         Upgradeslots = upgradeslots;

@@ -1,7 +1,7 @@
-using Application.Shared.Characters;
 using Application.Shared.KeyMaps;
 using client.keybind;
 using constants.game;
+using Google.Protobuf.Collections;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Game.Players.PlayerProps
@@ -22,7 +22,7 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
-        public void LoadData(KeyMapDto[] keyMapFromDB)
+        public void LoadData(RepeatedField<Dto.KeyMapDto> keyMapFromDB)
         {
             _dataSource.Clear();
 
@@ -42,9 +42,9 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
-        public KeyMapDto[] ToDto()
+        public Dto.KeyMapDto[] ToDto()
         {
-            return _dataSource.Select(x => new KeyMapDto
+            return _dataSource.Select(x => new Dto.KeyMapDto
             {
                 Key = x.Key,
                 Action = x.Value.getAction(),

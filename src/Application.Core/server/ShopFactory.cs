@@ -19,6 +19,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 
 namespace server;
@@ -32,16 +33,16 @@ public class ShopFactory
     private Dictionary<int, Shop?> shops = new();
     private Dictionary<int, Shop?> npcShops = new();
 
-    readonly IChannelServerTransport _transport;
+    readonly ItemService _itemService;
 
-    public ShopFactory(IChannelServerTransport transport)
+    public ShopFactory(ItemService itemService)
     {
-        _transport = transport;
+        _itemService = itemService;
     }
 
     private Shop? LoadShopFromRemote(int id, bool isShopId)
     {
-        var ret = _transport.GetShop(id, isShopId);
+        var ret = _itemService.GetShop(id, isShopId);
         if (ret != null)
         {
             shops.AddOrUpdate(ret.getId(), ret);

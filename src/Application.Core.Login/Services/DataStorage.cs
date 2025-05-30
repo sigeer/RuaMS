@@ -1,11 +1,9 @@
 using Application.Core.Login.Datas;
+using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Shared.Characters;
-using Application.Shared.Dto;
-using Application.Shared.Items;
 using Application.Shared.Login;
-using Application.Utility.Exceptions;
+using Application.Shared.Models;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
@@ -15,15 +13,16 @@ namespace Application.Core.Login.Services
 {
     public class DataStorage
     {
-        Dictionary<int, PlayerSaveDto> _chrUpdate = new Dictionary<int, PlayerSaveDto>();
-        Dictionary<int, AccountDto> _accUpdate = new Dictionary<int, AccountDto>();
+        Dictionary<int, CharacterLiveObject> _chrUpdate = new();
+        Dictionary<int, AccountCtrl> _accUpdate = new();
+        Dictionary<int, AccountGame> _accGameUpdate = new();
 
         Dictionary<int, AccountLoginStatus> _accLoginUpdate = new();
 
 
-        Dictionary<int, ItemDto[]> _merchantUpdate = new();
-        Dictionary<int, ItemDto[]> _dueyUpdate = new();
-        Dictionary<int, ItemDto[]> _marriageUpdate = new();
+        Dictionary<int, ItemModel[]> _merchantUpdate = new();
+        Dictionary<int, ItemModel[]> _dueyUpdate = new();
+        Dictionary<int, ItemModel[]> _marriageUpdate = new();
 
         readonly IMapper _mapper;
         readonly ILogger<DataStorage> _logger;
@@ -42,7 +41,7 @@ namespace Application.Core.Login.Services
         /// <summary>
         /// CharacterValueObject 保存到数据库
         /// </summary>
-        public async Task CommitCharacterAsync()
+        public async Task CommitCharacterAsync(DBContext dbContext)
         {
             var updateCount = _chrUpdate.Count;
             if (updateCount == 0)
@@ -58,10 +57,6 @@ namespace Application.Core.Login.Services
 
             try
             {
-                await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-                await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-
-                
                 var updateCharacters = await dbContext.Characters.Where(x => _chrUpdate.Keys.Contains(x.Id)).ToListAsync();
                 var accList = updateCharacters.Select(x => x.AccountId).ToArray();
 
@@ -128,12 +123,9 @@ namespace Application.Core.Login.Services
                     }
 
                     // family
-
-                    // cashshop
                 }
                 await dbContext.SaveChangesAsync();
                 _chrUpdate.Clear();
-                await dbTrans.CommitAsync();
                 _logger.LogInformation("保存了{Count}个用户数据", updateCount);
             }
             catch (Exception ex)
@@ -145,83 +137,21 @@ namespace Application.Core.Login.Services
                 _semaphore.Release();
             }
         }
-
-        private void UpdateStorage(DBContext dbContext, int accId, StorageDto? storage)
-        {
-            var m = storage ?? new StorageDto(accId);
-            var dbStorage = dbContext.Storages.Where(x => x.Accountid == accId).FirstOrDefault();
-            if (dbStorage == null)
-            {
-                dbStorage = new StorageEntity(m.Accountid, m.Slots, m.Meso);
-                dbContext.Storages.Add(dbStorage);
-            }
-            else
-            {
-                dbStorage.Slots = m.Slots;
-                dbStorage.Meso = m.Meso;
-            }
-            InventoryManager.CommitInventoryByType(dbContext, accId, m.Items, ItemFactory.STORAGE);
-        }
-
-        public void SetCharacter(PlayerSaveDto obj)
+        public void SetCharacter(CharacterLiveObject obj)
         {
             _chrUpdate[obj.Character.Id] = obj;
-
-            // Account相关的数据要即时更新
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-
-            dbContext.Quickslotkeymappeds.Where(x => x.Accountid == obj.Character.AccountId).ExecuteDelete();
-            if (obj.QuickSlot != null)
-            {
-                dbContext.Quickslotkeymappeds.Add(new Quickslotkeymapped(obj.Character.AccountId, obj.QuickSlot.LongValue));
-            }
-
-            // storage
-            UpdateStorage(dbContext, obj.Character.AccountId, obj.StorageInfo);
-
-            UpdateCashShop(dbContext, obj.Character.AccountId, obj.Character.Id, obj.CashShop);
-
-            dbContext.SaveChanges();
-
-            dbTrans.Commit();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <exception cref="BusinessException"></exception>
-        private void UpdateCashShop(DBContext dbContext, int accId, int charId, CashShopDto obj)
-        {
-
-            // cash shop
-            InventoryManager.CommitInventoryByType(dbContext, accId, obj.Items, ItemFactory.GetItemFactory(obj.FactoryType));
-            dbContext.Wishlists.Where(x => charId == x.CharId).ExecuteDelete();
-            dbContext.Wishlists.AddRange(obj.WishItems.Select(x => new WishlistEntity(charId, x)));
-
-            // account
-            var dbAccount = dbContext.Accounts.Where(x => x.Id == accId).FirstOrDefault();
-            if (dbAccount == null)
-                throw new BusinessException("");
-
-            dbAccount.NxCredit = obj.NxCredit;
-            dbAccount.MaplePoint = obj.MaplePoint;
-            dbAccount.NxPrepaid = obj.NxPrepaid;
-        }
 
         internal void SetAccountLoginRecord(KeyValuePair<int, AccountLoginStatus> item)
         {
             _accLoginUpdate[item.Key] = item.Value;
         }
 
-        internal async Task CommitAccountLoginRecord()
+        internal async Task CommitAccountLoginRecord(DBContext dbContext)
         {
             if (_accLoginUpdate.Count == 0)
                 return;
-
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
 
             var idsToUpdate = _accLoginUpdate.Keys.ToList();
             var accounts = await dbContext.Accounts.Where(x => idsToUpdate.Contains(x.Id)).ToListAsync();
@@ -234,5 +164,75 @@ namespace Application.Core.Login.Services
             await dbContext.SaveChangesAsync();
             _accLoginUpdate.Clear();
         }
+
+        internal void SetAccountGame(AccountGame accountGame)
+        {
+            _accGameUpdate[accountGame.Id] = accountGame;
+        }
+
+        internal void SetAccount(AccountCtrl obj)
+        {
+            _accUpdate[obj.Id] = obj;
+        }
+
+        public async Task CommitAccountGameAsync(DBContext dbContext)
+        {
+            var updateCount = _accGameUpdate.Count;
+            if (updateCount == 0)
+                return;
+
+            await dbContext.Quickslotkeymappeds.Where(x => _accGameUpdate.Keys.Contains(x.Accountid)).ExecuteDeleteAsync();
+            dbContext.Storages.Where(x => _accGameUpdate.Keys.Contains(x.Accountid)).ExecuteDelete();
+
+            foreach (var acc in _accGameUpdate)
+            {
+                if (acc.Value.QuickSlot != null)
+                    dbContext.Quickslotkeymappeds.Add(new Quickslotkeymapped(acc.Key, acc.Value.QuickSlot.LongValue));
+
+                dbContext.Storages.Add(new StorageEntity(acc.Key, acc.Value.Storage?.Slots ?? 4, acc.Value.Storage?.Meso ?? 0));
+                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.StorageItems, ItemFactory.STORAGE);
+
+                dbContext.Accounts.Where(x => x.Id == acc.Key).ExecuteUpdate(
+                    x => x.SetProperty(y => y.MaplePoint, acc.Value.MaplePoint).SetProperty(y => y.NxPrepaid, acc.Value.NxPrepaid).SetProperty(y => y.NxCredit, acc.Value.NxCredit)
+                    );
+
+                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashAranItems, ItemFactory.CASH_ARAN);
+                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashCygnusItems, ItemFactory.CASH_CYGNUS);
+                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashExplorerItems, ItemFactory.CASH_EXPLORER);
+                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashOverallItems, ItemFactory.CASH_OVERALL);
+            }
+            await dbContext.SaveChangesAsync();
+            _accGameUpdate.Clear();
+        }
+
+        /// <summary>
+        /// account的字段更新都是即时更新，不与character一同处理
+        /// <para>有3种更新：1.仅更新lastlogin，2.更新该方法以下属性，3.更新现金相关，随cashshop更新</para>
+        /// </summary>
+        /// <param name="obj"></param>
+        public async Task CommitAccountCtrlAsync(DBContext dbContext)
+        {
+            var updateCount = _accUpdate.Count;
+            if (updateCount == 0)
+                return;
+
+            var allAccounts = await dbContext.Accounts.AsNoTracking().Where(x => _accUpdate.Keys.Contains(x.Id)).ToListAsync();
+            foreach (var obj in _accUpdate.Values)
+            {
+                var dbModel = allAccounts.FirstOrDefault(x => x.Id == obj.Id)!;
+
+                dbModel.Macs = obj.Macs;
+                dbModel.Hwid = obj.Hwid;
+                dbModel.Pic = obj.Pic;
+                dbModel.Pin = obj.Pin;
+                dbModel.Ip = obj.Ip;
+                dbModel.GMLevel = obj.GMLevel;
+                dbModel.Characterslots = obj.Characterslots;
+            }
+            await dbContext.SaveChangesAsync();
+            _accUpdate.Clear();
+        }
+
+
     }
 }

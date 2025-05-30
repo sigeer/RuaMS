@@ -8,6 +8,7 @@ using Application.Core.Models;
 using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
+using Google.Protobuf.WellKnownTypes;
 using net.server;
 using Rank;
 using server;
@@ -15,12 +16,25 @@ using server;
 namespace Application.Core.Mappers
 {
     /// <summary>
-    /// Proto -&gt; Object
+    /// Proto &lt;-&gt; Object
     /// </summary>
     public class ProtoMapper : Profile
     {
         public ProtoMapper()
         {
+            CreateMap<Timestamp, DateTimeOffset?>()
+                .ConvertUsing(src => src == null ? (DateTimeOffset?)null : src.ToDateTimeOffset());
+            CreateMap<DateTimeOffset?, Timestamp>()
+                .ConvertUsing(src => src.HasValue ? Timestamp.FromDateTimeOffset(src.Value) : null!);
+
+            CreateMap<Timestamp, DateTimeOffset>()
+                .ConvertUsing(src => src.ToDateTimeOffset());
+            CreateMap<DateTimeOffset, Timestamp>()
+                .ConvertUsing(src => Timestamp.FromDateTimeOffset(src));
+
+            CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
+            CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
+
             CreateMap<Rank.RankCharacter, RankedCharacterInfo>()
                 .ForMember(dest => dest.Rank, src => src.MapFrom(x => x.Rank))
                 .ForMember(dest => dest.CharacterName, src => src.MapFrom(x => x.Name))
@@ -58,7 +72,8 @@ namespace Application.Core.Mappers
 
             #region Item
             CreateMap<Dto.ItemDto, Pet>()
-                 .ConstructUsing(source => new Pet(source.Itemid, (short)source.Position, source.Petid))
+                 .ConstructUsing(source => new Pet(source.Itemid, (short)source.Position, source.PetInfo!.Petid
+                 ))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
@@ -192,14 +207,13 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.Level, source => source.MapFrom(x => x.getLevel()))
                 .ForMember(dest => dest.Itemlevel, source => source.MapFrom(x => x.getItemLevel()))
                 .ForMember(dest => dest.Itemexp, source => source.MapFrom(x => x.getItemExp()))
-                .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.getRingId()))
                 .ForMember(dest => dest.RingInfo, source => source.MapFrom(x => x.Ring));
             #endregion 
 
             CreateMap<Dto.StorageDto, Storage>()
                 .ConstructUsing((x, ctx) =>
                 {
-                    return new Storage(x.Accountid, (byte)x.Slots, x.Meso, ctx.Mapper.Map<Item[]>(x.Items));
+                    return new Storage(x.Accountid, (byte)x.Slots, x.Meso);
                 })
                 .ReverseMap()
                 .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.getMeso()))
@@ -213,7 +227,7 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.StartTime, source => source.MapFrom(x => x.startTime))
                 .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
 
-            CreateMap<Dto.DropDto, DropEntry>()
+            CreateMap<Dto.DropItemDto, DropEntry>()
                 .ConstructUsing((src, ctx) =>
                 {
                     if (src.Type == (int)DropType.ReactorDrop)
@@ -232,6 +246,8 @@ namespace Application.Core.Mappers
                 .ConstructUsing((src, ctx) => new ShopItem((short)src.Buyable, src.ItemId, src.Price, src.Pitch));
 
             CreateMap<Dto.GiftDto, GiftModel>();
+            CreateMap<Dto.SpecialCashItemDto, SpecialCashItem>()
+                .ConstructUsing((src, ctx) => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
         }
 
         private int[] TranslateArray(string str)

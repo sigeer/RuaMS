@@ -6,8 +6,8 @@ using Application.Core.Scripting.Infrastructure;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Scripting;
-using Application.Shared.Characters;
 using Application.Shared.Login;
+using Application.Shared.Models;
 using Application.Shared.Net;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
@@ -21,7 +21,6 @@ using net.server.world;
 using scripting;
 using scripting.Event;
 using scripting.npc;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using tools;
 
@@ -29,7 +28,7 @@ namespace Application.Core.Channel.Net
 {
     public class ChannelClient : ClientBase, IChannelClient
     {
-        public AccountDto AccountEntity { get; set; }
+        public AccountCtrl AccountEntity { get; set; }
         IPacketProcessor<IChannelClient> _packetProcessor;
         public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
 
@@ -521,7 +520,7 @@ namespace Application.Core.Channel.Net
             Character = player;
         }
 
-        public void SetAccount(AccountDto accountEntity)
+        public void SetAccount(AccountCtrl accountEntity)
         {
             AccountEntity = accountEntity;
 

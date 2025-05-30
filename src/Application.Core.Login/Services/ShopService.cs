@@ -36,9 +36,9 @@ namespace Application.Core.Login.Services
             }
         }
 
-        public ShopDto? LoadFromDB(int id, bool isShopId)
+        public Dto.ShopDto? LoadFromDB(int id, bool isShopId)
         {
-            ShopDto? ret = null;
+            Dto.ShopDto? ret = null;
             int shopId;
             try
             {
@@ -56,21 +56,21 @@ namespace Application.Core.Login.Services
                 if (tmpModel != null)
                 {
                     shopId = tmpModel.ShopId;
-                    ret = _mapper.Map<ShopDto>(tmpModel);
+                    ret = _mapper.Map<Dto.ShopDto>(tmpModel);
                 }
                 else
                 {
                     return null;
                 }
 
-                var items = new List<ShopItemDto>();
+                var items = new List<Dto.ShopItemDto>();
                 List<int> recharges = new(rechargeableItems);
                 var shopItems = dbContext.Shopitems.Where(x => x.Shopid == shopId).OrderByDescending(x => x.Position).ToList();
                 shopItems.ForEach(x =>
                 {
                     if (ItemConstants.isRechargeable(x.ItemId))
                     {
-                        var m = _mapper.Map<ShopItemDto>(x);
+                        var m = _mapper.Map<Dto.ShopItemDto>(x);
                         m.Buyable = 1;
                         items.Add(m);
                         if (rechargeableItems.Contains(x.ItemId))
@@ -80,16 +80,16 @@ namespace Application.Core.Login.Services
                     }
                     else
                     {
-                        var m = _mapper.Map<ShopItemDto>(x);
+                        var m = _mapper.Map<Dto.ShopItemDto>(x);
                         m.Buyable = 1000;
                         items.Add(m);
                     }
                 });
                 foreach (int recharge in recharges)
                 {
-                    items.Add(new ShopItemDto() { Buyable = 1000, ItemId = recharge, Price = 0, Pitch = 0 });
+                    items.Add(new Dto.ShopItemDto() { Buyable = 1000, ItemId = recharge, Price = 0, Pitch = 0 });
                 }
-                ret.Items = items.ToArray();
+                ret.Items.AddRange(items);
             }
             catch (Exception e)
             {

@@ -31,6 +31,5 @@ message EquipDto {
   int32 vicious = 21;
   int32 itemlevel = 22;
   int32 itemexp = 23;
-  int32 ringId = 24;
-  RingDto ringInfo = 25;
+  RingDto ringInfo = 24;
 }

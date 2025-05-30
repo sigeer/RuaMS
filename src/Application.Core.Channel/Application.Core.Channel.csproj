@@ -8,18 +8,17 @@
 
   <ItemGroup>
     <Compile Remove="Handlers\**" />
+    <Compile Remove="Map\**" />
     <EmbeddedResource Remove="Handlers\**" />
+    <EmbeddedResource Remove="Map\**" />
     <None Remove="Handlers\**" />
+    <None Remove="Map\**" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
     <ProjectReference Include="..\Application.Shared\Application.Shared.csproj" />
     <ProjectReference Include="..\Application.Utility\Application.Utility.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Map\" />
   </ItemGroup>
 
 </Project>

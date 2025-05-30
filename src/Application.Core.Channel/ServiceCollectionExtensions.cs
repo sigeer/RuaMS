@@ -1,10 +1,8 @@
-using Application.Core.Channel.Mappers;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
 using Application.Core.Net;
 using Application.Core.Servers.Services;
-using client.processor.npc;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.handlers;
 using server;
@@ -66,7 +64,7 @@ namespace Application.Core.Channel
 
             services.AddScoped<CharacterService>();
 
-            services.AddAutoMapper(typeof(ObjectMapper), typeof(ProtoMapper));
+            services.AddAutoMapper(typeof(ProtoMapper));
             return services;
         }
     }

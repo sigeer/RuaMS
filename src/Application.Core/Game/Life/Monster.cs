@@ -1055,6 +1055,7 @@ public class Monster : AbstractLifeObject
                 eim.friendlyKilled(this, hasKiller);
             }
         }
+        getMap().dismissRemoveAfter(this);
     }
 
     object monsterKilledLock = new object();

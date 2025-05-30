@@ -1,12 +1,10 @@
-using Application.Core.Login.Datas;
-using Application.Core.Servers;
 using Application.EF;
-using Application.Shared.Characters;
-using Application.Shared.Dto;
 using Application.Shared.Login;
 using Application.Utility.Configs;
 using AutoMapper;
+using client.inventory;
 using Microsoft.EntityFrameworkCore;
+using MySql.EntityFrameworkCore.Extensions;
 
 namespace Application.Core.Login.Services
 {
@@ -24,32 +22,50 @@ namespace Application.Core.Login.Services
             _dbContextFactory = dbContextFactory;
         }
 
+
         /// <summary>
         /// 角色登录
         /// </summary>
         /// <param name="clientSession"></param>
+        /// <param name="channelId"></param>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public CharacterValueObject? PlayerLogin(string clientSession, int channelId, int characterId)
+        public Dto.PlayerGetterDto? PlayerLogin(string clientSession, int channelId, int characterId)
         {
             var characterObj = _masterServer.CharacterManager.GetCharacter(characterId);
             if (characterObj == null || characterObj.Character == null)
                 return null;
 
-            if (characterObj.Account == null || characterObj.Account.Hwid == null)
+            var accountData = _masterServer.AccountManager.GetAccount(characterObj.Character.AccountId);
+            if (accountData == null || accountData.Hwid == null)
                 return null;
 
-            var accountModel = _masterServer.AccountManager.GetAccountLoginStatus(characterObj.Account.Id);
+            var accountModel = _masterServer.AccountManager.GetAccountLoginStatus(characterObj.Character.AccountId);
             if (accountModel.State != LoginStage.LOGIN_SERVER_TRANSITION && accountModel.State != LoginStage.PlayerServerTransition)
                 return null;
 
             if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
-            characterObj.LoginInfo = new LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
             characterObj.Channel = channelId;
 
-            return characterObj;
+            var data = _mapper.Map<Dto.PlayerGetterDto>(characterObj);
+            data.LoginInfo = new Dto.LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
+
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var now = DateTimeOffset.UtcNow;
+            var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
+
+            data.FameRecord = new Dto.RecentFameRecordDto();
+            data.FameRecord.LastUpdateTime = fameRecords.Count == 0 ? 0 : fameRecords.Max(x => x.When).ToUnixTimeMilliseconds();
+            data.FameRecord.ChararacterIds.AddRange(fameRecords.Select(x => x.CharacteridTo));
+
+            data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
+                .Select(x => new Dto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
+
+            data.AccountGame = _mapper.Map<Dto.AccountGameDto>(_masterServer.AccountManager.GetAccountGameData(data.Character.AccountId));
+            data.Account = _mapper.Map<Dto.AccountCtrlDto>(_masterServer.AccountManager.GetAccount(data.Character.AccountId));
+            return data;
         }
 
         public void SetPlayerLogedIn(int playerId, int channel)

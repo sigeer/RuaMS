@@ -1,13 +1,11 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Datas;
+using Application.Core.Login.Models;
 using Application.EF;
-using Application.Shared.Duey;
-using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace Application.Core.Login.Services
 {
@@ -44,7 +42,7 @@ namespace Application.Core.Login.Services
                     select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
         }
 
-        public DueyPackageDto[] GetPlayerDueyPackages(int id)
+        public Dto.DueyPackageDto[] GetPlayerDueyPackages(int id)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
@@ -52,13 +50,13 @@ namespace Application.Core.Login.Services
             var allDueyItems = LoadDueyItems(dbContext, dataList.Select(x => x.PackageId).ToArray());
             return dataList.Select(x =>
             {
-                var m = _mapper.Map<DueyPackageDto>(x);
-                m.Item = _mapper.Map<ItemDto?>(allDueyItems.FirstOrDefault(y => y.Item.Characterid == x.PackageId));
+                var m = _mapper.Map<Dto.DueyPackageDto>(x);
+                m.Item.AddRange(_mapper.Map<Dto.ItemDto[]>(allDueyItems.Where(y => y.Item.Characterid == x.PackageId)));
                 return m;
             }).ToArray();
         }
 
-        public DueyPackageDto? GetDueyPackageByPackageId(int id)
+        public Dto.DueyPackageDto? GetDueyPackageByPackageId(int id)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
@@ -67,8 +65,8 @@ namespace Application.Core.Login.Services
                 return null;
 
             var allDueyItems = LoadDueyItems(dbContext, [id]);
-            var m = _mapper.Map<DueyPackageDto>(dbModel);
-            m.Item = _mapper.Map<ItemDto?>(allDueyItems.FirstOrDefault(y => y.Item.Characterid == id));
+            var m = _mapper.Map<Dto.DueyPackageDto>(dbModel);
+            m.Item.AddRange(_mapper.Map<Dto.ItemDto[]>(allDueyItems.Where(y => y.Item.Characterid == id)));
             return m;
         }
 
@@ -111,7 +109,7 @@ namespace Application.Core.Login.Services
             }
         }
 
-        public void SubmitDueyPackage(DueyPackageDto package)
+        public void SubmitDueyPackage(Dto.DueyPackageDto package)
         {
             try
             {
@@ -124,7 +122,7 @@ namespace Application.Core.Login.Services
 
                 _mapper.Map(package, dbModel);
 
-                InventoryManager.CommitInventoryByType(dbContext, package.PackageId, package.Item == null ? [] : [package.Item], ItemFactory.DUEY);
+                InventoryManager.CommitInventoryByType(dbContext, package.PackageId, _mapper.Map<ItemModel[]>(package.Item), ItemFactory.DUEY);
 
                 dbContext.SaveChanges();
                 dbTrans.Commit();

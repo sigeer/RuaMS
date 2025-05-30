@@ -44,7 +44,7 @@ public class Storage
     private object lockObj = new object();
     public bool IsChanged { get; set; }
 
-    private Storage(int id, byte slots, int meso)
+    public Storage(int id, byte slots, int meso)
     {
         log = LogFactory.GetLogger(LogType.Storage);
         this.AccountId = id;
@@ -52,13 +52,14 @@ public class Storage
         this.meso = meso;
     }
 
-    public Storage(int id, byte slots, int meso, Item[] itemList) : this(id, slots, meso)
+    public void LoadItems(Item[] items)
     {
-        foreach (var item in itemList)
+        foreach (var item in items)
         {
-            items.Add(item);
+            this.items.Add(item);
         }
     }
+
 
     public static Storage loadOrCreateFromDB(int id, int world)
     {

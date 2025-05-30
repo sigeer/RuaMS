@@ -21,7 +21,7 @@
 */
 
 
-using Application.Shared.Characters;
+using Google.Protobuf.Collections;
 using tools;
 
 
@@ -44,7 +44,7 @@ public class MonsterBook
         Owner = owner;
     }
 
-    public void LoadData(MonsterbookDto[] dataList)
+    public void LoadData(RepeatedField<Dto.MonsterbookDto> dataList)
     {
         foreach (var item in dataList)
         {
@@ -212,9 +212,9 @@ public class MonsterBook
         }
     }
 
-    public MonsterbookDto[] ToDto()
+    public Dto.MonsterbookDto[] ToDto()
     {
-        return cards.Select(x => new MonsterbookDto()
+        return cards.Select(x => new Dto.MonsterbookDto()
         {
             Cardid = x.Key,
             Level = x.Value

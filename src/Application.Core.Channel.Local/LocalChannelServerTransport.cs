@@ -6,10 +6,7 @@ using Application.Core.Login;
 using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.ServerTransports;
-using Application.Shared.Characters;
 using Application.Shared.Configs;
-using Application.Shared.Dto;
-using Application.Shared.Duey;
 using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
@@ -17,7 +14,6 @@ using Application.Shared.Net;
 using AutoMapper;
 using net.server;
 using net.server.guild;
-using server;
 using server.expeditions;
 using System.Net;
 using System.Text;
@@ -486,7 +482,7 @@ namespace Application.Core.Channel.Local
             }
         }
 
-        public CharacterValueObject? GetPlayerData(string clientSession, int channelId, int cid)
+        public Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid)
         {
             return _loginService.PlayerLogin(clientSession, channelId, cid);
         }
@@ -506,7 +502,7 @@ namespace Application.Core.Channel.Local
             _server.UpdateAccountChracterByAdd(accountId, id);
         }
 
-        public void SendPlayerObject(PlayerSaveDto characterValueObject)
+        public void SendPlayerObject(Dto.PlayerSaveDto characterValueObject)
         {
             _server.CharacterManager.Update(characterValueObject);
         }
@@ -516,13 +512,13 @@ namespace Application.Core.Channel.Local
             _server.InvitationController.RemovePlayerIncomingInvites(id);
         }
 
-        public void SendBuffObject(int v, PlayerBuffSaveDto playerBuffSaveDto)
+        public void SendBuffObject(int v, Dto.PlayerBuffSaveDto playerBuffSaveDto)
         {
-            _server.SaveBuff(v, playerBuffSaveDto);
+            _server.BuffManager.SaveBuff(v, playerBuffSaveDto);
         }
-        public PlayerBuffSaveDto GetBuffObject(int id)
+        public Dto.PlayerBuffSaveDto GetBuffObject(int id)
         {
-            return _server.GetBuff(id);
+            return _server.BuffManager.Get(id);
         }
 
         public void SetPlayerOnlined(int id, int v)
@@ -535,7 +531,7 @@ namespace Application.Core.Channel.Local
             _ = _storageService.CommitAllImmediately();
         }
 
-        public Dictionary<int, List<DropDto>> RequestAllReactorDrops()
+        public Dto.DropAllDto RequestAllReactorDrops()
         {
             return _itemService.LoadAllReactorDrops();
         }
@@ -545,7 +541,7 @@ namespace Application.Core.Channel.Local
             return _itemService.LoadReactorSkillBooks();
         }
 
-        public SpecialCashItem[] RequestSpecialCashItems()
+        public Dto.SpecialCashItemListDto RequestSpecialCashItems()
         {
             return _itemService.LoadSpecialCashItems();
         }
@@ -564,12 +560,12 @@ namespace Application.Core.Channel.Local
             _itemService.ClearGifts(giftIdArray);
         }
 
-        public DueyPackageDto[] GetPlayerDueyPackages(int id)
+        public Dto.DueyPackageDto[] GetPlayerDueyPackages(int id)
         {
             return _dueyService.GetPlayerDueyPackages(id);
         }
 
-        public DueyPackageDto? GetDueyPackageByPackageId(int id)
+        public Dto.DueyPackageDto? GetDueyPackageByPackageId(int id)
         {
             return _dueyService.GetDueyPackageByPackageId(id);
         }
@@ -598,14 +594,14 @@ namespace Application.Core.Channel.Local
             _noteService.show(name);
         }
 
-        public NoteDto? DeleteNoteMessage(int id)
+        public Dto.NoteDto? DeleteNoteMessage(int id)
         {
             return _noteService.delete(id);
         }
 
-        public Shop? GetShop(int id, bool isShopId)
+        public Dto.ShopDto? GetShop(int id, bool isShopId)
         {
-            return _mapper.Map<Shop>(_shopManager.LoadFromDB(id, isShopId));
+            return _mapper.Map<Dto.ShopDto>(_shopManager.LoadFromDB(id, isShopId));
         }
 
         public int[] GetCardTierSize()
@@ -621,11 +617,6 @@ namespace Application.Core.Channel.Local
         public void AddReport(int fromId, int toId, int reason, string description, string chatLog)
         {
             _msgService.AddReport(fromId, toId, reason, description, chatLog);
-        }
-
-        public PetDto CreatePet(string petName, int level, int tameness, int fullness)
-        {
-            return _itemService.CreatePet(petName, level, tameness, fullness);
         }
 
         public Rank.RankCharacterList LoadPlayerRanking(int topCount)
