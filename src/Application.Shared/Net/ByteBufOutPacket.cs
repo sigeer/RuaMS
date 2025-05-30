@@ -86,7 +86,7 @@ public class ByteBufOutPacket : OutPacket
 
     public void writeString(string value)
     {
-        byte[] bytes = Encoding.Default.GetBytes(value);
+        byte[] bytes = GlobalVariable.Encoding.GetBytes(value);
         writeShort(bytes.Length);
         writeBytes(bytes);
     }
