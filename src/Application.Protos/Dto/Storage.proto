@@ -6,8 +6,7 @@ import "google/protobuf/wrappers.proto";
 package Dto;
 
 message StorageDto {
-  int32 id = 1;
-  int32 accountid = 2;
-  int32 slots = 3;
-  int32 meso = 4;
+  int32 accountid = 1;
+  int32 slots = 2;
+  int32 meso = 3;
 }

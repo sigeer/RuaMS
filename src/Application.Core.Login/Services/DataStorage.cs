@@ -147,13 +147,10 @@ namespace Application.Core.Login.Services
             _accLoginUpdate[item.Key] = item.Value;
         }
 
-        internal async Task CommitAccountLoginRecord()
+        internal async Task CommitAccountLoginRecord(DBContext dbContext)
         {
             if (_accLoginUpdate.Count == 0)
                 return;
-
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
 
             var idsToUpdate = _accLoginUpdate.Keys.ToList();
             var accounts = await dbContext.Accounts.Where(x => idsToUpdate.Contains(x.Id)).ToListAsync();

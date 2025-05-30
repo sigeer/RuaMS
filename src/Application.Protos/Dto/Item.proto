@@ -18,10 +18,9 @@ message ItemDto {
   int32 position = 7;
   int32 quantity = 8;
   string owner = 9;
-  int64 petid = 10;
-  int32 flag = 11;
-  int64 expiration = 12;
-  string giftFrom = 13;
-  EquipDto equipInfo = 14;
-  PetDto petInfo = 15;
+  int32 flag = 10;
+  int64 expiration = 11;
+  string giftFrom = 12;
+  EquipDto equipInfo = 13;
+  PetDto petInfo = 14;
 }

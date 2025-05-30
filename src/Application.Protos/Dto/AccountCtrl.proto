@@ -12,15 +12,15 @@ message AccountCtrlDto {
   string pic = 4;
   google.protobuf.Timestamp birthday = 5;
   int32 banned = 6;
-  string banreason = 7;
-  string macs = 8;
+  google.protobuf.StringValue banreason = 7;
+  google.protobuf.StringValue macs = 8;
   int32 characterslots = 9;
   int32 gender = 10;
-  google.protobuf.Timestamp tempban = 11;
+  optional google.protobuf.Timestamp tempban = 11;
   int32 greason = 12;
   bool tos = 13;
   int32 gMLevel = 14;
-  string ip = 15;
+  google.protobuf.StringValue ip = 15;
   string hwid = 16;
   int32 language = 17;
 }

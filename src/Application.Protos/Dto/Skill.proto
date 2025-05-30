@@ -5,9 +5,8 @@ import "google/protobuf/wrappers.proto";
 package Dto;
 
 message SkillDto {
-  int32 characterid = 1;
-  int32 skillid = 2;
-  int32 skilllevel = 3;
-  int32 masterlevel = 4;
-  int64 expiration = 5;
+  int32 skillid = 1;
+  int32 skilllevel = 2;
+  int32 masterlevel = 3;
+  int64 expiration = 4;
 }
