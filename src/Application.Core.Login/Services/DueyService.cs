@@ -2,6 +2,7 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.EF;
+using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,7 @@ namespace Application.Core.Login.Services
         private static List<ItemEntityPair> LoadDueyItems(DBContext dbContext, int[] packageIdArray)
         {
             var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                .Where(x => x.Characterid != null && packageIdArray.Contains(x.Characterid.Value) && x.Type == ItemFactory.DUEY.getValue())
+                .Where(x => x.Characterid != null && packageIdArray.Contains(x.Characterid.Value) && x.Type == (int)ItemType.Duey)
                          join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
                          from cs in css.DefaultIfEmpty()
                          select new { Item = a, Pet = cs }).ToList();

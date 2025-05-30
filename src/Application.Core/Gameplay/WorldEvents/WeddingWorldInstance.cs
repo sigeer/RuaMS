@@ -1,5 +1,6 @@
 using Application.Core.Game.TheWorld;
 using Application.Core.model;
+using Application.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 

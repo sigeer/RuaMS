@@ -25,7 +25,6 @@ using Application.Core.Game.Skills;
 using Application.Shared.KeyMaps;
 using client.keybind;
 using constants.game;
-using net.packet;
 
 namespace Application.Core.Channel.Net.Handlers;
 

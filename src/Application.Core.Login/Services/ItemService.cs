@@ -2,10 +2,8 @@ using Application.Core.EF.Entities.Items;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Item;
-using Application.Shared.Items;
 using AutoMapper;
 using Dto;
-using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 using ZLinq;
 

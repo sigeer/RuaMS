@@ -1,8 +1,7 @@
-using Application.Core.model;
 using Application.EF;
+using Application.Shared.Items;
 using Application.Utility;
 using AutoMapper;
-using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.server;
@@ -75,7 +74,7 @@ namespace Application.Core.Login.Services
                 if (expiredCids.Count > 0)
                 {
                     var cidList = expiredCids.Select(x => x.CharacterId).ToList();
-                    var itemType = ItemFactory.MERCHANT.getValue();
+                    var itemType = (int)ItemType.Merchant;
                     dbContext.Inventoryitems.Where(x => x.Type == itemType && cidList.Contains(x.Characterid ?? 0)).ExecuteDelete();
 
                     foreach (var cid in expiredCids)

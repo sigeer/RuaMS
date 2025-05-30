@@ -3,7 +3,7 @@ using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.EF;
-using Application.Utility.Configs;
+using Application.Shared.Items;
 using Application.Utility.Exceptions;
 using AutoMapper;
 using client.inventory;
@@ -106,7 +106,7 @@ namespace Application.Core.Login.Datas
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
-                var invItems = InventoryManager.LoadItems(dbContext, characterId, ItemFactory.INVENTORY);
+                var invItems = InventoryManager.LoadItems(dbContext, characterId, ItemType.Inventory);
 
                 var buddyData = (from a in dbContext.Buddies
                                  join b in dbContext.Characters on a.BuddyId equals b.Id

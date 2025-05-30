@@ -24,12 +24,10 @@
 using Application.Core.Managers;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Shared.Net;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using server;
 using tools;
 

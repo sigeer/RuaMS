@@ -20,6 +20,7 @@
 
 
 using Application.Core.Managers.Constants;
+using Application.Shared.Client;
 using client.inventory;
 using server;
 using tools;

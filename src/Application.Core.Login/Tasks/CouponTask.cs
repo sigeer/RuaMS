@@ -18,7 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Login.Datas;
 using Application.Utility.Tasks;
 
 namespace Application.Core.Login.Tasks;

@@ -1,4 +1,3 @@
-using Application.Core.model;
 using Application.EF;
 using Application.EF.Entities;
 using Microsoft.EntityFrameworkCore;

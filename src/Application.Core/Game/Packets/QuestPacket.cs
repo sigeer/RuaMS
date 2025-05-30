@@ -1,7 +1,4 @@
-﻿using client;
-using net.opcodes;
-using net.packet;
-using tools;
+using client;
 
 namespace Application.Core.Game.Packets
 {
@@ -38,7 +35,7 @@ namespace Application.Core.Game.Packets
             foreach (QuestStatus qs in completed)
             {
                 p.writeShort(qs.getQuest().getId());
-                p.writeLong(PacketCreator.getTime(qs.getCompletionTime()));
+                p.writeLong(PacketCommon.getTime(qs.getCompletionTime()));
             }
         }
 
@@ -57,7 +54,7 @@ namespace Application.Core.Game.Packets
             p.writeByte(1);
             p.writeShort(quest);
             p.writeByte(2);
-            p.writeLong(PacketCreator.getTime(time));
+            p.writeLong(PacketCommon.getTime(time));
             return p;
         }
 

@@ -1,8 +1,5 @@
-using Application.Core.Client;
 using Application.Core.Login.Models;
 using Application.Shared.Login;
-using Application.Shared.Models;
-using net.server.coordinator.session;
 
 namespace Application.Core.Login.Client
 {

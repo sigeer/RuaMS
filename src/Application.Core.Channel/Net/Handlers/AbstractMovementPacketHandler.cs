@@ -23,7 +23,6 @@
 
 using Application.Core.Game.Maps;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using server.movement;
 using System.Drawing;
 using tools.exceptions;

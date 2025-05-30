@@ -1,4 +1,5 @@
 using Application.EF;
+using Application.Utility;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
@@ -28,7 +29,7 @@ namespace Application.Core.Login.Services
             if (BLOCKED_NAMES.Any(x => x.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 return false;
 
-            var bLength = GlobalTools.Encoding.GetBytes(name).Length;
+            var bLength = GlobalVariable.Encoding.GetBytes(name).Length;
             if (bLength < 3 || bLength > 12)
                 return false;
 

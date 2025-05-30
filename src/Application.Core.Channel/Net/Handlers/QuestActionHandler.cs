@@ -23,7 +23,6 @@
 
 using Application.Core.Game.Players;
 using Application.Utility.Extensions;
-using net.packet;
 using server.quest;
 using System.Drawing;
 

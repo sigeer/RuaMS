@@ -1,7 +1,6 @@
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using net.packet;
 using server;
 using server.quest;
 using tools;

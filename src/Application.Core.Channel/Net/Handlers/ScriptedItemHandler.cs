@@ -21,7 +21,6 @@
 */
 
 
-using net.packet;
 using scripting.item;
 using server;
 

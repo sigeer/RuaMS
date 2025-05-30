@@ -25,7 +25,6 @@ using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
-using net.packet;
 using net.server.guild;
 using tools;
 

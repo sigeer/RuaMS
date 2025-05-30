@@ -5,11 +5,6 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Datas
 {
@@ -23,9 +18,9 @@ namespace Application.Core.Login.Datas
         /// <param name="isAccount"></param>
         /// <param name="itemType">需要满足IsAccount == isAccount</param>
         /// <returns></returns>
-        public static List<ItemEntityPair> LoadItems(DBContext dbContext, int targetId, params ItemFactory[] itemFactories)
+        public static List<ItemEntityPair> LoadItems(DBContext dbContext, int targetId, params ItemType[] itemFactories)
         {
-            var itemType = itemFactories.Select(x => x.getValue()).ToArray();
+            var itemType = itemFactories.Select(x => (int)x).ToArray();
             var items = (from a in dbContext.Inventoryitems.AsNoTracking()
                 .Where(x => x.Characterid == targetId)
                 .Where(x => itemType.Contains(x.Type))
@@ -104,8 +99,8 @@ namespace Application.Core.Login.Datas
 
                 if (item.EquipInfo != null)
                 {
-                    dbContext.Inventoryequipments.Add(new Inventoryequipment(model.Inventoryitemid, 
-                        item.EquipInfo.Upgradeslots, 
+                    dbContext.Inventoryequipments.Add(new Inventoryequipment(model.Inventoryitemid,
+                        item.EquipInfo.Upgradeslots,
                         item.EquipInfo.Level,
                         item.EquipInfo.Str,
                         item.EquipInfo.Dex,

@@ -12,7 +12,6 @@ using Application.Core.Servers;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Net;
 using Application.Shared.Servers;
 using Application.Utility.Compatible.Atomics;
 using Application.Utility.Configs;

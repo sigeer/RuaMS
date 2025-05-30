@@ -22,9 +22,6 @@
 
 
 using Application.Core.Managers;
-using Application.EF;
-using Application.EF.Entities;
-using net.packet;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

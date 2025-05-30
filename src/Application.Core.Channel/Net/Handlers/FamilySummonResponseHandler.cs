@@ -3,7 +3,6 @@
 using Application.Core.Game.Invites;
 using Application.Utility.Configs;
 using client;
-using net.packet;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

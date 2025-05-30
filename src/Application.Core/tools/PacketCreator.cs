@@ -36,6 +36,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Shared.Battle;
+using Application.Shared.Client;
 using Application.Shared.Items;
 using client;
 using client.inventory;
@@ -43,9 +44,6 @@ using client.keybind;
 using client.newyear;
 using client.status;
 using constants.game;
-using net.encryption;
-using net.opcodes;
-using net.packet;
 using net.server;
 using net.server.world;
 using server;
@@ -68,35 +66,6 @@ public class PacketCreator
 {
 
     public static List<KeyValuePair<Stat, int>> EMPTY_STATUPDATE = [];
-    // 2339/1/1 8:00:01
-    private static long FT_UT_OFFSET = 116444736010800000L + TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Ticks; // normalize with timezone offset suggested by Ari
-    // 2448/1/1
-    private static long DEFAULT_TIME = 150842304000000000L;//00 80 05 BB 46 E6 17 02
-    // 2268/12/31
-    public static long ZERO_TIME = 94354848000000000L;//00 40 E0 FD 3B 37 4F 01
-    // 2447/12/31
-    private static long PERMANENT = 150841440000000000L; // 00 C0 9B 90 7D E5 17 02
-
-    public static long getTime(long utcTimestamp)
-    {
-        if (utcTimestamp < 0 && utcTimestamp >= -3)
-        {
-            if (utcTimestamp == -1)
-            {
-                return DEFAULT_TIME;    //high number ll
-            }
-            else if (utcTimestamp == -2)
-            {
-                return ZERO_TIME;
-            }
-            else
-            {
-                return PERMANENT;
-            }
-        }
-
-        return utcTimestamp * 10000 + FT_UT_OFFSET;
-    }
 
     private static void writeMobSkillId(OutPacket packet, MobSkillId msId)
     {
@@ -357,7 +326,7 @@ public class PacketCreator
 
     private static void addExpirationTime(OutPacket p, long time)
     {
-        p.writeLong(getTime(time)); // offset expiration time issue found thanks to Thora
+        p.writeLong(PacketCommon.getTime(time)); // offset expiration time issue found thanks to Thora
     }
 
     protected static void addItemInfo(OutPacket p, Item item, bool zeroPosition = false)
@@ -460,7 +429,7 @@ public class PacketCreator
             p.writeInt(equip.getVicious()); //WTF NEXON ARE YOU SERIOUS?
             p.writeLong(0);
         }
-        p.writeLong(getTime(-2));
+        p.writeLong(PacketCommon.getTime(-2));
         p.writeInt(-1);
 
     }
@@ -471,7 +440,7 @@ public class PacketCreator
         {
             p.writeByte(chr.getInventory(InventoryTypeUtils.getByType(i)).getSlotLimit());
         }
-        p.writeLong(getTime(-2));
+        p.writeLong(PacketCommon.getTime(-2));
         Inventory iv = chr.getInventory(InventoryType.EQUIPPED);
         var equippedC = iv.list();
         List<Item> equipped = new(equippedC.Count);
@@ -573,49 +542,11 @@ public class PacketCreator
         }
     }
 
-    public static Packet sendGuestTOS()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GUEST_ID_LOGIN);
-        p.writeShort(0x100);
-        p.writeInt(Randomizer.nextInt(999999));
-        p.writeLong(0);
-        p.writeLong(getTime(-2));
-        p.writeLong(getTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
-        p.writeInt(0);
-        p.writeString("http://maplesolaxia.com");
-        return p;
-    }
 
-    /**
-     * Sends a hello packet.
-     *
-     * @param mapleVersion The maple client version.
-     * @param sendIv       the IV in use by the server for sending
-     * @param recvIv       the IV in use by the server for receiving
-     * @return
-     */
-    public static Packet getHello(short mapleVersion, InitializationVector sendIv, InitializationVector recvIv)
-    {
-        OutPacket p = new ByteBufOutPacket();
-        p.writeShort(0x0E);
-        p.writeShort(mapleVersion);
-        p.writeShort(1);
-        p.writeByte(49);
-        p.writeBytes(recvIv.getBytes());
-        p.writeBytes(sendIv.getBytes());
-        p.writeByte(8);
-        return p;
-    }
 
-    /**
-     * Sends a ping packet.
-     *
-     * @return The packet.
-     */
-    public static Packet getPing()
-    {
-        return OutPacket.create(SendOpcode.PING);
-    }
+
+
+
 
     /// <summary>
     /// 
@@ -707,7 +638,7 @@ public class PacketCreator
         p.writeByte(0);
         p.writeInt(0);
         p.writeByte(reason);
-        p.writeLong(getTime(-1));
+        p.writeLong(PacketCommon.getTime(-1));
         return p;
     }
 
@@ -718,62 +649,15 @@ public class PacketCreator
         p.writeByte(0);
         p.writeInt(0);
         p.writeByte(reason);
-        p.writeLong(getTime(timestampTill)); // Tempban date is handled as a 64-bit long, number of 100NS intervals since 1/1/1601. Lulz.
+        p.writeLong(PacketCommon.getTime(timestampTill)); // Tempban date is handled as a 64-bit long, number of 100NS intervals since 1/1/1601. Lulz.
         return p;
     }
 
 
 
-    /**
-     * Gets a packet detailing a PIN operation.
-     * <p>
-     * Possible values for <code>mode</code>:<br> 0 - PIN was accepted<br> 1 -
-     * Register a new PIN<br> 2 - Invalid pin / Reenter<br> 3 - Connection
-     * failed due to system error<br> 4 - Enter the pin
-     *
-     * @param mode The mode.
-     * @return
-     */
-    private static Packet pinOperation(byte mode)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CHECK_PINCODE);
-        p.writeByte(mode);
-        return p;
-    }
 
-    public static Packet pinRegistered()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.UPDATE_PINCODE);
-        p.writeByte(0);
-        return p;
-    }
 
-    public static Packet requestPin()
-    {
-        return pinOperation(4);
-    }
 
-    public static Packet requestPinAfterFailure()
-    {
-        return pinOperation(2);
-    }
-
-    public static Packet registerPin()
-    {
-        return pinOperation(1);
-    }
-
-    public static Packet pinAccepted()
-    {
-        return pinOperation(0);
-    }
-
-    public static Packet wrongPic()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CHECK_SPW_RESULT);
-        p.writeByte(0);
-        return p;
-    }
 
     /// <summary>
     /// Gets a packet detailing a server and its channels.
@@ -823,22 +707,7 @@ public class PacketCreator
     }
 
 
-    /// <summary>
-    /// Gets a packet detailing a server status message.
-    /// </summary>
-    /// <param name="status">The server status.
-    /// <para>Possible values for <paramref name="status"/>:</para>
-    /// <para>0 - Normal</para>
-    /// <para>1 - Highly populated</para>
-    /// <para>2 - Full</para>
-    /// </param>
-    /// <returns>The server status packet.</returns>
-    public static Packet getServerStatus(int status)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SERVERSTATUS);
-        p.writeShort(status);
-        return p;
-    }
+
 
     /// <summary>
     /// Gets a packet telling the client the IP of the channel server.
@@ -958,7 +827,7 @@ public class PacketCreator
             p.writeInt(Randomizer.nextInt());
         }
         addCharacterInfo(p, chr);
-        p.writeLong(getTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+        p.writeLong(PacketCommon.getTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
         return p;
     }
 
@@ -1057,7 +926,7 @@ public class PacketCreator
             p.writeInt(chr.getPosition().X);
             p.writeInt(chr.getPosition().Y);
         }
-        p.writeLong(getTime(chr.Client.CurrentServer.getCurrentTime()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.getCurrentTime()));
         return p;
     }
 
@@ -1073,7 +942,7 @@ public class PacketCreator
         p.writeBool(true);
         p.writeInt(spawnPosition.X);    // spawn position placement thanks to Arnah (Vertisy)
         p.writeInt(spawnPosition.Y);
-        p.writeLong(getTime(chr.Client.CurrentServer.getCurrentTime()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.getCurrentTime()));
         return p;
     }
 
@@ -1221,7 +1090,7 @@ public class PacketCreator
      */
     public static Packet serverMessage(string message)
     {
-        return serverMessage(4, 0, message, true, false, 0);
+        return PacketCommon.serverMessage(message);
     }
 
     /// <summary>
@@ -1242,50 +1111,12 @@ public class PacketCreator
     /// <returns></returns>
     public static Packet serverNotice(int type, string message, int npc = 0)
     {
-        return serverMessage(type, 0, message, false, false, npc);
+        return PacketCommon.serverNotice(type, message, npc);
     }
 
     public static Packet serverNotice(int type, int channel, string message, bool smegaEar = false)
     {
-        return serverMessage(type, channel, message, false, smegaEar, 0);
-    }
-
-    /**
-     * Gets a server message packet.
-     * <p>
-     * Possible values for <code>type</code>:<br> 0: [Notice]<br> 1: Popup<br>
-     * 2: Megaphone<br> 3: Super Megaphone<br> 4: Scrolling message at top<br>
-     * 5: Pink Text<br> 6: Lightblue Text<br> 7: BroadCasting NPC
-     *
-     * @param type          The type of the notice.
-     * @param channel       The channel this notice was sent on.
-     * @param message       The message to convey.
-     * @param servermessage Is this a scrolling ticker?
-     * @return The server notice packet.
-     */
-    private static Packet serverMessage(int type, int channel, string message, bool servermessage, bool megaEar, int npc)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SERVERMESSAGE);
-        p.writeByte(type);
-        if (servermessage)
-        {
-            p.writeByte(1);
-        }
-        p.writeString(message);
-        if (type == 3)
-        {
-            p.writeByte(channel - 1); // channel
-            p.writeBool(megaEar);
-        }
-        else if (type == 6)
-        {
-            p.writeInt(0);
-        }
-        else if (type == 7)
-        { // npc
-            p.writeInt(npc);
-        }
-        return p;
+        return PacketCommon.serverNotice(type, channel, message, smegaEar);
     }
 
 
@@ -5945,7 +5776,7 @@ public class PacketCreator
             p.writeInt(item.getTaxes()); //this + below = price
             p.writeInt(item.getPrice()); //price
             p.writeInt(0);
-            p.writeLong(getTime(item.getEndingDate()));
+            p.writeLong(PacketCommon.getTime(item.getEndingDate()));
             p.writeString(item.getSeller()); //account name (what was nexon thinking?)
             p.writeString(item.getSeller()); //char name
             for (int j = 0; j < 28; j++)
@@ -6193,7 +6024,7 @@ public class PacketCreator
                 p.writeInt(item.getTaxes()); //this + below = price
                 p.writeInt(item.getPrice()); //price
                 p.writeInt(0);
-                p.writeLong(getTime(item.getEndingDate()));
+                p.writeLong(PacketCommon.getTime(item.getEndingDate()));
                 p.writeString(item.getSeller()); //account name (what was nexon thinking?)
                 p.writeString(item.getSeller()); //char name
                 for (int i = 0; i < 28; i++)
@@ -6223,7 +6054,7 @@ public class PacketCreator
                 p.writeInt(item.getTaxes()); //taxes
                 p.writeInt(item.getPrice()); //price
                 p.writeInt(0);
-                p.writeLong(getTime(item.getEndingDate()));
+                p.writeLong(PacketCommon.getTime(item.getEndingDate()));
                 p.writeString(item.getSeller()); //account name (what was nexon thinking?)
                 p.writeString(item.getSeller()); //char name
                 for (int i = 0; i < 28; i++)
@@ -7222,7 +7053,7 @@ public class PacketCreator
                 p.writeFixedString(dp.SenderName);
 
                 p.writeInt(dp.Mesos);
-                p.writeLong(getTime(dp.sentTimeInMilliseconds()));
+                p.writeLong(PacketCommon.getTime(dp.sentTimeInMilliseconds()));
 
                 var msg = dp.Message;
                 if (msg != null)

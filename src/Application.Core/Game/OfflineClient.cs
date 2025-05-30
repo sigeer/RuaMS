@@ -1,10 +1,8 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Scripting.Infrastructure;
-using Application.Shared.Models;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
-using net.server.coordinator.session;
 using scripting;
 using scripting.Event;
 using scripting.npc;

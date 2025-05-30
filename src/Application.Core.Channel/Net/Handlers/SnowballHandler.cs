@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Maps.Specials;
-using net.packet;
 
 namespace Application.Core.Channel.Net.Handlers;
 

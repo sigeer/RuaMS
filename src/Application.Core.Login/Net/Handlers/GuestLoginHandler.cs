@@ -22,9 +22,8 @@
 
 
 using Application.Core.Login.Client;
+using Application.Core.Login.Net.Packets;
 using Microsoft.Extensions.Logging;
-using net.packet;
-using tools;
 
 namespace Application.Core.Login.Net.Handlers;
 
@@ -42,7 +41,7 @@ public class GuestLoginHandler : LoginHandlerBase
 
     public override void HandlePacket(InPacket p, ILoginClient c)
     {
-        c.sendPacket(PacketCreator.sendGuestTOS());
+        c.sendPacket(LoginPacketCreator.sendGuestTOS());
         //Console.WriteLine(slea.ToString());
         _loginHandler.HandlePacket(p, c);
     }

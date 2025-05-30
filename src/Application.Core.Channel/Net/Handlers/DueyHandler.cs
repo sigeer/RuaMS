@@ -23,7 +23,6 @@
 
 using Application.Utility.Configs;
 using client.processor.npc;
-using net.packet;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

@@ -25,7 +25,6 @@ using Application.Core.Game.Trades;
 using Application.Utility.Extensions;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using System.Drawing;
 using tools;
 

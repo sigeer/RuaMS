@@ -28,7 +28,6 @@ using Application.Shared.Battle;
 using client.autoban;
 using client.inventory;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using server;
 using server.life;
 using System.Drawing;

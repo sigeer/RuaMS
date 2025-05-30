@@ -1,6 +1,4 @@
 using Application.Core.Models;
-using net.opcodes;
-using static tools.PacketCreator;
 
 namespace net.packet.outs;
 
@@ -19,7 +17,7 @@ public class ShowNotesPacket : ByteBufOutPacket
         writeInt(note.Id);
         writeString(note.From + " "); //Stupid nexon forgot space lol
         writeString(note.Message);
-        writeLong(getTime(note.Timestamp));
+        writeLong(PacketCommon.getTime(note.Timestamp));
         writeByte(note.Fame);
     }
 }

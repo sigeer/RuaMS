@@ -26,7 +26,6 @@ builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);
 
 // 支持GBK
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-GlobalTools.Encoding = Encoding.GetEncoding("GBK");
 
 // 日志配置
 Log.Logger = new LoggerConfiguration()

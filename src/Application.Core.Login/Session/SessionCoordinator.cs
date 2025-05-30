@@ -27,7 +27,6 @@ using Application.Shared.Sessions;
 using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using net.server.coordinator.session;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Session;

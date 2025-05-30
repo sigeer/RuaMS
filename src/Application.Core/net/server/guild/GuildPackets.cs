@@ -1,7 +1,4 @@
 using Application.Core.Game.Relation;
-using net.opcodes;
-using net.packet;
-using tools;
 
 namespace net.server.guild;
 
@@ -239,7 +236,7 @@ public class GuildPackets
         p.writeInt(rs.Localthreadid);
         p.writeInt(rs.Postercid);
         p.writeString(rs.Name);
-        p.writeLong(PacketCreator.getTime(rs.Timestamp));
+        p.writeLong(PacketCommon.getTime(rs.Timestamp));
         p.writeInt(rs.Icon);
         p.writeInt(rs.Replycount);
     }
@@ -285,7 +282,7 @@ public class GuildPackets
         p.writeByte(0x07);
         p.writeInt(localthreadid);
         p.writeInt(threadRS.Postercid);
-        p.writeLong(PacketCreator.getTime(threadRS.Timestamp));
+        p.writeLong(PacketCommon.getTime(threadRS.Timestamp));
         p.writeString(threadRS.Name);
         p.writeString(threadRS.Startpost);
         p.writeInt(threadRS.Icon);
@@ -298,7 +295,7 @@ public class GuildPackets
             {
                 p.writeInt(item.Replyid);
                 p.writeInt(item.Postercid);
-                p.writeLong(PacketCreator.getTime(item.Timestamp));
+                p.writeLong(PacketCommon.getTime(item.Timestamp));
                 p.writeString(item.Content);
             }
             if (repliesRS.Count != replyCount)

@@ -29,7 +29,6 @@ using Application.Utility.Compatible;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using server;
 using server.life;
 using server.quest;

@@ -24,7 +24,6 @@
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
-using net.packet;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

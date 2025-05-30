@@ -27,7 +27,6 @@ using Application.EF;
 using Application.EF.Entities;
 using client;
 using Microsoft.Extensions.Logging;
-using net.packet;
 using tools;
 using static Application.Core.Game.Relation.BuddyList;
 using static Application.Core.Game.Relation.BuddyList.BuddyOperation;

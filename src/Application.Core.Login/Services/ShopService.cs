@@ -1,7 +1,6 @@
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Item;
-using Application.Shared.Dto;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
