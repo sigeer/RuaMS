@@ -358,22 +358,22 @@ namespace Application.Core.Servers.Services
             if (cashFactoryType == ItemType.CashOverall)
                 data.AccountGame.CashOverallItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
-                    opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+                    opt.Items["Type"] = ItemFactory.CASH_OVERALL.getValue();
                 }));
             if (cashFactoryType == ItemType.CashAran)
                 data.AccountGame.CashAranItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
-                    opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+                    opt.Items["Type"] = ItemFactory.CASH_ARAN.getValue();
                 }));
             if (cashFactoryType == ItemType.CashExplorer)
                 data.AccountGame.CashExplorerItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
-                    opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+                    opt.Items["Type"] = ItemFactory.CASH_EXPLORER.getValue();
                 }));
             if (cashFactoryType == ItemType.CashCygnus)
                 data.AccountGame.CashCygnusItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
                 {
-                    opt.Items["Type"] = ItemFactory.STORAGE.getValue();
+                    opt.Items["Type"] = ItemFactory.CASH_CYGNUS.getValue();
                 }));
             return data;
         }

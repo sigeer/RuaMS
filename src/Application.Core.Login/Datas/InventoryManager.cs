@@ -65,17 +65,17 @@ namespace Application.Core.Login.Datas
         public static void CommitInventoryByType(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
             var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
-            if (allItems.Count == 0)
-                return;
+            if (allItems.Count != 0)
+            {
+                var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
+                var ringIds = dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).Select(x => x.RingId).ToArray();
 
-            var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
-            var ringIds = dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).Select(x => x.RingId).ToArray();
-
-            var petIds = allItems.Select(x => x.Petid).ToArray();
-            dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-            dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-            dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
-            dbContext.Rings.Where(x => ringIds.Contains(x.Id)).ExecuteDelete();
+                var petIds = allItems.Select(x => x.Petid).ToArray();
+                dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
+                dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
+                dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
+                dbContext.Rings.Where(x => ringIds.Contains(x.Id)).ExecuteDelete();
+            }
 
             foreach (var item in items)
             {
@@ -146,17 +146,17 @@ namespace Application.Core.Login.Datas
         public static async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
             var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
-            if (allItems.Count == 0)
-                return;
+            if (allItems.Count != 0)
+            {
+                var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
+                var ringIds = dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).Select(x => x.RingId).ToArray();
 
-            var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
-            var ringIds = dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).Select(x => x.RingId).ToArray();
-
-            var petIds = allItems.Select(x => x.Petid).ToArray();
-            await dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
-            await dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
-            await dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDeleteAsync();
-            await dbContext.Rings.Where(x => ringIds.Contains(x.Id)).ExecuteDeleteAsync();
+                var petIds = allItems.Select(x => x.Petid).ToArray();
+                await dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
+                await dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
+                await dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDeleteAsync();
+                await dbContext.Rings.Where(x => ringIds.Contains(x.Id)).ExecuteDeleteAsync();
+            }
 
             foreach (var item in items)
             {
