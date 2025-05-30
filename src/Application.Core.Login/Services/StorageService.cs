@@ -64,7 +64,7 @@ namespace Application.Core.Login.Services
             await _dataStorage.CommitCharacterAsync(dbContext);
             await _dataStorage.CommitAccountCtrlAsync(dbContext);
             await _dataStorage.CommitAccountGameAsync(dbContext);
-            await _dataStorage.CommitAccountLoginRecord();
+            await _dataStorage.CommitAccountLoginRecord(dbContext);
 
             await dbTrans.CommitAsync();
         }
@@ -76,7 +76,7 @@ namespace Application.Core.Login.Services
             await _dataStorage.CommitCharacterAsync(dbContext);
             await _dataStorage.CommitAccountCtrlAsync(dbContext);
             await _dataStorage.CommitAccountGameAsync(dbContext);
-            await _dataStorage.CommitAccountLoginRecord();
+            await _dataStorage.CommitAccountLoginRecord(dbContext);
 
             await dbTrans.CommitAsync();
         }

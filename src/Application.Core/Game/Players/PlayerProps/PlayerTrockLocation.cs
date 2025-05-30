@@ -42,8 +42,8 @@ namespace Application.Core.Game.Players.PlayerProps
 
         public Dto.TrockLocationDto[] ToDto()
         {
-            return _dataSouce.Select(x => new Dto.TrockLocationDto() { Characterid = Owner.Id, Mapid = x, Vip = 0 })
-                .Concat(_vipDataSouce.Select(x => new Dto.TrockLocationDto() { Characterid = Owner.Id, Mapid = x, Vip = 1 })).ToArray();
+            return _dataSouce.Select(x => new Dto.TrockLocationDto() { Mapid = x, Vip = 0 })
+                .Concat(_vipDataSouce.Select(x => new Dto.TrockLocationDto() { Mapid = x, Vip = 1 })).ToArray();
         }
         public override void LoadData(DBContext dbContext)
         {

@@ -80,7 +80,6 @@ namespace Application.Core.Game.Players.PlayerProps
                 Locationtype = ((SavedLocationType)idx).ToString(),
                 Map = x.getMapId(),
                 Portal = x.getPortal(),
-                Characterid = Owner.Id,
             }).ToArray();
         }
     }

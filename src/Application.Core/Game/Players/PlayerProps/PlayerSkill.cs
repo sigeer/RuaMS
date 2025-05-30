@@ -31,7 +31,6 @@ namespace Application.Core.Game.Players.PlayerProps
                 Expiration = x.Value.expiration,
                 Masterlevel = x.Value.masterlevel,
                 Skilllevel = x.Value.skillevel,
-                Characterid = Owner.Id
             }).ToArray();
         }
 
