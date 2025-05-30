@@ -88,8 +88,6 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
 
-            CreateMap<GiftEntity, GiftDto>()
-                .ForMember(dest => dest.RingId, src => src.MapFrom(x => x.Ringid));
 
             CreateMap<DueyPackageEntity, DueyPackageDto>();
             CreateMap<NoteEntity, NoteDto>();

@@ -161,7 +161,6 @@ public class ItemFactory : EnumClass
         equip.setItemLevel(rs.Itemlevel);
         equip.setExpiration(rs.Expiration);
         equip.setGiftFrom(rs.GiftFrom);
-        equip.setRingId(rs.Ringid);
 
         return equip;
     }

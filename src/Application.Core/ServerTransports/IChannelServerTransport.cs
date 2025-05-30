@@ -122,7 +122,7 @@ namespace Application.Core.ServerTransports
         int[] RequestReactorSkillBooks();
         SpecialCashItem[] RequestSpecialCashItems();
         void SendGift(int recipient, string from, string message, int sn, long ringid);
-        GiftDto[] LoadPlayerGifts(int playerId);
+        Dto.GiftDto[] LoadPlayerGifts(int playerId);
         void ClearGifts(int[] giftIdArray);
         DueyPackageDto[] GetPlayerDueyPackages(int id);
         DueyPackageDto? GetDueyPackageByPackageId(int id);

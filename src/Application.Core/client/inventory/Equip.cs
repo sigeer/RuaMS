@@ -53,7 +53,6 @@ public class Equip : Item
     private byte level, itemLevel;
     private int str, dex, _int, luk, hp, mp, watk, matk, wdef, mdef, acc, avoid, hands, speed, jump, vicious;
     private float itemExp;
-    private long ringid = -1;
     private bool _wear = false;
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
@@ -826,17 +825,13 @@ public class Equip : Item
     }
     public long getRingId()
     {
-        return ringid;
+        return Ring?.getRingId() ?? -1;
     }
 
     public override long getCashId()
     {
-        return ringid > 0 ? ringid : base.getCashId();
-    }
-
-    public void setRingId(long id)
-    {
-        this.ringid = id;
+        var ringId = getRingId();
+        return ringId > 0 ? ringId : base.getCashId();
     }
 
     public bool isWearing()
@@ -877,7 +872,7 @@ public class Equip : Item
         this.setLevel((byte)dbModel.Level);
         this.setItemLevel((byte)dbModel.Itemlevel);
         this.setItemExp(dbModel.Itemexp);
-        this.setRingId(dbModel.Ringid);
+        // this.setRingId(dbModel.Ringid);
         this.setVicious((byte)dbModel.Vicious);
         this.setFlag((short)dbModel.Flag);
         this.setExpiration(dbModel.Expiration);

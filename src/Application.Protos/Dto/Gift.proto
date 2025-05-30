@@ -2,6 +2,9 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
+
+import "Dto/Ring.proto";
+
 package Dto;
 
 message GiftDto {
@@ -10,5 +13,5 @@ message GiftDto {
   string from = 3;
   string message = 4;
   int32 sn = 5;
-  int32 ringId = 6;
+  RingDto ring = 6;
 }

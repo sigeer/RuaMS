@@ -325,7 +325,7 @@ public class CashShop
         List<ItemMessagePair> gifts = new();
         try
         {
-            var dataList = Owner.Client.CurrentServer.Transport.LoadPlayerGifts(Owner.Id);
+            var dataList = Owner.Client.CurrentServer.ItemService.LoadPlayerGifts(Owner.Id);
             foreach (var rs in dataList)
             {
                 notes++;
@@ -336,7 +336,7 @@ public class CashShop
                 if (item.getInventoryType().Equals(InventoryType.EQUIP))
                 {
                     equip = (Equip)item;
-                    equip.setRingId(rs.RingId);
+                    equip.Ring = rs.Ring;
                     gifts.Add(new ItemMessagePair(equip, rs.Message));
                 }
                 else

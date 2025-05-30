@@ -543,6 +543,8 @@ namespace Application.Core.Channel.Net
 
         public bool CheckBirthday(DateTime date)
         {
+            return true;
+
             if (AccountEntity == null)
                 return false;
 

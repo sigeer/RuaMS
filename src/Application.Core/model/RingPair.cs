@@ -1,4 +1,6 @@
+using Application.Core.Game.Relation;
+
 namespace Application.Core.model
 {
-    public record RingPair(long MyRingId, long PartnerRingId);
+    public record RingPair(Ring MyRing, Ring PartnerRing);
 }

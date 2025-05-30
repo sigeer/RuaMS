@@ -1,10 +1,7 @@
-using Application.Core.Game.Items;
+using Application.Core.Model;
 using Application.Core.ServerTransports;
-using Application.Shared.Characters;
 using AutoMapper;
-using client.inventory;
 using Microsoft.Extensions.Logging;
-using server;
 
 namespace Application.Core.Servers.Services
 {
@@ -19,6 +16,12 @@ namespace Application.Core.Servers.Services
             _mapper = mapper;
             _transport = transport;
             _logger = logger;
+        }
+
+        public GiftModel[] LoadPlayerGifts(int id)
+        {
+            var remoteData = _transport.LoadPlayerGifts(id);
+            return _mapper.Map<GiftModel[]>(remoteData);
         }
     }
 }

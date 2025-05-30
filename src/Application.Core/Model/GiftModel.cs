@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Application.Core.Game.Relation;
 
-namespace Application.Shared.Items
+namespace Application.Core.Model
 {
-    public class GiftDto
+    public class GiftModel
     {
         public int Id { get; set; }
 
@@ -17,7 +13,6 @@ namespace Application.Shared.Items
         public string Message { get; set; } = null!;
 
         public int Sn { get; set; }
-
-        public long RingId { get; set; } = -1;
+        public Ring? Ring { get; set; }
     }
 }

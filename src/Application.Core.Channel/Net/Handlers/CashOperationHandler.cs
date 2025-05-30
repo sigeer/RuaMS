@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Game.GameEvents.PartyQuest;
 using Application.Core.Game.Items;
 using Application.Core.Game.Players;
 using Application.Core.Managers;
@@ -329,10 +330,9 @@ public class CashOperationHandler : ChannelHandlerBase
 
                         if (item is Equip equip)
                         {
-                            if (equip.getRingId() >= 0)
+                            if (equip.Ring != null)
                             {
-                                var ring = RingManager.LoadFromDb(equip.getRingId());
-                                chr.addPlayerRing(ring);
+                                chr.addPlayerRing(equip.Ring);
                             }
                         }
                     }
@@ -382,7 +382,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         int SN = p.readInt();
                         string recipientName = p.readString();
                         string text = p.readString();
-                        var itemRing = CashItemFactory.getItem(SN);
+                        var itemRing = CashItemFactory.GetItemTrust(SN);
                         var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(recipientName);
                         if (partner == null)
                         {
@@ -400,12 +400,17 @@ public class CashOperationHandler : ChannelHandlerBase
                             if (chr.getChannelServer().Service.CashItem2Item(itemRing) is Equip eqp)
                             {
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
-                                eqp.setRingId(rings.MyRingId);
+                                if (rings == null)
+                                {
+                                    c.sendPacket(PacketCreator.showCashShopMessage(0xBE));
+                                    return;
+                                }
+                                eqp.Ring = rings.MyRing;
                                 cs.addToInventory(eqp);
                                 c.sendPacket(PacketCreator.showBoughtCashItem(eqp, c.AccountEntity!.Id));
                                 cs.gainCash(toCharge, itemRing, chr.getWorld());
-                                cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
-                                chr.addCrushRing(RingManager.LoadFromDb(rings.MyRingId)!);
+                                cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRing.getRingId());
+                                chr.addCrushRing(rings.MyRing);
                                 c.CurrentServer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
                             }
                         }
@@ -457,10 +462,9 @@ public class CashOperationHandler : ChannelHandlerBase
                     int birthday = p.readInt();
                     if (c.CheckBirthday(birthday))
                     {
-                        int payment = p.readByte();
-                        p.skip(3); //0s
+                        int payment = p.readInt();
                         int snID = p.readInt();
-                        var itemRing = CashItemFactory.getItem(snID);
+                        var itemRing = CashItemFactory.GetItemTrust(snID);
                         string sentTo = p.readString();
                         string text = p.readString();
                         var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(sentTo);
@@ -474,12 +478,17 @@ public class CashOperationHandler : ChannelHandlerBase
                             if (chr.getChannelServer().Service.CashItem2Item(itemRing) is Equip eqp)
                             {
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
-                                eqp.setRingId(rings.MyRingId);
+                                if (rings == null)
+                                {
+                                    c.sendPacket(PacketCreator.showCashShopMessage(0xBE));
+                                    return;
+                                }
+                                eqp.Ring = rings.MyRing;
                                 cs.addToInventory(eqp);
                                 c.sendPacket(PacketCreator.showBoughtCashRing(eqp, partner.getName(), c.AccountEntity!.Id));
                                 cs.gainCash(payment, -itemRing.getPrice());
-                                cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRingId);
-                                chr.addFriendshipRing(RingManager.LoadFromDb(rings.MyRingId)!);
+                                cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRing.getRingId());
+                                chr.addFriendshipRing(rings.MyRing);
                                 c.CurrentServer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
                             }
                         }

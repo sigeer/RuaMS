@@ -555,7 +555,7 @@ namespace Application.Core.Channel.Local
             _itemService.InsertGift(recipient, from, message, sn, ringid);
         }
 
-        public GiftDto[] LoadPlayerGifts(int playerId)
+        public Dto.GiftDto[] LoadPlayerGifts(int playerId)
         {
             return _itemService.LoadPlayerGifts(playerId);
         }
