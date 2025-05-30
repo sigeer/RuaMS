@@ -121,7 +121,7 @@ namespace Application.Core.ServerTransports
         Dictionary<int, List<DropDto>> RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
         SpecialCashItem[] RequestSpecialCashItems();
-        void SendGift(int recipient, string from, string message, int sn, int ringid);
+        void SendGift(int recipient, string from, string message, int sn, long ringid);
         GiftDto[] LoadPlayerGifts(int playerId);
         void ClearGifts(int[] giftIdArray);
         DueyPackageDto[] GetPlayerDueyPackages(int id);

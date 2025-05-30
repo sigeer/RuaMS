@@ -53,7 +53,7 @@ public class Equip : Item
     private byte level, itemLevel;
     private int str, dex, _int, luk, hp, mp, watk, matk, wdef, mdef, acc, avoid, hands, speed, jump, vicious;
     private float itemExp;
-    private int ringid = -1;
+    private long ringid = -1;
     private bool _wear = false;
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
@@ -824,7 +824,7 @@ public class Equip : Item
     {
         this.upgradeSlots = (byte)i;
     }
-    public int getRingId()
+    public long getRingId()
     {
         return ringid;
     }
@@ -834,7 +834,7 @@ public class Equip : Item
         return ringid > 0 ? ringid : base.getCashId();
     }
 
-    public void setRingId(int id)
+    public void setRingId(long id)
     {
         this.ringid = id;
     }

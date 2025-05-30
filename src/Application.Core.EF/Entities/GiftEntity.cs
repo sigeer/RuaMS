@@ -2,7 +2,7 @@ namespace Application.EF.Entities;
 
 public class GiftEntity
 {
-    public GiftEntity(int to, string from, string message, int sn, int ringid)
+    public GiftEntity(int to, string from, string message, int sn, long ringid)
     {
         To = to;
         From = from;
@@ -23,5 +23,5 @@ public class GiftEntity
 
     public int Sn { get; set; }
 
-    public int Ringid { get; set; }
+    public long Ringid { get; set; }
 }

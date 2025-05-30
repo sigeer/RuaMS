@@ -76,5 +76,5 @@ public partial class Inventoryequipment
 
     public int Itemexp { get; set; }
 
-    public int RingId { get; set; } = -1;
+    public long RingId { get; set; } = -1;
 }

@@ -28,15 +28,15 @@ namespace Application.Core.Game.Relation;
  */
 public class Ring : IComparable<Ring>
 {
-    private int ringId;
-    private int ringId2;
+    private long ringId;
+    private long ringId2;
     private int partnerId;
     private int itemId;
     private string partnerName;
     private bool _equipped = false;
-    public int PartnerRingId => ringId2;
+    public long PartnerRingId => ringId2;
 
-    public Ring(int id, int id2, int partnerId, int itemid, string partnername)
+    public Ring(long id, long id2, int partnerId, int itemid, string partnername)
     {
         ringId = id;
         ringId2 = id2;
@@ -45,12 +45,12 @@ public class Ring : IComparable<Ring>
         partnerName = partnername;
     }
 
-    public int getRingId()
+    public long getRingId()
     {
         return ringId;
     }
 
-    public int getPartnerRingId()
+    public long getPartnerRingId()
     {
         return ringId2;
     }
@@ -90,12 +90,6 @@ public class Ring : IComparable<Ring>
         return o is Ring ring && ring.getRingId() == getRingId();
     }
 
-    public override int GetHashCode()
-    {
-        int hash = 5;
-        hash = 53 * hash + ringId;
-        return hash;
-    }
 
     public int CompareTo(Ring? other)
     {

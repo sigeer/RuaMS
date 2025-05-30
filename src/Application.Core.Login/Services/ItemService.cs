@@ -59,7 +59,7 @@ namespace Application.Core.Login.Services
                    .Select(x => new SpecialCashItem(x.Sn, x.Modifier, (byte)x.Info)).ToArray();
         }
 
-        public void InsertGift(int toId, string from, string message, int sn, int ringid = -1)
+        public void InsertGift(int toId, string from, string message, int sn, long ringid = -1)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             var giftModel = new GiftEntity(toId, from, message, sn, ringid);

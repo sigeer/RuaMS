@@ -261,22 +261,10 @@ public class CashShop
         }
     }
 
-    public Item? findByCashId(int cashId)
+    public Item? findByCashId(long cashId)
     {
-        bool isRing;
-        Equip? equip = null;
-        foreach (Item item in getInventory())
+        foreach (var item in getInventory())
         {
-            if (item.getInventoryType().Equals(InventoryType.EQUIP))
-            {
-                equip = (Equip)item;
-                isRing = equip.getRingId() > -1;
-            }
-            else
-            {
-                isRing = false;
-            }
-
             if (item.getCashId() == cashId)
             {
                 return item;
@@ -327,7 +315,7 @@ public class CashShop
         wishList.Add(sn);
     }
 
-    public void gift(int recipient, string from, string message, int sn, int ringid = -1)
+    public void gift(int recipient, string from, string message, int sn, long ringid = -1)
     {
         Owner.Client.CurrentServer.Transport.SendGift(recipient, from, message, sn, ringid);
     }

@@ -1,4 +1,4 @@
-﻿namespace Application.Core.model
+namespace Application.Core.model
 {
-    public record RingPair(int MyRingId, int PartnerRingId);
+    public record RingPair(long MyRingId, long PartnerRingId);
 }
