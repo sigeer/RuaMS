@@ -12,6 +12,7 @@ namespace Application.Core.Login.Services
         protected System.Threading.Channels.Channel<StorageType> packetChannel;
         readonly DataStorage _dataStorage;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         protected readonly ILogger<StorageService> _logger;
         public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory)
@@ -59,26 +60,55 @@ namespace Application.Core.Login.Services
 
         public async Task CommitCharacter()
         {
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-            await _dataStorage.CommitCharacterAsync(dbContext);
-            await _dataStorage.CommitAccountCtrlAsync(dbContext);
-            await _dataStorage.CommitAccountGameAsync(dbContext);
-            await _dataStorage.CommitAccountLoginRecord(dbContext);
+            if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(5)))
+            {
+                _logger.LogInformation("失败：已经有一个保存操作正在进行中");
+                return;
+            }
 
-            await dbTrans.CommitAsync();
+            try
+            {
+                await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+                await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+
+                await _dataStorage.CommitCharacterAsync(dbContext);
+                await _dataStorage.CommitAccountCtrlAsync(dbContext);
+                await _dataStorage.CommitAccountGameAsync(dbContext);
+                await _dataStorage.CommitAccountLoginRecord(dbContext);
+
+                await dbTrans.CommitAsync();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
         }
 
         public async Task CommitAllImmediately()
         {
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-            await _dataStorage.CommitCharacterAsync(dbContext);
-            await _dataStorage.CommitAccountCtrlAsync(dbContext);
-            await _dataStorage.CommitAccountGameAsync(dbContext);
-            await _dataStorage.CommitAccountLoginRecord(dbContext);
+            if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(5)))
+            {
+                _logger.LogInformation("失败：已经有一个保存操作正在进行中");
+                return;
+            }
 
-            await dbTrans.CommitAsync();
+            try
+            {
+                await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+                await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
+
+                await _dataStorage.CommitCharacterAsync(dbContext);
+                await _dataStorage.CommitAccountCtrlAsync(dbContext);
+                await _dataStorage.CommitAccountGameAsync(dbContext);
+                await _dataStorage.CommitAccountLoginRecord(dbContext);
+
+                await dbTrans.CommitAsync();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
     }
 
