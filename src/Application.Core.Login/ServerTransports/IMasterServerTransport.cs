@@ -14,5 +14,6 @@ namespace Application.Core.ServerTransports
         void BroadcastMessage(Packet p);
         void SendNotes(int channel, int id, Dto.NoteDto[] notes);
         void SendUpdateCouponRates(Config.CouponConfig config);
+        void SendDueyNotification(int channel, int id, string senderName, bool dueyType);
     }
 }

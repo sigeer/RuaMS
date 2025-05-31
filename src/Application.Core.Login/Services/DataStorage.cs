@@ -3,6 +3,7 @@ using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Login;
+using Application.Utility;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,7 @@ namespace Application.Core.Login.Services
 
 
         ConcurrentDictionary<int, ItemModel[]> _merchantUpdate = new();
-        ConcurrentDictionary<int, ItemModel[]> _dueyUpdate = new();
+        ConcurrentDictionary<int, UpdateField<DueyPackageModel>> _dueyUpdate = new();
         ConcurrentDictionary<int, ItemModel[]> _marriageUpdate = new();
 
         readonly IMapper _mapper;
@@ -239,6 +240,43 @@ namespace Application.Core.Login.Services
             await dbContext.SaveChangesAsync();
         }
 
+        internal void SetDueyPackage(DueyPackageModel dueyPackageModel)
+        {
+            _dueyUpdate[dueyPackageModel.PackageId] = new UpdateField<DueyPackageModel>(UpdateMethod.Update, dueyPackageModel);
+        }
 
+        internal void RemoveDueyPackage(DueyPackageModel dueyPackageModel)
+        {
+            dueyPackageModel.Item = null;
+            _dueyUpdate[dueyPackageModel.PackageId] = new UpdateField<DueyPackageModel>(UpdateMethod.Remove, dueyPackageModel);
+        }
+
+        public async Task CommitDueyPackageAsync(DBContext dbContext)
+        {
+            var updateData = new Dictionary<int, UpdateField<DueyPackageModel>>();
+            foreach (var key in _dueyUpdate.Keys.ToList())
+            {
+                _dueyUpdate.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
+            if (updateCount == 0)
+                return;
+
+            var allPackages = await dbContext.Dueypackages.Where(x => updateData.Keys.Contains(x.PackageId)).ToListAsync();
+            foreach (var item in updateData.Values)
+            {
+                var dbModel = allPackages.FirstOrDefault(x => x.PackageId == item.Data.PackageId)!;
+                if (item.Method == UpdateMethod.Remove)
+                {
+                    dbContext.Dueypackages.Remove(dbModel);
+                }
+                var obj = item.Data;
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.PackageId, obj.Item == null ? [] : [obj.Item], ItemFactory.DUEY);
+
+            }
+            await dbContext.SaveChangesAsync();
+        }
     }
 }

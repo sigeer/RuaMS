@@ -6,7 +6,7 @@ namespace Application.Core.Login.Models
 
         public int ReceiverId { get; set; }
 
-        public string SenderName { get; set; } = null!;
+        public int SenderId { get; set; }
 
         public int Mesos { get; set; }
 

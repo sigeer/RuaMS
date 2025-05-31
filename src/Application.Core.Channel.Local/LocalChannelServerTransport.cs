@@ -3,6 +3,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
+using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.Core.model;
 using Application.Core.ServerTransports;
@@ -573,7 +574,7 @@ namespace Application.Core.Channel.Local
 
         public void RequestRemovePackage(int packageid)
         {
-            _dueyService.RemovePackageFromDB(packageid);
+            _server.DueyManager.RemovePackageById(packageid);
         }
 
         public bool SendNormalNoteMessage(string fromName, string toName, string noteMessage)
@@ -630,6 +631,20 @@ namespace Application.Core.Channel.Local
             _server.CouponManager.ToggleCoupon(v);
         }
 
+        public Dto.CreatePackageCheckResponse CreateDueyPackageFromInventoryCheck(Dto.CreatePackageCheckRequest request)
+        {
+            return _server.DueyManager.CreateDueyPackageCheck(request.SenderId, request.ReceiverName);
+        }
+
+        public Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request)
+        {
+            return _server.DueyManager.CreateDueyPackage(request.SenderId, request.SendMeso, request.Item, request.SendMessage, request.ReceiverId, request.Quick);
+        }
+
+        public void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest)
+        {
+            _server.DueyManager.SendDueyNotification(sendDueyNotificationRequest.CharacterName);
+        }
 
     }
 }

@@ -330,7 +330,7 @@ public class RingActionHandler : ChannelHandlerBase
                                     Item weddingTicket = new Item(newItemId, 0, 1);
                                     weddingTicket.setExpiration(expiration);
 
-                                    DueyProcessor.dueyCreatePackage(weddingTicket, 0, groom, guest);
+                                    c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Id, 0, weddingTicket, null, guest, false);
                                 }
                             }
                             else

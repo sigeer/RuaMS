@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package Dto;
+
+message CreateDueyPackageRequest {
+  int32 senderId = 1;
+  int32 sendMeso = 2;
+  google.protobuf.StringValue sendMessage = 3;
+  string receiverName = 4;
+  bool quick = 5;
+}

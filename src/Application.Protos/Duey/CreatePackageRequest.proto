@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+
+
+package Dto;
+
+import "Dto/Item.proto";
+
+message CreatePackageCheckRequest {
+  int32 senderId = 1;
+  string receiverName = 2;
+}
+
+message CreatePackageCheckResponse {
+	int32 code = 1;
+	int32 receiverId = 2;
+}
+
+message CreatePackageRequest {
+	int32 senderId = 1;
+	int32 sendMeso = 2;
+	google.protobuf.StringValue sendMessage = 3;
+	int32 receiverId = 4;
+	bool quick = 5;
+	ItemDto item = 6;
+}
+
+message CreatePackageResponse {
+	bool isSuccess = 1;
+}

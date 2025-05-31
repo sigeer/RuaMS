@@ -15,12 +15,14 @@ namespace Application.Core.Login.Services
         readonly ILogger<DueyService> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly IMapper _mapper;
+        readonly MasterServer _server;
 
-        public DueyService(ILogger<DueyService> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper)
+        public DueyService(ILogger<DueyService> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
+            _server = server;
         }
 
         private static List<ItemEntityPair> LoadDueyItems(DBContext dbContext, int[] packageIdArray)
@@ -83,50 +85,8 @@ namespace Application.Core.Login.Services
 
                 foreach (int pid in toRemove)
                 {
-                    RemovePackageFromDB(pid);
+                    _server.DueyManager.RemovePackageById(pid);
                 }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-            }
-        }
-
-        public void RemovePackageFromDB(int packageId)
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                dbContext.Dueypackages.Where(x => x.PackageId == packageId).ExecuteDelete();
-
-                InventoryManager.CommitInventoryByType(dbContext, packageId, [], ItemFactory.DUEY);
-
-                dbTrans.Commit();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-            }
-        }
-
-        public void SubmitDueyPackage(Dto.DueyPackageDto package)
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-
-                var dbModel = dbContext.Dueypackages.FirstOrDefault(x => x.PackageId == package.PackageId);
-                if (dbModel == null)
-                    return;
-
-                _mapper.Map(package, dbModel);
-
-                InventoryManager.CommitInventoryByType(dbContext, package.PackageId, _mapper.Map<ItemModel[]>(package.Item), ItemFactory.DUEY);
-
-                dbContext.SaveChanges();
-                dbTrans.Commit();
             }
             catch (Exception e)
             {

@@ -5,8 +5,7 @@ public partial class DueyPackageEntity
     public int PackageId { get; set; }
 
     public int ReceiverId { get; set; }
-
-    public string SenderName { get; set; } = null!;
+    public int SenderId { get; set; }
 
     public int Mesos { get; set; }
 
@@ -19,10 +18,10 @@ public partial class DueyPackageEntity
     public bool Type { get; set; } = false;
     private DueyPackageEntity() { }
 
-    public DueyPackageEntity(int receiverId, string senderName, int mesos, string? message, bool @checked, bool type)
+    public DueyPackageEntity(int receiverId, int senderId, int mesos, string? message, bool @checked, bool type)
     {
         ReceiverId = receiverId;
-        SenderName = senderName;
+        SenderId = senderId;
         Mesos = mesos;
         TimeStamp = DateTimeOffset.UtcNow;
         Message = message;
