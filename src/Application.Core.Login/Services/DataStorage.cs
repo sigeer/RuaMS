@@ -7,33 +7,31 @@ using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Services
 {
     public class DataStorage
     {
-        Dictionary<int, CharacterLiveObject> _chrUpdate = new();
-        Dictionary<int, AccountCtrl> _accUpdate = new();
-        Dictionary<int, AccountGame> _accGameUpdate = new();
+        ConcurrentDictionary<int, CharacterLiveObject> _chrUpdate = new();
+        ConcurrentDictionary<int, AccountCtrl> _accUpdate = new();
+        ConcurrentDictionary<int, AccountGame> _accGameUpdate = new();
 
-        Dictionary<int, AccountLoginStatus> _accLoginUpdate = new();
+        ConcurrentDictionary<int, AccountLoginStatus> _accLoginUpdate = new();
 
 
-        Dictionary<int, ItemModel[]> _merchantUpdate = new();
-        Dictionary<int, ItemModel[]> _dueyUpdate = new();
-        Dictionary<int, ItemModel[]> _marriageUpdate = new();
+        ConcurrentDictionary<int, ItemModel[]> _merchantUpdate = new();
+        ConcurrentDictionary<int, ItemModel[]> _dueyUpdate = new();
+        ConcurrentDictionary<int, ItemModel[]> _marriageUpdate = new();
 
         readonly IMapper _mapper;
         readonly ILogger<DataStorage> _logger;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
-        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-        public DataStorage(IMapper mapper, ILogger<DataStorage> logger, IDbContextFactory<DBContext> dbContextFactory)
+        public DataStorage(IMapper mapper, ILogger<DataStorage> logger)
         {
             _mapper = mapper;
             _logger = logger;
-            _dbContextFactory = dbContextFactory;
         }
 
 
@@ -42,41 +40,42 @@ namespace Application.Core.Login.Services
         /// </summary>
         public async Task CommitCharacterAsync(DBContext dbContext)
         {
-            var updateCount = _chrUpdate.Count;
+            var updateData = new Dictionary<int, CharacterLiveObject>();
+            foreach (var key in _chrUpdate.Keys.ToList())
+            {
+                _chrUpdate.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
             if (updateCount == 0)
                 return;
 
             _logger.LogInformation("正在保存用户数据...");
 
-            if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(5)))
-            {
-                _logger.LogInformation("失败：已经有一个保存操作正在进行中");
-                return;
-            }
-
             try
             {
-                var updateCharacters = await dbContext.Characters.Where(x => _chrUpdate.Keys.Contains(x.Id)).ToListAsync();
+                var updateCharacters = await dbContext.Characters.Where(x => updateData.Keys.Contains(x.Id)).ToListAsync();
                 var accList = updateCharacters.Select(x => x.AccountId).ToArray();
 
-                await dbContext.Monsterbooks.Where(x => _chrUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
-                var petIdList = _chrUpdate.Values.SelectMany(x => x.PetIgnores.Select(x => x.PetId)).ToArray();
+                await dbContext.Monsterbooks.Where(x => updateData.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
+                var petIdList = updateData.Values.SelectMany(x => x.PetIgnores.Select(x => x.PetId)).ToArray();
                 await dbContext.Petignores.Where(x => petIdList.Contains(x.Petid)).ExecuteDeleteAsync();
-                await dbContext.Keymaps.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Skills.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Skillmacros.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Savedlocations.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Trocklocations.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Buddies.Where(x => _chrUpdate.Keys.Contains(x.CharacterId)).ExecuteDeleteAsync();
-                await dbContext.AreaInfos.Where(x => _chrUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
-                await dbContext.Eventstats.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Cooldowns.Where(x => _chrUpdate.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
+                await dbContext.Keymaps.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Skills.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Skillmacros.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Savedlocations.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Trocklocations.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Buddies.Where(x => updateData.Keys.Contains(x.CharacterId)).ExecuteDeleteAsync();
+                await dbContext.AreaInfos.Where(x => updateData.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
+                await dbContext.Eventstats.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Cooldowns.Where(x => updateData.Keys.Contains(x.Charid)).ExecuteDeleteAsync();
 
-                await dbContext.Questprogresses.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Queststatuses.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
-                await dbContext.Medalmaps.Where(x => _chrUpdate.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Questprogresses.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Queststatuses.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Medalmaps.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
 
-                foreach (var obj in _chrUpdate.Values)
+                foreach (var obj in updateData.Values)
                 {
                     var character = updateCharacters.FirstOrDefault(x => x.Id == obj.Character.Id)!;
                     _mapper.Map(obj.Character, character);
@@ -124,17 +123,13 @@ namespace Application.Core.Login.Services
                     // family
                 }
                 await dbContext.SaveChangesAsync();
-                _chrUpdate.Clear();
                 _logger.LogInformation("保存了{Count}个用户数据", updateCount);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存用户数据{Status}", "失败");
             }
-            finally
-            {
-                _semaphore.Release();
-            }
+
         }
         public void SetCharacter(CharacterLiveObject obj)
         {
@@ -176,32 +171,38 @@ namespace Application.Core.Login.Services
 
         public async Task CommitAccountGameAsync(DBContext dbContext)
         {
-            var updateCount = _accGameUpdate.Count;
+            var updateData = new Dictionary<int, AccountGame>();
+            foreach (var key in _accGameUpdate.Keys.ToList())
+            {
+                _accGameUpdate.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
             if (updateCount == 0)
                 return;
 
-            await dbContext.Quickslotkeymappeds.Where(x => _accGameUpdate.Keys.Contains(x.Accountid)).ExecuteDeleteAsync();
-            dbContext.Storages.Where(x => _accGameUpdate.Keys.Contains(x.Accountid)).ExecuteDelete();
+            await dbContext.Quickslotkeymappeds.Where(x => updateData.Keys.Contains(x.Accountid)).ExecuteDeleteAsync();
+            await dbContext.Storages.Where(x => updateData.Keys.Contains(x.Accountid)).ExecuteDeleteAsync();
 
-            foreach (var acc in _accGameUpdate)
+            foreach (var acc in updateData)
             {
                 if (acc.Value.QuickSlot != null)
                     dbContext.Quickslotkeymappeds.Add(new Quickslotkeymapped(acc.Key, acc.Value.QuickSlot.LongValue));
 
                 dbContext.Storages.Add(new StorageEntity(acc.Key, acc.Value.Storage?.Slots ?? 4, acc.Value.Storage?.Meso ?? 0));
-                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.StorageItems, ItemFactory.STORAGE);
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, acc.Key, acc.Value.StorageItems, ItemFactory.STORAGE);
 
-                dbContext.Accounts.Where(x => x.Id == acc.Key).ExecuteUpdate(
+                await dbContext.Accounts.Where(x => x.Id == acc.Key).ExecuteUpdateAsync(
                     x => x.SetProperty(y => y.MaplePoint, acc.Value.MaplePoint).SetProperty(y => y.NxPrepaid, acc.Value.NxPrepaid).SetProperty(y => y.NxCredit, acc.Value.NxCredit)
                     );
 
-                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashAranItems, ItemFactory.CASH_ARAN);
-                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashCygnusItems, ItemFactory.CASH_CYGNUS);
-                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashExplorerItems, ItemFactory.CASH_EXPLORER);
-                InventoryManager.CommitInventoryByType(dbContext, acc.Key, acc.Value.CashOverallItems, ItemFactory.CASH_OVERALL);
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, acc.Key, acc.Value.CashAranItems, ItemFactory.CASH_ARAN);
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, acc.Key, acc.Value.CashCygnusItems, ItemFactory.CASH_CYGNUS);
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, acc.Key, acc.Value.CashExplorerItems, ItemFactory.CASH_EXPLORER);
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, acc.Key, acc.Value.CashOverallItems, ItemFactory.CASH_OVERALL);
             }
             await dbContext.SaveChangesAsync();
-            _accGameUpdate.Clear();
         }
 
         /// <summary>
@@ -211,12 +212,19 @@ namespace Application.Core.Login.Services
         /// <param name="obj"></param>
         public async Task CommitAccountCtrlAsync(DBContext dbContext)
         {
-            var updateCount = _accUpdate.Count;
+            var updateData = new Dictionary<int, AccountCtrl>();
+            foreach (var key in _accUpdate.Keys.ToList())
+            {
+                _accUpdate.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
             if (updateCount == 0)
                 return;
 
-            var allAccounts = await dbContext.Accounts.AsNoTracking().Where(x => _accUpdate.Keys.Contains(x.Id)).ToListAsync();
-            foreach (var obj in _accUpdate.Values)
+            var allAccounts = await dbContext.Accounts.AsNoTracking().Where(x => updateData.Keys.Contains(x.Id)).ToListAsync();
+            foreach (var obj in updateData.Values)
             {
                 var dbModel = allAccounts.FirstOrDefault(x => x.Id == obj.Id)!;
 
@@ -229,7 +237,6 @@ namespace Application.Core.Login.Services
                 dbModel.Characterslots = obj.Characterslots;
             }
             await dbContext.SaveChangesAsync();
-            _accUpdate.Clear();
         }
 
 

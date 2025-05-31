@@ -257,7 +257,7 @@ public class Server
             LoadAccountCharacterCache(dbContext);
 
             NewYearCardRecord.startPendingNewYearCardRequests(dbContext);
-            CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
+            // CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             PlayerNPC.loadRunningRankData(dbContext);
 
