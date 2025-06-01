@@ -5,6 +5,7 @@ using Application.Core.Login.Services;
 using Application.EF;
 using Application.Shared.Items;
 using Application.Utility.Exceptions;
+using Application.Utility.Extensions;
 using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using net.server;
 using Serilog;
+using System.Xml.Linq;
 
 namespace Application.Core.Login.Datas
 {
@@ -22,8 +24,8 @@ namespace Application.Core.Login.Datas
     /// </summary>
     public class CharacterManager : IDisposable
     {
-        Dictionary<int, CharacterLiveObject> _idDataSource = new Dictionary<int, CharacterLiveObject>();
-        Dictionary<string, CharacterLiveObject> _nameDataSource = new Dictionary<string, CharacterLiveObject>();
+        Dictionary<int, CharacterLiveObject?> _idDataSource = new();
+        Dictionary<string, CharacterLiveObject?> _nameDataSource = new();
 
         Dictionary<int, CharacterViewObject> _charcterViewCache = new();
 
@@ -42,8 +44,20 @@ namespace Application.Core.Login.Datas
             _masterServer = masterServer;
         }
 
-        public CharacterLiveObject? FindPlayerById(int id) => _idDataSource.GetValueOrDefault(id);
-        public CharacterLiveObject? FindPlayerByName(string name) => _nameDataSource.GetValueOrDefault(name);
+        public CharacterLiveObject? FindPlayerById(int id)
+        {
+            return _idDataSource.GetOrAdd(id, () =>
+            {
+                return GetCharacter(id);
+            });
+        }
+        public CharacterLiveObject? FindPlayerByName(string name)
+        {
+            return _nameDataSource.GetOrAdd(name, () =>
+            {
+                return GetCharacter(null, name);
+            });
+        }
 
         public void Update(Dto.PlayerSaveDto obj)
         {
@@ -92,13 +106,23 @@ namespace Application.Core.Login.Datas
             _charcterViewCache.Clear();
         }
 
-        public CharacterLiveObject? GetCharacter(int characterId)
+        public CharacterLiveObject? GetCharacter(int? characterId = null, string? characterName = null)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            CharacterLiveObject? d;
-            if (!_idDataSource.TryGetValue(characterId, out d))
+            if (characterId == null && characterName == null)
+                return null;
+
+            CharacterLiveObject? d = null;
+            if (characterId != null)
+                _idDataSource.TryGetValue(characterId.Value, out d);
+            if (d == null && characterName != null)
+                _nameDataSource.TryGetValue(characterName, out d);
+
+            if (d == null)
             {
-                var characterEntity = dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId);
+                using var dbContext = _dbContextFactory.CreateDbContext();
+                var characterEntity = characterId != null
+                    ? dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId)
+                    : dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Name == characterName);
                 if (characterEntity == null)
                     return null;
 
@@ -106,7 +130,7 @@ namespace Application.Core.Login.Datas
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
-                var invItems = InventoryManager.LoadItems(dbContext, characterId, ItemType.Inventory);
+                var invItems = InventoryManager.LoadItems(dbContext, characterEntity.Id, ItemType.Inventory);
 
                 var buddyData = (from a in dbContext.Buddies
                                  join b in dbContext.Characters on a.BuddyId equals b.Id
@@ -143,7 +167,7 @@ namespace Application.Core.Login.Datas
                     WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray()
                 };
 
-                _idDataSource[characterId] = d;
+                _idDataSource[characterEntity.Id] = d;
                 _nameDataSource[characterEntity.Name] = d;
             }
             return d;

@@ -22,6 +22,9 @@ namespace Application.Core.Login.Services
 
 
         ConcurrentDictionary<int, ItemModel[]> _merchantUpdate = new();
+        /// <summary>
+        /// 只会新增/删除 Key: Id（不是packageId）
+        /// </summary>
         ConcurrentDictionary<int, UpdateField<DueyPackageModel>> _dueyUpdate = new();
         ConcurrentDictionary<int, ItemModel[]> _marriageUpdate = new();
 
@@ -240,15 +243,15 @@ namespace Application.Core.Login.Services
             await dbContext.SaveChangesAsync();
         }
 
-        internal void SetDueyPackage(DueyPackageModel dueyPackageModel)
+        internal void SetDueyPackageAdded(DueyPackageModel dueyPackageModel)
         {
-            _dueyUpdate[dueyPackageModel.PackageId] = new UpdateField<DueyPackageModel>(UpdateMethod.Update, dueyPackageModel);
+            _dueyUpdate[dueyPackageModel.Id] = new UpdateField<DueyPackageModel>(UpdateMethod.Add, dueyPackageModel);
         }
 
-        internal void RemoveDueyPackage(DueyPackageModel dueyPackageModel)
+        internal void SetDueyPackageRemoved(DueyPackageModel dueyPackageModel)
         {
             dueyPackageModel.Item = null;
-            _dueyUpdate[dueyPackageModel.PackageId] = new UpdateField<DueyPackageModel>(UpdateMethod.Remove, dueyPackageModel);
+            _dueyUpdate[dueyPackageModel.Id] = new UpdateField<DueyPackageModel>(UpdateMethod.Remove, dueyPackageModel);
         }
 
         public async Task CommitDueyPackageAsync(DBContext dbContext)
@@ -264,16 +267,28 @@ namespace Application.Core.Login.Services
             if (updateCount == 0)
                 return;
 
-            var allPackages = await dbContext.Dueypackages.Where(x => updateData.Keys.Contains(x.PackageId)).ToListAsync();
             foreach (var item in updateData.Values)
             {
-                var dbModel = allPackages.FirstOrDefault(x => x.PackageId == item.Data.PackageId)!;
-                if (item.Method == UpdateMethod.Remove)
-                {
-                    dbContext.Dueypackages.Remove(dbModel);
-                }
                 var obj = item.Data;
-                await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.PackageId, obj.Item == null ? [] : [obj.Item], ItemFactory.DUEY);
+                int packageId = 0;
+                if (item.Method == UpdateMethod.Add)
+                {
+                    var tempData = new DueyPackageEntity(obj.ReceiverId, obj.SenderName, obj.Mesos, obj.Message, obj.Checked, obj.Type, obj.TimeStamp);
+                    dbContext.Dueypackages.Add(tempData);
+                    await dbContext.SaveChangesAsync();
+                    packageId = tempData.PackageId;
+                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, packageId, obj.Item == null ? [] : [obj.Item], ItemFactory.DUEY);
+                    obj.PackageId = packageId;
+
+                }
+                if(item.Method == UpdateMethod.Remove && item.Data.PackageId > 0)
+                {
+                    // 已经保存过数据库，存在packageid 才需要从数据库移出
+                    // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
+                    packageId = item.Data.PackageId;
+                    await dbContext.Dueypackages.Where(x => x.PackageId == packageId).ExecuteDeleteAsync();
+                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, packageId, [], ItemFactory.DUEY);
+                }
 
             }
             await dbContext.SaveChangesAsync();

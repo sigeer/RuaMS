@@ -19,7 +19,7 @@ message CreatePackageCheckResponse {
 }
 
 message CreatePackageRequest {
-	int32 senderId = 1;
+	string senderName = 1;
 	int32 sendMeso = 2;
 	google.protobuf.StringValue sendMessage = 3;
 	int32 receiverId = 4;

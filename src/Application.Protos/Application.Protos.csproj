@@ -23,8 +23,6 @@
 
 	<ItemGroup>
 		<Protobuf Include="Duey\CreatePackageRequest.proto" GrpcServices="None" />
-		<Protobuf Include="Duey\CreateDueyPackageRequest.proto" GrpcServices="None" />
-		<Protobuf Include="Duey\CreateDueyPackageResponse.proto" GrpcServices="None" />
 	</ItemGroup>
 
 	<ItemGroup>

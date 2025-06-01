@@ -1,24 +1,28 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Tls;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Datas
 {
     public class DueyManager
     {
+
+        /// <summary>
+        /// Key: localId(不是packageId,packageId只用来保存数据库)
+        /// </summary>
         ConcurrentDictionary<int, DueyPackageModel> _dataSource;
+
+        private static int _currentId = 0;
 
         readonly ILogger<DueyManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly IMapper _maper;
+        readonly IMapper _mapper;
         readonly MasterServer _server;
         readonly DataStorage _dataStorage;
 
@@ -26,7 +30,7 @@ namespace Application.Core.Login.Datas
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;
-            _maper = maper;
+            _mapper = maper;
 
             _dataSource = new();
             _server = server;
@@ -36,10 +40,14 @@ namespace Application.Core.Login.Datas
         public async Task Setup()
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            var allPackages = _maper.Map<List<DueyPackageModel>>(await dbContext.Dueypackages.AsNoTracking().ToListAsync());
+            var allPackages = _mapper.Map<List<DueyPackageModel>>(await dbContext.Dueypackages.AsNoTracking().ToListAsync());
+
+            var allPackageItems = InventoryManager.LoadDueyItems(dbContext, allPackages.Select(x => x.PackageId).ToArray());
             foreach (var package in allPackages)
             {
-                _dataSource[package.PackageId] = package;
+                package.Item = _mapper.Map<ItemModel>(allPackageItems.FirstOrDefault(x => x.Item.Characterid == package.PackageId));
+                package.Id = Interlocked.Increment(ref _currentId);
+                _dataSource[package.Id] = package;
             }
         }
 
@@ -67,25 +75,34 @@ namespace Application.Core.Login.Datas
             return response;
         }
 
+        public void UpdatePackageId(int localId, int packageId)
+        {
+            if (_dataSource.TryGetValue(localId, out var d))
+                d.PackageId = packageId;
+        }
 
-        public Dto.CreatePackageResponse CreateDueyPackage(int senderId, int sendMesos, Dto.ItemDto? item, string? sendMessage, int receiverId, bool quick)
+
+        public Dto.CreatePackageResponse CreateDueyPackage(string senderName, int sendMesos, Dto.ItemDto? item, string? sendMessage, int receiverId, bool quick)
         {
             try
             {
-                using var dbContext = _dbContextFactory.CreateDbContext();
-                var dbModel = new DueyPackageEntity(receiverId, senderId, sendMesos, sendMessage, true, quick);
-                dbContext.Dueypackages.Add(dbModel);
-
-                if (dbContext.SaveChanges() < 1)
+                var model = new DueyPackageModel()
                 {
-                    _logger.LogError("Error trying to create namespace [mesos: {Meso}, sender: {Sender}, quick: {Quick}, receiver chrId: {Receiver}]",
-                        sendMesos, senderId, quick, receiverId);
-                    return new Dto.CreatePackageResponse { IsSuccess = false };
-                }
-
-                var model = _maper.Map<DueyPackageModel>(dbModel);
-                _dataSource[model.PackageId] = model;
-                _dataStorage.SetDueyPackage(model);
+                    Id = Interlocked.Increment(ref _currentId),
+                    ReceiverId = receiverId,
+                    SenderName = senderName,
+                    Mesos = sendMesos,
+                    Message = sendMessage,
+                    Type = quick,
+                    Checked = true,
+                    TimeStamp = DateTimeOffset.UtcNow,
+                    Item = _mapper.Map<ItemModel>(item, ctx =>
+                    {
+                        ctx.Items["Type"] = ItemFactory.DUEY.getValue();
+                    })
+                };
+                _dataSource[model.Id] = model;
+                _dataStorage.SetDueyPackageAdded(model);
                 return new Dto.CreatePackageResponse { IsSuccess = true };
             }
             catch (Exception sqle)
@@ -96,10 +113,10 @@ namespace Application.Core.Login.Datas
             return new Dto.CreatePackageResponse { IsSuccess = false };
         }
 
-        public void RemovePackageById(int packageId)
+        public void RemovePackageById(int localId)
         {
-            if (_dataSource.TryRemove(packageId, out var d))
-                _dataStorage.RemoveDueyPackage(d);
+            if (_dataSource.TryRemove(localId, out var d))
+                _dataStorage.SetDueyPackageRemoved(d);
         }
 
         public void SendDueyNotification(string characterName)
@@ -109,14 +126,43 @@ namespace Application.Core.Login.Datas
             {
                 using var dbContext = _dbContextFactory.CreateDbContext();
                 var sender = dbContext.Dueypackages.Where(x => x.ReceiverId == target.Character.Id && x.Checked)
-                    .OrderByDescending(x => x.Type).Select(x => new { x.SenderId, x.Type }).FirstOrDefault();
+                    .OrderByDescending(x => x.Type).Select(x => new { x.SenderName, x.Type }).FirstOrDefault();
 
                 if (sender != null)
                 {
-                    var senderName = _server.CharacterManager.FindPlayerById(sender.SenderId);
                     dbContext.Dueypackages.Where(x => x.ReceiverId == target.Character.Id).ExecuteUpdate(x => x.SetProperty(y => y.Checked, false));
-                    _server.Transport.SendDueyNotification(target.Channel, target.Character.Id, senderName.Character.Name, sender.Type);
+                    _server.Transport.SendDueyNotification(target.Channel, target.Character.Id, sender.SenderName, sender.Type);
                 }
+            }
+        }
+
+        public Dto.DueyPackageDto[] GetPlayerDueyPackages(int playerId)
+        {
+            return _mapper.Map<Dto.DueyPackageDto[]>(_dataSource.Values.Where(x => x.ReceiverId == playerId));
+        }
+
+        public Dto.DueyPackageDto? GetDueyPackageByPackageId(int id)
+        {
+            if (_dataSource.TryGetValue(id, out var d))
+                return _mapper.Map<Dto.DueyPackageDto>(d);
+            return null;
+        }
+
+        public void RunDueyExpireSchedule()
+        {
+            try
+            {
+                var dayBefore30 = DateTimeOffset.UtcNow.AddDays(-30);
+                var toRemove = _dataSource.Values.Where(x => x.TimeStamp < dayBefore30).Select(X => X.Id).ToList();
+
+                foreach (int pid in toRemove)
+                {
+                    RemovePackageById(pid);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
             }
         }
     }

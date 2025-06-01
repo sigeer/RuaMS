@@ -564,12 +564,12 @@ namespace Application.Core.Channel.Local
 
         public Dto.DueyPackageDto[] GetPlayerDueyPackages(int id)
         {
-            return _dueyService.GetPlayerDueyPackages(id);
+            return _server.DueyManager.GetPlayerDueyPackages(id);
         }
 
         public Dto.DueyPackageDto? GetDueyPackageByPackageId(int id)
         {
-            return _dueyService.GetDueyPackageByPackageId(id);
+            return _server.DueyManager.GetDueyPackageByPackageId(id);
         }
 
         public void RequestRemovePackage(int packageid)
@@ -638,7 +638,7 @@ namespace Application.Core.Channel.Local
 
         public Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request)
         {
-            return _server.DueyManager.CreateDueyPackage(request.SenderId, request.SendMeso, request.Item, request.SendMessage, request.ReceiverId, request.Quick);
+            return _server.DueyManager.CreateDueyPackage(request.SenderName, request.SendMeso, request.Item, request.SendMessage, request.ReceiverId, request.Quick);
         }
 
         public void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest)

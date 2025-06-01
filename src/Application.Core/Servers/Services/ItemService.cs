@@ -43,11 +43,11 @@ namespace Application.Core.Servers.Services
             return _mapper.Map<Shop>(_transport.GetShop(id, isShopId));
         }
 
-        public bool CreateDueyPackage(int id, int sendMesos, Item? item, string? sendMessage, int recipient, bool quick)
+        public bool CreateDueyPackage(string senderName, int sendMesos, Item? item, string? sendMessage, int recipient, bool quick)
         {
             return _transport.CreateDueyPackage(new Dto.CreatePackageRequest
             {
-                SenderId = id,
+                SenderName = senderName,
                 SendMeso = sendMesos,
                 SendMessage = sendMessage,
                 ReceiverId = recipient,
@@ -202,7 +202,7 @@ namespace Application.Core.Servers.Services
                     var (res, item) = RemoveFromInventoryForDuey(c, invTypeId, itemPos, amount);
                     if (res == 0)
                     {
-                        c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Id, sendMesos, item, sendMessage, checkResult.ReceiverId, quick);
+                        c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Name, sendMesos, item, sendMessage, checkResult.ReceiverId, quick);
                         c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
                     }
                     else if (res > 0)
