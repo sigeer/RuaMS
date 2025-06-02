@@ -3,12 +3,9 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
-using Application.Core.Login.Models;
 using Application.Core.Login.Services;
-using Application.Core.model;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Models;
@@ -33,7 +30,6 @@ namespace Application.Core.Channel.Local
         readonly MasterServer _server;
         readonly StorageService _storageService;
         readonly ItemService _itemService;
-        readonly DueyService _dueyService;
         readonly NoteService _noteService;
         readonly ShopService _shopManager;
         readonly MessageService _msgService;
@@ -49,7 +45,6 @@ namespace Application.Core.Channel.Local
             LoginService loginService,
             StorageService storageService,
             ItemService itemService,
-            DueyService dueyService,
             NoteService noteService,
             ShopService shopManager,
             MessageService messageService,
@@ -60,7 +55,6 @@ namespace Application.Core.Channel.Local
             _loginService = loginService;
             _storageService = storageService;
             _itemService = itemService;
-            _dueyService = dueyService;
             _noteService = noteService;
             _shopManager = shopManager;
             _msgService = messageService;
