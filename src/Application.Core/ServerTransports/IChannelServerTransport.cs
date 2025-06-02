@@ -134,6 +134,9 @@ namespace Application.Core.ServerTransports
         Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request);
         void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest);
         Dto.CreatePackageCheckResponse CreateDueyPackageFromInventoryCheck(Dto.CreatePackageCheckRequest request);
+        void UpdateAccount(AccountCtrl accountEntity);
+        Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
+        Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);
         #endregion
     }
 }

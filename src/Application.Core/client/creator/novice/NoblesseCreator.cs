@@ -18,30 +18,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Shared.Client;
+using Application.Core.client.creator.novice;
+using Application.Core.Servers.Services;
 
 namespace client.creator.novice;
 
 /**
  * @author RonanLana
  */
-public class NoblesseCreator : CharacterFactory
+public class NoblesseCreator : NoviceCreator
 {
+    public NoblesseCreator(ChannelService channelService) : base(channelService)
+    {
+    }
 
-    private static CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon)
+    private CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon)
     {
         CharacterFactoryRecipe recipe = new CharacterFactoryRecipe(job, level, map, top, bottom, shoes, weapon);
         giveItem(recipe, ItemId.NOBLESSE_GUIDE, 1, InventoryType.ETC);
         return recipe;
     }
 
-    private static void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
+    private void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
     {
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(IClientBase c, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
+    public override int createCharacter(int accountId, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
     {
-        return createNewCharacter(c, name, face, hair, skin, gender, createRecipe(Job.NOBLESSE, 1, MapId.STARTING_MAP_NOBLESSE, top, bottom, shoes, weapon));
+        return createNewCharacter(accountId, name, face, hair, skin, gender, createRecipe(Job.NOBLESSE, 1, MapId.STARTING_MAP_NOBLESSE, top, bottom, shoes, weapon));
     }
 }

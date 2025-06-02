@@ -19,6 +19,8 @@
 */
 
 
+using Application.Core.client.creator.veteran;
+using Application.Core.Servers.Services;
 using client.inventory;
 using server;
 
@@ -27,13 +29,17 @@ namespace client.creator.veteran;
 /**
  * @author RonanLana
  */
-public class PirateCreator : CharacterFactory
+public class PirateCreator : VeteranCreator
 {
     private static int[] equips = { 0, 0, 0, 0, ItemId.BROWN_PAULIE_BOOTS };
     private static int[] weapons = { ItemId.PRIME_HANDS, ItemId.COLD_MIND };
     private static int[] startingHpMp = { 846, 503 };
 
-    private static CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon)
+    public PirateCreator(ChannelService channelService) : base(channelService)
+    {
+    }
+
+    private CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon)
     {
         CharacterFactoryRecipe recipe = new CharacterFactoryRecipe(job, level, map, top, bottom, shoes, weapon);
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -63,19 +69,19 @@ public class PirateCreator : CharacterFactory
         return recipe;
     }
 
-    private static void giveEquipment(CharacterFactoryRecipe recipe, ItemInformationProvider ii, int equipid)
+    private void giveEquipment(CharacterFactoryRecipe recipe, ItemInformationProvider ii, int equipid)
     {
         Item nEquip = ii.getEquipById(equipid);
         recipe.addStartingEquipment(nEquip);
     }
 
-    private static void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
+    private void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
     {
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(IChannelClient c, string name, int face, int hair, int skin, int gender, int improveSp)
+    public override int createCharacter(int accountId, string name, int face, int hair, int skin, int gender, int improveSp)
     {
-        return createNewCharacter(c, name, face, hair, skin, gender, createRecipe(Job.PIRATE, 30, MapId.NAUTILUS_HARBOR, equips[gender], equips[2 + gender], equips[4], weapons[0]));
+        return createNewCharacter(accountId, name, face, hair, skin, gender, createRecipe(Job.PIRATE, 30, MapId.NAUTILUS_HARBOR, equips[gender], equips[2 + gender], equips[4], weapons[0]));
     }
 }

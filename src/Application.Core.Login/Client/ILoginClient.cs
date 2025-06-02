@@ -30,6 +30,6 @@ namespace Application.Core.Login.Client
         List<CharacterViewObject> LoadCharactersView();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
-        void CommitAccount();
+        bool AcceptToS();
     }
 }

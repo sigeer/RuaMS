@@ -1,13 +1,19 @@
+using Application.Core.client.creator.novice;
 using Application.Core.Duey;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
+using Application.Core.Managers.Constants;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants;
 using Application.Shared.Dto;
 using Application.Shared.Items;
 using AutoMapper;
+using client.creator;
+using client.creator.novice;
+using client.creator.veteran;
 using client.inventory;
 using net.packet.outs;
 using server;
@@ -52,6 +58,26 @@ namespace Application.Core.Servers.Services
                 dto.Channel = 0;
             }
             _tranport.SendPlayerObject(dto);
+        }
+
+        public int CreatePlayer(int type, int accountId, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
+        {
+            return CharacterFactory.GetNoviceCreator(type, this).createCharacter(accountId, name, face, hair, skin, top, bottom, shoes, weapon, gender);
+        }
+
+        public int CreatePlayer(IChannelClient client, int type, string name, int face, int hair, int skin, int gender, int improveSp)
+        {
+            var checkResult = _tranport.CreatePlayerCheck(new Dto.CreateCharCheckRequest { AccountId = client.AccountId, Name = name }).Code;
+            if (checkResult != CreateCharResult.Success)
+                return checkResult;
+
+            return CharacterFactory.GetVeteranCreator(type, this).createCharacter(client.AccountId, name, face, hair, skin, gender, improveSp);
+        }
+
+        public int SendNewPlayer(IPlayer player)
+        {
+            var dto = _characteService.DeserializeNew(player);
+            return _tranport.SendNewPlayer(dto).Code;
         }
 
         public void SaveBuff(IPlayer player)

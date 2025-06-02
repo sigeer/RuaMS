@@ -4301,25 +4301,6 @@ public partial class Player
             }
             this.Id = dbModel.Id;
 
-            // Select a keybinding method
-            KeyMap.SaveData(dbContext);
-
-            // No quickslots, or no change.
-            CharacterManager.SaveQuickSlotMapped(dbContext, this);
-
-            itemsWithType = new();
-            foreach (Inventory iv in Bag.GetValues())
-            {
-                foreach (Item item in iv.list())
-                {
-                    itemsWithType.Add(new(item, iv.getType()));
-                }
-            }
-
-            ItemFactory.INVENTORY.saveItems(itemsWithType, Id, dbContext);
-
-            Skills.SaveData(dbContext);
-
             dbTrans.Commit();
             return true;
         }

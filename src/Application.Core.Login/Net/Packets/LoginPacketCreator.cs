@@ -1,3 +1,4 @@
+using Application.Core.Game.Players;
 using Application.Core.Login.Client;
 using Application.Core.Login.Models;
 using Application.Utility;
@@ -11,6 +12,13 @@ namespace Application.Core.Login.Net.Packets
 {
     public static class LoginPacketCreator
     {
+        public static Packet addNewCharEntry(ILoginClient client, CharacterViewObject chr)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.ADD_NEW_CHAR_ENTRY);
+            p.writeByte(0);
+            AddCharEntry(p, client, chr, false);
+            return p;
+        }
         /// <summary>
         /// Gets a packet detailing a server status message.
         /// </summary>

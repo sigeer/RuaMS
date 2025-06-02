@@ -16,7 +16,6 @@ namespace Application.Core.Login.Client
 {
     public class LoginClient : ClientBase, ILoginClient
     {
-        public AccountCtrl? AccountEntity { get; set; }
         public AccountLoginStatus AccountLoginStatus { get; private set; }
         public override bool IsOnlined => AccountLoginStatus.State > LoginStage.LOGIN_NOTLOGGEDIN;
         IPacketProcessor<ILoginClient> _packetProcessor;
@@ -300,6 +299,19 @@ namespace Application.Core.Login.Client
             return LoginResultCode.Success;
         }
 
+        public bool AcceptToS()
+        {
+            if (AccountEntity == null)
+                return false;
+
+            if (AccountEntity.Tos)
+                return true;
+
+            AccountEntity.Tos = true;
+            CommitAccount();
+            return false;
+        }
+
         public bool HasBannedIP()
         {
             using var dbContext = new DBContext();
@@ -364,7 +376,7 @@ namespace Application.Core.Login.Client
             return IsOnlined;
         }
 
-        public void CommitAccount()
+        public override void CommitAccount()
         {
             if (AccountEntity == null)
                 return;
@@ -372,7 +384,7 @@ namespace Application.Core.Login.Client
             if (Hwid != null)
                 AccountEntity.Hwid = Hwid.hwid;
 
-            CurrentServer.CommitAccountEntity(AccountEntity);
+            base.CommitAccount();
         }
 
         public void SendCharList()

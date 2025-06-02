@@ -17,6 +17,7 @@ namespace Application.Core.Login.Mappers
         {
             CreateMap<CharacterEntity, CharacterModel>()
                 .ReverseMap();
+            CreateMap<Dto.CharacterDto, CharacterEntity>();
 
             CreateMap<AccountEntity, AccountCtrl>();
 

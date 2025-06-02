@@ -33,6 +33,16 @@ namespace Application.Core.Login
             }
         }
 
+        public Dto.CreateCharResponseDto CreatePlayer(Dto.CreateCharRequestDto request)
+        {
+            var world = Server.getInstance().getWorld(0);
+            var channel = world.Channels[0];
+            var statusCode = channel.Service.CreatePlayer(
+                request.Type, request.AccountId,
+                request.Name, request.Face, request.Hair, request.SkinColor, request.Top, request.Bottom, request.Shoes, request.Weapon, request.Gender);
+            return new Dto.CreateCharResponseDto() { Code = statusCode };
+        }
+
         public CoupleIdPair? GetAllWeddingCoupleForGuest(int guestId, bool cathedral)
         {
             var world = Server.getInstance().getWorld(0);

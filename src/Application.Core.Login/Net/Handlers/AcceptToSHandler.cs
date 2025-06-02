@@ -22,7 +22,7 @@ public class AcceptToSHandler : LoginHandlerBase
 
     public override void HandlePacket(InPacket p, ILoginClient c)
     {
-        if (p.available() == 0 || p.readByte() != 1 || c.AccountEntity!.Tos)
+        if (p.available() == 0 || p.readByte() != 1 || c.AcceptToS())
         {
             c.Disconnect();//IClient dc's but just because I am cool I do this (:
             return;

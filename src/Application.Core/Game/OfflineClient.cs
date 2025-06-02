@@ -112,6 +112,11 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
+        public void CommitAccount()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Disconnect(bool isShutdown, bool fromCashShop = false)
         {
             throw new BusinessCharacterOfflineException();

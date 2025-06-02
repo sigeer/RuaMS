@@ -456,7 +456,6 @@ namespace Application.Core.Game.Players
         void Hide(bool hide, bool login = false);
         void increaseEquipExp(int expGain);
         void increaseGuildCapacity();
-        bool insertNewChar(CharacterFactoryRecipe recipe);
         bool isAran();
 
         bool isBanned();

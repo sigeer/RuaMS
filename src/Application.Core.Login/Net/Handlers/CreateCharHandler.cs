@@ -21,9 +21,13 @@
  */
 
 
+using Application.Core.Client;
 using Application.Core.Login.Client;
+using Application.Core.Login.Net.Packets;
+using Application.Core.ServerTransports;
 using client.creator.novice;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using tools;
 
 namespace Application.Core.Login.Net.Handlers;
@@ -51,24 +55,20 @@ public class CreateCharHandler : LoginHandlerBase
         int weapon = p.readInt();
         int gender = p.readByte();
 
-        int status;
-        switch (job)
+        if (job < 0 || job > 2)
         {
-            case 0: // Knights of Cygnus
-                status = NoblesseCreator.createCharacter(c, name, face, hair + haircolor, skincolor, top, bottom, shoes, weapon, gender);
-                break;
-            case 1: // Adventurer
-                status = BeginnerCreator.createCharacter(c, name, face, hair + haircolor, skincolor, top, bottom, shoes, weapon, gender);
-                break;
-            case 2: // Aran
-                status = LegendCreator.createCharacter(c, name, face, hair + haircolor, skincolor, top, bottom, shoes, weapon, gender);
-                break;
-            default:
-                c.sendPacket(PacketCreator.deleteCharResponse(0, 9));
-                return;
+            c.sendPacket(PacketCreator.deleteCharResponse(0, 9));
+            return;
         }
 
-        if (status == -2)
+        int newCharacterId = c.CurrentServer.CharacterManager.CreatePlayer(c.AccountId, name, face, hair + haircolor, skincolor, top, bottom, shoes, weapon, gender, job);
+        if (newCharacterId > 0)
+        {
+            c.sendPacket(LoginPacketCreator.addNewCharEntry(c, c.CurrentServer.CharacterManager.GetCharactersView([newCharacterId])[0]));
+        }
+
+
+        if (newCharacterId == -2)
         {
             c.sendPacket(PacketCreator.deleteCharResponse(0, 9));
         }

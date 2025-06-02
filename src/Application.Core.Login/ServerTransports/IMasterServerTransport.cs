@@ -15,5 +15,6 @@ namespace Application.Core.ServerTransports
         void SendNotes(int channel, int id, Dto.NoteDto[] notes);
         void SendUpdateCouponRates(Config.CouponConfig config);
         void SendDueyNotification(int channel, int id, string senderName, bool dueyType);
+        Dto.CreateCharResponseDto CreatePlayer(Dto.CreateCharRequestDto request);
     }
 }

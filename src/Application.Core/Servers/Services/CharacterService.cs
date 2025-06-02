@@ -15,6 +15,7 @@ using server.events;
 using server.quest;
 using System.Runtime.InteropServices;
 using tools;
+using ZstdSharp.Unsafe;
 
 namespace Application.Core.Servers.Services
 {
@@ -427,6 +428,65 @@ namespace Application.Core.Servers.Services
             }));
             return data;
         }
+
+        public Dto.NewPlayerSaveDto DeserializeNew(IPlayer player)
+        {
+            var playerDto = _mapper.Map<Dto.CharacterDto>(player);
+            if (player.MapModel == null || (player.CashShopModel != null && player.CashShopModel.isOpened()))
+            {
+                playerDto.Map = player.Map;
+            }
+            else
+            {
+                if (player.MapModel.getForcedReturnId() != MapId.NONE)
+                {
+                    playerDto.Map = player.MapModel.getForcedReturnId();
+                }
+                else
+                {
+                    playerDto.Map = player.HP < 1 ? player.MapModel.getReturnMapId() : player.MapModel.getId();
+                }
+            }
+            if (player.MapModel == null || player.MapModel.getId() == 610020000 || player.MapModel.getId() == 610020001)
+            {
+                // reset to first spawnpoint on those maps
+                playerDto.Spawnpoint = 0;
+            }
+            else
+            {
+                var closest = player.MapModel.findClosestPlayerSpawnpoint(player.getPosition());
+                if (closest != null)
+                {
+                    playerDto.Spawnpoint = closest.getId();
+                }
+                else
+                {
+                    playerDto.Spawnpoint = 0;
+                }
+            }
+
+            #region inventory mapping
+            var itemType = ItemFactory.INVENTORY.getValue();
+            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<Dto.ItemDto[]>(x.list(), opt =>
+            {
+                opt.Items["InventoryType"] = (int)x.getType();
+                opt.Items["Type"] = itemType;
+            })).ToArray();
+
+            #endregion
+
+            var data = new Dto.NewPlayerSaveDto()
+            {
+                Character = playerDto
+            };
+            data.InventoryItems.AddRange(d);
+            data.Events.AddRange(player.Events.Select(x => new Dto.EventDto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }));
+            data.Skills.AddRange(player.Skills.ToDto());
+            data.KeyMaps.AddRange(player.KeyMap.ToDto());
+
+            return data;
+        }
+
 
 
         /// <summary>

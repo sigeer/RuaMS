@@ -19,7 +19,9 @@
 */
 
 
+using Application.Core.client.creator.veteran;
 using Application.Core.Game.Skills;
+using Application.Core.Servers.Services;
 using client.inventory;
 using server;
 
@@ -28,14 +30,18 @@ namespace client.creator.veteran;
 /**
  * @author RonanLana
  */
-public class WarriorCreator : CharacterFactory
+public class WarriorCreator : VeteranCreator
 {
     private static int[] equips = { ItemId.RED_HWARANG_SHIRT, 0, ItemId.BLACK_MARTIAL_ARTS_PANTS, 0, ItemId.MITHRIL_BATTLE_GRIEVES };
     private static int[] weapons = { ItemId.GLADIUS, ItemId.MITHRIL_POLE_ARM, ItemId.MITHRIL_MAUL, ItemId.FIREMANS_AXE };
     private static int[] startingHpMp = { 905, 208 };
     private static int[] hpGain = { 0, 72, 144, 212, 280, 348, 412, 476, 540, 600, 660 };
 
-    private static CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon, int gender, int improveSp)
+    public WarriorCreator(ChannelService channelService) : base(channelService)
+    {
+    }
+
+    private CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon, int gender, int improveSp)
     {
         CharacterFactoryRecipe recipe = new CharacterFactoryRecipe(job, level, map, top, bottom, shoes, weapon);
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -83,19 +89,19 @@ public class WarriorCreator : CharacterFactory
         return recipe;
     }
 
-    private static void giveEquipment(CharacterFactoryRecipe recipe, ItemInformationProvider ii, int equipid)
+    private void giveEquipment(CharacterFactoryRecipe recipe, ItemInformationProvider ii, int equipid)
     {
         Item nEquip = ii.getEquipById(equipid);
         recipe.addStartingEquipment(nEquip);
     }
 
-    private static void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
+    private void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
     {
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(IChannelClient c, string name, int face, int hair, int skin, int gender, int improveSp)
+    public override int createCharacter(int accountId, string name, int face, int hair, int skin, int gender, int improveSp)
     {
-        return createNewCharacter(c, name, face, hair, skin, gender, createRecipe(Job.WARRIOR, 30, MapId.PERION, equips[gender], equips[2 + gender], equips[4], weapons[0], gender, improveSp));
+        return createNewCharacter(accountId, name, face, hair, skin, gender, createRecipe(Job.WARRIOR, 30, MapId.PERION, equips[gender], equips[2 + gender], equips[4], weapons[0], gender, improveSp));
     }
 }

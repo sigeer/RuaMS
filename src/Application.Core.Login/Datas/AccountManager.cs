@@ -44,9 +44,7 @@ namespace Application.Core.Login.Datas
 
         public AccountCtrl? GetAccountDto(int accId)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbModel = dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Id == accId);
-            return _maaper.Map<AccountCtrl>(dbModel);
+            return GetAccount(accId);
         }
 
         public int GetAccountIdByName(string accName)

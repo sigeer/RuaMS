@@ -19,6 +19,8 @@
 */
 
 
+using Application.Core.client.creator.veteran;
+using Application.Core.Servers.Services;
 using client.inventory;
 using server;
 
@@ -27,14 +29,18 @@ namespace client.creator.veteran;
 /**
  * @author RonanLana
  */
-public class BowmanCreator : CharacterFactory
+public class BowmanCreator : VeteranCreator
 {
     private static int[] equips = {ItemId.GREEN_HUNTERS_ARMOR, ItemId.GREEN_HUNTRESS_ARMOR,
             ItemId.GREEN_HUNTERS_PANTS, ItemId.GREEN_HUNTRESS_PANTS, ItemId.GREEN_HUNTER_BOOTS};
     private static int[] weapons = { ItemId.RYDEN, ItemId.MOUNTAIN_CROSSBOW };
     private static int[] startingHpMp = { 797, 404 };
 
-    private static CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon)
+    public BowmanCreator(ChannelService channelService) : base(channelService)
+    {
+    }
+
+    private CharacterFactoryRecipe createRecipe(Job job, int level, int map, int top, int bottom, int shoes, int weapon)
     {
         CharacterFactoryRecipe recipe = new CharacterFactoryRecipe(job, level, map, top, bottom, shoes, weapon);
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -60,19 +66,19 @@ public class BowmanCreator : CharacterFactory
         return recipe;
     }
 
-    private static void giveEquipment(CharacterFactoryRecipe recipe, ItemInformationProvider ii, int equipid)
+    private void giveEquipment(CharacterFactoryRecipe recipe, ItemInformationProvider ii, int equipid)
     {
         Item nEquip = ii.getEquipById(equipid);
         recipe.addStartingEquipment(nEquip);
     }
 
-    private static void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
+    private void giveItem(CharacterFactoryRecipe recipe, int itemid, int quantity, InventoryType itemType)
     {
         recipe.addStartingItem(itemid, quantity, itemType);
     }
 
-    public static int createCharacter(IChannelClient c, string name, int face, int hair, int skin, int gender, int improveSp)
+    public override int createCharacter(int accountId, string name, int face, int hair, int skin, int gender, int improveSp)
     {
-        return createNewCharacter(c, name, face, hair, skin, gender, createRecipe(Job.BOWMAN, 30, MapId.HENESYS, equips[gender], equips[2 + gender], equips[4], weapons[0]));
+        return createNewCharacter(accountId, name, face, hair, skin, gender, createRecipe(Job.BOWMAN, 30, MapId.HENESYS, equips[gender], equips[2 + gender], equips[4], weapons[0]));
     }
 }

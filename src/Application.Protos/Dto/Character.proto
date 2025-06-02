@@ -73,7 +73,7 @@ message CharacterDto {
   int32 marriageItemId = 66;
   int32 reborns = 67;
   int32 pqpoints = 68;
-  string dataString = 69;
+  google.protobuf.StringValue dataString = 69;
   google.protobuf.Timestamp lastLogoutTime = 70;
   google.protobuf.Timestamp lastExpGainTime = 71;
   bool partySearch = 72;

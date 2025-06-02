@@ -25,7 +25,6 @@ namespace Application.Core.Channel.Net
 {
     public class ChannelClient : ClientBase, IChannelClient
     {
-        public AccountCtrl AccountEntity { get; set; }
         IPacketProcessor<IChannelClient> _packetProcessor;
         public EngineStorage ScriptEngines { get; set; } = new EngineStorage();
 
