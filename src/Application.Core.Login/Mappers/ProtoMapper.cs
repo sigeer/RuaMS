@@ -1,7 +1,7 @@
 using Application.Core.Login.Models;
 using Application.Core.Mappers;
-using Application.Shared.Models;
 using AutoMapper;
+using client.inventory;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Login.Mappers
@@ -56,9 +56,11 @@ namespace Application.Core.Login.Mappers
             CreateMap<KeyMapModel, Dto.KeyMapDto>().ReverseMap();
             CreateMap<QuickSlotModel, Dto.QuickSlotDto>().ReverseMap();
 
-            CreateMap<SavedLocationModel, Dto.SavedLocationDto>();
+            CreateMap<SavedLocationModel, Dto.SavedLocationDto>().ReverseMap();
 
-            CreateMap<DueyPackageModel, Dto.DueyPackageDto>().ReverseMap();
+            CreateMap<DueyPackageModel, Dto.DueyPackageDto>()
+                .ForMember(x => x.PackageId, src => src.MapFrom(x => x.Id));
+
             CreateMap<ShopModel, Dto.ShopDto>().ReverseMap();
             CreateMap<ShopItemModel, Dto.ShopItemDto>().ReverseMap();
 

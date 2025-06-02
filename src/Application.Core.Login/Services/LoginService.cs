@@ -31,7 +31,7 @@ namespace Application.Core.Login.Services
         /// <returns></returns>
         public Dto.PlayerGetterDto? PlayerLogin(string clientSession, int channelId, int characterId)
         {
-            var characterObj = _masterServer.CharacterManager.GetCharacter(characterId);
+            var characterObj = _masterServer.CharacterManager.FindPlayerById(characterId);
             if (characterObj == null || characterObj.Character == null)
                 return null;
 

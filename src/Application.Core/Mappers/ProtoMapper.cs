@@ -131,11 +131,15 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.Position, source => source.MapFrom(x => x.getPosition()))
                 .ForMember(dest => dest.InventoryType, source => source.MapFrom((src, dest, destMember, context) =>
                 {
-                    return context.Items.TryGetValue("InventoryType", out var invType) ? Convert.ToSByte(invType) : (sbyte)src.getInventoryType();
+                    if (context.TryGetItems(out var items) && items.TryGetValue("InventoryType", out var invType))
+                        return Convert.ToSByte(invType);
+                    return 0;
                 }))
                 .ForMember(dest => dest.Type, source => source.MapFrom((src, dest, destMember, context) =>
                 {
-                    return context.Items.TryGetValue("Type", out var type) ? Convert.ToByte(type) : ItemFactory.INVENTORY.getValue();
+                    if (context.TryGetItems(out var items) && items.TryGetValue("Type", out var type))
+                        return Convert.ToSByte(type);
+                    return ItemFactory.INVENTORY.getValue();
                 }))
                 .Include<Equip, Dto.ItemDto>()
                 .Include<Pet, Dto.ItemDto>();

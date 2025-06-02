@@ -1,11 +1,8 @@
 using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
-using Application.Core.model;
 using Application.Shared.Configs;
-using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.Servers;
-using server;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -134,6 +131,9 @@ namespace Application.Core.ServerTransports
         void AddReport(int v1, int v2, int v3, string description, string v4);
         Rank.RankCharacterList LoadPlayerRanking(int topCount);
         void SendToggleCoupon(int v);
+        Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request);
+        void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest);
+        Dto.CreatePackageCheckResponse CreateDueyPackageFromInventoryCheck(Dto.CreatePackageCheckRequest request);
         #endregion
     }
 }

@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Servers.Services;
 using Application.Utility.Configs;
 using client.processor.npc;
 using tools;
@@ -29,6 +30,12 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DueyHandler : ChannelHandlerBase
 {
+    readonly ItemService _itemService;
+
+    public DueyHandler(ItemService itemService)
+    {
+        _itemService = itemService;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -53,7 +60,7 @@ public class DueyHandler : ChannelHandlerBase
             bool quick = p.readByte() != 0;
             string? message = quick ? p.readString() : null;
 
-            DueyProcessor.dueySendItem(c, inventId, itemPos, amount, mesos, message, recipient, quick);
+            _itemService.DueySendItemFromInventory(c, inventId, itemPos, amount, mesos, message, recipient, quick);
         }
         else if (operation == DueyProcessorActions.TOSERVER_REMOVE_PACKAGE.getCode())
         {

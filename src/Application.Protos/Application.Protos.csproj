@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -12,6 +12,8 @@
 
 	<ItemGroup>
 		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />
+
+		<Protobuf Include="Duey\SendDueyNotificationRequest.proto" GrpcServices="None" />
 		<Protobuf Include="Rank\RankCharacter.proto" GrpcServices="None" />
 
 		<Protobuf Include="Config\RegisterServerResult.proto" GrpcServices="None" />
@@ -20,7 +22,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Duey\CreatePackageRequest.proto" GrpcServices="None" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Protobuf Include="Dto\SpecialCashItem.proto" GrpcServices="None" />
+
 		<Protobuf Include="Dto\PlayerShop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Drop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Equip.proto" GrpcServices="None" />

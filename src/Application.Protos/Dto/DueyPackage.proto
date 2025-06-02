@@ -13,8 +13,8 @@ message DueyPackageDto {
   string senderName = 3;
   int32 mesos = 4;
   google.protobuf.Timestamp timeStamp = 5;
-  string message = 6;
+  google.protobuf.StringValue message = 6;
   bool checked = 7;
   bool type = 8;
-  repeated ItemDto item = 9;
+  ItemDto item = 9;
 }

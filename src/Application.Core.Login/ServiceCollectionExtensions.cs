@@ -72,7 +72,6 @@ namespace Application.Core.Login
             services.AddSingleton<CharacterService>();
             services.AddSingleton<LoginService>();
             services.AddSingleton<ItemService>();
-            services.AddSingleton<DueyService>();
             services.AddSingleton<FredrickService>();
             services.AddSingleton<NoteService>();
             services.AddSingleton<ShopService>();

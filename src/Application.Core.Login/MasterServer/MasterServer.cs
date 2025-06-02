@@ -76,6 +76,7 @@ namespace Application.Core.Login
         public CharacterManager CharacterManager { get; }
         public ServerManager ServerManager { get; }
         public BuffManager BuffManager { get; }
+        public DueyManager DueyManager { get; }
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -119,6 +120,7 @@ namespace Application.Core.Login
             AccountManager = ActivatorUtilities.CreateInstance<AccountManager>(ServiceProvider, this);
             WeddingInstance = ActivatorUtilities.CreateInstance<WeddingManager>(ServiceProvider, this);
             BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
+            DueyManager = ActivatorUtilities.CreateInstance<DueyManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;
@@ -160,6 +162,7 @@ namespace Application.Core.Login
             try
             {
                 await ServerManager.SetupDataBase();
+                await DueyManager.Setup();
                 await Server.getInstance().Start();
             }
             catch (Exception ex)

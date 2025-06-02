@@ -305,10 +305,11 @@ namespace Application.Core.Servers.Services
             }
 
             #region inventory mapping
+            var itemType = ItemFactory.INVENTORY.getValue();
             var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<Dto.ItemDto[]>(x.list(), opt =>
             {
                 opt.Items["InventoryType"] = (int)x.getType();
-                opt.Items["Type"] = 1;
+                opt.Items["Type"] = itemType;
             })).ToArray();
             #endregion
 

@@ -4,10 +4,8 @@ using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
 using Application.Core.Login.Services;
-using Application.Core.model;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Items;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Models;
@@ -32,7 +30,6 @@ namespace Application.Core.Channel.Local
         readonly MasterServer _server;
         readonly StorageService _storageService;
         readonly ItemService _itemService;
-        readonly DueyService _dueyService;
         readonly NoteService _noteService;
         readonly ShopService _shopManager;
         readonly MessageService _msgService;
@@ -48,7 +45,6 @@ namespace Application.Core.Channel.Local
             LoginService loginService,
             StorageService storageService,
             ItemService itemService,
-            DueyService dueyService,
             NoteService noteService,
             ShopService shopManager,
             MessageService messageService,
@@ -59,7 +55,6 @@ namespace Application.Core.Channel.Local
             _loginService = loginService;
             _storageService = storageService;
             _itemService = itemService;
-            _dueyService = dueyService;
             _noteService = noteService;
             _shopManager = shopManager;
             _msgService = messageService;
@@ -563,17 +558,17 @@ namespace Application.Core.Channel.Local
 
         public Dto.DueyPackageDto[] GetPlayerDueyPackages(int id)
         {
-            return _dueyService.GetPlayerDueyPackages(id);
+            return _server.DueyManager.GetPlayerDueyPackages(id);
         }
 
         public Dto.DueyPackageDto? GetDueyPackageByPackageId(int id)
         {
-            return _dueyService.GetDueyPackageByPackageId(id);
+            return _server.DueyManager.GetDueyPackageByPackageId(id);
         }
 
         public void RequestRemovePackage(int packageid)
         {
-            _dueyService.RemovePackageFromDB(packageid);
+            _server.DueyManager.RemovePackageById(packageid);
         }
 
         public bool SendNormalNoteMessage(string fromName, string toName, string noteMessage)
@@ -630,6 +625,20 @@ namespace Application.Core.Channel.Local
             _server.CouponManager.ToggleCoupon(v);
         }
 
+        public Dto.CreatePackageCheckResponse CreateDueyPackageFromInventoryCheck(Dto.CreatePackageCheckRequest request)
+        {
+            return _server.DueyManager.CreateDueyPackageCheck(request.SenderId, request.ReceiverName);
+        }
+
+        public Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request)
+        {
+            return _server.DueyManager.CreateDueyPackage(request.SenderName, request.SendMeso, request.Item, request.SendMessage, request.ReceiverId, request.Quick);
+        }
+
+        public void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest)
+        {
+            _server.DueyManager.SendDueyNotification(sendDueyNotificationRequest.CharacterName);
+        }
 
     }
 }

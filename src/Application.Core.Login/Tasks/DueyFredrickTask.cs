@@ -5,19 +5,19 @@ namespace Application.Core.Login.Tasks
 {
     public class DueyFredrickTask : AbstractRunnable
     {
-        readonly DueyService _dueyService;
+        readonly MasterServer _server;
         readonly FredrickService _fredrickService;
 
-        public DueyFredrickTask(FredrickService fredrickProcessor, DueyService dueyService)
+        public DueyFredrickTask(FredrickService fredrickProcessor, MasterServer server)
         {
             this._fredrickService = fredrickProcessor;
-            _dueyService = dueyService;
+            _server = server;
         }
 
         public override void HandleRun()
         {
             _fredrickService.runFredrickSchedule();
-            _dueyService.runDueyExpireSchedule();
+            _server.DueyManager.RunDueyExpireSchedule();
         }
     }
 

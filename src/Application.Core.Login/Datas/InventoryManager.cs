@@ -64,7 +64,9 @@ namespace Application.Core.Login.Datas
 
         public static void CommitInventoryByType(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
-            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
+            var itemType = (byte)type.getValue();
+
+            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == itemType).ToList();
             if (allItems.Count != 0)
             {
                 var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
@@ -92,7 +94,7 @@ namespace Application.Core.Login.Datas
                     Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
                     Position = item.Position,
                     Quantity = item.Quantity,
-                    Type = item.Type,
+                    Type = itemType,
                 };
                 dbContext.Inventoryitems.AddAsync(model);
                 dbContext.SaveChanges();
@@ -145,7 +147,9 @@ namespace Application.Core.Login.Datas
 
         public static async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
-            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == type.getValue()).ToList();
+            var itemType = (byte)type.getValue();
+
+            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == itemType).ToList();
             if (allItems.Count != 0)
             {
                 var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
@@ -158,6 +162,7 @@ namespace Application.Core.Login.Datas
                 await dbContext.Rings.Where(x => ringIds.Contains(x.Id)).ExecuteDeleteAsync();
             }
 
+            
             foreach (var item in items)
             {
                 var model = new Inventoryitem()
@@ -173,7 +178,7 @@ namespace Application.Core.Login.Datas
                     Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
                     Position = item.Position,
                     Quantity = item.Quantity,
-                    Type = item.Type,
+                    Type = itemType,
                 };
                 await dbContext.Inventoryitems.AddAsync(model);
                 await dbContext.SaveChangesAsync();
@@ -222,6 +227,26 @@ namespace Application.Core.Login.Datas
             }
 
             await dbContext.SaveChangesAsync();
+        }
+
+        public static List<ItemEntityPair> LoadDueyItems(DBContext dbContext, int[] packageIdArray)
+        {
+            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
+                .Where(x => x.Characterid != null && packageIdArray.Contains(x.Characterid.Value) && x.Type == (int)ItemType.Duey)
+                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
+                         from cs in css.DefaultIfEmpty()
+                         select new { Item = a, Pet = cs }).ToList();
+
+            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
+            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
+                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
+                          from es in ess.DefaultIfEmpty()
+                          select new EquipEntityPair(a, es)).ToList();
+
+            return (from a in items
+                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
+                    from bs in bss.DefaultIfEmpty()
+                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
         }
     }
 }

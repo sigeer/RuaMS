@@ -2,11 +2,12 @@ namespace Application.Core.Login.Models
 {
     public class DueyPackageModel
     {
+        public int Id { get; set; }
         public int PackageId { get; set; }
 
         public int ReceiverId { get; set; }
 
-        public string SenderName { get; set; } = null!;
+        public string SenderName { get; set; }
 
         public int Mesos { get; set; }
 

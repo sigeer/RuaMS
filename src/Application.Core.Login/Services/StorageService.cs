@@ -103,6 +103,8 @@ namespace Application.Core.Login.Services
                 await _dataStorage.CommitAccountGameAsync(dbContext);
                 await _dataStorage.CommitAccountLoginRecord(dbContext);
 
+                await _dataStorage.CommitDueyPackageAsync(dbContext);
+
                 await dbTrans.CommitAsync();
             }
             finally
