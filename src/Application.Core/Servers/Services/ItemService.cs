@@ -1,4 +1,3 @@
-using Application.Core.Duey;
 using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
@@ -59,7 +58,7 @@ namespace Application.Core.Servers.Services
 
         public Dto.CreatePackageCheckResponse CreateDueyPackageCheck(int senderId, string recipient)
         {
-            return _transport.CreateDueyPackageFromInventoryCheck(new Dto.CreatePackageCheckRequest { SenderId = senderId, ReceiverName = recipient } );
+            return _transport.CreateDueyPackageFromInventoryCheck(new Dto.CreatePackageCheckRequest { SenderId = senderId, ReceiverName = recipient });
         }
 
         internal void SendDueyNotification(string recipient)
@@ -118,9 +117,8 @@ namespace Application.Core.Servers.Services
                 //    return 1;
                 //}
             }
-
-            _logger.LogError("装备栏的道具不能直接快递");
-            return (-1, null);
+            // 仅发送金币
+            return (0, null);
         }
 
         public void DueySendItemFromInventory(IChannelClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
@@ -193,17 +191,20 @@ namespace Application.Core.Servers.Services
                         return;
                     }
 
-                    c.OnlinedCharacter.gainMeso((int)-finalcost, false);
-                    if (quick)
-                    {
-                        InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.QUICK_DELIVERY_TICKET, 1, false, false);
-                    }
-
                     var (res, item) = RemoveFromInventoryForDuey(c, invTypeId, itemPos, amount);
                     if (res == 0)
                     {
-                        c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Name, sendMesos, item, sendMessage, checkResult.ReceiverId, quick);
-                        c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
+                        if (c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Name, sendMesos, item, sendMessage, checkResult.ReceiverId, quick))
+                        {
+                            c.OnlinedCharacter.gainMeso((int)-finalcost, false);
+                            if (quick)
+                            {
+                                InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.QUICK_DELIVERY_TICKET, 1, false, false);
+                            }
+
+                            c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
+                        }
+
                     }
                     else if (res > 0)
                     {
