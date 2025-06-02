@@ -31,8 +31,8 @@ namespace Application.Core.Login.Datas
     /// </summary>
     public class CharacterManager : IDisposable
     {
-        Dictionary<int, CharacterLiveObject?> _idDataSource = new();
-        Dictionary<string, CharacterLiveObject?> _nameDataSource = new();
+        Dictionary<int, CharacterLiveObject> _idDataSource = new();
+        Dictionary<string, CharacterLiveObject> _nameDataSource = new();
 
         Dictionary<int, CharacterViewObject> _charcterViewCache = new();
 
@@ -53,17 +53,25 @@ namespace Application.Core.Login.Datas
 
         public CharacterLiveObject? FindPlayerById(int id)
         {
-            return _idDataSource.GetOrAdd(id, () =>
-            {
-                return GetCharacter(id);
-            });
+            if (_idDataSource.TryGetValue(id, out var data) && data != null)
+                return data;
+
+            data = GetCharacter(id);
+            if (data == null)
+                return null;
+            _idDataSource[id] = data;
+            return data;
         }
         public CharacterLiveObject? FindPlayerByName(string name)
         {
-            return _nameDataSource.GetOrAdd(name, () =>
-            {
-                return GetCharacter(null, name);
-            });
+            if (_nameDataSource.TryGetValue(name, out var data) && data != null)
+                return data;
+
+            data = GetCharacter(null, name);
+            if (data == null)
+                return null;
+            _nameDataSource[name] = data;
+            return data;
         }
 
         public void Update(Dto.PlayerSaveDto obj)

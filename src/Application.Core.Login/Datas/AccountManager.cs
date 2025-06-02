@@ -20,8 +20,8 @@ namespace Application.Core.Login.Datas
         /// </summary>
         Dictionary<int, AccountLoginStatus> _accStageCache = new Dictionary<int, AccountLoginStatus>();
 
-        Dictionary<int, AccountGame?> _accGameDataSource = new();
-        Dictionary<int, AccountCtrl?> _accDataSource = new();
+        Dictionary<int, AccountGame> _accGameDataSource = new();
+        Dictionary<int, AccountCtrl> _accDataSource = new();
 
         /// <summary>
         /// 账户及其拥有的角色id缓存
@@ -130,35 +130,36 @@ namespace Application.Core.Login.Datas
 
         internal AccountGame? GetAccountGameData(int accountId)
         {
-            return _accGameDataSource.GetOrAdd(accountId, () =>
-            {
-                using var dbContext = _dbContextFactory.CreateDbContext();
-                var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
-                if (accountData == null)
-                    return null;
-
-                var allAccountItems = InventoryManager.LoadAccountItems(dbContext, accountId,
-                    ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
-
-                var data = new AccountGame
-                {
-                    Id = accountData.Id,
-                    NxCredit = accountData.NxCredit ?? 0,
-                    MaplePoint = accountData.MaplePoint ?? 0,
-                    NxPrepaid = accountData.NxPrepaid ?? 0,
-
-                    StorageItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.Storage)),
-                    CashOverallItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashOverall)),
-                    CashAranItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashAran)),
-                    CashCygnusItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashCygnus)),
-                    CashExplorerItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashExplorer)),
-                    QuickSlot = _maaper.Map<QuickSlotModel>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == accountId).FirstOrDefault()),
-                    Storage = _maaper.Map<StorageModel>(
-                        dbContext.Storages.FirstOrDefault(x => x.Accountid == accountId)
-                        ) ?? new StorageModel(accountId)
-                };
+            if (_accGameDataSource.TryGetValue(accountId, out var data) && data != null)
                 return data;
-            });
+
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
+            if (accountData == null)
+                return null;
+
+            var allAccountItems = InventoryManager.LoadAccountItems(dbContext, accountId,
+                ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
+
+            data = new AccountGame
+            {
+                Id = accountData.Id,
+                NxCredit = accountData.NxCredit ?? 0,
+                MaplePoint = accountData.MaplePoint ?? 0,
+                NxPrepaid = accountData.NxPrepaid ?? 0,
+
+                StorageItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.Storage)),
+                CashOverallItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashOverall)),
+                CashAranItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashAran)),
+                CashCygnusItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashCygnus)),
+                CashExplorerItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashExplorer)),
+                QuickSlot = _maaper.Map<QuickSlotModel>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == accountId).FirstOrDefault()),
+                Storage = _maaper.Map<StorageModel>(
+                    dbContext.Storages.FirstOrDefault(x => x.Accountid == accountId)
+                    ) ?? new StorageModel(accountId)
+            };
+            _accGameDataSource[accountId] = data;
+            return data;
         }
         internal void UpdateAccountGame(AccountGame accountGame)
         {
@@ -168,12 +169,17 @@ namespace Application.Core.Login.Datas
 
         internal AccountCtrl? GetAccount(int accountId)
         {
-            return _accDataSource.GetOrAdd(accountId, () =>
-            {
-                using var dbContext = _dbContextFactory.CreateDbContext();
-                var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
-                return _maaper.Map<AccountCtrl>(accountData);
-            });
+            if (_accDataSource.TryGetValue(accountId, out var accountCtrl) && accountCtrl != null)
+                return accountCtrl;
+
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
+            if (accountData == null) 
+                return null;
+
+            accountCtrl = _maaper.Map<AccountCtrl>(accountData);
+            _accDataSource[accountId] = accountCtrl;
+            return accountCtrl;
         }
 
         public void UpdateAccount(AccountCtrl obj)
