@@ -1,4 +1,5 @@
 using Application.Shared.Login;
+using Application.Shared.Models;
 using Application.Shared.Net;
 using System.Net.Sockets;
 
@@ -37,5 +38,6 @@ namespace Application.Shared.Servers
         void BroadcastWorldMessage(Packet p);
         bool CheckCharacterName(string name);
         void UpdateAccountChracterByAdd(int accountId, int id);
+        void CommitAccountEntity(AccountCtrl accountEntity);
     }
 }

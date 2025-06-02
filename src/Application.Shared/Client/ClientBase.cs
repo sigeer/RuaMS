@@ -1,3 +1,4 @@
+using Application.Shared.Models;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
@@ -6,6 +7,7 @@ namespace Application.Shared.Client
 {
     public abstract class ClientBase : SocketClient, IClientBase
     {
+        public AccountCtrl? AccountEntity { get; set; }
         protected ClientBase(long sessionId, IServerBase<IServerTransport> currentServer, IChannel nettyChannel, ILogger<ISocketClient> log) : base(sessionId, nettyChannel, currentServer, log)
         {
         }
@@ -28,6 +30,14 @@ namespace Application.Shared.Client
         public void UpdateAccountChracterByAdd(int id)
         {
             CurrentServerBase.UpdateAccountChracterByAdd(AccountId, id);
+        }
+
+        public virtual void CommitAccount()
+        {
+            if (AccountEntity == null)
+                return;
+
+            CurrentServerBase.CommitAccountEntity(AccountEntity);
         }
     }
 }

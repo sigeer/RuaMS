@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package Dto;
+
+message CreateCharRequestDto {
+  string name = 1;
+  int32 face = 2;
+  int32 skinColor = 3;
+  int32 hair = 4;
+  int32 gender = 5;
+  int32  top = 6;
+  int32 bottom = 7;
+  int32 shoes = 8;
+  int32 weapon = 9;
+  int32 type = 10;
+  int32 accountId = 11;
+}
+
+message CreateCharResponseDto {
+	int32 code = 1;
+}
+
+message CreateCharCheckRequest {
+	int32 accountId = 1;
+	string name = 2;
+}
+
+message CreateCharCheckResponse {
+	int32 code = 1;
+}

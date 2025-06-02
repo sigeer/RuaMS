@@ -21,7 +21,7 @@ public class SetGmLevelCommand : CommandBase
         if (target != null && target.Client.AccountEntity != null)
         {
             target.Client.AccountEntity.GMLevel = (sbyte)newLevel;
-
+            target.Client.CommitAccount();
             target.dropMessage("You are now a level " + newLevel + " GM. See @commands for a list of available commands.");
             player.dropMessage(target + " is now a level " + newLevel + " GM.");
         }

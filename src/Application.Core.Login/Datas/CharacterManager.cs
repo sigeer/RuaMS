@@ -1,21 +1,28 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
+using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Services;
+using Application.Core.Managers.Constants;
 using Application.EF;
+using Application.EF.Entities;
+using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
+using client.creator;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
+using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using net.server;
 using Serilog;
 using System.Xml.Linq;
+using tools;
 
 namespace Application.Core.Login.Datas
 {
@@ -350,6 +357,64 @@ namespace Application.Core.Login.Datas
         internal int GetOnlinedPlayerCount()
         {
             return _idDataSource.Values.Count(x => x.Channel != 0);
+        }
+
+        public int CreatePlayerCheck(int accountId, string name)
+        {
+            var accountInfo = _masterServer.AccountManager.GetAccountDto(accountId);
+            if (accountInfo == null)
+                return CreateCharResult.CharSlotLimited;
+
+             if (accountInfo.Characterslots - _masterServer.AccountManager.GetAccountPlayerIds(accountId).Count <= 0)
+                return CreateCharResult.CharSlotLimited;
+
+            if (!_masterServer.CheckCharacterName(name))
+                return CreateCharResult.NameInvalid;
+
+            return CreateCharResult.Success;
+        }
+
+        public int CreatePlayer(int accountId, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender, int type)
+        {
+            var checkResult = CreatePlayerCheck(accountId, name);
+            if (checkResult != CreateCharResult.Success)
+                return checkResult;
+
+            return _masterServer.Transport.CreatePlayer(new Dto.CreateCharRequestDto
+            {
+                AccountId = accountId,
+                Type = type,
+                Name = name,
+                Face = face,
+                Hair = hair,
+                SkinColor = skin,
+                Top = top,
+                Bottom = bottom,
+                Shoes = shoes,
+                Weapon = weapon,
+                Gender = gender
+            }).Code;
+        }
+
+        public int CreatePlayerDB(Dto.NewPlayerSaveDto data)
+        {
+            try
+            {
+                using var dbContext = _dbContextFactory.CreateDbContext();
+                using var dbTrans = dbContext.Database.BeginTransaction();
+                var characterId = _dataStorage.CommitNewPlayer(dbContext, data);
+                dbTrans.Commit();
+
+                _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(data.Character.AccountId, characterId);
+                _masterServer.Transport.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name));
+                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", data.Character.AccountId, data.Character.Name);
+                return characterId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建角色保存到数据库");
+                return CreateCharResult.Error;
+            }
         }
     }
 }

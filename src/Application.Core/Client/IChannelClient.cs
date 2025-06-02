@@ -13,11 +13,6 @@ namespace Application.Core.Client
         IWorldChannel CurrentServer { get; }
         int Channel { get; }
         int ActualChannel { get; }
-        /// <summary>
-        /// 不和LoginClient一样使用AccountEntity的原因：LoginClient可以与MasterServer直接交互修改AccountEntity
-        /// 而ChannelClient可能与MasterServer不在同一个进程，避免出现错误的以为能够直接修改AccountEntity
-        /// </summary>
-        AccountCtrl AccountEntity { get; set; }
         IPlayer? Character { get; }
         IPlayer OnlinedCharacter { get; }
 

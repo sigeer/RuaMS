@@ -13,6 +13,10 @@ namespace Application.Core.Channel
 {
     public partial class WorldChannel
     {
+        public void CommitAccountEntity(AccountCtrl accountEntity)
+        {
+            Transport.UpdateAccount(accountEntity);
+        }
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
         {
             return Transport.UpdateAccountState(accId, state);

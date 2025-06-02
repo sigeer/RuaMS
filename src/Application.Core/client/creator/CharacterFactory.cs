@@ -19,10 +19,19 @@
 */
 
 
+using Acornima.Ast;
+using Application.Core.client.creator.novice;
+using Application.Core.client.creator.veteran;
 using Application.Core.Managers.Constants;
-using Application.Shared.Client;
+using Application.Core.Servers.Services;
+using Application.Shared.Constants.Job;
+using client.creator.novice;
+using client.creator.veteran;
 using client.inventory;
+using constants.game;
 using server;
+using System.Reflection;
+using System.Xml.Linq;
 using tools;
 
 namespace client.creator;
@@ -32,7 +41,14 @@ namespace client.creator;
  */
 public abstract class CharacterFactory
 {
-    static object createNewLock = new object();
+    protected readonly ChannelService _channelService;
+    object createNewLock = new object();
+
+    protected CharacterFactory(ChannelService channelService)
+    {
+        _channelService = channelService;
+    }
+
 
     /// <summary>
     /// 
@@ -47,27 +63,21 @@ public abstract class CharacterFactory
     /// <param name="recipe"></param>
     /// <param name="newchar"></param>
     /// <returns>0=成功</returns>
-    public static int CreateCharacter(IClientBase c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe, out IPlayer? newCharacter)
+    private int CreateCharacter(int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
     {
         lock (createNewLock)
         {
-            newCharacter = null;
-            if (!c.CurrentServerBase.CheckCharacterName(name))
-            {
-                return CreateCharResult.NameInvalid;
-            }
-
-            newCharacter = new Player(
+           var newCharacter = new Player(
                 world: 0,
-                accountId: c.AccountId,
-                hp: 50,
-                mp: 5,
-                str: 12,
-                dex: 5,
-                @int: 4,
-                luk: 4,
-                job: Job.BEGINNER,
-                level: 1
+                accountId: accountId,
+                hp: recipe.getMaxHp(),
+                mp: recipe.getMaxMp(),
+                str: recipe.getStr(),
+                dex: recipe.getDex(),
+                @int: recipe.getInt(),
+                luk: recipe.getLuk(),
+                job: recipe.getJob(),
+                level: recipe.getLevel()
              );
             ;
             newCharacter.setSkinColor(SkinColorUtils.getById(skin));
@@ -79,6 +89,10 @@ public abstract class CharacterFactory
             newCharacter.setLevel(recipe.getLevel());
             newCharacter.setJob(recipe.getJob());
             newCharacter.Map = recipe.getMap();
+
+            newCharacter.Ap = recipe.getRemainingAp();
+            newCharacter.RemainingSp[GameConstants.getSkillBook(recipe.getJob().getId())] = recipe.getRemainingSp();
+            newCharacter.MesoValue.set(recipe.getMeso());
 
             Inventory equipped = newCharacter.getInventory(InventoryType.EQUIPPED);
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -119,38 +133,31 @@ public abstract class CharacterFactory
                 return CreateCharResult.Error;
             }
 
-            if (!newCharacter.insertNewChar(recipe))
-            {
-                return CreateCharResult.Error;
-            }
-            return CreateCharResult.Success;
+            return _channelService.SendNewPlayer(newCharacter);
         }
     }
-    protected static int createNewCharacter(IClientBase c, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
+    protected int createNewCharacter(int accountId, string name, int face, int hair, int skin, int gender, CharacterFactoryRecipe recipe)
     {
-        lock (createNewLock)
+        return CreateCharacter(accountId, name, face, hair, skin, gender, recipe);
+    }
+
+    public static NoviceCreator GetNoviceCreator(int type, ChannelService channelService)
+    {
+        if (type == 0) return new NoblesseCreator(channelService);
+        if (type == 1) return new BeginnerCreator(channelService);
+        if (type == 2) return new LegendCreator(channelService);
+        throw new BusinessFatalException("不支持的创建类型");
+    }
+
+    public static VeteranCreator GetVeteranCreator(int type, ChannelService channelService)
+    {
+        return (type) switch
         {
-            if (c.GetAvailableCharacterSlots() <= 0)
-            {
-                return CreateCharResult.CharSlotLimited;
-            }
-
-            var result = CreateCharacter(c, name, face, hair, skin, gender, recipe, out var newCharacter);
-            if (result == CreateCharResult.Success && newCharacter != null)
-            {
-                if (c is IChannelClient channelClient)
-                {
-                    newCharacter.setClient(channelClient);
-                }
-                c.sendPacket(PacketCreator.addNewCharEntry(c, newCharacter));
-
-                c.UpdateAccountChracterByAdd(newCharacter.Id);
-                c.CurrentServerBase.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + c.AccountName + " has created a new character with IGN " + name));
-                Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", c.AccountName, name);
-
-                return CreateCharResult.Success;
-            }
-            return result;
-        }
+            0 => new WarriorCreator(channelService),
+            1 => new MagicianCreator(channelService),
+            2 => new BowmanCreator(channelService),
+            3 => new ThiefCreator(channelService),
+            _ => new PirateCreator(channelService),
+        };
     }
 }

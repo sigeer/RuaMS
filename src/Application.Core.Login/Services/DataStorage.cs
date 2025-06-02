@@ -38,6 +38,40 @@ namespace Application.Core.Login.Services
             _logger = logger;
         }
 
+        public int CommitNewPlayer(DBContext dbContext, Dto.NewPlayerSaveDto newCharacter)
+        {
+            _logger.LogInformation("正在保存新角色数据...");
+
+            try
+            {
+                var character = _mapper.Map<CharacterEntity>(newCharacter.Character);
+                dbContext.Characters.Add(character);
+                dbContext.SaveChanges();
+
+                dbContext.Keymaps.AddRange(newCharacter.KeyMaps.Select(x => new KeyMapEntity(character.Id, x.Key, x.Type, x.Action)));
+
+
+                InventoryManager.CommitInventoryByType(dbContext, character.Id, _mapper.Map<ItemModel[]>(newCharacter.InventoryItems), ItemFactory.INVENTORY);
+
+                // Skill
+                dbContext.Skills.AddRange(
+                    newCharacter.Skills.Select(x => new SkillEntity(x.Skillid, character.Id, x.Skilllevel, x.Masterlevel, x.Expiration))
+                    );
+
+                dbContext.Eventstats.AddRange(newCharacter.Events.Select(x => new Eventstat(character.Id, x.Name, x.Info)));
+
+
+                dbContext.SaveChanges();
+                _logger.LogInformation("新角色创建成功Id={Id}, Name = {Name}, AccountId={AccountId}", character.Id, character.Name, character.AccountId);
+                return character.Id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "新角色保存用户{Status}", "失败");
+                return -2;
+            }
+
+        }
 
         /// <summary>
         /// CharacterValueObject 保存到数据库
@@ -135,6 +169,8 @@ namespace Application.Core.Login.Services
             }
 
         }
+
+
         public void SetCharacter(CharacterLiveObject obj)
         {
             _chrUpdate[obj.Character.Id] = obj;
@@ -227,16 +263,18 @@ namespace Application.Core.Login.Services
             if (updateCount == 0)
                 return;
 
-            var allAccounts = await dbContext.Accounts.AsNoTracking().Where(x => updateData.Keys.Contains(x.Id)).ToListAsync();
+            var allAccounts = await dbContext.Accounts.Where(x => updateData.Keys.Contains(x.Id)).ToListAsync();
             foreach (var obj in updateData.Values)
             {
                 var dbModel = allAccounts.FirstOrDefault(x => x.Id == obj.Id)!;
 
-                dbModel.Macs = obj.Macs;
+                dbModel.Macs = obj.Macs == null ? null : string.Join(",", obj.Macs.Split(",").Select(x => x.Trim()).ToHashSet());
                 dbModel.Hwid = obj.Hwid;
                 dbModel.Pic = obj.Pic;
                 dbModel.Pin = obj.Pin;
                 dbModel.Ip = obj.Ip;
+                dbModel.Gender = obj.Gender;
+                dbModel.Tos = obj.Tos;
                 dbModel.GMLevel = obj.GMLevel;
                 dbModel.Characterslots = obj.Characterslots;
             }

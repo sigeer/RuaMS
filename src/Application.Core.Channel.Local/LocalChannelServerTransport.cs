@@ -640,5 +640,22 @@ namespace Application.Core.Channel.Local
             _server.DueyManager.SendDueyNotification(sendDueyNotificationRequest.CharacterName);
         }
 
+        public void UpdateAccount(AccountCtrl accountEntity)
+        {
+            _server.AccountManager.UpdateAccount(accountEntity);
+        }
+
+        public Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data)
+        {
+            return new Dto.CreateCharResponseDto { Code = _server.CharacterManager.CreatePlayerDB(data) };
+        }
+
+        public Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request)
+        {
+            return new Dto.CreateCharCheckResponse()
+            {
+                Code = _server.CharacterManager.CreatePlayerCheck(request.AccountId, request.Name)
+            };
+        }
     }
 }

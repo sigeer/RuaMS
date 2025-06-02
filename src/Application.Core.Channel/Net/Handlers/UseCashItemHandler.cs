@@ -34,6 +34,7 @@ using client.processor.stat;
 using constants.game;
 using Microsoft.Extensions.Logging;
 using net.packet.outs;
+using Serilog;
 using server;
 using server.maps;
 using System.Text;
@@ -550,16 +551,9 @@ public class UseCashItemHandler : ChannelHandlerBase
             int jobid = p.readInt();
             int improveSp = p.readInt();
 
-            int createStatus = (jobid) switch
-            {
-                0 => WarriorCreator.createCharacter(c, name, face, hair + haircolor, skin, gender, improveSp),
-                1 => MagicianCreator.createCharacter(c, name, face, hair + haircolor, skin, gender, improveSp),
-                2 => BowmanCreator.createCharacter(c, name, face, hair + haircolor, skin, gender, improveSp),
-                3 => ThiefCreator.createCharacter(c, name, face, hair + haircolor, skin, gender, improveSp),
-                _ => PirateCreator.createCharacter(c, name, face, hair + haircolor, skin, gender, improveSp),
-            };
+            int newPlayerId = c.CurrentServer.Service.CreatePlayer(c, jobid, name, face, hair + haircolor, skin, gender, improveSp);
 
-            if (createStatus == 0)
+            if (newPlayerId > 0)
             {
                 c.sendPacket(PacketCreator.sendMapleLifeError(0));   // success!
 
@@ -568,13 +562,13 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
             else
             {
-                if (createStatus == -1)
+                if (newPlayerId == -1)
                 {    // check name
                     c.sendPacket(PacketCreator.sendMapleLifeNameError());
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.sendMapleLifeError(-1 * createStatus));
+                    c.sendPacket(PacketCreator.sendMapleLifeError(-1 * newPlayerId));
                 }
             }
         }
