@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using net.server;
@@ -70,7 +70,7 @@ public class Guild : IGuild
     }
 
     private int world = -1;
-    private IWorld GetWorldModel()
+    private World GetWorldModel()
     {
         return Server.getInstance().getWorld(world)!;
     }

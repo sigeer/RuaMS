@@ -24,7 +24,7 @@
 
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.model;
 using System.Collections.Concurrent;
 using tools;
@@ -422,12 +422,12 @@ public class Expedition
         }
     }
 
-    public bool addChannelExpedition(IWorldChannel ch)
+    public bool addChannelExpedition(WorldChannel ch)
     {
         return ch.addExpedition(this);
     }
 
-    public void removeChannelExpedition(IWorldChannel ch)
+    public void removeChannelExpedition(WorldChannel ch)
     {
         ch.removeExpedition(this);
     }

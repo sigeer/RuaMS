@@ -19,7 +19,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace Application.Core.Game.Items;
 
@@ -36,7 +36,7 @@ public class Mount : IMount
     private IPlayer owner;
     private bool active;
 
-    public IWorldChannel ChannelServer => owner.getChannelServer();
+    public WorldChannel ChannelServer => owner.getChannelServer();
 
     public Mount(IPlayer owner, int id)
     {
@@ -144,7 +144,7 @@ public class Mount : IMount
     {
         if (owner != null)
         {
-            ChannelServer.MountTirednessController.unregisterMountHunger(owner);
+            ChannelServer.MountTirednessManager.unregisterMountHunger(owner);
         }
     }
 }

@@ -46,7 +46,7 @@ namespace Application.Core.Managers
                 return false;
             }
         }
-        public static void leaveParty(ITeam party, IPlayer player)
+        public static void leaveParty(Team party, IPlayer player)
         {
             var world = player.getWorldServer();
 
@@ -150,7 +150,7 @@ namespace Application.Core.Managers
             return false;
         }
 
-        public static void expelFromParty(ITeam? party, IChannelClient c, int expelCid)
+        public static void expelFromParty(Team? party, IChannelClient c, int expelCid)
         {
             var world = c.getWorldServer();
             var player = c.OnlinedCharacter;

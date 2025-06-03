@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace Application.Core.Servers
 {

@@ -26,7 +26,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Managers;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Items;
@@ -319,7 +319,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return null;
     }
 
-    public override ITeam? getParty()
+    public override Team? getParty()
     {
         return getPlayer().TeamModel;
     }
@@ -793,7 +793,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
-    private int isCPQParty(IMap lobby, ITeam party)
+    private int isCPQParty(IMap lobby, Team party)
     {
         int cpqMinLvl, cpqMaxLvl;
 
@@ -827,7 +827,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return 0;
     }
 
-    private int canStartCPQ(IMap lobby, ITeam party, ITeam challenger)
+    private int canStartCPQ(IMap lobby, Team party, Team challenger)
     {
         int ret = isCPQParty(lobby, party);
         if (ret != 0)
@@ -872,7 +872,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             var tMan = TimerManager.getInstance();
             tMan.schedule(() =>
             {
-                ITeam lobbyParty = getPlayer().getParty()!, challengerParty = challenger.getParty()!;
+                Team lobbyParty = getPlayer().getParty()!, challengerParty = challenger.getParty()!;
                 try
                 {
                     foreach (var mc in lobbyParty.getMembers())

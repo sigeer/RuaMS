@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Managers;
 using client;
 
@@ -6,9 +6,9 @@ namespace net.server.task;
 
 public class FamilyDailyResetTask : BaseTask
 {
-    private IWorld world;
+    private World world;
 
-    public FamilyDailyResetTask(IWorld world) : base(world)
+    public FamilyDailyResetTask(World world) : base(world)
     {
         this.world = world;
     }

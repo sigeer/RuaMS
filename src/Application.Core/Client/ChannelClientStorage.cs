@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Client
@@ -6,7 +6,7 @@ namespace Application.Core.Client
     public class ChannelClientStorage
     {
         public ConcurrentDictionary<int, IChannelClient> _dataSource;
-        public ChannelClientStorage(IWorldChannel worldChannel)
+        public ChannelClientStorage(WorldChannel worldChannel)
         {
             _dataSource = new();
         }

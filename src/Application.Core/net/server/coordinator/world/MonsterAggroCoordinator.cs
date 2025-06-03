@@ -20,7 +20,7 @@
 
 
 using Application.Core.Game.Life;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using server;
 
 namespace net.server.coordinator.world;
@@ -32,7 +32,7 @@ namespace net.server.coordinator.world;
  */
 public class MonsterAggroCoordinator
 {
-    readonly IWorldChannel _channelServer;
+    readonly WorldChannel _channelServer;
     private object lockObj = new object();
     private object idleLock = new object();
     private long lastStopTime;
@@ -44,7 +44,7 @@ public class MonsterAggroCoordinator
 
     private HashSet<int> mapPuppetEntries = new();
 
-    public MonsterAggroCoordinator(IWorldChannel channelServer)
+    public MonsterAggroCoordinator(WorldChannel channelServer)
     {
         _channelServer = channelServer;
         lastStopTime = _channelServer.getCurrentTime();

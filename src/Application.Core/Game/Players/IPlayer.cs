@@ -7,7 +7,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Shared.Objects;
 using client;
@@ -51,7 +51,7 @@ namespace Application.Core.Game.Players
         public PlayerSkill Skills { get; set; }
         public SkillMacro?[] SkillMacros { get; set; }
 
-        public ITeam? TeamModel { get; }
+        public Team? TeamModel { get; }
         public IGuild? GuildModel { get; }
         public IAlliance? AllianceModel { get; }
         public ISchool? SchoolModel { get; set; }
@@ -255,7 +255,7 @@ namespace Application.Core.Game.Players
         CashShop getCashShop();
         int getChair();
         string? getChalkboard();
-        IWorldChannel getChannelServer();
+        WorldChannel getChannelServer();
         int getCleanItemQuantity(int itemid, bool checkEquipped);
         IChannelClient getClient();
         short getCombo();
@@ -358,7 +358,7 @@ namespace Application.Core.Game.Players
         int getOwlSearch();
         IMap? getOwnedMap();
         int getPartnerId();
-        ITeam? getParty();
+        Team? getParty();
         public bool isLeader();
         /// <summary>
         /// 不存在队伍时为 -1
@@ -429,7 +429,7 @@ namespace Application.Core.Game.Players
         IMap getWarpMap(int map);
         bool getWhiteChat();
         int getWorld();
-        IWorld getWorldServer();
+        World getWorldServer();
         void giveCoolDowns(int skillid, long starttime, long length);
         void giveDebuff(Disease disease, MobSkill skill);
         int gmLevel();
@@ -511,7 +511,7 @@ namespace Application.Core.Game.Players
         bool needQuestItem(int questid, int itemid);
         void LinkNewChannelClient(IChannelClient newClient);
         void notifyMapTransferToPartner(int mapid);
-        void partyOperationUpdate(ITeam party, List<IPlayer>? exPartyMembers);
+        void partyOperationUpdate(Team party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
         void pickupItem(IMapObject? ob, int petIndex = -1);
         long portalDelay();
@@ -533,7 +533,7 @@ namespace Application.Core.Game.Players
         void removeJailExpirationTime();
         void removeNewYearRecord(NewYearCardRecord newyear);
         Door? removePartyDoor(bool partyUpdate);
-        void removePartyDoor(ITeam formerParty);
+        void removePartyDoor(Team formerParty);
         void removePartyQuestItem(string letter);
         void removePet(Pet pet, bool shift_left);
         void removeSandboxItems();
@@ -632,7 +632,7 @@ namespace Application.Core.Game.Players
         void setOwlSearch(int id);
         void setOwnedMap(IMap? map);
         void setPartnerId(int partnerid);
-        void setParty(ITeam? p);
+        void setParty(Team? p);
         void setPartyQuest(PartyQuest? pq);
         void setPartyQuestItemObtained(string partyquestchar);
         void setPlayerAggro(int mobHash);

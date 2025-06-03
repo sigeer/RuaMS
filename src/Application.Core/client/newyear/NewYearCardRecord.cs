@@ -19,7 +19,7 @@
 */
 
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using server;

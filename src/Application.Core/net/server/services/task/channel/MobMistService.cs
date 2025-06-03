@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.services.task.channel;
 
@@ -30,7 +30,7 @@ public class MobMistService : BaseService
 
     private MobMistScheduler[] mobMistSchedulers = new MobMistScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public MobMistService(IWorldChannel worldChannel) : base(worldChannel)
+    public MobMistService(WorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
@@ -56,7 +56,7 @@ public class MobMistService : BaseService
 
     private class MobMistScheduler : BaseScheduler
     {
-        public MobMistScheduler(IWorldChannel worldChannel) : base(worldChannel)
+        public MobMistScheduler(WorldChannel worldChannel) : base(worldChannel)
         {
         }
 

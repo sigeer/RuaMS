@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.services;
 
@@ -38,8 +38,8 @@ public abstract class BaseScheduler
 
     CancellationTokenSource? cancellationTokenSource;
 
-    IWorldChannel _channelServer;
-    protected BaseScheduler(IWorldChannel worldChannel)
+    WorldChannel _channelServer;
+    protected BaseScheduler(WorldChannel worldChannel)
     {
         _channelServer = worldChannel;
     }

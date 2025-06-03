@@ -658,7 +658,7 @@ public class Monster : AbstractLifeObject
             return;
         }
 
-        Dictionary<ITeam, Dictionary<IPlayer, long>> partyExpDist = new();
+        Dictionary<Team, Dictionary<IPlayer, long>> partyExpDist = new();
         Dictionary<IPlayer, long> soloExpDist = new();
 
         Dictionary<int, IPlayer> mapPlayers = MapModel.getMapAllPlayers();

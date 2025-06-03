@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.task;
 
@@ -21,7 +21,7 @@ public class TimeoutTask : BaseTask
         }
     }
 
-    public TimeoutTask(IWorld world) : base(world)
+    public TimeoutTask(World world) : base(world)
     {
     }
 }

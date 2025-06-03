@@ -6,7 +6,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public void setParty(ITeam? p)
+        public void setParty(Team? p)
         {
             Monitor.Enter(prtLock);
             try
@@ -59,7 +59,7 @@ namespace Application.Core.Game.Players
         }
 
 
-        public ITeam? getParty()
+        public Team? getParty()
         {
             Monitor.Enter(prtLock);
             try
@@ -156,7 +156,7 @@ namespace Application.Core.Game.Players
 
         public bool leaveParty()
         {
-            ITeam? party;
+            Team? party;
             bool partyLeader;
 
             Monitor.Enter(prtLock);

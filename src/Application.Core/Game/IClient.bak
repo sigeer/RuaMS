@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Life;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Scripting.Infrastructure;
 using Application.Core.Servers;
 using Application.Core.ServerTransports;

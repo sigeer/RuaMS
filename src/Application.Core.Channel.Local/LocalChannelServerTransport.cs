@@ -38,7 +38,7 @@ namespace Application.Core.Channel.Local
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
         /// </summary>
-        IWorld _world => Server.getInstance().getWorld(0);
+        World _world => Server.getInstance().getWorld(0);
 
         public LocalChannelServerTransport(
             MasterServer server,
@@ -62,7 +62,7 @@ namespace Application.Core.Channel.Local
             _rankService = rankService;
         }
 
-        public Task<Config.RegisterServerResult> RegisterServer(IWorldChannel server)
+        public Task<Config.RegisterServerResult> RegisterServer(WorldChannel server)
         {
             if (!_server.IsRunning)
                 return Task.FromResult(new Config.RegisterServerResult() { Channel = -1, Message = "中心服务器未启动" });
@@ -188,12 +188,12 @@ namespace Application.Core.Channel.Local
             _server.UpdateWorldConfig(updatePatch);
         }
 
-        public Task<bool> RemoveServer(IWorldChannel server)
+        public Task<bool> RemoveServer(WorldChannel server)
         {
             return Task.FromResult(true);
         }
 
-        public ITeam CreateTeam(int playerId)
+        public Team CreateTeam(int playerId)
         {
             throw new NotImplementedException();
         }
@@ -263,10 +263,10 @@ namespace Application.Core.Channel.Local
         public List<OwlSearchResult> OwlSearch(int itemId)
         {
             List<OwlSearchResult> hmsAvailable = new();
-
+            var world = Server.getInstance().getWorld(0);
             foreach (var ch in Server.getInstance().getWorld(0).getChannels())
             {
-                foreach (var hm in ch.HiredMerchantController.getActiveMerchants())
+                foreach (var hm in ch.HiredMerchantManager.getActiveMerchants())
                 {
                     List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemId);
 
@@ -287,7 +287,7 @@ namespace Application.Core.Channel.Local
                 }
             }
 
-            foreach (PlayerShop ps in Server.getInstance().getWorld(0).getActivePlayerShops())
+            foreach (PlayerShop ps in world.Channels.SelectMany(x => x.PlayerShopManager.getActivePlayerShops()))
             {
                 List<PlayerShopItem> itemBundles = ps.sendAvailableBundles(itemId);
 
@@ -315,13 +315,20 @@ namespace Application.Core.Channel.Local
             IPlayerShop? ps = null;
             foreach (var ch in Server.getInstance().getWorld(0).getChannels())
             {
-                ps = ch.HiredMerchantController.getHiredMerchant(ownerId);
+                ps = ch.HiredMerchantManager.getHiredMerchant(ownerId);
                 if (ps != null)
                     break;
             }
 
             if (ps == null)
-                ps = Server.getInstance().getWorld(0).getPlayerShop(ownerId);
+            {
+                foreach (var ch in Server.getInstance().getWorld(0).getChannels())
+                {
+                    ps = ch.PlayerShopManager.getPlayerShop(ownerId);
+                    if (ps != null)
+                        break;
+                }
+            }
 
             if (ps == null || ps.getMap().getId() != mapId || !ps.hasItem(searchItem))
                 return null;
@@ -340,7 +347,7 @@ namespace Application.Core.Channel.Local
             IPlayerShop? ps = null;
             foreach (var ch in Server.getInstance().getWorld(0).getChannels())
             {
-                ps = ch.HiredMerchantController.getHiredMerchant(ownerId);
+                ps = ch.HiredMerchantManager.getHiredMerchant(ownerId);
                 if (ps != null)
                     break;
             }
@@ -656,6 +663,28 @@ namespace Application.Core.Channel.Local
             {
                 Code = _server.CharacterManager.CreatePlayerCheck(request.AccountId, request.Name)
             };
+        }
+
+        public void AddOwlItemSearch(int itemid)
+        {
+            _server.CashShopDataManager.AddOwlItemSearch(itemid);
+        }
+
+        public int[][] GetMostSellerCashItems()
+        {
+            return _mapper.Map<int[][]>(_server.CashShopDataManager.GetMostSellerCashItems());
+        }
+
+        public Dto.OwlSearchResponse GetOwlSearchedItems()
+        {
+            var data = new Dto.OwlSearchResponse();
+            data.Items.AddRange(_server.CashShopDataManager.GetOwlSearchedItems());
+            return data;
+        }
+
+        public void AddCashItemBought(int sn)
+        {
+            _server.CashShopDataManager.AddCashItemBought(sn);
         }
     }
 }

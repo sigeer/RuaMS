@@ -2,6 +2,7 @@ using Quartz;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using YamlDotNet.Core.Tokens;
 
 namespace Application.Utility.Extensions
 {
@@ -71,6 +72,13 @@ namespace Application.Utility.Extensions
             ref var valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(dictionary, key);
             if (!Unsafe.IsNullRef(ref valueRef))
                 valueRef = value;
+        }
+
+        public static void UpdateOnly<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue, TValue> valueFunc) where TKey : notnull
+        {
+            ref var valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(dictionary, key);
+            if (!Unsafe.IsNullRef(ref valueRef))
+                valueRef = valueFunc(valueRef);
         }
     }
 

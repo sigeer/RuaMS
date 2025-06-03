@@ -105,7 +105,7 @@ public class SpawnPetProcessor
             chr.Client.sendPacket(PacketCreator.enableActions());
 
             chr.commitExcludedItems();
-            chr.getClient().getChannelServer().PetHungerController.registerPetHunger(chr, chr.getPetIndex(pet));
+            chr.getClient().getChannelServer().PetHungerManager.registerPetHunger(chr, chr.getPetIndex(pet));
         }
     }
 }

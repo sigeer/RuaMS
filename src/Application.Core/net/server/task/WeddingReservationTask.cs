@@ -19,7 +19,7 @@
 */
 
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.task;
 
@@ -59,7 +59,7 @@ public class WeddingReservationTask : BaseTask
         }
     }
 
-    public WeddingReservationTask(IWorld world) : base(world)
+    public WeddingReservationTask(World world) : base(world)
     {
     }
 }

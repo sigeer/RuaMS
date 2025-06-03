@@ -1,8 +1,8 @@
+using Application.Core.Channel;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
-using Application.Core.Game.TheWorld;
 using Application.Shared.WzEntity;
 using client.inventory;
 using net.server.coordinator.world;
@@ -17,7 +17,7 @@ namespace Application.Core.Game.Maps
     {
         int Id { get; }
         XiGuai? XiGuai { get; set; }
-        public IWorldChannel ChannelServer { get; }
+        public WorldChannel ChannelServer { get; }
         /// <summary>
         /// 当存在小数时，则是概率生成
         /// </summary>
@@ -106,7 +106,7 @@ namespace Application.Core.Game.Maps
         List<Reactor> getAllReactors();
         Rectangle getArea(int index);
         List<Rectangle> getAreas();
-        IWorldChannel getChannelServer();
+        WorldChannel getChannelServer();
         IPlayer? getCharacterById(int id);
         IPlayer? getCharacterByName(string name);
         IReadOnlyCollection<IPlayer> getCharacters();

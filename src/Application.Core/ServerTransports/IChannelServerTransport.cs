@@ -1,5 +1,6 @@
+using Application.Core.Channel;
 using Application.Core.Game.Relation;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Shared.Configs;
 using Application.Shared.Login;
 using Application.Shared.Servers;
@@ -16,8 +17,8 @@ namespace Application.Core.ServerTransports
         public int GetCurrentTimestamp();
         public DateTimeOffset GetServerupTime();
 
-        Task<Config.RegisterServerResult> RegisterServer(IWorldChannel server);
-        Task<bool> RemoveServer(IWorldChannel server);
+        Task<Config.RegisterServerResult> RegisterServer(WorldChannel server);
+        Task<bool> RemoveServer(WorldChannel server);
 
         void DropWorldMessage(int type, string message);
         /// <summary>
@@ -60,7 +61,7 @@ namespace Application.Core.ServerTransports
 
         void DisconnectPlayers(IEnumerable<int> playerIdList);
         #region Team
-        ITeam CreateTeam(int playerId);
+        Team CreateTeam(int playerId);
         #endregion
 
         #region player npc
@@ -137,6 +138,10 @@ namespace Application.Core.ServerTransports
         void UpdateAccount(AccountCtrl accountEntity);
         Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
         Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);
+        void AddOwlItemSearch(int itemid);
+        int[][] GetMostSellerCashItems();
+        Dto.OwlSearchResponse GetOwlSearchedItems();
+        void AddCashItemBought(int sn);
         #endregion
     }
 }

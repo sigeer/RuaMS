@@ -1,7 +1,5 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Managers;
-using Application.Core.model;
-using Application.Shared.Models;
 using server;
 using System.Text;
 
@@ -23,12 +21,12 @@ namespace Application.Core.Gameplay.ChannelEvents
 
         private long ongoingStartTime;
 
-        public IWorldChannel ChannelServer { get; }
+        public WorldChannel ChannelServer { get; }
         readonly ILogger log;
 
         object lockObj = new object();
 
-        public WeddingChannelInstance(IWorldChannel channelServer)
+        public WeddingChannelInstance(WorldChannel channelServer)
         {
             ChannelServer = channelServer;
             log = LogFactory.GetLogger(LogType.Wedding);

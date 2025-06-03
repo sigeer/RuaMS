@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Microsoft.Extensions.Logging;
 using scripting;
 
@@ -27,7 +27,7 @@ public class DevtestCommand : CommandBase
 
 public class DevtestScriptManager : AbstractScriptManager
 {
-    public DevtestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IWorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
+    public DevtestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
     {
     }
 

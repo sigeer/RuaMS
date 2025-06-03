@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.services.task.channel;
 
@@ -30,7 +30,7 @@ public class MobClearSkillService : BaseService
 
     private MobClearSkillScheduler[] mobClearSkillSchedulers = new MobClearSkillScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public MobClearSkillService(IWorldChannel worldChannel) : base(worldChannel)
+    public MobClearSkillService(WorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
@@ -56,7 +56,7 @@ public class MobClearSkillService : BaseService
 
     private class MobClearSkillScheduler : BaseScheduler
     {
-        public MobClearSkillScheduler(IWorldChannel worldChannel) : base(worldChannel)
+        public MobClearSkillScheduler(WorldChannel worldChannel) : base(worldChannel)
         {
         }
 

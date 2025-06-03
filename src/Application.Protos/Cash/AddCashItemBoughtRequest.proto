@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package Dto;
+
+message AddCashItemBoughtRequest {
+  int32 sn = 1;
+}

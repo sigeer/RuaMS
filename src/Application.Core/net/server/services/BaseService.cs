@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.services;
 
@@ -27,9 +27,9 @@ namespace net.server.services;
  */
 public abstract class BaseService
 {
-    protected IWorldChannel _channelServer;
+    protected WorldChannel _channelServer;
 
-    protected BaseService(IWorldChannel channelServer)
+    protected BaseService(WorldChannel channelServer)
     {
         _channelServer = channelServer;
     }

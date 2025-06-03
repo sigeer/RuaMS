@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Invites;
 using Application.Core.Game.Maps;
@@ -21,17 +22,17 @@ using static Application.Core.Game.Relation.BuddyList;
 
 namespace Application.Core.Game.TheWorld;
 
-public class World : IWorld
+public class World
 {
     private ILogger log;
     public int Id { get; set; }
     public string Name { get; set; }
 
-    public List<IWorldChannel> Channels { get; }
+    public List<WorldChannel> Channels { get; }
     WorldPlayerStorage? _players;
     public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
     public WorldGuildStorage GuildStorage { get; }
-    public Dictionary<int, ITeam> TeamStorage { get; }
+    public Dictionary<int, Team> TeamStorage { get; }
 
     private Dictionary<int, byte> pnpcStep = new();
     private Dictionary<int, short> pnpcPodium = new();
@@ -44,27 +45,11 @@ public class World : IWorld
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
     private PartySearchCoordinator partySearch = new PartySearchCoordinator();
 
-    private Dictionary<int, Storage> accountStorages = new();
-    private object accountCharsLock = new object();
-
     private AtomicInteger runningPartyId = new AtomicInteger();
     private object partyLock = new object();
 
-    private Dictionary<int, int> owlSearched = new();
-    private List<Dictionary<int, int>> cashItemBought = new(9);
-    private ReaderWriterLockSlim suggestLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-    private object activePlayerShopsLock = new object();
-    /// <summary>
-    /// PlayerId - PlayerShop
-    /// </summary>
-    private Dictionary<int, PlayerShop> activePlayerShops = new();
-
-
-
-    private ScheduledFuture? charactersSchedule;
     private ScheduledFuture? marriagesSchedule;
-    private ScheduledFuture? mapOwnershipSchedule;
     private ScheduledFuture? fishingSchedule;
     private ScheduledFuture? partySearchSchedule;
     private ScheduledFuture? timeoutSchedule;
@@ -72,27 +57,21 @@ public class World : IWorld
     public World(WorldConfigEntity config)
     {
         log = LogFactory.GetLogger("World_" + Id);
-        Channels = new List<IWorldChannel>();
-        TeamStorage = new Dictionary<int, ITeam>();
+        Channels = new List<WorldChannel>();
+        TeamStorage = new Dictionary<int, Team>();
         runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
         runningMessengerId.set(1);
         GuildStorage = new WorldGuildStorage();
 
-        for (int i = 0; i < 9; i++)
-        {
-            cashItemBought.Add(new());
-        }
 
         this.Id = config.Id;
         Name = config.Name;
 
         var tman = TimerManager.getInstance();
 
-        // charactersSchedule = tman.register(new CharacterAutosaverTask(this), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
         marriagesSchedule = tman.register(new WeddingReservationTask(this),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
-        mapOwnershipSchedule = tman.register(new MapOwnershipTask(this), TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
         fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         partySearchSchedule = tman.register(new PartySearchTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #if !DEBUG
@@ -109,22 +88,17 @@ public class World : IWorld
         }
     }
 
-    public int getChannelsSize()
-    {
-        return Channels.Count;
-    }
-
-    public List<IWorldChannel> getChannels()
+    public List<WorldChannel> getChannels()
     {
         return new(Channels);
     }
 
-    public IWorldChannel getChannel(int channel)
+    public WorldChannel getChannel(int channel)
     {
         return Channels.ElementAtOrDefault(channel - 1) ?? throw new BusinessFatalException($"Channel {channel} not existed");
     }
 
-    public int addChannel(IWorldChannel channel)
+    public int addChannel(WorldChannel channel)
     {
         Channels.Add(channel);
         Players.RelateChannel(channel.getId(), channel.Players);
@@ -160,51 +134,6 @@ public class World : IWorld
     }
 
 
-    public void loadAccountStorage(int accountId)
-    {
-        if (getAccountStorage(accountId) == null)
-        {
-            registerAccountStorage(accountId);
-        }
-    }
-
-    private void registerAccountStorage(int accountId)
-    {
-        Storage storage = Storage.loadOrCreateFromDB(accountId, this.Id);
-        Monitor.Enter(accountCharsLock);
-        try
-        {
-            accountStorages.AddOrUpdate(accountId, storage);
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-    }
-
-    public void unregisterAccountStorage(int accountId)
-    {
-        Monitor.Enter(accountCharsLock);
-        try
-        {
-            accountStorages.Remove(accountId);
-        }
-        finally
-        {
-            Monitor.Exit(accountCharsLock);
-        }
-    }
-
-    public Storage getAccountStorage(int accountId)
-    {
-        var m = accountStorages.GetValueOrDefault(accountId);
-        if (m == null)
-        {
-            registerAccountStorage(accountId);
-            return accountStorages.GetValueOrDefault(accountId) ?? throw new BusinessException($"Register Storage for AccountId {accountId} failed");
-        }
-        return m;
-    }
 
     public List<IPlayer> loadAndGetAllCharactersView()
     {
@@ -297,33 +226,6 @@ public class World : IWorld
         return mgc.GuildModel;
     }
 
-    public bool isWorldCapacityFull()
-    {
-        return getWorldCapacityStatus() == 2;
-    }
-
-    public int getWorldCapacityStatus()
-    {
-        int worldCap = getChannelsSize() * YamlConfig.config.server.CHANNEL_LOAD;
-        int num = Players.Count();
-
-        int status;
-        if (num >= worldCap)
-        {
-            status = 2;
-        }
-        else if (num >= worldCap * .8)
-        { // More than 80 percent o___o
-            status = 1;
-        }
-        else
-        {
-            status = 0;
-        }
-
-        return status;
-    }
-
 
     public void setGuildAndRank(List<int> cids, int guildid, int rank, int exception)
     {
@@ -409,7 +311,7 @@ public class World : IWorld
     }
 
 
-    public ITeam createParty(IPlayer chrfor)
+    public Team createParty(IPlayer chrfor)
     {
         int partyid = runningPartyId.getAndIncrement();
         var party = new Team(partyid, chrfor);
@@ -428,7 +330,7 @@ public class World : IWorld
         return party;
     }
 
-    public ITeam? getParty(int partyid)
+    public Team? getParty(int partyid)
     {
         Monitor.Enter(partyLock);
         try
@@ -441,7 +343,7 @@ public class World : IWorld
         }
     }
 
-    private ITeam disbandParty(int partyid)
+    private Team disbandParty(int partyid)
     {
         Monitor.Enter(partyLock);
         try
@@ -455,7 +357,7 @@ public class World : IWorld
         }
     }
 
-    private void updateParty(ITeam party, PartyOperation operation, IPlayer target)
+    private void updateParty(Team party, PartyOperation operation, IPlayer target)
     {
         var partyMembers = party.getMembers();
 
@@ -570,7 +472,7 @@ public class World : IWorld
         return chr?.Channel ?? -1;
     }
 
-    public void partyChat(ITeam party, string chattext, string namefrom)
+    public void partyChat(Team party, string chattext, string namefrom)
     {
         foreach (IPlayer partychar in party.getMembers())
         {
@@ -886,212 +788,6 @@ public class World : IWorld
         }
     }
 
-    private static int getPetKey(IPlayer chr, sbyte petSlot)
-    {
-        // assuming max 3 pets
-        return (chr.getId() << 2) + petSlot;
-    }
-
-    public void addOwlItemSearch(int itemid)
-    {
-        suggestLock.EnterWriteLock();
-        try
-        {
-            var cur = owlSearched.GetValueOrDefault(itemid);
-            owlSearched.AddOrUpdate(itemid, cur + 1);
-        }
-        finally
-        {
-            suggestLock.ExitWriteLock();
-        }
-    }
-
-    public List<KeyValuePair<int, int>> getOwlSearchedItems()
-    {
-        if (YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
-        {
-            return new(0);
-        }
-
-        suggestLock.EnterReadLock();
-        try
-        {
-            List<KeyValuePair<int, int>> searchCounts = new(owlSearched.Count);
-
-            foreach (var e in owlSearched)
-            {
-                searchCounts.Add(new(e.Key, e.Value));
-            }
-
-            return searchCounts;
-        }
-        finally
-        {
-            suggestLock.ExitReadLock();
-        }
-    }
-
-    public void addCashItemBought(int snid)
-    {
-        suggestLock.EnterWriteLock();
-        try
-        {
-            Dictionary<int, int> tabItemBought = cashItemBought[snid / 10000000];
-
-            var cur = tabItemBought.GetValueOrDefault(snid);
-            tabItemBought.AddOrUpdate(snid, cur + 1);
-        }
-        finally
-        {
-            suggestLock.ExitWriteLock();
-        }
-    }
-
-    private List<List<KeyValuePair<int, int>>> getBoughtCashItems()
-    {
-        if (YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
-        {
-            List<List<KeyValuePair<int, int>>> boughtCounts = new(9);
-
-            // thanks GabrielSin for pointing out an issue here
-            for (int i = 0; i < 9; i++)
-            {
-                List<KeyValuePair<int, int>> tabCounts = new(0);
-                boughtCounts.Add(tabCounts);
-            }
-
-            return boughtCounts;
-        }
-
-        suggestLock.EnterReadLock();
-        try
-        {
-            List<List<KeyValuePair<int, int>>> boughtCounts = new(cashItemBought.Count);
-
-            foreach (Dictionary<int, int> tab in cashItemBought)
-            {
-                List<KeyValuePair<int, int>> tabItems = new();
-                boughtCounts.Add(tabItems);
-
-                foreach (var e in tab)
-                {
-                    tabItems.Add(new(e.Key, e.Value));
-                }
-            }
-
-            return boughtCounts;
-        }
-        finally
-        {
-            suggestLock.ExitReadLock();
-        }
-    }
-
-    private List<int> getMostSellerOnTab(List<KeyValuePair<int, int>> tabSellers)
-    {
-        return tabSellers.OrderByDescending(x => x.Value).Select(x => x.Key).Take(5).ToList();
-    }
-
-    public List<List<int>> getMostSellerCashItems()
-    {
-        List<List<KeyValuePair<int, int>>> mostSellers = this.getBoughtCashItems();
-        List<List<int>> cashLeaderboards = new(9);
-        List<int> tabLeaderboards;
-        List<int> allLeaderboards = new List<int>();
-
-        foreach (var tabSellers in mostSellers)
-        {
-            if (tabSellers.Count < 5)
-            {
-                if (allLeaderboards == null)
-                {
-                    List<KeyValuePair<int, int>> allSellers = new();
-                    foreach (var tabItems in mostSellers)
-                    {
-                        allSellers.AddRange(tabItems);
-                    }
-
-                    allLeaderboards = getMostSellerOnTab(allSellers);
-                }
-
-                tabLeaderboards = new();
-                if (allLeaderboards.Count < 5)
-                {
-                    foreach (int i in GameConstants.CASH_DATA)
-                    {
-                        tabLeaderboards.Add(i);
-                    }
-                }
-                else
-                {
-                    tabLeaderboards.AddRange(allLeaderboards);
-                }
-            }
-            else
-            {
-                tabLeaderboards = getMostSellerOnTab(tabSellers);
-            }
-
-            cashLeaderboards.Add(tabLeaderboards);
-        }
-
-        return cashLeaderboards;
-    }
-
-    #region
-    public void registerPlayerShop(PlayerShop ps)
-    {
-        Monitor.Enter(activePlayerShopsLock);
-        try
-        {
-            activePlayerShops.AddOrUpdate(ps.getOwner().getId(), ps);
-        }
-        finally
-        {
-            Monitor.Exit(activePlayerShopsLock);
-        }
-    }
-
-    public void unregisterPlayerShop(PlayerShop ps)
-    {
-        Monitor.Enter(activePlayerShopsLock);
-        try
-        {
-            activePlayerShops.Remove(ps.getOwner().getId());
-        }
-        finally
-        {
-            Monitor.Exit(activePlayerShopsLock);
-        }
-    }
-
-    public List<PlayerShop> getActivePlayerShops()
-    {
-        Monitor.Enter(activePlayerShopsLock);
-        try
-        {
-            return activePlayerShops.Values.ToList();
-        }
-        finally
-        {
-            Monitor.Exit(activePlayerShopsLock);
-        }
-    }
-
-    public PlayerShop? getPlayerShop(int ownerid)
-    {
-        Monitor.Enter(activePlayerShopsLock);
-        try
-        {
-            return activePlayerShops.GetValueOrDefault(ownerid);
-        }
-        finally
-        {
-            Monitor.Exit(activePlayerShopsLock);
-        }
-    }
-    #endregion
-
     public void setPlayerNpcMapStep(int mapid, int step)
     {
         setPlayerNpcMapData(mapid, step, -1, false);
@@ -1190,7 +886,7 @@ public class World : IWorld
 
         foreach (var ch in getChannels())
         {
-            foreach (var hm in ch.HiredMerchantController.getActiveMerchants())
+            foreach (var hm in ch.HiredMerchantManager.getActiveMerchants())
             {
                 List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemid);
 
@@ -1199,17 +895,19 @@ public class World : IWorld
                     hmsAvailable.Add(new(mpsi, hm));
                 }
             }
-        }
 
-        foreach (PlayerShop ps in getActivePlayerShops())
-        {
-            List<PlayerShopItem> itemBundles = ps.sendAvailableBundles(itemid);
-
-            foreach (PlayerShopItem mpsi in itemBundles)
+            foreach (PlayerShop ps in ch.PlayerShopManager.getActivePlayerShops())
             {
-                hmsAvailable.Add(new(mpsi, ps));
+                List<PlayerShopItem> itemBundles = ps.sendAvailableBundles(itemid);
+
+                foreach (PlayerShopItem mpsi in itemBundles)
+                {
+                    hmsAvailable.Add(new(mpsi, ps));
+                }
             }
         }
+
+
         hmsAvailable = hmsAvailable.OrderBy(x => x.Key.getPrice()).Take(200).ToList();
         return hmsAvailable;
     }
@@ -1241,22 +939,10 @@ public class World : IWorld
             await ch.Shutdown();
         }
 
-        if (charactersSchedule != null)
-        {
-            await charactersSchedule.CancelAsync(false);
-            charactersSchedule = null;
-        }
-
         if (marriagesSchedule != null)
         {
             await marriagesSchedule.CancelAsync(false);
             marriagesSchedule = null;
-        }
-
-        if (mapOwnershipSchedule != null)
-        {
-            await mapOwnershipSchedule.CancelAsync(false);
-            mapOwnershipSchedule = null;
         }
 
         if (fishingSchedule != null)

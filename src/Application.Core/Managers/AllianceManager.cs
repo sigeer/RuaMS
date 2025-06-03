@@ -1,6 +1,6 @@
 using Application.Core.Game.Invites;
 using Application.Core.Game.Relation;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using net.server.guild;
 
 namespace Application.Core.Managers
@@ -45,7 +45,7 @@ namespace Application.Core.Managers
             }
         }
 
-        private static List<IPlayer> getPartyGuildMasters(ITeam party)
+        private static List<IPlayer> getPartyGuildMasters(Team party)
         {
             List<IPlayer> mcl = new();
 
@@ -75,7 +75,7 @@ namespace Application.Core.Managers
             return mcl;
         }
 
-        public static Alliance? createAlliance(ITeam party, string name)
+        public static Alliance? createAlliance(Team party, string name)
         {
             var guildMasters = getPartyGuildMasters(party);
             if (guildMasters.Count != 2)

@@ -18,7 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
+using Application.Core.Channel;
 
 namespace net.server.services.task.channel;
 
@@ -30,7 +31,7 @@ public class EventService : BaseService
 
     private EventScheduler[] eventSchedulers = new EventScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public EventService(IWorldChannel worldChannel) : base(worldChannel)
+    public EventService(WorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
@@ -56,7 +57,7 @@ public class EventService : BaseService
 
     private class EventScheduler : BaseScheduler
     {
-        public EventScheduler(IWorldChannel worldChannel) : base(worldChannel)
+        public EventScheduler(WorldChannel worldChannel) : base(worldChannel)
         {
         }
 

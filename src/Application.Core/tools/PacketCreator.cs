@@ -31,7 +31,7 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
@@ -668,7 +668,7 @@ public class PacketCreator
     /// <param name="eventmsg"></param>
     /// <param name="channelLoad">Load of the channel - 1200 seems to be max.</param>
     /// <returns>The server info packet.</returns>
-    public static Packet getServerList(int serverId, string serverName, int flag, string eventmsg, List<IWorldChannel> channelLoad)
+    public static Packet getServerList(int serverId, string serverName, int flag, string eventmsg, List<WorldChannel> channelLoad)
     {
         OutPacket p = OutPacket.create(SendOpcode.SERVERLIST);
         p.writeByte(serverId);
@@ -3778,7 +3778,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet partyCreated(ITeam party, int partycharid)
+    public static Packet partyCreated(Team party, int partycharid)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         p.writeByte(8);
@@ -3877,7 +3877,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addPartyStatus(int forchannel, ITeam party, OutPacket p, bool leaving)
+    private static void addPartyStatus(int forchannel, Team party, OutPacket p, bool leaving)
     {
         var partymembers = party.getMembers();
         while (partymembers.Count < 6)
@@ -3966,7 +3966,7 @@ public class PacketCreator
         }
     }
 
-    public static Packet updateParty(int forChannel, ITeam party, PartyOperation op, IPlayer target)
+    public static Packet updateParty(int forChannel, Team party, PartyOperation op, IPlayer target)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         switch (op)
@@ -7777,7 +7777,7 @@ public class PacketCreator
             }
             p.skip(121);
 
-            List<List<int>> mostSellers = c.getWorldServer().getMostSellerCashItems();
+            List<List<int>> mostSellers = c.CurrentServer.Service.GetMostSellerCashItems();
             for (int i = 1; i <= 8; i++)
             {
                 List<int> mostSellersTab = mostSellers.get(i);

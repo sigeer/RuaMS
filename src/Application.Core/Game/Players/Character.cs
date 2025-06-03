@@ -21,6 +21,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -29,7 +30,7 @@ using Application.Core.Game.Players.Models;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
@@ -66,8 +67,8 @@ namespace Application.Core.Game.Players;
 
 public partial class Player
 {
-    private ITeam? teamModel;
-    public ITeam? TeamModel
+    private Team? teamModel;
+    public Team? TeamModel
     {
         get
         {
@@ -1195,7 +1196,7 @@ public partial class Player
         return lastVisited;
     }
 
-    public void partyOperationUpdate(ITeam party, List<IPlayer>? exPartyMembers)
+    public void partyOperationUpdate(Team party, List<IPlayer>? exPartyMembers)
     {
         List<WeakReference<IMap>> mapids;
 
@@ -1258,13 +1259,13 @@ public partial class Player
         }
     }
 
-    private static void removePartyPlayerDoor(ITeam party, IPlayer target)
+    private static void removePartyPlayerDoor(Team party, IPlayer target)
     {
         target.removePartyDoor(party);
     }
 
 
-    private static void updatePartyTownDoors(ITeam party, IPlayer target, IPlayer? partyLeaver, List<IPlayer> partyMembers)
+    private static void updatePartyTownDoors(Team party, IPlayer target, IPlayer? partyLeaver, List<IPlayer> partyMembers)
     {
         if (partyLeaver != null)
         {
@@ -2086,7 +2087,7 @@ public partial class Player
 
     public void applyPartyDoor(Door door, bool partyUpdate)
     {
-        ITeam? chrParty;
+        Team? chrParty;
         Monitor.Enter(prtLock);
         try
         {
@@ -2112,7 +2113,7 @@ public partial class Player
     public Door? removePartyDoor(bool partyUpdate)
     {
         Door? ret = null;
-        ITeam? chrParty;
+        Team? chrParty;
 
         Monitor.Enter(prtLock);
         try
@@ -2138,7 +2139,7 @@ public partial class Player
         return ret;
     }
 
-    public void removePartyDoor(ITeam formerParty)
+    public void removePartyDoor(Team formerParty)
     {    // player is no longer registered at this party
         formerParty.removeDoor(Id);
     }
@@ -2644,7 +2645,7 @@ public partial class Player
 
     public void resetPlayerAggro()
     {
-        if (getChannelServer().ServerMessageController.unregisterDisabledServerMessage(Id))
+        if (getChannelServer().ServerMessageManager.unregisterDisabledServerMessage(Id))
         {
             Client.announceServerMessage();
         }
@@ -2726,7 +2727,7 @@ public partial class Player
         if (mps.isOwner(this))
         {
             mps.setOpen(false);
-            getWorldServer().unregisterPlayerShop(mps);
+            getChannelServer().PlayerShopManager.unregisterPlayerShop(mps);
 
             foreach (PlayerShopItem mpsi in mps.getItems())
             {
@@ -2926,7 +2927,7 @@ public partial class Player
         return World;
     }
 
-    public IWorld getWorldServer()
+    public World getWorldServer()
     {
         return Server.getInstance().getWorld(World);
     }
@@ -4962,7 +4963,7 @@ public partial class Player
         silentPartyUpdateInternal(TeamModel);
     }
 
-    private void silentPartyUpdateInternal(ITeam? chrParty)
+    private void silentPartyUpdateInternal(Team? chrParty)
     {
         if (chrParty != null)
         {
@@ -5645,7 +5646,7 @@ public partial class Player
         this.chasing = chasing;
     }
 
-    public IWorldChannel getChannelServer()
+    public WorldChannel getChannelServer()
     {
         return Client.CurrentServer;
     }

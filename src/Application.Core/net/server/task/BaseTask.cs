@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.task;
 
@@ -27,9 +27,9 @@ namespace net.server.task;
  */
 public abstract class BaseTask : AbstractRunnable
 {
-    protected IWorld wserv;
+    protected World wserv;
 
-    public BaseTask(IWorld world)
+    public BaseTask(World world)
     {
         wserv = world;
         Name = $"World_{world.Id}_{Name}";
