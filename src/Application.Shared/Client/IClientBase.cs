@@ -23,8 +23,6 @@ namespace Application.Shared.Client
         string AccountName { get; }
         int AccountGMLevel { get; }
         void CommitAccount();
-        int GetAvailableCharacterSlots();
-
         void SetCharacterOnSessionTransitionState(int cid);
         void UpdateAccountChracterByAdd(int id);
     }

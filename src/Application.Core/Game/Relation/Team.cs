@@ -3,7 +3,7 @@ using server.maps;
 
 namespace Application.Core.Game.Relation
 {
-    public class Team : ITeam
+    public class Team
     {
         private int id;
         private int leaderId;

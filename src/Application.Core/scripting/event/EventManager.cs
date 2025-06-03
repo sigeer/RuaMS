@@ -24,7 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using constants.game;
 using net.server;
 using scripting.Event.scheduler;
@@ -47,7 +47,7 @@ public class EventManager
 {
     ILogger log = LogFactory.GetLogger(LogType.EventManager);
     private IEngine iv;
-    private IWorldChannel cserv;
+    private WorldChannel cserv;
     private Server server;
     private EventScriptScheduler ess;
     private ConcurrentDictionary<string, EventInstanceManager> instances = new();
@@ -75,7 +75,7 @@ public class EventManager
     public const int DefaultMaxLobbys = 1;
 
 
-    public EventManager(IWorldChannel cserv, IEngine iv, string name)
+    public EventManager(WorldChannel cserv, IEngine iv, string name)
     {
         this.server = Server.getInstance();
         this.iv = iv;
@@ -204,7 +204,7 @@ public class EventManager
     //    return new EventScheduledFuture(r, ess);
     //}
 
-    public IWorldChannel getChannelServer()
+    public WorldChannel getChannelServer()
     {
         return cserv;
     }
@@ -575,33 +575,33 @@ public class EventManager
     }
 
     //PQ method: starts a PQ
-    public bool startInstance(ITeam party, IMap map)
+    public bool startInstance(Team party, IMap map)
     {
         return startInstance(-1, party, map);
     }
 
-    public bool startInstance(int lobbyId, ITeam party, IMap map)
+    public bool startInstance(int lobbyId, Team party, IMap map)
     {
         return startInstance(lobbyId, party, map, party.getLeader());
     }
 
-    public bool startInstance(int lobbyId, ITeam party, IMap map, IPlayer leader)
+    public bool startInstance(int lobbyId, Team party, IMap map, IPlayer leader)
     {
         return startInstance(lobbyId, party, map, 0, leader);
     }
 
     //PQ method: starts a PQ with a difficulty level, requires function setup(difficulty, leaderid) instead of setup()
-    public bool startInstance(ITeam party, IMap map, int difficulty)
+    public bool startInstance(Team party, IMap map, int difficulty)
     {
         return startInstance(-1, party, map, difficulty);
     }
 
-    public bool startInstance(int lobbyId, ITeam party, IMap map, int difficulty)
+    public bool startInstance(int lobbyId, Team party, IMap map, int difficulty)
     {
         return startInstance(lobbyId, party, map, difficulty, party.getLeader());
     }
 
-    public bool startInstance(int lobbyId, ITeam party, IMap map, int difficulty, IPlayer leader)
+    public bool startInstance(int lobbyId, Team party, IMap map, int difficulty, IPlayer leader)
     {
         if (this.isDisposed())
         {
@@ -770,7 +770,7 @@ public class EventManager
     //    return false;
     //}
 
-    public List<IPlayer> getEligibleParty(ITeam party)
+    public List<IPlayer> getEligibleParty(Team party)
     {
         if (party == null)
         {

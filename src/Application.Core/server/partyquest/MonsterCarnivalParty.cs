@@ -22,11 +22,11 @@ public class MonsterCarnivalParty
     public int SummonedMonster { get; set; }
     public int SummonedReactor { get; set; }
     public bool IsWinner { get; private set; }
-    public ITeam Team { get; }
+    public Team Team { get; }
     public MonsterCarnival Event { get; }
     public MonsterCarnivalParty? Enemy { get; set; }
 
-    public MonsterCarnivalParty(MonsterCarnival @event, ITeam team, sbyte team1)
+    public MonsterCarnivalParty(MonsterCarnival @event, Team team, sbyte team1)
     {
         Event = @event;
         Team = team;

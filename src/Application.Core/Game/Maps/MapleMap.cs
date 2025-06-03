@@ -28,7 +28,7 @@ using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Shared.WzEntity;
 using client;
 using client.autoban;
@@ -148,9 +148,9 @@ public class MapleMap : IMap
     // due to the nature of loadMapFromWz (synchronized), sole function that calls 'generateMapDropRangeCache', this lock remains optional.
     private static object bndLock = new object();
 
-    public IWorldChannel ChannelServer { get; }
+    public WorldChannel ChannelServer { get; }
     public XiGuai? XiGuai { get; set; }
-    public MapleMap(int mapid, IWorldChannel worldChannel, int returnMapId)
+    public MapleMap(int mapid, WorldChannel worldChannel, int returnMapId)
     {
         Id = mapid;
         this.mapid = mapid;
@@ -233,7 +233,7 @@ public class MapleMap : IMap
         return mapid;
     }
 
-    public IWorldChannel getChannelServer()
+    public WorldChannel getChannelServer()
     {
         return ChannelServer;
     }
@@ -2389,7 +2389,7 @@ public class MapleMap : IMap
             broadcastMessage(kite.makeDestroyData());
         };
 
-        ChannelServer.MapObjectController.RegisterTimedMapObject(expireKite, YamlConfig.config.server.KITE_EXPIRE_TIME);
+        ChannelServer.MapObjectManager.RegisterTimedMapObject(expireKite, YamlConfig.config.server.KITE_EXPIRE_TIME);
     }
 
     public void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
@@ -2649,11 +2649,11 @@ public class MapleMap : IMap
 
         if (this.getHPDec() > 0)
         {
-            getChannelServer().CharacterHpDecreaseController.addPlayerHpDecrease(chr);
+            getChannelServer().CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
         }
         else
         {
-            getChannelServer().CharacterHpDecreaseController.removePlayerHpDecrease(chr);
+            getChannelServer().CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
         }
 
         MapScriptManager msm = ChannelServer.MapScriptManager;
@@ -2889,7 +2889,7 @@ public class MapleMap : IMap
         }
 
         chr.receivePartyMemberHP();
-        ChannelServer.CharacterDiseaseController.registerAnnouncePlayerDiseases(chr.getClient());
+        ChannelServer.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
     }
 
     public Portal getRandomPlayerSpawnpoint()
@@ -4632,7 +4632,7 @@ public class MapleMap : IMap
 
             mapOwnerLastActivityTime = ChannelServer.getCurrentTime();
 
-            getChannelServer().registerOwnedMap(this);
+            getChannelServer().MapOwnershipManager.RegisterOwnedMap(this);
             return true;
         }
         else
@@ -4656,7 +4656,7 @@ public class MapleMap : IMap
 
             mapOwnerLastActivityTime = long.MaxValue;
 
-            getChannelServer().unregisterOwnedMap(this);
+            getChannelServer().MapOwnershipManager.UnregisterOwnedMap(this);
             return true;
         }
         else

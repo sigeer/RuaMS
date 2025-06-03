@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.task;
 
@@ -33,7 +33,7 @@ public class FishingTask : BaseTask
         wserv.FishingInstance.RunCheckFishingSchedule();
     }
 
-    public FishingTask(IWorld world) : base(world)
+    public FishingTask(World world) : base(world)
     {
     }
 }

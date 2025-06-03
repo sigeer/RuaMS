@@ -1,5 +1,6 @@
+using Application.Core.Channel;
 using Application.Core.Game.Life;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Models;
 using scripting;
@@ -10,7 +11,7 @@ namespace Application.Core.Client
 {
     public interface IChannelClient : IClientBase
     {
-        IWorldChannel CurrentServer { get; }
+        WorldChannel CurrentServer { get; }
         int Channel { get; }
         int ActualChannel { get; }
         IPlayer? Character { get; }
@@ -29,7 +30,7 @@ namespace Application.Core.Client
         /// 临时使用
         /// </summary>
         /// <returns></returns>
-        IWorld getWorldServer();
+        World getWorldServer();
         void OpenNpc(int npcid, string? script = null);
         bool canClickNPC();
         void setClickedNPC();
@@ -43,7 +44,7 @@ namespace Application.Core.Client
         void resetCsCoupon();
         void SetPlayer(IPlayer? player);
         void SetAccount(AccountCtrl accountEntity);
-        IWorldChannel getChannelServer();
+        WorldChannel getChannelServer();
         int getChannel();
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);
 

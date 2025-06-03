@@ -48,7 +48,7 @@ public class Pyramid : PartyQuest
     ScheduledFuture? _timer = null;
     ScheduledFuture? gaugeSchedule = null;
 
-    public Pyramid(ITeam party, PyramidMode mode, int mapid) : base(party)
+    public Pyramid(Team party, PyramidMode mode, int mapid) : base(party)
     {
         this.mode = mode;
         this.map = mapid;

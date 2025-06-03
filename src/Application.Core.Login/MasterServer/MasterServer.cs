@@ -1,5 +1,6 @@
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
+using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
@@ -77,6 +78,7 @@ namespace Application.Core.Login
         public ServerManager ServerManager { get; }
         public BuffManager BuffManager { get; }
         public DueyManager DueyManager { get; }
+        public CashShopDataManager CashShopDataManager { get; }
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -121,6 +123,7 @@ namespace Application.Core.Login
             WeddingInstance = ActivatorUtilities.CreateInstance<WeddingManager>(ServiceProvider, this);
             BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
             DueyManager = ActivatorUtilities.CreateInstance<DueyManager>(ServiceProvider, this);
+            CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;

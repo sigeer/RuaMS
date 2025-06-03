@@ -27,7 +27,7 @@ public class MonsterCarnival
     MonsterCarnivalParty redTeam;
     MonsterCarnivalParty blueTeam;
 
-    public MonsterCarnival(ITeam p1, ITeam p2, int mapid, bool cpq1, int room)
+    public MonsterCarnival(Team p1, Team p2, int mapid, bool cpq1, int room)
     {
         this.IsCPQ1 = cpq1;
         this.room = room;

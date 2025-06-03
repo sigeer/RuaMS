@@ -434,7 +434,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             Monitor.Exit(visitorLock);
         }
 
-        Owner.getChannelServer().HiredMerchantController.unregisterHiredMerchant(this);
+        Owner.getChannelServer().HiredMerchantManager.unregisterHiredMerchant(this);
 
         try
         {
@@ -481,7 +481,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     {
         MapModel.removeMapObject(this);
         MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(ownerId));
-        c.CurrentServer.HiredMerchantController.unregisterHiredMerchant(ownerId);
+        c.CurrentServer.HiredMerchantManager.unregisterHiredMerchant(ownerId);
 
         removeAllVisitors();
         removeOwner(c.OnlinedCharacter);
@@ -548,7 +548,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             Log.Logger.Error(e.ToString());
         }
 
-        Owner.getChannelServer().HiredMerchantController.unregisterHiredMerchant(this);
+        Owner.getChannelServer().HiredMerchantManager.unregisterHiredMerchant(this);
     }
 
 

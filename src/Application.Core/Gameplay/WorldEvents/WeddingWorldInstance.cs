@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.model;
 using Application.Shared.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +8,7 @@ namespace Application.Core.Gameplay.WorldEvents
 {
     public class WeddingWorldInstance
     {
-        public IWorld WorldServer { get; }
+        public World WorldServer { get; }
         readonly ILogger log;
 
         private Dictionary<int, int> relationships = new();
@@ -17,7 +17,7 @@ namespace Application.Core.Gameplay.WorldEvents
         private Dictionary<int, KeyValuePair<KeyValuePair<bool, bool>, CoupleIdPair>> queuedMarriages = new();
         private ConcurrentDictionary<int, HashSet<int>> marriageGuests = new();
 
-        public WeddingWorldInstance(IWorld worldServer)
+        public WeddingWorldInstance(World worldServer)
         {
             WorldServer = worldServer;
             log = LogFactory.GetLogger(LogType.Wedding);

@@ -1,5 +1,5 @@
 using Application.Core.Game.Life;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
@@ -11,7 +11,7 @@ namespace Application.Core.Game
 {
     public class OfflineClient : IChannelClient
     {
-        public IWorldChannel CurrentServer => throw new BusinessCharacterOfflineException();
+        public WorldChannel CurrentServer => throw new BusinessCharacterOfflineException();
 
         public int Channel => throw new BusinessCharacterOfflineException();
 
@@ -157,7 +157,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public IWorldChannel getChannelServer()
+        public WorldChannel getChannelServer()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -172,7 +172,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public IWorld getWorldServer()
+        public World getWorldServer()
         {
             throw new BusinessCharacterOfflineException();
         }

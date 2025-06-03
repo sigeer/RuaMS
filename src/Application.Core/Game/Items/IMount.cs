@@ -19,13 +19,13 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace Application.Core.Game.Items
 {
     public interface IMount
     {
-        public IWorldChannel ChannelServer { get; }
+        public WorldChannel ChannelServer { get; }
         void empty();
         int getExp();
         int getId();

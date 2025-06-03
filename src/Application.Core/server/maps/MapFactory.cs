@@ -24,7 +24,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Application.Shared.MapObjects;
 using Application.Shared.WzEntity;
 using scripting.Event;
@@ -135,7 +135,7 @@ public class MapFactory
         }
     }
 
-    public static IMap loadMapFromWz(int mapid, IWorldChannel worldChannel, EventInstanceManager? evt)
+    public static IMap loadMapFromWz(int mapid, WorldChannel worldChannel, EventInstanceManager? evt)
     {
         IMap map;
 

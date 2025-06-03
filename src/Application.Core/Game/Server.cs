@@ -21,14 +21,13 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Game.Life;
 using Application.Core.Game.Skills;
-using Application.Core.Game.TheWorld;
 using Application.Core.Managers;
 using Application.Core.model;
 using client;
-using client.inventory.manipulator;
 using client.newyear;
 using Microsoft.EntityFrameworkCore;
 using net.server.task;
@@ -50,7 +49,7 @@ public class Server
     private static HashSet<int> activeFly = new();
 
 
-    public Dictionary<int, IWorld> RunningWorlds { get; set; } = new();
+    public Dictionary<int, World> RunningWorlds { get; set; } = new();
 
     /// <summary>
     /// AccountId - cid
@@ -104,12 +103,12 @@ public class Server
         });
     }
 
-    public IWorld getWorld(int id)
+    public World getWorld(int id)
     {
         return RunningWorlds.GetValueOrDefault(id) ?? throw new BusinessException($"World {id} not exsited");
     }
 
-    public List<IWorld> getWorlds()
+    public List<World> getWorlds()
     {
         return RunningWorlds.Values.ToList();
     }
@@ -119,17 +118,12 @@ public class Server
         return RunningWorlds.Count;
     }
 
-    public IWorldChannel getChannel(int world, int channel)
-    {
-        return this.getWorld(world).getChannel(channel);
-    }
-
-    public List<IWorldChannel> getChannelsFromWorld(int world)
+    public List<WorldChannel> getChannelsFromWorld(int world)
     {
         return this.getWorld(world).getChannels();
     }
 
-    public List<IWorldChannel> getAllChannels()
+    public List<WorldChannel> getAllChannels()
     {
         try
         {

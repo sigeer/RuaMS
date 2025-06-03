@@ -33,10 +33,10 @@ public abstract class PartyQuest
     protected ILogger log;
 
     int channel, world;
-    ITeam party;
+    Team party;
     List<IPlayer> participants = new();
 
-    public PartyQuest(ITeam party)
+    public PartyQuest(Team party)
     {
         this.party = party;
         var leader = party.getLeader();
@@ -56,7 +56,7 @@ public abstract class PartyQuest
         log = LogFactory.GetLogger($"PartyQuest/{GetType().Name}");
     }
 
-    public ITeam getParty()
+    public Team getParty()
     {
         return party;
     }

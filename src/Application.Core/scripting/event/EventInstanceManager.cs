@@ -402,7 +402,7 @@ public class EventInstanceManager
         }
     }
 
-    public void registerParty(ITeam party, IMap map)
+    public void registerParty(Team party, IMap map)
     {
         foreach (var mpc in party.getEligibleMembers())
         {

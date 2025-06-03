@@ -228,7 +228,7 @@ public class CashShop
         gainCash(type, -buyItem.getPrice());
         if (!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
         {
-            Server.getInstance().getWorld(world).addCashItemBought(buyItem.getSN());
+            Owner.Client.CurrentServer.Service.AddCashItemBought(buyItem.getSN());
         }
     }
 

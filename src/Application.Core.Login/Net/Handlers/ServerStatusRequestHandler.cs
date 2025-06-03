@@ -39,15 +39,6 @@ public class ServerStatusRequestHandler : LoginHandlerBase
     public override void HandlePacket(InPacket p, ILoginClient c)
     {
         byte world = (byte)p.readShort();
-        var wserv = Server.getInstance().getWorld(world);
-        if (wserv != null)
-        {
-            int status = wserv.getWorldCapacityStatus();
-            c.sendPacket(LoginPacketCreator.getServerStatus(status));
-        }
-        else
-        {
-            c.sendPacket(LoginPacketCreator.getServerStatus(2));
-        }
+        c.sendPacket(LoginPacketCreator.getServerStatus(_server.GetWorldCapacityStatus()));
     }
 }

@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace net.server.services.task.channel;
 
@@ -30,7 +30,7 @@ public class OverallService : BaseService
 
     private OverallScheduler[] channelSchedulers = new OverallScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public OverallService(IWorldChannel worldChannel) : base(worldChannel)
+    public OverallService(WorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
@@ -73,7 +73,7 @@ public class OverallService : BaseService
 
     public class OverallScheduler : BaseScheduler
     {
-        public OverallScheduler(IWorldChannel worldChannel) : base(worldChannel)
+        public OverallScheduler(WorldChannel worldChannel) : base(worldChannel)
         {
         }
 

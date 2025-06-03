@@ -817,7 +817,7 @@ public class AbstractPlayerInteraction
         return null;
     }
 
-    public virtual ITeam? getParty()
+    public virtual Team? getParty()
     {
         return getPlayer().getParty();
     }

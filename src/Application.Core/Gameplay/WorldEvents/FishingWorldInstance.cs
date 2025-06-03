@@ -1,4 +1,4 @@
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using System.Collections.Concurrent;
 using tools.packets;
 
@@ -8,12 +8,12 @@ namespace Application.Core.Gameplay.WorldEvents
     {
         private ConcurrentDictionary<IPlayer, int> fishingAttempters = new();
 
-        public FishingWorldInstance(IWorld worldServer)
+        public FishingWorldInstance(World worldServer)
         {
             WorldServer = worldServer;
         }
 
-        public IWorld WorldServer { get; set; }
+        public World WorldServer { get; set; }
         public bool RegisterFisherPlayer(IPlayer chr, int baitLevel)
         {
             return fishingAttempters.TryAdd(chr, baitLevel);

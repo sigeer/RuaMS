@@ -24,9 +24,6 @@ namespace Application.Shared.Client
         /// <param name="cid"></param>
         public abstract void SetCharacterOnSessionTransitionState(int cid);
         protected abstract HashSet<string> GetMac();
-
-
-        public abstract int GetAvailableCharacterSlots();
         public void UpdateAccountChracterByAdd(int id)
         {
             CurrentServerBase.UpdateAccountChracterByAdd(AccountId, id);

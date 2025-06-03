@@ -1,12 +1,13 @@
+using Application.Core.Channel;
 using Application.Core.Game.Relation;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using server;
 
 namespace Application.Core.Gameplay.ChannelEvents
 {
     public class DojoInstance : IAsyncDisposable
     {
-        IWorldChannel Channel { get; }
+        WorldChannel Channel { get; }
         private int usedDojo = 0;
         private int[] dojoStage;
         private long[] dojoFinishTime;
@@ -15,7 +16,7 @@ namespace Application.Core.Gameplay.ChannelEvents
         private object lockObj = new object();
 
         public const int StageCount = 20;
-        public DojoInstance(IWorldChannel channel)
+        public DojoInstance(WorldChannel channel)
         {
             Channel = channel;
 
@@ -44,7 +45,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
         }
 
-        public int LookupPartyDojo(ITeam? party)
+        public int LookupPartyDojo(Team? party)
         {
             if (party == null)
             {
@@ -54,7 +55,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             return dojoParty.GetValueOrDefault(party.GetHashCode(), -1);
         }
 
-        public int IngressDojo(bool isPartyDojo, ITeam? party, int fromStage)
+        public int IngressDojo(bool isPartyDojo, Team? party, int fromStage)
         {
             Monitor.Enter(lockObj);
             try
@@ -109,7 +110,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
         }
 
-        private void FreeDojoSlot(int slot, ITeam? party)
+        private void FreeDojoSlot(int slot, Team? party)
         {
             int mask = 0b11111111111111111111;
             mask ^= (1 << slot);
@@ -211,7 +212,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 {
                     int delta = (dojoMapId) % 100;
                     int dojoBaseMap = (slot < 5) ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE;
-                    ITeam? party = null;
+                    Team? party = null;
 
                     for (int i = 0; i < 5; i++)
                     { //only 32 stages, but 38 maps
@@ -242,7 +243,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             dojoFinishTime[slot] = this.Channel.getCurrentTime() + clockTime;
         }
 
-        public void DismissDojoSchedule(int dojoMapId, ITeam party)
+        public void DismissDojoSchedule(int dojoMapId, Team party)
         {
             int slot = GetDojoSlot(dojoMapId);
             int stage = (dojoMapId / 100) % 100;

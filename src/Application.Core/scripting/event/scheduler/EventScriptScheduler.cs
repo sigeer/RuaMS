@@ -19,7 +19,7 @@
  */
 
 
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 
 namespace scripting.Event.scheduler;
 /**
@@ -37,9 +37,9 @@ public class EventScriptScheduler
 
     CancellationTokenSource? cancellationTokenSource;
 
-    readonly IWorldChannel _channelServer;
+    readonly WorldChannel _channelServer;
 
-    public EventScriptScheduler(IWorldChannel channelServer)
+    public EventScriptScheduler(WorldChannel channelServer)
     {
         _channelServer = channelServer;
     }

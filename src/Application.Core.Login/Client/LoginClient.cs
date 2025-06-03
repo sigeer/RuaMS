@@ -71,14 +71,6 @@ namespace Application.Core.Login.Client
             updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
             CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
-
-        public override int GetAvailableCharacterSlots()
-        {
-            if (AccountEntity == null)
-                return 0;
-
-            return AccountEntity.Characterslots - CurrentServer.GetAccountCharacterCount(AccountEntity.Id);
-        }
         public void Disconnect()
         {
             _sessionCoordinator.closeSession(this, false);

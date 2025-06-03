@@ -22,7 +22,7 @@
 
 
 using Application.Core.Game.Commands;
-using Application.Core.Game.TheWorld;
+using Application.Core.Channel;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
@@ -41,7 +41,7 @@ public class EventScriptManager : AbstractScriptManager
     private bool active = false;
     readonly string[] eventScripts;
 
-    public EventScriptManager(IWorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor, channel)
+    public EventScriptManager(WorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor, channel)
     {
         eventScripts = ScriptResFactory.GetEvents();
 

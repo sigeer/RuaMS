@@ -19,8 +19,8 @@
 */
 
 
+using Application.Core.Channel;
 using Application.Core.Game.Life.Monsters;
-using Application.Core.Game.TheWorld;
 
 namespace net.server.services.task.channel;
 
@@ -33,7 +33,7 @@ public class MobStatusService : BaseService
 
     private MobStatusScheduler[] mobStatusSchedulers = new MobStatusScheduler[YamlConfig.config.server.CHANNEL_LOCKS];
 
-    public MobStatusService(IWorldChannel worldChannel) : base(worldChannel)
+    public MobStatusService(WorldChannel worldChannel) : base(worldChannel)
     {
         for (int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++)
         {
@@ -97,7 +97,7 @@ public class MobStatusService : BaseService
             }
         }
 
-        public MobStatusScheduler(IWorldChannel worldChannel) : base(worldChannel)
+        public MobStatusScheduler(WorldChannel worldChannel) : base(worldChannel)
         {
 
             base.addListener((List<object> toRemove, bool update) =>
