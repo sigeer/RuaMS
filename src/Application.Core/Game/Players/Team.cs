@@ -28,18 +28,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void updatePartyMemberHP()
-        {
-            Monitor.Enter(prtLock);
-            try
-            {
-                receivePartyMemberHP();
-            }
-            finally
-            {
-                Monitor.Exit(prtLock);
-            }
-        }
 
         public bool isLeader()
         {
@@ -105,13 +93,12 @@ namespace Application.Core.Game.Players
         public List<IPlayer> getPartyMembersOnSameMap()
         {
             List<IPlayer> list = new();
-            int thisMapHash = this.MapModel.GetHashCode();
-
             Monitor.Enter(prtLock);
             try
             {
                 if (TeamModel != null)
                 {
+                    int thisMapHash = this.MapModel.GetHashCode();
                     foreach (var chr in TeamModel.GetChannelMembers(Client.CurrentServer))
                     {
                         var chrMap = chr.getMap();
@@ -181,6 +168,26 @@ namespace Application.Core.Game.Players
                 return false;
             }
         }
+
+        public void updatePartyMemberHP()
+        {
+            Monitor.Enter(prtLock);
+            try
+            {
+                if (TeamModel != null)
+                {
+                    foreach (var player in this.getPartyMembersOnSameMap())
+                    {
+                        player.sendPacket(PacketCreator.updatePartyMemberHP(getId(), HP, ActualMaxHP));
+                    }
+                }
+            }
+            finally
+            {
+                Monitor.Exit(prtLock);
+            }
+        }
+
 
         public void receivePartyMemberHP()
         {

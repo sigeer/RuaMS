@@ -242,7 +242,7 @@ namespace Application.Core.Game.Players
                     if (TeamModel != null)
                     {
                         sendPacket(PacketCreator.updateParty(Client.getChannelServer(), TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
-                        receivePartyMemberHP();
+                        updatePartyMemberHP();
                     }
                 }
                 finally
