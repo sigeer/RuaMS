@@ -2251,8 +2251,6 @@ public partial class DBContext : DbContext
 
             entity.HasIndex(e => new { e.Id, e.AccountId, e.Name }, "id_2");
 
-            entity.HasIndex(e => e.Party, "party");
-
             entity.HasIndex(e => new { e.Level, e.Exp }, "ranking1");
 
             entity.Property(e => e.Id)
