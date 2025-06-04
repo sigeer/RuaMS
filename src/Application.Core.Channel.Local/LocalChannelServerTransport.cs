@@ -687,7 +687,7 @@ namespace Application.Core.Channel.Local
         #region Team
         public Dto.TeamDto CreateTeam(int playerId)
         {
-            return _mapper.Map<Dto.TeamDto>(_server.TeamManager.CreateTeam(playerId));
+            return _server.TeamManager.CreateTeam(playerId);
         }
 
         public Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId)

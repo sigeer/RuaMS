@@ -3903,7 +3903,10 @@ public class PacketCreator
         }
         foreach (var partychar in partymembers)
         {
-            p.writeInt(partychar.Channel - 1);
+            if (partychar.Channel > 0)
+                p.writeInt(partychar.Channel - 1);
+            else
+                p.writeInt(-2);
         }
         p.writeInt(party.getLeaderId());
         Dictionary<int, IPlayer> forChannelMembers = party.GetChannelMembers(forchannel).ToDictionary(x => x.Id, x => x);

@@ -15,6 +15,7 @@ using scripting.npc;
 using System.Text.RegularExpressions;
 using tools;
 using Application.Shared.Team;
+using Application.Core.Game.Players;
 
 namespace Application.Core.Channel.Net
 {
@@ -124,12 +125,13 @@ namespace Application.Core.Channel.Net
                         Character.cancelAllDebuffs();
                         Character.saveCharToDB(isLogoff: true);
 
+                        RemovePartyPlayer(Character);
+
                         Character.logOff();
                         if (YamlConfig.config.server.INSTANT_NAME_CHANGE)
                         {
                             Character.doPendingNameChange();
                         }
-
                     }
                     else
                     {
@@ -182,8 +184,7 @@ namespace Application.Core.Channel.Net
 
                 if (!serverTransition)
                 {
-                    // thanks MedicOP for detecting an issue with party leader change on changing channels
-                    RemovePartyPlayer(player, wserv);
+
 
                     var eim = player.getEventInstance();
                     if (eim != null)
@@ -218,11 +219,9 @@ namespace Application.Core.Channel.Net
             }
         }
 
-        private void RemovePartyPlayer(IPlayer player, World wserv)
+        private void RemovePartyPlayer(IPlayer player)
         {
-            var map = player.getMap();
             var party = player.getParty();
-            int idz = player.getId();
 
             if (party != null)
             {

@@ -191,9 +191,9 @@ namespace Application.Core.Login
 
         internal void SendTeamUpdate(int exceptChannel, int teamId, PartyOperation operation, TeamMemberDto target)
         {
-            for (int i = 1; i < _server.ChannelServerList.Count + 1; i++)
+            for (int i = 0; i < _server.ChannelServerList.Count; i++)
             {
-                if (i == exceptChannel)
+                if (i == exceptChannel - 1)
                     continue;
 
                 var ch = _server.ChannelServerList[i];

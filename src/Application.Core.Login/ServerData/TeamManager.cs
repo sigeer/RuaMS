@@ -3,6 +3,7 @@ using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using XmlWzReader;
 
 namespace Application.Core.Login.ServerData
 {
@@ -36,12 +37,18 @@ namespace Application.Core.Login.ServerData
         }
         public TeamModel? GetTeamLocal(int teamId) => _dataSource.GetValueOrDefault(teamId);
 
-        public TeamModel CreateTeam(int playerId)
+        public Dto.TeamDto CreateTeam(int playerId)
         {
             var newTeam = new TeamModel(Interlocked.Increment(ref _currentId), playerId);
             var chrFrom = _server.CharacterManager.FindPlayerById(playerId)!;
             chrFrom.Character.Party = newTeam.Id;
-            return newTeam;
+
+            var response = new Dto.TeamDto();
+            response.Id = newTeam.Id;
+            response.LeaderId = newTeam.LeaderId;
+            response.Members.AddRange(_mapper.Map<Dto.TeamMemberDto[]>(new CharacterLiveObject[] { chrFrom }));
+            _dataSource[newTeam.Id] = newTeam;
+            return response;
         }
         public bool RemoveTeam(int leaderId, int teamId)
         {
@@ -59,19 +66,20 @@ namespace Application.Core.Login.ServerData
                 errorCode = UpdateTeamCheckResult.TeamNotExsited;
             else
             {
-                var chrFrom = _server.CharacterManager.FindPlayerById(fromId)!;
+                var chrFrom = fromId > 0 ? _server.CharacterManager.FindPlayerById(fromId) : null;
                 var chrTo = fromId == toId ? chrFrom : _server.CharacterManager.FindPlayerById(toId)!;
+                response.UpdatedMember = _mapper.Map<Dto.TeamMemberDto>(chrTo);
                 switch (operation)
                 {
                     case PartyOperation.JOIN:
-                        if (chrFrom.Character.Party > 0)
+                        if (chrFrom!.Character.Party > 0)
                             errorCode = UpdateTeamCheckResult.Join_HasTeam;
                         if (party.TryAddMember(toId, out errorCode))
                             chrFrom.Character.Party = partyid;
                         break;
                     case PartyOperation.EXPEL:
                         if (party.TryExpel(fromId, toId, out errorCode))
-                            chrTo.Character.Party = 0;
+                            chrTo!.Character.Party = 0;
                         break;
                     case PartyOperation.LEAVE:
                         if (fromId == party.LeaderId)
@@ -79,13 +87,13 @@ namespace Application.Core.Login.ServerData
                             operation = PartyOperation.DISBAND;
                             goto case PartyOperation.DISBAND;
                         }
-                        if (party.TryRemoveMember(toId, out errorCode))
-                            chrTo.Character.Party = 0;
+                        if (party.TryRemoveMember(fromId, out errorCode))
+                            chrFrom!.Character.Party = 0;
                         break;
                     case PartyOperation.DISBAND:
                         if (fromId != party.LeaderId)
                             errorCode = UpdateTeamCheckResult.Disband_NotLeader;
-                        else if (!RemoveTeam(toId, partyid))
+                        else if (!RemoveTeam(fromId, partyid))
                             errorCode = UpdateTeamCheckResult.Leave_InnerError;
                         else
                         {
@@ -98,7 +106,6 @@ namespace Application.Core.Login.ServerData
                         }
                         break;
                     case PartyOperation.SILENT_UPDATE:
-                        response.UpdatedMember = _mapper.Map<Dto.TeamMemberDto>(chrTo);
                         break;
                     case PartyOperation.LOG_ONOFF:
                         // fromId = -1 表示下线
