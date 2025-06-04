@@ -1,4 +1,4 @@
-namespace Application.Core.Servers
+namespace Application.Shared.Servers
 {
     public class ChannelServerConfig
     {

@@ -582,10 +582,10 @@ public class EventManager
 
     public bool startInstance(int lobbyId, Team party, IMap map)
     {
-        return startInstance(lobbyId, party, map, party.getLeader());
+        return startInstance(lobbyId, party, map, party.GetChannelLeader(cserv));
     }
 
-    public bool startInstance(int lobbyId, Team party, IMap map, IPlayer leader)
+    public bool startInstance(int lobbyId, Team party, IMap map, IPlayer? leader)
     {
         return startInstance(lobbyId, party, map, 0, leader);
     }
@@ -598,11 +598,16 @@ public class EventManager
 
     public bool startInstance(int lobbyId, Team party, IMap map, int difficulty)
     {
-        return startInstance(lobbyId, party, map, difficulty, party.getLeader());
+        return startInstance(lobbyId, party, map, difficulty, party.GetChannelLeader(cserv));
     }
 
-    public bool startInstance(int lobbyId, Team party, IMap map, int difficulty, IPlayer leader)
+    public bool startInstance(int lobbyId, Team party, IMap map, int difficulty, IPlayer? leader)
     {
+        if (leader == null)
+        {
+            log.Information("队长不在同一频道");
+            return false;
+        }
         if (this.isDisposed())
         {
             return false;
@@ -778,7 +783,7 @@ public class EventManager
         }
         try
         {
-            var result = iv.CallFunction("getEligibleParty", party.getPartyMembersOnline());
+            var result = iv.CallFunction("getEligibleParty", party.GetChannelMembers(cserv));
             var eligibleParty = result.ToObject<List<IPlayer>>();
             party.setEligibleMembers(eligibleParty);
             return eligibleParty;

@@ -1,4 +1,4 @@
-﻿using scripting.Event;
+using scripting.Event;
 
 namespace Application.Core.Game.GameEvents.PartyQuest
 {
@@ -95,7 +95,7 @@ namespace Application.Core.Game.GameEvents.PartyQuest
 
         protected virtual List<IPlayer> FilterTeam()
         {
-            return Player.TeamModel!.getPartyMembersOnline().Where(x => x.Level >= MinLevel && x.Level <= MaxLevel).ToList();
+            return Player.TeamModel!.GetChannelMembers(Player.Client.CurrentServer).Where(x => x.Level >= MinLevel && x.Level <= MaxLevel).ToList();
         }
 
         public abstract int GetStageFromMap(int mapId);

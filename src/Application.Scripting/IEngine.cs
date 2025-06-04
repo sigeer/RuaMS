@@ -10,6 +10,5 @@ namespace Application.Scripting
         public ScriptResultWrapper Evaluate(ScriptPrepareWrapper prepared);
         public ScriptResultWrapper GetValue(string variable);
         public bool IsExisted(string variable);
-        ScriptPrepareWrapper Prepare(string code);
     }
 }

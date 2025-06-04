@@ -39,10 +39,13 @@ public class PortalScriptManager : AbstractScriptManager
     {
     }
 
-    private IEngine? getPortalScript(string scriptName)
+    private IEngine? getPortalScript(string? scriptName)
     {
-        string scriptPath = GetPortalScriptPath(scriptName);
-        var script = _scripts[scriptPath];
+        if (string.IsNullOrEmpty(scriptName))
+            return null;
+
+        var scriptPath = GetPortalScriptPath(scriptName);
+        var script = _scripts[scriptPath.CacheKey];
         if (script != null)
         {
             return script;
@@ -54,7 +57,7 @@ public class PortalScriptManager : AbstractScriptManager
             return null;
         }
 
-        _scripts[scriptPath] = engine;
+        _scripts[scriptPath.CacheKey] = engine;
         return script;
     }
 

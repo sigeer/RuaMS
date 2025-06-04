@@ -70,7 +70,7 @@ namespace Application.Scripting.Lua
             return _engine.GetObjectFromPath(variable) != null;
         }
 
-        public ScriptPrepareWrapper Prepare(string code)
+        public static ScriptPrepareWrapper Prepare(string code)
         {
             return new NLuaScriptPrepareWrapper(code);
         }

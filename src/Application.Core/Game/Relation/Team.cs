@@ -1,4 +1,4 @@
-using net.server.world;
+using Application.Core.Channel;
 using server.maps;
 
 namespace Application.Core.Game.Relation
@@ -7,7 +7,7 @@ namespace Application.Core.Game.Relation
     {
         private int id;
         private int leaderId;
-        private List<IPlayer> members = new();
+        private Dictionary<int, TeamMember> members = new();
         private List<IPlayer> pqMembers = new List<IPlayer>();
 
         private Dictionary<int, int> histMembers = new();
@@ -17,18 +17,18 @@ namespace Application.Core.Game.Relation
 
         private object lockObj = new object();
 
-        public Team(int id, IPlayer chrfor)
+        public Team(int id, int leaderId)
         {
-            this.leaderId = chrfor.getId();
+            this.leaderId = leaderId;
             this.id = id;
         }
 
-        public bool containsMembers(IPlayer member)
+        public bool containsMembers(int memberId)
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.Contains(member);
+                return members.ContainsKey(memberId);
             }
             finally
             {
@@ -36,15 +36,15 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void addMember(IPlayer member)
+        public void addMember(TeamMember member)
         {
             Monitor.Enter(lockObj);
             try
             {
-                histMembers.AddOrUpdate(member.getId(), nextEntry);
+                histMembers.AddOrUpdate(member.Id, nextEntry);
                 nextEntry++;
 
-                members.Add(member);
+                members.TryAdd(member.Id, member);
             }
             finally
             {
@@ -52,12 +52,12 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void removeMember(IPlayer member)
+        public void removeMember(int member)
         {
             Monitor.Enter(lockObj);
             try
             {
-                histMembers.Remove(member.getId());
+                histMembers.Remove(member);
 
                 members.Remove(member);
             }
@@ -67,23 +67,17 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void setLeader(IPlayer victim)
+        public void SetLeaderId(int leaderId)
         {
-            this.leaderId = victim.getId();
+            this.leaderId = leaderId;
         }
 
-        public void updateMember(IPlayer member)
+        public void updateMember(TeamMember member)
         {
             Monitor.Enter(lockObj);
             try
             {
-                for (int i = 0; i < members.Count; i++)
-                {
-                    if (members.get(i).getId() == member.getId())
-                    {
-                        members[i] = member;
-                    }
-                }
+                members[member.Id] = member;
             }
             finally
             {
@@ -91,12 +85,12 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public IPlayer? getMemberById(int id)
+        public IPlayer? getMemberById(WorldChannel currentServer, int id)
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.FirstOrDefault(x => x.getId() == id);
+                return GetChannelMembers(currentServer).FirstOrDefault(x => x.getId() == id);
             }
             finally
             {
@@ -104,25 +98,20 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public ICollection<IPlayer> getMembers()
-        {
-            Monitor.Enter(lockObj);
-            try
-            {
-                return members.ToList();
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
-            }
-        }
+        public int GetMemberCount() => members.Count;
+        public List<TeamMember> GetTeamMembers() => members.Values.ToList();
 
-        public List<IPlayer> getPartyMembersOnline()
+        /// <summary>
+        /// 当需要获取完整Player时的获取队员，都会要求在同一频道
+        /// </summary>
+        /// <param name="currentServer"></param>
+        /// <returns></returns>
+        public List<IPlayer> GetChannelMembers(WorldChannel currentServer)
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.Where(x => x.IsOnlined).ToList();
+                return members.Keys.Select(x => currentServer.Players.getCharacterById(x)).Where(x => x != null).ToList()!;
             }
             finally
             {
@@ -156,12 +145,12 @@ namespace Application.Core.Game.Relation
             return leaderId;
         }
 
-        public IPlayer getLeader()
+        public IPlayer? GetChannelLeader(WorldChannel server)
         {
             Monitor.Enter(lockObj);
             try
             {
-                return members.FirstOrDefault(x => x.getId() == leaderId) ?? throw new BusinessException();
+                return GetChannelMembers(server).FirstOrDefault(x => x.getId() == leaderId);
             }
             finally
             {
@@ -249,33 +238,6 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void assignNewLeader(IChannelClient c)
-        {
-            var world = c.getWorldServer();
-            IPlayer? newLeadr = null;
-
-            Monitor.Enter(lockObj);
-            try
-            {
-                foreach (IPlayer mpc in members)
-                {
-                    if (mpc.getId() != leaderId && (newLeadr == null || newLeadr.getLevel() < mpc.getLevel()))
-                    {
-                        newLeadr = mpc;
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(lockObj);
-            }
-
-            if (newLeadr != null)
-            {
-                world.updateParty(this.getId(), PartyOperation.CHANGE_LEADER, newLeadr);
-            }
-        }
-
         public override int GetHashCode()
         {
             int prime = 31;
@@ -284,9 +246,9 @@ namespace Application.Core.Game.Relation
             return result;
         }
 
-        public IPlayer? getMemberByPos(int pos)
+        public int GetRandomMemberId()
         {
-            return members.ElementAtOrDefault(pos);
+            return Randomizer.Select(members.Keys);
         }
 
         public override bool Equals(object? obj)

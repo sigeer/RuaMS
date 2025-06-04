@@ -30,7 +30,7 @@ namespace Application.Core.Game
 
         public static string[] GetEvents()
         {
-            return Directory.GetFiles(GetScriptFullPath(ScriptDir.Event)).Select(x => Path.GetFileName(x)).Where(x => !x.StartsWith("__")).ToArray();
+            return Directory.GetFiles(GetScriptFullPath(ScriptDir.Event)).Select(x => Path.GetFileNameWithoutExtension(x)).Where(x => !x.StartsWith("__")).ToArray();
         }
     }
 }

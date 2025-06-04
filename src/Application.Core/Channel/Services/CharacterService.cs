@@ -127,7 +127,7 @@ namespace Application.Core.Servers.Services
             player.setPosition(portal.getPosition());
 
             var wserv = Server.getInstance().getWorld(0);
-            player.setParty(wserv.getParty(player.Party));
+            player.setParty(c.CurrentServer.TeamManager.GetParty(player.Party));
 
             int messengerid = player.MessengerId;
             int position = player.MessengerPosition;
@@ -428,7 +428,11 @@ namespace Application.Core.Servers.Services
             }));
             return data;
         }
-
+        /// <summary>
+        /// 创建角色使用
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
         public Dto.NewPlayerSaveDto DeserializeNew(IPlayer player)
         {
             var playerDto = _mapper.Map<Dto.CharacterDto>(player);
@@ -485,6 +489,11 @@ namespace Application.Core.Servers.Services
             data.KeyMaps.AddRange(player.KeyMap.ToDto());
 
             return data;
+        }
+
+        public Dto.CharacterMapChangeDto DeserializeMap(IPlayer player)
+        {
+            return new Dto.CharacterMapChangeDto { Id = player.Id, Map = player.Map };
         }
 
 

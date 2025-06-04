@@ -29,9 +29,9 @@ namespace Application.Core.Game.Maps;
  */
 public class DoorObject : AbstractMapObject
 {
-    private int ownerId;
     private int pairOid;
 
+    public IPlayer Owner { get; }
     private IMap from;
     private IMap to;
     private int linkedPortalId;
@@ -39,11 +39,11 @@ public class DoorObject : AbstractMapObject
 
     private ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-    public DoorObject(int owner, IMap destination, IMap origin, int townPortalId, Point targetPosition, Point toPosition) : base()
+    public DoorObject(IPlayer owner, IMap destination, IMap origin, int townPortalId, Point targetPosition, Point toPosition) : base()
     {
         setPosition(targetPosition);
 
-        ownerId = owner;
+        Owner = owner;
         linkedPortalId = townPortalId;
         from = origin;
         to = destination;
@@ -93,7 +93,7 @@ public class DoorObject : AbstractMapObject
     public void warp(IPlayer chr)
     {
         var party = chr.getParty();
-        if (chr.getId() == ownerId || party != null && party.getMemberById(ownerId) != null)
+        if (chr.getId() == Owner.Id || party != null && party.getMemberById(Owner.getChannelServer(), Owner.Id) != null)
         {
             chr.sendPacket(PacketCreator.playPortalSound());
 
@@ -123,7 +123,7 @@ public class DoorObject : AbstractMapObject
         var chr = client.OnlinedCharacter;
         if (getFrom().getId() == chr.getMapId())
         {
-            if (chr.getParty() != null && (getOwnerId() == chr.getId() || chr.getParty()!.getMemberById(getOwnerId()) != null))
+            if (chr.getParty() != null && (Owner.Id == chr.getId() || chr.getParty()!.getMemberById( Owner.getChannelServer(), Owner.Id) != null))
             {
                 chr.sendPacket(PacketCreator.partyPortal(getFrom().getId(), getTo().getId(), toPosition()));
             }
@@ -131,7 +131,7 @@ public class DoorObject : AbstractMapObject
             chr.sendPacket(PacketCreator.spawnPortal(getFrom().getId(), getTo().getId(), toPosition()));
             if (!inTown())
             {
-                chr.sendPacket(PacketCreator.spawnDoor(getOwnerId(), getPosition(), launched));
+                chr.sendPacket(PacketCreator.spawnDoor(Owner.Id, getPosition(), launched));
             }
         }
     }
@@ -142,11 +142,11 @@ public class DoorObject : AbstractMapObject
         if (from.getId() == chr.getMapId())
         {
             var party = chr.getParty();
-            if (party != null && (ownerId == chr.getId() || party.getMemberById(ownerId) != null))
+            if (party != null && (Owner.Id == chr.getId() || party.getMemberById(Owner.getChannelServer(), Owner.Id) != null))
             {
                 client.sendPacket(PacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
             }
-            client.sendPacket(PacketCreator.removeDoor(ownerId, inTown()));
+            client.sendPacket(PacketCreator.removeDoor(Owner.Id, inTown()));
         }
     }
 
@@ -155,14 +155,10 @@ public class DoorObject : AbstractMapObject
         if (client != null && from.getId() == client.OnlinedCharacter.getMapId())
         {
             client.sendPacket(PacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
-            client.sendPacket(PacketCreator.removeDoor(ownerId, inTown()));
+            client.sendPacket(PacketCreator.removeDoor(Owner.Id, inTown()));
         }
     }
 
-    public int getOwnerId()
-    {
-        return ownerId;
-    }
 
     public void setPairOid(int oid)
     {

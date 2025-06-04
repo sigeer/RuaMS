@@ -28,18 +28,6 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void updatePartyMemberHP()
-        {
-            Monitor.Enter(prtLock);
-            try
-            {
-                receivePartyMemberHP();
-            }
-            finally
-            {
-                Monitor.Exit(prtLock);
-            }
-        }
 
         public bool isLeader()
         {
@@ -92,7 +80,7 @@ namespace Application.Core.Game.Players
             {
                 if (TeamModel != null)
                 {
-                    return TeamModel.getMembers().Where(x => x.IsOnlined).ToList();
+                    return TeamModel.GetChannelMembers(Client.CurrentServer).Where(x => x.IsOnlined).ToList();
                 }
                 return new List<IPlayer>();
             }
@@ -105,14 +93,13 @@ namespace Application.Core.Game.Players
         public List<IPlayer> getPartyMembersOnSameMap()
         {
             List<IPlayer> list = new();
-            int thisMapHash = this.MapModel.GetHashCode();
-
             Monitor.Enter(prtLock);
             try
             {
                 if (TeamModel != null)
                 {
-                    foreach (var chr in TeamModel.getMembers())
+                    int thisMapHash = this.MapModel.GetHashCode();
+                    foreach (var chr in TeamModel.GetChannelMembers(Client.CurrentServer))
                     {
                         var chrMap = chr.getMap();
                         // 用hashcode判断地图是否相同？ -- 同一频道、同一mapid
@@ -143,7 +130,7 @@ namespace Application.Core.Game.Players
             {
                 if (TeamModel != null)
                 {
-                    return TeamModel.getMemberById(cid) != null;
+                    return TeamModel.containsMembers(cid);
                 }
             }
             finally
@@ -172,11 +159,7 @@ namespace Application.Core.Game.Players
 
             if (party != null)
             {
-                if (partyLeader)
-                {
-                    party.assignNewLeader(Client);
-                }
-                TeamManager.leaveParty(party, this);
+                Client.CurrentServer.TeamManager.LeaveParty(this);
 
                 return true;
             }
@@ -185,6 +168,26 @@ namespace Application.Core.Game.Players
                 return false;
             }
         }
+
+        public void updatePartyMemberHP()
+        {
+            Monitor.Enter(prtLock);
+            try
+            {
+                if (TeamModel != null)
+                {
+                    foreach (var player in this.getPartyMembersOnSameMap())
+                    {
+                        player.sendPacket(PacketCreator.updatePartyMemberHP(getId(), HP, ActualMaxHP));
+                    }
+                }
+            }
+            finally
+            {
+                Monitor.Exit(prtLock);
+            }
+        }
+
 
         public void receivePartyMemberHP()
         {

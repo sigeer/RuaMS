@@ -252,6 +252,17 @@ namespace Application.Core.Mappers
             CreateMap<Dto.GiftDto, GiftModel>();
             CreateMap<Dto.SpecialCashItemDto, SpecialCashItem>()
                 .ConstructUsing((src, ctx) => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
+
+            CreateMap<Dto.TeamMemberDto, TeamMember>();
+            CreateMap<Dto.TeamDto, Team>()
+                .ConstructUsing(src => new Team(src.Id, src.LeaderId))
+                .AfterMap((src, dest, ctx) =>
+                {
+                    foreach (var member in src.Members)
+                    {
+                        dest.addMember(ctx.Mapper.Map<TeamMember>(member));
+                    }
+                });
         }
 
         private int[] TranslateArray(string str)

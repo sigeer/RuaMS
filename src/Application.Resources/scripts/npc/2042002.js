@@ -177,31 +177,17 @@ function action(mode, type, selection) {
                     cm.sendOk("在你加入战斗之前，你需要先创建一个队伍！");
                 } else if (!cm.isLeader()) {
                     status = 10;
-                    cm.sendOk("如果你想开始战斗，让#b队伍领袖#k和我对话。");
+                    cm.sendOk("如果你想开始战斗，让#b队长#k和我交谈。");
                 } else {
-                    var party = cm.getParty().getMembers();
-                    var inMap = cm.partyMembersInMap();
-                    var lvlOk = 0;
-                    var isOutMap = 0;
-                    for (var i = 0; i < party.size(); i++) {
-                        if (party.get(i).getLevel() >= cpqMinLvl && party.get(i).getLevel() <= cpqMaxLvl) {
-                            lvlOk++;
-
-                            if (party.get(i).getPlayer().getMapId() != cpqMap) {
-                                isOutMap++;
-                            }
-                        }
-                    }
-
-                    if (party >= 1) {
+                    if (!cm.CheckTeamMemberCount(cpqMinAmt, cpqMaxAmt)) {
                         status = 10;
                         cm.sendOk("你的队伍人数不够。你需要一个有 #b" + cpqMinAmt + "#k - #r" + cpqMaxAmt + "#k 名成员的队伍，并且他们应该和你在同一地图上。");
-                    } else if (lvlOk != inMap) {
+                    } else if (!cm.CheckTeamMemberLevel(cpqMinLvl, cpqMaxLvl)) {
                         status = 10;
-                        cm.sendOk("确保你的队伍中的每个人都处于正确的等级范围（" + cpqMinLvl + "~" + cpqMaxLvl + "）之间！");
-                    } else if (isOutMap > 0) {
+                        cm.sendOk("确保你的队伍中的每个人都处于正确的等级范围内（" + cpqMinLvl + "~" + cpqMaxLvl + "）！");
+                    } else if (!cm.CheckTeamMemberMap()) {
                         status = 10;
-                        cm.sendOk("有一些队员不在地图上！");
+                        cm.sendOk("有一些队伍成员不在地图上！");
                     } else {
                         if (!cm.sendCPQMapLists()) {
                             cm.sendOk("所有的怪物嘉年华场地目前都在使用中！请稍后再试。");
@@ -219,7 +205,7 @@ function action(mode, type, selection) {
                         cm.dispose();
                     }
                 } else {
-                    var party = cm.getParty().getMembers();
+                    var party = cm.GetTeamMembers();
                     if ((selection >= 0 && selection <= 3) && party.size() < 1) {
                         cm.sendOk("你至少需要2名玩家才能参与战斗！");
                     } else if ((selection >= 4 && selection <= 5) && party.size() < 1) {
@@ -241,17 +227,17 @@ function action(mode, type, selection) {
                 cm.sendSimple(talk);
             } else if (status == 1) {
                 if (selection == 0) {
-                    if ((cm.getLevel() > 29 && cm.getLevel() < 51) || cm.getPlayer().isGM()) {
+                    if ((cm.getLevel() >= cpqMinLvl && cm.getLevel() <= cpqMaxLvl) || cm.getPlayer().isGM()) {
                         cm.getChar().saveLocation("MONSTER_CARNIVAL");
                         cm.warp(980000000, 0);
                         cm.dispose();
 
-                    } else if (cm.getLevel() < 30) {
-                        cm.sendOk("你必须至少达到30级才能参加怪物嘉年华。当你足够强大时，和我交谈。");
+                    } else if (cm.getLevel() < cpqMinLvl) {
+                        cm.sendOk(`你必须至少达到${cpqMinLvl}级才能参加怪物嘉年华。当你足够强大时，和我交谈。`);
                         cm.dispose();
 
                     } else {
-                        cm.sendOk("很抱歉，只有等级在30到50级之间的玩家才能参加怪物嘉年华活动。");
+                        cm.sendOk(`很抱歉，只有等级在${cpqMinLvl}到${cpqMaxLvl}级之间的玩家才能参加怪物嘉年华活动。`);
                         cm.dispose();
 
                     }

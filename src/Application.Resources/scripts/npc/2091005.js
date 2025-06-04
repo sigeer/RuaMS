@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -163,7 +163,7 @@ function action(mode, type, selection) {
                             //    cm.sendNext("你要独自接受挑战吗？");
                         //}
 
-                        else if (!isBetween(party, 30)) {
+                        else if (!cm.CheckTeamMemberLevelRange(30)) {
                             cm.sendNext("你的队伍成员等级范围太广，无法进入。请确保你的所有队伍成员等级相差不超过#r30级#k。");
                             cm.dispose();
 
@@ -304,7 +304,7 @@ function action(mode, type, selection) {
                                 return;
                             }
 
-                            if (!isBetween(cm.getParty(), 35)) {
+                            if (!cm.CheckTeamMemberLevelRange(35)) {
                                 cm.sendOk("你的队伍成员等级范围太广，无法进入。请确保你的所有队伍成员等级相差不超过#r35级#k。");
                                 cm.dispose();
                                 return;
@@ -397,18 +397,4 @@ function sendBeltRequirements(belt, oldbelt, haveOldbelt, level, points) {
 
 function isRestingSpot(id) {
     return (Math.floor(id / 100) % 100) % 6 == 0 && id != 925020001;
-}
-
-function isBetween(party, range) {
-    var lowest = cm.getPlayer().getLevel();
-    var highest = lowest;
-    for (var x = 0; x < party.getMembers().size(); x++) {
-        var lvl = party.getMembers().get(x).getLevel();
-        if (lvl > highest) {
-            highest = lvl;
-        } else if (lvl < lowest) {
-            lowest = lvl;
-        }
-    }
-    return (highest - lowest) <= range;
 }

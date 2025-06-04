@@ -1,4 +1,4 @@
-﻿/**
+/**
  -- Version Info -----------------------------------------------------------------------------------
  1.0 - First Version by Drago (MapleStorySA)
  2.0 - Second Version by Jayd - translated CPQ contents to English
@@ -37,7 +37,7 @@ function action(mode, type, selection) {
         }
 
         if (status == 0) {
-            if (cm.getParty().getMembers().size() == party.size()) {
+            if (cm.getParty().GetTeamMembers().size() == party.size()) {
                 cm.getPlayer().setChallenged(true);
                 var snd = "";
                 for (var i = 0; i < party.size(); i++) {
@@ -50,7 +50,7 @@ function action(mode, type, selection) {
                 cm.dispose();
             }
         } else if (status == 1) {
-            if (party.size() == cm.getParty().getMembers().size()) {
+            if (party.size() == cm.getParty().GetTeamMembers().size()) {
                 cm.answerCPQChallenge(true);
             } else {
                 cm.answerCPQChallenge(false);

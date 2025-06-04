@@ -82,7 +82,7 @@ namespace Application.Core.Login
 
         public static IServiceCollection AddLoginServer(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(ProtoMapper), typeof(EntityMapper));
+            services.AddAutoMapper(typeof(ProtoMapper).Assembly);
 
             services.AddLoginHandlers();
 

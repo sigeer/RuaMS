@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -115,23 +115,13 @@ function action(mode, type, selection) {
                     cm.dispose();
                     return;
                 }
-                var lowest = cm.getPlayer().getLevel();
-                var highest = lowest;
-                for (var x = 0; x < party.getMembers().size(); x++) {
-                    var lvl = party.getMembers().get(x).getLevel();
-                    if (lvl > highest) {
-                        highest = lvl;
-                    } else if (lvl < lowest) {
-                        lowest = lvl;
-                    }
-                }
-                var isBetween30 = highest - lowest < 30;
+
                 if (party.getLeader().getId() != cm.getPlayer().getId()) {
                     cm.sendNext("你以为你要去哪里？你甚至不是队伍的领袖！去告诉你的队伍领袖来找我谈话。");
                     cm.dispose();
-                } else if (party.getMembers().size() == 1) {
+                } else if (party.GetTeamMembers().size() == 1) {
                     cm.sendNext("你要独自接受挑战吗？");
-                } else if (!isBetween30) {
+                } else if (!cm.CheckTeamMemberLevelRange(30)) {
                     cm.sendNext("你的队伍成员等级范围太广，无法进入。请确保你的所有队伍成员等级相差不超过#r30级#k。");
                 } else {
                     for (var i = 1; i < 39; i++) { //only 32 stages, but 38 maps

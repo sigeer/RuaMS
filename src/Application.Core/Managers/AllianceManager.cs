@@ -45,15 +45,15 @@ namespace Application.Core.Managers
             }
         }
 
-        private static List<IPlayer> getPartyGuildMasters(Team party)
+        private static List<IPlayer> getPartyGuildMasters(WorldChannel server, Team party)
         {
             List<IPlayer> mcl = new();
 
-            foreach (var chr in party.getMembers())
+            foreach (var chr in party.GetChannelMembers(server))
             {
                 if (chr != null)
                 {
-                    var lchr = party.getLeader();
+                    var lchr = party.GetChannelLeader(server);
                     if (chr.getGuildRank() == 1 && lchr != null && chr.getMapId() == lchr.getMapId())
                     {
                         mcl.Add(chr);
@@ -75,9 +75,9 @@ namespace Application.Core.Managers
             return mcl;
         }
 
-        public static Alliance? createAlliance(Team party, string name)
+        public static Alliance? createAlliance(WorldChannel server, Team party, string name)
         {
-            var guildMasters = getPartyGuildMasters(party);
+            var guildMasters = getPartyGuildMasters(server, party);
             if (guildMasters.Count != 2)
             {
                 return null;

@@ -1,7 +1,5 @@
 using Application.Core.Login.Models;
-using Application.Core.Mappers;
 using AutoMapper;
-using client.inventory;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Login.Mappers
@@ -69,6 +67,13 @@ namespace Application.Core.Login.Mappers
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
             CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>();
+
+            CreateMap<CharacterLiveObject, Dto.TeamMemberDto>()
+                .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
+                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
+                .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
+                .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
+                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level));
         }
     }
 }

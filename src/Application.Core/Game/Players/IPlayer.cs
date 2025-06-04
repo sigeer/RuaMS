@@ -189,7 +189,6 @@ namespace Application.Core.Game.Players
         void deleteBuddy(int otherCid);
         void deleteFromTrocks(int map);
         void deleteFromVipTrocks(int map);
-        void disablePartySearchInvite(int fromLeaderid);
         void disbandGuild();
         void diseaseExpireTask();
         void dispel();
@@ -438,7 +437,6 @@ namespace Application.Core.Game.Players
         void handleOrbconsume();
         bool hasActiveBuff(int sourceid);
         bool hasBuffFromSourceid(int sourceid);
-        bool hasDisabledPartySearchInvite(int fromLeaderid);
         bool hasDisease(Disease dis);
         bool HasEmptySlotByItem(int itemId);
         bool hasEmptySlot(sbyte invType);
@@ -495,7 +493,6 @@ namespace Application.Core.Game.Players
         bool isPartyLeader();
         bool isPartyMember(IPlayer chr);
         bool isPartyMember(int cid);
-        bool isRecvPartySearchInviteEnabled();
         bool isRidingBattleship();
         bool isSummonsEmpty();
         void leaveMap();
@@ -544,7 +541,6 @@ namespace Application.Core.Game.Players
         void resetEnteredScript(int mapId);
         void resetEnteredScript(string script);
         void resetExcluded(long petId);
-        void resetPartySearchInvite(int fromLeaderid);
         void resetPlayerAggro();
         void resetStats();
         void respawn(EventInstanceManager? eim, int returnMap);
@@ -668,7 +664,6 @@ namespace Application.Core.Game.Players
         void toggleBlockCashShop();
         void toggleExpGain();
         void toggleHide(bool login);
-        bool toggleRecvPartySearchInvite();
         void toggleWhiteChat();
         void unequipAllPets();
         void unequippedItem(Equip equip);
@@ -681,7 +676,6 @@ namespace Application.Core.Game.Players
         void updateCouponRates();
         void updateMacros(int position, SkillMacro? updateMacro);
         void updatePartyMemberHP();
-        void updatePartySearchAvailability(bool psearchAvailable);
         void updateQuestStatus(QuestStatus qs);
         void updateRemainingSp(int remainingSp);
         void updateSingleStat(Stat stat, int newval);

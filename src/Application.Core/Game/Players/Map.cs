@@ -1,5 +1,6 @@
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
+using Application.Shared.Team;
 using Application.Shared.WzEntity;
 using net.server.world;
 using server;
@@ -240,8 +241,8 @@ namespace Application.Core.Game.Players
                 {
                     if (TeamModel != null)
                     {
-                        sendPacket(PacketCreator.updateParty(Client.getChannel(), TeamModel, PartyOperation.SILENT_UPDATE, this));
-                        receivePartyMemberHP();
+                        sendPacket(PacketCreator.updateParty(Client.getChannelServer(), TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
+                        updatePartyMemberHP();
                     }
                 }
                 finally

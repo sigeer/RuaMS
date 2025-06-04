@@ -62,6 +62,7 @@ using System.Collections.ObjectModel;
 using tools;
 using tools.packets;
 using static client.inventory.Equip;
+using Application.Shared.Team;
 
 namespace Application.Core.Game.Players;
 
@@ -264,61 +265,6 @@ public partial class Player
     public Job getJobStyle()
     {
         return getJobStyle((byte)((this.getStr() > this.getDex()) ? 0x80 : 0x40));
-    }
-
-
-    public void updatePartySearchAvailability(bool psearchAvailable)
-    {
-        if (psearchAvailable)
-        {
-            if (PartySearch && getParty() == null)
-            {
-                this.getWorldServer().getPartySearchCoordinator().attachPlayer(this);
-            }
-        }
-        else
-        {
-            if (PartySearch)
-            {
-                this.getWorldServer().getPartySearchCoordinator().detachPlayer(this);
-            }
-        }
-    }
-
-    public bool toggleRecvPartySearchInvite()
-    {
-        PartySearch = !PartySearch;
-
-        if (PartySearch)
-        {
-            updatePartySearchAvailability(getParty() == null);
-        }
-        else
-        {
-            this.getWorldServer().getPartySearchCoordinator().detachPlayer(this);
-        }
-
-        return PartySearch;
-    }
-
-    public bool isRecvPartySearchInviteEnabled()
-    {
-        return PartySearch;
-    }
-
-    public void resetPartySearchInvite(int fromLeaderid)
-    {
-        disabledPartySearchInvites.Remove(fromLeaderid);
-    }
-
-    public void disablePartySearchInvite(int fromLeaderid)
-    {
-        disabledPartySearchInvites.Add(fromLeaderid);
-    }
-
-    public bool hasDisabledPartySearchInvite(int fromLeaderid)
-    {
-        return disabledPartySearchInvites.Contains(fromLeaderid);
     }
 
     public void setSessionTransitionState()
@@ -894,16 +840,7 @@ public partial class Player
                 return;//the fuck you doing idiot!
             }
 
-            if (PartySearch && TeamModel == null)
-            {
-                this.updatePartySearchAvailability(false);
-                this.JobModel = newJob;
-                this.updatePartySearchAvailability(true);
-            }
-            else
-            {
-                this.JobModel = newJob;
-            }
+            this.JobModel = newJob;
 
             int spGain = 1;
             if (newJob.HasSPTable)
@@ -1028,6 +965,8 @@ public partial class Player
                 statLock.ExitWriteLock();
                 Monitor.Exit(effLock);
             }
+
+            saveCharToDB();
 
             // setMPC(new PartyCharacter(this));
             silentPartyUpdate();
@@ -2685,11 +2624,7 @@ public partial class Player
 
     public void closePartySearchInteractions()
     {
-        this.getWorldServer().getPartySearchCoordinator().unregisterPartyLeader(this);
-        if (PartySearch)
-        {
-            this.getWorldServer().getPartySearchCoordinator().detachPlayer(this);
-        }
+
     }
 
     public void closePlayerInteractions()
@@ -3444,6 +3379,8 @@ public partial class Player
                 statLock.ExitWriteLock();
                 Monitor.Exit(effLock);
             }
+
+            saveCharToDB();
 
             MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
             // setMPC(new PartyCharacter(this));
@@ -4967,7 +4904,7 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            getWorldServer().updateParty(chrParty.getId(), PartyOperation.SILENT_UPDATE, this);
+            Client.CurrentServer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
         }
     }
 

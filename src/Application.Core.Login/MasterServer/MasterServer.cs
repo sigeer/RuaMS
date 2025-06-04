@@ -1,11 +1,10 @@
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
+using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
 using Application.Utility;
@@ -25,7 +24,7 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IServerBase<IMasterServerTransport>
+    public partial class MasterServer : IServerBase<MasterServerTransport>
     {
         public int Id { get; } = 0;
         readonly ILogger<MasterServer> _logger;
@@ -37,7 +36,7 @@ namespace Application.Core.Login
 
         public string InstanceId { get; }
 
-        public IMasterServerTransport Transport { get; }
+        public MasterServerTransport Transport { get; }
 
         public DateTimeOffset StartupTime { get; private set; }
 
@@ -79,6 +78,7 @@ namespace Application.Core.Login
         public BuffManager BuffManager { get; }
         public DueyManager DueyManager { get; }
         public CashShopDataManager CashShopDataManager { get; }
+        public TeamManager TeamManager { get; }
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -124,6 +124,7 @@ namespace Application.Core.Login
             BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
             DueyManager = ActivatorUtilities.CreateInstance<DueyManager>(ServiceProvider, this);
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
+            TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;

@@ -80,7 +80,7 @@ namespace Application.Scripting.JS
             return !_engine.Evaluate(variable).IsUndefined();
         }
 
-        public ScriptPrepareWrapper Prepare(string code)
+        public static ScriptPrepareWrapper Prepare(string code)
         {
             return new JintScriptPrepareWrapper(Engine.PrepareScript(code));
         }

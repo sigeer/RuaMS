@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Game.Relation;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -67,7 +68,7 @@ public class MultiChatHandler : ChannelHandlerBase
         }
         else if (type == 1 && player.getParty() != null)
         {
-            world.partyChat(player.getParty()!, chattext, player.getName());
+            c.CurrentServer.Service.SendTeamChat(player.Name, chattext);
             // ChatLogger.log(c, "Party", chattext);
         }
         else if (type == 2 && player.GuildModel != null)

@@ -10,6 +10,7 @@ using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Models;
 using Application.Shared.Net;
+using Application.Shared.Team;
 using AutoMapper;
 using net.server;
 using net.server.guild;
@@ -67,9 +68,9 @@ namespace Application.Core.Channel.Local
             if (!_server.IsRunning)
                 return Task.FromResult(new Config.RegisterServerResult() { Channel = -1, Message = "中心服务器未启动" });
 
-            var channelId = _world.addChannel(server);
+            _world.addChannel(server);
 
-            _server.AddChannel(new InternalWorldChannel(server));
+            var channelId = _server.AddChannel(new InternalWorldChannel(server));
             return Task.FromResult(new Config.RegisterServerResult
             {
                 Channel = channelId,
@@ -193,10 +194,6 @@ namespace Application.Core.Channel.Local
             return Task.FromResult(true);
         }
 
-        public Team CreateTeam(int playerId)
-        {
-            throw new NotImplementedException();
-        }
 
         public void SetPlayerNpcMapPodiumData(int mapId, int podumData)
         {
@@ -686,5 +683,27 @@ namespace Application.Core.Channel.Local
         {
             _server.CashShopDataManager.AddCashItemBought(sn);
         }
+
+        #region Team
+        public Dto.TeamDto CreateTeam(int playerId)
+        {
+            return _server.TeamManager.CreateTeam(playerId);
+        }
+
+        public Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId)
+        {
+            return _server.TeamManager.UpdateParty(fromChannel, teamId, operation, fromId, toId);
+        }
+
+        public void SendTeamChat(string name, string chattext)
+        {
+            _server.TeamManager.SendTeamChat(name, chattext);
+        }
+
+        public Dto.GetTeamResponse GetTeam(int party)
+        {
+            return new Dto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
+        }
+        #endregion
     }
 }

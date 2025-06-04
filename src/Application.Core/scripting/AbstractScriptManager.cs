@@ -39,6 +39,7 @@ using server.life;
 using System.Collections.Concurrent;
 using tools;
 using tools.packets;
+using System.IO;
 
 namespace scripting;
 
@@ -47,10 +48,12 @@ namespace scripting;
  */
 public abstract class AbstractScriptManager
 {
-    static ConcurrentDictionary<string, ScriptPrepareWrapper> JsCache { get; set; } = new();
+    static ConcurrentDictionary<string, ScriptMeta?> JsCache { get; set; } = new();
     protected readonly ILogger<AbstractScriptManager> _logger;
     protected readonly CommandExecutor _commandExecutor;
     protected readonly WorldChannel _channelServer;
+
+    static readonly ScriptFile JsUtil = new ScriptFile("", "utils", ScriptType.Js);
 
     protected AbstractScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel)
     {
@@ -59,43 +62,58 @@ public abstract class AbstractScriptManager
         _channelServer = worldChannel;
     }
 
-    protected IEngine? getInvocableScriptEngine(string path)
+    protected ScriptMeta? GetScriptMeta(ScriptFile file)
     {
-        path = GetFullScriptPath(path);
-        if (!JsCache.TryGetValue(path, out var jsContent))
+        return JsCache.GetOrAdd(file.CacheKey, (key) =>
         {
-            if (!File.Exists(path))
-            {
-                _logger.LogWarning($"script {path} not found");
-                return null;
-            }
+            var fullPath = GetFullScriptPath(Path.Combine(file.Category, file.FileName));
+            if (File.Exists(fullPath))
+                return new ScriptMeta(file, JintEngine.Prepare(File.ReadAllText(fullPath)), fullPath);
+
+            file.UpdateType(ScriptType.Lua);
+            fullPath = GetFullScriptPath(Path.Combine(file.Category, file.FileName));
+            if (File.Exists(fullPath))
+                return new ScriptMeta(file, NLuaScriptEngine.Prepare(File.ReadAllText(fullPath)), fullPath);
+
+            _logger.LogWarning("{Category}脚本{Name}没有找到。", file.Category, file.Name);
+            return null;
+        });
+    }
+
+    private IEngine? getInvocableScriptEngine(ScriptMeta? jsContent)
+    {
+        if (jsContent == null)
+        {
+            return null;
         }
 
         IEngine engine = new JintEngine();
-        if (path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+        if (jsContent.ScriptFile.Type == ScriptType.Js)
             engine = new JintEngine();
-        else if (path.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
+        else if (jsContent.ScriptFile.Type == ScriptType.Lua)
             engine = new NLuaScriptEngine();
         else
         {
-            throw new BusinessException($"不支持的脚本类型：{path}");
+            throw new BusinessException($"不支持的脚本类型：{jsContent.ScriptFile.Type}");
         }
-
-        jsContent = engine.Prepare(File.ReadAllText(path));
-        JsCache[path] = jsContent;
 
         try
         {
             InitializeScriptType(engine);
 
-            engine.Evaluate(jsContent);
+            engine.Evaluate(jsContent.PreparedValue);
             return engine;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "File: {ScriptPath}", path);
+            _logger.LogWarning(ex, "File: {ScriptPath}", jsContent.FullPath);
             throw;
         }
+    }
+
+    protected IEngine? getInvocableScriptEngine(ScriptFile file)
+    {
+        return getInvocableScriptEngine(GetScriptMeta(file));
     }
 
     void InitializeScriptType(IEngine engine)
@@ -132,28 +150,32 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("Job", typeof(Job));
             engine.AddHostedType("InventoryType", typeof(InventoryType));
 
-            var jsFile = GetFullScriptPath("utils.js");
-            if (JsCache.TryGetValue(jsFile, out var jsContent))
-                engine.Evaluate(jsContent);
-            else
+            var jsUtils = GetScriptMeta(JsUtil);
+            if (jsUtils != null)
             {
-                var content = engine.Prepare(File.ReadAllText(jsFile));
-                JsCache[jsFile] = content;
-                engine.Evaluate(content);
+                engine.Evaluate(jsUtils.PreparedValue);
             }
         }
     }
 
-    protected IEngine getInvocableScriptEngine(string path, IChannelClient c)
+    protected IEngine? getInvocableScriptEngine(ScriptMeta? meta, IChannelClient c)
     {
-        var engine = c.ScriptEngines[path];
+        if (meta == null)
+            return null;
+
+        var engine = c.ScriptEngines[meta.ScriptFile.CacheKey];
         if (engine == null)
         {
-            engine = getInvocableScriptEngine(path)!;
-            c.ScriptEngines[path] = engine;
+            engine = getInvocableScriptEngine(meta)!;
+            c.ScriptEngines[meta.ScriptFile.CacheKey] = engine;
         }
 
         return engine;
+    }
+
+    protected IEngine? getInvocableScriptEngine(ScriptFile file, IChannelClient c)
+    {
+        return getInvocableScriptEngine(GetScriptMeta(file), c);
     }
 
     public static void ClearCache()
@@ -161,9 +183,9 @@ public abstract class AbstractScriptManager
         JsCache.Clear();
     }
 
-    protected void resetContext(string path, IChannelClient c)
+    protected void resetContext(ScriptFile file, IChannelClient c)
     {
-        c.ScriptEngines.Remove(path);
+        c.ScriptEngines.Remove(file.CacheKey);
     }
 
     protected string GetFullScriptPath(string relativePath)
@@ -171,22 +193,12 @@ public abstract class AbstractScriptManager
         return ScriptResFactory.GetScriptFullPath(relativePath);
     }
 
-    protected string GetScriptPath(string category, string path, string type = "js")
-    {
-        if (path.EndsWith(".js") || path.EndsWith(".lua"))
-            return Path.Combine(category, path);
-
-        var extension = type == "js" ? ".js" : ".lua";
-
-        return Path.Combine(category, path + extension);
-    }
-
-    protected string GetSpecialScriptPath(string path) => GetScriptPath("BeiDouSpecial", path);
-    protected string GetNpcScriptPath(string path) => GetScriptPath("npc", path);
-    protected string GetItemScriptPath(string path) => GetScriptPath("item", path);
-    protected string GetQuestScriptPath(string path) => GetScriptPath("quest", path);
-    protected string GetEventScriptPath(string path) => GetScriptPath(ScriptDir.Event, path);
-    protected string GetPortalScriptPath(string path) => GetScriptPath("portal", path);
-    protected string GetReactorScriptPath(string path) => GetScriptPath("reactor", path);
-    protected string GetMapScriptPath(string path) => GetScriptPath("map", path);
+    protected ScriptFile GetSpecialScriptPath(string path) => new ScriptFile("BeiDouSpecial", path);
+    protected ScriptFile GetNpcScriptPath(string path) => new ScriptFile("npc", path);
+    protected ScriptFile GetItemScriptPath(string path) => new ScriptFile("item", path);
+    protected ScriptFile GetQuestScriptPath(string path) => new ScriptFile("quest", path);
+    protected ScriptFile GetEventScriptPath(string path) => new ScriptFile(ScriptDir.Event, path);
+    protected ScriptFile GetPortalScriptPath(string path) => new ScriptFile("portal", path);
+    protected ScriptFile GetReactorScriptPath(string path) => new ScriptFile("reactor", path);
+    protected ScriptFile GetMapScriptPath(string path) => new ScriptFile("map", path);
 }

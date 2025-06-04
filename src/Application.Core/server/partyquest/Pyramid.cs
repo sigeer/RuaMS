@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Channel;
 using Application.Core.Game.Relation;
 using tools;
 
@@ -48,7 +49,7 @@ public class Pyramid : PartyQuest
     ScheduledFuture? _timer = null;
     ScheduledFuture? gaugeSchedule = null;
 
-    public Pyramid(Team party, PyramidMode mode, int mapid) : base(party)
+    public Pyramid(WorldChannel worldChannel, Team party, PyramidMode mode, int mapid) : base(worldChannel, party)
     {
         this.mode = mode;
         this.map = mapid;

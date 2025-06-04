@@ -46,11 +46,6 @@ namespace Application.Core.Game.Players
         {
             awayFromWorld.Set(false);
             Client.CurrentServer.removePlayerAway(Id);
-
-            if (PartySearch)
-            {
-                this.getWorldServer().getPartySearchCoordinator().attachPlayer(this);
-            }
         }
     }
 }

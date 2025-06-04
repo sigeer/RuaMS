@@ -30,7 +30,7 @@ public class PartySearchTask : BaseTask
 
     public override void HandleRun()
     {
-        wserv.runPartySearchUpdateSchedule();
+        
     }
 
     public PartySearchTask(World world) : base(world)

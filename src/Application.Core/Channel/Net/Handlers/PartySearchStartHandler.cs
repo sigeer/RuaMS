@@ -37,6 +37,10 @@ public class PartySearchStartHandler : ChannelHandlerBase
         int min = p.readInt();
         int max = p.readInt();
 
+        c.OnlinedCharacter.dropMessage(1, "该功能已关闭");
+        c.sendPacket(PacketCreator.enableActions());
+        return;
+
         var chr = c.OnlinedCharacter;
         if (min > max)
         {
@@ -69,6 +73,6 @@ public class PartySearchStartHandler : ChannelHandlerBase
         }
 
         var world = c.getWorldServer();
-        world.getPartySearchCoordinator().registerPartyLeader(chr, min, max, jobs);
+        // world.getPartySearchCoordinator().registerPartyLeader(chr, min, max, jobs);
     }
 }

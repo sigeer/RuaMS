@@ -5,6 +5,7 @@ using Application.Shared.Configs;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using System.Net;
+using Application.Shared.Team;
 
 namespace Application.Core.ServerTransports
 {
@@ -61,7 +62,7 @@ namespace Application.Core.ServerTransports
 
         void DisconnectPlayers(IEnumerable<int> playerIdList);
         #region Team
-        Team CreateTeam(int playerId);
+        Dto.TeamDto CreateTeam(int playerId);
         #endregion
 
         #region player npc
@@ -142,6 +143,9 @@ namespace Application.Core.ServerTransports
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
         void AddCashItemBought(int sn);
+        Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId);
+        void SendTeamChat(string name, string chattext);
+        Dto.GetTeamResponse GetTeam(int party);
         #endregion
     }
 }

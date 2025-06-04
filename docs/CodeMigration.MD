@@ -57,3 +57,4 @@ TimeSpan.FromSeconds($1)
 | `gachaponInfo.js` | `Gachapon.GachaponType` -> `GachaponManager`| ❗ |  |
 | `2xEvent.js` | `Server.getInstance().getWorld(em.getChannelServer().getWorld());` -> `em.getWorldServer();` | - | CodeMigration替换 |
 | `1021.js`, `21010.js` | `getHp()` -> `HP`,`updateHp` -> `SetHP` | ❗ | hp/mp相关代码重构，这里需要手动修改一下 |
+| - | `party.getMembers()` -> `GetChannelMembers` | ❗ |  |

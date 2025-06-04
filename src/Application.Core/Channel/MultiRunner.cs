@@ -1,6 +1,5 @@
-using Application.Core.Channel;
-using Application.Core.Servers;
 using Application.Core.ServerTransports;
+using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Core.Channel

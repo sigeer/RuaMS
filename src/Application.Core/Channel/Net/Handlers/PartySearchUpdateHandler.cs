@@ -27,6 +27,6 @@ public class PartySearchUpdateHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        c.getWorldServer().getPartySearchCoordinator().unregisterPartyLeader(c.OnlinedCharacter);
+        // c.getWorldServer().getPartySearchCoordinator().unregisterPartyLeader(c.OnlinedCharacter);
     }
 }

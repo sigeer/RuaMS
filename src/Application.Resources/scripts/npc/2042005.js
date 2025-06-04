@@ -1,4 +1,4 @@
-﻿/**
+/**
  -- Version Info -----------------------------------------------------------------------------------
  1.0 - First Version by Drago (MapleStorySA)
  2.0 - Second Version by Jayd - translated CPQ contents to English
@@ -36,28 +36,13 @@ function action(mode, type, selection) {
                 status = 10;
                 cm.sendOk("如果你想开始战斗，让#组队队长#来找我谈谈。");
             } else {
-                var leaderMapid = cm.getMapId();
-                var party = cm.getParty().getMembers();
-                var inMap = cm.partyMembersInMap();
-                var lvlOk = 0;
-                var isOutMap = 0;
-                for (var i = 0; i < party.size(); i++) {
-                    if (party.get(i).getLevel() >= cpqMinLvl && party.get(i).getLevel() <= cpqMaxLvl) {
-                        lvlOk++;
-
-                        if (party.get(i).getPlayer().getMapId() != leaderMapid) {
-                            isOutMap++;
-                        }
-                    }
-                }
-
-                if (party >= 1) {
+                if (!cm.CheckTeamMemberCount(cpqMinAmt, cpqMaxAmt)) {
                     status = 10;
                     cm.sendOk("你的队伍人数不够。你需要一个有 #b" + cpqMinAmt + "#k - #r" + cpqMaxAmt + "#k 名成员的队伍，并且他们应该和你在同一地图上。");
-                } else if (lvlOk != inMap) {
+                } else if (!cm.CheckTeamMemberLevel(cpqMinLvl, cpqMaxLvl)) {
                     status = 10;
                     cm.sendOk("确保你的队伍中的每个人都处于正确的等级范围内（" + cpqMinLvl + "~" + cpqMaxLvl + "）！");
-                } else if (isOutMap > 0) {
+                } else if (!cm.CheckTeamMemberMap()) {
                     status = 10;
                     cm.sendOk("有一些队员不在地图上！");
                 } else {
@@ -77,7 +62,7 @@ function action(mode, type, selection) {
                     cm.dispose();
                 }
             } else {
-                var party = cm.getParty().getMembers();
+                var party = cm.GetTeamMembers();
                 if ((selection === 0 || selection === 1) && party.size() < (YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : 2)) {
                     cm.sendOk("你至少需要2名玩家才能参与战斗！");
                 } else if ((selection === 2) && party.size() < (YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : 3)) {

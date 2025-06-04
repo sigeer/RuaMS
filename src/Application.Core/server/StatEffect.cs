@@ -1180,7 +1180,7 @@ public class StatEffect
                 var opposition = applyfrom.MCTeam!.Enemy!;
                 if (skill.targetsAll)
                 {
-                    foreach (var chrApp in opposition.Team.getMembers())
+                    foreach (var chrApp in opposition.Team.GetChannelMembers(applyto.Client.CurrentServer))
                     {
                         if (chrApp.IsOnlined && chrApp.getMap().isCPQMap())
                         {
@@ -1198,9 +1198,8 @@ public class StatEffect
                 }
                 else
                 {
-                    int amount = opposition.Team.getMembers().Count;
-                    int randd = (int)Math.Floor(Randomizer.nextDouble() * amount);
-                    var chrApp = applyfrom.getMap().getCharacterById(opposition.Team.getMemberByPos(randd).getId());
+
+                    var chrApp = applyfrom.getMap().getCharacterById(opposition.Team.GetRandomMemberId());
                     if (chrApp != null && chrApp.getMap().isCPQMap())
                     {
                         if (dis == null)

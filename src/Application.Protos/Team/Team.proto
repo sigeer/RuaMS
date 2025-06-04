@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "Team/TeamMember.proto";
+
+package Dto;
+
+message TeamDto {
+  int32 id = 1;
+  int32 leaderId = 2;
+  repeated TeamMemberDto members = 3;
+}
+
+message GetTeamResponse {
+	TeamDto model = 1;
+}

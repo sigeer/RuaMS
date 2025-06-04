@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -121,22 +121,12 @@ function action(mode, type, selection) {
                         cm.dispose();
                         return;
                     } else {
-                        if (pqparty.getMembers().size() < 2) {
+                        if (pqparty.GetTeamMembers().size() < 2) {
                             cm.sendOk("获得更多成员...");
                             cm.dispose();
                             return;
                         } else {
-                            var i = 0;
-                            for (var a = 0; a < pq.getMembers().size(); a++) {
-                                var pqchar = pq.getMembers().get(a);
-                                if (i > 1) {
-                                    break;
-                                }
-                                if (pqchar != null && pqchar.getMapId() == 926010000) {
-                                    i++;
-                                }
-                            }
-                            if (i < 2) {
+                            if (!cm.CheckTeamMemberMap()) {
                                 cm.sendOk("确保你的地图上有2名或更多队员。");
                                 cm.dispose();
                                 return;

@@ -127,6 +127,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
     public CharacterDiseaseManager CharacterDiseaseManager { get; }
     public MapOwnershipManager MapOwnershipManager { get; }
     public PlayerShopManager PlayerShopManager { get; }
+    public TeamManager TeamManager { get; }
 
     public IServiceScope LifeScope { get; }
     public SkillbookInformationProvider SkillbookInformationProvider { get; }
@@ -206,6 +207,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         RankService = LifeScope.ServiceProvider.GetRequiredService<RankService>();
 
         PlayerShopManager = new PlayerShopManager(this);
+        TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(LifeScope.ServiceProvider, this);
     }
 
     public int getTransportationTime(double travelTime)

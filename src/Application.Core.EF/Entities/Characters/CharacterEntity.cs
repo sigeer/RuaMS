@@ -92,8 +92,6 @@ public class CharacterEntity
     public int Spawnpoint { get; set; }
 
 
-    public int Party { get; set; }
-
     public int BuddyCapacity { get; set; } = 25;
 
     public DateTimeOffset CreateDate { get; set; }

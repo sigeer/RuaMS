@@ -113,7 +113,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             int hitChance = rollHitChance(dis?.getMobSkillType());
                             if (hitChance <= 80)
                             {
-                                foreach (var mc in enemies.Team.getMembers())
+                                foreach (var mc in enemies.Team.GetChannelMembers(c.CurrentServer))
                                 {
                                     if (mc != null)
                                     {
@@ -131,9 +131,9 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            int amount = enemies.Team.getMembers().Count - 1;
+                            int amount = enemies.Team.GetChannelMembers(c.CurrentServer).Count - 1;
                             int randd = (int)Math.Floor(Randomizer.nextDouble() * amount);
-                            var chrApp = c.OnlinedCharacter.getMap().getCharacterById(enemies.Team.getMemberByPos(randd).getId());
+                            var chrApp = c.OnlinedCharacter.getMap().getCharacterById(enemies.Team.GetRandomMemberId());
                             if (chrApp != null && chrApp.getMap().isCPQMap())
                             {
                                 if (dis == null)
