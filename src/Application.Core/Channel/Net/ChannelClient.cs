@@ -14,6 +14,7 @@ using scripting.Event;
 using scripting.npc;
 using System.Text.RegularExpressions;
 using tools;
+using Application.Shared.Team;
 
 namespace Application.Core.Channel.Net
 {
@@ -225,22 +226,7 @@ namespace Application.Core.Channel.Net
 
             if (party != null)
             {
-                wserv.updateParty(party.getId(), PartyOperation.LOG_ONOFF, player);
-                if (party.getLeader().getId() == idz && map != null)
-                {
-                    IPlayer? lchr = null;
-                    foreach (var pchr in party.getMembers())
-                    {
-                        if (pchr != null && pchr.getId() != idz && (lchr == null || lchr.getLevel() <= pchr.getLevel()) && map.getCharacterById(pchr.getId()) != null)
-                        {
-                            lchr = pchr;
-                        }
-                    }
-                    if (lchr != null)
-                    {
-                        wserv.updateParty(party.getId(), PartyOperation.CHANGE_LEADER, lchr);
-                    }
-                }
+                CurrentServer.TeamManager.UpdateTeam(party.getId(), PartyOperation.LOG_ONOFF, null, player.Id);
             }
         }
 

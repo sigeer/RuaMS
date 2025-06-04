@@ -464,7 +464,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public Alliance? createAlliance(string name)
     {
-        return AllianceManager.createAlliance(getParty()!, name);
+        return AllianceManager.createAlliance(c.CurrentServer, getParty()!, name);
     }
 
     public int getAllianceCapacity()
@@ -564,9 +564,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         if (!party)
         {
-            partyz = new Team(-1, getPlayer());
+            partyz = new Team(-1, getPlayer().Id);
         }
-        Pyramid py = new Pyramid(partyz, mod, map.getId());
+        Pyramid py = new Pyramid(c.CurrentServer, partyz, mod, map.getId());
         getPlayer().setPartyQuest(py);
         py.warp(mapid);
         dispose();
@@ -748,7 +748,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
             map = cs.getMapFactory().getMap(980000100 + 100 * field);
             mapExit = cs.getMapFactory().getMap(980000000);
-            foreach (var mc in getPlayer().getParty()!.getMembers())
+            foreach (var mc in getPlayer().getParty()!.GetChannelMembers(c.CurrentServer))
             {
                 if (mc != null)
                 {
@@ -775,7 +775,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void cancelCPQLobby()
     {
-        foreach (var mc in getPlayer().getParty()!.getMembers())
+        foreach (var mc in getPlayer().getParty()!.GetChannelMembers(c.CurrentServer))
         {
             mc.clearCpqTimer();
         }
@@ -808,7 +808,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             cpqMaxLvl = 70;
         }
 
-        var partyMembers = party.getMembers();
+        var partyMembers = party.GetChannelMembers(c.CurrentServer);
         foreach (var pchr in partyMembers)
         {
             if (pchr.getLevel() >= cpqMinLvl && pchr.getLevel() <= cpqMaxLvl)
@@ -858,12 +858,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
                     throw new Exception("No opponent found!");
                 }
 
-                foreach (var mc in challenger.getParty()!.getMembers())
+                foreach (var mc in challenger.getParty()!.GetChannelMembers(c.CurrentServer))
                 {
                     mc.changeMap(lobbyMap, lobbyMap.getPortal(0));
                     TimerManager.getInstance().schedule(() => mapClock(10), 1500);
                 }
-                foreach (var mc in getPlayer().getParty()!.getMembers())
+                foreach (var mc in getPlayer().getParty()!.GetChannelMembers(c.CurrentServer))
                 {
                     TimerManager.getInstance().schedule(() => mapClock(10), 1500);
                 }
@@ -875,11 +875,11 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 Team lobbyParty = getPlayer().getParty()!, challengerParty = challenger.getParty()!;
                 try
                 {
-                    foreach (var mc in lobbyParty.getMembers())
+                    foreach (var mc in lobbyParty.GetChannelMembers(c.CurrentServer))
                     {
                         mc.setMonsterCarnival(null);
                     }
-                    foreach (var mc in challengerParty.getMembers())
+                    foreach (var mc in challengerParty.GetChannelMembers(c.CurrentServer))
                     {
                         mc.setMonsterCarnival(null);
                     }
@@ -893,7 +893,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 int status = canStartCPQ(lobbyMap, lobbyParty, challengerParty);
                 if (status == 0)
                 {
-                    new MonsterCarnival(lobbyParty, challengerParty, mapid, true, (field / 100) % 10);
+                    new MonsterCarnival(c.CurrentServer, lobbyParty, challengerParty, mapid, true, (field / 100) % 10);
                 }
                 else
                 {
@@ -921,7 +921,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                     throw new Exception("No opponent found!");
                 }
 
-                foreach (var mc in challenger.getParty()!.getMembers())
+                foreach (var mc in challenger.getParty()!.GetChannelMembers(c.CurrentServer))
                 {
                     if (mc != null)
                     {
@@ -939,14 +939,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
                 try
                 {
-                    foreach (var mc in lobbyParty.getMembers())
+                    foreach (var mc in lobbyParty.GetChannelMembers(c.CurrentServer))
                     {
                         if (mc != null)
                         {
                             mc.setMonsterCarnival(null);
                         }
                     }
-                    foreach (var mc in challengerParty.getMembers())
+                    foreach (var mc in challengerParty.GetChannelMembers(c.CurrentServer))
                     {
                         if (mc != null)
                         {
@@ -964,7 +964,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 int status = canStartCPQ(lobbyMap, lobbyParty, challengerParty);
                 if (status == 0)
                 {
-                    new MonsterCarnival(lobbyParty, challengerParty, mapid, false, (field / 1000) % 10);
+                    new MonsterCarnival(c.CurrentServer, lobbyParty, challengerParty, mapid, false, (field / 1000) % 10);
                 }
                 else
                 {
@@ -1049,7 +1049,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
             mapExit = cs.getMapFactory().getMap(980030000);
             map = cs.getMapFactory().getMap(980031000 + 1000 * field);
-            foreach (var mc in c.OnlinedCharacter.getParty()!.getMembers())
+            foreach (var mc in c.OnlinedCharacter.getParty()!.GetChannelMembers(c.CurrentServer))
             {
                 if (mc != null)
                 {
@@ -1130,7 +1130,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         IPlayer? leader = null;
         var map = c.CurrentServer.getMapFactory().getMap(980000100 + 100 * field);
-        if (map.getAllPlayer().Count != getPlayer().getParty()!.getMembers().Count)
+        if (map.getAllPlayer().Count != getPlayer().getParty()!.GetChannelMembers(c.CurrentServer).Count)
         {
             sendOk("An unexpected error regarding the other party has occurred.");
             return;

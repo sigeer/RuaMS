@@ -35,7 +35,6 @@ namespace Application.Core.Game.Maps
         void addMapObject(IMapObject mapobject);
 
         void addMonsterSpawn(Monster monster, int mobTime, int team);
-        void addPartyMember(IPlayer chr, int partyid);
         void addPlayer(IPlayer chr);
         void addPlayerNPCMapObject(PlayerNPC pnpcobject);
         void addPlayerPuppet(IPlayer player);
@@ -211,8 +210,6 @@ namespace Application.Core.Game.Maps
         void removeMapObject(int num);
         void removeMapObject(IMapObject obj);
         void removeMonsterSpawn(int mobId, int x, int y);
-        void removeParty(int partyid);
-        void removePartyMember(IPlayer chr, int partyid);
         void removePlayer(IPlayer chr);
         void removePlayerPuppet(IPlayer player);
         bool removeSelfDestructive(int mapobjectid);

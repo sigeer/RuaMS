@@ -881,7 +881,7 @@ public class AbstractPlayerInteraction
             removeAll(id);
             return;
         }
-        foreach (var chr in getParty()!.getMembers())
+        foreach (var chr in getParty()!.GetChannelMembers(c.CurrentServer))
         {
             if (chr != null && chr.getClient() != null)
             {
@@ -920,11 +920,11 @@ public class AbstractPlayerInteraction
         if (party == null)
             return;
 
-        int size = party.getMembers().Count;
+        int size = party.GetMemberCount();
 
         if (instance)
         {
-            foreach (var chr in party.getMembers())
+            foreach (var chr in party.GetChannelMembers(c.CurrentServer))
             {
                 if (!chr.IsOnlined || chr.getEventInstance() == null)
                 {
@@ -934,7 +934,7 @@ public class AbstractPlayerInteraction
         }
 
         int bonus = size < 4 ? 100 : 70 + (size * 10);
-        foreach (var player in party.getMembers())
+        foreach (var player in party.GetChannelMembers(c.CurrentServer))
         {
             if (player == null || player.getEventInstance() == null)
             {

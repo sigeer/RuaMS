@@ -7,8 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Net\server\coordinator\login\**" />
     <Compile Remove="tools\mapletools\**" />
+    <EmbeddedResource Remove="Net\server\coordinator\login\**" />
     <EmbeddedResource Remove="tools\mapletools\**" />
+    <None Remove="Net\server\coordinator\login\**" />
     <None Remove="tools\mapletools\**" />
   </ItemGroup>
 
@@ -34,7 +37,6 @@
 	  <Folder Include="Gameplay\Wedding\" />
 	  <Folder Include="Net\netty\" />
 	  <Folder Include="Net\opcodes\" />
-	  <Folder Include="Net\server\coordinator\login\" />
 	  <Folder Include="Net\server\coordinator\session\" />
 	  <Folder Include="service\" />
 	</ItemGroup>

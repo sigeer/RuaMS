@@ -1,12 +1,12 @@
-using Application.Core.Game.Players;
-using Application.Core.ServerTransports;
+using Application.Core.Login.Models;
 using Application.Shared.Configs;
+using Application.Shared.Servers;
 using net.server;
 using tools;
 
 namespace Application.Core.Login
 {
-    public class MasterServerTransport : IMasterServerTransport
+    public class MasterServerTransport : IServerTransport
     {
         readonly MasterServer _server;
 
@@ -83,6 +83,16 @@ namespace Application.Core.Login
             return selectedPw;
         }
 
+        public void SendChannelPlayerPacket(int channel, int playerId, Packet packet)
+        {
+            var world = Server.getInstance().getWorld(0);
+            var chr = world.Channels[channel - 1].getPlayerStorage().getCharacterById(playerId);
+            if (chr != null)
+            {
+                chr.Client.sendPacket(packet);
+            }
+        }
+
         public void SendDueyNotification(int channel, int id, string senderName, bool dueyType)
         {
             var world = Server.getInstance().getWorld(0);
@@ -113,6 +123,17 @@ namespace Application.Core.Login
                         chr.sendPacket(PacketCommon.serverMessage(_server.ServerMessage));
                     }
                 }
+            }
+        }
+
+
+        public void SendTeamChat(string nameFrom, PlayerChannelPair[] teamMember, string chatText)
+        {
+            var world = Server.getInstance().getWorld(0);
+            var data = teamMember.GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.PlayerId).ToArray());
+            foreach (var item in data)
+            {
+                world.Channels[item.Key - 1].Service.SendTeamChat(nameFrom, item.Value, chatText);
             }
         }
 

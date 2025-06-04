@@ -7,12 +7,10 @@ using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
 using Application.Core.Managers;
 using client;
-using constants.game;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
-using net.server.coordinator.partysearch;
 using net.server.guild;
 using net.server.task;
 using net.server.world;
@@ -43,10 +41,9 @@ public class World
     public FishingWorldInstance FishingInstance { get; }
 
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
-    private PartySearchCoordinator partySearch = new PartySearchCoordinator();
+
 
     private AtomicInteger runningPartyId = new AtomicInteger();
-    private object partyLock = new object();
 
 
     private ScheduledFuture? marriagesSchedule;
@@ -73,7 +70,6 @@ public class World
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
         fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
-        partySearchSchedule = tman.register(new PartySearchTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #if !DEBUG
         timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
@@ -150,11 +146,6 @@ public class World
     public MatchCheckerCoordinator getMatchCheckerCoordinator()
     {
         return matchChecker;
-    }
-
-    public PartySearchCoordinator getPartySearchCoordinator()
-    {
-        return partySearch;
     }
 
 
@@ -310,156 +301,6 @@ public class World
         }
     }
 
-
-    public Team createParty(IPlayer chrfor)
-    {
-        int partyid = runningPartyId.getAndIncrement();
-        var party = new Team(partyid, chrfor);
-
-        Monitor.Enter(partyLock);
-        try
-        {
-            TeamStorage.AddOrUpdate(party.getId(), party);
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
-
-        party.addMember(chrfor);
-        return party;
-    }
-
-    public Team? getParty(int partyid)
-    {
-        Monitor.Enter(partyLock);
-        try
-        {
-            return TeamStorage.GetValueOrDefault(partyid);
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
-    }
-
-    private Team disbandParty(int partyid)
-    {
-        Monitor.Enter(partyLock);
-        try
-        {
-            TeamStorage.Remove(partyid, out var d);
-            return d;
-        }
-        finally
-        {
-            Monitor.Exit(partyLock);
-        }
-    }
-
-    private void updateParty(Team party, PartyOperation operation, IPlayer target)
-    {
-        var partyMembers = party.getMembers();
-
-        foreach (var partychar in partyMembers)
-        {
-            partychar.setParty(operation == PartyOperation.DISBAND ? null : party);
-            if (partychar.IsOnlined)
-            {
-                partychar.sendPacket(PacketCreator.updateParty(partychar.getClient().getChannel(), party, operation, target));
-            }
-        }
-        switch (operation)
-        {
-            case PartyOperation.LEAVE:
-            case PartyOperation.EXPEL:
-                target.setParty(null);
-                if (target.IsOnlined)
-                {
-                    target.sendPacket(PacketCreator.updateParty(target.Client.CurrentServer.getId(), party, operation, target));
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    public void updateParty(int partyid, PartyOperation operation, IPlayer target)
-    {
-        var party = getParty(partyid) ?? throw new ArgumentException("no party with the specified partyid exists");
-        switch (operation)
-        {
-            case PartyOperation.JOIN:
-                party.addMember(target);
-                break;
-            case PartyOperation.EXPEL:
-            case PartyOperation.LEAVE:
-                party.removeMember(target);
-                break;
-            case PartyOperation.DISBAND:
-                disbandParty(partyid);
-                break;
-            case PartyOperation.SILENT_UPDATE:
-            case PartyOperation.LOG_ONOFF:
-                party.updateMember(target);
-                break;
-            case PartyOperation.CHANGE_LEADER:
-                var mc = party.getLeader();
-                if (mc != null)
-                {
-                    var eim = mc.getEventInstance();
-
-                    if (eim != null && eim.isEventLeader(mc))
-                    {
-                        eim.changedLeader(target);
-                    }
-                    else
-                    {
-                        int oldLeaderMapid = mc.getMapId();
-
-                        if (MiniDungeonInfo.isDungeonMap(oldLeaderMapid))
-                        {
-                            if (oldLeaderMapid != target.getMapId())
-                            {
-                                var mmd = mc.getClient().getChannelServer().getMiniDungeon(oldLeaderMapid);
-                                if (mmd != null)
-                                {
-                                    mmd.close();
-                                }
-                            }
-                        }
-                    }
-                    party.setLeader(target);
-                }
-                break;
-            default:
-                log.Warning("Unhandled updateParty operation: {PartyOperation}", operation.ToString());
-                break;
-        }
-        updateParty(party, operation, target);
-    }
-
-    public void removeMapPartyMembers(int partyid)
-    {
-        var party = getParty(partyid);
-        if (party == null)
-        {
-            return;
-        }
-
-        foreach (var mc in party.getMembers())
-        {
-            if (mc != null)
-            {
-                var map = mc.getMap();
-                if (map != null)
-                {
-                    map.removeParty(partyid);
-                }
-            }
-        }
-    }
-
     public int find(string name)
     {
         var chr = getPlayerStorage().getCharacterByName(name);
@@ -470,20 +311,6 @@ public class World
     {
         var chr = getPlayerStorage().getCharacterById(id);
         return chr?.Channel ?? -1;
-    }
-
-    public void partyChat(Team party, string chattext, string namefrom)
-    {
-        foreach (IPlayer partychar in party.getMembers())
-        {
-            if (!partychar.getName().Equals(namefrom))
-            {
-                if (partychar.IsOnlined)
-                {
-                    partychar.sendPacket(PacketCreator.multiChat(namefrom, chattext, 1));
-                }
-            }
-        }
     }
 
     public void buddyChat(int[] recipientCharacterIds, int cidFrom, string nameFrom, string chattext)
@@ -921,11 +748,6 @@ public class World
         }
     }
 
-    public void runPartySearchUpdateSchedule()
-    {
-        partySearch.updatePartySearchStorage();
-        partySearch.runPartySearch();
-    }
 
     private void clearWorldData()
     {

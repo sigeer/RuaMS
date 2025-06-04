@@ -13,6 +13,7 @@
 	<ItemGroup>
 		<Protobuf Include="Cash\AddCashItemBoughtRequest.proto" GrpcServices="None" />
 		<Protobuf Include="Creator\NewPlayerSetter.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\CharacterMapChange.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />
 
 		<Protobuf Include="Duey\SendDueyNotificationRequest.proto" GrpcServices="None" />
@@ -74,6 +75,13 @@
 		<Protobuf Include="Dto\ShopItem.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Merchant.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerShopItem.proto" GrpcServices="None" />
+
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Team\TeamMember.proto" GrpcServices="None" />
+		<Protobuf Include="Team\Team.proto" GrpcServices="None" />
+		<Protobuf Include="Team\UpdateTeamResponse.proto" GrpcServices="None" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -55,6 +55,7 @@ using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
 using static server.CashShop;
+using Application.Shared.Team;
 
 namespace tools;
 
@@ -3877,20 +3878,20 @@ public class PacketCreator
         return p;
     }
 
-    private static void addPartyStatus(int forchannel, Team party, OutPacket p, bool leaving)
+    private static void addPartyStatus(WorldChannel forchannel, Team party, OutPacket p, bool leaving)
     {
-        var partymembers = party.getMembers();
+        var partymembers = party.GetTeamMembers();
         while (partymembers.Count < 6)
         {
-            partymembers.Add(new Player());
+            partymembers.Add(new TeamMember());
         }
         foreach (var partychar in partymembers)
         {
-            p.writeInt(partychar.getId());
+            p.writeInt(partychar.Id);
         }
         foreach (var partychar in partymembers)
         {
-            p.writeFixedString(partychar.getName());
+            p.writeFixedString(partychar.Name);
         }
         foreach (var partychar in partymembers)
         {
@@ -3898,40 +3899,30 @@ public class PacketCreator
         }
         foreach (var partychar in partymembers)
         {
-            p.writeInt(partychar.getLevel());
+            p.writeInt(partychar.Level);
         }
         foreach (var partychar in partymembers)
         {
-            if (partychar.IsOnlined)
-            {
-                p.writeInt(partychar.Channel - 1);
-            }
-            else
-            {
-                p.writeInt(-2);
-            }
+            p.writeInt(partychar.Channel - 1);
         }
-        p.writeInt(party.getLeader().getId());
+        p.writeInt(party.getLeaderId());
+        Dictionary<int, IPlayer> forChannelMembers = party.GetChannelMembers(forchannel).ToDictionary(x => x.Id, x => x);
         foreach (var partychar in partymembers)
         {
-            if (partychar.Channel == forchannel)
-            {
-                p.writeInt(partychar.getMapId());
-            }
+            if (forChannelMembers.TryGetValue(partychar.Id, out var player))
+                p.writeInt(player.getMapId());
             else
-            {
                 p.writeInt(0);
-            }
         }
 
         Dictionary<int, Door> partyDoors = party.getDoors();
         foreach (var partychar in partymembers)
         {
-            if (partychar.Channel == forchannel && !leaving)
+            if (forChannelMembers.TryGetValue(partychar.Id, out var player) && !leaving)
             {
                 if (partyDoors.Count > 0)
                 {
-                    var door = partyDoors.GetValueOrDefault(partychar.getId());
+                    var door = partyDoors.GetValueOrDefault(partychar.Id);
                     if (door != null)
                     {
                         DoorObject mdo = door.getTownDoor();
@@ -3966,7 +3957,7 @@ public class PacketCreator
         }
     }
 
-    public static Packet updateParty(int forChannel, Team party, PartyOperation op, IPlayer target)
+    public static Packet updateParty(WorldChannel forChannel, Team party, PartyOperation op, int targetId, string targetName)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         switch (op)
@@ -3976,7 +3967,7 @@ public class PacketCreator
             case PartyOperation.LEAVE:
                 p.writeByte(0x0C);
                 p.writeInt(party.getId());
-                p.writeInt(target.getId());
+                p.writeInt(targetId);
                 if (op == PartyOperation.DISBAND)
                 {
                     p.writeByte(0);
@@ -3993,14 +3984,14 @@ public class PacketCreator
                     {
                         p.writeByte(0);
                     }
-                    p.writeString(target.getName());
+                    p.writeString(targetName);
                     addPartyStatus(forChannel, party, p, false);
                 }
                 break;
             case PartyOperation.JOIN:
                 p.writeByte(0xF);
                 p.writeInt(party.getId());
-                p.writeString(target.getName());
+                p.writeString(targetName);
                 addPartyStatus(forChannel, party, p, false);
                 break;
             case PartyOperation.SILENT_UPDATE:
@@ -4011,7 +4002,7 @@ public class PacketCreator
                 break;
             case PartyOperation.CHANGE_LEADER:
                 p.writeByte(0x1B);
-                p.writeInt(target.getId());
+                p.writeInt(targetId);
                 p.writeByte(0);
                 break;
         }

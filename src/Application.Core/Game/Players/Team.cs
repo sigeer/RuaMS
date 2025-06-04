@@ -92,7 +92,7 @@ namespace Application.Core.Game.Players
             {
                 if (TeamModel != null)
                 {
-                    return TeamModel.getMembers().Where(x => x.IsOnlined).ToList();
+                    return TeamModel.GetChannelMembers(Client.CurrentServer).Where(x => x.IsOnlined).ToList();
                 }
                 return new List<IPlayer>();
             }
@@ -112,7 +112,7 @@ namespace Application.Core.Game.Players
             {
                 if (TeamModel != null)
                 {
-                    foreach (var chr in TeamModel.getMembers())
+                    foreach (var chr in TeamModel.GetChannelMembers(Client.CurrentServer))
                     {
                         var chrMap = chr.getMap();
                         // 用hashcode判断地图是否相同？ -- 同一频道、同一mapid
@@ -143,7 +143,7 @@ namespace Application.Core.Game.Players
             {
                 if (TeamModel != null)
                 {
-                    return TeamModel.getMemberById(cid) != null;
+                    return TeamModel.containsMembers(cid);
                 }
             }
             finally
@@ -172,11 +172,7 @@ namespace Application.Core.Game.Players
 
             if (party != null)
             {
-                if (partyLeader)
-                {
-                    party.assignNewLeader(Client);
-                }
-                TeamManager.leaveParty(party, this);
+                Client.CurrentServer.TeamManager.LeaveParty(this);
 
                 return true;
             }

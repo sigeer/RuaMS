@@ -373,7 +373,7 @@ namespace Application.Core.Login.Datas
             if (accountInfo == null)
                 return CreateCharResult.CharSlotLimited;
 
-             if (accountInfo.Characterslots - _masterServer.AccountManager.GetAccountPlayerIds(accountId).Count <= 0)
+            if (accountInfo.Characterslots - _masterServer.AccountManager.GetAccountPlayerIds(accountId).Count <= 0)
                 return CreateCharResult.CharSlotLimited;
 
             if (!_masterServer.CheckCharacterName(name))
@@ -422,6 +422,15 @@ namespace Application.Core.Login.Datas
             {
                 _logger.LogError(ex, "创建角色保存到数据库");
                 return CreateCharResult.Error;
+            }
+        }
+
+        public void SendPacket(int playerId, Packet packet)
+        {
+            var chr = FindPlayerById(playerId);
+            if (chr != null && chr.Channel > 0)
+            {
+                _masterServer.Transport.SendChannelPlayerPacket(chr.Channel, chr.Character.Id, packet);
             }
         }
     }

@@ -23,6 +23,7 @@
 
 using Application.Core.Game.Invites;
 using Application.Core.Managers;
+using Application.Shared.Team;
 using Application.Utility.Configs;
 using net.server.world;
 using tools;
@@ -44,7 +45,7 @@ public class PartyOperationHandler : ChannelHandlerBase
         {
             case 1:
                 { // create
-                    TeamManager.createParty(player, false);
+                    c.CurrentServer.TeamManager.CreateParty(player, false);
                     break;
                 }
             case 2:
@@ -53,8 +54,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                     {
                         var partymembers = player.getPartyMembersOnline();
 
-                        TeamManager.leaveParty(party, player);
-                        player.updatePartySearchAvailability(true);
+                        c.CurrentServer.TeamManager.LeaveParty(player);
                         player.partyOperationUpdate(party, partymembers);
                     }
                     break;
@@ -67,7 +67,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                     InviteResultType res = inviteRes.Result;
                     if (res == InviteResultType.ACCEPTED)
                     {
-                        TeamManager.joinParty(player, partyid, false);
+                        c.CurrentServer.TeamManager.JoinParty(player, partyid, false);
                     }
                     else
                     {
@@ -96,14 +96,14 @@ public class PartyOperationHandler : ChannelHandlerBase
                         {
                             if (party == null)
                             {
-                                if (!TeamManager.createParty(player, false))
+                                if (!c.CurrentServer.TeamManager.CreateParty(player, false))
                                 {
                                     return;
                                 }
 
                                 party = player.getParty();
                             }
-                            if (party.getMembers().Count < 6)
+                            if (party.GetMemberCount() < 6)
                             {
                                 if (InviteType.PARTY.CreateInvite(new TeamInviteRequest(player, invited)))
                                 {
@@ -131,16 +131,21 @@ public class PartyOperationHandler : ChannelHandlerBase
                     break;
                 }
             case 5:
-                { // expel
+                { 
+                    // expel
                     int cid = p.readInt();
-                    TeamManager.expelFromParty(party, c, cid);
+                    c.CurrentServer.TeamManager.ExpelFromParty(party, c, cid);
                     break;
                 }
             case 6:
-                { // change leader
+                {
+                    // change leader
+                    if (party == null)
+                    {
+                        return;
+                    }
                     int newLeader = p.readInt();
-                    var newLeadr = party.getMemberById(newLeader);
-                    world.updateParty(party.getId(), PartyOperation.CHANGE_LEADER, newLeadr);
+                    c.CurrentServer.TeamManager.ChangeLeader(player, newLeader);
                     break;
                 }
         }

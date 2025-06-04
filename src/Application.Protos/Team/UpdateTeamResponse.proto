@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "Team/TeamMember.proto";
+
+package Dto;
+
+message UpdateTeamResponse {
+  bool isSuccess = 1;
+  int32 teamId = 2;
+  int32 operation = 3;
+  // operation == update 时有值
+  TeamMemberDto updatedMember = 4;
+  int32 errorCode = 5;
+  bool silentCheck = 6;
+}
+

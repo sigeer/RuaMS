@@ -21,7 +21,6 @@
 */
 
 
-using Application.Core.Game.Invites;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -34,16 +33,8 @@ public class DenyPartyRequestHandler : ChannelHandlerBase
         p.readByte();
         string[] cname = p.readString().Split("PS: ");
 
-        var cfrom = c.CurrentServer.getPlayerStorage().getCharacterByName(cname[cname.Length - 1]);
-        if (cfrom != null)
-        {
-            var chr = c.OnlinedCharacter;
-
-            if (InviteType.PARTY.AnswerInvite(chr.getId(), cfrom.getPartyId(), false).Result == InviteResultType.DENIED)
-            {
-                chr.updatePartySearchAvailability(chr.getParty() == null);
-                cfrom.sendPacket(PacketCreator.partyStatusMessage(23, chr.getName()));
-            }
-        }
+        c.OnlinedCharacter.dropMessage(1, "该功能已关闭");
+        c.sendPacket(PacketCreator.enableActions());
+        return;
     }
 }

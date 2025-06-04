@@ -47,7 +47,7 @@ public class DoorHandler : ChannelHandlerBase
         {
             if (obj is DoorObject door)
             {
-                if (door.getOwnerId() == ownerid)
+                if (door.Owner.Id == ownerid)
                 {
                     door.warp(chr);
                     return;

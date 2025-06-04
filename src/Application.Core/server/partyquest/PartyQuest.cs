@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Channel;
 using Application.Core.Game.Relation;
 
 namespace server.partyquest;
@@ -32,18 +33,17 @@ public abstract class PartyQuest
 {
     protected ILogger log;
 
-    int channel, world;
+    int channel;
     Team party;
     List<IPlayer> participants = new();
 
-    public PartyQuest(Team party)
+    public PartyQuest(WorldChannel worldChannel, Team party)
     {
         this.party = party;
-        var leader = party.getLeader();
-        channel = leader.Channel;
-        world = leader.getWorld();
+        var leader = party.GetChannelLeader(worldChannel);
+        channel = worldChannel.getId();
         int mapid = leader.getMapId();
-        foreach (var pchr in party.getMembers())
+        foreach (var pchr in party.GetChannelMembers(worldChannel))
         {
             if (pchr.Channel == channel && pchr.getMapId() == mapid)
             {

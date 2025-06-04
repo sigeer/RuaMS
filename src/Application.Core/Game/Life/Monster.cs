@@ -408,7 +408,7 @@ public class Monster : AbstractLifeObject
             Packet packet = PacketCreator.showMonsterHP(getObjectId(), remainingHP);
             if (from.getParty() != null)
             {
-                foreach (var mpc in from.getParty()!.getMembers())
+                foreach (var mpc in from.getParty()!.GetChannelMembers(from.Client.CurrentServer))
                 {
                     var member = from.getMap().getCharacterById(mpc.getId()); // god bless
                     if (member != null)

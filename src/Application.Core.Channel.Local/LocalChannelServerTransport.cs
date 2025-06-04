@@ -10,6 +10,7 @@ using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Models;
 using Application.Shared.Net;
+using Application.Shared.Team;
 using AutoMapper;
 using net.server;
 using net.server.guild;
@@ -193,10 +194,6 @@ namespace Application.Core.Channel.Local
             return Task.FromResult(true);
         }
 
-        public Team CreateTeam(int playerId)
-        {
-            throw new NotImplementedException();
-        }
 
         public void SetPlayerNpcMapPodiumData(int mapId, int podumData)
         {
@@ -686,5 +683,27 @@ namespace Application.Core.Channel.Local
         {
             _server.CashShopDataManager.AddCashItemBought(sn);
         }
+
+        #region Team
+        public Dto.TeamDto CreateTeam(int playerId)
+        {
+            return _mapper.Map<Dto.TeamDto>(_server.TeamManager.CreateTeam(playerId));
+        }
+
+        public Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
+        {
+            return _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
+        }
+
+        public void SendTeamChat(string name, string chattext)
+        {
+            _server.TeamManager.SendTeamChat(name, chattext);
+        }
+
+        public Dto.TeamDto GetTeam(int party)
+        {
+            return _server.TeamManager.GetTeamFull(party);
+        }
+        #endregion
     }
 }

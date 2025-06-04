@@ -82,7 +82,6 @@ public class EnterMTSHandler : ChannelHandlerBase
         }
 
         chr.closePlayerInteractions();
-        chr.closePartySearchInteractions();
 
         chr.unregisterChairBuff();
         c.CurrentServer.StashCharacterBuff(chr);

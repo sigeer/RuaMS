@@ -2,16 +2,20 @@ using Application.Core.Channel;
 using Application.Core.Duey;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
+using Application.Core.Game.Relation;
 using Application.Core.Managers.Constants;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Items;
+using Application.Shared.Team;
 using AutoMapper;
 using client.creator;
 using client.inventory;
 using net.packet.outs;
+using Org.BouncyCastle.Asn1.X509;
 using server;
 using System.Collections.Generic;
+using tools;
 
 namespace Application.Core.Servers.Services
 {
@@ -183,6 +187,29 @@ namespace Application.Core.Servers.Services
         internal void AddCashItemBought(int sn)
         {
             _tranport.AddCashItemBought(sn);
+        }
+
+        internal void SendTeamChat(string name, string chattext)
+        {
+            _tranport.SendTeamChat(name, chattext);
+        }
+
+        public void SendTeamChat(string nameFrom, int[] value, string chatText)
+        {
+            foreach (var item in value)
+            {
+                var chr = _server.Players.getCharacterById(item);
+                if (chr != null)
+                {
+                    chr.sendPacket(PacketCreator.multiChat(nameFrom, chatText, 1));
+                }
+            }
+            
+        }
+
+        internal Team? CreateParty(int id)
+        {
+            return _mapper.Map<Team>(_tranport.CreateTeam(id));
         }
     }
 }

@@ -65,8 +65,8 @@ public class Door
 
                 if (townPortal != null)
                 {
-                    this.areaDoor = new DoorObject(ownerId, town, target, townPortal.getId(), targetPosition, townPortal.getPosition());
-                    this.townDoor = new DoorObject(ownerId, target, town, -1, townPortal.getPosition(), targetPosition);
+                    this.areaDoor = new DoorObject(owner, town, target, townPortal.getId(), targetPosition, townPortal.getPosition());
+                    this.townDoor = new DoorObject(owner, target, town, -1, townPortal.getPosition(), targetPosition);
 
                     this.areaDoor.setPairOid(this.townDoor.getObjectId());
                     this.townDoor.setPairOid(this.areaDoor.getObjectId());
