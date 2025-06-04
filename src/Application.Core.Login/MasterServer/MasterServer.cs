@@ -1,11 +1,10 @@
 using Application.Core.Login.Datas;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
+using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
-using Application.Core.Servers;
-using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
 using Application.Utility;
@@ -125,7 +124,7 @@ namespace Application.Core.Login
             BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
             DueyManager = ActivatorUtilities.CreateInstance<DueyManager>(ServiceProvider, this);
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
-            TeamManager  = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
+            TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;

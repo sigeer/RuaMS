@@ -76,7 +76,8 @@ public class PartyOperationHandler : ChannelHandlerBase
                     break;
                 }
             case 4:
-                { // invite
+                { 
+                    // invite
                     string name = p.readString();
                     var invited = world.getPlayerStorage().getCharacterByName(name);
                     if (invited != null && invited.IsOnlined)

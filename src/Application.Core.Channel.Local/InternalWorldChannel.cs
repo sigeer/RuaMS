@@ -1,4 +1,6 @@
-using Application.Core.Servers;
+using Application.Core.Login.Servers;
+using Application.Shared.Team;
+using Dto;
 
 namespace Application.Core.Channel.Local
 {
@@ -10,5 +12,10 @@ namespace Application.Core.Channel.Local
         }
 
         public WorldChannel WorldChannel { get; }
+
+        public override void SendTeamUpdate(int teamId, PartyOperation operation, TeamMemberDto target)
+        {
+            WorldChannel.TeamManager.ProcessUpdateResponse(teamId, operation, target);
+        }
     }
 }

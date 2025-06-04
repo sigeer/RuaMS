@@ -1,4 +1,4 @@
-﻿/**
+/**
  -- Version Info -----------------------------------------------------------------------------------
  1.0 - First Version by Drago (MapleStorySA)
  2.0 - Second Version by Ronan (HeavenMS)
@@ -177,31 +177,17 @@ function action(mode, type, selection) {
                     cm.sendOk("在你加入战斗之前，你需要先创建一个队伍！");
                 } else if (!cm.isLeader()) {
                     status = 10;
-                    cm.sendOk("如果你想开始战斗，让#b队伍领袖#k和我对话。");
+                    cm.sendOk("如果你想开始战斗，让#b队长#k和我交谈。");
                 } else {
-                    var party = cm.getParty().getMembers();
-                    var inMap = cm.partyMembersInMap();
-                    var lvlOk = 0;
-                    var isOutMap = 0;
-                    for (var i = 0; i < party.size(); i++) {
-                        if (party.get(i).getLevel() >= cpqMinLvl && party.get(i).getLevel() <= cpqMaxLvl) {
-                            lvlOk++;
-
-                            if (party.get(i).getPlayer().getMapId() != cpqMap) {
-                                isOutMap++;
-                            }
-                        }
-                    }
-
-                    if (party >= 1) {
+                    if (!cm.CheckTeamMemberCount(cpqMinAmt, cpqMaxAmt)) {
                         status = 10;
                         cm.sendOk("你的队伍人数不够。你需要一个有 #b" + cpqMinAmt + "#k - #r" + cpqMaxAmt + "#k 名成员的队伍，并且他们应该和你在同一地图上。");
-                    } else if (lvlOk != inMap) {
+                    } else if (!cm.CheckTeamMemberLevel(cpqMinLvl, cpqMaxLvl)) {
                         status = 10;
                         cm.sendOk("确保你的队伍中的每个人都处于正确的等级范围内（" + cpqMinLvl + "~" + cpqMaxLvl + "）！");
-                    } else if (isOutMap > 0) {
+                    } else if (!cm.CheckTeamMemberMap()) {
                         status = 10;
-                        cm.sendOk("有一些队员不在地图上！");
+                        cm.sendOk("有一些队伍成员不在地图上！");
                     } else {
                         if (!cm.sendCPQMapLists()) {
                             cm.sendOk("所有的怪物嘉年华场地目前都在使用中！请稍后再试。");
@@ -219,7 +205,7 @@ function action(mode, type, selection) {
                         cm.dispose();
                     }
                 } else {
-                    var party = cm.getParty().getMembers();
+                    var party = cm.GetTeamMembers();
                     if ((selection >= 0 && selection <= 3) && party.size() < (YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : 2)) {
                         cm.sendOk("你至少需要2名玩家才能参与战斗！");
                     } else if ((selection >= 4 && selection <= 5) && party.size() < (YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : 3)) {
@@ -241,17 +227,17 @@ function action(mode, type, selection) {
                 cm.sendSimple(talk);
             } else if (status == 1) {
                 if (selection == 0) {
-                    if ((cm.getLevel() > 29 && cm.getLevel() < 51) || cm.getPlayer().isGM()) {
+                    if ((cm.getLevel() >= cpqMinLvl && cm.getLevel() <= cpqMaxLvl) || cm.getPlayer().isGM()) {
                         cm.getChar().saveLocation("MONSTER_CARNIVAL");
                         cm.warp(980000000, 0);
                         cm.dispose();
 
-                    } else if (cm.getLevel() < 30) {
-                        cm.sendOk("你必须至少达到30级才能参加怪物嘉年华。当你足够强大时，和我交谈。");
+                    } else if (cm.getLevel() < cpqMinLvl) {
+                        cm.sendOk(`你必须至少达到${cpqMinLvl}级才能参加怪物嘉年华。当你足够强大时，和我交谈。`);
                         cm.dispose();
 
                     } else {
-                        cm.sendOk("很抱歉，只有等级在30到50级之间的玩家才能参加怪物嘉年华活动。");
+                        cm.sendOk(`很抱歉，只有等级在${cpqMinLvl}到${cpqMaxLvl}级之间的玩家才能参加怪物嘉年华活动。`);
                         cm.dispose();
 
                     }
@@ -410,9 +396,9 @@ function action(mode, type, selection) {
                 if (select == 0) {
                     cm.sendNext("什么是#b怪物嘉年华#k？哈哈哈！可以说这是一次你永远不会忘记的经历！这是与其他像你一样的冒险者进行的战斗！#k");
                 } else if (select == 1) {
-                    cm.sendNext("进入嘉年华领域时，你的任务是通过击败来自对立阵营的怪物来获得CP，并使用这些CP来分散对立阵营的注意，防止他们攻击怪物。");
+                    cm.sendNext("进入嘉年华场地时，你的任务是通过击败来自对立阵营的怪物来获得CP，并使用这些CP来分散对立阵营的注意，防止他们攻击怪物。");
                 } else if (select == 2) {
-                    cm.sendNext("一旦你习惯了这些指令，试着使用 #bTAB 和 F1 ~ F12#k。#bTAB 可以在召唤怪物/使用技能/保护者之间切换#k，而 #bF1 ~ F12 可以直接让你访问其中一个窗口#k。");
+                    cm.sendNext("一旦你熟悉了指令，试着使用 #bTAB 和 F1 ~ F12#k。#bTAB 可以在召唤怪物/使用技能/保护者之间切换#k，而 #bF1 ~ F12 可以直接访问窗口之一#k。");
                 }
             } else if (status == 63) {
                 if (select == 0) {
@@ -420,7 +406,7 @@ function action(mode, type, selection) {
                 } else if (select == 1) {
                     cm.sendNext("有三种方法可以分散对方的注意力：#b召唤怪物、能力和守护者#k。如果你想了解更多关于“详细说明”的内容，我可以给你更深入的了解！");
                 } else if (select == 2) {
-                    cm.sendNext("召唤怪物会召唤一个攻击对方队伍的怪物，并将其控制在其下。使用CP召唤一个被召唤的怪物，它将出现在同一区域，攻击对方团队。");
+                    cm.sendNext("召唤怪物会召唤一个攻击对方队伍的怪物，并将其控制在其下。使用CP召唤一个怪物，它将出现在同一区域，攻击对方队伍。");
                 }
             } else if (status == 64) {
                 if (select == 0) {

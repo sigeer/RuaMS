@@ -1,4 +1,4 @@
-﻿/*2101017.js
+/*2101017.js
  *Cesar
  *@author Jvlaple
  */
@@ -77,7 +77,7 @@ function action(mode, type, selection) {
                     cm.sendSimple(text);
                     status = 6;
                 } else if (selection == 3) {
-                    if (expedicao.getMembers().size() < 1) {
+                    if (expedicao.GetTeamMembers().size() < 1) {
                         cm.sendOk("需要一个玩家来开始战斗。");
                         cm.dispose();
                     } else {

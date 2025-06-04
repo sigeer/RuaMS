@@ -57,7 +57,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     private int npc;
     private int npcOid;
-    private string? scriptName;
+    public ScriptMeta ScriptMeta { get; }
     private string? _getText;
     private bool itemScript;
     private List<IPlayer> otherParty;
@@ -77,24 +77,26 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return talk;
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, string? scriptName) : this(c, npc, -1, scriptName, false)
+    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName, false)
     {
 
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, List<IPlayer> otherParty, bool test) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<IPlayer> otherParty, bool test) : base(c)
     {
         this.c = c;
         this.npc = npc;
+        this.ScriptMeta = scriptName;
         this.otherParty = otherParty;
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, int oid, string? scriptName, bool itemScript) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName, bool itemScript) : base(c)
     {
         this.npc = npc;
         this.npcOid = oid;
-        this.scriptName = scriptName;
+        this.ScriptMeta = scriptName;
         this.itemScript = itemScript;
+        this.otherParty = [];
     }
 
     public int getNpc()
@@ -107,20 +109,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return npcOid;
     }
 
-    public string? getScriptName()
-    {
-        return scriptName;
-    }
-
-    public bool isItemScript()
-    {
-        return itemScript;
-    }
-
-    public void resetItemScript()
-    {
-        this.itemScript = false;
-    }
 
     public virtual void dispose()
     {
@@ -322,6 +310,61 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public override Team? getParty()
     {
         return getPlayer().TeamModel;
+    }
+
+    public List<IPlayer>? GetTeamMembers()
+    {
+        return getParty()?.GetChannelMembers(c.CurrentServer);
+    }
+
+    public bool CheckTeamMemberCount(int min, int max)
+    {
+        var p = getParty();
+        if (p == null)
+            return false;
+
+        var pCount = p.GetMemberCount();
+        return pCount >= min && pCount <= max;
+    }
+
+    public bool CheckTeamMemberLevel(int min, int max)
+    {
+        var p = getParty();
+        if (p == null)
+            return false;
+
+        var pMember = p.GetTeamMembers();
+        return pMember.All(x => x.Level >= min && x.Level <= max);
+    }
+
+    public bool CheckTeamMemberChannel()
+    {
+        var p = getParty();
+        if (p == null)
+            return false;
+
+        var pMember = p.GetTeamMembers();
+        return pMember.All(x => x.Channel == c.CurrentServer.getId());
+    }
+
+    public bool CheckTeamMemberMap()
+    {
+        var p = getParty();
+        if (p == null)
+            return false;
+
+        return getPlayer().getPartyMembersOnSameMap().Count == p.GetMemberCount();
+    }
+
+    public bool CheckTeamMemberLevelRange(int range)
+    {
+        var p = getParty();
+        if (p == null)
+            return false;
+
+        var minLevel = p.GetTeamMembers().Min(x => x.Level);
+        var maxLevel = p.GetTeamMembers().Max(x => x.Level);
+        return maxLevel - minLevel <= range;
     }
 
     public override void resetMap(int mapid)

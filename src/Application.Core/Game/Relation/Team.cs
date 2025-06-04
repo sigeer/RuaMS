@@ -67,9 +67,9 @@ namespace Application.Core.Game.Relation
             }
         }
 
-        public void setLeader(IPlayer victim)
+        public void SetLeaderId(int leaderId)
         {
-            this.leaderId = victim.getId();
+            this.leaderId = leaderId;
         }
 
         public void updateMember(TeamMember member)
@@ -106,7 +106,7 @@ namespace Application.Core.Game.Relation
         /// </summary>
         /// <param name="currentServer"></param>
         /// <returns></returns>
-        public ICollection<IPlayer> GetChannelMembers(WorldChannel currentServer)
+        public List<IPlayer> GetChannelMembers(WorldChannel currentServer)
         {
             Monitor.Enter(lockObj);
             try

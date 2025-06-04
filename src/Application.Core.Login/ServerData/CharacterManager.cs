@@ -1,26 +1,21 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
-using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Services;
 using Application.Core.Managers.Constants;
 using Application.EF;
-using Application.EF.Entities;
-using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
-using client.creator;
-using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using net.server;
 using Serilog;
+using System.Collections.Concurrent;
 using System.Xml.Linq;
 using tools;
 
@@ -31,10 +26,10 @@ namespace Application.Core.Login.Datas
     /// </summary>
     public class CharacterManager : IDisposable
     {
-        Dictionary<int, CharacterLiveObject> _idDataSource = new();
-        Dictionary<string, CharacterLiveObject> _nameDataSource = new();
+        ConcurrentDictionary<int, CharacterLiveObject> _idDataSource = new();
+        ConcurrentDictionary<string, CharacterLiveObject> _nameDataSource = new();
 
-        Dictionary<int, CharacterViewObject> _charcterViewCache = new();
+        ConcurrentDictionary<int, CharacterViewObject> _charcterViewCache = new();
 
         readonly IMapper _mapper;
         readonly ILogger<CharacterManager> _logger;

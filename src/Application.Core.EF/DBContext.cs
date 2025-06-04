@@ -2446,9 +2446,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.PartnerId)
                 .HasColumnType("int(11)")
                 .HasColumnName("partnerId");
-            entity.Property(e => e.Party)
-                .HasColumnType("int(11)")
-                .HasColumnName("party");
             entity.Property(e => e.PartySearch)
                 .IsRequired()
                 .HasDefaultValue(true)

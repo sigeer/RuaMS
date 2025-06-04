@@ -7,6 +7,5 @@ message TeamMemberDto {
 	string name = 2;
 	int32 level = 3;
 	int32 job = 4;
-	int32 map = 5;
-	int32 channel = 6;
+	int32 channel = 5;
 }

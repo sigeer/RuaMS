@@ -1,6 +1,8 @@
 using Application.Core.Login.Models;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
+using Application.Shared.Team;
+using Dto;
 using net.server;
 using tools;
 
@@ -9,7 +11,6 @@ namespace Application.Core.Login
     public class MasterServerTransport : IServerTransport
     {
         readonly MasterServer _server;
-
         public MasterServerTransport(MasterServer masterServer)
         {
             this._server = masterServer;
@@ -186,6 +187,18 @@ namespace Application.Core.Login
                 }
             }
             return false;
+        }
+
+        internal void SendTeamUpdate(int exceptChannel, int teamId, PartyOperation operation, TeamMemberDto target)
+        {
+            for (int i = 1; i < _server.ChannelServerList.Count + 1; i++)
+            {
+                if (i == exceptChannel)
+                    continue;
+
+                var ch = _server.ChannelServerList[i];
+                ch.SendTeamUpdate(teamId, operation, target);
+            }
         }
     }
 }

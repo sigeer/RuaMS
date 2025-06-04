@@ -143,9 +143,9 @@ namespace Application.Core.ServerTransports
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
         void AddCashItemBought(int sn);
-        Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
+        Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
-        Dto.TeamDto GetTeam(int party);
+        Dto.GetTeamResponse GetTeam(int party);
         #endregion
     }
 }

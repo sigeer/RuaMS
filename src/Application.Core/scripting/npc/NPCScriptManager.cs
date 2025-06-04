@@ -85,15 +85,16 @@ public class NPCScriptManager : AbstractScriptManager
             if (c.NPCConversationManager != null)
                 c.NPCConversationManager.dispose();
 
-            c.NPCConversationManager = new NPCConversationManager(c, npc, chrs, true);
-            var engine = getInvocableScriptEngine(GetNpcScriptPath(filename), c);
 
+            var scriptMeta = GetScriptMeta(GetNpcScriptPath(filename));
+            var engine = getInvocableScriptEngine(scriptMeta, c);
             if (engine == null)
             {
                 c.OnlinedCharacter.dropMessage(1, "NPC " + npc + " is uncoded.");
-                c.NPCConversationManager.dispose();
                 return;
             }
+
+            c.NPCConversationManager = new NPCConversationManager(c, npc, scriptMeta!, chrs, true);
             engine.AddHostedObject("cm", c.NPCConversationManager);
             _scripts[c] = engine;
 
@@ -115,13 +116,12 @@ public class NPCScriptManager : AbstractScriptManager
 
             if (c.canClickNPC())
             {
-                c.NPCConversationManager = new NPCConversationManager(c, npc, oid, fileName, itemScript);
-                IEngine? engine = null;
+                ScriptMeta? scriptMeta = null;
                 if (!itemScript)
                 {
                     if (fileName != null)
                     {
-                        engine = getInvocableScriptEngine(GetNpcScriptPath(fileName), c) ?? getInvocableScriptEngine(GetSpecialScriptPath(fileName), c);
+                        scriptMeta = GetScriptMeta(GetNpcScriptPath(fileName)) ?? GetScriptMeta(GetSpecialScriptPath(fileName));
                     }
                 }
                 else
@@ -129,14 +129,21 @@ public class NPCScriptManager : AbstractScriptManager
                     if (fileName != null)
                     {
                         // thanks MiLin for drafting NPC-based item scripts
-                        engine = getInvocableScriptEngine(GetItemScriptPath(fileName), c);
+                        scriptMeta = GetScriptMeta(GetItemScriptPath(fileName));
                     }
                 }
-                if (engine == null)
+                if (scriptMeta == null)
                 {
-                    engine = getInvocableScriptEngine(GetNpcScriptPath(npc.ToString()), c);
-                    c.NPCConversationManager.resetItemScript();
+                    itemScript = false;
+                    scriptMeta = GetScriptMeta(GetNpcScriptPath(npc.ToString()));
                 }
+                if (scriptMeta == null)
+                {
+                    return false;
+                }
+
+                var engine = getInvocableScriptEngine(scriptMeta, c);
+                c.NPCConversationManager = new NPCConversationManager(c, npc, oid, scriptMeta, itemScript);
                 if (engine == null)
                 {
                     c.NPCConversationManager.dispose();
@@ -193,7 +200,7 @@ public class NPCScriptManager : AbstractScriptManager
             {
                 if (c.NPCConversationManager != null)
                 {
-                    _logger.LogError(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.getScriptName(), c.NPCConversationManager.getNpc());
+                    _logger.LogError(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.ScriptMeta, c.NPCConversationManager.getNpc());
                     c.NPCConversationManager.dispose();
                 }
             }
@@ -208,19 +215,7 @@ public class NPCScriptManager : AbstractScriptManager
         c.NPCConversationManager = null;
         _scripts.Remove(c);
 
-        string scriptFolder = (cm.isItemScript() ? "item" : "npc");
-        if (cm.getScriptName() != null)
-        {
-            if (scriptFolder == "npc")
-                resetContext(GetSpecialScriptPath(cm.getScriptName()!), c);
-            resetContext(GetScriptPath(scriptFolder, cm.getScriptName()!), c);
-        }
-        else
-        {
-            if (scriptFolder == "npc")
-                resetContext(GetSpecialScriptPath(cm.getNpc().ToString()), c);
-            resetContext(GetScriptPath(scriptFolder, cm.getNpc().ToString()), c);
-        }
+        resetContext(cm.ScriptMeta.ScriptFile, c);
 
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }

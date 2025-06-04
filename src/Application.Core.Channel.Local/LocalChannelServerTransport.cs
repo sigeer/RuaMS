@@ -68,9 +68,9 @@ namespace Application.Core.Channel.Local
             if (!_server.IsRunning)
                 return Task.FromResult(new Config.RegisterServerResult() { Channel = -1, Message = "中心服务器未启动" });
 
-            var channelId = _world.addChannel(server);
+            _world.addChannel(server);
 
-            _server.AddChannel(new InternalWorldChannel(server));
+            var channelId = _server.AddChannel(new InternalWorldChannel(server));
             return Task.FromResult(new Config.RegisterServerResult
             {
                 Channel = channelId,
@@ -690,9 +690,9 @@ namespace Application.Core.Channel.Local
             return _mapper.Map<Dto.TeamDto>(_server.TeamManager.CreateTeam(playerId));
         }
 
-        public Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
+        public Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId)
         {
-            return _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
+            return _server.TeamManager.UpdateParty(fromChannel, teamId, operation, fromId, toId);
         }
 
         public void SendTeamChat(string name, string chattext)
@@ -700,9 +700,9 @@ namespace Application.Core.Channel.Local
             _server.TeamManager.SendTeamChat(name, chattext);
         }
 
-        public Dto.TeamDto GetTeam(int party)
+        public Dto.GetTeamResponse GetTeam(int party)
         {
-            return _server.TeamManager.GetTeamFull(party);
+            return new Dto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
         }
         #endregion
     }
