@@ -2,20 +2,13 @@ using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
-using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
-using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
-using Application.Core.Servers;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
-using Application.Utility.Compatible.Atomics;
-using Application.Utility.Configs;
-using Application.Utility.Loggers;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
 using scripting.Event;
@@ -24,7 +17,6 @@ using scripting.npc;
 using scripting.portal;
 using scripting.quest;
 using scripting.reactor;
-using Serilog;
 using server;
 using server.events.gm;
 using server.expeditions;
@@ -47,7 +39,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
     private int channel;
 
     public ChannelPlayerStorage Players { get; }
-    public AbstractServer NettyServer { get; }
+    public AbstractNettyServer NettyServer { get; }
 
     private MapManager mapManager;
     private EventScriptManager eventSM;
@@ -116,7 +108,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
     public List<int> ActiveCoupons { get; set; } = new();
 
     public IChannelServerTransport Transport { get; }
-    public ChannelServerConfig ServerConfig { get; }
+    public WorldChannelConfig ChannelConfig { get; }
 
     public ServerMessageManager ServerMessageManager { get; }
     public CharacterHpDecreaseManager CharacterHpDecreaseManager { get; }
@@ -128,7 +120,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
     public MapOwnershipManager MapOwnershipManager { get; }
     public PlayerShopManager PlayerShopManager { get; }
     public TeamManager TeamManager { get; }
-
+    public GuildManager GuildManager { get; }
     public IServiceScope LifeScope { get; }
     public SkillbookInformationProvider SkillbookInformationProvider { get; }
     public ShopFactory ShopFactory { get; }
@@ -150,11 +142,11 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
-    public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
+    public WorldChannel(IServiceScope scope, WorldChannelConfig config, IChannelServerTransport transport)
     {
         LifeScope = scope;
         InstanceId = Guid.NewGuid().ToString();
-        ServerConfig = config;
+        ChannelConfig = config;
         WorldServerMessage = "";
         Transport = transport;
 
@@ -169,7 +161,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         this.Port = config.Port;
         this.ipEndPoint = new IPEndPoint(IPAddress.Parse(config.Host), Port);
 
-        NettyServer = new ChannelServer(this);
+        NettyServer = new NettyChannelServer(this);
         log = LogFactory.GetLogger($"Channel_{InstanceId}");
 
         ServerMessageManager = new ServerMessageManager(this);
@@ -207,7 +199,8 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         RankService = LifeScope.ServiceProvider.GetRequiredService<RankService>();
 
         PlayerShopManager = new PlayerShopManager(this);
-        TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(LifeScope.ServiceProvider, this);
+        TeamManager = LifeScope.ServiceProvider.GetRequiredService<TeamManager>();
+        GuildManager = LifeScope.ServiceProvider.GetRequiredService<GuildManager>();
     }
 
     public int getTransportationTime(double travelTime)

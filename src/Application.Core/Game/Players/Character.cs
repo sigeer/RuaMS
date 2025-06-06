@@ -81,8 +81,8 @@ public partial class Player
             Party = teamModel?.getId() ?? 0;
         }
     }
-    public IGuild? GuildModel => getGuild();
-    public IAlliance? AllianceModel => getAlliance();
+    public Guild? GuildModel => getGuild();
+    public Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
 
     private ILogger? _log;
@@ -969,7 +969,6 @@ public partial class Player
             saveCharToDB();
 
             // setMPC(new PartyCharacter(this));
-            silentPartyUpdate();
 
             if (dragon != null)
             {
@@ -977,10 +976,6 @@ public partial class Player
                 dragon = null;
             }
 
-            if (GuildModel != null)
-            {
-                GuildModel.broadcast(PacketCreator.jobMessage(0, JobId, Name), this.getId());
-            }
             Family? family = getFamily();
             if (family != null)
             {
@@ -1616,7 +1611,7 @@ public partial class Player
         }
         try
         {
-            GuildModel?.disbandGuild();
+            Client.CurrentServer.GuildManager.Disband(this);
         }
         catch (Exception e)
         {
@@ -2399,11 +2394,11 @@ public partial class Player
         return getGender() == 0;
     }
 
-    public IGuild? getGuild()
+    public Guild? getGuild()
     {
         try
         {
-            return AllGuildStorage.GetGuildById(GuildId);
+            return Client.CurrentServer.GuildManager.GetGuildById(GuildId);
         }
         catch (Exception ex)
         {
@@ -2412,7 +2407,7 @@ public partial class Player
         }
     }
 
-    public IAlliance? getAlliance()
+    public Alliance? getAlliance()
     {
         return getGuild()?.AllianceModel;
     }
@@ -3018,7 +3013,7 @@ public partial class Player
             return;
         }
 
-        if (guild.increaseCapacity())
+        if (Client.CurrentServer.GuildManager.IncreaseGuildCapacity(this))
         {
             gainMeso(-cost, true, false, true);
         }
@@ -3384,12 +3379,6 @@ public partial class Player
 
             MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
             // setMPC(new PartyCharacter(this));
-            silentPartyUpdate();
-
-            if (GuildModel != null)
-            {
-                GuildModel.broadcast(PacketCreator.levelUpMessage(2, Level, Name), this.getId());
-            }
 
             if (Level % 20 == 0)
             {
@@ -4904,7 +4893,7 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            Client.CurrentServer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
+            Client.CurrentServer.TeamManager.UpdateTeam(Client.CurrentServer, chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
         }
     }
 
@@ -5596,11 +5585,11 @@ public partial class Player
         GuildModel.setOnline(Id, false, -1);
         if (GuildRank > 1)
         {
-            GuildModel.leaveGuild(this);
+            Client.CurrentServer.GuildManager.LeaveMember(this);
         }
         else
         {
-            GuildModel.disbandGuild();
+            Client.CurrentServer.GuildManager.Disband(this);
         }
     }
 }

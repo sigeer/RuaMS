@@ -804,7 +804,7 @@ public class AbstractPlayerInteraction
         getGuild()?.guildMessage(PacketCreator.serverNotice(type, message));
     }
 
-    public IGuild? getGuild()
+    public Guild? getGuild()
     {
         try
         {

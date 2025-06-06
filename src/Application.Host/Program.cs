@@ -57,7 +57,7 @@ builder.Logging.AddSerilog();
 
 builder.Services.AddChannelServer();
 builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
-builder.Services.AddSingleton<MultiRunner>();
+builder.Services.AddSingleton<WorldChannelServer>();
 
 builder.Services.AddDbFactory(builder.Configuration.GetConnectionString("MySQL"));
 builder.Services.AddLoginServer();

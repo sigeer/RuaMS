@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package Dto;
+
+message UpdateGuildMemberRequest {
+	int32 guildId = 1;
+	int32 operation = 2;
+	int32 fromId = 3;
+	int32 toId = 4;
+	int32 toRank = 5;
+	int32 fromChannel = 6;
+}

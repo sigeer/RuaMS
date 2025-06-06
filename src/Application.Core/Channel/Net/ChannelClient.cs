@@ -225,7 +225,7 @@ namespace Application.Core.Channel.Net
 
             if (party != null)
             {
-                CurrentServer.TeamManager.UpdateTeam(party.getId(), PartyOperation.LOG_ONOFF, null, player.Id);
+                CurrentServer.TeamManager.UpdateTeam(CurrentServer, party.getId(), PartyOperation.LOG_ONOFF, null, player.Id);
             }
         }
 

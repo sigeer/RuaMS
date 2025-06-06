@@ -1,9 +1,15 @@
+using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
+using Application.EF.Entities;
 using Application.Shared.Configs;
+using Application.Shared.Constants.Item;
+using Application.Shared.Constants.Job;
 using Application.Shared.Servers;
 using Application.Shared.Team;
 using Dto;
 using net.server;
+using Org.BouncyCastle.Asn1.X509;
+using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Login
@@ -189,7 +195,26 @@ namespace Application.Core.Login
             return false;
         }
 
-        internal void SendTeamUpdate(int exceptChannel, int teamId, PartyOperation operation, TeamMemberDto target)
+
+        internal void BroadcastJobChanged(int type, IDictionary<int, int[]> targets, string name, int jobId)
+        {
+            foreach (var item in targets)
+            {
+                var ch = _server.ChannelServerList[item.Key];
+                ch.BroadcastJobChanged(type, item.Value, name, jobId);
+            }
+        }
+
+        internal void BroadcastLevelChanged(int type, IDictionary<int, int[]> targets, string name, int level)
+        {
+            foreach (var item in targets)
+            {
+                var ch = _server.ChannelServerList[item.Key];
+                ch.BroadcastLevelChanged(type, item.Value, name, level);
+            }
+        }
+
+        internal void BroadcastTeamUpdate(int exceptChannel, int teamId, PartyOperation operation, TeamMemberDto target)
         {
             for (int i = 0; i < _server.ChannelServerList.Count; i++)
             {
@@ -198,6 +223,42 @@ namespace Application.Core.Login
 
                 var ch = _server.ChannelServerList[i];
                 ch.SendTeamUpdate(teamId, operation, target);
+            }
+        }
+
+        internal void BroadcastGuildUpdate(int exceptChannel, UpdateGuildResponse response)
+        {
+            for (int i = 0; i < _server.ChannelServerList.Count; i++)
+            {
+                if (i == exceptChannel - 1)
+                    continue;
+
+                var ch = _server.ChannelServerList[i];
+                ch.SendGuildUpdate(response);
+            }
+        }
+
+        internal void DropMesssage(int exceptChannel, IDictionary<int, int[]> targets, int type, string message)
+        {
+            for (int i = 0; i < _server.ChannelServerList.Count; i++)
+            {
+                if (i == exceptChannel - 1)
+                    continue;
+
+                var ch = _server.ChannelServerList[i];
+
+            }
+        }
+
+        internal void BroadcastAllianceUpdate(int exceptChannel, UpdateAllianceResponse response)
+        {
+            for (int i = 0; i < _server.ChannelServerList.Count; i++)
+            {
+                if (i == exceptChannel - 1)
+                    continue;
+
+                var ch = _server.ChannelServerList[i];
+                ch.SendAllianceUpdate(response);
             }
         }
     }

@@ -73,6 +73,7 @@ namespace Application.Core.Login.Datas
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
+                var oldCharacterData = origin.Character;
                 origin.Character = _mapper.Map<CharacterModel>(obj.Character);
                 origin.BuddyList = _mapper.Map<BuddyModel[]>(obj.BuddyList);
                 origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
@@ -94,6 +95,20 @@ namespace Application.Core.Login.Datas
 
                 _logger.LogDebug("玩家{PlayerName}已缓存", obj.Character.Name);
                 _dataStorage.SetCharacter(origin);
+
+                if (oldCharacterData.Level != origin.Character.Level)
+                {
+                    // 等级变化通知
+                    _masterServer.GuildManager.BroadcastLevelChanged(origin.Character.Name, origin.Character.Level, origin.Character.Id);
+                    _masterServer.TeamManager.UpdateParty(obj.Channel, origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                }
+
+                if (oldCharacterData.JobId != origin.Character.JobId)
+                {
+                    // 转职通知
+                    _masterServer.GuildManager.BroadcastJobChanged(origin.Character.Name, origin.Character.JobId, origin.Character.Id);
+                    _masterServer.TeamManager.UpdateParty(obj.Channel, origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                }
             }
 
         }
@@ -427,6 +442,35 @@ namespace Application.Core.Login.Datas
             {
                 _masterServer.Transport.SendChannelPlayerPacket(chr.Channel, chr.Character.Id, packet);
             }
+        }
+
+        public List<CharacterLiveObject> GetGuildMembers(int guildId)
+        {
+            List<CharacterLiveObject> dataList = new List<CharacterLiveObject>();
+
+            var localData = _idDataSource.Values.Where(x => x.Character.GuildId == guildId);
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dbData = dbContext.Characters.Where(x => x.GuildId == guildId).ToList();
+            var dbCId = dbData.Select(x => x.Id).ToList();
+            foreach (var dbModel in dbData)
+            {
+                if (_idDataSource.TryGetValue(dbModel.Id, out var d))
+                {
+                    if (d.Character.GuildId == guildId)
+                        dataList.Add(d);
+                }
+                else
+                {
+                    dataList.Add(GetCharacter(dbModel.Id)!);
+                }
+            }
+            dataList.AddRange(localData);
+            return dataList.ToHashSet().ToList();
+        }
+
+        public IDictionary<int, int[]> GetPlayerChannelPair(IEnumerable<int> players)
+        {
+            return players.Select(FindPlayerById).Where(x => x != null).GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.Character.Id).ToArray());
         }
     }
 }

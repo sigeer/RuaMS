@@ -6,12 +6,13 @@ namespace Application.Core.Game.TheWorld
 {
     public class AllGuildStorage
     {
-        private static ConcurrentDictionary<int, IGuild?> CachedData { get; set; } = new();
-        public static IGuild? GetGuildById(int id)
+        private static ConcurrentDictionary<int, Guild?> CachedData { get; set; } = new();
+        public static Guild? GetGuildById(int id)
         {
-            return CachedData.GetOrAdd(id, GuildManager.FindGuildFromDB);
+            return null;
+            // return CachedData.GetOrAdd(id, GuildManager.FindGuildFromDB);
         }
-        public static IGuild AddOrUpdate(IGuild guild) => CachedData[guild.GuildId] = guild;
+
         public static void Remove(params int[] guildIdArr)
         {
             foreach (var guildId in guildIdArr)
@@ -19,7 +20,7 @@ namespace Application.Core.Game.TheWorld
                 CachedData.TryRemove(guildId, out var _);
             }
         }
-        public static IGuild? GetGuildByName(string name)
+        public static Guild? GetGuildByName(string name)
         {
             return CachedData.Values.FirstOrDefault(x => x != null && x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }

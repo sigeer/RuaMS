@@ -16,7 +16,7 @@ namespace Application.Shared.Servers
         /// 当前服务器的启动时间(StartServer之后)
         /// </summary>
         DateTimeOffset StartupTime { get; }
-        AbstractServer NettyServer { get; }
+        AbstractNettyServer NettyServer { get; }
         bool IsRunning { get; }
         int Port { get; set; }
         /// <summary>

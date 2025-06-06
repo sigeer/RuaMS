@@ -827,7 +827,7 @@ public class EventManager
 
     private void exportReadyGuild(int guildId)
     {
-        var mg = AllGuildStorage.GetGuildById(guildId);
+        var mg = cserv.GuildManager.GetGuildById(guildId);
         if (mg != null)
         {
             string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
@@ -840,7 +840,7 @@ public class EventManager
 
     private void exportMovedQueueToGuild(int guildId, int place)
     {
-        var mg = AllGuildStorage.GetGuildById(guildId);
+        var mg = cserv.GuildManager.GetGuildById(guildId);
         string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                 + " and is currently on the " + GameConstants.ordinal(place) + " place on the waiting queue.";
 

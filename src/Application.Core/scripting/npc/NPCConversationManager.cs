@@ -497,7 +497,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void disbandAlliance(IChannelClient c, int allianceId)
     {
-        AllAllianceStorage.GetAllianceById(allianceId)?.Disband();
+        c.CurrentServer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
     }
 
     public bool canBeUsedAllianceName(string name)
@@ -507,7 +507,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public Alliance? createAlliance(string name)
     {
-        return AllianceManager.createAlliance(c.CurrentServer, getParty()!, name);
+        return c.CurrentServer.GuildManager.CreateAlliance(getPlayer(), name);
     }
 
     public int getAllianceCapacity()

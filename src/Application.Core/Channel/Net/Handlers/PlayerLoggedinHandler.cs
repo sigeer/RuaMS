@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.Core.Servers.Services;
@@ -42,10 +43,12 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 {
     readonly ILogger<ChannelHandlerBase> _logger;
     readonly CharacterService _characterSrv;
-    public PlayerLoggedinHandler(ILogger<ChannelHandlerBase> logger, CharacterService characterSrv)
+    readonly TeamManager _teamManger;
+    public PlayerLoggedinHandler(ILogger<ChannelHandlerBase> logger, CharacterService characterSrv, TeamManager teamManager)
     {
         _logger = logger;
         _characterSrv = characterSrv;
+        _teamManger = teamManager;
     }
     public override bool ValidateState(IChannelClient c)
     {
@@ -211,7 +214,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             {
                 //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
                 //c.sendPacket(PacketCreator.partyCreated(pchar));
-                c.CurrentServer.TeamManager.UpdateTeam(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
+                _teamManger.UpdateTeam(c.CurrentServer, player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
                 player.updatePartyMemberHP();
             }
 

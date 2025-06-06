@@ -6,6 +6,7 @@ using Application.Core.Login;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Constants.Job;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Models;
@@ -704,6 +705,43 @@ namespace Application.Core.Channel.Local
         {
             return new Dto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
         }
+
+        public Dto.GetGuildResponse GetGuild(int id)
+        {
+            return new Dto.GetGuildResponse() { Model = _server.GuildManager.GetGuildFull(id) };
+        }
+
+        public Dto.GetGuildResponse CreateGuild(string guildName, int playerId)
+        {
+            return new Dto.GetGuildResponse {  Model = _server.GuildManager.CreateGuild(guildName, playerId) };
+        }
+
+        public Dto.UpdateGuildResponse SendUpdateGuildMember(int fromChannel, GuildOperation operation, int id, int guildId, int target, int toRank)
+        {
+            return _server.GuildManager.UpdateGuildMember(new Dto.UpdateGuildMemberRequest
+            {
+                FromChannel = fromChannel,
+                FromId = id,
+                ToId = target,
+                ToRank = toRank,
+                GuildId = guildId,
+                Operation = (int)operation
+            });
+        }
+
+        public Dto.UpdateGuildResponse SendUpdateGuildMeta(int fromChannel, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields)
+        {
+            return _server.GuildManager.UpdateGuild(new Dto.UpdateGuildRequest
+            {
+                FromChannel = fromChannel,
+                GuildId = guildId,
+                Operation = (int)operation,
+                UpdateFields = updateFields,
+                OperatorId = operatorId
+            });
+        }
+
+
         #endregion
     }
 }

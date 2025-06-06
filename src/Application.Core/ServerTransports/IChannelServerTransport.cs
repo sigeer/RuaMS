@@ -146,6 +146,10 @@ namespace Application.Core.ServerTransports
         Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);
+        Dto.GetGuildResponse GetGuild(int id);
+        Dto.GetGuildResponse CreateGuild(string guildName, int playerId);
+        Dto.UpdateGuildResponse SendUpdateGuildMember(int fromChannel, GuildOperation operation, int operatorId, int guildId, int target, int toRank);
+        Dto.UpdateGuildResponse SendUpdateGuildMeta(int fromChannel, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields);
         #endregion
     }
 }

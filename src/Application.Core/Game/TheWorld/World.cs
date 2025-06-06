@@ -29,7 +29,6 @@ public class World
     public List<WorldChannel> Channels { get; }
     WorldPlayerStorage? _players;
     public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
-    public WorldGuildStorage GuildStorage { get; }
     public Dictionary<int, Team> TeamStorage { get; }
 
     private Dictionary<int, byte> pnpcStep = new();
@@ -43,8 +42,6 @@ public class World
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
 
 
-    private AtomicInteger runningPartyId = new AtomicInteger();
-
 
     private ScheduledFuture? marriagesSchedule;
     private ScheduledFuture? fishingSchedule;
@@ -55,11 +52,7 @@ public class World
     {
         log = LogFactory.GetLogger("World_" + Id);
         Channels = new List<WorldChannel>();
-        TeamStorage = new Dictionary<int, Team>();
-        runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
         runningMessengerId.set(1);
-        GuildStorage = new WorldGuildStorage();
-
 
         this.Id = config.Id;
         Name = config.Name;
@@ -207,99 +200,6 @@ public class World
         }
     }
 
-    public IGuild? getGuild(IPlayer? mgc)
-    {
-        if (mgc == null)
-        {
-            return null;
-        }
-
-        return mgc.GuildModel;
-    }
-
-
-    public void setGuildAndRank(List<int> cids, int guildid, int rank, int exception)
-    {
-        foreach (int cid in cids)
-        {
-            if (cid != exception)
-            {
-                setGuildAndRank(cid, guildid, rank);
-            }
-        }
-    }
-
-    public void setOfflineGuildStatus(int guildid, int guildrank, int cid)
-    {
-        using var dbContext = new DBContext();
-        dbContext.Characters.Where(x => x.Id == cid).ExecuteUpdate(x => x.SetProperty(y => y.GuildId, guildid).SetProperty(y => y.GuildRank, guildrank));
-    }
-
-    public void setGuildAndRank(int cid, int guildid, int rank)
-    {
-        var mc = getPlayerStorage().getCharacterById(cid);
-        if (mc == null || !mc.IsOnlined)
-        {
-            return;
-        }
-        bool bDifferentGuild;
-        if (guildid == -1 && rank == -1)
-        {
-            bDifferentGuild = true;
-        }
-        else
-        {
-            bDifferentGuild = guildid != mc.GuildId;
-            mc.GuildId = guildid;
-            mc.GuildRank = rank;
-
-            if (bDifferentGuild)
-            {
-                mc.AllianceRank = 5;
-            }
-
-            mc.saveGuildStatus();
-        }
-        if (bDifferentGuild)
-        {
-            if (mc.isLoggedinWorld())
-            {
-                var guild = AllGuildStorage.GetGuildById(guildid);
-                if (guild != null)
-                {
-                    mc.getMap().broadcastPacket(mc, GuildPackets.guildNameChanged(cid, guild.getName()));
-                    mc.getMap().broadcastPacket(mc, GuildPackets.guildMarkChanged(cid, guild));
-                }
-                else
-                {
-                    mc.getMap().broadcastPacket(mc, GuildPackets.guildNameChanged(cid, ""));
-                }
-            }
-        }
-    }
-
-    public void changeEmblem(int gid, List<int> affectedPlayers, IGuild mgs)
-    {
-        sendPacket(affectedPlayers, GuildPackets.guildEmblemChange(gid, (short)mgs.LogoBg, (byte)mgs.LogoBgColor, (short)mgs.Logo, (byte)mgs.LogoColor), -1);
-        setGuildAndRank(affectedPlayers, -1, -1, -1);    //respawn player
-    }
-
-    public void sendPacket(List<int> targetIds, Packet packet, int exception)
-    {
-        IPlayer? chr;
-        foreach (int i in targetIds)
-        {
-            if (i == exception)
-            {
-                continue;
-            }
-            chr = getPlayerStorage().getCharacterById(i);
-            if (chr != null && chr.isLoggedinWorld())
-            {
-                chr.sendPacket(packet);
-            }
-        }
-    }
 
     public int find(string name)
     {
@@ -748,12 +648,6 @@ public class World
         }
     }
 
-
-    private void clearWorldData()
-    {
-        TeamStorage.Clear();
-    }
-
     public async Task Shutdown()
     {
         foreach (var ch in getChannels())
@@ -785,8 +679,6 @@ public class World
             timeoutSchedule = null;
         }
         Players.disconnectAll();
-
-        clearWorldData();
         log.Information("Finished shutting down world {WorldId}", Id);
     }
 }

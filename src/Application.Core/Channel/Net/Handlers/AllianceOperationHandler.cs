@@ -24,9 +24,10 @@
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.Channel;
-using Application.Core.Managers;
 using net.server.guild;
 using tools;
+using Application.Core.Channel.ServerData;
+using Application.Shared.Guild;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -35,6 +36,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class AllianceOperationHandler : ChannelHandlerBase
 {
+
+    readonly GuildManager _guildManager;
+
+    public AllianceOperationHandler(GuildManager guildManager)
+    {
+        _guildManager = guildManager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -89,7 +97,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                         return;
                     }
 
-                    chr.AllianceModel.RemoveGuildFromAlliance(chr.GuildId, 1);
+                    _guildManager.AllianceLeaveGuild(chr, chr.GuildId);
                     break;
                 }
             case 0x03: // Send Invite
@@ -101,7 +109,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    AllianceManager.sendInvitation(c, guildName, alliance.getId());
+                    _guildManager.SendAllianceInvitation(c, guildName, alliance.getId());
                 }
 
                 break;
@@ -116,13 +124,13 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     int allianceid = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
 
-                    alliance = AllAllianceStorage.GetAllianceById(allianceid);
+                    alliance = _guildManager.GetAllianceById(allianceid);
                     if (alliance == null)
                     {
                         return;
                     }
 
-                    if (!AllianceManager.answerInvitation(c.OnlinedCharacter.getId(), chrGuild.getName(), alliance.getId(), true))
+                    if (!_guildManager.AnswerAllianceInvitation(c.OnlinedCharacter.getId(), chrGuild.getName(), alliance.getId(), true))
                     {
                         return;
                     }
@@ -135,8 +143,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
 
                     int guildid = chr.getGuildId();
 
-                    alliance.AddGuild(guildid);
-                    chrGuild.resetAllianceGuildPlayersRank();
+                    _guildManager.GuildJoinAlliance(chr, allianceid, guildid);
 
                     chr.setAllianceRank(2);
                     chr.saveGuildStatus();
@@ -158,7 +165,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                         return;
                     }
 
-                    alliance!.RemoveGuildFromAlliance(guildid, 2);
+                    _guildManager.AllianceExpelGuild(c.OnlinedCharacter, allianceid, guildid);
                     break;
                 }
             case 0x07:
@@ -176,7 +183,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     }
 
                     //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeLeader(chr.getGuild().getAllianceId(), chr.getId(), slea.readInt()), -1, -1);
-                    changeLeaderAllianceRank(alliance!, player);
+                    // changeLeaderAllianceRank(alliance!, player);
                     break;
                 }
             case 0x08:
@@ -211,20 +218,20 @@ public class AllianceOperationHandler : ChannelHandlerBase
         alliance?.saveToDB();
     }
 
-    private void changeLeaderAllianceRank(IAlliance alliance, IPlayer newLeader)
-    {
-        var oldLeader = alliance.getLeader();
-        oldLeader.setAllianceRank(2);
-        oldLeader.saveGuildStatus();
+    //private void changeLeaderAllianceRank(Alliance alliance, IPlayer newLeader)
+    //{
+    //    var oldLeader = alliance.getLeader();
+    //    oldLeader.setAllianceRank(2);
+    //    oldLeader.saveGuildStatus();
 
-        newLeader.setAllianceRank(1);
-        newLeader.saveGuildStatus();
+    //    newLeader.setAllianceRank(1);
+    //    newLeader.saveGuildStatus();
 
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
-        alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
-    }
+    //    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
+    //    alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
+    //}
 
-    private void changePlayerAllianceRank(IAlliance alliance, IPlayer chr, bool raise)
+    private void changePlayerAllianceRank(Alliance alliance, IPlayer chr, bool raise)
     {
         int newRank = chr.getAllianceRank() + (raise ? -1 : 1);
         if (newRank < 3 || newRank > 5)

@@ -52,8 +52,8 @@ namespace Application.Core.Game.Players
         public SkillMacro?[] SkillMacros { get; set; }
 
         public Team? TeamModel { get; }
-        public IGuild? GuildModel { get; }
-        public IAlliance? AllianceModel { get; }
+        public Guild? GuildModel { get; }
+        public Alliance? AllianceModel { get; }
         public ISchool? SchoolModel { get; set; }
         public Dictionary<short, string> AreaInfo { get; set; }
         public MonsterBook Monsterbook { get; set; }
@@ -232,7 +232,7 @@ namespace Application.Core.Game.Players
         List<PlayerBuffValueHolder> getAllBuffs();
         List<PlayerCoolDownValueHolder> getAllCooldowns();
         Dictionary<Disease, DiseaseExpiration> getAllDiseases();
-        IAlliance? getAlliance();
+        Alliance? getAlliance();
         int getAllianceRank();
         string? getAreaInfo(int area);
         Dictionary<short, string> getAreaInfos();
@@ -295,7 +295,7 @@ namespace Application.Core.Game.Players
         List<Ring> getFriendshipRings();
         int getGachaExp();
         int getGender();
-        IGuild? getGuild();
+        Guild? getGuild();
         int getGuildId();
         int getGuildRank();
         int getHair();

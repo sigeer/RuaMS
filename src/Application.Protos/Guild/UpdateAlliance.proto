@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "Guild/Alliance.proto";
+
+package Dto;
+
+message UpdateAllianceRequest {
+	int32 operation = 1;
+	int32 operatorId = 2;
+	int32 allianceId = 3;
+	AllianceDto updateFields = 4;
+	int32 fromChannel = 5;
+}
+
+message UpdateAllianceMemberRequest {
+	int32 guildId = 1;
+	int32 operation = 2;
+	int32 fromId = 3;
+	int32 toId = 4;
+	int32 toRank = 5;
+	int32 fromChannel = 6;
+}
+
+message UpdateAllianceResponse {
+	int32 updateType = 1;
+	int32 code = 2;
+	int32 allianceId = 3;
+	int32 operation = 4;
+	int32 guildId = 5;
+}

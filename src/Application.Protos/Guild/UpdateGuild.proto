@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "Guild/Guild.proto";
+import "Guild/GuildMember.proto";
+
+package Dto;
+
+message UpdateGuildRequest {
+	int32 operation = 1;
+	int32 operatorId = 2;
+	int32 guildId = 3;
+	GuildDto updateFields = 4;
+	int32 fromChannel = 5;
+}
+
+message UpdateGuildResponse {
+	int32 updateType = 1;
+	int32 code = 2;
+	int32 guildId = 3;
+	int32 operation = 4;
+	GuildDto updatedGuild = 5;
+	GuildMemberDto updatedMember = 6;
+}

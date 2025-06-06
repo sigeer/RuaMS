@@ -1,3 +1,4 @@
+using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
@@ -74,6 +75,15 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
                 .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
                 .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level));
+
+            CreateMap<CharacterLiveObject, Dto.GuildMemberDto>()
+                .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
+                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
+                .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
+                .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
+                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level))
+                .ForMember(dest => dest.GuildRank, src => src.MapFrom(x => x.Character.GuildRank))
+                .ForMember(dest => dest.AllianceRank, src => src.MapFrom(x => x.Character.AllianceRank));
         }
     }
 }

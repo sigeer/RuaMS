@@ -6,16 +6,22 @@ using Application.Core.Game.Relation;
 using Application.Core.Managers.Constants;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants.Job;
 using Application.Shared.Items;
 using Application.Shared.Team;
 using AutoMapper;
 using client.creator;
 using client.inventory;
+using Dto;
 using net.packet.outs;
+using net.server.guild;
 using Org.BouncyCastle.Asn1.X509;
 using server;
+using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using tools;
+using static Mysqlx.Notice.Warning.Types;
 
 namespace Application.Core.Servers.Services
 {
@@ -210,6 +216,30 @@ namespace Application.Core.Servers.Services
         internal Team? CreateParty(int id)
         {
             return _mapper.Map<Team>(_tranport.CreateTeam(id));
+        }
+
+        public void ProcessBroadcastJobChanged(int type, int[] players, string name, int jobId)
+        {
+            foreach (var cid in players)
+            {
+                var chr = _server.Players.getCharacterById(cid);
+                if (chr != null)
+                {
+                    chr.sendPacket(PacketCreator.jobMessage(type, jobId, name));
+                }
+            }
+        }
+
+        public void ProcessBroadcastLevelChanged(int type, int[] value, string name, int level)
+        {
+            foreach (var cid in value)
+            {
+                var chr = _server.Players.getCharacterById(cid);
+                if (chr != null)
+                {
+                    chr.sendPacket(PacketCreator.levelUpMessage(type, level, name));
+                }
+            }
         }
     }
 }

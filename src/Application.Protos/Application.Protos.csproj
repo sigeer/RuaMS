@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -11,12 +11,20 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Cash\AddCashItemBoughtRequest.proto" GrpcServices="None" />
-		<Protobuf Include="Creator\NewPlayerSetter.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\CharacterMapChange.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />
+		<Protobuf Include="Guild\Alliance.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Guild\Guild.proto" GrpcServices="None" />
+		<Protobuf Include="Guild\GuildMember.proto" GrpcServices="None" />
+		<Protobuf Include="Guild\UpdateAlliance.proto" GrpcServices="None" />
+		<Protobuf Include="Guild\UpdateGuildMember.proto" GrpcServices="None" />
+		<Protobuf Include="Guild\UpdateGuild.proto" GrpcServices="None" />
+		<Protobuf Include="Invitation\CreateInviteRequest.proto" GrpcServices="None" />
+		<Protobuf Include="Invitation\CreateInviteResponse.proto" GrpcServices="None" />
 
-		<Protobuf Include="Duey\SendDueyNotificationRequest.proto" GrpcServices="None" />
+		<Protobuf Include="Invitation\InviteRequest.proto" GrpcServices="None" />
 		<Protobuf Include="Rank\RankCharacter.proto" GrpcServices="None" />
 
 		<Protobuf Include="Config\RegisterServerResult.proto" GrpcServices="None" />
@@ -25,14 +33,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Cash\AddCashItemBoughtRequest.proto" GrpcServices="None" />
 		<Protobuf Include="Cash\OwlSearchRecord.proto" GrpcServices="None" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Duey\SendDueyNotificationRequest.proto" GrpcServices="None" />
 		<Protobuf Include="Duey\CreatePackageRequest.proto" GrpcServices="None" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Creator\NewPlayerSetter.proto" GrpcServices="None" />
 		<Protobuf Include="Creator\CreateCharRequest.proto" GrpcServices="None" />
 	</ItemGroup>
 

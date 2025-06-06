@@ -32,10 +32,10 @@ namespace Application.Core.Game.Relation;
  * @author XoticStory
  * @author Ronan
  */
-public class Alliance : IAlliance
+public class Alliance
 {
     ILogger log;
-    public ConcurrentDictionary<int, IGuild> Guilds { get; }
+    public ConcurrentDictionary<int, Guild> Guilds { get; }
 
 
     public int AllianceId { get; set; }
@@ -44,8 +44,10 @@ public class Alliance : IAlliance
     public string Notice { get; set; }
     public string[] RankTitles { get; set; }
 
-    public Alliance(int id, string name)
+    WorldChannelServer _server;
+    public Alliance(WorldChannelServer server, int id, string name)
     {
+        _server = server;
         Name = name;
         AllianceId = id;
         RankTitles = new string[5] { "Master", "Jr. Master", "Member", "Member", "Member" };
@@ -83,7 +85,7 @@ public class Alliance : IAlliance
 
     public bool RemoveGuildFromAlliance(int guildId, int method)
     {
-        if (method == 1 && getLeader().getGuildId() == guildId)
+        if (method == 1 && GetLeaderGuildId() == guildId)
         {
             return false;
         }
@@ -126,20 +128,20 @@ public class Alliance : IAlliance
     }
 
 
-    public bool AddGuild(int gid)
+    public bool AddGuild(Guild guild)
     {
-        if (Guilds.Count == Capacity || Guilds.ContainsKey(gid))
+        if (Guilds.Count == Capacity || Guilds.ContainsKey(guild.GuildId))
         {
             return false;
         }
 
-        var guild = AllGuildStorage.GetGuildById(gid);
         if (guild != null)
         {
-            var r = Guilds.TryAdd(gid, guild);
+            var r = Guilds.TryAdd(guild.GuildId, guild);
             if (r)
                 guild.AllianceId = AllianceId;
 
+            guild.resetAllianceGuildPlayersRank();
             return r;
         }
         return false;
@@ -148,15 +150,7 @@ public class Alliance : IAlliance
 
     public void Disband()
     {
-        using var dbContext = new DBContext();
-        using var dbTrans = dbContext.Database.BeginTransaction();
-        dbContext.Alliances.Where(x => x.Id == AllianceId).ExecuteDelete();
-        dbContext.AllianceGuilds.Where(x => x.AllianceId == AllianceId).ExecuteDelete();
-
-        AllAllianceStorage.Remove(AllianceId);
-        AllGuildStorage.Remove(Guilds.Keys.ToArray());
         Guilds.Clear();
-        dbTrans.Commit();
 
         broadcastMessage(GuildPackets.disbandAlliance(AllianceId), -1, -1);
     }
@@ -216,13 +210,14 @@ public class Alliance : IAlliance
         return Name;
     }
 
-    object getLeaderLock = new object();
-    public IPlayer getLeader()
+    public int GetLeaderGuildId()
     {
-        lock (getLeaderLock)
+        foreach (var guild in Guilds.Values)
         {
-            return Guilds.Values.Select(x => x.getMGC(x.Leader)).FirstOrDefault(x => x?.AllianceRank == 1) ?? throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+            if (guild.getMembers().Any(x => x.AllianceRank == 1))
+                return guild.GuildId;
         }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
     }
 
     public void dropMessage(string message)

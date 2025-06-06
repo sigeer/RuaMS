@@ -75,9 +75,8 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 broadcastGuildCreationDismiss(matchPlayers);
                 return;
             }
-
-            int gid = GuildManager.CreateGuild(message, leader.getId());
-            if (gid == 0)
+            var guild = leader.Client.CurrentServer.GuildManager.CreateGuild(message, leader.Id);
+            if (guild == null)
             {
                 leader.sendPacket(GuildPackets.genericGuildMessage(0x23));
                 broadcastGuildCreationDismiss(matchPlayers);
@@ -85,9 +84,8 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             }
             leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
 
-            leader.setGuildId(gid);
-
-            leader.GuildModel!.changeRank(leader.Id, 1);
+            leader.setGuildId(guild.GuildId);
+            leader.GuildModel!.ChangeRank(leader.Id, 1);
 
             leader.sendPacket(GuildPackets.showGuildInfo(leader));
             leader.dropMessage(1, "You have successfully created a Guild.");
@@ -96,7 +94,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             {
                 bool cofounder = chr.getPartyId() == partyid;
 
-                chr.GuildId = gid;
+                chr.GuildId = guild.GuildId;
                 chr.GuildRank = cofounder ? 2 : 5;
                 chr.AllianceRank = 5;
 
@@ -119,8 +117,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
                 chr.saveGuildStatus(); // update database
             }
 
-            leader.GuildModel.broadcastNameChanged();
-            leader.GuildModel.broadcastEmblemChanged();
+            leader.GuildModel.UpdateView();
         }
 
         public override void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)

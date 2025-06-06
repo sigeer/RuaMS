@@ -263,6 +263,17 @@ namespace Application.Core.Mappers
                         dest.addMember(ctx.Mapper.Map<TeamMember>(member));
                     }
                 });
+
+            CreateMap<Dto.GuildMemberDto, GuildMember>();
+            CreateMap<Dto.GuildDto, Guild>()
+                .ForMember(dest => dest.RankTitles, src => src.MapFrom(x => new string[5]
+                {
+                    x.Rank1Title,
+                    x.Rank2Title,
+                    x.Rank3Title,
+                    x.Rank4Title,
+                    x.Rank5Title
+                }));
         }
 
         private int[] TranslateArray(string str)

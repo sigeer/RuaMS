@@ -29,7 +29,7 @@ namespace Application.Core.Login
         public int Id { get; } = 0;
         readonly ILogger<MasterServer> _logger;
         public int Port { get; set; } = 8484;
-        public AbstractServer NettyServer { get; }
+        public AbstractNettyServer NettyServer { get; }
         public bool IsRunning { get; private set; }
         public List<ChannelServerWrapper> ChannelServerList { get; }
         public WeddingManager WeddingInstance { get; }
@@ -79,6 +79,7 @@ namespace Application.Core.Login
         public DueyManager DueyManager { get; }
         public CashShopDataManager CashShopDataManager { get; }
         public TeamManager TeamManager { get; }
+        public GuildManager GuildManager { get; }
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -97,7 +98,7 @@ namespace Application.Core.Login
             ChannelServerList = new List<ChannelServerWrapper>();
             StartupTime = DateTimeOffset.UtcNow;
             Transport = new MasterServerTransport(this);
-            NettyServer = new LoginServer(this);
+            NettyServer = new NettyLoginServer(this);
 
 
             var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
@@ -125,6 +126,7 @@ namespace Application.Core.Login
             DueyManager = ActivatorUtilities.CreateInstance<DueyManager>(ServiceProvider, this);
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
+            GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;
