@@ -982,7 +982,6 @@ public partial class Player
                 family.broadcast(PacketCreator.jobMessage(1, JobId, Name), this.getId());
             }
             setMasteries(this.JobId);
-            guildUpdate();
 
             broadcastChangeJob();
 
@@ -2867,30 +2866,6 @@ public partial class Player
         return Client.AccountEntity!.GMLevel;
     }
 
-    private void guildUpdate()
-    {
-        if (this.GuildId < 1)
-        {
-            return;
-        }
-
-        try
-        {
-            if (GuildModel != null)
-                GuildModel.memberLevelJobUpdate(this);
-
-            //Server.getInstance().getGuild(guildid, world, mgc).gainGP(40);
-            if (AllianceModel != null)
-            {
-                AllianceModel.broadcastMessage(GuildPackets.updateAllianceJobLevel(this), Id, -1);
-            }
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
-        }
-    }
-
     public void handleEnergyChargeGain()
     {
         // to get here energychargelevel has to be > 0
@@ -3421,8 +3396,6 @@ public partial class Player
 
                 ThreadManager.getInstance().newTask(r);
             }
-
-            guildUpdate();
 
             var familyEntry = getFamilyEntry();
             if (familyEntry != null)

@@ -14,12 +14,14 @@ namespace Application.Core.Channel.ServerData
         readonly IMapper _mapper;
         readonly ILogger<TeamManager> _logger;
         readonly IChannelServerTransport _transport;
+        readonly WorldChannelServer _server;
 
-        public TeamManager(WorldChannel server, IMapper mapper, ILogger<TeamManager> logger, IChannelServerTransport transport)
+        public TeamManager(IMapper mapper, ILogger<TeamManager> logger, IChannelServerTransport transport, WorldChannelServer server)
         {
             _mapper = mapper;
             _logger = logger;
             _transport = transport;
+            _server = server;
         }
 
 
@@ -39,12 +41,14 @@ namespace Application.Core.Channel.ServerData
                     return false;
                 }
 
-                party = player.Client.CurrentServer.Service.CreateParty(player.Id);
-                if (party == null)
+                var remoteData = _transport.CreateTeam(player.Id);
+                if (remoteData == null)
                 {
                     player.dropMessage(5, "创建队伍失败：发生了未知错误");
                     return false;
                 }
+                party = new Team(_server, remoteData.Id, remoteData.LeaderId);
+                _mapper.Map(remoteData, party);
                 TeamChannelStorage[party.getId()] = party;
                 player.setParty(party);
                 // player.setMPC(partyplayer);
@@ -96,7 +100,7 @@ namespace Application.Core.Channel.ServerData
             return UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
-        public bool ProcessUpdateResponse(WorldChannel worldChannel, int partyId, PartyOperation operation, Dto.TeamMemberDto target)
+        public bool ProcessUpdateResponse(int partyId, PartyOperation operation, Dto.TeamMemberDto target)
         {
             var party = GetParty(partyId);
             if (party == null)
@@ -125,18 +129,18 @@ namespace Application.Core.Channel.ServerData
                 default:
                     break;
             }
-            var partyMembers = party.GetChannelMembers(worldChannel);
+            var partyMembers = party.GetActiveMembers();
 
             foreach (var partychar in partyMembers)
             {
                 partychar.setParty(operation == PartyOperation.DISBAND ? null : party);
                 if (partychar.IsOnlined)
                 {
-                    partychar.sendPacket(PacketCreator.updateParty(worldChannel, party, operation, targetMember.Id, targetMember.Name));
+                    partychar.sendPacket(PacketCreator.updateParty(partychar.getChannelServer().getId(), party, operation, targetMember.Id, targetMember.Name));
                 }
             }
 
-            var targetPlayer = worldChannel.Players.getCharacterById(targetMember.Id);
+            var targetPlayer = _server.FindPlayerById(targetMember.Channel, targetMember.Id);
             if (operation == PartyOperation.JOIN)
             {
                 if (targetPlayer != null)
@@ -164,7 +168,7 @@ namespace Application.Core.Channel.ServerData
                     }
 
                     targetPlayer.setParty(null);
-                    targetPlayer.sendPacket(PacketCreator.updateParty(worldChannel, party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.sendPacket(PacketCreator.updateParty(targetPlayer.getChannelServer().getId(), party, operation, targetMember.Id, targetMember.Name));
                 }
             }
             else if (operation == PartyOperation.DISBAND)
@@ -208,9 +212,9 @@ namespace Application.Core.Channel.ServerData
             }
             else if (operation == PartyOperation.CHANGE_LEADER)
             {
-                var oldLeader = party.getLeaderId();
-                var mc = worldChannel.Players.getCharacterById(oldLeader);
-                if (mc != null && targetPlayer != null)
+                var oldLeader = party.GetTeamMember(party.getLeaderId());
+                var mc = _server.FindPlayerById(oldLeader.Channel, oldLeader.Id);
+                if (mc != null && targetPlayer != null && mc.Channel == targetPlayer.Channel)
                 {
                     var eim = mc.getEventInstance();
 
@@ -226,7 +230,7 @@ namespace Application.Core.Channel.ServerData
                         {
                             if (oldLeaderMapid != targetPlayer.getMapId())
                             {
-                                var mmd = worldChannel.getMiniDungeon(oldLeaderMapid);
+                                var mmd = _server.GetChannel(mc.Channel)?.getMiniDungeon(oldLeaderMapid);
                                 if (mmd != null)
                                 {
                                     mmd.close();
@@ -247,7 +251,7 @@ namespace Application.Core.Channel.ServerData
         {
             var result = _transport.SendUpdateTeam(worldChannel.getId(), teamId, operation, player?.Id ?? -1, target);
             if (result.ErrorCode == 0)
-                return ProcessUpdateResponse(worldChannel, result.TeamId, (PartyOperation)result.Operation, result.UpdatedMember);
+                return ProcessUpdateResponse(result.TeamId, (PartyOperation)result.Operation, result.UpdatedMember);
 
             if (player != null && !result.SilentCheck)
             {

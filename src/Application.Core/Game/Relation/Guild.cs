@@ -82,7 +82,7 @@ public class Guild
 
     private void SendChannelMember(Action<IPlayer> action)
     {
-        foreach (var server in _serverContainer.Servers)
+        foreach (var server in _serverContainer.Servers.Values)
         {
             foreach (var m in GetCurrentChannelMembers(server))
             {
@@ -92,6 +92,15 @@ public class Guild
                 }
             }
         }
+    }
+
+    public void UpdateMember(GuildMember member)
+    {
+        if (member.GuildId != GuildId)
+        {
+            return;
+        }
+        members[member.Id] = member;
     }
 
 
@@ -248,7 +257,7 @@ public class Guild
         });
     }
 
-    public void broadcastInfoChanged(WorldChannel server)
+    public void broadcastInfoChanged()
     {
         SendChannelMember(chr =>
         {
@@ -469,26 +478,6 @@ public class Guild
         }
     }
 
-    public void memberLevelJobUpdate(IPlayer mgc)
-    {
-        Monitor.Enter(membersLock);
-        try
-        {
-            foreach (var member in members)
-            {
-                if (mgc.Equals(member))
-                {
-                    this.broadcast(GuildPackets.guildMemberLevelJobUpdate(mgc));
-                    break;
-                }
-            }
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
-    }
-
     public override bool Equals(object? other)
     {
         if (other is Guild o)
@@ -529,7 +518,6 @@ public class Guild
         try
         {
             members.Clear();
-            AllGuildStorage.Remove(GuildId);
             this.writeToDB(true);
             this.broadcast(null, -1, BCOp.DISBAND);
         }

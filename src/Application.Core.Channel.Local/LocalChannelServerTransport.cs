@@ -456,33 +456,6 @@ namespace Application.Core.Channel.Local
             return sb.ToString();
         }
 
-        public void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise)
-        {
-            foreach (var ch in _world.Channels)
-            {
-                var chr = ch.Players.getCharacterById(targetCharacterId);
-                if (chr != null)
-                {
-                    var alliance = chr.getAlliance();
-                    if (alliance == null)
-                        return;
-
-                    int newRank = chr.getAllianceRank() + (isRaise ? -1 : 1);
-                    if (newRank < 3 || newRank > 5)
-                    {
-                        return;
-                    }
-
-                    chr.setAllianceRank(newRank);
-                    chr.saveGuildStatus();
-
-
-                    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
-                    alliance.dropMessage("'" + chr.getName() + "' has been reassigned to '" + alliance.getRankTitle(newRank) + "' in this Alliance.");
-                }
-            }
-        }
-
         public Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid)
         {
             return _loginService.PlayerLogin(clientSession, channelId, cid);
@@ -706,14 +679,20 @@ namespace Application.Core.Channel.Local
             return new Dto.GetTeamResponse() { Model = _server.TeamManager.GetTeamFull(party) };
         }
 
+
+
+
+        #endregion
+
+        #region Guild & Alliance
         public Dto.GetGuildResponse GetGuild(int id)
         {
             return new Dto.GetGuildResponse() { Model = _server.GuildManager.GetGuildFull(id) };
         }
 
-        public Dto.GetGuildResponse CreateGuild(string guildName, int playerId)
+        public Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members)
         {
-            return new Dto.GetGuildResponse {  Model = _server.GuildManager.CreateGuild(guildName, playerId) };
+            return new Dto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
         }
 
         public Dto.UpdateGuildResponse SendUpdateGuildMember(int fromChannel, GuildOperation operation, int id, int guildId, int target, int toRank)
@@ -741,7 +720,30 @@ namespace Application.Core.Channel.Local
             });
         }
 
+        public Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
+        {
+            return new Dto.GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(masters, allianceName) };
+        }
 
+        public Dto.UpdateAllianceResponse SendUpdateAlliance(Dto.UpdateAllianceRequest request)
+        {
+            return _server.GuildManager.UpdateAllianceMember(request);
+        }
+
+        public Dto.GetAllianceResponse GetAlliance(int id)
+        {
+            return new Dto.GetAllianceResponse { Model = _server.GuildManager.GetAllianceFull(id) };
+        }
+
+        public void SendGuildChat(string name, string text)
+        {
+            _server.GuildManager.SendGuildChat(name, text);
+        }
+
+        public void SendAllianceChat(string name, string text)
+        {
+            _server.GuildManager.SendAllianceChat(name, text);
+        }
         #endregion
     }
 }

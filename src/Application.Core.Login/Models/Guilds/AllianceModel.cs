@@ -1,3 +1,5 @@
+using Application.Shared.Guild;
+
 namespace Application.Core.Login.Models.Guilds
 {
     public class AllianceModel
@@ -21,5 +23,29 @@ namespace Application.Core.Login.Models.Guilds
         public string Rank5 { get; set; } = null!;
 
         public List<int> Guilds { get; set; } = [];
+        public bool TryAddGuild(int guild, out AllianceUpdateResult code)
+        {
+            code = 0;
+
+            if (Guilds.Count >= Capacity)
+                return false;
+
+            if (Guilds.Contains(guild))
+                return false;
+
+            Guilds.Add(guild);
+            return true;
+        }
+
+        public bool TryRemoveGuild(int guild, out AllianceUpdateResult code)
+        {
+            code = 0;
+
+            if (!Guilds.Contains(guild))
+                return false;
+
+            Guilds.Remove(guild);
+            return true;
+        }
     }
 }

@@ -144,7 +144,7 @@ public class GuildOperationHandler : ChannelHandlerBase
 
                 if (mc.AllianceModel != null)
                 {
-                    mc.AllianceModel.updateAlliancePackets(mc);
+                    mc.AllianceModel.updateAlliancePackets();
                 }
                 break;
             case 0x07:
@@ -162,7 +162,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     c.sendPacket(GuildPackets.showGuildInfo(null));
                     if (mc.AllianceModel != null)
                     {
-                        mc.AllianceModel.updateAlliancePackets(mc);
+                        mc.AllianceModel.updateAlliancePackets();
                     }
                 }
 
@@ -176,7 +176,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 {
                     if (mc.AllianceModel != null)
                     {
-                        mc.AllianceModel!.updateAlliancePackets(mc);
+                        mc.AllianceModel!.updateAlliancePackets();
                     }
                 }
                 break;
@@ -230,7 +230,7 @@ public class GuildOperationHandler : ChannelHandlerBase
 
                 if (mc.AllianceModel != null)
                 {
-                    mc.AllianceModel.broadcastMessage(GuildPackets.getGuildAlliances(mc.AllianceModel), -1, -1);
+                    mc.AllianceModel.BroadcastGuildAlliance();
                 }
                 break;
             case 0x10:

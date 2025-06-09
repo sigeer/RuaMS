@@ -10,3 +10,7 @@ message AllianceDto {
   repeated string rankTitles = 5;
   repeated int32 guilds = 6;
 }
+
+message GetAllianceResponse {
+	AllianceDto model = 1;
+}

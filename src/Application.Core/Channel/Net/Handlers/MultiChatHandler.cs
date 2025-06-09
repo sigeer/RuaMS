@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Relation;
 using client.autoban;
 using Microsoft.Extensions.Logging;
@@ -30,11 +31,13 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MultiChatHandler : ChannelHandlerBase
 {
+    readonly GuildManager _guildManager;
     readonly ILogger<MultiChatHandler> _logger;
 
-    public MultiChatHandler(ILogger<MultiChatHandler> logger)
+    public MultiChatHandler(ILogger<MultiChatHandler> logger, GuildManager guildManager )
     {
         _logger = logger;
+        _guildManager = guildManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -73,14 +76,14 @@ public class MultiChatHandler : ChannelHandlerBase
         }
         else if (type == 2 && player.GuildModel != null)
         {
-            player.GuildModel.guildChat(player.getName(), player.getId(), chattext);
+            _guildManager.SendGuildChat(c.OnlinedCharacter, chattext);
             // ChatLogger.log(c, "Guild", chattext);
         }
         else if (type == 3 && player.getGuild() != null)
         {
             if (player.AllianceModel != null)
             {
-                player.AllianceModel?.broadcastMessage(PacketCreator.multiChat(player.getName(), chattext, 3), player.getId(), -1);
+                _guildManager.SendAllianceChat(c.OnlinedCharacter, chattext);
                 // ChatLogger.log(c, "Ally", chattext);
             }
         }

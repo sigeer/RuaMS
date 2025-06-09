@@ -6,6 +6,7 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using System.Net;
 using Application.Shared.Team;
+using Application.Shared.Guild;
 
 namespace Application.Core.ServerTransports
 {
@@ -98,7 +99,6 @@ namespace Application.Core.ServerTransports
         bool HasCharacteridInTransition(string clientSession);
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
         string LoadExpeditionInfo();
-        void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
         Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid);
         int GetAccountCharacterCount(int accId);
         bool CheckCharacterName(string name);
@@ -147,9 +147,14 @@ namespace Application.Core.ServerTransports
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);
         Dto.GetGuildResponse GetGuild(int id);
-        Dto.GetGuildResponse CreateGuild(string guildName, int playerId);
+        Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
         Dto.UpdateGuildResponse SendUpdateGuildMember(int fromChannel, GuildOperation operation, int operatorId, int guildId, int target, int toRank);
         Dto.UpdateGuildResponse SendUpdateGuildMeta(int fromChannel, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields);
+        Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
+        Dto.UpdateAllianceResponse SendUpdateAlliance(Dto.UpdateAllianceRequest request);
+        Dto.GetAllianceResponse GetAlliance(int id);
+        void SendGuildChat(string name, string text);
+        void SendAllianceChat(string name, string text);
         #endregion
     }
 }

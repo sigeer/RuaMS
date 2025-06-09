@@ -44,6 +44,7 @@ using server.partyquest;
 using tools;
 using tools.packets;
 using static server.partyquest.Pyramid;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace scripting.npc;
@@ -489,8 +490,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
         var alliance = c.OnlinedCharacter.AllianceModel!;
         alliance.increaseCapacity(1);
 
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
-        alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
+        alliance.BroadcastGuildAlliance();
+        alliance.BroadcastNotice();
 
         c.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue
     }
@@ -607,7 +608,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         if (!party)
         {
-            partyz = new Team(-1, getPlayer().Id);
+            partyz = new Team(c.CurrentServer.LifeScope.ServiceProvider.GetRequiredService<WorldChannelServer>(), -1, getPlayer().Id);
         }
         Pyramid py = new Pyramid(c.CurrentServer, partyz, mod, map.getId());
         getPlayer().setPartyQuest(py);

@@ -4,12 +4,29 @@ namespace Application.Shared.Guild
     {
         LeaveAlliance,
         ExpelGuild,
-        AddGuild
+        Join,
+        MemberLogin,
+        MemberUpdate,
+
+        IncreasePlayerRank,
+        DecreasePlayerRank,
+        ChangeAllianceLeader,
+        IncreaseCapacity,
+        Disband,
+        ChangeRankTitle,
+        ChangeNotice,
     }
 
-    public enum AllianceMetaOperation
+    public enum AllianceUpdateResult
     {
-        IncreaseCapacity,
-        Disband
+        Success,
+        PlayerNotExisted,
+        AllianceNotFound,
+        GuildNotExsited,
+        NotGuildLeader,
+        LeaderNotExisted,
+        GuildAlreadyInAlliance,
+        NotAllianceLeader,
+        PlayerNotOnlined,
     }
 }

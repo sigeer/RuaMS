@@ -19,7 +19,6 @@
 		<Protobuf Include="Guild\Guild.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\GuildMember.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\UpdateAlliance.proto" GrpcServices="None" />
-		<Protobuf Include="Guild\UpdateGuildMember.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\UpdateGuild.proto" GrpcServices="None" />
 		<Protobuf Include="Invitation\CreateInviteRequest.proto" GrpcServices="None" />
 		<Protobuf Include="Invitation\CreateInviteResponse.proto" GrpcServices="None" />

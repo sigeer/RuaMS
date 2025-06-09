@@ -99,14 +99,14 @@ namespace Application.Core.Login.Datas
                 if (oldCharacterData.Level != origin.Character.Level)
                 {
                     // 等级变化通知
-                    _masterServer.GuildManager.BroadcastLevelChanged(origin.Character.Name, origin.Character.Level, origin.Character.Id);
+                    _masterServer.GuildManager.BroadcastLevelChanged(origin.Character);
                     _masterServer.TeamManager.UpdateParty(obj.Channel, origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
 
                 if (oldCharacterData.JobId != origin.Character.JobId)
                 {
                     // 转职通知
-                    _masterServer.GuildManager.BroadcastJobChanged(origin.Character.Name, origin.Character.JobId, origin.Character.Id);
+                    _masterServer.GuildManager.BroadcastJobChanged(origin.Character);
                     _masterServer.TeamManager.UpdateParty(obj.Channel, origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
             }
@@ -194,6 +194,7 @@ namespace Application.Core.Login.Datas
 
                 _idDataSource[characterEntity.Id] = d;
                 _nameDataSource[characterEntity.Name] = d;
+                _charcterViewCache[characterEntity.Id] = d;
             }
             return d;
         }
@@ -444,33 +445,18 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public List<CharacterLiveObject> GetGuildMembers(int guildId)
+        public List<int> GetGuildMembers(DBContext dbContext, int guildId)
         {
-            List<CharacterLiveObject> dataList = new List<CharacterLiveObject>();
-
-            var localData = _idDataSource.Values.Where(x => x.Character.GuildId == guildId);
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbData = dbContext.Characters.Where(x => x.GuildId == guildId).ToList();
-            var dbCId = dbData.Select(x => x.Id).ToList();
-            foreach (var dbModel in dbData)
-            {
-                if (_idDataSource.TryGetValue(dbModel.Id, out var d))
-                {
-                    if (d.Character.GuildId == guildId)
-                        dataList.Add(d);
-                }
-                else
-                {
-                    dataList.Add(GetCharacter(dbModel.Id)!);
-                }
-            }
-            dataList.AddRange(localData);
+            List<int> dataList = new List<int>();
+            var chrTemp = GetCharactersView(dbContext.Characters.Where(x => x.GuildId == guildId).Select(x => x.Id).ToArray());
+            dataList.AddRange(chrTemp.Where(x => x.Character.GuildId == guildId).Select(x => x.Character.Id));
+            dataList.AddRange(_charcterViewCache.Values.Where(x => x.Character.GuildId == guildId).Select(x => x.Character.Id));
             return dataList.ToHashSet().ToList();
         }
 
-        public IDictionary<int, int[]> GetPlayerChannelPair(IEnumerable<int> players)
+        public IDictionary<int, int[]> GetPlayerChannelPair(IEnumerable<CharacterViewObject> players)
         {
-            return players.Select(FindPlayerById).Where(x => x != null).GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.Character.Id).ToArray());
+            return players.Where(x => x != null).GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.Character.Id).ToArray());
         }
     }
 }

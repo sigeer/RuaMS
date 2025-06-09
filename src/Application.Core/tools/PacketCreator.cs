@@ -3878,7 +3878,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void addPartyStatus(WorldChannel forchannel, Team party, OutPacket p, bool leaving)
+    private static void addPartyStatus(int forchannel, Team party, OutPacket p, bool leaving)
     {
         var partymembers = party.GetTeamMembers();
         while (partymembers.Count < 6)
@@ -3909,10 +3909,10 @@ public class PacketCreator
                 p.writeInt(-2);
         }
         p.writeInt(party.getLeaderId());
-        Dictionary<int, IPlayer> forChannelMembers = party.GetChannelMembers(forchannel).ToDictionary(x => x.Id, x => x);
+        Dictionary<int, IPlayer> forChannelMembers = party.GetActiveMembers().ToDictionary(x => x.Id, x => x);
         foreach (var partychar in partymembers)
         {
-            if (forChannelMembers.TryGetValue(partychar.Id, out var player))
+            if (forChannelMembers.TryGetValue(partychar.Id, out var player) && player.getChannelServer().getId() == forchannel)
                 p.writeInt(player.getMapId());
             else
                 p.writeInt(0);
@@ -3960,7 +3960,7 @@ public class PacketCreator
         }
     }
 
-    public static Packet updateParty(WorldChannel forChannel, Team party, PartyOperation op, int targetId, string targetName)
+    public static Packet updateParty(int forChannel, Team party, PartyOperation op, int targetId, string targetName)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
         switch (op)

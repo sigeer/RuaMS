@@ -13,6 +13,15 @@ message UpdateGuildRequest {
 	int32 fromChannel = 5;
 }
 
+message UpdateGuildMemberRequest {
+	int32 guildId = 1;
+	int32 operation = 2;
+	int32 fromId = 3;
+	int32 toId = 4;
+	int32 toRank = 5;
+	int32 fromChannel = 6;
+}
+
 message UpdateGuildResponse {
 	int32 updateType = 1;
 	int32 code = 2;
@@ -20,4 +29,10 @@ message UpdateGuildResponse {
 	int32 operation = 4;
 	GuildDto updatedGuild = 5;
 	GuildMemberDto updatedMember = 6;
+}
+
+message CreateGuildRequest {
+	string name = 1;
+	int32 leaderId = 2;
+	repeated int32 members = 3;
 }

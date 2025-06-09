@@ -7,7 +7,7 @@ namespace Application.Core.Game.Relation
         public int Level { get; set; }
         public int JobId { get; set; }
         public int Channel { get; set; }
-
+        public int GuildId { get; set; }
         public int GuildRank { get; set; }
         public int AllianceRank { get; set; }
         public int GP { get; set; }

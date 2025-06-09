@@ -19,7 +19,7 @@ namespace Application.Core.Channel.Local
 
         public override void SendTeamUpdate(int teamId, PartyOperation operation, TeamMemberDto target)
         {
-            WorldChannel.TeamManager.ProcessUpdateResponse(WorldChannel, teamId, operation, target);
+            WorldChannel.TeamManager.ProcessUpdateResponse(teamId, operation, target);
         }
 
         public override void BroadcastJobChanged(int type, int[] players, string name, int jobId)
@@ -39,7 +39,7 @@ namespace Application.Core.Channel.Local
 
         public override void SendAllianceUpdate(UpdateAllianceResponse response)
         {
-            WorldChannel.GuildManager.ProcessAllianceUpdate(WorldChannel, response);
+            WorldChannel.GuildManager.ProcessAllianceUpdate(response);
         }
     }
 }

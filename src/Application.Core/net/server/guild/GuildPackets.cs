@@ -144,11 +144,11 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet guildMemberLevelJobUpdate(IPlayer mgc)
+    public static Packet guildMemberLevelJobUpdate(Guild guild, GuildMember mgc)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x3C);
-        p.writeInt(mgc.GuildId);
+        p.writeInt(guild.GuildId);
         p.writeInt(mgc.Id);
         p.writeInt(mgc.Level);
         p.writeInt(mgc.JobId);
@@ -435,7 +435,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet addGuildToAlliance(Alliance alliance, Guild newGuild, IChannelClient c)
+    public static Packet addGuildToAlliance(Alliance alliance, Guild newGuild)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x12);
@@ -457,13 +457,13 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet allianceMemberOnline(IPlayer mc, bool online)
+    public static Packet allianceMemberOnline(Guild guild, int playerId, bool online)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0E);
-        p.writeInt(mc.getGuild().getAllianceId());
-        p.writeInt(mc.getGuildId());
-        p.writeInt(mc.getId());
+        p.writeInt(guild.AllianceId);
+        p.writeInt(guild.GuildId);
+        p.writeInt(playerId);
         p.writeBool(online);
         return p;
     }
@@ -489,12 +489,12 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet updateAllianceJobLevel(IPlayer mc)
+    public static Packet updateAllianceJobLevel(Guild guild, GuildMember mc)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x18);
-        p.writeInt(mc.getGuild().getAllianceId());
-        p.writeInt(mc.GuildId);
+        p.writeInt(guild.AllianceId);
+        p.writeInt(guild.GuildId);
         p.writeInt(mc.Id);
         p.writeInt(mc.Level);
         p.writeInt(mc.JobId);

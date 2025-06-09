@@ -2,6 +2,7 @@ using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
+using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.handlers;
@@ -55,6 +56,9 @@ namespace Application.Core.Channel
             // 频道的数据中心不再与频道关联，而是与频道所在的进程关联（同一进程多个频道）
             services.AddSingleton<TeamManager>();
             services.AddSingleton<GuildManager>();
+
+            services.AddSingleton<MatchCheckerGuildCreationListener>();
+            services.AddSingleton<MatchCheckerCPQChallengeListener>();
 
             services.AddMemoryCache();
             return services;

@@ -69,21 +69,22 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>();
 
-            CreateMap<CharacterLiveObject, Dto.TeamMemberDto>()
+            CreateMap<CharacterViewObject, Dto.TeamMemberDto>()
                 .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
                 .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
                 .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
                 .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level));
 
-            CreateMap<CharacterLiveObject, Dto.GuildMemberDto>()
+            CreateMap<CharacterViewObject, Dto.GuildMemberDto>()
                 .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
                 .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
                 .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
                 .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level))
                 .ForMember(dest => dest.GuildRank, src => src.MapFrom(x => x.Character.GuildRank))
-                .ForMember(dest => dest.AllianceRank, src => src.MapFrom(x => x.Character.AllianceRank));
+                .ForMember(dest => dest.AllianceRank, src => src.MapFrom(x => x.Character.AllianceRank))
+                .ForMember(dest => dest.GuildId, src => src.MapFrom(x => x.Character.GuildId));
         }
     }
 }

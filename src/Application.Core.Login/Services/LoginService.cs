@@ -51,6 +51,11 @@ namespace Application.Core.Login.Services
             var data = _mapper.Map<Dto.PlayerGetterDto>(characterObj);
             data.LoginInfo = new Dto.LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
 
+            if (data.LoginInfo.IsNewCommer)
+            {
+                _masterServer.GuildManager.BroadcastLogin(characterObj.Character);
+            }
+
             using var dbContext = _dbContextFactory.CreateDbContext();
             var now = DateTimeOffset.UtcNow;
             var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();

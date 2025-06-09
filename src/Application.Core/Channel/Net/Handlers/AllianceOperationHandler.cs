@@ -21,13 +21,8 @@
  */
 
 
-using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
-using Application.Core.Channel;
-using net.server.guild;
-using tools;
 using Application.Core.Channel.ServerData;
-using Application.Shared.Guild;
+using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -87,16 +82,11 @@ public class AllianceOperationHandler : ChannelHandlerBase
         switch (b)
         {
             case 0x01:
-                alliance.broadcastMessage(GuildPackets.sendShowInfo(alliance!.getId(), chr.getId()), -1, -1);
+                alliance!.BroadcastPlayerInfo(chr.Id);
                 break;
             case 0x02:
                 {
                     // Leave Alliance
-                    if (chr.AllianceModel == null || chr.GuildRank != 1)
-                    {
-                        return;
-                    }
-
                     _guildManager.AllianceLeaveGuild(chr, chr.GuildId);
                     break;
                 }
@@ -123,6 +113,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
 
                     int allianceid = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
+                    int guildid = chr.getGuildId();
 
                     alliance = _guildManager.GetAllianceById(allianceid);
                     if (alliance == null)
@@ -141,18 +132,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                         return;
                     }
 
-                    int guildid = chr.getGuildId();
-
                     _guildManager.GuildJoinAlliance(chr, allianceid, guildid);
-
-                    chr.setAllianceRank(2);
-                    chr.saveGuildStatus();
-
-                    alliance.broadcastMessage(GuildPackets.addGuildToAlliance(alliance, chrGuild, c), -1, -1);
-                    alliance.broadcastMessage(GuildPackets.updateAllianceInfo(alliance), -1, -1);
-                    alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
-                    chrGuild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
-
                     break;
                 }
             case 0x06:
@@ -160,10 +140,6 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     // Expel Guild
                     int guildid = p.readInt();
                     int allianceid = p.readInt();
-                    if (chrGuild.AllianceId == 0 || chrGuild.AllianceId != allianceid)
-                    {
-                        return;
-                    }
 
                     _guildManager.AllianceExpelGuild(c.OnlinedCharacter, allianceid, guildid);
                     break;
@@ -171,19 +147,10 @@ public class AllianceOperationHandler : ChannelHandlerBase
             case 0x07:
                 {
                     // Change Alliance Leader
-                    if (chrGuild.AllianceId == 0 || chr.GuildId < 1)
-                    {
-                        return;
-                    }
                     int victimid = p.readInt();
-                    var player = c.getWorldServer().getPlayerStorage().getCharacterById(victimid);
-                    if (player == null || !player.IsOnlined || player.AllianceRank != 2)
-                    {
-                        return;
-                    }
 
                     //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeLeader(chr.getGuild().getAllianceId(), chr.getId(), slea.readInt()), -1, -1);
-                    // changeLeaderAllianceRank(alliance!, player);
+                    _guildManager.ChageLeaderAllianceRank(c.OnlinedCharacter, victimid);
                     break;
                 }
             case 0x08:
@@ -192,23 +159,19 @@ public class AllianceOperationHandler : ChannelHandlerBase
                 {
                     ranks[i] = p.readString();
                 }
-                alliance.setRankTitle(ranks);
-                alliance.broadcastMessage(GuildPackets.changeAllianceRankTitle(alliance.getId(), ranks), -1, -1);
+                _guildManager.UpdateAllianceRank(chr, ranks);
                 break;
             case 0x09:
                 {
                     int int1 = p.readInt();
                     sbyte byte1 = p.ReadSByte();
 
-                    c.CurrentServer.ChangePlayerAllianceRank(int1, byte1 > 0);
+                    _guildManager.ChangePlayerAllianceRank(c.OnlinedCharacter, int1, byte1 > 0);
                     break;
                 }
             case 0x0A:
                 string notice = p.readString();
-                alliance.setNotice(notice);
-                alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), notice), -1, -1);
-
-                alliance.dropMessage(5, "* Alliance Notice : " + notice);
+                _guildManager.UpdateAllianceNotice(chr, notice);
                 break;
             default:
                 chr.dropMessage("Feature not available");
@@ -216,34 +179,6 @@ public class AllianceOperationHandler : ChannelHandlerBase
         }
 
         alliance?.saveToDB();
-    }
-
-    //private void changeLeaderAllianceRank(Alliance alliance, IPlayer newLeader)
-    //{
-    //    var oldLeader = alliance.getLeader();
-    //    oldLeader.setAllianceRank(2);
-    //    oldLeader.saveGuildStatus();
-
-    //    newLeader.setAllianceRank(1);
-    //    newLeader.saveGuildStatus();
-
-    //    alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
-    //    alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
-    //}
-
-    private void changePlayerAllianceRank(Alliance alliance, IPlayer chr, bool raise)
-    {
-        int newRank = chr.getAllianceRank() + (raise ? -1 : 1);
-        if (newRank < 3 || newRank > 5)
-        {
-            return;
-        }
-
-        chr.setAllianceRank(newRank);
-        chr.saveGuildStatus();
-
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
-        alliance.dropMessage("'" + chr.getName() + "' has been reassigned to '" + alliance.getRankTitle(newRank) + "' in this Alliance.");
     }
 
 }

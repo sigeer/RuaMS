@@ -142,8 +142,10 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
-    public WorldChannel(IServiceScope scope, WorldChannelConfig config, IChannelServerTransport transport)
+    public WorldChannelServer Container { get; }
+    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, WorldChannelConfig config, IChannelServerTransport transport)
     {
+        Container = serverContainer;
         LifeScope = scope;
         InstanceId = Guid.NewGuid().ToString();
         ChannelConfig = config;
@@ -860,10 +862,6 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         return Transport.LoadExpeditionInfo();
     }
 
-    public void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise)
-    {
-        Transport.ChangePlayerAllianceRank(targetCharacterId, isRaise);
-    }
 
     public int GetAccountCharcterCount(int accId)
     {

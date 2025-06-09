@@ -189,17 +189,11 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    player.GuildModel.setOnline(player.Id, true, c.Channel);
                     c.sendPacket(GuildPackets.showGuildInfo(player));
                     if (player.AllianceModel != null)
                     {
                         c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel));
                         c.sendPacket(GuildPackets.allianceNotice(player.AllianceModel.AllianceId, player.AllianceModel.getNotice()));
-
-                        if (newcomer)
-                        {
-                            player.AllianceModel.broadcastMessage(GuildPackets.allianceMemberOnline(player, true), player.getId(), -1);
-                        }
                     }
                     else
                     {

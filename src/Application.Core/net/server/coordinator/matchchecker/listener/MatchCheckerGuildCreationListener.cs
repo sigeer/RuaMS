@@ -1,4 +1,4 @@
-using Application.Core.Managers;
+using Application.Core.Channel.ServerData;
 using constants.game;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
@@ -7,6 +7,13 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
 {
     public class MatchCheckerGuildCreationListener : AbstractMatchCheckerListener
     {
+        private GuildManager _guildManager;
+
+        public MatchCheckerGuildCreationListener(GuildManager guildManager)
+        {
+            _guildManager = guildManager;
+        }
+
         private static void broadcastGuildCreationDismiss(HashSet<IPlayer> nonLeaderMatchPlayers)
         {
             foreach (var chr in nonLeaderMatchPlayers)
@@ -32,92 +39,10 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
 
         public override void onMatchAccepted(int leaderid, HashSet<IPlayer> matchPlayers, string message)
         {
-            var leader = matchPlayers.FirstOrDefault(x => x.getId() == leaderid);
-
-            if (leader == null || !leader.isLoggedinWorld())
+            _guildManager.CreateGuild(message, leaderid, matchPlayers, () =>
             {
                 broadcastGuildCreationDismiss(matchPlayers);
-                return;
-            }
-            matchPlayers.Remove(leader);
-
-            if (leader.getGuildId() > 0)
-            {
-                leader.dropMessage(1, "You cannot create a new Guild while in one.");
-                broadcastGuildCreationDismiss(matchPlayers);
-                return;
-            }
-            int partyid = leader.getPartyId();
-            if (partyid == -1 || !leader.isPartyLeader())
-            {
-                leader.dropMessage(1, "You cannot establish the creation of a new Guild without leading a party.");
-                broadcastGuildCreationDismiss(matchPlayers);
-                return;
-            }
-            if (leader.getMapId() != MapId.GUILD_HQ)
-            {
-                leader.dropMessage(1, "You cannot establish the creation of a new Guild outside of the Guild Headquarters.");
-                broadcastGuildCreationDismiss(matchPlayers);
-                return;
-            }
-            foreach (var chr in matchPlayers)
-            {
-                if (leader.getMap().getCharacterById(chr.getId()) == null)
-                {
-                    leader.dropMessage(1, "You cannot establish the creation of a new Guild if one of the members is not present here.");
-                    broadcastGuildCreationDismiss(matchPlayers);
-                    return;
-                }
-            }
-            if (leader.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
-            {
-                leader.dropMessage(1, "You do not have " + GameConstants.numberWithCommas(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
-                broadcastGuildCreationDismiss(matchPlayers);
-                return;
-            }
-            var guild = leader.Client.CurrentServer.GuildManager.CreateGuild(message, leader.Id);
-            if (guild == null)
-            {
-                leader.sendPacket(GuildPackets.genericGuildMessage(0x23));
-                broadcastGuildCreationDismiss(matchPlayers);
-                return;
-            }
-            leader.gainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, true, false, true);
-
-            leader.setGuildId(guild.GuildId);
-            leader.GuildModel!.ChangeRank(leader.Id, 1);
-
-            leader.sendPacket(GuildPackets.showGuildInfo(leader));
-            leader.dropMessage(1, "You have successfully created a Guild.");
-
-            foreach (var chr in matchPlayers)
-            {
-                bool cofounder = chr.getPartyId() == partyid;
-
-                chr.GuildId = guild.GuildId;
-                chr.GuildRank = cofounder ? 2 : 5;
-                chr.AllianceRank = 5;
-
-                chr.GuildModel?.addGuildMember(chr);
-
-                if (chr.isLoggedinWorld())
-                {
-                    chr.sendPacket(GuildPackets.showGuildInfo(chr));
-
-                    if (cofounder)
-                    {
-                        chr.dropMessage(1, "You have successfully cofounded a Guild.");
-                    }
-                    else
-                    {
-                        chr.dropMessage(1, "You have successfully joined the new Guild.");
-                    }
-                }
-
-                chr.saveGuildStatus(); // update database
-            }
-
-            leader.GuildModel.UpdateView();
+            });
         }
 
         public override void onMatchDeclined(int leaderid, HashSet<IPlayer> matchPlayers, string message)

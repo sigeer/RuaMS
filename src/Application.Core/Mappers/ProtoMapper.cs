@@ -255,7 +255,6 @@ namespace Application.Core.Mappers
 
             CreateMap<Dto.TeamMemberDto, TeamMember>();
             CreateMap<Dto.TeamDto, Team>()
-                .ConstructUsing(src => new Team(src.Id, src.LeaderId))
                 .AfterMap((src, dest, ctx) =>
                 {
                     foreach (var member in src.Members)

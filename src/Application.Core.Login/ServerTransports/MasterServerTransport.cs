@@ -134,13 +134,13 @@ namespace Application.Core.Login
         }
 
 
-        public void SendTeamChat(string nameFrom, PlayerChannelPair[] teamMember, string chatText)
+        public void SendMultiChat(int type, string nameFrom, PlayerChannelPair[] teamMember, string chatText)
         {
             var world = Server.getInstance().getWorld(0);
             var data = teamMember.GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.PlayerId).ToArray());
             foreach (var item in data)
             {
-                world.Channels[item.Key - 1].Service.SendTeamChat(nameFrom, item.Value, chatText);
+                world.Channels[item.Key - 1].Service.SendMultiChat(type, nameFrom, item.Value, chatText);
             }
         }
 

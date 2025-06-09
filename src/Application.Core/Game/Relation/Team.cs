@@ -17,8 +17,10 @@ namespace Application.Core.Game.Relation
 
         private object lockObj = new object();
 
-        public Team(int id, int leaderId)
+        readonly WorldChannelServer _server;
+        public Team(WorldChannelServer server, int id, int leaderId)
         {
+            _server = server;
             this.leaderId = leaderId;
             this.id = id;
         }
@@ -119,6 +121,19 @@ namespace Application.Core.Game.Relation
             }
         }
 
+        public List<IPlayer> GetActiveMembers()
+        {
+            Monitor.Enter(lockObj);
+            try
+            {
+                return members.Values.Select(x => _server.FindPlayerById(x.Channel, x.Id)).Where(x => x != null).ToList()!;
+            }
+            finally
+            {
+                Monitor.Exit(lockObj);
+            }
+        }
+
         // used whenever entering PQs: will draw every party member that can attempt a target PQ while ingnoring those unfit.
         public ICollection<IPlayer> getEligibleMembers()
         {
@@ -143,6 +158,11 @@ namespace Application.Core.Game.Relation
         public int getLeaderId()
         {
             return leaderId;
+        }
+
+        public TeamMember GetTeamMember(int id)
+        {
+            return members.GetValueOrDefault(id) ?? throw new BusinessException($"CharacterId = {id} 不在队伍里");
         }
 
         public IPlayer? GetChannelLeader(WorldChannel server)

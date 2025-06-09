@@ -40,15 +40,12 @@ public class Alliance
 
     public int AllianceId { get; set; }
     public int Capacity { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public string Notice { get; set; }
     public string[] RankTitles { get; set; }
 
-    WorldChannelServer _server;
-    public Alliance(WorldChannelServer server, int id, string name)
+    public Alliance(int id)
     {
-        _server = server;
-        Name = name;
         AllianceId = id;
         RankTitles = new string[5] { "Master", "Jr. Master", "Member", "Member", "Member" };
         Notice = string.Empty;
@@ -96,11 +93,8 @@ public class Alliance
         broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild), -1, -1);
         removeGuild(guildId);
 
-        using var dbContext = new DBContext();
-        dbContext.AllianceGuilds.Where(x => x.GuildId == guildId).ExecuteDelete();
-
-        broadcastMessage(GuildPackets.getGuildAlliances(this), -1, -1);
-        broadcastMessage(GuildPackets.allianceNotice(getId(), getNotice()), -1, -1);
+        BroadcastGuildAlliance();
+        BroadcastNotice();
         guild.broadcast(GuildPackets.disbandAlliance(getId()));
 
         if (method == 1)
@@ -110,12 +104,12 @@ public class Alliance
         return true;
     }
 
-    public void updateAlliancePackets(IPlayer chr)
+    public void updateAlliancePackets()
     {
         if (AllianceId > 0)
         {
-            this.broadcastMessage(GuildPackets.updateAllianceInfo(this));
-            this.broadcastMessage(GuildPackets.allianceNotice(this.getId(), this.getNotice()));
+            this.BroadcastAllianceInfo();
+            this.BroadcastNotice();
         }
     }
 
@@ -128,7 +122,7 @@ public class Alliance
     }
 
 
-    public bool AddGuild(Guild guild)
+    public bool TryAddGuild(Guild guild)
     {
         if (Guilds.Count == Capacity || Guilds.ContainsKey(guild.GuildId))
         {
@@ -220,6 +214,44 @@ public class Alliance
         throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
     }
 
+    public int GetLeaderId()
+    {
+        foreach (var guild in Guilds.Values)
+        {
+            var leader = guild.getMembers().FirstOrDefault(x => x.AllianceRank == 1);
+            if (leader != null)
+                return leader.Id;
+        }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+    }
+
+    public GuildMember GetLeader()
+    {
+        foreach (var guild in Guilds.Values)
+        {
+            var leader = guild.getMembers().FirstOrDefault(x => x.AllianceRank == 1);
+            if (leader != null)
+                return leader;
+        }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+    }
+
+    public GuildMember GetMemberById(int cid)
+    {
+        foreach (var guild in Guilds.Values)
+        {
+            var leader = guild.getMembers().FirstOrDefault(x => x.Id == cid);
+            if (leader != null)
+                return leader;
+        }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+    }
+
+    public void UpdateMember(GuildMember member)
+    {
+        Guilds[member.GuildId].UpdateMember(member);
+    }
+
     public void dropMessage(string message)
     {
         dropMessage(5, message);
@@ -240,5 +272,25 @@ public class Alliance
             if (guild.GuildId != exceptedGuildId)
                 guild.broadcast(packet, exception);
         }
+    }
+
+    public void BroadcastPlayerInfo(int chrId)
+    {
+        broadcastMessage(GuildPackets.sendShowInfo(getId(), chrId), -1, -1);
+    }
+
+    public void BroadcastGuildAlliance()
+    {
+        broadcastMessage(GuildPackets.getGuildAlliances(this), -1, -1);
+    }
+
+    public void BroadcastNotice()
+    {
+        broadcastMessage(GuildPackets.allianceNotice(getId(), getNotice()), -1, -1);
+    }
+
+    public void BroadcastAllianceInfo()
+    {
+        broadcastMessage(GuildPackets.updateAllianceInfo(this), -1, -1);
     }
 }

@@ -136,7 +136,7 @@ namespace Application.Core.Login.ServerData
                     var teamMember = team.GetMembers().Where(x => x != sender.Character.Id)
                         .Select(x => _server.CharacterManager.FindPlayerById(x)).Where(x => x != null)
                         .Select(x => new PlayerChannelPair(x.Channel, x.Character.Id)).ToArray();
-                    _server.Transport.SendTeamChat(nameFrom, teamMember, chatText);
+                    _server.Transport.SendMultiChat(1, nameFrom, teamMember, chatText);
                 }
             }
         }

@@ -200,23 +200,19 @@ namespace Application.Core.Servers.Services
             _tranport.SendTeamChat(name, chattext);
         }
 
-        public void SendTeamChat(string nameFrom, int[] value, string chatText)
+        public void SendMultiChat(int type, string nameFrom, int[] value, string chatText)
         {
             foreach (var item in value)
             {
                 var chr = _server.Players.getCharacterById(item);
                 if (chr != null)
                 {
-                    chr.sendPacket(PacketCreator.multiChat(nameFrom, chatText, 1));
+                    chr.sendPacket(PacketCreator.multiChat(nameFrom, chatText, type));
                 }
             }
             
         }
 
-        internal Team? CreateParty(int id)
-        {
-            return _mapper.Map<Team>(_tranport.CreateTeam(id));
-        }
 
         public void ProcessBroadcastJobChanged(int type, int[] players, string name, int jobId)
         {
