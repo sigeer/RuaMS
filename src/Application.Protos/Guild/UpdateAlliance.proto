@@ -12,7 +12,7 @@ message UpdateAllianceRequest {
 	int32 targetGuildId = 4;
 	int32 targetPlayerId = 5;
 	AllianceDto updateFields = 6;
-	int32 fromChannel = 7;
+	string fromChannel = 7;
 }
 
 message UpdateAllianceResponse {

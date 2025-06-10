@@ -19,7 +19,7 @@ namespace Application.Core.ServerTransports
         public int GetCurrentTimestamp();
         public DateTimeOffset GetServerupTime();
 
-        Task<Config.RegisterServerResult> RegisterServer(WorldChannel server);
+        Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels);
         Task<bool> RemoveServer(WorldChannel server);
 
         void DropWorldMessage(int type, string message);
@@ -143,13 +143,13 @@ namespace Application.Core.ServerTransports
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
         void AddCashItemBought(int sn);
-        Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId);
+        Dto.UpdateTeamResponse SendUpdateTeam(string fromServer, int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);
         Dto.GetGuildResponse GetGuild(int id);
         Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
-        Dto.UpdateGuildResponse SendUpdateGuildMember(int fromChannel, GuildOperation operation, int operatorId, int guildId, int target, int toRank);
-        Dto.UpdateGuildResponse SendUpdateGuildMeta(int fromChannel, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields);
+        Dto.UpdateGuildResponse SendUpdateGuildMember(string fromServer, GuildOperation operation, int operatorId, int guildId, int target, int toRank);
+        Dto.UpdateGuildResponse SendUpdateGuildMeta(string fromServer, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields);
         Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
         Dto.UpdateAllianceResponse SendUpdateAlliance(Dto.UpdateAllianceRequest request);
         Dto.GetAllianceResponse GetAlliance(int id);

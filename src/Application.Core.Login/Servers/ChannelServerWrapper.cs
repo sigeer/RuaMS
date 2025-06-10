@@ -1,19 +1,20 @@
 using Application.Core.Login.ServerTransports;
 using Application.Shared.Servers;
 using Application.Shared.Team;
+using Config;
 using Dto;
 
 namespace Application.Core.Login.Servers
 {
-    public abstract class ChannelServerWrapper: IChannelBroadcast
+    public abstract class ChannelServerWrapper : IChannelBroadcast
     {
-        protected ChannelServerWrapper(string instanceId, WorldChannelConfig serverNetInfo)
+        protected ChannelServerWrapper(string serverName, List<WorldChannelConfig> serverConfigs)
         {
-            InstanceId = instanceId;
-            ServerConfig = serverNetInfo;
+            ServerName = serverName;
+            ServerConfigs = serverConfigs;
         }
-        public string InstanceId { get; protected set; }
-        public WorldChannelConfig ServerConfig { get; protected set; }
+        public string ServerName { get; protected set; }
+        public List<WorldChannelConfig> ServerConfigs { get; }
 
 
         public abstract void SendTeamUpdate(int teamId, PartyOperation operation, TeamMemberDto target);
@@ -25,6 +26,8 @@ namespace Application.Core.Login.Servers
         public abstract void SendAllianceUpdate(UpdateAllianceResponse response);
 
         #endregion
+        public abstract void UpdateCouponConfig(CouponConfig config);
+        public abstract void SendMultiChat(int type, string nameFrom, int[] value, string chatText);
     }
 
 

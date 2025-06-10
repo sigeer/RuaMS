@@ -281,7 +281,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                         else
                         {
                             c.sendPacket(PacketCreator.skillCooldown(attack.skill, effectCooldown));
-                            chr.addCooldown(attack.skill, c.CurrentServer.getCurrentTime(), 1000 * effectCooldown);
+                            chr.addCooldown(attack.skill, c.CurrentServerContainer.getCurrentTime(), 1000 * effectCooldown);
                         }
                     }
                 }

@@ -64,6 +64,7 @@
 
 ##### 增加`ChannelServerContainer`，也就是原先的`MultiRunner`
 
-可能存在一台机器（一个进程）上部署多个频道的情况，此时`MasterServer`广播时，没必要对这N个`WorldChannel`请求N次，而是在传给`ChannelServerContainer`再本地处理  
-也就是服务器的请求节点不再是`MasterServer`与`WorldChannel`，而是`MasterServer`与`ChannelServerContainer`。 
+可能存在一台机器（一个进程）上部署多个频道的情况，此时`MasterServer`广播时，没必要对这N个`WorldChannel`请求N次，而是在传给`WorldChannelServer`再本地处理  
+也就是服务器的请求节点不再是`MasterServer`与`WorldChannel`，而是`MasterServer`与`WorldChannelServer`。 
 wz资源，在同一进程时，没必要每个频道都读取一次 ，所以都会通过单例注入（`AddSingleton<SkillbookInformationProvider>()`） 
+重新对`IServerBase`进行调整，区分功能范围

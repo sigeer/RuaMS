@@ -126,7 +126,7 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                long curtime = getChannelServer().getCurrentTime();
+                long curtime = Client.CurrentServerContainer.getCurrentTime();
 
                 Dictionary<int, PlayerBuffValueHolder> ret = new();
                 foreach (Dictionary<BuffStat, BuffStatValueHolder> bel in buffEffects.Values)
@@ -221,7 +221,7 @@ namespace Application.Core.Game.Players
                     {
                         es = new(buffExpires);
 
-                        long curTime = getChannelServer().getCurrentTime();
+                        long curTime = Client.CurrentServerContainer.getCurrentTime();
                         foreach (var bel in es)
                         {
                             if (curTime >= bel.Value)
@@ -624,7 +624,7 @@ namespace Application.Core.Game.Players
             List<BuffStateValuePair> toCancel = deregisterBuffStats(buffstats);
             if (effect.isMonsterRiding())
             {
-                this.getClient().getChannelServer().MountTirednessManager.unregisterMountHunger(this);
+                Client.CurrentServerContainer.MountTirednessManager.unregisterMountHunger(this);
                 this.getMount()?.setActive(false);
             }
 

@@ -57,7 +57,7 @@ public class UseCashItemHandler : ChannelHandlerBase
     {
         var player = c.OnlinedCharacter;
 
-        long timeNow = c.CurrentServer.getCurrentTime();
+        long timeNow = c.CurrentServerContainer.getCurrentTime();
         if (timeNow - player.getLastUsedCashItem() < 3000)
         {
             player.dropMessage(1, "You have used a cash item recently. Wait a moment, then try again.");
@@ -241,7 +241,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                 if (period > 0)
                 {
-                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : c.CurrentServer.getCurrentTime();
+                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : c.CurrentServerContainer.getCurrentTime();
                     eq.setExpiration(expiration + 24 * 3600 * 1000 * (period));
                 }
 
@@ -287,7 +287,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     }
                     break;
                 case 2: // Super megaphone
-                    c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
+                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -335,7 +335,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                     if (megassenger)
                     {
-                        c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + builder, ear));
+                        c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + builder, ear));
                     }
 
                     break;
@@ -353,7 +353,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    c.CurrentServer.BroadcastWorldMessage(PacketCreator.itemMegaphone(msg, whisper, c.ActualChannel, item));
+                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.itemMegaphone(msg, whisper, c.ActualChannel, item));
                     break;
                 case 7: //triple megaphone
                     int lines = p.ReadSByte();
@@ -367,7 +367,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                         msg2[i] = medal + player.getName() + " : " + p.readString();
                     }
                     whisper = p.readByte() == 1;
-                    c.CurrentServer.BroadcastWorldMessage(PacketCreator.getMultiMegaphone(msg2, c.ActualChannel, whisper));
+                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.getMultiMegaphone(msg2, c.ActualChannel, whisper));
                     break;
             }
             remove(c, position, itemId);
@@ -390,7 +390,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             string sendTo = p.readString();
             string msg = p.readString();
-            bool sendSuccess = c.CurrentServer.Transport.SendNormalNoteMessage(player.getName(), sendTo, msg);
+            bool sendSuccess = c.CurrentServerContainer.Transport.SendNormalNoteMessage(player.getName(), sendTo, msg);
             if (sendSuccess)
             {
                 remove(c, position, itemId);
@@ -447,7 +447,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             if (!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
             {
-                c.CurrentServer.Transport.AddOwlItemSearch(itemid);
+                c.CurrentServerContainer.Transport.AddOwlItemSearch(itemid);
             }
             player.setOwlSearch(itemid);
             var hmsAvailable = c.getWorldServer().getAvailableItemBundles(itemid);
@@ -514,8 +514,8 @@ public class UseCashItemHandler : ChannelHandlerBase
                 strLines.Add(p.readString());
             }
 
-            c.CurrentServer.BroadcastWorldMessage(PacketCreator.getAvatarMega(player, medal, c.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            TimerManager.getInstance().schedule(() => c.CurrentServer.BroadcastWorldMessage(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
+            c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.getAvatarMega(player, medal, c.ActualChannel, itemId, strLines, (p.readByte() != 0)));
+            TimerManager.getInstance().schedule(() => c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
         else if (itemType == 540)

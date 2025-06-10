@@ -207,7 +207,7 @@ namespace Application.Core.Login.ServerData
                 UpdateType = 1,
                 Operation = (int)GuildOperation.MemberJobChanged
             };
-            _server.Transport.BroadcastGuildUpdate(-1, guildResponse);
+            _server.Transport.BroadcastGuildUpdate("", guildResponse);
 
             var allianceResponse = new UpdateAllianceResponse()
             {
@@ -215,7 +215,7 @@ namespace Application.Core.Login.ServerData
                 UpdateType = 1,
                 Operation = (int)AllianceOperation.MemberUpdate,
             };
-            _server.Transport.BroadcastAllianceUpdate(-1, allianceResponse);
+            _server.Transport.BroadcastAllianceUpdate("", allianceResponse);
         }
 
         public void BroadcastLevelChanged(CharacterModel character)
@@ -227,7 +227,7 @@ namespace Application.Core.Login.ServerData
                 UpdateType = 1,
                 Operation = (int)GuildOperation.MemberLevelChanged
             };
-            _server.Transport.BroadcastGuildUpdate(-1, response);
+            _server.Transport.BroadcastGuildUpdate("", response);
 
             var allianceResponse = new UpdateAllianceResponse()
             {
@@ -235,7 +235,7 @@ namespace Application.Core.Login.ServerData
                 UpdateType = 1,
                 Operation = (int)AllianceOperation.MemberUpdate,
             };
-            _server.Transport.BroadcastAllianceUpdate(-1, allianceResponse);
+            _server.Transport.BroadcastAllianceUpdate("", allianceResponse);
         }
 
         public void BroadcastLogin(CharacterModel character)
@@ -247,7 +247,7 @@ namespace Application.Core.Login.ServerData
                 UpdateType = 1,
                 Operation = (int)GuildOperation.MemberLogin
             };
-            _server.Transport.BroadcastGuildUpdate(-1, response);
+            _server.Transport.BroadcastGuildUpdate("", response);
 
             var allianceResponse = new UpdateAllianceResponse()
             {
@@ -255,7 +255,7 @@ namespace Application.Core.Login.ServerData
                 UpdateType = 1,
                 Operation = (int)AllianceOperation.MemberLogin,
             };
-            _server.Transport.BroadcastAllianceUpdate(-1, allianceResponse);
+            _server.Transport.BroadcastAllianceUpdate("", allianceResponse);
         }
 
         public UpdateGuildResponse UpdateGuild(Dto.UpdateGuildRequest request)

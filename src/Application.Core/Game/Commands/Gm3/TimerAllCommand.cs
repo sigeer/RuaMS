@@ -18,14 +18,14 @@ public class TimerAllCommand : CommandBase
 
         if (paramsValue[0].Equals("remove", StringComparison.OrdinalIgnoreCase))
         {
-            player.getChannelServer().Transport.RemoveTimer();
+            player.getChannelServer().Container.Transport.RemoveTimer();
         }
         else
         {
             try
             {
                 int seconds = int.Parse(paramsValue[0]);
-                player.getChannelServer().Transport.SendTimer(seconds);
+                player.getChannelServer().Container.Transport.SendTimer(seconds);
             }
             catch (FormatException e)
             {

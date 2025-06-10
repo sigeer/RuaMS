@@ -185,7 +185,7 @@ namespace Application.Core.Game.Players
                         Monitor.Exit(effLock);
                     }
 
-                    long curTime = getChannelServer().getCurrentTime();
+                    long curTime = Client.CurrentServerContainer.getCurrentTime();
                     foreach (var bel in es)
                     {
                         CooldownValueHolder mcdvh = bel.Value;
@@ -262,7 +262,7 @@ namespace Application.Core.Game.Players
             }
             else
             {
-                long timeNow = getChannelServer().getCurrentTime();
+                long timeNow = Client.CurrentServerContainer.getCurrentTime();
                 int time = (int)((length + starttime) - timeNow);
                 addCooldown(skillid, timeNow, time);
             }

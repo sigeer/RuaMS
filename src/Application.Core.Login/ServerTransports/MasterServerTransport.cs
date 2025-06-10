@@ -140,26 +140,16 @@ namespace Application.Core.Login
             var data = teamMember.GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.PlayerId).ToArray());
             foreach (var item in data)
             {
-                world.Channels[item.Key - 1].Service.SendMultiChat(type, nameFrom, item.Value, chatText);
+                var ch = _server.GetChannelServer(item.Key);
+                ch.SendMultiChat(type, nameFrom, item.Value, chatText);
             }
         }
 
         public void SendUpdateCouponRates(Config.CouponConfig config)
         {
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in world.Channels)
+            foreach (var server in _server.ChannelServerList)
             {
-                ch.UpdateCouponConfig(config);
-
-                foreach (var chr in ch.getPlayerStorage().getAllCharacters())
-                {
-                    if (!chr.isLoggedin())
-                    {
-                        continue;
-                    }
-
-                    chr.updateCouponRates();
-                }
+                server.Value.UpdateCouponConfig(config);
             }
         }
 
@@ -200,7 +190,7 @@ namespace Application.Core.Login
         {
             foreach (var item in targets)
             {
-                var ch = _server.ChannelServerList[item.Key];
+                var ch = _server.GetChannelServer(item.Key);
                 ch.BroadcastJobChanged(type, item.Value, name, jobId);
             }
         }
@@ -209,56 +199,43 @@ namespace Application.Core.Login
         {
             foreach (var item in targets)
             {
-                var ch = _server.ChannelServerList[item.Key];
+                var ch = _server.GetChannelServer(item.Key);
                 ch.BroadcastLevelChanged(type, item.Value, name, level);
             }
+
         }
 
-        internal void BroadcastTeamUpdate(int exceptChannel, int teamId, PartyOperation operation, TeamMemberDto target)
+        internal void BroadcastTeamUpdate(string exceptServer, int teamId, PartyOperation operation, TeamMemberDto target)
         {
-            for (int i = 0; i < _server.ChannelServerList.Count; i++)
+            foreach (var server in _server.ChannelServerList)
             {
-                if (i == exceptChannel - 1)
+                if (server.Key == exceptServer)
                     continue;
 
-                var ch = _server.ChannelServerList[i];
-                ch.SendTeamUpdate(teamId, operation, target);
+                server.Value.SendTeamUpdate(teamId, operation, target);
             }
         }
 
-        internal void BroadcastGuildUpdate(int exceptChannel, UpdateGuildResponse response)
+        internal void BroadcastGuildUpdate(string exceptServer, UpdateGuildResponse response)
         {
-            for (int i = 0; i < _server.ChannelServerList.Count; i++)
+            foreach (var server in _server.ChannelServerList)
             {
-                if (i == exceptChannel - 1)
+                if (server.Key == exceptServer)
                     continue;
 
-                var ch = _server.ChannelServerList[i];
-                ch.SendGuildUpdate(response);
+                server.Value.SendGuildUpdate(response);
             }
         }
 
-        internal void DropMesssage(int exceptChannel, IDictionary<int, int[]> targets, int type, string message)
+
+        internal void BroadcastAllianceUpdate(string exceptServer, UpdateAllianceResponse response)
         {
-            for (int i = 0; i < _server.ChannelServerList.Count; i++)
+            foreach (var server in _server.ChannelServerList)
             {
-                if (i == exceptChannel - 1)
+                if (server.Key == exceptServer)
                     continue;
 
-                var ch = _server.ChannelServerList[i];
-
-            }
-        }
-
-        internal void BroadcastAllianceUpdate(int exceptChannel, UpdateAllianceResponse response)
-        {
-            for (int i = 0; i < _server.ChannelServerList.Count; i++)
-            {
-                if (i == exceptChannel - 1)
-                    continue;
-
-                var ch = _server.ChannelServerList[i];
-                ch.SendAllianceUpdate(response);
+                server.Value.SendAllianceUpdate(response);
             }
         }
     }

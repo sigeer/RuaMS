@@ -13,11 +13,11 @@ namespace ServiceTest.ChannelTests
         {
             var scope = _sp.CreateScope();
             var transport = _sp.GetRequiredService<IChannelServerTransport>();
-            var config = new Application.Shared.Servers.WorldChannelConfig
+            var config = new Application.Shared.Servers.WorldChannelConfig("TEST")
             {
                 Port = 7575
             };
-            _channel = new Application.Core.Channel.WorldChannel(scope, config, transport);
+            _channel = new Application.Core.Channel.WorldChannel(scope, config);
         }
         [Test]
         public void RequestReactorDropTest()

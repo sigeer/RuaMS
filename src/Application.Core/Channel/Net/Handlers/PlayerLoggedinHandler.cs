@@ -202,7 +202,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
             }
 
-            c.CurrentServer.Transport.ShowNoteMessage(player.Name);
+            c.CurrentServerContainer.Transport.ShowNoteMessage(player.Name);
 
             if (player.getParty() != null)
             {
@@ -246,7 +246,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 {
                     if (pet != null)
                     {
-                        c.CurrentServer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
+                        c.CurrentServerContainer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
                     }
                 }
 
@@ -265,7 +265,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 */
                 if (player.isGM())
                 {
-                    c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
+                    c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
                 }
             }
             else
@@ -292,7 +292,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (player.PartnerId > 0)
             {
-                c.CurrentServer.NotifyPartner(player.Id);
+                c.CurrentServerContainer.NotifyPartner(player.Id);
                 //var partner = wserv.getPlayerStorage().getCharacterById(player.PartnerId);
 
                 //if (partner != null && partner.isLoggedinWorld())

@@ -42,7 +42,7 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                long curtime = getChannelServer().getCurrentTime();
+                long curtime = Client.CurrentServerContainer.getCurrentTime();
                 Dictionary<Disease, DiseaseExpiration> ret = new();
 
                 foreach (var de in diseaseExpires)
@@ -66,7 +66,7 @@ namespace Application.Core.Game.Players
             chLock.EnterReadLock();
             try
             {
-                long curTime = getChannelServer().getCurrentTime();
+                long curTime = Client.CurrentServerContainer.getCurrentTime();
 
                 foreach (var di in diseaseMap)
                 {
@@ -158,7 +158,7 @@ namespace Application.Core.Game.Players
                 chLock.EnterReadLock();
                 try
                 {
-                    long curTime = getChannelServer().getCurrentTime();
+                    long curTime = Client.CurrentServerContainer.getCurrentTime();
                     diseaseExpires.AddOrUpdate(disease, curTime + skill.getDuration());
                     diseases.AddOrUpdate(disease, new(new DiseaseValueHolder(curTime, skill.getDuration()), skill));
                 }
@@ -267,7 +267,7 @@ namespace Application.Core.Game.Players
                     chLock.EnterReadLock();
                     try
                     {
-                        long curTime = getChannelServer().getCurrentTime();
+                        long curTime = Client.CurrentServerContainer.getCurrentTime();
 
                         foreach (var de in diseaseExpires)
                         {

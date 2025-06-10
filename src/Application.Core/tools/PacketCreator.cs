@@ -927,7 +927,7 @@ public class PacketCreator
             p.writeInt(chr.getPosition().X);
             p.writeInt(chr.getPosition().Y);
         }
-        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.getCurrentTime()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServerContainer.getCurrentTime()));
         return p;
     }
 
@@ -943,7 +943,7 @@ public class PacketCreator
         p.writeBool(true);
         p.writeInt(spawnPosition.X);    // spawn position placement thanks to Arnah (Vertisy)
         p.writeInt(spawnPosition.Y);
-        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.getCurrentTime()));
+        p.writeLong(PacketCommon.getTime(chr.Client.CurrentServerContainer.getCurrentTime()));
         return p;
     }
 

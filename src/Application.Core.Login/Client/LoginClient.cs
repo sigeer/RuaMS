@@ -376,7 +376,7 @@ namespace Application.Core.Login.Client
             if (Hwid != null)
                 AccountEntity.Hwid = Hwid.hwid;
 
-            base.CommitAccount();
+            CurrentServer.CommitAccountEntity(AccountEntity);
         }
 
         public void SendCharList()

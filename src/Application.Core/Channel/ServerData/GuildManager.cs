@@ -251,15 +251,15 @@ namespace Application.Core.Channel.ServerData
             return localData;
         }
 
-        public bool ProcessUpdateGuild(WorldChannel worldChannel, Dto.UpdateGuildResponse result)
+        public bool ProcessUpdateGuild(Dto.UpdateGuildResponse result)
         {
             if (result.UpdateType == 1)
-                return ProcessUpdateMember(worldChannel, (GuildOperation)result.Operation, result.GuildId, _mapper.Map<GuildMember>(result.UpdatedMember));
+                return ProcessUpdateMember((GuildOperation)result.Operation, result.GuildId, _mapper.Map<GuildMember>(result.UpdatedMember));
             if (result.UpdateType == 2)
-                return ProcessUpdateGuildMeta(worldChannel, (GuildInfoOperation)result.Operation, result.GuildId, result.UpdatedGuild);
+                return ProcessUpdateGuildMeta((GuildInfoOperation)result.Operation, result.GuildId, result.UpdatedGuild);
             return false;
         }
-        public bool ProcessUpdateMember(WorldChannel worldChannel, GuildOperation operation, int guildId, GuildMember targetMember)
+        public bool ProcessUpdateMember(GuildOperation operation, int guildId, GuildMember targetMember)
         {
             var guild = GetGuildById(guildId);
             if (guild == null)
@@ -298,11 +298,11 @@ namespace Application.Core.Channel.ServerData
 
             _logger.LogCritical(
                 "家族数据同步失败：主服务器成功，频道服务器失败，可能存在数据不同步的问题！Server: {ServerInstance}, Operation: {Operation}, GuildId: {GuildId}, TargetMemberId: {TargetMemberId}",
-                worldChannel.InstanceId, operation, guildId, targetMember.Id);
+                _serverContainer.ServerName, operation, guildId, targetMember.Id);
             return result;
         }
 
-        public bool ProcessUpdateGuildMeta(WorldChannel worldChannel, GuildInfoOperation operation, int guildId, Dto.GuildDto targetGuild)
+        public bool ProcessUpdateGuildMeta(GuildInfoOperation operation, int guildId, Dto.GuildDto targetGuild)
         {
             var guild = GetGuildById(guildId);
             if (guild == null)
@@ -348,10 +348,10 @@ namespace Application.Core.Channel.ServerData
 
         public bool UpdateGuildMember(GuildOperation operation, IPlayer player, int target, int guildId, int toRank = -1)
         {
-            var result = _transport.SendUpdateGuildMember(player.getChannelServer().getId(), operation, player.Id, guildId, target, toRank);
+            var result = _transport.SendUpdateGuildMember(_serverContainer.ServerName, operation, player.Id, guildId, target, toRank);
             if (result.Code == 0)
             {
-                return ProcessUpdateGuild(player.getChannelServer(), result);
+                return ProcessUpdateGuild(result);
             }
 
             return false;
@@ -360,10 +360,10 @@ namespace Application.Core.Channel.ServerData
 
         public bool UpdateGuildMeta(GuildInfoOperation operation, IPlayer player, int guildId, Dto.GuildDto updateFields)
         {
-            var result = _transport.SendUpdateGuildMeta(player.getChannelServer().getId(), operation, player.Id, guildId, updateFields);
+            var result = _transport.SendUpdateGuildMeta(_serverContainer.ServerName, operation, player.Id, guildId, updateFields);
             if (result.Code == 0)
             {
-                return ProcessUpdateGuild(player.getChannelServer(), result);
+                return ProcessUpdateGuild(result);
             }
 
             return false;
@@ -628,7 +628,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)AllianceOperation.ChangeAllianceLeader,
                 AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = player.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = player.Id,
                 TargetPlayerId = targetPlayerId
             });
@@ -643,7 +643,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)(isIncrease ? AllianceOperation.IncreasePlayerRank : AllianceOperation.DecreasePlayerRank),
                 AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = player.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = player.Id,
                 TargetPlayerId = targetPlayerId
             });
@@ -659,7 +659,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)AllianceOperation.LeaveAlliance,
                 AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = player.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = player.Id,
                 TargetGuildId = guildId,
             });
@@ -675,7 +675,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)AllianceOperation.ExpelGuild,
                 AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = player.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = player.Id,
                 TargetGuildId = guildId,
             });
@@ -704,7 +704,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)AllianceOperation.Join,
                 AllianceId = allianceId,
-                FromChannel = player.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = player.Id,
                 TargetGuildId = guildId,
             });
@@ -716,7 +716,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)AllianceOperation.Disband,
                 AllianceId = allianceId,
-                FromChannel = player.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = player.Id,
             });
         }
@@ -729,7 +729,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)AllianceOperation.Disband,
                 AllianceId = chr.AllianceModel.AllianceId,
-                FromChannel = chr.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = chr.Id,
                 UpdateFields = request,
             });
@@ -742,7 +742,7 @@ namespace Application.Core.Channel.ServerData
             {
                 Operation = (int)AllianceOperation.Disband,
                 AllianceId = chr.AllianceModel.AllianceId,
-                FromChannel = chr.Channel,
+                FromChannel = _serverContainer.ServerName,
                 OperatorPlayerId = chr.Id,
                 UpdateFields = request,
             });

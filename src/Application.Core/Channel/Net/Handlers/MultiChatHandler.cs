@@ -43,7 +43,7 @@ public class MultiChatHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
-        if (player.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServer.getCurrentTimestamp())
+        if (player.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServerContainer.getCurrentTimestamp())
         {
             return;
         }

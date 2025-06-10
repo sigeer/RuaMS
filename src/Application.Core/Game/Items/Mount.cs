@@ -144,7 +144,7 @@ public class Mount : IMount
     {
         if (owner != null)
         {
-            ChannelServer.MountTirednessManager.unregisterMountHunger(owner);
+            ChannelServer.Container.MountTirednessManager.unregisterMountHunger(owner);
         }
     }
 }

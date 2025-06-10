@@ -48,7 +48,7 @@ public class SnowballHandler : ChannelHandlerBase
         {
             return;
         }
-        if ((c.CurrentServer.getCurrentTime() - chr.getLastSnowballAttack()) < 500)
+        if ((c.CurrentServerContainer.getCurrentTime() - chr.getLastSnowballAttack()) < 500)
         {
             return;
         }
@@ -57,7 +57,7 @@ public class SnowballHandler : ChannelHandlerBase
             return;
         }
 
-        chr.setLastSnowballAttack(c.CurrentServer.getCurrentTime());
+        chr.setLastSnowballAttack(c.CurrentServerContainer.getCurrentTime());
         int damage = 0;
         if (what < 2 && othersnowball.getSnowmanHP() > 0)
         {

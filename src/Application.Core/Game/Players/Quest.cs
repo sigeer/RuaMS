@@ -378,7 +378,7 @@ namespace Application.Core.Game.Players
             Monitor.Enter(evtLock);
             try
             {
-                long timeNow = getChannelServer().getCurrentTime();
+                long timeNow = Client.CurrentServerContainer.getCurrentTime();
                 List<Quest> expireList = new();
 
                 foreach (var qe in questExpirations)
@@ -424,7 +424,7 @@ namespace Application.Core.Game.Players
                     }, TimeSpan.FromSeconds(10));
                 }
 
-                questExpirations.AddOrUpdate(quest, (long)(getChannelServer().getCurrentTime() + time.TotalMilliseconds));
+                questExpirations.AddOrUpdate(quest, (long)(Client.CurrentServerContainer.getCurrentTime() + time.TotalMilliseconds));
             }
             finally
             {

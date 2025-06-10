@@ -10,7 +10,7 @@ message UpdateGuildRequest {
 	int32 operatorId = 2;
 	int32 guildId = 3;
 	GuildDto updateFields = 4;
-	int32 fromChannel = 5;
+	string fromChannel = 5;
 }
 
 message UpdateGuildMemberRequest {
@@ -19,7 +19,7 @@ message UpdateGuildMemberRequest {
 	int32 fromId = 3;
 	int32 toId = 4;
 	int32 toRank = 5;
-	int32 fromChannel = 6;
+	string fromChannel = 6;
 }
 
 message UpdateGuildResponse {

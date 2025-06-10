@@ -12,7 +12,7 @@ namespace Application.Shared.Client
 {
     public abstract class SocketClient : ChannelHandlerAdapter, ISocketClient
     {
-        public IServerBase<IServerTransport> CurrentServerBase { get; protected set; }
+        public ISocketServer CurrentServerBase { get; protected set; }
         public long SessionId { get; }
 
         public IChannel NettyChannel { get; protected set; }
@@ -27,7 +27,7 @@ namespace Application.Shared.Client
         public bool IsActive { get; protected set; }
 
         protected string _clientInfo;
-        protected SocketClient(long sessionId, IChannel nettyChannel, IServerBase<IServerTransport> server, ILogger<ISocketClient> log)
+        protected SocketClient(long sessionId, IChannel nettyChannel, ISocketServer server, ILogger<ISocketClient> log)
         {
             SessionId = sessionId;
             NettyChannel = nettyChannel;

@@ -34,7 +34,7 @@ namespace Application.Host
         public async Task StartNow(bool ignoreCache)
         {
             await _server.StartServer();
-            await _channelRunner.Start(7674, 3);
+            await _channelRunner.StartServer();
         }
 
         public async Task StopNow()

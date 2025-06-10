@@ -136,7 +136,7 @@ namespace Application.Core.Channel.ServerData
                 partychar.setParty(operation == PartyOperation.DISBAND ? null : party);
                 if (partychar.IsOnlined)
                 {
-                    partychar.sendPacket(PacketCreator.updateParty(partychar.getChannelServer().getId(), party, operation, targetMember.Id, targetMember.Name));
+                    partychar.sendPacket(PacketCreator.updateParty(partychar.Channel, party, operation, targetMember.Id, targetMember.Name));
                 }
             }
 
@@ -168,7 +168,7 @@ namespace Application.Core.Channel.ServerData
                     }
 
                     targetPlayer.setParty(null);
-                    targetPlayer.sendPacket(PacketCreator.updateParty(targetPlayer.getChannelServer().getId(), party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.sendPacket(PacketCreator.updateParty(targetPlayer.Channel, party, operation, targetMember.Id, targetMember.Name));
                 }
             }
             else if (operation == PartyOperation.DISBAND)
@@ -249,7 +249,7 @@ namespace Application.Core.Channel.ServerData
 
         public bool UpdateTeam(WorldChannel worldChannel, int teamId, PartyOperation operation, IPlayer? player, int target)
         {
-            var result = _transport.SendUpdateTeam(worldChannel.getId(), teamId, operation, player?.Id ?? -1, target);
+            var result = _transport.SendUpdateTeam(_server.ServerName, teamId, operation, player?.Id ?? -1, target);
             if (result.ErrorCode == 0)
                 return ProcessUpdateResponse(result.TeamId, (PartyOperation)result.Operation, result.UpdatedMember);
 

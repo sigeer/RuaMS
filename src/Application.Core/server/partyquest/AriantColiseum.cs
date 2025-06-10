@@ -318,7 +318,7 @@ public class AriantColiseum
                     chr.changeMap(MapId.ARPQ_LOBBY, 0);
                 }
 
-                map.ChannelServer.MapObjectManager.RegisterTimedMapObject(() =>
+                map.ChannelServer.Container.MapObjectManager.RegisterTimedMapObject(() =>
                 {
                     score.Clear();
                     exped = null;

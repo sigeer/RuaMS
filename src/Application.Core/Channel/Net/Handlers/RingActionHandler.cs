@@ -223,7 +223,7 @@ public class RingActionHandler : ChannelHandlerBase
                     {
                         InventoryManipulator.removeById(source.Client, InventoryType.USE, itemid, 1, false, false);
 
-                        int tempMarriageId = c.CurrentServer.Transport.CreateRelationship(source.getId(), target.getId());
+                        int tempMarriageId = c.CurrentServerContainer.Transport.CreateRelationship(source.getId(), target.getId());
                         source.setPartnerId(target.getId()); // engage them (new marriageitemid, partnerid for both)
                         target.setPartnerId(source.getId());
 
@@ -292,11 +292,11 @@ public class RingActionHandler : ChannelHandlerBase
                 try
                 {
                     var wserv = c.getWorldServer();
-                    var registration = c.CurrentServer.Transport.GetMarriageQueuedLocation(marriageId);
+                    var registration = c.CurrentServerContainer.Transport.GetMarriageQueuedLocation(marriageId);
 
                     if (registration != null)
                     {
-                        if (c.CurrentServer.Transport.AddMarriageGuest(marriageId, guest))
+                        if (c.CurrentServerContainer.Transport.AddMarriageGuest(marriageId, guest))
                         {
                             bool cathedral = registration.Value.Key;
                             int newItemId = cathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
@@ -324,7 +324,7 @@ public class RingActionHandler : ChannelHandlerBase
                                     }
                                     else
                                     {
-                                        c.CurrentServer.Transport.SendNormalNoteMessage(groom, name, dueyMessage);
+                                        c.CurrentServerContainer.Transport.SendNormalNoteMessage(groom, name, dueyMessage);
                                     }
 
                                     Item weddingTicket = new Item(newItemId, 0, 1);
@@ -372,7 +372,7 @@ public class RingActionHandler : ChannelHandlerBase
                     }
 
                     // collision case: most soon-to-come wedding will show up
-                    var coupleId = c.CurrentServer.Transport.GetWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
+                    var coupleId = c.CurrentServerContainer.Transport.GetWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
                     if (coupleId != null)
                     {
                         int groomId = coupleId.HusbandId, brideId = coupleId.WifeId;

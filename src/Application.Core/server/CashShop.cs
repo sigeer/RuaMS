@@ -314,7 +314,7 @@ public class CashShop
 
     public void gift(int recipient, string from, string message, int sn, long ringid = -1)
     {
-        Owner.Client.CurrentServer.Transport.SendGift(recipient, from, message, sn, ringid);
+        Owner.Client.CurrentServerContainer.Transport.SendGift(recipient, from, message, sn, ringid);
     }
 
     public List<ItemMessagePair> loadGifts()
@@ -356,7 +356,7 @@ public class CashShop
                 }
             }
 
-            Owner.Client.CurrentServer.Transport.ClearGifts(dataList.Select(x => x.Id).ToArray());
+            Owner.Client.CurrentServerContainer.Transport.ClearGifts(dataList.Select(x => x.Id).ToArray());
         }
         catch (Exception sqle)
         {

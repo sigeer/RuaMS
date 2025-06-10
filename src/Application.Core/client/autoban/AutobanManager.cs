@@ -43,14 +43,14 @@ public class AutobanManager
 
             if (lastTime.TryGetValue(fac, out var value))
             {
-                if (value < (chr.getChannelServer().getCurrentTime() - fac.getExpire()))
+                if (value < (chr.Client.CurrentServerContainer.getCurrentTime() - fac.getExpire()))
                 {
                     points.AddOrUpdate(fac, points.GetValueOrDefault(fac) / 2); //So the points are not completely gone.
                 }
             }
             if (fac.getExpire() != -1)
             {
-                lastTime.AddOrUpdate(fac, chr.getChannelServer().getCurrentTime());
+                lastTime.AddOrUpdate(fac, chr.Client.CurrentServerContainer.getCurrentTime());
             }
 
             points.AddOrUpdate(fac, points.GetValueOrDefault(fac) + 1);
@@ -93,7 +93,7 @@ public class AutobanManager
     //Don't use the same type for more than 1 thing
     public void spam(int type)
     {
-        this._spam[type] = chr.getChannelServer().getCurrentTime();
+        this._spam[type] = chr.Client.CurrentServerContainer.getCurrentTime();
     }
 
     public void spam(int type, int timestamp)

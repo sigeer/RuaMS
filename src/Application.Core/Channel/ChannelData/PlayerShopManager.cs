@@ -1,6 +1,6 @@
 using Application.Core.Game.Trades;
 
-namespace Application.Core.Channel.ServerData
+namespace Application.Core.Channel.ChannelData
 {
     public class PlayerShopManager
     {

@@ -14,7 +14,7 @@ public class ExpedsCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (TempConversation.TryCreate(c, out var p))
         {
-            p.RegisterTalk(c.CurrentServer.GetExpeditionInfo());
+            p.RegisterTalk(c.CurrentServerContainer.GetExpeditionInfo());
         }
     }
 }

@@ -145,7 +145,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.showCash(chr));
 
                     string noteMessage = chr.getName() + " has sent you a gift! Go check out the Cash Shop.";
-                    c.CurrentServer.Transport.SendNormalNoteMessage(chr.Name, recipient.CharacterName, noteMessage);
+                    c.CurrentServerContainer.Transport.SendNormalNoteMessage(chr.Name, recipient.CharacterName, noteMessage);
                 }
                 else if (action == 0x05)
                 {
@@ -409,7 +409,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 cs.gainCash(toCharge, itemRing, chr.getWorld());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRing.getRingId());
                                 chr.addCrushRing(rings.MyRing);
-                                c.CurrentServer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
+                                c.CurrentServerContainer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
                             }
                         }
                     }
@@ -487,7 +487,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 cs.gainCash(payment, -itemRing.getPrice());
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRing.getRingId());
                                 chr.addFriendshipRing(rings.MyRing);
-                                c.CurrentServer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
+                                c.CurrentServerContainer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
                             }
                         }
                     }
@@ -511,7 +511,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         p.readString(); //old name
                         string newName = p.readString();
-                        if (!c.CurrentServer.CheckCharacterName(newName) || chr.getLevel() < 10)
+                        if (!c.CurrentServerContainer.CheckCharacterName(newName) || chr.getLevel() < 10)
                         { //(longest ban duration isn't tracked currently)
                             c.sendPacket(PacketCreator.showCashShopMessage(0));
                             c.enableCSActions();

@@ -18,7 +18,7 @@ public class SummonCommand : CommandBase
 
         var map = player.getMap();
 
-        if (!c.CurrentServer.WarpPlayer(paramsValue[0], player.Channel, player.getMapId(), map.findClosestPortal(player.getPosition())?.getId()))
+        if (!c.CurrentServerContainer.WarpPlayer(paramsValue[0], player.Channel, player.getMapId(), map.findClosestPortal(player.getPosition())?.getId()))
         {
             player.dropMessage(6, "Unknown player.");
         }

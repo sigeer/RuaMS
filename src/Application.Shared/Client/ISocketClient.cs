@@ -7,7 +7,7 @@ namespace Application.Shared.Client
 {
     public interface ISocketClient
     {
-        IServerBase<IServerTransport> CurrentServerBase { get; }
+        ISocketServer CurrentServerBase { get; }
         long SessionId { get; }
         IChannel NettyChannel { get; }
 

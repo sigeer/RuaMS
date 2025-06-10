@@ -50,7 +50,7 @@ public class CoconutHandler : ChannelHandlerBase
         {
             return;
         }
-        if (c.CurrentServer.getCurrentTime() < nut.getHitTime())
+        if (c.CurrentServerContainer.getCurrentTime() < nut.getHitTime())
         {
             return;
         }

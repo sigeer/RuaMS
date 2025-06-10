@@ -87,7 +87,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (!c.CurrentServer.TeamManager.CreateParty(mc, true))
+                if (!c.CurrentServerContainer.TeamManager.CreateParty(mc, true))
                 {
                     mc.dropMessage(1, "You cannot create a new Guild while in a party.");
                     return;
@@ -271,7 +271,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                             int partyid = leader.getPartyId();
                             if (partyid != -1)
                             {
-                                c.CurrentServer.TeamManager.JoinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
+                                c.CurrentServerContainer.TeamManager.JoinParty(mc, partyid, true);    // GMS gimmick "party to form guild" recalled thanks to Vcoc
                             }
                         }
                     }

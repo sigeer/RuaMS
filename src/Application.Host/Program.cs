@@ -62,7 +62,7 @@ try
 
 
     builder.Services.AddChannelServer();
-    builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
+    builder.Services.AddLocalServer();
     builder.Services.AddSingleton<WorldChannelServer>();
 
     builder.Services.AddDbFactory(builder.Configuration.GetConnectionString("MySQL"));

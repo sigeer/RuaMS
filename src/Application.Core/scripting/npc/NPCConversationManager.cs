@@ -481,7 +481,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         if (item.Level > 0)
         {
             //Uncommon and Rare
-            c.CurrentServer.BroadcastWorldMessage(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
+            c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.gachaponMessage(itemGained, map, getPlayer()));
         }
     }
 
@@ -498,7 +498,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void disbandAlliance(IChannelClient c, int allianceId)
     {
-        c.CurrentServer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
+        c.CurrentServerContainer.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
     }
 
     public bool canBeUsedAllianceName(string name)
@@ -508,7 +508,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public Alliance? createAlliance(string name)
     {
-        return c.CurrentServer.GuildManager.CreateAlliance(getPlayer(), name);
+        return c.CurrentServerContainer.GuildManager.CreateAlliance(getPlayer(), name);
     }
 
     public int getAllianceCapacity()
@@ -672,7 +672,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public int[] getAvailableSkillBooks()
     {
         List<int> ret = ItemInformationProvider.getInstance().usableSkillBooks(this.getPlayer());
-        ret.AddRange(c.CurrentServer.SkillbookInformationProvider.getTeachableSkills(this.getPlayer()));
+        ret.AddRange(c.CurrentServerContainer.SkillbookInformationProvider.getTeachableSkills(this.getPlayer()));
 
         return ret.ToArray();
     }
@@ -684,7 +684,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public string getSkillBookInfo(int itemid)
     {
-        var sbe = c.CurrentServer.SkillbookInformationProvider.getSkillbookAvailability(itemid);
+        var sbe = c.CurrentServerContainer.SkillbookInformationProvider.getSkillbookAvailability(itemid);
         switch (sbe)
         {
             case SkillBookEntry.UNAVAILABLE:

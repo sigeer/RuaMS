@@ -827,7 +827,7 @@ public class EventManager
 
     private void exportReadyGuild(int guildId)
     {
-        var mg = cserv.GuildManager.GetGuildById(guildId);
+        var mg = cserv.Container.GuildManager.GetGuildById(guildId);
         if (mg != null)
         {
             string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
@@ -840,7 +840,7 @@ public class EventManager
 
     private void exportMovedQueueToGuild(int guildId, int place)
     {
-        var mg = cserv.GuildManager.GetGuildById(guildId);
+        var mg = cserv.Container.GuildManager.GetGuildById(guildId);
         string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                 + " and is currently on the " + GameConstants.ordinal(place) + " place on the waiting queue.";
 
@@ -854,7 +854,7 @@ public class EventManager
             if (!queuedGuilds.TryDequeue(out var guildId))
                 return null;
 
-            cserv.Transport.RemoveGuildQueued(guildId);
+            cserv.Container.Transport.RemoveGuildQueued(guildId);
             var leaderId = queuedGuildLeaders.Remove(guildId, out var d) ? d : 0;
 
             int place = 1;
@@ -889,7 +889,7 @@ public class EventManager
 
     public sbyte addGuildToQueue(int guildId, int leaderId)
     {
-        if (cserv.Transport.IsGuildQueued(guildId))
+        if (cserv.Container.Transport.IsGuildQueued(guildId))
         {
             return -1;
         }
@@ -902,7 +902,7 @@ public class EventManager
                 canStartAhead = queuedGuilds.Count == 0;
 
                 queuedGuilds.Enqueue(guildId);
-                cserv.Transport.PutGuildQueued(guildId);
+                cserv.Container.Transport.PutGuildQueued(guildId);
                 queuedGuildLeaders.AddOrUpdate(guildId, leaderId);
 
                 int place = queuedGuilds.Count;
@@ -916,7 +916,7 @@ public class EventManager
                     lock (queuedGuilds)
                     {
                         queuedGuilds.Enqueue(guildId);
-                        cserv.Transport.PutGuildQueued(guildId);
+                        cserv.Container.Transport.PutGuildQueued(guildId);
                         queuedGuildLeaders.AddOrUpdate(guildId, leaderId);
                     }
                 }

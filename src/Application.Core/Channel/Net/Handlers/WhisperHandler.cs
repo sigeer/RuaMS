@@ -98,7 +98,7 @@ public class WhisperHandler : ChannelHandlerBase
     private void handleWhisper(string message, IChannelClient client, IPlayer target)
     {
         var user = client.OnlinedCharacter;
-        if (user.getAutobanManager().getLastSpam(7) + 200 > client.CurrentServer.getCurrentTime())
+        if (user.getAutobanManager().getLastSpam(7) + 200 > client.CurrentServerContainer.getCurrentTime())
         {
             return;
         }

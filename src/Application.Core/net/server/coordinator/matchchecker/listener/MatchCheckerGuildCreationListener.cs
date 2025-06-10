@@ -7,11 +7,13 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
 {
     public class MatchCheckerGuildCreationListener : AbstractMatchCheckerListener
     {
-        private GuildManager _guildManager;
+        GuildManager _guildManager;
+        TeamManager _teamManager;
 
-        public MatchCheckerGuildCreationListener(GuildManager guildManager)
+        public MatchCheckerGuildCreationListener(GuildManager guildManager, TeamManager teamManager)
         {
             _guildManager = guildManager;
+            _teamManager = teamManager;
         }
 
         private static void broadcastGuildCreationDismiss(HashSet<IPlayer> nonLeaderMatchPlayers)
@@ -51,7 +53,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    chr.Client.CurrentServer.TeamManager.LeaveParty(chr);
+                    _teamManager.LeaveParty(chr);
                 }
 
                 if (chr.isLoggedinWorld())
@@ -80,7 +82,7 @@ namespace Application.Core.net.server.coordinator.matchchecker.listener
             {
                 if (chr.getId() == leaderid && chr.getClient() != null)
                 {
-                    chr.Client.CurrentServer.TeamManager.LeaveParty(chr);
+                    _teamManager.LeaveParty(chr);
                 }
 
                 if (chr.isLoggedinWorld())

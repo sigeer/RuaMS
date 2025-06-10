@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using Application.Core.Game.Controllers;
 
 namespace Application.Core.Channel.ServerData
@@ -9,12 +8,12 @@ namespace Application.Core.Channel.ServerData
         private Dictionary<int, int> activePets = new();
         private DateTimeOffset petUpdate;
 
-        readonly WorldChannel worldChannel;
+        readonly WorldChannelServer _server;
 
-        public PetHungerManager(WorldChannel worldChannel) : base($"PetHungerController_{worldChannel.InstanceId}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        public PetHungerManager(WorldChannelServer server) : base($"PetHungerController_{server.ServerName}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
             petUpdate = DateTimeOffset.UtcNow;
-            this.worldChannel = worldChannel;
+            this._server = server;
         }
 
         private static int getPetKey(IPlayer chr, sbyte petSlot)
@@ -86,7 +85,7 @@ namespace Application.Core.Channel.ServerData
 
             foreach (var dp in deployedPets)
             {
-                var chr = worldChannel.getPlayerStorage().getCharacterById(dp.Key / 4);
+                var chr = _server.FindPlayerById(dp.Key / 4);
                 if (chr == null || !chr.isLoggedinWorld())
                 {
                     continue;

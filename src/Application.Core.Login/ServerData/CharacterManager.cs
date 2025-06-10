@@ -100,14 +100,16 @@ namespace Application.Core.Login.Datas
                 {
                     // 等级变化通知
                     _masterServer.GuildManager.BroadcastLevelChanged(origin.Character);
-                    _masterServer.TeamManager.UpdateParty(obj.Channel, origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                    _masterServer.TeamManager.UpdateParty(_masterServer.GetChannel(obj.Channel)!.Name, 
+                        origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
 
                 if (oldCharacterData.JobId != origin.Character.JobId)
                 {
                     // 转职通知
                     _masterServer.GuildManager.BroadcastJobChanged(origin.Character);
-                    _masterServer.TeamManager.UpdateParty(obj.Channel, origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                    _masterServer.TeamManager.UpdateParty(_masterServer.GetChannel(obj.Channel)!.Name, 
+                        origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
             }
 

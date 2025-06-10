@@ -124,7 +124,7 @@ public class DebugCommand : CommandBase
             case "servercoupons":
             case "coupons":
                 string s = "Currently active SERVER coupons: ";
-                foreach (int i in c.CurrentServer.ActiveCoupons)
+                foreach (int i in c.CurrentServerContainer.ActiveCoupons)
                 {
                     s += (i + " ");
                 }

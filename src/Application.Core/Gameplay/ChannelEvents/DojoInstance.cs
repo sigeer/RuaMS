@@ -240,7 +240,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 Monitor.Exit(lockObj);
             }
 
-            dojoFinishTime[slot] = this.Channel.getCurrentTime() + clockTime;
+            dojoFinishTime[slot] = this.Channel.Container.getCurrentTime() + clockTime;
         }
 
         public void DismissDojoSchedule(int dojoMapId, Team party)

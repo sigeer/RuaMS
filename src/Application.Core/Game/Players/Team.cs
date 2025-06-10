@@ -159,7 +159,7 @@ namespace Application.Core.Game.Players
 
             if (party != null)
             {
-                Client.CurrentServer.TeamManager.LeaveParty(this);
+                Client.CurrentServerContainer.TeamManager.LeaveParty(this);
 
                 return true;
             }

@@ -10,7 +10,7 @@ public class SaveDBCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         c.OnlinedCharacter.saveCharToDB();
-        c.CurrentServer.Transport.CallSaveDB();
+        c.CurrentServerContainer.Transport.CallSaveDB();
         c.OnlinedCharacter.message("保存成功");
     }
 }

@@ -1,8 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
-using Application.Core.Channel;
 using Application.Core.Scripting.Infrastructure;
-using Application.Shared.Models;
 using scripting;
 using scripting.Event;
 using scripting.npc;
@@ -12,6 +10,7 @@ namespace Application.Core.Client
     public interface IChannelClient : IClientBase
     {
         WorldChannel CurrentServer { get; }
+        WorldChannelServer CurrentServerContainer => CurrentServer.Container;
         int Channel { get; }
         int ActualChannel { get; }
         IPlayer? Character { get; }

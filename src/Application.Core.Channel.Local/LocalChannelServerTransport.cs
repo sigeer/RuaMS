@@ -64,17 +64,20 @@ namespace Application.Core.Channel.Local
             _rankService = rankService;
         }
 
-        public Task<Config.RegisterServerResult> RegisterServer(WorldChannel server)
+        public Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels)
         {
             if (!_server.IsRunning)
-                return Task.FromResult(new Config.RegisterServerResult() { Channel = -1, Message = "中心服务器未启动" });
+                return Task.FromResult(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" });
 
-            _world.addChannel(server);
+            foreach (var item in server.Servers.Values)
+            {
+                _world.addChannel(item);
+            }
 
-            var channelId = _server.AddChannel(new InternalWorldChannel(server));
+            var channelId = _server.AddChannel(new InternalWorldChannel(server, channels));
             return Task.FromResult(new Config.RegisterServerResult
             {
-                Channel = channelId,
+                StartChannel = channelId,
                 Coupon = _server.CouponManager.GetConfig(),
                 Config = _server.GetWorldConfig()
             });
@@ -664,9 +667,9 @@ namespace Application.Core.Channel.Local
             return _server.TeamManager.CreateTeam(playerId);
         }
 
-        public Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId)
+        public Dto.UpdateTeamResponse SendUpdateTeam(string fromServer, int teamId, PartyOperation operation, int fromId, int toId)
         {
-            return _server.TeamManager.UpdateParty(fromChannel, teamId, operation, fromId, toId);
+            return _server.TeamManager.UpdateParty(fromServer, teamId, operation, fromId, toId);
         }
 
         public void SendTeamChat(string name, string chattext)
@@ -695,11 +698,11 @@ namespace Application.Core.Channel.Local
             return new Dto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
         }
 
-        public Dto.UpdateGuildResponse SendUpdateGuildMember(int fromChannel, GuildOperation operation, int id, int guildId, int target, int toRank)
+        public Dto.UpdateGuildResponse SendUpdateGuildMember(string fromServer, GuildOperation operation, int id, int guildId, int target, int toRank)
         {
             return _server.GuildManager.UpdateGuildMember(new Dto.UpdateGuildMemberRequest
             {
-                FromChannel = fromChannel,
+                FromChannel = fromServer,
                 FromId = id,
                 ToId = target,
                 ToRank = toRank,
@@ -708,11 +711,11 @@ namespace Application.Core.Channel.Local
             });
         }
 
-        public Dto.UpdateGuildResponse SendUpdateGuildMeta(int fromChannel, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields)
+        public Dto.UpdateGuildResponse SendUpdateGuildMeta(string fromServer, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields)
         {
             return _server.GuildManager.UpdateGuild(new Dto.UpdateGuildRequest
             {
-                FromChannel = fromChannel,
+                FromChannel = fromServer,
                 GuildId = guildId,
                 Operation = (int)operation,
                 UpdateFields = updateFields,
