@@ -1,6 +1,7 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.Guilds;
 using Application.Core.Login.Services;
+using Application.Core.tools;
 using Application.EF;
 using Application.Shared.Guild;
 using Application.Shared.Team;
@@ -28,13 +29,14 @@ namespace Application.Core.Login.ServerData
         readonly ILogger<GuildManager> _logger;
         readonly IMapper _mapper;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
-
-        public GuildManager(MasterServer server, ILogger<GuildManager> logger, IMapper mapper, IDbContextFactory<DBContext> dbContext)
+        readonly DataStorage _dataStorage;
+        public GuildManager(MasterServer server, ILogger<GuildManager> logger, IMapper mapper, IDbContextFactory<DBContext> dbContext, DataStorage dataStorage)
         {
             _server = server;
             _logger = logger;
             _mapper = mapper;
             _dbContextFactory = dbContext;
+            _dataStorage = dataStorage;
         }
 
         public void Initialize()
@@ -87,6 +89,7 @@ namespace Application.Core.Login.ServerData
                 }
             }
 
+            _dataStorage.SetGuildUpdate(guildModel);
             var response = new Dto.GuildDto();
             response.GuildId = guildModel.GuildId;
             response.Leader = guildModel.Leader;
@@ -298,6 +301,7 @@ namespace Application.Core.Login.ServerData
                         break;
                     case GuildInfoOperation.IncreaseCapacity:
                         guild.Capacity += 5;
+        
                         break;
                     case GuildInfoOperation.Disband:
                         foreach (var member in GetGuildMembers(guild))
@@ -310,15 +314,27 @@ namespace Application.Core.Login.ServerData
                         }
                         _idGuildDataSource.Remove(guild.GuildId, out _);
                         _nameGuildDataSource.Remove(guild.Name, out _);
+                        
                         break;
                     default:
                         break;
                 }
 
+                if (code == 0)
+                {
+                    if (operation == GuildInfoOperation.Disband)
+                        _dataStorage.SetGuildRemoved(guild!);
+                    else
+                        _dataStorage.SetGuildUpdate(guild!);
+                }
+
+
             }
             response.UpdatedGuild = _mapper.Map<Dto.GuildDto>(guild);
             if (code == 0)
+            {
                 _server.Transport.BroadcastGuildUpdate(request.FromChannel, response);
+            }
 
             return response;
         }
