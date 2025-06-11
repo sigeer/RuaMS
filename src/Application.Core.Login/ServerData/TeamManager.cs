@@ -55,7 +55,7 @@ namespace Application.Core.Login.ServerData
                 return _dataSource.TryRemove(teamId, out _);
             return false;
         }
-        public Dto.UpdateTeamResponse UpdateParty(string fromServer, int partyid, PartyOperation operation, int fromId, int toId)
+        public Dto.UpdateTeamResponse UpdateParty(int partyid, PartyOperation operation, int fromId, int toId)
         {
             var response = new Dto.UpdateTeamResponse();
             UpdateTeamCheckResult errorCode = UpdateTeamCheckResult.Success;
@@ -122,7 +122,7 @@ namespace Application.Core.Login.ServerData
             response.ErrorCode = (int)errorCode;
 
             if (errorCode == UpdateTeamCheckResult.Success)
-                _server.Transport.BroadcastTeamUpdate(fromServer, partyid, operation, response.UpdatedMember);
+                _server.Transport.BroadcastTeamUpdate(partyid, operation, response.UpdatedMember);
             return response;
         }
 

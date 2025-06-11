@@ -107,6 +107,7 @@ namespace Application.Core.Channel.Net
                                 if (guild != null)
                                 {
                                     guild.setOnline(Character.Id, false, CurrentServer.getId());
+                                    // 都断开连接了这个包还有必要发？
                                     Character.sendPacket(GuildPackets.showGuildInfo(Character));
                                 }
                             }

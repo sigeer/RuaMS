@@ -61,7 +61,6 @@ namespace Application.Core.ServerTransports
         /// <param name="updatePatch"></param>
         void SendWorldConfig(WorldConfigPatch updatePatch);
 
-        void DisconnectPlayers(IEnumerable<int> playerIdList);
         #region Team
         Dto.TeamDto CreateTeam(int playerId);
         #endregion
@@ -143,18 +142,37 @@ namespace Application.Core.ServerTransports
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
         void AddCashItemBought(int sn);
-        Dto.UpdateTeamResponse SendUpdateTeam(string fromServer, int teamId, PartyOperation operation, int fromId, int toId);
+        Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);
         Dto.GetGuildResponse GetGuild(int id);
         Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
-        Dto.UpdateGuildResponse SendUpdateGuildMember(string fromServer, GuildOperation operation, int operatorId, int guildId, int target, int toRank);
-        Dto.UpdateGuildResponse SendUpdateGuildMeta(string fromServer, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields);
         Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
-        Dto.UpdateAllianceResponse SendUpdateAlliance(Dto.UpdateAllianceRequest request);
         Dto.GetAllianceResponse GetAlliance(int id);
         void SendGuildChat(string name, string text);
         void SendAllianceChat(string name, string text);
+        void BroadcastGuildMessage(int guildId, int v, string callout);
+        void SendUpdateGuildGP(Dto.UpdateGuildGPRequest request);
+        void SendUpdateGuildRankTitle(Dto.UpdateGuildRankTitleRequest request);
+        void SendUpdateGuildNotice(Dto.UpdateGuildNoticeRequest request);
+        void SendUpdateGuildCapacity(Dto.UpdateGuildCapacityRequest request);
+        void SendUpdateGuildEmblem(Dto.UpdateGuildEmblemRequest request);
+        void SendGuildDisband(Dto.GuildDisbandRequest request);
+        void SendChangePlayerGuildRank(Dto.UpdateGuildMemberRankRequest request);
+        void SendGuildExpelMember(Dto.ExpelFromGuildRequest expelFromGuildRequest);
+        void SendPlayerLeaveGuild(Dto.LeaveGuildRequest leaveGuildRequest);
+        void SendPlayerJoinGuild(Dto.JoinGuildRequest joinGuildRequest);
+
+
+        void SendGuildJoinAlliance(Dto.GuildJoinAllianceRequest guildJoinAllianceRequest);
+        void SendGuildLeaveAlliance(Dto.GuildLeaveAllianceRequest guildLeaveAllianceRequest);
+        void SendAllianceExpelGuild(Dto.AllianceExpelGuildRequest allianceExpelGuildRequest);
+        void SendChangeAllianceLeader(Dto.AllianceChangeLeaderRequest allianceChangeLeaderRequest);
+        void SendChangePlayerAllianceRank(Dto.ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest);
+        void SendIncreaseAllianceCapacity(Dto.IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest);
+        void SendUpdateAllianceRankTitle(Dto.UpdateAllianceRankTitleRequest request);
+        void SendUpdateAllianceNotice(Dto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
+        void SendAllianceDisband(Dto.DisbandAllianceRequest disbandAllianceRequest);
         #endregion
     }
 }

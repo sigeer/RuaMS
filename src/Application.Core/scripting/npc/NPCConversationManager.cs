@@ -487,13 +487,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void upgradeAlliance()
     {
-        var alliance = c.OnlinedCharacter.AllianceModel!;
-        alliance.increaseCapacity(1);
-
-        alliance.BroadcastGuildAlliance();
-        alliance.BroadcastNotice();
-
-        c.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue
+        c.CurrentServerContainer.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
     }
 
     public void disbandAlliance(IChannelClient c, int allianceId)

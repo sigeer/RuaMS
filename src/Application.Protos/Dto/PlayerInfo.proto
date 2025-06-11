@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package Dto;
+
+message PlayerOnlineChange {
+	int32 id = 1;
+	string name = 2;
+	int32 channel = 3;
+	int32 guildId = 4;
+	int32 teamId = 5;
+}
+
+message PlayerLevelJobChange {
+  int32 id = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 jobId = 4;
+  int32 guildId = 5;
+  int32 teamId = 6;
+}

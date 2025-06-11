@@ -1,4 +1,5 @@
 using Application.Core.Login.Datas;
+using Application.Core.Login.Models;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Servers;
@@ -207,6 +208,7 @@ namespace Application.Core.Login
                 {
                     Channels.Add(item);
                 }
+                _serverChannelCache = null;
                 return started + 1;
             }
             return -1;
@@ -216,9 +218,33 @@ namespace Application.Core.Login
         {
             if (ChannelServerList.Remove(instanceId, out var channelServer))
             {
+                _serverChannelCache = null;
                 return Channels.RemoveAll(x => x.Name == channelServer.ServerName) == channelServer.ServerConfigs.Count;
             }
             return false;
+        }
+
+        bool channelChanged = false;
+        List<ServerChannelPair>? _serverChannelCache;
+        private List<ServerChannelPair> GetServerChannel()
+        {
+            return _serverChannelCache ??= Channels.Select((item, idx) => new ServerChannelPair(item.Name, idx + 1)).ToList();
+        }
+
+        /// <summary>
+        /// 对玩家按服务器分组
+        /// </summary>
+        /// <param name="dataList">玩家id及其所在频道</param>
+        /// <param name="exceptServer"></param>
+        /// <returns>服务器: 服务器上的玩家</returns>
+        public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<PlayerChannelPair> dataList)
+        {
+            var d = GetServerChannel();
+
+            return (from a in dataList
+                        join b in d on a.Channel equals b.Channel
+                        group a.PlayerId by b.ServerName into ass
+                        select ass).ToDictionary(x => ChannelServerList[x.Key], x => x.ToArray());
         }
 
         public ChannelServerWrapper GetChannelServer(int channelId)

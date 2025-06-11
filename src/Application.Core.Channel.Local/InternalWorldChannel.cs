@@ -19,26 +19,6 @@ namespace Application.Core.Channel.Local
             ChannelServer.TeamManager.ProcessUpdateResponse(teamId, operation, target);
         }
 
-        public override void BroadcastJobChanged(int type, int[] players, string name, int jobId)
-        {
-            ChannelServer.ProcessBroadcastJobChanged(type, players, name, jobId);
-        }
-
-        public override void BroadcastLevelChanged(int type, int[] value, string name, int level)
-        {
-            ChannelServer.ProcessBroadcastLevelChanged(type, value, name, level);
-        }
-
-        public override void SendGuildUpdate(UpdateGuildResponse response)
-        {
-            ChannelServer.GuildManager.ProcessUpdateGuild(response);
-        }
-
-        public override void SendAllianceUpdate(UpdateAllianceResponse response)
-        {
-            ChannelServer.GuildManager.ProcessAllianceUpdate(response);
-        }
-
         public override void UpdateCouponConfig(CouponConfig config)
         {
             ChannelServer.UpdateCouponConfig(config);
@@ -61,5 +41,123 @@ namespace Application.Core.Channel.Local
         {
             ChannelServer.SendMultiChat(type, nameFrom, value, chatText);
         }
+
+        public override void DropMessage(int[] value, int type, string message)
+        {
+            ChannelServer.DropMessage(value, type, message);
+        }
+
+        public override void BroadcastGuildGPUpdate(UpdateGuildGPResponse response)
+        {
+            ChannelServer.BroadcastGuildGPUpdate(response);
+        }
+
+        public override void BroadcastGuildRankTitleUpdate(UpdateGuildRankTitleResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildRankTitleUpdate(response);
+        }
+
+        public override void BroadcastGuildNoticeUpdate(UpdateGuildNoticeResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildNoticeUpdate(response);
+        }
+
+        public override void BroadcastGuildCapacityUpdate(UpdateGuildCapacityResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildCapacityIncreased(response);
+        }
+
+        public override void BroadcastGuildEmblemUpdate(UpdateGuildEmblemResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildEmblemUpdate(response);
+        }
+
+        public override void BroadcastGuildDisband(GuildDisbandResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildDisband(response);
+        }
+
+        public override void BroadcastGuildRankChanged(UpdateGuildMemberRankResponse response)
+        {
+            ChannelServer.GuildManager.OnChangePlayerGuildRank(response);
+        }
+
+        public override void BroadcastGuildExpelMember(ExpelFromGuildResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildExpelMember(response);
+        }
+
+        public override void BroadcastPlayerJoinGuild(JoinGuildResponse response)
+        {
+            ChannelServer.GuildManager.OnPlayerJoinGuild(response);
+        }
+
+        public override void BroadcastPlayerLeaveGuild(LeaveGuildResponse response)
+        {
+            ChannelServer.GuildManager.OnPlayerLeaveGuild(response);
+        }
+
+        public override void BroadcastPlayerLevelChanged(PlayerLevelJobChange response)
+        {
+            ChannelServer.OnPlayerLevelChanged(response);
+        }
+
+        public override void BroadcastPlayerJobChanged(PlayerLevelJobChange response)
+        {
+            ChannelServer.OnPlayerJobChanged(response);
+        }
+
+        public override void BroadcastPlayerLoginOff(PlayerOnlineChange response)
+        {
+            ChannelServer.OnPlayerLoginOff(response);
+        }
+
+        #region Alliance
+        public override void BroadcastGuildJoinAlliance(GuildJoinAllianceResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildJoinAlliance(response);
+        }
+
+        public override void BroadcastAllianceCapacityIncreased(IncreaseAllianceCapacityResponse response)
+        {
+            ChannelServer.GuildManager.OnAllianceCapacityIncreased(response);
+        }
+
+        public override void BroadcastGuildLeaveAlliance(GuildLeaveAllianceResponse response)
+        {
+            ChannelServer.GuildManager.OnGuildLeaveAlliance(response);
+        }
+
+        public override void BroadcastAllianceExpelGuild(AllianceExpelGuildResponse response)
+        {
+            ChannelServer.GuildManager.OnAllianceExpelGuild(response);
+        }
+
+        public override void BroadcastAllianceRankTitleChanged(UpdateAllianceRankTitleResponse response)
+        {
+            ChannelServer.GuildManager.OnAllianceRankTitleChanged(response);
+        }
+
+        public override void BroadcastAllianceNoticeChanged(UpdateAllianceNoticeResponse response)
+        {
+            ChannelServer.GuildManager.OnAllianceNoticeChanged(response);
+        }
+
+        public override void BroadcastAllianceLeaderChanged(AllianceChangeLeaderResponse response)
+        {
+            ChannelServer.GuildManager.OnAllianceLeaderChanged(response);
+        }
+
+        public override void BroadcastAllianceMemberRankChanged(ChangePlayerAllianceRankResponse response)
+        {
+            ChannelServer.GuildManager.OnPlayerAllianceRankChanged(response);
+        }
+
+        public override void BroadcastAllianceDisband(DisbandAllianceResponse response)
+        {
+            ChannelServer.GuildManager.OnAllianceDisband(response);
+        }
+
+        #endregion
     }
 }

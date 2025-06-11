@@ -1,4 +1,4 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public class AllianceEntity
 {
@@ -6,8 +6,9 @@ public class AllianceEntity
     {
     }
 
-    public AllianceEntity(string name)
+    public AllianceEntity(int id, string name)
     {
+        Id = id;
         Name = name;
     }
 

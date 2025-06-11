@@ -133,19 +133,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (!_guildManager.AddMember(mc, gid))
-                {
-                    mc.dropMessage(1, "The guild you are trying to join is already full.");
-                    mc.GuildId = Defaults.GuildId;
-                    return;
-                }
-
-                c.sendPacket(GuildPackets.showGuildInfo(mc));
-
-                if (mc.AllianceModel != null)
-                {
-                    mc.AllianceModel.updateAlliancePackets();
-                }
+                _guildManager.AddMember(mc, gid);
                 break;
             case 0x07:
                 cid = p.readInt();
@@ -156,29 +144,13 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (_guildManager.LeaveMember(mc))
-                {
-                    c.sendPacket(GuildPackets.updateGP(mc.GuildId, 0));
-                    c.sendPacket(GuildPackets.showGuildInfo(null));
-                    if (mc.AllianceModel != null)
-                    {
-                        mc.AllianceModel.updateAlliancePackets();
-                    }
-                }
-
-
+                _guildManager.LeaveMember(mc);
                 break;
             case 0x08:
                 cid = p.readInt();
                 name = p.readString();
 
-                if (_guildManager.ExpelMember(mc, cid))
-                {
-                    if (mc.AllianceModel != null)
-                    {
-                        mc.AllianceModel!.updateAlliancePackets();
-                    }
-                }
+                _guildManager.ExpelMember(mc, cid);
                 break;
             case 0x0d:
                 if (mc.GuildModel == null || mc.getGuildRank() != 1)

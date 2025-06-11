@@ -46,15 +46,10 @@ namespace Application.Core.Login.Services
             if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
-            characterObj.Channel = channelId;
 
             var data = _mapper.Map<Dto.PlayerGetterDto>(characterObj);
             data.LoginInfo = new Dto.LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
 
-            if (data.LoginInfo.IsNewCommer)
-            {
-                _masterServer.GuildManager.BroadcastLogin(characterObj.Character);
-            }
 
             using var dbContext = _dbContextFactory.CreateDbContext();
             var now = DateTimeOffset.UtcNow;
@@ -74,7 +69,7 @@ namespace Application.Core.Login.Services
 
         public void SetPlayerLogedIn(int playerId, int channel)
         {
-            _masterServer.CharacterManager.SetPlayerChannel(playerId, channel, out var accId);
+            _masterServer.CharacterManager.CompleteLogin(playerId, channel, out var accId);
             _masterServer.AccountManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
         }
 

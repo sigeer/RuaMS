@@ -5,6 +5,7 @@ using AutoMapper.Execution;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.guild;
+using Org.BouncyCastle.Asn1.X509;
 using System;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
@@ -53,13 +54,13 @@ public class Guild
     public string[] RankTitles { get; set; } = new string[5];
 
     private Dictionary<int, List<int>> notifications = new();
-    private bool bDirty = true;
+    private Dictionary<int, bool> channelDirty;
 
     WorldChannelServer _serverContainer;
     public Guild(WorldChannelServer serverContainer, int guildId)
     {
         _serverContainer = serverContainer;
-
+        channelDirty = new ();
         GuildId = guildId;
         this.members = [];
     }
@@ -70,13 +71,13 @@ public class Guild
     List<IPlayer?>? channelMembersCache;
     public List<IPlayer?> GetCurrentChannelMembers(WorldChannel server)
     {
-        if (!bDirty)
+        if (!channelDirty.GetValueOrDefault(server.getId()))
         {
             return channelMembersCache!;
         }
 
         // 人员发生变动、或者上下线时重算
-        bDirty = true;
+        channelDirty[server.getId()] = true;
         return channelMembersCache = members.Keys.Select(x => server.Players.getCharacterById(x)).ToList();
     }
 
@@ -94,6 +95,29 @@ public class Guild
         }
     }
 
+    public void SetMemberChannel(int cid, int channel)
+    {
+        if (members.TryGetValue(cid, out var member))
+        {
+            member.Channel = channel;
+        }
+    }
+    public void SetMemberLevel(int cid, int level)
+    {
+        if (members.TryGetValue(cid, out var member))
+        {
+            member.Level = level;
+        }
+    }
+
+    public void SetMemberJob(int cid, int jobId)
+    {
+        if (members.TryGetValue(cid, out var member))
+        {
+            member.JobId = jobId;
+        }
+    }
+
     public void UpdateMember(GuildMember member)
     {
         if (member.GuildId != GuildId)
@@ -101,6 +125,12 @@ public class Guild
             return;
         }
         members[member.Id] = member;
+        var chr = _serverContainer.Servers[member.Channel].Players.getCharacterById(member.Id);
+        if (chr != null)
+        {
+            chr.GuildRank = member.GuildRank;
+            chr.AllianceRank = member.AllianceRank;
+        }
     }
 
 
@@ -147,8 +177,10 @@ public class Guild
         return Leader;
     }
 
+
     public int setLeaderId(int charId)
     {
+        // 家族不能更换族长？
         return Leader = charId;
     }
 
@@ -312,7 +344,12 @@ public class Guild
     {
         dropMessage(5, message);
     }
-
+    
+    /// <summary>
+    /// 如果直接调用，只会修改本机上的数据。所有操作应该由GuildManager调用
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="message"></param>
     public void dropMessage(int type, string message)
     {
         guildMessage(PacketCreator.serverNotice(type, message));
@@ -325,20 +362,7 @@ public class Guild
         {
             this.broadcast(GuildPackets.guildMemberOnline(GuildId, cid, online), cid);
 
-            bDirty = true;
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
-        }
-    }
-
-    public void guildChat(string name, int cid, string message)
-    {
-        Monitor.Enter(membersLock);
-        try
-        {
-            this.broadcast(PacketCreator.multiChat(name, message, 2), cid);
+            channelDirty[channel] = true;
         }
         finally
         {
@@ -371,7 +395,7 @@ public class Guild
                     }
                     m.sendPacket(GuildPackets.newGuildMember(GuildId, member));
                 });
-                bDirty = true;
+                channelDirty[member.Channel] = true;
                 return true;
             }
 
@@ -398,7 +422,7 @@ public class Guild
                     }
                     m.sendPacket(GuildPackets.memberLeft(m, false));
                 });
-                bDirty = true;
+                channelDirty[member.Channel] = true;
                 return true;
             }
             return false;
@@ -424,7 +448,7 @@ public class Guild
                     }
                     m.sendPacket(GuildPackets.memberLeft(m, true));
                 });
-                bDirty = true;
+                channelDirty[member.Channel] = true;
                 log.Warning("Unable to find member with id {CharacterId}", cid);
                 return true;
             }
@@ -539,6 +563,8 @@ public class Guild
         try
         {
             this.broadcast(null, -1, BCOp.EMBLEMCHANGE);
+
+            BroadcastDisplay();
         }
         finally
         {
@@ -589,17 +615,18 @@ public class Guild
         return AllianceId;
     }
 
-    public void setAllianceId(int aid)
+    public void JoinAlliance()
     {
-        this.AllianceId = aid;
-        try
+        foreach (var mgc in members)
         {
-            using var dbContext = new DBContext();
-            dbContext.Guilds.Where(x => x.GuildId == GuildId).ExecuteUpdate(x => x.SetProperty(y => y.AllianceId, aid));
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
+            var chr = _serverContainer.FindPlayerById(mgc.Key);
+            if (chr != null)
+            {
+                chr.setAllianceRank(chr.getGuildRank() == 1 ? 2 : 5);
+            }
+            mgc.Value.AllianceRank = 5;
+            if (mgc.Value.GuildRank == 1)
+                mgc.Value.AllianceRank = 2;
         }
     }
 
@@ -621,9 +648,6 @@ public class Guild
         {
             Monitor.Exit(membersLock);
         }
-
-        using var dbContext = new DBContext();
-        dbContext.Characters.Where(x => x.GuildId == GuildId).ExecuteUpdate(x => x.SetProperty(y => y.AllianceRank, 5));
     }
 
     /// <summary>

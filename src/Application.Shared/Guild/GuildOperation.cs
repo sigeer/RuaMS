@@ -1,24 +1,14 @@
 namespace Application.Shared.Team
 {
-    public enum GuildOperation
+    public enum GuildUpdateResult
     {
-        AddMember,
-        ChangeRank,
-        ExpelMember,
-        Leave,
-        MemberLevelChanged,
-        MemberJobChanged,
-        MemberLogin,
-        MemberLogoff
-    }
+        Success,
+        PlayerNotExisted,
+        PlayerNotOnlined,
+        GuildNotExisted ,
 
-    public enum GuildInfoOperation
-    {
-        ChangeName,
-        ChangeEmblem,
-        ChangeRankTitle,
-        ChangeNotice,
-        IncreaseCapacity,
-        Disband,
+        MasterRankFail,
+
+        Join_AlreadyInGuild
     }
 }

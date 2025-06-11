@@ -14,8 +14,7 @@ namespace Application.Utility
 
     public enum UpdateMethod
     {
-        Add,
-        Update,
+        AddOrUpdate,
         Remove
     }
 

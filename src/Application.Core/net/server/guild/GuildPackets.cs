@@ -144,14 +144,14 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet guildMemberLevelJobUpdate(Guild guild, GuildMember mgc)
+    public static Packet guildMemberLevelJobUpdate(int guildId, int playerId, int level, int jobId)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x3C);
-        p.writeInt(guild.GuildId);
-        p.writeInt(mgc.Id);
-        p.writeInt(mgc.Level);
-        p.writeInt(mgc.JobId);
+        p.writeInt(guildId);
+        p.writeInt(playerId);
+        p.writeInt(level);
+        p.writeInt(jobId);
         return p;
     }
 
@@ -489,15 +489,16 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet updateAllianceJobLevel(Guild guild, GuildMember mc)
+
+    public static Packet updateAllianceJobLevel(Guild guild, int memberId, int level,int jobId)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x18);
         p.writeInt(guild.AllianceId);
         p.writeInt(guild.GuildId);
-        p.writeInt(mc.Id);
-        p.writeInt(mc.Level);
-        p.writeInt(mc.JobId);
+        p.writeInt(memberId);
+        p.writeInt(level);
+        p.writeInt(jobId);
         return p;
     }
 

@@ -87,7 +87,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
             case 0x02:
                 {
                     // Leave Alliance
-                    _guildManager.AllianceLeaveGuild(chr, chr.GuildId);
+                    _guildManager.GuildLeaveAlliance(chr, chr.GuildId);
                     break;
                 }
             case 0x03: // Send Invite
@@ -114,23 +114,6 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     int allianceid = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
                     int guildid = chr.getGuildId();
-
-                    alliance = _guildManager.GetAllianceById(allianceid);
-                    if (alliance == null)
-                    {
-                        return;
-                    }
-
-                    if (!_guildManager.AnswerAllianceInvitation(c.OnlinedCharacter.getId(), chrGuild.getName(), alliance.getId(), true))
-                    {
-                        return;
-                    }
-
-                    if (alliance.getGuilds().Count == alliance.getCapacity())
-                    {
-                        chr.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-                        return;
-                    }
 
                     _guildManager.GuildJoinAlliance(chr, allianceid, guildid);
                     break;

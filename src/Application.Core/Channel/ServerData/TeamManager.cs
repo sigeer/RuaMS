@@ -249,7 +249,7 @@ namespace Application.Core.Channel.ServerData
 
         public bool UpdateTeam(WorldChannel worldChannel, int teamId, PartyOperation operation, IPlayer? player, int target)
         {
-            var result = _transport.SendUpdateTeam(_server.ServerName, teamId, operation, player?.Id ?? -1, target);
+            var result = _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
             if (result.ErrorCode == 0)
                 return ProcessUpdateResponse(result.TeamId, (PartyOperation)result.Operation, result.UpdatedMember);
 

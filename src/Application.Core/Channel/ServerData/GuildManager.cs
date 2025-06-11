@@ -5,25 +5,31 @@ using Application.Core.Managers;
 using Application.Core.ServerTransports;
 using Application.Shared.Guild;
 using Application.Shared.Team;
+using Application.Utility;
 using AutoMapper;
 using AutoMapper.Execution;
 using constants.game;
+using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySqlX.XDevAPI.Common;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Org.BouncyCastle.Asn1.X509;
 using Serilog;
+using server.quest;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using tools;
+using XmlWzReader;
 using static Mysqlx.Notice.Warning.Types;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -229,15 +235,56 @@ namespace Application.Core.Channel.ServerData
             return guild;
         }
 
-        public bool AddMember(IPlayer player, int guildId)
+        public void AddMember(IPlayer player, int guildId)
         {
-            return UpdateGuildMember(GuildOperation.AddMember, player, player.Id, guildId);
+            _transport.SendPlayerJoinGuild(new JoinGuildRequest { GuildId = guildId, PlayerId = player.Id });
+        }
+
+        public void OnPlayerJoinGuild(JoinGuildResponse data)
+        {
+            HandleGuildResponse(data.Code, data.Request.GuildId, data.Request.PlayerId,
+                guild =>
+                {
+                    var result = guild.AddGuildMember(_mapper.Map<GuildMember>(data.Member));
+
+                    if (result)
+                        GetAllianceById(guild.AllianceId)?.updateAlliancePackets();
+
+                    return result;
+                },
+                mc =>
+                {
+                    mc.sendPacket(GuildPackets.showGuildInfo(mc));
+                },
+                mc =>
+                {
+                    mc.dropMessage(1, "The guild you are trying to join is already full.");
+                });
         }
 
 
-        public bool LeaveMember(IPlayer fromChr)
+        public void LeaveMember(IPlayer fromChr)
         {
-            return UpdateGuildMember(GuildOperation.Leave, fromChr, fromChr.Id, fromChr.GuildId);
+            _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
+        }
+
+        public void OnPlayerLeaveGuild(LeaveGuildResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.PlayerId,
+                guild =>
+                {
+                    var result = guild.LeaveGuild(data.Request.PlayerId);
+
+                    if (result)
+                        GetAllianceById(guild.AllianceId)?.updateAlliancePackets();
+
+                    return result;
+                },
+                mc =>
+                {
+                    mc.sendPacket(GuildPackets.updateGP(mc.GuildId, 0));
+                    mc.sendPacket(GuildPackets.showGuildInfo(null));
+                });
         }
 
         public Guild? GetGuildById(int id)
@@ -251,127 +298,78 @@ namespace Application.Core.Channel.ServerData
             return localData;
         }
 
-        public bool ProcessUpdateGuild(Dto.UpdateGuildResponse result)
+        public void ExpelMember(IPlayer fromChr, int toId)
         {
-            if (result.UpdateType == 1)
-                return ProcessUpdateMember((GuildOperation)result.Operation, result.GuildId, _mapper.Map<GuildMember>(result.UpdatedMember));
-            if (result.UpdateType == 2)
-                return ProcessUpdateGuildMeta((GuildInfoOperation)result.Operation, result.GuildId, result.UpdatedGuild);
-            return false;
+            _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
         }
-        public bool ProcessUpdateMember(GuildOperation operation, int guildId, GuildMember targetMember)
-        {
-            var guild = GetGuildById(guildId);
-            if (guild == null)
-                return false;
-            bool result = false;
 
-            switch (operation)
+        public void OnGuildExpelMember(ExpelFromGuildResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
-                case GuildOperation.AddMember:
-                    result = guild.AddGuildMember(targetMember);
-                    break;
-                case GuildOperation.ChangeRank:
-                    result = guild.ChangeRank(targetMember.Id, targetMember.GuildRank);
-                    break;
-                case GuildOperation.ExpelMember:
-                    result = guild.ExpelMember(targetMember.Id);
-                    break;
-                case GuildOperation.Leave:
-                    result = guild.LeaveGuild(targetMember.Id);
-                    break;
-                case GuildOperation.MemberJobChanged:
-                    guild.broadcast(PacketCreator.jobMessage(0, targetMember.JobId, targetMember.Name), targetMember.Id);
-                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(guild, targetMember));
-                    break;
-                case GuildOperation.MemberLevelChanged:
-                    guild.broadcast(PacketCreator.levelUpMessage(0, targetMember.Level, targetMember.Name), targetMember.Id);
-                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(guild, targetMember));
-                    break;
-                case GuildOperation.MemberLogin:
-                case GuildOperation.MemberLogoff:
-                    guild.setOnline(targetMember.Id, operation == GuildOperation.MemberLogin, targetMember.Channel);
-                    break;
-                default:
-                    break;
+                var result = guild.ExpelMember(data.Request.TargetPlayerId);
+                var alliance = GetAllianceById(guild.AllianceId);
+                alliance?.updateAlliancePackets();
+                return result;
+            });
+        }
+
+        public void ChangeRank(IPlayer fromChr, int toId, int toRank)
+        {
+            _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
+        }
+
+        public void OnChangePlayerGuildRank(UpdateGuildMemberRankResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
+            {
+                return guild.ChangeRank(data.Request.TargetPlayerId, data.Request.NewRank);
+            });
+        }
+
+        private void HandleGuildResponse(int code, int guildId, int masterId, Func<Guild, bool> onGuildAction, Action<IPlayer>? masterSuccessBack = null, Action<IPlayer>? masterFailback = null)
+        {
+            if (code == 0)
+            {
+                var guild = GetGuildById(guildId);
+                if (guild != null)
+                {
+                    var localResult = onGuildAction(guild);
+
+                    if (!localResult)
+                    {
+                        _logger.LogCritical(
+                            "家族数据同步失败：主服务器成功，频道服务器失败，可能存在数据不同步的问题！Server: {ServerName}, GuildId: {GuildId}, StackTrace: {StackTrace}",
+                            _serverContainer.ServerName, guildId, new StackTrace());
+                        return;
+                    }
+
+                    if (masterSuccessBack != null)
+                    {
+                        var master = _serverContainer.FindPlayerById(masterId);
+                        if (master != null)
+                        {
+                            masterSuccessBack(master);
+                        }
+                    }
+                    return;
+                }
             }
 
-            _logger.LogCritical(
-                "家族数据同步失败：主服务器成功，频道服务器失败，可能存在数据不同步的问题！Server: {ServerInstance}, Operation: {Operation}, GuildId: {GuildId}, TargetMemberId: {TargetMemberId}",
-                _serverContainer.ServerName, operation, guildId, targetMember.Id);
-            return result;
-        }
-
-        public bool ProcessUpdateGuildMeta(GuildInfoOperation operation, int guildId, Dto.GuildDto targetGuild)
-        {
-            var guild = GetGuildById(guildId);
-            if (guild == null)
-                return false;
-
-            switch (operation)
+            if (masterFailback != null)
             {
-                case GuildInfoOperation.ChangeName:
-                    guild.Name = targetGuild.Name;
-                    guild.broadcastNameChanged();
-                    break;
-                case GuildInfoOperation.ChangeEmblem:
-                    guild.setGuildEmblem((short)targetGuild.LogoBg, (byte)targetGuild.LogoBgColor, (short)targetGuild.Logo, (byte)targetGuild.LogoColor);
-                    guild.BroadcastDisplay();
-                    break;
-                case GuildInfoOperation.ChangeRankTitle:
-                    guild.changeRankTitle([targetGuild.Rank1Title, targetGuild.Rank2Title, targetGuild.Rank3Title, targetGuild.Rank4Title, targetGuild.Rank5Title]);
-                    break;
-                case GuildInfoOperation.ChangeNotice:
-                    guild.setGuildNotice(targetGuild.Notice);
-                    break;
-                case GuildInfoOperation.IncreaseCapacity:
-                    guild.increaseCapacity();
-                    break;
-                case GuildInfoOperation.Disband:
-                    guild.disbandGuild();
-                    break;
-                default:
-                    break;
+                var master = _serverContainer.FindPlayerById(masterId);
+                if (master != null)
+                {
+                    masterFailback(master);
+                }
             }
-            return true;
-        }
-
-        public bool ExpelMember(IPlayer fromChr, int toId)
-        {
-            return UpdateGuildMember(GuildOperation.ExpelMember, fromChr, toId, fromChr.GuildId);
-        }
-
-        public bool ChangeRank(IPlayer fromChr, int toId, int toRank)
-        {
-            return UpdateGuildMember(GuildOperation.ChangeRank, fromChr, toId, fromChr.GuildId);
-        }
-
-        public bool UpdateGuildMember(GuildOperation operation, IPlayer player, int target, int guildId, int toRank = -1)
-        {
-            var result = _transport.SendUpdateGuildMember(_serverContainer.ServerName, operation, player.Id, guildId, target, toRank);
-            if (result.Code == 0)
-            {
-                return ProcessUpdateGuild(result);
-            }
-
-            return false;
         }
 
 
-        public bool UpdateGuildMeta(GuildInfoOperation operation, IPlayer player, int guildId, Dto.GuildDto updateFields)
+        public void SetGuildEmblem(IPlayer chr, short bg, byte bgcolor, short logo, byte logocolor)
         {
-            var result = _transport.SendUpdateGuildMeta(_serverContainer.ServerName, operation, player.Id, guildId, updateFields);
-            if (result.Code == 0)
-            {
-                return ProcessUpdateGuild(result);
-            }
-
-            return false;
-        }
-
-        public bool SetGuildEmblem(IPlayer chr, short bg, byte bgcolor, short logo, byte logocolor)
-        {
-            return UpdateGuildMeta(GuildInfoOperation.ChangeEmblem, chr, chr.GuildId, new Dto.GuildDto
+            _transport.SendUpdateGuildEmblem(new Dto.UpdateGuildEmblemRequest
             {
                 Logo = logo,
                 LogoColor = logocolor,
@@ -380,38 +378,106 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public bool SetGuildRankTitle(IPlayer chr, string[] titles)
+        public void OnGuildEmblemUpdate(UpdateGuildEmblemResponse data)
         {
-            return UpdateGuildMeta(GuildInfoOperation.ChangeRankTitle, chr, chr.GuildId, new Dto.GuildDto
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, (guild) =>
             {
-                Rank1Title = titles[0],
-                Rank2Title = titles[1],
-                Rank3Title = titles[2],
-                Rank4Title = titles[3],
-                Rank5Title = titles[4]
+                guild.setGuildEmblem((short)data.Request.LogoBg, (byte)data.Request.LogoBgColor, (short)data.Request.Logo, (byte)data.Request.LogoColor);
+                return true;
+            }, master =>
+            {
+                master.gainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);
             });
         }
 
-        public bool IncreaseGuildCapacity(IPlayer chr)
+        public void SetGuildRankTitle(IPlayer chr, string[] titles)
         {
-            return UpdateGuildMeta(GuildInfoOperation.IncreaseCapacity, chr, chr.GuildId, new Dto.GuildDto
+            var request = new Dto.UpdateGuildRankTitleRequest { MasterId = chr.Id };
+            request.RankTitles.AddRange(titles);
+            _transport.SendUpdateGuildRankTitle(request);
+        }
+        public void OnGuildRankTitleUpdate(UpdateGuildRankTitleResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
+                guild.changeRankTitle(data.Request.RankTitles.ToArray());
+                return true;
             });
         }
 
-        public bool SetGuildNotice(IPlayer chr, string? notice)
+
+        public void IncreaseGuildCapacity(IPlayer chr)
         {
-            return UpdateGuildMeta(GuildInfoOperation.ChangeRankTitle, chr, chr.GuildId, new Dto.GuildDto
+            _transport.SendUpdateGuildCapacity(new Dto.UpdateGuildCapacityRequest { MasterId = chr.Id });
+        }
+
+        public void OnGuildCapacityIncreased(UpdateGuildCapacityResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
-                Notice = notice
+                return guild.increaseCapacity();
+            }, master =>
+            {
+                master.gainMeso(-data.Request.Cost, true, false, true);
+            }, master =>
+            {
+                master.dropMessage(1, "Your guild already reached the maximum capacity of players.");
             });
         }
 
-        public bool Disband(IPlayer chr)
+        public void SetGuildNotice(IPlayer chr, string notice)
         {
-            return UpdateGuildMeta(GuildInfoOperation.Disband, chr, chr.GuildId, new Dto.GuildDto
+            _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
+        }
+        public void OnGuildNoticeUpdate(UpdateGuildNoticeResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, guild =>
             {
+                guild.setGuildNotice(data.Request.Notice);
+                return true;
             });
+        }
+
+        public void Disband(IPlayer chr)
+        {
+            _transport.SendGuildDisband(new Dto.GuildDisbandRequest { MasterId = chr.Id });
+        }
+
+        public void OnGuildDisband(Dto.GuildDisbandResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
+                guild =>
+                {
+                    guild.disbandGuild();
+                    return CachedData.TryRemove(guild.GuildId, out _);
+                });
+        }
+
+        internal void DropGuildMessage(int guildId, int v, string callout)
+        {
+            _transport.BroadcastGuildMessage(guildId, v, callout);
+        }
+
+        public void GainGP(IPlayer chr, int gp)
+        {
+            _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
+        }
+
+        internal void OnGuildGPUpdate(Dto.UpdateGuildGPResponse data)
+        {
+            HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
+                guild =>
+                {
+                    if (data.Request.Gp > 0)
+                    {
+                        guild.gainGP(data.Request.Gp);
+                    }
+                    else
+                    {
+                        guild.removeGP(-data.Request.Gp);
+                    }
+                    return true;
+                });
         }
 
         #region alliance
@@ -516,237 +582,6 @@ namespace Application.Core.Channel.ServerData
             _allianceData[id] = localData;
             return localData;
         }
-        public bool ProcessAllianceUpdate(Dto.UpdateAllianceResponse updates)
-        {
-            var alliance = GetAllianceById(updates.AllianceId);
-            if (alliance == null)
-                return false;
-
-            var guild = GetGuildById(updates.GuildId);
-            if (guild == null)
-                return false;
-
-            var operation = (AllianceOperation)updates.Operation;
-            switch (operation)
-            {
-                case AllianceOperation.LeaveAlliance:
-                    alliance.RemoveGuildFromAlliance(updates.GuildId, 1);
-                    break;
-                case AllianceOperation.ExpelGuild:
-                    alliance.RemoveGuildFromAlliance(updates.GuildId, 2);
-                    break;
-                case AllianceOperation.Join:
-                    if (!alliance.TryAddGuild(guild))
-                    {
-                        return false;
-                    }
-                    alliance.broadcastMessage(GuildPackets.addGuildToAlliance(alliance, guild), -1, -1);
-                    alliance.BroadcastAllianceInfo();
-                    alliance.BroadcastNotice();
-                    guild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
-                    break;
-                case AllianceOperation.MemberLogin:
-                    alliance.UpdateMember(_mapper.Map<GuildMember>(updates.TargetPlayer));
-                    alliance.broadcastMessage(GuildPackets.allianceMemberOnline(guild, updates.TargetPlayer.Id, true), updates.TargetPlayer.Id, -1);
-                    break;
-                case AllianceOperation.MemberUpdate:
-                    alliance.UpdateMember(_mapper.Map<GuildMember>(updates.TargetPlayer));
-                    alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, _mapper.Map<GuildMember>(updates.TargetPlayer)), updates.TargetPlayer.Id, -1);
-                    break;
-
-                case AllianceOperation.ChangeAllianceLeader:
-                    var oldLeader = alliance.GetLeader();
-                    oldLeader.AllianceRank = 2;
-
-                    var oldLeaderObj = _serverContainer.FindPlayerById(oldLeader.Channel, oldLeader.Id);
-                    if (oldLeaderObj != null)
-                        oldLeaderObj.setAllianceRank(2);
-
-                    var newLeader = alliance.GetMemberById(updates.TargetPlayer.Id);
-                    newLeader.AllianceRank = 1;
-                    var newLeaderObj = _serverContainer.FindPlayerById(updates.TargetPlayer.Channel, updates.TargetPlayer.Id);
-                    if (newLeaderObj != null)
-                        newLeaderObj.setAllianceRank(1);
-
-
-                    alliance.BroadcastGuildAlliance();
-                    alliance.dropMessage("'" + updates.TargetPlayer.Name + "' has been appointed as the new head of this Alliance.");
-                    break;
-                case AllianceOperation.IncreasePlayerRank:
-                case AllianceOperation.DecreasePlayerRank:
-                    var newRank = updates.TargetPlayer.AllianceRank;
-                    var targetPlayer = alliance.GetMemberById(updates.TargetPlayer.Id);
-                    targetPlayer.AllianceRank = newRank;
-                    var targetPlayerObj = _serverContainer.FindPlayerById(updates.TargetPlayer.Channel, updates.TargetPlayer.Id);
-                    if (targetPlayerObj != null)
-                        targetPlayerObj.setAllianceRank(newRank);
-
-                    alliance.BroadcastGuildAlliance();
-                    break;
-                case AllianceOperation.IncreaseCapacity:
-                    alliance.increaseCapacity(1);
-                    alliance.BroadcastGuildAlliance();
-                    alliance.BroadcastNotice();
-                    break;
-                case AllianceOperation.Disband:
-                    alliance.Disband();
-                    _allianceData.TryRemove(updates.AllianceId, out _);
-                    break;
-                case AllianceOperation.ChangeRankTitle:
-                    var newRanks = updates.UpdatedAlliance.RankTitles.ToArray();
-                    alliance.setRankTitle(newRanks);
-                    alliance.broadcastMessage(GuildPackets.changeAllianceRankTitle(alliance.getId(), newRanks), -1, -1);
-                    break;
-                case AllianceOperation.ChangeNotice:
-                    alliance.setNotice(updates.UpdatedAlliance.Notice);
-                    alliance.BroadcastNotice();
-
-                    alliance.dropMessage(5, "* Alliance Notice : " + updates.UpdatedAlliance.Notice);
-                    break;
-                default:
-                    break;
-            }
-            return true;
-        }
-
-        private bool UpdateAlliance(Dto.UpdateAllianceRequest request)
-        {
-            var result = _transport.SendUpdateAlliance(request);
-            if (result.Code == 0)
-                return ProcessAllianceUpdate(result);
-
-            return false;
-        }
-
-        public bool ChageLeaderAllianceRank(IPlayer player, int targetPlayerId)
-        {
-            if (player.AllianceModel == null || player.GuildRank != 1)
-            {
-                return false;
-            }
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)AllianceOperation.ChangeAllianceLeader,
-                AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = player.Id,
-                TargetPlayerId = targetPlayerId
-            });
-        }
-        public bool ChangePlayerAllianceRank(IPlayer player, int targetPlayerId, bool isIncrease)
-        {
-            if (player.AllianceModel == null)
-            {
-                return false;
-            }
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)(isIncrease ? AllianceOperation.IncreasePlayerRank : AllianceOperation.DecreasePlayerRank),
-                AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = player.Id,
-                TargetPlayerId = targetPlayerId
-            });
-        }
-
-        public bool AllianceLeaveGuild(IPlayer player, int guildId)
-        {
-            if (player.AllianceModel == null || player.GuildRank != 1)
-            {
-                return false;
-            }
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)AllianceOperation.LeaveAlliance,
-                AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = player.Id,
-                TargetGuildId = guildId,
-            });
-        }
-
-        public bool AllianceExpelGuild(IPlayer player, int allianceId, int guildId)
-        {
-            if (player.AllianceModel?.AllianceId != allianceId)
-            {
-                return false;
-            }
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)AllianceOperation.ExpelGuild,
-                AllianceId = player.AllianceModel.AllianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = player.Id,
-                TargetGuildId = guildId,
-            });
-        }
-
-        public bool GuildJoinAlliance(IPlayer player, int allianceId, int guildId)
-        {
-            var alliance = GetAllianceById(allianceId);
-            if (alliance == null)
-            {
-                return false;
-            }
-
-            if (!AnswerAllianceInvitation(player.getId(), player.getGuild()!.Name, allianceId, true))
-            {
-                return false;
-            }
-
-            if (alliance.getGuilds().Count == alliance.getCapacity())
-            {
-                player.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-                return false;
-            }
-
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)AllianceOperation.Join,
-                AllianceId = allianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = player.Id,
-                TargetGuildId = guildId,
-            });
-        }
-
-        internal bool DisbandAlliance(IPlayer player, int allianceId)
-        {
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)AllianceOperation.Disband,
-                AllianceId = allianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = player.Id,
-            });
-        }
-
-        internal bool UpdateAllianceRank(IPlayer chr, string[] ranks)
-        {
-            var request = new Dto.AllianceDto();
-            request.RankTitles.AddRange(ranks);
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)AllianceOperation.Disband,
-                AllianceId = chr.AllianceModel.AllianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = chr.Id,
-                UpdateFields = request,
-            });
-        }
-
-        internal bool UpdateAllianceNotice(IPlayer chr, string notice)
-        {
-            var request = new Dto.AllianceDto() { Notice = notice };
-            return UpdateAlliance(new Dto.UpdateAllianceRequest
-            {
-                Operation = (int)AllianceOperation.Disband,
-                AllianceId = chr.AllianceModel.AllianceId,
-                FromChannel = _serverContainer.ServerName,
-                OperatorPlayerId = chr.Id,
-                UpdateFields = request,
-            });
-        }
 
         public void SendGuildChat(IPlayer chr, string text)
         {
@@ -755,6 +590,246 @@ namespace Application.Core.Channel.ServerData
         public void SendAllianceChat(IPlayer chr, string text)
         {
             _transport.SendAllianceChat(chr.Name, text);
+        }
+
+
+        #endregion
+
+        #region Alliance
+        private void HandleAllianceResponse(int code, int allianceId, int masterId, Func<Alliance, bool> onGuildAction, Action<IPlayer, Alliance>? masterSuccessBack = null, Action<IPlayer>? masterFailback = null)
+        {
+            if (code == 0)
+            {
+                var alliance = GetAllianceById(allianceId);
+                if (alliance != null)
+                {
+                    var localResult = onGuildAction(alliance);
+
+                    if (!localResult)
+                    {
+                        _logger.LogCritical(
+                            "联盟数据同步失败：主服务器成功，频道服务器失败，可能存在数据不同步的问题！Server: {ServerName}, AllianceId: {AllianceId}, StackTrace: {StackTrace}",
+                            _serverContainer.ServerName, allianceId, new StackTrace());
+                        return;
+                    }
+
+                    if (masterSuccessBack != null)
+                    {
+                        var master = _serverContainer.FindPlayerById(masterId);
+                        if (master != null)
+                        {
+                            masterSuccessBack(master, alliance);
+                        }
+                    }
+                    return;
+                }
+            }
+
+            if (masterFailback != null)
+            {
+                var master = _serverContainer.FindPlayerById(masterId);
+                if (master != null)
+                {
+                    masterFailback(master);
+                }
+            }
+        }
+        public void GuildLeaveAlliance(IPlayer player, int guildId)
+        {
+            if (player.AllianceModel == null || player.GuildRank != 1)
+            {
+                return;
+            }
+            _transport.SendGuildLeaveAlliance(new Dto.GuildLeaveAllianceRequest { MasterId = player.Id });
+        }
+
+        public void OnGuildLeaveAlliance(GuildLeaveAllianceResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    return alliance.RemoveGuildFromAlliance(data.GuildId, 1);
+                });
+        }
+        public void AllianceExpelGuild(IPlayer player, int allianceId, int guildId)
+        {
+            if (player.AllianceModel?.AllianceId != allianceId)
+            {
+                return;
+            }
+
+            _transport.SendAllianceExpelGuild(new Dto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
+        }
+        public void OnAllianceExpelGuild(AllianceExpelGuildResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    return alliance.RemoveGuildFromAlliance(data.GuildId, 2);
+                });
+        }
+
+        public void GuildJoinAlliance(IPlayer player, int allianceId, int guildId)
+        {
+            var alliance = GetAllianceById(allianceId);
+            if (alliance == null)
+            {
+                return;
+            }
+
+            if (!AnswerAllianceInvitation(player.getId(), player.getGuild()!.Name, allianceId, true))
+            {
+                return;
+            }
+
+            if (alliance.getGuilds().Count == alliance.getCapacity())
+            {
+                player.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
+                return;
+            }
+
+            _transport.SendGuildJoinAlliance(new Dto.GuildJoinAllianceRequest { MasterId = player.Id, AllianceId = allianceId });
+        }
+        public void OnGuildJoinAlliance(GuildJoinAllianceResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    var guild = GetGuildById(data.GuildId);
+                    if (guild == null || !alliance.TryAddGuild(guild))
+                    {
+                        return false;
+                    }
+                    alliance.broadcastMessage(GuildPackets.addGuildToAlliance(alliance, guild));
+                    alliance.BroadcastAllianceInfo();
+                    alliance.BroadcastNotice();
+                    guild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
+
+                    return true;
+                });
+        }
+        public void ChageLeaderAllianceRank(IPlayer player, int targetPlayerId)
+        {
+            if (player.GuildRank != 1)
+            {
+                return;
+            }
+            _transport.SendChangeAllianceLeader(new Dto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
+        }
+        public void OnAllianceLeaderChanged(AllianceChangeLeaderResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    var oldLeader = alliance.GetLeader();
+                    oldLeader.AllianceRank = 2;
+
+                    var oldLeaderObj = _serverContainer.FindPlayerById(oldLeader.Channel, oldLeader.Id);
+                    if (oldLeaderObj != null)
+                        oldLeaderObj.setAllianceRank(2);
+
+                    var newLeader = alliance.GetMemberById(data.Request.PlayerId);
+                    newLeader.AllianceRank = 1;
+                    var newLeaderObj = _serverContainer.FindPlayerById(newLeader.Channel, newLeader.Id);
+                    if (newLeaderObj != null)
+                        newLeaderObj.setAllianceRank(1);
+
+
+                    alliance.BroadcastGuildAlliance();
+                    alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
+
+                    return true;
+                });
+        }
+        public void ChangePlayerAllianceRank(IPlayer player, int targetPlayerId, bool isIncrease)
+        {
+            _transport.SendChangePlayerAllianceRank(new Dto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
+        }
+        public void OnPlayerAllianceRankChanged(ChangePlayerAllianceRankResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    var newRank = data.NewRank;
+                    var targetPlayer = alliance.GetMemberById(data.Request.PlayerId);
+                    targetPlayer.AllianceRank = newRank;
+                    var targetPlayerObj = _serverContainer.FindPlayerById(targetPlayer.Channel, targetPlayer.Id);
+                    if (targetPlayerObj != null)
+                        targetPlayerObj.setAllianceRank(newRank);
+
+                    alliance.BroadcastGuildAlliance();
+
+                    return true;
+                });
+        }
+        public void HandleIncreaseAllianceCapacity(IPlayer chr)
+        {
+            _transport.SendIncreaseAllianceCapacity(new Dto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+        }
+        public void OnAllianceCapacityIncreased(IncreaseAllianceCapacityResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    alliance.increaseCapacity(1);
+                    alliance.BroadcastGuildAlliance();
+                    alliance.BroadcastNotice();
+
+                    return true;
+                }, 
+                (mc, alliance) =>
+                {
+                    mc.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue
+                });
+        }
+        internal void UpdateAllianceRank(IPlayer chr, string[] ranks)
+        {
+            var request = new Dto.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
+            request.RankTitles.AddRange(ranks);
+            _transport.SendUpdateAllianceRankTitle(request);
+        }
+        public void OnAllianceRankTitleChanged(UpdateAllianceRankTitleResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    var newRanks = data.Request.RankTitles.ToArray();
+                    alliance.setRankTitle(newRanks);
+                    alliance.broadcastMessage(GuildPackets.changeAllianceRankTitle(alliance.getId(), newRanks), -1, -1);
+
+                    return true;
+                });
+        }
+        internal void UpdateAllianceNotice(IPlayer chr, string notice)
+        {
+            _transport.SendUpdateAllianceNotice(new Dto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
+        }
+        public void OnAllianceNoticeChanged(UpdateAllianceNoticeResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    alliance.setNotice(data.Request.Notice);
+                    alliance.BroadcastNotice();
+
+                    alliance.dropMessage(5, "* Alliance Notice : " + data.Request.Notice);
+
+                    return true;
+                });
+        }
+
+        internal void DisbandAlliance(IPlayer player, int allianceId)
+        {
+            _transport.SendAllianceDisband(new Dto.DisbandAllianceRequest { MasterId = player.Id });
+        }
+        public void OnAllianceDisband(DisbandAllianceResponse data)
+        {
+            HandleAllianceResponse(data.Code, data.AllianceId, data.Request.MasterId,
+                alliance =>
+                {
+                    alliance.Disband();
+                    return _allianceData.TryRemove(alliance.AllianceId, out _);
+                });
         }
         #endregion
     }

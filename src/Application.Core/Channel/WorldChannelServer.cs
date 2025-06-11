@@ -5,6 +5,7 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using net.server.guild;
 using server;
 using System.Diagnostics;
 using System.Net;
@@ -186,6 +187,8 @@ namespace Application.Core.Channel
             var configs = await Transport.RegisterServer(this, localServers);
             if (configs.StartChannel > 0)
             {
+                ForceUpdateServerTime();
+
                 foreach (var server in localServers)
                 {
                     var channel = configs.StartChannel++;
@@ -218,17 +221,6 @@ namespace Application.Core.Channel
             }
 
         }
-
-        //internal void SendDropGuildMessage(int guildId, int v, string message)
-        //{
-        //    _transport.SendDropGuildMessage(getId(), guildId, type, message);
-
-        //    var guild = GuildManager.GetGuildById(guildId);
-        //    if (guild != null)
-        //    {
-        //        guild.dropMessage(type, message);
-        //    }
-        //}
 
         public IPlayer? FindPlayerById(int cid)
         {
@@ -339,39 +331,6 @@ namespace Application.Core.Channel
             }
         }
 
-
-        public void ProcessBroadcastJobChanged(int type, int[] players, string name, int jobId)
-        {
-            foreach (var server in Servers.Values)
-            {
-                foreach (var cid in players)
-                {
-                    var chr = server.Players.getCharacterById(cid);
-                    if (chr != null)
-                    {
-                        chr.sendPacket(PacketCreator.jobMessage(type, jobId, name));
-                    }
-                }
-            }
-
-        }
-
-        public void ProcessBroadcastLevelChanged(int type, int[] value, string name, int level)
-        {
-            foreach (var server in Servers.Values)
-            {
-                foreach (var cid in value)
-                {
-                    var chr = server.Players.getCharacterById(cid);
-                    if (chr != null)
-                    {
-                        chr.sendPacket(PacketCreator.levelUpMessage(type, level, name));
-                    }
-                }
-            }
-
-        }
-
         public IPEndPoint GetChannelEndPoint(int channel)
         {
             return Transport.GetChannelEndPoint(channel);
@@ -397,5 +356,99 @@ namespace Application.Core.Channel
             Transport.NotifyPartner(id);
         }
 
+        public void DropMessage(int[] value, int type, string message)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                foreach (var player in ch.Players.getAllCharacters())
+                {
+                    player.dropMessage(type, message);
+                }
+            }
+        }
+
+        public void BroadcastGuildGPUpdate(Dto.UpdateGuildGPResponse response)
+        {
+            GuildManager.OnGuildGPUpdate(response);
+        }
+
+        public void OnPlayerJobChanged(Dto.PlayerLevelJobChange data)
+        {
+            if (data.GuildId > 0)
+            {
+                var guild = GuildManager.GetGuildById(data.GuildId);
+                if (guild != null)
+                {
+                    guild.SetMemberJob(data.Id, data.JobId);
+                    guild.broadcast(PacketCreator.jobMessage(0, data.JobId, data.Name), data.Id);
+                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
+
+                    if (guild.AllianceId > 0)
+                    {
+                        var alliance = GuildManager.GetAllianceById(guild.AllianceId);
+                        if (alliance != null)
+                        {
+                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void OnPlayerLevelChanged(Dto.PlayerLevelJobChange data)
+        {
+            if (data.GuildId > 0)
+            {
+                var guild = GuildManager.GetGuildById(data.GuildId);
+                if (guild != null)
+                {
+                    guild.SetMemberLevel(data.Id, data.Level);
+                    guild.broadcast(PacketCreator.levelUpMessage(0, data.Level, data.Name), data.Id);
+                    guild.broadcast(GuildPackets.guildMemberLevelJobUpdate(data.GuildId, data.Id, data.Level, data.JobId));
+
+                    if (guild.AllianceId > 0)
+                    {
+                        var alliance = GuildManager.GetAllianceById(guild.AllianceId);
+                        if (alliance != null)
+                        {
+                            alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
+                        }
+                    }
+ 
+                }
+            }
+
+            //if (data.TeamId > 0)
+            //{
+            //    var team = TeamManager.GetParty(data.TeamId);
+            //    if (team != null)
+            //    {
+            //        team.UpdateMemberLevel(data.Id, data.Level);
+            //    }
+            //}
+        }
+
+        public void OnPlayerLoginOff(Dto.PlayerOnlineChange data)
+        {
+            if (data.GuildId > 0)
+            {
+                var guild = GuildManager.GetGuildById(data.GuildId);
+                if (guild != null)
+                {
+                    guild.SetMemberChannel(data.Id, data.Channel);
+                    guild.setOnline(data.Id, data.Channel > 0, data.Channel);
+
+                    if (guild.AllianceId > 0)
+                    {
+                        var alliance = GuildManager.GetAllianceById(guild.AllianceId);
+                        if (alliance != null)
+                        {
+                            alliance.broadcastMessage(GuildPackets.allianceMemberOnline(guild, data.Id, true), data.Id);
+                        }
+                    }
+
+                }
+            }
+        }
     }
 }

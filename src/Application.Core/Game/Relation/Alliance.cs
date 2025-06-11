@@ -133,9 +133,10 @@ public class Alliance
         {
             var r = Guilds.TryAdd(guild.GuildId, guild);
             if (r)
+            {
                 guild.AllianceId = AllianceId;
-
-            guild.resetAllianceGuildPlayersRank();
+                guild.JoinAlliance();
+            }
             return r;
         }
         return false;

@@ -15,7 +15,9 @@ using Application.Shared.Team;
 using AutoMapper;
 using net.server;
 using net.server.guild;
+using Org.BouncyCastle.Asn1.Ocsp;
 using server.expeditions;
+using server.quest;
 using System.Net;
 using System.Text;
 using tools;
@@ -81,18 +83,6 @@ namespace Application.Core.Channel.Local
                 Coupon = _server.CouponManager.GetConfig(),
                 Config = _server.GetWorldConfig()
             });
-        }
-
-        public void DisconnectPlayers(IEnumerable<int> playerIdList)
-        {
-            foreach (var playerId in playerIdList)
-            {
-                var chr = _world.getPlayerStorage().getCharacterById(playerId);
-                if (chr != null && chr.IsOnlined)
-                {
-                    chr.getClient().ForceDisconnect();
-                }
-            }
         }
 
         public void DropWorldMessage(int type, string message)
@@ -667,9 +657,9 @@ namespace Application.Core.Channel.Local
             return _server.TeamManager.CreateTeam(playerId);
         }
 
-        public Dto.UpdateTeamResponse SendUpdateTeam(string fromServer, int teamId, PartyOperation operation, int fromId, int toId)
+        public Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId)
         {
-            return _server.TeamManager.UpdateParty(fromServer, teamId, operation, fromId, toId);
+            return _server.TeamManager.UpdateParty(teamId, operation, fromId, toId);
         }
 
         public void SendTeamChat(string name, string chattext)
@@ -698,40 +688,11 @@ namespace Application.Core.Channel.Local
             return new Dto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
         }
 
-        public Dto.UpdateGuildResponse SendUpdateGuildMember(string fromServer, GuildOperation operation, int id, int guildId, int target, int toRank)
-        {
-            return _server.GuildManager.UpdateGuildMember(new Dto.UpdateGuildMemberRequest
-            {
-                FromChannel = fromServer,
-                FromId = id,
-                ToId = target,
-                ToRank = toRank,
-                GuildId = guildId,
-                Operation = (int)operation
-            });
-        }
-
-        public Dto.UpdateGuildResponse SendUpdateGuildMeta(string fromServer, GuildInfoOperation operation, int operatorId, int guildId, Dto.GuildDto updateFields)
-        {
-            return _server.GuildManager.UpdateGuild(new Dto.UpdateGuildRequest
-            {
-                FromChannel = fromServer,
-                GuildId = guildId,
-                Operation = (int)operation,
-                UpdateFields = updateFields,
-                OperatorId = operatorId
-            });
-        }
-
         public Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
         {
             return new Dto.GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(masters, allianceName) };
         }
 
-        public Dto.UpdateAllianceResponse SendUpdateAlliance(Dto.UpdateAllianceRequest request)
-        {
-            return _server.GuildManager.UpdateAllianceMember(request);
-        }
 
         public Dto.GetAllianceResponse GetAlliance(int id)
         {
@@ -746,6 +707,106 @@ namespace Application.Core.Channel.Local
         public void SendAllianceChat(string name, string text)
         {
             _server.GuildManager.SendAllianceChat(name, text);
+        }
+
+        public void BroadcastGuildMessage(int guildId, int v, string callout)
+        {
+            _server.GuildManager.BroadcastGuildMessage(guildId, v, callout);
+        }
+
+        public void SendUpdateGuildGP(Dto.UpdateGuildGPRequest request)
+        {
+            _server.GuildManager.UpdateGuildGP(request);
+        }
+
+        public void SendUpdateGuildRankTitle(Dto.UpdateGuildRankTitleRequest request)
+        {
+            _server.GuildManager.UpdateGuildRankTitle(request);
+        }
+
+        public void SendUpdateGuildNotice(Dto.UpdateGuildNoticeRequest request)
+        {
+            _server.GuildManager.UpdateGuildNotice(request);
+        }
+
+        public void SendUpdateGuildCapacity(Dto.UpdateGuildCapacityRequest request)
+        {
+            _server.GuildManager.IncreseGuildCapacity(request);
+        }
+
+        public void SendUpdateGuildEmblem(Dto.UpdateGuildEmblemRequest request)
+        {
+            _server.GuildManager.UpdateGuildEmblem(request);
+        }
+
+        public void SendGuildDisband(Dto.GuildDisbandRequest request)
+        {
+            _server.GuildManager.DisbandGuild(request);
+        }
+
+        public void SendChangePlayerGuildRank(Dto.UpdateGuildMemberRankRequest request)
+        {
+            _server.GuildManager.ChangePlayerGuildRank(request);
+        }
+
+        public void SendGuildExpelMember(Dto.ExpelFromGuildRequest request)
+        {
+            _server.GuildManager.GuildExpelMember(request);
+        }
+
+        public void SendPlayerLeaveGuild(Dto.LeaveGuildRequest request)
+        {
+            _server.GuildManager.PlayerLeaveGuild(request);
+        }
+
+        public void SendPlayerJoinGuild(Dto.JoinGuildRequest request)
+        {
+            _server.GuildManager.PlayerJoinGuild(request);
+        }
+
+        public void SendGuildJoinAlliance(Dto.GuildJoinAllianceRequest request)
+        {
+            _server.GuildManager.GuildJoinAlliance(request);
+        }
+
+        public void SendGuildLeaveAlliance(Dto.GuildLeaveAllianceRequest request)
+        {
+            _server.GuildManager.GuildLeaveAlliance(request);
+        }
+
+        public void SendAllianceExpelGuild(Dto.AllianceExpelGuildRequest request)
+        {
+            _server.GuildManager.AllianceExpelGuild(request);
+        }
+
+        public void SendChangeAllianceLeader(Dto.AllianceChangeLeaderRequest request)
+        {
+            _server.GuildManager.ChangeAllianceLeader(request);
+        }
+
+        public void SendChangePlayerAllianceRank(Dto.ChangePlayerAllianceRankRequest request)
+        {
+            _server.GuildManager.ChangePlayerAllianceRank(request);
+        }
+
+        public void SendIncreaseAllianceCapacity(Dto.IncreaseAllianceCapacityRequest request)
+        {
+            _server.GuildManager.IncreaseAllianceCapacity(request);
+        }
+
+        public void SendUpdateAllianceRankTitle(Dto.UpdateAllianceRankTitleRequest request)
+        {
+            _server.GuildManager.UpdateAllianceRankTitle(request);
+        }
+
+        public void SendUpdateAllianceNotice(Dto.UpdateAllianceNoticeRequest request)
+        {
+            _server.GuildManager.UpdateAllianceNotice(request);
+        }
+
+        public void SendAllianceDisband(Dto.DisbandAllianceRequest request)
+        {
+            _server.GuildManager.DisbandAlliance(request);
         }
         #endregion
     }

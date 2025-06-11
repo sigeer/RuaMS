@@ -12,6 +12,9 @@
 
 	<ItemGroup>
 		<Protobuf Include="Dto\CharacterMapChange.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\PlayerInfo.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\Alliance.proto">
 		  <GrpcServices>None</GrpcServices>

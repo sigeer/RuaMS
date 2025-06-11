@@ -87,6 +87,16 @@ namespace Application.Core.Game.Relation
             }
         }
 
+        public void UpdateMemberLevel(int memberId, int level)
+        {
+            members[memberId].Level = level;
+        }
+
+        public void UpdateMemberJob(int memberId, int job)
+        {
+            members[memberId].JobId = job;
+        }
+
         public IPlayer? getMemberById(WorldChannel currentServer, int id)
         {
             Monitor.Enter(lockObj);

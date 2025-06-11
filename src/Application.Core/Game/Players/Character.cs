@@ -2988,14 +2988,8 @@ public partial class Player
             return;
         }
 
-        if (Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this))
-        {
-            gainMeso(-cost, true, false, true);
-        }
-        else
-        {
-            dropMessage(1, "Your guild already reached the maximum capacity of players.");
-        }
+        Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this);
+
     }
 
     public bool isBuffFrom(BuffStat stat, Skill skill)

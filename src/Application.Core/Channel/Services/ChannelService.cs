@@ -226,16 +226,5 @@ namespace Application.Core.Servers.Services
             }
         }
 
-        public void ProcessBroadcastLevelChanged(int type, int[] value, string name, int level)
-        {
-            foreach (var cid in value)
-            {
-                var chr = _server.Players.getCharacterById(cid);
-                if (chr != null)
-                {
-                    chr.sendPacket(PacketCreator.levelUpMessage(type, level, name));
-                }
-            }
-        }
     }
 }
