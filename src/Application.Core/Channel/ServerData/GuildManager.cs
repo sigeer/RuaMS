@@ -290,8 +290,13 @@ namespace Application.Core.Channel.ServerData
             if (CachedData.TryGetValue(id, out var d) && d != null)
                 return d;
 
+            var remoteData = _transport.GetGuild(id);
+            if (remoteData == null || remoteData.Model == null)
+            {
+                return null;
+            }
             var localData = new Guild(_serverContainer, id);
-            _mapper.Map(_transport.GetGuild(id), localData);
+            _mapper.Map(remoteData.Model, localData);
             CachedData[localData.GuildId] = localData;
             return localData;
         }
@@ -797,7 +802,7 @@ namespace Application.Core.Channel.ServerData
                     alliance.BroadcastNotice();
 
                     return true;
-                }, 
+                },
                 (mc, alliance) =>
                 {
                     mc.sendPacket(GuildPackets.updateAllianceInfo(alliance));  // thanks Vcoc for finding an alliance update to leader issue

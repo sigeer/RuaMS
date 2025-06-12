@@ -71,7 +71,7 @@ namespace Application.Core.Channel.Local
             if (!_server.IsRunning)
                 return Task.FromResult(new Config.RegisterServerResult() { StartChannel = -1, Message = "中心服务器未启动" });
 
-            foreach (var item in server.Servers.Values)
+            foreach (var item in channels)
             {
                 _world.addChannel(item);
             }
