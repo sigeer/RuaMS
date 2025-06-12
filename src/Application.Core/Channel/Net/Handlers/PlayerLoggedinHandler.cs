@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.Core.Servers.Services;
@@ -42,10 +43,12 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 {
     readonly ILogger<ChannelHandlerBase> _logger;
     readonly CharacterService _characterSrv;
-    public PlayerLoggedinHandler(ILogger<ChannelHandlerBase> logger, CharacterService characterSrv)
+    readonly TeamManager _teamManger;
+    public PlayerLoggedinHandler(ILogger<ChannelHandlerBase> logger, CharacterService characterSrv, TeamManager teamManager)
     {
         _logger = logger;
         _characterSrv = characterSrv;
+        _teamManger = teamManager;
     }
     public override bool ValidateState(IChannelClient c)
     {
@@ -180,23 +183,13 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (player.GuildId > 0)
             {
-                if (player.GuildModel == null)
+                if (player.GuildModel != null)
                 {
-                    CharacterManager.deleteGuild(player);
-                }
-                else
-                {
-                    player.GuildModel.setOnline(player.Id, true, c.Channel);
                     c.sendPacket(GuildPackets.showGuildInfo(player));
                     if (player.AllianceModel != null)
                     {
                         c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel));
                         c.sendPacket(GuildPackets.allianceNotice(player.AllianceModel.AllianceId, player.AllianceModel.getNotice()));
-
-                        if (newcomer)
-                        {
-                            player.AllianceModel.broadcastMessage(GuildPackets.allianceMemberOnline(player, true), player.getId(), -1);
-                        }
                     }
                     else
                     {
@@ -205,13 +198,13 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 }
             }
 
-            c.CurrentServer.Transport.ShowNoteMessage(player.Name);
+            c.CurrentServerContainer.Transport.ShowNoteMessage(player.Name);
 
             if (player.getParty() != null)
             {
                 //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.
                 //c.sendPacket(PacketCreator.partyCreated(pchar));
-                c.CurrentServer.TeamManager.UpdateTeam(player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
+                _teamManger.UpdateTeam(c.CurrentServer, player.getParty()!.getId(), PartyOperation.LOG_ONOFF, player, player.Id);
                 player.updatePartyMemberHP();
             }
 
@@ -249,7 +242,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 {
                     if (pet != null)
                     {
-                        c.CurrentServer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
+                        c.CurrentServerContainer.PetHungerManager.registerPetHunger(player, player.getPetIndex(pet));
                     }
                 }
 
@@ -268,7 +261,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 */
                 if (player.isGM())
                 {
-                    c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
+                    c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.earnTitleMessage((player.gmLevel() < 6 ? "GM " : "Admin ") + player.getName() + " has logged in"));
                 }
             }
             else
@@ -295,7 +288,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (player.PartnerId > 0)
             {
-                c.CurrentServer.NotifyPartner(player.Id);
+                c.CurrentServerContainer.NotifyPartner(player.Id);
                 //var partner = wserv.getPlayerStorage().getCharacterById(player.PartnerId);
 
                 //if (partner != null && partner.isLoggedinWorld())

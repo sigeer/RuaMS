@@ -1,21 +1,15 @@
+using Application.Core.Channel.ChannelData;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
-using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
-using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
-using Application.Core.Servers;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
-using Application.Utility.Compatible.Atomics;
-using Application.Utility.Configs;
-using Application.Utility.Loggers;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
 using scripting.Event;
@@ -24,7 +18,6 @@ using scripting.npc;
 using scripting.portal;
 using scripting.quest;
 using scripting.reactor;
-using Serilog;
 using server;
 using server.events.gm;
 using server.expeditions;
@@ -32,10 +25,11 @@ using server.maps;
 using System.Diagnostics;
 using System.Net;
 using tools;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : IServerBase<IChannelServerTransport>
+public partial class WorldChannel : ISocketServer
 {
     public string InstanceId { get; }
     private ILogger log;
@@ -47,7 +41,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
     private int channel;
 
     public ChannelPlayerStorage Players { get; }
-    public AbstractServer NettyServer { get; }
+    public AbstractNettyServer NettyServer { get; }
 
     private MapManager mapManager;
     private EventScriptManager eventSM;
@@ -112,25 +106,14 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
     public float WorldFishingRate { get; private set; }
     public string WorldServerMessage { get; private set; }
 
-    public Dictionary<int, int> CouponRates { get; set; } = new(30);
-    public List<int> ActiveCoupons { get; set; } = new();
 
-    public IChannelServerTransport Transport { get; }
-    public ChannelServerConfig ServerConfig { get; }
+    public WorldChannelConfig ChannelConfig { get; }
 
-    public ServerMessageManager ServerMessageManager { get; }
-    public CharacterHpDecreaseManager CharacterHpDecreaseManager { get; }
-    public MapObjectManager MapObjectManager { get; }
-    public MountTirednessManager MountTirednessManager { get; }
-    public HiredMerchantManager HiredMerchantManager { get; }
-    public PetHungerManager PetHungerManager { get; }
-    public CharacterDiseaseManager CharacterDiseaseManager { get; }
-    public MapOwnershipManager MapOwnershipManager { get; }
     public PlayerShopManager PlayerShopManager { get; }
-    public TeamManager TeamManager { get; }
+    public HiredMerchantManager HiredMerchantManager { get; }
 
     public IServiceScope LifeScope { get; }
-    public SkillbookInformationProvider SkillbookInformationProvider { get; }
+
     public ShopFactory ShopFactory { get; }
     public ItemService ItemService { get; }
     public RankService RankService { get; }
@@ -150,13 +133,14 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
-    public WorldChannel(IServiceScope scope, ChannelServerConfig config, IChannelServerTransport transport)
+    public WorldChannelServer Container { get; }
+    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, WorldChannelConfig config)
     {
+        Container = serverContainer;
         LifeScope = scope;
         InstanceId = Guid.NewGuid().ToString();
-        ServerConfig = config;
+        ChannelConfig = config;
         WorldServerMessage = "";
-        Transport = transport;
 
         ClientStorage = new ChannelClientStorage(this);
         Service = ActivatorUtilities.CreateInstance<ChannelService>(LifeScope.ServiceProvider, this);
@@ -169,18 +153,11 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         this.Port = config.Port;
         this.ipEndPoint = new IPEndPoint(IPAddress.Parse(config.Host), Port);
 
-        NettyServer = new ChannelServer(this);
+        NettyServer = new NettyChannelServer(this);
         log = LogFactory.GetLogger($"Channel_{InstanceId}");
 
-        ServerMessageManager = new ServerMessageManager(this);
-        CharacterHpDecreaseManager = new CharacterHpDecreaseManager(this);
-        MapObjectManager = new MapObjectManager(this);
-        MountTirednessManager = new MountTirednessManager(this);
+        PlayerShopManager = new PlayerShopManager(this);
         HiredMerchantManager = new HiredMerchantManager(this);
-        PetHungerManager = new PetHungerManager(this);
-        CharacterDiseaseManager = new CharacterDiseaseManager(this);
-        MapOwnershipManager = new MapOwnershipManager(this);
-
         _respawnTask = new RespawnTask(this);
 
         DojoInstance = new DojoInstance(this);
@@ -201,13 +178,11 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         QuestScriptManager = ActivatorUtilities.CreateInstance<QuestScriptManager>(LifeScope.ServiceProvider, this);
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
 
-        SkillbookInformationProvider = LifeScope.ServiceProvider.GetRequiredService<SkillbookInformationProvider>();
+
         ShopFactory = LifeScope.ServiceProvider.GetRequiredService<ShopFactory>();
         ItemService = LifeScope.ServiceProvider.GetRequiredService<ItemService>();
         RankService = LifeScope.ServiceProvider.GetRequiredService<RankService>();
 
-        PlayerShopManager = new PlayerShopManager(this);
-        TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(LifeScope.ServiceProvider, this);
     }
 
     public int getTransportationTime(double travelTime)
@@ -267,75 +242,52 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
             eventSM = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         }
     }
-
-    public async Task StartServer()
+    public void Register(int channel)
     {
-        log.Information("频道服务器{InstanceId}启动中...", InstanceId);
-        await NettyServer.Start();
-        log.Information("频道服务器{InstanceId}启动成功：监听端口{Port}", InstanceId, Port);
+        this.channel = channel;
 
-        _ = Task.Run(() =>
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            log.Information("频道服务器{InstanceId}加载WZ - 能手册...", InstanceId);
-            SkillbookInformationProvider.LoadAllSkillbookInformation();
-            log.Information("频道服务器{InstanceId}WZ - 能手册加载完成, 耗时{Cost}", InstanceId, sw.Elapsed.TotalSeconds);
-        });
-
-
-        var configs = await Transport.RegisterServer(this);
-        if (configs.Channel <= 0)
-        {
-            log.Information("频道服务器{InstanceId}注册{Status}：{ErrorMessage}", InstanceId, "失败", configs.Message);
-            return;
-        }
-
-        channel = configs.Channel;
         log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
+    }
+    public void Initialize()
+    {
+        if (this.channel <= 0)
+        {
+            throw new Exception("频道服务器需要先向中心服务器注册才能初始化");
+        }
 
         log.Information("[{ServerName} - {Channel}] 初始化...",
             "频道服务器", channel);
 
-        UpdateWorldConfig(new WorldConfigPatch
-        {
-            MobRate = configs.Config.MobRate,
-            MesoRate = configs.Config.MesoRate,
-            ExpRate = configs.Config.ExpRate,
-            DropRate = configs.Config.DropRate,
-            BossDropRate = configs.Config.BossDropRate,
-            QuestRate = configs.Config.QuestRate,
-            TravelRate = configs.Config.TravelRate,
-            FishingRate = configs.Config.FishingRate,
-            ServerMessage = configs.Config.ServerMessage
-        });
         log.Information("[{ServerName} - {Channel}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
             "频道服务器", channel, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
-        UpdateCouponConfig(configs.Coupon);
-
-        log.Information("[{ServerName} - {Channel}] 初始化完成",
-            "频道服务器", channel);
-
-        StartupTime = DateTimeOffset.UtcNow;
-        ForceUpdateServerTime();
-
-        ServerMessageManager.Register();
-        CharacterHpDecreaseManager.Register();
-        MapObjectManager.Register();
-        MountTirednessManager.Register();
         HiredMerchantManager.Register();
-        PetHungerManager.Register();
-        CharacterDiseaseManager.Register();
-        MapOwnershipManager.Register();
         _respawnTask.Register();
 
-        IsRunning = true;
+        log.Information("[{ServerName} - {Channel}] 初始化完成", "频道服务器", channel);
+
         log.Information("[{ServerName} - {Channel}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
             "频道服务器", channel,
-            DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+            DateTimeOffset.FromUnixTimeMilliseconds(Container.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
+
+    public async Task StartServer()
+    {
+        try
+        {
+            IsRunning = false;
+            log.Information("频道服务器{InstanceId}启动中...", InstanceId);
+            await NettyServer.Start();
+            log.Information("频道服务器{InstanceId}启动成功：监听端口{Port}", InstanceId, Port);
+            IsRunning = true;
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "频道服务器{InstanceId}启动失败");
+        }
+    }
+
 
     bool isShuttingDown = false;
 
@@ -353,14 +305,11 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
             log.Information("正在停止频道{Channel}...", channel);
 
             log.Information("频道{Channel}停止定时任务...", channel);
-            await ServerMessageManager.StopAsync();
-            await CharacterHpDecreaseManager.StopAsync();
-            await MapObjectManager.StopAsync();
-            await MountTirednessManager.StopAsync();
+
             await HiredMerchantManager.StopAsync();
-            await CharacterDiseaseManager.StopAsync();
-            await PetHungerManager.StopAsync();
-            await MapOwnershipManager.StopAsync();
+
+
+
             await _respawnTask.StopAsync();
 
             log.Information("频道{Channel}停止定时任务...完成", channel);
@@ -535,7 +484,14 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
 
     private void disconnectAwayPlayers()
     {
-        Transport.DisconnectPlayers(playersAway);
+        foreach (var cid in playersAway)
+        {
+            var chr = Players.getCharacterById(cid);
+            if (chr != null && chr.isLoggedin())
+            {
+                chr.getClient().ForceDisconnect();
+            }
+        }
     }
 
 
@@ -591,10 +547,6 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         }
     }
 
-    public bool isConnected(string name)
-    {
-        return Players.getCharacterByName(name) != null;
-    }
 
     public bool isActive()
     {
@@ -606,7 +558,7 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
     {
         this.WorldServerMessage = message;
         broadcastPacket(PacketCreator.serverMessage(message));
-        ServerMessageManager.resetDisabledServerMessages();
+        Container.ServerMessageManager.resetDisabledServerMessages();
     }
 
     public int getStoredVar(int key)
@@ -785,29 +737,15 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
         return !usedMC.Contains(getMonsterCarnivalRoom(cpq1, field));
     }
 
-    public void BroadcastWorldMessage(Packet p)
-    {
-        Transport.BroadcastMessage(p);
-    }
-    public void BroadcastWorldGMPacket(Packet packet)
-    {
-        Transport.BroadcastGMMessage(packet);
-    }
-
-
     public IPEndPoint GetChannelEndPoint(int channel)
     {
         if (channel == getId())
             return getIP();
 
-        return Transport.GetChannelEndPoint(channel);
+        return Container.GetChannelEndPoint(channel);
     }
 
 
-    public void NotifyPartner(int id)
-    {
-        Transport.NotifyPartner(id);
-    }
 
     public void UpdateBuddyByLoggedOff(int characterId, int channel, int[] buddies)
     {
@@ -844,75 +782,5 @@ public partial class WorldChannel : IServerBase<IChannelServerTransport>
                 }
             }
         }
-    }
-
-    public void SetCharacteridInTransition(string v, int cid)
-    {
-        if (YamlConfig.config.server.USE_IP_VALIDATION)
-            Transport.SetCharacteridInTransition(v, cid);
-    }
-
-    public bool HasCharacteridInTransition(string clientSession)
-    {
-        return Transport.HasCharacteridInTransition(clientSession);
-    }
-
-    public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
-    {
-        return Transport.WarpPlayer(name, channel, mapId, portal);
-    }
-
-    public string GetExpeditionInfo()
-    {
-        return Transport.LoadExpeditionInfo();
-    }
-
-    public void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise)
-    {
-        Transport.ChangePlayerAllianceRank(targetCharacterId, isRaise);
-    }
-
-    public int GetAccountCharcterCount(int accId)
-    {
-        return Transport.GetAccountCharacterCount(accId);
-    }
-
-    public bool CheckCharacterName(string name)
-    {
-        return Transport.CheckCharacterName(name);
-    }
-
-    public void UpdateAccountChracterByAdd(int accountId, int id)
-    {
-        Transport.UpdateAccountChracterByAdd(accountId, id);
-    }
-
-    private AtomicLong currentTime = new AtomicLong(0);
-    private long serverCurrentTime = 0;
-
-    public int getCurrentTimestamp()
-    {
-        return Transport.GetCurrentTimestamp();
-    }
-
-    public long getCurrentTime()
-    {
-        return serverCurrentTime;
-    }
-    public void UpdateServerTime()
-    {
-        serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
-    }
-
-    public void ForceUpdateServerTime()
-    {
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
-        var forceTime = Transport.GetCurrentTime();
-        sw.Stop();
-        forceTime = forceTime + sw.ElapsedMilliseconds;
-        serverCurrentTime = forceTime;
-        currentTime.set(forceTime);
-
     }
 }

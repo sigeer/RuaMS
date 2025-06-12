@@ -137,7 +137,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                         int duration = combo.getEffect(olv).getDuration();
                         var stat = new BuffStatValue(BuffStat.COMBO, neworbcount);
                         chr.setBuffedValue(BuffStat.COMBO, neworbcount);
-                        duration -= (int)(c.CurrentServer.getCurrentTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
+                        duration -= (int)(c.CurrentServerContainer.getCurrentTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
                         c.sendPacket(PacketCreator.giveBuff(oid, duration, stat));
                         chr.getMap().broadcastMessage(chr, PacketCreator.giveForeignBuff(chr.getId(), stat), false);
                     }
@@ -205,7 +205,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 else
                 {
                     c.sendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
-                    chr.addCooldown(attack.skill, c.CurrentServer.getCurrentTime(), 1000 * (effect_.getCooldown()));
+                    chr.addCooldown(attack.skill, c.CurrentServerContainer.getCurrentTime(), 1000 * (effect_.getCooldown()));
                 }
             }
         }

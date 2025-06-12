@@ -38,8 +38,9 @@ public class GuildEntity
 
 
     protected GuildEntity() { }
-    public GuildEntity(string name, int leaderId)
+    public GuildEntity(int id, string name, int leaderId)
     {
+        GuildId = id;
         Name = name;
         Leader = leaderId;
     }

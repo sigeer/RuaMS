@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "Guild/GuildMember.proto";
+
+package Dto;
+
+message GuildDto {
+  int32 guildId = 1;
+  int32 leader = 2;
+  repeated GuildMemberDto members = 3;
+  string name = 4;
+  int32 gp = 5;
+  int32 logo = 6;
+  int32 logoColor = 7;
+  string rank1Title = 8;
+  string rank2Title = 9;
+  string rank3Title = 10;
+  string rank4Title = 11;
+  string rank5Title = 12;
+  int32 logoBg = 13;
+  int32 logoBgColor = 14;
+  google.protobuf.StringValue notice = 15;
+}
+
+message GetGuildResponse {
+	GuildDto model = 1;
+}

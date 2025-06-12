@@ -23,24 +23,35 @@ using Application.Core.net.server.coordinator.matchchecker.listener;
 
 namespace net.server.coordinator.matchchecker;
 
-/**
- * @author Ronan
- */
-public class MatchCheckerType
+public enum MatchCheckerType
 {
+    GUILD_CREATION,
+    CPQ_CHALLENGE
+}
 
-    public static readonly MatchCheckerType GUILD_CREATION = new(new MatchCheckerGuildCreationListener());
-    public static readonly MatchCheckerType CPQ_CHALLENGE = new(new MatchCheckerCPQChallengeListener());
-
-    private AbstractMatchCheckerListener listener;
-
-    private MatchCheckerType(AbstractMatchCheckerListener listener)
+public static class MatchCheckerTypeUtils
+{
+    public static AbstractMatchCheckerListener getListener(this MatchCheckerType type)
     {
-        this.listener = listener;
+        if (type == MatchCheckerType.GUILD_CREATION)
+            return MatchCheckerStaticFactory.Context.matchCheckerGuildCreationListener;
+        if (type == MatchCheckerType.CPQ_CHALLENGE)
+            return MatchCheckerStaticFactory.Context.matchCheckerCPQChallengeListener;
+
+        throw new Exception();
+    }
+}
+
+public  class MatchCheckerStaticFactory
+{
+    public static MatchCheckerStaticFactory Context { get; set; }
+    public MatchCheckerGuildCreationListener matchCheckerGuildCreationListener { get; }
+    public MatchCheckerCPQChallengeListener matchCheckerCPQChallengeListener { get; }
+
+    public MatchCheckerStaticFactory(MatchCheckerGuildCreationListener matchCheckerGuildCreationListener, MatchCheckerCPQChallengeListener matchCheckerCPQChallengeListener)
+    {
+        this.matchCheckerGuildCreationListener = matchCheckerGuildCreationListener;
+        this.matchCheckerCPQChallengeListener = matchCheckerCPQChallengeListener;
     }
 
-    public AbstractMatchCheckerListener getListener()
-    {
-        return this.listener;
-    }
 }

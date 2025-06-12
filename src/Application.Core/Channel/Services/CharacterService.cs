@@ -127,7 +127,7 @@ namespace Application.Core.Servers.Services
             player.setPosition(portal.getPosition());
 
             var wserv = Server.getInstance().getWorld(0);
-            player.setParty(c.CurrentServer.TeamManager.GetParty(player.Party));
+            player.setParty(c.CurrentServerContainer.TeamManager.GetParty(player.Party));
 
             int messengerid = player.MessengerId;
             int position = player.MessengerPosition;
@@ -195,7 +195,7 @@ namespace Application.Core.Servers.Services
                 int skillid = item.SkillId;
                 long length = item.Length;
                 long startTime = item.StartTime;
-                if (skillid != 5221999 && (length + startTime < c.CurrentServer.getCurrentTime()))
+                if (skillid != 5221999 && (length + startTime < c.CurrentServerContainer.getCurrentTime()))
                 {
                     continue;
                 }

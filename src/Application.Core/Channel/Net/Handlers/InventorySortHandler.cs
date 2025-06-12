@@ -35,7 +35,7 @@ public class InventorySortHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
-        chr.getAutobanManager().setTimestamp(3, c.CurrentServer.getCurrentTimestamp(), 4);
+        chr.getAutobanManager().setTimestamp(3, c.CurrentServerContainer.getCurrentTimestamp(), 4);
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
         {

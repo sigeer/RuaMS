@@ -1,6 +1,7 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
+using Application.Core.Login.Models.Guilds;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
@@ -91,8 +92,8 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<DueyPackageEntity, DueyPackageModel>();
             CreateMap<NoteEntity, Dto.NoteDto>();
-            CreateMap<ShopEntity, ShopModel>();
-            CreateMap<Shopitem, ShopItemModel>();
+            CreateMap<ShopEntity, Dto.ShopDto>();
+            CreateMap<Shopitem, Dto.ShopItemDto>();
 
             CreateMap<Ring_Entity, RingModel>();
             CreateMap<GiftRingPair, Dto.GiftDto>()
@@ -100,6 +101,9 @@ namespace Application.Core.Login.Mappers
                 .IncludeMembers(x => x.Gift);
             CreateMap<GiftEntity, Dto.GiftDto>();
             CreateMap<SpecialCashItemEntity, Dto.SpecialCashItemDto>();
+
+            CreateMap<GuildEntity, GuildModel>();
+            CreateMap<AllianceEntity, AllianceModel>();
         }
     }
 }

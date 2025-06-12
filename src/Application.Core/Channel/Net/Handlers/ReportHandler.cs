@@ -59,8 +59,8 @@ public class ReportHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.reportResponse(2));
                 return;
             }
-            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            c.CurrentServer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, "");
+            c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
+            c.CurrentServerContainer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, "");
         }
         else if (type == 1)
         {
@@ -82,12 +82,12 @@ public class ReportHandler : ChannelHandlerBase
                     return;
                 }
             }
-            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            c.CurrentServer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, chatlog);
+            c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
+            c.CurrentServerContainer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, chatlog);
         }
         else
         {
-            c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type, which is impossible."));
+            c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type, which is impossible."));
         }
     }
 }

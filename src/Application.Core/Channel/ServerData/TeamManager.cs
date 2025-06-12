@@ -1,4 +1,5 @@
 using Application.Core.Game.Relation;
+using Application.Core.ServerTransports;
 using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -10,16 +11,19 @@ namespace Application.Core.Channel.ServerData
     public class TeamManager
     {
         readonly ConcurrentDictionary<int, Team> TeamChannelStorage = new();
-        readonly WorldChannel _server;
         readonly IMapper _mapper;
         readonly ILogger<TeamManager> _logger;
+        readonly IChannelServerTransport _transport;
+        readonly WorldChannelServer _server;
 
-        public TeamManager(WorldChannel server, IMapper mapper, ILogger<TeamManager> logger)
+        public TeamManager(IMapper mapper, ILogger<TeamManager> logger, IChannelServerTransport transport, WorldChannelServer server)
         {
-            _server = server;
             _mapper = mapper;
             _logger = logger;
+            _transport = transport;
+            _server = server;
         }
+
 
         public bool CreateParty(IPlayer player, bool silentCheck)
         {
@@ -37,12 +41,14 @@ namespace Application.Core.Channel.ServerData
                     return false;
                 }
 
-                party = _server.Service.CreateParty(player.Id);
-                if (party == null)
+                var remoteData = _transport.CreateTeam(player.Id);
+                if (remoteData == null)
                 {
                     player.dropMessage(5, "创建队伍失败：发生了未知错误");
                     return false;
                 }
+                party = new Team(_server, remoteData.Id, remoteData.LeaderId);
+                _mapper.Map(remoteData, party);
                 TeamChannelStorage[party.getId()] = party;
                 player.setParty(party);
                 // player.setMPC(partyplayer);
@@ -67,7 +73,7 @@ namespace Application.Core.Channel.ServerData
 
         public bool LeaveParty(IPlayer player)
         {
-            return UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id);
+            return UpdateTeam(player.getChannelServer(), player.Party, PartyOperation.LEAVE, player, player.Id);
             //MatchCheckerCoordinator mmce = world.getMatchCheckerCoordinator();
             //if (mmce.getMatchConfirmationLeaderid(player.getId()) == player.getId() && mmce.getMatchConfirmationType(player.getId()) == MatchCheckerType.GUILD_CREATION)
             //{
@@ -77,21 +83,21 @@ namespace Application.Core.Channel.ServerData
 
         public bool JoinParty(IPlayer player, int partyid, bool silentCheck)
         {
-            return UpdateTeam(partyid, PartyOperation.JOIN, player, player.Id);
+            return UpdateTeam(player.getChannelServer(), partyid, PartyOperation.JOIN, player, player.Id);
         }
 
         public bool ExpelFromParty(Team? party, IChannelClient c, int expelCid)
         {
             if (party != null)
             {
-                return UpdateTeam(party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
+                return UpdateTeam(c.CurrentServer, party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
             }
             return false;
         }
 
         internal bool ChangeLeader(IPlayer player, int newLeader)
         {
-            return UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
+            return UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
         public bool ProcessUpdateResponse(int partyId, PartyOperation operation, Dto.TeamMemberDto target)
@@ -114,7 +120,7 @@ namespace Application.Core.Channel.ServerData
                     party.removeMember(targetMember.Id);
                     break;
                 case PartyOperation.DISBAND:
-                    TeamChannelStorage.Remove(partyId);
+                    TeamChannelStorage.TryRemove(partyId, out _);
                     break;
                 case PartyOperation.SILENT_UPDATE:
                 case PartyOperation.LOG_ONOFF:
@@ -123,18 +129,18 @@ namespace Application.Core.Channel.ServerData
                 default:
                     break;
             }
-            var partyMembers = party.GetChannelMembers(_server);
+            var partyMembers = party.GetActiveMembers();
 
             foreach (var partychar in partyMembers)
             {
                 partychar.setParty(operation == PartyOperation.DISBAND ? null : party);
                 if (partychar.IsOnlined)
                 {
-                    partychar.sendPacket(PacketCreator.updateParty(_server, party, operation, targetMember.Id, targetMember.Name));
+                    partychar.sendPacket(PacketCreator.updateParty(partychar.Channel, party, operation, targetMember.Id, targetMember.Name));
                 }
             }
 
-            var targetPlayer = _server.Players.getCharacterById(targetMember.Id);
+            var targetPlayer = _server.FindPlayerById(targetMember.Channel, targetMember.Id);
             if (operation == PartyOperation.JOIN)
             {
                 if (targetPlayer != null)
@@ -162,7 +168,7 @@ namespace Application.Core.Channel.ServerData
                     }
 
                     targetPlayer.setParty(null);
-                    targetPlayer.sendPacket(PacketCreator.updateParty(_server, party, operation, targetMember.Id, targetMember.Name));
+                    targetPlayer.sendPacket(PacketCreator.updateParty(targetPlayer.Channel, party, operation, targetMember.Id, targetMember.Name));
                 }
             }
             else if (operation == PartyOperation.DISBAND)
@@ -206,9 +212,9 @@ namespace Application.Core.Channel.ServerData
             }
             else if (operation == PartyOperation.CHANGE_LEADER)
             {
-                var oldLeader = party.getLeaderId();
-                var mc = _server.Players.getCharacterById(oldLeader);
-                if (mc != null && targetPlayer != null)
+                var oldLeader = party.GetTeamMember(party.getLeaderId());
+                var mc = _server.FindPlayerById(oldLeader.Channel, oldLeader.Id);
+                if (mc != null && targetPlayer != null && mc.Channel == targetPlayer.Channel)
                 {
                     var eim = mc.getEventInstance();
 
@@ -224,7 +230,7 @@ namespace Application.Core.Channel.ServerData
                         {
                             if (oldLeaderMapid != targetPlayer.getMapId())
                             {
-                                var mmd = _server.getMiniDungeon(oldLeaderMapid);
+                                var mmd = _server.GetChannel(mc.Channel)?.getMiniDungeon(oldLeaderMapid);
                                 if (mmd != null)
                                 {
                                     mmd.close();
@@ -241,9 +247,9 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public bool UpdateTeam(int teamId, PartyOperation operation, IPlayer? player, int target)
+        public bool UpdateTeam(WorldChannel worldChannel, int teamId, PartyOperation operation, IPlayer? player, int target)
         {
-            var result = _server.Transport.SendUpdateTeam(_server.getId(), teamId, operation, player?.Id ?? -1, target);
+            var result = _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
             if (result.ErrorCode == 0)
                 return ProcessUpdateResponse(result.TeamId, (PartyOperation)result.Operation, result.UpdatedMember);
 
@@ -270,7 +276,7 @@ namespace Application.Core.Channel.ServerData
             if (TeamChannelStorage.TryGetValue(party, out var d) && d != null)
                 return d;
 
-            var dataRemote = _mapper.Map<Team>(_server.Transport.GetTeam(party).Model);
+            var dataRemote = _mapper.Map<Team>(_transport.GetTeam(party).Model);
             TeamChannelStorage[party] = dataRemote;
             return dataRemote;
         }

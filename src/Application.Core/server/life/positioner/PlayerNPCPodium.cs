@@ -138,20 +138,20 @@ public class PlayerNPCPodium
 
             var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
             var podimuData = encodePodiumData(podiumStep + 1, podiumCount + 1);
-            map.ChannelServer.Transport.SetPlayerNpcMapPodiumData(map.getId(), podimuData);
+            map.ChannelServer.Container.Transport.SetPlayerNpcMapPodiumData(map.getId(), podimuData);
             return reorganizePlayerNpcs(map, podiumStep + 1, mmoList);
         }
         else
         {
             var outPodiumData = encodePodiumData(podiumStep, podiumCount + 1);
-            map.ChannelServer.Transport.SetPlayerNpcMapPodiumData(map.getId(), outPodiumData);
+            map.ChannelServer.Container.Transport.SetPlayerNpcMapPodiumData(map.getId(), outPodiumData);
             return calcNextPos(podiumCount, podiumStep);
         }
     }
 
     public static Point? getNextPlayerNpcPosition(IMap map)
     {
-        var pos = getNextPlayerNpcPosition(map, map.ChannelServer.Transport.GetPlayerNpcMapPodiumData(map.getId()));
+        var pos = getNextPlayerNpcPosition(map, map.ChannelServer.Container.Transport.GetPlayerNpcMapPodiumData(map.getId()));
         if (pos == null)
         {
             return null;

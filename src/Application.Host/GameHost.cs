@@ -6,10 +6,10 @@ namespace Application.Host
     public class GameHost : IHostedService
     {
         readonly MasterServer _server;
-        readonly MultiRunner _channelRunner;
+        readonly WorldChannelServer _channelRunner;
         readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-        public GameHost(MasterServer server, MultiRunner channelRunner, IHostApplicationLifetime hostApplicationLifetime)
+        public GameHost(MasterServer server, WorldChannelServer channelRunner, IHostApplicationLifetime hostApplicationLifetime)
         {
             _server = server;
             _channelRunner = channelRunner;
@@ -34,7 +34,7 @@ namespace Application.Host
         public async Task StartNow(bool ignoreCache)
         {
             await _server.StartServer();
-            await _channelRunner.Start(7674, 3);
+            await _channelRunner.StartServer();
         }
 
         public async Task StopNow()

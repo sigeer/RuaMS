@@ -8,16 +8,16 @@ namespace ServiceTest.ChannelTests
 {
     public class ChannelServiceTest : TestBase
     {
-        Application.Core.Game.TheWorld.WorldChannel _channel;
+        WorldChannel _channel;
         public ChannelServiceTest()
         {
             var scope = _sp.CreateScope();
             var transport = _sp.GetRequiredService<IChannelServerTransport>();
-            var config = new ChannelServerConfig
+            var config = new Application.Shared.Servers.WorldChannelConfig("TEST")
             {
                 Port = 7575
             };
-            _channel = new Application.Core.Channel.WorldChannel(scope, config, transport);
+            _channel = new Application.Core.Channel.WorldChannel(scope, config);
         }
         [Test]
         public void RequestReactorDropTest()

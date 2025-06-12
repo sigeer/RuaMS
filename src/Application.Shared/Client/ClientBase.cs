@@ -8,7 +8,7 @@ namespace Application.Shared.Client
     public abstract class ClientBase : SocketClient, IClientBase
     {
         public AccountCtrl? AccountEntity { get; set; }
-        protected ClientBase(long sessionId, IServerBase<IServerTransport> currentServer, IChannel nettyChannel, ILogger<ISocketClient> log) : base(sessionId, nettyChannel, currentServer, log)
+        protected ClientBase(long sessionId, ISocketServer currentServer, IChannel nettyChannel, ILogger<ISocketClient> log) : base(sessionId, nettyChannel, currentServer, log)
         {
         }
         public bool IsServerTransition { get; protected set; }
@@ -24,17 +24,7 @@ namespace Application.Shared.Client
         /// <param name="cid"></param>
         public abstract void SetCharacterOnSessionTransitionState(int cid);
         protected abstract HashSet<string> GetMac();
-        public void UpdateAccountChracterByAdd(int id)
-        {
-            CurrentServerBase.UpdateAccountChracterByAdd(AccountId, id);
-        }
 
-        public virtual void CommitAccount()
-        {
-            if (AccountEntity == null)
-                return;
-
-            CurrentServerBase.CommitAccountEntity(AccountEntity);
-        }
+        public abstract void CommitAccount();
     }
 }

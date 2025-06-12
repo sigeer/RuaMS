@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using Application.Core.Game.Controllers;
 
 namespace Application.Core.Channel.ServerData
@@ -10,12 +9,12 @@ namespace Application.Core.Channel.ServerData
         private Dictionary<int, int> activeMounts = new();
         private DateTime mountUpdate;
 
-        readonly WorldChannel worldChannel;
+        readonly WorldChannelServer _server;
 
-        public MountTirednessManager(WorldChannel worldChannel) : base($"MountTirednessController_{worldChannel.InstanceId}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        public MountTirednessManager(WorldChannelServer server) : base($"MountTirednessController_{server.ServerName}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
             mountUpdate = DateTime.UtcNow;
-            this.worldChannel = worldChannel;
+            this._server = server;
         }
 
         public void registerMountHunger(IPlayer chr)
@@ -77,7 +76,7 @@ namespace Application.Core.Channel.ServerData
 
             foreach (var dp in deployedMounts)
             {
-                var chr = worldChannel.getPlayerStorage().getCharacterById(dp.Key);
+                var chr = _server.FindPlayerById(dp.Key);
                 if (chr == null || !chr.isLoggedinWorld())
                 {
                     continue;

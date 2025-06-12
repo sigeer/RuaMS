@@ -801,10 +801,10 @@ public class AbstractPlayerInteraction
 
     public void guildMessage(int type, string message)
     {
-        getGuild()?.guildMessage(PacketCreator.serverNotice(type, message));
+        getGuild()?.dropMessage(type, message);
     }
 
-    public IGuild? getGuild()
+    public Guild? getGuild()
     {
         try
         {
@@ -1354,7 +1354,7 @@ public class AbstractPlayerInteraction
 
     public long getCurrentTime()
     {
-        return c.CurrentServer.getCurrentTime();
+        return c.CurrentServerContainer.getCurrentTime();
     }
 
     public void weakenAreaBoss(int monsterId, string message)

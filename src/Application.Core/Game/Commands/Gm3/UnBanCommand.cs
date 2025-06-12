@@ -22,7 +22,7 @@ public class UnBanCommand : CommandBase
 
         try
         {
-            c.CurrentServer.Transport.SendUnbanAccount(paramsValue[0]);
+            c.CurrentServerContainer.Transport.SendUnbanAccount(paramsValue[0]);
         }
         catch (Exception e)
         {

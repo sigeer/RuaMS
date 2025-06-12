@@ -8,13 +8,13 @@ namespace Application.Core.Channel.ServerData
         private Queue<IChannelClient> processDiseaseAnnouncePlayers = new();
         private Queue<IChannelClient> registeredDiseaseAnnouncePlayers = new();
 
-        readonly WorldChannel worldChannel;
+        readonly WorldChannelServer _server;
 
-        public CharacterDiseaseManager(WorldChannel worldChannel) : base($"CharacterDiseaseController_{worldChannel.InstanceId}",
+        public CharacterDiseaseManager(WorldChannelServer server) : base($"CharacterDiseaseController_{server.ServerName}",
             TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL),
             TimeSpan.FromMilliseconds(YamlConfig.config.server.UPDATE_INTERVAL))
         {
-            this.worldChannel = worldChannel;
+            this._server = server;
         }
 
         public void registerAnnouncePlayerDiseases(IChannelClient c)
@@ -33,7 +33,7 @@ namespace Application.Core.Channel.ServerData
 
         protected override void HandleRun()
         {
-            worldChannel.UpdateServerTime();
+            _server.UpdateServerTime();
 
             Queue<IChannelClient> processDiseaseAnnounceClients;
             Monitor.Enter(disLock);

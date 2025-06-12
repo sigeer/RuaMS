@@ -1,9 +1,4 @@
-using Application.Core.Channel.ServerData;
-using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
-using Application.Shared;
-using Application.Shared.Login;
-using Application.Utility.Compatible;
 using client;
 using net.server;
 using server;
@@ -14,16 +9,6 @@ namespace Application.Core.Channel
 {
     public partial class WorldChannel
     {
-
-
-        public void CommitAccountEntity(AccountCtrl accountEntity)
-        {
-            Transport.UpdateAccount(accountEntity);
-        }
-        public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
-        {
-            return Transport.UpdateAccountState(accId, state);
-        }
         public void StashCharacterBuff(IPlayer player)
         {
             Service.SaveBuff(player);
@@ -31,7 +16,7 @@ namespace Application.Core.Channel
 
         private List<KeyValuePair<long, PlayerBuffValueHolder>> getLocalStartTimes(List<PlayerBuffValueHolder> lpbvl)
         {
-            long curtime = getCurrentTime();
+            long curtime = Container.getCurrentTime();
             return lpbvl.Select(x => new KeyValuePair<long, PlayerBuffValueHolder>(curtime - x.usedTime, x)).OrderBy(x => x.Key).ToList();
         }
 
@@ -55,12 +40,6 @@ namespace Application.Core.Channel
                 var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Key, e.Value.MobSkill.getX()));
                 player.sendPacket(PacketCreator.giveDebuff(debuff, e.Value.MobSkill));
             }
-        }
-
-        public void UpdateCouponConfig(Config.CouponConfig config)
-        {
-            ActiveCoupons = config.ActiveCoupons.ToList();
-            CouponRates = config.CouponRates.ToDictionary();
         }
     }
 }

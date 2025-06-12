@@ -3,14 +3,13 @@ using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using XmlWzReader;
 
 namespace Application.Core.Login.ServerData
 {
-    public class TeamManager
+    public class TeamManager : IDisposable
     {
         ConcurrentDictionary<int, TeamModel> _dataSource = new();
-        private int _currentId = 0;
+        private int _currentId = 1000000001;
 
         readonly MasterServer _server;
         IMapper _mapper;
@@ -56,7 +55,7 @@ namespace Application.Core.Login.ServerData
                 return _dataSource.TryRemove(teamId, out _);
             return false;
         }
-        public Dto.UpdateTeamResponse UpdateParty(int fromChannel, int partyid, PartyOperation operation, int fromId, int toId)
+        public Dto.UpdateTeamResponse UpdateParty(int partyid, PartyOperation operation, int fromId, int toId)
         {
             var response = new Dto.UpdateTeamResponse();
             UpdateTeamCheckResult errorCode = UpdateTeamCheckResult.Success;
@@ -123,7 +122,7 @@ namespace Application.Core.Login.ServerData
             response.ErrorCode = (int)errorCode;
 
             if (errorCode == UpdateTeamCheckResult.Success)
-                _server.Transport.SendTeamUpdate(fromChannel, partyid, operation, response.UpdatedMember);
+                _server.Transport.BroadcastTeamUpdate(partyid, operation, response.UpdatedMember);
             return response;
         }
 
@@ -137,10 +136,14 @@ namespace Application.Core.Login.ServerData
                     var teamMember = team.GetMembers().Where(x => x != sender.Character.Id)
                         .Select(x => _server.CharacterManager.FindPlayerById(x)).Where(x => x != null)
                         .Select(x => new PlayerChannelPair(x.Channel, x.Character.Id)).ToArray();
-                    _server.Transport.SendTeamChat(nameFrom, teamMember, chatText);
+                    _server.Transport.SendMultiChat(1, nameFrom, teamMember, chatText);
                 }
             }
         }
 
+        public void Dispose()
+        {
+            _dataSource.Clear();
+        }
     }
 }

@@ -64,7 +64,7 @@ public class ItemRewardHandler : ChannelHandlerBase
                     if (reward.period != -1)
                     {
                         // TODO is this a bug, meant to be 60 * 60 * 1000?
-                        item.setExpiration(c.CurrentServer.getCurrentTime() + reward.period * 60 * 60 * 10);
+                        item.setExpiration(c.CurrentServerContainer.getCurrentTime() + reward.period * 60 * 60 * 10);
                     }
                     InventoryManipulator.addFromDrop(c, item, false);
                 }
@@ -78,7 +78,7 @@ public class ItemRewardHandler : ChannelHandlerBase
                     string msg = reward.worldmsg;
                     msg = msg.Replace("/name", c.OnlinedCharacter.getName());
                     msg = msg.Replace("/item", ii.getName(reward.itemid));
-                    c.CurrentServer.BroadcastWorldMessage(PacketCreator.serverNotice(6, msg));
+                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(6, msg));
                 }
                 break;
             }

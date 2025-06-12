@@ -129,7 +129,7 @@ namespace Application.Core.Game.Players
             {
                 MarriageItemId = -1;
             }
-            else if (PartnerId > 0 && getChannelServer().Transport.GetRelationshipId(Id) <= 0)
+            else if (PartnerId > 0 && getChannelServer().Container.Transport.GetRelationshipId(Id) <= 0)
             {
                 MarriageItemId = -1;
                 PartnerId = -1;

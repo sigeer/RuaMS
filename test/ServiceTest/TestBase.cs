@@ -49,7 +49,7 @@ namespace ServiceTest
 
             sc.AddChannelServer();
             sc.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
-            sc.AddSingleton<MultiRunner>();
+            sc.AddSingleton<WorldChannelServer>();
 
             sc.AddScoped<IChannel, MockChannel>();
 

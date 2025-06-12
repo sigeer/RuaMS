@@ -61,11 +61,11 @@ namespace Application.Core.Gameplay.ChannelEvents
             }
 
 
-            var coupleId = ChannelServer.Transport.GetMarriageQueuedCouple(ret.Value)!;
-            var typeGuests = ChannelServer.Transport.RemoveMarriageQueued(ret.Value);
+            var coupleId = ChannelServer.Container.Transport.GetMarriageQueuedCouple(ret.Value)!;
+            var typeGuests = ChannelServer.Container.Transport.RemoveMarriageQueued(ret.Value);
 
             CoupleNamePair couple = new(CharacterManager.getNameById(coupleId.HusbandId), CharacterManager.getNameById(coupleId.WifeId));
-            ChannelServer.Transport.DropWorldMessage(6, couple.CharacterName1 + " and " + couple.CharacterName2 + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + ChannelServer.getId() + ".");
+            ChannelServer.Container.Transport.DropWorldMessage(6, couple.CharacterName1 + " and " + couple.CharacterName2 + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + ChannelServer.getId() + ".");
 
             return new(typeGuests.Key, new(ret.Value, typeGuests.Value));
         }
@@ -75,7 +75,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             Monitor.Enter(lockObj);
             try
             {
-                return ChannelServer.Transport.IsMarriageQueued(weddingId) || weddingId.Equals(ongoingCathedral) || weddingId.Equals(ongoingChapel);
+                return ChannelServer.Container.Transport.IsMarriageQueued(weddingId) || weddingId.Equals(ongoingCathedral) || weddingId.Equals(ongoingChapel);
             }
             finally
             {
@@ -117,7 +117,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 return -1;
             }
 
-            ChannelServer.Transport.PutMarriageQueued(weddingId.Value, cathedral, premium, groomId, brideId);
+            ChannelServer.Container.Transport.PutMarriageQueued(weddingId.Value, cathedral, premium, groomId, brideId);
 
             Monitor.Enter(lockObj);
             try
@@ -370,7 +370,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             Monitor.Enter(lockObj);
             try
             {
-                return (IsOngoingWeddingGuest(cathedral, guestId)) ? ChannelServer.Transport.GetRelationshipCouple(GetOngoingWedding(cathedral)) : null;
+                return (IsOngoingWeddingGuest(cathedral, guestId)) ? ChannelServer.Container.Transport.GetRelationshipCouple(GetOngoingWedding(cathedral)) : null;
             }
             finally
             {

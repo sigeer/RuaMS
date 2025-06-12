@@ -1,9 +1,16 @@
+using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
+using Application.EF.Entities;
 using Application.Shared.Configs;
+using Application.Shared.Constants.Item;
+using Application.Shared.Constants.Job;
 using Application.Shared.Servers;
 using Application.Shared.Team;
+using client.inventory;
 using Dto;
 using net.server;
+using Org.BouncyCastle.Asn1.X509;
+using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Login
@@ -128,32 +135,20 @@ namespace Application.Core.Login
         }
 
 
-        public void SendTeamChat(string nameFrom, PlayerChannelPair[] teamMember, string chatText)
+        public void SendMultiChat(int type, string nameFrom, PlayerChannelPair[] teamMember, string chatText)
         {
-            var world = Server.getInstance().getWorld(0);
-            var data = teamMember.GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.PlayerId).ToArray());
-            foreach (var item in data)
+            var groups = _server.GroupPlayer(teamMember);
+            foreach (var server in groups)
             {
-                world.Channels[item.Key - 1].Service.SendTeamChat(nameFrom, item.Value, chatText);
+                server.Key.SendMultiChat(type, nameFrom, server.Value, chatText);
             }
         }
 
         public void SendUpdateCouponRates(Config.CouponConfig config)
         {
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in world.Channels)
+            foreach (var server in _server.ChannelServerList)
             {
-                ch.UpdateCouponConfig(config);
-
-                foreach (var chr in ch.getPlayerStorage().getAllCharacters())
-                {
-                    if (!chr.isLoggedin())
-                    {
-                        continue;
-                    }
-
-                    chr.updateCouponRates();
-                }
+                server.Value.UpdateCouponConfig(config);
             }
         }
 
@@ -189,15 +184,197 @@ namespace Application.Core.Login
             return false;
         }
 
-        internal void SendTeamUpdate(int exceptChannel, int teamId, PartyOperation operation, TeamMemberDto target)
-        {
-            for (int i = 0; i < _server.ChannelServerList.Count; i++)
-            {
-                if (i == exceptChannel - 1)
-                    continue;
 
-                var ch = _server.ChannelServerList[i];
-                ch.SendTeamUpdate(teamId, operation, target);
+        internal void BroadcastTeamUpdate(int teamId, PartyOperation operation, TeamMemberDto target)
+        {
+            foreach (var server in _server.ChannelServerList)
+            {
+                server.Value.SendTeamUpdate(teamId, operation, target);
+            }
+        }
+
+        internal void DropMessage(IEnumerable<PlayerChannelPair> targets, int type, string message)
+        {
+            var groups = _server.GroupPlayer(targets);
+            foreach (var server in groups)
+            {
+                server.Key.DropMessage(server.Value, type, message);
+            }
+        }
+
+        internal void BroadcastGuildGPUpdate(UpdateGuildGPResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildGPUpdate(response);
+            }
+        }
+
+        internal void BroadcastGuildRankTitleUpdate(UpdateGuildRankTitleResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildRankTitleUpdate(response);
+            }
+        }
+
+        internal void BroadcastGuildNoticeUpdate(UpdateGuildNoticeResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildNoticeUpdate(response);
+            }
+        }
+
+        internal void BroadcastGuildCapacityUpdate(UpdateGuildCapacityResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildCapacityUpdate(response);
+            }
+        }
+
+        internal void BroadcastGuildEmblemUpdate(UpdateGuildEmblemResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildEmblemUpdate(response);
+            }
+        }
+
+        internal void BroadcastGuildDisband(GuildDisbandResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildDisband(response);
+            }
+        }
+
+        internal void BroadcastGuildRankChanged(UpdateGuildMemberRankResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildRankChanged(response);
+            }
+        }
+
+        internal void BroadcastGuildExpelMember(ExpelFromGuildResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildExpelMember(response);
+            }
+        }
+
+        internal void BroadcastPlayerJoinGuild(JoinGuildResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastPlayerJoinGuild(response);
+            }
+        }
+
+        internal void BroadcastPlayerLeaveGuild(LeaveGuildResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastPlayerLeaveGuild(response);
+            }
+        }
+
+        internal void BroadcastPlayerLevelChanged(PlayerLevelJobChange response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastPlayerLevelChanged(response);
+            }
+        }
+
+        internal void BroadcastPlayerJobChanged(PlayerLevelJobChange response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastPlayerJobChanged(response);
+            }
+        }
+
+        internal void BroadcastPlayerLoginOff(PlayerOnlineChange response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastPlayerLoginOff(response);
+            }
+        }
+
+        internal void BroadcastGuildJoinAlliance(GuildJoinAllianceResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildJoinAlliance(response);
+            }
+        }
+
+        internal void BroadcastGuildLeaveAlliance(GuildLeaveAllianceResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastGuildLeaveAlliance(response);
+            }
+        }
+
+        internal void BroadcastAllianceExpelGuild(AllianceExpelGuildResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastAllianceExpelGuild(response);
+            }
+        }
+
+        internal void BroadcastAllianceCapacityIncreased(IncreaseAllianceCapacityResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastAllianceCapacityIncreased(response);
+            }
+        }
+
+        internal void BroadcastAllianceRankTitleChanged(UpdateAllianceRankTitleResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastAllianceRankTitleChanged(response);
+            }
+        }
+
+        internal void BroadcastAllianceNoticeChanged(UpdateAllianceNoticeResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastAllianceNoticeChanged(response);
+            }
+        }
+
+        internal void BroadcastAllianceLeaderChanged(AllianceChangeLeaderResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastAllianceLeaderChanged(response);
+            }
+        }
+
+        internal void BroadcastAllianceMemberRankChanged(ChangePlayerAllianceRankResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastAllianceMemberRankChanged(response);
+            }
+        }
+
+        internal void BroadcastAllianceDisband(DisbandAllianceResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastAllianceDisband(response);
             }
         }
     }

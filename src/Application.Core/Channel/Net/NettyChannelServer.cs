@@ -1,20 +1,20 @@
+
+
+using Application.Core.Channel;
 using Application.Shared.Servers;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 
+namespace Application.Core.Channel.Net;
 
-namespace Application.Core.Login.Net;
-
-public class LoginServer : AbstractServer
+public class NettyChannelServer : AbstractNettyServer
 {
-    public static int WORLD_ID = -1;
-    public static int CHANNEL_ID = -1;
     private IChannel? nettyChannel;
-    readonly MasterServer server;
-    public LoginServer(MasterServer server) : base(server.Port)
+    readonly WorldChannel worldChannel;
+    public NettyChannelServer(WorldChannel worldChannel) : base(worldChannel.Port)
     {
-        this.server = server;
+        this.worldChannel = worldChannel;
     }
 
     public override async Task Start()
@@ -24,7 +24,7 @@ public class LoginServer : AbstractServer
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .Group(parentGroup, childGroup)
                 .Channel<TcpServerSocketChannel>()
-                .ChildHandler(new LoginServerInitializer(server));
+                .ChildHandler(new ChannelServerInitializer(worldChannel));
 
         this.nettyChannel = await bootstrap.BindAsync(port);
     }
@@ -33,7 +33,7 @@ public class LoginServer : AbstractServer
     {
         if (nettyChannel == null)
         {
-            throw new Exception("Must start LoginServer before stopping it");
+            throw new Exception("Must start ChannelServer before stopping it");
         }
 
         await nettyChannel.CloseAsync();

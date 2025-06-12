@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package Dto;
+
+message AllianceDto {
+  int32 allianceId = 1;
+  int32 capacity = 2;
+  string name = 3;
+  string notice = 4;
+  repeated string rankTitles = 5;
+  repeated int32 guilds = 6;
+}
+
+message GetAllianceResponse {
+	AllianceDto model = 1;
+}

@@ -1,5 +1,6 @@
 using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
+using Application.Core.Login.Models.Guilds;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Login;
@@ -283,7 +284,7 @@ namespace Application.Core.Login.Services
 
         internal void SetDueyPackageAdded(DueyPackageModel dueyPackageModel)
         {
-            _dueyUpdate[dueyPackageModel.Id] = new UpdateField<DueyPackageModel>(UpdateMethod.Add, dueyPackageModel);
+            _dueyUpdate[dueyPackageModel.Id] = new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, dueyPackageModel);
         }
 
         internal void SetDueyPackageRemoved(DueyPackageModel dueyPackageModel)
@@ -309,7 +310,7 @@ namespace Application.Core.Login.Services
             {
                 var obj = item.Data;
                 int packageId = 0;
-                if (item.Method == UpdateMethod.Add)
+                if (item.Method == UpdateMethod.AddOrUpdate)
                 {
                     var tempData = new DueyPackageEntity(obj.ReceiverId, obj.SenderName, obj.Mesos, obj.Message, obj.Checked, obj.Type, obj.TimeStamp);
                     dbContext.Dueypackages.Add(tempData);
@@ -331,5 +332,125 @@ namespace Application.Core.Login.Services
             }
             await dbContext.SaveChangesAsync();
         }
+
+        #region Guild
+        ConcurrentDictionary<int, UpdateField<GuildModel>> _guild = new();
+        public void SetGuildUpdate(GuildModel data)
+        {
+            _guild[data.GuildId] = new UpdateField<GuildModel>(UpdateMethod.AddOrUpdate, data);
+        }
+        public void SetGuildRemoved(GuildModel data)
+        {
+            _guild[data.GuildId] = new UpdateField<GuildModel>(UpdateMethod.Remove, data);
+        }
+        public async Task CommitGuildAsync(DBContext dbContext)
+        {
+            var updateData = new Dictionary<int, UpdateField<GuildModel>>();
+            foreach (var key in _guild.Keys.ToList())
+            {
+                _guild.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
+            if (updateCount == 0)
+                return;
+
+            var dbData = dbContext.Guilds.Where(x => updateData.Keys.Contains(x.GuildId)).ToList();
+            foreach (var item in updateData.Values)
+            {
+                var obj = item.Data;
+                if (item.Method == UpdateMethod.Remove)
+                {
+                    // 已经保存过数据库，存在packageid 才需要从数据库移出
+                    // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
+                    await dbContext.Guilds.Where(x => x.GuildId == obj.GuildId).ExecuteDeleteAsync();
+                }
+                else
+                {
+                    var dbModel = dbData.FirstOrDefault(x => x.GuildId == obj.GuildId);
+                    if (dbModel == null)
+                    {
+                        dbModel = new GuildEntity(obj.GuildId, obj.Name, obj.Leader);
+                        dbContext.Add(dbModel);
+                    }
+                    dbModel.GP = obj.GP;
+                    dbModel.Rank1Title = obj.Rank1Title;
+                    dbModel.Rank2Title = obj.Rank2Title;
+                    dbModel.Rank3Title = obj.Rank3Title;
+                    dbModel.Rank4Title = obj.Rank4Title;
+                    dbModel.Rank5Title = obj.Rank5Title;
+                    dbModel.Logo = obj.Logo;
+                    dbModel.LogoBg = obj.LogoBg;
+                    dbModel.LogoBgColor = obj.LogoBgColor;
+                    dbModel.LogoColor = obj.LogoColor;
+                    dbModel.AllianceId = obj.AllianceId;
+                    dbModel.Capacity = obj.Capacity;
+                    dbModel.Name = obj.Name;
+                    dbModel.Notice = obj.Notice;
+                    dbModel.Signature = obj.Signature;
+                    dbModel.Leader = obj.Leader;
+                }
+
+            }
+            await dbContext.SaveChangesAsync();
+        }
+        #endregion
+
+        #region Alliance
+        ConcurrentDictionary<int, UpdateField<AllianceModel>> _alliance = new();
+        public void SetAlliance(AllianceModel data)
+        {
+            _alliance[data.Id] = new UpdateField<AllianceModel>(UpdateMethod.AddOrUpdate, data);
+        }
+        public void SetAllianceRemoved(AllianceModel data)
+        {
+            _alliance[data.Id] = new UpdateField<AllianceModel>(UpdateMethod.Remove, data);
+        }
+        public async Task CommitAllianceAsync(DBContext dbContext)
+        {
+            var updateData = new Dictionary<int, UpdateField<AllianceModel>>();
+            foreach (var key in _guild.Keys.ToList())
+            {
+                _alliance.TryRemove(key, out var d);
+                updateData[key] = d;
+            }
+
+            var updateCount = updateData.Count;
+            if (updateCount == 0)
+                return;
+
+            var dbData = dbContext.Alliances.Where(x => updateData.Keys.Contains(x.Id)).ToList();
+            foreach (var item in updateData.Values)
+            {
+                var obj = item.Data;
+                if (item.Method == UpdateMethod.Remove)
+                {
+                    // 已经保存过数据库，存在packageid 才需要从数据库移出
+                    // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
+                    await dbContext.Alliances.Where(x => x.Id == obj.Id).ExecuteDeleteAsync();
+                }
+                else
+                {
+                    var dbModel = dbData.FirstOrDefault(x => x.Id == obj.Id);
+                    if (dbModel == null)
+                    {
+                        dbModel = new AllianceEntity(obj.Id, obj.Name);
+                        dbContext.Add(dbModel);
+                    }
+                    dbModel.Capacity = obj.Capacity;
+                    dbModel.Name = obj.Name;
+                    dbModel.Notice = obj.Notice;
+                    dbModel.Rank1 = obj.Rank1;
+                    dbModel.Rank2 = obj.Rank2;
+                    dbModel.Rank3 = obj.Rank3;
+                    dbModel.Rank4 = obj.Rank4;
+                    dbModel.Rank5 = obj.Rank5;
+                }
+
+            }
+            await dbContext.SaveChangesAsync();
+        }
+        #endregion
     }
 }

@@ -52,7 +52,7 @@ public class DueyProcessor
         {
             try
             {
-                c.CurrentServer.Transport.RequestRemovePackage(packageid);
+                c.CurrentServerContainer.Transport.RequestRemovePackage(packageid);
                 c.sendPacket(PacketCreator.removeItemFromDuey(playerRemove, packageid));
             }
             finally

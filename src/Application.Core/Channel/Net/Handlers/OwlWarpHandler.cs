@@ -42,7 +42,7 @@ public class OwlWarpHandler : ChannelHandlerBase
             return;
         }
 
-        var dto = c.CurrentServer.Transport.SendOwlWarp(mapid, ownerid, c.OnlinedCharacter.getOwlSearch());
+        var dto = c.CurrentServerContainer.Transport.SendOwlWarp(mapid, ownerid, c.OnlinedCharacter.getOwlSearch());
         if (dto == null)
         {
             c.sendPacket(PacketCreator.getOwlMessage(1));

@@ -27,7 +27,7 @@ public class MonitorCommand : CommandBase
         bool monitored = MonitoredChrLogger.toggleMonitored(victim.getId());
         player.yellowMessage(victim.getId() + " is " + (monitored ? "now being monitored." : "no longer being monitored."));
         string message = player.getName() + (monitored ? " has started monitoring " : " has stopped monitoring ") + victim.getId() + ".";
-        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message));
+        c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message));
 
     }
 }

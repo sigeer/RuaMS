@@ -37,7 +37,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
         p.readInt();
-        abm.setTimestamp(5, c.CurrentServer.getCurrentTimestamp(), 4);
+        abm.setTimestamp(5, c.CurrentServerContainer.getCurrentTimestamp(), 4);
         p.readShort();
         int itemId = p.readInt();
         int monsterid = p.readInt();
@@ -66,7 +66,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
             case ItemId.POUCH:
                 if (mob.getId() == MobId.GHOST)
                 {
-                    if ((abm.getLastSpam(10) + 1000) < c.CurrentServer.getCurrentTime())
+                    if ((abm.getLastSpam(10) + 1000) < c.CurrentServerContainer.getCurrentTime())
                     {
                         if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
                         {
@@ -87,7 +87,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
             case ItemId.ARPQ_ELEMENT_ROCK:
                 if (mob.getId() == MobId.ARPQ_SCORPION)
                 {
-                    if ((abm.getLastSpam(10) + 800) < c.CurrentServer.getCurrentTime())
+                    if ((abm.getLastSpam(10) + 800) < c.CurrentServerContainer.getCurrentTime())
                     {
                         if (mob.getHp() < ((mob.getMaxHp() / 10) * 4))
                         {
@@ -209,7 +209,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
             case ItemId.FISH_NET:
                 if (mob.getId() == MobId.P_JUNIOR)
                 {
-                    if ((abm.getLastSpam(10) + 3000) < c.CurrentServer.getCurrentTime())
+                    if ((abm.getLastSpam(10) + 3000) < c.CurrentServerContainer.getCurrentTime())
                     {
                         abm.spam(10);
                         chr.getMap().broadcastMessage(PacketCreator.catchMonster(monsterid, itemId, 1));
@@ -236,7 +236,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                     int timeCatch = ii.getUseDelay(itemId);
                     int mobHp = ii.getMobHP(itemId);
 
-                    if (timeCatch != 0 && (abm.getLastSpam(10) + timeCatch) < c.CurrentServer.getCurrentTime())
+                    if (timeCatch != 0 && (abm.getLastSpam(10) + timeCatch) < c.CurrentServerContainer.getCurrentTime())
                     {
                         if (mobHp != 0 && mob.getHp() < ((mob.getMaxHp() / 100) * mobHp))
                         {

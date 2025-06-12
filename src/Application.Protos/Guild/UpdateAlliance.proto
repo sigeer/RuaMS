@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+import "Guild/Alliance.proto";
+import "Guild/GuildMember.proto";
+
+package Dto;
+
+
+message GuildLeaveAllianceRequest {
+	int32 masterId = 1;
+}
+
+message GuildLeaveAllianceResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	int32 guildId = 3;
+	GuildLeaveAllianceRequest request = 4;
+}
+
+message AllianceExpelGuildRequest {
+	int32 masterId = 1;
+	int32 guildId = 2;
+}
+
+message AllianceExpelGuildResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	int32 guildId = 3;
+	AllianceExpelGuildRequest request = 4;
+}
+
+message GuildJoinAllianceRequest {
+	int32 masterId = 1;
+	int32 allianceId = 2;
+}
+
+message GuildJoinAllianceResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	int32 guildId = 3;
+	GuildJoinAllianceRequest request = 4;
+}
+
+message AllianceChangeLeaderRequest {
+	int32 masterId = 1;
+	int32 playerId = 2;
+}
+
+message AllianceChangeLeaderResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	AllianceChangeLeaderRequest request = 3;
+}
+
+message ChangePlayerAllianceRankRequest {
+	int32 masterId = 1;
+	int32 playerId = 2;
+	int32 delta = 3;
+}
+
+message ChangePlayerAllianceRankResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	ChangePlayerAllianceRankRequest request = 3;
+	int32 newRank = 4;
+}
+
+message IncreaseAllianceCapacityRequest {
+	int32 masterId = 1;
+}
+
+message IncreaseAllianceCapacityResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	IncreaseAllianceCapacityRequest request = 3;
+}
+
+message UpdateAllianceRankTitleRequest {
+	int32 masterId = 1;
+	repeated string rankTitles = 2;
+}
+
+message UpdateAllianceRankTitleResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	UpdateAllianceRankTitleRequest request = 3;
+}
+
+message UpdateAllianceNoticeRequest {
+	int32 masterId = 1;
+	string notice = 2;
+}
+
+message UpdateAllianceNoticeResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	UpdateAllianceNoticeRequest request = 3;
+}
+
+message DisbandAllianceRequest{
+	int32 masterId = 1;
+}
+
+message DisbandAllianceResponse {
+	int32 code = 1;
+	int32 allianceId = 2;
+	DisbandAllianceRequest request = 3;
+}

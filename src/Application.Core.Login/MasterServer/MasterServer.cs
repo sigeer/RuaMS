@@ -1,4 +1,5 @@
 using Application.Core.Login.Datas;
+using Application.Core.Login.Models;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Servers;
@@ -24,17 +25,19 @@ namespace Application.Core.Login
     /// <summary>
     /// 兼顾调度+登录（原先的Server+World），移除大区的概念
     /// </summary>
-    public partial class MasterServer : IServerBase<MasterServerTransport>
+    public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer
     {
+        public bool IsClosed { get; private set; }
         public int Id { get; } = 0;
         readonly ILogger<MasterServer> _logger;
         public int Port { get; set; } = 8484;
-        public AbstractServer NettyServer { get; }
+        public AbstractNettyServer NettyServer { get; }
         public bool IsRunning { get; private set; }
-        public List<ChannelServerWrapper> ChannelServerList { get; }
+        public Dictionary<string, ChannelServerWrapper> ChannelServerList { get; }
+        public List<WorldChannelConfig> Channels { get; }
         public WeddingManager WeddingInstance { get; }
 
-        public string InstanceId { get; }
+        public string ServerName { get; }
 
         public MasterServerTransport Transport { get; }
 
@@ -79,6 +82,7 @@ namespace Application.Core.Login
         public DueyManager DueyManager { get; }
         public CashShopDataManager CashShopDataManager { get; }
         public TeamManager TeamManager { get; }
+        public GuildManager GuildManager { get; }
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -93,11 +97,12 @@ namespace Application.Core.Login
 
             _characterSevice = characterManager;
 
-            InstanceId = Guid.NewGuid().ToString();
-            ChannelServerList = new List<ChannelServerWrapper>();
+            ServerName = Guid.NewGuid().ToString();
+            ChannelServerList = new ();
+            Channels = new();
             StartupTime = DateTimeOffset.UtcNow;
             Transport = new MasterServerTransport(this);
-            NettyServer = new LoginServer(this);
+            NettyServer = new NettyLoginServer(this);
 
 
             var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
@@ -109,6 +114,7 @@ namespace Application.Core.Login
             BossDropRate = serverSection.GetValue<float>("BossDropRate", 1);
             TravelRate = serverSection.GetValue<float>("TravelRate", 1);
             FishingRate = serverSection.GetValue<float>("FishingRate", 1);
+            QuestRate = serverSection.GetValue<float>("QuestRate", 1);
 
             Name = serverSection.GetValue<string>("Name", "RuaMS");
             EventMessage = serverSection.GetValue<string>("EventMessage", "");
@@ -125,6 +131,7 @@ namespace Application.Core.Login
             DueyManager = ActivatorUtilities.CreateInstance<DueyManager>(ServiceProvider, this);
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
+            GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;
@@ -138,7 +145,7 @@ namespace Application.Core.Login
 
             if (isShuttingdown)
             {
-                _logger.LogInformation("正在停止服务器[{ServerName}]", InstanceId);
+                _logger.LogInformation("正在停止服务器[{ServerName}]", ServerName);
                 return;
             }
 
@@ -194,28 +201,66 @@ namespace Application.Core.Login
 
         public int AddChannel(ChannelServerWrapper channel)
         {
-            ChannelServerList.Add(channel);
-            return ChannelServerList.Count;
+            if (ChannelServerList.TryAdd(channel.ServerName, channel))
+            {
+                var started = Channels.Count;
+                foreach (var item in channel.ServerConfigs)
+                {
+                    Channels.Add(item);
+                }
+                _serverChannelCache = null;
+                return started + 1;
+            }
+            return -1;
         }
 
         public bool RemoveChannel(string instanceId)
         {
-            var item = ChannelServerList.FirstOrDefault(x => x.InstanceId == instanceId);
-            if (item == null)
-                return false;
-
-            return ChannelServerList.Remove(item);
+            if (ChannelServerList.Remove(instanceId, out var channelServer))
+            {
+                _serverChannelCache = null;
+                return Channels.RemoveAll(x => x.Name == channelServer.ServerName) == channelServer.ServerConfigs.Count;
+            }
+            return false;
         }
 
-        public ChannelServerWrapper GetChannel(int channelId)
+        bool channelChanged = false;
+        List<ServerChannelPair>? _serverChannelCache;
+        private List<ServerChannelPair> GetServerChannel()
         {
-            return ChannelServerList[channelId - 1];
+            return _serverChannelCache ??= Channels.Select((item, idx) => new ServerChannelPair(item.Name, idx + 1)).ToList();
+        }
+
+        /// <summary>
+        /// 对玩家按服务器分组
+        /// </summary>
+        /// <param name="dataList">玩家id及其所在频道</param>
+        /// <param name="exceptServer"></param>
+        /// <returns>服务器: 服务器上的玩家</returns>
+        public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<PlayerChannelPair> dataList)
+        {
+            var d = GetServerChannel();
+
+            return (from a in dataList
+                        join b in d on a.Channel equals b.Channel
+                        group a.PlayerId by b.ServerName into ass
+                        select ass).ToDictionary(x => ChannelServerList[x.Key], x => x.ToArray());
+        }
+
+        public ChannelServerWrapper GetChannelServer(int channelId)
+        {
+            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].Name)!;
+        }
+
+        public WorldChannelConfig? GetChannel(int channelId)
+        {
+            return Channels.ElementAtOrDefault(channelId - 1);
         }
 
         public IPEndPoint GetChannelIPEndPoint(int channelId)
         {
-            var channel = GetChannel(channelId);
-            return new IPEndPoint(IPAddress.Parse(channel.ServerConfig.Host), channel.ServerConfig.Port);
+            var channel = Channels[channelId - 1];
+            return new IPEndPoint(IPAddress.Parse(channel.Host), channel.Port);
         }
 
         public bool IsGuildQueued(int guildId)

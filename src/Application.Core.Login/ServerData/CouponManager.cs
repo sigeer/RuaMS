@@ -24,7 +24,7 @@ namespace Application.Core.Login.Datas
             _server = server;
         }
 
-        public void Initializer(DBContext dbContext)
+        public void Initialize(DBContext dbContext)
         {
             loadCouponRates(dbContext);
             UpdateActiveCouponsInternal(dbContext);

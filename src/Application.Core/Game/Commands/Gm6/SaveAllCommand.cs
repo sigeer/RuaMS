@@ -21,7 +21,7 @@ public class SaveAllCommand : CommandBase
             }
         }
         string message = player.getName() + " used !saveall.";
-        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message));
+        c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message));
         player.message("All players saved successfully.");
     }
 }

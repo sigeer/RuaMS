@@ -122,7 +122,7 @@ public class CouponCodeHandler : ChannelHandlerBase
                 return new StatuedTypedItemQuantity(-2, []);
             }
 
-            if (dbModel.Expiration < c.CurrentServer.getCurrentTime())
+            if (dbModel.Expiration < c.CurrentServerContainer.getCurrentTime())
             {
                 return new StatuedTypedItemQuantity(-3, []);
             }

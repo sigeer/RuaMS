@@ -150,7 +150,7 @@ namespace Application.Core.Game.Players
                 chrPet.setSummoned(false);
             }
 
-            this.getClient().getChannelServer().PetHungerManager.unregisterPetHunger(this, petIdx);
+            Client.CurrentServerContainer.PetHungerManager.unregisterPetHunger(this, petIdx);
             MapModel.broadcastMessage(this, PacketCreator.showPet(this, pet, true, hunger), true);
 
             removePet(pet, shift_left);

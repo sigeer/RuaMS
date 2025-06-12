@@ -9,7 +9,7 @@ namespace Application.Core.Channel.ServerData
         private Dictionary<Action, DateTime> registeredTimedMapObjects = new();
         private object timedMapObjectLock = new object();
 
-        public MapObjectManager(WorldChannel channel) : base($"MapObjectController_{channel.InstanceId}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
+        public MapObjectManager(WorldChannelServer channel) : base($"MapObjectController_{channel.ServerName}", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
         {
         }
 

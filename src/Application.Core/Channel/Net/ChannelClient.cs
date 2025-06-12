@@ -1,8 +1,8 @@
 using Application.Core.Game.Life;
-using Application.Core.Channel;
 using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Login;
 using Application.Shared.Net.Logging;
+using Application.Shared.Team;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using net.packet.logging;
@@ -14,8 +14,6 @@ using scripting.Event;
 using scripting.npc;
 using System.Text.RegularExpressions;
 using tools;
-using Application.Shared.Team;
-using Application.Core.Game.Players;
 
 namespace Application.Core.Channel.Net
 {
@@ -38,6 +36,7 @@ namespace Application.Core.Channel.Net
         public IPlayer OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
 
         public WorldChannel CurrentServer { get; }
+        public WorldChannelServer CurrentServerContainer => CurrentServer.Container;
 
         /// <summary>
         /// CashShop
@@ -47,16 +46,24 @@ namespace Application.Core.Channel.Net
         public int ActualChannel => CurrentServer.getId();
         public NPCConversationManager? NPCConversationManager { get; set; }
 
-        public override int AccountId => AccountEntity.Id;
+        public override int AccountId => AccountEntity?.Id ?? -2;
 
         public override string AccountName => AccountName;
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
 
+        public override void CommitAccount()
+        {
+            if (AccountEntity == null)
+                return;
+
+            CurrentServerContainer.CommitAccountEntity(AccountEntity);
+        }
+
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
-            CurrentServer.UpdateAccountState(AccountEntity!.Id, LoginStage.PlayerServerTransition);
+            CurrentServerContainer.UpdateAccountState(AccountEntity!.Id, LoginStage.PlayerServerTransition);
             IsServerTransition = true;
-            CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
+            CurrentServerContainer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
 
         bool _isDisconnecting = false;
@@ -100,6 +107,7 @@ namespace Application.Core.Channel.Net
                                 if (guild != null)
                                 {
                                     guild.setOnline(Character.Id, false, CurrentServer.getId());
+                                    // 都断开连接了这个包还有必要发？
                                     Character.sendPacket(GuildPackets.showGuildInfo(Character));
                                 }
                             }
@@ -154,14 +162,14 @@ namespace Application.Core.Channel.Net
             // 反之如果只是卡顿，旧client在这里退出了登录，新client在PlayerLoggedinHandler里也会变成登出态
             if (!IsServerTransition && IsOnlined)
             {
-                CurrentServer.Transport.SendAccountLogout(AccountEntity.Id);
+                CurrentServerContainer.Transport.SendAccountLogout(AccountEntity.Id);
             }
             else
             {
                 //比如切换频道  但是还没有成功进入新频道
-                if (YamlConfig.config.server.USE_IP_VALIDATION && !CurrentServer.HasCharacteridInTransition(GetSessionRemoteHost()))
+                if (YamlConfig.config.server.USE_IP_VALIDATION && !CurrentServerContainer.HasCharacteridInTransition(GetSessionRemoteHost()))
                 {
-                    CurrentServer.Transport.SendAccountLogout(AccountEntity.Id);
+                    CurrentServerContainer.Transport.SendAccountLogout(AccountEntity.Id);
                     IsServerTransition = false;
                 }
             }
@@ -208,7 +216,7 @@ namespace Application.Core.Channel.Net
 
                     if (player.getMap().getHPDec() > 0)
                     {
-                        player.getChannelServer().CharacterHpDecreaseManager.removePlayerHpDecrease(player);
+                        player.getChannelServer().Container.CharacterHpDecreaseManager.removePlayerHpDecrease(player);
                     }
                 }
 
@@ -225,7 +233,7 @@ namespace Application.Core.Channel.Net
 
             if (party != null)
             {
-                CurrentServer.TeamManager.UpdateTeam(party.getId(), PartyOperation.LOG_ONOFF, null, player.Id);
+                CurrentServerContainer.TeamManager.UpdateTeam(CurrentServer, party.getId(), PartyOperation.LOG_ONOFF, null, player.Id);
             }
         }
 
@@ -303,12 +311,12 @@ namespace Application.Core.Channel.Net
         long lastNpcClick;
         public bool canClickNPC()
         {
-            return lastNpcClick + 500 < CurrentServer.getCurrentTime();
+            return lastNpcClick + 500 < CurrentServerContainer.getCurrentTime();
         }
 
         public void setClickedNPC()
         {
-            lastNpcClick = CurrentServer.getCurrentTime();
+            lastNpcClick = CurrentServerContainer.getCurrentTime();
         }
 
         public void removeClickedNPC()
@@ -332,7 +340,7 @@ namespace Application.Core.Channel.Net
 
         private void announceDisableServerMessage()
         {
-            if (!this.getChannelServer().ServerMessageManager.registerDisabledServerMessage(OnlinedCharacter.getId()))
+            if (!this.getChannelServer().Container.ServerMessageManager.registerDisabledServerMessage(OnlinedCharacter.getId()))
             {
                 sendPacket(PacketCreator.serverMessage(""));
             }

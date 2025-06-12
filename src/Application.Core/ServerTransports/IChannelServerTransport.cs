@@ -6,6 +6,7 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using System.Net;
 using Application.Shared.Team;
+using Application.Shared.Guild;
 
 namespace Application.Core.ServerTransports
 {
@@ -18,7 +19,7 @@ namespace Application.Core.ServerTransports
         public int GetCurrentTimestamp();
         public DateTimeOffset GetServerupTime();
 
-        Task<Config.RegisterServerResult> RegisterServer(WorldChannel server);
+        Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels);
         Task<bool> RemoveServer(WorldChannel server);
 
         void DropWorldMessage(int type, string message);
@@ -60,7 +61,6 @@ namespace Application.Core.ServerTransports
         /// <param name="updatePatch"></param>
         void SendWorldConfig(WorldConfigPatch updatePatch);
 
-        void DisconnectPlayers(IEnumerable<int> playerIdList);
         #region Team
         Dto.TeamDto CreateTeam(int playerId);
         #endregion
@@ -98,7 +98,6 @@ namespace Application.Core.ServerTransports
         bool HasCharacteridInTransition(string clientSession);
         bool WarpPlayer(string name, int? channel, int mapId, int? portal);
         string LoadExpeditionInfo();
-        void ChangePlayerAllianceRank(int targetCharacterId, bool isRaise);
         Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid);
         int GetAccountCharacterCount(int accId);
         bool CheckCharacterName(string name);
@@ -143,9 +142,37 @@ namespace Application.Core.ServerTransports
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
         void AddCashItemBought(int sn);
-        Dto.UpdateTeamResponse SendUpdateTeam(int fromChannel, int teamId, PartyOperation operation, int fromId, int toId);
+        Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);
+        Dto.GetGuildResponse GetGuild(int id);
+        Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
+        Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
+        Dto.GetAllianceResponse GetAlliance(int id);
+        void SendGuildChat(string name, string text);
+        void SendAllianceChat(string name, string text);
+        void BroadcastGuildMessage(int guildId, int v, string callout);
+        void SendUpdateGuildGP(Dto.UpdateGuildGPRequest request);
+        void SendUpdateGuildRankTitle(Dto.UpdateGuildRankTitleRequest request);
+        void SendUpdateGuildNotice(Dto.UpdateGuildNoticeRequest request);
+        void SendUpdateGuildCapacity(Dto.UpdateGuildCapacityRequest request);
+        void SendUpdateGuildEmblem(Dto.UpdateGuildEmblemRequest request);
+        void SendGuildDisband(Dto.GuildDisbandRequest request);
+        void SendChangePlayerGuildRank(Dto.UpdateGuildMemberRankRequest request);
+        void SendGuildExpelMember(Dto.ExpelFromGuildRequest expelFromGuildRequest);
+        void SendPlayerLeaveGuild(Dto.LeaveGuildRequest leaveGuildRequest);
+        void SendPlayerJoinGuild(Dto.JoinGuildRequest joinGuildRequest);
+
+
+        void SendGuildJoinAlliance(Dto.GuildJoinAllianceRequest guildJoinAllianceRequest);
+        void SendGuildLeaveAlliance(Dto.GuildLeaveAllianceRequest guildLeaveAllianceRequest);
+        void SendAllianceExpelGuild(Dto.AllianceExpelGuildRequest allianceExpelGuildRequest);
+        void SendChangeAllianceLeader(Dto.AllianceChangeLeaderRequest allianceChangeLeaderRequest);
+        void SendChangePlayerAllianceRank(Dto.ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest);
+        void SendIncreaseAllianceCapacity(Dto.IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest);
+        void SendUpdateAllianceRankTitle(Dto.UpdateAllianceRankTitleRequest request);
+        void SendUpdateAllianceNotice(Dto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
+        void SendAllianceDisband(Dto.DisbandAllianceRequest disbandAllianceRequest);
         #endregion
     }
 }

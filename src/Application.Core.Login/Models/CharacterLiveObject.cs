@@ -2,6 +2,10 @@ namespace Application.Core.Login.Models
 {
     public class CharacterViewObject
     {
+        /// <summary>
+        /// 仅在MasterServer使用
+        /// </summary>
+        public int Channel { get; set; }
         public CharacterModel Character { get; set; }
         public ItemModel[] InventoryItems { get; set; } = [];
     }
@@ -25,10 +29,7 @@ namespace Application.Core.Login.Models
         public KeyMapModel[] KeyMaps { get; set; }
         public SavedLocationModel[] SavedLocations { get; set; }
         public BuddyModel[] BuddyList { get; set; }
-        /// <summary>
-        /// 仅在MasterServer使用
-        /// </summary>
-        public int Channel { get; set; }
+
     }
 
 }

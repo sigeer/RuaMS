@@ -47,7 +47,7 @@ public class MonsterAggroCoordinator
     public MonsterAggroCoordinator(WorldChannel channelServer)
     {
         _channelServer = channelServer;
-        lastStopTime = _channelServer.getCurrentTime();
+        lastStopTime = _channelServer.Container.getCurrentTime();
     }
 
     private class PlayerAggroEntry(int cid)
@@ -81,7 +81,7 @@ public class MonsterAggroCoordinator
             Monitor.Exit(idleLock);
         }
 
-        lastStopTime = _channelServer.getCurrentTime();
+        lastStopTime = _channelServer.Container.getCurrentTime();
     }
 
     public void startAggroCoordinator()
@@ -105,7 +105,7 @@ public class MonsterAggroCoordinator
             Monitor.Exit(idleLock);
         }
 
-        int timeDelta = (int)Math.Ceiling((double)(_channelServer.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
+        int timeDelta = (int)Math.Ceiling((double)(_channelServer.Container.getCurrentTime() - lastStopTime) / YamlConfig.config.server.MOB_STATUS_AGGRO_INTERVAL);
         if (timeDelta > 0)
         {
             runAggroUpdate(timeDelta);

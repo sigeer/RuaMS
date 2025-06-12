@@ -36,7 +36,7 @@ public class InventoryMergeHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
-        chr.getAutobanManager().setTimestamp(2, c.CurrentServer.getCurrentTimestamp(), 4);
+        chr.getAutobanManager().setTimestamp(2, c.CurrentServerContainer.getCurrentTimestamp(), 4);
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
         {

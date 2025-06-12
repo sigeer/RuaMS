@@ -52,6 +52,8 @@ namespace Application.Core.Game
 
         public IServerBase<IServerTransport> CurrentServerBase => throw new NotImplementedException();
 
+        ISocketServer ISocketClient.CurrentServerBase => throw new NotImplementedException();
+
         public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
             throw new BusinessCharacterOfflineException();

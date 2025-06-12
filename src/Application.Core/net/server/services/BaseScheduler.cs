@@ -116,7 +116,7 @@ public abstract class BaseScheduler
             unlockScheduler();
         }
 
-        long timeNow = _channelServer.getCurrentTime();
+        long timeNow = _channelServer.Container.getCurrentTime();
         toRemove = new();
         foreach (var rmd in registeredEntriesCopy)
         {
@@ -167,7 +167,7 @@ public abstract class BaseScheduler
                 }, cancellationTokenSource.Token);
             }
 
-            registeredEntries.AddOrUpdate(key, new(removalAction, _channelServer.getCurrentTime() + duration));
+            registeredEntries.AddOrUpdate(key, new(removalAction, _channelServer.Container.getCurrentTime() + duration));
         }
         finally
         {

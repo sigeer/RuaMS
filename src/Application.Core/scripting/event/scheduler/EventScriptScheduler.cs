@@ -72,7 +72,7 @@ public class EventScriptScheduler
             registeredEntriesCopy = new(registeredEntries);
 
 
-            long timeNow = _channelServer.getCurrentTime();
+            long timeNow = _channelServer.Container.getCurrentTime();
             toRemove = new();
             foreach (var rmd in registeredEntriesCopy)
             {
@@ -118,7 +118,7 @@ public class EventScriptScheduler
                 }, cancellationTokenSource.Token);
             }
 
-            registeredEntries.Add(scheduledAction, _channelServer.getCurrentTime() + duration);
+            registeredEntries.Add(scheduledAction, _channelServer.Container.getCurrentTime() + duration);
         }
         finally
         {

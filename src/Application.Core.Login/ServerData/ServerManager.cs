@@ -26,9 +26,10 @@ namespace Application.Core.Login.Datas
             await InitializeDataBase(dbContext);
 
             await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-            await SetAllMerchantsInactive(dbContext);
+            await dbContext.Characters.ExecuteUpdateAsync(x => x.SetProperty(y => y.HasMerchant, false));
             await CleanNxcodeCoupons(dbContext);
-            _masterServer.CouponManager.Initializer(dbContext);
+            _masterServer.CouponManager.Initialize(dbContext);
+            _masterServer.GuildManager.Initialize(dbContext);
 
             await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
 
@@ -55,11 +56,6 @@ namespace Application.Core.Login.Datas
                 _logger.LogError(ex, "初始化数据库失败");
                 throw;
             }
-        }
-
-        private static async Task SetAllMerchantsInactive(DBContext dbContext)
-        {
-            await dbContext.Characters.ExecuteUpdateAsync(x => x.SetProperty(y => y.HasMerchant, false));
         }
 
         private static async Task CleanNxcodeCoupons(DBContext dbContext)

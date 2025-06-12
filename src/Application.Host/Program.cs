@@ -2,6 +2,7 @@ using Application.Core;
 using Application.Core.Channel;
 using Application.Core.Channel.Local;
 using Application.Core.Login;
+using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.OpenApi;
 using Application.Core.ServerTransports;
 using Application.Host;
@@ -13,6 +14,7 @@ using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using net.server.coordinator.matchchecker;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
@@ -21,152 +23,165 @@ using Yitter.IdGenerator;
 
 // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);
+try
+{
 
-// 支持GBK
-Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-// 日志配置
-Log.Logger = new LoggerConfiguration()
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);
+
+    // 支持GBK
+    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+    // 日志配置
+    Log.Logger = new LoggerConfiguration()
 #if !DEBUG
     .MinimumLevel.Information()
 #else
-    .MinimumLevel.Debug()
+        .MinimumLevel.Debug()
 #endif
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-    .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.Map(
-        keySelector: logEvent =>
-            logEvent.Properties.TryGetValue("Category", out var category) ? category?.ToString()?.Trim('"') : "Default",
-            configure: (category, writeTo) =>
-                writeTo.Logger(
-                    lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Error).WriteTo.Async(a => a.File($"logs/AllError/Error-.txt", rollingInterval: RollingInterval.Day))
-                )
-                .WriteTo.Logger(lg => lg.WriteTo.Async(a => a.File($"logs/{category}/All-.txt", rollingInterval: RollingInterval.Day)))
-)
-.CreateLogger();
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+        .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+        .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.Map(
+            keySelector: logEvent =>
+                logEvent.Properties.TryGetValue("Category", out var category) ? category?.ToString()?.Trim('"') : "Default",
+                configure: (category, writeTo) =>
+                    writeTo.Logger(
+                        lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Error).WriteTo.Async(a => a.File($"logs/AllError/Error-.txt", rollingInterval: RollingInterval.Day))
+                    )
+                    .WriteTo.Logger(lg => lg.WriteTo.Async(a => a.File($"logs/{category}/All-.txt", rollingInterval: RollingInterval.Day)))
+    )
+    .CreateLogger();
 
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog();
-
-
-builder.Services.AddChannelServer();
-builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
-builder.Services.AddSingleton<MultiRunner>();
-
-builder.Services.AddDbFactory(builder.Configuration.GetConnectionString("MySQL"));
-builder.Services.AddLoginServer();
+    builder.Logging.ClearProviders();
+    builder.Logging.AddSerilog();
 
 
-builder.Services.AddHostedService<GameHost>();
-if (YamlConfig.config.server.ENABLE_OPENAPI)
-{
-    builder.Services.AddCors(options =>
+    builder.Services.AddChannelServer();
+    builder.Services.AddLocalServer();
+    builder.Services.AddSingleton<WorldChannelServer>();
+
+    builder.Services.AddDbFactory(builder.Configuration.GetConnectionString("MySQL"));
+    builder.Services.AddLoginServer();
+
+
+    builder.Services.AddHostedService<GameHost>();
+    if (YamlConfig.config.server.ENABLE_OPENAPI)
     {
-        options.AddPolicy("cors", p =>
+        builder.Services.AddCors(options =>
         {
-            var allowedHost = builder.Configuration.GetValue<string>("AllowedHosts");
-            if (string.IsNullOrEmpty(allowedHost) || allowedHost == "*")
-                p.SetIsOriginAllowed(_ => true);
-            else
-                p.WithOrigins(allowedHost.Split(","));
-
-            p
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
-        });
-    });
-
-    //builder.Services.AddQuartz(o => o.AddJobListener(new JobCompleteListener()));
-    //builder.Services.AddSingleton<TimerManager>();
-
-    // 游戏服务
-    builder.Services.AddSingleton<GameHost>();
-
-    builder.Services.AddScoped<AuthService>();
-    builder.Services.AddScoped<DropdataService>();
-    builder.Services.AddScoped<DataService>();
-    builder.Services.AddScoped<ServerService>();
-    builder.Services.AddScoped<ChannelService>();
-    builder.Services.AddAutoMapper(typeof(DtoMapper).Assembly);
-
-    builder.Services.AddAuthentication(s =>
-    {
-        s.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        s.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        s.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    }).AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromSeconds(30),
-            ValidateIssuer = true,
-            ValidIssuer = "cosmic_dotnet",
-
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.GetAuthCode())),
-
-            ValidateAudience = false
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
+            options.AddPolicy("cors", p =>
             {
-                //Token expired
-                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                var allowedHost = builder.Configuration.GetValue<string>("AllowedHosts");
+                if (string.IsNullOrEmpty(allowedHost) || allowedHost == "*")
+                    p.SetIsOriginAllowed(_ => true);
+                else
+                    p.WithOrigins(allowedHost.Split(","));
+
+                p
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+            });
+        });
+
+        //builder.Services.AddQuartz(o => o.AddJobListener(new JobCompleteListener()));
+        //builder.Services.AddSingleton<TimerManager>();
+
+        // 游戏服务
+        builder.Services.AddSingleton<GameHost>();
+
+        builder.Services.AddScoped<AuthService>();
+        builder.Services.AddScoped<DropdataService>();
+        builder.Services.AddScoped<DataService>();
+        builder.Services.AddScoped<ServerService>();
+        builder.Services.AddScoped<ChannelService>();
+        builder.Services.AddAutoMapper(typeof(DtoMapper).Assembly);
+
+        builder.Services.AddAuthentication(s =>
+        {
+            s.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            s.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            s.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromSeconds(30),
+                ValidateIssuer = true,
+                ValidIssuer = "cosmic_dotnet",
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.GetAuthCode())),
+
+                ValidateAudience = false
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
                 {
-                    context.Response.Headers["Token-Expired"] = "true";
-                }
+                    //Token expired
+                    if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                    {
+                        context.Response.Headers["Token-Expired"] = "true";
+                    }
 
-                return Task.CompletedTask;
-            },
-        };
-    });
+                    return Task.CompletedTask;
+                },
+            };
+        });
 
-    // Api
-    builder.Services.AddControllers(o =>
-        o.Filters.Add<DataWrapperFilter>()
-    );
+        // Api
+        builder.Services.AddControllers(o =>
+            o.Filters.Add<DataWrapperFilter>()
+        );
 
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddOpenApi();
-}
-
-var app = builder.Build();
-
-var idGeneratorOptions = new IdGeneratorOptions(1);
-YitIdHelper.SetIdGenerator(idGeneratorOptions);
-
-if (YamlConfig.config.server.ENABLE_OPENAPI)
-{
-    var authCode = AuthService.GetAuthCode();
-    Log.Logger.Information("授权码>>：[" + authCode + "]");
-
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-        app.MapScalarApiReference();
-        app.MapOpenApi();
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddOpenApi();
     }
 
-    app.UseCors("cors");
+    var app = builder.Build();
 
-    app.UseAuthentication();
-    app.UseAuthorization();
+    var idGeneratorOptions = new IdGeneratorOptions(1);
+    YitIdHelper.SetIdGenerator(idGeneratorOptions);
 
-    app.MapControllers();
+    MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
+        app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
+        app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
+
+    if (YamlConfig.config.server.ENABLE_OPENAPI)
+    {
+        var authCode = AuthService.GetAuthCode();
+        Log.Logger.Information("授权码>>：[" + authCode + "]");
+
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapScalarApiReference();
+            app.MapOpenApi();
+        }
+
+        app.UseCors("cors");
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapControllers();
+    }
+
+    //AppDomain.CurrentDomain.ProcessExit += (e, o) =>
+    //{
+    //    var server = app.Services.GetService<IMasterServer>();
+    //        server.Shutdown().Wait();
+    //};
+    app.Run();
 }
-
-//AppDomain.CurrentDomain.ProcessExit += (e, o) =>
-//{
-//    var server = app.Services.GetService<IMasterServer>();
-//        server.Shutdown().Wait();
-//};
-app.Run();
+catch (Exception ex)
+{
+    Console.WriteLine($"Application failed to start: {ex}");
+}

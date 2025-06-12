@@ -21,11 +21,7 @@
  */
 
 
-using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
-using Application.Core.Channel;
-using Application.Core.Managers;
-using net.server.guild;
+using Application.Core.Channel.ServerData;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -35,6 +31,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class AllianceOperationHandler : ChannelHandlerBase
 {
+
+    readonly GuildManager _guildManager;
+
+    public AllianceOperationHandler(GuildManager guildManager)
+    {
+        _guildManager = guildManager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -79,30 +82,18 @@ public class AllianceOperationHandler : ChannelHandlerBase
         switch (b)
         {
             case 0x01:
-                alliance.broadcastMessage(GuildPackets.sendShowInfo(alliance!.getId(), chr.getId()), -1, -1);
+                alliance!.BroadcastPlayerInfo(chr.Id);
                 break;
             case 0x02:
                 {
                     // Leave Alliance
-                    if (chr.AllianceModel == null || chr.GuildRank != 1)
-                    {
-                        return;
-                    }
-
-                    chr.AllianceModel.RemoveGuildFromAlliance(chr.GuildId, 1);
+                    _guildManager.GuildLeaveAlliance(chr, chr.GuildId);
                     break;
                 }
             case 0x03: // Send Invite
                 string guildName = p.readString();
 
-                if (alliance!.getGuilds().Count == alliance.getCapacity())
-                {
-                    chr.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-                }
-                else
-                {
-                    AllianceManager.sendInvitation(c, guildName, alliance.getId());
-                }
+                _guildManager.SendAllianceInvitation(c, guildName);
 
                 break;
             case 0x04:
@@ -115,37 +106,9 @@ public class AllianceOperationHandler : ChannelHandlerBase
 
                     int allianceid = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
-
-                    alliance = AllAllianceStorage.GetAllianceById(allianceid);
-                    if (alliance == null)
-                    {
-                        return;
-                    }
-
-                    if (!AllianceManager.answerInvitation(c.OnlinedCharacter.getId(), chrGuild.getName(), alliance.getId(), true))
-                    {
-                        return;
-                    }
-
-                    if (alliance.getGuilds().Count == alliance.getCapacity())
-                    {
-                        chr.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-                        return;
-                    }
-
                     int guildid = chr.getGuildId();
 
-                    alliance.AddGuild(guildid);
-                    chrGuild.resetAllianceGuildPlayersRank();
-
-                    chr.setAllianceRank(2);
-                    chr.saveGuildStatus();
-
-                    alliance.broadcastMessage(GuildPackets.addGuildToAlliance(alliance, chrGuild, c), -1, -1);
-                    alliance.broadcastMessage(GuildPackets.updateAllianceInfo(alliance), -1, -1);
-                    alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
-                    chrGuild.dropMessage("Your guild has joined the [" + alliance.getName() + "] union.");
-
+                    _guildManager.GuildJoinAlliance(chr, allianceid, guildid);
                     break;
                 }
             case 0x06:
@@ -153,30 +116,17 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     // Expel Guild
                     int guildid = p.readInt();
                     int allianceid = p.readInt();
-                    if (chrGuild.AllianceId == 0 || chrGuild.AllianceId != allianceid)
-                    {
-                        return;
-                    }
 
-                    alliance!.RemoveGuildFromAlliance(guildid, 2);
+                    _guildManager.AllianceExpelGuild(c.OnlinedCharacter, allianceid, guildid);
                     break;
                 }
             case 0x07:
                 {
                     // Change Alliance Leader
-                    if (chrGuild.AllianceId == 0 || chr.GuildId < 1)
-                    {
-                        return;
-                    }
                     int victimid = p.readInt();
-                    var player = c.getWorldServer().getPlayerStorage().getCharacterById(victimid);
-                    if (player == null || !player.IsOnlined || player.AllianceRank != 2)
-                    {
-                        return;
-                    }
 
                     //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeLeader(chr.getGuild().getAllianceId(), chr.getId(), slea.readInt()), -1, -1);
-                    changeLeaderAllianceRank(alliance!, player);
+                    _guildManager.ChageLeaderAllianceRank(c.OnlinedCharacter, victimid);
                     break;
                 }
             case 0x08:
@@ -185,58 +135,24 @@ public class AllianceOperationHandler : ChannelHandlerBase
                 {
                     ranks[i] = p.readString();
                 }
-                alliance.setRankTitle(ranks);
-                alliance.broadcastMessage(GuildPackets.changeAllianceRankTitle(alliance.getId(), ranks), -1, -1);
+                _guildManager.UpdateAllianceRank(chr, ranks);
                 break;
             case 0x09:
                 {
                     int int1 = p.readInt();
                     sbyte byte1 = p.ReadSByte();
 
-                    c.CurrentServer.ChangePlayerAllianceRank(int1, byte1 > 0);
+                    _guildManager.ChangePlayerAllianceRank(c.OnlinedCharacter, int1, byte1 > 0);
                     break;
                 }
             case 0x0A:
                 string notice = p.readString();
-                alliance.setNotice(notice);
-                alliance.broadcastMessage(GuildPackets.allianceNotice(alliance.getId(), notice), -1, -1);
-
-                alliance.dropMessage(5, "* Alliance Notice : " + notice);
+                _guildManager.UpdateAllianceNotice(chr, notice);
                 break;
             default:
                 chr.dropMessage("Feature not available");
                 break;
         }
-
-        alliance?.saveToDB();
-    }
-
-    private void changeLeaderAllianceRank(IAlliance alliance, IPlayer newLeader)
-    {
-        var oldLeader = alliance.getLeader();
-        oldLeader.setAllianceRank(2);
-        oldLeader.saveGuildStatus();
-
-        newLeader.setAllianceRank(1);
-        newLeader.saveGuildStatus();
-
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
-        alliance.dropMessage("'" + newLeader.Name + "' has been appointed as the new head of this Alliance.");
-    }
-
-    private void changePlayerAllianceRank(IAlliance alliance, IPlayer chr, bool raise)
-    {
-        int newRank = chr.getAllianceRank() + (raise ? -1 : 1);
-        if (newRank < 3 || newRank > 5)
-        {
-            return;
-        }
-
-        chr.setAllianceRank(newRank);
-        chr.saveGuildStatus();
-
-        alliance.broadcastMessage(GuildPackets.getGuildAlliances(alliance), -1, -1);
-        alliance.dropMessage("'" + chr.getName() + "' has been reassigned to '" + alliance.getRankTitle(newRank) + "' in this Alliance.");
     }
 
 }

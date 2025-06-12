@@ -19,7 +19,9 @@
 */
 
 
-using Application.Core.Managers;
+
+
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -28,6 +30,12 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class DenyAllianceRequestHandler : ChannelHandlerBase
 {
+    readonly GuildManager _guildManager;
+
+    public DenyAllianceRequestHandler(GuildManager guildManager)
+    {
+        _guildManager = guildManager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -41,7 +49,7 @@ public class DenyAllianceRequestHandler : ChannelHandlerBase
             var alliance = chr.getAlliance();
             if (alliance != null)
             {
-                AllianceManager.answerInvitation(c.OnlinedCharacter.getId(), guildName, alliance.getId(), false);
+                _guildManager.AnswerAllianceInvitation(c.OnlinedCharacter.getId(), guildName, alliance.getId(), false);
             }
         }
     }

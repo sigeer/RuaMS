@@ -34,6 +34,7 @@ using server.life;
 using server.quest;
 using System.Collections.Concurrent;
 using tools.exceptions;
+using System.Runtime.ConstrainedExecution;
 
 //using jdk.nashorn.api.scripting;
 
@@ -827,24 +828,19 @@ public class EventManager
 
     private void exportReadyGuild(int guildId)
     {
-        var mg = AllGuildStorage.GetGuildById(guildId);
-        if (mg != null)
-        {
-            string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
-                + " and HAS JUST STARTED THE STRATEGY PHASE. After 3 minutes, no more guild members will be allowed to join the effort."
-                + " Check out Shuang at the excavation site in Perion for more info.";
+        string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
+            + " and HAS JUST STARTED THE STRATEGY PHASE. After 3 minutes, no more guild members will be allowed to join the effort."
+            + " Check out Shuang at the excavation site in Perion for more info.";
 
-            mg.dropMessage(6, callout);
-        }
+        cserv.Container.GuildManager.DropGuildMessage(guildId, 6, callout);
     }
 
     private void exportMovedQueueToGuild(int guildId, int place)
     {
-        var mg = AllGuildStorage.GetGuildById(guildId);
         string callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                 + " and is currently on the " + GameConstants.ordinal(place) + " place on the waiting queue.";
 
-        mg?.dropMessage(6, callout);
+        cserv.Container.GuildManager.DropGuildMessage(guildId, 6, callout);
     }
 
     private List<int>? getNextGuildQueue()
@@ -854,7 +850,7 @@ public class EventManager
             if (!queuedGuilds.TryDequeue(out var guildId))
                 return null;
 
-            cserv.Transport.RemoveGuildQueued(guildId);
+            cserv.Container.Transport.RemoveGuildQueued(guildId);
             var leaderId = queuedGuildLeaders.Remove(guildId, out var d) ? d : 0;
 
             int place = 1;
@@ -889,7 +885,7 @@ public class EventManager
 
     public sbyte addGuildToQueue(int guildId, int leaderId)
     {
-        if (cserv.Transport.IsGuildQueued(guildId))
+        if (cserv.Container.Transport.IsGuildQueued(guildId))
         {
             return -1;
         }
@@ -902,7 +898,7 @@ public class EventManager
                 canStartAhead = queuedGuilds.Count == 0;
 
                 queuedGuilds.Enqueue(guildId);
-                cserv.Transport.PutGuildQueued(guildId);
+                cserv.Container.Transport.PutGuildQueued(guildId);
                 queuedGuildLeaders.AddOrUpdate(guildId, leaderId);
 
                 int place = queuedGuilds.Count;
@@ -916,7 +912,7 @@ public class EventManager
                     lock (queuedGuilds)
                     {
                         queuedGuilds.Enqueue(guildId);
-                        cserv.Transport.PutGuildQueued(guildId);
+                        cserv.Container.Transport.PutGuildQueued(guildId);
                         queuedGuildLeaders.AddOrUpdate(guildId, leaderId);
                     }
                 }

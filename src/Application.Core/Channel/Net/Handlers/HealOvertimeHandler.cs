@@ -37,7 +37,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
         }
 
         AutobanManager abm = chr.getAutobanManager();
-        int timestamp = c.CurrentServer.getCurrentTimestamp();
+        int timestamp = c.CurrentServerContainer.getCurrentTimestamp();
         p.skip(8);
 
         short healHP = p.readShort();

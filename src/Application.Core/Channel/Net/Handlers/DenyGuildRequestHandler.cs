@@ -21,7 +21,8 @@
 */
 
 
-using Application.Core.Managers;
+
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -31,13 +32,19 @@ namespace Application.Core.Channel.Net.Handlers;
 public class DenyGuildRequestHandler : ChannelHandlerBase
 {
 
+    readonly GuildManager _guildManager;
+    public DenyGuildRequestHandler(GuildManager guildManager)
+    {
+        _guildManager = guildManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         p.readByte();
         var cfrom = c.getWorldServer().getPlayerStorage().getCharacterByName(p.readString());
         if (cfrom != null)
         {
-            GuildManager.AnswerInvitation(c.OnlinedCharacter, cfrom.GuildId, false);
+            _guildManager.AnswerInvitation(c.OnlinedCharacter, cfrom.GuildId, false);
         }
     }
 }

@@ -1,10 +1,10 @@
 namespace Application.Shared.Servers
 {
-    public abstract class AbstractServer
+    public abstract class AbstractNettyServer
     {
         protected int port;
 
-        protected AbstractServer(int port)
+        protected AbstractNettyServer(int port)
         {
             this.port = port;
         }

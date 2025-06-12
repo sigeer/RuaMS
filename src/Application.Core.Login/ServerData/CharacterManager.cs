@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
@@ -10,6 +11,7 @@ using Application.Utility.Extensions;
 using AutoMapper;
 using client.inventory.manipulator;
 using client.processor.npc;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -73,6 +75,7 @@ namespace Application.Core.Login.Datas
         {
             if (_idDataSource.TryGetValue(obj.Character.Id, out var origin))
             {
+                var oldCharacterData = origin.Character;
                 origin.Character = _mapper.Map<CharacterModel>(obj.Character);
                 origin.BuddyList = _mapper.Map<BuddyModel[]>(obj.BuddyList);
                 origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
@@ -88,14 +91,84 @@ namespace Application.Core.Login.Datas
                 origin.TrockLocations = _mapper.Map<TrockLocationModel[]>(obj.TrockLocations);
                 origin.CoolDowns = _mapper.Map<CoolDownModel[]>(obj.CoolDowns);
 
-                origin.Channel = obj.Channel;
-
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
                 _logger.LogDebug("玩家{PlayerName}已缓存", obj.Character.Name);
                 _dataStorage.SetCharacter(origin);
-            }
 
+                if (oldCharacterData.Level != origin.Character.Level)
+                {
+                    // 等级变化通知
+                    _masterServer.Transport.BroadcastPlayerLevelChanged(new Dto.PlayerLevelJobChange
+                    {
+                        Id = origin.Character.Id,
+                        JobId = origin.Character.JobId,
+                        Level = origin.Character.Level,
+                        Name = origin.Character.Name,
+                        GuildId = origin.Character.GuildId,
+                        TeamId = origin.Character.Party
+                    });
+                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                }
+
+                if (oldCharacterData.JobId != origin.Character.JobId)
+                {
+                    // 转职通知
+                    _masterServer.Transport.BroadcastPlayerJobChanged(new Dto.PlayerLevelJobChange
+                    {
+                        Id = origin.Character.Id,
+                        JobId = origin.Character.JobId,
+                        Level = origin.Character.Level,
+                        Name = origin.Character.Name,
+                        GuildId = origin.Character.GuildId,
+                        TeamId = origin.Character.Party
+                    });
+                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                }
+
+                if (obj.Channel <= 0)
+                {
+                    origin.Channel = obj.Channel;
+                    // 离线通知
+                    if (obj.Channel == 0)
+                    {
+                        _masterServer.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
+                        {
+                            Id = origin.Character.Id,
+                            Name = origin.Character.Name,
+                            GuildId = origin.Character.GuildId,
+                            TeamId = origin.Character.Party,
+                            Channel = obj.Channel
+                        });
+                        _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
+                    }
+                }
+            }
+        }
+
+        internal void CompleteLogin(int playerId, int channel, out int accountId)
+        {
+            if (_idDataSource.TryGetValue(playerId, out var d))
+            {
+                d.Channel = channel;
+                accountId = d.Character.AccountId;
+
+                // 上线通知
+                _masterServer.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
+                {
+                    Id = d.Character.Id,
+                    Name = d.Character.Name,
+                    GuildId = d.Character.GuildId,
+                    TeamId = d.Character.Party,
+                    Channel = d.Channel
+                });
+
+                _masterServer.TeamManager.UpdateParty(d.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
+            }
+            else
+            {
+                throw new BusinessFatalException($"未验证的玩家Id {playerId}。{nameof(_idDataSource)} 中包含了所有登录过的玩家，而设置频道的玩家必然登录过。");
+            }
         }
 
         public bool Remove(int characterId)
@@ -179,6 +252,7 @@ namespace Application.Core.Login.Datas
 
                 _idDataSource[characterEntity.Id] = d;
                 _nameDataSource[characterEntity.Name] = d;
+                _charcterViewCache[characterEntity.Id] = d;
             }
             return d;
         }
@@ -189,7 +263,7 @@ namespace Application.Core.Login.Datas
         /// </summary>
         /// <param name="charIds"></param>
         /// <returns></returns>
-        public List<CharacterViewObject> GetCharactersView(int[] charIds)
+        public List<CharacterViewObject> GetCharactersView(IEnumerable<int> charIds)
         {
             List<CharacterViewObject> list = new List<CharacterViewObject>();
 
@@ -242,18 +316,7 @@ namespace Application.Core.Login.Datas
 
         }
 
-        internal void SetPlayerChannel(int playerId, int channel, out int accountId)
-        {
-            if (_idDataSource.TryGetValue(playerId, out var d))
-            {
-                d.Channel = channel;
-                accountId = d.Character.AccountId;
-            }
-            else
-            {
-                throw new BusinessFatalException($"未验证的玩家Id {playerId}。{nameof(_idDataSource)} 中包含了所有登录过的玩家，而设置频道的玩家必然登录过。");
-            }
-        }
+
 
         public bool DeleteChar(int cid, int senderAccId)
         {
@@ -409,7 +472,8 @@ namespace Application.Core.Login.Datas
                 dbTrans.Commit();
 
                 _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(data.Character.AccountId, characterId);
-                _masterServer.Transport.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name));
+                _masterServer.Transport.BroadcastWorldGMPacket(
+                    PacketCreator.sendYellowTip("[New Char]: " + data.Character.AccountId + " has created a new character with IGN " + data.Character.Name));
                 Log.Logger.Information("Account {AccountName} created chr with name {CharacterName}", data.Character.AccountId, data.Character.Name);
                 return characterId;
             }
@@ -420,13 +484,18 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public void SendPacket(int playerId, Packet packet)
+        public List<int> GetGuildMembers(DBContext dbContext, int guildId)
         {
-            var chr = FindPlayerById(playerId);
-            if (chr != null && chr.Channel > 0)
-            {
-                _masterServer.Transport.SendChannelPlayerPacket(chr.Channel, chr.Character.Id, packet);
-            }
+            List<int> dataList = new List<int>();
+            var chrTemp = GetCharactersView(dbContext.Characters.Where(x => x.GuildId == guildId).Select(x => x.Id).ToArray());
+            dataList.AddRange(chrTemp.Where(x => x.Character.GuildId == guildId).Select(x => x.Character.Id));
+            dataList.AddRange(_charcterViewCache.Values.Where(x => x.Character.GuildId == guildId).Select(x => x.Character.Id));
+            return dataList.ToHashSet().ToList();
+        }
+
+        public IDictionary<int, int[]> GetPlayerChannelPair(IEnumerable<CharacterViewObject> players)
+        {
+            return players.Where(x => x != null).GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.Character.Id).ToArray());
         }
     }
 }

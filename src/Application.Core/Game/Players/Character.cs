@@ -81,8 +81,8 @@ public partial class Player
             Party = teamModel?.getId() ?? 0;
         }
     }
-    public IGuild? GuildModel => getGuild();
-    public IAlliance? AllianceModel => getAlliance();
+    public Guild? GuildModel => getGuild();
+    public Alliance? AllianceModel => getAlliance();
     public Storage Storage { get; set; } = null!;
 
     private ILogger? _log;
@@ -313,7 +313,7 @@ public partial class Player
 
     public int getRelationshipId()
     {
-        return getChannelServer().Transport.GetRelationshipId(Id);
+        return getChannelServer().Container.Transport.GetRelationshipId(Id);
     }
 
 
@@ -969,7 +969,6 @@ public partial class Player
             saveCharToDB();
 
             // setMPC(new PartyCharacter(this));
-            silentPartyUpdate();
 
             if (dragon != null)
             {
@@ -977,17 +976,12 @@ public partial class Player
                 dragon = null;
             }
 
-            if (GuildModel != null)
-            {
-                GuildModel.broadcast(PacketCreator.jobMessage(0, JobId, Name), this.getId());
-            }
             Family? family = getFamily();
             if (family != null)
             {
                 family.broadcast(PacketCreator.jobMessage(1, JobId, Name), this.getId());
             }
             setMasteries(this.JobId);
-            guildUpdate();
 
             broadcastChangeJob();
 
@@ -1502,7 +1496,7 @@ public partial class Player
             Skill battleship = SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
             sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
-            addCooldown(Corsair.BATTLE_SHIP, getChannelServer().getCurrentTime(), cooldown * 1000);
+            addCooldown(Corsair.BATTLE_SHIP, Client.CurrentServerContainer.getCurrentTime(), cooldown * 1000);
             removeCooldown(5221999);
             cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
         }
@@ -1616,7 +1610,7 @@ public partial class Player
         }
         try
         {
-            GuildModel?.disbandGuild();
+            Client.CurrentServerContainer.GuildManager.Disband(this);
         }
         catch (Exception e)
         {
@@ -1688,7 +1682,7 @@ public partial class Player
     /// <param name="emote"></param>
     public void changeFaceExpression(int emote)
     {
-        long timeNow = getChannelServer().getCurrentTime();
+        long timeNow = Client.CurrentServerContainer.getCurrentTime();
         // IClient allows changing every 2 seconds. Give it a little bit of overhead for packet delays.
         if (timeNow - lastExpression > 1500)
         {
@@ -2399,11 +2393,11 @@ public partial class Player
         return getGender() == 0;
     }
 
-    public IGuild? getGuild()
+    public Guild? getGuild()
     {
         try
         {
-            return AllGuildStorage.GetGuildById(GuildId);
+            return Client.CurrentServerContainer.GuildManager.GetGuildById(GuildId);
         }
         catch (Exception ex)
         {
@@ -2412,9 +2406,10 @@ public partial class Player
         }
     }
 
-    public IAlliance? getAlliance()
+    public Alliance? getAlliance()
     {
-        return getGuild()?.AllianceModel;
+        var guild = getGuild();
+        return guild == null ? null : Client.CurrentServerContainer.GuildManager.GetAllianceById(guild.AllianceId);
     }
 
     public int getGuildId()
@@ -2584,7 +2579,7 @@ public partial class Player
 
     public void resetPlayerAggro()
     {
-        if (getChannelServer().ServerMessageManager.unregisterDisabledServerMessage(Id))
+        if (getChannelServer().Container.ServerMessageManager.unregisterDisabledServerMessage(Id))
         {
             Client.announceServerMessage();
         }
@@ -2872,30 +2867,6 @@ public partial class Player
         return Client.AccountEntity!.GMLevel;
     }
 
-    private void guildUpdate()
-    {
-        if (this.GuildId < 1)
-        {
-            return;
-        }
-
-        try
-        {
-            if (GuildModel != null)
-                GuildModel.memberLevelJobUpdate(this);
-
-            //Server.getInstance().getGuild(guildid, world, mgc).gainGP(40);
-            if (AllianceModel != null)
-            {
-                AllianceModel.broadcastMessage(GuildPackets.updateAllianceJobLevel(this), Id, -1);
-            }
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
-        }
-    }
-
     public void handleEnergyChargeGain()
     {
         // to get here energychargelevel has to be > 0
@@ -3018,14 +2989,8 @@ public partial class Player
             return;
         }
 
-        if (guild.increaseCapacity())
-        {
-            gainMeso(-cost, true, false, true);
-        }
-        else
-        {
-            dropMessage(1, "Your guild already reached the maximum capacity of players.");
-        }
+        Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this, cost);
+
     }
 
     public bool isBuffFrom(BuffStat stat, Skill skill)
@@ -3345,7 +3310,7 @@ public partial class Player
                         }
 
                         string names = (getMedalText() + Name);
-                        getChannelServer().Transport.BroadcastMessage(PacketCreator.serverNotice(6, string.Format(GameConstants.LEVEL_200, names, maxClassLevel, names)));
+                        getChannelServer().Container.Transport.BroadcastMessage(PacketCreator.serverNotice(6, string.Format(GameConstants.LEVEL_200, names, maxClassLevel, names)));
                     }
                 }
 
@@ -3384,12 +3349,6 @@ public partial class Player
 
             MapModel.broadcastMessage(this, PacketCreator.showForeignEffect(getId(), 0), false);
             // setMPC(new PartyCharacter(this));
-            silentPartyUpdate();
-
-            if (GuildModel != null)
-            {
-                GuildModel.broadcast(PacketCreator.levelUpMessage(2, Level, Name), this.getId());
-            }
 
             if (Level % 20 == 0)
             {
@@ -3432,8 +3391,6 @@ public partial class Player
 
                 ThreadManager.getInstance().newTask(r);
             }
-
-            guildUpdate();
 
             var familyEntry = getFamilyEntry();
             if (familyEntry != null)
@@ -3632,8 +3589,8 @@ public partial class Player
     {
         activeCoupons.Clear();
 
-        Dictionary<int, int> coupons = Client.CurrentServer.CouponRates;
-        List<int> active = Client.CurrentServer.ActiveCoupons;
+        Dictionary<int, int> coupons = Client.CurrentServerContainer.CouponRates;
+        List<int> active = Client.CurrentServerContainer.ActiveCoupons;
 
         foreach (Item it in cashItems)
         {
@@ -3747,7 +3704,7 @@ public partial class Player
 
         cancelAllBuffs(false);
         dispelDebuffs();
-        lastDeathtime = getChannelServer().getCurrentTime();
+        lastDeathtime = Client.CurrentServerContainer.getCurrentTime();
 
         EventInstanceManager? eim = getEventInstance();
         if (eim != null)
@@ -4166,21 +4123,6 @@ public partial class Player
         }
     }
 
-
-    public void saveGuildStatus()
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            dbContext.Characters.Where(x => x.Id == getId())
-                .ExecuteUpdate(x => x.SetProperty(y => y.GuildId, GuildId).SetProperty(y => y.GuildRank, GuildRank).SetProperty(y => y.AllianceRank, AllianceRank));
-        }
-        catch (Exception se)
-        {
-            Log.Error(se.ToString());
-        }
-    }
-
     public void saveLocationOnWarp()
     {  // suggestion to remember the map before warp command thanks to Lei
         Portal? closest = MapModel.findClosestPortal(getPosition());
@@ -4266,7 +4208,7 @@ public partial class Player
         if (Server.getInstance().isGmOnline(this.getWorld()))
         {
             //Alert and log if a GM is online
-            Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
+            Client.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
         }
         else
         {
@@ -4859,7 +4801,7 @@ public partial class Player
 
     private long getDojoTimeLeft()
     {
-        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - getChannelServer().getCurrentTime();
+        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - Client.CurrentServerContainer.getCurrentTime();
     }
 
     public void showDojoClock()
@@ -4872,7 +4814,7 @@ public partial class Player
 
     public void showUnderleveledInfo(Monster mob)
     {
-        long curTime = getChannelServer().getCurrentTime();
+        long curTime = Client.CurrentServerContainer.getCurrentTime();
         if (nextWarningTime < curTime)
         {
             nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds);   // show underlevel info again after 1 minute
@@ -4904,7 +4846,7 @@ public partial class Player
     {
         if (chrParty != null)
         {
-            Client.CurrentServer.TeamManager.UpdateTeam(chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
+            Client.CurrentServerContainer.TeamManager.UpdateTeam(Client.CurrentServer, chrParty.getId(), PartyOperation.SILENT_UPDATE, this, this.Id);
         }
     }
 
@@ -5057,7 +4999,7 @@ public partial class Player
 
         }, 5000);
 
-        Client.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, CharacterManager.makeMapleReadable(Name) + " was autobanned for " + reason));
+        Client.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, CharacterManager.makeMapleReadable(Name) + " was autobanned for " + reason));
     }
 
     public void block(int reason, int days, string desc)
@@ -5345,7 +5287,7 @@ public partial class Player
     public void logOff()
     {
         RemoveWorldWatcher();
-        Client.CurrentServer.Transport.SendAccountLogout(AccountId);
+        Client.CurrentServerContainer.Transport.SendAccountLogout(AccountId);
         setClient(new OfflineClient());
     }
 
@@ -5596,11 +5538,11 @@ public partial class Player
         GuildModel.setOnline(Id, false, -1);
         if (GuildRank > 1)
         {
-            GuildModel.leaveGuild(this);
+            Client.CurrentServerContainer.GuildManager.LeaveMember(this);
         }
         else
         {
-            GuildModel.disbandGuild();
+            Client.CurrentServerContainer.GuildManager.Disband(this);
         }
     }
 }

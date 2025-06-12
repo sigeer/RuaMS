@@ -32,21 +32,20 @@ namespace Application.Core.Game.Relation;
  * @author XoticStory
  * @author Ronan
  */
-public class Alliance : IAlliance
+public class Alliance
 {
     ILogger log;
-    public ConcurrentDictionary<int, IGuild> Guilds { get; }
+    public ConcurrentDictionary<int, Guild> Guilds { get; }
 
 
     public int AllianceId { get; set; }
     public int Capacity { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public string Notice { get; set; }
     public string[] RankTitles { get; set; }
 
-    public Alliance(int id, string name)
+    public Alliance(int id)
     {
-        Name = name;
         AllianceId = id;
         RankTitles = new string[5] { "Master", "Jr. Master", "Member", "Member", "Member" };
         Notice = string.Empty;
@@ -56,90 +55,57 @@ public class Alliance : IAlliance
     }
 
 
-    public void saveToDB()
-    {
-        using var dbContext = new DBContext();
-        using var dbTrans = dbContext.Database.BeginTransaction();
-        dbContext.Alliances.Where(x => x.Id == AllianceId)
-            .ExecuteUpdate(x => x.SetProperty(y => y.Capacity, this.Capacity)
-                    .SetProperty(y => y.Notice, this.Notice)
-                    .SetProperty(y => y.Rank1, RankTitles[0])
-                    .SetProperty(y => y.Rank2, RankTitles[1])
-                    .SetProperty(y => y.Rank3, RankTitles[2])
-                    .SetProperty(y => y.Rank4, RankTitles[3])
-                    .SetProperty(y => y.Rank5, RankTitles[4]));
-
-
-        dbContext.AllianceGuilds.Where(x => x.AllianceId == AllianceId).ExecuteDelete();
-        dbContext.AllianceGuilds.AddRange(Guilds.Keys.Select(x => new Allianceguild()
-        {
-            AllianceId = AllianceId,
-            GuildId = x
-        }));
-        dbContext.SaveChanges();
-        dbTrans.Commit();
-    }
-
-
     public bool RemoveGuildFromAlliance(int guildId, int method)
     {
-        if (method == 1 && getLeader().getGuildId() == guildId)
+        if (method == 1 && GetLeaderGuildId() == guildId)
         {
             return false;
         }
 
-        if (!Guilds.TryGetValue(guildId, out var guild) || guild == null)
-            throw new BusinessException($"GuildId {guildId} not found or not in alliance");
+        if (Guilds.TryRemove(guildId, out var guild))
+        {
+            guild.AllianceId = 0;
 
-        broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild), -1, -1);
-        removeGuild(guildId);
+            broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild), -1, -1);
 
-        using var dbContext = new DBContext();
-        dbContext.AllianceGuilds.Where(x => x.GuildId == guildId).ExecuteDelete();
+            BroadcastGuildAlliance();
+            BroadcastNotice();
+            guild.broadcast(GuildPackets.disbandAlliance(getId()));
 
-        broadcastMessage(GuildPackets.getGuildAlliances(this), -1, -1);
-        broadcastMessage(GuildPackets.allianceNotice(getId(), getNotice()), -1, -1);
-        guild.broadcast(GuildPackets.disbandAlliance(getId()));
-
-        if (method == 1)
-            dropMessage("[" + guild.Name + "] guild has left the union.");
-        else if (method == 2)
-            dropMessage("[" + guild.Name + "] guild has been expelled from the union.");
-        return true;
+            if (method == 1)
+                dropMessage("[" + guild.Name + "] guild has left the union.");
+            else if (method == 2)
+                dropMessage("[" + guild.Name + "] guild has been expelled from the union.");
+            return true;
+        }
+        return false;
+        //throw new BusinessException($"GuildId {guildId} not found or not in alliance");
     }
 
-    public void updateAlliancePackets(IPlayer chr)
+    public void updateAlliancePackets()
     {
         if (AllianceId > 0)
         {
-            this.broadcastMessage(GuildPackets.updateAllianceInfo(this));
-            this.broadcastMessage(GuildPackets.allianceNotice(this.getId(), this.getNotice()));
+            this.BroadcastAllianceInfo();
+            this.BroadcastNotice();
         }
     }
 
-    private bool removeGuild(int gid)
+    public bool TryAddGuild(Guild guild)
     {
-        var r = Guilds.TryRemove(gid, out var guild);
-        if (r && guild != null)
-            guild.AllianceId = 0;
-        return r;
-    }
-
-
-    public bool AddGuild(int gid)
-    {
-        if (Guilds.Count == Capacity || Guilds.ContainsKey(gid))
+        if (Guilds.Count == Capacity || Guilds.ContainsKey(guild.GuildId))
         {
             return false;
         }
 
-        var guild = AllGuildStorage.GetGuildById(gid);
         if (guild != null)
         {
-            var r = Guilds.TryAdd(gid, guild);
+            var r = Guilds.TryAdd(guild.GuildId, guild);
             if (r)
+            {
                 guild.AllianceId = AllianceId;
-
+                guild.JoinAlliance();
+            }
             return r;
         }
         return false;
@@ -148,15 +114,7 @@ public class Alliance : IAlliance
 
     public void Disband()
     {
-        using var dbContext = new DBContext();
-        using var dbTrans = dbContext.Database.BeginTransaction();
-        dbContext.Alliances.Where(x => x.Id == AllianceId).ExecuteDelete();
-        dbContext.AllianceGuilds.Where(x => x.AllianceId == AllianceId).ExecuteDelete();
-
-        AllAllianceStorage.Remove(AllianceId);
-        AllGuildStorage.Remove(Guilds.Keys.ToArray());
         Guilds.Clear();
-        dbTrans.Commit();
 
         broadcastMessage(GuildPackets.disbandAlliance(AllianceId), -1, -1);
     }
@@ -216,13 +174,52 @@ public class Alliance : IAlliance
         return Name;
     }
 
-    object getLeaderLock = new object();
-    public IPlayer getLeader()
+    public int GetLeaderGuildId()
     {
-        lock (getLeaderLock)
+        foreach (var guild in Guilds.Values)
         {
-            return Guilds.Values.Select(x => x.getMGC(x.Leader)).FirstOrDefault(x => x?.AllianceRank == 1) ?? throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+            if (guild.getMembers().Any(x => x.AllianceRank == 1))
+                return guild.GuildId;
         }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+    }
+
+    public int GetLeaderId()
+    {
+        foreach (var guild in Guilds.Values)
+        {
+            var leader = guild.getMembers().FirstOrDefault(x => x.AllianceRank == 1);
+            if (leader != null)
+                return leader.Id;
+        }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+    }
+
+    public GuildMember GetLeader()
+    {
+        foreach (var guild in Guilds.Values)
+        {
+            var leader = guild.getMembers().FirstOrDefault(x => x.AllianceRank == 1);
+            if (leader != null)
+                return leader;
+        }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+    }
+
+    public GuildMember GetMemberById(int cid)
+    {
+        foreach (var guild in Guilds.Values)
+        {
+            var leader = guild.getMembers().FirstOrDefault(x => x.Id == cid);
+            if (leader != null)
+                return leader;
+        }
+        throw new BusinessException($"Alliance (Id = {AllianceId}) Leader not found"); ;
+    }
+
+    public void UpdateMember(GuildMember member)
+    {
+        Guilds[member.GuildId].UpdateMember(member);
     }
 
     public void dropMessage(string message)
@@ -245,5 +242,25 @@ public class Alliance : IAlliance
             if (guild.GuildId != exceptedGuildId)
                 guild.broadcast(packet, exception);
         }
+    }
+
+    public void BroadcastPlayerInfo(int chrId)
+    {
+        broadcastMessage(GuildPackets.sendShowInfo(getId(), chrId), -1, -1);
+    }
+
+    public void BroadcastGuildAlliance()
+    {
+        broadcastMessage(GuildPackets.getGuildAlliances(this), -1, -1);
+    }
+
+    public void BroadcastNotice()
+    {
+        broadcastMessage(GuildPackets.allianceNotice(getId(), getNotice()), -1, -1);
+    }
+
+    public void BroadcastAllianceInfo()
+    {
+        broadcastMessage(GuildPackets.updateAllianceInfo(this), -1, -1);
     }
 }

@@ -8,8 +8,8 @@ public class MapOwnershipManager : TimelyControllerBase
 
     private HashSet<IMap> ownedMaps = new();
 
-    public MapOwnershipManager(WorldChannel worldChannel)
-        : base($"MapOwnershipTask_{worldChannel.InstanceId}",
+    public MapOwnershipManager(WorldChannelServer worldChannel)
+        : base($"MapOwnershipTask_{worldChannel.ServerName}",
               TimeSpan.FromSeconds(20),
               TimeSpan.FromSeconds(20))
     {

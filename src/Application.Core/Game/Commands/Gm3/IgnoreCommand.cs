@@ -28,7 +28,7 @@ public class IgnoreCommand : CommandBase
         bool ignored = AutobanFactory.toggleIgnored(victim.getId());
         player.yellowMessage(victim.getName() + " is " + (ignored ? "now being ignored." : "no longer being ignored."));
         string message_ = player.getName() + (ignored ? " has started ignoring " : " has stopped ignoring ") + victim.getName() + ".";
-        c.CurrentServer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message_));
+        c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message_));
 
     }
 }

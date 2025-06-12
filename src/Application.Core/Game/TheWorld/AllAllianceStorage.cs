@@ -6,12 +6,8 @@ namespace Application.Core.Game.TheWorld
 {
     public class AllAllianceStorage
     {
-        private static ConcurrentDictionary<int, IAlliance?> CachedData { get; set; } = new();
-        public static IAlliance AddOrUpdate(IAlliance alliance) => CachedData[alliance.AllianceId] = alliance;
-        public static IAlliance? GetAllianceById(int id)
-        {
-            return CachedData.GetOrAdd(id, AllianceManager.loadAlliance);
-        }
+        private static ConcurrentDictionary<int, Alliance?> CachedData { get; set; } = new();
+        public static Alliance AddOrUpdate(Alliance alliance) => CachedData[alliance.AllianceId] = alliance;
         public static void Remove(int allianceId)
         {
             CachedData.TryRemove(allianceId, out var _);

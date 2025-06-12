@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+import "Guild/Guild.proto";
+import "Guild/GuildMember.proto";
+
+package Dto;
+
+message JoinGuildRequest {
+	int32 guildId = 1;
+	int32 playerId = 2;
+}
+
+message JoinGuildResponse {
+	int32 code = 1;
+	JoinGuildRequest request = 2;
+	GuildMemberDto member = 3;
+}
+
+message LeaveGuildRequest {
+	int32 playerId = 1;
+}
+
+message LeaveGuildResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	LeaveGuildRequest request = 3;
+}
+
+message ExpelFromGuildRequest {
+	int32 masterId = 1;
+	int32 targetPlayerId = 2;
+}
+
+message ExpelFromGuildResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	ExpelFromGuildRequest request = 3;
+}
+
+
+message UpdateMemberRankRequest {
+	int32 masterId = 1;
+	int32 targetPlayerId = 2;
+	int32 toRank = 3;
+}
+
+message UpdateMemberRankRespons {
+	int32 code = 1;
+	UpdateMemberRankRequest request = 2;
+}
+
+message UpdateGuildNoticeRequest {
+	int32 masterId = 1;
+	string notice = 2;
+}
+
+message UpdateGuildNoticeResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	UpdateGuildNoticeRequest request = 3;
+}
+
+message UpdateGuildRankTitleRequest {
+	int32 masterId = 1;
+	repeated string rankTitles = 2;
+}
+
+message UpdateGuildRankTitleResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	UpdateGuildRankTitleRequest request = 3;
+}
+
+message UpdateGuildGPRequest {
+	int32 masterId = 1;
+	int32 gp = 2;
+}
+
+message UpdateGuildGPResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	UpdateGuildGPRequest request = 3;
+}
+
+message UpdateGuildCapacityRequest {
+	int32 masterId = 1;
+	int32 cost = 2;
+}
+
+message UpdateGuildCapacityResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	UpdateGuildCapacityRequest request = 3;
+}
+
+message GuildDisbandRequest{
+	int32 masterId = 1;
+}
+
+message GuildDisbandResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	GuildDisbandRequest request = 3;
+}
+
+message UpdateGuildEmblemRequest {
+	int32 masterId = 1;
+	int32 logoBg = 2;
+	int32 logoBgColor = 3;
+	int32 logo = 4;
+	int32 logoColor = 5;
+}
+
+message UpdateGuildEmblemResponse {
+	int32 code = 1;
+	int32 guildId = 2;
+	UpdateGuildEmblemRequest request = 3;
+}
+
+message UpdateGuildMemberRankRequest {
+	int32 masterId = 1;
+	int32 targetPlayerId = 2;
+	int32 newRank  = 3;
+}
+
+message UpdateGuildMemberRankResponse {
+	int32 code = 1;
+	int32 guildId =2;
+	UpdateGuildMemberRankRequest request = 3;
+}
+
+
+message CreateGuildRequest {
+	string name = 1;
+	int32 leaderId = 2;
+	repeated int32 members = 3;
+}

@@ -22,7 +22,7 @@ public class FishingRateCommand : CommandBase
             return;
 
         int fishrate = Math.Max(d, 1);
-        c.getChannelServer().Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { FishingRate = fishrate });
+        c.getChannelServer().Container.Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { FishingRate = fishrate });
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Fishing Rate has been changed to " + fishrate + "x."));
     }
 }

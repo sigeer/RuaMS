@@ -95,7 +95,7 @@ public class AutobanFactory : EnumClass
             {
                 return;
             }
-            chr.Client.CurrentServer.BroadcastWorldGMPacket(
+            chr.Client.CurrentServerContainer.BroadcastWorldGMPacket(
                 PacketCreator.sendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason));
         }
         if (YamlConfig.config.server.USE_AUTOBAN_LOG)

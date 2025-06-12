@@ -34,7 +34,7 @@ public class ItemMoveHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(4);
-        if (c.OnlinedCharacter.getAutobanManager().getLastSpam(6) + 300 > c.CurrentServer.getCurrentTime())
+        if (c.OnlinedCharacter.getAutobanManager().getLastSpam(6) + 300 > c.CurrentServerContainer.getCurrentTime())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;

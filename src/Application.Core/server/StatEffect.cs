@@ -1369,7 +1369,7 @@ public class StatEffect
     {
         applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
 
-        long starttime = applyto.getChannelServer().getCurrentTime();
+        long starttime = applyto.Client.CurrentServerContainer.getCurrentTime();
         //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
         //	ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + 99999) - Server.getInstance().getCurrentTime()));
         applyto.registerEffect(this, starttime, long.MaxValue, false);
@@ -1380,7 +1380,7 @@ public class StatEffect
         // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
         applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
 
-        long starttime = applyto.getChannelServer().getCurrentTime();
+        long starttime = applyto.Client.CurrentServerContainer.getCurrentTime();
         applyto.registerEffect(this, starttime, long.MaxValue, false);
     }
 
@@ -1389,7 +1389,7 @@ public class StatEffect
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
 
-        long leftDuration = (starttime + localDuration) - target.getChannelServer().getCurrentTime();
+        long leftDuration = (starttime + localDuration) - target.Client.CurrentServerContainer.getCurrentTime();
         if (leftDuration > 0)
         {
             if (isDash() || isInfusion())
@@ -1451,7 +1451,7 @@ public class StatEffect
 
             // thanks inhyuk for noticing some skill mounts not acting properly for other players when changing maps
             givemount = applyto.mount(ridingMountId, sourceid);
-            givemount.ChannelServer.MountTirednessManager.registerMountHunger(applyto);
+            givemount.ChannelServer.Container.MountTirednessManager.registerMountHunger(applyto);
 
             localDuration = sourceid;
             localsourceid = ridingMountId;
@@ -1556,7 +1556,7 @@ public class StatEffect
                 applyto.sendPacket(buff);
             }
 
-            long starttime = applyto.getChannelServer().getCurrentTime();
+            long starttime = applyto.Client.CurrentServerContainer.getCurrentTime();
             //CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
             //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, localDuration);
             applyto.registerEffect(this, starttime, starttime + localDuration, false);

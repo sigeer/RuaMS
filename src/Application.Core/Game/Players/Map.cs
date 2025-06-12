@@ -241,7 +241,7 @@ namespace Application.Core.Game.Players
                 {
                     if (TeamModel != null)
                     {
-                        sendPacket(PacketCreator.updateParty(Client.getChannelServer(), TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
+                        sendPacket(PacketCreator.updateParty(Client.Channel, TeamModel, PartyOperation.SILENT_UPDATE, this.Id, this.Name));
                         updatePartyMemberHP();
                     }
                 }
@@ -415,7 +415,7 @@ namespace Application.Core.Game.Players
 
         public void showMapOwnershipInfo(IPlayer mapOwner)
         {
-            long curTime = getChannelServer().getCurrentTime();
+            long curTime = Client.CurrentServerContainer.getCurrentTime();
             if (nextWarningTime < curTime)
             {
                 nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds); // show underlevel info again after 1 minute

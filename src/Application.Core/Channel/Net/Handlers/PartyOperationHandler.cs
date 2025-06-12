@@ -45,7 +45,7 @@ public class PartyOperationHandler : ChannelHandlerBase
         {
             case 1:
                 { // create
-                    c.CurrentServer.TeamManager.CreateParty(player, false);
+                    c.CurrentServerContainer.TeamManager.CreateParty(player, false);
                     break;
                 }
             case 2:
@@ -54,7 +54,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                     {
                         var partymembers = player.getPartyMembersOnline();
 
-                        c.CurrentServer.TeamManager.LeaveParty(player);
+                        c.CurrentServerContainer.TeamManager.LeaveParty(player);
                         player.partyOperationUpdate(party, partymembers);
                     }
                     break;
@@ -67,7 +67,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                     InviteResultType res = inviteRes.Result;
                     if (res == InviteResultType.ACCEPTED)
                     {
-                        c.CurrentServer.TeamManager.JoinParty(player, partyid, false);
+                        c.CurrentServerContainer.TeamManager.JoinParty(player, partyid, false);
                     }
                     else
                     {
@@ -97,7 +97,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                         {
                             if (party == null)
                             {
-                                if (!c.CurrentServer.TeamManager.CreateParty(player, false))
+                                if (!c.CurrentServerContainer.TeamManager.CreateParty(player, false))
                                 {
                                     return;
                                 }
@@ -135,7 +135,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                 { 
                     // expel
                     int cid = p.readInt();
-                    c.CurrentServer.TeamManager.ExpelFromParty(party, c, cid);
+                    c.CurrentServerContainer.TeamManager.ExpelFromParty(party, c, cid);
                     break;
                 }
             case 6:
@@ -146,7 +146,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                         return;
                     }
                     int newLeader = p.readInt();
-                    c.CurrentServer.TeamManager.ChangeLeader(player, newLeader);
+                    c.CurrentServerContainer.TeamManager.ChangeLeader(player, newLeader);
                     break;
                 }
         }

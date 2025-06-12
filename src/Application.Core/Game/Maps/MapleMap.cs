@@ -972,7 +972,7 @@ public class MapleMap : IMap
 
     private void registerItemDrop(MapItem mdrop)
     {
-        droppedItems.AddOrUpdate(mdrop, !everlast ? ChannelServer.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
+        droppedItems.AddOrUpdate(mdrop, !everlast ? ChannelServer.Container.getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : long.MaxValue);
     }
 
     public void unregisterItemDrop(MapItem mdrop)
@@ -995,7 +995,7 @@ public class MapleMap : IMap
         objectLock.EnterReadLock();
         try
         {
-            long timeNow = ChannelServer.getCurrentTime();
+            long timeNow = ChannelServer.Container.getCurrentTime();
 
             foreach (var it in droppedItems)
             {
@@ -1164,7 +1164,7 @@ public class MapleMap : IMap
     private void spawnDrop(Item idrop, Point dropPos, IMapObject dropper, IPlayer chr, byte droptype, short questid, short dropDelay)
     {
         MapItem mdrop = new MapItem(idrop, dropPos, dropper, chr, droptype, false, questid);
-        mdrop.setDropTime(ChannelServer.getCurrentTime());
+        mdrop.setDropTime(ChannelServer.Container.getCurrentTime());
         spawnAndAddRangedMapObject(mdrop, c =>
         {
             var chr1 = c.OnlinedCharacter;
@@ -1191,7 +1191,7 @@ public class MapleMap : IMap
     {
         Point droppos = calcDropPos(position, position);
         MapItem mdrop = new MapItem(meso, droppos, dropper, owner, droptype, playerDrop);
-        mdrop.setDropTime(ChannelServer.getCurrentTime());
+        mdrop.setDropTime(ChannelServer.Container.getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, c =>
         {
@@ -1419,22 +1419,22 @@ public class MapleMap : IMap
 
     public void broadcastBalrogVictory(string leaderName)
     {
-        ChannelServer.Transport.DropWorldMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.");
+        ChannelServer.Container.Transport.DropWorldMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + countAlivePlayers() + " players alive.");
     }
 
     public void broadcastHorntailVictory()
     {
-        ChannelServer.Transport.DropWorldMessage(6, "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!");
+        ChannelServer.Container.Transport.DropWorldMessage(6, "[Victory] To the crew that have finally conquered Horned Tail after numerous attempts, I salute thee! You are the true heroes of Leafre!!");
     }
 
     public void broadcastZakumVictory()
     {
-        ChannelServer.Transport.DropWorldMessage(6, "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!");
+        ChannelServer.Container.Transport.DropWorldMessage(6, "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!");
     }
 
     public void broadcastPinkBeanVictory(int channel)
     {
-        ChannelServer.Transport.DropWorldMessage(6, "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!");
+        ChannelServer.Container.Transport.DropWorldMessage(6, "[Victory] In a swift stroke of sorts, the crew that has attempted Pink Bean at channel " + channel + " has ultimately defeated it. The Temple of Time shines radiantly once again, the day finally coming back, as the crew that managed to finally conquer it returns victoriously from the battlefield!!");
     }
 
     private bool removeKilledMonsterObject(Monster monster)
@@ -2389,7 +2389,7 @@ public class MapleMap : IMap
             broadcastMessage(kite.makeDestroyData());
         };
 
-        ChannelServer.MapObjectManager.RegisterTimedMapObject(expireKite, YamlConfig.config.server.KITE_EXPIRE_TIME);
+        ChannelServer.Container.MapObjectManager.RegisterTimedMapObject(expireKite, YamlConfig.config.server.KITE_EXPIRE_TIME);
     }
 
     public void spawnItemDrop(IMapObject dropper, IPlayer owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
@@ -2408,7 +2408,7 @@ public class MapleMap : IMap
 
         Point droppos = calcDropPos(pos, pos);
         MapItem mdrop = new MapItem(item, droppos, dropper, owner, dropType, playerDrop);
-        mdrop.setDropTime(ChannelServer.getCurrentTime());
+        mdrop.setDropTime(ChannelServer.Container.getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, c =>
         {
@@ -2567,11 +2567,11 @@ public class MapleMap : IMap
 
         if (this.getHPDec() > 0)
         {
-            getChannelServer().CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
+            getChannelServer().Container.CharacterHpDecreaseManager.addPlayerHpDecrease(chr);
         }
         else
         {
-            getChannelServer().CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
+            getChannelServer().Container.CharacterHpDecreaseManager.removePlayerHpDecrease(chr);
         }
 
         MapScriptManager msm = ChannelServer.MapScriptManager;
@@ -2807,7 +2807,7 @@ public class MapleMap : IMap
         }
 
         chr.receivePartyMemberHP();
-        ChannelServer.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
+        ChannelServer.Container.CharacterDiseaseManager.registerAnnouncePlayerDiseases(chr.getClient());
     }
 
     public Portal getRandomPlayerSpawnpoint()
@@ -4543,9 +4543,9 @@ public class MapleMap : IMap
             this.mapOwner = chr;
             chr.setOwnedMap(this);
 
-            mapOwnerLastActivityTime = ChannelServer.getCurrentTime();
+            mapOwnerLastActivityTime = ChannelServer.Container.getCurrentTime();
 
-            getChannelServer().MapOwnershipManager.RegisterOwnedMap(this);
+            getChannelServer().Container.MapOwnershipManager.RegisterOwnedMap(this);
             return true;
         }
         else
@@ -4569,7 +4569,7 @@ public class MapleMap : IMap
 
             mapOwnerLastActivityTime = long.MaxValue;
 
-            getChannelServer().MapOwnershipManager.UnregisterOwnedMap(this);
+            getChannelServer().Container.MapOwnershipManager.UnregisterOwnedMap(this);
             return true;
         }
         else
@@ -4580,7 +4580,7 @@ public class MapleMap : IMap
 
     private void refreshOwnership()
     {
-        mapOwnerLastActivityTime = ChannelServer.getCurrentTime();
+        mapOwnerLastActivityTime = ChannelServer.Container.getCurrentTime();
     }
 
     public bool isOwnershipRestricted(IPlayer chr)
@@ -4605,7 +4605,7 @@ public class MapleMap : IMap
 
     public void checkMapOwnerActivity()
     {
-        long timeNow = ChannelServer.getCurrentTime();
+        long timeNow = ChannelServer.Container.getCurrentTime();
         if (timeNow - mapOwnerLastActivityTime > 60000)
         {
             if (unclaimOwnership() != null)

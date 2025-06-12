@@ -22,7 +22,7 @@ public class BossDropRateCommand : CommandBase
         if (int.TryParse(paramsValue[0], out var d))
         {
             int bossdroprate = Math.Max(d, 1);
-            c.getChannelServer().Transport.SendWorldConfig(new WorldConfigPatch() { BossDropRate = bossdroprate });
+            c.getChannelServer().Container.Transport.SendWorldConfig(new WorldConfigPatch() { BossDropRate = bossdroprate });
             c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Boss Drop Rate has been changed to " + bossdroprate + "x."));
         }
 

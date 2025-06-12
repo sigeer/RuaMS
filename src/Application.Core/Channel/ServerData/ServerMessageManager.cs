@@ -8,11 +8,11 @@ namespace Application.Core.Channel.ServerData
         private Dictionary<int, int> disabledServerMessages = new();
         private object srvMessagesLock = new object();
 
-        readonly WorldChannel worldChannel;
+        readonly WorldChannelServer _server;
 
-        public ServerMessageManager(WorldChannel worldChannel) : base($"ServerMessageController_{worldChannel.InstanceId}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
+        public ServerMessageManager(WorldChannelServer server) : base($"ServerMessageController_{server.ServerName}", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
         {
-            this.worldChannel = worldChannel;
+            this._server = server;
         }
 
         public void resetDisabledServerMessages()
@@ -90,11 +90,11 @@ namespace Application.Core.Channel.ServerData
 
             foreach (int chrid in toRemove)
             {
-                var chr = worldChannel.Players.getCharacterById(chrid);
+                var chr = _server.FindPlayerById(chrid);
 
                 if (chr != null && chr.isLoggedinWorld())
                 {
-                    chr.sendPacket(PacketCreator.serverMessage(worldChannel.WorldServerMessage));
+                    chr.sendPacket(PacketCreator.serverMessage(_server.WorldServerMessage));
                 }
             }
         }
