@@ -133,40 +133,6 @@ public class Guild
         }
     }
 
-
-    public void writeToDB(bool isDisband)
-    {
-        //try
-        //{
-        //    using var dbContext = new DBContext();
-        //    if (!isDisband)
-        //    {
-        //        dbContext.Guilds.Attach(Mapper.Map<GuildEntity>(this)).State = EntityState.Modified;
-        //        dbContext.SaveChanges();
-        //    }
-        //    else
-        //    {
-        //        dbContext.Characters.Where(x => x.GuildId == GuildId).ExecuteUpdate(x => x.SetProperty(y => y.GuildId, 0)
-        //                .SetProperty(y => y.GuildRank, 5));
-        //        dbContext.Guilds.Where(x => x.GuildId == GuildId).ExecuteDelete();
-
-        //        Monitor.Enter(membersLock);
-        //        try
-        //        {
-        //            this.broadcast(GuildPackets.guildDisband(GuildId));
-        //        }
-        //        finally
-        //        {
-        //            Monitor.Exit(membersLock);
-        //        }
-        //    }
-        //}
-        //catch (Exception e)
-        //{
-        //    log.Error(e.ToString());
-        //}
-    }
-
     public int getId()
     {
         return GuildId;
@@ -489,7 +455,6 @@ public class Guild
     public void setGuildNotice(string notice)
     {
         this.Notice = notice;
-        this.writeToDB(false);
 
         Monitor.Enter(membersLock);
         try
@@ -532,8 +497,6 @@ public class Guild
         {
             Monitor.Exit(membersLock);
         }
-
-        this.writeToDB(false);
     }
 
     public void disbandGuild()
@@ -542,7 +505,6 @@ public class Guild
         try
         {
             members.Clear();
-            this.writeToDB(true);
             this.broadcast(null, -1, BCOp.DISBAND);
         }
         finally
@@ -557,7 +519,6 @@ public class Guild
         this.LogoBgColor = bgcolor;
         this.Logo = logo;
         this.LogoColor = logocolor;
-        this.writeToDB(false);
 
         Monitor.Enter(membersLock);
         try
@@ -580,7 +541,6 @@ public class Guild
             return false;
         }
         Capacity += 5;
-        this.writeToDB(false);
 
         Monitor.Enter(membersLock);
         try
@@ -598,7 +558,6 @@ public class Guild
     public void gainGP(int amount)
     {
         GP += amount;
-        this.writeToDB(false);
         this.guildMessage(GuildPackets.updateGP(GuildId, GP));
         this.guildMessage(PacketCreator.getGPMessage(amount));
     }
@@ -606,7 +565,6 @@ public class Guild
     public void removeGP(int amount)
     {
         GP -= amount;
-        this.writeToDB(false);
         this.guildMessage(GuildPackets.updateGP(GuildId, GP));
     }
 
@@ -627,26 +585,6 @@ public class Guild
             mgc.Value.AllianceRank = 5;
             if (mgc.Value.GuildRank == 1)
                 mgc.Value.AllianceRank = 2;
-        }
-    }
-
-    public void resetAllianceGuildPlayersRank()
-    {
-        Monitor.Enter(membersLock);
-        try
-        {
-            SendChannelMember(chr =>
-            {
-                chr.setAllianceRank(5);
-            });
-            foreach (var mgc in members)
-            {
-                mgc.Value.AllianceRank = 5;
-            }
-        }
-        finally
-        {
-            Monitor.Exit(membersLock);
         }
     }
 
@@ -673,8 +611,6 @@ public class Guild
             {
                 mc.AllianceRank = 5;
             }
-
-            mc.saveGuildStatus();
         }
         if (bDifferentGuild)
         {

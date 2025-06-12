@@ -225,8 +225,6 @@ namespace Application.Core.Channel.ServerData
                         chr.dropMessage(1, "You have successfully joined the new Guild.");
                     }
                 }
-
-                chr.saveGuildStatus(); // update database
             }
 
             guild.BroadcastDisplay();

@@ -549,7 +549,6 @@ namespace Application.Core.Game.Players
         bool runTirednessSchedule();
         //void saveCharToDB();
         void saveCharToDB(bool notAutosave = true, bool isLogoff = false);
-        void saveGuildStatus();
         void saveLocation(string type);
         void saveLocationOnWarp();
         int sellAllItemsFromName(sbyte invTypeId, string name);

@@ -27,8 +27,6 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<AllianceEntity> Alliances { get; set; }
 
-    public virtual DbSet<Allianceguild> AllianceGuilds { get; set; }
-
     public virtual DbSet<AreaInfo> AreaInfos { get; set; }
 
     public virtual DbSet<BbsReply> BbsReplies { get; set; }
@@ -229,25 +227,6 @@ public partial class DBContext : DbContext
                 .HasMaxLength(11)
                 .HasDefaultValueSql("'Member'")
                 .HasColumnName("rank5");
-        });
-
-        modelBuilder.Entity<Allianceguild>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("allianceguilds");
-
-            entity.Property(e => e.Id)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("id");
-            entity.Property(e => e.AllianceId)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(10)")
-                .HasColumnName("allianceid");
-            entity.Property(e => e.GuildId)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("int(10)")
-                .HasColumnName("guildid");
         });
 
         modelBuilder.Entity<AreaInfo>(entity =>

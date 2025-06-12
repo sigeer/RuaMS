@@ -4122,21 +4122,6 @@ public partial class Player
         }
     }
 
-
-    public void saveGuildStatus()
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            dbContext.Characters.Where(x => x.Id == getId())
-                .ExecuteUpdate(x => x.SetProperty(y => y.GuildId, GuildId).SetProperty(y => y.GuildRank, GuildRank).SetProperty(y => y.AllianceRank, AllianceRank));
-        }
-        catch (Exception se)
-        {
-            Log.Error(se.ToString());
-        }
-    }
-
     public void saveLocationOnWarp()
     {  // suggestion to remember the map before warp command thanks to Lei
         Portal? closest = MapModel.findClosestPortal(getPosition());

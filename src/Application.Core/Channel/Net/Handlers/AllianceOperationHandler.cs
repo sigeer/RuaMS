@@ -160,8 +160,6 @@ public class AllianceOperationHandler : ChannelHandlerBase
                 chr.dropMessage("Feature not available");
                 break;
         }
-
-        alliance?.saveToDB();
     }
 
 }

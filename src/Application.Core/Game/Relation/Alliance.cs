@@ -55,31 +55,6 @@ public class Alliance
     }
 
 
-    public void saveToDB()
-    {
-        using var dbContext = new DBContext();
-        using var dbTrans = dbContext.Database.BeginTransaction();
-        dbContext.Alliances.Where(x => x.Id == AllianceId)
-            .ExecuteUpdate(x => x.SetProperty(y => y.Capacity, this.Capacity)
-                    .SetProperty(y => y.Notice, this.Notice)
-                    .SetProperty(y => y.Rank1, RankTitles[0])
-                    .SetProperty(y => y.Rank2, RankTitles[1])
-                    .SetProperty(y => y.Rank3, RankTitles[2])
-                    .SetProperty(y => y.Rank4, RankTitles[3])
-                    .SetProperty(y => y.Rank5, RankTitles[4]));
-
-
-        dbContext.AllianceGuilds.Where(x => x.AllianceId == AllianceId).ExecuteDelete();
-        dbContext.AllianceGuilds.AddRange(Guilds.Keys.Select(x => new Allianceguild()
-        {
-            AllianceId = AllianceId,
-            GuildId = x
-        }));
-        dbContext.SaveChanges();
-        dbTrans.Commit();
-    }
-
-
     public bool RemoveGuildFromAlliance(int guildId, int method)
     {
         if (method == 1 && GetLeaderGuildId() == guildId)

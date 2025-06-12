@@ -76,6 +76,9 @@ namespace Application.Core.Login.Services
                 await _dataStorage.CommitAccountGameAsync(dbContext);
                 await _dataStorage.CommitAccountLoginRecord(dbContext);
 
+                await _dataStorage.CommitAllianceAsync(dbContext);
+                await _dataStorage.CommitGuildAsync(dbContext);
+
                 await dbTrans.CommitAsync();
             }
             finally
@@ -102,6 +105,9 @@ namespace Application.Core.Login.Services
                 await _dataStorage.CommitAccountCtrlAsync(dbContext);
                 await _dataStorage.CommitAccountGameAsync(dbContext);
                 await _dataStorage.CommitAccountLoginRecord(dbContext);
+
+                await _dataStorage.CommitAllianceAsync(dbContext);
+                await _dataStorage.CommitGuildAsync(dbContext);
 
                 await _dataStorage.CommitDueyPackageAsync(dbContext);
 

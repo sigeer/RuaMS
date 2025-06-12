@@ -299,8 +299,8 @@ namespace Application.Core.Login.ServerData
                 }
                 else
                 {
-                    guildAction(guild);
                     _dataStorage.SetGuildUpdate(guild!);
+                    guildAction(guild);
                     code = GuildUpdateResult.Success;
                     return guild.GuildId;
                 }
