@@ -196,14 +196,9 @@ public class GuildOperationHandler : ChannelHandlerBase
                 short logo = p.readShort();
                 byte logocolor = p.readByte();
 
-                mc.gainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);
-
                 _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
 
-                if (mc.AllianceModel != null)
-                {
-                    mc.AllianceModel.BroadcastGuildAlliance();
-                }
+
                 break;
             case 0x10:
                 if (mc.GuildModel == null || mc.GuildRank > 2)

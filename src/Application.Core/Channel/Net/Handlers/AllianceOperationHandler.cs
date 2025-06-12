@@ -93,14 +93,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
             case 0x03: // Send Invite
                 string guildName = p.readString();
 
-                if (alliance!.getGuilds().Count == alliance.getCapacity())
-                {
-                    chr.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-                }
-                else
-                {
-                    _guildManager.SendAllianceInvitation(c, guildName, alliance.getId());
-                }
+                _guildManager.SendAllianceInvitation(c, guildName);
 
                 break;
             case 0x04:

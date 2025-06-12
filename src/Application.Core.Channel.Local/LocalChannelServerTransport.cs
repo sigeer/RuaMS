@@ -568,7 +568,7 @@ namespace Application.Core.Channel.Local
 
         public Dto.ShopDto? GetShop(int id, bool isShopId)
         {
-            return _mapper.Map<Dto.ShopDto>(_shopManager.LoadFromDB(id, isShopId));
+            return _shopManager.LoadFromDB(id, isShopId);
         }
 
         public int[] GetCardTierSize()

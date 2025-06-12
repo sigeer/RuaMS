@@ -381,6 +381,7 @@ namespace Application.Core.Channel.ServerData
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId, (guild) =>
             {
                 guild.setGuildEmblem((short)data.Request.LogoBg, (byte)data.Request.LogoBgColor, (short)data.Request.Logo, (byte)data.Request.LogoColor);
+                GetAllianceById(guild.AllianceId)?.BroadcastGuildAlliance();
                 return true;
             }, master =>
             {
@@ -404,9 +405,9 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        public void IncreaseGuildCapacity(IPlayer chr)
+        public void IncreaseGuildCapacity(IPlayer chr, int cost)
         {
-            _transport.SendUpdateGuildCapacity(new Dto.UpdateGuildCapacityRequest { MasterId = chr.Id });
+            _transport.SendUpdateGuildCapacity(new Dto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
         public void OnGuildCapacityIncreased(UpdateGuildCapacityResponse data)
@@ -446,8 +447,22 @@ namespace Application.Core.Channel.ServerData
             HandleGuildResponse(data.Code, data.GuildId, data.Request.MasterId,
                 guild =>
                 {
-                    guild.disbandGuild();
-                    return CachedData.TryRemove(guild.GuildId, out _);
+                    if (CachedData.TryRemove(guild.GuildId, out _))
+                    {
+                        guild.disbandGuild();
+
+                        if (guild.AllianceId > 0)
+                        {
+                            var alliance = GetAllianceById(guild.AllianceId);
+                            if (alliance != null)
+                            {
+                                return alliance.RemoveGuildFromAlliance(guild.GuildId, 1);
+                            }
+                        }
+
+                        return true;
+                    }
+                    return false;
                 });
         }
 
@@ -505,9 +520,17 @@ namespace Application.Core.Channel.ServerData
 
             return alliance;
         }
-        public void SendAllianceInvitation(IChannelClient c, string targetGuildName, int allianceId)
+        public void SendAllianceInvitation(IChannelClient c, string targetGuildName)
         {
-            var mg = AllGuildStorage.GetGuildByName(targetGuildName);
+            var alliance = c.OnlinedCharacter.AllianceModel;
+            if (alliance == null)
+                return;
+
+            if (alliance.getGuilds().Count == alliance.getCapacity())
+            {
+                c.OnlinedCharacter.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
+            }
+            var mg = CachedData.Values.FirstOrDefault(x => x.Name == targetGuildName);
             if (mg == null)
             {
                 c.OnlinedCharacter.dropMessage(5, "The entered guild does not exist.");
@@ -529,7 +552,7 @@ namespace Application.Core.Channel.ServerData
                     {
                         if (InviteType.ALLIANCE.CreateInvite(new AllianceInviteRequest(c.OnlinedCharacter, victim)))
                         {
-                            victim.sendPacket(GuildPackets.allianceInvite(allianceId, c.OnlinedCharacter));
+                            victim.sendPacket(GuildPackets.allianceInvite(alliance.AllianceId, c.OnlinedCharacter));
                         }
                         else
                         {

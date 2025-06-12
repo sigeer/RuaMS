@@ -70,6 +70,7 @@ namespace Application.Core.Login.ServerData
 
                 _currentAllianceId = model.Id > _currentAllianceId ? model.Id : _currentAllianceId;
             }
+            _logger.LogInformation("共加载了{GuildCount}个家族，{AllianceCount}个联盟", allGuilds.Count, allAliance.Count);
         }
 
         public Dto.GuildDto? CreateGuild(string guildName, int leaderId, int[] members)
@@ -87,9 +88,12 @@ namespace Application.Core.Login.ServerData
             _nameGuildDataSource[guildModel.Name] = guildModel;
 
             var memberList = members.Select(_server.CharacterManager.FindPlayerById).Where(x => x != null).ToList();
+            if (memberList.Any(x => x!.Character.GuildId != 0))
+                return null;
+
             foreach (var member in memberList)
             {
-                if (member.Character.Id == leaderId)
+                if (member!.Character.Id == leaderId)
                 {
                     header.Character.GuildId = guildModel.GuildId;
                     header.Character.GuildRank = 1;
@@ -220,7 +224,7 @@ namespace Application.Core.Login.ServerData
 
             var guild1 = GetLocalGuild(first.Character.GuildId);
             var guild2 = GetLocalGuild(second.Character.GuildId);
-            if (guild1 == null || guild2 == null)
+            if (guild1 == null || guild2 == null || guild1.AllianceId != 0 || guild2.AllianceId != 0)
                 return null;
 
             var allianceModel = new AllianceModel()
@@ -333,83 +337,35 @@ namespace Application.Core.Login.ServerData
 
         public void UpdateGuildGP(UpdateGuildGPRequest request)
         {
-            var response = new UpdateGuildGPResponse { Code = 0, Request = request };
-            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
-            if (master == null)
+            var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
-                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
-            }
-            else
-            {
-                var guild = GetLocalGuild(master.Character.GuildId);
-                if (guild == null)
-                {
-                    response.Code = (int)GuildUpdateResult.GuildNotExisted;
-                }
-                else
-                {
-                    response.GuildId = guild.GuildId;
-
-                    guild.GP = request.Gp;
-                }
-            }
-
+                guild.GP = request.Gp;
+            }, out var code);
+            var response = new UpdateGuildGPResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildGPUpdate(response);
         }
 
         public void UpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
         {
-            var response = new UpdateGuildRankTitleResponse { Code = 0, Request = request };
-            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
-            if (master == null)
+            var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
-                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
-            }
-            else
-            {
-                var guild = GetLocalGuild(master.Character.GuildId);
-                if (guild == null)
-                {
-                    response.Code = (int)GuildUpdateResult.GuildNotExisted;
-                }
-                else
-                {
-                    response.GuildId = guild.GuildId;
-
-                    guild.Rank1Title = request.RankTitles[0];
-                    guild.Rank2Title = request.RankTitles[1];
-                    guild.Rank3Title = request.RankTitles[2];
-                    guild.Rank4Title = request.RankTitles[3];
-                    guild.Rank5Title = request.RankTitles[4];
-                }
-            }
-
+                guild.Rank1Title = request.RankTitles[0];
+                guild.Rank2Title = request.RankTitles[1];
+                guild.Rank3Title = request.RankTitles[2];
+                guild.Rank4Title = request.RankTitles[3];
+                guild.Rank5Title = request.RankTitles[4];
+            }, out var code);
+            var response = new UpdateGuildRankTitleResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildRankTitleUpdate(response);
         }
 
         public void UpdateGuildNotice(UpdateGuildNoticeRequest request)
         {
-            var response = new UpdateGuildNoticeResponse { Code = 0, Request = request };
-            var master = _server.CharacterManager.FindPlayerById(request.MasterId);
-            if (master == null)
+            var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
-                response.Code = (int)GuildUpdateResult.PlayerNotExisted;
-            }
-            else
-            {
-                var guild = GetLocalGuild(master.Character.GuildId);
-                if (guild == null)
-                {
-                    response.Code = (int)GuildUpdateResult.GuildNotExisted;
-                }
-                else
-                {
-                    guild.Notice = request.Notice;
-
-                    response.GuildId = guild.GuildId;
-                }
-            }
-
+                guild.Notice = request.Notice;
+            }, out var code);
+            var response = new UpdateGuildNoticeResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildNoticeUpdate(response);
         }
 
@@ -449,6 +405,13 @@ namespace Application.Core.Login.ServerData
                         member.Character.GuildId = 0;
                         member.Character.GuildRank = 5;
                     }
+                }
+                if (guild.AllianceId > 0)
+                {
+                    var alliance = GetLocalAlliance(guild.AllianceId);
+                    if (alliance != null)
+                        alliance.TryRemoveGuild(guild.GuildId, out _);
+                    guild.AllianceId = 0;
                 }
                 _idGuildDataSource.Remove(guild.GuildId, out _);
                 _nameGuildDataSource.Remove(guild.Name, out _);
@@ -520,10 +483,13 @@ namespace Application.Core.Login.ServerData
                 if (master.Character.Id == guild.Leader)
                 {
                     // disband
+                    DisbandGuild(new GuildDisbandRequest { MasterId = request.PlayerId });
                 }
-                master.Character.GuildId = 0;
-                master.Character.GuildRank = 5;
-
+                else
+                {
+                    master.Character.GuildId = 0;
+                    master.Character.GuildRank = 5;
+                }
                 return 0;
             }, out var code);
 
@@ -603,7 +569,6 @@ namespace Application.Core.Login.ServerData
             }
             else
             {
-
                 var guild = GetLocalGuild(master.Character.GuildId);
                 if (guild == null)
                 {
@@ -632,7 +597,9 @@ namespace Application.Core.Login.ServerData
                                     if (member != null)
                                         member.Character.AllianceRank = 5;
                                 }
+                                guild.AllianceId = alliance.Id;
                                 master.Character.AllianceRank = 2;
+
                                 response.GuildId = guild.GuildId;
                                 response.AllianceId = alliance.Id;
                             }
@@ -678,9 +645,9 @@ namespace Application.Core.Login.ServerData
         {
             var (allianceId, guildId) = HandleAllianceRequest(request.MasterId, (master, alliance, guild) =>
             {
-                if (master.Character.GuildRank != 1)
+                if (master.Character.AllianceRank != 1)
                 {
-                    return AllianceUpdateResult.NotGuildLeader;
+                    return AllianceUpdateResult.NotAllianceLeader;
                 }
                 if (alliance.TryRemoveGuild(guild.GuildId, out var code))
                 {

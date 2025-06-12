@@ -12,6 +12,7 @@ namespace Application.Shared.Guild
         GuildAlreadyInAlliance,
         NotAllianceLeader,
         PlayerNotOnlined,
-        RankLimitted
+        RankLimitted,
+        CapacityFull
     }
 }

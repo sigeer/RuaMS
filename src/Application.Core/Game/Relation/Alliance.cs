@@ -62,21 +62,24 @@ public class Alliance
             return false;
         }
 
-        if (!Guilds.TryGetValue(guildId, out var guild) || guild == null)
-            throw new BusinessException($"GuildId {guildId} not found or not in alliance");
+        if (Guilds.TryRemove(guildId, out var guild))
+        {
+            guild.AllianceId = 0;
 
-        broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild), -1, -1);
-        removeGuild(guildId);
+            broadcastMessage(GuildPackets.removeGuildFromAlliance(this, guild), -1, -1);
 
-        BroadcastGuildAlliance();
-        BroadcastNotice();
-        guild.broadcast(GuildPackets.disbandAlliance(getId()));
+            BroadcastGuildAlliance();
+            BroadcastNotice();
+            guild.broadcast(GuildPackets.disbandAlliance(getId()));
 
-        if (method == 1)
-            dropMessage("[" + guild.Name + "] guild has left the union.");
-        else if (method == 2)
-            dropMessage("[" + guild.Name + "] guild has been expelled from the union.");
-        return true;
+            if (method == 1)
+                dropMessage("[" + guild.Name + "] guild has left the union.");
+            else if (method == 2)
+                dropMessage("[" + guild.Name + "] guild has been expelled from the union.");
+            return true;
+        }
+        return false;
+        //throw new BusinessException($"GuildId {guildId} not found or not in alliance");
     }
 
     public void updateAlliancePackets()
@@ -87,15 +90,6 @@ public class Alliance
             this.BroadcastNotice();
         }
     }
-
-    private bool removeGuild(int gid)
-    {
-        var r = Guilds.TryRemove(gid, out var guild);
-        if (r && guild != null)
-            guild.AllianceId = 0;
-        return r;
-    }
-
 
     public bool TryAddGuild(Guild guild)
     {

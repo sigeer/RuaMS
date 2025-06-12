@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Game.TheWorld;
 using Application.Shared.Guild;
 using AutoMapper;
 using AutoMapper.Execution;
@@ -43,8 +44,6 @@ public class Guild
 
 
     private static ILogger log = LogFactory.GetLogger(LogType.Guild);
-    public Alliance? AllianceModel => _serverContainer.GuildManager.GetAllianceById(AllianceId);
-    public bool IsValid => members.Count > 0;
 
 
     private ConcurrentDictionary<int, GuildMember> members;

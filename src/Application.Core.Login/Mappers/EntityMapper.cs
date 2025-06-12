@@ -92,8 +92,8 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<DueyPackageEntity, DueyPackageModel>();
             CreateMap<NoteEntity, Dto.NoteDto>();
-            CreateMap<ShopEntity, ShopModel>();
-            CreateMap<Shopitem, ShopItemModel>();
+            CreateMap<ShopEntity, Dto.ShopDto>();
+            CreateMap<Shopitem, Dto.ShopItemDto>();
 
             CreateMap<Ring_Entity, RingModel>();
             CreateMap<GiftRingPair, Dto.GiftDto>()
@@ -103,6 +103,7 @@ namespace Application.Core.Login.Mappers
             CreateMap<SpecialCashItemEntity, Dto.SpecialCashItemDto>();
 
             CreateMap<GuildEntity, GuildModel>();
+            CreateMap<AllianceEntity, AllianceModel>();
         }
     }
 }

@@ -807,16 +807,16 @@ namespace Application.Core.Managers
         //    }
         //}
 
-        public static void deleteGuild(IPlayer player)
-        {
-            using var dbContext = new DBContext();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-            dbContext.Characters.Where(x => x.GuildId == player.GuildId).ExecuteUpdate(x => x.SetProperty(y => y.GuildId, 0).SetProperty(y => y.GuildRank, 5));
-            dbContext.Guilds.Where(x => x.GuildId == player.GuildId).ExecuteDelete();
-            dbTrans.Commit();
-            player.GuildId = 0;
-            player.GuildRank = 5;
-        }
+        //public static void deleteGuild(IPlayer player)
+        //{
+        //    using var dbContext = new DBContext();
+        //    using var dbTrans = dbContext.Database.BeginTransaction();
+        //    dbContext.Characters.Where(x => x.GuildId == player.GuildId).ExecuteUpdate(x => x.SetProperty(y => y.GuildId, 0).SetProperty(y => y.GuildRank, 5));
+        //    dbContext.Guilds.Where(x => x.GuildId == player.GuildId).ExecuteDelete();
+        //    dbTrans.Commit();
+        //    player.GuildId = 0;
+        //    player.GuildRank = 5;
+        //}
 
         public static void ShowAllEquipFeatures(IPlayer player)
         {

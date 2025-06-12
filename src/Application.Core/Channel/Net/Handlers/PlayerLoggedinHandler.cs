@@ -183,11 +183,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (player.GuildId > 0)
             {
-                if (player.GuildModel == null)
-                {
-                    CharacterManager.deleteGuild(player);
-                }
-                else
+                if (player.GuildModel != null)
                 {
                     c.sendPacket(GuildPackets.showGuildInfo(player));
                     if (player.AllianceModel != null)

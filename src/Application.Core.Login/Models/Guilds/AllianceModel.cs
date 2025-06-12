@@ -28,10 +28,17 @@ namespace Application.Core.Login.Models.Guilds
             code = 0;
 
             if (Guilds.Count >= Capacity)
+            {
+                code = AllianceUpdateResult.CapacityFull;
                 return false;
+            }
 
             if (Guilds.Contains(guild))
+            {
+                code = AllianceUpdateResult.GuildAlreadyInAlliance;
                 return false;
+            }
+                
 
             Guilds.Add(guild);
             return true;
@@ -41,11 +48,7 @@ namespace Application.Core.Login.Models.Guilds
         {
             code = 0;
 
-            if (!Guilds.Contains(guild))
-                return false;
-
-            Guilds.Remove(guild);
-            return true;
+            return Guilds.Remove(guild);
         }
     }
 }

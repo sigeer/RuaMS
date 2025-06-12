@@ -2408,7 +2408,8 @@ public partial class Player
 
     public Alliance? getAlliance()
     {
-        return getGuild()?.AllianceModel;
+        var guild = getGuild();
+        return guild == null ? null : Client.CurrentServerContainer.GuildManager.GetAllianceById(guild.AllianceId);
     }
 
     public int getGuildId()
@@ -2988,7 +2989,7 @@ public partial class Player
             return;
         }
 
-        Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this);
+        Client.CurrentServerContainer.GuildManager.IncreaseGuildCapacity(this, cost);
 
     }
 
