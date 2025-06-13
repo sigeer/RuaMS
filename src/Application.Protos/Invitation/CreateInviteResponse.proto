@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message CreateInviteResponse {
-  int32 code = 1;
-}

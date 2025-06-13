@@ -1,37 +1,14 @@
-using Application.Core.Game.Invites;
-using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
-using Application.Core.Managers;
 using Application.Core.ServerTransports;
-using Application.Shared.Guild;
-using Application.Shared.Team;
-using Application.Utility;
+using Application.Shared.Invitations;
 using AutoMapper;
-using AutoMapper.Execution;
 using constants.game;
 using Dto;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MySqlX.XDevAPI.Common;
 using net.server.coordinator.matchchecker;
 using net.server.guild;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Org.BouncyCastle.Asn1.X509;
-using Serilog;
-using server.quest;
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Drawing;
-using System.Numerics;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Cryptography;
-using System.Xml.Linq;
-using tools;
-using XmlWzReader;
-using static Mysqlx.Notice.Warning.Types;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Channel.ServerData
 {
@@ -86,55 +63,21 @@ namespace Application.Core.Channel.ServerData
             return guildMembers;
         }
 
-        public GuildResponse? SendInvitation(IChannelClient c, string targetName)
+        public void SendInvitation(IChannelClient c, string targetName)
         {
-            var sender = c.OnlinedCharacter;
-
-            var mc = c.CurrentServer.getPlayerStorage().getCharacterByName(targetName);
-            if (mc == null)
+            _transport.SendInvitation(new Dto.CreateInviteRequest
             {
-                return GuildResponse.NOT_IN_CHANNEL;
-            }
-            if (mc.GuildId > 0)
-            {
-                return GuildResponse.ALREADY_IN_GUILD;
-            }
-
-            if (InviteType.GUILD.CreateInvite(new GuildInviteRequest(sender, mc)))
-            {
-                mc.sendPacket(GuildPackets.guildInvite(sender.GuildId, sender.getName()));
-                return null;
-            }
-            else
-            {
-                return GuildResponse.MANAGING_INVITE;
-            }
+                Type = (int)InviteTypeEnum.GUILD,
+                FromId = c.OnlinedCharacter.Id,
+                ToName = targetName,
+            });
         }
 
-        public bool AnswerInvitation(IPlayer answer, int guildId, bool operation)
+
+
+        public void AnswerInvitation(IPlayer answer, bool operation)
         {
-            InviteResult res = InviteType.GUILD.AnswerInvite(answer.Id, guildId, operation);
-
-            GuildResponse? mgr = null;
-            switch (res.Result)
-            {
-                case InviteResultType.ACCEPTED:
-                    return true;
-
-                case InviteResultType.DENIED:
-                    mgr = GuildResponse.DENIED_INVITE;
-                    break;
-
-                default:
-                    mgr = GuildResponse.NOT_FOUND_INVITE;
-                    break;
-            }
-
-            if (mgr != null && res.Request != null)
-            {
-                res.Request.From.sendPacket(mgr.Value.getPacket(answer.getName()));
-            }
-            return false;
+            _transport.AnswerInvitation(new AnswerInviteRequest { Type = (int)InviteTypeEnum.GUILD, MasterId = answer.Id, Ok = operation });
         }
 
         public Guild? CreateGuild(string guildName, int playerId, HashSet<IPlayer> members, Action failCallback)
@@ -231,11 +174,6 @@ namespace Application.Core.Channel.ServerData
 
 
             return guild;
-        }
-
-        public void AddMember(IPlayer player, int guildId)
-        {
-            _transport.SendPlayerJoinGuild(new JoinGuildRequest { GuildId = guildId, PlayerId = player.Id });
         }
 
         public void OnPlayerJoinGuild(JoinGuildResponse data)
@@ -548,51 +486,19 @@ namespace Application.Core.Channel.ServerData
                 }
                 else
                 {
-                    var victim = c.CurrentServer.Players.getCharacterById(mg.getLeaderId());
-                    if (victim == null)
+                    _transport.SendInvitation(new CreateInviteRequest
                     {
-                        c.OnlinedCharacter.dropMessage(5, "The master of the guild that you offered an invitation is currently not online.");
-                    }
-                    else
-                    {
-                        if (InviteType.ALLIANCE.CreateInvite(new AllianceInviteRequest(c.OnlinedCharacter, victim)))
-                        {
-                            victim.sendPacket(GuildPackets.allianceInvite(alliance.AllianceId, c.OnlinedCharacter));
-                        }
-                        else
-                        {
-                            c.OnlinedCharacter.dropMessage(5, "The master of the guild that you offered an invitation is currently managing another invite.");
-                        }
-                    }
+                        Type = (int)InviteTypeEnum.ALLIANCE,
+                        FromId = c.OnlinedCharacter.Id,
+                        ToName = targetGuildName
+                    });
                 }
             }
         }
 
-        public bool AnswerAllianceInvitation(int targetId, string targetGuildName, int allianceId, bool answer)
+        public void AnswerAllianceInvitation(IPlayer chr, bool answer)
         {
-            InviteResult res = InviteType.ALLIANCE.AnswerInvite(targetId, allianceId, answer);
-
-            string msg;
-            switch (res.Result)
-            {
-                case InviteResultType.ACCEPTED:
-                    return true;
-
-                case InviteResultType.DENIED:
-                    msg = "[" + targetGuildName + "] guild has denied your guild alliance invitation.";
-                    break;
-
-                default:
-                    msg = "The guild alliance request has not been accepted, since the invitation expired.";
-                    break;
-            }
-
-            if (res.Request != null)
-            {
-                res.Request.From.dropMessage(5, msg);
-            }
-
-            return false;
+            _transport.AnswerInvitation(new AnswerInviteRequest { MasterId = chr.Id, Ok = answer, Type = (int)InviteTypeEnum.ALLIANCE });
         }
         public Alliance? GetAllianceById(int id)
         {
@@ -693,28 +599,6 @@ namespace Application.Core.Channel.ServerData
                 {
                     return alliance.RemoveGuildFromAlliance(data.GuildId, 2);
                 });
-        }
-
-        public void GuildJoinAlliance(IPlayer player, int allianceId, int guildId)
-        {
-            var alliance = GetAllianceById(allianceId);
-            if (alliance == null)
-            {
-                return;
-            }
-
-            if (!AnswerAllianceInvitation(player.getId(), player.getGuild()!.Name, allianceId, true))
-            {
-                return;
-            }
-
-            if (alliance.getGuilds().Count == alliance.getCapacity())
-            {
-                player.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-                return;
-            }
-
-            _transport.SendGuildJoinAlliance(new Dto.GuildJoinAllianceRequest { MasterId = player.Id, AllianceId = allianceId });
         }
         public void OnGuildJoinAlliance(GuildJoinAllianceResponse data)
         {

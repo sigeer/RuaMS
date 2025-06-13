@@ -21,9 +21,7 @@
 */
 
 
-using Application.Core.Game.Invites;
-using Application.Core.Game.Players;
-using Application.Utility.Configs;
+using Application.Core.Channel.ServerData;
 using client;
 using tools;
 
@@ -35,6 +33,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class FamilyUseHandler : ChannelHandlerBase
 {
+    readonly FamilyManager _manager;
+
+    public FamilyUseHandler(FamilyManager manager)
+    {
+        _manager = manager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
@@ -49,10 +54,11 @@ public class FamilyUseHandler : ChannelHandlerBase
             return; // shouldn't even be able to request it
         }
         c.sendPacket(PacketCreator.getFamilyInfo(entry));
+        var toName = p.readString();
         IPlayer? victim;
         if (type == FamilyEntitlement.FAMILY_REUINION || type == FamilyEntitlement.SUMMON_FAMILY)
         {
-            victim = c.CurrentServer.getPlayerStorage().getCharacterByName(p.readString());
+            victim = c.CurrentServer.getPlayerStorage().getCharacterByName(toName);
             if (victim != null && victim != c.OnlinedCharacter)
             {
                 if (victim.getFamily() == c.OnlinedCharacter.getFamily())
@@ -81,15 +87,7 @@ public class FamilyUseHandler : ChannelHandlerBase
                             if (!FieldLimit.CANNOTMIGRATE.check(targetMap.getFieldLimit()) && !FieldLimit.CANNOTVIPROCK.check(ownMap.getFieldLimit())
                                     && (ownMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(ownMap.getId())) && ownMap.getEventInstance() == null)
                             {
-
-                                if (InviteType.FAMILY_SUMMON.HasRequest(victim.getId()))
-                                {
-                                    c.sendPacket(PacketCreator.sendFamilyMessage(74, 0));
-                                    return;
-                                }
-                                InviteType.FAMILY_SUMMON.CreateInvite(new FamilySummonInviteRequest(c.OnlinedCharacter, victim));
-                                victim.sendPacket(PacketCreator.sendFamilySummonRequest(c.OnlinedCharacter.getFamily().getName(), c.OnlinedCharacter.getName()));
-                                useEntitlement(entry, type);
+                                _manager.CreateSummonInvite(c.OnlinedCharacter, toName);
                             }
                             else
                             {

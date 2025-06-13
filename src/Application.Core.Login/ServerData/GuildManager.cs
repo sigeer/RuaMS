@@ -122,6 +122,7 @@ namespace Application.Core.Login.ServerData
 
             return null;
         }
+        public GuildModel? FindGuildByName(string name) => _nameGuildDataSource.GetValueOrDefault(name);
         public Dto.GuildDto? GetGuildFull(int guildId)
         {
             var data = GetLocalGuild(guildId);
@@ -339,7 +340,7 @@ namespace Application.Core.Login.ServerData
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
-                guild.GP = request.Gp;
+                guild.GP += request.Gp;
             }, out var code);
             var response = new UpdateGuildGPResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildGPUpdate(response);

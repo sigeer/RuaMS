@@ -47,6 +47,8 @@ namespace Application.Core.Login.Servers
         public abstract void BroadcastAllianceLeaderChanged(AllianceChangeLeaderResponse response);
         public abstract void BroadcastAllianceMemberRankChanged(ChangePlayerAllianceRankResponse response);
         public abstract void BroadcastAllianceDisband(DisbandAllianceResponse response);
+        public abstract void ReturnInvitatioCreated(CreateInviteResponse response);
+        public abstract void ReturnInvitationAnswer(AnswerInviteResponse response);
     }
 
 

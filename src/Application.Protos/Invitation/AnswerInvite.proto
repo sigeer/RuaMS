@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package Dto;
+
+message AnswerInviteRequest {
+	int32 type = 1;
+	int32 masterId = 2;
+	bool ok = 3;
+}
+
+message AnswerInviteResponse {
+	int32 code = 1;
+	int32 type = 2;
+	int32 receivePlayerId = 3;
+	string receivePlayerName =4;
+	int32 key = 5;
+	int32 senderPlayerId = 6;
+	string senderPlayerName = 7;
+	int32 result = 8;
+	string targetName = 9;
+}

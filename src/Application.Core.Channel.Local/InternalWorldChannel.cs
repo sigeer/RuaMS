@@ -159,5 +159,15 @@ namespace Application.Core.Channel.Local
         }
 
         #endregion
+
+        public override void ReturnInvitatioCreated(CreateInviteResponse response)
+        {
+            ChannelServer.OnSendInvitation(response);
+        }
+
+        public override void ReturnInvitationAnswer(AnswerInviteResponse response)
+        {
+            ChannelServer.OnAnswerInvitation(response);
+        }
     }
 }
