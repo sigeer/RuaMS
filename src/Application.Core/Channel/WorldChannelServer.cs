@@ -31,6 +31,7 @@ namespace Application.Core.Channel
         #region Data
         public GuildManager GuildManager { get; private set; } = null!;
         public TeamManager TeamManager { get; private set; } = null!;
+        public ChatRoomService ChatRoomService { get; private set; } = null!;
         #endregion
 
         #region Task
@@ -158,6 +159,7 @@ namespace Application.Core.Channel
 
             GuildManager = _sp.GetRequiredService<GuildManager>();
             TeamManager = _sp.GetRequiredService<TeamManager>();
+            ChatRoomService = _sp.GetRequiredService<ChatRoomService>();
 
             CharacterDiseaseManager.Register();
             PetHungerManager.Register();

@@ -129,16 +129,6 @@ namespace Application.Core.Servers.Services
             var wserv = Server.getInstance().getWorld(0);
             player.setParty(c.CurrentServerContainer.TeamManager.GetParty(player.Party));
 
-            int messengerid = player.MessengerId;
-            int position = player.MessengerPosition;
-            if (messengerid > 0 && position < 4 && position > -1)
-            {
-                var messenger = wserv.getMessenger(messengerid);
-                if (messenger != null)
-                {
-                    player.Messenger = messenger;
-                }
-            }
 
             foreach (var item in o.PetIgnores)
             {
@@ -490,12 +480,6 @@ namespace Application.Core.Servers.Services
 
             return data;
         }
-
-        public Dto.CharacterMapChangeDto DeserializeMap(IPlayer player)
-        {
-            return new Dto.CharacterMapChangeDto { Id = player.Id, Map = player.Map };
-        }
-
 
 
         /// <summary>

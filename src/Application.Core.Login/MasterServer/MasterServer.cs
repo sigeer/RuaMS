@@ -88,6 +88,7 @@ namespace Application.Core.Login
         public IServiceProvider ServiceProvider { get; }
 
         public InvitationController InvitationController { get; }
+        public ChatRoomManager ChatRoomManager { get; }
 
         CharacterService _characterSevice;
         public MasterServer(IServiceProvider sp, CharacterService characterManager)
@@ -132,6 +133,7 @@ namespace Application.Core.Login
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
+            ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;

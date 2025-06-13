@@ -23,7 +23,6 @@
 
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
-using Application.Core.Managers;
 using Application.Core.Servers.Services;
 using Application.Shared.KeyMaps;
 using Application.Shared.Team;
@@ -33,7 +32,6 @@ using Microsoft.Extensions.Logging;
 using net.server;
 using net.server.coordinator.world;
 using net.server.guild;
-using net.server.world;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -231,7 +229,9 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
 
             c.sendPacket(PacketCreator.updateGender(player));
-            player.checkMessenger();
+
+            //退出游戏/切换频道会退出聊天室，那这里的方法又有什么用？
+            // player.checkMessenger();
             c.sendPacket(PacketCreator.enableReport());
             player.changeSkillLevel(SkillFactory.GetSkillTrust(10000000 * player.getJobType() + 12), (sbyte)(player.getLinkedLevel() / 10), 20, -1);
             player.checkBerserk(player.isHidden());

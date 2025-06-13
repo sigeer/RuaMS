@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+import "Dto/PlayerView.proto";
+
+package Dto;
+
+message ChatRoomDto {
+	int32 roomId = 1;
+	repeated PlayerViewDto members = 2;
+}
+
+message CreateChatRoomRequest{
+	int32 masterId = 1;
+}
+
+message JoinChatRoomRequest {
+	int32 masterId = 1;
+	int32 roomId = 2;
+}
+
+message JoinChatRoomResponse {
+	int32 code = 1;
+	string invitorName = 2;
+	ChatRoomDto room = 3;
+	int32 newComerPosition = 4;
+	JoinChatRoomRequest request = 5;
+}
+
+message LeaveChatRoomRequst{
+	int32 masterId = 1;
+}
+
+message LeaveChatRoomResponse {
+	int32 code = 1;
+	ChatRoomDto room = 2;
+	int32 leftPosition = 3;
+}
+
+message SendChatRoomMessageRequest {
+	int32 masterId = 1;
+	string text = 2;
+}
+
+message SendChatRoomMessageResponse {
+	int32 code = 1;
+	repeated int32 members= 2;
+	string text = 3;
+}

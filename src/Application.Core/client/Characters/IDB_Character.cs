@@ -79,9 +79,6 @@ namespace Application.Core.client.Characters
 
         public int GuildRank { get; set; }
 
-        public int MessengerId { get; set; }
-
-        public int MessengerPosition { get; set; }
 
         public int MountLevel { get; set; }
 
