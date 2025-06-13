@@ -1,9 +1,12 @@
+using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
+using Application.Shared.Invitations;
 using Application.Shared.Team;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Numerics;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -279,6 +282,31 @@ namespace Application.Core.Channel.ServerData
             var dataRemote = _mapper.Map<Team>(_transport.GetTeam(party).Model);
             TeamChannelStorage[party] = dataRemote;
             return dataRemote;
+        }
+
+        public void CreateInvite(IPlayer fromChr, string toName)
+        {
+            var party = fromChr.getParty();
+            if (party == null)
+            {
+                if (!CreateParty(fromChr, false))
+                {
+                    return;
+                }
+
+                party = fromChr.getParty()!;
+            }
+            if (party.GetMemberCount() >= 6)
+            {
+                fromChr.sendPacket(PacketCreator.partyStatusMessage(17));
+                return;
+            }
+            _transport.SendInvitation(new Dto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = (int)InviteTypeEnum.PARTY });
+
+        }
+        public void AnswerInvite(IPlayer chr, bool answer)
+        {
+            _transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer,  Type = (int)InviteTypeEnum.PARTY });
         }
     }
 }

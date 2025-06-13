@@ -1,11 +1,8 @@
-namespace Application.Core.Game.Invites
+using Application.Shared.Invitations;
+
+namespace Application.Core.Login.Models.Invitations
 {
-    public enum InviteResultType
-    {
-        ACCEPTED,
-        DENIED,
-        NOT_FOUND
-    }
+
 
     public class InviteResult
     {

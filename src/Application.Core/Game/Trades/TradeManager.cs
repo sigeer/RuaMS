@@ -1,4 +1,5 @@
 using Application.Core.Game.Invites;
+using Application.Shared.Invitations;
 using client.inventory;
 using server;
 using System.Text;

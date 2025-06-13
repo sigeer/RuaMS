@@ -476,7 +476,7 @@ namespace Application.Core.Channel.Local
 
         public void SendRemovePlayerIncomingInvites(int id)
         {
-            _server.InvitationController.RemovePlayerIncomingInvites(id);
+            _server.InvitationManager.RemovePlayerIncomingInvites(id);
         }
 
         public void SendBuffObject(int v, Dto.PlayerBuffSaveDto playerBuffSaveDto)
@@ -809,5 +809,15 @@ namespace Application.Core.Channel.Local
             _server.GuildManager.DisbandAlliance(request);
         }
         #endregion
+
+        public void SendInvitation(Dto.CreateInviteRequest request)
+        {
+            _server.InvitationManager.AddInvitation(request);
+        }
+
+        public void AnswerInvitation(Dto.AnswerInviteRequest request)
+        {
+            _server.InvitationManager.AnswerInvitation(request);
+        }
     }
 }

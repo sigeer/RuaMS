@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message TeamInviteRequestDto {
-  int32 fromId = 1;
-  string toName = 2;
-  int32 teamId = 3;
-}

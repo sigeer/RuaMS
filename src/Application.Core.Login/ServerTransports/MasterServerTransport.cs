@@ -377,5 +377,31 @@ namespace Application.Core.Login
                 server.BroadcastAllianceDisband(response);
             }
         }
+
+        internal void ReturnInvitatioCreated(CreateInviteResponse response)
+        {
+            var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
+            var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId)!;
+
+            var server1 = _server.GetChannelServer(sender.Channel);
+            var server2 = _server.GetChannelServer(receiver.Channel);
+
+            server1.ReturnInvitatioCreated(response);
+            if (server1 != server2)
+                server2.ReturnInvitatioCreated(response);
+        }
+
+        internal void ReturnInvitationAnswer(AnswerInviteResponse response)
+        {
+            var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
+            var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId)!;
+
+            var server1 = _server.GetChannelServer(sender.Channel);
+            var server2 = _server.GetChannelServer(receiver.Channel);
+
+            server1.ReturnInvitationAnswer(response);
+            if (server1 != server2)
+                server2.ReturnInvitationAnswer(response);
+        }
     }
 }

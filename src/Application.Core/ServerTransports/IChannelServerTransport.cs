@@ -174,5 +174,8 @@ namespace Application.Core.ServerTransports
         void SendUpdateAllianceNotice(Dto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
         void SendAllianceDisband(Dto.DisbandAllianceRequest disbandAllianceRequest);
         #endregion
+
+        void SendInvitation(Dto.CreateInviteRequest request);
+        void AnswerInvitation(Dto.AnswerInviteRequest request);
     }
 }

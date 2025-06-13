@@ -1,6 +1,7 @@
 using Application.Core.Game.Invites;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Invitations;
 using Application.Utility.Configs;
 using client;
 using Microsoft.EntityFrameworkCore;

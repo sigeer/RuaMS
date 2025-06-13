@@ -43,14 +43,6 @@ public class DenyAllianceRequestHandler : ChannelHandlerBase
         string inviterName = p.readString();
         string guildName = p.readString();
 
-        var chr = c.getWorldServer().getPlayerStorage().getCharacterByName(inviterName);
-        if (chr != null)
-        {
-            var alliance = chr.getAlliance();
-            if (alliance != null)
-            {
-                _guildManager.AnswerAllianceInvitation(c.OnlinedCharacter.getId(), guildName, alliance.getId(), false);
-            }
-        }
+        _guildManager.AnswerAllianceInvitation(c.OnlinedCharacter, false);
     }
 }

@@ -6,6 +6,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
 using Application.Core.Managers;
+using Application.Shared.Invitations;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.server;

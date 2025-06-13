@@ -22,12 +22,20 @@
 
 
 using Application.Core.Channel.Net;
-using Application.Core.Game.Invites;
+using Application.Core.Channel.Services;
+using Application.Shared.Invitations;
 using net.server.world;
 using tools;
 
 public class MessengerHandler : ChannelHandlerBase
 {
+    readonly MessengerService _messengerService;
+
+    public MessengerHandler(MessengerService messengerService)
+    {
+        _messengerService = messengerService;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         if (c.tryacquireClient())
@@ -81,7 +89,7 @@ public class MessengerHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            InviteType.MESSENGER.AnswerInvite(player.getId(), messengerid, false);
+                            _messengerService.AnswerInvite(player, false);
                         }
                         break;
                     case 0x02:
@@ -95,6 +103,7 @@ public class MessengerHandler : ChannelHandlerBase
                         else if (messenger.getMembers().Count < 3)
                         {
                             input = p.readString();
+                            _messengerService.CreateInvite(player, input);
                             var target = c.CurrentServer.getPlayerStorage().getCharacterByName(input);
                             if (target != null)
                             {
