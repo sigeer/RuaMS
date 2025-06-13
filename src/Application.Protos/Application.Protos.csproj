@@ -11,7 +11,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Dto\CharacterMapChange.proto" GrpcServices="None" />
+		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\PlayerView.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerInfo.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>

@@ -11,9 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
-using net.server.guild;
 using net.server.task;
-using net.server.world;
 using server;
 using tools;
 using static Application.Core.Game.Relation.BuddyList;
@@ -34,14 +32,10 @@ public class World
     private Dictionary<int, byte> pnpcStep = new();
     private Dictionary<int, short> pnpcPodium = new();
 
-    private Dictionary<int, Messenger> messengers = new();
-    private AtomicInteger runningMessengerId = new AtomicInteger();
     private Dictionary<int, Family> families = new();
     public FishingWorldInstance FishingInstance { get; }
 
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
-
-
 
     private ScheduledFuture? marriagesSchedule;
     private ScheduledFuture? fishingSchedule;
@@ -52,7 +46,6 @@ public class World
     {
         log = LogFactory.GetLogger("World_" + Id);
         Channels = new List<WorldChannel>();
-        runningMessengerId.set(1);
 
         this.Id = config.Id;
         Name = config.Name;
@@ -244,26 +237,6 @@ public class World
 
     #region Messenger
 
-    public Messenger createMessenger(MessengerCharacter chrfor)
-    {
-        int messengerid = runningMessengerId.getAndIncrement();
-        Messenger messenger = new Messenger(messengerid, chrfor);
-        messengers.AddOrUpdate(messenger.getId(), messenger);
-        return messenger;
-    }
-
-    public Messenger? getMessenger(int messengerid)
-    {
-        return messengers.GetValueOrDefault(messengerid);
-    }
-
-    public void leaveMessenger(int messengerid, MessengerCharacter target)
-    {
-        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
-        int position = messenger.getPositionByName(target.getName());
-        messenger.removeMember(target);
-        removeMessengerPlayer(messenger, position);
-    }
 
     public void messengerInvite(string sender, int messengerid, string target, int fromchannel)
     {
@@ -272,8 +245,7 @@ public class World
             var targetChr = getPlayerStorage().getCharacterByName(target);
             if (targetChr != null && targetChr.IsOnlined)
             {
-                var messenger = targetChr.Messenger;
-                if (messenger == null)
+                if (targetChr.ChatRoomId == 0)
                 {
                     var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
                     if (from != null)
@@ -298,132 +270,20 @@ public class World
         }
     }
 
-    public void addMessengerPlayer(Messenger messenger, string namefrom, int fromchannel, int position)
-    {
-        foreach (var messengerchar in messenger.getMembers())
-        {
-            var chr = getPlayerStorage().getCharacterByName(messengerchar.getName());
-            if (chr == null || !chr.IsOnlined)
-            {
-                continue;
-            }
-            if (!messengerchar.getName().Equals(namefrom))
-            {
-                var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
-                if (from != null)
-                {
-                    chr.sendPacket(PacketCreator.addMessengerPlayer(namefrom, from, position, (byte)(fromchannel - 1)));
-                    from.sendPacket(PacketCreator.addMessengerPlayer(chr.Name, chr, messengerchar.getPosition(), (byte)(messengerchar.getChannel() - 1)));
-                }
-            }
-            else
-            {
-                chr.sendPacket(PacketCreator.joinMessenger(messengerchar.getPosition()));
-            }
-        }
-    }
-
-    public void removeMessengerPlayer(Messenger messenger, int position)
-    {
-        foreach (var messengerchar in messenger.getMembers())
-        {
-            var chr = getPlayerStorage().getCharacterByName(messengerchar.getName());
-            if (chr != null && chr.IsOnlined)
-            {
-                chr.sendPacket(PacketCreator.removeMessengerPlayer(position));
-            }
-        }
-    }
-
-    public void messengerChat(Messenger messenger, string chattext, string namefrom)
-    {
-        string from = "";
-        string to1 = "";
-        string to2 = "";
-        foreach (var messengerchar in messenger.getMembers())
-        {
-            if (!(messengerchar.getName().Equals(namefrom)))
-            {
-                var chr = getPlayerStorage().getCharacterByName(messengerchar.getName());
-                if (chr != null && chr.IsOnlined)
-                {
-                    chr.sendPacket(PacketCreator.messengerChat(chattext));
-                    if (to1.Equals(""))
-                    {
-                        to1 = messengerchar.getName();
-                    }
-                    else if (to2.Equals(""))
-                    {
-                        to2 = messengerchar.getName();
-                    }
-                }
-            }
-            else
-            {
-                from = messengerchar.getName();
-            }
-        }
-    }
-
     public void declineChat(string sender, IPlayer player)
     {
         if (isConnected(sender))
         {
             var senderChr = getPlayerStorage().getCharacterByName(sender);
-            if (senderChr != null && senderChr.IsOnlined && senderChr.Messenger != null)
+            if (senderChr != null && senderChr.IsOnlined && senderChr.ChatRoomId > 0)
             {
-                if (InviteType.MESSENGER.AnswerInvite(player.getId(), senderChr.Messenger.getId(), false).Result == InviteResultType.DENIED)
+                if (InviteType.MESSENGER.AnswerInvite(player.getId(), senderChr.ChatRoomId, false).Result == InviteResultType.DENIED)
                 {
                     senderChr.sendPacket(PacketCreator.messengerNote(player.getName(), 5, 0));
                 }
             }
         }
     }
-
-    public void updateMessenger(int messengerid, string namefrom, int fromchannel)
-    {
-        var messenger = getMessenger(messengerid);
-        int position = messenger.getPositionByName(namefrom);
-        updateMessenger(messenger, namefrom, position, fromchannel);
-    }
-
-    public void updateMessenger(Messenger messenger, string namefrom, int position, int fromchannel)
-    {
-        foreach (var messengerchar in messenger.getMembers())
-        {
-            var ch = getChannel(fromchannel);
-            if (!(messengerchar.getName().Equals(namefrom)))
-            {
-                var chr = ch.getPlayerStorage().getCharacterByName(messengerchar.getName());
-                if (chr != null)
-                {
-                    var fromPlayer = getChannel(fromchannel).getPlayerStorage().getCharacterByName(namefrom);
-                    if (fromPlayer != null)
-                        chr.sendPacket(PacketCreator.updateMessengerPlayer(namefrom, fromPlayer, position, (byte)(fromchannel - 1)));
-                }
-            }
-        }
-    }
-
-    public void silentLeaveMessenger(int messengerid, MessengerCharacter target)
-    {
-        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
-        messenger.addMember(target, target.getPosition());
-    }
-
-    public void joinMessenger(int messengerid, MessengerCharacter target, string from, int fromchannel)
-    {
-        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
-        messenger.addMember(target, target.getPosition());
-        addMessengerPlayer(messenger, from, fromchannel, target.getPosition());
-    }
-
-    public void silentJoinMessenger(int messengerid, MessengerCharacter target, int position)
-    {
-        var messenger = getMessenger(messengerid) ?? throw new ArgumentException("No messenger with the specified messengerid exists");
-        messenger.addMember(target, position);
-    }
-
     #endregion
 
     public bool isConnected(string charName)

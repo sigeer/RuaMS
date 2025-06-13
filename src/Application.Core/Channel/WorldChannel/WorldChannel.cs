@@ -118,8 +118,6 @@ public partial class WorldChannel : ISocketServer
     public ItemService ItemService { get; }
     public RankService RankService { get; }
 
-
-
     #region
     public EventService EventService { get; }
     public MobAnimationService MobAnimationService { get; }

@@ -63,8 +63,6 @@ namespace Application.Core.Mappers
                             .ForMember(x => x.MountLevel, opt => opt.MapFrom(x => x.MountModel == null ? 1 : x.MountModel.getLevel()))
                             .ForMember(x => x.MountExp, opt => opt.MapFrom(x => x.MountModel == null ? 0 : x.MountModel.getExp()))
                             .ForMember(x => x.Mounttiredness, opt => opt.MapFrom(x => x.MountModel == null ? 0 : x.MountModel.getTiredness()))
-                            .ForMember(x => x.MessengerId, opt => opt.MapFrom(x => x.Messenger == null ? 0 : x.Messenger.getId()))
-                            .ForMember(x => x.MessengerPosition, opt => opt.MapFrom(x => x.Messenger == null ? 4 : x.MessengerPosition))
                             .ForMember(x => x.Hp, opt => opt.MapFrom(x => x.HP))
                             .ForMember(x => x.Mp, opt => opt.MapFrom(x => x.MP))
                             .ForMember(x => x.Maxhp, opt => opt.MapFrom(x => x.MaxHP))

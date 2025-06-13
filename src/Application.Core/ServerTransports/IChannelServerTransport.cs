@@ -174,5 +174,10 @@ namespace Application.Core.ServerTransports
         void SendUpdateAllianceNotice(Dto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
         void SendAllianceDisband(Dto.DisbandAllianceRequest disbandAllianceRequest);
         #endregion
+
+        void SendPlayerJoinChatRoom(Dto.JoinChatRoomRequest joinChatRoomRequest);
+        void SendPlayerLeaveChatRoom(Dto.LeaveChatRoomRequst leaveChatRoomRequst);
+        void SendChatRoomMesage(Dto.SendChatRoomMessageRequest sendChatRoomMessageRequest);
+        void SendCreateChatRoom(Dto.CreateChatRoomRequest createChatRoomRequest);
     }
 }

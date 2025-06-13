@@ -30,12 +30,12 @@ using Application.Core.Game.Players.Models;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Shared.Items;
 using Application.Shared.KeyMaps;
+using Application.Shared.Team;
 using client;
 using client.autoban;
 using client.creator;
@@ -47,7 +47,6 @@ using constants.game;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.guild;
-using net.server.world;
 using scripting;
 using scripting.Event;
 using server;
@@ -62,7 +61,6 @@ using System.Collections.ObjectModel;
 using tools;
 using tools.packets;
 using static client.inventory.Equip;
-using Application.Shared.Team;
 
 namespace Application.Core.Game.Players;
 
@@ -162,8 +160,7 @@ public partial class Player
         }
     }
 
-
-    public Messenger? Messenger { get; set; }
+    public int ChatRoomId { get; set; }
 
     private PlayerShop? playerShop = null;
     private Shop? shop = null;
@@ -1346,16 +1343,6 @@ public partial class Player
         }
     }
 
-    public void checkMessenger()
-    {
-        if (Messenger != null && MessengerPosition < 4 && MessengerPosition > -1)
-        {
-            var worldz = getWorldServer();
-            worldz.silentJoinMessenger(Messenger.getId(), new MessengerCharacter(this, MessengerPosition), MessengerPosition);
-            worldz.updateMessenger(Messenger.getId(), Name, Client.Channel);
-        }
-    }
-
     public void controlMonster(Monster monster)
     {
         controlled.AddOrUpdate(monster, monster.getId());
@@ -1717,10 +1704,6 @@ public partial class Player
         MapModel.broadcastUpdateCharLookMessage(this, this);
         equipchanged = true;
         UpdateLocalStats();
-        if (Messenger != null)
-        {
-            getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.Channel);
-        }
     }
 
     public enum FameStatus
@@ -2630,7 +2613,6 @@ public partial class Player
         closeMiniGame(true);
         closeRPS();
         closeHiredMerchant(false);
-        closePlayerMessenger();
 
         Client.closePlayerScriptInteractions();
         resetPlayerAggro();
@@ -2679,22 +2661,6 @@ public partial class Player
             mps.removeVisitor(this);
         }
         this.setPlayerShop(null);
-    }
-
-    public void closePlayerMessenger()
-    {
-        Messenger? m = Messenger;
-        if (m == null)
-        {
-            return;
-        }
-
-        var w = getWorldServer();
-        MessengerCharacter messengerplayer = new MessengerCharacter(this, this.MessengerPosition);
-
-        w.leaveMessenger(m.getId(), messengerplayer);
-        this.setMessenger(null);
-        this.setMessengerPosition(4);
     }
 
 
@@ -4438,17 +4404,6 @@ public partial class Player
             UpdateActualMesoRate();
             UpdateActualDropRate();
         }
-    }
-
-    public void setMessenger(Messenger? messenger)
-    {
-        this.Messenger = messenger;
-        MessengerId = messenger?.getId() ?? 0;
-    }
-
-    public void setMessengerPosition(int position)
-    {
-        this.MessengerPosition = position;
     }
 
     public void setMonsterBookCover(int bookCover)

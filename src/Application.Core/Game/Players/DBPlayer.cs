@@ -77,10 +77,6 @@ namespace Application.Core.Game.Players
 
         public int GuildRank { get; set; }
 
-        public int MessengerId { get; set; }
-
-        public int MessengerPosition { get; set; } = 4;
-
         public int MountLevel { get; set; }
 
         public int MountExp { get; set; }

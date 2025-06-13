@@ -22,10 +22,6 @@
 
 
 using Application.Core.Game.Invites;
-using Application.Core.Managers;
-using Application.Shared.Team;
-using Application.Utility.Configs;
-using net.server.world;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -76,7 +72,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                     break;
                 }
             case 4:
-                { 
+                {
                     // invite
                     string name = p.readString();
                     var invited = world.getPlayerStorage().getCharacterByName(name);
@@ -132,7 +128,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                     break;
                 }
             case 5:
-                { 
+                {
                     // expel
                     int cid = p.readInt();
                     c.CurrentServerContainer.TeamManager.ExpelFromParty(party, c, cid);
