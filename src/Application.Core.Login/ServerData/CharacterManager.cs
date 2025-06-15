@@ -50,6 +50,9 @@ namespace Application.Core.Login.Datas
 
         public CharacterLiveObject? FindPlayerById(int id)
         {
+            if (id <= 0)
+                return null;
+
             if (_idDataSource.TryGetValue(id, out var data) && data != null)
                 return data;
 
@@ -141,6 +144,7 @@ namespace Application.Core.Login.Datas
                             Channel = obj.Channel
                         });
                         _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
+                        _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
                     }
                 }
             }

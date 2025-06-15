@@ -377,5 +377,29 @@ namespace Application.Core.Login
                 server.BroadcastAllianceDisband(response);
             }
         }
+
+        internal void BroadcastJoinChatRoom(Dto.JoinChatRoomResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastJoinChatRoom(response);
+            }
+        }
+
+        internal void BroadcastLeaveChatRoom(Dto.LeaveChatRoomResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastLeaveChatRoom(response);
+            }
+        }
+
+        internal void BroadcastChatRoomMessage(SendChatRoomMessageResponse res)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastChatRoomMessage(res);
+            }
+        }
     }
 }

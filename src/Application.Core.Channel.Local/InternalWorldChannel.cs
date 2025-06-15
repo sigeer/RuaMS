@@ -1,4 +1,5 @@
 using Application.Core.Login.Servers;
+using Application.EF.Entities;
 using Application.Shared.Team;
 using Config;
 using Dto;
@@ -159,5 +160,20 @@ namespace Application.Core.Channel.Local
         }
 
         #endregion
+
+        public override void BroadcastJoinChatRoom(JoinChatRoomResponse response)
+        {
+            ChannelServer.ChatRoomService.OnPlayerJoinChatRoom(response);
+        }
+
+        public override void BroadcastLeaveChatRoom(LeaveChatRoomResponse response)
+        {
+            ChannelServer.ChatRoomService.OnPlayerLeaveChatRoom(response);
+        }
+
+        public override void BroadcastChatRoomMessage(SendChatRoomMessageResponse res)
+        {
+            ChannelServer.ChatRoomService.OnReceiveMessage(res);
+        }
     }
 }

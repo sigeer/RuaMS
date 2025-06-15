@@ -20,6 +20,7 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Duey;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
@@ -31,13 +32,12 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Shared.Battle;
-using Application.Shared.Client;
 using Application.Shared.Items;
+using Application.Shared.Team;
 using client;
 using client.inventory;
 using client.keybind;
@@ -45,7 +45,6 @@ using client.newyear;
 using client.status;
 using constants.game;
 using net.server;
-using net.server.world;
 using server;
 using server.events.gm;
 using server.life;
@@ -55,7 +54,6 @@ using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
 using static server.CashShop;
-using Application.Shared.Team;
 
 namespace tools;
 
@@ -4532,6 +4530,15 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet joinMessenger(int position)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
+        p.writeByte(0x01);
+        p.writeByte(position);
+        return p;
+    }
+
+
     public static Packet removeMessengerPlayer(int position)
     {
         OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
@@ -4552,13 +4559,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet joinMessenger(int position)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
-        p.writeByte(0x01);
-        p.writeByte(position);
-        return p;
-    }
 
     public static Packet messengerChat(string text)
     {
