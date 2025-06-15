@@ -1,6 +1,8 @@
+using Acornima;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.ServerTransports;
 using AutoMapper;
+using AutoMapper.Execution;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -37,35 +39,34 @@ namespace Application.Core.Channel.ServerData
             var code = (JoinChatRoomResult)data.Code;
             if (code == JoinChatRoomResult.Success)
             {
-                var newComer = data.Room.Members[data.NewComerPosition - 1];
+                var newComer = data.Room.Members[data.NewComerPosition];
                 foreach (var member in data.Room.Members)
                 {
-                    if (member == null)
+                    if (member.PlayerInfo == null)
                         continue;
-                    var chr = _server.FindPlayerById(member.Character.Id);
+                    var chr = _server.FindPlayerById(member.PlayerInfo.Character.Id);
                     if (chr != null)
                     {
-                        if (chr.Id != newComer.Character.Id)
+                        if (chr.Id != newComer.PlayerInfo.Character.Id)
                         {
-                            chr.sendPacket(ChatRoomPacket.addMessengerPlayer(newComer.Character.Name, newComer, data.NewComerPosition, (byte)(newComer.Channel - 1)));
+                            chr.sendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition, (byte)(newComer.PlayerInfo.Channel - 1)));
                         }
                     }
                 }
 
-                var newComerChr = _server.FindPlayerById(newComer.Character.Id);
+                var newComerChr = _server.FindPlayerById(newComer.PlayerInfo.Character.Id);
                 if (newComerChr != null)
                 {
                     newComerChr.ChatRoomId = data.Room.RoomId;
-                    for (int position = 1; position < data.Room.Members.Count + 1; position++)
+                    foreach (var member in data.Room.Members)
                     {
-                        var member = data.Room.Members[position - 1];
-                        if (member != null)
-                        {
-                            if (newComerChr.Id != member.Character.Id)
-                                newComerChr.sendPacket(ChatRoomPacket.addMessengerPlayer(member.Character.Name, member, position, (byte)(member.Channel - 1)));
-                            else
-                                newComerChr.sendPacket(ChatRoomPacket.joinMessenger(position));
-                        }
+                        if (member.PlayerInfo == null)
+                            continue;
+
+                        if (newComerChr.Id != member.PlayerInfo.Character.Id)
+                            newComerChr.sendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position, (byte)(member.PlayerInfo.Channel - 1)));
+                        else
+                            newComerChr.sendPacket(ChatRoomPacket.joinMessenger(member.Position));
                     }
                 }
             }
@@ -78,9 +79,17 @@ namespace Application.Core.Channel.ServerData
 
         public void OnPlayerLeaveChatRoom(Dto.LeaveChatRoomResponse data)
         {
+            var leftPlayer = _server.FindPlayerById(data.LeftPlayerID);
+            if (leftPlayer != null)
+            {
+                leftPlayer.ChatRoomId = 0;
+            }    
             foreach (var member in data.Room.Members)
             {
-                var chr = _server.FindPlayerById(member.Character.Id);
+                if (member.PlayerInfo == null)
+                    continue;
+
+                var chr = _server.FindPlayerById(member.PlayerInfo.Character.Id);
                 if (chr != null && chr.IsOnlined)
                 {
                     chr.sendPacket(PacketCreator.removeMessengerPlayer(data.LeftPosition));

@@ -22,7 +22,7 @@ namespace Application.Core.Login.Models.ChatRoom
             position = 4;
             if (_freeSlots.TryPop(out var index))
             {
-                position = index + 1;
+                position = index;
                 Members[index] = memberId;
                 return true;
             }
@@ -32,7 +32,7 @@ namespace Application.Core.Login.Models.ChatRoom
         public bool TryRemoveMember(int memberId, out int position)
         {
             var idx = Array.IndexOf(Members, memberId);
-            position = idx + 1;
+            position = idx;
             if (idx > -1)
             {
                 Members[idx] = -1;

@@ -86,7 +86,8 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.GuildId, src => src.MapFrom(x => x.Character.GuildId));
 
             CreateMap<ChatRoomModel, Dto.ChatRoomDto>()
-                .ForMember(dest => dest.RoomId, src => src.MapFrom(x => x.Id));
+                .ForMember(dest => dest.RoomId, src => src.MapFrom(x => x.Id))
+                .ForMember(dest => dest.Members, src => src.Ignore());
         }
     }
 }

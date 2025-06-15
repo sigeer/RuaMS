@@ -1,17 +1,9 @@
-using Acornima;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Shared.Constants;
 using AutoMapper;
 using Dto;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ZstdSharp.Unsafe;
 
 namespace Application.Core.Login.ServerData
 {
@@ -36,6 +28,16 @@ namespace Application.Core.Login.ServerData
             _server = server;
             _logger = logger;
             _mapper = mapper;
+        }
+
+        private Dto.ChatRoomDto MapDto(ChatRoomModel model)
+        {
+            var roomDto = _mapper.Map<Dto.ChatRoomDto>(model);
+            var membersDto = model.Members
+                    .Select(_server.CharacterManager.FindPlayerById)
+                    .Select((x, idx) => new ChatRoomMemberDto() { Position = idx, PlayerInfo = _mapper.Map<Dto.PlayerViewDto>(x) }).ToArray();
+            roomDto.Members.AddRange(membersDto);
+            return roomDto;
         }
 
         public int CreateChatRoom(Dto.CreateChatRoomRequest request)
@@ -81,12 +83,7 @@ namespace Application.Core.Login.ServerData
 
             _playerMapper[request.MasterId] = room;
 
-            var roomDto = _mapper.Map<Dto.ChatRoomDto>(room);
-            roomDto.Members.AddRange(
-                room.Members
-                    .Select(_server.CharacterManager.FindPlayerById)
-                    .Select(_mapper.Map<Dto.PlayerViewDto>)
-            );
+            var roomDto = MapDto(room);
 
             response.Room = roomDto;
             response.NewComerPosition = position;
@@ -101,8 +98,14 @@ namespace Application.Core.Login.ServerData
             {
                 if (room.TryRemoveMember(request.MasterId, out var position))
                 {
-                    var roomDto = _mapper.Map<Dto.ChatRoomDto>(room);
-                    _server.Transport.BroadcastLeaveChatRoom(new Dto.LeaveChatRoomResponse { Code = 0, Room = roomDto, LeftPosition = position });
+                    var roomDto = MapDto(room);
+                    _server.Transport.BroadcastLeaveChatRoom(new Dto.LeaveChatRoomResponse 
+                    { 
+                        Code = 0, 
+                        Room = roomDto, 
+                        LeftPosition = position, 
+                        LeftPlayerID = request.MasterId 
+                    });
                 }
                 if (room.Members.Length == 0)
                 {
@@ -113,10 +116,11 @@ namespace Application.Core.Login.ServerData
 
         public void SendMessage(SendChatRoomMessageRequest request)
         {
-            if (_playerMapper.TryRemove(request.MasterId, out var room))
+            if (_playerMapper.TryGetValue(request.MasterId, out var room))
             {
+                // /invite name
                 var res = new Dto.SendChatRoomMessageResponse { Code = 0, Text = request.Text };
-                res.Members.AddRange(room.Members);
+                res.Members.AddRange(room.Members.Where(x => x != request.MasterId));
                 _server.Transport.BroadcastChatRoomMessage(res);
             }
         }

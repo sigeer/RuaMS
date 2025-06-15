@@ -6,7 +6,12 @@ package Dto;
 
 message ChatRoomDto {
 	int32 roomId = 1;
-	repeated PlayerViewDto members = 2;
+	repeated ChatRoomMemberDto members = 2;
+}
+
+message ChatRoomMemberDto {
+	int32 position = 1;
+	PlayerViewDto playerInfo = 2;
 }
 
 message CreateChatRoomRequest{
@@ -34,6 +39,7 @@ message LeaveChatRoomResponse {
 	int32 code = 1;
 	ChatRoomDto room = 2;
 	int32 leftPosition = 3;
+	int32 leftPlayerID = 4;
 }
 
 message SendChatRoomMessageRequest {
