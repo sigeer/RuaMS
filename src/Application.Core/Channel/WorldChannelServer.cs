@@ -1,4 +1,6 @@
+using Application.Core.Channel.Events;
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Players;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Login;
@@ -9,6 +11,7 @@ using net.server.guild;
 using server;
 using System.Diagnostics;
 using System.Net;
+using System.Numerics;
 using System.Security.Cryptography.Xml;
 using tools;
 
@@ -60,7 +63,7 @@ namespace Application.Core.Channel
         public List<int> ActiveCoupons { get; set; } = new();
 
         #endregion
-
+        public List<IChannelModule> Plugins { get; }
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, ChannelServerConfig serverConfig, ILogger<WorldChannelServer> logger)
         {
             _sp = sp;
@@ -71,6 +74,7 @@ namespace Application.Core.Channel
             ServerConfig = serverConfig;
 
             SkillbookInformationProvider = _sp.GetRequiredService<SkillbookInformationProvider>();
+            Plugins = _sp.GetServices<IChannelModule>().ToList();
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
@@ -395,6 +399,10 @@ namespace Application.Core.Channel
                     }
                 }
             }
+            foreach (var plugin in Plugins)
+            {
+                plugin.OnPlayerChangeJob(data);
+            }
         }
 
         public void OnPlayerLevelChanged(Dto.PlayerLevelJobChange data)
@@ -440,16 +448,31 @@ namespace Application.Core.Channel
                     guild.SetMemberChannel(data.Id, data.Channel);
                     guild.setOnline(data.Id, data.Channel > 0, data.Channel);
 
+                    var chr = FindPlayerById(data.Channel, data.Id);
+                    if (chr != null)
+                        chr.sendPacket(GuildPackets.showGuildInfo(chr));
+
                     if (guild.AllianceId > 0)
                     {
                         var alliance = GuildManager.GetAllianceById(guild.AllianceId);
                         if (alliance != null)
                         {
-                            alliance.broadcastMessage(GuildPackets.allianceMemberOnline(guild, data.Id, true), data.Id);
+                            if (chr != null)
+                            {
+                                chr.sendPacket(GuildPackets.updateAllianceInfo(alliance));
+                                chr.sendPacket(GuildPackets.allianceNotice(alliance.AllianceId, alliance.getNotice()));
+                            }
+
+                            if (data.IsNewComer)
+                                alliance.broadcastMessage(GuildPackets.allianceMemberOnline(guild, data.Id, true), data.Id);
                         }
                     }
-
                 }
+            }
+
+            foreach (var plugin in Plugins)
+            {
+                plugin.OnPlayerLogin(data);
             }
         }
     }

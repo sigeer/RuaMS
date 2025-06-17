@@ -410,7 +410,7 @@ namespace Application.Core.Login.Services
         public async Task CommitAllianceAsync(DBContext dbContext)
         {
             var updateData = new Dictionary<int, UpdateField<AllianceModel>>();
-            foreach (var key in _guild.Keys.ToList())
+            foreach (var key in _alliance.Keys.ToList())
             {
                 _alliance.TryRemove(key, out var d);
                 updateData[key] = d;

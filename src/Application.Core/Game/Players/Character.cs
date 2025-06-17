@@ -22,6 +22,7 @@
  */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Events;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -95,7 +96,6 @@ public partial class Player
 
     // 替换Family，搁置
     public ISchool? SchoolModel { get; set; }
-    private FamilyEntry? familyEntry;
 
     private int battleshipHp = 0;
     private int mesosTraded = 0;
@@ -973,11 +973,6 @@ public partial class Player
                 dragon = null;
             }
 
-            Family? family = getFamily();
-            if (family != null)
-            {
-                family.broadcast(PacketCreator.jobMessage(1, JobId, Name), this.getId());
-            }
             setMasteries(this.JobId);
 
             broadcastChangeJob();
@@ -1011,11 +1006,6 @@ public partial class Player
     public void broadcastAcquaintances(Packet packet)
     {
         BuddyList.broadcast(packet);
-        var family = getFamily();
-        if (family != null)
-        {
-            family.broadcast(packet, Id);
-        }
 
         var guild = getGuild();
         if (guild != null)
@@ -2331,25 +2321,6 @@ public partial class Player
         return Fame;
     }
 
-    public Family? getFamily()
-    {
-        return familyEntry?.getFamily();
-    }
-
-    public FamilyEntry? getFamilyEntry()
-    {
-        return familyEntry;
-    }
-
-    public void setFamilyEntry(FamilyEntry? entry)
-    {
-        if (entry != null)
-        {
-            setFamilyId(entry.getFamily().getID());
-        }
-        this.familyEntry = entry;
-    }
-
     public int getFamilyId()
     {
         return FamilyId;
@@ -3356,21 +3327,6 @@ public partial class Player
                 };
 
                 ThreadManager.getInstance().newTask(r);
-            }
-
-            var familyEntry = getFamilyEntry();
-            if (familyEntry != null)
-            {
-                familyEntry.giveReputationToSenior(YamlConfig.config.server.FAMILY_REP_PER_LEVELUP, true);
-                var senior = familyEntry.getSenior();
-                if (senior != null)
-                { //only send the message to direct senior
-                    var seniorChr = senior.getChr();
-                    if (seniorChr != null)
-                    {
-                        seniorChr.sendPacket(PacketCreator.levelUpMessage(1, Level, getName()));
-                    }
-                }
             }
         }
     }
@@ -5230,12 +5186,6 @@ public partial class Player
         partyQuest = null;
 
         TeamModel = null;
-        var familyEntry = getFamilyEntry();
-        if (familyEntry != null)
-        {
-            familyEntry.setCharacter(null);
-            setFamilyEntry(null);
-        }
         // Bag.Dispose();
     }
 

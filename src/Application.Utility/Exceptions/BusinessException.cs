@@ -61,6 +61,9 @@ namespace Application.Utility.Exceptions
 
     public class BusinessNotsupportException : BusinessException
     {
+        public BusinessNotsupportException() : base($"功能未启用")
+        {
+        }
         public BusinessNotsupportException(string function) : base($"功能 {function} 未启用")
         {
         }

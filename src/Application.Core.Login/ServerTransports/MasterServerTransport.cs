@@ -184,6 +184,11 @@ namespace Application.Core.Login
             return false;
         }
 
+        public void FamilyReuinion(int chrId, int toChrId)
+        {
+
+        }
+
 
         internal void BroadcastTeamUpdate(int teamId, PartyOperation operation, TeamMemberDto target)
         {

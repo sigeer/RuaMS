@@ -19,24 +19,38 @@
 */
 
 
-using Application.Utility.Configs;
-using tools;
+using Application.Core.Channel.Net;
+using Application.Core.Client;
+using Application.Module.Family.Channel;
+using Application.Module.Family.Channel.Net.Packets;
+using Application.Shared.Net;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Family.Channel.Net.Handlers;
 
 /**
  * @author Ubaware
  */
-public class OpenFamilyHandler : ChannelHandlerBase
+public class OpenFamilyPedigreeHandler : ChannelHandlerBase
 {
+    readonly FamilyManager _familyManager;
+
+    public OpenFamilyPedigreeHandler(FamilyManager familyManager)
+    {
+        _familyManager = familyManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
+        var target = c.CurrentServer.Players.getCharacterByName(p.readString());
+
+        if (target != null)
         {
-            return;
+            var family = _familyManager.GetFamilyByPlayerId(target.Id);
+            if (family != null)
+            {
+                c.sendPacket(FamilyPacketCreator.showPedigree(family, target.Id));
+            }
         }
-        var chr = c.OnlinedCharacter;
-        c.sendPacket(PacketCreator.getFamilyInfo(chr.getFamilyEntry()));
     }
 }
 

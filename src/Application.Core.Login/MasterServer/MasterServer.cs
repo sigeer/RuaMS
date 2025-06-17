@@ -1,4 +1,5 @@
 using Application.Core.Login.Datas;
+using Application.Core.Login.Events;
 using Application.Core.Login.Models;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
@@ -89,12 +90,14 @@ namespace Application.Core.Login
 
         public InvitationController InvitationController { get; }
         public ChatRoomManager ChatRoomManager { get; }
+        public List<IMasterModule> Plugins { get; }
 
         CharacterService _characterSevice;
         public MasterServer(IServiceProvider sp, CharacterService characterManager)
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
+            Plugins = ServiceProvider.GetServices<IMasterModule>().ToList();
 
             _characterSevice = characterManager;
 

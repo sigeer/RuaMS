@@ -48,5 +48,10 @@ namespace Application.Core.Login.Net
         {
             return _dataSource.GetValueOrDefault(code);
         }
+
+        public void TryAddHandler(short code, IPacketHandlerBase<ILoginClient> handler)
+        {
+            _dataSource.TryAdd(code, handler);
+        }
     }
 }

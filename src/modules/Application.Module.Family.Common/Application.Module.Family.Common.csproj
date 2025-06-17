@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Application.Utility\Application.Utility.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Protobuf Include="Protos\Family.proto">
+	    <GrpcServices>None</GrpcServices>
+	  </Protobuf>
+	</ItemGroup>
+
+</Project>

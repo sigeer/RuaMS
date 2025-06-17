@@ -112,14 +112,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.MONSTER_BOOK_COVER, sp.GetRequiredService<MonsterBookCoverHandler>()},
                 {(short)RecvOpcode.AUTO_DISTRIBUTE_AP, sp.GetRequiredService<AutoAssignHandler>()},
                 {(short)RecvOpcode.MAKER_SKILL, sp.GetRequiredService<MakerSkillHandler>()},
-                {(short)RecvOpcode.OPEN_FAMILY_PEDIGREE, sp.GetRequiredService<OpenFamilyPedigreeHandler>()},
-                {(short)RecvOpcode.OPEN_FAMILY, sp.GetRequiredService<OpenFamilyHandler>()},
-                {(short)RecvOpcode.ADD_FAMILY, sp.GetRequiredService<FamilyAddHandler>()},
-                {(short)RecvOpcode.SEPARATE_FAMILY_BY_SENIOR, sp.GetRequiredService<FamilySeparateHandler>()},
-                {(short)RecvOpcode.SEPARATE_FAMILY_BY_JUNIOR, sp.GetRequiredService<FamilySeparateHandler>()},
-                {(short)RecvOpcode.USE_FAMILY, sp.GetRequiredService<FamilyUseHandler>()},
-                {(short)RecvOpcode.CHANGE_FAMILY_MESSAGE, sp.GetRequiredService<FamilyPreceptsHandler>()},
-                {(short)RecvOpcode.FAMILY_SUMMON_RESPONSE, sp.GetRequiredService<FamilySummonResponseHandler>()},
+
                 {(short)RecvOpcode.USE_HAMMER, sp.GetRequiredService<UseHammerHandler>()},
                 {(short)RecvOpcode.SCRIPTED_ITEM, sp.GetRequiredService<ScriptedItemHandler>()},
                 {(short)RecvOpcode.TOUCHING_REACTOR, sp.GetRequiredService<TouchReactorHandler>()},
@@ -134,7 +127,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.CASHSHOP_SURPRISE, sp.GetRequiredService<CashShopSurpriseHandler>()},
                 {(short)RecvOpcode.USE_ITEM_REWARD, sp.GetRequiredService<ItemRewardHandler>()},
                 {(short)RecvOpcode.USE_REMOTE, sp.GetRequiredService<RemoteGachaponHandler>()},
-                {(short)RecvOpcode.ACCEPT_FAMILY, sp.GetRequiredService<AcceptFamilyHandler>()},
+
                 {(short)RecvOpcode.DUEY_ACTION, sp.GetRequiredService<DueyHandler>()},
                 {(short)RecvOpcode.USE_DEATHITEM, sp.GetRequiredService<UseDeathItemHandler>()},
 
@@ -170,6 +163,11 @@ namespace Application.Core.Channel.Net
         public IPacketHandlerBase<IChannelClient>? GetPacketHandler(short code)
         {
             return _dataSource.GetValueOrDefault(code);
+        }
+
+        public virtual void TryAddHandler(short code, IPacketHandlerBase<IChannelClient> handler)
+        {
+            _dataSource.TryAdd(code, handler);
         }
     }
 }

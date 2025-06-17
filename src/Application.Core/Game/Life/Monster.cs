@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.Events;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -35,6 +36,7 @@ using server;
 using server.life;
 using server.loot;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Game.Life;
 
@@ -584,7 +586,10 @@ public class Monster : AbstractLifeObject
         float bonusExp = partyBonusMod * playerExp;
 
         this.giveExpToCharacter(chr, playerExp, bonusExp, whiteExpGain, hasPartySharers);
-        giveFamilyRep(chr.getFamilyEntry());
+        foreach (var plugin in MapModel.ChannelServer.Container.Plugins)
+        {
+            plugin.OnMonsterReward(new MonsterRewardEvent(chr, this));
+        }
     }
 
     private void distributePartyExperience(Dictionary<IPlayer, long> partyParticipation, float expPerDmg, HashSet<IPlayer> underleveled, Dictionary<int, float> personalRatio, double sdevRatio)
@@ -647,7 +652,10 @@ public class Monster : AbstractLifeObject
         foreach (IPlayer mc in expMembers)
         {
             distributePlayerExperience(mc, participationExp, partyBonusMod, totalPartyLevel, mc == participationMvp, isWhiteExpGain(mc, personalRatio, sdevRatio), hasPartySharers);
-            giveFamilyRep(mc.getFamilyEntry());
+            foreach (var plugin in MapModel.ChannelServer.Container.Plugins)
+            {
+                plugin.OnMonsterReward(new MonsterRewardEvent(mc, this));
+            }
         }
     }
 
@@ -1141,18 +1149,6 @@ public class Monster : AbstractLifeObject
         }
     }
 
-    private void giveFamilyRep(FamilyEntry? entry)
-    {
-        if (entry != null)
-        {
-            int repGain = isBoss() ? YamlConfig.config.server.FAMILY_REP_PER_BOSS_KILL : YamlConfig.config.server.FAMILY_REP_PER_KILL;
-            if (getMaxHp() <= 1)
-            {
-                repGain = 0; //don't count trash mobs
-            }
-            entry.giveReputationToSenior(repGain, true);
-        }
-    }
 
     public int getHighestDamagerId()
     {
