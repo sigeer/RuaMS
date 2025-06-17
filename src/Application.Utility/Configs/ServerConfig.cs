@@ -57,7 +57,6 @@ public class ServerConfig
     public bool USE_MTS;
     public bool USE_CPQ;
     public bool USE_AUTOHIDE_GM;
-    public bool USE_FAMILY_SYSTEM;
     public bool USE_DUEY;
     public bool USE_RANDOMIZE_HPMP_GAIN;
     public bool USE_STORAGE_ITEM_SORT;
@@ -211,12 +210,6 @@ public class ServerConfig
     public int EXPAND_GUILD_BASE_COST;
     public int EXPAND_GUILD_TIER_COST;
     public int EXPAND_GUILD_MAX_COST;
-
-    //Family Configuration
-    public int FAMILY_REP_PER_KILL;
-    public int FAMILY_REP_PER_BOSS_KILL;
-    public int FAMILY_REP_PER_LEVELUP;
-    public int FAMILY_MAX_GENERATIONS;
 
     //Equipment Configuration
     public bool USE_EQUIPMNT_LVLUP_SLOTS;

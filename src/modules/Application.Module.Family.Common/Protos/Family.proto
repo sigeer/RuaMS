@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package Dto;
+
+message EntitlementUsedRecord {
+	int32 id = 1;
+	int64 time = 2;
+}
+
+message FamilyMemberDto {
+  int32 id = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 jobId = 4;
+  int32 seniorId = 5;
+  int32 channel = 6;
+  int64 loginTime = 7;
+  repeated EntitlementUsedRecord records = 8; 
+}
+
+message FamilyDto {
+	int32 id = 1;
+	repeated FamilyMemberDto members = 2;
+}
+
+message GetFamilyResponse {
+	int32 code = 1;
+	FamilyDto model = 2;
+	int32 inviterId = 3;
+	int32 receiverId = 4;
+}
+
+message CreateForkRequest {
+	int32 masterId = 1;
+	int32 cost = 2;
+}
+
+message CreateForkResponse {
+	int32 code = 1;
+	CreateForkRequest request = 2;
+	FamilyDto newFamily = 3;
+	int32 oldFamilyId = 4;
+	int32 oldSeniorId = 5;
+	int32 oldSupperSeniorId = 6;
+
+}
+
+message AnswerInviteResponse {
+	int32 code = 1;
+	FamilyDto model = 2;
+	int32 inviterId = 3;
+	int32 inviterChannel = 4;
+	FamilyMemberDto newMember = 5;
+}
+
+message UseEntitlementRequest {
+	int32 matserId = 1;
+	int32 entitlementId = 2;
+	int32 targetPlayerId = 3;
+}
+
+message UseEntitlementResponse {
+	int32 code = 1;
+	UseEntitlementRequest request = 2;
+	int32 familyId = 3;
+	FamilyMemberDto updatedMember = 4;
+}
+
+message ReputationChangedMessage {
+	int32 masterId = 1;
+	int32 value = 2;
+	string fromName = 3;
+}
+
+message DeclineSummonRequest {
+	int32 masterId = 1;
+}
+
+message DeclineSummonResponse {
+	int32 code = 1;
+	FamilyMemberDto updatedMember = 2;
+	int32 familyId = 3;
+	string declinePlayerName =  4;
+}

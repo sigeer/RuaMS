@@ -1,21 +1,23 @@
-
-
+using Application.Core.Channel.Net;
+using Application.Core.Client;
 using Application.Core.Game.Invites;
-using Application.Utility.Configs;
-using client;
-using tools;
+using Application.Module.Family.Channel.Net.Packets;
+using Application.Module.Family.Common;
+using Application.Shared.Net;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Family.Channel.Net.Handlers;
 
 public class FamilySummonResponseHandler : ChannelHandlerBase
 {
+    readonly FamilyManager _familyManager;
+
+    public FamilySummonResponseHandler(FamilyManager familyManager)
+    {
+        _familyManager = familyManager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
-        {
-            return;
-        }
         p.readString(); //family name
         bool accept = p.readByte() != 0;
         InviteResult inviteResult = InviteType.FAMILY_SUMMON.AnswerInvite(c.OnlinedCharacter.getId(), c.OnlinedCharacter.getId(), accept);
@@ -29,21 +31,20 @@ public class FamilySummonResponseHandler : ChannelHandlerBase
             return;
 
         var inviter = request.From;
-        var inviterEntry = inviter.getFamilyEntry();
+        var inviterEntry = _familyManager.GetFamilyByPlayerId(inviter.Id)?.getEntryByID(inviter.Id);
         if (inviterEntry == null)
         {
             return;
         }
         if (accept && inviter.getMap() == request.Map)
-        { //cancel if inviter has changed maps
+        {
+            //cancel if inviter has changed maps
             c.OnlinedCharacter.changeMap(request.Map, request.Map.getPortal(0));
         }
         else
         {
-            inviterEntry.refundEntitlement(FamilyEntitlement.SUMMON_FAMILY);
-            inviterEntry.gainReputation(FamilyEntitlement.SUMMON_FAMILY.getRepCost(), false); //refund rep cost if declined
-            inviter.sendPacket(PacketCreator.getFamilyInfo(inviterEntry));
-            inviter.dropMessage(5, c.OnlinedCharacter.getName() + " has denied the summon request.");
+            _familyManager.DeclineSummon(c.OnlinedCharacter);
+
         }
     }
 

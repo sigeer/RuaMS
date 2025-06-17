@@ -257,11 +257,6 @@ public class Server
 
             loadPlayerNpcMapStepFromDb(dbContext);
 
-            if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
-            {
-                Family.loadAllFamilies(dbContext);
-            }
-
             IsOnline = true;
 
             totalSw.Stop();

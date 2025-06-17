@@ -274,10 +274,17 @@ namespace Application.Core.Channel.Net
                 log.LogDebug("Received packet id {Code}", opcode);
             }
 
-            if (handler != null && handler.ValidateState(this))
+            if (handler != null)
             {
-                MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
-                handler.HandlePacket(packet, this);
+                if (handler.ValidateState(this))
+                {
+                    MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
+                    handler.HandlePacket(packet, this);
+                }
+            }
+            else
+            {
+                throw new BusinessNotsupportException();
             }
         }
 

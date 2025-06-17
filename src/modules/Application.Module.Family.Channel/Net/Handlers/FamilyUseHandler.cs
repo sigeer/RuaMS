@@ -21,13 +21,18 @@
 */
 
 
+using Application.Core.Channel.Net;
+using Application.Core.Client;
 using Application.Core.Game.Invites;
 using Application.Core.Game.Players;
-using Application.Utility.Configs;
-using client;
-using tools;
+using Application.Module.Family.Channel.Net.Packets;
+using Application.Module.Family.Common;
+using Application.Shared.Constants.Map;
+using Application.Shared.MapObjects;
+using Application.Shared.Net;
+using Application.Utility;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Family.Channel.Net.Handlers;
 
 /**
  * @author Moogra
@@ -35,27 +40,31 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class FamilyUseHandler : ChannelHandlerBase
 {
+    readonly FamilyManager _familyManager;
+
+    public FamilyUseHandler(FamilyManager familyManager)
+    {
+        _familyManager = familyManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
-        {
-            return;
-        }
-        FamilyEntitlement type = EnumClassUtils.GetValues<FamilyEntitlement>()[p.readInt()];
+        FamilyEntitlement type = FamilyEntitlement.Parse(p.readInt());
         int cost = type.getRepCost();
-        var entry = c.OnlinedCharacter.getFamilyEntry();
-        if (entry.getReputation() < cost || entry.isEntitlementUsed(type))
+        var family = _familyManager.GetFamily(c.OnlinedCharacter.Id)!;
+        var entry = family.getEntryByID(c.OnlinedCharacter.Id)!;
+        if (entry.Reputation < cost || entry.isEntitlementUsed(type))
         {
             return; // shouldn't even be able to request it
         }
-        c.sendPacket(PacketCreator.getFamilyInfo(entry));
+        c.sendPacket(FamilyPacketCreator.getFamilyInfo(entry));
         IPlayer? victim;
         if (type == FamilyEntitlement.FAMILY_REUINION || type == FamilyEntitlement.SUMMON_FAMILY)
         {
             victim = c.CurrentServer.getPlayerStorage().getCharacterByName(p.readString());
             if (victim != null && victim != c.OnlinedCharacter)
             {
-                if (victim.getFamily() == c.OnlinedCharacter.getFamily())
+                if (_familyManager.GetFamilyByPlayerId(victim.Id) == _familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id))
                 {
                     var targetMap = victim.getMap();
                     var ownMap = c.OnlinedCharacter.getMap();
@@ -68,11 +77,11 @@ public class FamilyUseHandler : ChannelHandlerBase
                             {
 
                                 c.OnlinedCharacter.changeMap(victim.getMap(), victim.getMap().getPortal(0));
-                                useEntitlement(entry, type);
+                                _familyManager.UseEntitlement(c.OnlinedCharacter, type);
                             }
                             else
                             {
-                                c.sendPacket(PacketCreator.sendFamilyMessage(75, 0)); // wrong message, but close enough. (client should check this first anyway)
+                                c.sendPacket(FamilyPacketCreator.sendFamilyMessage(75, 0)); // wrong message, but close enough. (client should check this first anyway)
                                 return;
                             }
                         }
@@ -84,16 +93,16 @@ public class FamilyUseHandler : ChannelHandlerBase
 
                                 if (InviteType.FAMILY_SUMMON.HasRequest(victim.getId()))
                                 {
-                                    c.sendPacket(PacketCreator.sendFamilyMessage(74, 0));
+                                    c.sendPacket(FamilyPacketCreator.sendFamilyMessage(74, 0));
                                     return;
                                 }
                                 InviteType.FAMILY_SUMMON.CreateInvite(new FamilySummonInviteRequest(c.OnlinedCharacter, victim));
-                                victim.sendPacket(PacketCreator.sendFamilySummonRequest(c.OnlinedCharacter.getFamily().getName(), c.OnlinedCharacter.getName()));
-                                useEntitlement(entry, type);
+                                victim.sendPacket(FamilyPacketCreator.sendFamilySummonRequest(family.getName(), c.OnlinedCharacter.getName()));
+                                _familyManager.UseEntitlement(c.OnlinedCharacter, type);
                             }
                             else
                             {
-                                c.sendPacket(PacketCreator.sendFamilyMessage(75, 0));
+                                c.sendPacket(FamilyPacketCreator.sendFamilyMessage(75, 0));
                                 return;
                             }
                         }
@@ -101,7 +110,7 @@ public class FamilyUseHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.sendFamilyMessage(67, 0));
+                    c.sendPacket(FamilyPacketCreator.sendFamilyMessage(67, 0));
                 }
             }
         }
@@ -158,16 +167,5 @@ public class FamilyUseHandler : ChannelHandlerBase
             //}
             //not implemented
         }
-    }
-
-    private bool useEntitlement(FamilyEntry entry, FamilyEntitlement entitlement)
-    {
-        if (entry.useEntitlement(entitlement))
-        {
-            entry.gainReputation(-entitlement.getRepCost(), false);
-            entry.getChr().sendPacket(PacketCreator.getFamilyInfo(entry));
-            return true;
-        }
-        return false;
     }
 }

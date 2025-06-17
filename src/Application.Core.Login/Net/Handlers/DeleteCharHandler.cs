@@ -51,19 +51,20 @@ public class DeleteCharHandler : LoginHandlerBase
             {
                 using var dbContext = new DBContext();
                 var charModel = dbContext.Characters.Where(x => x.Id == cid)
-                    .Select(x => new { x.World, x.GuildId, x.GuildRank, x.FamilyId })
+                    .Select(x => new { x.World, x.GuildId, x.GuildRank })
                     .FirstOrDefault() ?? throw new BusinessCharacterNotFoundException(cid);
                 if (charModel.GuildId != 0 && charModel.GuildRank <= 1)
                 {
                     c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x16));
                     return;
                 }
-                else if (charModel.FamilyId != -1)
+
+                foreach (var plugin in _server.Plugins)
                 {
-                    var family = Server.getInstance().getWorld(charModel.World)!.getFamily(charModel.FamilyId);
-                    if (family != null && family.getTotalMembers() > 1)
+                    var checkResult = plugin.DeleteCharacterCheck(cid);
+                    if (checkResult != 0)
                     {
-                        c.sendPacket(PacketCreator.deleteCharResponse(cid, 0x1D));
+                        c.sendPacket(PacketCreator.deleteCharResponse(cid, checkResult));
                         return;
                     }
                 }

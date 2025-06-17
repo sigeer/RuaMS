@@ -285,8 +285,6 @@ namespace Application.Core.Game.Players
         float getExpRate();
         int getFace();
         int getFame();
-        Family? getFamily();
-        FamilyEntry? getFamilyEntry();
         int getFamilyId();
         int getFestivalPoints();
         int getFh();
@@ -585,7 +583,6 @@ namespace Application.Core.Game.Players
         void setExp(int amount);
         void setFace(int face);
         void setFame(int fame);
-        void setFamilyEntry(FamilyEntry? entry);
         void setFamilyId(int familyId);
         void setFestivalPoints(int pontos);
         void setFinishedDojoTutorial();

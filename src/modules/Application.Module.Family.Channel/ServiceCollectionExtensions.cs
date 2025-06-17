@@ -1,0 +1,45 @@
+using Application.Core.Channel.Events;
+using Application.Core.Client;
+using Application.Module.Family.Channel.Net.Handlers;
+using Application.Shared.Net;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+namespace Application.Module.Family.Channel
+{
+    public static class ServiceCollectionExtensions
+    {
+        public static IServiceCollection AddFamilySystem(this IServiceCollection services)
+        {
+            services.AddSingleton<FamilyManager>();
+
+            services.AddSingleton<IChannelModule, ChannelFamilyModule>();
+
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, OpenFamilyHandler>();
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, OpenFamilyPedigreeHandler>();
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilyAddHandler>();
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilySeparateHandler>();
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilyUseHandler>();
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilyPreceptsHandler>();
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilySummonResponseHandler>();
+            services.AddSingleton<IPacketHandlerBase<IChannelClient>, AcceptFamilyHandler>();
+
+            return services;
+        }
+        public static void UseFamily(this IHost app)
+        {
+            var channelPacketProcessor = app.Services.GetRequiredService<IPacketProcessor<IChannelClient>>();
+
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.OPEN_FAMILY, app.Services.GetRequiredService<OpenFamilyHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.OPEN_FAMILY_PEDIGREE, app.Services.GetRequiredService<OpenFamilyPedigreeHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.ADD_FAMILY, app.Services.GetRequiredService<FamilyAddHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.SEPARATE_FAMILY_BY_SENIOR, app.Services.GetRequiredService<FamilySeparateHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.SEPARATE_FAMILY_BY_JUNIOR, app.Services.GetRequiredService<FamilySeparateHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.USE_FAMILY, app.Services.GetRequiredService<FamilyUseHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.CHANGE_FAMILY_MESSAGE, app.Services.GetRequiredService<FamilyPreceptsHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.FAMILY_SUMMON_RESPONSE, app.Services.GetRequiredService<FamilySummonResponseHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.ACCEPT_FAMILY, app.Services.GetRequiredService<AcceptFamilyHandler>());
+        }
+
+    }
+}

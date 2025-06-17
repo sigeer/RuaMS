@@ -141,6 +141,7 @@ namespace Application.Core.Login.Datas
                             Name = origin.Character.Name,
                             GuildId = origin.Character.GuildId,
                             TeamId = origin.Character.Party,
+                            FamilyId = origin.Character.FamilyId,
                             Channel = obj.Channel
                         });
                         _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
@@ -164,7 +165,9 @@ namespace Application.Core.Login.Datas
                     Name = d.Character.Name,
                     GuildId = d.Character.GuildId,
                     TeamId = d.Character.Party,
-                    Channel = d.Channel
+                    Channel = d.Channel,
+                    FamilyId = d.Character.FamilyId,
+                    IsNewComer = true
                 });
 
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);

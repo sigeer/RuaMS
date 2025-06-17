@@ -32,7 +32,6 @@ public class World
     private Dictionary<int, byte> pnpcStep = new();
     private Dictionary<int, short> pnpcPodium = new();
 
-    private Dictionary<int, Family> families = new();
     public FishingWorldInstance FishingInstance { get; }
 
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
@@ -59,15 +58,9 @@ public class World
 #if !DEBUG
         timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
-
         FishingInstance = new FishingWorldInstance(this);
 
-        if (YamlConfig.config.server.USE_FAMILY_SYSTEM)
-        {
-            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            FamilyManager.resetEntitlementUsage(this);
-            tman.register(new FamilyDailyResetTask(this), TimeSpan.FromDays(1), timeLeft);
-        }
+
     }
 
     public List<WorldChannel> getChannels()
@@ -160,39 +153,6 @@ public class World
     {
         return Id;
     }
-
-    public void addFamily(int id, Family f)
-    {
-        lock (families)
-        {
-            families.TryAdd(id, f);
-        }
-    }
-
-    public void removeFamily(int id)
-    {
-        lock (families)
-        {
-            families.Remove(id);
-        }
-    }
-
-    public Family? getFamily(int id)
-    {
-        lock (families)
-        {
-            return families.GetValueOrDefault(id);
-        }
-    }
-
-    public ICollection<Family> getFamilies()
-    {
-        lock (families)
-        {
-            return families.Values.ToList();
-        }
-    }
-
 
     public int find(string name)
     {
