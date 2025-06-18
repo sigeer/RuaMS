@@ -40,8 +40,8 @@ public class DenyGuildRequestHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        p.readByte();
+        var value = p.readByte();
         var invitor = p.readString();
-        _guildManager.AnswerInvitation(c.OnlinedCharacter, false);
+        _guildManager.AnswerInvitation(c.OnlinedCharacter, -1, false);
     }
 }

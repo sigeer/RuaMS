@@ -120,7 +120,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                _guildManager.AnswerInvitation(mc, true);
+                _guildManager.AnswerInvitation(mc,gid, true);
                 break;
             case 0x07:
                 cid = p.readInt();

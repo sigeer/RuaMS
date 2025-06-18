@@ -67,7 +67,7 @@ namespace Application.Core.Channel.ServerData
         {
             _transport.SendInvitation(new Dto.CreateInviteRequest
             {
-                Type = (int)InviteTypeEnum.GUILD,
+                Type = InviteTypes.Guild,
                 FromId = c.OnlinedCharacter.Id,
                 ToName = targetName,
             });
@@ -75,9 +75,9 @@ namespace Application.Core.Channel.ServerData
 
 
 
-        public void AnswerInvitation(IPlayer answer, bool operation)
+        public void AnswerInvitation(IPlayer answer, int guildId, bool operation)
         {
-            _transport.AnswerInvitation(new AnswerInviteRequest { Type = (int)InviteTypeEnum.GUILD, MasterId = answer.Id, Ok = operation });
+            _transport.AnswerInvitation(new AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
         public Guild? CreateGuild(string guildName, int playerId, HashSet<IPlayer> members, Action failCallback)
@@ -488,7 +488,7 @@ namespace Application.Core.Channel.ServerData
                 {
                     _transport.SendInvitation(new CreateInviteRequest
                     {
-                        Type = (int)InviteTypeEnum.ALLIANCE,
+                        Type = InviteTypes.Alliance,
                         FromId = c.OnlinedCharacter.Id,
                         ToName = targetGuildName
                     });
@@ -496,9 +496,9 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public void AnswerAllianceInvitation(IPlayer chr, bool answer)
+        public void AnswerAllianceInvitation(IPlayer chr, int allianceId, bool answer)
         {
-            _transport.AnswerInvitation(new AnswerInviteRequest { MasterId = chr.Id, Ok = answer, Type = (int)InviteTypeEnum.ALLIANCE });
+            _transport.AnswerInvitation(new AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
         public Alliance? GetAllianceById(int id)
         {

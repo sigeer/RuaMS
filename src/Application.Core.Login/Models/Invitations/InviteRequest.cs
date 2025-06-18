@@ -4,9 +4,8 @@ namespace Application.Core.Login.Models.Invitations
 {
     public class InviteRequest
     {
-        public InviteRequest(InviteTypeEnum type, long creationTime, int from, string fromName, int to, string toName, int key, string targetName)
+        public InviteRequest(long creationTime, int from, string fromName, int to, string toName, int key, string targetName)
         {
-            Type = type;
             CreationTime = creationTime;
             FromPlayerId = from;
             FromPlayerName = fromName;
@@ -15,8 +14,6 @@ namespace Application.Core.Login.Models.Invitations
             Key = key;
             TargetName = targetName;
         }
-
-        public InviteTypeEnum Type { get; }
         public long CreationTime { get;}
         public int FromPlayerId { get; }
         public string FromPlayerName { get; }

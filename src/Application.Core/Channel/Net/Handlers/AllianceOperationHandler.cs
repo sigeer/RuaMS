@@ -109,7 +109,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     int allianceId = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
 
-                    _guildManager.AnswerAllianceInvitation(chr, true);
+                    _guildManager.AnswerAllianceInvitation(chr, allianceId, true);
                     break;
                 }
             case 0x06:

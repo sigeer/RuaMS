@@ -2,7 +2,7 @@ namespace Application.Core.Login.Models.ChatRoom
 {
     public class ChatRoomModel
     {
-        const int MaxCount = 3;
+        public const int MaxCount = 3;
         public int Id { get; set; }
         public ChatRoomModel(int id)
         {

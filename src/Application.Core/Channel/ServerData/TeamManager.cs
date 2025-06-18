@@ -301,12 +301,12 @@ namespace Application.Core.Channel.ServerData
                 fromChr.sendPacket(PacketCreator.partyStatusMessage(17));
                 return;
             }
-            _transport.SendInvitation(new Dto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = (int)InviteTypeEnum.PARTY });
+            _transport.SendInvitation(new Dto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
 
         }
-        public void AnswerInvite(IPlayer chr, bool answer)
+        public void AnswerInvite(IPlayer chr, int partyId, bool answer)
         {
-            _transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer,  Type = (int)InviteTypeEnum.PARTY });
+            _transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer,  CheckKey = partyId, Type = InviteTypes.Party });
         }
     }
 }

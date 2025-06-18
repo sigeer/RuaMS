@@ -13,6 +13,9 @@ namespace Application.Shared.Invitations
 
         InviteesNotFound,
 
+        ChatRoom_AlreadInRoom,
+        ChatRoom_CapacityFull,
+
         Team_AlreadyInTeam,
         Team_CapacityFull,
         Team_BeginnerLimit,

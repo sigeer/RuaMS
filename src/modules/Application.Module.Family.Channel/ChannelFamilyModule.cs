@@ -4,7 +4,9 @@ using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
 using Application.Shared.Constants.Job;
+using Application.Shared.Invitations;
 using constants.game;
+using Dto;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using tools;
@@ -17,7 +19,6 @@ namespace Application.Module.Family.Channel
         readonly ILogger<ChannelFamilyModule> _logger;
         readonly WorldChannelServer _server;
         readonly FamilyConfigs _config;
-
         public ChannelFamilyModule(FamilyManager familyManager, ILogger<ChannelFamilyModule> logger, WorldChannelServer server, IOptions<FamilyConfigs> options)
         {
             _familyManager = familyManager;
@@ -28,7 +29,6 @@ namespace Application.Module.Family.Channel
 
         public void Initialize()
         {
-
         }
 
         public void OnMonsterReward(MonsterRewardEvent evt)

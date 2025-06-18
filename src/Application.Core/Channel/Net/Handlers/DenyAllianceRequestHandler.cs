@@ -43,6 +43,6 @@ public class DenyAllianceRequestHandler : ChannelHandlerBase
         string inviterName = p.readString();
         string guildName = p.readString();
 
-        _guildManager.AnswerAllianceInvitation(c.OnlinedCharacter, false);
+        _guildManager.AnswerAllianceInvitation(c.OnlinedCharacter, -1, false);
     }
 }

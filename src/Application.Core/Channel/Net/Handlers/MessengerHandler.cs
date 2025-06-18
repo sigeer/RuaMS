@@ -22,8 +22,7 @@
 
 
 using Application.Core.Channel.Net;
-using Application.Core.Channel.Services;
-using Application.Shared.Invitations;
+using Application.Core.Channel.ServerData;
 using tools;
 
 public class MessengerHandler : ChannelHandlerBase
@@ -53,27 +52,16 @@ public class MessengerHandler : ChannelHandlerBase
                         {
                             if (messengerid == 0)
                             {
-                                InviteType.MESSENGER.RemoveRequest(player.getId());
-
                                 _chatRoomService.CreateChatRoom(player);
                             }
                             else
                             {
-                                InviteResult inviteRes = InviteType.MESSENGER.AnswerInvite(player.getId(), messengerid, true);
-                                InviteResultType res = inviteRes.Result;
-                                if (res == InviteResultType.ACCEPTED)
-                                {
-                                    _chatRoomService.JoinChatRoom(player, messengerid);
-                                }
-                                else
-                                {
-                                    player.message("Could not verify your Maple Messenger accept since the invitation rescinded.");
-                                }
+                                _chatRoomService.AnswerInvite(player, messengerid, true);
                             }
                         }
                         else
                         {
-                            _messengerService.AnswerInvite(player, false);
+                            _chatRoomService.AnswerInvite(player, messengerid, false);
                         }
                         break;
                     case 0x02:
@@ -89,38 +77,8 @@ public class MessengerHandler : ChannelHandlerBase
                             // messenger.getMembers().Count < 3
                             // 邀请放进MasterServer后再补上
                             input = p.readString();
-                            _messengerService.CreateInvite(player, input);
-                            var target = c.CurrentServer.getPlayerStorage().getCharacterByName(input);
-                            if (target != null)
-                            {
-                                if (target.ChatRoomId == 0)
-                                {
-                                    if (InviteType.MESSENGER.CreateInvite(new ChatInviteRequest(c.OnlinedCharacter, target, player.ChatRoomId)))
-                                    {
-                                        target.sendPacket(PacketCreator.messengerInvite(c.OnlinedCharacter.getName(), player.ChatRoomId));
-                                        c.sendPacket(PacketCreator.messengerNote(input, 4, 1));
-                                    }
-                                    else
-                                    {
-                                        c.sendPacket(PacketCreator.messengerChat(player.getName() + " : " + input + " is already managing a Maple Messenger invitation"));
-                                    }
-                                }
-                                else
-                                {
-                                    c.sendPacket(PacketCreator.messengerChat(player.getName() + " : " + input + " is already using Maple Messenger"));
-                                }
-                            }
-                            else
-                            {
-                                if (world.find(input) > -1)
-                                {
-                                    world.messengerInvite(c.OnlinedCharacter.getName(), player.ChatRoomId, input, c.Channel);
-                                }
-                                else
-                                {
-                                    c.sendPacket(PacketCreator.messengerNote(input, 4, 0));
-                                }
-                            }
+
+                            _chatRoomService.CreateInvite(player, input);
                         }
                         else
                         {
@@ -128,8 +86,10 @@ public class MessengerHandler : ChannelHandlerBase
                         }
                         break;
                     case 0x05:
+                        // 拒绝邀请？
                         string targeted = p.readString();
-                        world.declineChat(targeted, player);
+                        // world.declineChat(targeted, player);
+                        _chatRoomService.AnswerInvite(player, -1, false);
                         break;
                     case 0x06:
                         input = p.readString();

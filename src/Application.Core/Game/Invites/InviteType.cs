@@ -1,21 +1,13 @@
 using Application.Shared.Invitations;
-using Application.Utility;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Collections.Concurrent;
 
-namespace Application.Core.Login.Models.Invitations
+namespace Application.Core.Game.Invites
 {
     public class InviteType : EnumClass, IDisposable
     {
         const long Expired = 3 * 60 * 1000;
         //BUDDY, (not needed)
-        public static InviteType FAMILY = new InviteType(InviteTypeEnum.FAMILY);
-        public static InviteType FAMILY_SUMMON = new InviteType(InviteTypeEnum.FAMILY_SUMMON);
-        public static InviteType MESSENGER = new InviteType(InviteTypeEnum.MESSENGER);
         public static InviteType TRADE = new InviteType(InviteTypeEnum.TRADE);
-        public static InviteType PARTY = new InviteType(InviteTypeEnum.PARTY);
-        public static InviteType GUILD = new InviteType(InviteTypeEnum.GUILD);
-        public static InviteType ALLIANCE = new InviteType(InviteTypeEnum.ALLIANCE);
         public InviteTypeEnum Value { get; }
         private InviteType(InviteTypeEnum enmuValue)
         {
@@ -24,7 +16,7 @@ namespace Application.Core.Login.Models.Invitations
         /// <summary>
         /// Key: 受邀者
         /// </summary>
-        protected ConcurrentDictionary<int, InviteRequest> _data = new ConcurrentDictionary<int, InviteRequest>();
+        protected ConcurrentDictionary<int, LocalInviteRequest> _data = new ConcurrentDictionary<int, LocalInviteRequest>();
 
         public bool HasRequest(int targetCId) => _data.ContainsKey(targetCId);
 
@@ -35,14 +27,18 @@ namespace Application.Core.Login.Models.Invitations
 
         public void CheckExpired(long now)
         {
-            _data = new ConcurrentDictionary<int, InviteRequest>(
-                _data.Where(kv => now - kv.Value.CreationTime > Expired)
-            );
+            foreach (var kv in _data)
+            {
+                if (kv.Value.CreationTime < now - Expired)
+                {
+                    _data.TryRemove(kv.Key, out _);
+                }
+            }
         }
 
-        public bool CreateInvite(InviteRequest request)
+        public bool CreateInvite(LocalInviteRequest request)
         {
-            if (!_data.TryAdd(request.ToPlayerId, request))
+            if (!_data.TryAdd(request.To.Id, request))
                 return false;
 
             return true;
@@ -55,17 +51,17 @@ namespace Application.Core.Login.Models.Invitations
         /// <param name="responseId">回复请求者（受邀者）</param>
         /// <param name="answer">同意/拒绝</param>
         /// <returns></returns>
-        public InviteResult AnswerInvite(int responseId, bool answer)
+        public LocalInviteResult AnswerInvite(int responseId, int checkKey, bool answer)
         {
             InviteResultType result = InviteResultType.NOT_FOUND;
 
-            if (_data.TryRemove(responseId, out var d))
+            if (_data.TryRemove(responseId, out var d) && (checkKey == -1 || checkKey == d.From.Id))
             {
                 result = answer ? InviteResultType.ACCEPTED : InviteResultType.DENIED;
-                return new InviteResult(result, d);
+                return new LocalInviteResult(result, d);
             }
 
-            return new InviteResult(result, null);
+            return new LocalInviteResult(result, null);
         }
 
         public void Dispose()

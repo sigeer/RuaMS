@@ -1,29 +1,20 @@
 using Application.Core.Channel.Events;
+using Application.Core.Channel.Invitation;
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
+using Application.Core.Channel.Tasks;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Invitations;
 using Application.Shared.Login;
 using Application.Shared.Servers;
-using client;
 using Dto;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MySqlX.XDevAPI.Common;
 using net.server.guild;
-using Org.BouncyCastle.Asn1.Ocsp;
 using server;
-using server.quest;
 using System.Diagnostics;
 using System.Net;
-using System.Numerics;
-using System.Security.Cryptography.Xml;
 using tools;
-using XmlWzReader;
-using static Grpc.Core.Metadata;
 
 namespace Application.Core.Channel
 {
@@ -74,6 +65,8 @@ namespace Application.Core.Channel
 
         #endregion
         public List<IChannelModule> Plugins { get; }
+        public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
+        ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, ChannelServerConfig serverConfig, ILogger<WorldChannelServer> logger)
         {
             _sp = sp;
@@ -93,6 +86,8 @@ namespace Application.Core.Channel
             MapObjectManager = new MapObjectManager(this);
             MountTirednessManager = new MountTirednessManager(this);
             MapOwnershipManager = new MapOwnershipManager(this);
+
+            InviteChannelHandlerRegistry = _sp.GetRequiredService<InviteChannelHandlerRegistry>();
         }
 
         #region 时间
@@ -147,6 +142,11 @@ namespace Application.Core.Channel
             await MapObjectManager.StopAsync();
             await MountTirednessManager.StopAsync();
 
+            if (invitationTask != null)
+                await invitationTask.CancelAsync(false);
+
+            InviteChannelHandlerRegistry.Dispose();
+
             foreach (var channel in Servers.Values)
             {
                 await channel.Shutdown();
@@ -182,6 +182,15 @@ namespace Application.Core.Channel
             MapObjectManager.Register();
             MountTirednessManager.Register();
             MapOwnershipManager.Register();
+
+            invitationTask = TimerManager.getInstance().register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+
+            InviteChannelHandlerRegistry.Register(_sp.GetServices<InviteChannelHandler>());
+
+            foreach (var plugin in Plugins)
+            {
+                plugin.Initialize();
+            }
 
             List<WorldChannel> localServers = [];
             // ping master
@@ -488,266 +497,14 @@ namespace Application.Core.Channel
         /// <param name="data"></param>
         public void OnSendInvitation(Dto.CreateInviteResponse data)
         {
-            var type = (InviteTypeEnum)data.Type;
-            switch (type)
-            {
-                case InviteTypeEnum.FAMILY:
-                    break;
-                case InviteTypeEnum.FAMILY_SUMMON:
-                    ProcessFamilySummonInvite(data);
-                    break;
-                case InviteTypeEnum.MESSENGER:
-                    break;
-                case InviteTypeEnum.TRADE:
-                    break;
-                case InviteTypeEnum.PARTY:
-                    {
-                        var code = (InviteResponseCode)data.Code;
-                        if (code == InviteResponseCode.Success)
-                        {
-                            var receiver = FindPlayerById(data.ReceivePlayerId);
-                            if (receiver != null)
-                            {
-                                receiver.sendPacket(PacketCreator.partyInvite(data.Key, data.SenderPlayerName));
-                            }
-                        }
-                        else
-                        {
-                            var sender = FindPlayerById(data.SenderPlayerId);
-                            if (sender != null)
-                            {
-                                switch (code)
-                                {
-                                    case InviteResponseCode.MANAGING_INVITE:
-                                        sender.sendPacket(PacketCreator.partyStatusMessage(22, data.ReceivePlayerName));
-                                        break;
-                                    case InviteResponseCode.InviteesNotFound:
-                                        sender.sendPacket(PacketCreator.partyStatusMessage(19));
-                                        break;
-                                    case InviteResponseCode.Team_AlreadyInTeam:
-                                        sender.sendPacket(PacketCreator.partyStatusMessage(16));
-                                        break;
-                                    case InviteResponseCode.Team_CapacityFull:
-                                        sender.sendPacket(PacketCreator.partyStatusMessage(17));
-                                        break;
-                                    case InviteResponseCode.Team_BeginnerLimit:
-                                        sender.sendPacket(PacketCreator.serverNotice(5, "The player you have invited does not meet the requirements."));
-                                        break;
-                                    default:
-                                        _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", type, code);
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case InviteTypeEnum.GUILD:
-                    {
-                        var code = (GuildResponse)data.Code;
-                        if (code == GuildResponse.Success)
-                        {
-                            var mc = FindPlayerById(data.ReceivePlayerId);
-                            if (mc != null)
-                            {
-                                mc.sendPacket(GuildPackets.guildInvite(data.Key, data.SenderPlayerName));
-                            }
-
-                        }
-                        else
-                        {
-                            var sender = FindPlayerById(data.SenderPlayerId);
-                            if (sender != null)
-                            {
-                                sender.sendPacket(code.getPacket(data.ReceivePlayerName));
-                            }
-                        }
-                    }
-                    break;
-                case InviteTypeEnum.ALLIANCE:
-                    {
-                        var code = (InviteResponseCode)data.Code;
-                        if (code == InviteResponseCode.Success)
-                        {
-                            var receiver = FindPlayerById(data.ReceivePlayerId);
-                            if (receiver != null)
-                            {
-                                receiver.sendPacket(GuildPackets.allianceInvite(data.Key, receiver));
-                            }
-
-                        }
-                        else
-                        {
-                            var sender = FindPlayerById(data.SenderPlayerId);
-                            if (sender != null)
-                            {
-                                // sender.dropMessage(5, "The master of the guild that you offered an invitation is currently managing another invite.");
-                                switch (code)
-                                {
-                                    case InviteResponseCode.Alliance_AlreadyInAlliance:
-                                        sender.dropMessage(5, "The entered guild is already registered on a guild alliance.");
-                                        break;
-                                    case InviteResponseCode.Alliance_GuildNotFound:
-                                        sender.dropMessage(5, "The entered guild does not exist.");
-                                        break;
-                                    case InviteResponseCode.Alliance_GuildLeaderNotFound:
-                                        sender.dropMessage(5, "The master of the guild that you offered an invitation is currently not online.");
-                                        break;
-                                    case InviteResponseCode.Alliance_CapacityFull:
-                                        sender.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
-                                        break;
-                                    default:
-                                        _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", type, code);
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
+            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationCreated(data);
         }
 
-        private void ProcessFamilySummonInvite(Dto.CreateInviteResponse data)
-        {
-            {
-                var code = (InviteResponseCode)data.Code;
-                if (code == InviteResponseCode.Success)
-                {
-                    var receiver = FindPlayerById(data.ReceivePlayerId);
-                    if (receiver != null)
-                    {
-                        receiver.sendPacket(PacketCreator.sendFamilySummonRequest(receiver.getFamily()!.getName(), data.SenderPlayerName));
-                    }
-                    var sender = FindPlayerById(data.SenderPlayerId);
-                    if (sender != null)
-                    {
-                        var entry = sender.getFamilyEntry();
-                        if (entry.useEntitlement(FamilyEntitlement.SUMMON_FAMILY))
-                        {
-                            entry.gainReputation(-FamilyEntitlement.SUMMON_FAMILY.getRepCost(), false);
-                            sender.sendPacket(PacketCreator.getFamilyInfo(entry));
-                        }
-                    }
-                }
-                else
-                {
-                    var sender = FindPlayerById(data.SenderPlayerId);
-                    if (sender != null)
-                    {
-                        switch (code)
-                        {
-                            case InviteResponseCode.MANAGING_INVITE:
-                                sender.sendPacket(PacketCreator.sendFamilyMessage(74, 0));
-                                break;
-                            case InviteResponseCode.InviteesNotFound:
-                                // 
-                                break;
-                            default:
-                                _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", "FamilySummon", code);
-                                break;
-                        }
-                    }
-                }
-            }
-        }
 
         public void OnAnswerInvitation(AnswerInviteResponse data)
         {
-            var type = (InviteTypeEnum)data.Type;
-            var result = (InviteResultType)data.Result;
-            switch (type)
-            {
-                case InviteTypeEnum.FAMILY:
-                    break;
-                case InviteTypeEnum.FAMILY_SUMMON:
-                    ProcessFamilySummonInviteAnswer(data);
-                    break;
-                case InviteTypeEnum.MESSENGER:
-                    break;
-                case InviteTypeEnum.TRADE:
-                    break;
-                case InviteTypeEnum.PARTY:
-                    {
-                        if (result != InviteResultType.ACCEPTED)
-                        {
-                            var sender = FindPlayerById(data.SenderPlayerId);
-                            if (sender != null)
-                            {
-                                sender.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party due to an expired invitation request."));
-                            }
-                        }
-                    }
-                    break;
-                case InviteTypeEnum.GUILD:
-                    {
-                        if (result != InviteResultType.ACCEPTED)
-                        {
-                            var sender = FindPlayerById(data.SenderPlayerId);
-                            if (sender != null)
-                            {
-                                var code = result == InviteResultType.DENIED ? GuildResponse.DENIED_INVITE : GuildResponse.NOT_FOUND_INVITE;
-                                sender.sendPacket(code.getPacket(data.ReceivePlayerName));
-                            }
-                        }
-                    }
-                    break;
-                case InviteTypeEnum.ALLIANCE:
-                    {
-                        if (result != InviteResultType.ACCEPTED)
-                        {
-                            var sender = FindPlayerById(data.SenderPlayerId);
-                            if (sender != null)
-                            {
-                                string msg = "";
-                                if (result == InviteResultType.DENIED)
-                                    msg = "[" + data.TargetName + "] guild has denied your guild alliance invitation.";
-                                if (result == InviteResultType.NOT_FOUND)
-                                    msg = "The guild alliance request has not been accepted, since the invitation expired.";
-                                sender.dropMessage(5, msg);
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
+            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationAnswered(data);
         }
 
-        private void ProcessFamilySummonInviteAnswer(AnswerInviteResponse data)
-        {
-            var result = (InviteResultType)data.Result;
-
-            if (result != InviteResultType.ACCEPTED)
-            {
-                var sender = FindPlayerById(data.SenderPlayerId);
-                if (sender != null)
-                {
-                    var inviterEntry = sender.getFamilyEntry();
-                    if (inviterEntry == null)
-                    {
-                        return;
-                    }
-
-                    inviterEntry.refundEntitlement(FamilyEntitlement.SUMMON_FAMILY);
-                    inviterEntry.gainReputation(FamilyEntitlement.SUMMON_FAMILY.getRepCost(), false); //refund rep cost if declined
-
-                    if (result == InviteResultType.DENIED)
-                    {
-                        sender.sendPacket(PacketCreator.getFamilyInfo(inviterEntry));
-                        sender.dropMessage(5, data.ReceivePlayerName + " has denied the summon request.");
-                    }
-                }
-            }
-            else
-            {
-                var receiver = FindPlayerById(data.ReceivePlayerId);
-                if (receiver != null)
-                {
-                    receiver.changeMap(data.Key);
-                }
-            }
-
-        }
     }
 }

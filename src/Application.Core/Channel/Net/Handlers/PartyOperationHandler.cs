@@ -55,7 +55,7 @@ public class PartyOperationHandler : ChannelHandlerBase
                 { // join
                     int partyid = p.readInt();
 
-                    c.CurrentServerContainer.TeamManager.AnswerInvite(player, true);
+                    c.CurrentServerContainer.TeamManager.AnswerInvite(player, partyid, true);
                     break;
                 }
             case 4:

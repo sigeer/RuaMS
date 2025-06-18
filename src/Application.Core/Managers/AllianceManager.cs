@@ -1,9 +1,3 @@
-using Application.Core.Game.Invites;
-using Application.Core.Game.Relation;
-using Application.Core.Channel;
-using net.server.guild;
-using System.Runtime.ConstrainedExecution;
-
 namespace Application.Core.Managers
 {
     public class AllianceManager

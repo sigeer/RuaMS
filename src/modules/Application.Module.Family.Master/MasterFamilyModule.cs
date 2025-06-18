@@ -1,5 +1,6 @@
 using Application.Core.Login;
 using Application.Core.Login.Events;
+using Application.Core.Login.Models.Invitations;
 using Application.EF;
 using Application.Module.Family.Master.Tasks;
 using Application.Utility;
@@ -14,13 +15,15 @@ namespace Application.Module.Family.Master
         readonly FamilyManager _familyManager;
         readonly ILogger<MasterFamilyModule> _logger;
         readonly DataService _dataService;
+        readonly InviteMasterHandlerRegistry _inviteHandlerRegistry;
 
-        public MasterFamilyModule(MasterServer server, FamilyManager familyManager, ILogger<MasterFamilyModule> logger, DataService dataService)
+        public MasterFamilyModule(MasterServer server, FamilyManager familyManager, ILogger<MasterFamilyModule> logger, DataService dataService, InviteMasterHandlerRegistry inviteHandlerRegistry)
         {
             _server = server;
             _familyManager = familyManager;
             _logger = logger;
             _dataService = dataService;
+            _inviteHandlerRegistry = inviteHandlerRegistry;
         }
 
         public int DeleteCharacterCheck(int id)

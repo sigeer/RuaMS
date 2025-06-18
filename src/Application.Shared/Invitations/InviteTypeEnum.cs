@@ -32,4 +32,13 @@ namespace Application.Shared.Invitations
         DENIED,
         NOT_FOUND
     }
+
+    public class InviteTypes
+    {
+        public const string Trade = "Trade";
+        public const string Party = "Party";
+        public const string Guild = "Guild";
+        public const string Alliance = "Alliance";
+        public const string Messenger = "Messenger";
+    }
 }

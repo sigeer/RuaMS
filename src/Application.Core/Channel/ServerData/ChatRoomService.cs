@@ -1,8 +1,7 @@
-using Acornima;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.ServerTransports;
+using Application.Shared.Invitations;
 using AutoMapper;
-using AutoMapper.Execution;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -83,7 +82,7 @@ namespace Application.Core.Channel.ServerData
             if (leftPlayer != null)
             {
                 leftPlayer.ChatRoomId = 0;
-            }    
+            }
             foreach (var member in data.Room.Members)
             {
                 if (member.PlayerInfo == null)
@@ -112,6 +111,16 @@ namespace Application.Core.Channel.ServerData
                     chr.sendPacket(PacketCreator.messengerChat(data.Text));
                 }
             }
+        }
+
+        internal void CreateInvite(IPlayer player, string input)
+        {
+            _server.Transport.SendInvitation(new Dto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
+        }
+
+        internal void AnswerInvite(IPlayer player, int roomId, bool v)
+        {
+            _server.Transport.AnswerInvitation(new Dto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }
     }
 }

@@ -1,6 +1,8 @@
 using Application.Core.Login.Client;
 using Application.Core.Login.Mappers;
+using Application.Core.Login.Models.Invitations;
 using Application.Core.Login.Net;
+using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
@@ -13,6 +15,7 @@ namespace Application.Core.Login
 {
     public static class ServiceCollectionExtensions
     {
+
         public static IServiceCollection AddDbFactory(this IServiceCollection services, string connectionString)
         {
             services.AddDbContextFactory<DBContext>(o =>
@@ -67,6 +70,18 @@ namespace Application.Core.Login
             return services;
         }
 
+        static IServiceCollection AddInvitationService(this IServiceCollection services)
+        {
+            services.AddSingleton<InviteMasterHandlerRegistry>();
+            services.AddSingleton<InvitationService>();
+
+            services.AddSingleton<InviteMasterHandler, PartyInviteHandler>();
+            services.AddSingleton<InviteMasterHandler, GuildInviteHandler>();
+            services.AddSingleton<InviteMasterHandler, AllianceInviteHandler>();
+            services.AddSingleton<InviteMasterHandler, MessengerInviteHandler>();
+            return services;
+        }
+
         static IServiceCollection AddServices(this IServiceCollection services)
         {
             services.AddSingleton<CharacterService>();
@@ -77,6 +92,7 @@ namespace Application.Core.Login
             services.AddSingleton<ShopService>();
             services.AddSingleton<MessageService>();
             services.AddSingleton<RankService>();
+            services.AddInvitationService();
             return services;
         }
 

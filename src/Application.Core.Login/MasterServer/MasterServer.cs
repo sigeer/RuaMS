@@ -178,9 +178,14 @@ namespace Application.Core.Login
         {
             try
             {
-                await ServerManager.SetupDataBase();
-                await DueyManager.Setup();
+                await ServerManager.Setup();
+
                 await Server.getInstance().Start();
+
+                foreach (var plugin in Plugins)
+                {
+                    plugin.Initialize();
+                }
             }
             catch (Exception ex)
             {

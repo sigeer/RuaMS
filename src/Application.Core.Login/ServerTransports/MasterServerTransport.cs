@@ -407,7 +407,7 @@ namespace Application.Core.Login
             }
         }
 
-        internal void ReturnInvitatioCreated(CreateInviteResponse response)
+        internal void ReturnInvitationCreated(CreateInviteResponse response)
         {
             var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
             var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId)!;
