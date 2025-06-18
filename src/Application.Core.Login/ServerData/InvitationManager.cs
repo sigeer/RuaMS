@@ -29,11 +29,13 @@ namespace Application.Core.Login.ServerData
         readonly MasterServer _server;
         readonly ILogger<InvitationManager> _logger;
         ConcurrentDictionary<string, ConcurrentDictionary<int, InviteRequest>> _allRequests = new();
-        public InvitationManager(MasterServer server, ILogger<InvitationManager> logger)
+        readonly InviteMasterHandlerRegistry _inviteMasterHandlerRegistry;
+        public InvitationManager(MasterServer server, ILogger<InvitationManager> logger, InviteMasterHandlerRegistry inviteMasterHandlerRegistry)
             : base("InvitationExpireCheckTask", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30))
         {
             _server = server;
             _logger = logger;
+            _inviteMasterHandlerRegistry = inviteMasterHandlerRegistry;
         }
 
         protected override void HandleRun()
@@ -52,9 +54,11 @@ namespace Application.Core.Login.ServerData
                     .ToList();
 
                 // 删除过期邀请
+                var handler = _inviteMasterHandlerRegistry.GetHandler(typeKey);
                 foreach (var key in expiredKeys)
                 {
-                    inviteDict.TryRemove(key, out _);
+                    if (inviteDict.TryRemove(key, out var request)) 
+                        handler?.OnInvitationExpired(request);
                 }
             }
         }
@@ -72,15 +76,17 @@ namespace Application.Core.Login.ServerData
         {
             if (_allRequests.TryGetValue(enumType, out var type))
             {
-                type.TryRemove(masterId, out _);
+                if (type.TryRemove(masterId, out var d)) 
+                    _inviteMasterHandlerRegistry.GetHandler(enumType)?.OnInvitationExpired(d);
             }
         }
 
         internal void RemovePlayerInvitation(int masterId)
         {
-            foreach (var it in _allRequests.Values)
+            foreach (var it in _allRequests)
             {
-                it.TryRemove(masterId, out _);
+                if (it.Value.TryRemove(masterId, out var d))
+                    _inviteMasterHandlerRegistry.GetHandler(it.Key)?.OnInvitationExpired(d);
             }
         }
 
@@ -98,10 +104,14 @@ namespace Application.Core.Login.ServerData
             InviteResultType result = InviteResultType.NOT_FOUND;
             if (_allRequests.TryGetValue(type, out var data))
             {
-                if (data.Remove(responseId, out var d) && !IsExpired(d) && (checkKey == -1 || d.Key == checkKey))
+                if (data.TryRemove(responseId, out var d) && (checkKey == -1 || d.Key == checkKey))
                 {
-                    result = answer ? InviteResultType.ACCEPTED : InviteResultType.DENIED;
-                    return new InviteResult(result, d);
+                    if (!IsExpired(d))
+                    {
+                        result = answer ? InviteResultType.ACCEPTED : InviteResultType.DENIED;
+                        return new InviteResult(result, d);
+                    }
+                    _inviteMasterHandlerRegistry.GetHandler(type)?.OnInvitationExpired(d);
                 }
             }
             return new InviteResult(result, null);
@@ -114,7 +124,7 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        public override void AcceptInvitation(InviteRequest request)
+        protected override void OnInvitationAccepted(InviteRequest request)
         {
             _server.TeamManager.UpdateParty(request.Key, Shared.Team.PartyOperation.JOIN, request.FromPlayerId, request.ToPlayerId);
         }
@@ -151,7 +161,7 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        public override void AcceptInvitation(InviteRequest request)
+        protected override void OnInvitationAccepted(InviteRequest request)
         {
             _server.GuildManager.PlayerJoinGuild(new JoinGuildRequest { PlayerId = request.ToPlayerId, GuildId = request.Key });
         }
@@ -179,7 +189,7 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        public override void AcceptInvitation(InviteRequest request)
+        protected override void OnInvitationAccepted(InviteRequest request)
         {
             _server.GuildManager.GuildJoinAlliance(new GuildJoinAllianceRequest { MasterId = request.ToPlayerId, AllianceId = request.Key });
         }
@@ -231,7 +241,7 @@ namespace Application.Core.Login.ServerData
         {
         }
 
-        public override void AcceptInvitation(InviteRequest request)
+        protected override void OnInvitationAccepted(InviteRequest request)
         {
             _server.ChatRoomManager.JoinChatRoom(new JoinChatRoomRequest { RoomId = request.Key, MasterId = request.ToPlayerId });
         }

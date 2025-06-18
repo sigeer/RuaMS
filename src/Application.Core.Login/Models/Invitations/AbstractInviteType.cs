@@ -65,7 +65,11 @@ namespace Application.Core.Login.Models.Invitations
             {
                 if (result.Result == InviteResultType.ACCEPTED)
                 {
-                    AcceptInvitation(result.Request);
+                    OnInvitationAccepted(result.Request);
+                }
+                else
+                {
+                    OnInvitationDeclined(result.Request);
                 }
 
                 response.Code = (int)result.Result;
@@ -81,7 +85,21 @@ namespace Application.Core.Login.Models.Invitations
             _server.Transport.ReturnInvitationAnswer(response);
         }
 
-        public abstract void AcceptInvitation(InviteRequest inviteResult);
+        protected virtual void OnInvitationAccepted(InviteRequest request)
+        {
+
+        }
+        protected virtual void OnInvitationDeclined(InviteRequest request)
+        {
+
+        }
+        /// <summary>
+        /// 邀请过期时触发
+        /// </summary>
+        /// <param name="request"></param>
+        public virtual void OnInvitationExpired(InviteRequest request)
+        {
+        }
 
         protected virtual void BroadcastResult(InviteResponseCode responseCode, int key, CharacterLiveObject fromPlayer, CharacterLiveObject? toPlayer, string targetName)
         {
@@ -115,6 +133,8 @@ namespace Application.Core.Login.Models.Invitations
 
             _server.Transport.ReturnInvitationCreated(response);
         }
+
+
     }
 
 

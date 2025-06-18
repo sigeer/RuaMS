@@ -1,6 +1,5 @@
 using Application.Core.Channel.Net;
 using Application.Core.Client;
-using Application.Core.Game.Invites;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Shared.Net;
 using Microsoft.Extensions.Logging;
@@ -22,26 +21,10 @@ public class AcceptFamilyHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         int inviterId = p.readInt();
-        p.readString();
+        var str = p.readString();
         bool accept = p.readByte() != 0;
         // string inviterName = slea.readMapleAsciiString();
-        var inviter = c.getWorldServer().getPlayerStorage().getCharacterById(inviterId);
-        if (inviter != null && inviter.IsOnlined)
-        {
-            InviteResult inviteResult = InviteType.FAMILY.AnswerInvite(c.OnlinedCharacter.getId(), inviter.Id, accept);
-            if (inviteResult.Result == InviteResultType.NOT_FOUND)
-            {
-                return; //was never invited. (or expired on server only somehow?)
-            }
-            if (accept)
-            {
-                _familyManager.AcceptInvite(inviterId, chr.Id);
-            }
-            else
-            {
-                inviter.sendPacket(FamilyPacketCreator.sendFamilyJoinResponse(false, chr.getName()));
-            }
-        }
+        _familyManager.AnswerInvite(c.OnlinedCharacter, -1, accept);
         c.sendPacket(FamilyPacketCreator.sendFamilyMessage(0, 0));
     }
 }

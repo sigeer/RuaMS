@@ -4,34 +4,25 @@ using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
 using Application.Shared.Constants.Job;
-using Application.Shared.Invitations;
 using constants.game;
-using Dto;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using tools;
 
 namespace Application.Module.Family.Channel
 {
-    internal class ChannelFamilyModule : IChannelModule
+    internal class ChannelFamilyModule : ChannelModule
     {
         readonly FamilyManager _familyManager;
-        readonly ILogger<ChannelFamilyModule> _logger;
-        readonly WorldChannelServer _server;
+
         readonly FamilyConfigs _config;
-        public ChannelFamilyModule(FamilyManager familyManager, ILogger<ChannelFamilyModule> logger, WorldChannelServer server, IOptions<FamilyConfigs> options)
+        public ChannelFamilyModule(FamilyManager familyManager, ILogger<ChannelModule> logger, WorldChannelServer server, IOptions<FamilyConfigs> options) : base(server, logger)
         {
             _familyManager = familyManager;
-            _logger = logger;
-            _server = server;
             _config = options.Value;
         }
 
-        public void Initialize()
-        {
-        }
-
-        public void OnMonsterReward(MonsterRewardEvent evt)
+        public override void OnMonsterReward(MonsterRewardEvent evt)
         {
             var family = _familyManager.GetFamilyByPlayerId(evt.ToPlayer.Id);
             if (family == null)
@@ -49,7 +40,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public void OnPlayerLevelUp(Dto.PlayerLevelJobChange arg)
+        public override void OnPlayerLevelUp(Dto.PlayerLevelJobChange arg)
         {
             var family = _familyManager.GetFamilyByPlayerId(arg.Id);
             if (family == null)
@@ -72,7 +63,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public void OnPlayerChangeJob(Dto.PlayerLevelJobChange arg)
+        public override void OnPlayerChangeJob(Dto.PlayerLevelJobChange arg)
         {
             var family = _familyManager.GetFamilyByPlayerId(arg.Id);
             if (family != null)
@@ -85,7 +76,7 @@ namespace Application.Module.Family.Channel
         }
 
 
-        public void OnPlayerLogin(Dto.PlayerOnlineChange data)
+        public override void OnPlayerLogin(Dto.PlayerOnlineChange data)
         {
             FamilyEntry? familyEntry = null;
 

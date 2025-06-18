@@ -89,7 +89,7 @@ namespace Application.Core.Login
         public IServiceProvider ServiceProvider { get; }
 
         public ChatRoomManager ChatRoomManager { get; }
-        public List<IMasterModule> Plugins { get; }
+        public List<MasterModule> Plugins { get; }
         public InvitationManager InvitationManager { get; }
 
         CharacterService _characterSevice;
@@ -97,7 +97,7 @@ namespace Application.Core.Login
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
-            Plugins = ServiceProvider.GetServices<IMasterModule>().ToList();
+            Plugins = ServiceProvider.GetServices<MasterModule>().ToList();
 
             _characterSevice = characterManager;
 

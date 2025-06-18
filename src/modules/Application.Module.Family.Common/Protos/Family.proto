@@ -45,7 +45,7 @@ message CreateForkResponse {
 
 }
 
-message AnswerInviteResponse {
+message JoinFamilyResponse {
 	int32 code = 1;
 	FamilyDto model = 2;
 	int32 inviterId = 3;

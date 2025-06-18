@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package Dto;
 
 message CreateInviteRequest {
@@ -16,4 +18,5 @@ message CreateInviteResponse {
   int32 key = 5;
   int32 senderPlayerId = 6;
   string senderPlayerName = 7;
+  google.protobuf.StringValue keyString = 8;
 }

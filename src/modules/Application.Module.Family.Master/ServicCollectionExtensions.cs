@@ -14,7 +14,7 @@ namespace Application.Module.Family.Master
             services.AddSingleton<FamilyManager>();
             services.AddSingleton<DataService>();
 
-            services.AddSingleton<IMasterModule, MasterFamilyModule>();
+            services.AddSingleton<MasterModule, MasterFamilyModule>();
 
             return services;
         }

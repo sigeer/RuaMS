@@ -7,6 +7,7 @@ using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Collections.Concurrent;
 
 namespace Application.Module.Family.Master
@@ -201,9 +202,12 @@ namespace Application.Module.Family.Master
 
         internal FamilyModel? GetFamily(int familyId)
         {
-            throw new NotImplementedException();
+            return _dataSource.GetValueOrDefault(familyId);
         }
-
+        internal FamilyModel? GetFamilyByPlayer(int chrId)
+        {
+            return _chrFamilyDataSource.GetValueOrDefault(chrId);
+        }
         List<FamilyMemberModel> GetAllChildren(IEnumerable<FamilyMemberModel> flatList, int parentId)
         {
             var result = new List<FamilyMemberModel>();
@@ -295,6 +299,7 @@ namespace Application.Module.Family.Master
                     GainReputation(member, -entitlement.getRepCost(), false, chr.Character.Name);
                     member.Reputation -= entitlement.getRepCost();
                     member.EntitlementUseRecord.Add(new FamilyEntitlementUseRecord(request.EntitlementId));
+
                     _transport.Send(request.MatserId, new Dto.UseEntitlementResponse { Code = 0 });
                 }
             }
@@ -308,18 +313,19 @@ namespace Application.Module.Family.Master
             {
                 member.Totalreputation += gain;
             }
-
-            _transport.SendReputationChanged(member.Cid, new Dto.ReputationChangedMessage { MasterId = member.Cid, FromName = from ?? "", Value = gain });
         }
 
-        public void Refund(DeclineSummonRequest request)
+        public void Refund(int usePlayer)
         {
-            if (_chrFamilyDataSource.TryGetValue(request.MasterId, out var family))
+            if (_chrFamilyDataSource.TryGetValue(usePlayer, out var family))
             {
-                if (family.Members.TryGetValue(request.MasterId, out var member))
+                if (family.Members.TryGetValue(usePlayer, out var member))
                 {
                     GainReputation(member, FamilyEntitlement.SUMMON_FAMILY.getRepCost(), false);
                     member.RemoveRecord(FamilyEntitlement.SUMMON_FAMILY.Value);
+
+
+                    _transport.Send(usePlayer, new Dto.UseEntitlementResponse { Code = 0 });
                 }
             }
 

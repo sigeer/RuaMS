@@ -16,8 +16,8 @@ namespace Application.Core.Login.Services
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         protected readonly ILogger<StorageService> _logger;
-        readonly IEnumerable<IMasterModule> _plugins;
-        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, IEnumerable<IMasterModule> plugins)
+        readonly IEnumerable<MasterModule> _plugins;
+        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, IEnumerable<MasterModule> plugins)
         {
             _dataStorage = chrStorage;
             _logger = logger;

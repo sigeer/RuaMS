@@ -64,7 +64,7 @@ namespace Application.Core.Channel
         public List<int> ActiveCoupons { get; set; } = new();
 
         #endregion
-        public List<IChannelModule> Plugins { get; }
+        public List<ChannelModule> Plugins { get; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, ChannelServerConfig serverConfig, ILogger<WorldChannelServer> logger)
@@ -77,7 +77,7 @@ namespace Application.Core.Channel
             ServerConfig = serverConfig;
 
             SkillbookInformationProvider = _sp.GetRequiredService<SkillbookInformationProvider>();
-            Plugins = _sp.GetServices<IChannelModule>().ToList();
+            Plugins = _sp.GetServices<ChannelModule>().ToList();
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
