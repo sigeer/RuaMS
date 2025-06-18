@@ -2383,13 +2383,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Meso)
                 .HasColumnType("int(11)")
                 .HasColumnName("meso");
-            entity.Property(e => e.MessengerId)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("messengerid");
-            entity.Property(e => e.MessengerPosition)
-                .HasDefaultValueSql("'4'")
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("messengerposition");
             entity.Property(e => e.Monsterbookcover)
                 .HasColumnType("int(11)")
                 .HasColumnName("monsterbookcover");

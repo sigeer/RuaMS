@@ -19,32 +19,44 @@
 */
 
 
-using Application.Utility.Configs;
-using client;
-using tools;
+using Application.Core.Channel.Net;
+using Application.Core.Client;
+using Application.Module.Family.Channel.Models;
+using Application.Module.Family.Channel.Net.Packets;
+using Application.Shared.Net;
+using Application.Utility.Exceptions;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Family.Channel.Net.Handlers;
 
 public class FamilySeparateHandler : ChannelHandlerBase
 {
+    readonly FamilyManager _familyManager;
+
+    public FamilySeparateHandler(FamilyManager familyManager)
+    {
+        _familyManager = familyManager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        if (!YamlConfig.config.server.USE_FAMILY_SYSTEM)
-        {
-            return;
-        }
-        var oldFamily = c.OnlinedCharacter.getFamily();
+        var oldFamily = _familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id);
         if (oldFamily == null)
         {
             return;
         }
+        var chrFamilyEntry = oldFamily.getEntryByID(c.OnlinedCharacter.Id);
+        if (chrFamilyEntry == null)
+        {
+            throw new BusinessFatalException();
+        }
+
         FamilyEntry? forkOn = null;
         bool isSenior;
         if (p.available() > 0)
-        { //packet 0x95 doesn't send id, since there is only one senior
+        {
+            //packet 0x95 doesn't send id, since there is only one senior
             forkOn = oldFamily.getEntryByID(p.readInt());
-            if (!c.OnlinedCharacter.getFamilyEntry().isJunior(forkOn))
+            if (!chrFamilyEntry.isJunior(forkOn))
             {
                 return; //packet editing?
             }
@@ -52,7 +64,7 @@ public class FamilySeparateHandler : ChannelHandlerBase
         }
         else
         {
-            forkOn = c.OnlinedCharacter.getFamilyEntry();
+            forkOn = chrFamilyEntry;
             isSenior = false;
         }
         if (forkOn == null)
@@ -65,36 +77,15 @@ public class FamilySeparateHandler : ChannelHandlerBase
         {
             return;
         }
-        int levelDiff = Math.Abs(c.OnlinedCharacter.getLevel() - senior.getLevel());
+        int levelDiff = Math.Abs(c.OnlinedCharacter.getLevel() - senior.Level);
         int cost = 2500 * levelDiff;
         cost += levelDiff * levelDiff;
         if (c.OnlinedCharacter.getMeso() < cost)
         {
-            c.sendPacket(PacketCreator.sendFamilyMessage(isSenior ? 81 : 80, cost));
+            c.sendPacket(FamilyPacketCreator.sendFamilyMessage(isSenior ? 81 : 80, cost));
             return;
         }
-        c.OnlinedCharacter.gainMeso(-cost, inChat: true);
-        int repCost = separateRepCost(forkOn);
-        senior.gainReputation(-repCost, false);
-        if (senior.getSenior() != null)
-        {
-            senior.getSenior()!.gainReputation(-(repCost / 2), false);
-        }
-        forkOn.announceToSenior(PacketCreator.serverNotice(5, forkOn.getName() + " has left the family."), true);
-        forkOn.fork();
-        c.sendPacket(PacketCreator.getFamilyInfo(forkOn)); //pedigree info will be requested from the client if the window is open
-        forkOn.updateSeniorFamilyInfo(true);
-        c.sendPacket(PacketCreator.sendFamilyMessage(1, 0));
-    }
+        _familyManager.Fork(forkOn.Id, cost);
 
-
-    private static int separateRepCost(FamilyEntry junior)
-    {
-        int level = junior.getLevel();
-        int ret = level / 20;
-        ret += 10;
-        ret *= level;
-        ret *= 2;
-        return ret;
     }
 }

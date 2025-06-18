@@ -23,7 +23,6 @@
 
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
-using Application.Core.Managers;
 using Application.Core.Servers.Services;
 using Application.Shared.KeyMaps;
 using Application.Shared.Team;
@@ -32,8 +31,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.server;
 using net.server.coordinator.world;
-using net.server.guild;
-using net.server.world;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -150,53 +147,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             c.CurrentServer.UpdateBuddyByLoggedIn(player.getId(), c.Channel, buddyIds);
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
-            c.sendPacket(PacketCreator.loadFamily(player));
-            if (player.getFamilyId() > 0)
-            {
-                var f = wserv.getFamily(player.getFamilyId());
-                if (f != null)
-                {
-                    var familyEntry = f.getEntryByID(player.getId());
-                    if (familyEntry != null)
-                    {
-                        familyEntry.setCharacter(player);
-                        player.setFamilyEntry(familyEntry);
-
-                        c.sendPacket(PacketCreator.getFamilyInfo(familyEntry));
-                        familyEntry.announceToSenior(PacketCreator.sendFamilyLoginNotice(player.getName(), true), true);
-                    }
-                    else
-                    {
-                        _logger.LogError("Chr {CharacterName}'s family doesn't have an entry for them. (familyId {FamilyId})", player.getName(), f.getID());
-                    }
-                }
-                else
-                {
-                    _logger.LogError("Chr {CharacterName} has an invalid family ID ({FamilyId})", player.getName(), player.getFamilyId());
-                    c.sendPacket(PacketCreator.getFamilyInfo(null));
-                }
-            }
-            else
-            {
-                c.sendPacket(PacketCreator.getFamilyInfo(null));
-            }
-
-            if (player.GuildId > 0)
-            {
-                if (player.GuildModel != null)
-                {
-                    c.sendPacket(GuildPackets.showGuildInfo(player));
-                    if (player.AllianceModel != null)
-                    {
-                        c.sendPacket(GuildPackets.updateAllianceInfo(player.AllianceModel));
-                        c.sendPacket(GuildPackets.allianceNotice(player.AllianceModel.AllianceId, player.AllianceModel.getNotice()));
-                    }
-                    else
-                    {
-                        player.GuildModel.AllianceId = 0;
-                    }
-                }
-            }
 
             c.CurrentServerContainer.Transport.ShowNoteMessage(player.Name);
 
@@ -231,7 +181,9 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
 
             c.sendPacket(PacketCreator.updateGender(player));
-            player.checkMessenger();
+
+            //退出游戏/切换频道会退出聊天室，那这里的方法又有什么用？
+            // player.checkMessenger();
             c.sendPacket(PacketCreator.enableReport());
             player.changeSkillLevel(SkillFactory.GetSkillTrust(10000000 * player.getJobType() + 12), (sbyte)(player.getLinkedLevel() / 10), 20, -1);
             player.checkBerserk(player.isHidden());

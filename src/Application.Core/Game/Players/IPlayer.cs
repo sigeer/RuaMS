@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.client.Characters;
 using Application.Core.Duey;
 using Application.Core.Game.Items;
@@ -7,17 +8,14 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Shared.Objects;
 using client;
 using client.autoban;
-using client.creator;
 using client.inventory;
 using client.keybind;
 using client.newyear;
 using net.server;
-using net.server.world;
 using scripting;
 using scripting.Event;
 using server;
@@ -57,7 +55,10 @@ namespace Application.Core.Game.Players
         public ISchool? SchoolModel { get; set; }
         public Dictionary<short, string> AreaInfo { get; set; }
         public MonsterBook Monsterbook { get; set; }
-        public Messenger? Messenger { get; set; }
+        /// <summary>
+        /// 临时使用，需要他验证邀请时是否进入了聊天室
+        /// </summary>
+        public int ChatRoomId { get; set; }
 
         public IMount? MountModel { get; }
         public Job JobModel { get; set; }
@@ -162,7 +163,6 @@ namespace Application.Core.Game.Players
         void changeTab(int tab);
         void changeType(int type);
         void checkBerserk(bool isHidden);
-        void checkMessenger();
         void clearCpqTimer();
         void clearSavedLocation(SavedLocationType type);
         void clearSummons();
@@ -171,7 +171,6 @@ namespace Application.Core.Game.Players
         void closeNpcShop();
         void closePartySearchInteractions();
         void closePlayerInteractions();
-        void closePlayerMessenger();
         void closePlayerShop();
         void closeRPS();
         void closeTrade();
@@ -286,8 +285,6 @@ namespace Application.Core.Game.Players
         float getExpRate();
         int getFace();
         int getFame();
-        Family? getFamily();
-        FamilyEntry? getFamilyEntry();
         int getFamilyId();
         int getFestivalPoints();
         int getFh();
@@ -586,7 +583,6 @@ namespace Application.Core.Game.Players
         void setExp(int amount);
         void setFace(int face);
         void setFame(int fame);
-        void setFamilyEntry(FamilyEntry? entry);
         void setFamilyId(int familyId);
         void setFestivalPoints(int pontos);
         void setFinishedDojoTutorial();
@@ -614,8 +610,6 @@ namespace Application.Core.Game.Players
         void setMarriageItemId(int itemid);
         void setMasteries(int jobId);
         void setMerchantMeso(int set);
-        void setMessenger(Messenger? messenger);
-        void setMessengerPosition(int position);
         MiniGame? getMiniGame();
         void setMiniGame(MiniGame? miniGame);
         void setMiniGamePoints(IPlayer visitor, int winnerslot, bool omok);

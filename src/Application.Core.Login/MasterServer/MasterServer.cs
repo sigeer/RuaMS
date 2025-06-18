@@ -1,4 +1,5 @@
 using Application.Core.Login.Datas;
+using Application.Core.Login.Events;
 using Application.Core.Login.Models;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
@@ -87,6 +88,8 @@ namespace Application.Core.Login
 
         public IServiceProvider ServiceProvider { get; }
 
+        public ChatRoomManager ChatRoomManager { get; }
+        public List<IMasterModule> Plugins { get; }
         public InvitationManager InvitationManager { get; }
 
         CharacterService _characterSevice;
@@ -94,6 +97,7 @@ namespace Application.Core.Login
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
+            Plugins = ServiceProvider.GetServices<IMasterModule>().ToList();
 
             _characterSevice = characterManager;
 
@@ -133,6 +137,7 @@ namespace Application.Core.Login
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
+            ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;

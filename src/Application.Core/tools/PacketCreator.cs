@@ -20,6 +20,7 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Duey;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
@@ -31,13 +32,12 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
 using Application.Shared.Battle;
-using Application.Shared.Client;
 using Application.Shared.Items;
+using Application.Shared.Team;
 using client;
 using client.inventory;
 using client.keybind;
@@ -45,7 +45,6 @@ using client.newyear;
 using client.status;
 using constants.game;
 using net.server;
-using net.server.world;
 using server;
 using server.events.gm;
 using server.life;
@@ -55,7 +54,6 @@ using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
 using static server.CashShop;
-using Application.Shared.Team;
 
 namespace tools;
 
@@ -4542,6 +4540,15 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet joinMessenger(int position)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
+        p.writeByte(0x01);
+        p.writeByte(position);
+        return p;
+    }
+
+
     public static Packet removeMessengerPlayer(int position)
     {
         OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
@@ -4562,13 +4569,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet joinMessenger(int position)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
-        p.writeByte(0x01);
-        p.writeByte(position);
-        return p;
-    }
 
     public static Packet messengerChat(string text)
     {
@@ -6221,224 +6221,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet loadFamily(IPlayer player)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_PRIVILEGE_LIST);
-        var allItems = EnumClassUtils.GetValues<FamilyEntitlement>();
-        p.writeInt(allItems.Count);
-        for (int i = 0; i < allItems.Count; i++)
-        {
-            FamilyEntitlement entitlement = allItems[i];
-            p.writeByte(i <= 1 ? 1 : 2); //type
-            p.writeInt(entitlement.getRepCost());
-            p.writeInt(entitlement.getUsageLimit());
-            p.writeString(entitlement.getName());
-            p.writeString(entitlement.getDescription());
-        }
-        return p;
-    }
-
-    /**
-     * Family Result Message
-     * <p>
-     * Possible values for <code>type</code>:<br>
-     * 64: You cannot add this character as a junior.
-     * 65: The name could not be found or is not online.
-     * 66: You belong to the same family.
-     * 67: You do not belong to the same family.<br>
-     * 69: The character you wish to add as\r\na Junior must be in the same
-     * map.<br>
-     * 70: This character is already a Junior of another character.<br>
-     * 71: The Junior you wish to add\r\nmust be at a lower rank.<br>
-     * 72: The gap between you and your\r\njunior must be within 20 levels.<br>
-     * 73: Another character has requested to add this character.\r\nPlease try
-     * again later.<br>
-     * 74: Another character has requested a summon.\r\nPlease try again
-     * later.<br>
-     * 75: The summons has failed. Your current location or state does not allow
-     * a summons.<br>
-     * 76: The family cannot extend more than 1000 generations from above and
-     * below.<br>
-     * 77: The Junior you wish to add\r\nmust be over Level 10.<br>
-     * 78: You cannot add a Junior \r\nthat has requested to change worlds.<br>
-     * 79: You cannot add a Junior \r\nsince you've requested to change
-     * worlds.<br>
-     * 80: Separation is not possible due to insufficient Mesos.\r\nYou will
-     * need %d Mesos to\r\nseparate with a Senior.<br>
-     * 81: Separation is not possible due to insufficient Mesos.\r\nYou will
-     * need %d Mesos to\r\nseparate with a Junior.<br>
-     * 82: The Entitlement does not apply because your level does not match the
-     * corresponding area.<br>
-     *
-     * @param type The type
-     * @return Family Result packet
-     */
-    public static Packet sendFamilyMessage(int type, int mesos)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_RESULT);
-        p.writeInt(type);
-        p.writeInt(mesos);
-        return p;
-    }
-
-    public static Packet getFamilyInfo(FamilyEntry? f)
-    {
-        if (f == null)
-        {
-            return getEmptyFamilyInfo();
-        }
-
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_INFO_RESULT);
-        p.writeInt(f.getReputation()); // cur rep left
-        p.writeInt(f.getTotalReputation()); // tot rep left
-        p.writeInt(f.getTodaysRep()); // todays rep
-        p.writeShort(f.getJuniorCount()); // juniors added
-        p.writeShort(2); // juniors allowed
-        p.writeShort(0); //Unknown
-        p.writeInt(f.getFamily().getLeader().getChrId()); // Leader ID (Allows setting message)
-        p.writeString(f.getFamily().getName());
-        p.writeString(f.getFamily().getMessage()); //family message
-        var allItem = EnumClassUtils.GetValues<FamilyEntitlement>();
-        p.writeInt(allItem.Count); //Entitlement info count
-        foreach (var entitlement in allItem)
-        {
-            p.writeInt(entitlement.ordinal()); //ID
-            p.writeInt(f.isEntitlementUsed(entitlement) ? 1 : 0); //Used count
-        }
-        return p;
-    }
-
-    private static Packet getEmptyFamilyInfo()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_INFO_RESULT);
-        p.writeInt(0); // cur rep left
-        p.writeInt(0); // tot rep left
-        p.writeInt(0); // todays rep
-        p.writeShort(0); // juniors added
-        p.writeShort(2); // juniors allowed
-        p.writeShort(0); //Unknown
-        p.writeInt(0); // Leader ID (Allows setting message)
-        p.writeString("");
-        p.writeString(""); //family message
-        p.writeInt(0);
-        return p;
-    }
-
-    public static Packet showPedigree(FamilyEntry entry)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_CHART_RESULT);
-        p.writeInt(entry.getChrId()); //ID of viewed player's pedigree, can't be leader?
-        List<FamilyEntry> superJuniors = new(4);
-        bool hasOtherJunior = false;
-        int entryCount = 2; //2 guaranteed, leader and self
-        entryCount += Math.Min(2, entry.getTotalSeniors());
-        //needed since OutPacket doesn't have any seek functionality
-        if (entry.getSenior() != null)
-        {
-            if (entry.getSenior()!.getJuniorCount() == 2)
-            {
-                entryCount++;
-                hasOtherJunior = true;
-            }
-        }
-        foreach (var junior in entry.getJuniors())
-        {
-            if (junior == null)
-            {
-                continue;
-            }
-            entryCount++;
-            foreach (var superJunior in junior.getJuniors())
-            {
-                if (superJunior == null)
-                {
-                    continue;
-                }
-                entryCount++;
-                superJuniors.Add(superJunior);
-            }
-        }
-        //write entries
-        bool missingEntries = entryCount == 2; //pedigree requires at least 3 entries to show leader, might only have 2 if leader's juniors leave
-        if (missingEntries)
-        {
-            entryCount++;
-        }
-        p.writeInt(entryCount); //player count
-        addPedigreeEntry(p, entry.getFamily().getLeader());
-        if (entry.getSenior() != null)
-        {
-            if (entry.getSenior()!.getSenior() != null)
-            {
-                addPedigreeEntry(p, entry.getSenior()!.getSenior()!);
-            }
-            addPedigreeEntry(p, entry.getSenior()!);
-        }
-        addPedigreeEntry(p, entry);
-        if (hasOtherJunior)
-        {
-            //must be sent after own entry
-            var otherJunior = entry.getSenior()?.getOtherJunior(entry);
-            if (otherJunior != null)
-            {
-                addPedigreeEntry(p, otherJunior);
-            }
-        }
-        if (missingEntries)
-        {
-            addPedigreeEntry(p, entry);
-        }
-        foreach (var junior in entry.getJuniors())
-        {
-            if (junior == null)
-            {
-                continue;
-            }
-            addPedigreeEntry(p, junior);
-            foreach (var superJunior in junior.getJuniors())
-            {
-                if (superJunior != null)
-                {
-                    addPedigreeEntry(p, superJunior);
-                }
-            }
-        }
-        p.writeInt(2 + superJuniors.Count); //member info count
-                                            // 0 = total seniors, -1 = total members, otherwise junior count of ID
-        p.writeInt(-1);
-        p.writeInt(entry.getFamily().getTotalMembers());
-        p.writeInt(0);
-        p.writeInt(entry.getTotalSeniors()); //client subtracts provided seniors
-        foreach (var superJunior in superJuniors)
-        {
-            p.writeInt(superJunior.getChrId());
-            p.writeInt(superJunior.getTotalJuniors());
-        }
-        p.writeInt(0); //another loop count (entitlements used)
-                       //p.writeInt(1); //entitlement index
-                       //p.writeInt(2); //times used
-        p.writeShort(entry.getJuniorCount() >= 2 ? 0 : 2); //0 disables Add button (only if viewing own pedigree)
-        return p;
-    }
-
-    private static void addPedigreeEntry(OutPacket p, FamilyEntry entry)
-    {
-        var chr = entry.getChr();
-        bool isOnline = chr != null;
-        p.writeInt(entry.getChrId()); //ID
-        p.writeInt(entry.getSenior() != null ? entry.getSenior()!.getChrId() : 0); //parent ID
-        p.writeShort(entry.getJob().getId()); //job id
-        p.writeByte(entry.getLevel()); //level
-        p.writeBool(isOnline); //isOnline
-        p.writeInt(entry.getReputation()); //current rep
-        p.writeInt(entry.getTotalReputation()); //total rep
-        p.writeInt(entry.getRepsToSenior()); //reps recorded to senior
-        p.writeInt(entry.getTodaysRep());
-        p.writeInt(isOnline ? ((chr!.isAwayFromWorld() || chr.getCashShop().isOpened()) ? -1 : chr.getClient().getChannel() - 1) : 0);
-        p.writeInt(isOnline ? chr!.getLoggedInTime().Minutes : 0); //time online in minutes
-        p.writeString(entry.getName()); //name
-    }
-
     public static Packet updateAreaInfo(int area, string info)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
@@ -6907,45 +6689,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet sendFamilyInvite(int playerId, string inviter)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_JOIN_REQUEST);
-        p.writeInt(playerId);
-        p.writeString(inviter);
-        return p;
-    }
-
-    public static Packet sendFamilySummonRequest(string familyName, string from)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_SUMMON_REQUEST);
-        p.writeString(from);
-        p.writeString(familyName);
-        return p;
-    }
-
-    public static Packet sendFamilyLoginNotice(string name, bool loggedIn)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_NOTIFY_LOGIN_OR_LOGOUT);
-        p.writeBool(loggedIn);
-        p.writeString(name);
-        return p;
-    }
-
-    public static Packet sendFamilyJoinResponse(bool accepted, string added)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_JOIN_REQUEST_RESULT);
-        p.writeByte(accepted ? 1 : 0);
-        p.writeString(added);
-        return p;
-    }
-
-    public static Packet getSeniorMessage(string name)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FAMILY_JOIN_ACCEPTED);
-        p.writeString(name);
-        p.writeInt(0);
-        return p;
-    }
 
     public static Packet sendGainRep(int gain, string from)
     {
@@ -7201,15 +6944,14 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Sends a "job advance" packet to the guild or family.
-     * <p>
-     * Possible values for <code>type</code>:<br> 0: <Guild ? has advanced to
-     * a(an) ?.<br> 1: <Family ? has advanced to a(an) ?.<br>
-     *
-     * @param type The type
-     * @return The "job advance" packet.
-     */
+
+    /// <summary>
+    /// Sends a "job advance" packet to the guild or family.
+    /// </summary>
+    /// <param name="type">0. guild 1. family</param>
+    /// <param name="job"></param>
+    /// <param name="charname"></param>
+    /// <returns></returns>
     public static Packet jobMessage(int type, int job, string charname)
     {
         OutPacket p = OutPacket.create(SendOpcode.NOTIFY_JOB_CHANGE);

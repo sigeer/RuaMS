@@ -1,3 +1,4 @@
+using Application.Core.Login.Events;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,11 +16,13 @@ namespace Application.Core.Login.Services
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         protected readonly ILogger<StorageService> _logger;
-        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory)
+        readonly IEnumerable<IMasterModule> _plugins;
+        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, IEnumerable<IMasterModule> plugins)
         {
             _dataStorage = chrStorage;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
+            _plugins = plugins;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<StorageType>();
             // 定时触发、特殊事件触发、关闭服务器触发
             Task.Run(async () =>
@@ -110,6 +113,11 @@ namespace Application.Core.Login.Services
                 await _dataStorage.CommitGuildAsync(dbContext);
 
                 await _dataStorage.CommitDueyPackageAsync(dbContext);
+
+                foreach (var plugin in _plugins)
+                {
+                    await plugin.SaveChangesAsync(dbContext);
+                }
 
                 await dbTrans.CommitAsync();
             }

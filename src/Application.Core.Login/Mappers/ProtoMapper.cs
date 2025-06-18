@@ -1,5 +1,6 @@
 using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
+using Application.Core.Login.Models.ChatRoom;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 
@@ -65,6 +66,7 @@ namespace Application.Core.Login.Mappers
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();
 
             CreateMap<CharacterLiveObject, Dto.PlayerGetterDto>();
+            CreateMap<CharacterLiveObject, Dto.PlayerViewDto>();
 
             CreateMap<CharacterLiveObject, Dto.TeamMemberDto>()
                 .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))
@@ -82,6 +84,10 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.GuildRank, src => src.MapFrom(x => x.Character.GuildRank))
                 .ForMember(dest => dest.AllianceRank, src => src.MapFrom(x => x.Character.AllianceRank))
                 .ForMember(dest => dest.GuildId, src => src.MapFrom(x => x.Character.GuildId));
+
+            CreateMap<ChatRoomModel, Dto.ChatRoomDto>()
+                .ForMember(dest => dest.RoomId, src => src.MapFrom(x => x.Id))
+                .ForMember(dest => dest.Members, src => src.Ignore());
         }
     }
 }

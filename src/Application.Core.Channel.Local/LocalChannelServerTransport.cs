@@ -810,6 +810,28 @@ namespace Application.Core.Channel.Local
         }
         #endregion
 
+        #region ChatRoom
+        public void SendPlayerJoinChatRoom(Dto.JoinChatRoomRequest request)
+        {
+            _server.ChatRoomManager.JoinChatRoom(request);
+        }
+
+        public void SendPlayerLeaveChatRoom(Dto.LeaveChatRoomRequst request)
+        {
+            _server.ChatRoomManager.LeaveChatRoom(request);
+        }
+
+        public void SendChatRoomMesage(Dto.SendChatRoomMessageRequest request)
+        {
+            _server.ChatRoomManager.SendMessage(request);
+        }
+
+        public void SendCreateChatRoom(Dto.CreateChatRoomRequest request)
+        {
+            _server.ChatRoomManager.CreateChatRoom(request);
+        }
+        #endregion
+
         public void SendInvitation(Dto.CreateInviteRequest request)
         {
             _server.InvitationManager.AddInvitation(request);

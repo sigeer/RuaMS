@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using net.packet.logging;
 using net.server;
 using net.server.guild;
-using net.server.world;
 using scripting;
 using scripting.Event;
 using scripting.npc;
@@ -76,10 +75,7 @@ namespace Application.Core.Channel.Net
             //once per Client instance
             if (Character != null && Character.isLoggedin() && Character.getClient() != null)
             {
-                int messengerid = Character.Messenger?.getId() ?? 0;
                 //int fid = OnlinedCharacter.getFamilyId();
-                MessengerCharacter chrm = new MessengerCharacter(Character, 0);
-
                 var guild = Character.GuildModel;
 
                 Character.cancelMagicDoor();
@@ -95,13 +91,6 @@ namespace Application.Core.Channel.Net
                         {
                             if (!fromCashShop)
                             {
-                                // meaning not changing channels
-                                if (messengerid > 0)
-                                {
-                                    wserv.leaveMessenger(messengerid, chrm);
-                                }
-
-
                                 Character.forfeitExpirableQuests();    //This is for those quests that you have to stay logged in for a certain amount of time
 
                                 if (guild != null)
@@ -285,10 +274,17 @@ namespace Application.Core.Channel.Net
                 log.LogDebug("Received packet id {Code}", opcode);
             }
 
-            if (handler != null && handler.ValidateState(this))
+            if (handler != null)
             {
-                MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
-                handler.HandlePacket(packet, this);
+                if (handler.ValidateState(this))
+                {
+                    MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
+                    handler.HandlePacket(packet, this);
+                }
+            }
+            else
+            {
+                throw new BusinessNotsupportException();
             }
         }
 

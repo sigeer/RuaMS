@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "Dto/Character.proto";
+import "Dto/Item.proto";
+
+package Dto;
+
+
+message PlayerViewDto {
+  int32 channel = 1;
+  CharacterDto character = 2; // CHECK TYPE
+  repeated ItemDto inventoryItems = 3; // CHECK TYPE
+}

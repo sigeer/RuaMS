@@ -77,10 +77,6 @@ namespace Application.Core.Game.Players
 
         public int GuildRank { get; set; }
 
-        public int MessengerId { get; set; }
-
-        public int MessengerPosition { get; set; } = 4;
-
         public int MountLevel { get; set; }
 
         public int MountExp { get; set; }
@@ -110,6 +106,7 @@ namespace Application.Core.Game.Players
         public int Setupslots { get; set; }
 
         public int Etcslots { get; set; }
+        [Obsolete("与FamilyCharacter功能重复")]
 
         public int FamilyId { get; set; } = -1;
 

@@ -22,6 +22,7 @@
  */
 
 using Application.Core.Channel;
+using Application.Core.Channel.Events;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -30,12 +31,12 @@ using Application.Core.Game.Players.Models;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Channel;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Shared.Items;
 using Application.Shared.KeyMaps;
+using Application.Shared.Team;
 using client;
 using client.autoban;
 using client.creator;
@@ -47,7 +48,6 @@ using constants.game;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.guild;
-using net.server.world;
 using scripting;
 using scripting.Event;
 using server;
@@ -62,7 +62,6 @@ using System.Collections.ObjectModel;
 using tools;
 using tools.packets;
 using static client.inventory.Equip;
-using Application.Shared.Team;
 
 namespace Application.Core.Game.Players;
 
@@ -97,7 +96,6 @@ public partial class Player
 
     // 替换Family，搁置
     public ISchool? SchoolModel { get; set; }
-    private FamilyEntry? familyEntry;
 
     private int battleshipHp = 0;
     private int mesosTraded = 0;
@@ -162,8 +160,7 @@ public partial class Player
         }
     }
 
-
-    public Messenger? Messenger { get; set; }
+    public int ChatRoomId { get; set; }
 
     private PlayerShop? playerShop = null;
     private Shop? shop = null;
@@ -976,11 +973,6 @@ public partial class Player
                 dragon = null;
             }
 
-            Family? family = getFamily();
-            if (family != null)
-            {
-                family.broadcast(PacketCreator.jobMessage(1, JobId, Name), this.getId());
-            }
             setMasteries(this.JobId);
 
             broadcastChangeJob();
@@ -1014,11 +1006,6 @@ public partial class Player
     public void broadcastAcquaintances(Packet packet)
     {
         BuddyList.broadcast(packet);
-        var family = getFamily();
-        if (family != null)
-        {
-            family.broadcast(packet, Id);
-        }
 
         var guild = getGuild();
         if (guild != null)
@@ -1343,16 +1330,6 @@ public partial class Player
                 }
                 , 5000, 3000);
             }
-        }
-    }
-
-    public void checkMessenger()
-    {
-        if (Messenger != null && MessengerPosition < 4 && MessengerPosition > -1)
-        {
-            var worldz = getWorldServer();
-            worldz.silentJoinMessenger(Messenger.getId(), new MessengerCharacter(this, MessengerPosition), MessengerPosition);
-            worldz.updateMessenger(Messenger.getId(), Name, Client.Channel);
         }
     }
 
@@ -1717,10 +1694,6 @@ public partial class Player
         MapModel.broadcastUpdateCharLookMessage(this, this);
         equipchanged = true;
         UpdateLocalStats();
-        if (Messenger != null)
-        {
-            getWorldServer().updateMessenger(Messenger, getName(), getWorld(), Client.Channel);
-        }
     }
 
     public enum FameStatus
@@ -2348,25 +2321,6 @@ public partial class Player
         return Fame;
     }
 
-    public Family? getFamily()
-    {
-        return familyEntry?.getFamily();
-    }
-
-    public FamilyEntry? getFamilyEntry()
-    {
-        return familyEntry;
-    }
-
-    public void setFamilyEntry(FamilyEntry? entry)
-    {
-        if (entry != null)
-        {
-            setFamilyId(entry.getFamily().getID());
-        }
-        this.familyEntry = entry;
-    }
-
     public int getFamilyId()
     {
         return FamilyId;
@@ -2630,7 +2584,6 @@ public partial class Player
         closeMiniGame(true);
         closeRPS();
         closeHiredMerchant(false);
-        closePlayerMessenger();
 
         Client.closePlayerScriptInteractions();
         resetPlayerAggro();
@@ -2679,22 +2632,6 @@ public partial class Player
             mps.removeVisitor(this);
         }
         this.setPlayerShop(null);
-    }
-
-    public void closePlayerMessenger()
-    {
-        Messenger? m = Messenger;
-        if (m == null)
-        {
-            return;
-        }
-
-        var w = getWorldServer();
-        MessengerCharacter messengerplayer = new MessengerCharacter(this, this.MessengerPosition);
-
-        w.leaveMessenger(m.getId(), messengerplayer);
-        this.setMessenger(null);
-        this.setMessengerPosition(4);
     }
 
 
@@ -3390,21 +3327,6 @@ public partial class Player
                 };
 
                 ThreadManager.getInstance().newTask(r);
-            }
-
-            var familyEntry = getFamilyEntry();
-            if (familyEntry != null)
-            {
-                familyEntry.giveReputationToSenior(YamlConfig.config.server.FAMILY_REP_PER_LEVELUP, true);
-                var senior = familyEntry.getSenior();
-                if (senior != null)
-                { //only send the message to direct senior
-                    var seniorChr = senior.getChr();
-                    if (seniorChr != null)
-                    {
-                        seniorChr.sendPacket(PacketCreator.levelUpMessage(1, Level, getName()));
-                    }
-                }
             }
         }
     }
@@ -4440,17 +4362,6 @@ public partial class Player
         }
     }
 
-    public void setMessenger(Messenger? messenger)
-    {
-        this.Messenger = messenger;
-        MessengerId = messenger?.getId() ?? 0;
-    }
-
-    public void setMessengerPosition(int position)
-    {
-        this.MessengerPosition = position;
-    }
-
     public void setMonsterBookCover(int bookCover)
     {
         this.Monsterbookcover = bookCover;
@@ -5275,12 +5186,6 @@ public partial class Player
         partyQuest = null;
 
         TeamModel = null;
-        var familyEntry = getFamilyEntry();
-        if (familyEntry != null)
-        {
-            familyEntry.setCharacter(null);
-            setFamilyEntry(null);
-        }
         // Bag.Dispose();
     }
 

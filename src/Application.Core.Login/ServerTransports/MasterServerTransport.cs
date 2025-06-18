@@ -184,6 +184,11 @@ namespace Application.Core.Login
             return false;
         }
 
+        public void FamilyReuinion(int chrId, int toChrId)
+        {
+
+        }
+
 
         internal void BroadcastTeamUpdate(int teamId, PartyOperation operation, TeamMemberDto target)
         {
@@ -375,6 +380,30 @@ namespace Application.Core.Login
             foreach (var server in _server.ChannelServerList.Values)
             {
                 server.BroadcastAllianceDisband(response);
+            }
+        }
+
+        internal void BroadcastJoinChatRoom(Dto.JoinChatRoomResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastJoinChatRoom(response);
+            }
+        }
+
+        internal void BroadcastLeaveChatRoom(Dto.LeaveChatRoomResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastLeaveChatRoom(response);
+            }
+        }
+
+        internal void BroadcastChatRoomMessage(SendChatRoomMessageResponse res)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastChatRoomMessage(res);
             }
         }
 
