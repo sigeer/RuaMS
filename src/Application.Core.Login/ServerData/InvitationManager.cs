@@ -262,7 +262,7 @@ namespace Application.Core.Login.ServerData
             }
 
             var room = _server.ChatRoomManager.GetPlayerRoom(request.FromId)!;
-            if (room.Members.Length == ChatRoomModel.MaxCount)
+            if (room.Members.Count(x => x > 0) == ChatRoomModel.MaxCount)
             {
                 responseCode = InviteResponseCode.ChatRoom_CapacityFull;
             }

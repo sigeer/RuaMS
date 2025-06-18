@@ -17,10 +17,10 @@ namespace Application.Core.Channel
         {
             services.AddSingleton<InviteChannelHandlerRegistry>();
 
-            services.AddSingleton<PartyInviteChannelHandler>();
-            services.AddSingleton<GuildInviteChannelHandler>();
-            services.AddSingleton<AllianceInviteChannelHandler>();
-            services.AddSingleton<MessengerInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, PartyInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, GuildInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, AllianceInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, MessengerInviteChannelHandler>();
             return services;
         }
 
