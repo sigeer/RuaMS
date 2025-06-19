@@ -39,6 +39,7 @@ namespace Application.Core.Game.Players
         /// <para>&gt;0 频道号</para>
         /// </summary>
         public int Channel { get; }
+        public int ActualChannel { get; }
         public bool IsOnlined => Client.IsOnlined;
         public BuddyList BuddyList { get; set; }
         public PlayerBag Bag { get; set; }
@@ -545,7 +546,7 @@ namespace Application.Core.Game.Players
         void runFullnessSchedule(int petSlot);
         bool runTirednessSchedule();
         //void saveCharToDB();
-        void saveCharToDB(bool notAutosave = true, bool isLogoff = false);
+        void saveCharToDB(bool notAutosave = true, int? setChannel = null);
         void saveLocation(string type);
         void saveLocationOnWarp();
         int sellAllItemsFromName(sbyte invTypeId, string name);

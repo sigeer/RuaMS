@@ -91,7 +91,7 @@ public class EnterMTSHandler : ChannelHandlerBase
 
         chr.StopPlayerTask();
 
-        chr.saveCharToDB();
+        chr.saveCharToDB(setChannel: -1);
 
         c.CurrentServer.removePlayer(chr);
         chr.getMap().removePlayer(c.OnlinedCharacter);

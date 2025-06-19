@@ -306,7 +306,7 @@ namespace Application.Core.Servers.Services
 
             var data = new Dto.PlayerSaveDto()
             {
-                Channel = player.Channel,
+                Channel = player.ActualChannel,
                 Character = playerDto
             };
             data.Areas.AddRange(player.AreaInfo.Select(x => new Dto.AreaDto() { Area = x.Key, Info = x.Value }));
