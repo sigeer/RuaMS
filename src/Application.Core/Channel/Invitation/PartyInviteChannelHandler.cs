@@ -14,12 +14,22 @@ namespace Application.Core.Channel.Invitation
         public override void OnInvitationAnswered(AnswerInviteResponse data)
         {
             var result = (InviteResultType)data.Result;
-            if (result != InviteResultType.ACCEPTED)
+
+            if (result == InviteResultType.DENIED)
             {
                 var sender = _server.FindPlayerById(data.SenderPlayerId);
                 if (sender != null)
                 {
-                    sender.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party due to an expired invitation request."));
+                    sender.sendPacket(PacketCreator.partyStatusMessage(23, data.ReceivePlayerName));
+                }
+            }
+
+            if (result == InviteResultType.NOT_FOUND)
+            {
+                var receiver = _server.FindPlayerById(data.ReceivePlayerId);
+                if (receiver != null)
+                {
+                    receiver.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party due to an expired invitation request."));
                 }
             }
         }

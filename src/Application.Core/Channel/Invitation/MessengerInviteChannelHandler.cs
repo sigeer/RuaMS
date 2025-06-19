@@ -36,7 +36,6 @@ namespace Application.Core.Channel.Invitation
                 var receiver = _server.FindPlayerById(data.ReceivePlayerId);
                 if (receiver != null)
                 {
-                    receiver.sendPacket(PacketCreator.partyInvite(data.Key, data.SenderPlayerName));
                     receiver.sendPacket(PacketCreator.messengerInvite(data.SenderPlayerName, data.Key));
 
                 }
