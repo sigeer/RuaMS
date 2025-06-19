@@ -1,12 +1,10 @@
 using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Constants.Job;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
 using Application.Shared.Models;
@@ -14,10 +12,7 @@ using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
 using net.server;
-using net.server.guild;
-using Org.BouncyCastle.Asn1.Ocsp;
 using server.expeditions;
-using server.quest;
 using System.Net;
 using System.Text;
 using tools;
@@ -38,6 +33,7 @@ namespace Application.Core.Channel.Local
         readonly ShopService _shopManager;
         readonly MessageService _msgService;
         readonly RankService _rankService;
+        readonly InvitationService _invitationService;
         readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
@@ -53,6 +49,7 @@ namespace Application.Core.Channel.Local
             ShopService shopManager,
             MessageService messageService,
             RankService rankService,
+            InvitationService invitationService,
             IMapper mapper)
         {
             _server = server;
@@ -64,6 +61,7 @@ namespace Application.Core.Channel.Local
             _msgService = messageService;
             _mapper = mapper;
             _rankService = rankService;
+            _invitationService = invitationService;
         }
 
         public Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels)
@@ -476,7 +474,7 @@ namespace Application.Core.Channel.Local
 
         public void SendRemovePlayerIncomingInvites(int id)
         {
-            _server.InvitationController.RemovePlayerIncomingInvites(id);
+            _invitationService.RemovePlayerInvitation(id);
         }
 
         public void SendBuffObject(int v, Dto.PlayerBuffSaveDto playerBuffSaveDto)
@@ -831,5 +829,15 @@ namespace Application.Core.Channel.Local
             _server.ChatRoomManager.CreateChatRoom(request);
         }
         #endregion
+
+        public void SendInvitation(Dto.CreateInviteRequest request)
+        {
+            _invitationService.AddInvitation(request);
+        }
+
+        public void AnswerInvitation(Dto.AnswerInviteRequest request)
+        {
+            _invitationService.AnswerInvitation(request);
+        }
     }
 }

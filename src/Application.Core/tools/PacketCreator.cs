@@ -3824,6 +3824,16 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet partyInvite(int fromTeamId, string fromPlayerName)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
+        p.writeByte(4);
+        p.writeInt(fromTeamId);
+        p.writeString(fromPlayerName);
+        p.writeByte(0);
+        return p;
+    }
+
     public static Packet partySearchInvite(IPlayer from)
     {
         OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);

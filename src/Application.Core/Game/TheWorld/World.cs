@@ -6,6 +6,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
 using Application.Core.Managers;
+using Application.Shared.Invitations;
 using client;
 using Microsoft.EntityFrameworkCore;
 using net.server;
@@ -198,58 +199,27 @@ public class World
     #region Messenger
 
 
-    public void messengerInvite(string sender, int messengerid, string target, int fromchannel)
-    {
-        if (isConnected(target))
-        {
-            var targetChr = getPlayerStorage().getCharacterByName(target);
-            if (targetChr != null && targetChr.IsOnlined)
-            {
-                if (targetChr.ChatRoomId == 0)
-                {
-                    var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
-                    if (from != null)
-                    {
-                        if (InviteType.MESSENGER.CreateInvite(new ChatInviteRequest(from, targetChr, messengerid)))
-                        {
-                            targetChr.sendPacket(PacketCreator.messengerInvite(sender, messengerid));
-                            from.sendPacket(PacketCreator.messengerNote(target, 4, 1));
-                        }
-                        else
-                        {
-                            from.sendPacket(PacketCreator.messengerChat(sender + " : " + target + " is already managing a Maple Messenger invitation"));
-                        }
-                    }
-                }
-                else
-                {
-                    var from = getChannel(fromchannel).getPlayerStorage().getCharacterByName(sender);
-                    from?.sendPacket(PacketCreator.messengerChat(sender + " : " + target + " is already using Maple Messenger"));
-                }
-            }
-        }
-    }
-
-    public void declineChat(string sender, IPlayer player)
-    {
-        if (isConnected(sender))
-        {
-            var senderChr = getPlayerStorage().getCharacterByName(sender);
-            if (senderChr != null && senderChr.IsOnlined && senderChr.ChatRoomId > 0)
-            {
-                if (InviteType.MESSENGER.AnswerInvite(player.getId(), senderChr.ChatRoomId, false).Result == InviteResultType.DENIED)
-                {
-                    senderChr.sendPacket(PacketCreator.messengerNote(player.getName(), 5, 0));
-                }
-            }
-        }
-    }
+    //public void declineChat(string sender, IPlayer player)
+    //{
+    //    if (isConnected(sender))
+    //    {
+    //        var senderChr = getPlayerStorage().getCharacterByName(sender);
+    //        if (senderChr != null && senderChr.IsOnlined && senderChr.ChatRoomId > 0)
+    //        {
+    //            if (InviteType.MESSENGER.AnswerInvite(player.getId(), senderChr.ChatRoomId, false).Result == InviteResultType.DENIED)
+    //            {
+    //                senderChr.sendPacket(PacketCreator.messengerNote(player.getName(), 5, 0));
+    //            }
+    //        }
+    //    }
+    //}
+    //public bool isConnected(string charName)
+    //{
+    //    return getPlayerStorage().getCharacterByName(charName)?.IsOnlined == true;
+    //}
     #endregion
 
-    public bool isConnected(string charName)
-    {
-        return getPlayerStorage().getCharacterByName(charName)?.IsOnlined == true;
-    }
+
 
     public BuddyAddResult requestBuddyAdd(string addName, int channelFrom, int cidFrom, string nameFrom)
     {

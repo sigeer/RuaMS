@@ -104,15 +104,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
 
                 string targetName = p.readString();
-                var mgr = _guildManager.SendInvitation(c, targetName);
-                if (mgr != null)
-                {
-                    c.sendPacket(mgr.Value.getPacket(targetName));
-                }
-                else
-                {
-                } // already sent invitation, do nothing
-
+                _guildManager.SendInvitation(c, targetName);
                 break;
             case 0x06:
                 if (mc.GuildId > 0)
@@ -128,12 +120,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (!_guildManager.AnswerInvitation(mc, gid, true))
-                {
-                    return;
-                }
-
-                _guildManager.AddMember(mc, gid);
+                _guildManager.AnswerInvitation(mc,gid, true);
                 break;
             case 0x07:
                 cid = p.readInt();

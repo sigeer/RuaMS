@@ -1,23 +1,24 @@
 using Application.Core.Channel.Events;
+using Application.Core.Channel.Invitation;
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.Players;
+using Application.Core.Channel.Tasks;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
+using Application.Shared.Invitations;
 using Application.Shared.Login;
 using Application.Shared.Servers;
+using Dto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.server.guild;
 using server;
 using System.Diagnostics;
 using System.Net;
-using System.Numerics;
-using System.Security.Cryptography.Xml;
 using tools;
 
 namespace Application.Core.Channel
 {
-    public class WorldChannelServer: IServerBase<IChannelServerTransport>
+    public class WorldChannelServer : IServerBase<IChannelServerTransport>
     {
         readonly IServiceProvider _sp;
         public IChannelServerTransport Transport { get; }
@@ -52,7 +53,7 @@ namespace Application.Core.Channel
 
         public float WorldMesoRate { get; private set; }
         public float WorldExpRate { get; private set; }
-        public float WorldDropRate  { get; private set; }
+        public float WorldDropRate { get; private set; }
         public float WorldBossDropRate { get; private set; }
         public float WorldQuestRate { get; private set; }
         public float WorldTravelRate { get; private set; }
@@ -63,7 +64,9 @@ namespace Application.Core.Channel
         public List<int> ActiveCoupons { get; set; } = new();
 
         #endregion
-        public List<IChannelModule> Plugins { get; }
+        public List<ChannelModule> Plugins { get; }
+        public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
+        ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, ChannelServerConfig serverConfig, ILogger<WorldChannelServer> logger)
         {
             _sp = sp;
@@ -74,7 +77,7 @@ namespace Application.Core.Channel
             ServerConfig = serverConfig;
 
             SkillbookInformationProvider = _sp.GetRequiredService<SkillbookInformationProvider>();
-            Plugins = _sp.GetServices<IChannelModule>().ToList();
+            Plugins = _sp.GetServices<ChannelModule>().ToList();
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
@@ -83,6 +86,8 @@ namespace Application.Core.Channel
             MapObjectManager = new MapObjectManager(this);
             MountTirednessManager = new MountTirednessManager(this);
             MapOwnershipManager = new MapOwnershipManager(this);
+
+            InviteChannelHandlerRegistry = _sp.GetRequiredService<InviteChannelHandlerRegistry>();
         }
 
         #region 时间
@@ -137,6 +142,11 @@ namespace Application.Core.Channel
             await MapObjectManager.StopAsync();
             await MountTirednessManager.StopAsync();
 
+            if (invitationTask != null)
+                await invitationTask.CancelAsync(false);
+
+            InviteChannelHandlerRegistry.Dispose();
+
             foreach (var channel in Servers.Values)
             {
                 await channel.Shutdown();
@@ -172,6 +182,15 @@ namespace Application.Core.Channel
             MapObjectManager.Register();
             MountTirednessManager.Register();
             MapOwnershipManager.Register();
+
+            invitationTask = TimerManager.getInstance().register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+
+            InviteChannelHandlerRegistry.Register(_sp.GetServices<InviteChannelHandler>());
+
+            foreach (var plugin in Plugins)
+            {
+                plugin.Initialize();
+            }
 
             List<WorldChannel> localServers = [];
             // ping master
@@ -424,7 +443,7 @@ namespace Application.Core.Channel
                             alliance.broadcastMessage(GuildPackets.updateAllianceJobLevel(guild, data.Id, data.Level, data.JobId), data.Id, -1);
                         }
                     }
- 
+
                 }
             }
 
@@ -467,13 +486,25 @@ namespace Application.Core.Channel
                                 alliance.broadcastMessage(GuildPackets.allianceMemberOnline(guild, data.Id, true), data.Id);
                         }
                     }
+
                 }
             }
-
-            foreach (var plugin in Plugins)
-            {
-                plugin.OnPlayerLogin(data);
-            }
         }
+
+        /// <summary>
+        /// 成功：向受邀者发送请求，失败：向邀请者发送失败原因
+        /// </summary>
+        /// <param name="data"></param>
+        public void OnSendInvitation(Dto.CreateInviteResponse data)
+        {
+            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationCreated(data);
+        }
+
+
+        public void OnAnswerInvitation(AnswerInviteResponse data)
+        {
+            InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationAnswered(data);
+        }
+
     }
 }

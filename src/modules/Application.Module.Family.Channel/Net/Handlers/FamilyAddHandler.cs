@@ -88,15 +88,7 @@ public class FamilyAddHandler : ChannelHandlerBase
             return;
         }
 
-        if (InviteType.FAMILY.HasRequest(addChr.getId()))
-        {
-            c.sendPacket(FamilyPacketCreator.sendFamilyMessage(73, 0));
-            return;
-        }
-
-        InviteType.FAMILY.CreateInvite(new InviteRequest(chr, addChr));
-        addChr.getClient().sendPacket(FamilyPacketCreator.sendFamilyInvite(chr.getId(), chr.getName()));
-        chr.dropMessage("The invite has been sent.");
+        _familyManager.CreateInvite(chr, toAdd);
         c.sendPacket(PacketCreator.enableActions());
     }
 }

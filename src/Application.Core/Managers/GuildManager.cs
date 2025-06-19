@@ -1,7 +1,3 @@
-using Application.Core.Game.Invites;
-using Application.Core.Game.Relation;
-using net.server;
-using net.server.coordinator.matchchecker;
 using net.server.guild;
 
 namespace Application.Core.Managers

@@ -406,5 +406,36 @@ namespace Application.Core.Login
                 server.BroadcastChatRoomMessage(res);
             }
         }
+
+        internal void ReturnInvitationCreated(CreateInviteResponse response)
+        {
+            var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
+            var server1 = _server.GetChannelServer(sender.Channel);
+            server1.ReturnInvitatioCreated(response);
+
+            var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId);
+            if (receiver != null)
+            {
+                var server2 = _server.GetChannelServer(receiver.Channel);
+                if (server1 != server2)
+                    server2.ReturnInvitatioCreated(response);
+            }
+
+        }
+
+        internal void ReturnInvitationAnswer(AnswerInviteResponse response)
+        {
+            var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
+            var server1 = _server.GetChannelServer(sender.Channel);
+            server1.ReturnInvitationAnswer(response);
+
+            var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId);
+            if (receiver != null)
+            {
+                var server2 = _server.GetChannelServer(receiver.Channel);
+                if (server1 != server2)
+                    server2.ReturnInvitationAnswer(response);
+            }
+        }
     }
 }

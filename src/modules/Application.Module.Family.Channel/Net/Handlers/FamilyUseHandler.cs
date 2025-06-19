@@ -58,10 +58,11 @@ public class FamilyUseHandler : ChannelHandlerBase
             return; // shouldn't even be able to request it
         }
         c.sendPacket(FamilyPacketCreator.getFamilyInfo(entry));
+        var toName = p.readString();
         IPlayer? victim;
         if (type == FamilyEntitlement.FAMILY_REUINION || type == FamilyEntitlement.SUMMON_FAMILY)
         {
-            victim = c.CurrentServer.getPlayerStorage().getCharacterByName(p.readString());
+            victim = c.CurrentServer.getPlayerStorage().getCharacterByName(toName);
             if (victim != null && victim != c.OnlinedCharacter)
             {
                 if (_familyManager.GetFamilyByPlayerId(victim.Id) == _familyManager.GetFamilyByPlayerId(c.OnlinedCharacter.Id))
@@ -91,14 +92,7 @@ public class FamilyUseHandler : ChannelHandlerBase
                                     && (ownMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(ownMap.getId())) && ownMap.getEventInstance() == null)
                             {
 
-                                if (InviteType.FAMILY_SUMMON.HasRequest(victim.getId()))
-                                {
-                                    c.sendPacket(FamilyPacketCreator.sendFamilyMessage(74, 0));
-                                    return;
-                                }
-                                InviteType.FAMILY_SUMMON.CreateInvite(new FamilySummonInviteRequest(c.OnlinedCharacter, victim));
-                                victim.sendPacket(FamilyPacketCreator.sendFamilySummonRequest(family.getName(), c.OnlinedCharacter.getName()));
-                                _familyManager.UseEntitlement(c.OnlinedCharacter, type);
+                                _familyManager.CreateSummonInvite(c.OnlinedCharacter, toName);
                             }
                             else
                             {

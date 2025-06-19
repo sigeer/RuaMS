@@ -1,3 +1,4 @@
+using Application.Shared.Invitations;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Game.Invites
@@ -6,24 +7,19 @@ namespace Application.Core.Game.Invites
     {
         const long Expired = 3 * 60 * 1000;
         //BUDDY, (not needed)
-        public static InviteType FAMILY = new InviteType();
-        public static InviteType FAMILY_SUMMON = new InviteType();
-        public static InviteType MESSENGER = new InviteType();
-        public static InviteType TRADE = new InviteType();
-        public static InviteType PARTY = new InviteType();
-        public static InviteType GUILD = new InviteType();
-        public static InviteType ALLIANCE = new InviteType();
-        private InviteType()
+        public static InviteType TRADE = new InviteType(InviteTypeEnum.TRADE);
+        public InviteTypeEnum Value { get; }
+        private InviteType(InviteTypeEnum enmuValue)
         {
+            Value = enmuValue;
         }
         /// <summary>
         /// Key: 受邀者
         /// </summary>
-        protected ConcurrentDictionary<int, InviteRequest> _data = new ConcurrentDictionary<int, InviteRequest>();
+        protected ConcurrentDictionary<int, LocalInviteRequest> _data = new ConcurrentDictionary<int, LocalInviteRequest>();
 
         public bool HasRequest(int targetCId) => _data.ContainsKey(targetCId);
 
-        protected InviteRequest? FindInviteRequest(int targetCId) => _data.GetValueOrDefault(targetCId);
         public void RemoveRequest(int targetCId)
         {
             _data.TryRemove(targetCId, out var d);
@@ -31,12 +27,16 @@ namespace Application.Core.Game.Invites
 
         public void CheckExpired(long now)
         {
-            _data = new ConcurrentDictionary<int, InviteRequest>(
-                _data.Where(kv => now - kv.Value.CreationTime > Expired)
-            );
+            foreach (var kv in _data)
+            {
+                if (kv.Value.CreationTime < now - Expired)
+                {
+                    _data.TryRemove(kv.Key, out _);
+                }
+            }
         }
 
-        public bool CreateInvite(InviteRequest request)
+        public bool CreateInvite(LocalInviteRequest request)
         {
             if (!_data.TryAdd(request.To.Id, request))
                 return false;
@@ -49,38 +49,19 @@ namespace Application.Core.Game.Invites
         /// </summary>
         /// <param name="type">邀请类型</param>
         /// <param name="responseId">回复请求者（受邀者）</param>
-        /// <param name="key">不同类型邀请值不同</param>
         /// <param name="answer">同意/拒绝</param>
         /// <returns></returns>
-        public InviteResult AnswerInvite(int responseId, int key, bool answer)
+        public LocalInviteResult AnswerInvite(int responseId, int checkKey, bool answer)
         {
             InviteResultType result = InviteResultType.NOT_FOUND;
 
-            var request = FindInviteRequest(responseId);
-
-            if (request != null && CheckKey(request, key))
+            if (_data.TryRemove(responseId, out var d) && (checkKey == -1 || checkKey == d.From.Id))
             {
-                RemoveRequest(responseId);
                 result = answer ? InviteResultType.ACCEPTED : InviteResultType.DENIED;
+                return new LocalInviteResult(result, d);
             }
 
-            return new InviteResult(result, request);
-        }
-
-        bool CheckKey(InviteRequest request, int input)
-        {
-            if (request is TeamInviteRequest team)
-                return team.TeamId == input;
-            if (request is GuildInviteRequest guild)
-                return guild.GuildId == input;
-            if (request is AllianceInviteRequest alliance)
-                return alliance.AllianceId == input;
-            if (request is ChatInviteRequest chat)
-                return chat.ChatRoomId == input;
-            if (request is FamilySummonInviteRequest familySummon)
-                return true;
-
-            return input == request.From.Id;
+            return new LocalInviteResult(result, null);
         }
 
         public void Dispose()

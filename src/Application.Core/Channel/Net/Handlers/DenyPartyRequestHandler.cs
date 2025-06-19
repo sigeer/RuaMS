@@ -21,20 +21,24 @@
 */
 
 
-using tools;
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 public class DenyPartyRequestHandler : ChannelHandlerBase
 {
+    readonly TeamManager _teamManager;
+
+    public DenyPartyRequestHandler(TeamManager teamManager)
+    {
+        _teamManager = teamManager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        p.readByte();
+        var value = p.readByte();
         string[] cname = p.readString().Split("PS: ");
 
-        c.OnlinedCharacter.dropMessage(1, "该功能已关闭");
-        c.sendPacket(PacketCreator.enableActions());
-        return;
+        _teamManager.AnswerInvite(c.OnlinedCharacter, -1, false);
     }
 }

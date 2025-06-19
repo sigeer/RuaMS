@@ -1,6 +1,7 @@
 using Application.Core.Channel.Events;
 using Application.Core.Client;
 using Application.Module.Family.Channel.Net.Handlers;
+using Application.Module.Family.Common;
 using Application.Shared.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,8 +13,9 @@ namespace Application.Module.Family.Channel
         public static IServiceCollection AddFamilySystem(this IServiceCollection services)
         {
             services.AddSingleton<FamilyManager>();
+            services.AddOptions<FamilyConfigs>();
 
-            services.AddSingleton<IChannelModule, ChannelFamilyModule>();
+            services.AddSingleton<ChannelModule, ChannelFamilyModule>();
 
             services.AddSingleton<IPacketHandlerBase<IChannelClient>, OpenFamilyHandler>();
             services.AddSingleton<IPacketHandlerBase<IChannelClient>, OpenFamilyPedigreeHandler>();

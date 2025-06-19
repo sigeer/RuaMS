@@ -68,3 +68,8 @@
 也就是服务器的请求节点不再是`MasterServer`与`WorldChannel`，而是`MasterServer`与`WorldChannelServer`。 
 wz资源，在同一进程时，没必要每个频道都读取一次 ，所以都会通过单例注入（`AddSingleton<SkillbookInformationProvider>()`） 
 重新对`IServerBase`进行调整，区分功能范围
+
+#### 邀请相关
+
+- 交易邀请仍旧使用旧逻辑。
+- 回复邀请`AnswerInvite`原逻辑会使用第二个参数进行验证，一些不方便的使用-1跳过验证

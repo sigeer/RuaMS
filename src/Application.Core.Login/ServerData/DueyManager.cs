@@ -37,9 +37,8 @@ namespace Application.Core.Login.Datas
             _dataStorage = dataStorage;
         }
 
-        public async Task Setup()
+        public async Task Initialize(DBContext dbContext)
         {
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
             var allPackages = _mapper.Map<List<DueyPackageModel>>(await dbContext.Dueypackages.AsNoTracking().ToListAsync());
 
             var allPackageItems = InventoryManager.LoadDueyItems(dbContext, allPackages.Select(x => x.PackageId).ToArray());

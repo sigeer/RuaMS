@@ -1,5 +1,6 @@
 using Application.Core.Login.Models.ChatRoom;
 using Application.Shared.Constants;
+using Application.Shared.Invitations;
 using AutoMapper;
 using Dto;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,8 @@ namespace Application.Core.Login.ServerData
             roomDto.Members.AddRange(membersDto);
             return roomDto;
         }
+
+        public ChatRoomModel? GetPlayerRoom(int playerId) => _playerMapper.GetValueOrDefault(playerId);
 
         public int CreateChatRoom(Dto.CreateChatRoomRequest request)
         {
@@ -88,7 +91,8 @@ namespace Application.Core.Login.ServerData
             response.Room = roomDto;
             response.NewComerPosition = position;
             response.Code = (int)JoinChatRoomResult.Success;
-
+            // 加入聊天室后，删除其他聊天邀请
+            _server.InvitationManager.RemovePlayerInvitation(request.MasterId, InviteTypes.Messenger);
             _server.Transport.BroadcastJoinChatRoom(response);
         }
 

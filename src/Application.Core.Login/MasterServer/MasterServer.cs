@@ -88,16 +88,16 @@ namespace Application.Core.Login
 
         public IServiceProvider ServiceProvider { get; }
 
-        public InvitationController InvitationController { get; }
         public ChatRoomManager ChatRoomManager { get; }
-        public List<IMasterModule> Plugins { get; }
+        public List<MasterModule> Plugins { get; }
+        public InvitationManager InvitationManager { get; }
 
         CharacterService _characterSevice;
         public MasterServer(IServiceProvider sp, CharacterService characterManager)
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
-            Plugins = ServiceProvider.GetServices<IMasterModule>().ToList();
+            Plugins = ServiceProvider.GetServices<MasterModule>().ToList();
 
             _characterSevice = characterManager;
 
@@ -125,7 +125,8 @@ namespace Application.Core.Login
             ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
             WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
 
-            InvitationController = new InvitationController(this);
+            InvitationManager = ActivatorUtilities.CreateInstance<InvitationManager>(ServiceProvider, this);
+
             ServerManager = ActivatorUtilities.CreateInstance<ServerManager>(ServiceProvider, this);
             CouponManager = ActivatorUtilities.CreateInstance<CouponManager>(ServiceProvider, this);
             CharacterManager = ActivatorUtilities.CreateInstance<CharacterManager>(ServiceProvider, this);
@@ -159,7 +160,7 @@ namespace Application.Core.Login
             await NettyServer.Stop();
             _logger.LogInformation("[{ServerName}] 停止监听", "登录服务器");
 
-            await InvitationController.DisposeAsync();
+            await InvitationManager.DisposeAsync();
 
             await Server.getInstance().Stop(false);
 
@@ -177,9 +178,14 @@ namespace Application.Core.Login
         {
             try
             {
-                await ServerManager.SetupDataBase();
-                await DueyManager.Setup();
+                await ServerManager.Setup();
+
                 await Server.getInstance().Start();
+
+                foreach (var plugin in Plugins)
+                {
+                    plugin.Initialize();
+                }
             }
             catch (Exception ex)
             {
@@ -341,7 +347,7 @@ namespace Application.Core.Login
             tMan.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
             tMan.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
             tMan.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            InvitationController.Register();
+            InvitationManager.Register();
             _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");
         }
 

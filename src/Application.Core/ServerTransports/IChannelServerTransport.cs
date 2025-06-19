@@ -179,5 +179,8 @@ namespace Application.Core.ServerTransports
         void SendPlayerLeaveChatRoom(Dto.LeaveChatRoomRequst leaveChatRoomRequst);
         void SendChatRoomMesage(Dto.SendChatRoomMessageRequest sendChatRoomMessageRequest);
         void SendCreateChatRoom(Dto.CreateChatRoomRequest createChatRoomRequest);
+
+        void SendInvitation(Dto.CreateInviteRequest request);
+        void AnswerInvitation(Dto.AnswerInviteRequest request);
     }
 }

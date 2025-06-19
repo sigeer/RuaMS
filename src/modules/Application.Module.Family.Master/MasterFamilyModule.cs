@@ -1,5 +1,6 @@
 using Application.Core.Login;
 using Application.Core.Login.Events;
+using Application.Core.Login.Models.Invitations;
 using Application.EF;
 using Application.Module.Family.Master.Tasks;
 using Application.Utility;
@@ -8,22 +9,22 @@ using server;
 
 namespace Application.Module.Family.Master
 {
-    public class MasterFamilyModule : IMasterModule
+    public class MasterFamilyModule : MasterModule
     {
-        readonly MasterServer _server;
         readonly FamilyManager _familyManager;
-        readonly ILogger<MasterFamilyModule> _logger;
         readonly DataService _dataService;
 
-        public MasterFamilyModule(MasterServer server, FamilyManager familyManager, ILogger<MasterFamilyModule> logger, DataService dataService)
+        public MasterFamilyModule(
+            MasterServer server, 
+            FamilyManager familyManager, 
+            ILogger<MasterModule> logger, 
+            DataService dataService) : base(server, logger)
         {
-            _server = server;
             _familyManager = familyManager;
-            _logger = logger;
             _dataService = dataService;
         }
 
-        public int DeleteCharacterCheck(int id)
+        public override int DeleteCharacterCheck(int id)
         {
             var chr = _server.CharacterManager.FindPlayerById(id);
             if (chr != null)
@@ -36,7 +37,7 @@ namespace Application.Module.Family.Master
             return 0;
         }
 
-        public void Initialize()
+        public override void Initialize()
         {
             _familyManager.LoadAllFamily();
 
@@ -45,12 +46,7 @@ namespace Application.Module.Family.Master
             TimerManager.getInstance().register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
         }
 
-        public void OnPlayerDeleted(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task SaveChangesAsync(DBContext dbContext)
+        public override async Task SaveChangesAsync(DBContext dbContext)
         {
             await _dataService.CommitAsync(dbContext);
         }

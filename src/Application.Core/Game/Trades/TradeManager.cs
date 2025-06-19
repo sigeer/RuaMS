@@ -1,4 +1,5 @@
 using Application.Core.Game.Invites;
+using Application.Shared.Invitations;
 using client.inventory;
 using server;
 using System.Text;
@@ -107,7 +108,7 @@ namespace Application.Core.Game.Trades
                 return;
             }
 
-            if (InviteType.TRADE.CreateInvite(new InviteRequest(c1, c2)))
+            if (InviteType.TRADE.CreateInvite(new LocalInviteRequest(c1, c2)))
             {
                 if (JoinTrade(c1.getTrade()!, c2))
                 {
@@ -145,7 +146,7 @@ namespace Application.Core.Game.Trades
 
         public static void VisitTrade(IPlayer c1, IPlayer c2)
         {
-            InviteResult inviteRes = InviteType.TRADE.AnswerInvite(c1.getId(), c2.getId(), true);
+            var inviteRes = InviteType.TRADE.AnswerInvite(c1.getId(), c2.getId(), true);
 
             InviteResultType res = inviteRes.Result;
             if (res == InviteResultType.ACCEPTED)

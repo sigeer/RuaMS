@@ -20,10 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using Application.Core.Game.Invites;
-using tools;
-
 namespace Application.Core.Channel.Net.Handlers;
 
 
@@ -59,72 +55,14 @@ public class PartyOperationHandler : ChannelHandlerBase
                 { // join
                     int partyid = p.readInt();
 
-                    InviteResult inviteRes = InviteType.PARTY.AnswerInvite(player.getId(), partyid, true);
-                    InviteResultType res = inviteRes.Result;
-                    if (res == InviteResultType.ACCEPTED)
-                    {
-                        c.CurrentServerContainer.TeamManager.JoinParty(player, partyid, false);
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party due to an expired invitation request."));
-                    }
+                    c.CurrentServerContainer.TeamManager.AnswerInvite(player, partyid, true);
                     break;
                 }
             case 4:
                 {
                     // invite
                     string name = p.readString();
-                    var invited = world.getPlayerStorage().getCharacterByName(name);
-                    if (invited != null && invited.IsOnlined)
-                    {
-                        if (invited.getLevel() < 10 && (!YamlConfig.config.server.USE_PARTY_FOR_STARTERS || player.getLevel() >= 10))
-                        { //min requirement is level 10
-                            c.sendPacket(PacketCreator.serverNotice(5, "The player you have invited does not meet the requirements."));
-                            return;
-                        }
-                        if (YamlConfig.config.server.USE_PARTY_FOR_STARTERS && invited.getLevel() >= 10 && player.getLevel() < 10)
-                        {    //trying to invite high level
-                            c.sendPacket(PacketCreator.serverNotice(5, "The player you have invited does not meet the requirements."));
-                            return;
-                        }
-
-                        if (invited.getParty() == null)
-                        {
-                            if (party == null)
-                            {
-                                if (!c.CurrentServerContainer.TeamManager.CreateParty(player, false))
-                                {
-                                    return;
-                                }
-
-                                party = player.getParty();
-                            }
-                            if (party.GetMemberCount() < 6)
-                            {
-                                if (InviteType.PARTY.CreateInvite(new TeamInviteRequest(player, invited)))
-                                {
-                                    invited.sendPacket(PacketCreator.partyInvite(player));
-                                }
-                                else
-                                {
-                                    c.sendPacket(PacketCreator.partyStatusMessage(22, invited.getName()));
-                                }
-                            }
-                            else
-                            {
-                                c.sendPacket(PacketCreator.partyStatusMessage(17));
-                            }
-                        }
-                        else
-                        {
-                            c.sendPacket(PacketCreator.partyStatusMessage(16));
-                        }
-                    }
-                    else
-                    {
-                        c.sendPacket(PacketCreator.partyStatusMessage(19));
-                    }
+                    c.CurrentServerContainer.TeamManager.CreateInvite(player, name);
                     break;
                 }
             case 5:

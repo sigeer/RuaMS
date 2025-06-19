@@ -1,4 +1,4 @@
-using Application.Core.Channel.Events;
+using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Commands;
@@ -6,7 +6,6 @@ using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using net.server.handlers;
 using server;
 
@@ -14,6 +13,17 @@ namespace Application.Core.Channel
 {
     public static class ServiceCollectionExtensions
     {
+        static IServiceCollection AddInvitationService(this IServiceCollection services)
+        {
+            services.AddSingleton<InviteChannelHandlerRegistry>();
+
+            services.AddSingleton<InviteChannelHandler, PartyInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, GuildInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, AllianceInviteChannelHandler>();
+            services.AddSingleton<InviteChannelHandler, MessengerInviteChannelHandler>();
+            return services;
+        }
+
         private static IServiceCollection AddChannelHandlers(this IServiceCollection services)
         {
             services.AddScoped<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
@@ -62,6 +72,8 @@ namespace Application.Core.Channel
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();
+
+            services.AddInvitationService();
 
             services.AddMemoryCache();
             return services;

@@ -152,12 +152,24 @@ namespace Application.Module.Family.Channel
             return ret;
         }
 
-        internal void AcceptInvite(int inviterId, int id)
+        internal void CreateInvite(IPlayer chr, string toAdd)
         {
-            _transport.AcceptFamily(inviterId, id);
+            _server.Transport.SendInvitation(new CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
+        }
+        internal void AnswerInvite(IPlayer chr, int familyId, bool accept)
+        {
+            _server.Transport.AnswerInvitation(new AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+        }
+        internal void CreateSummonInvite(IPlayer chr, string toAdd)
+        {
+            _server.Transport.SendInvitation(new CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
+        }
+        internal void AnswerSummonInvite(IPlayer chr, int familyId, bool accept)
+        {
+            _server.Transport.AnswerInvitation(new AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
 
-        public void OnAcceptInviationResponse(Dto.AnswerInviteResponse data)
+        public void OnJoinFamily(Dto.JoinFamilyResponse data)
         {
             if (data.Code != 0)
             {
@@ -192,40 +204,16 @@ namespace Application.Module.Family.Channel
 
         public void OnUseEntitlement(UseEntitlementResponse data)
         {
-            if (data.Code == 0)
-            {
-                var entitlement = FamilyEntitlement.Parse(data.Request.EntitlementId);
+            var entitlement = FamilyEntitlement.Parse(data.Request.EntitlementId);
 
-                var family = GetFamily(data.FamilyId)!;
+            var family = GetFamily(data.FamilyId)!;
 
-                var newEnty = _mapper.Map<FamilyEntry>(data.UpdatedMember);
-                family.UpdateMember(newEnty);
-                var chr = _server.FindPlayerById(data.Request.MatserId);
-                chr?.sendPacket(FamilyPacketCreator.getFamilyInfo(newEnty));
-
-            }
+            var newEnty = _mapper.Map<FamilyEntry>(data.UpdatedMember);
+            family.UpdateMember(newEnty);
+            var chr = _server.FindPlayerById(data.Request.MatserId);
+            chr?.sendPacket(FamilyPacketCreator.getFamilyInfo(newEnty));
         }
 
-        internal void DeclineSummon(IPlayer recevier)
-        {
-            _transport.SendDeclineSummon(new DeclineSummonRequest { MasterId = recevier.Id });
-        }
 
-        public void OnDeclineSummon(DeclineSummonResponse data)
-        {
-            if (data.Code == 0)
-            {
-                var family = GetFamily(data.FamilyId)!;
-
-                var newEntry = _mapper.Map<FamilyEntry>(data.UpdatedMember);
-                family.UpdateMember(newEntry);
-                var chr = _server.FindPlayerById(data.UpdatedMember.Id);
-                if (chr != null)
-                {
-                    chr.sendPacket(FamilyPacketCreator.getFamilyInfo(newEntry));
-                    chr.dropMessage(5, data.DeclinePlayerName + " has denied the summon request.");
-                }
-            }
-        }
     }
 }

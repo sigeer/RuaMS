@@ -40,11 +40,8 @@ public class DenyGuildRequestHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        p.readByte();
-        var cfrom = c.getWorldServer().getPlayerStorage().getCharacterByName(p.readString());
-        if (cfrom != null)
-        {
-            _guildManager.AnswerInvitation(c.OnlinedCharacter, cfrom.GuildId, false);
-        }
+        var value = p.readByte();
+        var invitor = p.readString();
+        _guildManager.AnswerInvitation(c.OnlinedCharacter, -1, false);
     }
 }

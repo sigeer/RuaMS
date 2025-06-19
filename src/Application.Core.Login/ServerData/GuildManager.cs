@@ -16,6 +16,7 @@ using Org.BouncyCastle.Asn1.Ocsp;
 using server.quest;
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Application.Core.Login.ServerData
@@ -44,10 +45,10 @@ namespace Application.Core.Login.ServerData
             _dataStorage = dataStorage;
         }
 
-        public void Initialize(DBContext dbContext)
+        public async Task Initialize(DBContext dbContext)
         {
             // 家族、联盟的数据应该不会太多，全部加载省事
-            var allGuilds = dbContext.Guilds.AsNoTracking().ToList();
+            var allGuilds = await dbContext.Guilds.AsNoTracking().ToListAsync();
             foreach (var item in allGuilds)
             {
                 var model = _mapper.Map<GuildModel>(item);
@@ -59,7 +60,7 @@ namespace Application.Core.Login.ServerData
                 _currentGuildId = model.GuildId > _currentGuildId ? model.GuildId : _currentGuildId;
             }
 
-            var allAliance = dbContext.Alliances.AsNoTracking().ToList();
+            var allAliance = await dbContext.Alliances.AsNoTracking().ToListAsync();
             foreach (var item in allAliance)
             {
                 var model = _mapper.Map<AllianceModel>(item);
@@ -122,6 +123,7 @@ namespace Application.Core.Login.ServerData
 
             return null;
         }
+        public GuildModel? FindGuildByName(string name) => _nameGuildDataSource.GetValueOrDefault(name);
         public Dto.GuildDto? GetGuildFull(int guildId)
         {
             var data = GetLocalGuild(guildId);
@@ -339,7 +341,7 @@ namespace Application.Core.Login.ServerData
         {
             var guildId = HandleGuildRequest(request.MasterId, guild =>
             {
-                guild.GP = request.Gp;
+                guild.GP += request.Gp;
             }, out var code);
             var response = new UpdateGuildGPResponse { Code = (int)code, Request = request, GuildId = guildId };
             _server.Transport.BroadcastGuildGPUpdate(response);

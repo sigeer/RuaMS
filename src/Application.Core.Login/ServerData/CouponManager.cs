@@ -3,6 +3,7 @@ using Application.Shared.Constants.Item;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Application.Core.Login.Datas
 {
@@ -24,9 +25,9 @@ namespace Application.Core.Login.Datas
             _server = server;
         }
 
-        public void Initialize(DBContext dbContext)
+        public async Task Initialize(DBContext dbContext)
         {
-            loadCouponRates(dbContext);
+            await loadCouponRates(dbContext);
             UpdateActiveCouponsInternal(dbContext);
         }
         public Config.CouponConfig GetConfig()
@@ -40,9 +41,9 @@ namespace Application.Core.Login.Datas
             return data;
         }
         #region coupon
-        private void loadCouponRates(DBContext dbContext)
+        private async Task loadCouponRates(DBContext dbContext)
         {
-            couponRates = dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToList().ToDictionary(x => x.CouponId, x => x.Rate);
+            couponRates =( await dbContext.Nxcoupons.AsNoTracking().Select(x => new { x.CouponId, x.Rate }).ToListAsync()).ToDictionary(x => x.CouponId, x => x.Rate);
         }
 
 

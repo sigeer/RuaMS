@@ -22,6 +22,8 @@
 
 
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Players;
+using Application.Core.Game.Relation;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -104,11 +106,10 @@ public class AllianceOperationHandler : ChannelHandlerBase
                         return;
                     }
 
-                    int allianceid = p.readInt();
+                    int allianceId = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
-                    int guildid = chr.getGuildId();
 
-                    _guildManager.GuildJoinAlliance(chr, allianceid, guildid);
+                    _guildManager.AnswerAllianceInvitation(chr, allianceId, true);
                     break;
                 }
             case 0x06:

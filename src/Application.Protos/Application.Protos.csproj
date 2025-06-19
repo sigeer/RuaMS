@@ -24,10 +24,8 @@
 		<Protobuf Include="Guild\GuildMember.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\UpdateAlliance.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\UpdateGuild.proto" GrpcServices="None" />
-		<Protobuf Include="Invitation\CreateInviteRequest.proto" GrpcServices="None" />
-		<Protobuf Include="Invitation\CreateInviteResponse.proto" GrpcServices="None" />
-
-		<Protobuf Include="Invitation\InviteRequest.proto" GrpcServices="None" />
+		<Protobuf Include="Invitation\CreateInvite.proto" GrpcServices="None" />
+		<Protobuf Include="Invitation\AnswerInvite.proto" GrpcServices="None" />
 		<Protobuf Include="Rank\RankCharacter.proto" GrpcServices="None" />
 
 		<Protobuf Include="Config\RegisterServerResult.proto" GrpcServices="None" />

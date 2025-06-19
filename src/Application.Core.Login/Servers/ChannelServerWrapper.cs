@@ -50,6 +50,8 @@ namespace Application.Core.Login.Servers
         public abstract void BroadcastJoinChatRoom(JoinChatRoomResponse response);
         public abstract void BroadcastLeaveChatRoom(LeaveChatRoomResponse response);
         public abstract void BroadcastChatRoomMessage(SendChatRoomMessageResponse res);
+        public abstract void ReturnInvitatioCreated(CreateInviteResponse response);
+        public abstract void ReturnInvitationAnswer(AnswerInviteResponse response);
     }
 
 
