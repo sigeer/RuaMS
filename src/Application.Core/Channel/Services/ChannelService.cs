@@ -55,12 +55,12 @@ namespace Application.Core.Servers.Services
             _tranport.SendRemovePlayerIncomingInvites(id);
         }
 
-        public void SaveChar(Player player, bool isLogoff = false)
+        public void SaveChar(Player player, int? setChannel = null)
         {
             var dto = _characteService.Deserialize(player);
-            if (isLogoff)
+            if (setChannel != null)
             {
-                dto.Channel = 0;
+                dto.Channel = setChannel.Value;
             }
             _tranport.SendPlayerObject(dto);
         }

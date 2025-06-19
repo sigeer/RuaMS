@@ -41,7 +41,7 @@ namespace Application.Core.Channel.Net
         /// CashShop
         /// </summary>
         public bool IsAwayWorld { get; private set; }
-        public int Channel => IsAwayWorld ? -1 : ActualChannel;
+        public int Channel => CurrentServer.getId();
         public int ActualChannel => CurrentServer.getId();
         public NPCConversationManager? NPCConversationManager { get; set; }
 
@@ -120,7 +120,7 @@ namespace Application.Core.Channel.Net
                         //getChannelServer().removePlayer(player); already being done
 
                         Character.cancelAllDebuffs();
-                        Character.saveCharToDB(isLogoff: true);
+                        Character.saveCharToDB(setChannel: 0);
 
                         RemovePartyPlayer(Character);
 

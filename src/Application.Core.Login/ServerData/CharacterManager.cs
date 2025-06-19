@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
@@ -11,7 +10,6 @@ using Application.Utility.Extensions;
 using AutoMapper;
 using client.inventory.manipulator;
 using client.processor.npc;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -129,6 +127,7 @@ namespace Application.Core.Login.Datas
                     _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
 
+                // 理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发
                 if (obj.Channel <= 0)
                 {
                     origin.Channel = obj.Channel;
@@ -147,6 +146,10 @@ namespace Application.Core.Login.Datas
                         _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                         _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
                     }
+                }
+                else
+                {
+                    _logger.LogWarning("意料之外的更新：理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发");
                 }
             }
         }

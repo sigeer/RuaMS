@@ -165,7 +165,7 @@ namespace Application.Core.Game.Players
         //}
 
         object saveCharLock = new object();
-        public void saveCharToDB(bool notAutosave = true, bool isLogoff = false)
+        public void saveCharToDB(bool notAutosave = true, int? setChannel = null)
         {
             lock (saveCharLock)
             {
@@ -174,7 +174,7 @@ namespace Application.Core.Game.Players
                     return;
                 }
 
-                Client.CurrentServer.Service.SaveChar(this, isLogoff);
+                Client.CurrentServer.Service.SaveChar(this, setChannel);
             }
         }
     }

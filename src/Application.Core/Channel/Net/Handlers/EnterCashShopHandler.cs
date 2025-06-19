@@ -89,7 +89,7 @@ public class EnterCashShopHandler : ChannelHandlerBase
             c.CurrentServer.removePlayer(mc);
             mc.getMap().removePlayer(mc);
             mc.getCashShop().open(true);
-            mc.saveCharToDB();
+            mc.saveCharToDB(setChannel: -1);
         }
         catch (Exception e)
         {
