@@ -63,6 +63,8 @@ namespace Application.Core.Login.Net.Handlers
                 return;
             }
 
+            c.SelectedChannel = Randomizer.rand(1, _server.ChannelServerList.Count);
+
             var socket = _server.GetChannelIPEndPoint(c.SelectedChannel);
             if (socket == null)
             {
@@ -101,7 +103,7 @@ namespace Application.Core.Login.Net.Handlers
                 return;
             }
 
-            c.SelectedChannel = Randomizer.rand(1, _server.ChannelServerList.Count);
+
             base.Process(c, charId, hostString, macs);
         }
     }
