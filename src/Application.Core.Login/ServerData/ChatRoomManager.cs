@@ -111,7 +111,7 @@ namespace Application.Core.Login.ServerData
                         LeftPlayerID = request.MasterId 
                     });
                 }
-                if (room.Members.Length == 0)
+                if (room.Members.Count(x => x > 0) == 0)
                 {
                     _dataSource.TryRemove(room.Id, out _);
                 }
