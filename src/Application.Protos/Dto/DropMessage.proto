@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package Dto;
+
+message DropMessageDto {
+  repeated int32 playerId = 1;
+  int32 type = 2;
+  string message = 3;
+}

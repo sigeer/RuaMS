@@ -4,6 +4,7 @@ using Application.EF.Entities;
 using Application.Shared.Configs;
 using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Job;
+using Application.Shared.Message;
 using Application.Shared.Servers;
 using Application.Shared.Team;
 using client.inventory;
@@ -137,18 +138,23 @@ namespace Application.Core.Login
 
         public void SendMultiChat(int type, string nameFrom, PlayerChannelPair[] teamMember, string chatText)
         {
+            if (teamMember.Length == 0)
+                return;
+
             var groups = _server.GroupPlayer(teamMember);
             foreach (var server in groups)
             {
-                server.Key.SendMultiChat(type, nameFrom, server.Value, chatText);
+                var res = new MultiChatMessage { Type = type, FromName = nameFrom, Text = chatText };
+                res.Receivers.AddRange(server.Value);
+                server.Key.BroadcastMessage(BroadcastType.OnMultiChat, res);
             }
         }
 
         public void SendUpdateCouponRates(Config.CouponConfig config)
         {
-            foreach (var server in _server.ChannelServerList)
+            foreach (var server in _server.ChannelServerList.Values)
             {
-                server.Value.UpdateCouponConfig(config);
+                server.BroadcastMessage(BroadcastType.OnCouponConfigUpdate, config);
             }
         }
 
@@ -190,20 +196,25 @@ namespace Application.Core.Login
         }
 
 
-        internal void BroadcastTeamUpdate(int teamId, PartyOperation operation, TeamMemberDto target)
+        internal void BroadcastTeamUpdate(UpdateTeamResponse response)
         {
-            foreach (var server in _server.ChannelServerList)
+            foreach (var server in _server.ChannelServerList.Values)
             {
-                server.Value.SendTeamUpdate(teamId, operation, target);
+                server.BroadcastMessage(BroadcastType.OnTeamUpdate, response);
             }
         }
 
         internal void DropMessage(IEnumerable<PlayerChannelPair> targets, int type, string message)
         {
+            if (targets.Count() == 0)
+                return;
+
             var groups = _server.GroupPlayer(targets);
             foreach (var server in groups)
             {
-                server.Key.DropMessage(server.Value, type, message);
+                var msg = new DropMessageDto { Type = type, Message = message };
+                msg.PlayerId.AddRange(server.Value);
+                server.Key.BroadcastMessage(BroadcastType.OnDropMessage, msg);
             }
         }
 
@@ -211,7 +222,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildGPUpdate(response);
+                server.BroadcastMessage(BroadcastType.OnGuildGpUpdate, response);
             }
         }
 
@@ -219,7 +230,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildRankTitleUpdate(response);
+                server.BroadcastMessage(BroadcastType.OnGuildRankTitleUpdate, response);
             }
         }
 
@@ -227,7 +238,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildNoticeUpdate(response);
+                server.BroadcastMessage(BroadcastType.OnGuildNoticeUpdate, response);
             }
         }
 
@@ -235,7 +246,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildCapacityUpdate(response);
+                server.BroadcastMessage(BroadcastType.OnGuildCapacityUpdate, response);
             }
         }
 
@@ -243,7 +254,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildEmblemUpdate(response);
+                server.BroadcastMessage(BroadcastType.OnGuildEmblemUpdate, response);
             }
         }
 
@@ -251,7 +262,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildDisband(response);
+                server.BroadcastMessage(BroadcastType.OnGuildDisband, response);
             }
         }
 
@@ -259,7 +270,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildRankChanged(response);
+                server.BroadcastMessage(BroadcastType.OnGuildRankChanged, response);
             }
         }
 
@@ -267,7 +278,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildExpelMember(response);
+                server.BroadcastMessage(BroadcastType.OnGuildExpelMember, response);
             }
         }
 
@@ -275,7 +286,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastPlayerJoinGuild(response);
+                server.BroadcastMessage(BroadcastType.OnPlayerJoinGuild, response);
             }
         }
 
@@ -283,7 +294,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastPlayerLeaveGuild(response);
+                server.BroadcastMessage(BroadcastType.OnPlayerLeaveGuild, response);
             }
         }
 
@@ -291,7 +302,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastPlayerLevelChanged(response);
+                server.BroadcastMessage(BroadcastType.OnPlayerLevelChanged, response);
             }
         }
 
@@ -299,7 +310,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastPlayerJobChanged(response);
+                server.BroadcastMessage(BroadcastType.OnPlayerJobChanged, response);
             }
         }
 
@@ -307,7 +318,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastPlayerLoginOff(response);
+                server.BroadcastMessage(BroadcastType.OnPlayerLoginOff, response);
             }
         }
 
@@ -315,7 +326,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildJoinAlliance(response);
+                server.BroadcastMessage(BroadcastType.OnGuildJoinAlliance, response);
             }
         }
 
@@ -323,7 +334,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastGuildLeaveAlliance(response);
+                server.BroadcastMessage(BroadcastType.OnGuildLeaveAlliance, response);
             }
         }
 
@@ -331,7 +342,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastAllianceExpelGuild(response);
+                server.BroadcastMessage(BroadcastType.OnAllianceExpelGuild, response);
             }
         }
 
@@ -339,7 +350,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastAllianceCapacityIncreased(response);
+                server.BroadcastMessage(BroadcastType.OnAllianceCapacityUpdate, response);
             }
         }
 
@@ -347,7 +358,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastAllianceRankTitleChanged(response);
+                server.BroadcastMessage(BroadcastType.OnAllianceRankTitleUpdate, response);
             }
         }
 
@@ -355,7 +366,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastAllianceNoticeChanged(response);
+                server.BroadcastMessage(BroadcastType.OnAllianceNoticeUpdate, response);
             }
         }
 
@@ -363,7 +374,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastAllianceLeaderChanged(response);
+                server.BroadcastMessage(BroadcastType.OnAllianceChangeLeader, response);
             }
         }
 
@@ -371,7 +382,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastAllianceMemberRankChanged(response);
+                server.BroadcastMessage(BroadcastType.OnAllianceRankChange, response);
             }
         }
 
@@ -379,7 +390,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastAllianceDisband(response);
+                server.BroadcastMessage(BroadcastType.OnAllianceDisband, response);
             }
         }
 
@@ -387,7 +398,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastJoinChatRoom(response);
+                server.BroadcastMessage(BroadcastType.OnJoinChatRoom, response);
             }
         }
 
@@ -395,7 +406,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastLeaveChatRoom(response);
+                server.BroadcastMessage(BroadcastType.OnLeaveChatRoom, response);
             }
         }
 
@@ -403,7 +414,7 @@ namespace Application.Core.Login
         {
             foreach (var server in _server.ChannelServerList.Values)
             {
-                server.BroadcastChatRoomMessage(res);
+                server.BroadcastMessage(BroadcastType.OnChatRoomMessageSend, res);
             }
         }
 
@@ -411,14 +422,14 @@ namespace Application.Core.Login
         {
             var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
             var server1 = _server.GetChannelServer(sender.Channel);
-            server1.ReturnInvitatioCreated(response);
+            server1.BroadcastMessage(BroadcastType.OnInvitationSend, response);
 
             var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId);
             if (receiver != null)
             {
                 var server2 = _server.GetChannelServer(receiver.Channel);
                 if (server1 != server2)
-                    server2.ReturnInvitatioCreated(response);
+                    server2.BroadcastMessage(BroadcastType.OnInvitationSend, response);
             }
 
         }
@@ -427,14 +438,14 @@ namespace Application.Core.Login
         {
             var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
             var server1 = _server.GetChannelServer(sender.Channel);
-            server1.ReturnInvitationAnswer(response);
+            server1.BroadcastMessage(BroadcastType.OnInvitationAnswer, response);
 
             var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId);
             if (receiver != null)
             {
                 var server2 = _server.GetChannelServer(receiver.Channel);
                 if (server1 != server2)
-                    server2.ReturnInvitationAnswer(response);
+                    server2.BroadcastMessage(BroadcastType.OnInvitationAnswer, response);
             }
         }
     }

@@ -122,7 +122,7 @@ namespace Application.Core.Login.ServerData
             response.ErrorCode = (int)errorCode;
 
             if (errorCode == UpdateTeamCheckResult.Success)
-                _server.Transport.BroadcastTeamUpdate(partyid, operation, response.UpdatedMember);
+                _server.Transport.BroadcastTeamUpdate(response);
             return response;
         }
 

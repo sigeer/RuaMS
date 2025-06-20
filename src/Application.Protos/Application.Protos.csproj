@@ -12,6 +12,8 @@
 
 	<ItemGroup>
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\MultiChatMessage.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\DropMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerView.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerInfo.proto">
 		  <GrpcServices>None</GrpcServices>

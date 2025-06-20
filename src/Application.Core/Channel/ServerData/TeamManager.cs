@@ -103,16 +103,18 @@ namespace Application.Core.Channel.ServerData
             return UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
-        public bool ProcessUpdateResponse(int partyId, PartyOperation operation, Dto.TeamMemberDto target)
+        public bool ProcessUpdateResponse(Dto.UpdateTeamResponse res)
         {
+            var partyId = res.TeamId;
             var party = GetParty(partyId);
             if (party == null)
             {
-                _logger.LogError("队伍{TeamId}不存在, Operation {Operation}, Target: {TargetId}", partyId, operation, target.Id);
+                _logger.LogError("队伍{TeamId}不存在, Operation {Operation}, Target: {TargetId}", partyId, res.Operation, res.UpdatedMember.Id);
                 return false;
             }
 
-            var targetMember = _mapper.Map<TeamMember>(target);
+            var targetMember = _mapper.Map<TeamMember>(res.UpdatedMember);
+            var operation = (PartyOperation)res.Operation;
             switch (operation)
             {
                 case PartyOperation.JOIN:
@@ -254,7 +256,7 @@ namespace Application.Core.Channel.ServerData
         {
             var result = _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
             if (result.ErrorCode == 0)
-                return ProcessUpdateResponse(result.TeamId, (PartyOperation)result.Operation, result.UpdatedMember);
+                return ProcessUpdateResponse(result);
 
             if (player != null && !result.SilentCheck)
             {
