@@ -40,7 +40,7 @@ public class Ola
     public Ola(IPlayer chr)
     {
         this.chr = chr;
-        this.schedule = TimerManager.getInstance().schedule(() =>
+        this.schedule = chr.Client.CurrentServerContainer.TimerManager.schedule(() =>
         {
             if (MapId.isOlaOla(chr.getMapId()))
             {

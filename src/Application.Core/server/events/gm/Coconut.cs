@@ -62,7 +62,7 @@ public class Coconut : Event
         setCoconutsHittable(true);
         map.broadcastMessage(PacketCreator.getClock(map.TimeDefault));
 
-        TimerManager.getInstance().schedule(Check, TimeSpan.FromSeconds(map.TimeDefault));
+        map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(map.TimeDefault));
     }
 
     private void Check()
@@ -96,14 +96,14 @@ public class Coconut : Event
     public void bonusTime()
     {
         map.broadcastMessage(PacketCreator.getClock(map.TimeExpand));
-        TimerManager.getInstance().schedule(Check, TimeSpan.FromSeconds(map.TimeExpand));
+        map.ChannelServer.Container.TimerManager.schedule(Check, TimeSpan.FromSeconds(map.TimeExpand));
 
     }
 
     public void warpOut()
     {
         setCoconutsHittable(false);
-        TimerManager.getInstance().schedule(() =>
+        map.ChannelServer.Container.TimerManager.schedule(() =>
         {
             List<IPlayer> chars = new(map.getCharacters());
 

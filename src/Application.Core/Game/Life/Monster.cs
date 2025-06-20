@@ -924,7 +924,7 @@ public class Monster : AbstractLifeObject
             {
                 var eim = this.getMap().getEventInstance();
 
-                TimerManager.getInstance().schedule(() =>
+                MapModel.ChannelServer.Container.TimerManager.schedule(() =>
                 {
                     var controller = lastController.Key;
                     bool aggro = lastController.Value;
@@ -995,7 +995,7 @@ public class Monster : AbstractLifeObject
     public void dropFromFriendlyMonster(long delay)
     {
         Monster m = this;
-        monsterItemDrop = TimerManager.getInstance().register(() =>
+        monsterItemDrop = MapModel.ChannelServer.Container.TimerManager.register(() =>
         {
             if (!m.isAlive())
             {

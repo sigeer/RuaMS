@@ -1,32 +1,35 @@
 using Application.Utility.Exceptions;
 using Quartz;
 using Quartz.Impl;
+using System.Collections.Concurrent;
 
 namespace Application.Utility.Tasks;
 
 public class QuartzTimerManager : ITimerManager
 {
-    IScheduler _scheduler;
+    public IScheduler Scheduler { get; }
+
+    public ConcurrentDictionary<string, ScheduledFuture> TaskScheduler { get; } = new();
     public QuartzTimerManager(IScheduler scheduler)
     {
-        _scheduler = scheduler;
+        Scheduler = scheduler;
     }
 
     public async Task Start()
     {
-        if (!_scheduler.IsStarted)
-            await _scheduler.Start();
+        if (!Scheduler.IsStarted)
+            await Scheduler.Start();
     }
 
     public async Task Stop()
     {
-        if (!_scheduler.IsShutdown)
+        if (!Scheduler.IsShutdown)
         {
-            foreach (var scheduler in SchedulerManager.TaskScheduler)
+            foreach (var scheduler in TaskScheduler)
             {
                 await scheduler.Value.CancelAsync(false);
             }
-            await _scheduler.Shutdown();
+            await Scheduler.Shutdown();
         }
     }
 
@@ -60,8 +63,8 @@ public class QuartzTimerManager : ITimerManager
                             .RepeatForever()) // 一直重复执行
                         .Build();
 
-        _scheduler.ScheduleJob(job, trigger).Wait();
-        return SchedulerManager.TaskScheduler[r.Name] = new QuartzScheduledFuture(r!.Name, trigger.Key);
+        Scheduler.ScheduleJob(job, trigger).Wait();
+        return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
     }
 
     public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
@@ -79,8 +82,8 @@ public class QuartzTimerManager : ITimerManager
             .StartAt(DateTimeOffset.UtcNow.Add(delay))
             .Build();
 
-        _scheduler.ScheduleJob(job, trigger).Wait();
-        return SchedulerManager.TaskScheduler[r.Name] = new QuartzScheduledFuture(r!.Name, trigger.Key);
+        Scheduler.ScheduleJob(job, trigger).Wait();
+        return TaskScheduler[r.Name] = new QuartzScheduledFuture(this, r!.Name, trigger.Key);
     }
 
     public ScheduledFuture schedule(Action r, TimeSpan delay)
@@ -102,6 +105,6 @@ public class QuartzTimerManager : ITimerManager
 
     public bool isShutdown()
     {
-        return _scheduler.IsShutdown;
+        return Scheduler.IsShutdown;
     }
 }

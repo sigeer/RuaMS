@@ -14,8 +14,10 @@ using Dto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.server.guild;
+using Polly;
 using server;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using tools;
 
@@ -69,6 +71,7 @@ namespace Application.Core.Channel
         #endregion
         public List<ChannelModule> Plugins { get; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
+        public ITimerManager TimerManager { get; private set; } = null!;
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, ChannelServerConfig serverConfig, ILogger<WorldChannelServer> logger)
         {
@@ -143,6 +146,9 @@ namespace Application.Core.Channel
             if (isShuttingdown)
                 return;
 
+            if (!IsRunning)
+                return;
+
             isShuttingdown = true;
 
             await CharacterDiseaseManager.StopAsync();
@@ -162,6 +168,8 @@ namespace Application.Core.Channel
             {
                 await channel.Shutdown();
             }
+            await TimerManager.Stop();
+            _logger.LogInformation("[{ServerName}]已停止", ServerName);
             IsClosed = true;
             isShuttingdown = false;
         }
@@ -171,8 +179,13 @@ namespace Application.Core.Channel
             StartupTime = DateTimeOffset.UtcNow;
             ForceUpdateServerTime();
         }
+
+        public bool IsRunning { get; private set; }
         public async Task Start(int startPort = 7574, int count = 3)
         {
+            if (IsRunning)
+                return;
+
             _ = Task.Run(() =>
             {
                 Stopwatch sw = new Stopwatch();
@@ -186,15 +199,17 @@ namespace Application.Core.Channel
             TeamManager = _sp.GetRequiredService<TeamManager>();
             ChatRoomService = _sp.GetRequiredService<ChatRoomService>();
 
-            CharacterDiseaseManager.Register();
-            PetHungerManager.Register();
-            ServerMessageManager.Register();
-            CharacterHpDecreaseManager.Register();
-            MapObjectManager.Register();
-            MountTirednessManager.Register();
-            MapOwnershipManager.Register();
+            TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz);
 
-            invitationTask = TimerManager.getInstance().register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            CharacterDiseaseManager.Register(TimerManager);
+            PetHungerManager.Register(TimerManager);
+            ServerMessageManager.Register(TimerManager);
+            CharacterHpDecreaseManager.Register(TimerManager);
+            MapObjectManager.Register(TimerManager);
+            MountTirednessManager.Register(TimerManager);
+            MapOwnershipManager.Register(TimerManager);
+
+            invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 
             InviteChannelHandlerRegistry.Register(_sp.GetServices<InviteChannelHandler>());
             InitializeMessage();
@@ -221,7 +236,14 @@ namespace Application.Core.Channel
                 }
             }
 
-            var configs = await Transport.RegisterServer(this, localServers);
+            var registerPolicy = Policy.HandleResult<RegisterServerResult>(x => x.StartChannel <= 0)
+                .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(2000), 
+                onRetry: (result, timespan, retryCount, context) =>
+                {
+                    _logger.LogError($"第 {retryCount} 次重试，返回值是 {result.Result.StartChannel}");
+                });
+            var configs = await registerPolicy.ExecuteAsync(async () => await Transport.RegisterServer(this, localServers));
+
             if (configs.StartChannel > 0)
             {
                 ForceUpdateServerTime();
@@ -251,10 +273,13 @@ namespace Application.Core.Channel
                 {
                     server.Initialize();
                 }
+
+                IsRunning = true;
             }
             else
             {
                 _logger.LogError("注册服务器失败, {Message}", configs.Message);
+                IsRunning = false;
             }
 
         }

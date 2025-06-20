@@ -74,11 +74,11 @@ public class AriantColiseum
             mc.sendPacket(PacketCreator.updateAriantPQRanking(score));
         }
 
-        setAriantScoreBoard(TimerManager.getInstance().schedule(() => showArenaResults(), pqTimerBoard));
+        setAriantScoreBoard(eventMap.ChannelServer.Container.TimerManager.schedule(() => showArenaResults(), pqTimerBoard));
 
-        setArenaFinish(TimerManager.getInstance().schedule(() => enterKingsRoom(), pqTimer));
+        setArenaFinish(eventMap.ChannelServer.Container.TimerManager.schedule(() => enterKingsRoom(), pqTimer));
 
-        setArenaUpdate(TimerManager.getInstance().register(() => broadcastAriantScoreUpdate(), 500, 500));
+        setArenaUpdate(eventMap.ChannelServer.Container.TimerManager.register(() => broadcastAriantScoreUpdate(), 500, 500));
     }
 
     private void setArenaUpdate(ScheduledFuture? ariantUpdate)

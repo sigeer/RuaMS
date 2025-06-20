@@ -1,4 +1,5 @@
 using Application.Core.EF.Entities;
+using net.server;
 using System.Collections.Concurrent;
 
 namespace server;
@@ -65,7 +66,7 @@ public class ExpLogger
 
     private static void startExpLogger()
     {
-        expLoggerSchedule = TimerManager.getInstance().register(saveExpLoggerToDBRunnable,
+        expLoggerSchedule = Server.getInstance().GlobalTimerManager.register(saveExpLoggerToDBRunnable,
             TimeSpan.FromSeconds(EXP_LOGGER_THREAD_SLEEP_DURATION_SECONDS),
             TimeSpan.FromSeconds(EXP_LOGGER_THREAD_SLEEP_DURATION_SECONDS));
 

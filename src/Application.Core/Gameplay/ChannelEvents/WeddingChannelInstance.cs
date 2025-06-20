@@ -235,7 +235,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             ongoingStartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             if (weddingId != null)
             {
-                ScheduledFuture? weddingTask = TimerManager.getInstance().schedule(() => CloseOngoingWedding(cathedral), TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_TIMEOUT));
+                ScheduledFuture? weddingTask = ChannelServer.Container.TimerManager.schedule(() => CloseOngoingWedding(cathedral), TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_TIMEOUT));
 
                 if (cathedral)
                 {

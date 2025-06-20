@@ -4,30 +4,25 @@ namespace server;
 
 public class TimerManager
 {
-    private static Lazy<ITimerManager>? instance = null;
 
-    public static ITimerManager getInstance()
+    public static async Task<ITimerManager> InitializeAsync(TaskEngine engine)
     {
-        return instance!.Value;
-    }
-
-    public static async Task InitializeAsync(TaskEngine engine)
-    {
-        if (SchedulerManager.TaskScheduler.Count > 0)
-            throw new BusinessFatalException("还有未停止的任务");
-
         switch (engine)
         {
             case TaskEngine.Task:
-                instance = new Lazy<ITimerManager>(new TaskTimerManager());
-                break;
+                var instance = new TaskTimerManager();
+                await instance.Start();
+                return instance;
             case TaskEngine.Quartz:
                 var factory = new StdSchedulerFactory();
-                QuartzSchedulerManager.Scheduler = await factory.GetScheduler();
-                QuartzSchedulerManager.Scheduler.ListenerManager.AddJobListener(new JobCompleteListener());
-                QuartzSchedulerManager.Scheduler.ListenerManager.AddSchedulerListener(new MySchedulerListener());
-                instance = new Lazy<ITimerManager>(new QuartzTimerManager(QuartzSchedulerManager.Scheduler));
-                break;
+                var scheduler = await factory.GetScheduler();
+
+                var quratz = new QuartzTimerManager(scheduler);
+                scheduler.ListenerManager.AddJobListener(new JobCompleteListener());
+                scheduler.ListenerManager.AddSchedulerListener(new MySchedulerListener(quratz));
+
+                await quratz.Start();
+                return quratz;
             default:
                 throw new BusinessFatalException("不支持的任务引擎 " + engine);
         }

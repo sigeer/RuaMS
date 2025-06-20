@@ -37,7 +37,7 @@ public class MapMonitor
     {
         this.map = map;
         this.portal = map.getPortal(portal);
-        this.monitorSchedule = TimerManager.getInstance().register(() =>
+        this.monitorSchedule = map.ChannelServer.Container.TimerManager.register(() =>
         {
             if (map.getCharacters().Count < 1)
             {

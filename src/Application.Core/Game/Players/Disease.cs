@@ -260,7 +260,7 @@ namespace Application.Core.Game.Players
         {
             if (_diseaseExpireTask == null)
             {
-                _diseaseExpireTask = TimerManager.getInstance().register(() =>
+                _diseaseExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
                 {
                     HashSet<Disease> toExpire = new();
 

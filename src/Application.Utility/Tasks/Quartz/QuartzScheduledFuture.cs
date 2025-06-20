@@ -4,9 +4,11 @@ namespace Application.Utility.Tasks
 {
     public class QuartzScheduledFuture: ScheduledFuture
     {
+        public QuartzTimerManager _timeManager;
         public TriggerKey TriggerKey { get; }
-        public QuartzScheduledFuture(string jobId, TriggerKey triggerKey)
+        public QuartzScheduledFuture(QuartzTimerManager timerManager, string jobId, TriggerKey triggerKey)
         {
+            _timeManager = timerManager;
             JobId = jobId;
             TriggerKey = triggerKey;
         }
@@ -16,9 +18,9 @@ namespace Application.Utility.Tasks
         {
             var jobKey = JobKey.Create(JobId);
             if (immediately)
-                await QuartzSchedulerManager.Scheduler.Interrupt(jobKey);
+                await _timeManager.Scheduler.Interrupt(jobKey);
 
-            return await QuartzSchedulerManager.Scheduler.DeleteJob(jobKey);
+            return await _timeManager.Scheduler.DeleteJob(jobKey);
         }
 
         public bool cancel(bool immediately)
