@@ -63,7 +63,7 @@ namespace Application.Core.Login.Net.Handlers
                 return;
             }
 
-            c.SelectedChannel = Randomizer.rand(1, _server.ChannelServerList.Count);
+            c.SelectedChannel = c.SelectedChannel < 1 ? Randomizer.rand(1, _server.ChannelServerList.Count) : c.SelectedChannel;
 
             var socket = _server.GetChannelIPEndPoint(c.SelectedChannel);
             if (socket == null)
