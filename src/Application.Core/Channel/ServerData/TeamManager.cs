@@ -74,9 +74,9 @@ namespace Application.Core.Channel.ServerData
             }
         }
 
-        public bool LeaveParty(IPlayer player)
+        public void LeaveParty(IPlayer player)
         {
-            return UpdateTeam(player.getChannelServer(), player.Party, PartyOperation.LEAVE, player, player.Id);
+            UpdateTeam(player.getChannelServer(), player.Party, PartyOperation.LEAVE, player, player.Id);
             //MatchCheckerCoordinator mmce = world.getMatchCheckerCoordinator();
             //if (mmce.getMatchConfirmationLeaderid(player.getId()) == player.getId() && mmce.getMatchConfirmationType(player.getId()) == MatchCheckerType.GUILD_CREATION)
             //{
@@ -84,33 +84,54 @@ namespace Application.Core.Channel.ServerData
             //}
         }
 
-        public bool JoinParty(IPlayer player, int partyid, bool silentCheck)
+        public void JoinParty(IPlayer player, int partyid, bool silentCheck)
         {
-            return UpdateTeam(player.getChannelServer(), partyid, PartyOperation.JOIN, player, player.Id);
+            UpdateTeam(player.getChannelServer(), partyid, PartyOperation.JOIN, player, player.Id);
         }
 
-        public bool ExpelFromParty(Team? party, IChannelClient c, int expelCid)
+        public void ExpelFromParty(Team? party, IChannelClient c, int expelCid)
         {
             if (party != null)
             {
-                return UpdateTeam(c.CurrentServer, party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
+                UpdateTeam(c.CurrentServer, party.getId(), PartyOperation.EXPEL, c.OnlinedCharacter, expelCid);
             }
-            return false;
+            return;
         }
 
-        internal bool ChangeLeader(IPlayer player, int newLeader)
+        internal void ChangeLeader(IPlayer player, int newLeader)
         {
-            return UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
+            UpdateTeam(player.getChannelServer(), player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
-        public bool ProcessUpdateResponse(Dto.UpdateTeamResponse res)
+        public void ProcessUpdateResponse(Dto.UpdateTeamResponse res)
         {
+            if (res.ErrorCode != 0)
+            {
+                var operatorPlayer = _server.FindPlayerById(res.OperatorId);
+                if (operatorPlayer != null && !res.SilentCheck)
+                {
+                    var errorCode = (UpdateTeamCheckResult)res.ErrorCode;
+                    // 人数已满
+                    if (errorCode == UpdateTeamCheckResult.Join_TeamMemberFull)
+                        operatorPlayer.sendPacket(PacketCreator.partyStatusMessage(17));
+                    // 队伍已解散
+                    if (errorCode == UpdateTeamCheckResult.TeamNotExsited)
+                        operatorPlayer.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party since it had already been disbanded."));
+                    // 已有队伍
+                    if (errorCode == UpdateTeamCheckResult.Join_HasTeam)
+                        operatorPlayer.sendPacket(PacketCreator.serverNotice(5, "You can't join the party as you are already in one."));
+
+                    _logger.LogDebug("队伍操作失败 {ErrorCode}", errorCode);
+                }
+                return;
+            }
+
             var partyId = res.TeamId;
             var party = GetParty(partyId);
             if (party == null)
             {
                 _logger.LogError("队伍{TeamId}不存在, Operation {Operation}, Target: {TargetId}", partyId, res.Operation, res.UpdatedMember.Id);
-                return false;
+                return;
             }
 
             var targetMember = _mapper.Map<TeamMember>(res.UpdatedMember);
@@ -212,6 +233,7 @@ namespace Application.Core.Channel.ServerData
                     }
 
                     targetPlayer.setParty(null);
+                    targetPlayer.sendPacket(PacketCreator.updateParty(targetPlayer.Channel, party, operation, targetMember.Id, targetMember.Name));
                     targetPlayer.partyOperationUpdate(party, preData);
                 }
             }
@@ -246,34 +268,12 @@ namespace Application.Core.Channel.ServerData
                 }
                 party.SetLeaderId(targetMember.Id);
             }
-
-            return true;
-
         }
 
 
-        public bool UpdateTeam(WorldChannel worldChannel, int teamId, PartyOperation operation, IPlayer? player, int target)
+        public void UpdateTeam(WorldChannel worldChannel, int teamId, PartyOperation operation, IPlayer? player, int target)
         {
-            var result = _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
-            if (result.ErrorCode == 0)
-                return ProcessUpdateResponse(result);
-
-            if (player != null && !result.SilentCheck)
-            {
-                var errorCode = (UpdateTeamCheckResult)result.ErrorCode;
-                // 人数已满
-                if (errorCode == UpdateTeamCheckResult.Join_TeamMemberFull)
-                    player.sendPacket(PacketCreator.partyStatusMessage(17));
-                // 队伍已解散
-                if (errorCode == UpdateTeamCheckResult.TeamNotExsited)
-                    player.sendPacket(PacketCreator.serverNotice(5, "You couldn't join the party since it had already been disbanded."));
-                // 已有队伍
-                if (errorCode == UpdateTeamCheckResult.Join_HasTeam)
-                    player.sendPacket(PacketCreator.serverNotice(5, "You can't join the party as you are already in one."));
-
-                _logger.LogDebug("队伍操作失败 {ErrorCode}", errorCode);
-            }
-            return false;
+            _transport.SendUpdateTeam(teamId, operation, player?.Id ?? -1, target);
         }
 
         internal Team? GetParty(int party)
