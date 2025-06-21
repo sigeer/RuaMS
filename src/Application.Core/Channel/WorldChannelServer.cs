@@ -1,12 +1,15 @@
 using Application.Core.Channel.Events;
 using Application.Core.Channel.Invitation;
+using Application.Core.Channel.Message;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Tasks;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Invitations;
 using Application.Shared.Login;
+using Application.Shared.Message;
 using Application.Shared.Servers;
+using Config;
 using Dto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -123,6 +126,14 @@ namespace Application.Core.Channel
         {
             ActiveCoupons = config.ActiveCoupons.ToList();
             CouponRates = config.CouponRates.ToDictionary();
+
+            foreach (var ch in Servers.Values)
+            {
+                foreach (var chr in ch.getPlayerStorage().getAllCharacters())
+                {
+                    chr.updateCouponRates();
+                }
+            }
         }
 
 
@@ -186,6 +197,7 @@ namespace Application.Core.Channel
             invitationTask = TimerManager.getInstance().register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 
             InviteChannelHandlerRegistry.Register(_sp.GetServices<InviteChannelHandler>());
+            InitializeMessage();
 
             foreach (var plugin in Plugins)
             {
@@ -381,23 +393,29 @@ namespace Application.Core.Channel
             Transport.NotifyPartner(id);
         }
 
-        public void DropMessage(int[] value, int type, string message)
+        public void DropMessage(DropMessageDto msg)
         {
             foreach (var ch in Servers.Values)
             {
-                foreach (var player in ch.Players.getAllCharacters())
+                if (msg.PlayerId.Contains(-1))
                 {
-                    player.dropMessage(type, message);
+                    foreach (var player in ch.Players.getAllCharacters())
+                    {
+                        player.dropMessage(msg.Type, msg.Message);
+                    }
+                }
+                else
+                {
+                    foreach (var id in msg.PlayerId)
+                    {
+                        ch.Players.getCharacterById(id)?.dropMessage(msg.Type, msg.Message);
+                    }
+
                 }
             }
         }
 
-        public void BroadcastGuildGPUpdate(Dto.UpdateGuildGPResponse response)
-        {
-            GuildManager.OnGuildGPUpdate(response);
-        }
-
-        public void OnPlayerJobChanged(Dto.PlayerLevelJobChange data)
+        private void OnPlayerJobChanged(Dto.PlayerLevelJobChange data)
         {
             if (data.GuildId > 0)
             {
@@ -424,7 +442,7 @@ namespace Application.Core.Channel
             }
         }
 
-        public void OnPlayerLevelChanged(Dto.PlayerLevelJobChange data)
+        private void OnPlayerLevelChanged(Dto.PlayerLevelJobChange data)
         {
             if (data.GuildId > 0)
             {
@@ -457,7 +475,7 @@ namespace Application.Core.Channel
             //}
         }
 
-        public void OnPlayerLoginOff(Dto.PlayerOnlineChange data)
+        private void OnPlayerLoginOff(Dto.PlayerOnlineChange data)
         {
             if (data.GuildId > 0)
             {
@@ -495,16 +513,66 @@ namespace Application.Core.Channel
         /// 成功：向受邀者发送请求，失败：向邀请者发送失败原因
         /// </summary>
         /// <param name="data"></param>
-        public void OnSendInvitation(Dto.CreateInviteResponse data)
+        private void OnSendInvitation(Dto.CreateInviteResponse data)
         {
             InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationCreated(data);
         }
 
 
-        public void OnAnswerInvitation(AnswerInviteResponse data)
+        private void OnAnswerInvitation(AnswerInviteResponse data)
         {
             InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationAnswered(data);
         }
 
+        private void InitializeMessage()
+        {
+            MessageDispatcher.Register<CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
+            MessageDispatcher.Register<AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
+
+            MessageDispatcher.Register<PlayerLevelJobChange>(BroadcastType.OnPlayerLevelChanged, OnPlayerLevelChanged);
+            MessageDispatcher.Register<PlayerLevelJobChange>(BroadcastType.OnPlayerJobChanged, OnPlayerJobChanged);
+            MessageDispatcher.Register<PlayerOnlineChange>(BroadcastType.OnPlayerLoginOff, OnPlayerLoginOff);
+
+            #region Guild
+            MessageDispatcher.Register<UpdateGuildNoticeResponse>(BroadcastType.OnGuildNoticeUpdate, GuildManager.OnGuildNoticeUpdate);
+            MessageDispatcher.Register<UpdateGuildGPResponse>(BroadcastType.OnGuildGpUpdate, GuildManager.OnGuildGPUpdate);
+            MessageDispatcher.Register<UpdateGuildCapacityResponse>(BroadcastType.OnGuildCapacityUpdate, GuildManager.OnGuildCapacityIncreased);
+            MessageDispatcher.Register<UpdateGuildEmblemResponse>(BroadcastType.OnGuildEmblemUpdate, GuildManager.OnGuildEmblemUpdate);
+            MessageDispatcher.Register<UpdateGuildRankTitleResponse>(BroadcastType.OnGuildRankTitleUpdate, GuildManager.OnGuildRankTitleUpdate);
+            MessageDispatcher.Register<UpdateGuildMemberRankResponse>(BroadcastType.OnGuildRankChanged, GuildManager.OnChangePlayerGuildRank);
+            MessageDispatcher.Register<JoinGuildResponse>(BroadcastType.OnPlayerJoinGuild, GuildManager.OnPlayerJoinGuild);
+            MessageDispatcher.Register<LeaveGuildResponse>(BroadcastType.OnPlayerLeaveGuild, GuildManager.OnPlayerLeaveGuild);
+            MessageDispatcher.Register<ExpelFromGuildResponse>(BroadcastType.OnGuildExpelMember, GuildManager.OnGuildExpelMember);
+            MessageDispatcher.Register<GuildDisbandResponse>(BroadcastType.OnGuildDisband, GuildManager.OnGuildDisband);
+            #endregion
+
+            #region Alliance
+            MessageDispatcher.Register<GuildJoinAllianceResponse>(BroadcastType.OnGuildJoinAlliance, GuildManager.OnGuildJoinAlliance);
+            MessageDispatcher.Register<GuildLeaveAllianceResponse>(BroadcastType.OnGuildLeaveAlliance, GuildManager.OnGuildLeaveAlliance);
+            MessageDispatcher.Register<AllianceExpelGuildResponse>(BroadcastType.OnAllianceExpelGuild, GuildManager.OnAllianceExpelGuild);
+            MessageDispatcher.Register<IncreaseAllianceCapacityResponse>(BroadcastType.OnAllianceCapacityUpdate, GuildManager.OnAllianceCapacityIncreased);
+            MessageDispatcher.Register<DisbandAllianceResponse>(BroadcastType.OnAllianceDisband, GuildManager.OnAllianceDisband);
+            MessageDispatcher.Register<UpdateAllianceNoticeResponse>(BroadcastType.OnAllianceNoticeUpdate, GuildManager.OnAllianceNoticeChanged);
+            MessageDispatcher.Register<ChangePlayerAllianceRankResponse>(BroadcastType.OnAllianceRankChange, GuildManager.OnPlayerAllianceRankChanged);
+            MessageDispatcher.Register<UpdateAllianceRankTitleResponse>(BroadcastType.OnAllianceRankTitleUpdate, GuildManager.OnAllianceRankTitleChanged);
+            MessageDispatcher.Register<AllianceChangeLeaderResponse>(BroadcastType.OnAllianceChangeLeader, GuildManager.OnAllianceLeaderChanged);
+            #endregion
+
+            #region ChatRoom
+            MessageDispatcher.Register<SendChatRoomMessageResponse>(BroadcastType.OnChatRoomMessageSend, ChatRoomService.OnReceiveMessage);
+            MessageDispatcher.Register<JoinChatRoomResponse>(BroadcastType.OnJoinChatRoom, ChatRoomService.OnPlayerJoinChatRoom);
+            MessageDispatcher.Register<LeaveChatRoomResponse>(BroadcastType.OnLeaveChatRoom, ChatRoomService.OnPlayerLeaveChatRoom);
+            #endregion
+
+            MessageDispatcher.Register<UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));
+
+            MessageDispatcher.Register<DropMessageDto>(BroadcastType.OnDropMessage, DropMessage);
+            MessageDispatcher.Register<CouponConfig>(BroadcastType.OnCouponConfigUpdate, UpdateCouponConfig);
+        }
+
+        public void OnMessageReceived(string type, object message)
+        {
+            MessageDispatcher.Dispatch(type, message);
+        }
     }
 }
