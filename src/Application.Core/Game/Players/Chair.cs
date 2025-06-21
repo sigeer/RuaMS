@@ -98,7 +98,7 @@ namespace Application.Core.Game.Players
                     stopChairTask();
                 }
 
-                chairRecoveryTask = TimerManager.getInstance().register(() =>
+                chairRecoveryTask = Client.CurrentServerContainer.TimerManager.register(() =>
                 {
                     updateChairHealStats();
                     int healHP = localchairhp;

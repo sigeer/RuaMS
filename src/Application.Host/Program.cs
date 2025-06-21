@@ -60,16 +60,8 @@ try
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog();
 
+    builder.AddGameServerLocal();
 
-    builder.Services.AddChannelServer();
-    builder.Services.AddLocalServer();
-    builder.Services.AddSingleton<WorldChannelServer>();
-
-    builder.Services.AddDbFactory(builder.Configuration.GetConnectionString("MySQL"));
-    builder.Services.AddLoginServer();
-
-
-    builder.Services.AddHostedService<GameHost>();
     if (YamlConfig.config.server.ENABLE_OPENAPI)
     {
         builder.Services.AddCors(options =>

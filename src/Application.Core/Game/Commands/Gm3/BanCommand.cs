@@ -54,7 +54,7 @@ public class BanCommand : CommandBase
             target.yellowMessage("Reason: " + reason);
             c.sendPacket(PacketCreator.getGMEffect(4, 0));
             var rip = target;
-            TimerManager.getInstance().schedule(() => rip.getClient().Disconnect(false, false), TimeSpan.FromSeconds(5)); //5 Seconds
+            c.CurrentServerContainer.TimerManager.schedule(() => rip.getClient().Disconnect(false, false), TimeSpan.FromSeconds(5)); //5 Seconds
             c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         }
         else if (CharacterManager.Ban(ign, reason, false))

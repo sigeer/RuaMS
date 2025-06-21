@@ -93,6 +93,7 @@ namespace Application.Core.Login
         public InvitationManager InvitationManager { get; }
 
         CharacterService _characterSevice;
+        public ITimerManager TimerManager { get; private set; } = null!;
         public MasterServer(IServiceProvider sp, CharacterService characterManager)
         {
             ServiceProvider = sp;
@@ -161,7 +162,7 @@ namespace Application.Core.Login
             _logger.LogInformation("[{ServerName}] 停止监听", "登录服务器");
 
             await InvitationManager.DisposeAsync();
-
+            await TimerManager.Stop();
             await Server.getInstance().Stop(false);
 
             var storageService = ServiceProvider.GetRequiredService<StorageService>();
@@ -333,21 +334,20 @@ namespace Application.Core.Login
         {
             _logger.LogInformation("[{ServerName}] 定时任务加载中...", "中心服务器");
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-            var tMan = TimerManager.getInstance();
-            await tMan.Start();
+            TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz);
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
-            tMan.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
-            tMan.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
-            tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
-            tMan.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
-            tMan.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
-            tMan.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
-            tMan.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
-            tMan.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            tMan.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            tMan.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            InvitationManager.Register();
+            TimerManager.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            TimerManager.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
+            TimerManager.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
+            TimerManager.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
+            TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
+            TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            TimerManager.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            InvitationManager.Register(TimerManager);
             _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");
         }
 

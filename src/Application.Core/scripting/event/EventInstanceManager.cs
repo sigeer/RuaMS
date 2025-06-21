@@ -316,7 +316,7 @@ public class EventInstanceManager
             chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
         }
 
-        event_schedule = TimerManager.getInstance().schedule(() =>
+        event_schedule = em.getChannelServer().Container.TimerManager.schedule(() =>
         {
             dismissEventTimer();
 
@@ -340,7 +340,7 @@ public class EventInstanceManager
                 long nextTime = getTimeLeft() + time;
                 eventTime += time;
 
-                event_schedule = TimerManager.getInstance().schedule(() =>
+                event_schedule = em.getChannelServer().Container.TimerManager.schedule(() =>
                 {
                     dismissEventTimer();
 
@@ -801,7 +801,7 @@ public class EventInstanceManager
                 Monitor.Exit(scriptLock);
             }
 
-            TimerManager.getInstance().schedule(() =>
+            em.getChannelServer().Container.TimerManager.schedule(() =>
             {
                 mapManager.Dispose();   // issues from instantly disposing some event objects found thanks to MedicOP
                 //lockObj.EnterWriteLock();

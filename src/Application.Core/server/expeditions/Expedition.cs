@@ -123,7 +123,7 @@ public class Expedition
         Expedition exped = this;
         startTime = DateTimeOffset.UtcNow.AddMinutes(type.getRegistrationMinutes());
 
-        schedule = TimerManager.getInstance().schedule(() =>
+        schedule = leader.Client.CurrentServerContainer.TimerManager.schedule(() =>
         {
             if (registering)
             {

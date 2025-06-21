@@ -1,21 +1,11 @@
 using Application.Core.Game.Controllers;
-using Application.Core.Game.Players;
-using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Invitations;
 using Application.Shared.Invitations;
-using Application.Utility;
 using Application.Utility.Configs;
-using Application.Utility.Exceptions;
 using Dto;
 using Microsoft.Extensions.Logging;
-using MySqlX.XDevAPI.Common;
-using net.server.guild;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
-using tools;
-using static Google.Protobuf.Reflection.FeatureSet.Types;
 
 namespace Application.Core.Login.ServerData
 {
@@ -57,7 +47,7 @@ namespace Application.Core.Login.ServerData
                 var handler = _inviteMasterHandlerRegistry.GetHandler(typeKey);
                 foreach (var key in expiredKeys)
                 {
-                    if (inviteDict.TryRemove(key, out var request)) 
+                    if (inviteDict.TryRemove(key, out var request))
                         handler?.OnInvitationExpired(request);
                 }
             }
@@ -76,7 +66,7 @@ namespace Application.Core.Login.ServerData
         {
             if (_allRequests.TryGetValue(enumType, out var type))
             {
-                if (type.TryRemove(masterId, out var d)) 
+                if (type.TryRemove(masterId, out var d))
                     _inviteMasterHandlerRegistry.GetHandler(enumType)?.OnInvitationExpired(d);
             }
         }

@@ -45,8 +45,8 @@ public class MonsterCarnival
         {
             endingTime = DateTimeOffset.UtcNow.AddSeconds(map.TimeDefault);
 
-            effectTimer = TimerManager.getInstance().schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
-            respawnTask = TimerManager.getInstance().register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
+            effectTimer = WorldChannel.Container.TimerManager.schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeDefault - 10));
+            respawnTask = WorldChannel.Container.TimerManager.register(() => respawn(), YamlConfig.config.server.RESPAWN_INTERVAL);
 
             WorldChannel.initMonsterCarnival(cpq1, room);
         }
@@ -178,7 +178,7 @@ public class MonsterCarnival
 
         map.broadcastMessage(PacketCreator.getClock(map.TimeExpand));
 
-        effectTimer = TimerManager.getInstance().schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeExpand - 10)); // thanks Vcoc for noticing a time set issue here
+        effectTimer = map.ChannelServer.Container.TimerManager.schedule(() => Complete(), TimeSpan.FromSeconds(map.TimeExpand - 10)); // thanks Vcoc for noticing a time set issue here
     }
     /// <summary>
     /// 先complete  过 10s finish

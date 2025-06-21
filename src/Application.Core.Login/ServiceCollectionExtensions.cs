@@ -15,15 +15,6 @@ namespace Application.Core.Login
 {
     public static class ServiceCollectionExtensions
     {
-
-        public static IServiceCollection AddDbFactory(this IServiceCollection services, string connectionString)
-        {
-            services.AddDbContextFactory<DBContext>(o =>
-            {
-                o.UseMySQL(connectionString);
-            });
-            return services;
-        }
         private static IServiceCollection AddLoginHandlers(this IServiceCollection services)
         {
             services.AddSingleton<IPacketProcessor<ILoginClient>, LoginPacketProcessor>();
@@ -96,8 +87,12 @@ namespace Application.Core.Login
             return services;
         }
 
-        public static IServiceCollection AddLoginServer(this IServiceCollection services)
+        public static IServiceCollection AddLoginServer(this IServiceCollection services, string connectionString)
         {
+            services.AddDbContextFactory<DBContext>(o =>
+            {
+                o.UseMySQL(connectionString);
+            });
             services.AddAutoMapper(typeof(ProtoMapper).Assembly);
 
             services.AddLoginHandlers();
@@ -107,9 +102,10 @@ namespace Application.Core.Login
             services.AddServices();
             services.AddStorage();
             services.AddDistributedMemoryCache();
-            services.AddSingleton<MasterServer>();
-
             services.AddScheduleTask();
+
+            services.AddSingleton<MasterServer>();
+            services.AddHostedService<MasterHost>();
             return services;
         }
     }

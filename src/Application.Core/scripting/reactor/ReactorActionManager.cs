@@ -306,7 +306,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
     public void summonBossDelayed(int mobId, int delayMs, int x, int y, string bgm,
                                   string summonMessage)
     {
-        TimerManager.getInstance().schedule(() =>
+        c.CurrentServerContainer.TimerManager.schedule(() =>
         {
             summonBoss(mobId, x, y, bgm, summonMessage);
         }, delayMs);

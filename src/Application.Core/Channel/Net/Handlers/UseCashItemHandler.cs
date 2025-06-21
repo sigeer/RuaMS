@@ -515,7 +515,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
 
             c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.getAvatarMega(player, medal, c.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            TimerManager.getInstance().schedule(() => c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
+            c.CurrentServerContainer.TimerManager.schedule(() => c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.byeAvatarMega()), TimeSpan.FromSeconds(10));
             remove(c, position, itemId);
         }
         else if (itemType == 540)
@@ -678,7 +678,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             remove(c, position, itemId);
 
             IChannelClient client = c;
-            TimerManager.getInstance().schedule(() =>
+            c.CurrentServerContainer.TimerManager.schedule(() =>
             {
                 if (!player.isLoggedin())
                 {

@@ -94,7 +94,7 @@ public class MonsterAggroCoordinator
                 return;
             }
 
-            aggroMonitor = TimerManager.getInstance().register(() =>
+            aggroMonitor = _channelServer.Container.TimerManager.register(() =>
             {
                 runAggroUpdate(1);
                 runSortLeadingCharactersAggro();

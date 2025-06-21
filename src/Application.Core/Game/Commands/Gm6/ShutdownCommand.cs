@@ -55,6 +55,6 @@ public class ShutdownCommand : CommandBase
             }
         }
 
-        TimerManager.getInstance().schedule(Server.getInstance().shutdown(false), time);
+        c.CurrentServerContainer.TimerManager.schedule(Server.getInstance().shutdown(false), time);
     }
 }

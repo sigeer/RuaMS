@@ -43,7 +43,7 @@ namespace Application.Module.Family.Master
 
             var timeLeft = TimeUtils.GetTimeLeftForNextDay();
             _familyManager.ResetEntitlementUsage();
-            TimerManager.getInstance().register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
+            _server.TimerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
         }
 
         public override async Task SaveChangesAsync(DBContext dbContext)

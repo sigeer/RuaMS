@@ -231,7 +231,7 @@ public class NewYearCardRecord
             return;
         }
 
-        sendTask = TimerManager.getInstance().register(() =>
+        sendTask = Server.getInstance().GlobalTimerManager.register(() =>
         {
             var target = AllPlayerStorage.GetOrAddCharacterById(receiverId);
             if (target != null && target.isLoggedinWorld())

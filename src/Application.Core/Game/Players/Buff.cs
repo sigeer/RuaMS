@@ -210,7 +210,7 @@ namespace Application.Core.Game.Players
         {
             if (_buffExpireTask == null)
             {
-                _buffExpireTask = TimerManager.getInstance().register(() =>
+                _buffExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
                 {
                     HashSet<KeyValuePair<int, long>> es;
                     List<BuffStatValueHolder> toCancel = new();
@@ -1289,7 +1289,7 @@ namespace Application.Core.Game.Players
                 {
                     StatEffect healEffect = bHealing.getEffect(bHealingLvl);
                     var healInterval = TimeSpan.FromSeconds(healEffect.getX());
-                    beholderHealingSchedule = TimerManager.getInstance().register(() =>
+                    beholderHealingSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
                     {
                         if (awayFromWorld.Get())
                         {
@@ -1311,7 +1311,7 @@ namespace Application.Core.Game.Players
                 {
                     StatEffect buffEffect = bBuff.getEffect(getSkillLevel(bBuff));
                     var buffInterval = TimeSpan.FromSeconds(buffEffect.getX());
-                    beholderBuffSchedule = TimerManager.getInstance().register(() =>
+                    beholderBuffSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
                     {
                         if (awayFromWorld.Get())
                         {
@@ -1339,7 +1339,7 @@ namespace Application.Core.Game.Players
                         recoveryTask.cancel(false);
                     }
 
-                    recoveryTask = TimerManager.getInstance().register(() =>
+                    recoveryTask = Client.CurrentServerContainer.TimerManager.register(() =>
                     {
                         if (getBuffSource(BuffStat.RECOVERY) == -1)
                         {
@@ -1516,7 +1516,7 @@ namespace Application.Core.Game.Players
                 dragonBloodSchedule.cancel(false);
                 dragonBloodSchedule = null;
             }
-            dragonBloodSchedule = TimerManager.getInstance().register(() =>
+            dragonBloodSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
             {
                 if (awayFromWorld.Get())
                 {

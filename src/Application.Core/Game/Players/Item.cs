@@ -25,7 +25,7 @@ namespace Application.Core.Game.Players
         {
             if (itemExpireTask == null)
             {
-                itemExpireTask = TimerManager.getInstance().register(() =>
+                itemExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
                 {
                     bool deletedCoupon = false;
 

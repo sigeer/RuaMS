@@ -253,7 +253,7 @@ public class Reactor : AbstractMapObject
         {
             sbyte nextState = stats.getTimeoutState(state);
 
-            timeoutTask = TimerManager.getInstance().schedule(() =>
+            timeoutTask = MapModel.ChannelServer.Container.TimerManager.schedule(() =>
             {
                 timeoutTask = null;
                 tryForceHitReactor(nextState);
@@ -263,7 +263,7 @@ public class Reactor : AbstractMapObject
 
     public void delayedHitReactor(IChannelClient c, long delay)
     {
-        TimerManager.getInstance().schedule(() =>
+        c.CurrentServerContainer.TimerManager.schedule(() =>
         {
             hitReactor(c);
         }, delay);

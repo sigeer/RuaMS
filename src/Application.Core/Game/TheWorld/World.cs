@@ -50,14 +50,12 @@ public class World
         this.Id = config.Id;
         Name = config.Name;
 
-        var tman = TimerManager.getInstance();
-
-        marriagesSchedule = tman.register(new WeddingReservationTask(this),
+        marriagesSchedule = Server.getInstance().GlobalTimerManager.register(new WeddingReservationTask(this),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
-        fishingSchedule = tman.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+        fishingSchedule = Server.getInstance().GlobalTimerManager.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #if !DEBUG
-        timeoutSchedule = tman.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+        timeoutSchedule = Server.getInstance().GlobalTimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
         FishingInstance = new FishingWorldInstance(this);
 

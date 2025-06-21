@@ -815,7 +815,7 @@ public partial class Player
             }
         }
 
-        TimerManager.getInstance().schedule(() =>
+        Client.CurrentServerContainer.TimerManager.schedule(() =>
         {
             var thisChr = this;
             var map = thisChr.MapModel;
@@ -1311,7 +1311,7 @@ public partial class Player
             if (skilllevel > 0)
             {
                 berserk = (this.HP * 100 / this.ActualMaxHP) < BerserkX.getEffect(skilllevel).getX();
-                berserkSchedule = TimerManager.getInstance().register(() =>
+                berserkSchedule = Client.CurrentServerContainer.TimerManager.register(() =>
                 {
                     if (awayFromWorld.Get())
                     {
@@ -1553,7 +1553,7 @@ public partial class Player
     {
         extraRecInterval = healInterval;
 
-        extraRecoveryTask = TimerManager.getInstance().register(() =>
+        extraRecoveryTask = Client.CurrentServerContainer.TimerManager.register(() =>
         {
             if (getBuffSource(BuffStat.HPREC) == -1 && getBuffSource(BuffStat.MPREC) == -1)
             {
@@ -2810,7 +2810,7 @@ public partial class Player
         Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
         StatEffect ceffect;
         ceffect = energycharge.getEffect(getSkillLevel(energycharge));
-        var tMan = TimerManager.getInstance();
+        var tMan = Client.CurrentServerContainer.TimerManager;
         if (energybar < 10000)
         {
             energybar += 102;
@@ -4118,7 +4118,7 @@ public partial class Player
     {
         sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "Cosmic", reason)));
         this.isbanned = true;
-        TimerManager.getInstance().schedule(() =>
+        Client.CurrentServerContainer.TimerManager.schedule(() =>
         {
             Client.Disconnect(false, false);
         }, duration);
@@ -4141,7 +4141,7 @@ public partial class Player
         //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
         //sendPacket(PacketCreator.sendPolice(text));
         //this.isbanned = true;
-        //TimerManager.getInstance().schedule(new Runnable() {
+        //Client.CurrentServerContainer.TimerManager.schedule(new Runnable() {
         //    public override    public void run() {
         //        Client.disconnect(false, false);
         //    }
@@ -4904,7 +4904,7 @@ public partial class Player
 
         this.ban(reason);
         sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for HACK reason.#k", "Cosmic")));
-        TimerManager.getInstance().schedule(() =>
+        Client.CurrentServerContainer.TimerManager.schedule(() =>
         {
             Client.Disconnect(false, false);
 
@@ -5002,7 +5002,7 @@ public partial class Player
     {
         if (pendantOfSpirit == null)
         {
-            pendantOfSpirit = TimerManager.getInstance().register(() =>
+            pendantOfSpirit = Client.CurrentServerContainer.TimerManager.register(() =>
             {
                 if (pendantExp < 3)
                 {

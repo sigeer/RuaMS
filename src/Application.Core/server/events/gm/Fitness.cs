@@ -42,7 +42,7 @@ public class Fitness
     public Fitness(IPlayer chr)
     {
         this.chr = chr;
-        this.schedule = TimerManager.getInstance().schedule(() =>
+        this.schedule = chr.Client.CurrentServerContainer.TimerManager.schedule(() =>
         {
             if (MapId.isPhysicalFitness(chr.getMapId()))
             {
@@ -88,7 +88,7 @@ public class Fitness
 
     public void checkAndMessage()
     {
-        this.schedulemsg = TimerManager.getInstance().register(() =>
+        this.schedulemsg = chr.Client.CurrentServerContainer.TimerManager.register(() =>
         {
             if (chr.Fitness == null)
             {

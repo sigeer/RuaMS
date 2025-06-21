@@ -169,7 +169,7 @@ namespace Application.Core.Game.Players
         {
             if (_skillCooldownTask == null)
             {
-                _skillCooldownTask = TimerManager.getInstance().register(() =>
+                _skillCooldownTask = Client.CurrentServerContainer.TimerManager.register(() =>
                 {
                     HashSet<KeyValuePair<int, CooldownValueHolder>> es;
 

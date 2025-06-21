@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Channel;
 using tools;
 
 namespace server.maps;
@@ -35,12 +36,12 @@ public class MiniDungeon
     int baseMap;
     long expireTime;
 
-    public MiniDungeon(int baseValue, long timeLimit)
+    public MiniDungeon(WorldChannel worldChannel, int baseValue, long timeLimit)
     {
         baseMap = baseValue;
         expireTime = timeLimit * 1000;
 
-        timeoutTask = TimerManager.getInstance().schedule(() => close(), expireTime);
+        timeoutTask = worldChannel.Container.TimerManager.schedule(() => close(), expireTime);
         expireTime += DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     }
 

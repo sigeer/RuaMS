@@ -793,10 +793,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
                     mc.setChallenged(false);
                     mc.changeMap(map, map.getPortal(0));
                     mc.sendPacket(PacketCreator.serverNotice(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntryLobby)));
-                    var tMan = TimerManager.getInstance();
-                    tMan.schedule(() => mapClock(3 * 60), 1500);
+                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(3 * 60), 1500);
 
-                    mc.setCpqTimer(TimerManager.getInstance().schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));
+                    mc.setCpqTimer(c.CurrentServerContainer.TimerManager.schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));
                 }
             }
         }
@@ -899,16 +898,16 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 foreach (var mc in challenger.getParty()!.GetChannelMembers(c.CurrentServer))
                 {
                     mc.changeMap(lobbyMap, lobbyMap.getPortal(0));
-                    TimerManager.getInstance().schedule(() => mapClock(10), 1500);
+                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(10), 1500);
                 }
                 foreach (var mc in getPlayer().getParty()!.GetChannelMembers(c.CurrentServer))
                 {
-                    TimerManager.getInstance().schedule(() => mapClock(10), 1500);
+                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(10), 1500);
                 }
             }
             int mapid = getPlayer().getMapId() + 1;
-            var tMan = TimerManager.getInstance();
-            tMan.schedule(() =>
+
+            c.CurrentServerContainer.TimerManager.schedule(() =>
             {
                 Team lobbyParty = getPlayer().getParty()!, challengerParty = challenger.getParty()!;
                 try
@@ -969,8 +968,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
                 }
             }
             int mapid = getPlayer().getMapId() + 100;
-            var tMan = TimerManager.getInstance();
-            tMan.schedule(() =>
+            c.CurrentServerContainer.TimerManager.schedule(() =>
             {
                 var lobbyParty = getPlayer().getParty()!;
                 var challengerParty = challenger.getParty()!;
@@ -1094,10 +1092,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
                     mc.setChallenged(false);
                     mc.changeMap(map, map.getPortal(0));
                     mc.sendPacket(PacketCreator.serverNotice(6, LanguageConstants.getMessage(mc, LanguageConstants.CPQEntryLobby)));
-                    var tMan = TimerManager.getInstance();
-                    tMan.schedule(() => mapClock(3 * 60), 1500);
+                    c.CurrentServerContainer.TimerManager.schedule(() => mapClock(3 * 60), 1500);
 
-                    mc.setCpqTimer(TimerManager.getInstance().schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));
+                    mc.setCpqTimer(c.CurrentServerContainer.TimerManager.schedule(() => mc.changeMap(mapExit, mapExit.getPortal(0)), TimeSpan.FromMinutes(3)));
                 }
             }
         }

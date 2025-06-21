@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Game.Relation;
-using Application.Core.Channel;
 using server;
 
 namespace Application.Core.Gameplay.ChannelEvents
@@ -208,7 +207,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 {
                     this.dojoTask[slot]!.cancel(false);
                 }
-                this.dojoTask[slot] = TimerManager.getInstance().schedule(() =>
+                this.dojoTask[slot] = Channel.Container.TimerManager.schedule(() =>
                 {
                     int delta = (dojoMapId) % 100;
                     int dojoBaseMap = (slot < 5) ? MapId.DOJO_PARTY_BASE : MapId.DOJO_SOLO_BASE;

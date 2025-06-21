@@ -10,7 +10,6 @@ namespace Application.Core.Game.Controllers
         TimeSpan _repeatDuration;
         TimeSpan _repeatDelay;
 
-
         protected TimelyControllerBase(string taskName, TimeSpan repeatDuration, TimeSpan repeatDelay)
         {
             _repeatDuration = repeatDuration;
@@ -23,9 +22,9 @@ namespace Application.Core.Game.Controllers
             await StopAsync();
         }
 
-        public virtual void Register()
+        public virtual void Register(ITimerManager timerManager)
         {
-            _scheduler = TimerManager.getInstance().register(new NamedRunnable(_taskName, HandleRun), _repeatDuration, _repeatDelay);
+            _scheduler = timerManager.register(new NamedRunnable(_taskName, HandleRun), _repeatDuration, _repeatDelay);
         }
         public virtual async Task StopAsync()
         {

@@ -74,7 +74,7 @@ public class MapleTVEffect
                 {
                     delay = 60000;
                 }
-                TimerManager.getInstance().schedule(() => broadcastTV(false, userWorld, null, null, -1, null), delay);
+                user.Client.CurrentServerContainer.TimerManager.schedule(() => broadcastTV(false, userWorld, null, null, -1, null), delay);
             }
             else
             {

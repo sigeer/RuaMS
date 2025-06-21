@@ -843,7 +843,7 @@ public class MapleMap : IMap
                 return;
             }
 
-            itemMonitor = TimerManager.getInstance().register(() =>
+            itemMonitor = ChannelServer.Container.TimerManager.register(() =>
             {
                 chrLock.EnterWriteLock();
                 try
@@ -892,11 +892,11 @@ public class MapleMap : IMap
                 }
             }, YamlConfig.config.server.ITEM_MONITOR_TIME, YamlConfig.config.server.ITEM_MONITOR_TIME);
 
-            expireItemsTask = TimerManager.getInstance().register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops),
+            expireItemsTask = ChannelServer.Container.TimerManager.register(new NamedRunnable($"ItemExpireCheck_Map:{getId()}_{GetHashCode()}", makeDisappearExpiredItemDrops),
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK,
                 YamlConfig.config.server.ITEM_EXPIRE_CHECK);
 
-            characterStatUpdateTask = TimerManager.getInstance().register(new NamedRunnable($"UpdateMapCharacterStat_Map:{getId()}_{GetHashCode()}", UpdateMapCharacterStat), 200, 200);
+            characterStatUpdateTask = ChannelServer.Container.TimerManager.register(new NamedRunnable($"UpdateMapCharacterStat_Map:{getId()}_{GetHashCode()}", UpdateMapCharacterStat), 200, 200);
 
             itemMonitorTimeout = 1;
         }
@@ -2320,7 +2320,7 @@ public class MapleMap : IMap
     {
         addMapObject(mist);
         broadcastMessage(fake ? mist.makeFakeSpawnData(30) : mist.makeSpawnData());
-        var tMan = TimerManager.getInstance();
+        var tMan = ChannelServer.Container.TimerManager;
         ScheduledFuture? poisonSchedule;
         if (poison)
         {
@@ -2607,7 +2607,7 @@ public class MapleMap : IMap
         { // To Ereve (SkyFerry)
             int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            TimerManager.getInstance().schedule(() =>
+            ChannelServer.Container.TimerManager.schedule(() =>
             {
                 if (chr.getMapId() == MapId.FROM_ELLINIA_TO_EREVE)
                 {
@@ -2619,7 +2619,7 @@ public class MapleMap : IMap
         { // To Victoria Island (SkyFerry)
             int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(2).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            TimerManager.getInstance().schedule(() =>
+            ChannelServer.Container.TimerManager.schedule(() =>
             {
                 if (chr.getMapId() == MapId.FROM_EREVE_TO_ELLINIA)
                 {
@@ -2631,7 +2631,7 @@ public class MapleMap : IMap
         { // To Orbis (SkyFerry)
             int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            TimerManager.getInstance().schedule(() =>
+            ChannelServer.Container.TimerManager.schedule(() =>
             {
                 if (chr.getMapId() == MapId.FROM_EREVE_TO_ORBIS)
                 {
@@ -2643,7 +2643,7 @@ public class MapleMap : IMap
         { // To Ereve From Orbis (SkyFerry)
             int travelTime = getChannelServer().getTransportationTime(TimeSpan.FromMinutes(8).TotalMilliseconds);
             chr.sendPacket(PacketCreator.getClock(travelTime / 1000));
-            TimerManager.getInstance().schedule(() =>
+            ChannelServer.Container.TimerManager.schedule(() =>
             {
                 if (chr.getMapId() == MapId.FROM_ORBIS_TO_EREVE)
                 {

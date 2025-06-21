@@ -259,8 +259,8 @@ public partial class WorldChannel : ISocketServer
         log.Information("[{ServerName} - {Channel}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
             "频道服务器", channel, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
-        HiredMerchantManager.Register();
-        _respawnTask.Register();
+        HiredMerchantManager.Register(Container.TimerManager);
+        _respawnTask.Register(Container.TimerManager);
 
         log.Information("[{ServerName} - {Channel}] 初始化完成", "频道服务器", channel);
 
@@ -305,8 +305,6 @@ public partial class WorldChannel : ISocketServer
             log.Information("频道{Channel}停止定时任务...", channel);
 
             await HiredMerchantManager.StopAsync();
-
-
 
             await _respawnTask.StopAsync();
 
@@ -627,7 +625,7 @@ public partial class WorldChannel : ISocketServer
             }
 
             MiniDungeonInfo mmdi = MiniDungeonInfo.getDungeon(dungeonid);
-            MiniDungeon mmd = new MiniDungeon(mmdi.getBase(), this.getMapFactory().getMap(mmdi.getDungeonId()).getTimeLimit());   // thanks Conrad for noticing hardcoded time limit for minidungeons
+            MiniDungeon mmd = new MiniDungeon(this, mmdi.getBase(), this.getMapFactory().getMap(mmdi.getDungeonId()).getTimeLimit());   // thanks Conrad for noticing hardcoded time limit for minidungeons
 
             dungeons.Add(dungeonid, mmd);
             return true;
