@@ -280,13 +280,6 @@ public class Server
     {
 
         GlobalTimerManager = await TimerManager.InitializeAsync(engine, "Temp");
-
-        var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-        GlobalTimerManager.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
-
-        timeLeft = TimeUtils.GetTimeLeftForNextDay();
-        ExpeditionBossLog.resetBossLogTable();
-        GlobalTimerManager.register(new BossLogTask(), TimeSpan.FromDays(1), timeLeft);
     }
 
 

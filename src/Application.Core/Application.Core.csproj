@@ -36,6 +36,7 @@
 
 
 	<ItemGroup>
+	  <Folder Include="Client\newyear\" />
 	  <Folder Include="constants\net\" />
 	  <Folder Include="Gameplay\Wedding\" />
 	  <Folder Include="Net\opcodes\" />

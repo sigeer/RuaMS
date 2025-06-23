@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Application.Module.Family.Master
 {
@@ -44,10 +45,9 @@ namespace Application.Module.Family.Master
             _transport = transport;
         }
 
-        public void LoadAllFamily()
+        public async Task LoadAllFamilyAsync(DBContext dbContext)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var allData = dbContext.FamilyCharacters.AsNoTracking().ToList();
+            var allData = await dbContext.FamilyCharacters.AsNoTracking().ToListAsync();
             _dataSource = new(allData.GroupBy(x => x.Familyid).ToDictionary(
                 x => x.Key,
                 x => new FamilyModel(x.Key)

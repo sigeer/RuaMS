@@ -1,12 +1,8 @@
-using Application.Core.Login.ServerTransports;
 using Application.Shared.Servers;
-using Application.Shared.Team;
-using Config;
-using Dto;
 
 namespace Application.Core.Login.Servers
 {
-    public abstract class ChannelServerWrapper 
+    public abstract class ChannelServerWrapper
     {
         protected ChannelServerWrapper(string serverName, List<ChannelConfig> serverConfigs)
         {

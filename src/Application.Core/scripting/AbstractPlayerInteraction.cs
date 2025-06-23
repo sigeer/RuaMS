@@ -1235,8 +1235,9 @@ public class AbstractPlayerInteraction
         var player = getPlayer();
         Expedition exped = new Expedition(player, type, silent, minPlayers, maxPlayers);
 
-        int channel = player.getMap().getChannelServer().getId();
-        if (!ExpeditionBossLog.attemptBoss(player.getId(), channel, exped, false))
+        var channelServer = player.getMap().getChannelServer();
+        int channel = channelServer.getId();
+        if (!channelServer.Container.ExpeditionService.CanStartExpedition(player.getId(), channel, exped.getType().name()))
         {
             // thanks Conrad for noticing missing expeditions entry limit
             return 1;

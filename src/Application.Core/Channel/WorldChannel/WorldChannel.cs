@@ -9,6 +9,7 @@ using Application.Core.Servers.Services;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
+using net.server.coordinator.world;
 using net.server.services.task.channel;
 using scripting.Event;
 using scripting.map;
@@ -123,6 +124,7 @@ public partial class WorldChannel : ISocketServer
     public MobStatusService MobStatusService { get; }
     public OverallService OverallService { get; }
     #endregion
+    public EventRecallManager EventRecallManager { get; }
 
     RespawnTask _respawnTask;
 
@@ -173,6 +175,8 @@ public partial class WorldChannel : ISocketServer
         PortalScriptManager = ActivatorUtilities.CreateInstance<PortalScriptManager>(LifeScope.ServiceProvider, this);
         QuestScriptManager = ActivatorUtilities.CreateInstance<QuestScriptManager>(LifeScope.ServiceProvider, this);
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
+
+        EventRecallManager = new EventRecallManager(this);
 
 
         ShopFactory = LifeScope.ServiceProvider.GetRequiredService<ShopFactory>();
@@ -264,6 +268,7 @@ public partial class WorldChannel : ISocketServer
 
         HiredMerchantManager.Register(Container.TimerManager);
         _respawnTask.Register(Container.TimerManager);
+        EventRecallManager.Register(Container.TimerManager);
 
         log.Information("[{ServerName}] 初始化完成", _serverLogName);
 

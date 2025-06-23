@@ -47,6 +47,11 @@ namespace Application.Core.Login.Datas
 
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
 
+                foreach (var module in _masterServer.Modules)
+                {
+                    await module.IntializeDatabaseAsync(dbContext);
+                }
+
                 await dbTrans.CommitAsync();
                 _logger.LogInformation("初始化数据库>>>成功");
             }

@@ -87,7 +87,7 @@ namespace Application.Core.Login
         public IServiceProvider ServiceProvider { get; }
 
         public ChatRoomManager ChatRoomManager { get; }
-        public List<MasterModule> Plugins { get; }
+        public List<MasterModule> Modules { get; private set; }
         public InvitationManager InvitationManager { get; }
 
         CharacterService _characterSevice;
@@ -96,7 +96,7 @@ namespace Application.Core.Login
         {
             ServiceProvider = sp;
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
-            Plugins = ServiceProvider.GetServices<MasterModule>().ToList();
+            Modules = new();
 
             _characterSevice = characterManager;
 
@@ -162,7 +162,13 @@ namespace Application.Core.Login
 
             Transport.BroadcastShutdown();
 
+            foreach (var module in Modules)
+            {
+                await module.UninstallAsync();
+            }
+
             await InvitationManager.DisposeAsync();
+
             await TimerManager.Stop();
             await Server.getInstance().Stop(false);
 
@@ -180,13 +186,16 @@ namespace Application.Core.Login
         {
             try
             {
+                Modules = ServiceProvider.GetServices<MasterModule>().ToList();
+                _logger.LogInformation("[{ServerName}] 共安装了{PluginCount}个额外模块", ServerName, Modules.Count);
+
                 await ServerManager.Setup();
 
                 await Server.getInstance().Start();
 
-                foreach (var plugin in Plugins)
+                foreach (var module in Modules)
                 {
-                    plugin.Initialize();
+                    await module.InitializeAsync();
                 }
             }
             catch (Exception ex)
@@ -354,6 +363,10 @@ namespace Application.Core.Login
             TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
             TimerManager.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
             InvitationManager.Register(TimerManager);
+            foreach (var module in Modules)
+            {
+                module.RegisterTask(TimerManager);
+            }
             _logger.LogInformation("[{ServerName}] 定时任务加载完成", ServerName);
         }
 

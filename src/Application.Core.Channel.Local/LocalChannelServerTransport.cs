@@ -34,6 +34,7 @@ namespace Application.Core.Channel.Local
         readonly MessageService _msgService;
         readonly RankService _rankService;
         readonly InvitationService _invitationService;
+        readonly IExpeditionService _expeditionService;
         readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
@@ -50,6 +51,7 @@ namespace Application.Core.Channel.Local
             MessageService messageService,
             RankService rankService,
             InvitationService invitationService,
+            IExpeditionService expeditionService,
             IMapper mapper)
         {
             _server = server;
@@ -62,6 +64,7 @@ namespace Application.Core.Channel.Local
             _mapper = mapper;
             _rankService = rankService;
             _invitationService = invitationService;
+            _expeditionService = expeditionService;
         }
 
         public Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels)
@@ -838,6 +841,16 @@ namespace Application.Core.Channel.Local
         public void AnswerInvitation(Dto.AnswerInviteRequest request)
         {
             _invitationService.AnswerInvitation(request);
+        }
+
+        public void RegisterExpedition(Dto.ExpeditionRegistry request)
+        {
+            _expeditionService.RegisterExpedition(request);
+        }
+
+        public Dto.ExpeditionCheckResponse CanStartExpedition(Dto.ExpeditionCheckRequest expeditionCheckRequest)
+        {
+            return _expeditionService.CanStartExpedition(expeditionCheckRequest);
         }
     }
 }

@@ -9,6 +9,7 @@ using Application.Host;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
+using Application.Module.ExpeditionBossLog.Master;
 using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,6 +62,7 @@ try
     builder.Logging.AddSerilog();
 
     builder.AddGameServerLocal();
+    builder.Services.AddExpeditionBossLog();
 
     if (YamlConfig.config.server.ENABLE_OPENAPI)
     {

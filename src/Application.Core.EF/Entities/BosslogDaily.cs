@@ -1,4 +1,4 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class BosslogDaily
 {
@@ -6,10 +6,11 @@ public partial class BosslogDaily
     {
     }
 
-    public BosslogDaily(int characterId, string bosstype)
+    public BosslogDaily(int characterId, string bosstype, DateTimeOffset time)
     {
         CharacterId = characterId;
         Bosstype = bosstype;
+        Attempttime = time;
     }
 
     public int Id { get; set; }

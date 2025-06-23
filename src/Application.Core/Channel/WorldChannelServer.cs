@@ -2,6 +2,7 @@ using Application.Core.Channel.Events;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Message;
 using Application.Core.Channel.ServerData;
+using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
@@ -69,9 +70,11 @@ namespace Application.Core.Channel
         public List<int> ActiveCoupons { get; set; } = new();
 
         #endregion
-        public List<ChannelModule> Plugins { get; }
+        public List<ChannelModule> Modules { get; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
         public ITimerManager TimerManager { get; private set; } = null!;
+
+        public ExpeditionService ExpeditionService { get; }
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, IOptions<ChannelServerConfig> serverConfigOptions, ILogger<WorldChannelServer> logger)
         {
@@ -83,7 +86,7 @@ namespace Application.Core.Channel
             ServerConfig = serverConfigOptions.Value;
 
             SkillbookInformationProvider = _sp.GetRequiredService<SkillbookInformationProvider>();
-            Plugins = _sp.GetServices<ChannelModule>().ToList();
+            Modules = _sp.GetServices<ChannelModule>().ToList();
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
@@ -92,6 +95,8 @@ namespace Application.Core.Channel
             MapObjectManager = new MapObjectManager(this);
             MountTirednessManager = new MountTirednessManager(this);
             MapOwnershipManager = new MapOwnershipManager(this);
+
+            ExpeditionService = _sp.GetRequiredService<ExpeditionService>();
 
             InviteChannelHandlerRegistry = _sp.GetRequiredService<InviteChannelHandlerRegistry>();
         }
@@ -225,9 +230,9 @@ namespace Application.Core.Channel
             InviteChannelHandlerRegistry.Register(_sp.GetServices<InviteChannelHandler>());
             InitializeMessage();
 
-            foreach (var plugin in Plugins)
+            foreach (var module in Modules)
             {
-                plugin.Initialize();
+                module.Initialize();
             }
 
             List<WorldChannel> localServers = [];
@@ -471,9 +476,9 @@ namespace Application.Core.Channel
                     }
                 }
             }
-            foreach (var plugin in Plugins)
+            foreach (var module in Modules)
             {
-                plugin.OnPlayerChangeJob(data);
+                module.OnPlayerChangeJob(data);
             }
         }
 
