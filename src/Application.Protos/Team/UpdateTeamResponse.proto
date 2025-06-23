@@ -12,5 +12,6 @@ message UpdateTeamResponse {
   TeamMemberDto updatedMember = 4;
   int32 errorCode = 5;
   bool silentCheck = 6;
+  int32 operatorId = 7;
 }
 

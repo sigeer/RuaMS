@@ -120,6 +120,7 @@ namespace Application.Core.Login.ServerData
             response.TeamId = partyid;
             response.Operation = (int)operation;
             response.ErrorCode = (int)errorCode;
+            response.OperatorId = fromId;
 
             if (errorCode == UpdateTeamCheckResult.Success)
                 _server.Transport.BroadcastTeamUpdate(response);
