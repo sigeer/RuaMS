@@ -47,9 +47,9 @@ namespace Application.Core.Login.Datas
 
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
 
-                foreach (var plugin in _masterServer.Plugins)
+                foreach (var module in _masterServer.Modules)
                 {
-                    await plugin.IntializeDatabaseAsync(dbContext);
+                    await module.IntializeDatabaseAsync(dbContext);
                 }
 
                 await dbTrans.CommitAsync();

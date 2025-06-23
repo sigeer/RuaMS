@@ -586,9 +586,9 @@ public class Monster : AbstractLifeObject
         float bonusExp = partyBonusMod * playerExp;
 
         this.giveExpToCharacter(chr, playerExp, bonusExp, whiteExpGain, hasPartySharers);
-        foreach (var plugin in MapModel.ChannelServer.Container.Plugins)
+        foreach (var module in MapModel.ChannelServer.Container.Modules)
         {
-            plugin.OnMonsterReward(new MonsterRewardEvent(chr, this));
+            module.OnMonsterReward(new MonsterRewardEvent(chr, this));
         }
     }
 
@@ -652,9 +652,9 @@ public class Monster : AbstractLifeObject
         foreach (IPlayer mc in expMembers)
         {
             distributePlayerExperience(mc, participationExp, partyBonusMod, totalPartyLevel, mc == participationMvp, isWhiteExpGain(mc, personalRatio, sdevRatio), hasPartySharers);
-            foreach (var plugin in MapModel.ChannelServer.Container.Plugins)
+            foreach (var module in MapModel.ChannelServer.Container.Modules)
             {
-                plugin.OnMonsterReward(new MonsterRewardEvent(mc, this));
+                module.OnMonsterReward(new MonsterRewardEvent(mc, this));
             }
         }
     }

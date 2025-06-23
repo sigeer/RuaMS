@@ -23,14 +23,19 @@ namespace Application.Module.ExpeditionBossLog.Master
         {
             await base.InitializeAsync();
             _manager.ResetBossLogTable();
-            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            _task = _server.TimerManager.register(new BossLogTask(_manager), TimeSpan.FromDays(1), timeLeft);
+
         }
 
         public override async Task IntializeDatabaseAsync(DBContext dbContext)
         {
             await base.IntializeDatabaseAsync(dbContext);
             await _manager.LoadDataAsync(dbContext);
+        }
+
+        public override void RegisterTask(ITimerManager timerManager)
+        {
+            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
+            _task = timerManager.register(new BossLogTask(_manager), TimeSpan.FromDays(1), timeLeft);
         }
 
         public override async Task UninstallAsync()

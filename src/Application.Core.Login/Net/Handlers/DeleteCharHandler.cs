@@ -59,9 +59,9 @@ public class DeleteCharHandler : LoginHandlerBase
                     return;
                 }
 
-                foreach (var plugin in _server.Plugins)
+                foreach (var module in _server.Modules)
                 {
-                    var checkResult = plugin.DeleteCharacterCheck(cid);
+                    var checkResult = module.DeleteCharacterCheck(cid);
                     if (checkResult != 0)
                     {
                         c.sendPacket(PacketCreator.deleteCharResponse(cid, checkResult));

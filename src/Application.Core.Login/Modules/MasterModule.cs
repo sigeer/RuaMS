@@ -1,4 +1,5 @@
 using Application.EF;
+using Application.Utility.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Events
@@ -13,7 +14,7 @@ namespace Application.Core.Login.Events
             _server = server;
             _logger = logger;
 
-            _moduleName = GetType().Assembly.FullName ?? "unknown";
+            _moduleName = GetType().Assembly.GetName().Name ?? "unknown";
         }
 
         /// <summary>
@@ -23,7 +24,7 @@ namespace Application.Core.Login.Events
         /// <returns></returns>
         public virtual Task IntializeDatabaseAsync(DBContext dbContext)
         {
-            _logger.LogInformation("正在加载模块 {Name} - Master 数据库", _moduleName);
+            _logger.LogInformation("模块 {Name}：加载数据", _moduleName);
             return Task.CompletedTask;
         }
         /// <summary>
@@ -32,16 +33,26 @@ namespace Application.Core.Login.Events
         /// <returns></returns>
         public virtual Task InitializeAsync()
         {
-            _logger.LogInformation("正在加载模块 {Name} - Master", _moduleName);
+            _logger.LogInformation("模块 {Name}：初始化", _moduleName);
             return Task.CompletedTask;
         }
+
+        /// <summary>
+        /// Master服务器注册定时任务时调用
+        /// </summary>
+        public virtual void RegisterTask(ITimerManager timerManager)
+        {
+            _logger.LogInformation("模块 {Name}：注册定时任务", _moduleName);
+        }
+
+
         /// <summary>
         /// 停止Master服务器时调用
         /// </summary>
         /// <returns></returns>
         public virtual Task UninstallAsync()
         {
-            _logger.LogInformation("正在卸载模块 {Name} - Master", _moduleName);
+            _logger.LogInformation("模块 {Name}：卸载", _moduleName);
             return Task.CompletedTask;
         }
 
@@ -60,7 +71,7 @@ namespace Application.Core.Login.Events
         /// <returns></returns>
         public virtual Task SaveChangesAsync(DBContext dbContext)
         {
-            _logger.LogInformation("正在保存模块 {Name} - Master 数据库", _moduleName);
+            _logger.LogInformation("模块 {Name}：保存数据库", _moduleName);
             return Task.CompletedTask;
         }
     }

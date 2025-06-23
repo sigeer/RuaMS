@@ -4,9 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.ExpeditionBossLog.Master
 {
-    internal static class ServiceCollectionExtensions
+    public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddFamilySystem(this IServiceCollection services)
+        public static IServiceCollection AddExpeditionBossLog(this IServiceCollection services)
         {
             services.AddSingleton<ExpeditionBossLogManager>();
             services.AddSingleton<IExpeditionService, ExpeditionLogModule>();

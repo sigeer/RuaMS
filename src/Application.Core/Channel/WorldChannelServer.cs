@@ -70,7 +70,7 @@ namespace Application.Core.Channel
         public List<int> ActiveCoupons { get; set; } = new();
 
         #endregion
-        public List<ChannelModule> Plugins { get; }
+        public List<ChannelModule> Modules { get; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
         public ITimerManager TimerManager { get; private set; } = null!;
 
@@ -86,7 +86,7 @@ namespace Application.Core.Channel
             ServerConfig = serverConfigOptions.Value;
 
             SkillbookInformationProvider = _sp.GetRequiredService<SkillbookInformationProvider>();
-            Plugins = _sp.GetServices<ChannelModule>().ToList();
+            Modules = _sp.GetServices<ChannelModule>().ToList();
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
@@ -230,9 +230,9 @@ namespace Application.Core.Channel
             InviteChannelHandlerRegistry.Register(_sp.GetServices<InviteChannelHandler>());
             InitializeMessage();
 
-            foreach (var plugin in Plugins)
+            foreach (var module in Modules)
             {
-                plugin.Initialize();
+                module.Initialize();
             }
 
             List<WorldChannel> localServers = [];
@@ -476,9 +476,9 @@ namespace Application.Core.Channel
                     }
                 }
             }
-            foreach (var plugin in Plugins)
+            foreach (var module in Modules)
             {
-                plugin.OnPlayerChangeJob(data);
+                module.OnPlayerChangeJob(data);
             }
         }
 

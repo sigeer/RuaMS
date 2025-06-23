@@ -42,8 +42,7 @@ namespace Application.Module.Family.Master
             await base.InitializeAsync();
 
             _familyManager.ResetEntitlementUsage();
-            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            _task = _server.TimerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
+
         }
 
         public override async Task IntializeDatabaseAsync(DBContext dbContext)
@@ -51,6 +50,14 @@ namespace Application.Module.Family.Master
             await base.IntializeDatabaseAsync(dbContext);
             await _familyManager.LoadAllFamilyAsync(dbContext);
         }
+
+        public override void RegisterTask(ITimerManager timerManager)
+        {
+            base.RegisterTask(timerManager);
+            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
+            _task = timerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
+        }
+
 
         public override async Task UninstallAsync()
         {
