@@ -10,7 +10,7 @@ namespace Application.Shared.Servers
         TServerTransport Transport { get; }
         Task StartServer();
         Task Shutdown();
-        bool IsClosed { get; }
+        bool IsRunning { get; }
 
         /// <summary>
         /// 当前服务器的启动时间(StartServer之后)

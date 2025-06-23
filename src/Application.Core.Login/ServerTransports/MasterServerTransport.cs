@@ -448,5 +448,13 @@ namespace Application.Core.Login
                     server2.BroadcastMessage(BroadcastType.OnInvitationAnswer, response);
             }
         }
+
+        internal void BroadcastShutdown()
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastMessage(BroadcastType.OnShutdown, new Google.Protobuf.WellKnownTypes.Empty());
+            }
+        }
     }
 }

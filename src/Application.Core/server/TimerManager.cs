@@ -1,11 +1,12 @@
 using Quartz.Impl;
+using System.Collections.Specialized;
 
 namespace server;
 
 public class TimerManager
 {
 
-    public static async Task<ITimerManager> InitializeAsync(TaskEngine engine)
+    public static async Task<ITimerManager> InitializeAsync(TaskEngine engine, string schedulerName)
     {
         switch (engine)
         {
@@ -14,7 +15,11 @@ public class TimerManager
                 await instance.Start();
                 return instance;
             case TaskEngine.Quartz:
-                var factory = new StdSchedulerFactory();
+                var properties = new NameValueCollection
+                {
+                    { "quartz.scheduler.instanceName", schedulerName }
+                };
+                var factory = new StdSchedulerFactory(properties);
                 var scheduler = await factory.GetScheduler();
 
                 var quratz = new QuartzTimerManager(scheduler);

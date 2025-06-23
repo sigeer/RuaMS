@@ -5,19 +5,19 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Tasks;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
-using Application.Shared.Invitations;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
 using Config;
 using Dto;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using net.server.guild;
 using Polly;
 using server;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using tools;
 
@@ -28,7 +28,7 @@ namespace Application.Core.Channel
         readonly IServiceProvider _sp;
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, WorldChannel> Servers { get; set; }
-        public bool IsClosed { get; private set; }
+        public bool IsRunning { get; private set; }
 
         public ChannelServerConfig ServerConfig { get; set; }
         public string ServerName => ServerConfig.ServerName;
@@ -73,14 +73,14 @@ namespace Application.Core.Channel
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
         public ITimerManager TimerManager { get; private set; } = null!;
         ScheduledFuture? invitationTask;
-        public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, ChannelServerConfig serverConfig, ILogger<WorldChannelServer> logger)
+        public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, IOptions<ChannelServerConfig> serverConfigOptions, ILogger<WorldChannelServer> logger)
         {
             _sp = sp;
             Transport = transport;
             _logger = logger;
 
             Servers = new();
-            ServerConfig = serverConfig;
+            ServerConfig = serverConfigOptions.Value;
 
             SkillbookInformationProvider = _sp.GetRequiredService<SkillbookInformationProvider>();
             Plugins = _sp.GetServices<ChannelModule>().ToList();
@@ -139,39 +139,50 @@ namespace Application.Core.Channel
             }
         }
 
-
-        bool isShuttingdown = false;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
         public async Task Shutdown()
         {
-            if (isShuttingdown)
-                return;
+            await _semaphore.WaitAsync();
 
-            if (!IsRunning)
-                return;
-
-            isShuttingdown = true;
-
-            await CharacterDiseaseManager.StopAsync();
-            await PetHungerManager.StopAsync();
-            await MapOwnershipManager.StopAsync();
-            await ServerMessageManager.StopAsync();
-            await CharacterHpDecreaseManager.StopAsync();
-            await MapObjectManager.StopAsync();
-            await MountTirednessManager.StopAsync();
-
-            if (invitationTask != null)
-                await invitationTask.CancelAsync(false);
-
-            InviteChannelHandlerRegistry.Dispose();
-
-            foreach (var channel in Servers.Values)
+            try
             {
-                await channel.Shutdown();
+                if (!IsRunning)
+                {
+                    _logger.LogInformation("[{ServerName}] 未启动", ServerName);
+                    return;
+                }
+                _logger.LogInformation("[{ServerName}] 正在停止...", ServerName);
+
+                await CharacterDiseaseManager.StopAsync();
+                await PetHungerManager.StopAsync();
+                await MapOwnershipManager.StopAsync();
+                await ServerMessageManager.StopAsync();
+                await CharacterHpDecreaseManager.StopAsync();
+                await MapObjectManager.StopAsync();
+                await MountTirednessManager.StopAsync();
+
+                if (invitationTask != null)
+                    await invitationTask.CancelAsync(false);
+
+                InviteChannelHandlerRegistry.Dispose();
+
+                foreach (var channel in Servers.Values)
+                {
+                    await channel.Shutdown();
+                }
+                await TimerManager.Stop();
+                _logger.LogInformation("[{ServerName}] 停止{Status}", ServerName, "成功");
+
+                IsRunning = false;
             }
-            await TimerManager.Stop();
-            _logger.LogInformation("[{ServerName}]已停止", ServerName);
-            IsClosed = true;
-            isShuttingdown = false;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[{ServerName}] 停止{Status}", ServerName, "失败");
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
         public async Task StartServer()
         {
@@ -180,8 +191,8 @@ namespace Application.Core.Channel
             ForceUpdateServerTime();
         }
 
-        public bool IsRunning { get; private set; }
-        public async Task Start(int startPort = 7574, int count = 3)
+
+        private async Task Start()
         {
             if (IsRunning)
                 return;
@@ -190,16 +201,16 @@ namespace Application.Core.Channel
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                _logger.LogInformation("服务器{ServerName}加载WZ - 能手册...", ServerName);
+                _logger.LogInformation("[{ServerName}]加载WZ - 能手册...", ServerName);
                 SkillbookInformationProvider.LoadAllSkillbookInformation();
-                _logger.LogInformation("服务器{ServerName}加载WZ - 能手册加载完成, 耗时{Cost}", ServerName, sw.Elapsed.TotalSeconds);
+                _logger.LogInformation("[{ServerName}]加载WZ - 能手册加载完成, 耗时{Cost}", ServerName, sw.Elapsed.TotalSeconds);
             });
 
             GuildManager = _sp.GetRequiredService<GuildManager>();
             TeamManager = _sp.GetRequiredService<TeamManager>();
             ChatRoomService = _sp.GetRequiredService<ChatRoomService>();
 
-            TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz);
+            TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
 
             CharacterDiseaseManager.Register(TimerManager);
             PetHungerManager.Register(TimerManager);
@@ -220,13 +231,8 @@ namespace Application.Core.Channel
             }
 
             List<WorldChannel> localServers = [];
-            // ping master
-            for (int j = 1; j <= count; j++)
+            foreach (var config in ServerConfig.ChannelConfig)
             {
-                var config = new WorldChannelConfig(ServerName)
-                {
-                    Port = startPort + j
-                };
                 var scope = _sp.CreateScope();
                 var channel = new WorldChannel(this, scope, config);
                 await channel.StartServer();
@@ -237,7 +243,7 @@ namespace Application.Core.Channel
             }
 
             var registerPolicy = Policy.HandleResult<RegisterServerResult>(x => x.StartChannel <= 0)
-                .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(2000), 
+                .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(2000),
                 onRetry: (result, timespan, retryCount, context) =>
                 {
                     _logger.LogError($"第 {retryCount} 次重试，返回值是 {result.Result.StartChannel}");
@@ -355,6 +361,10 @@ namespace Application.Core.Channel
             if (updatePatch.DropRate.HasValue)
             {
                 WorldDropRate = updatePatch.DropRate.Value;
+            }
+            if (updatePatch.QuestRate.HasValue)
+            {
+                WorldQuestRate = updatePatch.QuestRate.Value;
             }
             if (updatePatch.BossDropRate.HasValue)
             {
@@ -549,8 +559,11 @@ namespace Application.Core.Channel
             InviteChannelHandlerRegistry.GetHandler(data.Type)?.OnInvitationAnswered(data);
         }
 
+
         private void InitializeMessage()
         {
+            MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
+
             MessageDispatcher.Register<CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
             MessageDispatcher.Register<AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
 

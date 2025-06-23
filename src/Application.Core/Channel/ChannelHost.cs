@@ -12,20 +12,11 @@ namespace Application.Core.Channel
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await StartNow(true);
+            await _server.StartServer();
             return;
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await StopNow();
-        }
-        public async Task StartNow(bool ignoreCache)
-        {
-            await _server.StartServer();
-        }
-
-        public async Task StopNow()
         {
             await _server.Shutdown();
         }

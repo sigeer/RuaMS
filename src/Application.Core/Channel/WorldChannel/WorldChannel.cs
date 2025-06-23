@@ -1,13 +1,11 @@
 using Application.Core.Channel.ChannelData;
 using Application.Core.Channel.Net;
-using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers.Services;
-using Application.Core.ServerTransports;
 using Application.Shared.Configs;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,16 +20,15 @@ using server;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
-using System.Diagnostics;
 using System.Net;
 using tools;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Application.Core.Channel;
 
 public partial class WorldChannel : ISocketServer
 {
-    public string InstanceId { get; }
+    public string ServerName { get; }
+    string _serverLogName;
     private ILogger log;
     public bool IsRunning { get; private set; }
 
@@ -107,7 +104,7 @@ public partial class WorldChannel : ISocketServer
     public string WorldServerMessage { get; private set; }
 
 
-    public WorldChannelConfig ChannelConfig { get; }
+    public ChannelConfig ChannelConfig { get; }
 
     public PlayerShopManager PlayerShopManager { get; }
     public HiredMerchantManager HiredMerchantManager { get; }
@@ -132,11 +129,12 @@ public partial class WorldChannel : ISocketServer
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
     public WorldChannelServer Container { get; }
-    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, WorldChannelConfig config)
+    public WorldChannel(WorldChannelServer serverContainer, IServiceScope scope, ChannelConfig config)
     {
         Container = serverContainer;
         LifeScope = scope;
-        InstanceId = Guid.NewGuid().ToString();
+        ServerName = $"{serverContainer.ServerName}_{config.Port}";
+        _serverLogName = $"频道服务器 - {ServerName}";
         ChannelConfig = config;
         WorldServerMessage = "";
 
@@ -152,7 +150,7 @@ public partial class WorldChannel : ISocketServer
         this.ipEndPoint = new IPEndPoint(IPAddress.Parse(config.Host), Port);
 
         NettyServer = new NettyChannelServer(this);
-        log = LogFactory.GetLogger($"Channel_{InstanceId}");
+        log = LogFactory.GetLogger(ServerName);
 
         PlayerShopManager = new PlayerShopManager(this);
         HiredMerchantManager = new HiredMerchantManager(this);
@@ -206,6 +204,10 @@ public partial class WorldChannel : ISocketServer
         {
             WorldDropRate = updatePatch.DropRate.Value;
         }
+        if (updatePatch.QuestRate.HasValue)
+        {
+            WorldQuestRate = updatePatch.QuestRate.Value;
+        }
         if (updatePatch.BossDropRate.HasValue)
         {
             WorldBossDropRate = updatePatch.BossDropRate.Value;
@@ -244,7 +246,8 @@ public partial class WorldChannel : ISocketServer
     {
         this.channel = channel;
 
-        log.Information("频道服务器{InstanceId}注册成功：频道号{Channel}", InstanceId, channel);
+        log.Information("[{ServerName}] 注册成功：频道号{Channel}", _serverLogName, channel);
+        _serverLogName = $"频道服务器 - {ServerName} - 频道{channel}";
     }
     public void Initialize()
     {
@@ -253,19 +256,19 @@ public partial class WorldChannel : ISocketServer
             throw new Exception("频道服务器需要先向中心服务器注册才能初始化");
         }
 
-        log.Information("[{ServerName} - {Channel}] 初始化...",
-            "频道服务器", channel);
+        log.Information("[{ServerName}] 初始化...",
+            _serverLogName);
 
-        log.Information("[{ServerName} - {Channel}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
-            "频道服务器", channel, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
+        log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
+            _serverLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
         HiredMerchantManager.Register(Container.TimerManager);
         _respawnTask.Register(Container.TimerManager);
 
-        log.Information("[{ServerName} - {Channel}] 初始化完成", "频道服务器", channel);
+        log.Information("[{ServerName}] 初始化完成", _serverLogName);
 
-        log.Information("[{ServerName} - {Channel}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-            "频道服务器", channel,
+        log.Information("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
+            _serverLogName,
             DateTimeOffset.FromUnixTimeMilliseconds(Container.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
@@ -275,14 +278,14 @@ public partial class WorldChannel : ISocketServer
         try
         {
             IsRunning = false;
-            log.Information("频道服务器{InstanceId}启动中...", InstanceId);
+            log.Information("[{ServerName}] 启动中...", _serverLogName);
             await NettyServer.Start();
-            log.Information("频道服务器{InstanceId}启动成功：监听端口{Port}", InstanceId, Port);
+            log.Information("[{ServerName}] 启动成功：监听端口{Port}", _serverLogName, Port);
             IsRunning = true;
         }
         catch (Exception ex)
         {
-            log.Error(ex, "频道服务器{InstanceId}启动失败");
+            log.Error(ex, "[{ServerName}] 启动失败", _serverLogName);
         }
     }
 
@@ -300,15 +303,15 @@ public partial class WorldChannel : ISocketServer
             }
 
             isShuttingDown = true;
-            log.Information("正在停止频道{Channel}...", channel);
+            log.Information("[{ServerName}] 停止中...", _serverLogName);
 
-            log.Information("频道{Channel}停止定时任务...", channel);
+            log.Information("[{ServerName}] 停止定时任务...", _serverLogName);
 
             await HiredMerchantManager.StopAsync();
 
             await _respawnTask.StopAsync();
 
-            log.Information("频道{Channel}停止定时任务...完成", channel);
+            log.Information("[{ServerName}] 停止定时任务>>>完成", _serverLogName);
 
             closeAllMerchants();
             disconnectAwayPlayers();
@@ -321,16 +324,16 @@ public partial class WorldChannel : ISocketServer
             await closeChannelSchedules();
 
             await NettyServer.Stop();
-            log.Information("频道{Channel}停止监听", channel);
+            log.Information("[{ServerName}] 停止监听", _serverLogName);
 
             LifeScope.Dispose();
 
             IsRunning = false;
-            log.Information("频道{Channel}已停止", channel);
+            log.Information("[{ServerName}] 已停止", _serverLogName);
         }
         catch (Exception e)
         {
-            log.Error(e, "停止频道{Channel}时出错", channel);
+            log.Error(e, "[{ServerName}] 停止失败", _serverLogName);
         }
         finally
         {

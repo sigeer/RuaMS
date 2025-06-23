@@ -6,7 +6,7 @@ namespace Application.Utility.Tasks;
 
 public class TaskTimerManager : ITimerManager
 {
-    public static ConcurrentDictionary<string, ScheduledFuture> TaskScheduler { get; } = new();
+    public ConcurrentDictionary<string, ScheduledFuture> TaskScheduler { get; } = new();
 
     bool _isRunning = false;
 

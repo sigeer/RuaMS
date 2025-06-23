@@ -279,7 +279,7 @@ public class Server
     public async Task InitializeTimelyTasks(TaskEngine engine)
     {
 
-        GlobalTimerManager = await TimerManager.InitializeAsync(engine);
+        GlobalTimerManager = await TimerManager.InitializeAsync(engine, "Temp");
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
         GlobalTimerManager.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);

@@ -84,9 +84,6 @@ try
         //builder.Services.AddQuartz(o => o.AddJobListener(new JobCompleteListener()));
         //builder.Services.AddSingleton<TimerManager>();
 
-        // 游戏服务
-        builder.Services.AddSingleton<GameHost>();
-
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<DropdataService>();
         builder.Services.AddScoped<DataService>();

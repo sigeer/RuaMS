@@ -12,7 +12,8 @@ namespace Application.Core.Channel.Local
         public static void AddGameServerLocal(this WebApplicationBuilder builder)
         {
             builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
-            builder.Services.AddSingleton<ChannelServerConfig>(new ChannelServerConfig());
+            builder.Services.AddOptions<ChannelServerConfig>()
+                .BindConfiguration("ChannelServerConfig");
 
             // 需要先启动Master
             builder.Services.AddLoginServer(builder.Configuration.GetConnectionString("MySql")!);
