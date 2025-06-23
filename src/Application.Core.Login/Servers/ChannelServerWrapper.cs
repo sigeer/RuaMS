@@ -8,13 +8,13 @@ namespace Application.Core.Login.Servers
 {
     public abstract class ChannelServerWrapper 
     {
-        protected ChannelServerWrapper(string serverName, List<WorldChannelConfig> serverConfigs)
+        protected ChannelServerWrapper(string serverName, List<ChannelConfig> serverConfigs)
         {
             ServerName = serverName;
             ServerConfigs = serverConfigs;
         }
         public string ServerName { get; protected set; }
-        public List<WorldChannelConfig> ServerConfigs { get; }
+        public List<ChannelConfig> ServerConfigs { get; }
 
         public abstract void BroadcastMessage(string type, object message);
     }

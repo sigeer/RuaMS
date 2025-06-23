@@ -11,7 +11,7 @@ namespace Application.Core.Channel.ChannelData
 
         readonly WorldChannel worldChannel;
 
-        public HiredMerchantManager(WorldChannel worldChannel) : base($"HiredMerchantController_{worldChannel.InstanceId}", TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10))
+        public HiredMerchantManager(WorldChannel worldChannel) : base($"HiredMerchantController_{worldChannel.ServerName}", TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10))
         {
             this.worldChannel = worldChannel;
         }

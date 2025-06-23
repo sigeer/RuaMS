@@ -405,7 +405,7 @@ namespace Application.Core.Game.Players
         {
             MapEffect mapEffect = new MapEffect(msg, itemId);
             sendPacket(mapEffect.makeStartData());
-            TimerManager.getInstance().schedule(() =>
+            Client.CurrentServerContainer.TimerManager.schedule(() =>
             {
                 sendPacket(mapEffect.makeDestroyData());
 

@@ -17,7 +17,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.server;
-using server;
 using System.Net;
 
 
@@ -28,14 +27,13 @@ namespace Application.Core.Login
     /// </summary>
     public partial class MasterServer : IServerBase<MasterServerTransport>, ISocketServer
     {
-        public bool IsClosed { get; private set; }
+        public bool IsRunning { get; private set; }
         public int Id { get; } = 0;
         readonly ILogger<MasterServer> _logger;
         public int Port { get; set; } = 8484;
         public AbstractNettyServer NettyServer { get; }
-        public bool IsRunning { get; private set; }
         public Dictionary<string, ChannelServerWrapper> ChannelServerList { get; }
-        public List<WorldChannelConfig> Channels { get; }
+        public List<RegisteredChannelConfig> Channels { get; }
         public WeddingManager WeddingInstance { get; }
 
         public string ServerName { get; }
@@ -93,6 +91,7 @@ namespace Application.Core.Login
         public InvitationManager InvitationManager { get; }
 
         CharacterService _characterSevice;
+        public ITimerManager TimerManager { get; private set; } = null!;
         public MasterServer(IServiceProvider sp, CharacterService characterManager)
         {
             ServiceProvider = sp;
@@ -101,16 +100,17 @@ namespace Application.Core.Login
 
             _characterSevice = characterManager;
 
-            ServerName = Guid.NewGuid().ToString();
-            ChannelServerList = new ();
+            ChannelServerList = new();
             Channels = new();
             StartupTime = DateTimeOffset.UtcNow;
             Transport = new MasterServerTransport(this);
             NettyServer = new NettyLoginServer(this);
 
-
             var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
-            var serverSection = configuration.GetSection("WorldConfig");
+            ServerName = configuration.GetSection("ServerConfig").GetValue<string>("ServerName", "中心服务器");
+
+            var serverSection = configuration.GetSection("GameConfig");
+            Name = serverSection.GetValue<string>("Name", "RuaMS");
             MobRate = serverSection.GetValue<float>("MobRate", 1);
             ExpRate = serverSection.GetValue<float>("ExpRate", 1);
             MesoRate = serverSection.GetValue<float>("MesoRate", 1);
@@ -119,11 +119,10 @@ namespace Application.Core.Login
             TravelRate = serverSection.GetValue<float>("TravelRate", 1);
             FishingRate = serverSection.GetValue<float>("FishingRate", 1);
             QuestRate = serverSection.GetValue<float>("QuestRate", 1);
-
-            Name = serverSection.GetValue<string>("Name", "RuaMS");
             EventMessage = serverSection.GetValue<string>("EventMessage", "");
             ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
             WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
+
 
             InvitationManager = ActivatorUtilities.CreateInstance<InvitationManager>(ServiceProvider, this);
 
@@ -145,33 +144,36 @@ namespace Application.Core.Login
         {
             if (!IsRunning)
             {
-                _logger.LogInformation("服务器未启动");
+                _logger.LogInformation("[{ServerName}]未启动", ServerName);
                 return;
             }
 
             if (isShuttingdown)
             {
-                _logger.LogInformation("正在停止服务器[{ServerName}]", ServerName);
+                _logger.LogInformation("正在停止[{ServerName}]", ServerName);
                 return;
             }
 
             isShuttingdown = true;
-            _logger.LogInformation("[{ServerName}] 停止中...", "登录/中心服务器");
+            _logger.LogInformation("[{ServerName}] 停止中...", ServerName);
+
             await NettyServer.Stop();
-            _logger.LogInformation("[{ServerName}] 停止监听", "登录服务器");
+            _logger.LogInformation("[{ServerName}] 停止监听", ServerName);
+
+            Transport.BroadcastShutdown();
 
             await InvitationManager.DisposeAsync();
-
+            await TimerManager.Stop();
             await Server.getInstance().Stop(false);
 
             var storageService = ServiceProvider.GetRequiredService<StorageService>();
-            _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", "中心服务器");
+            _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", ServerName);
             await storageService.CommitAllImmediately();
-            _logger.LogInformation("[{ServerName}] 玩家数据已保存", "中心服务器");
+            _logger.LogInformation("[{ServerName}] 玩家数据已保存", ServerName);
 
             IsRunning = false;
             isShuttingdown = false;
-            _logger.LogInformation("[{ServerName}] 已停止", "登录/中心服务器");
+            _logger.LogInformation("[{ServerName}] 已停止", ServerName);
         }
 
         public async Task StartServer()
@@ -189,13 +191,13 @@ namespace Application.Core.Login
             }
             catch (Exception ex)
             {
-                _logger.LogError("[{ServerName}] 启动{Status}", "中心服务器", "失败");
+                _logger.LogError(ex, "[{ServerName}] 启动{Status}", ServerName, "失败");
                 return;
             }
 
-            _logger.LogInformation("[{ServerName}] 启动中...", "登录服务器");
+            _logger.LogInformation("[{ServerName}] 启动中...", ServerName);
             await NettyServer.Start();
-            _logger.LogInformation("[{ServerName}] 启动成功, 监听端口{Port}", "登录服务器", Port);
+            _logger.LogInformation("[{ServerName}] 启动{Status}, 监听端口{Port}", ServerName, "成功", Port);
 
             StartupTime = DateTimeOffset.UtcNow;
             ForceUpdateServerTime();
@@ -204,7 +206,7 @@ namespace Application.Core.Login
 
             IsRunning = true;
             _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-                "登录/中心服务器",
+                ServerName,
                 DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
                 DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
@@ -217,7 +219,12 @@ namespace Application.Core.Login
                 var started = Channels.Count;
                 foreach (var item in channel.ServerConfigs)
                 {
-                    Channels.Add(item);
+                    Channels.Add(new RegisteredChannelConfig
+                    {
+                        Host = item.Host,
+                        Port = item.Port,
+                        ServerName = channel.ServerName
+                    });
                 }
                 _serverChannelCache = null;
                 return started + 1;
@@ -230,7 +237,7 @@ namespace Application.Core.Login
             if (ChannelServerList.Remove(instanceId, out var channelServer))
             {
                 _serverChannelCache = null;
-                return Channels.RemoveAll(x => x.Name == channelServer.ServerName) == channelServer.ServerConfigs.Count;
+                return Channels.RemoveAll(x => x.ServerName == channelServer.ServerName) == channelServer.ServerConfigs.Count;
             }
             return false;
         }
@@ -239,7 +246,7 @@ namespace Application.Core.Login
         List<ServerChannelPair>? _serverChannelCache;
         private List<ServerChannelPair> GetServerChannel()
         {
-            return _serverChannelCache ??= Channels.Select((item, idx) => new ServerChannelPair(item.Name, idx + 1)).ToList();
+            return _serverChannelCache ??= Channels.Select((item, idx) => new ServerChannelPair(item.ServerName, idx + 1)).ToList();
         }
 
         /// <summary>
@@ -253,17 +260,17 @@ namespace Application.Core.Login
             var d = GetServerChannel();
 
             return (from a in dataList
-                        join b in d on a.Channel equals b.Channel
-                        group a.PlayerId by b.ServerName into ass
-                        select ass).ToDictionary(x => ChannelServerList[x.Key], x => x.ToArray());
+                    join b in d on a.Channel equals b.Channel
+                    group a.PlayerId by b.ServerName into ass
+                    select ass).ToDictionary(x => ChannelServerList[x.Key], x => x.ToArray());
         }
 
         public ChannelServerWrapper GetChannelServer(int channelId)
         {
-            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].Name)!;
+            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].ServerName)!;
         }
 
-        public WorldChannelConfig? GetChannel(int channelId)
+        public ChannelConfig? GetChannel(int channelId)
         {
             return Channels.ElementAtOrDefault(channelId - 1);
         }
@@ -331,24 +338,23 @@ namespace Application.Core.Login
 
         private async Task RegisterTask()
         {
-            _logger.LogInformation("[{ServerName}] 定时任务加载中...", "中心服务器");
+            _logger.LogInformation("[{ServerName}] 定时任务加载中...", ServerName);
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-            var tMan = TimerManager.getInstance();
-            await tMan.Start();
+            TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
-            tMan.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
-            tMan.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeUpdate", UpdateServerTime), YamlConfig.config.server.UPDATE_INTERVAL);
+            TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
-            tMan.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
-            tMan.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
-            tMan.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
-            tMan.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
-            tMan.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
-            tMan.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            tMan.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            tMan.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            InvitationManager.Register();
-            _logger.LogInformation("[{ServerName}] 定时任务加载完成", "中心服务器");
+            TimerManager.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
+            TimerManager.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
+            TimerManager.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
+            TimerManager.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
+            TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
+            TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            TimerManager.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            InvitationManager.Register(TimerManager);
+            _logger.LogInformation("[{ServerName}] 定时任务加载完成", ServerName);
         }
 
         public bool IsWorldCapacityFull()

@@ -72,7 +72,7 @@ public class Snowball
             }
         }
         hittable = true;
-        TimerManager.getInstance().schedule(() =>
+        map.ChannelServer.Container.TimerManager.schedule(() =>
         {
             var ball0 = map.getSnowball(0)!;
             var ball1 = map.getSnowball(1)!;
@@ -146,7 +146,7 @@ public class Snowball
                 {
                     this.snowmanhp = 0;
 
-                    TimerManager.getInstance().schedule(() =>
+                    map.ChannelServer.Container.TimerManager.schedule(() =>
                     {
                         setSnowmanHP(map.SnowManHP);
                         message(5);
@@ -196,7 +196,7 @@ public class Snowball
 
     public void warpOut()
     {
-        TimerManager.getInstance().schedule(() =>
+        map.ChannelServer.Container.TimerManager.schedule(() =>
         {
             if (winner)
             {

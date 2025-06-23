@@ -2,6 +2,8 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string OnShutdown = "OnShutdown";
+
         public const string OnInvitationSend = "OnInvitationSend";
         public const string OnInvitationAnswer = "OnInvitationAnswer";
 

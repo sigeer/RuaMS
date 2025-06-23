@@ -78,7 +78,7 @@ public class Pyramid : PartyQuest
         {
             gauge = 100;
             count = 0;
-            gaugeSchedule = TimerManager.getInstance().register(() =>
+            gaugeSchedule = worldChannel.Container.TimerManager.register(() =>
             {
                 gauge -= decrease;
                 if (gauge <= 0)
@@ -145,7 +145,7 @@ public class Pyramid : PartyQuest
             value = 120;
         }
 
-        _timer = TimerManager.getInstance().schedule(() =>
+        _timer = worldChannel.Container.TimerManager.schedule(() =>
         {
             stage++;
             warp(map + (stage * 100));//Should work :D

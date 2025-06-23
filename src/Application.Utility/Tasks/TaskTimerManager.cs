@@ -1,15 +1,12 @@
 using Application.Utility.Exceptions;
 using Serilog;
+using System.Collections.Concurrent;
 
 namespace Application.Utility.Tasks;
 
 public class TaskTimerManager : ITimerManager
 {
-    public TaskTimerManager()
-    {
-        if (SchedulerManager.TaskScheduler.Count > 0)
-            throw new BusinessFatalException("还有未停止的任务");
-    }
+    public ConcurrentDictionary<string, ScheduledFuture> TaskScheduler { get; } = new();
 
     bool _isRunning = false;
 
@@ -22,7 +19,7 @@ public class TaskTimerManager : ITimerManager
     public async Task Stop()
     {
         _isRunning = false;
-        foreach (var scheduler in SchedulerManager.TaskScheduler)
+        foreach (var scheduler in TaskScheduler)
         {
             await scheduler.Value.CancelAsync(false);
         }
@@ -59,10 +56,10 @@ public class TaskTimerManager : ITimerManager
         }, ctx.ImmediateCts.Token)
                         .ContinueWith(t =>
                         {
-                            if (SchedulerManager.TaskScheduler.Remove(r.Name, out var p))
+                            if (TaskScheduler.TryRemove(r.Name, out var p))
                                 Log.Logger.Debug("结束了一个任务【{TaskStatus}】，JobId = {JobId}", t.Status, p.JobId);
                         });
-        return SchedulerManager.TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx);
+        return TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx);
     }
 
     public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
@@ -78,10 +75,10 @@ public class TaskTimerManager : ITimerManager
         }, ctx.ImmediateCts.Token)
             .ContinueWith(t =>
             {
-                if (SchedulerManager.TaskScheduler.Remove(r.Name, out var p))
+                if (TaskScheduler.Remove(r.Name, out var p))
                     Log.Logger.Debug("结束了一个任务【{TaskStatus}】，JobId = {JobId}", t.Status, p.JobId);
             });
-        return SchedulerManager.TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx);
+        return TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx);
     }
 
     public ScheduledFuture schedule(Action r, TimeSpan delay)

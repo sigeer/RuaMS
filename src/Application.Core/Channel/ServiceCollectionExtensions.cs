@@ -89,6 +89,9 @@ namespace Application.Core.Channel
             services.AddScoped<CharacterService>();
 
             services.AddAutoMapper(typeof(ProtoMapper));
+
+            services.AddSingleton<WorldChannelServer>();
+            services.AddHostedService<ChannelHost>();
             return services;
         }
     }

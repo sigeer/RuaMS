@@ -1,3 +1,4 @@
+using net.server;
 using server;
 
 namespace ServiceTest.Infrastructure
@@ -7,9 +8,9 @@ namespace ServiceTest.Infrastructure
         [Test]
         public async Task RegisterTaskTests()
         {
-            await TimerManager.getInstance().Start();
+            await Server.getInstance().GlobalTimerManager.Start();
             int count = 0;
-            var task = TimerManager.getInstance().register(() =>
+            var task = Server.getInstance().GlobalTimerManager.register(() =>
             {
                 count++;
             }, TimeSpan.FromSeconds(1));

@@ -1,16 +1,23 @@
+using Application.Core.Login;
 using Application.Core.ServerTransports;
 using Application.Shared.Servers;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Core.Channel.Local
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddLocalServer(this IServiceCollection services)
+        public static void AddGameServerLocal(this WebApplicationBuilder builder)
         {
-            services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
-            services.AddSingleton<ChannelServerConfig>(new ChannelServerConfig());
-            return services;
+            builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
+            builder.Services.AddOptions<ChannelServerConfig>()
+                .BindConfiguration("ChannelServerConfig");
+
+            // 需要先启动Master
+            builder.Services.AddLoginServer(builder.Configuration.GetConnectionString("MySql")!);
+            builder.Services.AddChannelServer();
         }
     }
 }

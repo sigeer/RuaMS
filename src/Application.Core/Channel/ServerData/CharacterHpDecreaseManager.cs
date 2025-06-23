@@ -6,7 +6,7 @@ namespace Application.Core.Channel.ServerData
     {
         private Dictionary<IPlayer, int> playerHpDec = new Dictionary<IPlayer, int>();
 
-        public CharacterHpDecreaseManager(WorldChannelServer channel) : base($"CharacterHpDecreaseController_{channel.ServerName}"
+        public CharacterHpDecreaseManager(WorldChannelServer server) : base($"CharacterHpDecreaseController_{server.ServerName}"
             , TimeSpan.FromMilliseconds(YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL)
             , TimeSpan.FromMilliseconds(YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL))
         {

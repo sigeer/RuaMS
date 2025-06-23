@@ -359,7 +359,7 @@ namespace Application.Core.Game.Players
                 {
                     if (questExpireTask == null)
                     {
-                        questExpireTask = TimerManager.getInstance().register(() =>
+                        questExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
                         {
                             runQuestExpireTask();
 
@@ -417,7 +417,7 @@ namespace Application.Core.Game.Players
             {
                 if (questExpireTask == null)
                 {
-                    questExpireTask = TimerManager.getInstance().register(() =>
+                    questExpireTask = Client.CurrentServerContainer.TimerManager.register(() =>
                     {
                         runQuestExpireTask();
 

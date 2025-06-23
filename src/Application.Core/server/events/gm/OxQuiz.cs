@@ -68,7 +68,7 @@ public class OxQuiz
         }
         int number = gm;
         map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
-        TimerManager.getInstance().schedule(() =>
+        map.ChannelServer.Container.TimerManager.schedule(() =>
         {
             map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
             List<IPlayer> chars = new(map.getCharacters());

@@ -36,9 +36,11 @@ public abstract class PartyQuest
     int channel;
     Team party;
     List<IPlayer> participants = new();
+    protected WorldChannel worldChannel;
 
     public PartyQuest(WorldChannel worldChannel, Team party)
     {
+        this.worldChannel = worldChannel;
         this.party = party;
         var leader = party.GetChannelLeader(worldChannel);
         channel = worldChannel.getId();

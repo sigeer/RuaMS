@@ -275,21 +275,18 @@ public class Server
         }
     }
 
-
-
+    public ITimerManager GlobalTimerManager { get; private set; }
     public async Task InitializeTimelyTasks(TaskEngine engine)
     {
 
-        await TimerManager.InitializeAsync(engine);
-        var tMan = TimerManager.getInstance();
-        await tMan.Start();
+        GlobalTimerManager = await TimerManager.InitializeAsync(engine, "Temp");
 
         var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-        tMan.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
+        GlobalTimerManager.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
 
         timeLeft = TimeUtils.GetTimeLeftForNextDay();
         ExpeditionBossLog.resetBossLogTable();
-        tMan.register(new BossLogTask(), TimeSpan.FromDays(1), timeLeft);
+        GlobalTimerManager.register(new BossLogTask(), TimeSpan.FromDays(1), timeLeft);
     }
 
 
@@ -426,7 +423,7 @@ public class Server
         resetServerWorlds();
 
         ThreadManager.getInstance().stop();
-        await TimerManager.getInstance().Stop();
+        await GlobalTimerManager.Stop();
 
         IsOnline = false;
         if (force)

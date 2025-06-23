@@ -1,3 +1,4 @@
+using Application.Core.Login;
 using Application.Host.Models;
 using Application.Host.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +16,11 @@ namespace Application.Host.Controllers
         readonly AuthService _authService;
         readonly DataService _dataService;
         readonly ServerService _serverService;
-        readonly GameHost _serverHost;
-        public ServerController(AuthService authService, GameHost gameHost, DataService dataService, ServerService serverService)
+        readonly MasterServer _server;
+        public ServerController(AuthService authService, MasterServer server, DataService dataService, ServerService serverService)
         {
             _authService = authService;
-            _serverHost = gameHost;
+            _server = server;
             _dataService = dataService;
             _serverService = serverService;
         }
@@ -44,16 +45,16 @@ namespace Application.Host.Controllers
         }
 
         [HttpPost]
-        public async Task<bool> StartServer(bool ignoreCache = false)
+        public async Task<bool> StartServer()
         {
-            await _serverHost.StartNow(ignoreCache);
+            await _server.StartServer();
             return true;
         }
 
         [HttpPost]
         public async Task<bool> StopServer()
         {
-            await _serverHost.StopNow();
+            await _server.Shutdown();
             return true;
         }
 
