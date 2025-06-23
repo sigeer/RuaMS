@@ -18,48 +18,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
+using Application.Core.Game.Controllers;
 using scripting.Event;
 using System.Collections.Concurrent;
 
-namespace net.server.coordinator.world;
+namespace Application.Core.Channel.ChannelData;
 
 /**
  * @author Ronan
  */
-public class EventRecallCoordinator
+public class EventRecallManager : TimelyControllerBase
 {
-
-    private static EventRecallCoordinator instance = new EventRecallCoordinator();
-
-    public static EventRecallCoordinator getInstance()
-    {
-        return instance;
-    }
 
     private ConcurrentDictionary<int, EventInstanceManager> eventHistory = new();
 
-    private static bool isRecallableEvent(EventInstanceManager? eim)
+    public EventRecallManager(WorldChannel worldChannel) 
+        : base($"EventRecallController_{worldChannel.ServerName}", TimeSpan.FromHours(1), TimeSpan.FromHours(1))
     {
-        return eim != null && !eim.isEventDisposed() && !eim.isEventCleared();
     }
 
-    public EventInstanceManager? recallEventInstance(int characterId)
-    {
-        if (eventHistory.TryRemove(characterId, out var eim))
-            return isRecallableEvent(eim) ? eim : null;
-        return null;
-    }
-
-    public void storeEventInstance(int characterId, EventInstanceManager eim)
-    {
-        if (YamlConfig.config.server.USE_ENABLE_RECALL_EVENT && isRecallableEvent(eim))
-        {
-            eventHistory.AddOrUpdate(characterId, eim);
-        }
-    }
-
-    public void manageEventInstances()
+    protected override void HandleRun()
     {
         if (eventHistory.Count > 0)
         {
@@ -77,6 +55,27 @@ public class EventRecallCoordinator
             {
                 eventHistory.Remove(r);
             }
+        }
+    }
+
+
+    private bool isRecallableEvent(EventInstanceManager? eim)
+    {
+        return eim != null && !eim.isEventDisposed() && !eim.isEventCleared();
+    }
+
+    public EventInstanceManager? recallEventInstance(int characterId)
+    {
+        if (eventHistory.TryRemove(characterId, out var eim))
+            return isRecallableEvent(eim) ? eim : null;
+        return null;
+    }
+
+    public void storeEventInstance(int characterId, EventInstanceManager eim)
+    {
+        if (YamlConfig.config.server.USE_ENABLE_RECALL_EVENT && isRecallableEvent(eim))
+        {
+            eventHistory.AddOrUpdate(characterId, eim);
         }
     }
 }

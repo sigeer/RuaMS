@@ -280,9 +280,6 @@ public class Server
     {
 
         GlobalTimerManager = await TimerManager.InitializeAsync(engine, "Temp");
-
-        var timeLeft = TimeUtils.GetTimeLeftForNextHour();
-        GlobalTimerManager.register(new EventRecallCoordinatorTask(), TimeSpan.FromHours(1), timeLeft);
     }
 
 

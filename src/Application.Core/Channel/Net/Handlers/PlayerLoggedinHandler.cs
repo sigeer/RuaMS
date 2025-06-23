@@ -252,7 +252,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             if (newcomer)
             {
-                var eim = EventRecallCoordinator.getInstance().recallEventInstance(cid);
+                var eim = c.CurrentServer.EventRecallManager.recallEventInstance(cid);
                 eim?.registerPlayer(player);
             }
 
