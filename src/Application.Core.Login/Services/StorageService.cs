@@ -93,7 +93,7 @@ namespace Application.Core.Login.Services
 
         public async Task CommitAllImmediately()
         {
-            if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(5)))
+            if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(20)))
             {
                 _logger.LogInformation("失败：已经有一个保存操作正在进行中");
                 return;

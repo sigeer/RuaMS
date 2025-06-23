@@ -9,6 +9,7 @@ using Application.Core.Login.Tasks;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.handlers;
 
 namespace Application.Core.Login
@@ -83,6 +84,8 @@ namespace Application.Core.Login
             services.AddSingleton<ShopService>();
             services.AddSingleton<MessageService>();
             services.AddSingleton<RankService>();
+
+            services.TryAddSingleton<IExpeditionService, DefaultExpeditionService>();
             services.AddInvitationService();
             return services;
         }

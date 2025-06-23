@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package Dto;
+
+message ExpeditionRegistry {
+  repeated int32 cidList = 1;
+  int32 channel = 2;
+  string bossName = 3;
+}

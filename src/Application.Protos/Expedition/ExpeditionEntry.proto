@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package Dto;
+
+message ExpeditionCheckRequest {
+  int32 cid = 1;
+  int32 channel = 2;
+  string bossName = 3;
+}
+
+message ExpeditionCheckResponse {
+	bool isSuccess = 1;
+}

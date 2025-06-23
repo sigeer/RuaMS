@@ -2,6 +2,7 @@ using Application.Core.Channel.Events;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Message;
 using Application.Core.Channel.ServerData;
+using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.ServerTransports;
 using Application.Shared.Configs;
@@ -72,6 +73,8 @@ namespace Application.Core.Channel
         public List<ChannelModule> Plugins { get; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
         public ITimerManager TimerManager { get; private set; } = null!;
+
+        public ExpeditionService ExpeditionService { get; }
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, IOptions<ChannelServerConfig> serverConfigOptions, ILogger<WorldChannelServer> logger)
         {
@@ -92,6 +95,8 @@ namespace Application.Core.Channel
             MapObjectManager = new MapObjectManager(this);
             MountTirednessManager = new MountTirednessManager(this);
             MapOwnershipManager = new MapOwnershipManager(this);
+
+            ExpeditionService = _sp.GetRequiredService<ExpeditionService>();
 
             InviteChannelHandlerRegistry = _sp.GetRequiredService<InviteChannelHandlerRegistry>();
         }

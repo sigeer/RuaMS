@@ -1,11 +1,10 @@
 using Application.Core.Login;
 using Application.Core.Login.Events;
-using Application.Core.Login.Models.Invitations;
 using Application.EF;
 using Application.Module.Family.Master.Tasks;
 using Application.Utility;
+using Application.Utility.Tasks;
 using Microsoft.Extensions.Logging;
-using server;
 
 namespace Application.Module.Family.Master
 {
@@ -14,10 +13,11 @@ namespace Application.Module.Family.Master
         readonly FamilyManager _familyManager;
         readonly DataService _dataService;
 
+        ScheduledFuture? _task;
         public MasterFamilyModule(
-            MasterServer server, 
-            FamilyManager familyManager, 
-            ILogger<MasterModule> logger, 
+            MasterServer server,
+            FamilyManager familyManager,
+            ILogger<MasterModule> logger,
             DataService dataService) : base(server, logger)
         {
             _familyManager = familyManager;
@@ -37,13 +37,26 @@ namespace Application.Module.Family.Master
             return 0;
         }
 
-        public override void Initialize()
+        public override async Task InitializeAsync()
         {
-            _familyManager.LoadAllFamily();
+            await base.InitializeAsync();
 
-            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
             _familyManager.ResetEntitlementUsage();
-            _server.TimerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
+            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
+            _task = _server.TimerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
+        }
+
+        public override async Task IntializeDatabaseAsync(DBContext dbContext)
+        {
+            await base.IntializeDatabaseAsync(dbContext);
+            await _familyManager.LoadAllFamilyAsync(dbContext);
+        }
+
+        public override async Task UninstallAsync()
+        {
+            await base.UninstallAsync();
+            if (_task != null)
+                await _task.CancelAsync(false);
         }
 
         public override async Task SaveChangesAsync(DBContext dbContext)

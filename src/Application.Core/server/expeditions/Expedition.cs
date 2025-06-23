@@ -208,9 +208,11 @@ public class Expedition
             return "Sorry, this expedition is full!";
         }
 
-        int channel = this.getRecruitingMap().getChannelServer().getId();
-        if (!ExpeditionBossLog.attemptBoss(player.getId(), channel, this, false))
-        {    // thanks Conrad, Cato for noticing some expeditions have entry limit
+        var currentServer = this.getRecruitingMap().getChannelServer();
+        int channel = currentServer.getId();
+        if (!currentServer.Container.ExpeditionService.CanStartExpedition(player.getId(), channel, getType().name()))
+        {
+            // thanks Conrad, Cato for noticing some expeditions have entry limit
             return "Sorry, you've already reached the quota of attempts for this expedition! Try again another day...";
         }
 
@@ -249,12 +251,10 @@ public class Expedition
 
     private void registerExpeditionAttempt()
     {
-        int channel = this.getRecruitingMap().getChannelServer().getId();
+        var currentServer = this.getRecruitingMap().getChannelServer();
+        int channel = currentServer.getId();
 
-        foreach (IPlayer chr in getActiveMembers())
-        {
-            ExpeditionBossLog.attemptBoss(chr.getId(), channel, this, true);
-        }
+        currentServer.Container.ExpeditionService.RegisterExpedition(getActiveMembers().Select(x => x.getId()).ToArray(), channel, this.getType().name());
     }
 
     private void broadcastExped(Packet packet)

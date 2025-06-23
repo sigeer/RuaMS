@@ -182,5 +182,7 @@ namespace Application.Core.ServerTransports
 
         void SendInvitation(Dto.CreateInviteRequest request);
         void AnswerInvitation(Dto.AnswerInviteRequest request);
+        void RegisterExpedition(Dto.ExpeditionRegistry request);
+        Dto.ExpeditionCheckResponse CanStartExpedition(Dto.ExpeditionCheckRequest expeditionCheckRequest);
     }
 }

@@ -19,6 +19,8 @@
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />
+		<Protobuf Include="Expedition\ExpeditionEntry.proto" GrpcServices="None" />
+		<Protobuf Include="Expedition\ExpeditionRegistry.proto" GrpcServices="None" />
 		<Protobuf Include="Guild\Alliance.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>

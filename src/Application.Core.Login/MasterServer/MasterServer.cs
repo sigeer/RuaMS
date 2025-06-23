@@ -162,6 +162,11 @@ namespace Application.Core.Login
 
             Transport.BroadcastShutdown();
 
+            foreach (var plugin in Plugins)
+            {
+                await plugin.UninstallAsync();
+            }
+
             await InvitationManager.DisposeAsync();
             await TimerManager.Stop();
             await Server.getInstance().Stop(false);
@@ -186,7 +191,7 @@ namespace Application.Core.Login
 
                 foreach (var plugin in Plugins)
                 {
-                    plugin.Initialize();
+                    await plugin.InitializeAsync();
                 }
             }
             catch (Exception ex)
