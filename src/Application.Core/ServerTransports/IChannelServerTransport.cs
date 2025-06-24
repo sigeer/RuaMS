@@ -7,6 +7,7 @@ using Application.Shared.Servers;
 using System.Net;
 using Application.Shared.Team;
 using Application.Shared.Guild;
+using Dto;
 
 namespace Application.Core.ServerTransports
 {
@@ -81,7 +82,7 @@ namespace Application.Core.ServerTransports
 
         #region PlayerShop
         List<OwlSearchResult> OwlSearch(int itemId);
-        PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem);
+        Dto.PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem);
         int? FindPlayerShopChannel(int ownerId);
         #endregion
 
@@ -184,5 +185,9 @@ namespace Application.Core.ServerTransports
         void AnswerInvitation(Dto.AnswerInviteRequest request);
         void RegisterExpedition(Dto.ExpeditionRegistry request);
         Dto.ExpeditionCheckResponse CanStartExpedition(Dto.ExpeditionCheckRequest expeditionCheckRequest);
+
+        void ReceiveNewYearCard(ReceiveNewYearCardRequest receiveNewYearCardRequest);
+        void SendNewYearCard(SendNewYearCardRequest sendNewYearCardRequest);
+        void SendDiscardNewYearCard(DiscardNewYearCardRequest discardNewYearCardRequest);
     }
 }

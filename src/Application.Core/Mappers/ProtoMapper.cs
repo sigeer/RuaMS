@@ -6,6 +6,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Model;
 using Application.Core.Models;
 using Application.Shared.Items;
+using Application.Shared.NewYear;
 using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
@@ -271,6 +272,8 @@ namespace Application.Core.Mappers
                     x.Rank4Title,
                     x.Rank5Title
                 }));
+
+            CreateMap<Dto.NewYearCardDto, NewYearCardModel>();
         }
 
         private int[] TranslateArray(string str)

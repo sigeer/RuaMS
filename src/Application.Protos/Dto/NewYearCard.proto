@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package Dto;
+
+message NewYearCardDto {
+	int32 id = 1;
+	int32 senderId = 2;
+	int32 receiverId = 3;
+	string message = 4;
+	string senderName = 5;
+	string receiveName = 6;
+	bool senderDiscard = 7;
+	bool receiveDiscard = 8;
+	bool received = 9;
+	int64 timeSent = 10;
+	int64 timeReceived = 11;
+}
+
+message SendNewYearCardRequest {
+	int32 fromId = 1;
+	string toName = 2;
+	string message = 3;
+}
+
+message SendNewYearCardResponse {
+	int32 code = 1;
+	SendNewYearCardRequest request = 2;
+	NewYearCardDto model = 3;
+}
+
+message ReceiveNewYearCardRequest {
+	int32 masterId = 1;
+	int32 cardId = 2;
+}
+
+message ReceiveNewYearCardResponse {
+	int32 code = 1;
+	ReceiveNewYearCardRequest request = 2;
+	NewYearCardDto model = 3;
+}
+
+message NewYearCardNotifyDto {
+	repeated NewYearCardNotifyItem list = 1;
+}
+
+message NewYearCardNotifyItem {
+	int32 masterId = 1;
+	repeated NewYearCardDto list = 2;
+}
+
+message DiscardNewYearCardRequest {
+	int32 masterId = 1;
+	bool isSender = 2;
+}
+
+message DiscardNewYearCardResponse {
+	int32 code = 1;
+	DiscardNewYearCardRequest request = 2;
+	repeated NewYearCardDto updateList = 3;
+}

@@ -9,12 +9,12 @@ using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
+using Application.Shared.NewYear;
 using Application.Shared.Objects;
 using client;
 using client.autoban;
 using client.inventory;
 using client.keybind;
-using client.newyear;
 using net.server;
 using scripting;
 using scripting.Event;
@@ -99,7 +99,7 @@ namespace Application.Core.Game.Players
         void addMarriageRing(Ring? r);
         void addMerchantMesos(int add);
         void addMesosTraded(int gain);
-        void addNewYearRecord(NewYearCardRecord newyear);
+
         void addPet(Pet pet);
         void addPlayerRing(Ring ring);
         void addSummon(int id, Summon summon);
@@ -347,8 +347,11 @@ namespace Application.Core.Game.Players
         void SetMount(IMount? mount);
         IMount? getMount();
         string getName();
-        NewYearCardRecord? getNewYearRecord(int cardid);
-        HashSet<NewYearCardRecord> getNewYearRecords();
+        void addNewYearRecord(NewYearCardModel newyear);
+
+        HashSet<NewYearCardModel> getReceivedNewYearRecords();
+        void RemoveNewYearRecord(int id);
+        void DiscardNewYearRecord(bool isSender);
         int getNoPets();
         long getNpcCooldown();
         int getNumControlledMonsters();
@@ -386,7 +389,7 @@ namespace Application.Core.Game.Players
         float getRawDropRate();
         float getRawExpRate();
         float getRawMesoRate();
-        HashSet<NewYearCardRecord> getReceivedNewYearRecords();
+
         int getRelationshipId();
         int getRemainingSp();
         Ring? getRingById(long id);
@@ -526,7 +529,7 @@ namespace Application.Core.Game.Players
         void removeCooldown(int skillId);
         void removeIncomingInvites();
         void removeJailExpirationTime();
-        void removeNewYearRecord(NewYearCardRecord newyear);
+
         Door? removePartyDoor(bool partyUpdate);
         void removePartyDoor(Team formerParty);
         void removePartyQuestItem(string letter);

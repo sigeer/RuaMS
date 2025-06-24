@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Items;
-using client.newyear;
 using server;
 using tools;
 
@@ -877,12 +876,12 @@ public class InventoryManipulator
             {
                 if (itemId == ItemId.NEW_YEARS_CARD_SEND)
                 {
-                    NewYearCardRecord.removeAllNewYearCard(true, chr);
+                    chr.DiscardNewYearRecord(true);
                     c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_SEND);
                 }
                 else
                 {
-                    NewYearCardRecord.removeAllNewYearCard(false, chr);
+                    chr.DiscardNewYearRecord(false);
                     c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_RECEIVED);
                 }
             }
@@ -925,12 +924,12 @@ public class InventoryManipulator
             {
                 if (itemId == ItemId.NEW_YEARS_CARD_SEND)
                 {
-                    NewYearCardRecord.removeAllNewYearCard(true, chr);
+                    chr.DiscardNewYearRecord(true);
                     c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_SEND);
                 }
                 else
                 {
-                    NewYearCardRecord.removeAllNewYearCard(false, chr);
+                    chr.DiscardNewYearRecord(false);
                     c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_RECEIVED);
                 }
             }

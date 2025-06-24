@@ -5,6 +5,7 @@ using Application.Core.Login.Models.Guilds;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
+using Application.Shared.NewYear;
 using AutoMapper;
 
 namespace Application.Core.Login.Mappers
@@ -104,6 +105,8 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<GuildEntity, GuildModel>();
             CreateMap<AllianceEntity, AllianceModel>();
+
+            CreateMap<NewYearCardEntity, NewYearCardModel>();
         }
     }
 }

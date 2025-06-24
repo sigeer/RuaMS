@@ -42,6 +42,7 @@ namespace Application.Core.Channel
         public GuildManager GuildManager { get; private set; } = null!;
         public TeamManager TeamManager { get; private set; } = null!;
         public ChatRoomService ChatRoomService { get; private set; } = null!;
+        public NewYearCardService NewYearCardService { get; private set; } = null!;
         #endregion
 
         #region Task
@@ -214,6 +215,7 @@ namespace Application.Core.Channel
             GuildManager = _sp.GetRequiredService<GuildManager>();
             TeamManager = _sp.GetRequiredService<TeamManager>();
             ChatRoomService = _sp.GetRequiredService<ChatRoomService>();
+            NewYearCardService = _sp.GetRequiredService<NewYearCardService>();
 
             TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
 
@@ -605,6 +607,13 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<SendChatRoomMessageResponse>(BroadcastType.OnChatRoomMessageSend, ChatRoomService.OnReceiveMessage);
             MessageDispatcher.Register<JoinChatRoomResponse>(BroadcastType.OnJoinChatRoom, ChatRoomService.OnPlayerJoinChatRoom);
             MessageDispatcher.Register<LeaveChatRoomResponse>(BroadcastType.OnLeaveChatRoom, ChatRoomService.OnPlayerLeaveChatRoom);
+            #endregion
+
+            #region NewYearCard
+            MessageDispatcher.Register<Dto.SendNewYearCardResponse>(BroadcastType.OnNewYearCardSend, NewYearCardService.OnNewYearCardSend);
+            MessageDispatcher.Register<Dto.ReceiveNewYearCardResponse>(BroadcastType.OnNewYearCardReceived, NewYearCardService.OnNewYearCardReceived);
+            MessageDispatcher.Register<Dto.NewYearCardNotifyDto>(BroadcastType.OnNewYearCardNotify, NewYearCardService.OnNewYearCardNotify);
+            MessageDispatcher.Register<Dto.DiscardNewYearCardResponse>(BroadcastType.OnNewYearCardDiscard, NewYearCardService.OnNewYearCardDiscard);
             #endregion
 
             MessageDispatcher.Register<UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));

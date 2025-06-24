@@ -2,6 +2,7 @@ using Application.Core.Game.Controllers;
 using Application.Core.Login.Models.ChatRoom;
 using Application.Core.Login.Models.Invitations;
 using Application.Shared.Invitations;
+using Application.Shared.Team;
 using Application.Utility.Configs;
 using Dto;
 using Microsoft.Extensions.Logging;
@@ -116,7 +117,7 @@ namespace Application.Core.Login.ServerData
 
         protected override void OnInvitationAccepted(InviteRequest request)
         {
-            _server.TeamManager.UpdateParty(request.Key, Shared.Team.PartyOperation.JOIN, request.FromPlayerId, request.ToPlayerId);
+            _server.TeamManager.UpdateParty(request.Key, PartyOperation.JOIN, request.FromPlayerId, request.ToPlayerId);
         }
 
         public override void HandleInvitationCreated(CreateInviteRequest request)

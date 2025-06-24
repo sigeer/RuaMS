@@ -5,6 +5,7 @@ using Application.Core.Game.Skills;
 using Application.Shared.Dto;
 using Application.Shared.Items;
 using Application.Shared.Models;
+using Application.Shared.NewYear;
 using AutoMapper;
 using client;
 using client.inventory;
@@ -204,6 +205,11 @@ namespace Application.Core.Servers.Services
 
             player.LastFameTime = o.FameRecord.LastUpdateTime;
             player.LastFameCIds = o.FameRecord.ChararacterIds.ToList();
+
+            foreach (var card in o.NewYearCards)
+            {
+                player.addNewYearRecord(_mapper.Map<NewYearCardModel>(card));
+            }
 
             var mountItem = player.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.Mount);
             if (mountItem != null)

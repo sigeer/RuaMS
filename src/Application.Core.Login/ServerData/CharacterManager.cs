@@ -5,6 +5,7 @@ using Application.Core.Login.Services;
 using Application.Core.Managers.Constants;
 using Application.EF;
 using Application.Shared.Items;
+using Application.Shared.Team;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
@@ -109,7 +110,7 @@ namespace Application.Core.Login.Datas
                         GuildId = origin.Character.GuildId,
                         TeamId = origin.Character.Party
                     });
-                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
 
                 if (oldCharacterData.JobId != origin.Character.JobId)
@@ -124,7 +125,7 @@ namespace Application.Core.Login.Datas
                         GuildId = origin.Character.GuildId,
                         TeamId = origin.Character.Party
                     });
-                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
+                    _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
 
                 // 理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发
@@ -145,7 +146,7 @@ namespace Application.Core.Login.Datas
                                 FamilyId = origin.Character.FamilyId,
                                 Channel = obj.Channel
                             });
-                            _masterServer.TeamManager.UpdateParty(origin.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
+                            _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                             _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
                         }
                     }
@@ -176,7 +177,7 @@ namespace Application.Core.Login.Datas
                     IsNewComer = true
                 });
 
-                _masterServer.TeamManager.UpdateParty(d.Character.Party, Shared.Team.PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
+                _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
             }
             else
             {
@@ -260,7 +261,8 @@ namespace Application.Core.Login.Datas
                     Skills = _mapper.Map<SkillModel[]>(dbContext.Skills.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     TrockLocations = _mapper.Map<TrockLocationModel[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
-                    WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray()
+                    WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
+                    NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray()
                 };
 
                 _idDataSource[characterEntity.Id] = d;

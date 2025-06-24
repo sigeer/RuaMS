@@ -349,9 +349,9 @@ public class ItemId
     }
 
     // New Year card
-    public static int NEW_YEARS_CARD = 2160101;
-    public static int NEW_YEARS_CARD_SEND = 4300000;
-    public static int NEW_YEARS_CARD_RECEIVED = 4301000;
+    public const int NEW_YEARS_CARD = 2160101;
+    public const int NEW_YEARS_CARD_SEND = 4300000;
+    public const int NEW_YEARS_CARD_RECEIVED = 4301000;
 
     // Popular owl items
     private static int WORK_GLOVES = 1082002;

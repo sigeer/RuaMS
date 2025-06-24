@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.server;
+using server;
 using System.Net;
 
 
@@ -32,7 +33,13 @@ namespace Application.Core.Login
         readonly ILogger<MasterServer> _logger;
         public int Port { get; set; } = 8484;
         public AbstractNettyServer NettyServer { get; }
+        /// <summary>
+        /// 频道服务器，Key：频道服务器名
+        /// </summary>
         public Dictionary<string, ChannelServerWrapper> ChannelServerList { get; }
+        /// <summary>
+        /// 频道（一个频道服务器上可能运行多个频道）
+        /// </summary>
         public List<RegisteredChannelConfig> Channels { get; }
         public WeddingManager WeddingInstance { get; }
 
@@ -89,6 +96,7 @@ namespace Application.Core.Login
         public ChatRoomManager ChatRoomManager { get; }
         public List<MasterModule> Modules { get; private set; }
         public InvitationManager InvitationManager { get; }
+        public NewYearCardManager NewYearCardManager { get; }
 
         CharacterService _characterSevice;
         public ITimerManager TimerManager { get; private set; } = null!;
@@ -137,6 +145,7 @@ namespace Application.Core.Login
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
             ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
+            NewYearCardManager = ActivatorUtilities.CreateInstance<NewYearCardManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;
@@ -251,7 +260,6 @@ namespace Application.Core.Login
             return false;
         }
 
-        bool channelChanged = false;
         List<ServerChannelPair>? _serverChannelCache;
         private List<ServerChannelPair> GetServerChannel()
         {
@@ -272,6 +280,31 @@ namespace Application.Core.Login
                     join b in d on a.Channel equals b.Channel
                     group a.PlayerId by b.ServerName into ass
                     select ass).ToDictionary(x => ChannelServerList[x.Key], x => x.ToArray());
+        }
+
+        public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<int> cidList)
+        {
+            var channelServerMap = GetServerChannel();
+            var result = new Dictionary<ChannelServerWrapper, List<int>>();
+
+            foreach (var cid in cidList)
+            {
+                var player = CharacterManager.FindPlayerById(cid);
+                if (player == null || player.Channel <= 0)
+                    continue;
+
+                var serverName = Channels[player.Channel - 1].ServerName;
+                var serverWrapper = ChannelServerList[serverName];
+                if (!result.TryGetValue(serverWrapper, out var idList))
+                {
+                    idList = new List<int>();
+                    result[serverWrapper] = idList;
+                }
+                idList.Add(player.Character.Id);
+            }
+
+            // 转换 List<int> -> int[]
+            return result.ToDictionary(x => x.Key, x => x.Value.ToArray());
         }
 
         public ChannelServerWrapper GetChannelServer(int channelId)
@@ -363,6 +396,10 @@ namespace Application.Core.Login
             TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
             TimerManager.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
             InvitationManager.Register(TimerManager);
+            TimerManager.register(() =>
+            {
+                NewYearCardManager.NotifyNewYearCard();
+            }, TimeSpan.FromHours(1), timeLeft);
             foreach (var module in Modules)
             {
                 module.RegisterTask(TimerManager);

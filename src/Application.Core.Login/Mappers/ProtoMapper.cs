@@ -1,6 +1,6 @@
-using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
+using Application.Shared.NewYear;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 
@@ -88,6 +88,8 @@ namespace Application.Core.Login.Mappers
             CreateMap<ChatRoomModel, Dto.ChatRoomDto>()
                 .ForMember(dest => dest.RoomId, src => src.MapFrom(x => x.Id))
                 .ForMember(dest => dest.Members, src => src.Ignore());
+
+            CreateMap<NewYearCardModel, Dto.NewYearCardDto>();
         }
     }
 }

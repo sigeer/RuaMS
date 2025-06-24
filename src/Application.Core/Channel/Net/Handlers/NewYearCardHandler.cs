@@ -19,10 +19,7 @@
 */
 
 
-using Application.Core.Game.Players;
-using Application.EF;
-using client.newyear;
-using net.server;
+using Application.Core.Channel.ServerData;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -35,6 +32,12 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class NewYearCardHandler : ChannelHandlerBase
 {
+    readonly NewYearCardService _manager;
+
+    public NewYearCardHandler(NewYearCardService manager)
+    {
+        _manager = manager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -42,9 +45,11 @@ public class NewYearCardHandler : ChannelHandlerBase
         byte reqMode = p.readByte();                 //[00] -> NewYearReq (0 = Send)
 
         if (reqMode == 0)
-        {  // card has been sent
+        {
+            // card has been sent
             if (player.haveItem(ItemId.NEW_YEARS_CARD))
-            {  // new year's card
+            {
+                // new year's card
                 short slot = p.readShort();                      //[00 2C] -> nPOS (Item Slot Pos)
                 int itemid = p.readInt();                        //[00 20 F5 E5] -> nItemID (item id)
 
@@ -54,109 +59,40 @@ public class NewYearCardHandler : ChannelHandlerBase
                     if (player.canHold(ItemId.NEW_YEARS_CARD_SEND, 1))
                     {
                         string receiver = p.readString();  //[04 00 54 65 73 74] -> sReceiverName (person to send to)
+                        string message = p.readString();
 
-                        int receiverid = getReceiverId(receiver);
-                        if (receiverid != -1)
-                        {
-                            if (receiverid != c.OnlinedCharacter.getId())
-                            {
-                                string message = p.readString();   //[06 00 4C 65 74 74 65 72] -> sContent (message)
-
-                                NewYearCardRecord newyear = new NewYearCardRecord(player.getId(), player.getName(), receiverid, receiver, message);
-                                NewYearCardRecord.saveNewYearCard(newyear);
-                                player.addNewYearRecord(newyear);
-
-                                player.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD, -1);
-                                player.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD_SEND, 1);
-
-                                Server.getInstance().setNewYearCard(newyear);
-                                newyear.startNewYearCardTask();
-                                player.sendPacket(PacketCreator.onNewYearCardRes(player, newyear, 4, 0));    // successfully sent
-                            }
-                            else
-                            {
-                                player.sendPacket(PacketCreator.onNewYearCardRes(player, -1, 5, 0xF));   // cannot send to yourself
-                            }
-                        }
-                        else
-                        {
-                            player.sendPacket(PacketCreator.onNewYearCardRes(player, -1, 5, 0x13));  // cannot find such character
-                        }
+                        _manager.SendNewYearCard(player, receiver, message);
                     }
                     else
                     {
-                        player.sendPacket(PacketCreator.onNewYearCardRes(player, -1, 5, 0x10));  // inventory full
+                        player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x10));  // inventory full
                     }
                 }
                 else
                 {
-                    player.sendPacket(PacketCreator.onNewYearCardRes(player, -1, 5, status));  // item and inventory errors
+                    player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, status));  // item and inventory errors
                 }
             }
             else
             {
-                player.sendPacket(PacketCreator.onNewYearCardRes(player, -1, 5, 0x11));  // have no card to send
+                player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x11));  // have no card to send
             }
         }
         else
-        {    //receiver accepted the card
+        {
+            //receiver accepted the card
             int cardid = p.readInt();
 
-            var newyear = NewYearCardRecord.loadNewYearCard(cardid);
-
-            if (newyear != null && newyear.getReceiverId() == player.getId() && !newyear.isReceiverCardReceived())
+            if (player.canHold(ItemId.NEW_YEARS_CARD_RECEIVED, 1))
             {
-                if (!newyear.isSenderCardDiscarded())
-                {
-                    if (player.canHold(ItemId.NEW_YEARS_CARD_RECEIVED, 1))
-                    {
-                        newyear.stopNewYearCardTask();
-                        NewYearCardRecord.updateNewYearCard(newyear);
-
-                        player.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD_RECEIVED, 1);
-                        if (newyear.getMessage().Count() > 0)
-                        {
-                            player.dropMessage(6, "[New Year] " + newyear.getSenderName() + ": " + newyear.getMessage());
-                        }
-
-                        player.addNewYearRecord(newyear);
-                        player.sendPacket(PacketCreator.onNewYearCardRes(player, newyear, 6, 0));    // successfully rcvd
-
-                        player.getMap().broadcastMessage(PacketCreator.onNewYearCardRes(player, newyear, 0xD, 0));
-
-                        var sender = c.getWorldServer().getPlayerStorage().getCharacterById(newyear.getSenderId());
-                        if (sender != null && sender.isLoggedinWorld())
-                        {
-                            sender.getMap().broadcastMessage(PacketCreator.onNewYearCardRes(sender, newyear, 0xD, 0));
-                            sender.dropMessage(6, "[New Year] Your addressee successfully received the New Year card.");
-                        }
-                    }
-                    else
-                    {
-                        player.sendPacket(PacketCreator.onNewYearCardRes(player, -1, 5, 0x10));  // inventory full
-                    }
-                }
-                else
-                {
-                    player.dropMessage(6, "[New Year] The sender of the New Year card already dropped it. Nothing to receive.");
-                }
+                _manager.AcceptNewYearCard(player, cardid);
             }
             else
             {
-                if (newyear == null)
-                {
-                    player.dropMessage(6, "[New Year] The sender of the New Year card already dropped it. Nothing to receive.");
-                }
+                player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x10));  // inventory full
             }
         }
     }
-
-    private static int getReceiverId(string receiver)
-    {
-        using var dbContext = new DBContext();
-        return dbContext.Characters.Where(x => x.Name == receiver && x.World == 0).Select(x => new { x.Id })?.FirstOrDefault()?.Id ?? -1;
-    }
-
 
     private static int getValidNewYearCardStatus(int itemid, IPlayer player, short slot)
     {

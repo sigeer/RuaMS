@@ -105,7 +105,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Namechange> Namechanges { get; set; }
 
-    public virtual DbSet<Newyear> Newyears { get; set; }
+    public virtual DbSet<NewYearCardEntity> Newyears { get; set; }
 
     public virtual DbSet<NoteEntity> Notes { get; set; }
 
@@ -1229,7 +1229,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("requestTime");
         });
 
-        modelBuilder.Entity<Newyear>(entity =>
+        modelBuilder.Entity<NewYearCardEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1248,19 +1248,11 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'-1'")
                 .HasColumnType("int(10)")
                 .HasColumnName("receiverid");
-            entity.Property(e => e.ReceiverName)
-                .HasMaxLength(13)
-                .HasDefaultValueSql("''")
-                .HasColumnName("receivername");
             entity.Property(e => e.SenderDiscard).HasColumnName("senderdiscard");
             entity.Property(e => e.SenderId)
                 .HasDefaultValueSql("'-1'")
                 .HasColumnType("int(10)")
                 .HasColumnName("senderid");
-            entity.Property(e => e.SenderName)
-                .HasMaxLength(13)
-                .HasDefaultValueSql("''")
-                .HasColumnName("sendername");
             entity.Property(e => e.TimeReceived)
                 .HasColumnType("bigint(20) unsigned")
                 .HasColumnName("timereceived");
