@@ -6,6 +6,7 @@ using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.X509;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Datas
@@ -102,6 +103,10 @@ namespace Application.Core.Login.Datas
                 };
                 _dataSource[model.Id] = model;
                 _dataStorage.SetDueyPackageAdded(model);
+
+                var target = _server.CharacterManager.FindPlayerById(receiverId);
+                if (target != null)
+                    _server.Transport.SendDueyNotification(target.Channel, target.Character.Id, senderName, quick);
                 return new Dto.CreatePackageResponse { IsSuccess = true };
             }
             catch (Exception sqle)

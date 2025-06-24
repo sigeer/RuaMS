@@ -1,17 +1,10 @@
-using Application.Core.Game.Relation;
 using Application.Core.Login.Models;
 using Application.EF.Entities;
 using Application.Shared.Configs;
-using Application.Shared.Constants.Item;
-using Application.Shared.Constants.Job;
 using Application.Shared.Message;
 using Application.Shared.Servers;
-using Application.Shared.Team;
-using client.inventory;
 using Dto;
 using net.server;
-using Org.BouncyCastle.Asn1.X509;
-using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Login
@@ -22,6 +15,22 @@ namespace Application.Core.Login
         public MasterServerTransport(MasterServer masterServer)
         {
             this._server = masterServer;
+        }
+
+        /// <summary>
+        /// 只需要给部分玩家发送消息，仅需要找到这部分玩家的频道服务器
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="messageType"></param>
+        /// <param name="message"></param>
+        /// <param name="playerIdArray"></param>
+        void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : notnull
+        {
+            var serverGroups = _server.GroupPlayer(playerIdArray);
+            foreach (var group in serverGroups)
+            {
+                group.Key.BroadcastMessage(messageType, message);
+            }
         }
 
         public void BroadcastMessage(Packet p)
@@ -420,33 +429,12 @@ namespace Application.Core.Login
 
         internal void ReturnInvitationCreated(CreateInviteResponse response)
         {
-            var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
-            var server1 = _server.GetChannelServer(sender.Channel);
-            server1.BroadcastMessage(BroadcastType.OnInvitationSend, response);
-
-            var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId);
-            if (receiver != null)
-            {
-                var server2 = _server.GetChannelServer(receiver.Channel);
-                if (server1 != server2)
-                    server2.BroadcastMessage(BroadcastType.OnInvitationSend, response);
-            }
-
+            SendMessage(BroadcastType.OnInvitationSend, response, response.SenderPlayerId, response.ReceivePlayerId);
         }
 
         internal void ReturnInvitationAnswer(AnswerInviteResponse response)
         {
-            var sender = _server.CharacterManager.FindPlayerById(response.SenderPlayerId)!;
-            var server1 = _server.GetChannelServer(sender.Channel);
-            server1.BroadcastMessage(BroadcastType.OnInvitationAnswer, response);
-
-            var receiver = _server.CharacterManager.FindPlayerById(response.ReceivePlayerId);
-            if (receiver != null)
-            {
-                var server2 = _server.GetChannelServer(receiver.Channel);
-                if (server1 != server2)
-                    server2.BroadcastMessage(BroadcastType.OnInvitationAnswer, response);
-            }
+            SendMessage(BroadcastType.OnInvitationAnswer, response, response.SenderPlayerId, response.ReceivePlayerId);
         }
 
         internal void BroadcastShutdown()
@@ -454,6 +442,30 @@ namespace Application.Core.Login
             foreach (var server in _server.ChannelServerList.Values)
             {
                 server.BroadcastMessage(BroadcastType.OnShutdown, new Google.Protobuf.WellKnownTypes.Empty());
+            }
+        }
+
+        internal void SendNewYearCardReceived(ReceiveNewYearCardResponse response)
+        {
+            int[] to = response.Model == null ? [response.Request.MasterId] : [response.Request.MasterId, response.Model.SenderId];
+            SendMessage(BroadcastType.OnNewYearCardReceived, response, to);
+        }
+
+        internal void SendNewYearCards(SendNewYearCardResponse response)
+        {
+            SendMessage(BroadcastType.OnNewYearCardSend, response, response.Request.FromId);
+        }
+
+        internal void SendNewYearCardNotify(NewYearCardNotifyDto response)
+        {
+            SendMessage(BroadcastType.OnNewYearCardNotify, response, response.List.Select(x => x.MasterId).ToArray());
+        }
+
+        internal void SendNewYearCardDiscard(DiscardNewYearCardResponse response)
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastMessage(BroadcastType.OnNewYearCardDiscard, response);
             }
         }
     }

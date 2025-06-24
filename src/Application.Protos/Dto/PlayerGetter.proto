@@ -19,6 +19,7 @@ import "Dto/KeyMap.proto";
 import "Dto/SavedLocation.proto";
 import "Dto/Buddy.proto";
 import "Dto/AccountGame.proto";
+import "Dto/NewYearCard.proto";
 
 package Dto;
 
@@ -57,4 +58,5 @@ message PlayerGetterDto {
   CharacterLinkDto link = 18;
   RecentFameRecordDto fameRecord = 19;
   repeated int32 wishItems = 20;
+  repeated NewYearCardDto newYearCards = 21;
 }

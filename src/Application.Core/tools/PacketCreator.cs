@@ -37,11 +37,11 @@ using Application.Core.Managers;
 using Application.Core.model;
 using Application.Shared.Battle;
 using Application.Shared.Items;
+using Application.Shared.NewYear;
 using Application.Shared.Team;
 using client;
 using client.inventory;
 using client.keybind;
-using client.newyear;
 using client.status;
 using constants.game;
 using net.server;
@@ -195,10 +195,10 @@ public class PacketCreator
 
     private static void addNewYearInfo(OutPacket p, IPlayer chr)
     {
-        HashSet<NewYearCardRecord> received = chr.getReceivedNewYearRecords();
+        HashSet<NewYearCardModel> received = chr.getReceivedNewYearRecords();
 
         p.writeShort(received.Count);
-        foreach (NewYearCardRecord nyc in received)
+        foreach (var nyc in received)
         {
             encodeNewYearCard(nyc, p);
         }
@@ -1942,15 +1942,15 @@ public class PacketCreator
 
     private static void encodeNewYearCardInfo(OutPacket p, IPlayer chr)
     {
-        HashSet<NewYearCardRecord> newyears = chr.getReceivedNewYearRecords();
+        HashSet<NewYearCardModel> newyears = chr.getReceivedNewYearRecords();
         if (newyears.Count > 0)
         {
             p.writeByte(1);
 
             p.writeInt(newyears.Count);
-            foreach (NewYearCardRecord nyc in newyears)
+            foreach (NewYearCardModel nyc in newyears)
             {
-                p.writeInt(nyc.getId());
+                p.writeInt(nyc.Id);
             }
         }
         else
@@ -1959,13 +1959,8 @@ public class PacketCreator
         }
     }
 
-    public static Packet onNewYearCardRes(IPlayer user, int cardId, int mode, int msg)
-    {
-        var newyear = user.getNewYearRecord(cardId);
-        return onNewYearCardRes(user, newyear, mode, msg);
-    }
 
-    public static Packet onNewYearCardRes(IPlayer user, NewYearCardRecord? newyear, int mode, int msg)
+    public static Packet onNewYearCardRes(IPlayer user, NewYearCardModel? newyear, int mode, int msg)
     {
         OutPacket p = OutPacket.create(SendOpcode.NEW_YEAR_CARD_RES);
         p.writeByte(mode);
@@ -1977,7 +1972,7 @@ public class PacketCreator
                 break;
 
             case 8: // Successfully deleted a New Year Card.
-                p.writeInt(newyear!.getId());
+                p.writeInt(newyear!.Id);
                 break;
 
             case 5: // Nexon's stupid and makes 4 modes do the same operation..
@@ -2003,43 +1998,43 @@ public class PacketCreator
                     //lol nexon are you kidding
                     for (int i = 0; i < nSN; i++)
                     {
-                        p.writeInt(newyear!.getId());
-                        p.writeInt(newyear.getSenderId());
-                        p.writeString(newyear.getSenderName());
+                        p.writeInt(newyear!.Id);
+                        p.writeInt(newyear.SenderId);
+                        p.writeString(newyear.SenderName);
                     }
                 }
                 break;
 
             case 0xC:   // NotiArrived
-                p.writeInt(newyear!.getId());
-                p.writeString(newyear.getSenderName());
+                p.writeInt(newyear!.Id);
+                p.writeString(newyear.SenderName);
                 break;
 
             case 0xD:   // BroadCast_AddCardInfo
-                p.writeInt(newyear!.getId());
-                p.writeInt(user.getId());
+                p.writeInt(newyear!.Id);
+                p.writeInt(user.Id);
                 break;
 
             case 0xE:   // BroadCast_RemoveCardInfo
-                p.writeInt(newyear!.getId());
+                p.writeInt(newyear!.Id);
                 break;
         }
         return p;
     }
 
-    private static void encodeNewYearCard(NewYearCardRecord newyear, OutPacket p)
+    private static void encodeNewYearCard(NewYearCardModel newyear, OutPacket p)
     {
-        p.writeInt(newyear.getId());
-        p.writeInt(newyear.getSenderId());
-        p.writeString(newyear.getSenderName());
-        p.writeBool(newyear.isSenderCardDiscarded());
-        p.writeLong(newyear.getDateSent());
-        p.writeInt(newyear.getReceiverId());
-        p.writeString(newyear.getReceiverName());
-        p.writeBool(newyear.isReceiverCardDiscarded());
-        p.writeBool(newyear.isReceiverCardReceived());
-        p.writeLong(newyear.getDateReceived());
-        p.writeString(newyear.getMessage());
+        p.writeInt(newyear.Id);
+        p.writeInt(newyear.SenderId);
+        p.writeString(newyear.SenderName);
+        p.writeBool(newyear.SenderDiscard);
+        p.writeLong(newyear.TimeSent);
+        p.writeInt(newyear.ReceiverId);
+        p.writeString(newyear.ReceiverName);
+        p.writeBool(newyear.ReceiverDiscard);
+        p.writeBool(newyear.Received);
+        p.writeLong(newyear.TimeReceived);
+        p.writeString(newyear.Message);
     }
 
     private static void addRingLook(OutPacket p, IPlayer chr, bool crush)

@@ -71,6 +71,7 @@ namespace Application.Core.Channel
             services.AddSingleton<GuildManager>();
             services.AddSingleton<ChatRoomService>();
             services.AddSingleton<ExpeditionService>();
+            services.AddSingleton<NewYearCardService>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();

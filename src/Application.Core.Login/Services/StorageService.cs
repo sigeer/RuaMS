@@ -16,13 +16,13 @@ namespace Application.Core.Login.Services
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         protected readonly ILogger<StorageService> _logger;
-        readonly IEnumerable<MasterModule> _plugins;
-        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, IEnumerable<MasterModule> plugins)
+        readonly IEnumerable<MasterModule> _modules;
+        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, IEnumerable<MasterModule> modules)
         {
             _dataStorage = chrStorage;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
-            _plugins = plugins;
+            _modules = modules;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<StorageType>();
             // 定时触发、特殊事件触发、关闭服务器触发
             Task.Run(async () =>
@@ -114,7 +114,7 @@ namespace Application.Core.Login.Services
 
                 await _dataStorage.CommitDueyPackageAsync(dbContext);
 
-                foreach (var plugin in _plugins)
+                foreach (var plugin in _modules)
                 {
                     await plugin.SaveChangesAsync(dbContext);
                 }

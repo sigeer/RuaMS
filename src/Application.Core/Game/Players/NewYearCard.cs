@@ -1,33 +1,30 @@
-﻿using client.newyear;
+using Application.Shared.NewYear;
+using System.Collections.Concurrent;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private HashSet<NewYearCardRecord> newyears = new();
-        public HashSet<NewYearCardRecord> getNewYearRecords()
+        private ConcurrentDictionary<int, NewYearCardModel> newyears = new();
+
+        public HashSet<NewYearCardModel> getReceivedNewYearRecords()
         {
-            return newyears;
+            return newyears.Values.Where(x => x.Received).ToHashSet();
         }
 
-        public HashSet<NewYearCardRecord> getReceivedNewYearRecords()
+        public void addNewYearRecord(NewYearCardModel newyear)
         {
-            return newyears.Where(x => x.isReceiverCardReceived()).ToHashSet();
+            newyears[newyear.Id] = newyear;
         }
 
-        public NewYearCardRecord? getNewYearRecord(int cardid)
+        public void RemoveNewYearRecord(int id)
         {
-            return newyears.FirstOrDefault(x => x.getId() == cardid);
+            newyears.TryRemove(id, out _);
         }
 
-        public void addNewYearRecord(NewYearCardRecord newyear)
+        public void DiscardNewYearRecord(bool isSender)
         {
-            newyears.Add(newyear);
-        }
-
-        public void removeNewYearRecord(NewYearCardRecord newyear)
-        {
-            newyears.Remove(newyear);
+            Client.CurrentServerContainer.NewYearCardService.DiscardNewYearCard(this, isSender);
         }
     }
 }

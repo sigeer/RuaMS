@@ -16,8 +16,7 @@
       "launchUrl": "Scalar/v1",
       "applicationUrl": "http://localhost:5320",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ms-wz": "D:\\walker\\demo\\MS\\Cosmic\\wz"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "IIS Express": {

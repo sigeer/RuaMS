@@ -43,5 +43,10 @@ namespace Application.Shared.Message
         public const string OnPlayerLevelChanged = "OnPlayerLevelChanged";
         public const string OnPlayerJobChanged = "OnPlayerJobChanged";
         public const string OnPlayerLoginOff = "OnPlayerLoginOff";
+
+        public const string OnNewYearCardSend = "OnNewYearCardSend";
+        public const string OnNewYearCardReceived = "OnNewYearCardReceived";
+        public const string OnNewYearCardNotify = "OnNewYearCardNotify";
+        public const string OnNewYearCardDiscard = "OnNewYearCardDiscard";
     }
 }

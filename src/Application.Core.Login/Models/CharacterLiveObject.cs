@@ -1,3 +1,5 @@
+using Application.Shared.NewYear;
+
 namespace Application.Core.Login.Models
 {
     public class CharacterViewObject
@@ -29,6 +31,7 @@ namespace Application.Core.Login.Models
         public KeyMapModel[] KeyMaps { get; set; }
         public SavedLocationModel[] SavedLocations { get; set; }
         public BuddyModel[] BuddyList { get; set; }
+        public NewYearCardModel[] NewYearCards { get; set; }
 
     }
 

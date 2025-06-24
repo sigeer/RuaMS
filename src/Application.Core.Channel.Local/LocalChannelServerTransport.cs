@@ -302,7 +302,7 @@ namespace Application.Core.Channel.Local
             return hmsAvailable;
         }
 
-        public PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem)
+        public Dto.PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem)
         {
             IPlayerShop? ps = null;
             foreach (var ch in Server.getInstance().getWorld(0).getChannels())
@@ -325,7 +325,7 @@ namespace Application.Core.Channel.Local
             if (ps == null || ps.getMap().getId() != mapId || !ps.hasItem(searchItem))
                 return null;
 
-            return new PlayerShopDto
+            return new Dto.PlayerShopDto
             {
                 MapName = ps.getMap().getMapName(),
                 Channel = ps.Channel,
@@ -851,6 +851,22 @@ namespace Application.Core.Channel.Local
         public Dto.ExpeditionCheckResponse CanStartExpedition(Dto.ExpeditionCheckRequest expeditionCheckRequest)
         {
             return _expeditionService.CanStartExpedition(expeditionCheckRequest);
+        }
+
+
+        public void ReceiveNewYearCard(Dto.ReceiveNewYearCardRequest request)
+        {
+            _server.NewYearCardManager.ReceiveNewYearCard(request);
+        }
+
+        public void SendNewYearCard(Dto.SendNewYearCardRequest request)
+        {
+            _server.NewYearCardManager.SendNewYearCard(request);
+        }
+
+        public void SendDiscardNewYearCard(Dto.DiscardNewYearCardRequest request)
+        {
+            _server.NewYearCardManager.DiscardNewYearCard(request);
         }
     }
 }

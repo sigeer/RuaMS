@@ -27,12 +27,8 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.Core.model;
-using client;
-using client.newyear;
 using Microsoft.EntityFrameworkCore;
-using net.server.task;
 using server;
-using server.expeditions;
 using server.quest;
 using System.Diagnostics;
 using static server.CashShop;
@@ -56,8 +52,6 @@ public class Server
     /// </summary>
     private Dictionary<int, HashSet<AccountInfo>> AccountCharacterCache = new();
 
-    private Dictionary<int, NewYearCardRecord> newyears = new();
-
 
     private volatile bool availableDeveloperRoom = false;
     public bool IsOnline { get; set; }
@@ -65,23 +59,6 @@ public class Server
     ReaderWriterLockSlim lgnLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
     private Server()
     {
-    }
-
-    public void setNewYearCard(NewYearCardRecord nyc)
-    {
-        newyears.AddOrUpdate(nyc.getId(), nyc);
-    }
-
-    public NewYearCardRecord? getNewYearCard(int cardid)
-    {
-        return newyears.GetValueOrDefault(cardid);
-    }
-
-    public NewYearCardRecord? removeNewYearCard(int cardid)
-    {
-        if (newyears.Remove(cardid, out var d))
-            return d;
-        return null;
     }
 
     public void setAvailableDeveloperRoom()
@@ -250,7 +227,6 @@ public class Server
             using var dbContext = new DBContext();
             LoadAccountCharacterCache(dbContext);
 
-            NewYearCardRecord.startPendingNewYearCardRequests(dbContext);
             // CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
             PlayerNPC.loadRunningRankData(dbContext);
