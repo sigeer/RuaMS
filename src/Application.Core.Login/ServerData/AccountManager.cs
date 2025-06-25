@@ -8,6 +8,7 @@ using Application.Utility;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
+using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -188,5 +189,19 @@ namespace Application.Core.Login.Datas
             _dataStorage.SetAccount(obj);
         }
 
+        public void SetFly(SetFlyRequest request)
+        {
+            var chr = _server.CharacterManager.FindPlayerById(request.CId);
+            if (chr != null)
+            {
+                if (_accDataSource.TryGetValue(chr.Character.AccountId, out var data))
+                {
+                    data.CanFly = request.SetStatus;
+
+                    _server.Transport.SendSetFly(new Dto.SetFlyResponse { Code = 0, Request = request });
+                }
+            }
+
+        }
     }
 }

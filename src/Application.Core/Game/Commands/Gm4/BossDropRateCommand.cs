@@ -1,4 +1,3 @@
-using Application.Shared.Configs;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm4;
@@ -22,7 +21,7 @@ public class BossDropRateCommand : CommandBase
         if (int.TryParse(paramsValue[0], out var d))
         {
             int bossdroprate = Math.Max(d, 1);
-            c.getChannelServer().Container.Transport.SendWorldConfig(new WorldConfigPatch() { BossDropRate = bossdroprate });
+            c.CurrentServerContainer.Transport.SendWorldConfig(new Config.WorldConfig() { BossDropRate = bossdroprate });
             c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Boss Drop Rate has been changed to " + bossdroprate + "x."));
         }
 

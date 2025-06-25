@@ -15,9 +15,9 @@ public class ServerlistRequestHandler : LoginHandlerBase
 
     public override void HandlePacket(InPacket p, ILoginClient c)
     {
-        c.sendPacket(PacketCreator.getServerList(_server.Id, _server.Name, _server.Flag, _server.EventMessage, Server.getInstance().getWorld(0).Channels));
-        c.sendPacket(PacketCreator.getEndOfServerList());
-        c.sendPacket(PacketCreator.selectWorld(0));
+        c.sendPacket(LoginPacketCreator.GetServerList(_server));
+        c.sendPacket(LoginPacketCreator.GetEndOfServerList());
+        c.sendPacket(LoginPacketCreator.SelectWorld(0));
         c.sendPacket(LoginPacketCreator.SendRecommended(_server));
     }
 }

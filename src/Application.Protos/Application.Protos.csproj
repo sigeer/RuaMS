@@ -12,11 +12,15 @@
 
 	<ItemGroup>
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Events\PlayerLevelJobChange.proto" GrpcServices="None" />
+		<Protobuf Include="Events\TextMessage.proto" GrpcServices="None" />
+		<Protobuf Include="Events\ReloadEventsRequest.proto" GrpcServices="None" />
+		<Protobuf Include="Events\FlySetting.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\MultiChatMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\DropMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\NewYearCard.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PlayerView.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\PlayerInfo.proto">
+		<Protobuf Include="Events\PlayerOnlineChange.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Dto\PlayerGetter.proto" GrpcServices="None" />

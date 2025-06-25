@@ -6,10 +6,8 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Servers.Services;
-using Application.Shared.Configs;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
-using net.server.coordinator.world;
 using net.server.services.task.channel;
 using scripting.Event;
 using scripting.map;
@@ -190,7 +188,7 @@ public partial class WorldChannel : ISocketServer
         return (int)Math.Ceiling(travelTime / WorldTravelRate);
     }
 
-    public void UpdateWorldConfig(WorldConfigPatch updatePatch)
+    public void UpdateWorldConfig(Config.WorldConfig updatePatch)
     {
         if (updatePatch.MobRate.HasValue)
         {

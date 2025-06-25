@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Application.Core.Channel.Local\Application.Core.Channel.Local.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
     <ProjectReference Include="..\modules\Application.Module.ExpeditionBossLog.Master\Application.Module.ExpeditionBossLog.Master.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Fishing.Channel\Application.Module.Fishing.Channel.csproj" />
   </ItemGroup>
 
 	<ItemGroup>

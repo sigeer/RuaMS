@@ -5,6 +5,7 @@ namespace Application.Shared.Servers
     {
         public int Port { get; set; }
         public string Host { get; set; } = "127.0.0.1";
+        public int MaxSize { get; set; } = 100;
     }
 
     public class ChannelServerConfig

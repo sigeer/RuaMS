@@ -63,7 +63,7 @@ namespace Application.Core.Login.Services
                 .Select(x => new Dto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
             data.AccountGame = _mapper.Map<Dto.AccountGameDto>(_masterServer.AccountManager.GetAccountGameData(data.Character.AccountId));
-            data.Account = _mapper.Map<Dto.AccountCtrlDto>(_masterServer.AccountManager.GetAccount(data.Character.AccountId));
+            data.Account = _mapper.Map<Dto.AccountCtrlDto>(accountData);
             return data;
         }
 

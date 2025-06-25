@@ -2991,14 +2991,6 @@ public partial class Player
         return GuildId > 0 && GuildRank < 3;
     }
 
-    public bool attemptCatchFish(int baitLevel)
-    {
-        return YamlConfig.config.server.USE_FISHING_SYSTEM && MapId.isFishingArea(getMapId()) &&
-                this.getPosition().Y > 0 &&
-                ItemConstants.isFishingChair(chair.get()) &&
-                this.getWorldServer().FishingInstance.RegisterFisherPlayer(this, baitLevel);
-    }
-
     public void leaveMap()
     {
         releaseControlledMonsters();
@@ -3245,9 +3237,6 @@ public partial class Player
                                 PlayerNPC.spawnPlayerNPC(GameConstants.getHallOfFameMapid(JobModel), this);
                             });
                         }
-
-                        string names = (getMedalText() + Name);
-                        getChannelServer().Container.Transport.BroadcastMessage(PacketCreator.serverNotice(6, string.Format(GameConstants.LEVEL_200, names, maxClassLevel, names)));
                     }
                 }
 

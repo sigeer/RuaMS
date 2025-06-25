@@ -286,7 +286,8 @@ public class UseCashItemHandler : ChannelHandlerBase
                         return;
                     }
                     break;
-                case 2: // Super megaphone
+                case 2: 
+                    // Super megaphone
                     c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV

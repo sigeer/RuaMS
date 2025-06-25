@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package Dto;
+
+message SetFlyRequest {
+  int32 cId = 1;
+  bool setStatus = 2;
+}
+
+message SetFlyResponse {
+	int32 code = 1;
+	SetFlyRequest request = 2;
+}

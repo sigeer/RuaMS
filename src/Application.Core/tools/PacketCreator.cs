@@ -694,16 +694,7 @@ public class PacketCreator
         return p;
     }
 
-    /// <summary>
-    /// Gets a packet saying that the server list is over.
-    /// </summary>
-    /// <returns>The end of server list packet.</returns>
-    public static Packet getEndOfServerList()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SERVERLIST);
-        p.writeByte(0xFF);
-        return p;
-    }
+
 
 
 
@@ -2702,12 +2693,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet selectWorld(int world)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.LAST_CONNECTED_WORLD);
-        p.writeInt(world);//According to GMS, it should be the world that contains the most characters (most active)
-        return p;
-    }
+
 
     /**
      * @param chr

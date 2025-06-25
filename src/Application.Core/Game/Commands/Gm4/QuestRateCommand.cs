@@ -21,7 +21,7 @@ public class QuestRateCommand : CommandBase
             return;
 
         int questrate = Math.Max(d, 1);
-        c.getChannelServer().Container.Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { QuestRate = questrate });
+        c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { QuestRate = questrate });
         c.getWorldServer().broadcastPacket(PacketCreator.serverNotice(6, "[Rate] Quest Rate has been changed to " + questrate + "x."));
 
     }

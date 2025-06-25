@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package Dto;
+
+message PlayerLevelJobChange {
+  int32 id = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 jobId = 4;
+  int32 guildId = 5;
+  int32 teamId = 6;
+  int32 familyId = 7;
+  string nameWithMedal = 8;
+}

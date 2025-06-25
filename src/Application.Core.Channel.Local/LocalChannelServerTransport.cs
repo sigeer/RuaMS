@@ -4,13 +4,14 @@ using Application.Core.Game.Trades;
 using Application.Core.Login;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
-using Application.Shared.Configs;
 using Application.Shared.Login;
 using Application.Shared.MapObjects;
+using Application.Shared.Message;
 using Application.Shared.Models;
 using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
+using Dto;
 using net.server;
 using server.expeditions;
 using System.Net;
@@ -179,7 +180,7 @@ namespace Application.Core.Channel.Local
             return _server.WeddingInstance.GetWeddingCoupleForGuest(guestId, cathedral);
         }
 
-        public void SendWorldConfig(WorldConfigPatch updatePatch)
+        public void SendWorldConfig(Config.WorldConfig updatePatch)
         {
             _server.UpdateWorldConfig(updatePatch);
         }
@@ -867,6 +868,21 @@ namespace Application.Core.Channel.Local
         public void SendDiscardNewYearCard(Dto.DiscardNewYearCardRequest request)
         {
             _server.NewYearCardManager.DiscardNewYearCard(request);
+        }
+
+        public void SendSetFly(SetFlyRequest setFlyRequest)
+        {
+            _server.AccountManager.SetFly(setFlyRequest);
+        }
+
+        public void SendReloadEvents(ReloadEventsRequest reloadEventsRequest)
+        {
+            _server.Transport.BroadcastMessage(BroadcastType.OnEventsReloaded, new ReloadEventsResponse { Code = 0, Request = reloadEventsRequest });
+        }
+
+        public void BroadcastMessage(SendTextMessage data)
+        {
+            _server.Transport.BroadcastMessage(BroadcastType.OnMessage, data);
         }
     }
 }

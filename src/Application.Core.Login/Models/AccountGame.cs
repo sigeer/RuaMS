@@ -18,5 +18,6 @@ namespace Application.Core.Login.Models
         public ItemModel[] CashAranItems { get; set; } = [];
         public ItemModel[] CashOverallItems { get; set; } = [];
 
+        public bool CanFly { get; set; }
     }
 }

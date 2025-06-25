@@ -28,7 +28,6 @@ public class OnlineTwoCommand : CommandBase
                 player.dropMessage(6, s.Substring(0, s.Length - 2));
             }
         }
-
         //player.dropMessage(6, "There are a total of " + total + " players online.");
         player.showHint("Players online: #e#r" + total + "#k#n.", 300);
     }

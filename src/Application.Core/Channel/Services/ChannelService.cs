@@ -166,15 +166,6 @@ namespace Application.Core.Servers.Services
             return _mapper.Map<DueyPackageObject?>(_tranport.GetDueyPackageByPackageId(id));
         }
 
-        public void SendNoteMessage(int id, Dto.NoteDto[] notes)
-        {
-            var chr = _server.getPlayerStorage().getCharacterById(id);
-            if (chr != null)
-            {
-                chr.sendPacket(new ShowNotesPacket(_mapper.Map<List<NoteObject>>(notes)));
-            }
-        }
-
         internal int[] GetCardTierSize()
         {
             return _tranport.GetCardTierSize();
@@ -199,32 +190,5 @@ namespace Application.Core.Servers.Services
         {
             _tranport.SendTeamChat(name, chattext);
         }
-
-        public void SendMultiChat(int type, string nameFrom, int[] value, string chatText)
-        {
-            foreach (var item in value)
-            {
-                var chr = _server.Players.getCharacterById(item);
-                if (chr != null)
-                {
-                    chr.sendPacket(PacketCreator.multiChat(nameFrom, chatText, type));
-                }
-            }
-            
-        }
-
-
-        public void ProcessBroadcastJobChanged(int type, int[] players, string name, int jobId)
-        {
-            foreach (var cid in players)
-            {
-                var chr = _server.Players.getCharacterById(cid);
-                if (chr != null)
-                {
-                    chr.sendPacket(PacketCreator.jobMessage(type, jobId, name));
-                }
-            }
-        }
-
     }
 }

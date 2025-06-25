@@ -215,7 +215,8 @@ public class NPCScriptManager : AbstractScriptManager
         c.NPCConversationManager = null;
         _scripts.Remove(c);
 
-        resetContext(cm.ScriptMeta.ScriptFile, c);
+        if (cm.ScriptMeta != null)
+            resetContext(cm.ScriptMeta.ScriptFile, c);
 
         c.OnlinedCharacter.flushDelayedUpdateQuests();
     }

@@ -1,19 +1,14 @@
 using Application.Core.Channel;
 using Application.Core.EF.Entities.SystemBase;
-using Application.Core.Game.Invites;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
-using Application.Core.Managers;
-using Application.Shared.Invitations;
-using client;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
 using net.server.task;
-using server;
 using tools;
 using static Application.Core.Game.Relation.BuddyList;
 
@@ -28,18 +23,13 @@ public class World
     public List<WorldChannel> Channels { get; }
     WorldPlayerStorage? _players;
     public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
-    public Dictionary<int, Team> TeamStorage { get; }
 
     private Dictionary<int, byte> pnpcStep = new();
     private Dictionary<int, short> pnpcPodium = new();
 
-    public FishingWorldInstance FishingInstance { get; }
-
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
 
     private ScheduledFuture? marriagesSchedule;
-    private ScheduledFuture? fishingSchedule;
-    private ScheduledFuture? partySearchSchedule;
     private ScheduledFuture? timeoutSchedule;
 
     public World(WorldConfigEntity config)
@@ -53,12 +43,9 @@ public class World
         marriagesSchedule = Server.getInstance().GlobalTimerManager.register(new WeddingReservationTask(this),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
-        fishingSchedule = Server.getInstance().GlobalTimerManager.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #if !DEBUG
         timeoutSchedule = Server.getInstance().GlobalTimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
-        FishingInstance = new FishingWorldInstance(this);
-
 
     }
 
@@ -447,18 +434,6 @@ public class World
         {
             await marriagesSchedule.CancelAsync(false);
             marriagesSchedule = null;
-        }
-
-        if (fishingSchedule != null)
-        {
-            await fishingSchedule.CancelAsync(false);
-            fishingSchedule = null;
-        }
-
-        if (partySearchSchedule != null)
-        {
-            await partySearchSchedule.CancelAsync(false);
-            partySearchSchedule = null;
         }
 
         if (timeoutSchedule != null)

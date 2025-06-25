@@ -122,5 +122,9 @@ namespace Application.Core.Game.Players
             forfeitExpirableQuests();
             cancelQuestExpirationTask();
         }
+        public void SetFly(bool v)
+        {
+            Client.CurrentServerContainer.SetFly(Id, v);
+        }
     }
 }

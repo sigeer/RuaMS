@@ -55,7 +55,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int cid = p.readInt(); // TODO: investigate if this is the "client id" supplied in PacketCreator#getServerIP()
-        Server server = Server.getInstance();
 
         if (!c.tryacquireClient())
         {
