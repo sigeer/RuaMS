@@ -10,7 +10,6 @@ using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
 using Application.Module.ExpeditionBossLog.Master;
-using Application.Module.Fishing.Channel;
 using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

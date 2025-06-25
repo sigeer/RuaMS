@@ -97,10 +97,12 @@ namespace Application.Core.Login.Mappers
             CreateMap<Shopitem, Dto.ShopItemDto>();
 
             CreateMap<Ring_Entity, RingModel>();
+
             CreateMap<GiftRingPair, Dto.GiftDto>()
                 .ForMember(x => x.Ring, src => src.MapFrom(x => x.Ring))
                 .IncludeMembers(x => x.Gift);
             CreateMap<GiftEntity, Dto.GiftDto>();
+            CreateMap<Ring_Entity, Dto.RingDto>();
             CreateMap<SpecialCashItemEntity, Dto.SpecialCashItemDto>();
 
             CreateMap<GuildEntity, GuildModel>();
