@@ -10,7 +10,6 @@ using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
 using Application.Module.ExpeditionBossLog.Master;
-using Application.Module.Fishing.Channel;
 using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -64,7 +63,6 @@ try
 
     builder.AddGameServerLocal();
     builder.Services.AddExpeditionBossLogMaster();
-    builder.Services.AddFishingChannel();
 
     if (YamlConfig.config.server.ENABLE_OPENAPI)
     {
