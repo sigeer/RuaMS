@@ -64,7 +64,6 @@ try
 
     builder.AddGameServerLocal();
     builder.Services.AddExpeditionBossLogMaster();
-    builder.Services.AddFishingChannel();
 
     if (YamlConfig.config.server.ENABLE_OPENAPI)
     {
