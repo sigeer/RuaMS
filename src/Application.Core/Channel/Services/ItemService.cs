@@ -80,13 +80,14 @@ namespace Application.Core.Servers.Services
                 try
                 {
                     item = inv.getItem(itemPos);
-                    if (item != null && item.getQuantity() >= amount)
+                    if (item != null && item.getQuantity() >= amount && !item.IsFrozen)
                     {
                         if (item.isUntradeable() || ii.isUnmerchable(item.getItemId()))
                         {
                             return (-1, null);
                         }
 
+                        item.IsFrozen = true;
                         if (ItemConstants.isRechargeable(item.getItemId()))
                         {
                             InventoryManipulator.removeFromSlot(c, invType, itemPos, item.getQuantity(), true);
@@ -194,15 +195,19 @@ namespace Application.Core.Servers.Services
                     var (res, item) = RemoveFromInventoryForDuey(c, invTypeId, itemPos, amount);
                     if (res == 0)
                     {
+                        c.OnlinedCharacter.gainMeso((int)-finalcost);
                         if (c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Name, sendMesos, item, sendMessage, checkResult.ReceiverId, quick))
                         {
-                            c.OnlinedCharacter.gainMeso((int)-finalcost, false);
                             if (quick)
                             {
                                 InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.QUICK_DELIVERY_TICKET, 1, false, false);
                             }
 
                             c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
+                        }
+                        else
+                        {
+                            c.OnlinedCharacter.gainMeso((int)finalcost);
                         }
 
                     }
@@ -215,7 +220,7 @@ namespace Application.Core.Servers.Services
                         c.sendPacket(PacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                     }
 
-                    c.CurrentServer.ItemService.SendDueyNotification(recipient);
+                    SendDueyNotification(recipient);
                 }
                 finally
                 {

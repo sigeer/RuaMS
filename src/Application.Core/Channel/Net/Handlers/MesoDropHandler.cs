@@ -21,7 +21,7 @@
 */
 
 
-using Application.Utility.Configs;
+using Application.Core.Channel.Services;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -32,6 +32,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class MesoDropHandler : ChannelHandlerBase
 {
+    readonly IFishingService _fishingService;
+
+    public MesoDropHandler(IFishingService fishingService)
+    {
+        _fishingService = fishingService;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
@@ -74,7 +81,8 @@ public class MesoDropHandler : ChannelHandlerBase
             return;
         }
 
-        if (player.attemptCatchFish(meso))
+
+        if (_fishingService.AttemptCatchFish(player, meso))
         {
             player.getMap().disappearingMesoDrop(meso, player, player, player.getPosition());
         }

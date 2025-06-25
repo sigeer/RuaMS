@@ -2991,14 +2991,6 @@ public partial class Player
         return GuildId > 0 && GuildRank < 3;
     }
 
-    public bool attemptCatchFish(int baitLevel)
-    {
-        return YamlConfig.config.server.USE_FISHING_SYSTEM && MapId.isFishingArea(getMapId()) &&
-                this.getPosition().Y > 0 &&
-                ItemConstants.isFishingChair(chair.get()) &&
-                this.getWorldServer().FishingInstance.RegisterFisherPlayer(this, baitLevel);
-    }
-
     public void leaveMap()
     {
         releaseControlledMonsters();

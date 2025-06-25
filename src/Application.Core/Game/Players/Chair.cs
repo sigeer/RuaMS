@@ -1,6 +1,8 @@
+using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using client;
+using Microsoft.Extensions.DependencyInjection;
 using server;
 using tools;
 
@@ -19,7 +21,7 @@ namespace Application.Core.Game.Players
             {
                 if (ItemConstants.isFishingChair(chairid))
                 {
-                    this.getWorldServer().FishingInstance.UnregisterFisherPlayer(this);
+                    Client.CurrentServerContainer.ServiceProvider.GetRequiredService<IFishingService>().StopFishing(this);
                 }
 
                 setChair(-1);

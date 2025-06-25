@@ -7,6 +7,7 @@ using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.handlers;
 using server;
 
@@ -73,6 +74,7 @@ namespace Application.Core.Channel
             services.AddSingleton<ExpeditionService>();
             services.AddSingleton<NewYearCardService>();
             services.AddSingleton<NoteService>();
+            services.TryAddSingleton<IFishingService, DefaultFishingService>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();

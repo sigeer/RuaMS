@@ -27,13 +27,9 @@ public class World
     private Dictionary<int, byte> pnpcStep = new();
     private Dictionary<int, short> pnpcPodium = new();
 
-    public FishingWorldInstance FishingInstance { get; }
-
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
 
     private ScheduledFuture? marriagesSchedule;
-    private ScheduledFuture? fishingSchedule;
-    private ScheduledFuture? partySearchSchedule;
     private ScheduledFuture? timeoutSchedule;
 
     public World(WorldConfigEntity config)
@@ -47,12 +43,9 @@ public class World
         marriagesSchedule = Server.getInstance().GlobalTimerManager.register(new WeddingReservationTask(this),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
             TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
-        fishingSchedule = Server.getInstance().GlobalTimerManager.register(new FishingTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #if !DEBUG
         timeoutSchedule = Server.getInstance().GlobalTimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
-        FishingInstance = new FishingWorldInstance(this);
-
 
     }
 
@@ -441,18 +434,6 @@ public class World
         {
             await marriagesSchedule.CancelAsync(false);
             marriagesSchedule = null;
-        }
-
-        if (fishingSchedule != null)
-        {
-            await fishingSchedule.CancelAsync(false);
-            fishingSchedule = null;
-        }
-
-        if (partySearchSchedule != null)
-        {
-            await partySearchSchedule.CancelAsync(false);
-            partySearchSchedule = null;
         }
 
         if (timeoutSchedule != null)

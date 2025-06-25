@@ -29,7 +29,7 @@ namespace Application.Core.Channel
 {
     public class WorldChannelServer : IServerBase<IChannelServerTransport>
     {
-        readonly IServiceProvider _sp;
+        public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, WorldChannel> Servers { get; set; }
         public bool IsRunning { get; private set; }
@@ -80,19 +80,20 @@ namespace Application.Core.Channel
 
         public ExpeditionService ExpeditionService { get; }
         public NoteService? NoteService { get; private set; } = null!;
+        public IFishingService FishingService { get; }
 
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, IOptions<ChannelServerConfig> serverConfigOptions, ILogger<WorldChannelServer> logger)
         {
-            _sp = sp;
+            ServiceProvider = sp;
             Transport = transport;
             _logger = logger;
 
             Servers = new();
             ServerConfig = serverConfigOptions.Value;
 
-            SkillbookInformationProvider = _sp.GetRequiredService<SkillbookInformationProvider>();
-            Modules = _sp.GetServices<ChannelModule>().ToList();
+            SkillbookInformationProvider = ServiceProvider.GetRequiredService<SkillbookInformationProvider>();
+            Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
@@ -102,9 +103,9 @@ namespace Application.Core.Channel
             MountTirednessManager = new MountTirednessManager(this);
             MapOwnershipManager = new MapOwnershipManager(this);
 
-            ExpeditionService = _sp.GetRequiredService<ExpeditionService>();
+            ExpeditionService = ServiceProvider.GetRequiredService<ExpeditionService>();
 
-            InviteChannelHandlerRegistry = _sp.GetRequiredService<InviteChannelHandlerRegistry>();
+            InviteChannelHandlerRegistry = ServiceProvider.GetRequiredService<InviteChannelHandlerRegistry>();
         }
 
         #region 时间
@@ -177,6 +178,11 @@ namespace Application.Core.Channel
 
                 InviteChannelHandlerRegistry.Dispose();
 
+                foreach (var module in Modules)
+                {
+                    await module.UninstallAsync();
+                }
+
                 foreach (var channel in Servers.Values)
                 {
                     await channel.Shutdown();
@@ -217,11 +223,11 @@ namespace Application.Core.Channel
                 _logger.LogInformation("[{ServerName}]加载WZ - 能手册加载完成, 耗时{Cost}", ServerName, sw.Elapsed.TotalSeconds);
             });
 
-            GuildManager = _sp.GetRequiredService<GuildManager>();
-            TeamManager = _sp.GetRequiredService<TeamManager>();
-            ChatRoomService = _sp.GetRequiredService<ChatRoomService>();
-            NewYearCardService = _sp.GetRequiredService<NewYearCardService>();
-            NoteService = _sp.GetRequiredService<NoteService>();
+            GuildManager = ServiceProvider.GetRequiredService<GuildManager>();
+            TeamManager = ServiceProvider.GetRequiredService<TeamManager>();
+            ChatRoomService = ServiceProvider.GetRequiredService<ChatRoomService>();
+            NewYearCardService = ServiceProvider.GetRequiredService<NewYearCardService>();
+            NoteService = ServiceProvider.GetRequiredService<NoteService>();
 
             TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
 
@@ -235,18 +241,19 @@ namespace Application.Core.Channel
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 
-            InviteChannelHandlerRegistry.Register(_sp.GetServices<InviteChannelHandler>());
+            InviteChannelHandlerRegistry.Register(ServiceProvider.GetServices<InviteChannelHandler>());
             InitializeMessage();
 
             foreach (var module in Modules)
             {
                 module.Initialize();
-            }
+                module.RegisterTask(TimerManager);
+            }            
 
             List<WorldChannel> localServers = [];
             foreach (var config in ServerConfig.ChannelConfig)
             {
-                var scope = _sp.CreateScope();
+                var scope = ServiceProvider.CreateScope();
                 var channel = new WorldChannel(this, scope, config);
                 await channel.StartServer();
                 if (channel.IsRunning)

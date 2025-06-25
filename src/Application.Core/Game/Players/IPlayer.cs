@@ -112,7 +112,6 @@ namespace Application.Core.Game.Players
         bool applyConsumeOnPickup(int itemId);
         bool applyHpMpChange(int hpCon, int hpchange, int mpchange);
         void applyPartyDoor(Door door, bool partyUpdate);
-        bool attemptCatchFish(int baitLevel);
         void autoban(string reason);
         void awardQuestPoint(int awardedPoints);
         void ban(string reason);
