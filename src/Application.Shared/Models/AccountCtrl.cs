@@ -35,5 +35,6 @@ namespace Application.Shared.Models
         public string Hwid { get; set; } = null!;
 
         public int Language { get; set; } = 2;
+        public bool CanFly { get; set; }
     }
 }

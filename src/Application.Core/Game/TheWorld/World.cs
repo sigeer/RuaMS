@@ -1,19 +1,14 @@
 using Application.Core.Channel;
 using Application.Core.EF.Entities.SystemBase;
-using Application.Core.Game.Invites;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.WorldEvents;
-using Application.Core.Managers;
-using Application.Shared.Invitations;
-using client;
 using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
 using net.server.task;
-using server;
 using tools;
 using static Application.Core.Game.Relation.BuddyList;
 
@@ -28,7 +23,6 @@ public class World
     public List<WorldChannel> Channels { get; }
     WorldPlayerStorage? _players;
     public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
-    public Dictionary<int, Team> TeamStorage { get; }
 
     private Dictionary<int, byte> pnpcStep = new();
     private Dictionary<int, short> pnpcPodium = new();

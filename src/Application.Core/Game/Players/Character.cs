@@ -3245,9 +3245,6 @@ public partial class Player
                                 PlayerNPC.spawnPlayerNPC(GameConstants.getHallOfFameMapid(JobModel), this);
                             });
                         }
-
-                        string names = (getMedalText() + Name);
-                        getChannelServer().Container.Transport.BroadcastMessage(PacketCreator.serverNotice(6, string.Format(GameConstants.LEVEL_200, names, maxClassLevel, names)));
                     }
                 }
 

@@ -1,13 +1,9 @@
 using Application.Core.Channel;
-using Application.Core.Game.Relation;
-using Application.Core.Channel;
-using Application.Shared.Configs;
 using Application.Shared.Login;
 using Application.Shared.Servers;
-using System.Net;
 using Application.Shared.Team;
-using Application.Shared.Guild;
 using Dto;
+using System.Net;
 
 namespace Application.Core.ServerTransports
 {
@@ -60,7 +56,7 @@ namespace Application.Core.ServerTransports
         /// 更新全局倍率设置
         /// </summary>
         /// <param name="updatePatch"></param>
-        void SendWorldConfig(WorldConfigPatch updatePatch);
+        void SendWorldConfig(Config.WorldConfig updatePatch);
 
         #region Team
         Dto.TeamDto CreateTeam(int playerId);
@@ -189,5 +185,8 @@ namespace Application.Core.ServerTransports
         void ReceiveNewYearCard(ReceiveNewYearCardRequest receiveNewYearCardRequest);
         void SendNewYearCard(SendNewYearCardRequest sendNewYearCardRequest);
         void SendDiscardNewYearCard(DiscardNewYearCardRequest discardNewYearCardRequest);
+        void SendSetFly(SetFlyRequest setFlyRequest);
+        void SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
+        void BroadcastMessage(SendTextMessage data);
     }
 }

@@ -363,6 +363,16 @@ public class InventoryManipulator
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="c"></param>
+    /// <param name="itemid"></param>
+    /// <param name="quantity"></param>
+    /// <param name="owner"></param>
+    /// <param name="usedSlots"></param>
+    /// <param name="useProofInv"></param>
+    /// <returns>低位（bit0）表示：是否有空间。高位（其他位）表示：使用了多少额外的格子。</returns>
     public static int checkSpaceProgressively(IChannelClient c, int itemid, int quantity, string owner, int usedSlots, bool useProofInv)
     {
         // return value --> bit0: if has space for this one;

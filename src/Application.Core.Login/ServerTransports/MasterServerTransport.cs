@@ -1,6 +1,4 @@
 using Application.Core.Login.Models;
-using Application.EF.Entities;
-using Application.Shared.Configs;
 using Application.Shared.Message;
 using Application.Shared.Servers;
 using Dto;
@@ -30,6 +28,30 @@ namespace Application.Core.Login
             foreach (var group in serverGroups)
             {
                 group.Key.BroadcastMessage(messageType, message);
+            }
+        }
+
+        /// <summary>
+        /// 只需要给部分玩家发送消息，仅需要找到这部分玩家的频道服务器
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="messageType"></param>
+        /// <param name="message"></param>
+        /// <param name="playerIdArray"></param>
+        void SendMessage<TMessage>(string messageType, TMessage message, params PlayerChannelPair[] playerIdArray) where TMessage : notnull
+        {
+            var serverGroups = _server.GroupPlayer(playerIdArray);
+            foreach (var group in serverGroups)
+            {
+                group.Key.BroadcastMessage(messageType, message);
+            }
+        }
+
+        public void BroadcastMessage<TMessage>(string messageType, TMessage message) where TMessage : notnull
+        {
+            foreach (var server in _server.ChannelServerList.Values)
+            {
+                server.BroadcastMessage(messageType, message);
             }
         }
 
@@ -101,16 +123,6 @@ namespace Application.Core.Login
             return selectedPw;
         }
 
-        public void SendChannelPlayerPacket(int channel, int playerId, Packet packet)
-        {
-            var world = Server.getInstance().getWorld(0);
-            var chr = world.Channels[channel - 1].getPlayerStorage().getCharacterById(playerId);
-            if (chr != null)
-            {
-                chr.Client.sendPacket(packet);
-            }
-        }
-
         public void SendDueyNotification(int channel, int id, string senderName, bool dueyType)
         {
             var world = Server.getInstance().getWorld(0);
@@ -123,25 +135,9 @@ namespace Application.Core.Login
 
         public void SendNotes(int channel, int id, Dto.NoteDto[] notes)
         {
-            var world = Server.getInstance().getWorld(0);
-            world.Channels[channel - 1].Service.SendNoteMessage(id, notes);
-        }
-
-        public void SendServerMessage(IEnumerable<int> playerIdList)
-        {
-            if (playerIdList.Count() > 0)
-            {
-                var world = Server.getInstance().getWorld(0);
-                foreach (int chrid in playerIdList)
-                {
-                    var chr = world.Players.getCharacterById(chrid);
-
-                    if (chr != null && chr.isLoggedinWorld())
-                    {
-                        chr.sendPacket(PacketCommon.serverMessage(_server.ServerMessage));
-                    }
-                }
-            }
+            var data = new SendNoteResponse() { ReceiverChannel = channel, ReceiverId = id };
+            data.List.AddRange(notes);
+            SendMessage(BroadcastType.OnNoteSend, data, new PlayerChannelPair(channel, id));
         }
 
 
@@ -167,12 +163,11 @@ namespace Application.Core.Login
             }
         }
 
-        public void SendWorldConfig(WorldConfigPatch patch)
+        public void SendWorldConfig(Config.WorldConfig patch)
         {
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in world.Channels)
+            foreach (var server in _server.ChannelServerList.Values)
             {
-                ch.UpdateWorldConfig(patch);
+                server.BroadcastMessage(BroadcastType.OnWorldConfigUpdate, patch);
             }
         }
 
@@ -199,7 +194,12 @@ namespace Application.Core.Login
             return false;
         }
 
-        public void FamilyReuinion(int chrId, int toChrId)
+        /// <summary>
+        ///  把<paramref name="chrId"/>传送到<paramref name="toChrId"/>
+        /// </summary>
+        /// <param name="chrId"></param>
+        /// <param name="toChrId"></param>
+        public void SummonPlayer(int chrId, int toChrId)
         {
 
         }
@@ -467,6 +467,11 @@ namespace Application.Core.Login
             {
                 server.BroadcastMessage(BroadcastType.OnNewYearCardDiscard, response);
             }
+        }
+
+        internal void SendSetFly(SetFlyResponse setFlyResponse)
+        {
+            SendMessage(BroadcastType.OnSetFly, setFlyResponse, setFlyResponse.Request.CId);
         }
     }
 }

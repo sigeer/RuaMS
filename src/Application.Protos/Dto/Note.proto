@@ -13,3 +13,9 @@ message NoteDto {
   int32 fame = 6;
   int32 deleted = 7;
 }
+
+message SendNoteResponse {
+	int32 receiverId = 1;
+	int32 receiverChannel = 2;
+	repeated NoteDto list = 3;
+}

@@ -72,6 +72,7 @@ namespace Application.Core.Channel
             services.AddSingleton<ChatRoomService>();
             services.AddSingleton<ExpeditionService>();
             services.AddSingleton<NewYearCardService>();
+            services.AddSingleton<NoteService>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();

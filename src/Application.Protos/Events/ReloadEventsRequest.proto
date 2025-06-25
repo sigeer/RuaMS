@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package Dto;
+
+message ReloadEventsRequest {
+  int32 masterId = 1;
+}
+
+message ReloadEventsResponse {
+	int32 code = 1;
+	ReloadEventsRequest request = 2;
+}

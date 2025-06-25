@@ -78,4 +78,5 @@ message CharacterDto {
   google.protobuf.Timestamp lastExpGainTime = 71;
   bool partySearch = 72;
   int64 jailexpire = 73;
+  string nameWithMedal = 74;
 }

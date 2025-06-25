@@ -1,15 +1,17 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package Config;
 
 message WorldConfig {
-	float mobRate = 1;
-	float mesoRate = 2;
-	float expRate = 3;
-	float questRate = 4;
-	float dropRate = 5;
-	float bossDropRate = 6;
-	float travelRate = 7;
-	float fishingRate = 8;
-	string serverMessage = 9;
+	google.protobuf.FloatValue mobRate = 1;
+	google.protobuf.FloatValue mesoRate = 2;
+	google.protobuf.FloatValue expRate = 3;
+	google.protobuf.FloatValue questRate = 4;
+	google.protobuf.FloatValue dropRate = 5;
+	google.protobuf.FloatValue bossDropRate = 6;
+	google.protobuf.FloatValue travelRate = 7;
+	google.protobuf.FloatValue fishingRate = 8;
+	google.protobuf.StringValue serverMessage = 9;
 }

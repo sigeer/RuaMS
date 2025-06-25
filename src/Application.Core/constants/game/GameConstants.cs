@@ -453,5 +453,5 @@ public class GameConstants
         return maxMobDmg;
     }
 
-    public static string LEVEL_200 = "[Congrats] {0} has reached Level {1}! Congratulate {2} on such an amazing achievement!";
+    public const string LevelCongratulations = "[Congrats] {0} has reached Level {1}! Congratulate {2} on such an amazing achievement!";
 }

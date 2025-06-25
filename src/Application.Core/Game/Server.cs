@@ -42,8 +42,6 @@ public class Server
 
     public static Server getInstance() => instance.Value;
 
-    private static HashSet<int> activeFly = new();
-
 
     public Dictionary<int, World> RunningWorlds { get; set; } = new();
 
@@ -100,22 +98,6 @@ public class Server
         return this.getWorld(world).getChannels();
     }
 
-    public List<WorldChannel> getAllChannels()
-    {
-        try
-        {
-            return RunningWorlds.Values.SelectMany(x => x.Channels).ToList();
-        }
-        catch (NullReferenceException)
-        {
-            return new(0);
-        }
-    }
-
-    public HashSet<int> getOpenChannels(int world)
-    {
-        return getWorld(world).getChannels().Select(x => x.getId()).ToHashSet();
-    }
 
     public bool AddWorld(WorldConfigEntity worldConfig)
     {
@@ -272,22 +254,6 @@ public class Server
         return getWorld(world).Players.GetAllOnlinedPlayers().Any(x => x.isGM());
     }
 
-    public void changeFly(int accountid, bool canFly)
-    {
-        if (canFly)
-        {
-            activeFly.Add(accountid);
-        }
-        else
-        {
-            activeFly.Remove(accountid);
-        }
-    }
-
-    public bool canFly(int accountid)
-    {
-        return activeFly.Contains(accountid);
-    }
 
     private HashSet<IPlayer> getAccountCharacterEntries(int accountid, int loadLevel = 0)
     {

@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Game.Players;
 using Application.Core.Login.Client;
 using Application.Core.Login.Models;
@@ -266,7 +267,7 @@ namespace Application.Core.Login.Net.Packets
             p.writeInt(c.AccountEntity.Id);
             p.writeByte(c.AccountEntity.Gender);
 
-            bool canFly = Server.getInstance().canFly(c.AccountEntity.Id);
+            bool canFly = c.AccountEntity.CanFly;
             p.writeBool((YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.AccountEntity.GMLevel > 1);    // thanks Steve(kaito1410) for pointing the GM account bool here
             p.writeByte(((YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.AccountEntity.GMLevel > 1) ? 0x80 : 0);  // Admin Byte. 0x80,0x40,0x20.. Rubbish.
             p.writeByte(0); // Country Code.
@@ -465,6 +466,60 @@ namespace Application.Core.Login.Net.Packets
             }
         }
 
+        /// <summary>
+        /// Gets a packet detailing a server and its channels.
+        /// </summary>
+        /// <param name="serverId"></param>
+        /// <param name="serverName">The name of the server.</param>
+        /// <param name="flag"></param>
+        /// <param name="eventmsg"></param>
+        /// <param name="channelLoad">Load of the channel - 1200 seems to be max.</param>
+        /// <returns>The server info packet.</returns>
+        public static Packet GetServerList(MasterServer server)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SERVERLIST);
+            p.writeByte(server.Id);
+            p.writeString(server.Name);
+            p.writeByte(server.Flag);
+            p.writeString(server.EventMessage);
+            p.writeByte(100); // rate modifier, don't ask O.O!
+            p.writeByte(0); // event xp * 2.6 O.O!
+            p.writeByte(100); // rate modifier, don't ask O.O!
+            p.writeByte(0); // drop rate * 2.6
+            p.writeByte(0);
+            p.writeByte(server.Channels.Count);
+            for (int i = 0; i < server.Channels.Count; i++)
+            {
+                var chId = (i + 1);
+                var ch = server.Channels[i];
+                p.writeString(server.Name + "-" + chId);
+                p.writeInt(server.GetChannelCapacity(chId));
 
+                // thanks GabrielSin for this channel packet structure part
+                p.writeByte(1);// nWorldID
+                p.writeByte(i);// nChannelID
+                p.writeBool(false);// bAdultChannel
+            }
+            p.writeShort(0);
+            return p;
+        }
+
+        /// <summary>
+        /// Gets a packet saying that the server list is over.
+        /// </summary>
+        /// <returns>The end of server list packet.</returns>
+        public static Packet GetEndOfServerList()
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SERVERLIST);
+            p.writeByte(0xFF);
+            return p;
+        }
+
+        public static Packet SelectWorld(int world)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.LAST_CONNECTED_WORLD);
+            p.writeInt(world);//According to GMS, it should be the world that contains the most characters (most active)
+            return p;
+        }
     }
 }

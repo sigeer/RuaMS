@@ -4,17 +4,20 @@ using Application.Core.Channel.Message;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
+using Application.Core.Models;
 using Application.Core.ServerTransports;
-using Application.Shared.Configs;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
 using Config;
+using constants.game;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MySql.Data.MySqlClient;
+using net.packet.outs;
 using net.server.guild;
 using Polly;
 using server;
@@ -76,6 +79,8 @@ namespace Application.Core.Channel
         public ITimerManager TimerManager { get; private set; } = null!;
 
         public ExpeditionService ExpeditionService { get; }
+        public NoteService? NoteService { get; private set; } = null!;
+
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, IOptions<ChannelServerConfig> serverConfigOptions, ILogger<WorldChannelServer> logger)
         {
@@ -216,6 +221,7 @@ namespace Application.Core.Channel
             TeamManager = _sp.GetRequiredService<TeamManager>();
             ChatRoomService = _sp.GetRequiredService<ChatRoomService>();
             NewYearCardService = _sp.GetRequiredService<NewYearCardService>();
+            NoteService = _sp.GetRequiredService<NoteService>();
 
             TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
 
@@ -268,18 +274,7 @@ namespace Application.Core.Channel
                     Servers[channel] = server;
                 }
 
-                UpdateWorldConfig(new WorldConfigPatch
-                {
-                    MobRate = configs.Config.MobRate,
-                    MesoRate = configs.Config.MesoRate,
-                    ExpRate = configs.Config.ExpRate,
-                    DropRate = configs.Config.DropRate,
-                    BossDropRate = configs.Config.BossDropRate,
-                    QuestRate = configs.Config.QuestRate,
-                    TravelRate = configs.Config.TravelRate,
-                    FishingRate = configs.Config.FishingRate,
-                    ServerMessage = configs.Config.ServerMessage
-                });
+                UpdateWorldConfig(configs.Config);
                 UpdateCouponConfig(configs.Coupon);
 
                 foreach (var server in Servers.Values)
@@ -342,6 +337,10 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
+        public void BroadcastWorldMessage(int type, string text)
+        {
+            Transport.BroadcastMessage(new Dto.SendTextMessage { Text = text, Type = type });
+        }
         public void BroadcastWorldMessage(Packet p)
         {
             Transport.BroadcastMessage(p);
@@ -351,7 +350,7 @@ namespace Application.Core.Channel
             Transport.BroadcastGMMessage(packet);
         }
 
-        public void UpdateWorldConfig(WorldConfigPatch updatePatch)
+        private void UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
             if (updatePatch.MobRate.HasValue)
             {
@@ -507,6 +506,18 @@ namespace Application.Core.Channel
                 }
             }
 
+            if (data.Level == JobFactory.GetById(data.JobId).MaxLevel)
+            {
+                foreach (var ch in Servers.Values)
+                {
+                    ch.broadcastPacket(PacketCreator.serverNotice(6, string.Format(GameConstants.LevelCongratulations, data.NameWithMedal, data.Level, data.NameWithMedal)));
+                }
+            }
+
+            foreach (var module in Modules)
+            {
+                module.OnPlayerLevelUp(data);
+            }
             //if (data.TeamId > 0)
             //{
             //    var team = TeamManager.GetParty(data.TeamId);
@@ -549,6 +560,12 @@ namespace Application.Core.Channel
 
                 }
             }
+
+            foreach (var module in Modules)
+            {
+                if (data.IsNewComer)
+                    module.OnPlayerLogin(data);
+            }
         }
 
         /// <summary>
@@ -570,6 +587,11 @@ namespace Application.Core.Channel
         private void InitializeMessage()
         {
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
+            MessageDispatcher.Register<Dto.SendTextMessage>(BroadcastType.OnMessage, OnBroadcastText);
+            MessageDispatcher.Register<Dto.SetFlyResponse>(BroadcastType.OnSetFly, OnSetFly);
+            MessageDispatcher.Register<Dto.ReloadEventsResponse>(BroadcastType.OnEventsReloaded, OnEventsReloaded);
+            MessageDispatcher.Register<Config.WorldConfig>(BroadcastType.OnWorldConfigUpdate, UpdateWorldConfig);
+            MessageDispatcher.Register<CouponConfig>(BroadcastType.OnCouponConfigUpdate, UpdateCouponConfig);
 
             MessageDispatcher.Register<CreateInviteResponse>(BroadcastType.OnInvitationSend, OnSendInvitation);
             MessageDispatcher.Register<AnswerInviteResponse>(BroadcastType.OnInvitationAnswer, OnAnswerInvitation);
@@ -619,12 +641,73 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<UpdateTeamResponse>(BroadcastType.OnTeamUpdate, msg => TeamManager.ProcessUpdateResponse(msg));
 
             MessageDispatcher.Register<DropMessageDto>(BroadcastType.OnDropMessage, DropMessage);
-            MessageDispatcher.Register<CouponConfig>(BroadcastType.OnCouponConfigUpdate, UpdateCouponConfig);
+
+            MessageDispatcher.Register<Dto.SendNoteResponse>(BroadcastType.OnNoteSend, NoteService.OnNoteReceived);
         }
 
         public void OnMessageReceived(string type, object message)
         {
             MessageDispatcher.Dispatch(type, message);
+        }
+
+        internal void SetFly(int id, bool v)
+        {
+            Transport.SendSetFly(new Dto.SetFlyRequest { CId = id, SetStatus = v });
+        }
+
+        private void OnSetFly(Dto.SetFlyResponse data)
+        {
+            var chr = FindPlayerById(data.Request.CId);
+            if (chr != null)
+            {
+                string sendStr = "";
+                if (data.Request.SetStatus)
+                {
+                    sendStr += "Enabled Fly feature (F1). With fly active, you cannot attack.";
+                    if (!chr.Client.AccountEntity!.CanFly)
+                    {
+                        sendStr += " Re-login to take effect.";
+                    }
+                }
+                else
+                {
+                    sendStr += "Disabled Fly feature. You can now attack.";
+                    if (chr.Client.AccountEntity!.CanFly)
+                    {
+                        sendStr += " Re-login to take effect.";
+                    }
+                }
+
+                chr.dropMessage(sendStr);
+            }
+        }
+
+        internal void SendReloadEvents(IPlayer chr)
+        {
+            Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
+        }
+
+        private void OnEventsReloaded(Dto.ReloadEventsResponse data)
+        {
+            IPlayer? sender = null;
+            foreach (var ch in Servers.Values)
+            {
+                ch.reloadEventScriptManager();
+
+                if (sender == null)
+                {
+                    sender = ch.Players.getCharacterById(data.Request.MasterId);
+                    sender?.dropMessage(5, "Reloaded Events");
+                }
+            }
+        }
+
+        private void OnBroadcastText(Dto.SendTextMessage data)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                ch.broadcastPacket(PacketCreator.serverNotice(data.Type, data.Text)); ;
+            }
         }
     }
 }

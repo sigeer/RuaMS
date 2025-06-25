@@ -310,6 +310,8 @@ namespace Application.Core.Servers.Services
             })).ToArray();
             #endregion
 
+            playerDto.NameWithMedal = player.getMedalText() + player.Name;
+
             var data = new Dto.PlayerSaveDto()
             {
                 Channel = player.ActualChannel,

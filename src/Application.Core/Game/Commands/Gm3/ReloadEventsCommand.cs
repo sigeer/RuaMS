@@ -11,11 +11,6 @@ public class ReloadEventsCommand : CommandBase
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        var player = c.OnlinedCharacter;
-        foreach (var ch in Server.getInstance().getAllChannels())
-        {
-            ch.reloadEventScriptManager();
-        }
-        player.dropMessage(5, "Reloaded Events");
+        c.CurrentServerContainer.SendReloadEvents(c.OnlinedCharacter);
     }
 }

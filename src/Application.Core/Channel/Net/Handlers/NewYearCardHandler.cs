@@ -56,6 +56,7 @@ public class NewYearCardHandler : ChannelHandlerBase
                 int status = getValidNewYearCardStatus(itemid, player, slot);
                 if (status == 0)
                 {
+                    // TODO: 数据传输可能存在延迟
                     if (player.canHold(ItemId.NEW_YEARS_CARD_SEND, 1))
                     {
                         string receiver = p.readString();  //[04 00 54 65 73 74] -> sReceiverName (person to send to)

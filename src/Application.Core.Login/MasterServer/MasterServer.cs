@@ -7,7 +7,6 @@ using Application.Core.Login.Servers;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
-using Application.Shared.Configs;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Compatible.Atomics;
@@ -17,7 +16,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using net.server;
-using server;
 using System.Net;
 
 
@@ -241,7 +239,8 @@ namespace Application.Core.Login
                     {
                         Host = item.Host,
                         Port = item.Port,
-                        ServerName = channel.ServerName
+                        ServerName = channel.ServerName,
+                        MaxSize = item.MaxSize
                     });
                 }
                 _serverChannelCache = null;
@@ -274,12 +273,26 @@ namespace Application.Core.Login
         /// <returns>服务器: 服务器上的玩家</returns>
         public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<PlayerChannelPair> dataList)
         {
-            var d = GetServerChannel();
+            var channelServerMap = GetServerChannel();
+            var result = new Dictionary<ChannelServerWrapper, List<int>>();
 
-            return (from a in dataList
-                    join b in d on a.Channel equals b.Channel
-                    group a.PlayerId by b.ServerName into ass
-                    select ass).ToDictionary(x => ChannelServerList[x.Key], x => x.ToArray());
+            foreach (var player in dataList)
+            {
+                if (player.Channel <= 0)
+                    continue;
+
+                var serverName = Channels[player.Channel - 1].ServerName;
+                var serverWrapper = ChannelServerList[serverName];
+                if (!result.TryGetValue(serverWrapper, out var idList))
+                {
+                    idList = new List<int>();
+                    result[serverWrapper] = idList;
+                }
+                idList.Add(player.PlayerId);
+            }
+
+            // 转换 List<int> -> int[]
+            return result.ToDictionary(x => x.Key, x => x.Value.ToArray());
         }
 
         public Dictionary<ChannelServerWrapper, int[]> GroupPlayer(IEnumerable<int> cidList)
@@ -323,6 +336,11 @@ namespace Application.Core.Login
             return new IPEndPoint(IPAddress.Parse(channel.Host), channel.Port);
         }
 
+        public int GetChannelCapacity(int channelId)
+        {
+            return (int)(Math.Ceiling(((float)CharacterManager.GetChannelPlayerCount(channelId) / Channels[channelId - 1].MaxSize) * 800));
+        }
+
         public bool IsGuildQueued(int guildId)
         {
             return queuedGuilds.Contains(guildId);
@@ -338,7 +356,7 @@ namespace Application.Core.Login
             queuedGuilds.Remove(guildId);
         }
 
-        public void UpdateWorldConfig(WorldConfigPatch updatePatch)
+        public void UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
             // 修改值
             if (updatePatch.MobRate.HasValue)

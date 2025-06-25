@@ -108,7 +108,9 @@ namespace Application.Core.Login.Datas
                         Level = origin.Character.Level,
                         Name = origin.Character.Name,
                         GuildId = origin.Character.GuildId,
-                        TeamId = origin.Character.Party
+                        TeamId = origin.Character.Party,
+                        FamilyId = origin.Character.FamilyId,
+                        NameWithMedal = origin.Character.NameWithMedal
                     });
                     _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
@@ -123,7 +125,9 @@ namespace Application.Core.Login.Datas
                         Level = origin.Character.Level,
                         Name = origin.Character.Name,
                         GuildId = origin.Character.GuildId,
-                        TeamId = origin.Character.Party
+                        TeamId = origin.Character.Party,
+                        FamilyId = origin.Character.FamilyId,
+                        NameWithMedal = origin.Character.NameWithMedal
                     });
                     _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
@@ -511,6 +515,11 @@ namespace Application.Core.Login.Datas
         public IDictionary<int, int[]> GetPlayerChannelPair(IEnumerable<CharacterViewObject> players)
         {
             return players.Where(x => x != null).GroupBy(x => x.Channel).ToDictionary(x => x.Key, x => x.Select(y => y.Character.Id).ToArray());
+        }
+
+        internal float GetChannelPlayerCount(int channelId)
+        {
+            return _idDataSource.Values.Count(x => x.Channel == channelId);
         }
     }
 }

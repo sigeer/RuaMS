@@ -683,5 +683,6 @@ namespace Application.Core.Game.Players
 
         List<QuestStatus> getQuests();
         DueyPackageObject[] GetDueyPackages();
+        void SetFly(bool v);
     }
 }

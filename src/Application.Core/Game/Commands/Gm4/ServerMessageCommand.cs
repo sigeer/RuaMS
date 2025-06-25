@@ -10,6 +10,6 @@ public class ServerMessageCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        c.getChannelServer().Container.Transport.SendWorldConfig(new Shared.Configs.WorldConfigPatch { ServerMessage = player.getLastCommandMessage() });
+        c.getChannelServer().Container.Transport.SendWorldConfig(new Config.WorldConfig { ServerMessage = player.getLastCommandMessage() });
     }
 }

@@ -148,5 +148,6 @@ namespace Application.Core.Login.Models
         public bool PartySearch { get; set; } = true;
 
         public long Jailexpire { get; set; }
+        public string NameWithMedal { get; set; }
     }
 }

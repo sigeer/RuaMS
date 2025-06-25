@@ -293,7 +293,7 @@ namespace Application.Module.Family.Master
 
                     if (request.EntitlementId == FamilyEntitlement.FAMILY_REUINION.Value)
                     {
-                        _server.Transport.FamilyReuinion(request.MatserId, request.TargetPlayerId);
+                        _server.Transport.SummonPlayer(request.MatserId, request.TargetPlayerId);
                     }
                     var chr = _server.CharacterManager.FindPlayerById(member.Cid);
                     GainReputation(member, -entitlement.getRepCost(), false, chr.Character.Name);

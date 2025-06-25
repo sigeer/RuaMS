@@ -2,7 +2,12 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string OnMessage = "OnMessage";
+        public const string OnSetFly = "OnSetFly";
+        public const string OnEventsReloaded = "OnEventsReloaded";
         public const string OnShutdown = "OnShutdown";
+        public const string OnWorldConfigUpdate = "OnWorldConfigUpdate";
+        public const string OnNoteSend = "OnNoteSend";
 
         public const string OnInvitationSend = "OnInvitationSend";
         public const string OnInvitationAnswer = "OnInvitationAnswer";

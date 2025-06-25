@@ -23,4 +23,5 @@ message AccountCtrlDto {
   google.protobuf.StringValue ip = 15;
   string hwid = 16;
   int32 language = 17;
+  bool canFly = 18;
 }
