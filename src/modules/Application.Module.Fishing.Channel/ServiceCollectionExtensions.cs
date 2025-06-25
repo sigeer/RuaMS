@@ -6,7 +6,7 @@ namespace Application.Module.Fishing.Channel
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddFishing(this IServiceCollection services)
+        public static IServiceCollection AddFishingChannel(this IServiceCollection services)
         {
             services.AddSingleton<IFishingService, FishingChannelModule>();
             services.AddSingleton<ChannelModule, FishingChannelModule>();

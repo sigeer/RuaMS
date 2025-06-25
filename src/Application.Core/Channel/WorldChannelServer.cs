@@ -74,13 +74,12 @@ namespace Application.Core.Channel
         public List<int> ActiveCoupons { get; set; } = new();
 
         #endregion
-        public List<ChannelModule> Modules { get; }
+        public List<ChannelModule> Modules { get; private set; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
         public ITimerManager TimerManager { get; private set; } = null!;
 
         public ExpeditionService ExpeditionService { get; }
         public NoteService? NoteService { get; private set; } = null!;
-        public IFishingService FishingService { get; }
 
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, IOptions<ChannelServerConfig> serverConfigOptions, ILogger<WorldChannelServer> logger)
@@ -89,11 +88,11 @@ namespace Application.Core.Channel
             Transport = transport;
             _logger = logger;
 
+            Modules = new();
             Servers = new();
             ServerConfig = serverConfigOptions.Value;
 
             SkillbookInformationProvider = ServiceProvider.GetRequiredService<SkillbookInformationProvider>();
-            Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
@@ -222,6 +221,8 @@ namespace Application.Core.Channel
                 SkillbookInformationProvider.LoadAllSkillbookInformation();
                 _logger.LogInformation("[{ServerName}]加载WZ - 能手册加载完成, 耗时{Cost}", ServerName, sw.Elapsed.TotalSeconds);
             });
+
+            Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
 
             GuildManager = ServiceProvider.GetRequiredService<GuildManager>();
             TeamManager = ServiceProvider.GetRequiredService<TeamManager>();
