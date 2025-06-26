@@ -1,27 +1,13 @@
 using Application.Core.Channel;
-using Application.Core.Duey;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
-using Application.Core.Game.Relation;
 using Application.Core.Managers.Constants;
-using Application.Core.Models;
 using Application.Core.ServerTransports;
-using Application.Shared.Constants.Job;
 using Application.Shared.Items;
-using Application.Shared.Team;
 using AutoMapper;
 using client.creator;
 using client.inventory;
-using Dto;
-using net.packet.outs;
-using net.server.guild;
-using Org.BouncyCastle.Asn1.X509;
 using server;
-using System;
-using System.Collections.Generic;
-using System.Xml.Linq;
-using tools;
-using static Mysqlx.Notice.Warning.Types;
 
 namespace Application.Core.Servers.Services
 {
@@ -156,15 +142,6 @@ namespace Application.Core.Servers.Services
             return allItems.Items.GroupBy(x => x.DropperId).ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x.ToArray()));
         }
 
-        internal DueyPackageObject[] GetDueyPackages(int id)
-        {
-            return _mapper.Map<DueyPackageObject[]>(_tranport.GetPlayerDueyPackages(id));
-        }
-
-        internal DueyPackageObject? GetDueyPackageByPackageId(int id)
-        {
-            return _mapper.Map<DueyPackageObject?>(_tranport.GetDueyPackageByPackageId(id));
-        }
 
         internal int[] GetCardTierSize()
         {

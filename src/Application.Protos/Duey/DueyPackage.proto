@@ -5,16 +5,25 @@ import "google/protobuf/wrappers.proto";
 
 import "Dto/Item.proto";
 
-package Dto;
+package DueyDto;
 
 message DueyPackageDto {
   int32 packageId = 1;
   int32 receiverId = 2;
-  string senderName = 3;
+  int32 senderId = 3;
   int32 mesos = 4;
   google.protobuf.Timestamp timeStamp = 5;
   google.protobuf.StringValue message = 6;
   bool checked = 7;
   bool type = 8;
-  ItemDto item = 9;
+  Dto.ItemDto item = 9;
+}
+
+message GetPlayerDueyPackageRequest {
+	int32 receiverId = 1;
+}
+
+message GetPlayerDueyPackageResponse {
+	int32 receiverId = 1;
+	repeated DueyPackageDto list = 2;
 }

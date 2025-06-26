@@ -21,20 +21,22 @@
 */
 
 
-using Application.Core.Servers.Services;
+using Application.Core.Channel.Net;
+using Application.Core.Client;
+using Application.Module.Duey.Common;
+using Application.Shared.Net;
 using Application.Utility.Configs;
-using client.processor.npc;
 using tools;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Duey.Channel.Net.Handlers;
 
 public class DueyHandler : ChannelHandlerBase
 {
-    readonly ItemService _itemService;
+    readonly DueyManager _dueyManager;
 
-    public DueyHandler(ItemService itemService)
+    public DueyHandler(DueyManager dueyManager)
     {
-        _itemService = itemService;
+        _dueyManager = dueyManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -47,8 +49,9 @@ public class DueyHandler : ChannelHandlerBase
 
         byte operation = p.readByte();
         if (operation == DueyProcessorActions.TOSERVER_RECV_ITEM.getCode())
-        { // on click 'O' Button, thanks inhyuk
-            DueyProcessor.dueySendTalk(c, false);
+        {
+            // on click 'O' Button, thanks inhyuk
+            _dueyManager.SendTalk(c, false);
         }
         else if (operation == DueyProcessorActions.TOSERVER_SEND_ITEM.getCode())
         {
@@ -60,23 +63,24 @@ public class DueyHandler : ChannelHandlerBase
             bool quick = p.readByte() != 0;
             string? message = quick ? p.readString() : null;
 
-            _itemService.DueySendItemFromInventory(c, inventId, itemPos, amount, mesos, message, recipient, quick);
+            _dueyManager.DueySendItemFromInventory(c, inventId, itemPos, amount, mesos, message, recipient, quick);
         }
         else if (operation == DueyProcessorActions.TOSERVER_REMOVE_PACKAGE.getCode())
         {
             int packageid = p.readInt();
 
-            DueyProcessor.dueyRemovePackage(c, packageid, true);
+            // 删除？是发送者删还是接收者删？
+            _dueyManager.RemoveDueyPackage(c.OnlinedCharacter, packageid);
         }
         else if (operation == DueyProcessorActions.TOSERVER_CLAIM_PACKAGE.getCode())
         {
             int packageid = p.readInt();
 
-            DueyProcessor.dueyClaimPackage(c, packageid);
+            _dueyManager.TakePackage(c.OnlinedCharacter, packageid);
         }
         else if (operation == DueyProcessorActions.TOSERVER_CLAIM_PACKAGE.getCode())
         {
-            DueyProcessor.dueySendTalk(c, false);
+            _dueyManager.SendTalk(c, false);
         }
     }
 }

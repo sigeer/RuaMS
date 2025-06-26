@@ -1,4 +1,6 @@
-namespace Application.Core.Login.Models
+using Application.Core.Login.Models;
+
+namespace Application.Module.Duey.Master.Models
 {
     public class DueyPackageModel
     {
@@ -7,7 +9,7 @@ namespace Application.Core.Login.Models
 
         public int ReceiverId { get; set; }
 
-        public string SenderName { get; set; }
+        public int SenderId { get; set; }
 
         public int Mesos { get; set; }
 
@@ -19,5 +21,9 @@ namespace Application.Core.Login.Models
 
         public bool Type { get; set; } = false;
         public ItemModel? Item { get; set; }
+        /// <summary>
+        /// 取货读取时冻结
+        /// </summary>
+        public bool Fronzen { get; set; }
     }
 }

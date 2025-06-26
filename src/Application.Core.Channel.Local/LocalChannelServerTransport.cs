@@ -529,21 +529,6 @@ namespace Application.Core.Channel.Local
             _itemService.ClearGifts(giftIdArray);
         }
 
-        public Dto.DueyPackageDto[] GetPlayerDueyPackages(int id)
-        {
-            return _server.DueyManager.GetPlayerDueyPackages(id);
-        }
-
-        public Dto.DueyPackageDto? GetDueyPackageByPackageId(int id)
-        {
-            return _server.DueyManager.GetDueyPackageByPackageId(id);
-        }
-
-        public void RequestRemovePackage(int packageid)
-        {
-            _server.DueyManager.RemovePackageById(packageid);
-        }
-
         public bool SendNormalNoteMessage(string fromName, string toName, string noteMessage)
         {
             var insertResult = _noteService.sendNormal(noteMessage, fromName, toName, _server.getCurrentTime());
@@ -597,22 +582,6 @@ namespace Application.Core.Channel.Local
         {
             _server.CouponManager.ToggleCoupon(v);
         }
-
-        public Dto.CreatePackageCheckResponse CreateDueyPackageFromInventoryCheck(Dto.CreatePackageCheckRequest request)
-        {
-            return _server.DueyManager.CreateDueyPackageCheck(request.SenderId, request.ReceiverName);
-        }
-
-        public Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request)
-        {
-            return _server.DueyManager.CreateDueyPackage(request.SenderName, request.SendMeso, request.Item, request.SendMessage, request.ReceiverId, request.Quick);
-        }
-
-        public void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest)
-        {
-            _server.DueyManager.SendDueyNotification(sendDueyNotificationRequest.CharacterName);
-        }
-
         public void UpdateAccount(AccountCtrl accountEntity)
         {
             _server.AccountManager.UpdateAccount(accountEntity);

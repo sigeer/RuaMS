@@ -1,0 +1,35 @@
+using Application.Core.Login;
+using Application.Core.Login.Events;
+using Application.EF;
+using Application.Utility;
+using Application.Utility.Tasks;
+using DotNetty.Common.Utilities;
+using Microsoft.Extensions.Logging;
+
+namespace Application.Module.Duey.Master
+{
+    public class DueyMasterModule: MasterModule
+    {
+        readonly DueyManager _manager;
+        readonly DueyTask _dueyTask;
+        public DueyMasterModule(MasterServer server, ILogger<MasterModule> logger, DueyManager dueyManager, DueyTask dueyTask) : base(server, logger)
+        {
+            _manager = dueyManager;
+            _dueyTask = dueyTask;
+        }
+
+        public override async Task IntializeDatabaseAsync(DBContext dbContext)
+        {
+            await base.IntializeDatabaseAsync(dbContext);
+            await _manager.Initialize(dbContext);
+        }
+
+        public override void RegisterTask(ITimerManager timerManager)
+        {
+            base.RegisterTask(timerManager);
+
+            var timeLeft = TimeUtils.GetTimeLeftForNextHour();
+            timerManager.register(_dueyTask, TimeSpan.FromHours(1), timeLeft);
+        }
+    }
+}

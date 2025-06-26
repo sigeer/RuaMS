@@ -21,7 +21,6 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Duey;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -328,7 +327,7 @@ public class PacketCreator
         p.writeLong(PacketCommon.getTime(time)); // offset expiration time issue found thanks to Thora
     }
 
-    protected static void addItemInfo(OutPacket p, Item item, bool zeroPosition = false)
+    public static void addItemInfo(OutPacket p, Item item, bool zeroPosition = false)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         bool isCash = ii.isCash(item.getItemId());
@@ -6759,56 +6758,6 @@ public class PacketCreator
         OutPacket p = OutPacket.create(SendOpcode.PARCEL);
         p.writeByte(0x1B);
         p.writeBool(quick);  // 0 : package received, 1 : quick delivery namespace return p;
-        return p;
-    }
-
-    public static Packet sendDueyMSG(byte operation)
-    {
-        return sendDuey(operation, []);
-    }
-
-    public static Packet sendDuey(int operation, DueyPackageObject[] packages)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARCEL);
-        p.writeByte(operation);
-        if (operation == 8)
-        {
-            p.writeByte(0);
-            p.writeByte(packages.Length);
-            foreach (var dp in packages)
-            {
-                p.writeInt(dp.PackageId);
-                p.writeFixedString(dp.SenderName);
-
-                p.writeInt(dp.Mesos);
-                p.writeLong(PacketCommon.getTime(dp.sentTimeInMilliseconds()));
-
-                var msg = dp.Message;
-                if (msg != null)
-                {
-                    p.writeInt(1);
-                    p.writeFixedString(msg, 200);
-                }
-                else
-                {
-                    p.writeInt(0);
-                    p.skip(200);
-                }
-
-                p.writeByte(0);
-                if (dp.Item != null)
-                {
-                    p.writeByte(1);
-                    addItemInfo(p, dp.Item, true);
-                }
-                else
-                {
-                    p.writeByte(0);
-                }
-            }
-            p.writeByte(0);
-        }
-
         return p;
     }
 

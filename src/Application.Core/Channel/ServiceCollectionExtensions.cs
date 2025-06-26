@@ -28,7 +28,7 @@ namespace Application.Core.Channel
 
         private static IServiceCollection AddChannelHandlers(this IServiceCollection services)
         {
-            services.AddScoped<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
+            services.AddSingleton<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
 
             var interfaceType = typeof(ChannelHandlerBase);
             var implementations = interfaceType.Assembly.GetTypes()
@@ -36,10 +36,10 @@ namespace Application.Core.Channel
 
             foreach (var impl in implementations)
             {
-                services.AddScoped(impl);
+                services.AddSingleton(impl);
             }
-            services.AddScoped<KeepAliveHandler<IChannelClient>>();
-            services.AddScoped<CustomPacketHandler<IChannelClient>>();
+            services.AddSingleton<KeepAliveHandler<IChannelClient>>();
+            services.AddSingleton<CustomPacketHandler<IChannelClient>>();
             return services;
         }
 
@@ -75,6 +75,7 @@ namespace Application.Core.Channel
             services.AddSingleton<NewYearCardService>();
             services.AddSingleton<NoteService>();
             services.TryAddSingleton<IFishingService, DefaultFishingService>();
+            services.TryAddSingleton<IDueyService, DefaultDueyService>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();
