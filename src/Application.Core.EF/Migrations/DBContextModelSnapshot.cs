@@ -349,31 +349,6 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("alliance", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Allianceguild", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("id");
-
-                    b.Property<int>("AllianceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(10)")
-                        .HasColumnName("allianceid")
-                        .HasDefaultValueSql("'-1'");
-
-                    b.Property<int>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(10)")
-                        .HasColumnName("guildid")
-                        .HasDefaultValueSql("'-1'");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("allianceguilds", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.AreaInfo", b =>
                 {
                     b.Property<int>("Id")
@@ -795,16 +770,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("meso");
 
-                    b.Property<int>("MessengerId")
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("messengerid");
-
-                    b.Property<int>("MessengerPosition")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("messengerposition")
-                        .HasDefaultValueSql("'4'");
-
                     b.Property<int>("Monsterbookcover")
                         .HasColumnType("int(11)")
                         .HasColumnName("monsterbookcover");
@@ -852,10 +817,6 @@ namespace Application.Core.EF.Migrations
                     b.Property<int>("PartnerId")
                         .HasColumnType("int(11)")
                         .HasColumnName("partnerId");
-
-                    b.Property<int>("Party")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("party");
 
                     b.Property<bool>("PartySearch")
                         .ValueGeneratedOnAdd()
@@ -941,8 +902,6 @@ namespace Application.Core.EF.Migrations
 
                     b.HasIndex(new[] { "Id", "AccountId", "Name" }, "id_2")
                         .HasDatabaseName("id_21");
-
-                    b.HasIndex(new[] { "Party" }, "party");
 
                     b.HasIndex(new[] { "Level", "Exp" }, "ranking1")
                         .HasDatabaseName("ranking11");
@@ -1148,10 +1107,8 @@ namespace Application.Core.EF.Migrations
                     b.Property<int>("ReceiverId")
                         .HasColumnType("int(10) unsigned");
 
-                    b.Property<string>("SenderName")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)");
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int(10) unsigned");
 
                     b.Property<DateTimeOffset>("TimeStamp")
                         .ValueGeneratedOnAdd()
@@ -3046,7 +3003,7 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("skillmacros", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Specialcashitem", b =>
+            modelBuilder.Entity("Application.EF.Entities.SpecialCashItemEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -3280,7 +3237,7 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("monsterbook", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Newyear", b =>
+            modelBuilder.Entity("Application.EF.NewYearCardEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -3309,14 +3266,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnName("receiverid")
                         .HasDefaultValueSql("'-1'");
 
-                    b.Property<string>("ReceiverName")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
-                        .HasColumnName("receivername")
-                        .HasDefaultValueSql("''");
-
                     b.Property<bool>("SenderDiscard")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("senderdiscard");
@@ -3326,14 +3275,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(10)")
                         .HasColumnName("senderid")
                         .HasDefaultValueSql("'-1'");
-
-                    b.Property<string>("SenderName")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
-                        .HasColumnName("sendername")
-                        .HasDefaultValueSql("''");
 
                     b.Property<long>("TimeReceived")
                         .HasColumnType("bigint(20) unsigned")

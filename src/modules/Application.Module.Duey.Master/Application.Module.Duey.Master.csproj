@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
-    <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
+    <ProjectReference Include="..\..\Application.Core.Login\Application.Core.Login.csproj" />
+    <ProjectReference Include="..\Application.Module.Duey.Common\Application.Module.Duey.Common.csproj" />
   </ItemGroup>
 
 </Project>

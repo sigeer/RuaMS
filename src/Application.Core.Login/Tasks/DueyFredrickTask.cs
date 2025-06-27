@@ -17,7 +17,6 @@ namespace Application.Core.Login.Tasks
         public override void HandleRun()
         {
             _fredrickService.runFredrickSchedule();
-            _server.DueyManager.RunDueyExpireSchedule();
         }
     }
 

@@ -327,10 +327,11 @@ public class RingActionHandler : ChannelHandlerBase
                                         c.CurrentServerContainer.Transport.SendNormalNoteMessage(groom, name, dueyMessage);
                                     }
 
-                                    Item weddingTicket = new Item(newItemId, 0, 1);
-                                    weddingTicket.setExpiration(expiration);
+                                    // 
+                                    //Item weddingTicket = new Item(newItemId, 0, 1);
+                                    //weddingTicket.setExpiration(expiration);
 
-                                    c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Name, 0, weddingTicket, null, guest, false);
+                                    //c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Name, 0, weddingTicket, null, guest, false);
                                 }
                             }
                             else

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package DueyDto;
+
+
+message RemovePackageRequest {
+  int32 masterId = 1;
+  int32 packageId = 2;
+  bool byReceived = 3;
+}
+
+message RemovePackageResponse {
+	int32 code = 1;
+	RemovePackageRequest request = 2;
+}

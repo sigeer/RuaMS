@@ -12,6 +12,18 @@
 
 	<ItemGroup>
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Duey\CreatePackageRequest.proto" GrpcServices="None">
+		</Protobuf>
+		<Protobuf Include="Duey\DueyPackage.proto" GrpcServices="None">
+		</Protobuf>
+		<Protobuf Include="Duey\RemovePackageRequest.proto" GrpcServices="None">
+		</Protobuf>
+		<Protobuf Include="Duey\DueyNotificationDto.proto" GrpcServices="None">
+		</Protobuf>
+		<Protobuf Include="Duey\Service.proto" GrpcServices="Both">
+		</Protobuf>
+		<Protobuf Include="Duey\TakeDueyPackage.proto" GrpcServices="None">
+		</Protobuf>
 		<Protobuf Include="Events\PlayerLevelJobChange.proto" GrpcServices="None" />
 		<Protobuf Include="Events\TextMessage.proto" GrpcServices="None" />
 		<Protobuf Include="Events\ReloadEventsRequest.proto" GrpcServices="None" />
@@ -48,11 +60,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Duey\SendDueyNotificationRequest.proto" GrpcServices="None" />
-		<Protobuf Include="Duey\CreatePackageRequest.proto" GrpcServices="None" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Protobuf Include="Creator\NewPlayerSetter.proto" GrpcServices="None" />
 		<Protobuf Include="Creator\CreateCharRequest.proto" GrpcServices="None" />
 	</ItemGroup>
@@ -65,7 +72,6 @@
 		<Protobuf Include="Dto\Equip.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Gift.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Item.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\DueyPackage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\AccountCtrl.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\AccountGame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Area.proto" GrpcServices="None" />

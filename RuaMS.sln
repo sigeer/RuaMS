@@ -58,7 +58,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Benchmark", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Core.Login", "src\Application.Core.Login\Application.Core.Login.csproj", "{EC27D990-91B9-4A01-965F-2B517B71220D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Core.Channel.Local", "src\Application.Core.Channel.Local\Application.Core.Channel.Local.csproj", "{12C57780-E2FF-4253-B7D6-4B4B4F1719BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Core.Channel.InProgress", "src\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj", "{12C57780-E2FF-4253-B7D6-4B4B4F1719BE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Protos", "src\Application.Protos\Application.Protos.csproj", "{E39E4365-11B2-4D99-A950-F7121CA977FF}"
 EndProject
@@ -81,6 +81,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fishing", "Fishing", "{AF500F35-D800-4797-85A1-C606C18D7EF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Fishing.Channel", "src\modules\Application.Module.Fishing.Channel\Application.Module.Fishing.Channel.csproj", "{8E02584A-184E-474F-957A-8D719EAF30ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Duey", "Duey", "{D90FE86E-C1EA-4C3B-8AE9-0F9A8EE042B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Duey.Master", "src\modules\Application.Module.Duey.Master\Application.Module.Duey.Master.csproj", "{E46123A3-B820-4722-8FBD-F549C57D9E26}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Duey.Channel", "src\modules\Application.Module.Duey.Channel\Application.Module.Duey.Channel.csproj", "{AF59CAFA-DB26-4BA3-AE31-50821BED1A65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Duey.Common", "src\modules\Application.Module.Duey.Common\Application.Module.Duey.Common.csproj", "{B7D26463-1DCD-4B2A-829B-7144107261B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Duey.Channel.InProgress", "src\modules\Application.Module.Duey.Channel.InProgress\Application.Module.Duey.Channel.InProgress.csproj", "{FCB46D00-5167-4130-90E0-B887C4EC4E87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -172,6 +182,22 @@ Global
 		{8E02584A-184E-474F-957A-8D719EAF30ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E02584A-184E-474F-957A-8D719EAF30ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E02584A-184E-474F-957A-8D719EAF30ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E46123A3-B820-4722-8FBD-F549C57D9E26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E46123A3-B820-4722-8FBD-F549C57D9E26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E46123A3-B820-4722-8FBD-F549C57D9E26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E46123A3-B820-4722-8FBD-F549C57D9E26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF59CAFA-DB26-4BA3-AE31-50821BED1A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF59CAFA-DB26-4BA3-AE31-50821BED1A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF59CAFA-DB26-4BA3-AE31-50821BED1A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF59CAFA-DB26-4BA3-AE31-50821BED1A65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7D26463-1DCD-4B2A-829B-7144107261B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7D26463-1DCD-4B2A-829B-7144107261B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7D26463-1DCD-4B2A-829B-7144107261B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7D26463-1DCD-4B2A-829B-7144107261B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCB46D00-5167-4130-90E0-B887C4EC4E87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCB46D00-5167-4130-90E0-B887C4EC4E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCB46D00-5167-4130-90E0-B887C4EC4E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCB46D00-5167-4130-90E0-B887C4EC4E87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -203,6 +229,11 @@ Global
 		{47B52312-2C50-4B82-B719-B811F958AD71} = {7839C9EC-59B2-41A7-B0F8-D6C1FEF2790A}
 		{AF500F35-D800-4797-85A1-C606C18D7EF9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{8E02584A-184E-474F-957A-8D719EAF30ED} = {AF500F35-D800-4797-85A1-C606C18D7EF9}
+		{D90FE86E-C1EA-4C3B-8AE9-0F9A8EE042B9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{E46123A3-B820-4722-8FBD-F549C57D9E26} = {D90FE86E-C1EA-4C3B-8AE9-0F9A8EE042B9}
+		{AF59CAFA-DB26-4BA3-AE31-50821BED1A65} = {D90FE86E-C1EA-4C3B-8AE9-0F9A8EE042B9}
+		{B7D26463-1DCD-4B2A-829B-7144107261B8} = {D90FE86E-C1EA-4C3B-8AE9-0F9A8EE042B9}
+		{FCB46D00-5167-4130-90E0-B887C4EC4E87} = {D90FE86E-C1EA-4C3B-8AE9-0F9A8EE042B9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24613DFE-A8D5-438B-BCD0-3F036C9952D7}

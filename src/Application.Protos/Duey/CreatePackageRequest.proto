@@ -2,31 +2,23 @@ syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 
-
-
-package Dto;
+package DueyDto;
 
 import "Dto/Item.proto";
-
-message CreatePackageCheckRequest {
-  int32 senderId = 1;
-  string receiverName = 2;
-}
-
-message CreatePackageCheckResponse {
-	int32 code = 1;
-	int32 receiverId = 2;
-}
+import "Duey/DueyPackage.proto";
 
 message CreatePackageRequest {
-	string senderName = 1;
+	int32 senderId = 1;
 	int32 sendMeso = 2;
 	google.protobuf.StringValue sendMessage = 3;
-	int32 receiverId = 4;
+	string receiverName = 4;
 	bool quick = 5;
-	ItemDto item = 6;
+	Dto.ItemDto item = 6;
 }
 
 message CreatePackageResponse {
-	bool isSuccess = 1;
+	int32 code = 1;
+	DueyPackageDto package = 2;
+	int32 costMeso  = 3;
+	string senderName = 4;
 }

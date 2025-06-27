@@ -182,6 +182,11 @@ namespace Application.Core.Login.Datas
                 });
 
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
+
+                foreach (var module in _masterServer.Modules)
+                {
+                    module.OnPlayerLogin(d);
+                }
             }
             else
             {

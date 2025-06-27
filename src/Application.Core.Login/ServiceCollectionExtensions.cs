@@ -1,12 +1,14 @@
 using Application.Core.Login.Client;
 using Application.Core.Login.Mappers;
 using Application.Core.Login.Models.Invitations;
+using Application.Core.Login.Modules;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Tasks;
 using Application.EF;
+using Application.Shared.Servers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -107,6 +109,7 @@ namespace Application.Core.Login
             services.AddDistributedMemoryCache();
             services.AddScheduleTask();
 
+            services.AddSingleton<IServerBootstrap, DefaultMasterBootstrap>();
             services.AddSingleton<MasterServer>();
             services.AddHostedService<MasterHost>();
             return services;

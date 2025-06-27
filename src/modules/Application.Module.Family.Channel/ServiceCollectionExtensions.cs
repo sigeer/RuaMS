@@ -17,14 +17,14 @@ namespace Application.Module.Family.Channel
 
             services.AddSingleton<ChannelModule, ChannelFamilyModule>();
 
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, OpenFamilyHandler>();
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, OpenFamilyPedigreeHandler>();
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilyAddHandler>();
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilySeparateHandler>();
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilyUseHandler>();
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilyPreceptsHandler>();
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, FamilySummonResponseHandler>();
-            services.AddSingleton<IPacketHandlerBase<IChannelClient>, AcceptFamilyHandler>();
+            services.AddSingleton<OpenFamilyHandler>();
+            services.AddSingleton<OpenFamilyPedigreeHandler>();
+            services.AddSingleton<FamilyAddHandler>();
+            services.AddSingleton<FamilySeparateHandler>();
+            services.AddSingleton<FamilyUseHandler>();
+            services.AddSingleton<FamilyPreceptsHandler>();
+            services.AddSingleton<FamilySummonResponseHandler>();
+            services.AddSingleton<AcceptFamilyHandler>();
 
             return services;
         }

@@ -14,17 +14,15 @@ namespace Application.Benchmark
         [Benchmark()]
         public async Task UseTask()
         {
-            Server.getInstance().Reset();
-            await Server.getInstance().InitializeTimelyTasks(TaskEngine.Task);
-            await Server.getInstance().GlobalTimerManager.Stop();
+            var timeManager = await TimerManager.InitializeAsync(TaskEngine.Task, "Benchmark");
+            await timeManager.Stop();
         }
 
         [Benchmark()]
         public async Task UseQuartz()
         {
-            Server.getInstance().Reset();
-            await Server.getInstance().InitializeTimelyTasks(TaskEngine.Quartz);
-            await Server.getInstance().GlobalTimerManager.Stop();
+            var timeManager = await TimerManager.InitializeAsync(TaskEngine.Quartz, "Benchmark");
+            await timeManager.Stop();
         }
     }
 }

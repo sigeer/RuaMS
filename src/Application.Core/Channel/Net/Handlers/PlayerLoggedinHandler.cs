@@ -231,7 +231,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
 
             player.commitExcludedItems();
-            showDueyNotification(c, player);
 
             player.updateCouponRates();
 
@@ -278,27 +277,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         finally
         {
             c.releaseClient();
-        }
-    }
-
-    private void showDueyNotification(IChannelClient c, IPlayer player)
-    {
-        try
-        {
-
-            using var dbContext = new DBContext();
-            var dbModel = dbContext.Dueypackages.Where(x => x.ReceiverId == player.getId() && x.Checked).OrderByDescending(x => x.Type).FirstOrDefault();
-
-            if (dbModel != null)
-            {
-                dbContext.Dueypackages.Where(x => x.ReceiverId == player.getId()).ExecuteUpdate(x => x.SetProperty(y => y.Checked, false));
-
-                c.sendPacket(PacketCreator.sendDueyParcelNotification(dbModel.Type));
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.ToString());
         }
     }
 }

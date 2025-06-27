@@ -1,3 +1,4 @@
+using Application.Core.Login.Models;
 using Application.EF;
 using Application.Utility.Tasks;
 using Microsoft.Extensions.Logging;
@@ -56,6 +57,10 @@ namespace Application.Core.Login.Events
             return Task.CompletedTask;
         }
 
+        public virtual void OnPlayerLogin(CharacterLiveObject obj)
+        {
+
+        }
         public virtual int DeleteCharacterCheck(int id)
         {
             return 0;

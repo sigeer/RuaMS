@@ -83,7 +83,6 @@ namespace Application.Core.Login
         public CharacterManager CharacterManager { get; }
         public ServerManager ServerManager { get; }
         public BuffManager BuffManager { get; }
-        public DueyManager DueyManager { get; }
         public CashShopDataManager CashShopDataManager { get; }
         public TeamManager TeamManager { get; }
         public GuildManager GuildManager { get; }
@@ -138,7 +137,6 @@ namespace Application.Core.Login
             AccountManager = ActivatorUtilities.CreateInstance<AccountManager>(ServiceProvider, this);
             WeddingInstance = ActivatorUtilities.CreateInstance<WeddingManager>(ServiceProvider, this);
             BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
-            DueyManager = ActivatorUtilities.CreateInstance<DueyManager>(ServiceProvider, this);
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);

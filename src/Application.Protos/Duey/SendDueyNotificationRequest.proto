@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-import "google/protobuf/wrappers.proto";
-
-package Dto;
-
-message SendDueyNotificationRequest {
-	string characterName = 1;
-}

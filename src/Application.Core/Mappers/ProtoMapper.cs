@@ -1,4 +1,3 @@
-using Application.Core.Duey;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
@@ -11,7 +10,6 @@ using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
 using net.server;
-using Rank;
 using server;
 
 namespace Application.Core.Mappers
@@ -241,7 +239,7 @@ namespace Application.Core.Mappers
                         return DropEntry.Global(0, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
                     throw new BusinessFatalException("不支持的掉落类型");
                 });
-            CreateMap<Dto.DueyPackageDto, DueyPackageObject>();
+
             CreateMap<Dto.NoteDto, NoteObject>();
             CreateMap<Dto.ShopDto, Shop>()
                 .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));

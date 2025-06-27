@@ -23,9 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application.Core.Channel.Local\Application.Core.Channel.Local.csproj" />
+    <ProjectReference Include="..\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
-    <ProjectReference Include="..\modules\Application.Module.ExpeditionBossLog.Master\Application.Module.ExpeditionBossLog.Master.csproj" />
   </ItemGroup>
 
 	<ItemGroup>

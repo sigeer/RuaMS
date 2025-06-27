@@ -128,7 +128,6 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.USE_ITEM_REWARD, sp.GetRequiredService<ItemRewardHandler>()},
                 {(short)RecvOpcode.USE_REMOTE, sp.GetRequiredService<RemoteGachaponHandler>()},
 
-                {(short)RecvOpcode.DUEY_ACTION, sp.GetRequiredService<DueyHandler>()},
                 {(short)RecvOpcode.USE_DEATHITEM, sp.GetRequiredService<UseDeathItemHandler>()},
 
                 {(short)RecvOpcode.PLAYER_MAP_TRANSFER, sp.GetRequiredService<PlayerMapTransitionHandler>()},

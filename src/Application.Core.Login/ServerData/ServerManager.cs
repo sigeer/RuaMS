@@ -43,7 +43,6 @@ namespace Application.Core.Login.Datas
                 await CleanNxcodeCoupons(dbContext);
                 await _masterServer.CouponManager.Initialize(dbContext);
                 await _masterServer.GuildManager.Initialize(dbContext);
-                await _masterServer.DueyManager.Initialize(dbContext);
 
                 await _masterServer.NewYearCardManager.Initialize(dbContext);
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);

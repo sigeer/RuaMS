@@ -7,10 +7,7 @@ namespace Application.Core.Login.Shared
     {
         ConcurrentDictionary<TKey, TModel> _dirty = new();
 
-        protected virtual Task CommitInternal(DBContext dbContext, Dictionary<TKey, TModel> updateData)
-        {
-            return Task.CompletedTask;
-        }
+        protected abstract Task CommitInternal(DBContext dbContext, Dictionary<TKey, TModel> updateData);
 
         protected virtual void SetDirty(TKey key, TModel model)
         {
@@ -30,7 +27,18 @@ namespace Application.Core.Login.Shared
             if (updateCount == 0)
                 return;
 
-            await CommitInternal(dbContext, updateData);
+            try
+            {
+                await CommitInternal(dbContext, updateData);
+            }
+            catch (Exception)
+            {
+                foreach (var item in updateData)
+                {
+                    _dirty.TryAdd(item.Key, item.Value);
+                }
+                throw;
+            }
         }
     }
 }

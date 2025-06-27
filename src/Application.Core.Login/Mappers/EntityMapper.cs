@@ -90,8 +90,6 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
 
-
-            CreateMap<DueyPackageEntity, DueyPackageModel>();
             CreateMap<NoteEntity, Dto.NoteDto>();
             CreateMap<ShopEntity, Dto.ShopDto>();
             CreateMap<Shopitem, Dto.ShopItemDto>();

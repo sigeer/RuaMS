@@ -116,9 +116,6 @@ namespace Application.Core.ServerTransports
         void SendGift(int recipient, string from, string message, int sn, long ringid);
         Dto.GiftDto[] LoadPlayerGifts(int playerId);
         void ClearGifts(int[] giftIdArray);
-        Dto.DueyPackageDto[] GetPlayerDueyPackages(int id);
-        Dto.DueyPackageDto? GetDueyPackageByPackageId(int id);
-        void RequestRemovePackage(int packageid);
         bool SendNormalNoteMessage(string fromName, string toName, string noteMessage);
         bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
         void ShowNoteMessage(string name);
@@ -129,9 +126,6 @@ namespace Application.Core.ServerTransports
         void AddReport(int v1, int v2, int v3, string description, string v4);
         Rank.RankCharacterList LoadPlayerRanking(int topCount);
         void SendToggleCoupon(int v);
-        Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request);
-        void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest);
-        Dto.CreatePackageCheckResponse CreateDueyPackageFromInventoryCheck(Dto.CreatePackageCheckRequest request);
         void UpdateAccount(AccountCtrl accountEntity);
         Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
         Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);

@@ -6,6 +6,7 @@ using Application.Core.Game.Commands;
 using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
+using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.handlers;
@@ -28,7 +29,7 @@ namespace Application.Core.Channel
 
         private static IServiceCollection AddChannelHandlers(this IServiceCollection services)
         {
-            services.AddScoped<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
+            services.AddSingleton<IPacketProcessor<IChannelClient>, ChannelPacketProcessor>();
 
             var interfaceType = typeof(ChannelHandlerBase);
             var implementations = interfaceType.Assembly.GetTypes()
@@ -36,16 +37,16 @@ namespace Application.Core.Channel
 
             foreach (var impl in implementations)
             {
-                services.AddScoped(impl);
+                services.AddSingleton(impl);
             }
-            services.AddScoped<KeepAliveHandler<IChannelClient>>();
-            services.AddScoped<CustomPacketHandler<IChannelClient>>();
+            services.AddSingleton<KeepAliveHandler<IChannelClient>>();
+            services.AddSingleton<CustomPacketHandler<IChannelClient>>();
             return services;
         }
 
         private static IServiceCollection AddChannelCommands(this IServiceCollection services)
         {
-            services.AddScoped<CommandExecutor>();
+            services.AddSingleton<CommandExecutor>();
 
             var interfaceType = typeof(CommandBase);
             var implementations = interfaceType.Assembly.GetTypes()
@@ -53,7 +54,7 @@ namespace Application.Core.Channel
 
             foreach (var impl in implementations)
             {
-                services.AddScoped(interfaceType, impl);
+                services.AddSingleton(interfaceType, impl);
             }
             return services;
         }
@@ -75,6 +76,7 @@ namespace Application.Core.Channel
             services.AddSingleton<NewYearCardService>();
             services.AddSingleton<NoteService>();
             services.TryAddSingleton<IFishingService, DefaultFishingService>();
+            services.TryAddSingleton<IDueyService, DefaultDueyService>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();
@@ -90,13 +92,13 @@ namespace Application.Core.Channel
             services.AddChannelCommands();
             services.AddChannelHandlers();
 
+            services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
+            services.AddSingleton<WorldChannelServer>();
             services.AddChannelService();
 
-            services.AddScoped<CharacterService>();
+            services.AddSingleton<CharacterService>();
 
             services.AddAutoMapper(typeof(ProtoMapper));
-
-            services.AddSingleton<WorldChannelServer>();
             services.AddHostedService<ChannelHost>();
             return services;
         }
