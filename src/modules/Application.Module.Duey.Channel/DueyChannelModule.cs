@@ -4,6 +4,7 @@ using Application.Core.Channel.Message;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
 using Application.Module.Duey.Common;
+using Dto;
 using DueyDto;
 
 namespace Application.Module.Duey.Channel
@@ -29,6 +30,7 @@ namespace Application.Module.Duey.Channel
             MessageDispatcher.Register<RemovePackageResponse>(BroadcastType.OnDueyPackageRemove, _manager.OnDueyPackageRemoved);
             MessageDispatcher.Register<CreatePackageResponse>(BroadcastType.OnDueyPackageCreation, _manager.OnDueyPackageCreated);
             MessageDispatcher.Register<DueyNotificationDto>(BroadcastType.OnDueyNotification, _manager.OnDueyNotificationReceived);
+            MessageDispatcher.Register<DueyNotifyDto>(BroadcastType.OnDueyNotify, _manager.OnLoginDueyNotify);
         }
     }
 }

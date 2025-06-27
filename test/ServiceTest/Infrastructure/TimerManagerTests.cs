@@ -8,9 +8,9 @@ namespace ServiceTest.Infrastructure
         [Test]
         public async Task RegisterTaskTests()
         {
-            await Server.getInstance().GlobalTimerManager.Start();
+            var timeManager = await TimerManager.InitializeAsync(Application.Utility.Tasks.TaskEngine.Quartz, "test");
             int count = 0;
-            var task = Server.getInstance().GlobalTimerManager.register(() =>
+            var task = timeManager.register(() =>
             {
                 count++;
             }, TimeSpan.FromSeconds(1));

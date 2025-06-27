@@ -223,7 +223,7 @@ namespace Application.Module.Duey.Channel
             {
                 var chr = _server.FindPlayerById(data.Request.MasterId);
                 if (chr != null)
-                    chr.sendPacket(PacketCreator.removeItemFromDuey(data.Request.ByReceived, data.Request.PackageId));
+                    chr.sendPacket(DueyPacketCreator.removeItemFromDuey(data.Request.ByReceived, data.Request.PackageId));
             }
         }
 
@@ -344,6 +344,15 @@ namespace Application.Module.Duey.Channel
             if (receiver != null)
             {
                 receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.SenderName, data.Type));
+            }
+        }
+
+        public void OnLoginDueyNotify(DueyDto.DueyNotifyDto data)
+        {
+            var receiver = _server.FindPlayerById(data.ReceiverId);
+            if (receiver != null)
+            {
+                receiver.sendPacket(DueyPacketCreator.sendDueyParcelNotification(data.Type));
             }
         }
     }

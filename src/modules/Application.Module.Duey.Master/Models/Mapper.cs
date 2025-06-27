@@ -1,3 +1,4 @@
+using Application.EF.Entities;
 using AutoMapper;
 
 namespace Application.Module.Duey.Master.Models
@@ -6,7 +7,10 @@ namespace Application.Module.Duey.Master.Models
     {
         public Mapper()
         {
-            CreateMap<DueyPackageModel, DueyDto.DueyPackageDto>().ReverseMap();
+            CreateMap<DueyPackageEntity, DueyPackageModel>();
+            CreateMap<DueyPackageModel, DueyDto.DueyPackageDto>()
+                .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id))
+                .ReverseMap();
         }
     }
 }

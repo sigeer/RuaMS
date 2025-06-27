@@ -11,9 +11,9 @@ import "Duey/TakeDueyPackage.proto";
 import "Duey/DueyPackage.proto";
 
 service ChannelService {
-	rpc CreateDueyPackage (DueyDto.CreatePackageRequest) returns(DueyDto.CreatePackageResponse);
+	rpc CreateDueyPackage (DueyDto.CreatePackageRequest) returns(google.protobuf.Empty);
 	rpc GetPlayerDueyPackage(DueyDto.GetPlayerDueyPackageRequest) returns(DueyDto.GetPlayerDueyPackageResponse);
-	rpc RemoveDueyPackage(DueyDto.RemovePackageRequest) returns(DueyDto.RemovePackageResponse);
-	rpc TakeDueyPackage(DueyDto.TakeDueyPackageRequest) returns(DueyDto.TakeDueyPackageResponse);
+	rpc RemoveDueyPackage(DueyDto.RemovePackageRequest) returns(google.protobuf.Empty);
+	rpc TakeDueyPackage(DueyDto.TakeDueyPackageRequest) returns(google.protobuf.Empty);
 	rpc TakeDueyPackageCommit(DueyDto.TakeDueyPackageCommit) returns(google.protobuf.Empty);
 }

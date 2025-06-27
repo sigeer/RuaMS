@@ -3,10 +3,12 @@ using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
+using Application.EF.Entities;
 using Application.Module.Duey.Master.Models;
 using Application.Shared.Items;
 using Application.Utility;
 using AutoMapper;
+using client.inventory;
 using DueyDto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -53,16 +55,9 @@ namespace Application.Module.Duey.Master
             }
         }
 
-
-        public void UpdatePackageId(int localId, int packageId)
-        {
-            if (_dataSource.TryGetValue(localId, out var d))
-                d.PackageId = packageId;
-        }
-
         public void TakeDueyPackage(DueyDto.TakeDueyPackageRequest request)
         {
-            if (!_dataSource.TryGetValue(request.PackageId, out var package) || package.Fronzen)
+            if (!_dataSource.TryGetValue(request.PackageId, out var package))
             {
                 _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 1, Request = request });
                 return;
@@ -74,7 +69,12 @@ namespace Application.Module.Duey.Master
                 return;
             }
 
-            package.Fronzen = true;
+            if (!package.TryFreeze())
+            {
+                _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 1, Request = request });
+                return;
+            }
+
             _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Request = request, Package = _mapper.Map<DueyDto.DueyPackageDto>(package) });
         }
 
@@ -91,7 +91,7 @@ namespace Application.Module.Duey.Master
             {
                 if (_dataSource.TryGetValue(request.PackageId, out var package))
                 {
-                    package.Fronzen = false;
+                    package.ForceUnfreeze();
                 }
 
             }
@@ -135,7 +135,7 @@ namespace Application.Module.Duey.Master
                 SetDirty(model.Id, new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, model));
 
                 _transport.SendCreatePackage(new DueyDto.CreatePackageResponse { Package = _mapper.Map<DueyDto.DueyPackageDto>(model) });
-                _server.Transport.SendDueyNotification(target.Channel, target.Character.Id, target.Character.Name, model.Type);
+                _transport.SendDueyNotification(new DueyNotificationDto { SenderName = sender.Character.Name, ReceiverId = target.Character.Id, Type = model.Type});
             }
             catch (Exception sqle)
             {
@@ -152,23 +152,6 @@ namespace Application.Module.Duey.Master
 
             SetDirty(d.Id, new UpdateField<DueyPackageModel>(UpdateMethod.Remove, d));
             _transport.SendDueyPackageRemoved(new DueyDto.RemovePackageResponse { Code = 0, Request = request });
-        }
-
-        public void SendDueyNotification(string characterName)
-        {
-            var target = _server.CharacterManager.FindPlayerByName(characterName);
-            if (target != null && target.Channel > 0)
-            {
-                using var dbContext = _dbContextFactory.CreateDbContext();
-                var sender = dbContext.Dueypackages.Where(x => x.ReceiverId == target.Character.Id && x.Checked)
-                    .OrderByDescending(x => x.Type).Select(x => new { x.SenderName, x.Type }).FirstOrDefault();
-
-                if (sender != null)
-                {
-                    dbContext.Dueypackages.Where(x => x.ReceiverId == target.Character.Id).ExecuteUpdate(x => x.SetProperty(y => y.Checked, false));
-                    _server.Transport.SendDueyNotification(target.Channel, target.Character.Id, sender.SenderName, sender.Type);
-                }
-            }
         }
 
         public DueyDto.DueyPackageDto[] GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
@@ -195,6 +178,58 @@ namespace Application.Module.Duey.Master
             {
                 _logger.LogError(e.ToString());
             }
+        }
+
+        internal void SendDueyNotifyOnLogin(int id)
+        {
+            var allUnreadData = _dataSource.Values.Where(x => x.ReceiverId == id && x.Checked).OrderByDescending(x => x.Type);
+            var data = allUnreadData.FirstOrDefault();
+            if (data != null)
+            {
+                foreach (var item in allUnreadData)
+                {
+                    item.Checked = false;
+                    SetDirty(item.Id, new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, item));
+                }
+                _transport.SendDueyNotifyOnLogin(id, new DueyDto.DueyNotifyDto { Type = data.Type });
+            }
+        }
+
+        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, UpdateField<DueyPackageModel>> updateData)
+        {
+            var updatePackages = updateData.Values.Select(x => x.Data.PackageId).ToArray();
+            var dbList = await dbContext.Dueypackages.Where(x => updatePackages.Contains(x.PackageId)).ToListAsync();
+            foreach (var item in updateData.Values)
+            {
+                var obj = item.Data;
+                if (item.Method == UpdateMethod.AddOrUpdate)
+                {
+                    var dbData = dbList.FirstOrDefault(x => x.PackageId == obj.PackageId);
+                    if (dbData == null)
+                    {
+                        dbData = new DueyPackageEntity(obj.ReceiverId, obj.SenderId, obj.Mesos, obj.Message, obj.Checked, obj.Type, obj.TimeStamp);
+                        dbContext.Dueypackages.Add(dbData);
+                        await dbContext.SaveChangesAsync();
+
+                        obj.PackageId = dbData.PackageId;
+                        await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.PackageId, obj.Item == null ? [] : [obj.Item], ItemFactory.DUEY);
+                    }
+                    else
+                    {
+                        dbData.Checked = obj.Checked;
+                        await dbContext.SaveChangesAsync();
+                    }
+                }
+                if (item.Method == UpdateMethod.Remove && obj.PackageId > 0)
+                {
+                    // 已经保存过数据库，存在packageid 才需要从数据库移出
+                    // 没保存过数据库的，从内存中移出就行（已经移除了），不需要执行这里的更新s
+                    await dbContext.Dueypackages.Where(x => x.PackageId == obj.PackageId).ExecuteDeleteAsync();
+                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.PackageId, [], ItemFactory.DUEY);
+                }
+
+            }
+            await dbContext.SaveChangesAsync();
         }
     }
 }

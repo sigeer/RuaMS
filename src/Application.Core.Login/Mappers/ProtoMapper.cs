@@ -58,9 +58,6 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<SavedLocationModel, Dto.SavedLocationDto>().ReverseMap();
 
-            CreateMap<DueyPackageModel, Dto.DueyPackageDto>()
-                .ForMember(x => x.PackageId, src => src.MapFrom(x => x.Id));
-
             CreateMap<PlayerBuffSaveModel, Dto.PlayerBuffSaveDto>().ReverseMap();
             CreateMap<BuffModel, Dto.BuddyDto>().ReverseMap();
             CreateMap<DiseaseModel, Dto.DiseaseDto>().ReverseMap();

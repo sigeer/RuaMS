@@ -6735,31 +6735,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet removeItemFromDuey(bool remove, int Package)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARCEL);
-        p.writeByte(0x17);
-        p.writeInt(Package);
-        p.writeByte(remove ? 3 : 4);
-        return p;
-    }
-
-    public static Packet sendDueyParcelReceived(string from, bool quick)
-    {    // thanks inhyuk
-        OutPacket p = OutPacket.create(SendOpcode.PARCEL);
-        p.writeByte(0x19);
-        p.writeString(from);
-        p.writeBool(quick);
-        return p;
-    }
-
-    public static Packet sendDueyParcelNotification(bool quick)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PARCEL);
-        p.writeByte(0x1B);
-        p.writeBool(quick);  // 0 : package received, 1 : quick delivery namespace return p;
-        return p;
-    }
 
     public static Packet sendDojoAnimation(byte firstByte, string animation)
     {

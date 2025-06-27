@@ -1,5 +1,6 @@
 using Application.Core.Login;
 using Application.Core.Login.Events;
+using Application.Core.Login.Models;
 using Application.EF;
 using Application.Utility;
 using Application.Utility.Tasks;
@@ -30,6 +31,20 @@ namespace Application.Module.Duey.Master
 
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             timerManager.register(_dueyTask, TimeSpan.FromHours(1), timeLeft);
+        }
+
+        public override void OnPlayerLogin(CharacterLiveObject obj)
+        {
+            base.OnPlayerLogin(obj);
+
+            _manager.SendDueyNotifyOnLogin(obj.Character.Id);
+        }
+
+        public override async Task SaveChangesAsync(DBContext dbContext)
+        {
+            await base.SaveChangesAsync(dbContext);
+
+             await _manager.Commit(dbContext);
         }
     }
 }

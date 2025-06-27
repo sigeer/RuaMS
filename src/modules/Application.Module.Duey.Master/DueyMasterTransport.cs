@@ -1,5 +1,6 @@
 using Application.Core.Login;
 using Application.Core.Login.ServerTransports;
+using Application.EF.Entities;
 using Application.Module.Duey.Common;
 using DueyDto;
 
@@ -29,6 +30,11 @@ namespace Application.Module.Duey.Master
         public void SendDueyNotification(DueyDto.DueyNotificationDto response)
         {
             SendMessage(BroadcastType.OnDueyNotification, response, response.ReceiverId);
+        }
+
+        internal void SendDueyNotifyOnLogin(int receiverId, DueyNotifyDto response)
+        {
+            SendMessage(BroadcastType.OnDueyNotify, response, receiverId);
         }
     }
 }

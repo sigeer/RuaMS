@@ -82,15 +82,6 @@ namespace Application.Core.Login
             return selectedPw;
         }
 
-        public void SendDueyNotification(int channel, int id, string senderName, bool dueyType)
-        {
-            var world = Server.getInstance().getWorld(0);
-            var chr = world.Channels[channel - 1].getPlayerStorage().getCharacterById(id);
-            if (chr != null)
-            {
-                chr.Client.sendPacket(PacketCreator.sendDueyParcelReceived(senderName, dueyType));
-            }
-        }
 
         public void SendNotes(int channel, int id, Dto.NoteDto[] notes)
         {

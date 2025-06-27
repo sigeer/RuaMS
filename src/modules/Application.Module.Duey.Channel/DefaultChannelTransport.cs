@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using DueyDto;
 using Grpc.Net.Client;
 
@@ -7,9 +8,9 @@ namespace Application.Module.Duey.Channel
     {
         readonly DueyService.ChannelService.ChannelServiceClient _grpcClient;
 
-        public DefaultChannelTransport(GrpcChannel grpcChannel)
+        public DefaultChannelTransport(WorldChannelServer server)
         {
-            _grpcClient = new DueyService.ChannelService.ChannelServiceClient(grpcChannel);
+            _grpcClient = new DueyService.ChannelService.ChannelServiceClient(GrpcChannel.ForAddress(server.ServerConfig.MasterServerGrpcAddress));
         }
 
         public void CreateDueyPackage(CreatePackageRequest request)
@@ -32,9 +33,9 @@ namespace Application.Module.Duey.Channel
             _grpcClient.TakeDueyPackageCommit(request);
         }
 
-        public TakeDueyPackageResponse TakeDueyPackage(TakeDueyPackageRequest request)
+        public void TakeDueyPackage(TakeDueyPackageRequest request)
         {
-            return _grpcClient.TakeDueyPackage(request);
+            _grpcClient.TakeDueyPackage(request);
         }
     }
 }

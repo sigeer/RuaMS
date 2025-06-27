@@ -9,6 +9,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Duey.Channel\Application.Module.Duey.Channel.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Duey.Master\Application.Module.Duey.Master.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.ExpeditionBossLog.Master\Application.Module.ExpeditionBossLog.Master.csproj" />
   </ItemGroup>
 
 </Project>

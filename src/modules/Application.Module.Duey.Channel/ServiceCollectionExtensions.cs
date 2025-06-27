@@ -19,7 +19,7 @@ namespace Application.Module.Duey.Channel
             services.AddSingleton<DueyManager>();
             services.AddSingleton<ChannelModule, DueyChannelModule>();
 
-            services.AddScoped<DueyHandler>();
+            services.AddSingleton<DueyHandler>();
 
             return services;
         }
