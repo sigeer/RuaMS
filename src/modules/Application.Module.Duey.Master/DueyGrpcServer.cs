@@ -21,15 +21,12 @@ namespace Application.Module.Duey.Master
 
         public override Task<GetPlayerDueyPackageResponse> GetPlayerDueyPackage(GetPlayerDueyPackageRequest request, ServerCallContext context)
         {
-            var res = new GetPlayerDueyPackageResponse();
-            res.List.AddRange(_manager.GetPlayerDueyPackages(request));
-            res.ReceiverId = request.ReceiverId;
-            return Task.FromResult(res);
+            return Task.FromResult(_manager.GetPlayerDueyPackages(request));
         }
 
         public override Task<Empty> RemoveDueyPackage(RemovePackageRequest request, ServerCallContext context)
         {
-            _manager.RemovePackageById(request);
+            _manager.RemovePackage(request);
             return base.RemoveDueyPackage(request, context);
         }
 

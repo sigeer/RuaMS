@@ -24,7 +24,7 @@
 - **Application.Core** 核心功能，目录结构与Cosmic源码类似，部分经过较大整理或者重构，移到了Game目录
 - **Application.Core.EF** EF
 - **Application.Core.Channel** 频道服务器实现
-- **Application.Core.Channel.Local** 单进程运行主服务器+频道服务器的实现
+- **Application.Core.Channel.InProgress** 进程内同时运行主服务器+频道服务器的实现 （Application.Modules.XXX.Channel.InProgress）
 - **Application.Core.Login** 登录服务器、主服务器实现
 - **Application.Proto** proto文件
 - **Application.Utility** 工具类

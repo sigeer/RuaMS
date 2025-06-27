@@ -1,4 +1,4 @@
-using Application.Core.Channel.Local;
+using Application.Core.Channel.InProgress;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.OpenApi;
 using Application.Host.Middlewares;
@@ -56,7 +56,7 @@ try
     builder.Logging.AddSerilog();
 
 
-    builder.AddGameServerLocal();
+    builder.AddGameServerInProgress();
 
     if (YamlConfig.config.server.ENABLE_OPENAPI)
     {

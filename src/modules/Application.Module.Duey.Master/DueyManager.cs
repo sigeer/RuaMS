@@ -84,7 +84,7 @@ namespace Application.Module.Duey.Master
             {
                 if (_dataSource.TryRemove(request.PackageId, out var package))
                 {
-                    RemovePackageById(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId });
+                    RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
                 }
             }
             else
@@ -143,7 +143,7 @@ namespace Application.Module.Duey.Master
             }
         }
 
-        public void RemovePackageById(DueyDto.RemovePackageRequest request)
+        public void RemovePackage(DueyDto.RemovePackageRequest request)
         {
             if (!_dataSource.TryRemove(request.PackageId, out var d))
             {
@@ -154,9 +154,12 @@ namespace Application.Module.Duey.Master
             _transport.SendDueyPackageRemoved(new DueyDto.RemovePackageResponse { Code = 0, Request = request });
         }
 
-        public DueyDto.DueyPackageDto[] GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
+        public DueyDto.GetPlayerDueyPackageResponse GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
         {
-            return _mapper.Map<DueyDto.DueyPackageDto[]>(_dataSource.Values.Where(x => x.ReceiverId == request.ReceiverId));
+            var res = new GetPlayerDueyPackageResponse();
+            res.List.AddRange(_mapper.Map<DueyDto.DueyPackageDto[]>(_dataSource.Values.Where(x => x.ReceiverId == request.ReceiverId)));
+            res.ReceiverId = request.ReceiverId;
+            return res;
         }
 
         public void RunDueyExpireSchedule()

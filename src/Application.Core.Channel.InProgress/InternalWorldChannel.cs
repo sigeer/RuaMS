@@ -1,7 +1,7 @@
 using Application.Core.Login.Servers;
 using Config;
 
-namespace Application.Core.Channel.Local
+namespace Application.Core.Channel.InProgress
 {
     public sealed class InternalWorldChannel : ChannelServerWrapper
     {

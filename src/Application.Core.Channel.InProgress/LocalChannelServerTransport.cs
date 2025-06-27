@@ -19,7 +19,7 @@ using System.Text;
 using tools;
 using tools.packets;
 
-namespace Application.Core.Channel.Local
+namespace Application.Core.Channel.InProgress
 {
     /// <summary>
     /// 登录服务器 与 频道服务器在同一个进程中时，直接与MasterServer交互

@@ -1,18 +1,16 @@
 using Application.Core.Login;
 using Application.Core.ServerTransports;
-using Application.Module.Duey.Channel;
-using Application.Module.Duey.Master;
+using Application.Module.Duey.Channel.InProgress;
 using Application.Module.ExpeditionBossLog.Master;
-using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Application.Core.Channel.Local
+namespace Application.Core.Channel.InProgress
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddGameServerLocal(this WebApplicationBuilder builder)
+        public static void AddGameServerInProgress(this WebApplicationBuilder builder)
         {
             builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
 
@@ -22,9 +20,8 @@ namespace Application.Core.Channel.Local
 
             // 其他可关闭的游戏模块
             builder.Services.AddExpeditionBossLogMaster();
-            builder.Services.AddDueyMaster();
 
-            builder.Services.AddDueyChannel();
+            builder.Services.AddDueyInProgress();
         }
     }
 }
