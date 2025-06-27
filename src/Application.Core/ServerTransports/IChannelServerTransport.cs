@@ -182,5 +182,6 @@ namespace Application.Core.ServerTransports
         void SendSetFly(SetFlyRequest setFlyRequest);
         void SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
         void BroadcastMessage(SendTextMessage data);
+        void BroadcastTV(CreateTVMessageRequest request);
     }
 }

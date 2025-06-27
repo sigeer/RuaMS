@@ -764,22 +764,22 @@ public class PacketCreator
     /// </param>
     /// <param name="partner">The partner shown with chr</param>
     /// <returns>the SEND_TV packet</returns>
-    public static Packet sendTV(IPlayer chr, List<string> messages, int type, IPlayer? partner)
+    public static Packet sendTV(Dto.PlayerViewDto chr, string[] messages, int type, Dto.PlayerViewDto? partner)
     {
         OutPacket p = OutPacket.create(SendOpcode.SEND_TV);
         p.writeByte(partner != null ? 3 : 1);
         p.writeByte(type); //Heart = 2  Star = 1  Normal = 0
         addCharLook(p, chr, false);
-        p.writeString(chr.getName());
+        p.writeString(chr.Character.Name);
         if (partner != null)
         {
-            p.writeString(partner.getName());
+            p.writeString(partner.Character.Name);
         }
         else
         {
             p.writeShort(0);
         }
-        for (int i = 0; i < messages.Count; i++)
+        for (int i = 0; i < messages.Length; i++)
         {
             var messageItem = messages[i];
             if (i == 4 && messageItem.Length > 15)
@@ -7711,4 +7711,62 @@ public class PacketCreator
         return p;
     }
 
+    public static void addCharLook(OutPacket p, Dto.PlayerViewDto chr, bool mega)
+    {
+        p.writeByte(chr.Character.Gender);
+        p.writeByte((int)chr.Character.Skincolor); // skin color
+        p.writeInt(chr.Character.Face); // face
+        p.writeBool(!mega);
+        p.writeInt(chr.Character.Hair); // hair
+        addCharEquips(p, chr);
+    }
+
+    private static void addCharEquips(OutPacket p, Dto.PlayerViewDto chr)
+    {
+        Dictionary<short, int> myEquip = new();
+        Dictionary<short, int> maskedEquip = new();
+        int weaponItemId = 0;
+        foreach (var item in chr.InventoryItems.Where(x => x.InventoryType == -1))
+        {
+            short pos = (short)(item.Position * -1);
+            if (pos < 100 && !myEquip.ContainsKey(pos))
+            {
+                myEquip.AddOrUpdate(pos, item.Itemid);
+            }
+            else if (pos > 100 && pos != 111)
+            {
+                // don't ask. o.o
+                pos -= 100;
+                if (myEquip.TryGetValue(pos, out var d))
+                {
+                    maskedEquip.AddOrUpdate(pos, d);
+                }
+                myEquip.AddOrUpdate(pos, item.Itemid);
+            }
+            else if (myEquip.ContainsKey(pos))
+            {
+                maskedEquip.AddOrUpdate(pos, item.Itemid);
+            }
+
+            if (item.Position == -111)
+                weaponItemId = item.Itemid;
+        }
+        foreach (var entry in myEquip)
+        {
+            p.writeByte(entry.Key);
+            p.writeInt(entry.Value);
+        }
+        p.writeByte(0xFF);
+        foreach (var entry in maskedEquip)
+        {
+            p.writeByte(entry.Key);
+            p.writeInt(entry.Value);
+        }
+        p.writeByte(0xFF);
+        p.writeInt(weaponItemId);
+        for (int i = 0; i < 3; i++)
+        {
+            p.writeInt(0);
+        }
+    }
 }

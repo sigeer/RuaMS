@@ -12,6 +12,9 @@
 
 	<ItemGroup>
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\TVMessage.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Duey\CreatePackageRequest.proto" GrpcServices="None">
 		</Protobuf>
 		<Protobuf Include="Duey\DueyPackage.proto" GrpcServices="None">

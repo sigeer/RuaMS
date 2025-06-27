@@ -2,8 +2,10 @@ using Application.Core.EF.Entities.Items;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Item;
+using Application.Shared.Message;
 using AutoMapper;
 using Dto;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using ZLinq;
 
@@ -13,11 +15,13 @@ namespace Application.Core.Login.Services
     {
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly IMapper _mapper;
+        readonly MasterServer _server;
 
-        public ItemService(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper)
+        public ItemService(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
         {
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
+            _server = server;
         }
 
         public Dto.DropAllDto LoadAllReactorDrops()
@@ -73,6 +77,47 @@ namespace Application.Core.Login.Services
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
+        }
+
+        bool isLocked = true;
+        public void BroadcastTV(Dto.CreateTVMessageRequest request)
+        {
+            if (isLocked)
+                return;
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
+
+            var messageDto = new Dto.TVMessage { Master = _mapper.Map<Dto.PlayerViewDto>(master), Type = request.Type };
+            var masterPartner = _server.CharacterManager.FindPlayerById(master.Character.PartnerId);
+            if (masterPartner != null)
+                messageDto.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
+
+            messageDto.MessageList.AddRange(request.MessageList);
+            var response = new Dto.CreateTVMessageResponse()
+            {
+                Code = 0,
+                MasterId = master.Character.Id,
+                ShowEar = request.ShowEar,
+                Data = messageDto
+            };
+            _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, response);
+
+            int delay = 15;
+            if (request.Type == 4)
+            {
+                delay = 30;
+            }
+            else if (request.Type == 5)
+            {
+                delay = 60;
+            }
+            _server.TimerManager.schedule(BroadcastTVFinish, TimeSpan.FromSeconds(delay));
+        }
+
+        void BroadcastTVFinish()
+        {
+            isLocked = false;
+            _server.Transport.BroadcastMessage(BroadcastType.OnTVMessageFinish, new Empty());
         }
     }
 }

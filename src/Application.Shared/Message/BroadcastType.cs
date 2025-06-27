@@ -2,6 +2,8 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string OnTVMessage = "OnTVMessage";
+        public const string OnTVMessageFinish = "OnTVMessageFinish";
         public const string OnMessage = "OnMessage";
         public const string OnSetFly = "OnSetFly";
         public const string OnEventsReloaded = "OnEventsReloaded";

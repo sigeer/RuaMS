@@ -5,6 +5,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Models;
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Message;
@@ -594,8 +595,11 @@ namespace Application.Core.Channel
 
         private void InitializeMessage()
         {
+            var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
             MessageDispatcher.Register<Dto.SendTextMessage>(BroadcastType.OnMessage, OnBroadcastText);
+            MessageDispatcher.Register<Dto.CreateTVMessageResponse>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
+            MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
             MessageDispatcher.Register<Dto.SetFlyResponse>(BroadcastType.OnSetFly, OnSetFly);
             MessageDispatcher.Register<Dto.ReloadEventsResponse>(BroadcastType.OnEventsReloaded, OnEventsReloaded);
             MessageDispatcher.Register<Config.WorldConfig>(BroadcastType.OnWorldConfigUpdate, UpdateWorldConfig);

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+import "Dto/PlayerView.proto";
+import "google/protobuf/wrappers.proto";
+
+package Dto;
+
+message CreateTVMessageRequest {
+	int32 masterId = 1;
+	google.protobuf.StringValue toName = 2;
+	int32 type = 3;
+	repeated string messageList = 4;
+	bool showEar = 5;
+}
+
+message CreateTVMessageResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	TVMessage data = 3;
+	bool showEar = 4;
+}
+
+message TVMessage {
+  PlayerViewDto master = 1;
+  PlayerViewDto masterPartner = 2;
+  int32 type = 3;
+  repeated string messageList = 4;
+}
+
+message CreateTVMessageCommit {
+	int32 masterId = 1;
+	bool isSuccess = 2;
+}

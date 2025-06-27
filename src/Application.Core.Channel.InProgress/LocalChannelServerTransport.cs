@@ -18,6 +18,7 @@ using System.Net;
 using System.Text;
 using tools;
 using tools.packets;
+using XmlWzReader;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -852,6 +853,11 @@ namespace Application.Core.Channel.InProgress
         public void BroadcastMessage(SendTextMessage data)
         {
             _server.Transport.BroadcastMessage(BroadcastType.OnMessage, data);
+        }
+
+        public void BroadcastTV(CreateTVMessageRequest request)
+        {
+            _itemService.BroadcastTV(request);
         }
     }
 }

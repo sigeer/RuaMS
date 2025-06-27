@@ -24,6 +24,7 @@
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
+using Application.Core.Servers.Services;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
@@ -49,11 +50,13 @@ public class UseCashItemHandler : ChannelHandlerBase
 
     readonly ILogger<UseCashItemHandler> _logger;
     readonly IDueyService _dueyService;
+    readonly ItemService _itemService;
 
-    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService)
+    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService, ItemService itemService)
     {
         _logger = logger;
         _dueyService = dueyService;
+        _itemService = itemService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -78,6 +81,8 @@ public class UseCashItemHandler : ChannelHandlerBase
         var toUse = cashInv.getItem(position);
         if (toUse == null || toUse.getItemId() != itemId)
         {
+            // 会出现这种情况？--非背包使用？
+            _logger.LogDebug("UseCashItemHandler, position和itemid不匹配");
             toUse = cashInv.findById(itemId);
 
             if (toUse == null)
@@ -289,60 +294,40 @@ public class UseCashItemHandler : ChannelHandlerBase
                         return;
                     }
                     break;
-                case 2: 
+                case 2:
                     // Super megaphone
                     c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
-                    bool megassenger = false;
                     bool ear = false;
-                    IPlayer? victim = null;
+                    string? victim = null;
                     if (tvType != 1)
                     {
                         if (tvType >= 3)
                         {
-                            megassenger = true;
                             if (tvType == 3)
                             {
                                 p.readByte();
                             }
                             ear = 1 == p.readByte();
                         }
-                        else if (tvType != 2)
-                        {
-                            p.readByte();
-                        }
+
                         if (tvType != 4)
                         {
-                            victim = c.CurrentServer.getPlayerStorage().getCharacterByName(p.readString());
+                            victim = p.readString();
                         }
                     }
                     List<string> messages = new();
-                    StringBuilder builder = new StringBuilder();
                     for (int i = 0; i < 5; i++)
                     {
                         string message = p.readString();
-                        if (megassenger)
-                        {
-                            builder.Append(" ").Append(message);
-                        }
                         messages.Add(message);
                     }
-                    p.readInt();
+                    var v = p.readInt();
 
-                    if (!MapleTVEffect.broadcastMapleTVIfNotActive(player, victim, messages, tvType))
-                    {
-                        player.dropMessage(1, "MapleTV is already in use.");
-                        return;
-                    }
-
-                    if (megassenger)
-                    {
-                        c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.serverNotice(3, c.ActualChannel, medal + player.getName() + " : " + builder, ear));
-                    }
-
-                    break;
+                    _itemService.UseCash_TV(player, toUse, victim, messages, tvType, ear);
+                    return;
                 case 6: //item megaphone
                     string msg = medal + player.getName() + " : " + p.readString();
                     whisper = p.readByte() == 1;
