@@ -452,12 +452,21 @@ public class InventoryManipulator
         return returnValue;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="c"></param>
+    /// <param name="type"></param>
+    /// <param name="slot"></param>
+    /// <param name="quantity"></param>
+    /// <param name="fromDrop">不明</param>
+    /// <param name="consume">对于子弹、飞镖等物品，consume为true时不会移出</param>
     public static void removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
         IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
         var item = inv.getItem(slot)!;
-        // consume为什么是参数？不应该是InventoryType.USE？--true不会移除，false会移除
+
         bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
 
         if (type == InventoryType.EQUIPPED)
