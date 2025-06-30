@@ -15,5 +15,4 @@ service ChannelService {
 	rpc GetPlayerDueyPackage(DueyDto.GetPlayerDueyPackageRequest) returns(DueyDto.GetPlayerDueyPackageResponse);
 	rpc RemoveDueyPackage(DueyDto.RemovePackageRequest) returns(google.protobuf.Empty);
 	rpc TakeDueyPackage(DueyDto.TakeDueyPackageRequest) returns(google.protobuf.Empty);
-	rpc TakeDueyPackageCommit(DueyDto.TakeDueyPackageCommit) returns(google.protobuf.Empty);
 }

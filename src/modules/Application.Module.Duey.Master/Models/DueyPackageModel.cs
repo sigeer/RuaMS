@@ -32,7 +32,7 @@ namespace Application.Module.Duey.Master.Models
         public int _frozen;
 
         /// <summary>
-        /// 尝试冻结（原子操作）
+        /// 尝试冻结（原子操作），避免重复领取
         /// </summary>
         public bool TryFreeze()
         {

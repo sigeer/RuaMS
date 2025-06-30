@@ -2,10 +2,12 @@ using Application.Core.EF.Entities.Items;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Item;
+using Application.Shared.Items;
 using Application.Shared.Message;
 using AutoMapper;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
+using ItemDto;
 using Microsoft.EntityFrameworkCore;
 using ZLinq;
 
@@ -80,26 +82,30 @@ namespace Application.Core.Login.Services
         }
 
         bool isLocked = true;
-        public void BroadcastTV(Dto.CreateTVMessageRequest request)
+        public void BroadcastTV(ItemDto.CreateTVMessageRequest request)
         {
             if (isLocked)
                 return;
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
 
-            var messageDto = new Dto.TVMessage { Master = _mapper.Map<Dto.PlayerViewDto>(master), Type = request.Type };
+            var messageDto = new ItemDto.TVMessage { Master = _mapper.Map<Dto.PlayerViewDto>(master), Type = request.Type };
             var masterPartner = _server.CharacterManager.FindPlayerById(master.Character.PartnerId);
             if (masterPartner != null)
                 messageDto.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
 
             messageDto.MessageList.AddRange(request.MessageList);
-            var response = new Dto.CreateTVMessageResponse()
+
+            var tsc = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForCommit);
+            var response = new ItemDto.CreateTVMessageResponse()
             {
                 Code = 0,
                 MasterId = master.Character.Id,
                 ShowEar = request.ShowEar,
-                Data = messageDto
+                Data = messageDto,
+                Transaction = tsc
             };
+           
             _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, response);
 
             int delay = 15;
@@ -118,6 +124,26 @@ namespace Application.Core.Login.Services
         {
             isLocked = false;
             _server.Transport.BroadcastMessage(BroadcastType.OnTVMessageFinish, new Empty());
+        }
+
+        public void BroadcastItemMegaphone(UseItemMegaphoneRequest request)
+        {
+            var res = new ItemDto.UseItemMegaphoneResponse();
+
+            var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
+
+            _server.Transport.BroadcastMessage(BroadcastType.OnItemMegaphone, new ItemDto.UseItemMegaphoneResponse
+            {
+                Code = 0,
+                Data = new UseItemMegaphoneResult
+                {
+                    IsWishper = request.IsWishper,
+                    Item = request.Item,
+                    Message = request.Message,
+                    SenderChannel = master.Channel,
+                    SenderId = master.Character.Id,
+                }
+            });
         }
     }
 }

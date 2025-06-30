@@ -100,13 +100,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             return;
         }
 
-        string medal = "";
-        var medalItem = player.getInventory(InventoryType.EQUIPPED).getItem(-49);
-        if (medalItem != null)
-        {
-            medal = "<" + ii.getName(medalItem.getItemId()) + "> ";
-        }
-
+        string medal = player.getMedalText();
         if (itemType == 504)
         { // vip teleport rock
             string error1 = "Either the player could not be found or you were trying to teleport to an illegal location.";
@@ -328,12 +322,13 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                     _itemService.UseCash_TV(player, toUse, victim, messages, tvType, ear);
                     return;
-                case 6: //item megaphone
+                case 6: //道具喇叭
                     string msg = medal + player.getName() + " : " + p.readString();
                     whisper = p.readByte() == 1;
                     Item? item = null;
                     if (p.readByte() == 1)
-                    { //item
+                    { 
+                        //item
                         item = player.getInventory(InventoryTypeUtils.getByType((sbyte)p.readInt())).getItem((short)p.readInt());
                         if (item == null) //hack
                         {
@@ -342,9 +337,9 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    c.CurrentServerContainer.BroadcastWorldMessage(PacketCreator.itemMegaphone(msg, whisper, c.ActualChannel, item));
-                    break;
-                case 7: //triple megaphone
+                    _itemService.UseCash_ItemMegaphone(c.OnlinedCharacter, toUse, item, msg, whisper);
+                    return;
+                case 7: //缤纷喇叭
                     int lines = p.ReadSByte();
                     if (lines < 1 || lines > 3) //hack
                     {

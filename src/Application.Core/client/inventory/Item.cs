@@ -45,9 +45,9 @@ public class Item : IComparable<Item>, IItemProp
 
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
-
     public Item(int id, short position, short quantity)
     {
+
         log = LogFactory.GetLogger(LogType.Item);
         this.id = id;
         this.position = position;

@@ -2,6 +2,7 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string OnItemMegaphone = "OnItemMegaphone";
         public const string OnTVMessage = "OnTVMessage";
         public const string OnTVMessageFinish = "OnTVMessageFinish";
         public const string OnMessage = "OnMessage";

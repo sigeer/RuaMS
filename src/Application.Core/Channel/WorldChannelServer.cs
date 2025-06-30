@@ -303,6 +303,9 @@ namespace Application.Core.Channel
 
         public IPlayer? FindPlayerById(int cid)
         {
+            if (cid <= 0)
+                return null;
+
             foreach (var item in Servers.Values)
             {
                 var chr = item.Players.getCharacterById(cid);
@@ -314,6 +317,9 @@ namespace Application.Core.Channel
 
         public IPlayer? FindPlayerById(int channel, int cid)
         {
+            if (cid <= 0)
+                return null;
+
             if (Servers.TryGetValue(channel, out var ch))
                 return ch.Players.getCharacterById(cid);
 
@@ -598,7 +604,8 @@ namespace Application.Core.Channel
             var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
             MessageDispatcher.Register<Dto.SendTextMessage>(BroadcastType.OnMessage, OnBroadcastText);
-            MessageDispatcher.Register<Dto.CreateTVMessageResponse>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
+            MessageDispatcher.Register<ItemDto.UseItemMegaphoneResponse>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
+            MessageDispatcher.Register<ItemDto.CreateTVMessageResponse>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
             MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
             MessageDispatcher.Register<Dto.SetFlyResponse>(BroadcastType.OnSetFly, OnSetFly);
             MessageDispatcher.Register<Dto.ReloadEventsResponse>(BroadcastType.OnEventsReloaded, OnEventsReloaded);

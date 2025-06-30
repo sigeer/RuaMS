@@ -65,7 +65,7 @@ namespace Application.Module.Duey.Master
 
             if (package.ReceiverId != request.MasterId)
             {
-                _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse {  Code = 2, Request = request });
+                _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 2, Request = request });
                 return;
             }
 
@@ -76,26 +76,9 @@ namespace Application.Module.Duey.Master
             }
 
             _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Request = request, Package = _mapper.Map<DueyDto.DueyPackageDto>(package) });
+            RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
         }
 
-        public void TakeDueyPackageCommit(DueyDto.TakeDueyPackageCommit request)
-        {
-            if (request.Success)
-            {
-                if (_dataSource.TryRemove(request.PackageId, out var package))
-                {
-                    RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
-                }
-            }
-            else
-            {
-                if (_dataSource.TryGetValue(request.PackageId, out var package))
-                {
-                    package.ForceUnfreeze();
-                }
-
-            }
-        }
 
         public void CreateDueyPackage(DueyDto.CreatePackageRequest request)
         {
@@ -105,13 +88,21 @@ namespace Application.Module.Duey.Master
                 var sender = _server.CharacterManager.FindPlayerById(request.SenderId);
                 if (target == null || sender == null)
                 {
-                    _transport.SendCreatePackage(new DueyDto.CreatePackageResponse { Code = (int)SendDueyItemResponseCode.CharacterNotExisted, CostMeso = request.SendMeso });
+                    _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
+                    {
+                        Code = (int)SendDueyItemResponseCode.CharacterNotExisted,
+                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForRollback)
+                    });
                     return;
                 }
 
                 if (target.Character.AccountId == sender.Character.AccountId)
                 {
-                    _transport.SendCreatePackage(new DueyDto.CreatePackageResponse { Code = (int)SendDueyItemResponseCode.SameAccount, CostMeso = request.SendMeso });
+                    _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
+                    {
+                        Code = (int)SendDueyItemResponseCode.SameAccount,
+                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForRollback)
+                    });
                     return;
                 }
 
@@ -134,8 +125,12 @@ namespace Application.Module.Duey.Master
 
                 SetDirty(model.Id, new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, model));
 
-                _transport.SendCreatePackage(new DueyDto.CreatePackageResponse { Package = _mapper.Map<DueyDto.DueyPackageDto>(model) });
-                _transport.SendDueyNotification(new DueyNotificationDto { SenderName = sender.Character.Name, ReceiverId = target.Character.Id, Type = model.Type});
+                _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
+                {
+                    Package = _mapper.Map<DueyDto.DueyPackageDto>(model),
+                    SenderName = sender.Character.Name,
+                    Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForCommit)
+                });
             }
             catch (Exception sqle)
             {

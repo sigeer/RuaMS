@@ -3,6 +3,7 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Shared.Team;
 using Dto;
+using ItemDto;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -183,5 +184,7 @@ namespace Application.Core.ServerTransports
         void SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
         void BroadcastMessage(SendTextMessage data);
         void BroadcastTV(CreateTVMessageRequest request);
+        void SendItemMegaphone(UseItemMegaphoneRequest request);
+        void FinishTransaction(FinishTransactionRequest finishTransactionRequest);
     }
 }

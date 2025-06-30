@@ -31,7 +31,7 @@ public class EquipSlot : EnumClass
     public static readonly EquipSlot PENDANT = new EquipSlot("Pe", -17);
     public static readonly EquipSlot TAMED_MOB = new EquipSlot("Tm", -18);
     public static readonly EquipSlot SADDLE = new EquipSlot("Sd", -19);
-    public static readonly EquipSlot MEDAL = new EquipSlot("Me", -49);
+    public static readonly EquipSlot MEDAL = new EquipSlot("Me", Medal);
     public static readonly EquipSlot BELT = new EquipSlot("Be", -50);
     public static readonly EquipSlot PET_EQUIP = new EquipSlot();
 

@@ -28,11 +28,6 @@ namespace Application.Module.Duey.Channel
             _grpcClient.RemoveDueyPackage(request);
         }
 
-        public void TakeDueyPackageCommit(TakeDueyPackageCommit request)
-        {
-            _grpcClient.TakeDueyPackageCommit(request);
-        }
-
         public void TakeDueyPackage(TakeDueyPackageRequest request)
         {
             _grpcClient.TakeDueyPackage(request);

@@ -2,8 +2,9 @@ syntax = "proto3";
 
 import "Dto/PlayerView.proto";
 import "google/protobuf/wrappers.proto";
+import "Item/ItemTransaction.proto";
 
-package Dto;
+package ItemDto;
 
 message CreateTVMessageRequest {
 	int32 masterId = 1;
@@ -11,6 +12,7 @@ message CreateTVMessageRequest {
 	int32 type = 3;
 	repeated string messageList = 4;
 	bool showEar = 5;
+	ItemTransaction transaction = 6;
 }
 
 message CreateTVMessageResponse {
@@ -18,16 +20,12 @@ message CreateTVMessageResponse {
 	int32 masterId = 2;
 	TVMessage data = 3;
 	bool showEar = 4;
+	ItemTransaction transaction = 5;
 }
 
 message TVMessage {
-  PlayerViewDto master = 1;
-  PlayerViewDto masterPartner = 2;
+  Dto.PlayerViewDto master = 1;
+  Dto.PlayerViewDto masterPartner = 2;
   int32 type = 3;
   repeated string messageList = 4;
-}
-
-message CreateTVMessageCommit {
-	int32 masterId = 1;
-	bool isSuccess = 2;
 }

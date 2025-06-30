@@ -12,6 +12,7 @@ using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
 using Dto;
+using ItemDto;
 using net.server;
 using server.expeditions;
 using System.Net;
@@ -858,6 +859,16 @@ namespace Application.Core.Channel.InProgress
         public void BroadcastTV(CreateTVMessageRequest request)
         {
             _itemService.BroadcastTV(request);
+        }
+
+        public void SendItemMegaphone(UseItemMegaphoneRequest request)
+        {
+            _itemService.BroadcastItemMegaphone(request);
+        }
+
+        public void FinishTransaction(FinishTransactionRequest finishTransactionRequest)
+        {
+            _server.ItemTransactionManager.Finish(finishTransactionRequest);
         }
     }
 }

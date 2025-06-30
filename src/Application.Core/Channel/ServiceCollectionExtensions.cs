@@ -2,6 +2,7 @@ using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
+using Application.Core.Channel.Transactions;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
@@ -77,6 +78,9 @@ namespace Application.Core.Channel
             services.AddSingleton<NoteService>();
             services.TryAddSingleton<IFishingService, DefaultFishingService>();
             services.TryAddSingleton<IDueyService, DefaultDueyService>();
+            services.TryAddSingleton<IItemDistributeService, DefaultItemDistributeService>();
+
+            services.AddSingleton<ItemTransactionStore>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();

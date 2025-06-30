@@ -86,6 +86,7 @@ namespace Application.Core.Login
         public CashShopDataManager CashShopDataManager { get; }
         public TeamManager TeamManager { get; }
         public GuildManager GuildManager { get; }
+        public ItemTransactionManager ItemTransactionManager { get; }
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -142,6 +143,7 @@ namespace Application.Core.Login
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
             ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
             NewYearCardManager = ActivatorUtilities.CreateInstance<NewYearCardManager>(ServiceProvider, this);
+            ItemTransactionManager = ActivatorUtilities.CreateInstance<ItemTransactionManager>(ServiceProvider, this);
         }
 
         bool isShuttingdown = false;

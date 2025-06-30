@@ -4,6 +4,7 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.Core.Managers.Constants;
 using Application.EF;
+using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Shared.Team;
 using Application.Utility.Exceptions;
@@ -46,9 +47,12 @@ namespace Application.Core.Login.Datas
             _dataStorage = chrStorage;
             _masterServer = masterServer;
         }
-
+        CharacterLiveObject _sysChr = new CharacterLiveObject() { Character = new CharacterModel { Id = ServerConstants.SystemCId, Name = "系统" } };
         public CharacterLiveObject? FindPlayerById(int id)
         {
+            if (id == ServerConstants.SystemCId)
+                return _sysChr;
+
             if (id <= 0)
                 return null;
 

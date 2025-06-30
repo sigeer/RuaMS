@@ -1,10 +1,13 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Services;
+using Application.Core.Channel.Transactions;
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.Game.Trades;
 using Application.Module.Duey.Channel.Models;
 using Application.Module.Duey.Channel.Net;
 using Application.Module.Duey.Common;
+using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
 using Application.Utility.Configs;
@@ -25,23 +28,28 @@ namespace Application.Module.Duey.Channel
         readonly IChannelTransport _transport;
         readonly ILogger<DueyManager> _logger;
         readonly WorldChannelServer _server;
+        readonly ItemTransactionStore _itemStore;
+        readonly IItemDistributeService _distributeService;
 
-        public DueyManager(WorldChannelServer server, IMapper mapper, IChannelTransport transport, ILogger<DueyManager> logger)
+        public DueyManager(
+            WorldChannelServer server, IMapper mapper, IChannelTransport transport, ILogger<DueyManager> logger, ItemTransactionStore itemStore, IItemDistributeService distributeService)
         {
             _server = server;
             _mapper = mapper;
             _transport = transport;
             _logger = logger;
+            _itemStore = itemStore;
+            _distributeService = distributeService;
         }
-        private void CreateDueyPackage(IPlayer chr, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
+
+        private void CreateDueyPackage(IPlayer chr, int costMeso, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
         {
-            // 先消耗，失败再返回
-            chr.gainMeso(-sendMesos);
+            List<Item> items = [];
             if (quick)
             {
-                InventoryManipulator.removeById(chr.Client, InventoryType.CASH, ItemId.QUICK_DELIVERY_TICKET, 1, false, false);
+                items.Add(new Item(ItemId.QUICK_DELIVERY_TICKET, 0, 1));
             }
-
+            var transaction = _itemStore.BeginTransaction(chr, items, costMeso);
             _transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
             {
                 SenderId = chr.Id,
@@ -49,7 +57,8 @@ namespace Application.Module.Duey.Channel
                 SendMessage = sendMessage,
                 ReceiverName = recipient,
                 Quick = quick,
-                Item = _mapper.Map<Dto.ItemDto>(item)
+                Item = _mapper.Map<Dto.ItemDto>(item),
+                Transaction = _mapper.Map<ItemDto.ItemTransaction>(transaction)
             });
         }
 
@@ -71,17 +80,15 @@ namespace Application.Module.Duey.Channel
             }
             else
             {
-                var chr = _server.FindPlayerById(data.Package.SenderId);
-                if (chr != null)
-                {
-                    chr.gainMeso(data.CostMeso);
-                    if (data.Package.Type)
-                    {
-                        InventoryManipulator.addById(chr.Client, ItemId.QUICK_DELIVERY_TICKET, 1);
-                    }
 
-                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
-                }
+            }
+
+            var transactionOwner = _server.FindPlayerById(data.Transaction.PlayerId);
+            if (transactionOwner != null)
+            {
+                var tsc = _mapper.Map<ItemTransaction>(data.Transaction);
+                tsc.Player = transactionOwner;
+                _itemStore.ProcessTransaction(tsc);
             }
         }
 
@@ -194,7 +201,7 @@ namespace Application.Module.Duey.Channel
                     var (res, item) = RemoveFromInventoryForDuey(c, invTypeId, itemPos, amount);
                     if (res == 0)
                     {
-                        CreateDueyPackage(c.OnlinedCharacter, sendMesos, item, sendMessage, recipient, quick);
+                        CreateDueyPackage(c.OnlinedCharacter, (int)finalcost, sendMesos, item, sendMessage, recipient, quick);
                     }
                     else if (res > 0)
                     {
@@ -240,50 +247,9 @@ namespace Application.Module.Duey.Channel
 
             if (data.Code == 0)
             {
-                try
-                {
-                    var dp = _mapper.Map<DueyPackageObject>(data.Package);
-                    var dpItem = dp.Item;
-                    if (dpItem != null)
-                    {
-                        if (!chr.canHoldMeso(dp.Mesos))
-                        {
-                            chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                            _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                            return;
-                        }
-
-                        var itemId = dpItem.getItemId();
-                        if (!InventoryManipulator.checkSpace(chr.Client, itemId, dpItem.getQuantity(), dpItem.getOwner()))
-                        {
-                            if (ItemInformationProvider.getInstance().isPickupRestricted(itemId)
-                                && chr.getInventory(ItemConstants.getInventoryType(itemId)).findById(itemId) != null)
-                            {
-                                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
-                            }
-                            else
-                            {
-                                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
-                            }
-
-                            _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                            return;
-                        }
-                        else
-                        {
-                            InventoryManipulator.addFromDrop(chr.Client, dpItem, false);
-                        }
-                    }
-
-                    chr.gainMeso(dp.Mesos, false);
-
-                    _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true });
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                }
-
+                var dp = _mapper.Map<DueyPackageObject>(data.Package);
+                var dpItem = dp.Item;
+                _distributeService.Distribute(chr, [dpItem], dp.Mesos, "包裹满了");
             }
             else
             {
