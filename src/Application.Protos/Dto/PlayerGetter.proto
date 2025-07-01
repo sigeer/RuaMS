@@ -20,6 +20,7 @@ import "Dto/SavedLocation.proto";
 import "Dto/Buddy.proto";
 import "Dto/AccountGame.proto";
 import "Dto/NewYearCard.proto";
+import "Item/ItemTransaction.proto";
 
 package Dto;
 
@@ -59,4 +60,5 @@ message PlayerGetterDto {
   RecentFameRecordDto fameRecord = 19;
   repeated int32 wishItems = 20;
   repeated NewYearCardDto newYearCards = 21;
+  repeated ItemProto.ItemTransaction pendingTransactions = 22;
 }

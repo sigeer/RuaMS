@@ -22,15 +22,13 @@
 
 
 using Application.Core.Channel.ServerData;
+using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
-using Application.Core.Servers.Services;
 using Application.Shared.KeyMaps;
 using Application.Shared.Team;
 using client.inventory;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.server;
-using net.server.coordinator.world;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -39,12 +37,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PlayerLoggedinHandler : ChannelHandlerBase
 {
     readonly ILogger<ChannelHandlerBase> _logger;
-    readonly CharacterService _characterSrv;
+    readonly DataService _dataService;
     readonly TeamManager _teamManger;
-    public PlayerLoggedinHandler(ILogger<ChannelHandlerBase> logger, CharacterService characterSrv, TeamManager teamManager)
+    public PlayerLoggedinHandler(ILogger<ChannelHandlerBase> logger, DataService dataService, TeamManager teamManager)
     {
         _logger = logger;
-        _characterSrv = characterSrv;
+        _dataService = dataService;
         _teamManger = teamManager;
     }
     public override bool ValidateState(IChannelClient c)
@@ -71,7 +69,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 return;
             }
 
-            var playerObject = c.CurrentServer.Service.GetPlayerData(c.GetSessionRemoteHost(), cid);
+            var playerObject = _dataService.GetPlayerData(cserv.getId(), c.GetSessionRemoteHost(), cid);
             if (playerObject == null)
             {
                 c.Disconnect(true, false);
@@ -80,7 +78,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             c.Hwid = new Hwid(playerObject.Account.Hwid);
 
-            var player = _characterSrv.Serialize(c, playerObject);
+            var player = _dataService.Serialize(c, playerObject);
             if (player == null)
             {
                 // 1. 玩家不存在 2. 玩家并不处于切换服务器状态
@@ -118,7 +116,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             player.setEnteredChannelWorld(c.Channel);
 
-            c.CurrentServer.RecoverCharacterBuff(player);
+            _dataService.RecoverCharacterBuff(player);
 
             c.sendPacket(PacketCreator.getCharInfo(player));
             if (!player.isHidden())
@@ -264,11 +262,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.setNPCScriptable(npcsIds));
             }
 
-            if (newcomer)
-            {
-                player.setLoginTime(DateTimeOffset.UtcNow);
-            }
-            c.CurrentServer.Service.SetPlayerOnlined(player.Id);
+            _dataService.CompleteLogin(player, playerObject);
         }
         catch (Exception e)
         {

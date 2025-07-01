@@ -23,6 +23,7 @@
 */
 
 
+using Application.Core.Channel.Services;
 using Application.Core.Game.Players;
 using Application.EF;
 using client.inventory;
@@ -42,10 +43,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CouponCodeHandler : ChannelHandlerBase
 {
     readonly ILogger<CouponCodeHandler> _logger;
+    readonly ItemService _itemService;
 
-    public CouponCodeHandler(ILogger<CouponCodeHandler> logger)
+    public CouponCodeHandler(ILogger<CouponCodeHandler> logger, ItemService itemService)
     {
         _logger = logger;
+        _itemService = itemService;
     }
 
     private List<TypedItemQuantity> getNXCodeItems(IPlayer chr, DBContext dbContext, int codeid)
@@ -243,7 +246,7 @@ public class CouponCodeHandler : ChannelHandlerBase
 
                                 if (ItemInformationProvider.getInstance().isCash(item))
                                 {
-                                    Item it = c.getChannelServer().Service.GenerateCouponItem(item, qty);
+                                    Item it = _itemService.GenerateCouponItem(item, qty);
 
                                     cs.addToInventory(it);
                                     cashItems.Add(it);

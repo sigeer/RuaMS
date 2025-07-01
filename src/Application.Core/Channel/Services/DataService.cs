@@ -2,6 +2,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.ServerTransports;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
 using AutoMapper;
@@ -11,21 +12,44 @@ using client.keybind;
 using net.server;
 using server;
 using server.events;
+using server.life;
 using server.quest;
 using tools;
+using XmlWzReader;
 
-namespace Application.Core.Servers.Services
+namespace Application.Core.Channel.Services
 {
-    public class CharacterService
+    public class DataService
     {
         readonly IMapper _mapper;
+        readonly ItemTransactionService _transactionStore;
+        readonly IChannelServerTransport _transport;
+        readonly WorldChannelServer _server;
 
-        public CharacterService(IMapper mapper)
+        public DataService(IMapper mapper, ItemTransactionService store, IChannelServerTransport transport, WorldChannelServer server)
         {
             _mapper = mapper;
+            _transactionStore = store;
+            _transport = transport;
+            _server = server;
         }
 
-        public IPlayer? Serialize(IChannelClient c, Dto.PlayerGetterDto? o)
+        public Dto.PlayerGetterDto? GetPlayerData(int channelId, string clientSession, int cid)
+        {
+            return _transport.GetPlayerData(clientSession, channelId, cid);
+        }
+
+        public void SaveChar(Player player, int? setChannel = null)
+        {
+            var dto = Deserialize(player);
+            if (setChannel != null)
+            {
+                dto.Channel = setChannel.Value;
+            }
+            _transport.SendPlayerObject(dto);
+        }
+
+        public IPlayer? Serialize(IChannelClient c, Dto.PlayerGetterDto o)
         {
             if (o == null)
                 return null;
@@ -141,7 +165,7 @@ namespace Application.Core.Servers.Services
 
             player.PlayerTrockLocation.LoadData(o.TrockLocations.ToArray());
             player.AreaInfo = o.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
-            player.Events = o.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as Events);
+            player.Events = o.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as server.events.Events);
 
             var statusFromDB = o.QuestStatuses;
             foreach (var item in statusFromDB)
@@ -231,7 +255,7 @@ namespace Application.Core.Servers.Services
             return player;
         }
 
-        public Dto.PlayerSaveDto Deserialize(IPlayer player)
+        private Dto.PlayerSaveDto Deserialize(IPlayer player)
         {
             List<Dto.QuestStatusDto> questStatusList = new();
             foreach (var qs in player.getQuests())
@@ -372,6 +396,17 @@ namespace Application.Core.Servers.Services
             return data;
         }
 
+        public void CompleteLogin(IPlayer chr, Dto.PlayerGetterDto o)
+        {
+            if (o.LoginInfo.IsNewCommer)
+            {
+                chr.setLoginTime(DateTimeOffset.UtcNow);
+            }
+            _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
+
+            _transactionStore.HandleTransactions(chr, o.PendingTransactions);
+        }
+
         //public PlayerSaveDto DeserializeCashShop(IPlayer player)
         //{
         //    var cashShopItems = player.CashShopModel.getInventory();
@@ -483,71 +518,36 @@ namespace Application.Core.Servers.Services
             return data;
         }
 
-
-        /// <summary>
-        /// 角色
-        /// </summary>
-        /// <param name="charid"></param>
-        /// <param name="client"></param>
-        /// <param name="login"></param>
-        /// <returns></returns>
-        public static IPlayer? LoadPlayerFromDB(int charid, IChannelClient client, bool login)
+        public void SaveBuff(IPlayer player)
         {
-            try
+            _transport.SendBuffObject(player.getId(), DeserializeBuff(player));
+        }
+
+        private List<KeyValuePair<long, PlayerBuffValueHolder>> getLocalStartTimes(List<PlayerBuffValueHolder> lpbvl)
+        {
+            long curtime = _server.getCurrentTime();
+            return lpbvl.Select(x => new KeyValuePair<long, PlayerBuffValueHolder>(curtime - x.usedTime, x)).OrderBy(x => x.Key).ToList();
+        }
+        public void RecoverCharacterBuff(IPlayer player)
+        {
+            var buffdto = _transport.GetBuffObject(player.Id);
+            var buffs = buffdto.Buffs.Select(x => new PlayerBuffValueHolder(x.UsedTime,
+                x.IsSkill ? SkillFactory.GetSkillTrust(x.SourceId).getEffect(x.SkillLevel) : ItemInformationProvider.getInstance().getItemEffect(x.SourceId)!)).ToList();
+
+            var timedBuffs = getLocalStartTimes(buffs);
+            player.silentGiveBuffs(timedBuffs);
+
+            var diseases = buffdto.Diseases.ToDictionary(
+                x => Disease.ordinal(x.DiseaseOrdinal),
+                x => new DiseaseExpiration(x.LeftTime, MobSkillFactory.getMobSkillOrThrow((MobSkillType)x.MobSkillId, x.MobSkillLevel)));
+
+            player.silentApplyDiseases(diseases);
+
+            foreach (var e in diseases)
             {
-                var ret = new Player(client);
-                using var dbContext = new DBContext();
-                var dbModel = dbContext.Characters.FirstOrDefault(x => x.Id == charid) ?? throw new BusinessCharacterNotFoundException(charid);
-
-                var wserv = Server.getInstance().getWorld(ret.World);
-
-                if (login)
-                {
-
-                    // Debuffs (load)
-                    //#region Playerdiseases
-                    //Dictionary<Disease, DiseaseExpiration> loadedDiseases = new();
-                    //var playerDiseaseFromDB = dbContext.Playerdiseases.Where(x => x.Charid == ret.getId()).ToList();
-                    //foreach (var item in playerDiseaseFromDB)
-                    //{
-                    //    Disease disease = Disease.ordinal(item.Disease);
-                    //    if (disease == Disease.NULL)
-                    //    {
-                    //        continue;
-                    //    }
-
-                    //    int skillid = item.Mobskillid, skilllv = item.Mobskilllv;
-                    //    long length = item.Length;
-
-                    //    var ms = MobSkillFactory.getMobSkill(MobSkillTypeUtils.from(skillid), skilllv);
-                    //    if (ms != null)
-                    //    {
-                    //        loadedDiseases.AddOrUpdate(disease, new(length, ms));
-                    //    }
-                    //}
-
-                    //dbContext.Playerdiseases.Where(x => x.Charid == ret.getId()).ExecuteDelete();
-                    //if (loadedDiseases.Count > 0)
-                    //{
-                    //    Server.getInstance().getPlayerBuffStorage().addDiseasesToStorage(ret.Id, loadedDiseases);
-                    //}
-                    //#endregion
-
-                    // Fame history
-
-
-                    //ret.resetBattleshipHp();
-                }
-
-
-
-                return ret;
+                var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Key, e.Value.MobSkill.getX()));
+                player.sendPacket(PacketCreator.giveDebuff(debuff, e.Value.MobSkill));
             }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-            }
-            return null;
         }
     }
 }

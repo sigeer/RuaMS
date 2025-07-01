@@ -174,7 +174,7 @@ namespace Application.Core.Game.Players
                     return;
                 }
 
-                Client.CurrentServer.Service.SaveChar(this, setChannel);
+                Client.CurrentServer.Container.DataService.SaveChar(this, setChannel);
             }
         }
     }

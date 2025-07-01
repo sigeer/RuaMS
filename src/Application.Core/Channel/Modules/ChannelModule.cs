@@ -1,6 +1,7 @@
+using Application.Core.Channel.Events;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Core.Channel.Events
+namespace Application.Core.Channel.Modules
 {
     public abstract class ChannelModule
     {

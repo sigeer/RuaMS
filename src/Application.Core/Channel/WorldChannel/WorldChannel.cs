@@ -1,11 +1,9 @@
-using Application.Core.Channel.ChannelData;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
-using Application.Core.Servers.Services;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
@@ -15,7 +13,6 @@ using scripting.npc;
 using scripting.portal;
 using scripting.quest;
 using scripting.reactor;
-using server;
 using server.events.gm;
 using server.expeditions;
 using server.maps;
@@ -56,8 +53,6 @@ public partial class WorldChannel : ISocketServer
 
     private Event? @event;
     private HashSet<int> usedMC = new();
-
-    public DateTimeOffset StartupTime { get; private set; }
 
     public DojoInstance DojoInstance { get; }
 
@@ -110,9 +105,6 @@ public partial class WorldChannel : ISocketServer
 
     public IServiceScope LifeScope { get; }
 
-    public ShopFactory ShopFactory { get; }
-    public ItemService ItemService { get; }
-    public RankService RankService { get; }
 
     #region
     public EventService EventService { get; }
@@ -175,12 +167,6 @@ public partial class WorldChannel : ISocketServer
         DevtestScriptManager = ActivatorUtilities.CreateInstance<DevtestScriptManager>(LifeScope.ServiceProvider, this);
 
         EventRecallManager = new EventRecallManager(this);
-
-
-        ShopFactory = LifeScope.ServiceProvider.GetRequiredService<ShopFactory>();
-        ItemService = LifeScope.ServiceProvider.GetRequiredService<ItemService>();
-        RankService = LifeScope.ServiceProvider.GetRequiredService<RankService>();
-
     }
 
     public int getTransportationTime(double travelTime)

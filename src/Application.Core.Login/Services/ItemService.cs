@@ -7,7 +7,6 @@ using Application.Shared.Message;
 using AutoMapper;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
-using ItemDto;
 using Microsoft.EntityFrameworkCore;
 using ZLinq;
 
@@ -82,14 +81,22 @@ namespace Application.Core.Login.Services
         }
 
         bool isLocked = true;
-        public void BroadcastTV(ItemDto.CreateTVMessageRequest request)
+        public void BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
             if (isLocked)
+            {
+                _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, new ItemProto.CreateTVMessageResponse()
+                {
+                    Code = 1,
+                    MasterId = request.MasterId,
+                    Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForRollback)
+                });
                 return;
+            }
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
 
-            var messageDto = new ItemDto.TVMessage { Master = _mapper.Map<Dto.PlayerViewDto>(master), Type = request.Type };
+            var messageDto = new ItemProto.TVMessage { Master = _mapper.Map<Dto.PlayerViewDto>(master), Type = request.Type };
             var masterPartner = _server.CharacterManager.FindPlayerById(master.Character.PartnerId);
             if (masterPartner != null)
                 messageDto.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
@@ -97,7 +104,7 @@ namespace Application.Core.Login.Services
             messageDto.MessageList.AddRange(request.MessageList);
 
             var tsc = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForCommit);
-            var response = new ItemDto.CreateTVMessageResponse()
+            var response = new ItemProto.CreateTVMessageResponse()
             {
                 Code = 0,
                 MasterId = master.Character.Id,
@@ -105,7 +112,7 @@ namespace Application.Core.Login.Services
                 Data = messageDto,
                 Transaction = tsc
             };
-           
+
             _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, response);
 
             int delay = 15;
@@ -126,16 +133,16 @@ namespace Application.Core.Login.Services
             _server.Transport.BroadcastMessage(BroadcastType.OnTVMessageFinish, new Empty());
         }
 
-        public void BroadcastItemMegaphone(UseItemMegaphoneRequest request)
+        public void BroadcastItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
         {
-            var res = new ItemDto.UseItemMegaphoneResponse();
+            var res = new ItemProto.UseItemMegaphoneResponse();
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId)!;
 
-            _server.Transport.BroadcastMessage(BroadcastType.OnItemMegaphone, new ItemDto.UseItemMegaphoneResponse
+            _server.Transport.BroadcastMessage(BroadcastType.OnItemMegaphone, new ItemProto.UseItemMegaphoneResponse
             {
                 Code = 0,
-                Data = new UseItemMegaphoneResult
+                Data = new ItemProto.UseItemMegaphoneResult
                 {
                     IsWishper = request.IsWishper,
                     Item = request.Item,

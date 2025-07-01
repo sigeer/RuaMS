@@ -22,7 +22,7 @@ using Application.Core.Game.Controllers;
 using scripting.Event;
 using System.Collections.Concurrent;
 
-namespace Application.Core.Channel.ChannelData;
+namespace Application.Core.Channel;
 
 /**
  * @author Ronan

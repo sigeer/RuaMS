@@ -7418,7 +7418,7 @@ public class PacketCreator
         else
         {
             p.writeInt(0);
-            List<SpecialCashItem> lsci = CashItemFactory.getSpecialCashItems();
+            List<SpecialCashItem> lsci = c.CurrentServerContainer.CashItemProvider.getSpecialCashItems();
             p.writeShort(lsci.Count);//Guess what
             foreach (SpecialCashItem sci in lsci)
             {

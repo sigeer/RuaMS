@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
@@ -51,12 +52,14 @@ public class UseCashItemHandler : ChannelHandlerBase
     readonly ILogger<UseCashItemHandler> _logger;
     readonly IDueyService _dueyService;
     readonly ItemService _itemService;
+    readonly ShopManager _shopManager;
 
-    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService, ItemService itemService)
+    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService, ItemService itemService, ShopManager shopManager)
     {
         _logger = logger;
         _dueyService = dueyService;
         _itemService = itemService;
+        _shopManager = shopManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -561,7 +564,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             // MiuMiu's travel store
             if (player.getShop() == null)
             {
-                var shop = c.CurrentServer.ShopFactory.getShop(1338);
+                var shop = _shopManager.getShop(1338);
                 if (shop != null)
                 {
                     shop.sendShop(c);

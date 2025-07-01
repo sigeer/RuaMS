@@ -446,7 +446,7 @@ namespace Application.Core.Channel.Net
             Character.closePartySearchInteractions();
 
             Character.unregisterChairBuff();
-            CurrentServer.StashCharacterBuff(Character);
+            CurrentServer.Container.DataService.SaveBuff(Character);
             Character.setDisconnectedFromChannelWorld();
             Character.notifyMapTransferToPartner(-1);
             Character.removeIncomingInvites();

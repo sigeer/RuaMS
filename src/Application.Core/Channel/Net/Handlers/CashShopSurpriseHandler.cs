@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Channel.Services;
 using client.inventory;
 using server;
 using tools;
@@ -34,25 +35,42 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CashShopSurpriseHandler : ChannelHandlerBase
 {
 
+    readonly ItemService _itemService;
+
+    public CashShopSurpriseHandler(ItemService itemService)
+    {
+        _itemService = itemService;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        CashShop cs = c.OnlinedCharacter.getCashShop();
-        if (!cs.isOpened())
+        if (c.tryacquireClient())
         {
-            return;
-        }
+            try
+            {
+                CashShop cs = c.OnlinedCharacter.getCashShop();
+                if (!cs.isOpened())
+                {
+                    return;
+                }
 
-        long cashId = p.readLong();
-        var result = cs.openCashShopSurprise(cashId);
-        if (result == null)
-        {
-            c.sendPacket(PacketCreator.onCashItemGachaponOpenFailed());
-            return;
-        }
+                long cashId = p.readLong();
+                var result = _itemService.OpenCashShopSurprise(cs, cashId);
+                if (result == null)
+                {
+                    c.sendPacket(PacketCreator.onCashItemGachaponOpenFailed());
+                    return;
+                }
 
-        Item usedCashShopSurprise = result.usedCashShopSurprise;
-        Item reward = result.reward;
-        c.sendPacket(PacketCreator.onCashGachaponOpenSuccess(c.AccountEntity!.Id, usedCashShopSurprise.getCashId(),
-                usedCashShopSurprise.getQuantity(), reward, reward.getItemId(), reward.getQuantity(), true));
+                Item usedCashShopSurprise = result.usedCashShopSurprise;
+                Item reward = result.reward;
+                c.sendPacket(PacketCreator.onCashGachaponOpenSuccess(c.AccountEntity!.Id, usedCashShopSurprise.getCashId(),
+                        usedCashShopSurprise.getQuantity(), reward, reward.getItemId(), reward.getQuantity(), true));
+            }
+            finally
+            {
+                c.releaseClient();
+            }
+        }
     }
 }

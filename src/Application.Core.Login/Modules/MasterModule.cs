@@ -61,6 +61,11 @@ namespace Application.Core.Login.Events
         {
 
         }
+
+        public virtual void OnPlayerLogoff(CharacterLiveObject obj)
+        {
+
+        }
         public virtual int DeleteCharacterCheck(int id)
         {
             return 0;

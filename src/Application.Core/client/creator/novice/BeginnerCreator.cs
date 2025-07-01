@@ -18,8 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Channel;
 using Application.Core.client.creator.novice;
-using Application.Core.Servers.Services;
 
 namespace client.creator.novice;
 

@@ -19,30 +19,38 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
+using AutoMapper;
+using server;
 
-namespace server;
+namespace Application.Core.Channel.ServerData;
 
 /**
  * @author Matze
  */
-public class ShopFactory
+public class ShopManager
 {
 
     private Dictionary<int, Shop?> shops = new();
     private Dictionary<int, Shop?> npcShops = new();
 
-    readonly ItemService _itemService;
+    readonly IMapper _mapper;
+    readonly IChannelServerTransport _transport;
 
-    public ShopFactory(ItemService itemService)
+    public ShopManager(IMapper mapper, IChannelServerTransport transport)
     {
-        _itemService = itemService;
+        _mapper = mapper;
+        _transport = transport;
+    }
+
+    internal Shop GetShop(int id, bool isShopId)
+    {
+        return _mapper.Map<Shop>(_transport.GetShop(id, isShopId));
     }
 
     private Shop? LoadShopFromRemote(int id, bool isShopId)
     {
-        var ret = _itemService.GetShop(id, isShopId);
+        var ret = GetShop(id, isShopId);
         if (ret != null)
         {
             shops.AddOrUpdate(ret.getId(), ret);

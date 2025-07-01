@@ -1,4 +1,4 @@
-using Application.Core.Channel.Events;
+using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
 using Application.Module.Duey.Channel.Models;
@@ -19,6 +19,7 @@ namespace Application.Module.Duey.Channel
 
             services.AddSingleton<DueyManager>();
             services.AddSingleton<ChannelModule, DueyChannelModule>();
+            services.AddSingleton<IDueyService, DueyChannelModule>();
             services.AddSingleton<IItemDistributeService, DueyDistributeService>();
 
             services.AddSingleton<DueyHandler>();

@@ -21,6 +21,7 @@
 
 
 
+using Application.Core.Channel.Services;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -32,10 +33,14 @@ namespace Application.Core.Channel.Net.Handlers;
 public class EnterCashShopHandler : ChannelHandlerBase
 {
     readonly ILogger<EnterCashShopHandler> _logger;
+    readonly DataService _dataService;
+    readonly ItemService _itemService;
 
-    public EnterCashShopHandler(ILogger<EnterCashShopHandler> logger)
+    public EnterCashShopHandler(ILogger<EnterCashShopHandler> logger, DataService dataService, ItemService itemService)
     {
         _logger = logger;
+        _dataService = dataService;
+        _itemService = itemService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -73,7 +78,7 @@ public class EnterCashShopHandler : ChannelHandlerBase
             mc.closePartySearchInteractions();
 
             mc.unregisterChairBuff();
-            c.CurrentServer.StashCharacterBuff(mc);
+            _dataService.SaveBuff(mc);
             mc.setAwayFromChannelWorld();
             mc.notifyMapTransferToPartner(-1);
             mc.removeIncomingInvites();
@@ -82,7 +87,7 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
             c.sendPacket(PacketCreator.openCashShop(c, false));
             c.sendPacket(PacketCreator.showCashInventory(c));
-            c.sendPacket(PacketCreator.showGifts(mc.getCashShop().loadGifts()));
+            c.sendPacket(PacketCreator.showGifts(_itemService.LoadPlayerGifts(mc)));
             c.sendPacket(PacketCreator.showWishList(mc, false));
             c.sendPacket(PacketCreator.showCash(mc));
 

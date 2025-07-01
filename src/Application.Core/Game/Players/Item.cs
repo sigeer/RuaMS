@@ -1,11 +1,8 @@
-using Application.Core.Channel.Transactions;
 using Application.Core.Game.Items;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using Microsoft.Extensions.DependencyInjection;
 using server;
-using System;
 using tools;
 
 namespace Application.Core.Game.Players

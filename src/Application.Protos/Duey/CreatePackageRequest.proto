@@ -15,12 +15,12 @@ message CreatePackageRequest {
 	string receiverName = 4;
 	bool quick = 5;
 	Dto.ItemDto item = 6;
-	ItemDto.ItemTransaction transaction = 7;
+	ItemProto.CreateItemTransactionRequest transaction = 7;
 }
 
 message CreatePackageResponse {
 	int32 code = 1;
 	DueyPackageDto package = 2;
 	string senderName = 3;
-	ItemDto.ItemTransaction transaction = 4;
+	ItemProto.ItemTransaction transaction = 4;
 }

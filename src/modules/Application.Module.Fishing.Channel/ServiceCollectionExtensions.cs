@@ -1,4 +1,4 @@
-using Application.Core.Channel.Events;
+using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Microsoft.Extensions.DependencyInjection;
 

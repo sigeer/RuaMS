@@ -20,7 +20,7 @@
 
 
 using Application.Core.client.creator.veteran;
-using Application.Core.Servers.Services;
+using Application.Core.Channel;
 using client.inventory;
 using server;
 

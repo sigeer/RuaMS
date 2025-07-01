@@ -5,9 +5,19 @@ namespace Application.Core.Channel.Services
 {
     public interface IItemDistributeService
     {
+        /// <summary>
+        /// 发放道具/金币，不能发放的部分以其他方式给予
+        /// </summary>
+        /// <param name="chr"></param>
+        /// <param name="items"></param>
+        /// <param name="meso"></param>
+        /// <param name="title"></param>
         void Distribute(IPlayer chr, List<Item> items, int meso, string? title = null);
     }
 
+    /// <summary>
+    /// 不能发放的部分作为掉落物发放（但是有些物品不可拾取，比如固定道具）
+    /// </summary>
     public class DefaultItemDistributeService : IItemDistributeService
     {
         public void Distribute(IPlayer chr, List<Item> items, int meso, string? title = null)

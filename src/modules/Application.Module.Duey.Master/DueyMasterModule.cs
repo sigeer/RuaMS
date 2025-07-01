@@ -40,6 +40,13 @@ namespace Application.Module.Duey.Master
             _manager.SendDueyNotifyOnLogin(obj.Character.Id);
         }
 
+        public override void OnPlayerLogoff(CharacterLiveObject obj)
+        {
+            base.OnPlayerLogoff(obj);
+
+            _manager.PackageUnfreeze(obj.Character.Id);
+        }
+
         public override async Task SaveChangesAsync(DBContext dbContext)
         {
             await base.SaveChangesAsync(dbContext);

@@ -39,6 +39,7 @@ namespace Application.Module.Duey.Master.Models
             return Interlocked.CompareExchange(ref _frozen, 1, 0) == 0;
         }
 
+        public bool IsFrozen => _frozen == 1;
         /// <summary>
         /// 尝试解冻（原子操作）
         /// </summary>

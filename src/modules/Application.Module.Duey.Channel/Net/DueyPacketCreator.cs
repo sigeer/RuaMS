@@ -1,4 +1,5 @@
 using Application.Module.Duey.Channel.Models;
+using Application.Module.Duey.Common;
 using Application.Shared.Net;
 using tools;
 
@@ -41,7 +42,7 @@ namespace Application.Module.Duey.Channel.Net
         {
             OutPacket p = OutPacket.create(SendOpcode.PARCEL);
             p.writeByte(operation);
-            if (operation == 8)
+            if (operation == DueyProcessorActions.TOCLIENT_OPEN_DUEY.getCode())
             {
                 p.writeByte(0);
                 p.writeByte(packages.Length);

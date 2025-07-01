@@ -36,5 +36,11 @@ namespace Application.Module.Duey.Master
             return base.TakeDueyPackage(request, context);
         }
 
+        public override Task<Empty> TakeDueyPackageCommit(TakeDueyPackageCommit request, ServerCallContext context)
+        {
+            _manager.TakeDueyPackageCommit(request);
+            return base.TakeDueyPackageCommit(request, context);
+        }
+
     }
 }

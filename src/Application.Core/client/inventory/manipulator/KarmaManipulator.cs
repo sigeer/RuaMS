@@ -23,7 +23,7 @@ namespace client.inventory.manipulator;
 
 /// <summary>
 /// @author RonanLana
-/// --不知道什么功能
+/// --不知道什么功能  宿命剪刀？
 /// </summary>
 public class KarmaManipulator
 {

@@ -1,7 +1,7 @@
 using Application.Core.Game.Controllers;
 using Application.Core.Game.Trades;
 
-namespace Application.Core.Channel.ChannelData
+namespace Application.Core.Channel
 {
     public class HiredMerchantManager : TimelyControllerBase
     {

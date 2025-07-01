@@ -32,5 +32,10 @@ namespace Application.Module.Duey.Channel
         {
             _grpcClient.TakeDueyPackage(request);
         }
+
+        public void TakeDueyPackageCommit(TakeDueyPackageCommit takeDueyPackageCommit)
+        {
+            _grpcClient.TakeDueyPackageCommit(takeDueyPackageCommit);
+        }
     }
 }

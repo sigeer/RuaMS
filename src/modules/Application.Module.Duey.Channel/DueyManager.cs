@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Services;
-using Application.Core.Channel.Transactions;
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.Game.Trades;
@@ -10,6 +9,7 @@ using Application.Module.Duey.Common;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
+using Application.Shared.Items;
 using Application.Utility.Configs;
 using AutoMapper;
 using client.autoban;
@@ -28,11 +28,11 @@ namespace Application.Module.Duey.Channel
         readonly IChannelTransport _transport;
         readonly ILogger<DueyManager> _logger;
         readonly WorldChannelServer _server;
-        readonly ItemTransactionStore _itemStore;
+        readonly ItemTransactionService _itemStore;
         readonly IItemDistributeService _distributeService;
 
         public DueyManager(
-            WorldChannelServer server, IMapper mapper, IChannelTransport transport, ILogger<DueyManager> logger, ItemTransactionStore itemStore, IItemDistributeService distributeService)
+            WorldChannelServer server, IMapper mapper, IChannelTransport transport, ILogger<DueyManager> logger, ItemTransactionService itemStore, IItemDistributeService distributeService)
         {
             _server = server;
             _mapper = mapper;
@@ -49,7 +49,7 @@ namespace Application.Module.Duey.Channel
             {
                 items.Add(new Item(ItemId.QUICK_DELIVERY_TICKET, 0, 1));
             }
-            var transaction = _itemStore.BeginTransaction(chr, items, costMeso);
+
             _transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
             {
                 SenderId = chr.Id,
@@ -58,7 +58,7 @@ namespace Application.Module.Duey.Channel
                 ReceiverName = recipient,
                 Quick = quick,
                 Item = _mapper.Map<Dto.ItemDto>(item),
-                Transaction = _mapper.Map<ItemDto.ItemTransaction>(transaction)
+                Transaction = _itemStore.BeginTransaction(chr, items, costMeso)
             });
         }
 
@@ -80,16 +80,23 @@ namespace Application.Module.Duey.Channel
             }
             else
             {
+                var sender = _server.FindPlayerById(data.Package.SenderId);
+                if (sender != null)
+                {
+                    var dueyResponseCode = (SendDueyItemResponseCode)data.Code;
+                    if (dueyResponseCode == SendDueyItemResponseCode.SameAccount)
+                    {
+                        sender.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
+                    }
+                    if (dueyResponseCode == SendDueyItemResponseCode.CharacterNotExisted)
+                    {
+                        sender.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NAME_DOES_NOT_EXIST.getCode()));
+                    }
+                }
 
             }
 
-            var transactionOwner = _server.FindPlayerById(data.Transaction.PlayerId);
-            if (transactionOwner != null)
-            {
-                var tsc = _mapper.Map<ItemTransaction>(data.Transaction);
-                tsc.Player = transactionOwner;
-                _itemStore.ProcessTransaction(tsc);
-            }
+            _itemStore.HandleTransaction(data.Transaction);
         }
 
 
@@ -248,23 +255,36 @@ namespace Application.Module.Duey.Channel
             if (data.Code == 0)
             {
                 var dp = _mapper.Map<DueyPackageObject>(data.Package);
+
                 var dpItem = dp.Item;
-                _distributeService.Distribute(chr, [dpItem], dp.Mesos, "包裹满了");
-            }
-            else
-            {
-                if (data.Code == 1)
+
+                if (!chr.canHoldMeso(dp.Mesos))
                 {
                     chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                    _logger.LogWarning("Chr {CharacterName} tried to receive namespace from duey with id {PackageId}", chr.Name, data.Request.PackageId);
+                    _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                     return;
                 }
 
-                // dp.isDeliveringTime()
+                if (dpItem != null && !chr.canHold(dpItem.getItemId(), dpItem.getQuantity()))
+                {
+                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
+                    _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                    return;
+                }
+
+                _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true});
+                _distributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, "包裹满了");
+            }
+            else
+            {
+                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
+                if (data.Code == 1)
+                {
+                    _logger.LogWarning("Chr {CharacterName} tried to receive package from duey with id {PackageId}", chr.Name, data.Request.PackageId);
+                }
                 if (data.Code == 2)
                 {
-                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                    return;
+                    _logger.LogWarning("Chr {CharacterName} tried to receive package from duey with receiverId {PackageId}", chr.Name, data.Request.PackageId);
                 }
             }
         }
@@ -289,7 +309,7 @@ namespace Application.Module.Duey.Channel
                     }
                     else
                     {
-                        c.sendPacket(DueyPacketCreator.sendDuey(0x8, GetPlayerDueyPackages(c.OnlinedCharacter)));
+                        c.sendPacket(DueyPacketCreator.sendDuey(DueyProcessorActions.TOCLIENT_OPEN_DUEY.getCode(), GetPlayerDueyPackages(c.OnlinedCharacter)));
                     }
                 }
                 finally
@@ -302,15 +322,6 @@ namespace Application.Module.Duey.Channel
         public DueyPackageObject[] GetPlayerDueyPackages(IPlayer chr)
         {
             return _mapper.Map<DueyPackageObject[]>(_transport.GetDueyPackagesByPlayerId(new GetPlayerDueyPackageRequest { ReceiverId = chr.Id }).List);
-        }
-
-        public void OnDueyNotificationReceived(DueyDto.DueyNotificationDto data)
-        {
-            var receiver = _server.FindPlayerById(data.ReceiverId);
-            if (receiver != null)
-            {
-                receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.SenderName, data.Type));
-            }
         }
 
         public void OnLoginDueyNotify(DueyDto.DueyNotifyDto data)

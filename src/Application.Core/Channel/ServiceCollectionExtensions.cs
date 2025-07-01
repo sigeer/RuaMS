@@ -1,8 +1,8 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
-using Application.Core.Channel.Transactions;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
@@ -64,7 +64,8 @@ namespace Application.Core.Channel
         {
             // 可能同一机器创建多个频道，wz资源读取使用单例
             services.AddSingleton<SkillbookInformationProvider>();
-            services.AddSingleton<ShopFactory>();
+            services.AddSingleton<CashItemProvider>();
+            services.AddSingleton<ShopManager>();
 
             services.AddSingleton<ItemService>();
             services.AddSingleton<RankService>();
@@ -80,7 +81,7 @@ namespace Application.Core.Channel
             services.TryAddSingleton<IDueyService, DefaultDueyService>();
             services.TryAddSingleton<IItemDistributeService, DefaultItemDistributeService>();
 
-            services.AddSingleton<ItemTransactionStore>();
+            services.AddSingleton<ItemTransactionService>();
 
             services.AddSingleton<MatchCheckerGuildCreationListener>();
             services.AddSingleton<MatchCheckerCPQChallengeListener>();
@@ -100,7 +101,7 @@ namespace Application.Core.Channel
             services.AddSingleton<WorldChannelServer>();
             services.AddChannelService();
 
-            services.AddSingleton<CharacterService>();
+            services.AddSingleton<DataService>();
 
             services.AddAutoMapper(typeof(ProtoMapper));
             services.AddHostedService<ChannelHost>();

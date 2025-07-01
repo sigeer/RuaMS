@@ -26,6 +26,7 @@ using Application.Core.Game.Life;
 using Application.Core.Channel;
 using Microsoft.Extensions.Logging;
 using server.maps;
+using Application.Core.Channel.Services;
 
 namespace scripting.reactor;
 

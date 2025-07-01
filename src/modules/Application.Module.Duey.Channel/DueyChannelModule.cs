@@ -1,9 +1,10 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Events;
 using Application.Core.Channel.Message;
+using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
 using Application.Module.Duey.Common;
+using Dto;
 using DueyDto;
 
 namespace Application.Module.Duey.Channel

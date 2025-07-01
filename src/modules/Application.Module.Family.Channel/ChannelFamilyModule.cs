@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Events;
+using Application.Core.Channel.Modules;
 using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;

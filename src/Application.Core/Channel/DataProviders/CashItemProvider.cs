@@ -1,11 +1,7 @@
-using Application.Core.Servers.Services;
+using Application.Core.Channel.Services;
 using Application.Shared.Items;
-using Application.Utility.Exceptions;
-using Application.Utility.Extensions;
-using Application.Utility.Loggers;
-using client.inventory;
-using XmlWzReader;
-using XmlWzReader.wz;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ZLinq;
 
 namespace Application.Core.Channel.DataProviders
@@ -16,11 +12,12 @@ namespace Application.Core.Channel.DataProviders
         volatile Dictionary<int, List<int>> packages = new();
         volatile List<SpecialCashItem> specialcashitems = new();
 
-        readonly ItemService _itemService;
+        readonly Lazy<ItemService> _lazyItemService;
 
-        public CashItemProvider(ItemService itemService)
+        public CashItemProvider(IServiceProvider sp, ILogger<WZDataBootstrap> logger) : base(logger)
         {
-            _itemService = itemService;
+            Name = "现金道具";
+            _lazyItemService = new Lazy<ItemService>(() => sp.GetRequiredService<ItemService>());
         }
 
         protected override void LoadDataInternal()
@@ -58,7 +55,7 @@ namespace Application.Core.Channel.DataProviders
             try
             {
 
-                specialcashitems = _itemService.GetSpecialCashItems();
+                specialcashitems = _lazyItemService.Value.GetSpecialCashItems();
 
             }
             catch (Exception ex)
@@ -85,14 +82,13 @@ namespace Application.Core.Channel.DataProviders
 
         public CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
 
-        public List<Item> getPackage(int itemId, ChannelService service)
-        {
-            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => service.CashItem2Item(GetItemTrust(x))).ToList();
-        }
-
         public bool isPackage(int itemId)
         {
             return packages.ContainsKey(itemId);
+        }
+        public List<int> GetPackage(int itemId)
+        {
+            return packages.GetValueOrDefault(itemId) ?? [];
         }
 
         public List<SpecialCashItem> getSpecialCashItems()

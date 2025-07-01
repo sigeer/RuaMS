@@ -3,7 +3,6 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Shared.Team;
 using Dto;
-using ItemDto;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -108,8 +107,8 @@ namespace Application.Core.ServerTransports
         /// 设置玩家在线
         /// </summary>
         /// <param name="id">玩家id</param>
-        /// <param name="v">频道号</param>
-        void SetPlayerOnlined(int id, int v);
+        /// <param name="channelId">频道号</param>
+        void SetPlayerOnlined(int id, int channelId);
         void CallSaveDB();
         Dto.DropAllDto RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
@@ -183,8 +182,8 @@ namespace Application.Core.ServerTransports
         void SendSetFly(SetFlyRequest setFlyRequest);
         void SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
         void BroadcastMessage(SendTextMessage data);
-        void BroadcastTV(CreateTVMessageRequest request);
-        void SendItemMegaphone(UseItemMegaphoneRequest request);
-        void FinishTransaction(FinishTransactionRequest finishTransactionRequest);
+        void BroadcastTV(ItemProto.CreateTVMessageRequest request);
+        void SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
+        void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest);
     }
 }

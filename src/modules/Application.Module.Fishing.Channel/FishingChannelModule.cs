@@ -1,5 +1,5 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Events;
+using Application.Core.Channel.Modules;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Players;
 using Application.Shared.Constants.Item;

@@ -156,6 +156,11 @@ namespace Application.Core.Login.Datas
                             });
                             _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                             _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
+
+                            foreach (var module in _masterServer.Modules)
+                            {
+                                module.OnPlayerLogoff(origin);
+                            }
                         }
                     }
                     else

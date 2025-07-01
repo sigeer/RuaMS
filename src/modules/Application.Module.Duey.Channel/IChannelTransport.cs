@@ -9,5 +9,6 @@ namespace Application.Module.Duey.Channel
         void TakeDueyPackage(TakeDueyPackageRequest request);
         void RequestRemovePackage(RemovePackageRequest request);
         GetPlayerDueyPackageResponse GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request);
+        void TakeDueyPackageCommit(TakeDueyPackageCommit takeDueyPackageCommit);
     }
 }

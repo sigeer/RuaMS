@@ -3,14 +3,14 @@ syntax = "proto3";
 import "Dto/Item.proto";
 import "Item/ItemTransaction.proto";
 
-package ItemDto;
+package ItemProto;
 
 message UseItemMegaphoneRequest {
 	int32 masterId = 1;
 	Dto.ItemDto item = 2;
 	string message = 3;
 	bool isWishper = 4;
-	ItemTransaction transaction = 5;
+	CreateItemTransactionRequest transaction = 5;
 }
 
 message UseItemMegaphoneResult {

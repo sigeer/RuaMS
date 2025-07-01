@@ -26,6 +26,7 @@ using Application.Core.Client;
 using Application.Module.Duey.Common;
 using Application.Shared.Net;
 using Application.Utility.Configs;
+using Microsoft.Extensions.Logging;
 using tools;
 
 namespace Application.Module.Duey.Channel.Net.Handlers;
@@ -33,20 +34,16 @@ namespace Application.Module.Duey.Channel.Net.Handlers;
 public class DueyHandler : ChannelHandlerBase
 {
     readonly DueyManager _dueyManager;
+    readonly ILogger<DueyHandler> _logger;
 
-    public DueyHandler(DueyManager dueyManager)
+    public DueyHandler(DueyManager dueyManager, ILogger<DueyHandler> logger)
     {
         _dueyManager = dueyManager;
+        _logger = logger;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        if (!YamlConfig.config.server.USE_DUEY)
-        {
-            c.sendPacket(PacketCreator.enableActions());
-            return;
-        }
-
         byte operation = p.readByte();
         if (operation == DueyProcessorActions.TOSERVER_RECV_ITEM.getCode())
         {
@@ -78,9 +75,9 @@ public class DueyHandler : ChannelHandlerBase
 
             _dueyManager.TakePackage(c.OnlinedCharacter, packageid);
         }
-        else if (operation == DueyProcessorActions.TOSERVER_CLAIM_PACKAGE.getCode())
+        else
         {
-            _dueyManager.SendTalk(c, false);
+            _logger.LogDebug("DueyHandler, Action={Action}, ReadableCount={ReadableCount}", operation, p.available());
         }
     }
 }

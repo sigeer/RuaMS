@@ -34,5 +34,10 @@ namespace Application.Module.Duey.Channel.InProgress
         {
             _masterManager.TakeDueyPackage(request);
         }
+
+        public void TakeDueyPackageCommit(TakeDueyPackageCommit request)
+        {
+            _masterManager.TakeDueyPackageCommit(request);
+        }
     }
 }

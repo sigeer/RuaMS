@@ -20,6 +20,7 @@
 
 
 using Acornima.Ast;
+using Application.Core.Channel;
 using Application.Core.client.creator.novice;
 using Application.Core.client.creator.veteran;
 using Application.Core.Managers.Constants;

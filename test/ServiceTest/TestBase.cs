@@ -87,7 +87,7 @@ namespace ServiceTest
             channel.GetType().GetField("channel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(channel, 1);
             var masterServer = _sp.GetRequiredService<MasterServer>();
             var obj = masterServer.CharacterManager.FindPlayerById(1);
-            var charSrv = _sp.GetRequiredService<Application.Core.Servers.Services.CharacterService>();
+            var charSrv = _sp.GetRequiredService<Application.Core.Servers.Services.DataService>();
 
             var client = ActivatorUtilities.CreateInstance<ChannelClient>(_sp, (long)1, channel);
             //var mockChannel = new Mock<ChannelClient>();

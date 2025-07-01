@@ -1,5 +1,3 @@
-using Application.Core.Login.Models;
-using Application.Core.Login.Models.Transactions;
 using Application.Shared.Items;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -9,7 +7,7 @@ namespace Application.Core.Login.ServerData
 {
     public class ItemTransactionManager
     {
-        ConcurrentDictionary<long, ItemDto.ItemTransaction> _dataSource = [];
+        ConcurrentDictionary<long, ItemProto.ItemTransaction> _dataSource = [];
 
         readonly IMapper _mapper;
         readonly MasterServer _server;
@@ -22,17 +20,28 @@ namespace Application.Core.Login.ServerData
             _logger = logger;
         }
 
-        public ItemDto.ItemTransaction CreateTransaction(ItemDto.ItemTransaction tsc, ItemTransactionStatus status)
+        public ItemProto.ItemTransaction CreateTransaction(ItemProto.CreateItemTransactionRequest request, ItemTransactionStatus status)
         {
-            tsc.TransactionId = Yitter.IdGenerator.YitIdHelper.NextId();
-            tsc.Status = (int)status;
+            var tsc = new ItemProto.ItemTransaction()
+            {
+                PlayerId = request.PlayerId,
+                Status = (int)status,
+                TransactionId = Yitter.IdGenerator.YitIdHelper.NextId(),
+                Meso = request.Meso
+            };
+            tsc.Items.AddRange(request.Items);
             _dataSource.TryAdd(tsc.TransactionId, tsc);
             return tsc;
         }
 
-        public void Finish(ItemDto.FinishTransactionRequest request)
+        public void Finish(ItemProto.FinishTransactionRequest request)
         {
             _dataSource.TryRemove(request.TransactionId, out _);
+        }
+
+        public List<ItemProto.ItemTransaction> GetPlayerPendingTransactions(int chrId)
+        {
+            return _dataSource.Values.Where(x => x.PlayerId == chrId).ToList();
         }
     }
 }

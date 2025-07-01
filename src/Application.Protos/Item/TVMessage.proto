@@ -4,7 +4,7 @@ import "Dto/PlayerView.proto";
 import "google/protobuf/wrappers.proto";
 import "Item/ItemTransaction.proto";
 
-package ItemDto;
+package ItemProto;
 
 message CreateTVMessageRequest {
 	int32 masterId = 1;
@@ -12,7 +12,7 @@ message CreateTVMessageRequest {
 	int32 type = 3;
 	repeated string messageList = 4;
 	bool showEar = 5;
-	ItemTransaction transaction = 6;
+	CreateItemTransactionRequest transaction = 6;
 }
 
 message CreateTVMessageResponse {

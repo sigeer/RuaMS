@@ -12,14 +12,12 @@ using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
 using Dto;
-using ItemDto;
 using net.server;
 using server.expeditions;
 using System.Net;
 using System.Text;
 using tools;
 using tools.packets;
-using XmlWzReader;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -856,17 +854,17 @@ namespace Application.Core.Channel.InProgress
             _server.Transport.BroadcastMessage(BroadcastType.OnMessage, data);
         }
 
-        public void BroadcastTV(CreateTVMessageRequest request)
+        public void BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
             _itemService.BroadcastTV(request);
         }
 
-        public void SendItemMegaphone(UseItemMegaphoneRequest request)
+        public void SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request)
         {
             _itemService.BroadcastItemMegaphone(request);
         }
 
-        public void FinishTransaction(FinishTransactionRequest finishTransactionRequest)
+        public void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest)
         {
             _server.ItemTransactionManager.Finish(finishTransactionRequest);
         }

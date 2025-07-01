@@ -1,3 +1,4 @@
+using Application.Core.Game.Players;
 using Application.Core.Login;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
@@ -12,6 +13,7 @@ using client.inventory;
 using DueyDto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Collections.Concurrent;
 
 namespace Application.Module.Duey.Master
@@ -63,9 +65,15 @@ namespace Application.Module.Duey.Master
                 return;
             }
 
-            if (package.ReceiverId != request.MasterId)
+            if (package.ReceiverId == request.MasterId)
             {
                 _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 2, Request = request });
+                return;
+            }
+
+            if (package.TimeStamp.ToUnixTimeMilliseconds() < _server.getCurrentTime())
+            {
+                _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 3, Request = request });
                 return;
             }
 
@@ -76,7 +84,35 @@ namespace Application.Module.Duey.Master
             }
 
             _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Request = request, Package = _mapper.Map<DueyDto.DueyPackageDto>(package) });
-            RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
+        }
+
+        public void PackageUnfreeze(int chrId)
+        {
+            var packages = _dataSource.Values.Where(x => x.ReceiverId == chrId && x.IsFrozen);
+            foreach (var package in packages)
+            {
+                package.ForceUnfreeze();
+                _logger.LogInformation($"Package {package.Id} automatically unfrozen due to player disconnect.");
+            }
+        }
+
+        public void TakeDueyPackageCommit(DueyDto.TakeDueyPackageCommit request)
+        {
+            if (request.Success)
+            {
+                if (_dataSource.TryRemove(request.PackageId, out var package))
+                {
+                    RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
+                }
+            }
+            else
+            {
+                if (_dataSource.TryGetValue(request.PackageId, out var package))
+                {
+                    // 领取失败、解冻
+                    package.ForceUnfreeze();
+                }
+            }
         }
 
 

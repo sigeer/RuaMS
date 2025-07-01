@@ -7,11 +7,11 @@ namespace Application.Shared.Items
         /// </summary>
         Pending,
         /// <summary>
-        /// 未处理（玩家不在这个服务器上）时，需要执行Commit
+        /// 等待执行Commit
         /// </summary>
         PendingForCommit,
         /// <summary>
-        /// 未处理（玩家不在这个服务器上）时，需要执行Rollback
+        /// 等待执行Rollback
         /// </summary>
         PendingForRollback,
         /// <summary>

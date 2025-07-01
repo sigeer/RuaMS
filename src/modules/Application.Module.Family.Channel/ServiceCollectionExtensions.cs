@@ -1,4 +1,4 @@
-using Application.Core.Channel.Events;
+using Application.Core.Channel.Modules;
 using Application.Core.Client;
 using Application.Module.Family.Channel.Net.Handlers;
 using Application.Module.Family.Common;

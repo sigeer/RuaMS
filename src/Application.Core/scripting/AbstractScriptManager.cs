@@ -40,6 +40,7 @@ using System.Collections.Concurrent;
 using tools;
 using tools.packets;
 using System.IO;
+using Application.Core.Channel.ServerData;
 
 namespace scripting;
 
@@ -144,9 +145,9 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("Wedding", typeof(WeddingPackets));
             engine.AddHostedType("GameConstants", typeof(GameConstants));
             engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
-            engine.AddHostedType("ShopFactory", typeof(ShopFactory));
+            engine.AddHostedType("ShopFactory", typeof(ShopManager));
             engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
-            engine.AddHostedType("Guild", typeof(GuildManager));
+            engine.AddHostedType("Guild", typeof(Application.Core.Managers.GuildManager));
             engine.AddHostedType("Job", typeof(Job));
             engine.AddHostedType("InventoryType", typeof(InventoryType));
 

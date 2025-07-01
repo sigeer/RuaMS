@@ -27,11 +27,6 @@ namespace Application.Module.Duey.Master
             SendMessage(BroadcastType.OnDueyPackageTaking, response, response.Package.ReceiverId);
         }
 
-        public void SendDueyNotification(DueyDto.DueyNotificationDto response)
-        {
-            SendMessage(BroadcastType.OnDueyNotification, response, response.ReceiverId);
-        }
-
         internal void SendDueyNotifyOnLogin(int receiverId, DueyNotifyDto response)
         {
             SendMessage(BroadcastType.OnDueyNotify, response, receiverId);
