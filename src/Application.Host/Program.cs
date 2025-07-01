@@ -132,6 +132,8 @@ try
 
     var app = builder.Build();
 
+    app.UseGameServerLocal();
+
     var idGeneratorOptions = new IdGeneratorOptions(1);
     YitIdHelper.SetIdGenerator(idGeneratorOptions);
 
