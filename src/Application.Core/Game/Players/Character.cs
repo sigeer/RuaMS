@@ -1421,7 +1421,7 @@ public partial class Player
         }
         return false;
     }
-
+    Dictionary<int, PlayerPickupProcessor> _pickerProcessor = new();
     public void pickupItem(IMapObject? ob, int petIndex = -1)
     {
         // yes, one picks the IMapObject, not the MapItem
@@ -1431,28 +1431,16 @@ public partial class Player
             return;
         }
 
-        var pickerProcessor = new PlayerPickupProcessor(this, petIndex);
+        if (!_pickerProcessor.TryGetValue(petIndex, out var pickerProcessor))
+        {
+            pickerProcessor = new PlayerPickupProcessor(this, petIndex);
+            _pickerProcessor[petIndex] = pickerProcessor;
+        }
+        
         if (ob is MapItem mapitem)
         {
             pickerProcessor.Handle(mapitem);
         }
-    }
-
-
-    public int countItem(int itemid)
-    {
-        return Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
-    }
-
-    public bool canHold(int itemid, int quantity = 1)
-    {
-        return Client.getAbstractPlayerInteraction().canHold(itemid, quantity);
-    }
-
-    public bool canHoldUniques(List<int> itemids)
-    {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        return !itemids.Any(x => ii.isPickupRestricted(x) && haveItem(x));
     }
 
     public bool isRidingBattleship()
@@ -2892,25 +2880,6 @@ public partial class Player
         return HasMerchant;
     }
 
-    public bool haveItem(int itemid)
-    {
-        return getItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
-    }
-
-    public bool haveCleanItem(int itemid)
-    {
-        return getCleanItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
-    }
-
-    public bool HasEmptySlotByItem(int itemId)
-    {
-        return getInventory(ItemConstants.getInventoryType(itemId)).getNextFreeSlot() > -1;
-    }
-
-    public bool hasEmptySlot(sbyte invType)
-    {
-        return getInventory(InventoryTypeUtils.getByType(invType)).getNextFreeSlot() > -1;
-    }
 
     public void increaseGuildCapacity()
     {
@@ -5148,6 +5117,7 @@ public partial class Player
         }
         pendantOfSpirit = null;
 
+        _pickerProcessor.Clear();
         clearCpqTimer();
 
         Monitor.Enter(evtLock);

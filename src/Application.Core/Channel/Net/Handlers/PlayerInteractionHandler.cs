@@ -570,7 +570,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     if ((quantity <= item.getQuantity() && quantity >= 0) || ItemConstants.isRechargeable(item.getItemId()))
                     {
                         if (ii.isDropRestricted(item.getItemId()))
-                        { // ensure that undroppable items do not make it to the trade window
+                        { 
+                            // ensure that undroppable items do not make it to the trade window
                             if (!KarmaManipulator.hasKarmaFlag(item))
                             {
                                 c.sendPacket(PacketCreator.serverNotice(1, "That item is untradeable."));

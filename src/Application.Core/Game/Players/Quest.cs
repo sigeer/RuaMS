@@ -74,7 +74,7 @@ namespace Application.Core.Game.Players
             Quest q = Quest.getInstance(id);
             QuestStatus qs = getQuest(q);
 
-            if (qs.getInfoNumber() == infoNumber && infoNumber > 0)
+            if (infoNumber > 0 && qs.getInfoNumber() == infoNumber)
             {
                 Quest iq = Quest.getInstance(infoNumber);
                 QuestStatus iqs = getQuest(iq);

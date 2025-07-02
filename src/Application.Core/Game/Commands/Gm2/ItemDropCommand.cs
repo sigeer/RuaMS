@@ -85,7 +85,7 @@ public class ItemDropCommand : CommandBase
         }
         else
         {
-            toDrop = new Item(itemId, 0, quantity);
+            toDrop = Item.CreateVirtualItem(itemId, quantity);
         }
 
         toDrop.setOwner(player.getName());

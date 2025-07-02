@@ -207,8 +207,7 @@ namespace Application.Core.Gameplay
 
             else if (ItemId.isPet(mapItem.getItemId()))
             {
-                InventoryManipulator.addById(_player.Client, mapItem.getItem().getItemId(), mapItem.getItem().getQuantity(), null);
-                return true;
+                return InventoryManipulator.addById(_player.Client, mapItem.getItem().getItemId(), mapItem.getItem().getQuantity(), null);
             }
 
             else

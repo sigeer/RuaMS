@@ -1,3 +1,5 @@
+## 修改记录
+
 - `async/await` 的处理，如果使用`async/await`，js脚本部分也要进行相应的调整，需要大量修改。改为同步调用
 - Java中的byte，对应C#中的sbyte，在网络请求中，byte与sbyte没有区别。但是作为数值参与计算时，两者有区别。
 - 移除`GuildSummary`
@@ -60,10 +62,9 @@
 - 移除了`MapleMap`中的`mapParty`
 - 移除`CharacterEntity`的`Party`属性：组队数据并没有保存到数据库，这意味着重启服务器后组队数据消失，但是`Party`却仍有值。`Party`将与组队数据一起保存在内存中。
 
-#### 新的内容
+#### 结构调整
 
-##### 增加`ChannelServerContainer`，也就是原先的`MultiRunner`
-
+增加`WorldChannelServer`，也就是原先的`MultiRunner`  
 可能存在一台机器（一个进程）上部署多个频道的情况，此时`MasterServer`广播时，没必要对这N个`WorldChannel`请求N次，而是在传给`WorldChannelServer`再本地处理  
 也就是服务器的请求节点不再是`MasterServer`与`WorldChannel`，而是`MasterServer`与`WorldChannelServer`。 
 wz资源，在同一进程时，没必要每个频道都读取一次 ，所以都会通过单例注入（`AddSingleton<SkillbookInformationProvider>()`） 
@@ -94,4 +95,12 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 1. （默认）：作为掉落物落在角色位置
 2. 通过duey发放
 
-发放道具似乎也可以走这个逻辑
+发放道具也可以走这个逻辑
+
+
+
+## 待办事项
+
+- [ ] `DateTimeOffset.UtcNow` 换成 `getCurrentTime()`
+- [ ] 移除 `new DBConext()` 
+- [ ] 移除 `PlayerNpc`

@@ -267,7 +267,7 @@ namespace Application.Module.Duey.Channel
 
                 if (dpItem != null)
                 {
-                    if (!chr.canHoldUniques([dpItem.getItemId()]))
+                    if (!chr.CanHoldUniquesOnly(dpItem.getItemId()))
                     {
                         chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
                         _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });

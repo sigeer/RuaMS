@@ -1,3 +1,6 @@
+# 开发笔记
+
+记录一些代码、文件等
 
 ## 脚本相关
 
@@ -14,12 +17,12 @@ __BaseChallenge 单人事件
 
 ### 代码实现
 
- - Channel 和 EventScriptManager 是一对一
+- Channel 和 EventScriptManager 是一对一
 
- - EventScriptManager 和 EventManager（em） 是一对多，在服务器启动时生成，直接装载了所有event下的脚本（EventManager与event脚本一对一），并调用了init方法。
+- EventScriptManager 和 EventManager（em） 是一对多，在服务器启动时生成，直接装载了所有event下的脚本（EventManager与event脚本一对一），并调用了init方法。
 EventManager一般在js中通过`newInstance`，创建 EventInstanceManager（eim） ，可以将`EventInstanceManager`视作`EventManager`的实例，一对多
 
-- NPCScriptManager 是单例，当与NPC对话时，调用`start`方法开启对话，同时生成 NPCConversationManager（cm）。
+- Channel 和 NPCScriptManager 是一对一，当与NPC对话时，调用`start`方法开启对话，同时生成 NPCConversationManager（cm）。
 之后调用`action`，通过参数进入对话的不同阶段
 
 
@@ -62,14 +65,33 @@ StatEffect ： 状态效果，可能来自技能、物品道具，可以附加�
 BuffStatValueHolder：玩家身上的状态
 ```
 
-#### 一些相似的方法
+## 一些相似的方法
 
-有些方法看起来似乎有着一样的功能
+有些方法看起来似乎有着一样的功能，或者名字相近却不知道其功能的方法，一些简单已经被移除，还有一些复杂的记录在这里
 
-##### 检查背包空间
+### 检查背包空间
 
 | 方法名|   备注 |
 | ----------- |----------- |
-| `InventoryManipulator.checkSpace`  |  |
-| `Inventory.checkSpot`  |  |
-| `chr.canHold`  |  |
+| `chr.canHold`  | 调用`Inventory.checkSpot`（原先会调用`script.canHold`） |
+| `script.canHold`  | 调用`Inventory.checkSpots` |
+| `Inventory.checkSpot`  | 转 `Inventory.checkSpotsAndOwnership` |
+| `Inventory.checkSpotsAndOwnership`  | 内部会调用`InventoryManipulator.checkSpaceProgressively` |
+| `Inventory.checkSpots`  | 逻辑与`checkSpotsAndOwnership`相似，但是不包含owner检测 |
+| `InventoryManipulator.checkSpace`  | 内部实现与`checkSpaceProgressively`相似 |
+| `InventoryManipulator.checkSpaceProgressively`  | 返回值比`checkSpace`更丰富 |
+
+### 获取物品
+
+| 方法名| 固有道具验证| 背包空间验证|   备注 |
+| ----------- |-----------|-----------|----------- |
+| `InventoryManipulator.addById` |❌|❌ | 传入 itemId |
+| `InventoryManipulator.addFromDrop`|✔|❌  | 传入`Item` |
+| `chr.GainItem`|❌|✔`InventoryManipulator.checkSpace` | 传入itemId，但是调用`InventoryManipulator.addFromDrop` |
+
+### 移除物品
+
+| 方法名|   备注 |
+| ----------- |----------- |
+| `InventoryManipulator.removeFromSlot`  |  |
+| `InventoryManipulator.removeById`  |  |

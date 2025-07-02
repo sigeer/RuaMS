@@ -49,7 +49,7 @@ public class FamilyEntitlement : EnumClass
         return description;
     }
 
-    public static Dictionary<int, FamilyEntitlement> All = EnumClassUtils.GetValues<FamilyEntitlement>().ToDictionary(x => x.Value);
+    public static Dictionary<int, FamilyEntitlement> All = EnumClassCache<FamilyEntitlement>.Values.ToDictionary(x => x.Value);
     public static FamilyEntitlement Parse(int id)
     {
         return All[id];

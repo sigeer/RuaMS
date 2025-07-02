@@ -256,7 +256,7 @@ public class Storage
             });
 
             List<Item> storageItems = getItems();
-            foreach (InventoryType type in Enum.GetValues<InventoryType>())
+            foreach (InventoryType type in EnumCache<InventoryType>.Values)
             {
                 typeItems.AddOrUpdate(type, new(storageItems));
             }
@@ -305,7 +305,7 @@ public class Storage
             msi.mergeItems();
             items = msi.sortItems();
 
-            foreach (InventoryType type in Enum.GetValues<InventoryType>())
+            foreach (InventoryType type in EnumCache<InventoryType>.Values)
             {
                 typeItems.AddOrUpdate(type, new(items));
             }

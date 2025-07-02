@@ -77,6 +77,17 @@ public class Item : IComparable<Item>, IItemProp
         input.itemLog = new(itemLog);
     }
 
+    /// <summary>
+    /// 创建一个还不存在的道具
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <param name="quantity"></param>
+    /// <returns></returns>
+    public static Item CreateVirtualItem(int itemId, short quantity)
+    {
+        return new Item(itemId, 0, quantity);
+    }
+
     public void setPosition(short position)
     {
         this.position = position;

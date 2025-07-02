@@ -54,6 +54,11 @@ public enum InventoryType
     EQUIPPED = -1 //Seems nexon screwed something when removing an item T_T
 }
 
+public class InventoryTypeFactory
+{
+    public readonly static InventoryType[] All = Enum.GetValues<InventoryType>();
+}
+
 public static class InventoryTypeUtils
 {
     public static InventoryType getByType(this sbyte id)
@@ -64,11 +69,6 @@ public static class InventoryTypeUtils
     public static InventoryType GetByType(this int id)
     {
         return (InventoryType)id;
-    }
-
-    public static InventoryType[] values()
-    {
-        return Enum.GetValues<InventoryType>();
     }
 
     public static int ordinal(this InventoryType val)

@@ -1554,7 +1554,7 @@ public class ItemInformationProvider
     }
 
     /// <summary>
-    /// 固有道具
+    /// 固有道具（只能拥有1个）
     /// </summary>
     /// <param name="itemId"></param>
     /// <returns></returns>

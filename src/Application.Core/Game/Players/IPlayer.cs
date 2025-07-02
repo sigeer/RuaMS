@@ -149,6 +149,7 @@ namespace Application.Core.Game.Players
         bool canHold(int itemid, int quantity = 1);
         bool canHoldMeso(int gain);
         bool canHoldUniques(List<int> itemids);
+        bool CanHoldUniquesOnly(int itemId);
         bool cannotEnterCashShop();
         void changeCI(int type);
         void changeFaceExpression(int emote);
@@ -448,7 +449,7 @@ namespace Application.Core.Game.Players
         bool haveCleanItem(int itemid);
         bool haveItem(int itemid);
         bool haveItemEquipped(int itemid);
-        bool haveItemWithId(int itemid, bool checkEquipped);
+        bool haveItemWithId(int itemid, bool checkEquipped = true);
         bool haveWeddingRing();
         void Hide(bool hide, bool login = false);
         void increaseEquipExp(int expGain);
@@ -683,5 +684,6 @@ namespace Application.Core.Game.Players
         void SetFly(bool v);
         bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false);
         bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
+        Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
     }
 }

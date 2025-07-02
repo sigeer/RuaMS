@@ -7,6 +7,7 @@ using Application.Shared.Items;
 using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.Extensions.Logging;
 using Mysqlx.Crud;
 using server;
@@ -58,7 +59,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                item = new Item(cashItem.getItemId(), 0, cashItem.getCount());
+                item = Item.CreateVirtualItem(cashItem.getItemId(), cashItem.getCount());
             }
 
             if (ItemConstants.EXPIRING_ITEMS)
