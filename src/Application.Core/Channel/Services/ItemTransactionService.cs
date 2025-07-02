@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Services
             {
                 chr.RemoveItemById(item.getInventoryType(), item.getItemId(), item.getQuantity());
             }
-            chr.gainMeso(-meso);
+            chr.gainMeso(-meso, show: false);
 
             var request = new CreateItemTransactionRequest();
             request.PlayerId = chr.Id;
