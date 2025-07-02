@@ -228,7 +228,7 @@ namespace Application.Module.Duey.Master
                     item.Checked = false;
                     SetDirty(item.Id, new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, item));
                 }
-                _transport.SendDueyNotifyOnLogin(id, new DueyDto.DueyNotifyDto { Type = data.Type });
+                _transport.SendDueyNotifyOnLogin(id, new DueyDto.DueyNotifyDto { Type = data.Type, ReceiverId = data.ReceiverId });
             }
         }
 
