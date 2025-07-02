@@ -13,6 +13,7 @@ namespace Application.Module.Duey.Master.Models
         public int ReceiverId { get; set; }
 
         public int SenderId { get; set; }
+        public string SenderName { get; set; } = null!;
 
         public int Mesos { get; set; }
 

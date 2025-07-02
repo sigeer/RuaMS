@@ -6,7 +6,7 @@ namespace Application.Module.Duey.Channel.Models
     {
         public Mapper()
         {
-            CreateMap<DueyDto.DueyPackageDto, DueyPackageObject>().ReverseMap();
+            CreateMap<DueyDto.DueyPackageDto, DueyPackageObject>();
         }
     }
 }

@@ -61,3 +61,15 @@ StatEffect ： 状态效果，可能来自技能、物品道具，可以附加�
 
 BuffStatValueHolder：玩家身上的状态
 ```
+
+#### 一些相似的方法
+
+有些方法看起来似乎有着一样的功能
+
+##### 检查背包空间
+
+| 方法名|   备注 |
+| ----------- |----------- |
+| `InventoryManipulator.checkSpace`  |  |
+| `Inventory.checkSpot`  |  |
+| `chr.canHold`  |  |

@@ -21,6 +21,5 @@ message CreatePackageRequest {
 message CreatePackageResponse {
 	int32 code = 1;
 	DueyPackageDto package = 2;
-	string senderName = 3;
-	ItemProto.ItemTransaction transaction = 4;
+	ItemProto.ItemTransaction transaction = 3;
 }

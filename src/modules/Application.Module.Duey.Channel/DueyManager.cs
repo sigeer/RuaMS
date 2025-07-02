@@ -75,7 +75,7 @@ namespace Application.Module.Duey.Channel
                 var receiver = _server.FindPlayerById(data.Package.ReceiverId);
                 if (receiver != null)
                 {
-                    receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.SenderName, data.Package.Type));
+                    receiver.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
                 }
             }
             else
@@ -191,7 +191,7 @@ namespace Application.Module.Duey.Channel
                     }
 
                     long finalcost = (long)sendMesos + fee;
-                    if (finalcost < 0 || finalcost > int.MaxValue || (amount < 1 && sendMesos == 0))
+                    if (sendMesos < 0 || finalcost < 0 || finalcost > int.MaxValue || (amount < 1 && sendMesos == 0))
                     {
                         AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
@@ -265,12 +265,24 @@ namespace Application.Module.Duey.Channel
                     return;
                 }
 
-                if (dpItem != null && !chr.canHold(dpItem.getItemId(), dpItem.getQuantity()))
+                if (dpItem != null)
                 {
-                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
-                    _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                    return;
+                    if (!chr.canHoldUniques([dpItem.getItemId()]))
+                    {
+                        chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
+                        _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                        return;
+                    }
+
+                    if (!chr.canHold(dpItem.getItemId(), dpItem.getQuantity()))
+                    {
+                        chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
+                        _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                        return;
+                    }
                 }
+
+
 
                 _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true});
                 _distributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, "包裹满了");

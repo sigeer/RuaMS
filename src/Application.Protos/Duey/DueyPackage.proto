@@ -17,6 +17,7 @@ message DueyPackageDto {
   bool checked = 7;
   bool type = 8;
   Dto.ItemDto item = 9;
+  string senderName = 10;
 }
 
 message GetPlayerDueyPackageRequest {

@@ -1,4 +1,3 @@
-using Application.Core.Game.Players;
 using Application.Core.Login;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
@@ -13,7 +12,6 @@ using client.inventory;
 using DueyDto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Collections.Concurrent;
 
 namespace Application.Module.Duey.Master
@@ -46,13 +44,17 @@ namespace Application.Module.Duey.Master
 
         public async Task Initialize(DBContext dbContext)
         {
-            var allPackages = _mapper.Map<List<DueyPackageModel>>(await dbContext.Dueypackages.AsNoTracking().ToListAsync());
+            var dbList = await (from a in dbContext.Dueypackages.AsNoTracking()
+                                join b in dbContext.Characters on a.SenderId equals b.Id
+                                select new { Package = a, SenderName = b.Name }).ToListAsync();
 
-            var allPackageItems = InventoryManager.LoadDueyItems(dbContext, allPackages.Select(x => x.PackageId).ToArray());
-            foreach (var package in allPackages)
+            var allPackageItems = InventoryManager.LoadDueyItems(dbContext, dbList.Select(x => x.Package.PackageId).ToArray());
+            foreach (var item in dbList)
             {
+                var package = _mapper.Map<DueyPackageModel>(item.Package);
                 package.Item = _mapper.Map<ItemModel>(allPackageItems.FirstOrDefault(x => x.Item.Characterid == package.PackageId));
                 package.Id = Interlocked.Increment(ref _currentId);
+                package.SenderName = item.SenderName;
                 _dataSource[package.Id] = package;
             }
         }
@@ -71,7 +73,7 @@ namespace Application.Module.Duey.Master
                 return;
             }
 
-            if (package.TimeStamp.ToUnixTimeMilliseconds() < _server.getCurrentTime())
+            if (package.TimeStamp.ToUnixTimeMilliseconds() > _server.getCurrentTime())
             {
                 _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 3, Request = request });
                 return;
@@ -147,11 +149,12 @@ namespace Application.Module.Duey.Master
                     Id = Interlocked.Increment(ref _currentId),
                     ReceiverId = target.Character.Id,
                     SenderId = sender.Character.Id,
+                    SenderName = sender.Character.Name,
                     Mesos = request.SendMeso,
                     Message = request.SendMessage,
                     Type = request.Quick,
                     Checked = true,
-                    TimeStamp = DateTimeOffset.UtcNow,
+                    TimeStamp = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()),
                     Item = _mapper.Map<ItemModel>(request.Item, ctx =>
                     {
                         ctx.Items["Type"] = (int)ItemType.Duey;
@@ -164,7 +167,6 @@ namespace Application.Module.Duey.Master
                 _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
                 {
                     Package = _mapper.Map<DueyDto.DueyPackageDto>(model),
-                    SenderName = sender.Character.Name,
                     Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForCommit)
                 });
             }
@@ -250,6 +252,7 @@ namespace Application.Module.Duey.Master
                     }
                     else
                     {
+                        // 不能修改包裹，只能修改checked属性
                         dbData.Checked = obj.Checked;
                         await dbContext.SaveChangesAsync();
                     }

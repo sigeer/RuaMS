@@ -1,9 +1,4 @@
 using client.inventory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Module.Duey.Channel.Models
 {
@@ -29,11 +24,6 @@ namespace Application.Module.Duey.Channel.Models
         public long sentTimeInMilliseconds()
         {
             return TimeStamp.AddMonths(1).ToUnixTimeMilliseconds();
-        }
-
-        public bool isDeliveringTime()
-        {
-            return TimeStamp >= DateTimeOffset.UtcNow;
         }
     }
 }
