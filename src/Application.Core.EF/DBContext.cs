@@ -510,7 +510,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("int(10) unsigned");
             entity.Property(e => e.Message).HasMaxLength(200);
             entity.Property(e => e.ReceiverId).HasColumnType("int(10) unsigned");
-            entity.Property(e => e.SenderName).HasMaxLength(13);
+            entity.Property(e => e.SenderId).HasColumnType("int(10) unsigned");
             entity.Property(e => e.TimeStamp)
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
                 .HasColumnType("timestamp");

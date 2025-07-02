@@ -107,8 +107,8 @@ namespace Application.Core.ServerTransports
         /// 设置玩家在线
         /// </summary>
         /// <param name="id">玩家id</param>
-        /// <param name="v">频道号</param>
-        void SetPlayerOnlined(int id, int v);
+        /// <param name="channelId">频道号</param>
+        void SetPlayerOnlined(int id, int channelId);
         void CallSaveDB();
         Dto.DropAllDto RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
@@ -116,9 +116,6 @@ namespace Application.Core.ServerTransports
         void SendGift(int recipient, string from, string message, int sn, long ringid);
         Dto.GiftDto[] LoadPlayerGifts(int playerId);
         void ClearGifts(int[] giftIdArray);
-        Dto.DueyPackageDto[] GetPlayerDueyPackages(int id);
-        Dto.DueyPackageDto? GetDueyPackageByPackageId(int id);
-        void RequestRemovePackage(int packageid);
         bool SendNormalNoteMessage(string fromName, string toName, string noteMessage);
         bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
         void ShowNoteMessage(string name);
@@ -129,9 +126,6 @@ namespace Application.Core.ServerTransports
         void AddReport(int v1, int v2, int v3, string description, string v4);
         Rank.RankCharacterList LoadPlayerRanking(int topCount);
         void SendToggleCoupon(int v);
-        Dto.CreatePackageResponse CreateDueyPackage(Dto.CreatePackageRequest request);
-        void SendDueyNotification(Dto.SendDueyNotificationRequest sendDueyNotificationRequest);
-        Dto.CreatePackageCheckResponse CreateDueyPackageFromInventoryCheck(Dto.CreatePackageCheckRequest request);
         void UpdateAccount(AccountCtrl accountEntity);
         Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
         Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);
@@ -188,5 +182,8 @@ namespace Application.Core.ServerTransports
         void SendSetFly(SetFlyRequest setFlyRequest);
         void SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
         void BroadcastMessage(SendTextMessage data);
+        void BroadcastTV(ItemProto.CreateTVMessageRequest request);
+        void SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
+        void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest);
     }
 }

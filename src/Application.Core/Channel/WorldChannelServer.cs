@@ -1,10 +1,12 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
 using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Message;
+using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
-using Application.Core.Models;
+using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Message;
@@ -16,10 +18,9 @@ using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MySql.Data.MySqlClient;
-using net.packet.outs;
 using net.server.guild;
 using Polly;
+using Serilog;
 using server;
 using System.Diagnostics;
 using System.Net;
@@ -37,15 +38,31 @@ namespace Application.Core.Channel
         public ChannelServerConfig ServerConfig { get; set; }
         public string ServerName => ServerConfig.ServerName;
         public SkillbookInformationProvider SkillbookInformationProvider { get; }
+        public CashItemProvider CashItemProvider { get; }
         readonly ILogger<WorldChannelServer> _logger;
 
         public DateTimeOffset StartupTime { get; private set; }
+        public ITimerManager TimerManager { get; private set; } = null!;
 
         #region Data
-        public GuildManager GuildManager { get; private set; } = null!;
-        public TeamManager TeamManager { get; private set; } = null!;
-        public ChatRoomService ChatRoomService { get; private set; } = null!;
-        public NewYearCardService NewYearCardService { get; private set; } = null!;
+        readonly Lazy<GuildManager> _guildManager;
+        public GuildManager GuildManager => _guildManager.Value;
+
+        readonly Lazy<TeamManager> _teamManager;
+        public TeamManager TeamManager => _teamManager.Value;
+
+        readonly Lazy<ShopManager> _shopManager;
+        public ShopManager ShopManager => _shopManager.Value;
+
+
+        readonly Lazy<ChatRoomService> _chatRoomService;
+        public ChatRoomService ChatRoomService => _chatRoomService.Value;
+        readonly Lazy<NewYearCardService> _newYearService;
+        public NewYearCardService NewYearCardService => _newYearService.Value;
+        readonly Lazy<NoteService> _noteService;
+        public NoteService? NoteService => _noteService.Value;
+        readonly Lazy<DataService> _dataService;
+        public DataService DataService => _dataService.Value;
         #endregion
 
         #region Task
@@ -76,13 +93,18 @@ namespace Application.Core.Channel
         #endregion
         public List<ChannelModule> Modules { get; private set; }
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
-        public ITimerManager TimerManager { get; private set; } = null!;
 
         public ExpeditionService ExpeditionService { get; }
-        public NoteService? NoteService { get; private set; } = null!;
+
 
         ScheduledFuture? invitationTask;
-        public WorldChannelServer(IServiceProvider sp, IChannelServerTransport transport, IOptions<ChannelServerConfig> serverConfigOptions, ILogger<WorldChannelServer> logger)
+        public WorldChannelServer(IServiceProvider sp,
+            IChannelServerTransport transport,
+            IOptions<ChannelServerConfig> serverConfigOptions,
+            ILogger<WorldChannelServer> logger,
+            CashItemProvider cashItemProvider,
+            SkillbookInformationProvider skillbookInformationProvider
+            )
         {
             ServiceProvider = sp;
             Transport = transport;
@@ -92,7 +114,8 @@ namespace Application.Core.Channel
             Servers = new();
             ServerConfig = serverConfigOptions.Value;
 
-            SkillbookInformationProvider = ServiceProvider.GetRequiredService<SkillbookInformationProvider>();
+            SkillbookInformationProvider = skillbookInformationProvider;
+            CashItemProvider = cashItemProvider;
 
             CharacterDiseaseManager = new CharacterDiseaseManager(this);
             PetHungerManager = new PetHungerManager(this);
@@ -105,6 +128,15 @@ namespace Application.Core.Channel
             ExpeditionService = ServiceProvider.GetRequiredService<ExpeditionService>();
 
             InviteChannelHandlerRegistry = ServiceProvider.GetRequiredService<InviteChannelHandlerRegistry>();
+
+            _guildManager = new Lazy<GuildManager>(() => ServiceProvider.GetRequiredService<GuildManager>());
+            _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
+            _shopManager = new (() => ServiceProvider.GetRequiredService<ShopManager>());
+
+            _chatRoomService = new Lazy<ChatRoomService>(() => ServiceProvider.GetRequiredService<ChatRoomService>());
+            _newYearService = new(() => ServiceProvider.GetRequiredService<NewYearCardService>())   ;
+            _noteService = new(() => ServiceProvider.GetRequiredService<NoteService>());
+            _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
         }
 
         #region 时间
@@ -215,20 +247,16 @@ namespace Application.Core.Channel
 
             _ = Task.Run(() =>
             {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-                _logger.LogInformation("[{ServerName}]加载WZ - 能手册...", ServerName);
-                SkillbookInformationProvider.LoadAllSkillbookInformation();
-                _logger.LogInformation("[{ServerName}]加载WZ - 能手册加载完成, 耗时{Cost}", ServerName, sw.Elapsed.TotalSeconds);
+                SkillbookInformationProvider.LoadData();
+            });
+
+            _ = Task.Run(() =>
+            {
+                CashItemProvider.LoadData();
             });
 
             Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
 
-            GuildManager = ServiceProvider.GetRequiredService<GuildManager>();
-            TeamManager = ServiceProvider.GetRequiredService<TeamManager>();
-            ChatRoomService = ServiceProvider.GetRequiredService<ChatRoomService>();
-            NewYearCardService = ServiceProvider.GetRequiredService<NewYearCardService>();
-            NoteService = ServiceProvider.GetRequiredService<NoteService>();
 
             TimerManager = await server.TimerManager.InitializeAsync(TaskEngine.Quartz, ServerName);
 
@@ -249,7 +277,7 @@ namespace Application.Core.Channel
             {
                 module.Initialize();
                 module.RegisterTask(TimerManager);
-            }            
+            }
 
             List<WorldChannel> localServers = [];
             foreach (var config in ServerConfig.ChannelConfig)
@@ -302,6 +330,9 @@ namespace Application.Core.Channel
 
         public IPlayer? FindPlayerById(int cid)
         {
+            if (cid <= 0)
+                return null;
+
             foreach (var item in Servers.Values)
             {
                 var chr = item.Players.getCharacterById(cid);
@@ -313,6 +344,9 @@ namespace Application.Core.Channel
 
         public IPlayer? FindPlayerById(int channel, int cid)
         {
+            if (cid <= 0)
+                return null;
+
             if (Servers.TryGetValue(channel, out var ch))
                 return ch.Players.getCharacterById(cid);
 
@@ -594,8 +628,12 @@ namespace Application.Core.Channel
 
         private void InitializeMessage()
         {
+            var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
             MessageDispatcher.Register<Dto.SendTextMessage>(BroadcastType.OnMessage, OnBroadcastText);
+            MessageDispatcher.Register<ItemProto.UseItemMegaphoneResponse>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);
+            MessageDispatcher.Register<ItemProto.CreateTVMessageResponse>(BroadcastType.OnTVMessage, itemSrc.OnBroadcastTV);
+            MessageDispatcher.Register<Empty>(BroadcastType.OnTVMessageFinish, itemSrc.OnBroadcastTVFinished);
             MessageDispatcher.Register<Dto.SetFlyResponse>(BroadcastType.OnSetFly, OnSetFly);
             MessageDispatcher.Register<Dto.ReloadEventsResponse>(BroadcastType.OnEventsReloaded, OnEventsReloaded);
             MessageDispatcher.Register<Config.WorldConfig>(BroadcastType.OnWorldConfigUpdate, UpdateWorldConfig);

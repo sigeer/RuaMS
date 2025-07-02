@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.client.Characters;
-using Application.Core.Duey;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -681,7 +680,8 @@ namespace Application.Core.Game.Players
         void yellowMessage(string m);
 
         List<QuestStatus> getQuests();
-        DueyPackageObject[] GetDueyPackages();
         void SetFly(bool v);
+        bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false);
+        bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
     }
 }

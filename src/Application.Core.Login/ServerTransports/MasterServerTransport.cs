@@ -1,4 +1,5 @@
 using Application.Core.Login.Models;
+using Application.Core.Login.ServerTransports;
 using Application.Shared.Message;
 using Application.Shared.Servers;
 using Dto;
@@ -7,52 +8,10 @@ using tools;
 
 namespace Application.Core.Login
 {
-    public class MasterServerTransport : IServerTransport
+    public class MasterServerTransport : MasterServerTransportBase, IServerTransport
     {
-        readonly MasterServer _server;
-        public MasterServerTransport(MasterServer masterServer)
+        public MasterServerTransport(MasterServer masterServer) : base(masterServer)
         {
-            this._server = masterServer;
-        }
-
-        /// <summary>
-        /// 只需要给部分玩家发送消息，仅需要找到这部分玩家的频道服务器
-        /// </summary>
-        /// <typeparam name="TMessage"></typeparam>
-        /// <param name="messageType"></param>
-        /// <param name="message"></param>
-        /// <param name="playerIdArray"></param>
-        void SendMessage<TMessage>(string messageType, TMessage message, params int[] playerIdArray) where TMessage : notnull
-        {
-            var serverGroups = _server.GroupPlayer(playerIdArray);
-            foreach (var group in serverGroups)
-            {
-                group.Key.BroadcastMessage(messageType, message);
-            }
-        }
-
-        /// <summary>
-        /// 只需要给部分玩家发送消息，仅需要找到这部分玩家的频道服务器
-        /// </summary>
-        /// <typeparam name="TMessage"></typeparam>
-        /// <param name="messageType"></param>
-        /// <param name="message"></param>
-        /// <param name="playerIdArray"></param>
-        void SendMessage<TMessage>(string messageType, TMessage message, params PlayerChannelPair[] playerIdArray) where TMessage : notnull
-        {
-            var serverGroups = _server.GroupPlayer(playerIdArray);
-            foreach (var group in serverGroups)
-            {
-                group.Key.BroadcastMessage(messageType, message);
-            }
-        }
-
-        public void BroadcastMessage<TMessage>(string messageType, TMessage message) where TMessage : notnull
-        {
-            foreach (var server in _server.ChannelServerList.Values)
-            {
-                server.BroadcastMessage(messageType, message);
-            }
         }
 
         public void BroadcastMessage(Packet p)
@@ -123,15 +82,6 @@ namespace Application.Core.Login
             return selectedPw;
         }
 
-        public void SendDueyNotification(int channel, int id, string senderName, bool dueyType)
-        {
-            var world = Server.getInstance().getWorld(0);
-            var chr = world.Channels[channel - 1].getPlayerStorage().getCharacterById(id);
-            if (chr != null)
-            {
-                chr.Client.sendPacket(PacketCreator.sendDueyParcelReceived(senderName, dueyType));
-            }
-        }
 
         public void SendNotes(int channel, int id, Dto.NoteDto[] notes)
         {

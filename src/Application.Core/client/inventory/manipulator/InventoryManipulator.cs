@@ -452,11 +452,21 @@ public class InventoryManipulator
         return returnValue;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="c"></param>
+    /// <param name="type"></param>
+    /// <param name="slot"></param>
+    /// <param name="quantity"></param>
+    /// <param name="fromDrop">不明</param>
+    /// <param name="consume">对于子弹、飞镖等物品，consume为true时不会移出</param>
     public static void removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
         IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
         var item = inv.getItem(slot)!;
+
         bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
 
         if (type == InventoryType.EQUIPPED)
@@ -830,16 +840,16 @@ public class InventoryManipulator
             return ItemId.isWeddingRing(it.getItemId());
         }
     }
-    public static void drop(IChannelClient c, InventoryType type, short src, short quantity)
+    public static void drop(IChannelClient c, InventoryType type, short srcItemId, short quantity)
     {
-        if (src < 0)
+        if (srcItemId < 0)
         {
             type = InventoryType.EQUIPPED;
         }
 
         IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
-        var source = inv.getItem(src);
+        var source = inv.getItem(srcItemId);
 
         if (chr.getTrade() != null || chr.getMiniGame() != null || source == null)
         {
@@ -913,7 +923,7 @@ public class InventoryManipulator
                 try
                 {
                     chr.unequippedItem((Equip)source);
-                    inv.removeSlot(src);
+                    inv.removeSlot(srcItemId);
                 }
                 finally
                 {
@@ -922,11 +932,11 @@ public class InventoryManipulator
             }
             else
             {
-                inv.removeSlot(src);
+                inv.removeSlot(srcItemId);
             }
 
             c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(3, source))));
-            if (src < 0)
+            if (srcItemId < 0)
             {
                 chr.equipChanged();
             }

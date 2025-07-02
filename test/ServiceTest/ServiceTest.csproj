@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Application.Core.Channel.Local\Application.Core.Channel.Local.csproj" />
+    <ProjectReference Include="..\..\src\Application.Core.Channel.Local\Application.Core.Channel.InProgress.csproj" />
     <ProjectReference Include="..\..\src\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\..\src\Application.Core\Application.Core.csproj" />
     <ProjectReference Include="..\..\src\Application.Resources\Application.Resources.csproj" />

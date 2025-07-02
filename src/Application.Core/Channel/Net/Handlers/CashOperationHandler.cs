@@ -21,28 +21,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 using Application.Core.Game.Items;
-using Application.Core.Game.Players;
 using Application.Core.Managers;
 using Application.Shared.Items;
-using Application.Utility.Configs;
-using Application.Utility.Exceptions;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using server;
 using tools;
-using static server.CashShop;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 public class CashOperationHandler : ChannelHandlerBase
 {
     readonly ILogger<CashOperationHandler> _logger;
+    readonly ItemService _itemService;
+    readonly CashItemProvider _cashItemProvider;
 
-    public CashOperationHandler(ILogger<CashOperationHandler> logger)
+    public CashOperationHandler(ILogger<CashOperationHandler> logger, ItemService itemService, CashItemProvider cashItemProvider)
     {
         _logger = logger;
+        _itemService = itemService;
+        _cashItemProvider = cashItemProvider;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -66,7 +68,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     p.readByte();
                     int useNX = p.readInt();
                     int snCS = p.readInt();
-                    var cItem = CashItemFactory.getItem(snCS);
+                    var cItem = _cashItemProvider.getItem(snCS);
                     if (!canBuy(chr, cItem, cs.getCash(useNX)))
                     {
                         _logger.LogError("Denied to sell cash item with SN {ItemSN}", snCS); // preventing NPE here thanks to MedicOP
@@ -93,17 +95,17 @@ public class CashOperationHandler : ChannelHandlerBase
                             return;
                         }
 
-                        Item item = chr.getChannelServer().Service.CashItem2Item(cItem);
-                        cs.gainCash(useNX, cItem, chr.getWorld());  // thanks Rohenn for noticing cash operations after item acquisition
+                        Item item = _itemService.CashItem2Item(cItem);
+                        cs.Buy(useNX, cItem);  // thanks Rohenn for noticing cash operations after item acquisition
                         cs.addToInventory(item);
                         c.sendPacket(PacketCreator.showBoughtCashItem(item, c.AccountEntity!.Id));
                     }
                     else
                     {
                         // Package
-                        cs.gainCash(useNX, cItem, chr.getWorld());
+                        cs.Buy(useNX, cItem);
 
-                        List<Item> cashPackage = CashItemFactory.getPackage(cItem.getItemId(), chr.getChannelServer().Service);
+                        List<Item> cashPackage = _itemService.getPackage(cItem.getItemId());
                         foreach (Item item in cashPackage)
                         {
                             cs.addToInventory(item);
@@ -116,7 +118,7 @@ public class CashOperationHandler : ChannelHandlerBase
                 {
                     //TODO check for gender
                     int birthday = p.readInt();
-                    var cItem = CashItemFactory.getItem(p.readInt());
+                    var cItem = _cashItemProvider.getItem(p.readInt());
                     var recipient = CharacterManager.GetCharacterFromDatabase(p.readString());
                     var message = p.readString();
                     if (canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)) || string.IsNullOrEmpty(message) || message.Length > 73)
@@ -139,7 +141,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.sendPacket(PacketCreator.showCashShopMessage(0xA8));
                         return;
                     }
-                    cs.gainCash(4, cItem, chr.getWorld());
+                    cs.Buy(4, cItem);
                     cs.gift(recipient.CharacterId, chr.getName(), message, cItem.getSN());
                     c.sendPacket(PacketCreator.showGiftSucceed(recipient.CharacterName, cItem));
                     c.sendPacket(PacketCreator.showCash(chr));
@@ -154,7 +156,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     for (byte i = 0; i < 10; i++)
                     {
                         int sn = p.readInt();
-                        var cItem = CashItemFactory.getItem(sn);
+                        var cItem = _cashItemProvider.getItem(sn);
                         if (cItem != null && cItem.isOnSale() && sn != 0)
                         {
                             cs.addToWishList(sn);
@@ -194,7 +196,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        var cItem = CashItemFactory.getItem(p.readInt());
+                        var cItem = _cashItemProvider.getItem(p.readInt());
                         if (!canBuy(chr, cItem, cs.getCash(cash)))
                         {
                             c.enableCSActions();
@@ -207,7 +209,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
-                        cs.gainCash(cash, cItem, chr.getWorld());
+                        cs.Buy(cash, cItem);
                         if (chr.gainSlots(type, qty, false))
                         {
                             c.sendPacket(PacketCreator.showBoughtInventorySlots(type, chr.getSlots(type)));
@@ -253,7 +255,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        var cItem = CashItemFactory.getItem(p.readInt());
+                        var cItem = _cashItemProvider.getItem(p.readInt());
 
                         if (!canBuy(chr, cItem, cs.getCash(cash)))
                         {
@@ -266,7 +268,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
-                        cs.gainCash(cash, cItem, chr.getWorld());
+                        cs.Buy(cash, cItem);
                         if (chr.getStorage().gainSlots(qty))
                         {
                             // thanks ABaldParrot & Thora for detecting storage issues here
@@ -286,7 +288,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     // Increase Character Slots
                     p.skip(1);
                     int cash = p.readInt();
-                    var cItem = CashItemFactory.getItem(p.readInt());
+                    var cItem = _cashItemProvider.getItem(p.readInt());
 
                     if (!canBuy(chr, cItem, cs.getCash(cash)))
                     {
@@ -299,7 +301,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.enableCSActions();
                         return;
                     }
-                    cs.gainCash(cash, cItem, chr.getWorld());
+                    cs.Buy(cash, cItem);
                     if (c.GainCharacterSlot())
                     {
                         c.sendPacket(PacketCreator.showBoughtCharacterSlot(c.AccountEntity!.Characterslots));
@@ -380,7 +382,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         int SN = p.readInt();
                         string recipientName = p.readString();
                         string text = p.readString();
-                        var itemRing = CashItemFactory.GetItemTrust(SN);
+                        var itemRing = _cashItemProvider.GetItemTrust(SN);
                         var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(recipientName);
                         if (partner == null)
                         {
@@ -395,7 +397,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                   return;
                               }*/ //Gotta let them faggots marry too, hence why this is commented out <3 
 
-                            if (chr.getChannelServer().Service.CashItem2Item(itemRing) is Equip eqp)
+                            if (_itemService.CashItem2Item(itemRing) is Equip eqp)
                             {
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 if (rings == null)
@@ -406,7 +408,7 @@ public class CashOperationHandler : ChannelHandlerBase
                                 eqp.Ring = rings.MyRing;
                                 cs.addToInventory(eqp);
                                 c.sendPacket(PacketCreator.showBoughtCashItem(eqp, c.AccountEntity!.Id));
-                                cs.gainCash(toCharge, itemRing, chr.getWorld());
+                                cs.Buy(toCharge, itemRing);
                                 cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRing.getRingId());
                                 chr.addCrushRing(rings.MyRing);
                                 c.CurrentServerContainer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
@@ -429,7 +431,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         return;
                     }
 
-                    var item = CashItemFactory.getItem(serialNumber);
+                    var item = _cashItemProvider.getItem(serialNumber);
                     if (item == null || !item.isOnSale())
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0xC0));
@@ -462,7 +464,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         int payment = p.readInt();
                         int snID = p.readInt();
-                        var itemRing = CashItemFactory.GetItemTrust(snID);
+                        var itemRing = _cashItemProvider.GetItemTrust(snID);
                         string sentTo = p.readString();
                         string text = p.readString();
                         var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(sentTo);
@@ -473,7 +475,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         else
                         {
                             // Need to check to make sure its actually an equip and the right SN...
-                            if (chr.getChannelServer().Service.CashItem2Item(itemRing) is Equip eqp)
+                            if (_itemService.CashItem2Item(itemRing) is Equip eqp)
                             {
                                 var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
                                 if (rings == null)
@@ -500,7 +502,7 @@ public class CashOperationHandler : ChannelHandlerBase
                 }
                 else if (action == 0x2E)
                 { //name change
-                    var cItem = CashItemFactory.getItem(p.readInt());
+                    var cItem = _cashItemProvider.getItem(p.readInt());
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)))
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0));
@@ -525,9 +527,9 @@ public class CashOperationHandler : ChannelHandlerBase
                         }
                         if (chr.registerNameChange(newName))
                         { //success
-                            Item item = chr.getChannelServer().Service.CashItem2Item(cItem);
+                            Item item = _itemService.CashItem2Item(cItem);
                             c.sendPacket(PacketCreator.showNameChangeSuccess(item, c.AccountEntity!.Id));
-                            cs.gainCash(4, cItem, chr.getWorld());
+                            cs.Buy(4, cItem);
                             cs.addToInventory(item);
                         }
                         else
@@ -540,7 +542,7 @@ public class CashOperationHandler : ChannelHandlerBase
                 else if (action == 0x31)
                 {
                     //world transfer
-                    var cItem = CashItemFactory.getItem(p.readInt());
+                    var cItem = _cashItemProvider.getItem(p.readInt());
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)))
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0));

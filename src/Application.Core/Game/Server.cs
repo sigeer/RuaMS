@@ -147,15 +147,6 @@ public class Server
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            CashItemFactory.loadAllCashItems();
-            sw.Stop();
-            log.Debug("WZ - 现金道具加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);
-        });
-
-        _ = Task.Run(() =>
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
             Quest.loadAllQuests();
             sw.Stop();
             log.Debug("WZ - 任务加载耗时 {StarupCost}s", sw.Elapsed.TotalSeconds);

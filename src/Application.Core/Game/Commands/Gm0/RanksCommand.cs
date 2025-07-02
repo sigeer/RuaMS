@@ -1,11 +1,14 @@
+using Application.Core.Servers.Services;
 using net.server.guild;
 
 namespace Application.Core.Game.Commands.Gm0;
 
 public class RanksCommand : CommandBase
 {
-    public RanksCommand() : base(0, "ranks")
+    readonly RankService _rankService;
+    public RanksCommand(RankService rankService) : base(0, "ranks")
     {
+        _rankService = rankService;
         Description = "Show player rankings.";
     }
 
@@ -13,6 +16,6 @@ public class RanksCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
 
-        player.sendPacket(GuildPackets.showPlayerRanks(NpcId.MAPLE_ADMINISTRATOR, c.CurrentServer.RankService.LoadPlayerRanking()));
+        player.sendPacket(GuildPackets.showPlayerRanks(NpcId.MAPLE_ADMINISTRATOR, _rankService.LoadPlayerRanking()));
     }
 }

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package DueyDto;
+
+
+message DueyNotificationDto {
+	string senderName = 1;
+	bool type = 2;
+	int32 receiverId = 3;
+}
+
+message DueyNotifyDto {
+	int32 receiverId = 1;
+	bool type = 2;
+}

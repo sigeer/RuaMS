@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application.Module.Duey.Channel\Application.Module.Duey.Channel.csproj" />
+    <ProjectReference Include="..\Application.Module.Duey.Master\Application.Module.Duey.Master.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -21,8 +21,7 @@
 */
 
 
-using Application.EF;
-using Application.Utility.Configs;
+using Application.Core.Channel.Services;
 using Microsoft.Extensions.Logging;
 using server;
 using tools;
@@ -32,10 +31,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class EnterMTSHandler : ChannelHandlerBase
 {
     readonly ILogger<EnterMTSHandler> _logger;
+    readonly DataService _dataService;
 
-    public EnterMTSHandler(ILogger<EnterMTSHandler> logger)
+    public EnterMTSHandler(ILogger<EnterMTSHandler> logger, DataService dataService)
     {
         _logger = logger;
+        _dataService = dataService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -84,7 +85,7 @@ public class EnterMTSHandler : ChannelHandlerBase
         chr.closePlayerInteractions();
 
         chr.unregisterChairBuff();
-        c.CurrentServer.StashCharacterBuff(chr);
+        _dataService.SaveBuff(chr);
         chr.setAwayFromChannelWorld();
         chr.notifyMapTransferToPartner(-1);
         chr.removeIncomingInvites();

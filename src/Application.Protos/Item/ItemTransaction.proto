@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "Dto/Item.proto";
+
+package ItemProto;
+
+message CreateItemTransactionRequest {
+	int32 playerId = 1;
+ 	repeated Dto.ItemDto items = 2;
+	int32 meso = 3;
+}
+
+message ItemTransaction {
+	int64 transactionId = 1;
+	int32 playerId = 2;
+	repeated Dto.ItemDto items = 3;
+	int32 meso = 4;
+	int32 status = 5;
+}
+
+message FinishTransactionRequest {
+	int64 transactionId = 1;
+}

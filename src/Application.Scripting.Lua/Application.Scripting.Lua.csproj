@@ -12,6 +12,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="NLua" Version="1.7.5" />
+		<PackageReference Include="KeraLua" Version="1.4.6" />
 	</ItemGroup>
 
 

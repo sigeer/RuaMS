@@ -45,9 +45,9 @@ public class Item : IComparable<Item>, IItemProp
 
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
-
     public Item(int id, short position, short quantity)
     {
+
         log = LogFactory.GetLogger(LogType.Item);
         this.id = id;
         this.position = position;
@@ -75,8 +75,6 @@ public class Item : IComparable<Item>, IItemProp
         input.giftFrom = giftFrom;
         input.sn = sn;
         input.itemLog = new(itemLog);
-
-        input.IsFrozen = IsFrozen;
     }
 
     public void setPosition(short position)
@@ -213,6 +211,4 @@ public class Item : IComparable<Item>, IItemProp
         return ((this.getFlag() & ItemConstants.UNTRADEABLE) == ItemConstants.UNTRADEABLE)
             || (ItemInformationProvider.getInstance().isDropRestricted(this.getItemId()) && !KarmaManipulator.hasKarmaFlag(this));
     }
-
-    public bool IsFrozen { get; set; }
 }

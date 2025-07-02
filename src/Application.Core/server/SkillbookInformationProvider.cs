@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.ServerTransports;
 using Application.Core.Tools;
 using Application.Shared.Items;
@@ -36,32 +37,20 @@ namespace server;
 /**
  * Only used in 1 script that gives players information about where skillbooks can be found
  */
-public class SkillbookInformationProvider
+public class SkillbookInformationProvider : WZDataBootstrap
 {
     private volatile Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     readonly IChannelServerTransport _transport;
-    readonly ILogger<SkillbookInformationProvider> _logger;
-    bool loaded = false;
-    bool isLoading = false;
-    public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<SkillbookInformationProvider> logger)
+
+    public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<WZDataBootstrap> logger) : base(logger)
     {
+        Name = "能手册";
         _transport = transport;
-        _logger = logger;
     }
 
-    public void LoadAllSkillbookInformation()
+    protected override void LoadDataInternal()
     {
-        if (isLoading)
-            return;
-
-        if (loaded)
-        {
-            _logger.LogInformation("资源已加载");
-            return;
-        }
-
-        isLoading = true;
         Stopwatch sw = new Stopwatch();
         Dictionary<int, SkillBookEntry> loadedSkillbooks = new();
         sw.Start();
@@ -74,8 +63,6 @@ public class SkillbookInformationProvider
         loadedSkillbooks.putAll(fetchSkillbooksFromScripts());
         _logger.LogDebug("fetchSkillbooksFromScripts 耗时 {Cost}s", sw.Elapsed.TotalSeconds);
         foundSkillbooks = loadedSkillbooks;
-        loaded = true;
-        isLoading = false;
     }
 
     private static bool is4thJobSkill(int itemid)

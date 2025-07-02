@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package DueyDto;
+
+import "Dto/Item.proto";
+import "Duey/DueyPackage.proto";
+
+message TakeDueyPackageRequest {
+	int32 masterId = 1;
+	int32 packageId = 2;
+}
+
+message TakeDueyPackageResponse {
+	int32 code = 1;
+	TakeDueyPackageRequest request = 2;
+	DueyPackageDto package = 3;
+}
+
+message TakeDueyPackageCommit {
+	int32 masterId = 1;
+	int32 packageId = 2;
+	bool success = 3;
+}

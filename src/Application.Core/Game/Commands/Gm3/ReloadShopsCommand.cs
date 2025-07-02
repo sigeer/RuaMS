@@ -1,16 +1,18 @@
-using server;
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Game.Commands.Gm3;
 
 public class ReloadShopsCommand : CommandBase
 {
-    public ReloadShopsCommand() : base(3, "reloadshops")
+    readonly ShopManager _shopManager;
+    public ReloadShopsCommand(ShopManager shopManager) : base(3, "reloadshops")
     {
         Description = "Reload popup shops and NPC shops.";
+        _shopManager = shopManager;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        c.CurrentServer.ShopFactory.reloadShops();
+        _shopManager.reloadShops();
     }
 }

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+package DueyService;
+
+import "Duey/CreatePackageRequest.proto";
+import "Duey/RemovePackageRequest.proto";
+import "Duey/TakeDueyPackage.proto";
+import "Duey/DueyPackage.proto";
+
+service ChannelService {
+	rpc CreateDueyPackage (DueyDto.CreatePackageRequest) returns(google.protobuf.Empty);
+	rpc GetPlayerDueyPackage(DueyDto.GetPlayerDueyPackageRequest) returns(DueyDto.GetPlayerDueyPackageResponse);
+	rpc RemoveDueyPackage(DueyDto.RemovePackageRequest) returns(google.protobuf.Empty);
+	rpc TakeDueyPackage(DueyDto.TakeDueyPackageRequest) returns(google.protobuf.Empty);
+	rpc TakeDueyPackageCommit(DueyDto.TakeDueyPackageCommit) returns(google.protobuf.Empty);
+}

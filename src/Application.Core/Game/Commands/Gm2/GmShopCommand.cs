@@ -1,16 +1,18 @@
-using server;
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Game.Commands.Gm2;
 
 public class GmShopCommand : CommandBase
 {
-    public GmShopCommand() : base(2, "gmshop")
+    readonly ShopManager _shopManager;
+    public GmShopCommand(ShopManager shopManager) : base(2, "gmshop")
     {
         Description = "Open the GM shop.";
+        _shopManager = shopManager;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        c.CurrentServer.ShopFactory.getShop(1337)!.sendShop(c);
+        _shopManager.getShop(1337)!.sendShop(c);
     }
 }

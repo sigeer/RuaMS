@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "Dto/PlayerView.proto";
+import "google/protobuf/wrappers.proto";
+import "Item/ItemTransaction.proto";
+
+package ItemProto;
+
+message CreateTVMessageRequest {
+	int32 masterId = 1;
+	google.protobuf.StringValue toName = 2;
+	int32 type = 3;
+	repeated string messageList = 4;
+	bool showEar = 5;
+	CreateItemTransactionRequest transaction = 6;
+}
+
+message CreateTVMessageResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	TVMessage data = 3;
+	bool showEar = 4;
+	ItemTransaction transaction = 5;
+}
+
+message TVMessage {
+  Dto.PlayerViewDto master = 1;
+  Dto.PlayerViewDto masterPartner = 2;
+  int32 type = 3;
+  repeated string messageList = 4;
+}

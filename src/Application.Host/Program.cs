@@ -1,19 +1,13 @@
-using Application.Core;
-using Application.Core.Channel;
-using Application.Core.Channel.Local;
-using Application.Core.Login;
+using Application.Core.Channel.InProgress;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.OpenApi;
-using Application.Core.ServerTransports;
-using Application.Host;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
-using Application.Module.ExpeditionBossLog.Master;
+using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using net.server.coordinator.matchchecker;
 using Scalar.AspNetCore;
@@ -61,8 +55,8 @@ try
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog();
 
-    builder.AddGameServerLocal();
-    builder.Services.AddExpeditionBossLogMaster();
+
+    builder.AddGameServerInProgress();
 
     if (YamlConfig.config.server.ENABLE_OPENAPI)
     {
@@ -138,6 +132,8 @@ try
 
     var app = builder.Build();
 
+    app.UseGameServerLocal();
+
     var idGeneratorOptions = new IdGeneratorOptions(1);
     YitIdHelper.SetIdGenerator(idGeneratorOptions);
 
@@ -163,6 +159,12 @@ try
         app.UseAuthorization();
 
         app.MapControllers();
+    }
+
+    var bootstrap = app.Services.GetServices<IServerBootstrap>();
+    foreach (var item in bootstrap)
+    {
+        item.ConfigureHost(app);
     }
 
     //AppDomain.CurrentDomain.ProcessExit += (e, o) =>

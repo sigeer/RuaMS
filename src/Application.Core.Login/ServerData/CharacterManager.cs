@@ -4,6 +4,7 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Services;
 using Application.Core.Managers.Constants;
 using Application.EF;
+using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Shared.Team;
 using Application.Utility.Exceptions;
@@ -46,9 +47,12 @@ namespace Application.Core.Login.Datas
             _dataStorage = chrStorage;
             _masterServer = masterServer;
         }
-
+        CharacterLiveObject _sysChr = new CharacterLiveObject() { Character = new CharacterModel { Id = ServerConstants.SystemCId, Name = "系统" } };
         public CharacterLiveObject? FindPlayerById(int id)
         {
+            if (id == ServerConstants.SystemCId)
+                return _sysChr;
+
             if (id <= 0)
                 return null;
 
@@ -152,11 +156,17 @@ namespace Application.Core.Login.Datas
                             });
                             _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
                             _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
+
+                            foreach (var module in _masterServer.Modules)
+                            {
+                                module.OnPlayerLogoff(origin);
+                            }
                         }
                     }
                     else
                     {
-                        _logger.LogWarning("意料之外的更新：理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发");
+                        // 退出商城触发
+                        // _logger.LogWarning("意料之外的更新：理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发");
                     }
                 }
             }
@@ -182,6 +192,11 @@ namespace Application.Core.Login.Datas
                 });
 
                 _masterServer.TeamManager.UpdateParty(d.Character.Party, PartyOperation.LOG_ONOFF, d.Character.Id, d.Character.Id);
+
+                foreach (var module in _masterServer.Modules)
+                {
+                    module.OnPlayerLogin(d);
+                }
             }
             else
             {
@@ -227,6 +242,8 @@ namespace Application.Core.Login.Datas
                 if (characterEntity == null)
                     return null;
 
+                characterId = characterEntity.Id;
+                characterName = characterEntity.Name;
                 var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
@@ -266,7 +283,7 @@ namespace Application.Core.Login.Datas
                     TrockLocations = _mapper.Map<TrockLocationModel[]>(dbContext.Trocklocations.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     CoolDowns = _mapper.Map<CoolDownModel[]>(dbContext.Cooldowns.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                     WishItems = dbContext.Wishlists.Where(x => x.CharId == characterId).Select(x => x.Sn).ToArray(),
-                    NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray()
+                    NewYearCards = _masterServer.NewYearCardManager.LoadPlayerNewYearCard(characterId!.Value).ToArray(),
                 };
 
                 _idDataSource[characterEntity.Id] = d;

@@ -1,3 +1,6 @@
+using Application.Shared.Message;
+using XmlWzReader;
+
 namespace Application.Core.Login
 {
     public partial class MasterServer

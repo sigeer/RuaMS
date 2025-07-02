@@ -1467,6 +1467,11 @@ public class ItemInformationProvider
         return ret;
     }
 
+    /// <summary>
+    /// 交易限制
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
     public bool isUntradeableRestricted(int itemId)
     {
         if (untradeableCache.TryGetValue(itemId, out var value))
@@ -1509,7 +1514,12 @@ public class ItemInformationProvider
         return bRestricted;
     }
 
-    public bool isLootRestricted(int itemId)
+    /// <summary>
+    /// 丢弃消失（交易限制+账号共享限制）
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
+    private bool isLootRestricted(int itemId)
     {
         if (dropRestrictionCache.TryGetValue(itemId, out var value))
         {
@@ -1533,12 +1543,21 @@ public class ItemInformationProvider
         dropRestrictionCache.Add(itemId, bRestricted);
         return bRestricted;
     }
-
+    /// <summary>
+    /// 丢弃限制（不可交易，包含任务道具）
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
     public bool isDropRestricted(int itemId)
     {
         return isLootRestricted(itemId) || isQuestItem(itemId);
     }
 
+    /// <summary>
+    /// 固有道具
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
     public bool isPickupRestricted(int itemId)
     {
         if (pickupRestrictionCache.TryGetValue(itemId, out var value))
@@ -1667,7 +1686,11 @@ public class ItemInformationProvider
 
         return new(foodData.Value.Key, foodData.Value.Value.Contains(petId));
     }
-
+    /// <summary>
+    /// 任务道具
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
     public bool isQuestItem(int itemId)
     {
         if (isQuestItemCache.TryGetValue(itemId, out var value))

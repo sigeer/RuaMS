@@ -112,8 +112,6 @@ namespace Application.Core.Login.Services
                 await _dataStorage.CommitAllianceAsync(dbContext);
                 await _dataStorage.CommitGuildAsync(dbContext);
 
-                await _dataStorage.CommitDueyPackageAsync(dbContext);
-
                 foreach (var plugin in _modules)
                 {
                     await plugin.SaveChangesAsync(dbContext);

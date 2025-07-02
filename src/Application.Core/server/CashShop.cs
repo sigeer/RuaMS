@@ -50,7 +50,7 @@ public class CashShop
     private bool opened;
     private List<Item> inventory = new();
     private List<int> wishList = new();
-    private int notes = 0;
+    public int Notes { get; set; }
     private object lockObj = new object();
     public ItemType Factory { get; }
     public IPlayer Owner { get; set; }
@@ -96,97 +96,6 @@ public class CashShop
         wishList = characterWishList;
     }
 
-    public class CashItemFactory
-    {
-        private static volatile Dictionary<int, CashItem> items = new();
-        private static volatile Dictionary<int, List<int>> packages = new();
-        private static volatile List<SpecialCashItem> specialcashitems = new();
-
-        readonly IChannelServerTransport _transport;
-
-        public CashItemFactory(IChannelServerTransport transport)
-        {
-            _transport = transport;
-        }
-
-        public static void loadAllCashItems()
-        {
-            DataProvider etc = DataProviderFactory.getDataProvider(WZFiles.ETC);
-
-            Dictionary<int, CashItem> loadedItems = new();
-            var itemsRes = etc.getData("Commodity.img").getChildren();
-            foreach (Data item in itemsRes)
-            {
-                int sn = DataTool.getIntConvert("SN", item);
-                int itemId = DataTool.getIntConvert("ItemId", item);
-                int price = DataTool.getIntConvert("Price", item, 0);
-                long period = DataTool.getIntConvert("Period", item, 1);
-                short count = (short)DataTool.getIntConvert("Count", item, 1);
-                bool onSale = DataTool.getIntConvert("OnSale", item, 0) == 1;
-                loadedItems.AddOrUpdate(sn, new CashItem(sn, itemId, price, period, count, onSale));
-            }
-            CashItemFactory.items = loadedItems;
-
-            Dictionary<int, List<int>> loadedPackages = new();
-            foreach (Data cashPackage in etc.getData("CashPackage.img").getChildren())
-            {
-                List<int> cPackage = new();
-
-                foreach (Data item in cashPackage.getChildByPath("SN").getChildren())
-                {
-                    cPackage.Add(int.Parse(item.getData().ToString()));
-                }
-
-                loadedPackages.AddOrUpdate(int.Parse(cashPackage.getName()), cPackage);
-            }
-            CashItemFactory.packages = loadedPackages;
-
-            try
-            {
-                using var dbContext = new DBContext();
-                specialcashitems = dbContext.Specialcashitems.AsNoTracking().ToList()
-                    .Select(x => new SpecialCashItem(x.Sn, x.Modifier, (byte)x.Info)).ToList();
-
-            }
-            catch (Exception ex)
-            {
-                LogFactory.GetLogger(LogType.ItemData).Error(ex.ToString());
-            }
-        }
-
-        public static CashItem? getRandomCashItem()
-        {
-            if (items.Count == 0)
-            {
-                return null;
-            }
-
-            var list = items.Values.Where(x => x.isOnSale() && !ItemId.isCashPackage(x.getItemId())).ToList();
-            return Randomizer.Select(list);
-        }
-
-        public static CashItem? getItem(int sn)
-        {
-            return items.GetValueOrDefault(sn);
-        }
-
-        public static CashItem GetItemTrust(int sn) => getItem(sn) ?? throw new BusinessResException($"getItem({sn})");
-
-        public static List<Item> getPackage(int itemId, ChannelService service)
-        {
-            return (packages.GetValueOrDefault(itemId) ?? []).Select(x => service.CashItem2Item(GetItemTrust(x))).ToList();
-        }
-
-        public static bool isPackage(int itemId)
-        {
-            return packages.ContainsKey(itemId);
-        }
-
-        public static List<SpecialCashItem> getSpecialCashItems()
-        {
-            return specialcashitems;
-        }
-    }
 
     public record CashShopSurpriseResult(Item usedCashShopSurprise, Item reward)
     {
@@ -220,7 +129,7 @@ public class CashShop
         }
     }
 
-    public void gainCash(int type, CashItem? buyItem, int world)
+    public void Buy(int type, CashItem? buyItem)
     {
         if (buyItem == null)
             return;
@@ -317,114 +226,18 @@ public class CashShop
         Owner.Client.CurrentServerContainer.Transport.SendGift(recipient, from, message, sn, ringid);
     }
 
-    public List<ItemMessagePair> loadGifts()
-    {
-        List<ItemMessagePair> gifts = new();
-        try
-        {
-            var dataList = Owner.Client.CurrentServer.ItemService.LoadPlayerGifts(Owner.Id);
-            foreach (var rs in dataList)
-            {
-                notes++;
-                var cItem = CashItemFactory.GetItemTrust(rs.Sn);
-                Item item = Owner.Client.getChannelServer().Service.CashItem2Item(cItem);
-                Equip? equip = null;
-                item.setGiftFrom(rs.From);
-                if (item.getInventoryType().Equals(InventoryType.EQUIP))
-                {
-                    equip = (Equip)item;
-                    equip.Ring = rs.Ring;
-                    gifts.Add(new ItemMessagePair(equip, rs.Message));
-                }
-                else
-                {
-                    gifts.Add(new(item, rs.Message));
-                }
-
-                if (CashItemFactory.isPackage(cItem.getItemId()))
-                {
-                    //Packages never contains a ring
-                    foreach (Item packageItem in CashItemFactory.getPackage(cItem.getItemId(), Owner.Client.getChannelServer().Service))
-                    {
-                        packageItem.setGiftFrom(rs.From);
-                        addToInventory(packageItem);
-                    }
-                }
-                else
-                {
-                    addToInventory(equip == null ? item : equip);
-                }
-            }
-
-            Owner.Client.CurrentServerContainer.Transport.ClearGifts(dataList.Select(x => x.Id).ToArray());
-        }
-        catch (Exception sqle)
-        {
-            log.Error(sqle.ToString());
-        }
-
-        return gifts;
-    }
 
     public int getAvailableNotes()
     {
-        return notes;
+        return Notes;
     }
 
     public void decreaseNotes()
     {
-        notes--;
+        Notes--;
     }
 
-    public CashShopSurpriseResult? openCashShopSurprise(long cashId)
-    {
-        Monitor.Enter(lockObj);
-        try
-        {
-            Item? maybeCashShopSurprise = getItemByCashId(cashId);
-            if (maybeCashShopSurprise == null ||
-                    maybeCashShopSurprise.getItemId() != ItemId.CASH_SHOP_SURPRISE)
-            {
-                return null;
-            }
-
-            Item cashShopSurprise = maybeCashShopSurprise;
-            if (cashShopSurprise.getQuantity() <= 0)
-            {
-                return null;
-            }
-
-            if (getItemsSize() >= 100)
-            {
-                return null;
-            }
-
-            var cashItemReward = CashItemFactory.getRandomCashItem();
-            if (cashItemReward == null)
-            {
-                return null;
-            }
-
-            short newQuantity = (short)(cashShopSurprise.getQuantity() - 1);
-            cashShopSurprise.setQuantity(newQuantity);
-            if (newQuantity <= 0)
-            {
-                removeFromInventory(cashShopSurprise);
-            }
-
-            Item itemReward = Owner.Client.getChannelServer().Service.CashItem2Item(cashItemReward);
-            addToInventory(itemReward);
-
-            return new CashShopSurpriseResult(cashShopSurprise, itemReward);
-        }
-        finally
-        {
-            Monitor.Exit(lockObj);
-        }
-    }
-
-
-    private Item? getItemByCashId(long cashId)
+    public Item? getItemByCashId(long cashId)
     {
         return inventory.FirstOrDefault(x => x.getCashId() == cashId);
     }
