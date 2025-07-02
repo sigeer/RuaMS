@@ -27,27 +27,25 @@ public partial class DueyPackageEntity
         Message = message;
         Checked = @checked;
         Type = type;
-
-        UpdateSentTime();
     }
 
 
     public virtual ICollection<Dueyitem> Dueyitems { get; set; } = new List<Dueyitem>();
 
 
-    public void UpdateSentTime()
-    {
-        DateTimeOffset cal = TimeStamp;
+    //public void UpdateSentTime()
+    //{
+    //    DateTimeOffset cal = TimeStamp;
 
-        if (Type)
-        {
-            if (DateTimeOffset.UtcNow - TimeStamp < TimeSpan.FromDays(1))
-            {
-                // thanks inhyuk for noticing quick delivery packages unavailable to retrieve from the get-go
-                cal.AddDays(-1);
-            }
-        }
+    //    if (Type)
+    //    {
+    //        if (DateTimeOffset.UtcNow - TimeStamp < TimeSpan.FromDays(1))
+    //        {
+    //            // thanks inhyuk for noticing quick delivery packages unavailable to retrieve from the get-go
+    //            cal.AddDays(-1);
+    //        }
+    //    }
 
-        this.TimeStamp = cal;
-    }
+    //    this.TimeStamp = cal;
+    //}
 }

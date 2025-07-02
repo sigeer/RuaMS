@@ -67,7 +67,7 @@ namespace Application.Module.Duey.Master
                 return;
             }
 
-            if (package.ReceiverId == request.MasterId)
+            if (package.ReceiverId != request.MasterId)
             {
                 _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 2, Request = request });
                 return;
@@ -102,10 +102,7 @@ namespace Application.Module.Duey.Master
         {
             if (request.Success)
             {
-                if (_dataSource.TryRemove(request.PackageId, out var package))
-                {
-                    RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
-                }
+                RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
             }
             else
             {
@@ -144,6 +141,9 @@ namespace Application.Module.Duey.Master
                     return;
                 }
 
+                var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
+                if (request.Quick)
+                    time = time.AddDays(-1);
                 var model = new DueyPackageModel()
                 {
                     Id = Interlocked.Increment(ref _currentId),
@@ -154,12 +154,13 @@ namespace Application.Module.Duey.Master
                     Message = request.SendMessage,
                     Type = request.Quick,
                     Checked = true,
-                    TimeStamp = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()),
+                    TimeStamp = time,
                     Item = _mapper.Map<ItemModel>(request.Item, ctx =>
                     {
                         ctx.Items["Type"] = (int)ItemType.Duey;
                     })
                 };
+
                 _dataSource[model.Id] = model;
 
                 SetDirty(model.Id, new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, model));

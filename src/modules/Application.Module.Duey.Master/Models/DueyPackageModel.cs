@@ -26,6 +26,14 @@ namespace Application.Module.Duey.Master.Models
         public bool Type { get; set; } = false;
         public ItemModel? Item { get; set; }
 
+        public void UpdateSentTime()
+        {
+            if (Type)
+            {
+                TimeStamp = TimeStamp.AddDays(-1);
+            }
+        }
+
 
         /// <summary>
         /// 取货读取时冻结

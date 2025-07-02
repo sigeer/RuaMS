@@ -165,7 +165,8 @@ namespace Application.Core.Login.Datas
                     }
                     else
                     {
-                        _logger.LogWarning("意料之外的更新：理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发");
+                        // 退出商城触发
+                        // _logger.LogWarning("意料之外的更新：理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发");
                     }
                 }
             }
