@@ -146,7 +146,6 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("GameConstants", typeof(GameConstants));
             engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
             engine.AddHostedType("ShopFactory", typeof(ShopManager));
-            engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
             engine.AddHostedType("Guild", typeof(Application.Core.Managers.GuildManager));
             engine.AddHostedType("Job", typeof(Job));
             engine.AddHostedType("InventoryType", typeof(InventoryType));

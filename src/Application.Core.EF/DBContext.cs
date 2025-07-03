@@ -83,13 +83,13 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Macfilter> Macfilters { get; set; }
 
-    public virtual DbSet<Makercreatedatum> Makercreatedata { get; set; }
+    public virtual DbSet<MakerCreatedataEntity> Makercreatedata { get; set; }
 
-    public virtual DbSet<Makerreagentdatum> Makerreagentdata { get; set; }
+    public virtual DbSet<MakerReagentdataEntity> Makerreagentdata { get; set; }
 
-    public virtual DbSet<Makerrecipedatum> Makerrecipedata { get; set; }
+    public virtual DbSet<MakerRecipedataEntity> Makerrecipedata { get; set; }
 
-    public virtual DbSet<Makerrewarddatum> Makerrewarddata { get; set; }
+    public virtual DbSet<MakerRewardDataEntity> Makerrewarddata { get; set; }
 
     public virtual DbSet<DB_Marriage> Marriages { get; set; }
 
@@ -858,7 +858,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("filter");
         });
 
-        modelBuilder.Entity<Makercreatedatum>(entity =>
+        modelBuilder.Entity<MakerCreatedataEntity>(entity =>
         {
             entity.HasKey(e => new { e.Id, e.Itemid }).HasName("PRIMARY");
 
@@ -896,7 +896,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("tuc");
         });
 
-        modelBuilder.Entity<Makerreagentdatum>(entity =>
+        modelBuilder.Entity<MakerReagentdataEntity>(entity =>
         {
             entity.HasKey(e => e.Itemid).HasName("PRIMARY");
 
@@ -913,7 +913,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("value");
         });
 
-        modelBuilder.Entity<Makerrecipedatum>(entity =>
+        modelBuilder.Entity<MakerRecipedataEntity>(entity =>
         {
             entity.HasKey(e => new { e.Itemid, e.ReqItem }).HasName("PRIMARY");
 
@@ -930,7 +930,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("count");
         });
 
-        modelBuilder.Entity<Makerrewarddatum>(entity =>
+        modelBuilder.Entity<MakerRewardDataEntity>(entity =>
         {
             entity.HasKey(e => new { e.Itemid, e.Rewardid }).HasName("PRIMARY");
 

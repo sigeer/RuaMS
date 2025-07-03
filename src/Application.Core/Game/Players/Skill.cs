@@ -268,5 +268,10 @@ namespace Application.Core.Game.Players
             }
         }
         #endregion
+
+        public int GetMakerSkillLevel()
+        {
+            return getSkillLevel((getJob().getId() / 1000) * 10000000 + 1007);
+        }
     }
 }

@@ -25,16 +25,13 @@ using Application.Core.Channel.Infrastructures;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Core.ServerTransports;
-using AutoMapper;
 using client.autoban;
 using client.inventory;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using server;
-using server.life;
 using tools;
-using static server.MakerItemFactory;
 
 namespace Application.Core.Channel.DataProviders;
 
@@ -134,10 +131,7 @@ public class ItemInformationProvider : WZDataBootstrap, IStaticService
     protected Dictionary<int, ItemMessage> replaceOnExpireCache = new();
     protected Dictionary<int, string> equipmentSlotCache = new();
     protected Dictionary<int, bool> noCancelMouseCache = new();
-    protected Dictionary<int, int> mobCrystalMakerCache = new();
-    protected Dictionary<int, KeyValuePair<string, int>?> statUpgradeMakerCache = new();
-    protected Dictionary<int, MakerItemCreateEntry> makerItemCache = new();
-    protected Dictionary<int, int> makerCatalystCache = new();
+
 
     protected Dictionary<int, ItemSkillDataPair> SkillUpgreadCache = [];
     protected Dictionary<int, KeyValuePair<int, HashSet<int>>?> cashPetFoodCache = new();
@@ -2290,219 +2284,6 @@ public class ItemInformationProvider : WZDataBootstrap, IStaticService
         }
 
         return list;
-    }
-
-    private static int getCrystalForLevel(int level)
-    {
-        int range = (level - 1) / 10;
-
-        if (range < 5)
-        {
-            return ItemId.BASIC_MONSTER_CRYSTAL_1;
-        }
-        else if (range > 11)
-        {
-            return ItemId.ADVANCED_MONSTER_CRYSTAL_3;
-        }
-        else
-        {
-            return range switch
-            {
-                5 => ItemId.BASIC_MONSTER_CRYSTAL_2,
-                6 => ItemId.BASIC_MONSTER_CRYSTAL_3,
-                7 => ItemId.INTERMEDIATE_MONSTER_CRYSTAL_1,
-                8 => ItemId.INTERMEDIATE_MONSTER_CRYSTAL_2,
-                9 => ItemId.INTERMEDIATE_MONSTER_CRYSTAL_3,
-                10 => ItemId.ADVANCED_MONSTER_CRYSTAL_1,
-                _ => ItemId.ADVANCED_MONSTER_CRYSTAL_2
-            };
-        }
-    }
-
-    public KeyValuePair<string, int>? getMakerReagentStatUpgrade(int itemId)
-    {
-        try
-        {
-            if (statUpgradeMakerCache.TryGetValue(itemId, out var statUpgd) && statUpgd != null)
-                return statUpgd;
-
-            using var dbContext = new DBContext();
-            var dbModel = dbContext.Makerreagentdata.Where(x => x.Itemid == itemId).Select(x => new { x.Stat, x.Value }).FirstOrDefault();
-            if (dbModel != null)
-                statUpgd = new(dbModel.Stat, dbModel.Value);
-            else
-                return null;
-
-
-            statUpgradeMakerCache.AddOrUpdate(itemId, statUpgd);
-            return statUpgd;
-
-
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return null;
-        }
-    }
-
-    public int getMakerCrystalFromLeftover(int leftoverId)
-    {
-        try
-        {
-            if (mobCrystalMakerCache.TryGetValue(leftoverId, out var itemid))
-                return itemid;
-
-            itemid = -1;
-
-            using var dbContext = new DBContext();
-            var dbModel = dbContext.DropData.Where(x => x.Itemid == leftoverId).OrderBy(x => x.Dropperid).Select(x => new { x.Dropperid }).FirstOrDefault();
-            if (dbModel != null)
-                itemid = getCrystalForLevel(LifeFactory.getMonsterLevel(dbModel.Dropperid));
-
-            mobCrystalMakerCache.Add(leftoverId, itemid);
-            return itemid;
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-
-        return -1;
-    }
-
-    public MakerItemCreateEntry? getMakerItemEntry(int toCreate)
-    {
-        var makerEntry = makerItemCache.GetValueOrDefault(toCreate);
-
-        if (makerEntry != null)
-        {
-            return new MakerItemCreateEntry(makerEntry);
-        }
-        else
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                var dbModel = dbContext.Makercreatedata.Where(x => x.Itemid == toCreate).Select(x => new { x.ReqLevel, x.ReqMakerLevel, x.ReqMeso, x.Quantity }).FirstOrDefault();
-                int reqLevel = dbModel?.ReqLevel ?? -1;
-                int reqMakerLevel = dbModel?.ReqMakerLevel ?? -1;
-                int cost = dbModel?.ReqMeso ?? -1;
-                int toGive = dbModel?.Quantity ?? -1;
-
-                makerEntry = new MakerItemCreateEntry(cost, reqLevel, reqMakerLevel);
-                makerEntry.addGainItem(toCreate, toGive);
-                var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == toCreate).ToList();
-                dataList.ForEach(x =>
-                {
-                    makerEntry.addReqItem(x.ReqItem, x.Count);
-                });
-                makerItemCache.AddOrUpdate(toCreate, new MakerItemCreateEntry(makerEntry));
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-                makerEntry = null;
-            }
-        }
-
-        return makerEntry;
-    }
-
-    public int getMakerCrystalFromEquip(int equipId)
-    {
-        try
-        {
-            return getCrystalForLevel(getEquipLevelReq(equipId));
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-
-        return -1;
-    }
-
-    public int getMakerStimulantFromEquip(int equipId)
-    {
-        try
-        {
-            return getCrystalForLevel(getEquipLevelReq(equipId));
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-
-        return -1;
-    }
-
-    public List<ItemQuantity> getMakerDisassembledItems(int itemId)
-    {
-        try
-        {
-            using var dbContext = new DBContext();
-            var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == itemId && x.ReqItem >= ItemId.BASIC_MONSTER_CRYSTAL_1 && x.Itemid < 4270000).ToList();
-            return dataList.Select(x => new ItemQuantity(x.ReqItem, x.Count)).ToList();
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return new();
-        }
-    }
-
-    public int getMakerDisassembledFee(int itemId)
-    {
-        int fee = -1;
-        try
-        {
-            using var dbContext = new DBContext();
-            var dbModel = dbContext.Makercreatedata.Where(x => x.Itemid == itemId).Select(x => new { x.ReqMeso }).FirstOrDefault();
-            if (dbModel != null)
-            {   // cost is 13.6363~ % of the original value, trim by 1000.
-                float val = (float)(dbModel.ReqMeso * 0.13636363636364);
-                fee = (int)(val / 1000);
-                fee *= 1000;
-            }
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
-        return fee;
-    }
-
-    public int getMakerStimulant(int itemId)
-    {
-        if (makerCatalystCache.TryGetValue(itemId, out var itemid))
-            return itemid;
-
-        itemid = -1;
-        foreach (Data md in etcData.getData("ItemMake.img").getChildren())
-        {
-            var me = md.getChildByPath(StringUtil.getLeftPaddedStr(itemId.ToString(), '0', 8));
-            if (me != null)
-            {
-                itemid = DataTool.getInt(me.getChildByPath("catalyst"), -1);
-                break;
-            }
-        }
-
-        makerCatalystCache.Add(itemId, itemid);
-        return itemid;
-    }
-
-    public HashSet<string> getWhoDrops(int itemId)
-    {
-        return _cache.GetOrCreate($"WhoDropItem_{itemId}", e =>
-         {
-             return _transport.RequestWhoDrops(new Dto.QueryDropperByItemRequest { ItemId = itemId })
-                 .DropperIdList.Select(MonsterInformationProvider.getInstance().getMobNameFromId)
-                 .Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
-         }
-        ) ?? [];
-
     }
 
     private bool canUseSkillBook(IPlayer player, int skillBookId)

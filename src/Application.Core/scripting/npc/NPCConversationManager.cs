@@ -675,7 +675,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public object[] getNamesWhoDropsItem(int itemId)
     {
-        return ItemInformationProvider.getInstance().getWhoDrops(itemId).ToArray();
+        return MonsterInformationProvider.getInstance().FindDropperNames(itemId).ToArray();
     }
 
     public string getSkillBookInfo(int itemid)

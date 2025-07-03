@@ -418,7 +418,6 @@ namespace Application.Core.Login.Datas
                         if (ringid > -1)
                         {
                             dbContext.Rings.Where(x => x.Id == ringid).ExecuteDelete();
-                            CashIdGenerator.freeCashId(ringid);
                         }
                     });
 

@@ -1,4 +1,4 @@
-﻿namespace client.inventory;
+namespace Application.Shared.Items;
 
 public record ItemQuantity(int ItemId, int Quantity);
 

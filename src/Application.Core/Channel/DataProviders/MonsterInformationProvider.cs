@@ -215,6 +215,16 @@ public class MonsterInformationProvider : WZDataBootstrap, IStaticService
         return ret;
     }
 
+    public HashSet<int> FindDroppers(int itemId)
+    {
+        return drops.Where(x => x.Value.Any(y => y.ItemId == itemId)).Select(x => x.Key).ToHashSet();
+    }
+
+    public HashSet<string> FindDropperNames(int itemId)
+    {
+        return drops.Where(x => x.Value.Any(y => y.ItemId == itemId)).Select(x => getMobNameFromId(x.Key)).Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
+    }
+
     public void setMobAttackAnimationTime(int monsterId, int attackPos, int animationTime)
     {
         mobAttackAnimationTime.AddOrUpdate(new(monsterId, attackPos), animationTime);

@@ -284,6 +284,7 @@ namespace Application.Core.Channel.Net
             }
             else
             {
+                log.LogError("没有找到{OPCode}对应的Handler", OpcodeConstants.recvOpcodeNames.GetValueOrDefault(opcode, opcode.ToString()));
                 throw new BusinessNotsupportException();
             }
         }

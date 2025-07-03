@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Makerrewarddatum
+public partial class MakerRewardDataEntity
 {
     public int Itemid { get; set; }
 

@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Makercreatedatum
+public partial class MakerCreatedataEntity
 {
     public sbyte Id { get; set; }
 

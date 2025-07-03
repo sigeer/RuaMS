@@ -167,7 +167,7 @@ public class QuestStatus
 
     public string getProgress(int id)
     {
-        return _progress.GetValueOrDefault(id, "") ?? "";
+        return _progress.GetValueOrDefault(id) ?? "";
     }
 
     public void resetProgress(int id)
