@@ -21,13 +21,24 @@
  */
 
 
+using Application.Core.Channel.Net;
+using Application.Core.Client;
 using Application.Core.Managers;
 using Application.EF;
+using Application.Shared.Net;
+using Microsoft.EntityFrameworkCore;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.BBS.Channel.Net.Handlers;
 
 public class BBSOperationHandler : ChannelHandlerBase
 {
+
+    readonly BBSManager _manager;
+
+    public BBSOperationHandler(BBSManager manager)
+    {
+        _manager = manager;
+    }
 
     private string correctLength(string inValue, int maxSize)
     {
@@ -67,37 +78,34 @@ public class BBSOperationHandler : ChannelHandlerBase
                 }
                 if (!bEdit)
                 {
-                    BBSManager.newBBSThread(c, title, text, icon, bNotice);
+                    _manager.newBBSThread(c.OnlinedCharacter, title, text, icon, bNotice);
                 }
                 else
                 {
-                    BBSManager.editBBSThread(c, title, text, icon, localthreadid);
+                    _manager.editBBSThread(c.OnlinedCharacter, title, text, icon, localthreadid);
                 }
                 break;
             case 1:
                 localthreadid = p.readInt();
-                BBSManager.deleteBBSThread(c, localthreadid);
+                _manager.deleteBBSThread(c.OnlinedCharacter, localthreadid);
                 break;
             case 2:
                 int start = p.readInt();
-                BBSManager.listBBSThreads(c, start * 10);
+                _manager.listBBSThreads(c.OnlinedCharacter, start * 10);
                 break;
             case 3: // list thread + reply, following by id (int)
                 localthreadid = p.readInt();
-                using (var dbContext = new DBContext())
-                {
-                    BBSManager.displayThread(dbContext, c, localthreadid);
-                }
+                _manager.ShowThread(c.OnlinedCharacter, localthreadid);
                 break;
             case 4: // reply
                 localthreadid = p.readInt();
                 text = correctLength(p.readString(), 25);
-                BBSManager.newBBSReply(c, localthreadid, text);
+                _manager.PostReply(c.OnlinedCharacter, localthreadid, text);
                 break;
             case 5: // delete reply
-                p.readInt(); // we don't use this
+                int unknown1 =  p.readInt(); // we don't use this
                 int replyid = p.readInt();
-                BBSManager.deleteBBSReply(c, replyid);
+                _manager.deleteBBSReply(c.OnlinedCharacter, replyid);
                 break;
             default:
                 //Console.WriteLine("Unhandled BBS mode: " + slea.ToString());
