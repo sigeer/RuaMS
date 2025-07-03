@@ -74,7 +74,7 @@ namespace Application.Module.Maker.Channel
                 return statUpgd;
 
             var data = _transport.GetMakerReagentStatUpgrade(new MakerProto.ItemIdRequest { ItemId = itemId });
-            statUpgd = _mapper.Map<MakerReagentStatValue>(data.Data);
+            statUpgd = new MakerReagentStatValue(data.Data.Stat, data.Data.Value);
 
             statUpgradeMakerCache[itemId] = statUpgd;
             return statUpgd;
@@ -116,7 +116,14 @@ namespace Application.Module.Maker.Channel
             {
                 var data = _transport.GetMakerCraftTable(new MakerProto.ItemIdRequest { ItemId = toCreate });
                 if (data.Data != null)
-                    makerEntry = _mapper.Map<MakerItemCreateEntry>(data);
+                {
+                    makerEntry = new MakerItemCreateEntry(data.Data.ReqMeso, data.Data.ReqLevel, data.Data.ReqMakerLevel);
+                    foreach (var item in data.Data.ReqItems)
+                    {
+                        makerEntry.addReqItem(item.ItemId, item.Count);
+                    }
+                    makerEntry.addGainItem(data.Data.ItemId, data.Data.Quantity);
+                }
             }
 
             return makerEntry;
