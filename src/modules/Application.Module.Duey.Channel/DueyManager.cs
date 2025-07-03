@@ -237,7 +237,7 @@ namespace Application.Module.Duey.Channel
             {
                 var chr = _server.FindPlayerById(data.Request.MasterId);
                 if (chr != null)
-                    chr.sendPacket(DueyPacketCreator.removeItemFromDuey(data.Request.ByReceived, data.Request.PackageId));
+                    chr.sendPacket(DueyPacketCreator.removeItemFromDuey(!data.Request.ByReceived, data.Request.PackageId));
             }
         }
 

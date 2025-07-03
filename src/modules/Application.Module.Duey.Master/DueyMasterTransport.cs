@@ -24,7 +24,12 @@ namespace Application.Module.Duey.Master
 
         internal void SendTakeDueyPackage(TakeDueyPackageResponse response)
         {
-            SendMessage(BroadcastType.OnDueyPackageTaking, response, response.Package.ReceiverId);
+            List<int> receivers = [];
+            if (response.Package != null)
+                receivers.Add(response.Package.ReceiverId);
+
+            receivers.Add(response.Request.MasterId);
+            SendMessage(BroadcastType.OnDueyPackageTaking, response, receivers.ToArray());
         }
 
         internal void SendDueyNotifyOnLogin(int receiverId, DueyNotifyDto response)
