@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Trades;
@@ -32,7 +33,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using server;
 using System.Drawing;
 using tools;
 

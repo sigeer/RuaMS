@@ -19,7 +19,6 @@
 */
 
 
-using Application.Core.Channel.DataProviders;
 using Application.Core.ServerTransports;
 using Application.Core.Tools;
 using Application.Shared.Items;
@@ -28,7 +27,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace server;
+namespace Application.Core.Channel.DataProviders;
 
 /**
  * @author RonanLana
@@ -159,7 +158,7 @@ public class SkillbookInformationProvider : WZDataBootstrap
                             }
                         }
                     }
-                    else if (actNodeName == ("skill"))
+                    else if (actNodeName == "skill")
                     {
                         foreach (Data questSkillData in questNodeData.getChildren())
                         {

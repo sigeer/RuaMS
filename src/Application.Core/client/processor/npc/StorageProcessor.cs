@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;

@@ -25,10 +25,5 @@ namespace Application.Core.Channel.InProgress
 
             builder.Services.AddDueyInProgress();
         }
-
-        public static void UseGameServerLocal(this IHost app)
-        {
-            app.UseDuey();
-        }
     }
 }

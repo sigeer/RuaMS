@@ -1,6 +1,5 @@
 using Application.Core.Channel.InProgress;
 using Application.Core.net.server.coordinator.matchchecker.listener;
-using Application.Core.OpenApi;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Application.Host.Services;
@@ -84,7 +83,7 @@ try
         builder.Services.AddScoped<DropdataService>();
         builder.Services.AddScoped<DataService>();
         builder.Services.AddScoped<ServerService>();
-        builder.Services.AddScoped<ChannelService>();
+        builder.Services.AddScoped<Application.Core.OpenApi.ChannelService>();
         builder.Services.AddAutoMapper(typeof(DtoMapper).Assembly);
 
         builder.Services.AddAuthentication(s =>
@@ -131,8 +130,6 @@ try
     }
 
     var app = builder.Build();
-
-    app.UseGameServerLocal();
 
     var idGeneratorOptions = new IdGeneratorOptions(1);
     YitIdHelper.SetIdGenerator(idGeneratorOptions);

@@ -11,6 +11,7 @@ using Application.Shared.Models;
 using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
+using BaseProto;
 using Dto;
 using net.server;
 using server.expeditions;
@@ -659,6 +660,10 @@ namespace Application.Core.Channel.InProgress
             return new Dto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
         }
 
+        public Dto.CreateAllianceCheckResponse CreateAllianceCheck(Dto.CreateAllianceCheckRequest request)
+        {
+            return _server.GuildManager.CreateAllianceCheck(request);
+        }
         public Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
         {
             return new Dto.GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(masters, allianceName) };
@@ -867,6 +872,26 @@ namespace Application.Core.Channel.InProgress
         public void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest)
         {
             _server.ItemTransactionManager.Finish(finishTransactionRequest);
+        }
+
+        public DropAllDto RequestDropData()
+        {
+            return _itemService.LoadMobDropDto();
+        }
+
+        public QueryDropperByItemResponse RequestWhoDrops(QueryDropperByItemRequest request)
+        {
+            return _itemService.LoadWhoDrops(request);
+        }
+
+        public QueryMonsterCardDataResponse RequestMonsterCardData()
+        {
+            return _itemService.LoadMonsterCard();
+        }
+
+        public QueryRankedGuildsResponse RequestRankedGuilds()
+        {
+            return _server.GuildManager.LoadRankedGuilds();
         }
     }
 }

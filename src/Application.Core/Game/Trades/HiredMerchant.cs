@@ -21,13 +21,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 using net.server;
-using server;
 using tools;
 
 namespace Application.Core.Game.Trades;

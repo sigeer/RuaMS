@@ -4,6 +4,8 @@ using Application.Core.Client;
 using Application.Module.Duey.Channel.Models;
 using Application.Module.Duey.Channel.Net.Handlers;
 using Application.Shared.Net;
+using Application.Shared.Servers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -23,7 +25,7 @@ namespace Application.Module.Duey.Channel
             services.AddSingleton<IItemDistributeService, DueyDistributeService>();
 
             services.AddSingleton<DueyHandler>();
-
+            services.AddSingleton<IServerBootstrap, DueyChannelBootstrap>();
             return services;
         }
 
@@ -32,6 +34,14 @@ namespace Application.Module.Duey.Channel
             var channelPacketProcessor = app.Services.GetRequiredService<IPacketProcessor<IChannelClient>>();
 
             channelPacketProcessor.TryAddHandler((short)RecvOpcode.DUEY_ACTION, app.Services.GetRequiredService<DueyHandler>());
+        }
+    }
+
+    public class DueyChannelBootstrap : IServerBootstrap
+    {
+        public void ConfigureHost(WebApplication app)
+        {
+            app.UseDuey();
         }
     }
 }

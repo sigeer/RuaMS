@@ -245,15 +245,13 @@ namespace Application.Core.Channel
             if (IsRunning)
                 return;
 
-            _ = Task.Run(() =>
+            foreach (var item in ServiceProvider.GetServices<WZDataBootstrap>())
             {
-                SkillbookInformationProvider.LoadData();
-            });
-
-            _ = Task.Run(() =>
-            {
-                CashItemProvider.LoadData();
-            });
+                _ = Task.Run(() =>
+                {
+                    item.LoadData();
+                });
+            }
 
             Modules = ServiceProvider.GetServices<ChannelModule>().ToList();
 

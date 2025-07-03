@@ -1,5 +1,5 @@
-﻿using client.inventory;
-using server;
+using Application.Core.Channel.DataProviders;
+using client.inventory;
 
 namespace Application.Core.Game.Items
 {

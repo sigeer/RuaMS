@@ -20,22 +20,52 @@
  */
 
 
+using Application.Core.Channel.Infrastructures;
 using Application.Core.Game.Life;
+using Application.Core.ServerTransports;
+using Application.Shared.Items;
+using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using server.life;
 using System.Collections.Concurrent;
 
-namespace server.life;
+namespace Application.Core.Channel.DataProviders;
 
 
-public class MonsterInformationProvider
+public class MonsterInformationProvider : WZDataBootstrap, IStaticService
 {
-    private ILogger log = LogFactory.GetLogger(LogType.MonsterData);
-    // Author : LightPepsi
+    readonly IChannelServerTransport _transport;
+    readonly IMapper _mapper;
+    public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<WZDataBootstrap> logger) : base(logger)
+    {
+        Name = "怪物数据";
+        _transport = transport;
+        _mapper = mapper;
+    }
 
-    private static MonsterInformationProvider instance = new MonsterInformationProvider();
+    /// <summary>
+    /// 同时使用了getInstance()和注入，设计上有点不合理
+    /// </summary>
+    /// <param name="sp"></param>
+    private static MonsterInformationProvider? _instance;
 
     public static MonsterInformationProvider getInstance()
     {
-        return instance;
+        return _instance ?? throw new BusinessFatalException("MonsterInformationProvider 未注册");
+    }
+
+    public void Register(IServiceProvider sp)
+    {
+        if (_instance != null)
+            return;
+
+        _instance = sp.GetService<MonsterInformationProvider>() ?? throw new BusinessFatalException("MonsterInformationProvider 未注册");
+    }
+
+    protected override void LoadDataInternal()
+    {
+        retrieveGlobal();
     }
 
     private List<DropEntry> globaldrops = new();
@@ -54,10 +84,6 @@ public class MonsterInformationProvider
     private Dictionary<int, List<int>> dropsChancePool = new();    // thanks to ronan
     private Dictionary<int, bool> mobBossCache = new();
 
-    protected MonsterInformationProvider()
-    {
-        retrieveGlobal();
-    }
 
     public List<DropEntry> getRelevantGlobalDrops(int mapid)
     {
@@ -75,25 +101,12 @@ public class MonsterInformationProvider
 
     private void retrieveGlobal()
     {
-        try
-        {
-            using var dbContext = new DBContext();
-            globaldrops = dbContext.DropDataGlobals.Where(x => x.Chance > 0).ToList()
-                .Select(x => DropEntry.Global(x.Continent, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
+        var dataSource = _transport.RequestDropData().Items;
 
-            drops = dbContext.DropData
-                .Select(x => new { x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid, x.Dropperid })
-                .ToList()
-                .GroupBy(x => x.Dropperid)
-                .Select(x => new KeyValuePair<int, List<DropEntry>>(
-                    x.Key,
-                    x.Select(y => DropEntry.MobDrop(y.Dropperid, y.Itemid, y.Chance, y.MinimumQuantity, y.MaximumQuantity, (short)y.Questid)).ToList()))
-                .ToDictionary();
-        }
-        catch (Exception e)
-        {
-            log.Error(e, "Error retrieving global drops");
-        }
+        globaldrops = _mapper.Map<List<DropEntry>>(dataSource.Where(x => x.Type == (int)DropType.GlobalDrop));
+
+        drops = dataSource.Where(x => x.Type == (int)DropType.MonsterDrop).GroupBy(x => x.DropperId)
+            .ToDictionary(x => x.Key, x => _mapper.Map<List<DropEntry>>(x));
     }
 
     public List<DropEntry> retrieveEffectiveDrop(int monsterId)
@@ -162,23 +175,7 @@ public class MonsterInformationProvider
         if (drops.TryGetValue(monsterId, out var value))
             return value;
 
-        List<DropEntry> ret = new();
-
-        try
-        {
-            using var dbContext = new DBContext();
-            var ds = dbContext.DropData.Where(x => x.Dropperid == monsterId).Select(x => new { x.Dropperid, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, x.Questid }).ToList();
-            ret = ds.Select(x => DropEntry.MobDrop(x.Dropperid, x.Itemid, x.Chance, x.MinimumQuantity, x.MaximumQuantity, (short)x.Questid)).ToList();
-
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return ret;
-        }
-
-        drops.AddOrUpdate(monsterId, ret);
-        return ret;
+        return [];
     }
 
     /// <summary>
@@ -253,6 +250,8 @@ public class MonsterInformationProvider
     }
 
     Dictionary<int, string> allMobNameCache = [];
+
+
     private void LoadAllMobNameCache()
     {
         if (allMobNameCache.Count == 0)
@@ -287,10 +286,11 @@ public class MonsterInformationProvider
                 boss = LifeFactory.getMonster(id)?.isBoss() ?? false;
             }
             catch (Exception e)
-            {   //nonexistant mob
+            {
+                //nonexistant mob
                 boss = false;
 
-                log.Warning(e, "Non-existent mob id {MobId}", id);
+                _logger.LogWarning(e, "Non-existent mob id {MobId}", id);
             }
 
             mobBossCache.AddOrUpdate(id, boss);

@@ -141,6 +141,7 @@ namespace Application.Module.Duey.Master
                     return;
                 }
 
+                // Q.为什么特快是提前一天？而不是让普通包裹推迟一天？
                 var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
                 if (request.Quick)
                     time = time.AddDays(-1);

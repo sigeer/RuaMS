@@ -21,28 +21,68 @@
  */
 
 
+using Application.Core.Channel.Infrastructures;
 using Application.Core.Game.Skills;
 using Application.Core.model;
+using Application.Core.ServerTransports;
+using AutoMapper;
 using client.autoban;
 using client.inventory;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using server;
 using server.life;
 using tools;
 using static server.MakerItemFactory;
 
-namespace server;
+namespace Application.Core.Channel.DataProviders;
 
 
 /**
  * @author Matze
  */
-public class ItemInformationProvider
+public class ItemInformationProvider : WZDataBootstrap, IStaticService
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.ItemData);
-    private static ItemInformationProvider instance = new ItemInformationProvider();
+    private static ItemInformationProvider? _instance;
 
     public static ItemInformationProvider getInstance()
     {
-        return instance;
+        return _instance ?? throw new BusinessFatalException("ItemInformationProvider 未注册");
+    }
+
+    readonly IChannelServerTransport _transport;
+    readonly IMemoryCache _cache;
+    public ItemInformationProvider(IChannelServerTransport transport, IMemoryCache cache, ILogger<WZDataBootstrap> logger) : base(logger)
+    {
+        Name = "物品数据";
+
+        _transport = transport;
+        _cache = cache;
+
+        itemData = DataProviderFactory.getDataProvider(WZFiles.ITEM);
+        equipData = DataProviderFactory.getDataProvider(WZFiles.CHARACTER);
+        stringData = DataProviderFactory.getDataProvider(WZFiles.STRING);
+        etcData = DataProviderFactory.getDataProvider(WZFiles.ETC);
+        cashStringData = stringData.getData("Cash.img");
+        consumeStringData = stringData.getData("Consume.img");
+        eqpStringData = stringData.getData("Eqp.img");
+        etcStringData = stringData.getData("Etc.img");
+        insStringData = stringData.getData("Ins.img");
+        petStringData = stringData.getData("Pet.img");
+
+        isQuestItemCache.Add(0, false);
+        isPartyQuestItemCache.Add(0, false);
+    }
+
+    public void Register(IServiceProvider sp)
+    {
+        _instance = sp.GetService<ItemInformationProvider>() ?? throw new BusinessFatalException("ItemInformationProvider 未注册");
+    }
+
+    protected override void LoadDataInternal()
+    {
+        loadCardIdData();
     }
 
     protected DataProvider itemData;
@@ -96,30 +136,12 @@ public class ItemInformationProvider
     protected Dictionary<int, bool> noCancelMouseCache = new();
     protected Dictionary<int, int> mobCrystalMakerCache = new();
     protected Dictionary<int, KeyValuePair<string, int>?> statUpgradeMakerCache = new();
-    protected Dictionary<int, MakerItemFactory.MakerItemCreateEntry> makerItemCache = new();
+    protected Dictionary<int, MakerItemCreateEntry> makerItemCache = new();
     protected Dictionary<int, int> makerCatalystCache = new();
 
     protected Dictionary<int, ItemSkillDataPair> SkillUpgreadCache = [];
     protected Dictionary<int, KeyValuePair<int, HashSet<int>>?> cashPetFoodCache = new();
     protected Dictionary<int, QuestConsItem?> questItemConsCache = new();
-
-    private ItemInformationProvider()
-    {
-        loadCardIdData();
-        itemData = DataProviderFactory.getDataProvider(WZFiles.ITEM);
-        equipData = DataProviderFactory.getDataProvider(WZFiles.CHARACTER);
-        stringData = DataProviderFactory.getDataProvider(WZFiles.STRING);
-        etcData = DataProviderFactory.getDataProvider(WZFiles.ETC);
-        cashStringData = stringData.getData("Cash.img");
-        consumeStringData = stringData.getData("Consume.img");
-        eqpStringData = stringData.getData("Eqp.img");
-        etcStringData = stringData.getData("Etc.img");
-        insStringData = stringData.getData("Ins.img");
-        petStringData = stringData.getData("Pet.img");
-
-        isQuestItemCache.Add(0, false);
-        isPartyQuestItemCache.Add(0, false);
-    }
 
 
     public List<ItemInfoBase> getAllItems()
@@ -200,7 +222,7 @@ public class ItemInformationProvider
         {
             theData = consumeStringData;
         }
-        else if ((itemId >= 1010000 && itemId < 1040000) || (itemId >= 1122000 && itemId < 1123000) || (itemId >= 1132000 && itemId < 1133000) || (itemId >= 1142000 && itemId < 1143000))
+        else if (itemId >= 1010000 && itemId < 1040000 || itemId >= 1122000 && itemId < 1123000 || itemId >= 1132000 && itemId < 1133000 || itemId >= 1142000 && itemId < 1143000)
         {
             theData = eqpStringData;
             cat = "Eqp/Accessory";
@@ -320,6 +342,7 @@ public class ItemInformationProvider
     }
 
     Dictionary<int, Data?> itemCache = [];
+
     private Data? getItemData(int itemId)
     {
         if (itemCache.TryGetValue(itemId, out var value))
@@ -346,7 +369,6 @@ public class ItemInformationProvider
                 }
                 else if (iFile.getName() == idStr.Substring(1) + ".img")
                 {
-                    log.Information("===应该不会被触发");
                     ret = itemData.getData(topDir.getName() + "/" + iFile.getName());
                     itemCache[itemId] = ret;
                     return ret;
@@ -701,7 +723,7 @@ public class ItemInformationProvider
 
     public WeaponType getWeaponType(int itemId)
     {
-        int cat = (itemId / 10000) % 100;
+        int cat = itemId / 10000 % 100;
         WeaponType[] type = {
             WeaponType.SWORD1H,
             WeaponType.GENERAL1H_SWING,
@@ -1086,11 +1108,11 @@ public class ItemInformationProvider
     /// <returns></returns>
     public Item? scrollEquipWithId(Item equip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
     {
-        bool assertGM = (isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL);
+        bool assertGM = isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL;
 
         if (equip is Equip nEquip)
         {
-            var stats = this.getEquipStats(scrollId);
+            var stats = getEquipStats(scrollId);
 
             if (nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId) || assertGM)
             {
@@ -1236,7 +1258,7 @@ public class ItemInformationProvider
         Equip nEquip;
         nEquip = new Equip(equipId, 0, ringId);
         nEquip.setQuantity(1);
-        var stats = this.getEquipStats(equipId);
+        var stats = getEquipStats(equipId);
         if (stats != null)
         {
             foreach (var stat in stats)
@@ -1333,7 +1355,7 @@ public class ItemInformationProvider
             return 0;
         }
         int lMaxRange = (int)Math.Min(Math.Ceiling(defaultValue * 0.1), maxRange);
-        return (short)((defaultValue - lMaxRange) + Math.Floor(Randomizer.nextDouble() * (lMaxRange * 2 + 1)));
+        return (short)(defaultValue - lMaxRange + Math.Floor(Randomizer.nextDouble() * (lMaxRange * 2 + 1)));
     }
 
     public Equip randomizeStats(Equip equip)
@@ -1715,19 +1737,7 @@ public class ItemInformationProvider
 
     private void loadCardIdData()
     {
-        try
-        {
-            using var dbContext = new DBContext();
-            var dataList = dbContext.Monstercarddata.Select(x => new { x.Cardid, x.Mobid }).ToList();
-            dataList.ForEach(x =>
-            {
-                monsterBookID.AddOrUpdate(x.Cardid, x.Mobid);
-            });
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
+        monsterBookID = _transport.RequestMonsterCardData().List.ToDictionary(x => x.CardId, x => x.MobId);
     }
 
     public int getCardMobId(int id)
@@ -1947,12 +1957,12 @@ public class ItemInformationProvider
 
     public bool isUpgradeable(int itemId)
     {
-        Item it = this.getEquipById(itemId);
+        Item it = getEquipById(itemId);
         Equip eq = (Equip)it;
 
-        return (eq.getUpgradeSlots() > 0 || eq.getStr() > 0 || eq.getDex() > 0 || eq.getInt() > 0 || eq.getLuk() > 0 ||
+        return eq.getUpgradeSlots() > 0 || eq.getStr() > 0 || eq.getDex() > 0 || eq.getInt() > 0 || eq.getLuk() > 0 ||
                 eq.getWatk() > 0 || eq.getMatk() > 0 || eq.getWdef() > 0 || eq.getMdef() > 0 || eq.getAcc() > 0 ||
-                eq.getAvoid() > 0 || eq.getSpeed() > 0 || eq.getJump() > 0 || eq.getHp() > 0 || eq.getMp() > 0);
+                eq.getAvoid() > 0 || eq.getSpeed() > 0 || eq.getJump() > 0 || eq.getHp() > 0 || eq.getMp() > 0;
     }
 
     public bool isUnmerchable(int itemId)
@@ -2077,10 +2087,10 @@ public class ItemInformationProvider
         if (!EquipSlot.getFromTextSlot(islot).isAllowed(dst, isCash(id)))
         {
             equip.wear(false);
-            var itemName = ItemInformationProvider.getInstance().getName(equip.getItemId());
+            var itemName = getInstance().getName(equip.getItemId());
             chr.Client.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
             AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to forcibly equip an item.");
-            log.Warning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
+            _logger.LogWarning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
             return false;
         }
 
@@ -2142,7 +2152,7 @@ public class ItemInformationProvider
 
     public List<ItemInfoBase> getItemDataByName(string name)
     {
-        return ItemInformationProvider.getInstance().getAllItems().Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+        return getInstance().getAllItems().Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     private Data? getEquipLevelInfo(int itemId)
@@ -2296,7 +2306,7 @@ public class ItemInformationProvider
         }
         else
         {
-            return (range) switch
+            return range switch
             {
                 5 => ItemId.BASIC_MONSTER_CRYSTAL_2,
                 6 => ItemId.BASIC_MONSTER_CRYSTAL_3,
@@ -2485,26 +2495,14 @@ public class ItemInformationProvider
 
     public HashSet<string> getWhoDrops(int itemId)
     {
-        HashSet<string> list = new();
-        try
-        {
-            using var dbContext = new DBContext();
-            var dropperIdList = dbContext.DropData.Where(x => x.Itemid == itemId).Select(x => x.Dropperid).Take(50).ToList();
-            foreach (var item in dropperIdList)
-            {
-                string resultName = MonsterInformationProvider.getInstance().getMobNameFromId(item);
-                if (resultName.Length > 0)
-                {
-                    list.Add(resultName);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-        }
+        return _cache.GetOrCreate($"WhoDropItem_{itemId}", e =>
+         {
+             return _transport.RequestWhoDrops(new Dto.QueryDropperByItemRequest { ItemId = itemId })
+                 .DropperIdList.Select(MonsterInformationProvider.getInstance().getMobNameFromId)
+                 .Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
+         }
+        ) ?? [];
 
-        return list;
     }
 
     private bool canUseSkillBook(IPlayer player, int skillBookId)
@@ -2595,7 +2593,7 @@ public class ItemInformationProvider
         {
             this.npc = npc;
             this.script = script;
-            this._runOnPickup = rop;
+            _runOnPickup = rop;
         }
 
         public int getNpc()

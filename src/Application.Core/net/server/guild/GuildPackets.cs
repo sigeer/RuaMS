@@ -287,7 +287,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet showGuildRanks(int npcid, List<GuildEntity> dataList)
+    public static Packet showGuildRanks(int npcid, List<Dto.GuildDto> dataList)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x49);
@@ -301,7 +301,7 @@ public class GuildPackets
         foreach (var rs in dataList)
         {
             p.writeString(rs.Name);
-            p.writeInt(rs.GP);
+            p.writeInt(rs.Gp);
             p.writeInt(rs.Logo);
             p.writeInt(rs.LogoColor);
             p.writeInt(rs.LogoBg);

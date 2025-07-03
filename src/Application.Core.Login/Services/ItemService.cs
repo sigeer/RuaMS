@@ -5,7 +5,9 @@ using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using Application.Shared.Message;
 using AutoMapper;
+using BaseProto;
 using Dto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using ZLinq;
@@ -23,6 +25,17 @@ namespace Application.Core.Login.Services
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
             _server = server;
+        }
+
+        public Dto.DropAllDto LoadMobDropDto()
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var mobDrop = dbContext.DropData.Where(x => x.Chance >= 0).AsNoTracking().ToList();
+            var globalDrop = dbContext.DropDataGlobals.Where(x => x.Chance >= 0).AsNoTracking().ToList();
+            var data = new DropAllDto();
+            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(mobDrop));
+            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(globalDrop));
+            return data;
         }
 
         public Dto.DropAllDto LoadAllReactorDrops()
@@ -151,6 +164,25 @@ namespace Application.Core.Login.Services
                     SenderId = master.Character.Id,
                 }
             });
+        }
+
+        public QueryDropperByItemResponse LoadWhoDrops(QueryDropperByItemRequest request)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dbList = dbContext.DropData.Where(x => x.Itemid == request.ItemId).Select(x => x.Dropperid).ToArray();
+            var res = new QueryDropperByItemResponse();
+            res.DropperIdList.AddRange(dbList);
+            return res;
+
+        }
+
+        public QueryMonsterCardDataResponse LoadMonsterCard()
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dbList = dbContext.Monstercarddata.AsNoTracking().ToList();
+            var res = new QueryMonsterCardDataResponse();
+            res.List.AddRange(dbList.Select(x => new MonsterCardData { CardId = x.Cardid, MobId = x.Mobid} ));
+            return res;
         }
     }
 }

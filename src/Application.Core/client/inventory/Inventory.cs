@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.model;
 using client.inventory.manipulator;
 using server;

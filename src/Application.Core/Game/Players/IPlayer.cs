@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.client.Characters;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;

@@ -138,6 +138,7 @@ namespace Application.Core.ServerTransports
         Dto.GetTeamResponse GetTeam(int party);
         Dto.GetGuildResponse GetGuild(int id);
         Dto.GetGuildResponse CreateGuild(string guildName, int playerId, int[] members);
+        Dto.CreateAllianceCheckResponse CreateAllianceCheck(Dto.CreateAllianceCheckRequest request);
         Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName);
         Dto.GetAllianceResponse GetAlliance(int id);
         void SendGuildChat(string name, string text);
@@ -185,5 +186,9 @@ namespace Application.Core.ServerTransports
         void BroadcastTV(ItemProto.CreateTVMessageRequest request);
         void SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
         void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest);
+        Dto.DropAllDto RequestDropData();
+        Dto.QueryDropperByItemResponse RequestWhoDrops(QueryDropperByItemRequest queryDropperByItemRequest);
+        BaseProto.QueryMonsterCardDataResponse RequestMonsterCardData();
+        QueryRankedGuildsResponse RequestRankedGuilds();
     }
 }

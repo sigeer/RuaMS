@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Client;
 using Application.Core.Game.Players;
@@ -17,7 +18,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using DueyDto;
 using Microsoft.Extensions.Logging;
-using server;
 using tools;
 
 namespace Application.Module.Duey.Channel

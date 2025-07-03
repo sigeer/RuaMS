@@ -22,6 +22,7 @@
  */
 
 using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;

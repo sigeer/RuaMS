@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Managers;
 using client.inventory.manipulator;

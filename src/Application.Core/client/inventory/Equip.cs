@@ -21,9 +21,9 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
 using constants.game;
-using server;
 using tools;
 
 namespace client.inventory;

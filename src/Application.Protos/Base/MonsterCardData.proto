@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package BaseProto;
+
+message MonsterCardData {
+	int32 cardId = 1;
+	int32 mobId = 2;
+}
+
+message QueryMonsterCardDataResponse {
+	repeated MonsterCardData list = 1;
+}

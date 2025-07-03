@@ -1,8 +1,8 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using server;
 using tools;
 
 namespace Application.Core.Game.Players
