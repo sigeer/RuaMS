@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package BaseProto;
+
+message ItemQuantity {
+	int32 itemId = 1;
+	int32 quantity = 2;
+}
+
+message ItemQuantityList {
+	repeated ItemQuantity list = 1;
+}

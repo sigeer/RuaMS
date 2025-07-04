@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "Protos/Maker.proto";
+
+package MakerService;
+
+service ChannelService {
+	rpc GetMakerCraftTable (MakerProto.ItemIdRequest) returns(MakerProto.QueryMakerCraftTableResponse);
+	rpc GetMakerReagentStatUpgrade (MakerProto.ItemIdRequest) returns(MakerProto.QueryMakerItemStatResponse);
+	rpc GetMakerDisassembledItems (MakerProto.ItemIdRequest) returns(MakerProto.MakerRequiredItems);
+}

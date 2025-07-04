@@ -23,10 +23,10 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.EntityFrameworkCore;
-using server;
 using tools;
 
 namespace client.processor.npc;

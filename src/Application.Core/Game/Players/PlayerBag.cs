@@ -1,3 +1,4 @@
+using Application.Utility;
 using client.inventory;
 using client.inventory.manipulator;
 
@@ -11,7 +12,7 @@ namespace Application.Core.Game.Players
         public PlayerBag(IPlayer owner)
         {
             Owner = owner;
-            var typeList = Enum.GetValues<InventoryType>();
+            var typeList = EnumCache<InventoryType>.Values;
             _dataSource = new Inventory[typeList.Length];
 
             for (int i = 0; i < typeList.Length; i++)

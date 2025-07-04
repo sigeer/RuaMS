@@ -14,3 +14,11 @@ message AllianceDto {
 message GetAllianceResponse {
 	AllianceDto model = 1;
 }
+
+message CreateAllianceCheckRequest {
+	string name = 1;
+}
+
+message CreateAllianceCheckResponse {
+	bool isValid = 1;
+}

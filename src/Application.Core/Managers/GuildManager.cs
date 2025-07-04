@@ -1,25 +1,7 @@
-using net.server.guild;
-
 namespace Application.Core.Managers
 {
     public class GuildManager
     {
-        readonly static ILogger _log = LogFactory.GetLogger(LogType.Guild);
-
-
-        public static void displayGuildRanks(IChannelClient c, int npcid)
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                var rs = dbContext.Guilds.OrderByDescending(x => x.GP).Take(50).ToList();
-                c.sendPacket(GuildPackets.showGuildRanks(npcid, rs));
-            }
-            catch (Exception e)
-            {
-                _log.Error(e, "Failed to display guild ranks.");
-            }
-        }
 
         public static int getIncreaseGuildCost(int size)
         {

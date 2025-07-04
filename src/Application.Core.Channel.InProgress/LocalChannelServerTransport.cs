@@ -2,6 +2,7 @@ using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
+using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
@@ -11,6 +12,7 @@ using Application.Shared.Models;
 using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
+using BaseProto;
 using Dto;
 using net.server;
 using server.expeditions;
@@ -36,6 +38,7 @@ namespace Application.Core.Channel.InProgress
         readonly RankService _rankService;
         readonly InvitationService _invitationService;
         readonly IExpeditionService _expeditionService;
+        readonly ResourceDataManager _resourceService;
         readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
@@ -53,6 +56,7 @@ namespace Application.Core.Channel.InProgress
             RankService rankService,
             InvitationService invitationService,
             IExpeditionService expeditionService,
+            ResourceDataManager resourceDataService,
             IMapper mapper)
         {
             _server = server;
@@ -66,6 +70,7 @@ namespace Application.Core.Channel.InProgress
             _rankService = rankService;
             _invitationService = invitationService;
             _expeditionService = expeditionService;
+            _resourceService = resourceDataService;
         }
 
         public Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels)
@@ -659,6 +664,10 @@ namespace Application.Core.Channel.InProgress
             return new Dto.GetGuildResponse { Model = _server.GuildManager.CreateGuild(guildName, playerId, members) };
         }
 
+        public Dto.CreateAllianceCheckResponse CreateAllianceCheck(Dto.CreateAllianceCheckRequest request)
+        {
+            return _server.GuildManager.CreateAllianceCheck(request);
+        }
         public Dto.GetAllianceResponse CreateAlliance(int[] masters, string allianceName)
         {
             return new Dto.GetAllianceResponse { Model = _server.GuildManager.CreateAlliance(masters, allianceName) };
@@ -867,6 +876,41 @@ namespace Application.Core.Channel.InProgress
         public void FinishTransaction(ItemProto.FinishTransactionRequest finishTransactionRequest)
         {
             _server.ItemTransactionManager.Finish(finishTransactionRequest);
+        }
+
+        public DropAllDto RequestDropData()
+        {
+            return _itemService.LoadMobDropDto();
+        }
+
+        public QueryDropperByItemResponse RequestWhoDrops(QueryDropperByItemRequest request)
+        {
+            return _itemService.LoadWhoDrops(request);
+        }
+
+        public QueryMonsterCardDataResponse RequestMonsterCardData()
+        {
+            return _itemService.LoadMonsterCard();
+        }
+
+        public QueryRankedGuildsResponse RequestRankedGuilds()
+        {
+            return _server.GuildManager.LoadRankedGuilds();
+        }
+
+        public GetPLifeByMapIdResponse RequestPLifeByMapId(GetPLifeByMapIdRequest request)
+        {
+            return _resourceService.LoadMapPLife(request);
+        }
+
+        public void SendCreatePLife(CreatePLifeRequest createPLifeRequest)
+        {
+            _resourceService.CreatePLife(createPLifeRequest);
+        }
+
+        public void SendRemovePLife(RemovePLifeRequest removePLifeRequest)
+        {
+            _resourceService.RemovePLife(removePLifeRequest);
         }
     }
 }

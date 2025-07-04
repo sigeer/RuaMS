@@ -1,5 +1,5 @@
+using Application.Core.Channel.DataProviders;
 using client.inventory;
-using server;
 
 namespace Application.Core.Game.Commands.Gm2;
 

@@ -1,8 +1,7 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Managers;
 using Application.EF;
 using Application.Utility.Configs;
-using server;
-using server.life;
 
 namespace Application.Host.Services
 {

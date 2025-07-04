@@ -11,6 +11,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Base\PLife.proto" GrpcServices="None" />
+		<Protobuf Include="Base\ItemQuantity.proto" GrpcServices="None" />
+		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
 		<Protobuf Include="Item\ItemTransaction.proto" GrpcServices="None" />
 		<Protobuf Include="Item\TVMessage.proto">

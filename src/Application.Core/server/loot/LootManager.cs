@@ -19,8 +19,8 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
-using server.life;
 using server.quest;
 
 namespace server.loot;

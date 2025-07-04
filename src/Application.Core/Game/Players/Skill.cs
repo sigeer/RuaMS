@@ -58,8 +58,6 @@ namespace Application.Core.Game.Players
             {
                 Skills.Remove(skill);
                 sendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, -1)); //Shouldn't use expiration anymore :)
-                using DBContext dbContext = new DBContext();
-                dbContext.Skills.Where(x => x.Skillid == skill.getId() && x.Characterid == Id).ExecuteDelete();
             }
         }
 
@@ -268,5 +266,10 @@ namespace Application.Core.Game.Players
             }
         }
         #endregion
+
+        public int GetMakerSkillLevel()
+        {
+            return getSkillLevel((getJob().getId() / 1000) * 10000000 + 1007);
+        }
     }
 }

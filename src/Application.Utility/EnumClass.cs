@@ -31,5 +31,12 @@ namespace Application.Utility
                         && x.IsPublic
                         && x.FieldType == typeof(TModel)).Select(x => (TModel)x.GetValue(null)!).ToList();
         }
+
+        public static string[] GetNames<TModel>() where TModel : EnumClass
+        {
+            return typeof(TModel).GetFields().Where(x => x.IsStatic
+                        && x.IsPublic
+                        && x.FieldType == typeof(TModel)).Select(x => x.Name).ToArray();
+        }
     }
 }

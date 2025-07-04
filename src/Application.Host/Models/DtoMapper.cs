@@ -1,10 +1,9 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.EF.Entities.SystemBase;
 using Application.Core.Managers;
 using Application.EF.Entities;
 using Application.Utility.Configs;
 using AutoMapper;
-using server;
-using server.life;
 using server.quest;
 
 namespace Application.Host.Models

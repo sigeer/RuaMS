@@ -6,6 +6,7 @@ using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
+using Application.Core.Login.Shared;
 using Application.Core.Login.Tasks;
 using Application.EF;
 using Application.Shared.Servers;
@@ -76,6 +77,17 @@ namespace Application.Core.Login
             return services;
         }
 
+        static IServiceCollection AddDataManager(this IServiceCollection services)
+        {
+            services.AddSingleton<IStorage, ResourceDataManager>();
+            services.AddSingleton<ResourceDataManager>();
+
+            services.AddSingleton<IStorage, NewYearCardManager>();
+            services.AddSingleton<NewYearCardManager>();
+
+            return services;
+        }
+
         static IServiceCollection AddServices(this IServiceCollection services)
         {
             services.AddSingleton<CharacterService>();
@@ -104,11 +116,13 @@ namespace Application.Core.Login
 
             services.AddSessionManager();
 
+            services.AddDataManager();
             services.AddServices();
             services.AddStorage();
             services.AddDistributedMemoryCache();
             services.AddScheduleTask();
 
+            services.AddGrpc();
             services.AddSingleton<IServerBootstrap, DefaultMasterBootstrap>();
             services.AddSingleton<MasterServer>();
             services.AddHostedService<MasterHost>();

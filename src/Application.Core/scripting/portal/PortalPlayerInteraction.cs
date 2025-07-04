@@ -48,8 +48,7 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
 
     public bool hasLevel30Character()
     {
-        using var dbContext = new DBContext();
-        return dbContext.Characters.Where(x => x.AccountId == getPlayer().getAccountID()).Any(x => x.Level >= 30);
+        return c.OnlinedCharacter.getLinkedLevel() >= 30;
     }
 
     public void blockPortal()

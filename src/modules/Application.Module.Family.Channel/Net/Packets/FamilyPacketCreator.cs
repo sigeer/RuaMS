@@ -1,6 +1,5 @@
 using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Common;
-using Application.Module.Family.Common;
 using Application.Shared.Net;
 using Application.Utility;
 
@@ -11,9 +10,9 @@ namespace Application.Module.Family.Channel.Net.Packets
         public static Packet loadFamily()
         {
             OutPacket p = OutPacket.create(SendOpcode.FAMILY_PRIVILEGE_LIST);
-            var allItems = EnumClassUtils.GetValues<FamilyEntitlement>();
-            p.writeInt(allItems.Count);
-            for (int i = 0; i < allItems.Count; i++)
+            var allItems = EnumClassCache<FamilyEntitlement>.Values;
+            p.writeInt(allItems.Length);
+            for (int i = 0; i < allItems.Length; i++)
             {
                 FamilyEntitlement entitlement = allItems[i];
                 p.writeByte(i <= 1 ? 1 : 2); //type

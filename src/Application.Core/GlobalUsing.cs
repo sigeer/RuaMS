@@ -18,6 +18,7 @@ global using Application.Shared.Constants.Skill;
 global using Application.Shared.MapObjects;
 global using Application.Shared.Models;
 global using Application.Shared.Net;
+global using Application.Shared.Items;
 global using Application.Utility;
 global using Application.Utility.Compatible;
 global using Application.Utility.Compatible.Atomics;

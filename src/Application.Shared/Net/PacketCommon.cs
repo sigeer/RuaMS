@@ -11,7 +11,7 @@ namespace Application.Shared.Net
     public class PacketCommon
     {
         // 2339/1/1 8:00:01
-        private static long FT_UT_OFFSET = 116444736010800000L + TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Ticks; // normalize with timezone offset suggested by Ari
+        private static long FT_UT_OFFSET = 116444736010800000L + DateTimeOffset.Now.Offset.Ticks; // normalize with timezone offset suggested by Ari
                                                                                                                          // 2448/1/1
         private static long DEFAULT_TIME = 150842304000000000L;//00 80 05 BB 46 E6 17 02
                                                                // 2268/12/31

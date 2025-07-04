@@ -1,7 +1,7 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Managers;
 using client.inventory;
 using client.inventory.manipulator;
-using server;
 
 namespace Application.Core.Game.Commands.Gm4;
 

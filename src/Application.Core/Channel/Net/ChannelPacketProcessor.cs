@@ -75,7 +75,6 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.DAMAGE_REACTOR, sp.GetRequiredService<ReactorHitHandler>()},
                 {(short)RecvOpcode.GUILD_OPERATION, sp.GetRequiredService<GuildOperationHandler>()},
                 {(short)RecvOpcode.DENY_GUILD_REQUEST, sp.GetRequiredService<DenyGuildRequestHandler>()},
-                {(short)RecvOpcode.BBS_OPERATION, sp.GetRequiredService<BBSOperationHandler>()},
                 {(short)RecvOpcode.SKILL_EFFECT, sp.GetRequiredService<SkillEffectHandler>()},
                 {(short)RecvOpcode.MESSENGER, sp.GetRequiredService<MessengerHandler>()},
                 {(short)RecvOpcode.NPC_ACTION, sp.GetRequiredService<NPCAnimationHandler>()},
@@ -111,7 +110,6 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.REPORT, sp.GetRequiredService<ReportHandler>()},
                 {(short)RecvOpcode.MONSTER_BOOK_COVER, sp.GetRequiredService<MonsterBookCoverHandler>()},
                 {(short)RecvOpcode.AUTO_DISTRIBUTE_AP, sp.GetRequiredService<AutoAssignHandler>()},
-                {(short)RecvOpcode.MAKER_SKILL, sp.GetRequiredService<MakerSkillHandler>()},
 
                 {(short)RecvOpcode.USE_HAMMER, sp.GetRequiredService<UseHammerHandler>()},
                 {(short)RecvOpcode.SCRIPTED_ITEM, sp.GetRequiredService<ScriptedItemHandler>()},

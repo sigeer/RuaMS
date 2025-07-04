@@ -19,9 +19,9 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using server.life;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

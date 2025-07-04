@@ -11,8 +11,6 @@ namespace Application.Core.Game.Players
         private HiredMerchant? hiredMerchant = null;
         public void setHasMerchant(bool set)
         {
-            using var dbContext = new DBContext();
-            dbContext.Characters.Where(x => x.Id == Id).ExecuteUpdate(x => x.SetProperty(y => y.HasMerchant, set));
             HasMerchant = set;
         }
 
@@ -25,9 +23,6 @@ namespace Application.Core.Game.Players
 
         public void setMerchantMeso(int set)
         {
-            using var dbContext = new DBContext();
-            dbContext.Characters.Where(x => x.Id == Id).ExecuteUpdate(x => x.SetProperty(y => y.MerchantMesos, set));
-
             MerchantMesos = set;
         }
 

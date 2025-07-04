@@ -26,3 +26,7 @@ message GuildDto {
 message GetGuildResponse {
 	GuildDto model = 1;
 }
+
+message QueryRankedGuildsResponse {
+	repeated GuildDto guilds = 1;
+}

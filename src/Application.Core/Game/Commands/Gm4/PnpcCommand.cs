@@ -1,12 +1,14 @@
-using Application.Core.Managers;
+using Application.Core.Channel.Services;
 
 namespace Application.Core.Game.Commands.Gm4;
 
 public class PnpcCommand : CommandBase
 {
-    public PnpcCommand() : base(4, "pnpc")
+    readonly DataService _dataService;
+    public PnpcCommand(DataService dataService) : base(4, "pnpc")
     {
         Description = "Spawn a permanent NPC on your location.";
+        _dataService = dataService;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -31,17 +33,6 @@ public class PnpcCommand : CommandBase
             return;
         }
 
-        try
-        {
-            if (PLifeManager.CreatePnpc(npcId, player))
-                player.yellowMessage("Pnpc created.");
-            else
-                player.dropMessage(5, "You have entered an invalid NPC id.");
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex.ToString());
-            player.dropMessage(5, "Failed to store pNPC in the database.");
-        }
+        _dataService.CreatePLife(player, npcId, LifeType.NPC);
     }
 }

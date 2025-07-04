@@ -21,8 +21,8 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using scripting.npc;
-using server;
 using server.quest;
 using server.quest.actions;
 

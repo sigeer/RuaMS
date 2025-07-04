@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using client.inventory;
 
 namespace server.quest.requirements;

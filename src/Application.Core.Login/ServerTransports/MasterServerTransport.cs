@@ -2,6 +2,7 @@ using Application.Core.Login.Models;
 using Application.Core.Login.ServerTransports;
 using Application.Shared.Message;
 using Application.Shared.Servers;
+using BaseProto;
 using Dto;
 using net.server;
 using tools;
@@ -422,6 +423,16 @@ namespace Application.Core.Login
         internal void SendSetFly(SetFlyResponse setFlyResponse)
         {
             SendMessage(BroadcastType.OnSetFly, setFlyResponse, setFlyResponse.Request.CId);
+        }
+
+        internal void BroadcastPLifeCreated(CreatePLifeRequest request)
+        {
+            BroadcastMessage(BroadcastType.OnPLifeCreated, request);
+        }
+
+        internal void BroadcastPLifeRemoved(RemovePLifeResponse request)
+        {
+            BroadcastMessage(BroadcastType.OnPLifeRemoved, request);
         }
     }
 }

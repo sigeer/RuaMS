@@ -46,6 +46,7 @@ namespace Application.Core.Login.Datas
 
                 await _masterServer.NewYearCardManager.Initialize(dbContext);
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
+                await _masterServer.ResourceDataManager.Initialize(dbContext);
 
                 foreach (var module in _masterServer.Modules)
                 {

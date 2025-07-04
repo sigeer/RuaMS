@@ -1,10 +1,11 @@
+using Application.Core.Channel.DataProviders;
 using Application.Shared.Items;
-using server;
 
 namespace Application.Core.Game.Life
 {
     public class DropItemEntry
     {
+        protected DropItemEntry() { }
         public DropItemEntry(int itemId, int chance, int minCount, int maxCount)
         {
             ItemId = itemId;
@@ -26,6 +27,7 @@ namespace Application.Core.Game.Life
     /// </summary>
     public class DropEntry : DropItemEntry
     {
+        private DropEntry() { }
         private DropEntry(int itemId, int chance, int itemMinCount, int itemMaxCount) : base(itemId, chance, itemMinCount, itemMaxCount) { }
 
         public static DropEntry Global(int continentId, int itemId, int chance, int itemMinCount, int itemMaxCount, short questId)

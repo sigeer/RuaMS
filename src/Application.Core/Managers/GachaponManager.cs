@@ -1,6 +1,6 @@
-﻿using Application.Core.EF.Entities.Gachapons;
+using Application.Core.Channel.DataProviders;
+using Application.Core.EF.Entities.Gachapons;
 using Application.Core.Game.Gachapon;
-using server;
 
 namespace Application.Core.Managers
 {

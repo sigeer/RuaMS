@@ -229,14 +229,14 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.Length, source => source.MapFrom(x => x.length));
 
             CreateMap<Dto.DropItemDto, DropEntry>()
-                .ConstructUsing((src, ctx) =>
+                .ConvertUsing((src, ctx) =>
                 {
                     if (src.Type == (int)DropType.ReactorDrop)
                         return DropEntry.ReactorDrop(src.DropperId, src.ItemId, src.Chance, (short)src.QuestId);
                     if (src.Type == (int)DropType.MonsterDrop)
                         return DropEntry.MobDrop(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
                     if (src.Type == (int)DropType.GlobalDrop)
-                        return DropEntry.Global(0, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
+                        return DropEntry.Global(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
                     throw new BusinessFatalException("不支持的掉落类型");
                 });
 
@@ -272,6 +272,9 @@ namespace Application.Core.Mappers
                 }));
 
             CreateMap<Dto.NewYearCardDto, NewYearCardModel>();
+
+            CreateMap<Dto.DropItemDto, DropEntry>()
+                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.DropperId));
         }
 
         private int[] TranslateArray(string str)

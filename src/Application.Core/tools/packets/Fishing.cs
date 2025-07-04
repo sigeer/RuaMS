@@ -19,7 +19,7 @@
 */
 
 
-using server;
+using Application.Core.Channel.DataProviders;
 
 namespace tools.packets;
 

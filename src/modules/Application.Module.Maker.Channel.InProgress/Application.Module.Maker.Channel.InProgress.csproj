@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application.Module.Maker.Channel\Application.Module.Maker.Channel.csproj" />
+    <ProjectReference Include="..\Application.Module.Maker.Master\Application.Module.Maker.Master.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -32,7 +32,7 @@ public class LootInventory
 
     public LootInventory(IPlayer from)
     {
-        foreach (InventoryType values in Enum.GetValues<InventoryType>())
+        foreach (InventoryType values in EnumCache<InventoryType>.Values)
         {
 
             foreach (Item it in from.getInventory(values).list())

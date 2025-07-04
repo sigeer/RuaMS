@@ -8,7 +8,7 @@ namespace Application.Core.Login.Modules
     {
         public void ConfigureHost(WebApplication app)
         {
-
+            // TODO: 在这里启动grcp server
         }
     }
 }

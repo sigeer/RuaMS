@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
@@ -84,7 +85,7 @@ public class StorageProcessor
 
                             if (item != null)
                             {
-                                if (ii.isPickupRestricted(item.getItemId()) && chr.haveItemWithId(item.getItemId(), true))
+                                if (!chr.CanHoldUniquesOnly(item.getItemId()))
                                 {
                                     c.sendPacket(PacketCreator.getStorageError(0x0C));
                                     return;

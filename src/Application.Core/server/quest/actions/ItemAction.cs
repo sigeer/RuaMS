@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using client.inventory;
 using client.inventory.manipulator;
 using server.quest;
@@ -283,13 +284,10 @@ public class ItemAction : AbstractQuestAction
 
     private void announceInventoryLimit(List<int> itemids, IPlayer chr)
     {
-        foreach (int id in itemids)
+        if (!chr.canHoldUniques(itemids))
         {
-            if (ItemInformationProvider.getInstance().isPickupRestricted(id) && chr.haveItemWithId(id, true))
-            {
-                chr.dropMessage(1, "Please check if you already have a similar one-of-a-kind item in your inventory.");
-                return;
-            }
+            chr.dropMessage(1, "Please check if you already have a similar one-of-a-kind item in your inventory.");
+            return;
         }
 
         chr.dropMessage(1, "Please check if you have enough space in your inventory.");

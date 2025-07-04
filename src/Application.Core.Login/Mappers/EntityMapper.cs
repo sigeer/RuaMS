@@ -85,7 +85,16 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
                 .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Dropperid))
-                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.ReactorDrop))
+                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.MonsterDrop))
+                .ForMember(dest => dest.MinCount, src => src.MapFrom(x => x.MinimumQuantity))
+                .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
+                .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
+
+            CreateMap<DropDataGlobal, Dto.DropItemDto>()
+                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
+                .ForMember(dest => dest.QuestId, src => src.MapFrom(x => x.Questid))
+                .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.Continent))
+                .ForMember(dest => dest.Type, src => src.MapFrom(x => DropType.GlobalDrop))
                 .ForMember(dest => dest.MinCount, src => src.MapFrom(x => x.MinimumQuantity))
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
@@ -107,6 +116,9 @@ namespace Application.Core.Login.Mappers
             CreateMap<AllianceEntity, AllianceModel>();
 
             CreateMap<NewYearCardEntity, NewYearCardModel>();
+            CreateMap<PlifeEntity, BaseProto.PLifeDto>()
+                .ForMember(dest => dest.LifeId, src => src.MapFrom(x => x.Life))
+                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Map));
         }
     }
 }

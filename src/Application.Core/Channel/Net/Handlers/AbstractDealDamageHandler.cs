@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;

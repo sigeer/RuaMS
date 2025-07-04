@@ -1,10 +1,9 @@
+using Application.Core.Channel.DataProviders;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Host.Models;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using server;
-using server.life;
 
 namespace Application.Host.Services
 {

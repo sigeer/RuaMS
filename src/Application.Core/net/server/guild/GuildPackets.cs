@@ -208,86 +208,9 @@ public class GuildPackets
         return p;
     }
 
-    public static void addThread(OutPacket p, BbsThread rs)
-    {
-        p.writeInt(rs.Localthreadid);
-        p.writeInt(rs.Postercid);
-        p.writeString(rs.Name);
-        p.writeLong(PacketCommon.getTime(rs.Timestamp));
-        p.writeInt(rs.Icon);
-        p.writeInt(rs.Replycount);
-    }
+    
 
-    public static Packet BBSThreadList(List<BbsThread> dataList, int start)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GUILD_BBS_PACKET);
-        p.writeByte(0x06);
-        if (dataList.Count == 0)
-        {
-            p.writeByte(0);
-            p.writeInt(0);
-            p.writeInt(0);
-            return p;
-        }
-        int threadCount = dataList.Count;
-        if (dataList[0].Localthreadid == 0)
-        { //has a notice
-            p.writeByte(1);
-            addThread(p, dataList[0]);
-            threadCount--; //one thread didn't count (because it's a notice)
-        }
-        else
-        {
-            p.writeByte(0);
-        }
-        if (start + 1 > threadCount)
-        {
-            start = 0;
-        }
-        p.writeInt(threadCount);
-        p.writeInt(Math.Min(10, threadCount - start));
-        for (int i = 0; i < Math.Min(10, threadCount - start); i++)
-        {
-            addThread(p, dataList[i]);
-        }
-        return p;
-    }
-
-    public static Packet showThread(int localthreadid, BbsThread threadRS, ICollection<BbsReply> repliesRS)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GUILD_BBS_PACKET);
-        p.writeByte(0x07);
-        p.writeInt(localthreadid);
-        p.writeInt(threadRS.Postercid);
-        p.writeLong(PacketCommon.getTime(threadRS.Timestamp));
-        p.writeString(threadRS.Name);
-        p.writeString(threadRS.Startpost);
-        p.writeInt(threadRS.Icon);
-        if (repliesRS != null)
-        {
-            int replyCount = threadRS.Replycount;
-            p.writeInt(replyCount);
-
-            foreach (var item in repliesRS)
-            {
-                p.writeInt(item.Replyid);
-                p.writeInt(item.Postercid);
-                p.writeLong(PacketCommon.getTime(item.Timestamp));
-                p.writeString(item.Content);
-            }
-            if (repliesRS.Count != replyCount)
-            {
-                throw new Exception(threadRS.Threadid.ToString());
-            }
-        }
-        else
-        {
-            p.writeInt(0);
-        }
-        return p;
-    }
-
-    public static Packet showGuildRanks(int npcid, List<GuildEntity> dataList)
+    public static Packet showGuildRanks(int npcid, List<Dto.GuildDto> dataList)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x49);
@@ -301,7 +224,7 @@ public class GuildPackets
         foreach (var rs in dataList)
         {
             p.writeString(rs.Name);
-            p.writeInt(rs.GP);
+            p.writeInt(rs.Gp);
             p.writeInt(rs.Logo);
             p.writeInt(rs.LogoColor);
             p.writeInt(rs.LogoBg);

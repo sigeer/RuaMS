@@ -21,12 +21,12 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.model;
 using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using client.inventory;
 using constants.game;
-using server;
 using server.movement;
 using tools;
 

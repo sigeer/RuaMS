@@ -45,6 +45,8 @@ using tools;
 using tools.packets;
 using static server.partyquest.Pyramid;
 using Microsoft.Extensions.DependencyInjection;
+using Application.Core.Channel.DataProviders;
+using Application.Core.ServerTransports;
 
 
 namespace scripting.npc;
@@ -78,11 +80,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return talk;
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName, false)
-    {
-
-    }
-
     public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName, List<IPlayer> otherParty, bool test) : base(c)
     {
         this.c = c;
@@ -98,6 +95,11 @@ public class NPCConversationManager : AbstractPlayerInteraction
         this.ScriptMeta = scriptName;
         this.itemScript = itemScript;
         this.otherParty = [];
+    }
+
+    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName, false)
+    {
+
     }
 
     public int getNpc()
@@ -284,7 +286,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void displayGuildRanks()
     {
-        GuildManager.displayGuildRanks(getClient(), npc);
+        c.CurrentServerContainer.GuildManager.ShowRankedGuilds(c, npc);
     }
 
     public bool canSpawnPlayerNpc(int mapid)
@@ -497,7 +499,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public bool canBeUsedAllianceName(string name)
     {
-        return AllianceManager.canBeUsedAllianceName(name);
+        return c.CurrentServerContainer.GuildManager.CheckAllianceName(name);
     }
 
     public Alliance? createAlliance(string name)
@@ -673,7 +675,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public object[] getNamesWhoDropsItem(int itemId)
     {
-        return ItemInformationProvider.getInstance().getWhoDrops(itemId).ToArray();
+        return MonsterInformationProvider.getInstance().FindDropperNames(itemId).ToArray();
     }
 
     public string getSkillBookInfo(int itemid)
@@ -1502,16 +1504,6 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public int[] getCardTierSize()
     {
-        try
-        {
-            return c.CurrentServer.Service.GetCardTierSize();
-            using var dbContext = new DBContext();
-            return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
-            return new int[0];
-        }
+        return c.CurrentServer.Service.GetCardTierSize();
     }
 }

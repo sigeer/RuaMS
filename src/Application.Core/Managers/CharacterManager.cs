@@ -1,8 +1,8 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.model;
 using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
-using server;
 using System.Text.RegularExpressions;
 using tools;
 
@@ -468,7 +468,8 @@ namespace Application.Core.Managers
         }
 
         public static void doNameChange(int characterId, string oldName, string newName, int nameChangeId)
-        { //Don't do this while player is online
+        { 
+            //Don't do this while player is online
             try
             {
                 using var dbContext = new DBContext();

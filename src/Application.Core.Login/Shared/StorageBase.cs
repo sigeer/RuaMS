@@ -5,7 +5,7 @@ namespace Application.Core.Login.Shared
 {
     public abstract class StorageBase<TKey, TModel> : IStorage where TKey : notnull
     {
-        ConcurrentDictionary<TKey, TModel> _dirty = new();
+        protected ConcurrentDictionary<TKey, TModel> _dirty = new();
 
         protected abstract Task CommitInternal(DBContext dbContext, Dictionary<TKey, TModel> updateData);
 

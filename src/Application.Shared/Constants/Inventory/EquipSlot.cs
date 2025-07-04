@@ -77,7 +77,7 @@ public class EquipSlot : EnumClass
     {
         if (!string.IsNullOrEmpty(slot))
         {
-            foreach (EquipSlot c in EnumClassUtils.GetValues<EquipSlot>())
+            foreach (EquipSlot c in EnumClassCache<EquipSlot>.Values)
             {
                 if (c.getName() == slot)
                 {

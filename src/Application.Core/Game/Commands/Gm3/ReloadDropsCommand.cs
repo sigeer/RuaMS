@@ -1,4 +1,4 @@
-using server.life;
+using Application.Core.Channel.DataProviders;
 
 namespace Application.Core.Game.Commands.Gm3;
 

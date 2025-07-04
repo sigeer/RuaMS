@@ -1,5 +1,6 @@
 using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants.Npc;
 using Application.Shared.Invitations;
 using AutoMapper;
 using constants.game;
@@ -44,6 +45,16 @@ namespace Application.Core.Channel.ServerData
                 }
             }
             return true;
+        }
+
+        public bool CheckAllianceName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name) || name.Contains(" ") || name.Length > 12)
+            {
+                return false;
+            }
+
+            return _transport.CreateAllianceCheck(new CreateAllianceCheckRequest { Name = name }).IsValid;
         }
 
         public HashSet<IPlayer> getEligiblePlayersForGuild(IPlayer guildLeader)
@@ -740,6 +751,12 @@ namespace Application.Core.Channel.ServerData
                     alliance.Disband();
                     return _allianceData.TryRemove(alliance.AllianceId, out _);
                 });
+        }
+
+        internal void ShowRankedGuilds(IChannelClient c, int npc)
+        {
+            var data = _transport.RequestRankedGuilds();
+            c.sendPacket(GuildPackets.showGuildRanks(npc, data.Guilds.ToList()));
         }
         #endregion
     }

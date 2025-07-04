@@ -1,8 +1,8 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using server;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -185,7 +185,44 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public bool haveItemWithId(int itemid, bool checkEquipped)
+        public int countItem(int itemid)
+        {
+            return Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
+        }
+
+        public bool canHold(int itemid, int quantity = 1)
+        {
+            return Inventory.checkSpot(this, Item.CreateVirtualItem(itemid, (short)quantity));
+        }
+
+        public bool canHoldUniques(List<int> itemids)
+        {
+            ItemInformationProvider ii = ItemInformationProvider.getInstance();
+            return itemids.All(x => CanHoldUniquesOnly(x));
+        }
+
+        public bool CanHoldUniquesOnly(int itemId)
+        {
+            return !ItemInformationProvider.getInstance().isPickupRestricted(itemId) || !haveItem(itemId);
+        }
+
+        /// <summary>
+        /// 是否拥有某个道具（不确定道具类型时）
+        /// </summary>
+        /// <param name="itemid"></param>
+        /// <returns></returns>
+        public bool haveItem(int itemid)
+        {
+            return haveItemWithId(itemid, ItemConstants.isEquipment(itemid));
+        }
+
+        /// <summary>
+        /// 是否拥有某个道具
+        /// </summary>
+        /// <param name="itemid"></param>
+        /// <param name="checkEquipped"></param>
+        /// <returns></returns>
+        public bool haveItemWithId(int itemid, bool checkEquipped = true)
         {
             return (Bag[ItemConstants.getInventoryType(itemid)].findById(itemid) != null)
                     || (checkEquipped && Bag[InventoryType.EQUIPPED].findById(itemid) != null);
@@ -196,7 +233,20 @@ namespace Application.Core.Game.Players
             return (Bag[InventoryType.EQUIPPED].findById(itemid) != null);
         }
 
+        public bool haveCleanItem(int itemid)
+        {
+            return getCleanItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
+        }
 
+        public bool HasEmptySlotByItem(int itemId)
+        {
+            return getInventory(ItemConstants.getInventoryType(itemId)).getNextFreeSlot() > -1;
+        }
+
+        public bool hasEmptySlot(sbyte invType)
+        {
+            return getInventory(InventoryTypeUtils.getByType(invType)).getNextFreeSlot() > -1;
+        }
 
         public int getItemQuantity(int itemid, bool checkEquipped)
         {
@@ -409,5 +459,97 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
+        {
+            Item? item = null;
+
+            var invType = ItemConstants.getInventoryType(itemId);
+            if (quantity >= 0)
+            {
+                if (!InventoryManipulator.checkSpace(Client, itemId, quantity, ""))
+                {
+                    dropMessage(1, "Your inventory is full. Please remove an item from your " + invType.ToString() + " inventory.");
+                    return null;
+                }
+
+                if (ItemConstants.isPet(itemId))
+                {
+                    if (from != null)
+                    {
+                        var evolved = new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId());
+
+                        Point pos = getPosition();
+                        pos.Y -= 12;
+                        evolved.setPos(pos);
+                        evolved.setFh(getMap().getFootholds().findBelow(evolved.getPos()).getId());
+                        evolved.setStance(0);
+                        evolved.Summoned = true;
+
+                        var fromDefaultName = ItemInformationProvider.getInstance().getName(from.getItemId());
+                        evolved.Name = from.Name != fromDefaultName ? from.Name : fromDefaultName;
+                        evolved.Tameness = from.Tameness;
+                        evolved.Fullness = from.Fullness;
+                        evolved.Level = from.Level;
+                        evolved.setExpiration(DateTimeOffset.UtcNow.AddMilliseconds(expires).ToUnixTimeMilliseconds());
+
+                        item = evolved;
+                    }
+                }
+
+                ItemInformationProvider ii = ItemInformationProvider.getInstance();
+
+                if (item == null)
+                {
+                    if (invType == InventoryType.EQUIP)
+                    {
+                        item = ii.getEquipById(itemId);
+
+                        if (item != null)
+                        {
+                            Equip it = (Equip)item;
+                            if (ItemConstants.isAccessory(item.getItemId()) && it.getUpgradeSlots() <= 0)
+                            {
+                                it.setUpgradeSlots(3);
+                            }
+
+                            if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && getCS() == true)
+                            {
+                                if (!(isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
+                                {
+                                    it.setUpgradeSlots((byte)(it.getUpgradeSlots() + 1));
+                                }
+                                item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
+                            }
+
+                            if (randomStats)
+                            {
+                                ii.randomizeStats(it);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        item = Item.CreateVirtualItem(itemId, quantity);
+                    }
+                }
+
+                if (expires >= 0)
+                {
+                    item!.setExpiration(Client.CurrentServerContainer.getCurrentTime() + expires);
+                }
+
+                InventoryManipulator.addFromDrop(Client, item!, false);
+            }
+            else
+            {
+                InventoryManipulator.removeById(Client, invType, itemId, -quantity, true, false);
+            }
+            if (showMessage)
+            {
+                Client.sendPacket(PacketCreator.getShowItemGain(itemId, quantity, true));
+            }
+
+            return item;
+        }
     }
 }

@@ -1,5 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
+using Application.Shared.Items;
 using Application.Shared.NewYear;
 using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
@@ -87,6 +88,7 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Members, src => src.Ignore());
 
             CreateMap<NewYearCardModel, Dto.NewYearCardDto>();
+            CreateMap<ItemQuantity, BaseProto.ItemQuantity>();
         }
     }
 }

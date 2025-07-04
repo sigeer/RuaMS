@@ -1,4 +1,4 @@
-using server;
+using Application.Core.Channel.DataProviders;
 
 namespace Application.Core.Managers
 {

@@ -141,7 +141,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.sendPacket(PacketCreator.showCashShopMessage(0xA8));
                         return;
                     }
-                    cs.Buy(4, cItem);
+                    cs.Buy(CashType.NX_PREPAID, cItem);
                     cs.gift(recipient.CharacterId, chr.getName(), message, cItem.getSN());
                     c.sendPacket(PacketCreator.showGiftSucceed(recipient.CharacterName, cItem));
                     c.sendPacket(PacketCreator.showCash(chr));
