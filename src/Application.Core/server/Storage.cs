@@ -60,36 +60,6 @@ public class Storage
         }
     }
 
-
-    public static Storage loadOrCreateFromDB(int id, int world)
-    {
-        Storage ret;
-        try
-        {
-            using var dbContext = new DBContext();
-            var accountStorage = dbContext.Storages.Where(x => x.Accountid == id).FirstOrDefault();
-            if (accountStorage == null)
-            {
-                accountStorage = new StorageEntity(id, 4, 0);
-                dbContext.Storages.Add(accountStorage);
-                dbContext.SaveChanges();
-            }
-
-            ret = new Storage(accountStorage.Accountid, (byte)accountStorage.Slots, accountStorage.Meso);
-            foreach (var item in ItemFactory.STORAGE.loadItems(ret.AccountId, false))
-            {
-                ret.items.Add(item.Item);
-            }
-            return ret;
-        }
-        catch (Exception ex)
-        {
-            // exceptions leading to deploy null storages found thanks to Jefe
-            Log.Logger.Error(ex, "SQL error occurred when trying to load storage for accId {AccountId}, world {WorldId}", id, world);
-            throw;
-        }
-    }
-
     public byte getSlots()
     {
         return slots;

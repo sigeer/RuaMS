@@ -297,6 +297,9 @@ namespace Application.Core.Game.Players
         int getGuildId();
         int getGuildRank();
         int getHair();
+        /// <summary>
+        /// 正在访问的雇佣商人，而不是自己的雇佣商人
+        /// </summary>
         HiredMerchant? getHiredMerchant();
         int getId();
         int getInitialSpawnpoint();
