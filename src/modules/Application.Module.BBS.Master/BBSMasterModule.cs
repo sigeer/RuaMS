@@ -18,5 +18,11 @@ namespace Application.Module.BBS.Master
             await base.IntializeDatabaseAsync(dbContext);
             await _manager.Initialize(dbContext);
         }
+
+        public override async Task SaveChangesAsync(DBContext dbContext)
+        {
+            await base.SaveChangesAsync(dbContext);
+            await _manager.Commit(dbContext);
+        }
     }
 }

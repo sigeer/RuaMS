@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Shared.Team;
+using BaseProto;
 using Dto;
 using System.Net;
 
@@ -190,5 +191,8 @@ namespace Application.Core.ServerTransports
         Dto.QueryDropperByItemResponse RequestWhoDrops(QueryDropperByItemRequest queryDropperByItemRequest);
         BaseProto.QueryMonsterCardDataResponse RequestMonsterCardData();
         QueryRankedGuildsResponse RequestRankedGuilds();
+        GetPLifeByMapIdResponse RequestPLifeByMapId(GetPLifeByMapIdRequest requestPLifeByMapIdRequest);
+        void SendCreatePLife(CreatePLifeRequest createPLifeRequest);
+        void SendRemovePLife(RemovePLifeRequest removePLifeRequest);
     }
 }

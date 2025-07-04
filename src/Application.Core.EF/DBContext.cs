@@ -127,7 +127,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<PlayernpcsField> PlayernpcsFields { get; set; }
 
-    public virtual DbSet<Plife> Plives { get; set; }
+    public virtual DbSet<PlifeEntity> Plives { get; set; }
 
     public virtual DbSet<Questaction> Questactions { get; set; }
 
@@ -1552,7 +1552,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("world");
         });
 
-        modelBuilder.Entity<Plife>(entity =>
+        modelBuilder.Entity<PlifeEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

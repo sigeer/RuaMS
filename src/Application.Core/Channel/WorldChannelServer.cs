@@ -60,7 +60,7 @@ namespace Application.Core.Channel
         readonly Lazy<NewYearCardService> _newYearService;
         public NewYearCardService NewYearCardService => _newYearService.Value;
         readonly Lazy<NoteService> _noteService;
-        public NoteService? NoteService => _noteService.Value;
+        public NoteService NoteService => _noteService.Value;
         readonly Lazy<DataService> _dataService;
         public DataService DataService => _dataService.Value;
         #endregion
@@ -687,6 +687,9 @@ namespace Application.Core.Channel
             MessageDispatcher.Register<DropMessageDto>(BroadcastType.OnDropMessage, DropMessage);
 
             MessageDispatcher.Register<Dto.SendNoteResponse>(BroadcastType.OnNoteSend, NoteService.OnNoteReceived);
+
+            MessageDispatcher.Register<BaseProto.CreatePLifeRequest>(BroadcastType.OnPLifeCreated, DataService.OnPLifeCreated);
+            MessageDispatcher.Register<BaseProto.RemovePLifeResponse>(BroadcastType.OnPLifeRemoved, DataService.OnPLifeRemoved);
         }
 
         public void OnMessageReceived(string type, object message)

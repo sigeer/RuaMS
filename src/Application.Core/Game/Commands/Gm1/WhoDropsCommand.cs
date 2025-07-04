@@ -14,7 +14,7 @@ public class WhoDropsCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.dropMessage(5, "Please do @whodrops <item name>");
+            player.dropMessage(5, "Please do !whodrops <item name>");
             return;
         }
 
@@ -29,27 +29,7 @@ public class WhoDropsCommand : CommandBase
                 {
                     output += "#b" + data.Name + "#k is dropped by:\r\n";
 
-                    try
-                    {
-                        using var dbContext = new DBContext();
-                        var ds = dbContext.DropData.Where(x => x.Itemid == data.Id).Take(50);
-
-                        foreach (var item in ds)
-                        {
-                            string resultName = MonsterInformationProvider.getInstance().getMobNameFromId(item.Dropperid);
-                            if (resultName != null)
-                            {
-                                output += resultName + ", ";
-                            }
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        player.dropMessage(6, "There was a problem retrieving the required data. Please try again.");
-                        log.Error(e.ToString());
-                        return;
-                    }
+                    output += string.Join(", ", MonsterInformationProvider.getInstance().FindDropperNames(data.Id).Take(50));
                     output += "\r\n\r\n";
                 }
                 c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);

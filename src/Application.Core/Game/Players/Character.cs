@@ -368,8 +368,13 @@ public partial class Player
     public void ban(string reason)
     {
         this.isbanned = true;
-        using var dbContext = new DBContext();
-        dbContext.Accounts.Where(x => x.Id == Id).ExecuteUpdate(x => x.SetProperty(y => y.Banned, 1).SetProperty(y => y.Banreason, reason));
+
+        if (Client.AccountEntity != null)
+        {
+            Client.AccountEntity.Banned = 1;
+            Client.AccountEntity.Banreason = reason;
+            Client.CommitAccount();
+        }
     }
 
 
@@ -4874,17 +4879,13 @@ public partial class Player
 
     public void block(int reason, int days, string desc)
     {
-        try
+        if (Client.AccountEntity != null)
         {
             var tempBan = DateTimeOffset.UtcNow.AddDays(days);
-            using var dbContext = new DBContext();
-            dbContext.Accounts.Where(x => x.Id == AccountId).ExecuteUpdate(x => x.SetProperty(y => y.Banreason, desc)
-                .SetProperty(y => y.Tempban, tempBan)
-                .SetProperty(y => y.Greason, reason));
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
+            Client.AccountEntity.Banreason = desc;
+            Client.AccountEntity.Tempban = tempBan;
+            Client.AccountEntity.Greason = (sbyte)reason;
+            Client.CommitAccount();
         }
     }
 

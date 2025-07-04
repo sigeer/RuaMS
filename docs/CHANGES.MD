@@ -103,4 +103,6 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 
 - [ ] `DateTimeOffset.UtcNow` 换成 `getCurrentTime()`
 - [ ] 移除 `new DBConext()` 
-- [ ] 移除 `PlayerNpc`
+- [ ] 提取 `PlayerNpc`
+- [ ] 提取结婚系统
+- [ ] 提取拍卖系统

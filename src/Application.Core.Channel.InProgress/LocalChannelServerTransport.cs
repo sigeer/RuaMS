@@ -2,6 +2,7 @@ using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
+using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
@@ -37,6 +38,7 @@ namespace Application.Core.Channel.InProgress
         readonly RankService _rankService;
         readonly InvitationService _invitationService;
         readonly IExpeditionService _expeditionService;
+        readonly ResourceDataManager _resourceService;
         readonly IMapper _mapper;
         /// <summary>
         /// 后期移除，逐步合并到MasterServer中去
@@ -54,6 +56,7 @@ namespace Application.Core.Channel.InProgress
             RankService rankService,
             InvitationService invitationService,
             IExpeditionService expeditionService,
+            ResourceDataManager resourceDataService,
             IMapper mapper)
         {
             _server = server;
@@ -67,6 +70,7 @@ namespace Application.Core.Channel.InProgress
             _rankService = rankService;
             _invitationService = invitationService;
             _expeditionService = expeditionService;
+            _resourceService = resourceDataService;
         }
 
         public Task<Config.RegisterServerResult> RegisterServer(WorldChannelServer server, List<WorldChannel> channels)
@@ -892,6 +896,21 @@ namespace Application.Core.Channel.InProgress
         public QueryRankedGuildsResponse RequestRankedGuilds()
         {
             return _server.GuildManager.LoadRankedGuilds();
+        }
+
+        public GetPLifeByMapIdResponse RequestPLifeByMapId(GetPLifeByMapIdRequest request)
+        {
+            return _resourceService.LoadMapPLife(request);
+        }
+
+        public void SendCreatePLife(CreatePLifeRequest createPLifeRequest)
+        {
+            _resourceService.CreatePLife(createPLifeRequest);
+        }
+
+        public void SendRemovePLife(RemovePLifeRequest removePLifeRequest)
+        {
+            _resourceService.RemovePLife(removePLifeRequest);
         }
     }
 }

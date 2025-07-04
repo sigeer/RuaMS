@@ -1,12 +1,12 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Plife
+public partial class PlifeEntity
 {
-    protected Plife()
+    protected PlifeEntity()
     {
     }
 
-    public Plife(int world, int mapId, int mobId, int mobTime, int x, int y, int fh, string type)
+    public PlifeEntity(int mapId, int mobId, int mobTime, int x, int y, int fh, string type)
     {
         Life = mobId;
         F = 0;
@@ -17,7 +17,6 @@ public partial class Plife
         Type = type;
         X = x;
         Y = y;
-        World = world;
         Map = mapId;
         Mobtime = mobTime;
         Hide = 0;
