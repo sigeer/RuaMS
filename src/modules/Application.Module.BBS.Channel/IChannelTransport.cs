@@ -1,19 +1,14 @@
 using BBSProto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Module.BBS.Channel
 {
     public interface IChannelTransport
     {
-        void DeleteReply(DeleteReplyRequest deleteReplyRequest);
+        ShowBBSMainThreadResponse DeleteReply(DeleteReplyRequest deleteReplyRequest);
         void DeleteThread(DeleteThreadRequest deleteThreadRequest);
-        void EditThread(PostThreadRequest postThreadRequest);
-        void ListThreads(ListBBSRequest listBBSRequest);
-        void PostReply(PostReplyRequest postReplyRequest);
-        void ShowThread(ShowThreadRequest showThreadRequest);
+        ShowBBSMainThreadResponse EditThread(PostThreadRequest postThreadRequest);
+        BBSProto.ListBBSResponse ListThreads(ListBBSRequest listBBSRequest);
+        ShowBBSMainThreadResponse PostReply(PostReplyRequest postReplyRequest);
+        ShowBBSMainThreadResponse ShowThread(ShowThreadRequest showThreadRequest);
     }
 }

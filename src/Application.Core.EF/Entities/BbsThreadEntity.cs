@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class BbsThread
+public partial class BbsThreadEntity
 {
     public int Threadid { get; set; }
 

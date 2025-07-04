@@ -109,6 +109,7 @@ namespace Application.Core.Login
             services.AddDistributedMemoryCache();
             services.AddScheduleTask();
 
+            services.AddGrpc();
             services.AddSingleton<IServerBootstrap, DefaultMasterBootstrap>();
             services.AddSingleton<MasterServer>();
             services.AddHostedService<MasterHost>();

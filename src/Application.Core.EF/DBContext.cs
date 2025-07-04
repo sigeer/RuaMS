@@ -29,9 +29,9 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<AreaInfo> AreaInfos { get; set; }
 
-    public virtual DbSet<BbsReply> BbsReplies { get; set; }
+    public virtual DbSet<BbsReplyEntity> BbsReplies { get; set; }
 
-    public virtual DbSet<BbsThread> BbsThreads { get; set; }
+    public virtual DbSet<BbsThreadEntity> BbsThreads { get; set; }
 
     public virtual DbSet<BosslogDaily> BosslogDailies { get; set; }
 
@@ -249,7 +249,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("info");
         });
 
-        modelBuilder.Entity<BbsReply>(entity =>
+        modelBuilder.Entity<BbsReplyEntity>(entity =>
         {
             entity.HasKey(e => e.Replyid).HasName("PRIMARY");
 
@@ -273,7 +273,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("timestamp");
         });
 
-        modelBuilder.Entity<BbsThread>(entity =>
+        modelBuilder.Entity<BbsThreadEntity>(entity =>
         {
             entity.HasKey(e => e.Threadid).HasName("PRIMARY");
 

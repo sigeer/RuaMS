@@ -1,9 +1,12 @@
 using Application.Core.Login;
 using Application.Core.Login.Shared;
 using Application.EF;
+using Application.EF.Entities;
+using Application.Module.BBS.Common;
 using Application.Module.BBS.Master.Models;
 using Application.Utility;
 using AutoMapper;
+using BBSProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
@@ -16,18 +19,21 @@ namespace Application.Module.BBS.Master
         readonly ILogger<BBSManager> _logger;
         readonly IMapper _mapper;
         readonly MasterServer _server;
-        readonly MasterTransport _transport;
 
         int _threadId;
         ConcurrentDictionary<int, BBSThreadModel> _threads = new();
 
-        public BBSManager(ILogger<BBSManager> logger, IMapper mapper, MasterServer server, MasterTransport transport, IDbContextFactory<DBContext> dbContextFactory)
+        public BBSManager(ILogger<BBSManager> logger, IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory)
         {
             _logger = logger;
             _mapper = mapper;
             _server = server;
-            _transport = transport;
             _dbContextFactory = dbContextFactory;
+        }
+
+        public async Task Initialize(DBContext dbContext)
+        {
+            _threadId = (await dbContext.BbsThreads.MaxAsync(x => (int?)x.Threadid)) ?? 0;
         }
 
         public BBSThreadModel? GetThread(int threadId)
@@ -49,33 +55,50 @@ namespace Application.Module.BBS.Master
             return localData;
         }
 
-        public void ListBBSThreads(BBSProto.ListBBSRequest request)
+        public BBSProto.ListBBSResponse ListBBSThreads(BBSProto.ListBBSRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null || chr.Character.GuildId <= 0)
-            {
-                return;
-            }
+                return new BBSProto.ListBBSResponse() { Code = (int)BBSResponseCode.CharacterNoGuild };
 
-            var list = _mapper.Map<BBSProto.BBSThreadPreview[]>(_threads.Values);
+            var dataFromCache = _mapper.Map<List<BBSThreadPreview>>(_threads.Values.Where(x => x.Guildid == chr.Character.GuildId).ToList());
+
+            var cachedid = dataFromCache.Select(x => x.ThreadId).ToArray();
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dataFromDB = (from a in dbContext.BbsThreads.Where(x => !cachedid.Contains(x.Threadid) && x.Guildid == chr.Character.GuildId)
+                              let replyCount = dbContext.BbsReplies.Count(x => x.Threadid == a.Threadid)
+                              select new { thread = a, replyCount }).ToList()
+                              .Select(x =>
+                              {
+                                  var r = _mapper.Map<BBSThreadPreview>(x.thread);
+                                  r.ReplyCount = x.replyCount;
+                                  return r;
+                              }).ToList();
+
+            var total = dataFromCache.Concat(dataFromDB).OrderByDescending(x => x.Timestamp).ToArray();
+
             var res = new BBSProto.ListBBSResponse();
-            res.List.AddRange(list);
-
-            _transport.SendLoadThreadList(res);
+            res.List.AddRange(total);
+            return res;
         }
 
-        public void PostReply(BBSProto.PostReplyRequest request)
+        public ShowBBSMainThreadResponse PostReply(BBSProto.PostReplyRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null || chr.Character.GuildId <= 0)
-                return;
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.CharacterNoGuild };
 
-            if (!_threads.TryGetValue(request.ThreadId, out var thread))
-            {
-                return;
-            }
+            var thread = GetThread(request.ThreadId);
+            if (thread == null)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.ThreadNotFound };
 
-            var replyId = thread.Replies.Count == 0 ? (thread.Localthreadid + 1) : (thread.Replies.Max(x => x.Id) + 1);
+            if (thread.Guildid != chr.Character.GuildId)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.GuildNotMatched };
+
+            var replyId = thread.Replies.Count == 0 ? (thread.ThreadId + 1) : (thread.Replies.Max(x => x.Id) + 1);
+            if (replyId / 1000 != thread.ThreadId)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.ExceedMaxReplyCount };
+
             var newModel = new BBSReplyModel
             {
                 Content = request.Text,
@@ -86,50 +109,54 @@ namespace Application.Module.BBS.Master
             };
             thread.Replies.Add(newModel);
 
-            _transport.SendLoadThread(request.MasterId, _mapper.Map<BBSProto.BBSMainThread>(thread));
+            return new ShowBBSMainThreadResponse() { Data = _mapper.Map<BBSProto.BBSMainThread>(thread) };
         }
 
-        public void ShowThread(BBSProto.ShowThreadRequest request)
+        public ShowBBSMainThreadResponse ShowThread(BBSProto.ShowThreadRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null || chr.Character.GuildId <= 0)
-                return;
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.CharacterNoGuild };
 
-            if (!_threads.TryGetValue(request.ThreadId, out var thread))
-            {
-                return;
-            }
+            var thread = GetThread(request.ThreadId);
+            if (thread == null)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.ThreadNotFound };
 
             if (thread.Guildid != chr.Character.GuildId)
-                return;
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.GuildNotMatched };
 
-            _transport.SendLoadThread(request.MasterId, _mapper.Map<BBSProto.BBSMainThread>(thread));
+            return new ShowBBSMainThreadResponse() { Data = _mapper.Map<BBSProto.BBSMainThread>(thread) };
         }
 
-        public void EditThread(BBSProto.PostThreadRequest request)
+        public ShowBBSMainThreadResponse EditThread(BBSProto.PostThreadRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null || chr.Character.GuildId <= 0)
-                return;
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.CharacterNoGuild };
 
-            if (!_threads.TryGetValue(request.ThreadId, out var thread))
-            {
-                return;
-            }
+            var thread = GetThread(request.ThreadId);
+            if (thread == null)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.ThreadNotFound };
+
+            if (thread.Guildid != chr.Character.GuildId)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.GuildNotMatched };
+
+            if (thread.Postercid != request.MasterId)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.NoAccess };
 
             thread.Name = request.Title;
             thread.Startpost = request.Text;
             thread.Timestamp = _server.getCurrentTime();
             thread.Icon = (short)request.Icon;
 
-            _transport.SendLoadThread(request.MasterId, _mapper.Map<BBSProto.BBSMainThread>(thread));
+            return new ShowBBSMainThreadResponse() { Data = _mapper.Map<BBSProto.BBSMainThread>(thread) };
         }
 
-        public void PostThread(BBSProto.PostThreadRequest request)
+        public ShowBBSMainThreadResponse PostThread(BBSProto.PostThreadRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null || chr.Character.GuildId <= 0)
-                return;
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.CharacterNoGuild };
 
             var newModel = new BBSThreadModel()
             {
@@ -139,11 +166,12 @@ namespace Application.Module.BBS.Master
                 Icon = (short)request.Icon,
                 Startpost = request.Text,
                 Guildid = chr.Character.GuildId,
-                Localthreadid = Interlocked.Add(ref _threadId, 1000),
+                ThreadId = Interlocked.Add(ref _threadId, 1000),
             };
-            _threads[newModel.Localthreadid] = newModel;
+            _threads[newModel.ThreadId] = newModel;
+            SetDirty(newModel.ThreadId, new UpdateField<BBSThreadModel>(UpdateMethod.AddOrUpdate, newModel));
 
-            _transport.SendLoadThread(request.MasterId, _mapper.Map<BBSProto.BBSMainThread>(newModel));
+            return new ShowBBSMainThreadResponse() { Data = _mapper.Map<BBSProto.BBSMainThread>(newModel) };
         }
 
 
@@ -153,7 +181,8 @@ namespace Application.Module.BBS.Master
             if (chr == null || chr.Character.GuildId <= 0)
                 return;
 
-            if (!_threads.TryGetValue(request.ThreadId, out var thread))
+            var thread = GetThread(request.ThreadId);
+            if (thread == null)
             {
                 return;
             }
@@ -169,33 +198,52 @@ namespace Application.Module.BBS.Master
             }
         }
 
-        public void deleteBBSReply(BBSProto.DeleteReplyRequest request)
+        public ShowBBSMainThreadResponse DeleteBBSReply(BBSProto.DeleteReplyRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null || chr.Character.GuildId <= 0)
-                return;
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.CharacterNoGuild };
 
             var threadId = (request.ReplyId / 1000);
-            if (!_threads.TryGetValue(threadId, out var thread))
-            {
-                return;
-            }
+            var thread = GetThread(threadId);
+            if (thread == null)
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.ThreadNotFound };
 
             if (request.MasterId != thread.Postercid && chr.Character.GuildRank > 2)
-            {
-                return;
-            }
+                return new ShowBBSMainThreadResponse() { Code = (int)BBSResponseCode.NoAccess };
 
             thread.Replies.RemoveAll(x => x.Id == request.ReplyId);
 
             SetDirty(threadId, new UpdateField<BBSThreadModel>(UpdateMethod.AddOrUpdate, thread));
 
-            _transport.SendLoadThread(request.MasterId, _mapper.Map<BBSProto.BBSMainThread>(thread));
+            return new ShowBBSMainThreadResponse() { Data = _mapper.Map<BBSProto.BBSMainThread>(thread) };
         }
 
-        protected override Task CommitInternal(DBContext dbContext, Dictionary<int, UpdateField<BBSThreadModel>> updateData)
+        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, UpdateField<BBSThreadModel>> updateData)
         {
-            return Task.CompletedTask;
+            var updateThreads = updateData.Values.Select(x => x.Data.ThreadId).ToArray();
+            await dbContext.BbsThreads.Where(x => updateThreads.Contains(x.Threadid)).ExecuteDeleteAsync();
+            await dbContext.BbsReplies.Where(x => updateThreads.Contains(x.Threadid)).ExecuteDeleteAsync();
+            foreach (var item in updateData.Values)
+            {
+                var obj = item.Data;
+                if (item.Method == UpdateMethod.AddOrUpdate)
+                {
+                    var dbData = new BbsThreadEntity()
+                    {
+                        Threadid = obj.ThreadId,
+                        Guildid = obj.Guildid,
+                        Icon = obj.Icon,
+                        Name = obj.Name,
+                        Postercid = obj.Postercid,
+                        Startpost = obj.Startpost,
+                        Timestamp = obj.Timestamp,
+                    };
+                    dbContext.BbsThreads.Add(dbData);
+                    dbContext.BbsReplies.AddRange(obj.Replies.Select(x => new BbsReplyEntity(x.Id, x.Threadid, x.Postercid, x.Timestamp, x.Content)));
+                }
+            }
+            await dbContext.SaveChangesAsync();
         }
     }
 }

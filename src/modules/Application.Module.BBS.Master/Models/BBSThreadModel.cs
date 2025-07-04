@@ -16,6 +16,6 @@ namespace Application.Module.BBS.Master.Models
 
         public int Guildid { get; set; }
 
-        public int Localthreadid { get; set; }
+        public int ThreadId { get; set; }
     }
 }

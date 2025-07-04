@@ -4,11 +4,10 @@ package BBSProto;
 
 message ListBBSRequest {
 	int32 masterId = 1;
-	int32 start = 2;
 }
 
 message ListBBSResponse {
-	ListBBSRequest request = 1;
+	int32 code = 1;
 	repeated BBSThreadPreview list = 2;
 }
 
@@ -32,6 +31,11 @@ message BBSMainThread {
 	repeated BBSReplyDto replies = 7;
 }
 
+message ShowBBSMainThreadResponse {
+	int32 code = 1;
+	BBSMainThread data = 2;
+}
+
 message ShowThreadRequest {
 	int32 masterId = 1;
 	int32 threadId =2;
@@ -49,12 +53,6 @@ message PostThreadRequest {
 message DeleteThreadRequest {
 	int32 threadId = 1;
 	int32 masterId = 2;
-}
-
-message BBSMainThreadResponse {
-	int32 code = 1;
-	int32 receiverId = 2;
-	BBSMainThread data = 3;
 }
 
 

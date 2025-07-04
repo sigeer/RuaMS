@@ -4,6 +4,7 @@ using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Application.Module.BBS.Channel
 {
@@ -11,6 +12,7 @@ namespace Application.Module.BBS.Channel
     {
         public static IServiceCollection AddGuildBBSChannel(this IServiceCollection services)
         {
+            services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
             services.AddSingleton<BBSManager>();
 
             services.AddSingleton<BBSOperationHandler>();

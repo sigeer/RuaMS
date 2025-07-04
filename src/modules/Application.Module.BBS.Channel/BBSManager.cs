@@ -20,14 +20,11 @@ namespace Application.Module.BBS.Channel
 
         public void listBBSThreads(IPlayer chr, int start)
         {
-            _transport.ListThreads(new BBSProto.ListBBSRequest { MasterId = chr.Id, Start = start });
-        }
-
-        public void OnThreadListReceived(BBSProto.ListBBSResponse data)
-        {
-            var chr = _server.FindPlayerById(data.Request.MasterId);
-            if (chr != null)
-                chr.sendPacket(BBSPacketCreator.BBSThreadList(data.List.ToList(), data.Request.Start));
+            var res = _transport.ListThreads(new BBSProto.ListBBSRequest { MasterId = chr.Id });
+            if (res.Code == 0)
+            {
+                chr.sendPacket(BBSPacketCreator.BBSThreadList(res.List.ToList(), start));
+            }
         }
 
 
@@ -36,11 +33,14 @@ namespace Application.Module.BBS.Channel
             _transport.PostReply(new BBSProto.PostReplyRequest { MasterId = chr.Id, Text = text, ThreadId = threadId });
         }
 
-        public void OnBBSDataReceived(BBSProto.BBSMainThreadResponse data)
+        void ProcessThreadResponse(IPlayer chr, BBSProto.ShowBBSMainThreadResponse data)
         {
-            var chr = _server.FindPlayerById(data.ReceiverId);
-            if (chr != null)
+            if (data.Code == 0)
                 chr.sendPacket(BBSPacketCreator.showThread(data.Data));
+            else
+            {
+
+            }
         }
 
         public void editBBSThread(IPlayer chr, string title, string text, int icon, int localthreadid)
@@ -50,7 +50,8 @@ namespace Application.Module.BBS.Channel
                 return;
             }
 
-            _transport.EditThread(new BBSProto.PostThreadRequest { Icon = icon, MasterId = chr.Id, Text = text, ThreadId = localthreadid, Title = title });
+            var res = _transport.EditThread(new BBSProto.PostThreadRequest { Icon = icon, MasterId = chr.Id, Text = text, ThreadId = localthreadid, Title = title });
+            ProcessThreadResponse(chr, res);
         }
 
         public void newBBSThread(IPlayer chr, string title, string text, int icon, bool bNotice)
@@ -60,7 +61,8 @@ namespace Application.Module.BBS.Channel
                 return;
             }
 
-            _transport.EditThread(new BBSProto.PostThreadRequest { Icon = icon, MasterId = chr.Id, Text = text, Title = title });
+            var res = _transport.EditThread(new BBSProto.PostThreadRequest { Icon = icon, MasterId = chr.Id, Text = text, Title = title });
+            ProcessThreadResponse(chr, res);
         }
 
         public void deleteBBSThread(IPlayer chr, int localthreadid)
@@ -80,12 +82,14 @@ namespace Application.Module.BBS.Channel
                 return;
             }
 
-            _transport.DeleteReply(new BBSProto.DeleteReplyRequest { MasterId = chr.Id, ReplyId = replyid });
+            var res = _transport.DeleteReply(new BBSProto.DeleteReplyRequest { MasterId = chr.Id, ReplyId = replyid });
+            ProcessThreadResponse(chr, res);
         }
 
         internal void ShowThread(IPlayer chr, int threadId)
         {
-            _transport.ShowThread(new BBSProto.ShowThreadRequest { MasterId = chr.Id, ThreadId = threadId });
+            var data = _transport.ShowThread(new BBSProto.ShowThreadRequest { MasterId = chr.Id, ThreadId = threadId });
+            ProcessThreadResponse(chr, data);
         }
     }
 }

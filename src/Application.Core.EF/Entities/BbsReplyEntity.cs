@@ -1,13 +1,14 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class BbsReply
+public partial class BbsReplyEntity
 {
-    protected BbsReply()
+    protected BbsReplyEntity()
     {
     }
 
-    public BbsReply(int threadid, int postercid, long timestamp, string content)
+    public BbsReplyEntity(int id, int threadid, int postercid, long timestamp, string content)
     {
+        Replyid = id;
         Threadid = threadid;
         Postercid = postercid;
         Timestamp = timestamp;

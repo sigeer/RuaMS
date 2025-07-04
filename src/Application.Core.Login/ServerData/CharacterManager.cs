@@ -204,17 +204,6 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public bool Remove(int characterId)
-        {
-            if (_idDataSource.Remove(characterId, out var d))
-            {
-                _nameDataSource.Remove(d.Character.Name);
-                _charcterViewCache.Remove(characterId);
-                return true;
-            }
-            return false;
-        }
-
         public void Dispose()
         {
             _idDataSource.Clear();
@@ -445,7 +434,11 @@ namespace Application.Core.Login.Datas
                 dbTrans.Commit();
 
                 _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(accId, cid);
-                Remove(cid);
+
+                _nameDataSource.TryRemove(characterModel.Name, out _);
+                _charcterViewCache.TryRemove(cid, out _);
+                _idDataSource.Remove(cid, out _);
+
                 return true;
             }
             catch (Exception e)
