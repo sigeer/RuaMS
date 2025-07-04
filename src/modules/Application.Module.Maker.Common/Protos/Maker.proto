@@ -8,12 +8,16 @@ message MakerCraftTable {
 	int32 reqLevel = 3;
 	int32 reqMakerLevel = 4;
 	int32 quantity = 5;
-	repeated MakerRequiredItem reqItems = 6;
+	MakerRequiredItems reqItems = 6;
 }
 
 message MakerRequiredItem {
 	int32 itemId = 1;
 	int32 count = 2;
+}
+
+message MakerRequiredItems {
+	repeated MakerRequiredItem list = 1;
 }
 
 message ItemIdRequest {
@@ -33,3 +37,4 @@ message MakerItemStat {
 	string stat = 2;
 	int32 value = 3;
 }
+

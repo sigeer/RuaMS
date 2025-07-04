@@ -35,6 +35,16 @@ namespace client.inventory.manipulator;
  */
 public class InventoryManipulator
 {
+    /// <summary>
+    /// 尽量使用addByDrop
+    /// </summary>
+    /// <param name="c"></param>
+    /// <param name="itemId"></param>
+    /// <param name="quantity"></param>
+    /// <param name="owner"></param>
+    /// <param name="flag"></param>
+    /// <param name="expiration"></param>
+    /// <returns></returns>
     public static bool addById(IChannelClient c, int itemId, short quantity, string? owner = null, short flag = 0, long expiration = -1)
     {
         IPlayer chr = c.OnlinedCharacter;
@@ -230,7 +240,7 @@ public class InventoryManipulator
                     {
                         c.sendPacket(PacketCreator.getInventoryFull());
                         c.sendPacket(PacketCreator.getShowInventoryFull());
-                        // 没有修改过item的数量，这里操作失败后为什么要修改？
+                        // Q.没有修改过item的数量，这里操作失败后为什么要修改？--一部分数量已经被获取，这里的修改成剩余的数量
                         item.setQuantity((short)(quantity + newQ));
                         return false;
                     }
@@ -266,8 +276,8 @@ public class InventoryManipulator
                 {
                     chr.setHasSandboxItem();
                 }
-                // 为什么这里会有 enableActions，其他的不用调用？
-                c.sendPacket(PacketCreator.enableActions());
+                // 为什么这里会有 enableActions，其他的不用调用？，addById也没调用，似乎可以移除
+                // c.sendPacket(PacketCreator.enableActions());
             }
         }
         else if (quantity == 1)

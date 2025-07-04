@@ -1,12 +1,11 @@
 using Application.Core.Login;
 using Application.Core.ServerTransports;
-using Application.Module.Duey.Channel;
 using Application.Module.Duey.Channel.InProgress;
 using Application.Module.ExpeditionBossLog.Master;
+using Application.Module.Maker.Channel.InProgress;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -24,6 +23,7 @@ namespace Application.Core.Channel.InProgress
             builder.Services.AddExpeditionBossLogMaster();
 
             builder.Services.AddDueyInProgress();
+            builder.Services.AddMakerInProgress();
         }
     }
 }

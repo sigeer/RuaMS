@@ -34,7 +34,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                     int toDisassemble = -1, pos = -1;
                     bool makerSucceeded = true;
 
-                    MakerItemCreateEntry recipe;
+                    MakerItemCreateEntry? recipe = null;
                     Dictionary<int, short> reagentids = new();
                     int stimulantid = -1;
 
@@ -164,7 +164,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             break;
 
                         case 2: // no meso
-                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough mesos (" + GameConstants.numberWithCommas(recipe.getCost()) + ") to complete this operation."));
+                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough mesos (" + GameConstants.numberWithCommas(recipe!.getCost()) + ") to complete this operation."));
                             c.sendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
@@ -190,13 +190,13 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             }
                             else
                             {
-                                foreach (var pair in recipe.getReqItems())
+                                foreach (var pair in recipe!.getReqItems())
                                 {
                                     c.getAbstractPlayerInteraction().gainItem(pair.ItemId, (short)-pair.Quantity, false);
                                 }
                             }
 
-                            int cost = recipe.getCost();
+                            int cost = recipe!.getCost();
                             if (stimulantid == -1 && reagentids.Count == 0)
                             {
                                 if (cost > 0)

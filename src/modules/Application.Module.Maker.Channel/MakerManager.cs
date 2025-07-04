@@ -118,7 +118,7 @@ namespace Application.Module.Maker.Channel
                 if (data.Data != null)
                 {
                     makerEntry = new MakerItemCreateEntry(data.Data.ReqMeso, data.Data.ReqLevel, data.Data.ReqMakerLevel);
-                    foreach (var item in data.Data.ReqItems)
+                    foreach (var item in data.Data.ReqItems.List)
                     {
                         makerEntry.addReqItem(item.ItemId, item.Count);
                     }
@@ -157,9 +157,9 @@ namespace Application.Module.Maker.Channel
             return -1;
         }
 
-        public List<ItemQuantity> getMakerDisassembledItems(int itemId)
+        public List<MakerProto.MakerRequiredItem> getMakerDisassembledItems(int itemId)
         {
-            return _mapper.Map<List<ItemQuantity>>(_transport.GetMakerDisassembledItems(new MakerProto.ItemIdRequest { ItemId = itemId }).List);
+            return _transport.GetMakerDisassembledItems(new MakerProto.ItemIdRequest { ItemId = itemId }).List.ToList();
         }
 
         public int getMakerDisassembledFee(int itemId)
@@ -204,10 +204,10 @@ namespace Application.Module.Maker.Channel
         }
         #endregion
 
-        public MakerItemCreateEntry getItemCreateEntry(int toCreate, int stimulantid, Dictionary<int, short> reagentids)
+        public MakerItemCreateEntry? getItemCreateEntry(int toCreate, int stimulantid, Dictionary<int, short> reagentids)
         {
             var makerEntry = getMakerItemEntry(toCreate);
-            if (makerEntry.isInvalid())
+            if (makerEntry == null || makerEntry.isInvalid())
             {
                 return makerEntry;
             }
@@ -238,14 +238,14 @@ namespace Application.Module.Maker.Channel
             return ret;
         }
 
-        public MakerItemCreateEntry generateDisassemblyCrystalEntry(int fromEquipid, int cost, List<ItemQuantity> gains)
+        public MakerItemCreateEntry generateDisassemblyCrystalEntry(int fromEquipid, int cost, List<MakerProto.MakerRequiredItem> gains)
         {
             // equipment at specific position already taken
             MakerItemCreateEntry ret = new MakerItemCreateEntry(cost, 0, 1);
             ret.addReqItem(fromEquipid, 1);
             foreach (var p in gains)
             {
-                ret.addGainItem(p.ItemId, p.Quantity);
+                ret.addGainItem(p.ItemId, p.Count);
             }
             return ret;
         }
@@ -409,7 +409,7 @@ namespace Application.Module.Maker.Channel
             }
         }
 
-        public KeyValuePair<int, List<ItemQuantity>>? generateDisassemblyInfo(int itemId)
+        public KeyValuePair<int, List<MakerProto.MakerRequiredItem>>? generateDisassemblyInfo(int itemId)
         {
             int recvFee = getMakerDisassembledFee(itemId);
             if (recvFee > -1)
@@ -425,9 +425,9 @@ namespace Application.Module.Maker.Channel
         }
 
 
-        public short getCreateStatus(IChannelClient c, MakerItemCreateEntry recipe)
+        public short getCreateStatus(IChannelClient c, MakerItemCreateEntry? recipe)
         {
-            if (recipe.isInvalid())
+            if (recipe == null || recipe.isInvalid())
             {
                 return -1;
             }

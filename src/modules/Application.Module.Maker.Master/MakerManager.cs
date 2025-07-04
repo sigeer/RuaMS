@@ -36,11 +36,12 @@ namespace Application.Module.Maker.Master
             _mapper.Map(dbModel, model);
 
             var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == request.ItemId).ToList();
-            model.ReqItems.AddRange(_mapper.Map<MakerProto.MakerRequiredItem[]>(dataList));
+            model.ReqItems = new MakerProto.MakerRequiredItems();
+            model.ReqItems.List.AddRange(_mapper.Map<MakerProto.MakerRequiredItem[]>(dataList));
             return new QueryMakerCraftTableResponse() { Data = _mapper.Map<MakerProto.MakerCraftTable>(model) };
         }
 
-        public MakerProto.QueryMakerItemStatResponse getMakerReagentStatUpgrade(MakerProto.ItemIdRequest request)
+        public MakerProto.QueryMakerItemStatResponse GetMakerReagentStatUpgrade(MakerProto.ItemIdRequest request)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             var data = _mapper.Map<MakerProto.MakerItemStat>(
@@ -49,14 +50,14 @@ namespace Application.Module.Maker.Master
             return new MakerProto.QueryMakerItemStatResponse { Data = data };
         }
 
-        public BaseProto.ItemQuantityList GetMakerDisassembledItems(MakerProto.ItemIdRequest request)
+        public MakerProto.MakerRequiredItems GetMakerDisassembledItems(MakerProto.ItemIdRequest request)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             var dataList = dbContext.Makerrecipedata.Where(x => x.Itemid == request.ItemId && x.ReqItem >= ItemId.BASIC_MONSTER_CRYSTAL_1 && x.Itemid < 4270000)
                 .ToList()
-                .Select(x => new BaseProto.ItemQuantity() { ItemId = x.ReqItem, Quantity = x.Count })
+                .Select(x => new MakerProto.MakerRequiredItem() { ItemId = x.ReqItem, Count = x.Count })
                 .ToList();
-            var res = new BaseProto.ItemQuantityList();
+            var res = new MakerProto.MakerRequiredItems();
             res.List.AddRange(dataList);
             return res;
         }

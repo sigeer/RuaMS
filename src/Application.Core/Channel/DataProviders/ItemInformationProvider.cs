@@ -1333,7 +1333,7 @@ public class ItemInformationProvider : WZDataBootstrap, IStaticService
                 }
             }
         }
-        return nEquip.copy(); // 为什么要用copy？
+        return nEquip.copy(); // Q.为什么要用copy？
     }
 
     /// <summary>

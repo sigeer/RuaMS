@@ -1570,16 +1570,6 @@ public class PacketCreator
         return p;
     }
 
-    /// <summary>
-    /// Gets a packet telling the client to show a item gain.
-    /// </summary>
-    /// <param name="itemId">The ID of the item gained.</param>
-    /// <param name="quantity">How many items gained.</param>
-    /// <returns>The item gain packet.</returns>
-    public static Packet getShowItemGain(int itemId, short quantity)
-    {
-        return getShowItemGain(itemId, quantity, false);
-    }
 
     /// <summary>
     /// Gets a packet telling the client to show an item gain.
@@ -1588,7 +1578,7 @@ public class PacketCreator
     /// <param name="quantity">The number of items gained.</param>
     /// <param name="inChat">Show in the chat window?</param>
     /// <returns>The item gain packet.</returns>
-    public static Packet getShowItemGain(int itemId, short quantity, bool inChat)
+    public static Packet getShowItemGain(int itemId, short quantity, bool inChat = false)
     {
         OutPacket p;
         if (inChat)

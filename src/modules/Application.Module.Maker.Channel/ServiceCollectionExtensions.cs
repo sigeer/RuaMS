@@ -5,6 +5,7 @@ using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Application.Module.Maker.Channel
 {
@@ -17,6 +18,7 @@ namespace Application.Module.Maker.Channel
         /// <returns></returns>
         public static IServiceCollection AddMakerChannel(this IServiceCollection services)
         {
+            services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
             services.AddSingleton<MakerManager>();
             services.AddSingleton<ChannelModule, MakerChannelModule>();
 

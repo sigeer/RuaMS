@@ -15,6 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Protobuf Include="Protos\Service.proto" GrpcServices="Both" />
 	  <Protobuf Include="Protos\Maker.proto" GrpcServices="None" />
 	</ItemGroup>
 </Project>
