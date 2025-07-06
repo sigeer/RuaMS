@@ -93,7 +93,7 @@ namespace Application.Core.Login.Services
             return dbContext.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM monstercarddata GROUP BY floor(cardid / 1000);").ToArray();
         }
 
-        bool isLocked = true;
+        bool isLocked = false;
         public void BroadcastTV(ItemProto.CreateTVMessageRequest request)
         {
             if (isLocked)
@@ -127,6 +127,7 @@ namespace Application.Core.Login.Services
             };
 
             _server.Transport.BroadcastMessage(BroadcastType.OnTVMessage, response);
+            isLocked = true;
 
             int delay = 15;
             if (request.Type == 4)
