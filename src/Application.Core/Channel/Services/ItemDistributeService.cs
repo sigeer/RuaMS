@@ -34,12 +34,15 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            if (chr.canHoldMeso(meso))
-                chr.gainMeso(meso, false);
-            else
+            if (meso != 0)
             {
-                needNotice = true;
-                chr.getMap().spawnMesoDrop(meso, chr.getPosition(), chr, chr, true, 0);
+                if (chr.canHoldMeso(meso))
+                    chr.gainMeso(meso, false);
+                else
+                {
+                    needNotice = true;
+                    chr.getMap().spawnMesoDrop(meso, chr.getPosition(), chr, chr, true, 0);
+                }
             }
 
             if (needNotice)

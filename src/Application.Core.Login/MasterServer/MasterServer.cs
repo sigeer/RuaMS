@@ -87,6 +87,10 @@ namespace Application.Core.Login
         public TeamManager TeamManager { get; }
         public GuildManager GuildManager { get; }
         public ItemTransactionManager ItemTransactionManager { get; }
+        readonly Lazy<ResourceDataManager> _lazyResourceDataManager;
+        public ResourceDataManager ResourceDataManager => _lazyResourceDataManager.Value;
+        readonly Lazy<NewYearCardManager> _lazyNewYearCardManager;
+        public NewYearCardManager NewYearCardManager => _lazyNewYearCardManager.Value;
         #endregion
 
         public IServiceProvider ServiceProvider { get; }
@@ -94,7 +98,7 @@ namespace Application.Core.Login
         public ChatRoomManager ChatRoomManager { get; }
         public List<MasterModule> Modules { get; private set; }
         public InvitationManager InvitationManager { get; }
-        public NewYearCardManager NewYearCardManager { get; }
+
 
         CharacterService _characterSevice;
         public ITimerManager TimerManager { get; private set; } = null!;
@@ -142,8 +146,9 @@ namespace Application.Core.Login
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
             ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
-            NewYearCardManager = ActivatorUtilities.CreateInstance<NewYearCardManager>(ServiceProvider, this);
             ItemTransactionManager = ActivatorUtilities.CreateInstance<ItemTransactionManager>(ServiceProvider, this);
+            _lazyNewYearCardManager = new(() => ServiceProvider.GetRequiredService<NewYearCardManager>());
+            _lazyResourceDataManager = new(() => ServiceProvider.GetRequiredService<ResourceDataManager>());
         }
 
         bool isShuttingdown = false;

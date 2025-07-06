@@ -22,6 +22,7 @@
  */
 
 using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -367,8 +368,13 @@ public partial class Player
     public void ban(string reason)
     {
         this.isbanned = true;
-        using var dbContext = new DBContext();
-        dbContext.Accounts.Where(x => x.Id == Id).ExecuteUpdate(x => x.SetProperty(y => y.Banned, 1).SetProperty(y => y.Banreason, reason));
+
+        if (Client.AccountEntity != null)
+        {
+            Client.AccountEntity.Banned = 1;
+            Client.AccountEntity.Banreason = reason;
+            Client.CommitAccount();
+        }
     }
 
 
@@ -1421,7 +1427,7 @@ public partial class Player
         }
         return false;
     }
-
+    Dictionary<int, PlayerPickupProcessor> _pickerProcessor = new();
     public void pickupItem(IMapObject? ob, int petIndex = -1)
     {
         // yes, one picks the IMapObject, not the MapItem
@@ -1431,28 +1437,16 @@ public partial class Player
             return;
         }
 
-        var pickerProcessor = new PlayerPickupProcessor(this, petIndex);
+        if (!_pickerProcessor.TryGetValue(petIndex, out var pickerProcessor))
+        {
+            pickerProcessor = new PlayerPickupProcessor(this, petIndex);
+            _pickerProcessor[petIndex] = pickerProcessor;
+        }
+        
         if (ob is MapItem mapitem)
         {
             pickerProcessor.Handle(mapitem);
         }
-    }
-
-
-    public int countItem(int itemid)
-    {
-        return Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
-    }
-
-    public bool canHold(int itemid, int quantity = 1)
-    {
-        return Client.getAbstractPlayerInteraction().canHold(itemid, quantity);
-    }
-
-    public bool canHoldUniques(List<int> itemids)
-    {
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        return !itemids.Any(x => ii.isPickupRestricted(x) && haveItem(x));
     }
 
     public bool isRidingBattleship()
@@ -2892,25 +2886,6 @@ public partial class Player
         return HasMerchant;
     }
 
-    public bool haveItem(int itemid)
-    {
-        return getItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
-    }
-
-    public bool haveCleanItem(int itemid)
-    {
-        return getCleanItemQuantity(itemid, ItemConstants.isEquipment(itemid)) > 0;
-    }
-
-    public bool HasEmptySlotByItem(int itemId)
-    {
-        return getInventory(ItemConstants.getInventoryType(itemId)).getNextFreeSlot() > -1;
-    }
-
-    public bool hasEmptySlot(sbyte invType)
-    {
-        return getInventory(InventoryTypeUtils.getByType(invType)).getNextFreeSlot() > -1;
-    }
 
     public void increaseGuildCapacity()
     {
@@ -4904,17 +4879,13 @@ public partial class Player
 
     public void block(int reason, int days, string desc)
     {
-        try
+        if (Client.AccountEntity != null)
         {
             var tempBan = DateTimeOffset.UtcNow.AddDays(days);
-            using var dbContext = new DBContext();
-            dbContext.Accounts.Where(x => x.Id == AccountId).ExecuteUpdate(x => x.SetProperty(y => y.Banreason, desc)
-                .SetProperty(y => y.Tempban, tempBan)
-                .SetProperty(y => y.Greason, reason));
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
+            Client.AccountEntity.Banreason = desc;
+            Client.AccountEntity.Tempban = tempBan;
+            Client.AccountEntity.Greason = (sbyte)reason;
+            Client.CommitAccount();
         }
     }
 
@@ -5148,6 +5119,7 @@ public partial class Player
         }
         pendantOfSpirit = null;
 
+        _pickerProcessor.Clear();
         clearCpqTimer();
 
         Monitor.Enter(evtLock);

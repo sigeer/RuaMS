@@ -11,6 +11,7 @@
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
     <ProjectReference Include="..\modules\Application.Module.Duey.Channel.InProgress\Application.Module.Duey.Channel.InProgress.csproj" />
     <ProjectReference Include="..\modules\Application.Module.ExpeditionBossLog.Master\Application.Module.ExpeditionBossLog.Master.csproj" />
+    <ProjectReference Include="..\modules\Application.Module.Maker.Channel.InProgress\Application.Module.Maker.Channel.InProgress.csproj" />
   </ItemGroup>
 
 </Project>

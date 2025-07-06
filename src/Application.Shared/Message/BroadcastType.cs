@@ -2,6 +2,9 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string OnPLifeCreated = "OnPLifeCreated";
+        public const string OnPLifeRemoved = "OnPLifeRemoved";
+
         public const string OnItemMegaphone = "OnItemMegaphone";
         public const string OnTVMessage = "OnTVMessage";
         public const string OnTVMessageFinish = "OnTVMessageFinish";

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package MakerProto;
+
+message MakerCraftTable {
+	int32 itemId = 1;
+	int32 reqMeso = 2;
+	int32 reqLevel = 3;
+	int32 reqMakerLevel = 4;
+	int32 quantity = 5;
+	MakerRequiredItems reqItems = 6;
+}
+
+message MakerRequiredItem {
+	int32 itemId = 1;
+	int32 count = 2;
+}
+
+message MakerRequiredItems {
+	repeated MakerRequiredItem list = 1;
+}
+
+message ItemIdRequest {
+	int32 itemId = 1;
+}
+
+message QueryMakerCraftTableResponse {
+	MakerCraftTable data = 1;
+}
+
+message QueryMakerItemStatResponse {
+	MakerItemStat data = 1;
+}
+
+message MakerItemStat {
+	int32 itemId = 1;
+	string stat = 2;
+	int32 value = 3;
+}
+

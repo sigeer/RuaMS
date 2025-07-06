@@ -21,8 +21,8 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
-using server;
 using tools;
 
 namespace client.inventory.manipulator;
@@ -35,6 +35,16 @@ namespace client.inventory.manipulator;
  */
 public class InventoryManipulator
 {
+    /// <summary>
+    /// 尽量使用addByDrop
+    /// </summary>
+    /// <param name="c"></param>
+    /// <param name="itemId"></param>
+    /// <param name="quantity"></param>
+    /// <param name="owner"></param>
+    /// <param name="flag"></param>
+    /// <param name="expiration"></param>
+    /// <returns></returns>
     public static bool addById(IChannelClient c, int itemId, short quantity, string? owner = null, short flag = 0, long expiration = -1)
     {
         IPlayer chr = c.OnlinedCharacter;
@@ -86,7 +96,7 @@ public class InventoryManipulator
                     if (newQ != 0)
                     {
                         quantity -= newQ;
-                        Item nItem = new Item(itemId, 0, newQ);
+                        Item nItem = Item.CreateVirtualItem(itemId, newQ);
                         nItem.setFlag(flag);
                         nItem.setExpiration(expiration);
                         short newSlot = inv.addItem(nItem);
@@ -115,7 +125,7 @@ public class InventoryManipulator
             }
             else
             {
-                Item nItem = isPet ? new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : new Item(itemId, 0, quantity);
+                Item nItem = isPet ? new Pet(itemId, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : Item.CreateVirtualItem(itemId, quantity);
                 nItem.setFlag(flag);
                 nItem.setExpiration(expiration);
                 short newSlot = inv.addItem(nItem);
@@ -126,7 +136,7 @@ public class InventoryManipulator
                     return false;
                 }
                 c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
-                if (InventoryManipulator.isSandboxItem(nItem))
+                if (isSandboxItem(nItem))
                 {
                     chr.setHasSandboxItem();
                 }
@@ -149,7 +159,7 @@ public class InventoryManipulator
                 return false;
             }
             c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nEquip))));
-            if (InventoryManipulator.isSandboxItem(nEquip))
+            if (isSandboxItem(nEquip))
             {
                 chr.setHasSandboxItem();
             }
@@ -171,7 +181,7 @@ public class InventoryManipulator
         inv.lockInventory();
         try
         {
-            return addFromDropInternal(c, chr, type, inv, item, show);
+            return addFromDropInternal(c, type, inv, item, show);
         }
         finally
         {
@@ -179,11 +189,12 @@ public class InventoryManipulator
         }
     }
 
-    private static bool addFromDropInternal(IChannelClient c, IPlayer chr, InventoryType type, Inventory inv, Item item, bool show)
+    private static bool addFromDropInternal(IChannelClient c, InventoryType type, Inventory inv, Item item, bool show)
     {
+        var chr = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         int itemid = item.getItemId();
-        if (ii.isPickupRestricted(itemid) && chr.haveItemWithId(itemid, true))
+        if (!chr.CanHoldUniquesOnly(itemid))
         {
             c.sendPacket(PacketCreator.getInventoryFull());
             c.sendPacket(PacketCreator.showItemUnavailable());
@@ -198,7 +209,8 @@ public class InventoryManipulator
             if (!ItemConstants.isRechargeable(itemid) && item is not Pet)
             {
                 if (existing.Count > 0)
-                { // first update all existing slots to slotMax
+                {
+                    // first update all existing slots to slotMax
                     foreach (var eItem in existing)
                     {
                         if (quantity <= 0)
@@ -219,7 +231,7 @@ public class InventoryManipulator
                 {
                     short newQ = Math.Min(quantity, slotMax);
                     quantity -= newQ;
-                    Item nItem = new Item(itemid, 0, newQ);
+                    Item nItem = Item.CreateVirtualItem(itemid, newQ);
                     nItem.setExpiration(item.getExpiration());
                     nItem.setOwner(item.getOwner());
                     nItem.setFlag(item.getFlag());
@@ -228,13 +240,14 @@ public class InventoryManipulator
                     {
                         c.sendPacket(PacketCreator.getInventoryFull());
                         c.sendPacket(PacketCreator.getShowInventoryFull());
+                        // Q.没有修改过item的数量，这里操作失败后为什么要修改？--一部分数量已经被获取，这里的修改成剩余的数量
                         item.setQuantity((short)(quantity + newQ));
                         return false;
                     }
-                    nItem.setPosition(newSlot);
+                    // 是否有意义？
                     item.setPosition(newSlot);
                     c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, nItem))));
-                    if (InventoryManipulator.isSandboxItem(nItem))
+                    if (isSandboxItem(nItem))
                     {
                         chr.setHasSandboxItem();
                     }
@@ -242,10 +255,13 @@ public class InventoryManipulator
             }
             else
             {
-                // 这里为什么要new Item？
-                //Item nItem = item is Pet ? new Pet(itemid, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : new Item(itemid, 0, quantity);
+                // 飞镖 或 宠物 没有宠物会通过这种方式获取
+
+                // 这里为什么要new Item？--不需要，可以和装备一样直接加入到背包
+                //Item nItem = item is Pet ? new Pet(itemid, 0, Yitter.IdGenerator.YitIdHelper.NextId()) : Item.CreateVirtualItem(itemid, quantity);
                 //nItem.setExpiration(item.getExpiration());
                 //nItem.setFlag(item.getFlag());
+                //nItem.setOwner(item.getOwner());
 
                 short newSlot = inv.addItem(item);
                 if (newSlot == -1)
@@ -256,11 +272,12 @@ public class InventoryManipulator
                 }
                 item.setPosition(newSlot);
                 c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, item))));
-                if (InventoryManipulator.isSandboxItem(item))
+                if (isSandboxItem(item))
                 {
                     chr.setHasSandboxItem();
                 }
-                c.sendPacket(PacketCreator.enableActions());
+                // 为什么这里会有 enableActions，其他的不用调用？，addById也没调用，似乎可以移除
+                // c.sendPacket(PacketCreator.enableActions());
             }
         }
         else if (quantity == 1)
@@ -274,7 +291,7 @@ public class InventoryManipulator
             }
             item.setPosition(newSlot);
             c.sendPacket(PacketCreator.modifyInventory(true, Collections.singletonList(new ModifyInventory(0, item))));
-            if (InventoryManipulator.isSandboxItem(item))
+            if (isSandboxItem(item))
             {
                 chr.setHasSandboxItem();
             }
@@ -293,10 +310,6 @@ public class InventoryManipulator
         return true;
     }
 
-    private static bool haveItemWithId(Inventory inv, int itemid)
-    {
-        return inv.findById(itemid) != null;
-    }
     public static bool checkSpace(IChannelClient c, int itemid, int quantity, string owner)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -304,16 +317,9 @@ public class InventoryManipulator
         IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
 
-        if (ii.isPickupRestricted(itemid))
+        if (!chr.CanHoldUniquesOnly(itemid))
         {
-            if (haveItemWithId(inv, itemid))
-            {
-                return false;
-            }
-            else if (ItemConstants.isEquipment(itemid) && haveItemWithId(chr.getInventory(InventoryType.EQUIPPED), itemid))
-            {
-                return false;
-            }
+            return false;
         }
 
         if (!type.Equals(InventoryType.EQUIP))
@@ -386,16 +392,9 @@ public class InventoryManipulator
         IPlayer chr = c.OnlinedCharacter;
         Inventory inv = chr.getInventory(type);
 
-        if (ii.isPickupRestricted(itemid))
+        if (!chr.CanHoldUniquesOnly(itemid))
         {
-            if (haveItemWithId(inv, itemid))
-            {
-                return 0;
-            }
-            else if (ItemConstants.isEquipment(itemid) && haveItemWithId(chr.getInventory(InventoryType.EQUIPPED), itemid))
-            {
-                return 0;   // thanks Captain & Aika & Vcoc for pointing out inventory checkup on player trades missing out one-of-a-kind items.
-            }
+            return 0;
         }
 
         if (!type.Equals(InventoryType.EQUIP))
@@ -460,7 +459,7 @@ public class InventoryManipulator
     /// <param name="slot"></param>
     /// <param name="quantity"></param>
     /// <param name="fromDrop">不明</param>
-    /// <param name="consume">对于子弹、飞镖等物品，consume为true时不会移出</param>
+    /// <param name="consume">对于子弹、飞镖等物品，consume为true时不会移除</param>
     public static void removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
         IPlayer chr = c.OnlinedCharacter;
@@ -823,7 +822,8 @@ public class InventoryManipulator
         else if (ii.isCash(it.getItemId()))
         {
             if (YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_CASH)
-            {     // thanks Ari for noticing cash drops not available server-side
+            {
+                // thanks Ari for noticing cash drops not available server-side
                 return true;
             }
             else
@@ -831,7 +831,7 @@ public class InventoryManipulator
                 return ItemConstants.isPet(it.getItemId()) && YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_PET;
             }
         }
-        else if (isDroppedItemRestricted(it))
+        else if (YamlConfig.config.server.USE_ERASE_UNTRADEABLE_DROP && it.isUntradeable())
         {
             return true;
         }
@@ -986,14 +986,10 @@ public class InventoryManipulator
         }
     }
 
-    private static bool isDroppedItemRestricted(Item it)
-    {
-        return YamlConfig.config.server.USE_ERASE_UNTRADEABLE_DROP && it.isUntradeable();
-    }
 
     public static bool isSandboxItem(Item it) => isSandboxItem(it.getFlag());
 
-    public static bool isSandboxItem(short itFlag)
+    static bool isSandboxItem(short itFlag)
     {
         return (itFlag & ItemConstants.SANDBOX) == ItemConstants.SANDBOX;
     }

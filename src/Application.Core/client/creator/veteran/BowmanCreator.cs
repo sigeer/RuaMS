@@ -22,7 +22,7 @@
 using Application.Core.client.creator.veteran;
 using Application.Core.Channel;
 using client.inventory;
-using server;
+using Application.Core.Channel.DataProviders;
 
 namespace client.creator.veteran;
 

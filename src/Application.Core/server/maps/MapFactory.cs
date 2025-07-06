@@ -82,33 +82,11 @@ public class MapFactory
 
     private static void loadLifeFromDb(IMap map)
     {
-        try
+        var dataList = map.ChannelServer.Container.DataService.LoadPLife(map.Id);
+
+        foreach (var rs in dataList)
         {
-            using var dbContext = new DBContext();
-            var dataList = dbContext.Plives.Where(x => x.Map == map.getId()).ToList();
-
-            foreach (var rs in dataList)
-            {
-                int id = rs.Life;
-                string type = rs.Type;
-                int cy = rs.Cy;
-                int f = rs.F;
-                int fh = rs.Fh;
-                int rx0 = rs.Rx0;
-                int rx1 = rs.Rx1;
-                int x = rs.X;
-                int y = rs.Y;
-                int hide = rs.Hide;
-                int mobTime = rs.Mobtime;
-                int team = rs.Team;
-
-                loadLifeRaw(map, id, type, cy, f, fh, rx0, rx1, x, y, hide, mobTime, team);
-            }
-
-        }
-        catch (Exception sqle)
-        {
-            Log.Logger.Error(sqle.ToString());
+            loadLifeRaw(map, rs.LifeId, rs.Type, rs.Cy, rs.F, rs.Fh, rs.Rx0, rs.Rx1, rs.X, rs.Y, rs.Hide, rs.Mobtime, rs.Team);
         }
     }
 

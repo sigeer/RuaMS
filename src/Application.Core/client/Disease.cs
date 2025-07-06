@@ -21,6 +21,7 @@
 */
 
 
+using Application.Utility;
 using server.life;
 
 namespace client;
@@ -73,7 +74,7 @@ public class Disease : EnumClass
     {
         try
         {
-            return EnumClassUtils.GetValues<Disease>()[ord];
+            return EnumClassCache<Disease>.Values[ord];
         }
         catch (IndexOutOfRangeException e)
         {
@@ -85,7 +86,7 @@ public class Disease : EnumClass
 
     public static Disease? getBySkill(MobSkillType? skill)
     {
-        return EnumClassUtils.GetValues<Disease>().FirstOrDefault(x => x.mobSkillType == skill);
+        return EnumClassCache<Disease>.Values.FirstOrDefault(x => x.mobSkillType == skill);
     }
 
     public static Disease GetBySkillTrust(MobSkillType? skill)

@@ -26,7 +26,7 @@ using Application.Core.Channel;
 using Application.Core.Scripting.Infrastructure;
 using Microsoft.Extensions.Logging;
 using tools;
-using static server.ItemInformationProvider;
+using static Application.Core.Channel.DataProviders.ItemInformationProvider;
 
 namespace scripting.npc;
 

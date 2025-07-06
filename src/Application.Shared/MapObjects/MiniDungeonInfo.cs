@@ -78,7 +78,7 @@ public class MiniDungeonInfo : EnumClass
 
     public static bool isDungeonMap(int map)
     {
-        foreach (MiniDungeonInfo dungeon in EnumClassUtils.GetValues<MiniDungeonInfo>())
+        foreach (MiniDungeonInfo dungeon in EnumClassCache<MiniDungeonInfo>.Values)
         {
             if (map >= dungeon.getDungeonId() && map <= dungeon.getDungeonId() + dungeon.getDungeons())
             {
@@ -90,7 +90,7 @@ public class MiniDungeonInfo : EnumClass
 
     public static MiniDungeonInfo getDungeon(int map)
     {
-        foreach (MiniDungeonInfo dungeon in EnumClassUtils.GetValues<MiniDungeonInfo>())
+        foreach (MiniDungeonInfo dungeon in EnumClassCache<MiniDungeonInfo>.Values)
         {
             if (map >= dungeon.getDungeonId() && map <= dungeon.getDungeonId() + dungeon.getDungeons())
             {

@@ -204,7 +204,10 @@ namespace Application.Core.Login.ServerData
             return response;
         }
 
-
+        public Dto.CreateAllianceCheckResponse CreateAllianceCheck(Dto.CreateAllianceCheckRequest request)
+        {
+            return new CreateAllianceCheckResponse() { IsValid = !_nameAllianceDataSource.Keys.Contains(request.Name) };
+        }
         public Dto.AllianceDto? CreateAlliance(int[] memberPlayers, string allianceName)
         {
             if (_nameAllianceDataSource.Keys.Contains(allianceName))
@@ -789,5 +792,13 @@ namespace Application.Core.Login.ServerData
 
         }
         #endregion
+
+        public QueryRankedGuildsResponse LoadRankedGuilds()
+        {
+            var list = _idGuildDataSource.Values.OrderByDescending(x => x.GP).Take(50);
+            var res = new QueryRankedGuildsResponse();
+            res.Guilds.AddRange(_mapper.Map<GuildDto[]>(list));
+            return res;
+        }
     }
 }

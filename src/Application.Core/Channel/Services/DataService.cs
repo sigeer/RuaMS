@@ -1,19 +1,27 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Game.Life;
+using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants.Mob;
+using Application.Shared.Constants.Npc;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
 using AutoMapper;
+using BaseProto;
 using client;
 using client.inventory;
 using client.keybind;
+using Microsoft.Extensions.Caching.Memory;
 using net.server;
 using server;
 using server.events;
 using server.life;
 using server.quest;
+using System.Numerics;
 using tools;
 using XmlWzReader;
 
@@ -25,13 +33,14 @@ namespace Application.Core.Channel.Services
         readonly ItemTransactionService _transactionStore;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
-
-        public DataService(IMapper mapper, ItemTransactionService store, IChannelServerTransport transport, WorldChannelServer server)
+        readonly IMemoryCache _cache;
+        public DataService(IMapper mapper, ItemTransactionService store, IChannelServerTransport transport, WorldChannelServer server, IMemoryCache cache)
         {
             _mapper = mapper;
             _transactionStore = store;
             _transport = transport;
             _server = server;
+            _cache = cache;
         }
 
         public Dto.PlayerGetterDto? GetPlayerData(int channelId, string clientSession, int cid)
@@ -548,6 +557,164 @@ namespace Application.Core.Channel.Services
                 var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Key, e.Value.MobSkill.getX()));
                 player.sendPacket(PacketCreator.giveDebuff(debuff, e.Value.MobSkill));
             }
+        }
+
+        public void CreatePLife(IPlayer chr, int lifeId, string lifeType, int mobTime = -1)
+        {
+            if (lifeType == LifeType.Monster)
+            {
+                var mob = LifeFactory.getMonster(lifeId);
+                if (mob == null || string.IsNullOrEmpty(mob.getName()) || mob.getName().Equals("MISSINGNO"))
+                {
+                    chr.dropMessage("You have entered an invalid mob id.");
+                    return;
+                }
+            }
+
+            if (lifeType == LifeType.NPC)
+            {
+                var npc = LifeFactory.getNPC(lifeId);
+                if (npc == null || string.IsNullOrEmpty(npc.getName()) || npc.getName().Equals("MISSINGNO"))
+                {
+                    chr.dropMessage("You have entered an invalid npc id.");
+                    return;
+                }
+            }
+
+            int mapId = chr.getMapId();
+            var checkpos = chr.getMap().getGroundBelow(chr.getPosition());
+            int xpos = checkpos.X;
+            int ypos = checkpos.Y;
+            int fh = chr.getMap().getFootholds()!.findBelow(checkpos)!.getId();
+
+            _transport.SendCreatePLife(new BaseProto.CreatePLifeRequest
+            {
+                MasterId = chr.Id,
+                Data = new PLifeDto
+                {
+                    LifeId = lifeId,
+                    Cy = ypos,
+                    MapId = mapId,
+                    Type = lifeType,
+                    X = xpos,
+                    Y = ypos,
+                    Fh = fh,
+                    Mobtime = mobTime,
+                    Rx0 = xpos + 50,
+                    Rx1 = xpos - 50,
+                    Team = -1,
+                }
+            });
+        }
+
+        public void OnPLifeCreated(BaseProto.CreatePLifeRequest data)
+        {
+            IPlayer? chr = null;
+            foreach (var ch in _server.Servers.Values)
+            {
+                chr ??= ch.Players.getCharacterById(data.MasterId);
+                if (ch.getMapFactory().isMapLoaded(data.Data.MapId))
+                {
+                    var map = ch.getMapFactory().getMap(data.Data.MapId);
+                    if (data.Data.Type == LifeType.NPC)
+                    {
+                        var npc = LifeFactory.getNPC(data.Data.LifeId);
+                        if (npc != null && npc.getName() == "MISSINGNO")
+                        {
+                            npc.setPosition(new Point(data.Data.X, data.Data.Y));
+                            npc.setCy(data.Data.Cy);
+                            npc.setRx0(data.Data.Rx0);
+                            npc.setRx1(data.Data.Rx1);
+                            npc.setFh(data.Data.Fh);
+
+                            map.addMapObject(npc);
+                            map.broadcastMessage(PacketCreator.spawnNPC(npc));
+
+                        }   
+                    }
+                    else if (data.Data.Type == LifeType.Monster)
+                    {
+                        var mob = LifeFactory.getMonster(data.Data.LifeId);
+                        if (mob != null && !mob.getName().Equals("MISSINGNO"))
+                        {
+                            mob.setPosition(new Point(data.Data.X, data.Data.Y));
+                            mob.setCy(data.Data.Cy);
+                            mob.setRx0(data.Data.Rx0);
+                            mob.setRx1(data.Data.Rx1);
+                            mob.setFh(data.Data.Fh);
+
+                            map.addMonsterSpawn(mob, data.Data.Mobtime, data.Data.Team);
+                            map.addAllMonsterSpawn(mob, data.Data.Mobtime, data.Data.Team);
+
+                 
+                        }
+                    }
+                }
+            }
+
+            if (chr != null)
+            {
+                if (data.Data.Type == LifeType.NPC)
+                {
+                    chr.yellowMessage("Pnpc created.");
+                }
+                if (data.Data.Type == LifeType.Monster)
+                {
+                    chr.yellowMessage("Pmob created.");
+                }
+            }
+        }
+
+        public void RemovePLife(IPlayer chr, string lifeType, int lifeId = -1)
+        {
+            var pos = chr.getPosition();
+            _transport.SendRemovePLife(new BaseProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
+        }
+
+        public void OnPLifeRemoved(RemovePLifeResponse res)
+        {
+            IPlayer? chr = null;
+            foreach (var ch in _server.Servers.Values)
+            {
+                chr ??= ch.Players.getCharacterById(res.MasterId);
+                foreach (var data in res.RemovedItems)
+                {
+                    if (ch.getMapFactory().isMapLoaded(data.MapId))
+                    {
+                        var map = ch.getMapFactory().getMap(data.MapId);
+                        if (data.Type == LifeType.NPC)
+                        {
+                            map.destroyNPC(data.LifeId);
+                        }
+                        else if (data.Type == LifeType.Monster)
+                        {
+                            map.removeMonsterSpawn(data.LifeId, data.X, data.Y);
+                            map.removeAllMonsterSpawn(data.LifeId, data.X, data.Y);
+                        }
+                    }
+                }
+            }
+
+            if (chr != null)
+            {
+                if (res.LifeType == LifeType.NPC)
+                {
+                    chr.yellowMessage("Cleared " + res.RemovedItems.Count + " pNPC placements.");
+                }
+                if (res.LifeType == LifeType.Monster)
+                {
+                    chr.yellowMessage("Cleared " + res.RemovedItems.Count + " pmob placements.");
+                }
+            }
+        }
+
+        internal List<BaseProto.PLifeDto> LoadPLife(int mapId)
+        {
+            return _cache.GetOrCreate($"PLife_{mapId}", e =>
+            {
+                return _transport.RequestPLifeByMapId(new GetPLifeByMapIdRequest { MapId = mapId }).List.ToList();
+            }) ?? [];
+
         }
     }
 }

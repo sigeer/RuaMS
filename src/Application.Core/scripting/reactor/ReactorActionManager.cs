@@ -21,10 +21,10 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.Specials;
 using client.inventory;
-using server;
 using server.life;
 using server.maps;
 using server.partyquest;

@@ -1,5 +1,7 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Infrastructures;
 using Application.Core.Channel.Invitation;
+using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
@@ -8,10 +10,12 @@ using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Application.Shared.Servers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using net.server.handlers;
-using server;
+using System.Threading.Channels;
 
 namespace Application.Core.Channel
 {
@@ -64,7 +68,19 @@ namespace Application.Core.Channel
         {
             // 可能同一机器创建多个频道，wz资源读取使用单例
             services.AddSingleton<SkillbookInformationProvider>();
+            services.AddSingleton<WZDataBootstrap, SkillbookInformationProvider>();
+
             services.AddSingleton<CashItemProvider>();
+            services.AddSingleton<WZDataBootstrap, CashItemProvider>();
+
+            services.AddSingleton<IStaticService, MonsterInformationProvider>();
+            services.AddSingleton<WZDataBootstrap, MonsterInformationProvider>();
+            services.AddSingleton<MonsterInformationProvider>();
+
+            services.AddSingleton<IStaticService, ItemInformationProvider>();
+            services.AddSingleton<WZDataBootstrap, ItemInformationProvider>();
+            services.AddSingleton<ItemInformationProvider>();
+
             services.AddSingleton<ShopManager>();
 
             services.AddSingleton<ItemService>();
@@ -96,6 +112,8 @@ namespace Application.Core.Channel
         {
             services.AddChannelCommands();
             services.AddChannelHandlers();
+
+            services.AddSingleton<IServerBootstrap, DefaultChannelBootstrap>();
 
             services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
             services.AddSingleton<WorldChannelServer>();

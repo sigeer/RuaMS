@@ -66,11 +66,6 @@ public static class InventoryTypeUtils
         return (InventoryType)id;
     }
 
-    public static InventoryType[] values()
-    {
-        return Enum.GetValues<InventoryType>();
-    }
-
     public static int ordinal(this InventoryType val)
     {
         var d = val.getType();

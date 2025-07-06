@@ -34,14 +34,17 @@ namespace Application.Module.Duey.Channel
         {
             bool needNotice = false;
 
-            if (chr.canHoldMeso(meso))
+            if (meso != 0)
             {
-                chr.gainMeso(meso, false);
-            }
-            else
-            {
-                CreateDueyPackageFromSystem(meso, null, title, chr.Name, true);
-                needNotice = true;
+                if (chr.canHoldMeso(meso))
+                {
+                    chr.gainMeso(meso, false);
+                }
+                else
+                {
+                    CreateDueyPackageFromSystem(meso, null, title, chr.Name, true);
+                    needNotice = true;
+                }
             }
 
             foreach (var item in items)

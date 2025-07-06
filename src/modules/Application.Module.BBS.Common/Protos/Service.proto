@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "Protos/BBS.proto";
+
+package BBSService;
+
+service ChannelService {
+	rpc ListThreads(BBSProto.ListBBSRequest) returns(BBSProto.ListBBSResponse);
+	rpc EditThread(BBSProto.PostThreadRequest) returns(BBSProto.ShowBBSMainThreadResponse);
+	rpc DeleteThread(BBSProto.DeleteThreadRequest) returns(google.protobuf.Empty);
+	rpc ShowThread(BBSProto.ShowThreadRequest) returns(BBSProto.ShowBBSMainThreadResponse);
+	rpc PostReply(BBSProto.PostReplyRequest) returns(BBSProto.ShowBBSMainThreadResponse);
+	rpc DeleteReply(BBSProto.DeleteReplyRequest) returns(BBSProto.ShowBBSMainThreadResponse);
+}

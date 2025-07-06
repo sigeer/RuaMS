@@ -33,7 +33,6 @@ using client.inventory.manipulator;
 using constants.game;
 using Microsoft.Extensions.Logging;
 using net.server;
-using server;
 using server.expeditions;
 using server.life;
 using System.Collections.Concurrent;
@@ -41,6 +40,7 @@ using tools;
 using tools.packets;
 using System.IO;
 using Application.Core.Channel.ServerData;
+using Application.Core.Channel.DataProviders;
 
 namespace scripting;
 
@@ -146,7 +146,6 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("GameConstants", typeof(GameConstants));
             engine.AddHostedType("PlayerNPC", typeof(PlayerNPC));
             engine.AddHostedType("ShopFactory", typeof(ShopManager));
-            engine.AddHostedType("MakerProcessor", typeof(MakerProcessor));
             engine.AddHostedType("Guild", typeof(Application.Core.Managers.GuildManager));
             engine.AddHostedType("Job", typeof(Job));
             engine.AddHostedType("InventoryType", typeof(InventoryType));

@@ -21,8 +21,8 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using client.inventory.manipulator;
-using server;
 using server.life;
 using tools;
 

@@ -1,5 +1,5 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
-using server;
 using server.quest;
 using System.Diagnostics;
 using System.Text;

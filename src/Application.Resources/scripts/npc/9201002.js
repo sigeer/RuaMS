@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of the HeavenMS MapleStory Server
  Copyleft (L) 2017 RonanLana
  

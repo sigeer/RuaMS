@@ -1,6 +1,6 @@
+using Application.Core.Channel.DataProviders;
 using client.inventory;
 using constants.game;
-using server;
 using static client.inventory.Equip;
 
 namespace Application.Core.Managers

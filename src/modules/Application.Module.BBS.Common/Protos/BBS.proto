@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package BBSProto;
+
+message ListBBSRequest {
+	int32 masterId = 1;
+}
+
+message ListBBSResponse {
+	int32 code = 1;
+	repeated BBSThreadPreview list = 2;
+}
+
+message BBSThreadPreview {
+	int32 threadId = 1;
+	int32 posterId = 2;
+	int64 timestamp = 3;
+	string title = 4;
+	string startPost = 5;
+	int32 icon = 6;
+	int32 replyCount = 7;
+}
+
+message BBSMainThread {
+	int32 threadId = 1;
+	int32 posterId = 2;
+	int64 timestamp = 3;
+	string title = 4;
+	string startPost = 5;
+	int32 icon = 6;
+	repeated BBSReplyDto replies = 7;
+}
+
+message ShowBBSMainThreadResponse {
+	int32 code = 1;
+	BBSMainThread data = 2;
+}
+
+message ShowThreadRequest {
+	int32 masterId = 1;
+	int32 threadId =2;
+}
+
+
+message PostThreadRequest {
+	int32 masterId = 1;
+	string text = 2;
+	string title = 3;
+	int32 icon = 4;
+	int32 threadId = 5;
+}
+
+message DeleteThreadRequest {
+	int32 threadId = 1;
+	int32 masterId = 2;
+}
+
+
+message BBSReplyDto {
+	int32 replyId = 1;
+	int32 posterId  = 2;
+	string content = 3;
+	int64 timestamp = 4;
+}
+
+message PostReplyRequest {
+	int32 masterId = 1;
+	int32 threadId = 2;
+	string text = 3;
+}
+
+message PostReplyResponse {
+	int32 code = 1;
+}
+
+message DeleteReplyRequest {
+	int32 masterId =1;
+	int32 replyId = 2;
+}

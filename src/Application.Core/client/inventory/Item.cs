@@ -21,10 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using client.inventory.manipulator;
 using Org.BouncyCastle.Ocsp;
-using server;
 
 namespace client.inventory;
 
@@ -75,6 +75,17 @@ public class Item : IComparable<Item>, IItemProp
         input.giftFrom = giftFrom;
         input.sn = sn;
         input.itemLog = new(itemLog);
+    }
+
+    /// <summary>
+    /// 创建一个还不存在的道具
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <param name="quantity"></param>
+    /// <returns></returns>
+    public static Item CreateVirtualItem(int itemId, short quantity)
+    {
+        return new Item(itemId, 0, quantity);
     }
 
     public void setPosition(short position)

@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.model;
 using client.inventory.manipulator;
 using server;
@@ -506,6 +507,8 @@ public class Inventory : IEnumerable<Item>
             int itemid = p.Item.getItemId();
             if (ii.isPickupRestricted(itemid) && p.Item.getQuantity() > 1)
             {
+                // 固有道具可以叠放？
+                Log.Logger.Debug("ItemId={ItemId} 固有道具、Quantity={Quantity}", itemid, p.Item.getQuantity());
                 return false;
             }
         }
@@ -514,8 +517,9 @@ public class Inventory : IEnumerable<Item>
     }
 
     public static bool checkSpot(IPlayer chr, Item item)
-    {    // thanks Vcoc for noticing pshops not checking item stacks when taking item back
-        return checkSpot(chr, Collections.singletonList(item));
+    {
+        // thanks Vcoc for noticing pshops not checking item stacks when taking item back
+        return checkSpot(chr, [item]);
     }
 
     public static bool checkSpot(IPlayer chr, List<Item> items)
@@ -526,15 +530,16 @@ public class Inventory : IEnumerable<Item>
 
     public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, bool useProofInv = false)
     {
-        List<int> zeroedList = Enumerable.Repeat(0, Enum.GetValues<InventoryType>().Length).ToList();
+        List<int> zeroedList = Enumerable.Repeat(0, EnumCache<InventoryType>.Values.Length).ToList();
 
         return checkSpots(chr, items, zeroedList, useProofInv);
     }
 
-    public static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    static bool checkSpots(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         // assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0.
 
+        // 固有道具检测
         if (!checkItemRestricted(items))
         {
             return false;
@@ -546,17 +551,8 @@ public class Inventory : IEnumerable<Item>
         foreach (var item in items)
         {
             int itemId = item.Item.getItemId();
-            List<int>? qty = rcvItems.GetValueOrDefault(itemId);
 
-            if (qty == null)
-            {
-                List<int> itemQtyList = new();
-                itemQtyList.Add(item.Item.getQuantity());
-
-                rcvItems.AddOrUpdate(itemId, itemQtyList);
-                rcvTypes.AddOrUpdate(itemId, item.Type.getType());
-            }
-            else
+            if(rcvItems.TryGetValue(itemId, out var qty))
             {
                 if (!ItemConstants.isEquipment(itemId) && !ItemConstants.isRechargeable(itemId))
                 {
@@ -566,6 +562,11 @@ public class Inventory : IEnumerable<Item>
                 {
                     qty.Add(item.Item.getQuantity());
                 }
+            }
+            else
+            {
+                rcvItems[itemId] = new List<int>() { item.Item.getQuantity() };
+                rcvTypes[itemId] = item.Type.getType();
             }
         }
 
@@ -621,7 +622,7 @@ public class Inventory : IEnumerable<Item>
         return checkSpotsAndOwnership(chr, items, zeroedList, useProofInv);
     }
 
-    public static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
+    static bool checkSpotsAndOwnership(IPlayer chr, List<ItemInventoryType> items, List<int> typesSlotsUsed, bool useProofInv)
     {
         //assumption: no "UNDEFINED" or "EQUIPPED" items shall be tested here, all counts are >= 0 and item list to be checked is a legal one.
 

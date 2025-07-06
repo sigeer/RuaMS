@@ -1,9 +1,9 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
 using Application.Core.model;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.EntityFrameworkCore;
-using server;
 using tools.packets;
 
 namespace Application.Core.Managers

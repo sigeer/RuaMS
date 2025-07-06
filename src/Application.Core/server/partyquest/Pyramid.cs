@@ -23,6 +23,7 @@
 
 
 using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
 using tools;
 

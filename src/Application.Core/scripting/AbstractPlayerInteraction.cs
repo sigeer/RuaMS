@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -631,106 +632,7 @@ public class AbstractPlayerInteraction
 
     public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null)
     {
-        Item? item = null;
-
-        if (quantity >= 0)
-        {
-            if (ItemConstants.isPet(id))
-            {
-                if (from != null)
-                {
-                    var evolved = new Pet(id, 0, Yitter.IdGenerator.YitIdHelper.NextId());
-
-                    Point pos = getPlayer().getPosition();
-                    pos.Y -= 12;
-                    evolved.setPos(pos);
-                    evolved.setFh(getPlayer().getMap().getFootholds().findBelow(evolved.getPos()).getId());
-                    evolved.setStance(0);
-                    evolved.Summoned = true;
-
-                    var fromDefaultName = ItemInformationProvider.getInstance().getName(from.getItemId());
-                    evolved.Name = from.Name?.CompareTo(fromDefaultName) != 0 ? from.Name : ItemInformationProvider.getInstance().getName(id);
-                    evolved.Tameness = from.Tameness;
-                    evolved.Fullness = from.Fullness;
-                    evolved.Level = from.Level;
-                    evolved.setExpiration(DateTimeOffset.UtcNow.AddMilliseconds(expires).ToUnixTimeMilliseconds());
-
-                    item = evolved;
-                }
-
-                //InventoryManipulator.addById(c, id, (short) 1, null, petId, expires == -1 ? -1 : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + expires);
-            }
-
-            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-
-            if (item == null)
-            {
-                if (ItemConstants.getInventoryType(id).Equals(InventoryType.EQUIP))
-                {
-                    item = ii.getEquipById(id);
-
-                    if (item != null)
-                    {
-                        Equip it = (Equip)item;
-                        if (ItemConstants.isAccessory(item.getItemId()) && it.getUpgradeSlots() <= 0)
-                        {
-                            it.setUpgradeSlots(3);
-                        }
-
-                        if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && c.OnlinedCharacter.getCS() == true)
-                        {
-                            Equip eqp = (Equip)item;
-                            if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
-                            {
-                                eqp.setUpgradeSlots((byte)(eqp.getUpgradeSlots() + 1));
-                            }
-                            item = ItemInformationProvider.getInstance().scrollEquipWithId(item, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
-                        }
-                    }
-                }
-                else
-                {
-                    item = new Item(id, 0, quantity);
-                }
-            }
-
-
-            if (expires >= 0)
-            {
-                item!.setExpiration(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + expires);
-            }
-
-            if (!InventoryManipulator.checkSpace(c, id, quantity, ""))
-            {
-                c.OnlinedCharacter.dropMessage(1, "Your inventory is full. Please remove an item from your " + ItemConstants.getInventoryType(id).ToString() + " inventory.");
-                return null;
-            }
-            if (ItemConstants.getInventoryType(id) == InventoryType.EQUIP)
-            {
-                if (randomStats)
-                {
-                    InventoryManipulator.addFromDrop(c, ii.randomizeStats((Equip)item!), false);
-                }
-                else
-                {
-                    InventoryManipulator.addFromDrop(c, item!, false);
-                }
-            }
-            else
-            {
-                InventoryManipulator.addFromDrop(c, item!, false);
-            }
-        }
-        else
-        {
-            InventoryManipulator.removeById(c, ItemConstants.getInventoryType(id), id, -quantity, true, false);
-        }
-        if (showMessage)
-        {
-            c.sendPacket(PacketCreator.getShowItemGain(id, quantity, true));
-        }
-
-        return item;
+        return getPlayer().GainItem(id, quantity, randomStats, showMessage, expires, from);
     }
 
     public void gainFame(int delta)

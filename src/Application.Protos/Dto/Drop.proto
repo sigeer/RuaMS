@@ -17,3 +17,11 @@ message DropItemDto {
 message DropAllDto {
 	repeated DropItemDto items = 1;
 }
+
+message QueryDropperByItemRequest {
+	int32 itemId = 1;
+}
+
+message QueryDropperByItemResponse {
+	repeated int32 dropperIdList = 1;
+}

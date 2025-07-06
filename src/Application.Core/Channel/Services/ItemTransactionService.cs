@@ -26,16 +26,18 @@ namespace Application.Core.Channel.Services
         /// </summary>
         public CreateItemTransactionRequest BeginTransaction(IPlayer chr, List<Item> items, int meso = 0)
         {
+            var request = new CreateItemTransactionRequest();
+            request.PlayerId = chr.Id;
+            request.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(items));
+            request.Meso = meso;
+
             foreach (var item in items)
             {
                 chr.RemoveItemById(item.getInventoryType(), item.getItemId(), item.getQuantity());
             }
             chr.gainMeso(-meso, show: false);
 
-            var request = new CreateItemTransactionRequest();
-            request.PlayerId = chr.Id;
-            request.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(items));
-            request.Meso = meso;
+
             return request;
         }
 

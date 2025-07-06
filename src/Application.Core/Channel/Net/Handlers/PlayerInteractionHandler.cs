@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Game.Trades;
@@ -32,7 +33,6 @@ using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using server;
 using System.Drawing;
 using tools;
 
@@ -570,7 +570,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     if ((quantity <= item.getQuantity() && quantity >= 0) || ItemConstants.isRechargeable(item.getItemId()))
                     {
                         if (ii.isDropRestricted(item.getItemId()))
-                        { // ensure that undroppable items do not make it to the trade window
+                        { 
+                            // ensure that undroppable items do not make it to the trade window
                             if (!KarmaManipulator.hasKarmaFlag(item))
                             {
                                 c.sendPacket(PacketCreator.serverNotice(1, "That item is untradeable."));

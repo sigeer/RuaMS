@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application.Module.BBS.Channel\Application.Module.BBS.Channel.csproj" />
+    <ProjectReference Include="..\Application.Module.BBS.Master\Application.Module.BBS.Master.csproj" />
+  </ItemGroup>
+
+</Project>
