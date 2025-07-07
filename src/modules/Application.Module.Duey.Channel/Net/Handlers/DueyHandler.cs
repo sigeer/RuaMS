@@ -66,7 +66,6 @@ public class DueyHandler : ChannelHandlerBase
         {
             int packageid = p.readInt();
 
-            // 删除？是发送者删还是接收者删？
             _dueyManager.RemoveDueyPackage(c.OnlinedCharacter, packageid);
         }
         else if (operation == DueyProcessorActions.TOSERVER_CLAIM_PACKAGE.getCode())

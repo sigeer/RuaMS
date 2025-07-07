@@ -10,12 +10,9 @@ using Application.Core.Mappers;
 using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.Servers.Services;
 using Application.Shared.Servers;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using net.server.handlers;
-using System.Threading.Channels;
 
 namespace Application.Core.Channel
 {
@@ -42,7 +39,7 @@ namespace Application.Core.Channel
 
             foreach (var impl in implementations)
             {
-                services.AddSingleton(impl);
+                services.TryAddSingleton(impl);
             }
             services.AddSingleton<KeepAliveHandler<IChannelClient>>();
             services.AddSingleton<CustomPacketHandler<IChannelClient>>();

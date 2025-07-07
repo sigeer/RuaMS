@@ -53,6 +53,10 @@ public class ItemFactory : EnumClass
     /// 快递
     /// </summary>
     public static readonly ItemFactory DUEY = new(9, false);
+    /// <summary>
+    /// MTS
+    /// </summary>
+    public static readonly ItemFactory MTS = new(10, false);
     private int value;
     private bool account;
 

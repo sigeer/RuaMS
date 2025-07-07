@@ -849,7 +849,7 @@ public class Equip : Item
         return itemLevel;
     }
 
-    public void SetDataFromDB(MtsItem dbModel)
+    public void SetDataFromDB(MtsItemEntity dbModel)
     {
         this.setOwner(dbModel.Owner);
         this.setQuantity(1);

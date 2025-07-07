@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "Dto/Item.proto";
+
+package MTSProto;
+
+message MTSItemDto {
+	Dto.ItemDto item = 1;
+	int32 id = 2;
+	int32 sellerId = 3;
+}

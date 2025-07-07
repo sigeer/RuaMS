@@ -129,7 +129,7 @@ namespace Application.Core.Login.Datas
                 d.Remove(charId);
         }
 
-        internal AccountGame? GetAccountGameData(int accountId)
+        public AccountGame? GetAccountGameData(int accountId)
         {
             if (_accGameDataSource.TryGetValue(accountId, out var data) && data != null)
                 return data;
@@ -162,7 +162,7 @@ namespace Application.Core.Login.Datas
             _accGameDataSource[accountId] = data;
             return data;
         }
-        internal void UpdateAccountGame(AccountGame accountGame)
+        public void UpdateAccountGame(AccountGame accountGame)
         {
             _accGameDataSource[accountGame.Id] = accountGame;
             _dataStorage.SetAccountGame(accountGame);

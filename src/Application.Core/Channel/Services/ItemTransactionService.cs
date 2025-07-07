@@ -24,21 +24,54 @@ namespace Application.Core.Channel.Services
         /// <summary>
         /// 添加事务 
         /// </summary>
-        public CreateItemTransactionRequest BeginTransaction(IPlayer chr, List<Item> items, int meso = 0)
+        public bool TryBeginTransaction(IPlayer chr, List<Item> items, int meso, out CreateItemTransactionRequest request)
         {
-            var request = new CreateItemTransactionRequest();
+            bool isSuccess = true;
+            request = new CreateItemTransactionRequest();
             request.PlayerId = chr.Id;
-            request.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(items));
-            request.Meso = meso;
-
             foreach (var item in items)
             {
-                chr.RemoveItemById(item.getInventoryType(), item.getItemId(), item.getQuantity());
+                var copyItem = item.copy();
+                if (item.getPosition() > 0)
+                {
+                    if (chr.RemoveItemBySlot(item.getInventoryType(), item.getPosition(), item.getQuantity()))
+                        request.Items.Add(_mapper.Map<Dto.ItemDto>(copyItem));
+                    else
+                    {
+                        isSuccess = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    if (chr.RemoveItemById(item.getInventoryType(), item.getItemId(), item.getQuantity()))
+                        request.Items.Add(_mapper.Map<Dto.ItemDto>(copyItem));
+                    else
+                    {
+                        isSuccess = false;
+                        break;
+                    }
+                }
             }
-            chr.gainMeso(-meso, show: false);
 
+            if (chr.getMeso() >= meso)
+            {
+                chr.gainMeso(-meso, show: false);
+                request.Meso = meso;
+            }
+            else
+            {
+                isSuccess = false;
+            }
 
-            return request;
+            if (isSuccess)
+                return true;
+            else
+            {
+                chr.dropMessage("你没有足够的金币或者道具");
+                _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(request.Items), 0, "系统消耗失败返还");
+                return false;
+            }
         }
 
         public void HandleTransaction(ItemTransaction transaction)

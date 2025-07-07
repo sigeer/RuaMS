@@ -206,16 +206,20 @@ namespace Application.Core.Channel.Services
 
         internal void UseCash_TV(IPlayer player, Item item, string? victim, List<string> messages, int tvType, bool showEar)
         {
-            var request = new ItemProto.CreateTVMessageRequest
+            if (_itemStore.TryBeginTransaction(player, [item], 0, out var transaction))
             {
-                MasterId = player.Id,
-                ToName = victim,
-                Type = tvType,
-                ShowEar = showEar,
-                Transaction = _itemStore.BeginTransaction(player, [item])
-            };
-            request.MessageList.AddRange(messages);
-            _transport.BroadcastTV(request);
+                var request = new ItemProto.CreateTVMessageRequest
+                {
+                    MasterId = player.Id,
+                    ToName = victim,
+                    Type = tvType,
+                    ShowEar = showEar,
+                    Transaction = transaction
+                };
+                request.MessageList.AddRange(messages);
+                _transport.BroadcastTV(request);
+            }
+
         }
 
         public void OnBroadcastTV(ItemProto.CreateTVMessageResponse data)
@@ -260,17 +264,19 @@ namespace Application.Core.Channel.Services
 
         internal void UseCash_ItemMegaphone(IPlayer player, Item costItem, Item? item, string message, bool isWishper)
         {
-            var transaction = _itemStore.BeginTransaction(player, [costItem]);
-
-            var request = new ItemProto.UseItemMegaphoneRequest
+            if (_itemStore.TryBeginTransaction(player, [costItem], 0, out var transaction))
             {
-                MasterId = player.Id,
-                Message = message,
-                Item = _mapper.Map<Dto.ItemDto>(item),
-                IsWishper = isWishper,
-                Transaction = transaction
-            };
-            _transport.SendItemMegaphone(request);
+                var request = new ItemProto.UseItemMegaphoneRequest
+                {
+                    MasterId = player.Id,
+                    Message = message,
+                    Item = _mapper.Map<Dto.ItemDto>(item),
+                    IsWishper = isWishper,
+                    Transaction = transaction
+                };
+                _transport.SendItemMegaphone(request);
+            }
+
         }
 
         public void OnItemMegaphon(ItemProto.UseItemMegaphoneResponse data)

@@ -96,6 +96,13 @@ public class CashShop
         wishList = characterWishList;
     }
 
+    public void UpdateValue(int nxCredit, int maplePoint, int nxPrepaid)
+    {
+        NxCredit = nxCredit;
+        MaplePoint = maplePoint;
+        NxPrepaid = nxPrepaid;
+    }
+
 
     public record CashShopSurpriseResult(Item usedCashShopSurprise, Item reward)
     {

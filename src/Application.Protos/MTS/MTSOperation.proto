@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+import "Dto/Item.proto";
+import "Item/ItemTransaction.proto";
+import "MTS/MTS.proto";
+import "google/protobuf/wrappers.proto";
+
+package MTSProto;
+
+message MTSQuery {
+	int32 masterId = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+}
+
+message MTSQueryResponse {
+	PagedItems pageData = 1;
+	PlayerMTSInfo myMTSInfo = 2;
+}
+
+message SaleItemRequest {
+	int32 masterId = 1;
+	Dto.ItemDto item = 2;
+	int32 price = 3;
+	ItemProto.CreateItemTransactionRequest transaction = 4;
+}
+
+message SaleItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ItemProto.ItemTransaction transaction = 3;
+	PlayerMTSInfo myMTSInfo = 4;
+	PagedItems pageData = 5;
+}
+
+message CancelSaleItemRequest {
+	int32 masterId = 1;
+	int32 productId = 2;
+}
+
+message CancelSaleItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	PlayerMTSInfo myMTSInfo = 3;
+	PagedItems pageData = 4;
+}
+
+message AddItemToCartRequest {
+	MTSQuery query = 1;
+	int32 productId = 2;
+}
+
+message AddItemToCartResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	PlayerMTSInfo myMTSInfo = 3;
+	PagedItems pageData = 4;
+}
+
+message RemoveItemFromCartRequest {
+	MTSQuery query = 1;
+	int32 productId = 2;
+}
+
+message RemoveItemFromCartResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	PlayerMTSInfo myMTSInfo = 3;
+	PagedItems pageData = 4;
+}
+
+
+message PlayerMTSInfo {
+	repeated MTSProto.MTSItemDto onSale = 1;
+	repeated MTSProto.MTSItemDto inTransfer = 2;
+}
+
+message PagedItems {
+	repeated MTSProto.MTSItemDto items = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+	int32 totalPages = 5;
+}
+
+message ChangePageRequest {
+	int32 masterId = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+	int32 searchType = 5;
+	google.protobuf.StringValue searchText = 6;
+	repeated int32 filterItemId = 7;
+}
+
+message ChangePageResponse {
+	int32 masterId = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+	int32 totalPages = 5;
+	repeated MTSProto.MTSItemDto items = 6;
+	PlayerMTSInfo myMTSInfo = 7;
+}
+
+message TakeItemRequest {
+	MTSQuery query = 1;
+	int32 productId = 2;
+}
+
+message TakeItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	Dto.ItemDto item = 3;
+	PlayerMTSInfo myMTSInfo = 4;
+	PagedItems cartItems = 5;
+	PagedItems pageData = 6;
+}
+
+message BuyRequest {
+	MTSQuery query = 1;
+	int32 productId = 2;
+}
+
+message BuyResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	Dto.ItemDto item = 3;
+	PlayerMTSInfo myMTSInfo = 4;
+	PagedItems cartItems = 5;
+	PagedItems pageData = 6;
+	int32 updatedValue = 7;
+}
