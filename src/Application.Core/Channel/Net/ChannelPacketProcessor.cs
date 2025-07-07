@@ -95,7 +95,6 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.NOTE_ACTION, sp.GetRequiredService<NoteActionHandler>()},
                 {(short)RecvOpcode.CLOSE_CHALKBOARD, sp.GetRequiredService<CloseChalkboardHandler>()},
                 {(short)RecvOpcode.USE_MOUNT_FOOD, sp.GetRequiredService<UseMountFoodHandler>()},
-                {(short)RecvOpcode.MTS_OPERATION, sp.GetRequiredService<MTSHandler>()},
                 {(short)RecvOpcode.RING_ACTION, sp.GetRequiredService<RingActionHandler>()},
                 {(short)RecvOpcode.SPOUSE_CHAT, sp.GetRequiredService<SpouseChatHandler>()},
                 {(short)RecvOpcode.PET_AUTO_POT, sp.GetRequiredService<PetAutoPotHandler>()},

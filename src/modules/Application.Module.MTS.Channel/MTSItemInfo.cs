@@ -21,9 +21,10 @@
 */
 
 
+using Application.EF.Entities;
 using client.inventory;
 
-namespace server;
+namespace Application.Module.MTS.Channel;
 
 
 /**
@@ -80,7 +81,7 @@ public class MTSItemInfo
         return seller;
     }
 
-    public static MTSItemInfo Map(MtsItem rs)
+    public static MTSItemInfo Map(MtsItemEntity rs)
     {
         if (rs.Type != 1)
         {

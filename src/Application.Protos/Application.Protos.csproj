@@ -55,6 +55,8 @@
 		<Protobuf Include="Invitation\CreateInvite.proto" GrpcServices="None" />
 		<Protobuf Include="Invitation\AnswerInvite.proto" GrpcServices="None" />
 		<Protobuf Include="Item\ItemMegaphone.proto" GrpcServices="None" />
+		<Protobuf Include="MTS\MTS.proto" GrpcServices="None" />
+		<Protobuf Include="MTS\MTSOperation.proto" GrpcServices="None" />
 		<Protobuf Include="Rank\RankCharacter.proto" GrpcServices="None" />
 
 		<Protobuf Include="Config\RegisterServerResult.proto" GrpcServices="None" />

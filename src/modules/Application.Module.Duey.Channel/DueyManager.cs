@@ -50,16 +50,20 @@ namespace Application.Module.Duey.Channel
                 items.Add(new Item(ItemId.QUICK_DELIVERY_TICKET, 0, 1));
             }
 
-            _transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
+            if(_itemStore.TryBeginTransaction(chr, items, costMeso, out var transaction))
             {
-                SenderId = chr.Id,
-                SendMeso = sendMesos,
-                SendMessage = sendMessage,
-                ReceiverName = recipient,
-                Quick = quick,
-                Item = _mapper.Map<Dto.ItemDto>(item),
-                Transaction = _itemStore.BeginTransaction(chr, items, costMeso)
-            });
+                _transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
+                {
+                    SenderId = chr.Id,
+                    SendMeso = sendMesos,
+                    SendMessage = sendMessage,
+                    ReceiverName = recipient,
+                    Quick = quick,
+                    Item = _mapper.Map<Dto.ItemDto>(item),
+                    Transaction = transaction
+                });
+            }
+
         }
 
         public void OnDueyPackageCreated(DueyDto.CreatePackageResponse data)

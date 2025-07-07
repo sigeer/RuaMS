@@ -101,7 +101,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<MtsCart> MtsCarts { get; set; }
 
-    public virtual DbSet<MtsItem> MtsItems { get; set; }
+    public virtual DbSet<MtsItemEntity> MtsItems { get; set; }
 
     public virtual DbSet<Namechange> Namechanges { get; set; }
 
@@ -1044,7 +1044,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("itemid");
         });
 
-        modelBuilder.Entity<MtsItem>(entity =>
+        modelBuilder.Entity<MtsItemEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
