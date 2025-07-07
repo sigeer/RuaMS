@@ -65,18 +65,18 @@ namespace Application.Core.Channel
         {
             // 可能同一机器创建多个频道，wz资源读取使用单例
             services.AddSingleton<SkillbookInformationProvider>();
-            services.AddSingleton<WZDataBootstrap, SkillbookInformationProvider>();
+            services.AddSingleton<WZDataBootstrap, SkillbookInformationProvider>(sp => sp.GetRequiredService<SkillbookInformationProvider>());
 
             services.AddSingleton<CashItemProvider>();
-            services.AddSingleton<WZDataBootstrap, CashItemProvider>();
+            services.AddSingleton<WZDataBootstrap, CashItemProvider>(sp => sp.GetRequiredService<CashItemProvider>());
 
-            services.AddSingleton<IStaticService, MonsterInformationProvider>();
-            services.AddSingleton<WZDataBootstrap, MonsterInformationProvider>();
             services.AddSingleton<MonsterInformationProvider>();
+            services.AddSingleton<IStaticService, MonsterInformationProvider>(sp => sp.GetRequiredService<MonsterInformationProvider>());
+            services.AddSingleton<WZDataBootstrap, MonsterInformationProvider>(sp => sp.GetRequiredService<MonsterInformationProvider>());
 
-            services.AddSingleton<IStaticService, ItemInformationProvider>();
-            services.AddSingleton<WZDataBootstrap, ItemInformationProvider>();
             services.AddSingleton<ItemInformationProvider>();
+            services.AddSingleton<IStaticService, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
+            services.AddSingleton<WZDataBootstrap, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
 
             services.AddSingleton<ShopManager>();
 
