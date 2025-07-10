@@ -93,13 +93,6 @@ public class World
 
 
 
-    public List<IPlayer> loadAndGetAllCharactersView()
-    {
-        return Server.getInstance().loadAllAccountsCharactersView().Where(x => x.World == Id).ToList();
-    }
-
-
-
     public WorldPlayerStorage getPlayerStorage()
     {
         return Players;

@@ -1,9 +1,11 @@
 using Application.Core.Login.Services;
+using Application.Core.model;
 using Application.EF;
 using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using System.Diagnostics;
 
 namespace Application.Core.Login.Datas
@@ -95,5 +97,38 @@ namespace Application.Core.Login.Datas
             dbContext.Nxcodes.RemoveRange(codeList);
             await dbContext.SaveChangesAsync();
         }
+
+        // 后期会尽量避免直接存放玩家名称，改名直接修改character.name
+        //private void ApplyAllNameChanges(DBContext dbContext)
+        //{
+        //    try
+        //    {
+        //        List<NameChangePair> changedNames = new();
+        //        using var dbTrans = dbContext.Database.BeginTransaction();
+        //        var allChanges = dbContext.Namechanges.Where(x => x.CompletionTime == null).ToList();
+        //        allChanges.ForEach(x =>
+        //        {
+        //            bool success = CharacterManager.doNameChange(dbContext, x.Characterid, x.Old, x.New, x.Id);
+        //            if (!success)
+        //                dbTrans.Rollback();
+        //            else
+        //            {
+        //                dbTrans.Commit();
+        //                changedNames.Add(new(x.Old, x.New));
+        //            }
+        //        });
+
+        //        //log
+        //        foreach (var namePair in changedNames)
+        //        {
+        //            _logger.LogInformation("Name change applied - from: \"{CharacterName}\" to \"{CharacterName}\"", namePair.OldName, namePair.NewName);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        _logger.LogWarning(e, "Failed to retrieve list of pending name changes");
+        //        throw;
+        //    }
+        //}
     }
 }
