@@ -66,4 +66,14 @@ public class NPC : AbstractLifeObject
     {
         return stats.getName();
     }
+
+    public override string GetName()
+    {
+        return getName();
+    }
+
+    public override int GetSourceId()
+    {
+        return getId();
+    }
 }

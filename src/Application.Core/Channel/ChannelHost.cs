@@ -2,7 +2,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Application.Core.Channel
 {
-    internal class ChannelHost : IHostedService
+    public class ChannelHost : IHostedService
     {
         readonly WorldChannelServer _server;
         public ChannelHost(WorldChannelServer server)

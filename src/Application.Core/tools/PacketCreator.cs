@@ -35,6 +35,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Managers;
 using Application.Core.model;
+using Application.Core.Models;
 using Application.Shared.Battle;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
@@ -195,7 +196,7 @@ public class PacketCreator
 
     private static void addNewYearInfo(OutPacket p, IPlayer chr)
     {
-        HashSet<NewYearCardModel> received = chr.getReceivedNewYearRecords();
+        var received = chr.getReceivedNewYearRecords();
 
         p.writeShort(received.Count);
         foreach (var nyc in received)
@@ -1923,13 +1924,13 @@ public class PacketCreator
 
     private static void encodeNewYearCardInfo(OutPacket p, IPlayer chr)
     {
-        HashSet<NewYearCardModel> newyears = chr.getReceivedNewYearRecords();
+        HashSet<NewYearCardObject> newyears = chr.getReceivedNewYearRecords();
         if (newyears.Count > 0)
         {
             p.writeByte(1);
 
             p.writeInt(newyears.Count);
-            foreach (NewYearCardModel nyc in newyears)
+            foreach (var nyc in newyears)
             {
                 p.writeInt(nyc.Id);
             }
@@ -1941,7 +1942,7 @@ public class PacketCreator
     }
 
 
-    public static Packet onNewYearCardRes(IPlayer user, NewYearCardModel? newyear, int mode, int msg)
+    public static Packet onNewYearCardRes(IPlayer user, NewYearCardObject? newyear, int mode, int msg)
     {
         OutPacket p = OutPacket.create(SendOpcode.NEW_YEAR_CARD_RES);
         p.writeByte(mode);
@@ -2003,7 +2004,7 @@ public class PacketCreator
         return p;
     }
 
-    private static void encodeNewYearCard(NewYearCardModel newyear, OutPacket p)
+    private static void encodeNewYearCard(NewYearCardObject newyear, OutPacket p)
     {
         p.writeInt(newyear.Id);
         p.writeInt(newyear.SenderId);
@@ -5609,76 +5610,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet spawnPlayerNPC(PlayerNPC npc)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SPAWN_NPC_REQUEST_CONTROLLER);
-        p.writeByte(1);
-        p.writeInt(npc.getObjectId());
-        p.writeInt(npc.getScriptId());
-        p.writeShort(npc.getPosition().X);
-        p.writeShort(npc.getCY());
-        p.writeByte(npc.getDirection());
-        p.writeShort(npc.getFH());
-        p.writeShort(npc.getRX0());
-        p.writeShort(npc.getRX1());
-        p.writeByte(1);
-        return p;
-    }
-
-    public static Packet getPlayerNPC(PlayerNPC npc)
-    {     // thanks to Arnah
-        OutPacket p = OutPacket.create(SendOpcode.IMITATED_NPC_DATA);
-        p.writeByte(0x01);
-        p.writeInt(npc.getScriptId());
-        p.writeString(npc.getName());
-        p.writeByte(npc.getGender());
-        p.writeByte(npc.getSkin());
-        p.writeInt(npc.getFace());
-        p.writeByte(0);
-        p.writeInt(npc.getHair());
-        Dictionary<short, int> equip = npc.getEquips();
-        Dictionary<short, int> myEquip = new();
-        Dictionary<short, int> maskedEquip = new();
-        foreach (short position in equip.Keys)
-        {
-            short pos = (short)(position * -1);
-            if (pos < 100 && !myEquip.ContainsKey(pos))
-            {
-                myEquip.AddOrUpdate(pos, equip.GetValueOrDefault(position));
-            }
-            else if ((pos > 100 && pos != 111) || pos == -128)
-            { // don't ask. o.o
-                pos -= 100;
-                if (myEquip.TryGetValue(pos, out var d))
-                {
-                    maskedEquip.AddOrUpdate(pos, d);
-                }
-                myEquip.AddOrUpdate(pos, equip.GetValueOrDefault(position));
-            }
-            else if (myEquip.ContainsKey(pos))
-            {
-                maskedEquip.AddOrUpdate(pos, equip.GetValueOrDefault(position));
-            }
-        }
-        foreach (var entry in myEquip)
-        {
-            p.writeByte(entry.Key);
-            p.writeInt(entry.Value);
-        }
-        p.writeByte(0xFF);
-        foreach (var entry in maskedEquip)
-        {
-            p.writeByte(entry.Key);
-            p.writeInt(entry.Value);
-        }
-        p.writeByte(0xFF);
-        p.writeInt(equip.GetValueOrDefault((short)-111));
-        for (int i = 0; i < 3; i++)
-        {
-            p.writeInt(0);
-        }
-        return p;
-    }
 
     public static Packet removePlayerNPC(int oid)
     {

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Application.Core.Login
 {
-    internal class MasterHost : IHostedService
+    public class MasterHost : IHostedService
     {
         readonly MasterServer _server;
         public MasterHost(MasterServer server)

@@ -910,6 +910,16 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     {
         client.sendPacket(PacketCreator.spawnHiredMerchantBox(this));
     }
+
+    public override string GetName()
+    {
+        return description;
+    }
+
+    public override int GetSourceId()
+    {
+        return itemId;
+    }
 }
 
 public record Visitor(IPlayer chr, DateTimeOffset enteredAt) { }

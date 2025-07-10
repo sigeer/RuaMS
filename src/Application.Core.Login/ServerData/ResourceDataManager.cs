@@ -1,93 +1,100 @@
+using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
 using AutoMapper;
+using AutoMapper.Extensions.ExpressionMapping;
 using BaseProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using ZLinq;
 
 namespace Application.Core.Login.ServerData
 {
-    public class ResourceDataManager : StorageBase<int, UpdateField<PLifeDto>>
+    public class ResourceDataManager : StorageBase<int, PLifeModel>
     {
         readonly ILogger<ResourceDataManager> _logger;
         readonly IMapper _mapper;
         readonly MasterServer _server;
 
-        ConcurrentDictionary<int, PLifeDto> _pLifeData = new();
+        readonly IDbContextFactory<DBContext> _dbContextFactory;
+
         int _localPLifeId = 0;
 
-        public ResourceDataManager(ILogger<ResourceDataManager> logger, IMapper mapper, MasterServer server)
+        public ResourceDataManager(ILogger<ResourceDataManager> logger, IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory)
         {
             _logger = logger;
             _mapper = mapper;
             _server = server;
+            _dbContextFactory = dbContextFactory;
         }
 
         public async Task Initialize(DBContext dbContext)
         {
-            var dbList = _mapper.Map<PLifeDto[]>(await dbContext.Plives.AsNoTracking().ToArrayAsync());
-            foreach (var item in dbList)
-            {
-                _pLifeData[Interlocked.Increment(ref _localPLifeId)] = item;
-            }
+            _localPLifeId = await dbContext.Plives.MaxAsync(x => (int?)x.Id) ?? 0;
+        }
+
+        protected override List<PLifeModel> Query(Expression<Func<PLifeModel, bool>> expression)
+        {
+            var entityExpression = _mapper.MapExpression<Expression<Func<PlifeEntity, bool>>>(expression).Compile();
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dataFromDB = _mapper.Map<List<PLifeModel>>(dbContext.Plives.AsNoTracking().Where(entityExpression).ToList());
+
+            return QueryWithDirty(dataFromDB, expression.Compile());
         }
 
         public GetPLifeByMapIdResponse LoadMapPLife(GetPLifeByMapIdRequest request)
         {
             var res = new GetPLifeByMapIdResponse();
-            res.List.AddRange(_pLifeData.Where(x => x.Value.MapId == request.MapId).Select(x => x.Value));
+            res.List.AddRange(_mapper.Map<PLifeDto[]>(Query(x => x.Map == request.MapId)));
             return res;
         }
 
         public void CreatePLife(CreatePLifeRequest request)
         {
             var newKey = Interlocked.Increment(ref _localPLifeId);
-            _pLifeData[newKey] = request.Data;
-
-            SetDirty(newKey, new UpdateField<PLifeDto>(UpdateMethod.AddOrUpdate, request.Data));
+            var newModel = _mapper.Map<PLifeModel>(request.Data);
+            SetDirty(newKey, new StoreUnit<PLifeModel>(StoreFlag.AddOrUpdate, newModel));
 
             _server.Transport.BroadcastPLifeCreated(request);
         }
 
         public void RemovePLife(RemovePLifeRequest request)
         {
-            List<KeyValuePair<int, PLifeDto>> toRemove = [];
+            List<PLifeModel> toRemove = [];
             if (request.LifeId > 0)
             {
-                toRemove = _pLifeData.Where(x => x.Value.Type == request.LifeType && x.Value.MapId == request.MapId && x.Value.LifeId == request.LifeId).ToList();
+                toRemove = Query(x => x.Type == request.LifeType && x.Map == request.MapId && x.Life == request.LifeId).ToList();
 
             }
             else
             {
-                toRemove = _pLifeData.Where(x => x.Value.Type == request.LifeType && x.Value.MapId == request.MapId && x.Value.LifeId == request.LifeId)
-                    .Where(x => x.Value.X >= request.PosX - 50 && x.Value.X <= request.PosX + 50 && x.Value.Y >= request.PosY - 50 && x.Value.Y <= request.PosY + 50).ToList();
+                toRemove = Query(x => x.Type == request.LifeType && x.Map == request.MapId && x.Life == request.LifeId)
+                    .Where(x => x.X >= request.PosX - 50 && x.X <= request.PosX + 50 && x.Y >= request.PosY - 50 && x.Y <= request.PosY + 50).ToList();
             }
 
             foreach (var item in toRemove)
             {
-                _pLifeData.TryRemove(item.Key, out _);
-                SetDirty(item.Key, new UpdateField<PLifeDto>(UpdateMethod.Remove, item.Value));
+                SetRemoved(item.Id);
             }
 
             var res = new RemovePLifeResponse { MasterId = request.MasterId };
-            res.RemovedItems.AddRange(toRemove.Select(x => x.Value));
+            res.RemovedItems.AddRange(_mapper.Map<PLifeDto[]>(toRemove));
             _server.Transport.BroadcastPLifeRemoved(res);
         }
 
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, UpdateField<PLifeDto>> updateData)
+        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<PLifeModel>> updateData)
         {
-            var usedData = updateData.Values.Select(y => y.Data.Id).Where(x => x > 0).ToHashSet();
+            var usedData = updateData.Keys.ToArray();
             await dbContext.Plives.Where(x => usedData.Contains(x.Id)).ExecuteDeleteAsync();
             foreach (var item in updateData.Values)
             {
                 var obj = item.Data;
-                if (item.Method == UpdateMethod.AddOrUpdate)
+                if (item.Flag == StoreFlag.AddOrUpdate && obj != null)
                 {
-                    var model = new PlifeEntity(obj.MapId, obj.LifeId, obj.Mobtime, obj.X, obj.Y, obj.Fh, obj.Type);
+                    var model = new PlifeEntity(obj.Id, obj.Map, obj.Life, obj.Mobtime, obj.X, obj.Y, obj.Fh, obj.Type);
                     dbContext.Plives.Add(model);
                     await dbContext.SaveChangesAsync();
                     obj.Id = model.Id;

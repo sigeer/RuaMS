@@ -69,15 +69,6 @@ public class Server
         return availableDeveloperRoom;
     }
 
-    private void loadPlayerNpcMapStepFromDb(DBContext dbContext)
-    {
-        var list = dbContext.PlayernpcsFields.AsNoTracking().ToList();
-        list.ForEach(rs =>
-        {
-            RunningWorlds[rs.World]?.setPlayerNpcMapData(rs.Map, rs.Step, rs.Podium);
-        });
-    }
-
     public World getWorld(int id)
     {
         return RunningWorlds.GetValueOrDefault(id) ?? throw new BusinessException($"World {id} not exsited");
@@ -202,9 +193,6 @@ public class Server
 
             // CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
             applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
-            PlayerNPC.loadRunningRankData(dbContext);
-
-            loadPlayerNpcMapStepFromDb(dbContext);
 
             IsOnline = true;
 

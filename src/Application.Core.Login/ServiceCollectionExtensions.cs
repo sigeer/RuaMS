@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.handlers;
+using AutoMapper.Extensions.ExpressionMapping;
 
 namespace Application.Core.Login
 {
@@ -110,7 +111,10 @@ namespace Application.Core.Login
             {
                 o.UseMySQL(connectionString);
             });
-            services.AddAutoMapper(typeof(ProtoMapper).Assembly);
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddExpressionMapping();
+            }, typeof(ProtoMapper).Assembly);
 
             services.AddLoginHandlers();
 

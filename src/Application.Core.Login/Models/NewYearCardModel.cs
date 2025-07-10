@@ -1,6 +1,8 @@
-namespace Application.Shared.NewYear
+using Application.Core.Login.Shared;
+
+namespace Application.Core.Login.Models
 {
-    public class NewYearCardModel
+    public class NewYearCardModel: ITrackableEntityKey<int>
     {
         public int Id { get; set; }
 

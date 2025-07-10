@@ -112,6 +112,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Maker.Ch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.BBS.Channel.InProgress", "src\modules\Application.Module.BBS.Channel.InProgress\Application.Module.BBS.Channel.InProgress.csproj", "{13079ACD-255E-4449-8E0B-7B9CF9C6DB44}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PlayerNPC", "PlayerNPC", "{1BBA6168-DD98-4204-9361-F0081C5638F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.PlayerNPC.Channel", "src\modules\Application.Module.PlayerNPC.Channel\Application.Module.PlayerNPC.Channel.csproj", "{EC5F6FE3-3E35-403F-89B2-3EFF368FBBEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.PlayerNPC.Common", "src\modules\Application.Module.PlayerNPC.Common\Application.Module.PlayerNPC.Common.csproj", "{795C804C-05D0-4578-91B9-392F2FAC0A7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.PlayerNPC.Master", "src\modules\Application.Module.PlayerNPC.Master\Application.Module.PlayerNPC.Master.csproj", "{B4A70B1A-2132-4986-9ED3-DAF72875E211}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.PlayerNPC.Channel.InProgress", "src\modules\Application.Module.PlayerNPC.Channel.InProgress\Application.Module.PlayerNPC.Channel.InProgress.csproj", "{C7E53555-1B4E-413A-B6A7-404688C7F7A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -250,6 +260,22 @@ Global
 		{13079ACD-255E-4449-8E0B-7B9CF9C6DB44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13079ACD-255E-4449-8E0B-7B9CF9C6DB44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13079ACD-255E-4449-8E0B-7B9CF9C6DB44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC5F6FE3-3E35-403F-89B2-3EFF368FBBEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC5F6FE3-3E35-403F-89B2-3EFF368FBBEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC5F6FE3-3E35-403F-89B2-3EFF368FBBEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC5F6FE3-3E35-403F-89B2-3EFF368FBBEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{795C804C-05D0-4578-91B9-392F2FAC0A7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{795C804C-05D0-4578-91B9-392F2FAC0A7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{795C804C-05D0-4578-91B9-392F2FAC0A7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{795C804C-05D0-4578-91B9-392F2FAC0A7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4A70B1A-2132-4986-9ED3-DAF72875E211}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4A70B1A-2132-4986-9ED3-DAF72875E211}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4A70B1A-2132-4986-9ED3-DAF72875E211}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4A70B1A-2132-4986-9ED3-DAF72875E211}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7E53555-1B4E-413A-B6A7-404688C7F7A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7E53555-1B4E-413A-B6A7-404688C7F7A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7E53555-1B4E-413A-B6A7-404688C7F7A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7E53555-1B4E-413A-B6A7-404688C7F7A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -296,6 +322,11 @@ Global
 		{E7F0C49A-C147-4FA8-8737-294458691FD4} = {785F9A0A-7795-4675-8E4B-D557B825FAD8}
 		{50DD7B57-7987-44ED-8D5A-3C5A7DD9BF38} = {4727FB5E-4581-4E79-8771-30D089C07A5D}
 		{13079ACD-255E-4449-8E0B-7B9CF9C6DB44} = {785F9A0A-7795-4675-8E4B-D557B825FAD8}
+		{1BBA6168-DD98-4204-9361-F0081C5638F9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{EC5F6FE3-3E35-403F-89B2-3EFF368FBBEF} = {1BBA6168-DD98-4204-9361-F0081C5638F9}
+		{795C804C-05D0-4578-91B9-392F2FAC0A7D} = {1BBA6168-DD98-4204-9361-F0081C5638F9}
+		{B4A70B1A-2132-4986-9ED3-DAF72875E211} = {1BBA6168-DD98-4204-9361-F0081C5638F9}
+		{C7E53555-1B4E-413A-B6A7-404688C7F7A9} = {1BBA6168-DD98-4204-9361-F0081C5638F9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24613DFE-A8D5-438B-BCD0-3F036C9952D7}

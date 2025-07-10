@@ -292,18 +292,18 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public bool canSpawnPlayerNpc(int mapid)
     {
         var chr = getPlayer();
-        return !YamlConfig.config.server.PLAYERNPC_AUTODEPLOY && chr.getLevel() >= chr.getMaxClassLevel() && !chr.isGM() && PlayerNPC.canSpawnPlayerNpc(chr.getName(), mapid);
+        return chr.getLevel() >= chr.getMaxClassLevel()
+                && !chr.isGM()
+                && c.CurrentServerContainer.PlayerNPCService.CanSpawn(c.CurrentServer.getMapFactory().getMap(mapid), chr.Name);
     }
 
-    public PlayerNPC? getPlayerNPCByScriptid(int scriptId)
+    public IMapObject? getPlayerNPCByScriptid(int scriptId)
     {
         foreach (var pnpcObj in getPlayer().getMap().getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC)))
         {
-            PlayerNPC pn = (PlayerNPC)pnpcObj;
-
-            if (pn.getScriptId() == scriptId)
+            if (pnpcObj.GetSourceId() == scriptId)
             {
-                return pn;
+                return pnpcObj;
             }
         }
 

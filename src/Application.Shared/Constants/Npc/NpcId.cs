@@ -41,4 +41,6 @@ public class NpcId
     public const int PLAYER_NPC_BASE = 9900000;
 
     public const int BEI_DOU_NPC_BASE = 9900001;
+
+    public const int PlayerNpc_ObjectId_Base = 2147000000;
 }

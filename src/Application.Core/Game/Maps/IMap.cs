@@ -36,7 +36,7 @@ namespace Application.Core.Game.Maps
 
         void addMonsterSpawn(Monster monster, int mobTime, int team);
         void addPlayer(IPlayer chr);
-        void addPlayerNPCMapObject(PlayerNPC pnpcobject);
+        void addPlayerNPCMapObject(IMapObject pnpcobject);
         void addPlayerPuppet(IPlayer player);
         void addPortal(Portal myPortal);
         void addSelfDestructive(Monster mob);
@@ -132,6 +132,7 @@ namespace Application.Core.Game.Maps
         string getMapName();
         IMapObject? getMapObject(int oid);
         List<IMapObject> getMapObjects();
+        List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
         List<IMapObject> getMapObjectsInBox(Rectangle box, List<MapObjectType> types);
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, List<MapObjectType> types);
         Dictionary<int, IPlayer> getMapPlayers();

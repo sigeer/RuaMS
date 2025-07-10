@@ -3201,20 +3201,6 @@ public partial class Player
             {
                 ExpValue.set(0);
 
-                if (Level == maxClassLevel)
-                {
-                    if (!this.isGM())
-                    {
-                        if (YamlConfig.config.server.PLAYERNPC_AUTODEPLOY)
-                        {
-                            ThreadManager.getInstance().newTask(() =>
-                            {
-                                PlayerNPC.spawnPlayerNPC(GameConstants.getHallOfFameMapid(JobModel), this);
-                            });
-                        }
-                    }
-                }
-
                 setLevel(maxClassLevel);
             }
 

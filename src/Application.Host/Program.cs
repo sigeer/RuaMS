@@ -138,6 +138,12 @@ try
         app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
         app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
 
+    var bootstrap = app.Services.GetServices<IServerBootstrap>();
+    foreach (var item in bootstrap)
+    {
+        item.ConfigureHost(app);
+    }
+
     if (YamlConfig.config.server.ENABLE_OPENAPI)
     {
         var authCode = AuthService.GetAuthCode();
@@ -156,12 +162,6 @@ try
         app.UseAuthorization();
 
         app.MapControllers();
-    }
-
-    var bootstrap = app.Services.GetServices<IServerBootstrap>();
-    foreach (var item in bootstrap)
-    {
-        item.ConfigureHost(app);
     }
 
     //AppDomain.CurrentDomain.ProcessExit += (e, o) =>

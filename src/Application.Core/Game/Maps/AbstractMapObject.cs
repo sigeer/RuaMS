@@ -69,4 +69,13 @@ public abstract class AbstractMapObject : IMapObject
     {
         this.MapModel = map;
     }
+
+    public virtual string GetName()
+    {
+        return getType().ToString();
+    }
+    public virtual int GetSourceId()
+    {
+        return getObjectId();
+    }
 }

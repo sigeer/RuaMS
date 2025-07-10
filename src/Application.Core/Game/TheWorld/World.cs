@@ -24,9 +24,6 @@ public class World
     WorldPlayerStorage? _players;
     public WorldPlayerStorage Players => _players ?? (_players = new WorldPlayerStorage(Id));
 
-    private Dictionary<int, byte> pnpcStep = new();
-    private Dictionary<int, short> pnpcPodium = new();
-
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
 
     private ScheduledFuture? marriagesSchedule;
@@ -288,90 +285,6 @@ public class World
                 }
             }
         }
-    }
-
-    public void setPlayerNpcMapStep(int mapid, int step)
-    {
-        setPlayerNpcMapData(mapid, step, -1, false);
-    }
-
-    public void setPlayerNpcMapPodiumData(int mapid, int podium)
-    {
-        setPlayerNpcMapData(mapid, -1, podium, false);
-    }
-
-    public void setPlayerNpcMapData(int mapid, int step, int podium)
-    {
-        setPlayerNpcMapData(mapid, step, podium, true);
-    }
-
-    private static void executePlayerNpcMapDataUpdate<T>(DBContext dbContext, bool isPodium, Dictionary<int, T> pnpcData, short value, int worldid, int mapid)
-    {
-        if (pnpcData.ContainsKey(mapid))
-        {
-            dbContext.PlayernpcsFields.Where(x => x.World == worldid && x.Map == mapid)
-                .ExecuteUpdate(x => isPodium ? x.SetProperty(y => y.Podium, value) : x.SetProperty(y => y.Step, value));
-        }
-        else
-        {
-            var model = new PlayernpcsField
-            {
-                Map = mapid,
-                World = worldid,
-            };
-            if (isPodium)
-                model.Podium = value;
-            else
-                model.Step = (sbyte)value;
-            dbContext.PlayernpcsFields.Add(model);
-            dbContext.SaveChanges();
-        }
-    }
-
-    private void setPlayerNpcMapData(int mapid, int step, int podium, bool silent)
-    {
-        if (!silent)
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-
-                if (step != -1)
-                {
-                    executePlayerNpcMapDataUpdate(dbContext, false, pnpcStep, (short)step, Id, mapid);
-                }
-
-                if (podium != -1)
-                {
-                    executePlayerNpcMapDataUpdate(dbContext, true, pnpcPodium, (short)podium, Id, mapid);
-                }
-            }
-            catch (Exception e)
-            {
-                log.Error(e.ToString());
-            }
-        }
-
-        if (step != -1)
-            pnpcStep.AddOrUpdate(mapid, (byte)step);
-        if (podium != -1)
-            pnpcPodium.AddOrUpdate(mapid, (short)podium);
-    }
-
-    public int getPlayerNpcMapStep(int mapid)
-    {
-        return pnpcStep.GetValueOrDefault(mapid);
-    }
-
-    public int getPlayerNpcMapPodiumData(int mapid)
-    {
-        return pnpcPodium.GetValueOrDefault(mapid, (short)1);
-    }
-
-    public void resetPlayerNpcMapData()
-    {
-        pnpcStep.Clear();
-        pnpcPodium.Clear();
     }
 
     public void broadcastPacket(Packet packet)

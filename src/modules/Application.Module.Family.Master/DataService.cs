@@ -8,21 +8,21 @@ namespace Application.Module.Family.Master
 {
     public class DataService
     {
-        ConcurrentDictionary<int, UpdateField<FamilyModel>> _dirtyFlag = new();
+        ConcurrentDictionary<int, StoreUnit<FamilyModel>> _dirtyFlag = new();
 
         public void SetDirty(FamilyModel model)
         {
-            _dirtyFlag[model.Id] = new UpdateField<FamilyModel>(UpdateMethod.AddOrUpdate, model);
+            _dirtyFlag[model.Id] = new StoreUnit<FamilyModel>(StoreFlag.AddOrUpdate, model);
         }
 
         public void SetRemove(FamilyModel model)
         {
-            _dirtyFlag[model.Id] = new UpdateField<FamilyModel>(UpdateMethod.Remove, model);
+            _dirtyFlag[model.Id] = new StoreUnit<FamilyModel>(StoreFlag.Remove, model);
         }
 
         public async Task CommitAsync(DBContext dbContext)
         {
-            var updateData = new Dictionary<int, UpdateField<FamilyModel>>();
+            var updateData = new Dictionary<int, StoreUnit<FamilyModel>>();
             foreach (var key in _dirtyFlag.Keys.ToList())
             {
                 _dirtyFlag.TryRemove(key, out var d);
@@ -37,7 +37,7 @@ namespace Application.Module.Family.Master
             foreach (var item in updateData.Values)
             {
                 var obj = item.Data;
-                if (item.Method != UpdateMethod.Remove)
+                if (item.Flag != StoreFlag.Remove)
                 {
                     dbContext.FamilyCharacters.AddRange(obj.Members.Values.Select(x => new FamilyCharacter(x.Cid, obj.Id, x.Seniorid)
                     {

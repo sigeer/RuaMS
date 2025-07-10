@@ -271,7 +271,7 @@ namespace Application.Core.Mappers
                     x.Rank5Title
                 }));
 
-            CreateMap<Dto.NewYearCardDto, NewYearCardModel>();
+            CreateMap<Dto.NewYearCardDto, NewYearCardObject>();
 
             CreateMap<Dto.DropItemDto, DropEntry>()
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.DropperId));
