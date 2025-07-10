@@ -8,21 +8,17 @@ using Application.Module.Duey.Master.Models;
 using Application.Shared.Items;
 using Application.Utility;
 using AutoMapper;
+using AutoMapper.Extensions.ExpressionMapping;
 using client.inventory;
 using DueyDto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace Application.Module.Duey.Master
 {
-    public class DueyManager : StorageBase<int, UpdateField<DueyPackageModel>>
+    public class DueyManager : StorageBase<int, DueyPackageModel>
     {
-        /// <summary>
-        /// Key: localId(不是packageId,packageId只用来保存数据库)
-        /// </summary>
-        ConcurrentDictionary<int, DueyPackageModel> _dataSource;
-
         private int _currentId = 0;
 
         readonly ILogger<DueyManager> _logger;
@@ -37,31 +33,43 @@ namespace Application.Module.Duey.Master
             _dbContextFactory = dbContextFactory;
             _mapper = maper;
 
-            _dataSource = new();
             _server = server;
             _transport = transport;
         }
 
         public async Task Initialize(DBContext dbContext)
         {
-            var dbList = await (from a in dbContext.Dueypackages.AsNoTracking()
-                                join b in dbContext.Characters on a.SenderId equals b.Id
-                                select new { Package = a, SenderName = b.Name }).ToListAsync();
+            _currentId = await dbContext.Dueypackages.MaxAsync(x => (int?)x.PackageId) ?? 0;
+        }
+
+        protected override List<DueyPackageModel> Query(Expression<Func<DueyPackageModel, bool>> expression)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            var entityExpression = _mapper.MapExpression<Expression<Func<DueyPackageEntity, bool>>>(expression).Compile();
+            var dbList = (from a in dbContext.Dueypackages.AsNoTracking().Where(entityExpression)
+                          join b in dbContext.Characters on a.SenderId equals b.Id
+                          select new { Package = a, SenderName = b.Name }).ToList();
 
             var allPackageItems = InventoryManager.LoadDueyItems(dbContext, dbList.Select(x => x.Package.PackageId).ToArray());
+
+            List<DueyPackageModel> dataFromDB = [];
             foreach (var item in dbList)
             {
                 var package = _mapper.Map<DueyPackageModel>(item.Package);
-                package.Item = _mapper.Map<ItemModel>(allPackageItems.FirstOrDefault(x => x.Item.Characterid == package.PackageId));
-                package.Id = Interlocked.Increment(ref _currentId);
+                package.Item = _mapper.Map<ItemModel>(allPackageItems.FirstOrDefault(x => x.Item.Characterid == package.Id));
                 package.SenderName = item.SenderName;
-                _dataSource[package.Id] = package;
+
+                dataFromDB.Add(package);
             }
+
+            return QueryWithDirty(dataFromDB, expression.Compile());
         }
 
         public void TakeDueyPackage(DueyDto.TakeDueyPackageRequest request)
         {
-            if (!_dataSource.TryGetValue(request.PackageId, out var package))
+            var package = Query(x => x.Id == request.PackageId).FirstOrDefault();
+            if (package == null)
             {
                 _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 1, Request = request });
                 return;
@@ -90,7 +98,7 @@ namespace Application.Module.Duey.Master
 
         public void PackageUnfreeze(int chrId)
         {
-            var packages = _dataSource.Values.Where(x => x.ReceiverId == chrId && x.IsFrozen);
+            var packages = Query(x => x.ReceiverId == chrId && x.IsFrozen);
             foreach (var package in packages)
             {
                 package.ForceUnfreeze();
@@ -106,7 +114,8 @@ namespace Application.Module.Duey.Master
             }
             else
             {
-                if (_dataSource.TryGetValue(request.PackageId, out var package))
+                var package = Query(x => x.Id == request.PackageId).FirstOrDefault();
+                if (package != null)
                 {
                     // 领取失败、解冻
                     package.ForceUnfreeze();
@@ -162,9 +171,7 @@ namespace Application.Module.Duey.Master
                     })
                 };
 
-                _dataSource[model.Id] = model;
-
-                SetDirty(model.Id, new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, model));
+                SetDirty(model.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, model));
 
                 _transport.SendCreatePackage(new DueyDto.CreatePackageResponse
                 {
@@ -180,19 +187,20 @@ namespace Application.Module.Duey.Master
 
         public void RemovePackage(DueyDto.RemovePackageRequest request)
         {
-            if (!_dataSource.TryRemove(request.PackageId, out var d))
+            var package = Query(x => x.Id == request.PackageId).FirstOrDefault();
+            if (package == null || package.ReceiverId != request.MasterId)
             {
                 return;
             }
 
-            SetDirty(d.Id, new UpdateField<DueyPackageModel>(UpdateMethod.Remove, d));
+            SetRemoved(package.Id);
             _transport.SendDueyPackageRemoved(new DueyDto.RemovePackageResponse { Code = 0, Request = request });
         }
 
         public DueyDto.GetPlayerDueyPackageResponse GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
         {
             var res = new GetPlayerDueyPackageResponse();
-            res.List.AddRange(_mapper.Map<DueyDto.DueyPackageDto[]>(_dataSource.Values.Where(x => x.ReceiverId == request.ReceiverId)));
+            res.List.AddRange(_mapper.Map<DueyDto.DueyPackageDto[]>(Query(x => x.ReceiverId == request.ReceiverId)));
             res.ReceiverId = request.ReceiverId;
             return res;
         }
@@ -202,14 +210,11 @@ namespace Application.Module.Duey.Master
             try
             {
                 var dayBefore30 = DateTimeOffset.UtcNow.AddDays(-30);
-                var toRemove = _dataSource.Values.Where(x => x.TimeStamp < dayBefore30).Select(X => X.Id).ToList();
+                var toRemove = Query(x => x.TimeStamp < dayBefore30).Select(X => X.Id).ToList();
 
                 foreach (int pid in toRemove)
                 {
-                    if (_dataSource.TryRemove(pid, out var d))
-                    {
-                        SetDirty(d.Id, new UpdateField<DueyPackageModel>(UpdateMethod.Remove, d));
-                    }
+                    SetRemoved(pid);
                 }
             }
             catch (Exception e)
@@ -220,52 +225,32 @@ namespace Application.Module.Duey.Master
 
         internal void SendDueyNotifyOnLogin(int id)
         {
-            var allUnreadData = _dataSource.Values.Where(x => x.ReceiverId == id && x.Checked).OrderByDescending(x => x.Type);
+            var allUnreadData = Query(x => x.ReceiverId == id && x.Checked).OrderByDescending(x => x.Type);
             var data = allUnreadData.FirstOrDefault();
             if (data != null)
             {
                 foreach (var item in allUnreadData)
                 {
                     item.Checked = false;
-                    SetDirty(item.Id, new UpdateField<DueyPackageModel>(UpdateMethod.AddOrUpdate, item));
+                    SetDirty(item.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, item));
                 }
                 _transport.SendDueyNotifyOnLogin(id, new DueyDto.DueyNotifyDto { Type = data.Type, ReceiverId = data.ReceiverId });
             }
         }
 
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, UpdateField<DueyPackageModel>> updateData)
+        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<DueyPackageModel>> updateData)
         {
-            var updatePackages = updateData.Values.Select(x => x.Data.PackageId).ToArray();
-            var dbList = await dbContext.Dueypackages.Where(x => updatePackages.Contains(x.PackageId)).ToListAsync();
-            foreach (var item in updateData.Values)
+            var updatePackages = updateData.Keys.ToArray();
+            var dbList = await dbContext.Dueypackages.Where(x => updatePackages.Contains(x.PackageId)).ExecuteDeleteAsync();
+            foreach (var kv in updateData)
             {
-                var obj = item.Data;
-                if (item.Method == UpdateMethod.AddOrUpdate)
+                var obj = kv.Value.Data;
+                if (kv.Value.Flag == StoreFlag.AddOrUpdate && obj != null)
                 {
-                    var dbData = dbList.FirstOrDefault(x => x.PackageId == obj.PackageId);
-                    if (dbData == null)
-                    {
-                        dbData = new DueyPackageEntity(obj.ReceiverId, obj.SenderId, obj.Mesos, obj.Message, obj.Checked, obj.Type, obj.TimeStamp);
-                        dbContext.Dueypackages.Add(dbData);
-                        await dbContext.SaveChangesAsync();
-
-                        obj.PackageId = dbData.PackageId;
-                        await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.PackageId, obj.Item == null ? [] : [obj.Item], ItemFactory.DUEY);
-                    }
-                    else
-                    {
-                        // 不能修改包裹，只能修改checked属性
-                        dbData.Checked = obj.Checked;
-                        await dbContext.SaveChangesAsync();
-                    }
+                    var dbData = new DueyPackageEntity(obj.Id, obj.ReceiverId, obj.SenderId, obj.Mesos, obj.Message, obj.Checked, obj.Type, obj.TimeStamp);
+                    dbContext.Dueypackages.Add(dbData);
                 }
-                if (item.Method == UpdateMethod.Remove && obj.PackageId > 0)
-                {
-                    // 已经保存过数据库，存在packageid 才需要从数据库移出
-                    // 没保存过数据库的，从内存中移出就行（已经移除了），不需要执行这里的更新s
-                    await dbContext.Dueypackages.Where(x => x.PackageId == obj.PackageId).ExecuteDeleteAsync();
-                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, obj.PackageId, [], ItemFactory.DUEY);
-                }
+                await InventoryManager.CommitInventoryByTypeAsync(dbContext, kv.Key, obj?.Item == null ? [] : [obj.Item], ItemFactory.DUEY);
 
             }
             await dbContext.SaveChangesAsync();

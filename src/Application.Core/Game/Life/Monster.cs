@@ -2716,4 +2716,14 @@ public class Monster : AbstractLifeObject
 
         this.getMap().dismissRemoveAfter(this);
     }
+
+    public override string GetName()
+    {
+        return getName();
+    }
+
+    public override int GetSourceId()
+    {
+        return getId();
+    }
 }

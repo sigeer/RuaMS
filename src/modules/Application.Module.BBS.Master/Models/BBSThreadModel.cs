@@ -1,7 +1,10 @@
+using Application.Core.Login.Shared;
+
 namespace Application.Module.BBS.Master.Models
 {
-    public class BBSThreadModel
+    public class BBSThreadModel: ITrackableEntityKey<int>
     {
+        public int Id { get; set; }
         public int Postercid { get; set; }
 
         public string Name { get; set; } = null!;
@@ -15,7 +18,5 @@ namespace Application.Module.BBS.Master.Models
         public string Startpost { get; set; } = null!;
 
         public int Guildid { get; set; }
-
-        public int ThreadId { get; set; }
     }
 }

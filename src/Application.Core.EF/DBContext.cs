@@ -121,9 +121,9 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Playerdisease> Playerdiseases { get; set; }
 
-    public virtual DbSet<Playernpc> Playernpcs { get; set; }
+    public virtual DbSet<PlayerNpcEntity> Playernpcs { get; set; }
 
-    public virtual DbSet<PlayernpcsEquip> PlayernpcsEquips { get; set; }
+    public virtual DbSet<PlayerNpcsEquipEntity> PlayernpcsEquips { get; set; }
 
     public virtual DbSet<PlayernpcsField> PlayernpcsFields { get; set; }
 
@@ -1443,7 +1443,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("mobskilllv");
         });
 
-        modelBuilder.Entity<Playernpc>(entity =>
+        modelBuilder.Entity<PlayerNpcEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1508,7 +1508,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("x");
         });
 
-        modelBuilder.Entity<PlayernpcsEquip>(entity =>
+        modelBuilder.Entity<PlayerNpcsEquipEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

@@ -98,12 +98,17 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 发放道具也可以走这个逻辑
 
 
+#### PlayerNpc
+
+地图坐标的计算需要在频道服务器中进行
+
+
 
 ## 待办事项
 
 - [ ] `DateTimeOffset.UtcNow` 换成 `getCurrentTime()`
 - [ ] 移除 `new DBConext()` 
-- [ ] 提取 `PlayerNpc`
+- [x] 提取 `PlayerNpc`
 - [ ] 提取结婚系统
 - [ ] 提取拍卖系统
 - [ ] 整理初始化脚本以及迁移，对DBContext拆分

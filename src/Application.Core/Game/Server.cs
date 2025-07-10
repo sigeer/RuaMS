@@ -45,11 +45,6 @@ public class Server
 
     public Dictionary<int, World> RunningWorlds { get; set; } = new();
 
-    /// <summary>
-    /// AccountId - cid
-    /// </summary>
-    private Dictionary<int, HashSet<AccountInfo>> AccountCharacterCache = new();
-
 
     private volatile bool availableDeveloperRoom = false;
     public bool IsOnline { get; set; }
@@ -67,15 +62,6 @@ public class Server
     public bool canEnterDeveloperRoom()
     {
         return availableDeveloperRoom;
-    }
-
-    private void loadPlayerNpcMapStepFromDb(DBContext dbContext)
-    {
-        var list = dbContext.PlayernpcsFields.AsNoTracking().ToList();
-        list.ForEach(rs =>
-        {
-            RunningWorlds[rs.World]?.setPlayerNpcMapData(rs.Map, rs.Step, rs.Podium);
-        });
     }
 
     public World getWorld(int id)
@@ -197,15 +183,6 @@ public class Server
 
             LoadWorld();
 
-            using var dbContext = new DBContext();
-            LoadAccountCharacterCache(dbContext);
-
-            // CashIdGenerator.loadExistentCashIdsFromDb(dbContext);
-            applyAllNameChanges(dbContext); // -- name changes can be missed by INSTANT_NAME_CHANGE --
-            PlayerNPC.loadRunningRankData(dbContext);
-
-            loadPlayerNpcMapStepFromDb(dbContext);
-
             IsOnline = true;
 
             totalSw.Stop();
@@ -245,76 +222,6 @@ public class Server
         return getWorld(world).Players.GetAllOnlinedPlayers().Any(x => x.isGM());
     }
 
-
-    private HashSet<IPlayer> getAccountCharacterEntries(int accountid, int loadLevel = 0)
-    {
-        lgnLock.EnterReadLock();
-        try
-        {
-            if (AccountCharacterCache.TryGetValue(accountid, out var d))
-                return AllPlayerStorage.GetPlayersByIds(d.Select(x => x.Id).ToArray(), loadLevel).ToHashSet();
-            return [];
-        }
-        finally
-        {
-            lgnLock.ExitReadLock();
-        }
-    }
-
-    private Dictionary<int, HashSet<AccountInfo>> LoadAccountCharacterCache(DBContext dbContext)
-    {
-        AccountCharacterCache = (from a in dbContext.Accounts
-                                 let chars = dbContext.Characters.Where(x => x.AccountId == a.Id).Select(x => new { x.AccountId, x.Id, x.World }).ToList()
-                                 select new { AccountId = a.Id, CharIdList = chars }).ToList()
-                       .ToDictionary(x => x.AccountId, x => x.CharIdList.Select(x => new AccountInfo(x.Id, x.World, x.AccountId)).ToHashSet());
-        return AccountCharacterCache;
-    }
-
-    public List<IPlayer> loadAllAccountsCharactersView()
-    {
-        var idList = AccountCharacterCache.Keys.ToList();
-
-        var list = new List<IPlayer>();
-        idList.ForEach(accountId =>
-        {
-            list.AddRange(getAccountCharacterEntries(accountId));
-        });
-
-        return list;
-    }
-
-
-    private static void applyAllNameChanges(DBContext dbContext)
-    {
-        try
-        {
-            List<NameChangePair> changedNames = new();
-            using var dbTrans = dbContext.Database.BeginTransaction();
-            var allChanges = dbContext.Namechanges.Where(x => x.CompletionTime == null).ToList();
-            allChanges.ForEach(x =>
-            {
-                bool success = CharacterManager.doNameChange(dbContext, x.Characterid, x.Old, x.New, x.Id);
-                if (!success)
-                    dbTrans.Rollback();
-                else
-                {
-                    dbTrans.Commit();
-                    changedNames.Add(new(x.Old, x.New));
-                }
-            });
-
-            //log
-            foreach (var namePair in changedNames)
-            {
-                log.Information("Name change applied - from: \"{CharacterName}\" to \"{CharacterName}\"", namePair.OldName, namePair.NewName);
-            }
-        }
-        catch (Exception e)
-        {
-            log.Warning(e, "Failed to retrieve list of pending name changes");
-            throw;
-        }
-    }
     public Action shutdown(bool restart)
     {
         //no player should be online when trying to shutdown!

@@ -279,18 +279,18 @@ namespace Application.Core.Login.Services
         }
 
         #region Guild
-        ConcurrentDictionary<int, UpdateField<GuildModel>> _guild = new();
+        ConcurrentDictionary<int, StoreUnit<GuildModel>> _guild = new();
         public void SetGuildUpdate(GuildModel data)
         {
-            _guild[data.GuildId] = new UpdateField<GuildModel>(UpdateMethod.AddOrUpdate, data);
+            _guild[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.AddOrUpdate, data);
         }
         public void SetGuildRemoved(GuildModel data)
         {
-            _guild[data.GuildId] = new UpdateField<GuildModel>(UpdateMethod.Remove, data);
+            _guild[data.GuildId] = new StoreUnit<GuildModel>(StoreFlag.Remove, data);
         }
         public async Task CommitGuildAsync(DBContext dbContext)
         {
-            var updateData = new Dictionary<int, UpdateField<GuildModel>>();
+            var updateData = new Dictionary<int, StoreUnit<GuildModel>>();
             foreach (var key in _guild.Keys.ToList())
             {
                 _guild.TryRemove(key, out var d);
@@ -305,7 +305,7 @@ namespace Application.Core.Login.Services
             foreach (var item in updateData.Values)
             {
                 var obj = item.Data;
-                if (item.Method == UpdateMethod.Remove)
+                if (item.Flag == StoreFlag.Remove)
                 {
                     // 已经保存过数据库，存在packageid 才需要从数据库移出
                     // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新
@@ -343,18 +343,18 @@ namespace Application.Core.Login.Services
         #endregion
 
         #region Alliance
-        ConcurrentDictionary<int, UpdateField<AllianceModel>> _alliance = new();
+        ConcurrentDictionary<int, StoreUnit<AllianceModel>> _alliance = new();
         public void SetAlliance(AllianceModel data)
         {
-            _alliance[data.Id] = new UpdateField<AllianceModel>(UpdateMethod.AddOrUpdate, data);
+            _alliance[data.Id] = new StoreUnit<AllianceModel>(StoreFlag.AddOrUpdate, data);
         }
         public void SetAllianceRemoved(AllianceModel data)
         {
-            _alliance[data.Id] = new UpdateField<AllianceModel>(UpdateMethod.Remove, data);
+            _alliance[data.Id] = new StoreUnit<AllianceModel>(StoreFlag.Remove, data);
         }
         public async Task CommitAllianceAsync(DBContext dbContext)
         {
-            var updateData = new Dictionary<int, UpdateField<AllianceModel>>();
+            var updateData = new Dictionary<int, StoreUnit<AllianceModel>>();
             foreach (var key in _alliance.Keys.ToList())
             {
                 _alliance.TryRemove(key, out var d);
@@ -369,7 +369,7 @@ namespace Application.Core.Login.Services
             foreach (var item in updateData.Values)
             {
                 var obj = item.Data;
-                if (item.Method == UpdateMethod.Remove)
+                if (item.Flag == StoreFlag.Remove)
                 {
                     // 已经保存过数据库，存在packageid 才需要从数据库移出
                     // 没保存过数据库的，从内存中移出就行，不需要执行这里的更新

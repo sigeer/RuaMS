@@ -63,6 +63,8 @@ namespace Application.Core.Channel
         public NoteService NoteService => _noteService.Value;
         readonly Lazy<DataService> _dataService;
         public DataService DataService => _dataService.Value;
+        readonly Lazy<IPlayerNPCService> _playerNPCService;
+        public IPlayerNPCService PlayerNPCService => _playerNPCService.Value;
         #endregion
 
         #region Task
@@ -137,6 +139,7 @@ namespace Application.Core.Channel
             _newYearService = new(() => ServiceProvider.GetRequiredService<NewYearCardService>())   ;
             _noteService = new(() => ServiceProvider.GetRequiredService<NoteService>());
             _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
+            _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
         }
 
         #region 时间

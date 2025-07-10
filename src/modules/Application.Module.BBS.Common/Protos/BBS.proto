@@ -8,11 +8,11 @@ message ListBBSRequest {
 
 message ListBBSResponse {
 	int32 code = 1;
-	repeated BBSThreadPreview list = 2;
+	repeated BBSThreadPreviewDto list = 2;
 }
 
-message BBSThreadPreview {
-	int32 threadId = 1;
+message BBSThreadPreviewDto {
+	int32 id = 1;
 	int32 posterId = 2;
 	int64 timestamp = 3;
 	string title = 4;
@@ -21,8 +21,8 @@ message BBSThreadPreview {
 	int32 replyCount = 7;
 }
 
-message BBSMainThread {
-	int32 threadId = 1;
+message BBSThreadDto {
+	int32 id = 1;
 	int32 posterId = 2;
 	int64 timestamp = 3;
 	string title = 4;
@@ -33,7 +33,7 @@ message BBSMainThread {
 
 message ShowBBSMainThreadResponse {
 	int32 code = 1;
-	BBSMainThread data = 2;
+	BBSThreadDto data = 2;
 }
 
 message ShowThreadRequest {
@@ -48,6 +48,7 @@ message PostThreadRequest {
 	string title = 3;
 	int32 icon = 4;
 	int32 threadId = 5;
+	bool bNotice = 6;
 }
 
 message DeleteThreadRequest {

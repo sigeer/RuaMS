@@ -18,8 +18,9 @@ public partial class DueyPackageEntity
     public bool Type { get; set; } = false;
     private DueyPackageEntity() { }
 
-    public DueyPackageEntity(int receiverId, int senderId, int mesos, string? message, bool @checked, bool type, DateTimeOffset createTime)
+    public DueyPackageEntity(int id, int receiverId, int senderId, int mesos, string? message, bool @checked, bool type, DateTimeOffset createTime)
     {
+        PackageId = id;
         ReceiverId = receiverId;
         SenderId = senderId;
         Mesos = mesos;

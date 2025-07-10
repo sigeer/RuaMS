@@ -1,3 +1,4 @@
+using Application.Core.Models;
 using Application.Shared.NewYear;
 using System.Collections.Concurrent;
 
@@ -5,14 +6,14 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        private ConcurrentDictionary<int, NewYearCardModel> newyears = new();
+        private ConcurrentDictionary<int, NewYearCardObject> newyears = new();
 
-        public HashSet<NewYearCardModel> getReceivedNewYearRecords()
+        public HashSet<NewYearCardObject> getReceivedNewYearRecords()
         {
             return newyears.Values.Where(x => x.Received).ToHashSet();
         }
 
-        public void addNewYearRecord(NewYearCardModel newyear)
+        public void addNewYearRecord(NewYearCardObject newyear)
         {
             newyears[newyear.Id] = newyear;
         }

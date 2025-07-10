@@ -115,10 +115,9 @@ namespace Application.Core.Login.Mappers
             CreateMap<GuildEntity, GuildModel>();
             CreateMap<AllianceEntity, AllianceModel>();
 
-            CreateMap<NewYearCardEntity, NewYearCardModel>();
-            CreateMap<PlifeEntity, BaseProto.PLifeDto>()
-                .ForMember(dest => dest.LifeId, src => src.MapFrom(x => x.Life))
-                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Map));
+            CreateMap<NewYearCardEntity, NewYearCardModel>().ReverseMap();
+
+            CreateMap<PlifeEntity, PLifeModel>().ReverseMap();
         }
     }
 }

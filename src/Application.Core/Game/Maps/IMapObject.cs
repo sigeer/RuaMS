@@ -3,6 +3,8 @@ namespace Application.Core.Game.Maps
     public interface IMapObject
     {
         public IMap MapModel { get; }
+        string GetName();
+        int GetSourceId();
         void setMap(IMap map);
         IMap getMap();
         Point getPosition();

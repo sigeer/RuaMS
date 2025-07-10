@@ -63,15 +63,6 @@ namespace Application.Core.ServerTransports
         Dto.TeamDto CreateTeam(int playerId);
         #endregion
 
-        #region player npc
-        void SetPlayerNpcMapPodiumData(int mapId, int podumData);
-        int GetPlayerNpcMapPodiumData(int mapId);
-        void SetPlayerNpcMapStep(int mapId, int step);
-        int GetPlayerNpcMapStep(int mapId);
-
-        void RequestRemovePlayerNpc(int mapId, IEnumerable<int> playerNpcObjectId);
-        #endregion
-
         #region
         void SendTimer(int seconds);
         void RemoveTimer();

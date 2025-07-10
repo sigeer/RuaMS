@@ -315,7 +315,7 @@ public class MapleMap : IMap
         return true;
     }
 
-    public void addPlayerNPCMapObject(PlayerNPC pnpcobject)
+    public void addPlayerNPCMapObject(IMapObject pnpcobject)
     {
         objectLock.EnterWriteLock();
         try
@@ -3225,7 +3225,19 @@ public class MapleMap : IMap
             }
             objectLock.ExitWriteLock();
         }
+    }
 
+    public List<IMapObject> GetMapObjects(Func<IMapObject, bool> func)
+    {
+        objectLock.EnterReadLock();
+        try
+        {
+            return mapobjects.Values.Where(func).ToList();
+        }
+        finally
+        {
+            objectLock.ExitReadLock();
+        }
     }
 
     private static List<IMapObject> getMapObjectsInRange(List<IMapObject> allMapObjects, Point from, double rangeSq, List<MapObjectType> types)

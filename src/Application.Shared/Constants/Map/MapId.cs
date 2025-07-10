@@ -269,6 +269,7 @@ public class MapId
     public const int HALL_OF_BOWMEN = 100000204;
     public const int HALL_OF_THIEVES = 103000008;
     public const int NAUTILUS_TRAINING_ROOM = 120000105;
+
     public const int KNIGHTS_CHAMBER = 130000100; // Cygnus
     public const int KNIGHTS_CHAMBER_2 = 130000110;
     public const int KNIGHTS_CHAMBER_3 = 130000120;

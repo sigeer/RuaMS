@@ -19,12 +19,17 @@
 */
 
 
-using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using net.server;
-using tools;
+using Application.Module.PlayerNPC.Channel.Models;
+using Application.Module.PlayerNPC.Common;
+using Application.Shared.MapObjects;
+using Application.Utility.Compatible;
+using Application.Utility.Configs;
+using Microsoft.Extensions.Options;
+using Serilog;
+using System.Drawing;
 
-namespace server.life.positioner;
+namespace Application.Module.PlayerNPC.Channel;
 
 /**
  * @author RonanLana
@@ -32,11 +37,23 @@ namespace server.life.positioner;
  * Note: the podium uses getGroundBelow that in its turn uses inputted posY minus 7.
  * Podium system will implement increase-by-7 to negate that behaviour.
  */
-public class PlayerNPCPodium
+public class PlayerNPCPodium : IPlayerPositioner
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.PlayerNPC);
+    readonly Configs _config;
+    public PlayerNPCPodium(Configs config, int nextStep)
+    {
+        NextPositionData = nextStep;
+        _config = config;
+    }
 
-    private static int getPlatformPosX(int platform)
+    public int NextPositionData { get; set; }
+
+    private void UpdateNextPositionData(int value)
+    {
+        NextPositionData = value;
+    }
+
+    private int getPlatformPosX(int platform)
     {
         return platform switch
         {
@@ -46,7 +63,7 @@ public class PlayerNPCPodium
         };
     }
 
-    private static int getPlatformPosY(int platform)
+    private int getPlatformPosY(int platform)
     {
         if (platform == 0)
         {
@@ -55,7 +72,7 @@ public class PlayerNPCPodium
         return 40;
     }
 
-    private static Point calcNextPos(int rank, int step)
+    private Point calcNextPos(int rank, int step)
     {
         int podiumPlatform = rank / step;
         int relativePos = (rank % step) + 1;
@@ -64,10 +81,10 @@ public class PlayerNPCPodium
         return pos;
     }
 
-    private static Point rearrangePlayerNpcs(IMap map, int newStep, List<PlayerNPC> pnpcs)
+    private Point rearrangePlayerNpcs(IMap map, int newStep, List<PlayerNpc> pnpcs)
     {
         int i = 0;
-        foreach (PlayerNPC pn in pnpcs)
+        foreach (var pn in pnpcs)
         {
             pn.updatePlayerNPCPosition(map, calcNextPos(i, newStep));
             i++;
@@ -76,82 +93,80 @@ public class PlayerNPCPodium
         return calcNextPos(i, newStep);
     }
 
-    private static Point? reorganizePlayerNpcs(IMap map, int newStep, List<IMapObject> mmoList)
+    private Point? reorganizePlayerNpcs(IMap map, int newStep, List<IMapObject> mmoList)
     {
         if (mmoList.Count > 0)
         {
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                log.Debug("Re-organizing pnpc map, step {Step}", newStep);
+                Log.Logger.Debug("Re-organizing pnpc map, step {Step}", newStep);
             }
 
-            List<PlayerNPC> playerNpcs = mmoList.OfType<PlayerNPC>().OrderBy(x => x.getScriptId()).ToList();
-
-            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
-            {
-                var m = ch.getMapFactory().getMap(map.getId());
-
-                foreach (var pn in playerNpcs)
-                {
-                    m.removeMapObject(pn);
-                    m.broadcastMessage(PacketCreator.removeNPCController(pn.getObjectId()));
-                    m.broadcastMessage(PacketCreator.removePlayerNPC(pn.getObjectId()));
-                }
-            }
-
-            Point ret = rearrangePlayerNpcs(map, newStep, playerNpcs);
-
-            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
-            {
-                var m = ch.getMapFactory().getMap(map.getId());
-
-                foreach (var pn in playerNpcs)
-                {
-                    m.addPlayerNPCMapObject(pn);
-                    m.broadcastMessage(PacketCreator.spawnPlayerNPC(pn));
-                    m.broadcastMessage(PacketCreator.getPlayerNPC(pn));
-                }
-            }
-
-            return ret;
+            var playerNpcs = mmoList.OfType<PlayerNpc>().OrderBy(x => x.GetSourceId()).ToList();
+            return rearrangePlayerNpcs(map, newStep, playerNpcs);
         }
 
         return null;
     }
 
-    private static int encodePodiumData(int podiumStep, int podiumCount)
+    public int GetPodiumDataByIndex(int index)
+    {
+        if (index == 0)
+            return 1;
+
+        int podiumData = GetPodiumDataByIndex(index - 1);
+        int podiumCount = (podiumData / (1 << 5));
+        int podiumStep = podiumData % (1 << 5);
+
+        if (podiumCount >= 3 * podiumStep)
+        {
+            if (podiumStep >= _config.PLAYERNPC_AREA_STEPS)
+            {
+                return -1;
+            }
+
+            return encodePodiumData(podiumStep + 1, podiumCount + 1);
+        }
+        else
+        {
+            return encodePodiumData(podiumStep, podiumCount + 1);
+        }
+    }
+
+    private int encodePodiumData(int podiumStep, int podiumCount)
     {
         return (podiumCount * (1 << 5)) + podiumStep;
     }
 
-    private static Point? getNextPlayerNpcPosition(IMap map, int podiumData)
+    private Point? getNextPlayerNpcPosition(IMap map, int podiumData)
     {
         // automated playernpc position thanks to Ronan
-        int podiumStep = podiumData % (1 << 5), podiumCount = (podiumData / (1 << 5));
+        int podiumCount = (podiumData / (1 << 5));
+        int podiumStep = podiumData % (1 << 5);
 
         if (podiumCount >= 3 * podiumStep)
         {
-            if (podiumStep >= YamlConfig.config.server.PLAYERNPC_AREA_STEPS)
+            if (podiumStep >= _config.PLAYERNPC_AREA_STEPS)
             {
                 return null;
             }
 
             var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
             var podimuData = encodePodiumData(podiumStep + 1, podiumCount + 1);
-            map.ChannelServer.Container.Transport.SetPlayerNpcMapPodiumData(map.getId(), podimuData);
+            UpdateNextPositionData(podimuData);
             return reorganizePlayerNpcs(map, podiumStep + 1, mmoList);
         }
         else
         {
             var outPodiumData = encodePodiumData(podiumStep, podiumCount + 1);
-            map.ChannelServer.Container.Transport.SetPlayerNpcMapPodiumData(map.getId(), outPodiumData);
+            UpdateNextPositionData(outPodiumData);
             return calcNextPos(podiumCount, podiumStep);
         }
     }
 
-    public static Point? getNextPlayerNpcPosition(IMap map)
+    public Point? GetNextPlayerNpcPosition(IMap map)
     {
-        var pos = getNextPlayerNpcPosition(map, map.ChannelServer.Container.Transport.GetPlayerNpcMapPodiumData(map.getId()));
+        var pos = getNextPlayerNpcPosition(map, NextPositionData);
         if (pos == null)
         {
             return null;

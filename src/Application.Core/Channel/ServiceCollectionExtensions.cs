@@ -93,6 +93,7 @@ namespace Application.Core.Channel
             services.TryAddSingleton<IFishingService, DefaultFishingService>();
             services.TryAddSingleton<IDueyService, DefaultDueyService>();
             services.TryAddSingleton<IItemDistributeService, DefaultItemDistributeService>();
+            services.TryAddSingleton<IPlayerNPCService, DefaultPlayerNPCService>();
 
             services.AddSingleton<ItemTransactionService>();
 

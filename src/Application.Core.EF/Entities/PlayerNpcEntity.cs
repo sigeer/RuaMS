@@ -1,6 +1,6 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Playernpc
+public partial class PlayerNpcEntity
 {
     public int Id { get; set; }
 

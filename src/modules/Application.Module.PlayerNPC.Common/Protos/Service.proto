@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "Protos/PlayerNPC.proto";
+
+package PlayerNPCProto;
+
+service ChannelService {
+	rpc CreatePlayerNPCCheck(CreatePlayerNPCPreRequest)returns(CreatePlayerNPCPreResponse);
+	rpc CreatePlayerNPC(CreatePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc RemoveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
+	rpc RemoveByName(RemovePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc GetMapPlayerNPC(GetMapPlayerNPCListRequest) returns(GetMapPlayerNPCListResponse);
+}

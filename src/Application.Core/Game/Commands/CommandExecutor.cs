@@ -32,6 +32,14 @@ public class CommandExecutor
         loaded = true;
     }
 
+    public void TryRegisterCommand(CommandBase command)
+    {
+        foreach (var sytax in command.AllSupportedCommand)
+        {
+            registeredCommands.TryAdd(sytax, command);
+        }
+    }
+
     public void handle(IChannelClient client, string message)
     {
         if (!loaded)

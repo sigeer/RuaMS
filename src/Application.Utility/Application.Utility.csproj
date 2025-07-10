@@ -11,6 +11,7 @@
 		<PackageReference Include="Quartz" Version="3.14.0" />
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />
 		<PackageReference Include="AutoMapper" Version="14.0.0" />
+		<PackageReference Include="AutoMapper.Extensions.ExpressionMapping" Version="8.0.0" />
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.1" />
 	</ItemGroup>
 

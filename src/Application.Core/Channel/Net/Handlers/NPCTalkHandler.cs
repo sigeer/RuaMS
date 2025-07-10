@@ -57,6 +57,12 @@ public class NPCTalkHandler : ChannelHandlerBase
 
         int oid = p.readInt();
         var obj = c.OnlinedCharacter.getMap().getMapObject(oid);
+        if (obj == null)
+        {
+            c.sendPacket(PacketCreator.enableActions());
+            return;
+        }
+
         if (obj is NPC npc)
         {
             if (YamlConfig.config.server.USE_DEBUG)
@@ -106,15 +112,15 @@ public class NPCTalkHandler : ChannelHandlerBase
                 }
             }
         }
-        else if (obj is PlayerNPC pnpc)
+        else if (obj.getType() == MapObjectType.PLAYER_NPC)
         {
-            if (pnpc.getScriptId() < NpcId.CUSTOM_DEV && !c.CurrentServer.NPCScriptManager.isNpcScriptAvailable(c, "" + pnpc.getScriptId()))
+            if (obj.GetSourceId() < NpcId.CUSTOM_DEV && !c.CurrentServer.NPCScriptManager.isNpcScriptAvailable(c, "" + obj.GetSourceId()))
             {
-                c.CurrentServer.NPCScriptManager.start(c, pnpc.getScriptId(), "rank_user", null);
+                c.CurrentServer.NPCScriptManager.start(c, obj.GetSourceId(), "rank_user", null);
             }
             else
             {
-                c.CurrentServer.NPCScriptManager.start(c, pnpc.getScriptId(), null);
+                c.CurrentServer.NPCScriptManager.start(c, obj.GetSourceId(), null);
             }
         }
     }

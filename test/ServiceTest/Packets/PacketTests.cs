@@ -1,10 +1,10 @@
-﻿
+
+using Application.Shared.Net;
 using DotNetty.Buffers;
-using net.packet;
 
 namespace ServiceTest.Packets
 {
-    public class PacketTests: TestBase
+    public class PacketTests : TestBase
     {
         [TestCase("中文测试", ExpectedResult = 13)]
         [TestCase("abc", ExpectedResult = 13)]
