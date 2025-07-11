@@ -3,6 +3,7 @@ using Application.Core.Login.ServerTransports;
 using Application.Shared.Message;
 using Application.Shared.Servers;
 using BaseProto;
+using CashProto;
 using Dto;
 using net.server;
 using tools;
@@ -433,6 +434,11 @@ namespace Application.Core.Login
         internal void BroadcastPLifeRemoved(RemovePLifeResponse request)
         {
             BroadcastMessage(BroadcastType.OnPLifeRemoved, request);
+        }
+
+        internal void ReturnBuyCashItem(BuyCashItemResponse buyCashItemResponse)
+        {
+            SendMessage(BroadcastType.OnCashItemPurchased, buyCashItemResponse, buyCashItemResponse.MasterId);
         }
     }
 }

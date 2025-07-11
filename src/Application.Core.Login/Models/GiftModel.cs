@@ -1,8 +1,8 @@
-using Application.Core.Game.Relation;
+using Application.Core.Login.Shared;
 
-namespace Application.Core.Model
+namespace Application.Core.Login.Models
 {
-    public class GiftModel
+    public class GiftModel: ITrackableEntityKey<int>
     {
         public int Id { get; set; }
 
@@ -14,6 +14,6 @@ namespace Application.Core.Model
         public string Message { get; set; } = null!;
 
         public int Sn { get; set; }
-        public RingModel? Ring { get; set; }
+        public int RingSourceId { get; set; }
     }
 }

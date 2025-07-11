@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+import "Item/ItemTransaction.proto";
+import "Item/Ring.proto";
+
+package CashProto;
+
+message BuyCashItemRequest {
+	int32 masterId = 1;
+	int32 cashItemSn = 2;
+	int32 cashItemId = 3;
+	GiftInfo giftInfo = 4;
+	ItemProto.CreateItemTransactionRequest transaction = 5;
+}
+
+message BuySlotRequest {
+	int32 masterId = 1;
+	int32 slotType = 2;
+	int32 slotValue = 3;
+	
+	ItemProto.CreateItemTransactionRequest transaction = 4;
+}
+
+message GiftInfo {
+	string recipient = 1;
+	string message = 2;
+	bool createRing = 3;
+}
+
+message BuyCashItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	int32 sn = 3;
+	ItemProto.ItemTransaction transaction = 4;
+	CreateGiftResponse giftInfo = 5;
+}
+
+message CreateGiftResponse {
+	int32 code = 1;
+	string recipient = 2;
+	ItemProto.RingDto myRing = 3;
+}

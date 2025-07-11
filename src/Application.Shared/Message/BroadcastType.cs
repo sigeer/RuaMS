@@ -2,6 +2,8 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string OnCashItemPurchased = "OnCashItemPurchased";
+
         public const string OnPLifeCreated = "OnPLifeCreated";
         public const string OnPLifeRemoved = "OnPLifeRemoved";
 

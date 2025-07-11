@@ -86,6 +86,10 @@ namespace Application.Core.Login
         public CashShopDataManager CashShopDataManager { get; }
         public TeamManager TeamManager { get; }
         public GuildManager GuildManager { get; }
+        readonly Lazy<RingManager> _ringManager;
+        public RingManager RingManager => _ringManager.Value;
+        readonly Lazy<GiftManager> _giftManager;
+        public GiftManager GiftManager => _giftManager.Value;
         public ItemTransactionManager ItemTransactionManager { get; }
         readonly Lazy<ResourceDataManager> _lazyResourceDataManager;
         public ResourceDataManager ResourceDataManager => _lazyResourceDataManager.Value;
@@ -147,6 +151,8 @@ namespace Application.Core.Login
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
             ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
             ItemTransactionManager = ActivatorUtilities.CreateInstance<ItemTransactionManager>(ServiceProvider, this);
+            _giftManager = new(() => ServiceProvider.GetRequiredService<GiftManager>());
+            _ringManager = new(() => ServiceProvider.GetRequiredService<RingManager>());
             _lazyNewYearCardManager = new(() => ServiceProvider.GetRequiredService<NewYearCardManager>());
             _lazyResourceDataManager = new(() => ServiceProvider.GetRequiredService<ResourceDataManager>());
         }

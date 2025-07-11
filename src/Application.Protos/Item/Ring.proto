@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ItemProto;
+
+message RingDto {
+	int32 id = 1;
+	int32 characterId1 = 2;
+	int32 characterId2 = 3;
+	int64 ringId1 = 4;
+	int64 ringId2 = 5;
+	int32 itemId = 6;
+	string characterName1 = 7;
+	string characterName2 = 8;
+}

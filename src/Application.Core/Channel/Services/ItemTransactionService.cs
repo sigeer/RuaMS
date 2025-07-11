@@ -24,6 +24,37 @@ namespace Application.Core.Channel.Services
         /// <summary>
         /// 添加事务 
         /// </summary>
+        public bool TryBuyCash(IPlayer chr, int type, CashItem cashItem, out CreateItemTransactionRequest request)
+        {
+            bool isSuccess = true;
+            request = new CreateItemTransactionRequest();
+            request.PlayerId = chr.Id;
+
+            if (!cashItem.isOnSale())
+                return false;
+
+            if (chr.getCashShop().BuyCashItem(type, cashItem))
+            {
+                request.CashType = type;
+                request.CashValue = cashItem.getPrice();
+            }
+            else
+            {
+                isSuccess = false;
+            }
+
+            if (isSuccess)
+                return true;
+            else
+            {
+                chr.dropMessage("你没有足够的现金");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 添加事务 
+        /// </summary>
         public bool TryBeginTransaction(IPlayer chr, List<Item> items, int meso, out CreateItemTransactionRequest request)
         {
             bool isSuccess = true;
@@ -54,22 +85,27 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            if (chr.getMeso() >= meso)
+            if (meso != 0)
             {
-                chr.gainMeso(-meso, show: false);
-                request.Meso = meso;
+                if (chr.getMeso() >= meso)
+                {
+                    chr.gainMeso(-meso, show: false);
+                    request.Meso = meso;
+                }
+                else
+                {
+                    isSuccess = false;
+                }
+
             }
-            else
-            {
-                isSuccess = false;
-            }
+
 
             if (isSuccess)
                 return true;
             else
             {
                 chr.dropMessage("你没有足够的金币或者道具");
-                _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(request.Items), 0, "系统消耗失败返还");
+                _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(request.Items), meso, 0, 0, "系统消耗失败返还");
                 return false;
             }
         }
@@ -82,7 +118,8 @@ namespace Application.Core.Channel.Services
                 var status = (ItemTransactionStatus)transaction.Status;
                 if (status == ItemTransactionStatus.PendingForRollback)
                 {
-                    _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(transaction.Items), transaction.Meso, "系统消耗失败返还");
+                    _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(transaction.Items), transaction.Meso, transaction.CashType, transaction.CashValue,
+                        "系统消耗失败返还");
                 }
 
                 _transport.FinishTransaction(new FinishTransactionRequest
@@ -101,7 +138,8 @@ namespace Application.Core.Channel.Services
                     var status = (ItemTransactionStatus)transaction.Status;
                     if (status == ItemTransactionStatus.PendingForRollback)
                     {
-                        _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(transaction.Items), transaction.Meso, "系统消耗失败返还");
+                        _itemDistributor.Distribute(chr, _mapper.Map<List<Item>>(transaction.Items), transaction.Meso, transaction.CashType, transaction.CashValue, 
+                            "系统消耗失败返还");
                     }
 
                     _transport.FinishTransaction(new FinishTransactionRequest

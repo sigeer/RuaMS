@@ -14,8 +14,11 @@
 		<Protobuf Include="Base\PLife.proto" GrpcServices="None" />
 		<Protobuf Include="Base\ItemQuantity.proto" GrpcServices="None" />
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
+		<Protobuf Include="Cash\Cash.proto" GrpcServices="None" />
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Item\Ring.proto" GrpcServices="None" />
 		<Protobuf Include="Item\ItemTransaction.proto" GrpcServices="None" />
+		<Protobuf Include="Item\Gift.proto" GrpcServices="None" />
 		<Protobuf Include="Item\TVMessage.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
@@ -80,7 +83,6 @@
 		<Protobuf Include="Dto\PlayerShop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Drop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Equip.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\Gift.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Item.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\AccountCtrl.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\AccountGame.proto" GrpcServices="None" />
@@ -91,7 +93,6 @@
 		<Protobuf Include="Dto\Event.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\KeyMap.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Monsterbook.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\Ring.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Pet.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\PetIgnore.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\QuestStatus.proto" GrpcServices="None" />

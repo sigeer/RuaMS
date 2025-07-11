@@ -29,15 +29,4 @@ namespace Application.Core.EF.Entities.Items
         public Ring_Entity? Ring { get; set; }
     }
 
-    public class GiftRingPair
-    {
-        public GiftRingPair(GiftEntity gift, Ring_Entity? ring)
-        {
-            Gift = gift;
-            Ring = ring;
-        }
-
-        public GiftEntity Gift { get; set; }
-        public Ring_Entity? Ring { get; set; }
-    }
 }

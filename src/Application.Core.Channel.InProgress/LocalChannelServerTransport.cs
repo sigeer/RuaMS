@@ -13,7 +13,9 @@ using Application.Shared.Net;
 using Application.Shared.Team;
 using AutoMapper;
 using BaseProto;
+using CashProto;
 using Dto;
+using ItemProto;
 using net.server;
 using server.expeditions;
 using System.Net;
@@ -483,14 +485,10 @@ namespace Application.Core.Channel.InProgress
             return _itemService.LoadSpecialCashItems();
         }
 
-        public void SendGift(int recipient, string from, string message, int sn, long ringid)
-        {
-            _itemService.InsertGift(recipient, from, message, sn, ringid);
-        }
 
-        public Dto.GiftDto[] LoadPlayerGifts(int playerId)
+        public GetMyGiftsResponse LoadPlayerGifts(GetMyGiftsRequest request)
         {
-            return _itemService.LoadPlayerGifts(playerId);
+            return _server.GiftManager.LoadGifts(request);
         }
         public void ClearGifts(int[] giftIdArray)
         {
@@ -874,6 +872,11 @@ namespace Application.Core.Channel.InProgress
         public void SendRemovePLife(RemovePLifeRequest removePLifeRequest)
         {
             _resourceService.RemovePLife(removePLifeRequest);
+        }
+
+        public void SendBuyCashItem(BuyCashItemRequest buyCashItemRequest)
+        {
+            _server.CashShopDataManager.BuyCashItem(buyCashItemRequest);
         }
     }
 }

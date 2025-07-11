@@ -10,48 +10,26 @@ namespace Application.Core.Managers
 {
     public class RingManager
     {
-        public static RingPair? CreateRing(int itemid, IPlayer partner1, IPlayer partner2)
-        {
-            try
-            {
-                if (partner1 == null || partner2 == null)
-                    return null;
-
-                long[] ringID = new long[2];
-                ringID[0] = Yitter.IdGenerator.YitIdHelper.NextId();
-                ringID[1] = Yitter.IdGenerator.YitIdHelper.NextId();
-
-                return new RingPair(
-                    new Ring(ringID[0], ringID[1], partner2.getId(), itemid, partner2.getName()),
-                    new Ring(ringID[1], ringID[0], partner1.getId(), itemid, partner1.getName()));
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex.ToString());
-                return null;
-            }
-        }
-
         // js
-        public static void GiveMarriageRings(IPlayer player, IPlayer partner, int marriageRingItemId)
-        {
-            var rings = CreateRing(marriageRingItemId, player, partner);
-            var ii = ItemInformationProvider.getInstance();
+        //public static void GiveMarriageRings(IPlayer player, IPlayer partner, int marriageRingItemId)
+        //{
+        //    var rings = CreateRing(marriageRingItemId, player, partner);
+        //    var ii = ItemInformationProvider.getInstance();
 
-            Item ringObj = ii.getEquipById(marriageRingItemId);
-            Equip ringEqp = (Equip)ringObj;
-            ringEqp.Ring = rings.MyRing;
-            player.addMarriageRing(rings.MyRing);
-            InventoryManipulator.addFromDrop(player.Client, ringEqp, false);
-            player.broadcastMarriageMessage();
+        //    Item ringObj = ii.getEquipById(marriageRingItemId);
+        //    Equip ringEqp = (Equip)ringObj;
+        //    ringEqp.Ring = rings.MyRing;
+        //    player.addMarriageRing(rings.MyRing);
+        //    InventoryManipulator.addFromDrop(player.Client, ringEqp, false);
+        //    player.broadcastMarriageMessage();
 
-            ringObj = ii.getEquipById(marriageRingItemId);
-            ringEqp = (Equip)ringObj;
-            ringEqp.Ring = rings.PartnerRing;
-            partner.addMarriageRing(rings.PartnerRing);
-            InventoryManipulator.addFromDrop(partner.Client, ringEqp, false);
-            partner.broadcastMarriageMessage();
-        }
+        //    ringObj = ii.getEquipById(marriageRingItemId);
+        //    ringEqp = (Equip)ringObj;
+        //    ringEqp.Ring = rings.PartnerRing;
+        //    partner.addMarriageRing(rings.PartnerRing);
+        //    InventoryManipulator.addFromDrop(partner.Client, ringEqp, false);
+        //    partner.broadcastMarriageMessage();
+        //}
 
         public static void BreakMarriageRing(IPlayer chr, int wItemId)
         {

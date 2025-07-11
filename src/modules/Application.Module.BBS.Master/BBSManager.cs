@@ -36,7 +36,7 @@ namespace Application.Module.BBS.Master
             _threadId = (await dbContext.BbsThreads.MaxAsync(x => (int?)x.Threadid)) ?? 0;
         }
 
-        protected override List<BBSThreadModel> Query(Expression<Func<BBSThreadModel, bool>> expression)
+        public override List<BBSThreadModel> Query(Expression<Func<BBSThreadModel, bool>> expression)
         {
             var entityExpression = _mapper.MapExpression<Expression<Func<BbsThreadEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();

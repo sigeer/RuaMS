@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-import "Dto/Ring.proto";
+import "Item/Ring.proto";
 
 package Dto;
 
@@ -31,5 +31,5 @@ message EquipDto {
   int32 vicious = 21;
   int32 itemlevel = 22;
   int32 itemexp = 23;
-  RingDto ringInfo = 24;
+  ItemProto.RingDto ringInfo = 24;
 }

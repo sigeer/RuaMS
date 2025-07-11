@@ -1,6 +1,8 @@
+using Application.Shared.Items;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
 using AutoMapper;
+using CashProto;
 using constants.game;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +29,50 @@ namespace Application.Core.Login.ServerData
                 cashItemBought.Add(new());
             }
 
+        }
+
+        public void BuyCashItem(BuyCashItemRequest request)
+        {
+            CreateGiftResponse? giftResult = null;
+            if (request.GiftInfo != null)
+            {
+                giftResult = _server.GiftManager.CreateGift(request.MasterId, request.GiftInfo.Recipient, request.CashItemSn, request.CashItemId, request.GiftInfo.Message, request.GiftInfo.CreateRing);
+                if (giftResult.Code != 0)
+                {
+                    _server.Transport.ReturnBuyCashItem(new BuyCashItemResponse { 
+                        Code = giftResult.Code, 
+                        GiftInfo = giftResult,
+                        MasterId = request.MasterId,
+                        Sn = request.CashItemSn,
+                        Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, Application.Shared.Items.ItemTransactionStatus.PendingForRollback) });
+                    return;
+                }
+            }
+
+            if (!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
+            {
+                suggestLock.EnterWriteLock();
+                try
+                {
+                    Dictionary<int, int> tabItemBought = cashItemBought[request.CashItemSn / 10000000];
+
+                    var cur = tabItemBought.GetValueOrDefault(request.CashItemSn);
+                    tabItemBought.AddOrUpdate(request.CashItemSn, cur + 1);
+                }
+                finally
+                {
+                    suggestLock.ExitWriteLock();
+                }
+            }
+
+            _server.Transport.ReturnBuyCashItem(new BuyCashItemResponse
+            {
+                Code = 0,
+                GiftInfo = giftResult,
+                MasterId = request.MasterId,
+                Sn = request.CashItemSn,
+                Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, Application.Shared.Items.ItemTransactionStatus.PendingForCommit)
+            });
         }
 
         public void AddOwlItemSearch(int itemid)

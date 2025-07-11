@@ -42,7 +42,7 @@ namespace Application.Module.Duey.Master
             _currentId = await dbContext.Dueypackages.MaxAsync(x => (int?)x.PackageId) ?? 0;
         }
 
-        protected override List<DueyPackageModel> Query(Expression<Func<DueyPackageModel, bool>> expression)
+        public override List<DueyPackageModel> Query(Expression<Func<DueyPackageModel, bool>> expression)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 

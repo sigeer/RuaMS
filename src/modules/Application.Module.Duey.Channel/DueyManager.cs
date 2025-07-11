@@ -289,7 +289,7 @@ namespace Application.Module.Duey.Channel
 
 
                 _transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = true});
-                _distributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, "包裹满了");
+                _distributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
             }
             else
             {

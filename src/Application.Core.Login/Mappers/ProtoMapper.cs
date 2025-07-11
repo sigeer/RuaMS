@@ -34,7 +34,7 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<EquipModel, Dto.EquipDto>().ReverseMap();
             CreateMap<PetModel, Dto.PetDto>().ReverseMap();
-            CreateMap<RingModel, Dto.RingDto>().ReverseMap();
+            CreateMap<RingModel, ItemProto.RingDto>();
             CreateMap<ItemModel, Dto.ItemDto>().ReverseMap();
 
             CreateMap<AccountCtrl, Dto.AccountCtrlDto>().ReverseMap();
@@ -86,6 +86,8 @@ namespace Application.Core.Login.Mappers
             CreateMap<ChatRoomModel, Dto.ChatRoomDto>()
                 .ForMember(dest => dest.RoomId, src => src.MapFrom(x => x.Id))
                 .ForMember(dest => dest.Members, src => src.Ignore());
+
+            CreateMap<GiftModel, ItemProto.GiftDto>();
 
             CreateMap<NewYearCardModel, Dto.NewYearCardDto>();
             CreateMap<PLifeModel, BaseProto.PLifeDto>()

@@ -29,7 +29,7 @@ namespace Application.Core.Login.Shared
             _localData[key] = new StoreUnit<TModel>(StoreFlag.Remove, null);
         }
 
-        protected abstract List<TModel> Query(Expression<Func<TModel, bool>> expression);
+        public abstract List<TModel> Query(Expression<Func<TModel, bool>> expression);
 
         /// <summary>
         /// 查询，数据库数据 + 修改过的数据 - 移除的数据

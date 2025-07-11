@@ -65,6 +65,9 @@ namespace Application.Core.Channel
         public DataService DataService => _dataService.Value;
         readonly Lazy<IPlayerNPCService> _playerNPCService;
         public IPlayerNPCService PlayerNPCService => _playerNPCService.Value;
+
+        readonly Lazy<ItemService> _itemService;
+        public ItemService ItemService => _itemService.Value;
         #endregion
 
         #region Task
@@ -140,6 +143,7 @@ namespace Application.Core.Channel
             _noteService = new(() => ServiceProvider.GetRequiredService<NoteService>());
             _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
             _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
+            _itemService = new(() => ServiceProvider.GetRequiredService<ItemService>());
         }
 
         #region 时间
@@ -630,6 +634,8 @@ namespace Application.Core.Channel
         private void InitializeMessage()
         {
             var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
+            MessageDispatcher.Register<CashProto.BuyCashItemResponse>(BroadcastType.OnCashItemPurchased, itemSrc.OnBuyCashItemCallback);
+
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
             MessageDispatcher.Register<Dto.SendTextMessage>(BroadcastType.OnMessage, OnBroadcastText);
             MessageDispatcher.Register<ItemProto.UseItemMegaphoneResponse>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);

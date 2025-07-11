@@ -70,13 +70,11 @@ namespace Application.Core.Login.Datas
             if (allItems.Count != 0)
             {
                 var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
-                var ringIds = dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).Select(x => x.RingId).ToArray();
 
                 var petIds = allItems.Select(x => x.Petid).ToArray();
                 dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
                 dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
                 dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
-                dbContext.Rings.Where(x => ringIds.Contains(x.Id)).ExecuteDelete();
             }
 
             foreach (var item in items)
@@ -124,16 +122,6 @@ namespace Application.Core.Login.Datas
                         item.EquipInfo.Itemlevel,
                         item.EquipInfo.Itemexp,
                         item.EquipInfo.RingInfo?.Id ?? -1));
-
-                    if (item.EquipInfo.RingInfo != null)
-                    {
-                        dbContext.Rings.Add(new Ring_Entity(
-                            item.EquipInfo.RingInfo.Id,
-                            item.EquipInfo.RingInfo.ItemId,
-                            item.EquipInfo.RingInfo.PartnerRingId,
-                            item.EquipInfo.RingInfo.PartnerChrId,
-                            item.EquipInfo.RingInfo.PartnerName));
-                    }
                 }
                 if (item.PetInfo != null)
                 {
@@ -153,16 +141,14 @@ namespace Application.Core.Login.Datas
             if (allItems.Count != 0)
             {
                 var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
-                var ringIds = dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).Select(x => x.RingId).ToArray();
 
                 var petIds = allItems.Select(x => x.Petid).ToArray();
                 await dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
                 await dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
                 await dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDeleteAsync();
-                await dbContext.Rings.Where(x => ringIds.Contains(x.Id)).ExecuteDeleteAsync();
             }
 
-            
+
             foreach (var item in items)
             {
                 var model = new Inventoryitem()
@@ -208,16 +194,6 @@ namespace Application.Core.Login.Datas
                         item.EquipInfo.Itemlevel,
                         item.EquipInfo.Itemexp,
                         item.EquipInfo.RingInfo?.Id ?? -1));
-
-                    if (item.EquipInfo.RingInfo != null)
-                    {
-                        dbContext.Rings.Add(new Ring_Entity(
-                            item.EquipInfo.RingInfo.Id,
-                            item.EquipInfo.RingInfo.ItemId,
-                            item.EquipInfo.RingInfo.PartnerRingId,
-                            item.EquipInfo.RingInfo.PartnerChrId,
-                            item.EquipInfo.RingInfo.PartnerName));
-                    }
                 }
                 if (item.PetInfo != null)
                 {

@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Game.Relation;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
 using Application.Shared.Items;
@@ -10,6 +11,7 @@ using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.Extensions.Logging;
 using Mysqlx.Crud;
+using Org.BouncyCastle.Cms;
 using server;
 using tools;
 using static server.CashShop;
@@ -25,11 +27,11 @@ namespace Application.Core.Channel.Services
         readonly ItemTransactionService _itemStore;
         readonly CashItemProvider _cashItemProvider;
 
-        public ItemService(IMapper mapper, 
-            IChannelServerTransport transport, 
-            ILogger<ItemService> logger, 
-            WorldChannelServer server, 
-            ItemTransactionService itemStore, 
+        public ItemService(IMapper mapper,
+            IChannelServerTransport transport,
+            ILogger<ItemService> logger,
+            WorldChannelServer server,
+            ItemTransactionService itemStore,
             CashItemProvider cashItemProvider)
         {
             _mapper = mapper;
@@ -94,11 +96,6 @@ namespace Application.Core.Channel.Services
             return item;
         }
 
-        internal void AddCashItemBought(int sn)
-        {
-            _transport.AddCashItemBought(sn);
-        }
-
         public List<Item> getPackage(int itemId)
         {
             return _cashItemProvider.GetPackage(itemId).Select(x => CashItem2Item(_cashItemProvider.GetItemTrust(x))).ToList();
@@ -118,18 +115,17 @@ namespace Application.Core.Channel.Services
             List<ItemMessagePair> gifts = new();
             try
             {
-                var dataList = _mapper.Map<GiftModel[]>(_transport.LoadPlayerGifts(chr.Id));
+                var dataList = _mapper.Map<GiftModel[]>(_transport.LoadPlayerGifts(new ItemProto.GetMyGiftsRequest { MasterId = chr.Id}).List);
                 foreach (var rs in dataList)
                 {
                     cashShop.Notes++;
                     var cItem = _cashItemProvider.GetItemTrust(rs.Sn);
                     Item item = CashItem2Item(cItem);
-                    Equip? equip = null;
-                    item.setGiftFrom(rs.From);
-                    if (item.getInventoryType().Equals(InventoryType.EQUIP))
+
+                    item.setGiftFrom(rs.FromName);
+                    if (item is Equip equip)
                     {
-                        equip = (Equip)item;
-                        equip.Ring = rs.Ring;
+                        equip.Ring = chr.GetRingFromTotal(rs.Ring);
                         gifts.Add(new ItemMessagePair(equip, rs.Message));
                     }
                     else
@@ -143,13 +139,13 @@ namespace Application.Core.Channel.Services
                         //Packages never contains a ring
                         foreach (Item packageItem in packages)
                         {
-                            packageItem.setGiftFrom(rs.From);
+                            packageItem.setGiftFrom(rs.FromName);
                             cashShop.addToInventory(packageItem);
                         }
                     }
                     else
                     {
-                        cashShop.addToInventory(equip == null ? item : equip);
+                        cashShop.addToInventory(item);
                     }
                 }
 
@@ -293,6 +289,95 @@ namespace Application.Core.Channel.Services
 
             }
 
+            _itemStore.HandleTransaction(data.Transaction);
+        }
+
+        public void BuyCashItem(IPlayer chr, int cashType, CashItem cItem)
+        {
+            if (_itemStore.TryBuyCash(chr, cashType, cItem, out var transaction))
+                _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
+                {
+                    MasterId = chr.Id,
+                    CashItemId = cItem.getItemId(),
+                    CashItemSn = cItem.getSN(),
+                    Transaction = transaction
+                });
+        }
+
+        public void BuyCashItemForGift(IPlayer chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
+        {
+            if (_itemStore.TryBuyCash(chr, cashType, cItem, out var transaction))
+                _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
+                {
+                    MasterId = chr.Id,
+                    CashItemId = cItem.getItemId(),
+                    CashItemSn = cItem.getSN(),
+                    Transaction = transaction,
+                    GiftInfo = new CashProto.GiftInfo
+                    {
+                        Message = message,
+                        Recipient = toName,
+                        CreateRing = createRing
+                    }
+                });
+        }
+
+        public void OnBuyCashItemCallback(CashProto.BuyCashItemResponse data)
+        {
+            var chr = _server.FindPlayerById(data.MasterId);
+            if (chr != null)
+            {
+                if (data.Code != 0)
+                {
+                    chr.sendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
+                    return;
+                }
+
+                if (data.GiftInfo != null)
+                {
+                    var cItem = _cashItemProvider.getItem(data.Sn)!;
+                    Item item = CashItem2Item(cItem);
+                    if (data.GiftInfo.MyRing != null && CashItem2Item(cItem) is Equip equip)
+                    {
+                        var ring = _mapper.Map<RingModel>(data.GiftInfo.MyRing);
+                        var ringSingle = chr.GetRingFromTotal(ring);
+                        equip.Ring = ringSingle;
+                        chr.addPlayerRing(ringSingle);
+                        // 原代码中 crush ring 用的是showBoughtCashItem
+                        chr.sendPacket(PacketCreator.showBoughtCashRing(item, data.GiftInfo.Recipient, chr.Client.AccountId));
+                        chr.getCashShop().addToInventory(item);
+                    }
+
+
+                    chr.sendPacket(PacketCreator.showGiftSucceed(data.GiftInfo.Recipient, cItem));
+                }
+                else
+                {
+                    var cItem = _cashItemProvider.getItem(data.Sn)!;
+                    if (_cashItemProvider.isPackage(cItem.getItemId()))
+                    {
+                        var cashPackage = getPackage(cItem.getItemId());
+                        foreach (var item in cashPackage)
+                        {
+                            chr.getCashShop().addToInventory(item);
+
+                            chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
+                        }
+                        chr.sendPacket(PacketCreator.showBoughtCashPackage(cashPackage, chr.Client.AccountId));
+                    }
+                    else
+                    {
+                        Item item = CashItem2Item(cItem);
+
+                        chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
+                        chr.getCashShop().addToInventory(item);
+
+                    }
+
+                }
+
+                chr.sendPacket(PacketCreator.showCash(chr));
+            }
             _itemStore.HandleTransaction(data.Transaction);
         }
     }

@@ -80,12 +80,11 @@ namespace Application.Core.Login
 
         static IServiceCollection AddDataManager(this IServiceCollection services)
         {
-            services.AddSingleton<IStorage, ResourceDataManager>();
             services.AddSingleton<ResourceDataManager>();
 
-            services.AddSingleton<IStorage, NewYearCardManager>();
             services.AddSingleton<NewYearCardManager>();
 
+            services.AddSingleton<GiftManager>();
             return services;
         }
 
