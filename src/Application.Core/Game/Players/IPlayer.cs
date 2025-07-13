@@ -9,6 +9,7 @@ using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
+using Application.Core.Models;
 using Application.Shared.NewYear;
 using Application.Shared.Objects;
 using client;
@@ -350,9 +351,9 @@ namespace Application.Core.Game.Players
         void SetMount(IMount? mount);
         IMount? getMount();
         string getName();
-        void addNewYearRecord(NewYearCardModel newyear);
+        void addNewYearRecord(NewYearCardObject newyear);
 
-        HashSet<NewYearCardModel> getReceivedNewYearRecords();
+        HashSet<NewYearCardObject> getReceivedNewYearRecords();
         void RemoveNewYearRecord(int id);
         void DiscardNewYearRecord(bool isSender);
         int getNoPets();

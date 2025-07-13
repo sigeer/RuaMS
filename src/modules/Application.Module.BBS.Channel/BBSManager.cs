@@ -61,7 +61,8 @@ namespace Application.Module.BBS.Channel
                 return;
             }
 
-            var res = _transport.EditThread(new BBSProto.PostThreadRequest { Icon = icon, MasterId = chr.Id, Text = text, Title = title });
+            // TODO: 这里bNotice不明，重构改变了原逻辑（关键字段: localthreadid）
+            var res = _transport.EditThread(new BBSProto.PostThreadRequest { Icon = icon, MasterId = chr.Id, Text = text, Title = title, BNotice = bNotice });
             ProcessThreadResponse(chr, res);
         }
 

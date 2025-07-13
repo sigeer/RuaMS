@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+import "Protos/PlayerNPCPositioner.proto";
+
+package PlayerNPCProto;
+
+message PlayerNPCDto {
+	string name = 1;
+	int32 x = 2;
+	int32 cy = 3;
+	int32 mapId = 4;
+	int32 rx0 = 5;
+	int32 rx1 = 6;
+	int32 hair = 7;
+	int32 face = 8;
+	int32 skin = 9;
+	int32 scriptId = 10;
+	int32 jobId = 11;
+	int32 fh = 12;
+	int32 gender = 13;
+	int32 dir = 14;
+	int32 playerId = 15;
+	bool isHonor = 16;
+	int32 overallRank = 17;
+	int32 jobRank = 18;
+	repeated PlayerNPCEquip equips = 19;
+}
+
+message PlayerNPCEquip {
+	int32 position = 1;
+	int32 itemId = 2;
+}
+
+message GetMapPlayerNPCListRequest {
+	int32 mapId = 1;
+}
+
+message GetMapPlayerNPCListResponse {
+	repeated PlayerNPCDto list = 1;
+}
+
+message CreatePlayerNPCPreRequest {
+	int32 mapId = 1;
+	int32 branchSidStart = 2;
+	int32 branchSidEnd = 3;
+}
+
+message CreatePlayerNPCPreResponse {
+	int32 code = 1;
+	int32 mapId = 2;
+	int32 nextPositionData = 3;
+	repeated int32 usedScriptIdList = 4;
+}
+
+message CreatePlayerNPCRequest {
+	int32 mapId = 1;
+	int32 nextStepData = 2;
+	repeated PlayerNPCDto updatedList = 3;
+	PlayerNPCDto newData = 4;
+}
+
+message RemovePlayerNPCRequest {
+	string targetName = 1;
+}
+
+message RemovePlayerNPCItemResponse {
+	int32 mapId = 1;
+	int32 objectId = 2;
+}
+
+message RemovePlayerNPCResponse {
+	repeated RemovePlayerNPCItemResponse list = 1;
+}
+
+message UpdateMapPlayerNPCResponse {
+	int32 mapId = 1;
+	repeated PlayerNPCDto updatedList = 3;
+	PlayerNPCDto newData = 4;
+}
+
+message RemoveAllPlayerNPCResponse {
+	repeated int32 mapIdList = 1;
+}

@@ -1,26 +1,22 @@
-using Application.Core;
 using Application.Core.Channel;
-using Application.Core.Channel.Local;
 using Application.Core.Channel.Net;
 using Application.Core.Game.Players;
-using Application.Core.Game.TheWorld;
 using Application.Core.Login;
-using Application.Core.Login.Datas;
-using Application.Core.Servers;
+using Application.Core.Login.Services;
+using Application.Core.net.server.coordinator.matchchecker.listener;
 using Application.Core.ServerTransports;
+using Application.Module.PlayerNPC.Channel.InProgress;
+using Application.Shared.Servers;
 using Application.Utility.Configs;
-using Application.Utility.Tasks;
-using AutoMapper;
-using DotNetty.Transport.Channels;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using net.server;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using net.server.coordinator.matchchecker;
 using Serilog;
-using Serilog.Events;
-using server;
-using ServiceTest.TestUtilities;
 using System.Text;
-using System.Threading.Channels;
+using System.Threading.Tasks;
 using Yitter.IdGenerator;
 
 namespace ServiceTest
@@ -30,64 +26,64 @@ namespace ServiceTest
         protected IServiceProvider _sp;
         public TestBase()
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-                .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateLogger();
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
 
-            var configuration = new ConfigurationBuilder();
-            var config = configuration.Build();
+            var builder = WebApplication.CreateBuilder();
 
-            var sc = new ServiceCollection();
-            sc.AddSingleton<IConfiguration>(config);
-            sc.AddLogging();
+            builder.Logging.ClearProviders();
+            builder.Logging.AddSerilog();
 
-            sc.AddChannelServer();
-            sc.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
-            sc.AddSingleton<WorldChannelServer>();
 
-            sc.AddScoped<IChannel, MockChannel>();
+            builder.Services.AddSingleton<IChannelServerTransport, Application.Core.Channel.InProgress.LocalChannelServerTransport>();
 
-            sc.AddDbFactory(YamlConfig.config.server.DB_CONNECTIONSTRING);
-            sc.AddLoginServer();
+            // 需要先启动Master
+            builder.Services.AddLoginServer(YamlConfig.config.server.DB_CONNECTIONSTRING);
+            builder.Services.AddChannelServer();
+            builder.Services.AddPlayerNPCInProgress();
 
-            _sp = sc.BuildServiceProvider();
+            //sc.AddScoped<IChannel, MockChannel>();
+
+
+            var app = builder.Build();
+            _sp = app.Services;
 
             var idGeneratorOptions = new IdGeneratorOptions(1);
             YitIdHelper.SetIdGenerator(idGeneratorOptions);
 
-            // Environment.SetEnvironmentVariable("ms-wz", "D:\\Cosmic\\wz");
+            MatchCheckerStaticFactory.Context = new MatchCheckerStaticFactory(
+                app.Services.GetRequiredService<MatchCheckerGuildCreationListener>(),
+                app.Services.GetRequiredService<MatchCheckerCPQChallengeListener>());
 
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            TimerManager.InitializeAsync(TaskEngine.Task).Wait();
+            var bootstrap = app.Services.GetServices<IServerBootstrap>();
+            foreach (var item in bootstrap)
+            {
+                item.ConfigureHost(app);
+            }
         }
 
-        public WorldChannel CreateChannel()
+        protected async Task LoadServer()
         {
-            Server.getInstance().LoadWorld();
-            var config = new ChannelServerConfig
+            var hostedServices = _sp.GetServices<IHostedService>();
+            foreach (var hostService in hostedServices)
             {
-                Port = 7575
-            };
-            var scope = _sp.CreateScope();
-            var transport = _sp.GetRequiredService<IChannelServerTransport>();
-            return new WorldChannel(scope, config, transport);
+                await hostService.StartAsync(CancellationToken.None);
+            }
+        }
+
+        protected WorldChannel GetChannel(int i)
+        {
+            var container = _sp.GetRequiredService<WorldChannelServer>();
+            return container.Servers[i];
         }
 
         public IPlayer? GetPlayer()
         {
-            var channel = CreateChannel();
+            var channel = _sp.GetRequiredService<WorldChannelServer>().Servers[1];
 
-            channel.GetType().GetField("channel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(channel, 1);
-            var masterServer = _sp.GetRequiredService<MasterServer>();
-            var obj = masterServer.CharacterManager.FindPlayerById(1);
-            var charSrv = _sp.GetRequiredService<Application.Core.Servers.Services.DataService>();
+            var loginService = _sp.GetRequiredService<LoginService>();
+            var obj = loginService.PlayerLogin("", channel.getId(), 1);
+            var charSrv = _sp.GetRequiredService<Application.Core.Channel.Services.DataService>();
 
             var client = ActivatorUtilities.CreateInstance<ChannelClient>(_sp, (long)1, channel);
             //var mockChannel = new Mock<ChannelClient>();

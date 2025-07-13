@@ -256,21 +256,7 @@ public class MapFactory
         }
         if (evt == null)
         {
-            try
-            {
-                using var dbContext = new DBContext();
-                var dataList = dbContext.Playernpcs.Where(x => x.Map == mapid && x.World == worldChannel.getWorld()).ToList();
-
-                foreach (var item in dataList)
-                {
-                    map.addPlayerNPCMapObject(new PlayerNPC(item));
-                }
-
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-            }
+            map.ChannelServer.Container.PlayerNPCService.LoadPlayerNpc(map);
         }
 
         loadLifeFromWz(map, mapData);

@@ -1,10 +1,11 @@
-﻿using Application.Core;
-using constants.net;
+using Application.Core;
+using Application.Shared.Constants;
+using Application.Shared.Net;
+using Application.Shared.Net.Encryption;
+using Application.Utility;
 using DotNetty.Buffers;
-using net.encryption;
 using Serilog;
 using Serilog.Events;
-using ServiceTest.Clients;
 using System.Text;
 using tools;
 
@@ -28,7 +29,7 @@ namespace ServiceTest.Infrastructure
         {
             var senderCypher = new MapleAESOFB(InitializationVector.generateSend(), ServerConstants.VERSION);
 
-            var bytes = GlobalTools.Encoding.GetBytes(inputString);
+            var bytes = GlobalVariable.Encoding.GetBytes(inputString);
             Console.WriteLine(string.Join(',', bytes));
 
             MapleCustomEncryption.encryptData(bytes);
@@ -108,7 +109,7 @@ namespace ServiceTest.Infrastructure
             var p1 = new byte[4];
             var sender = InitializationVector.generateSend();
             var recv = InitializationVector.generateReceive();
-            var packet = PacketCreator.getHello(ServerConstants.VERSION, sender, recv);
+            var packet = PacketCommon.getHello(ServerConstants.VERSION, sender, recv);
             var helloBytes = packet.ToString();
             Console.WriteLine(helloBytes);
             Assert.Pass();

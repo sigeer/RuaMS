@@ -126,5 +126,15 @@ namespace Application.Core.Game.Players
         {
             Client.CurrentServerContainer.SetFly(Id, v);
         }
+
+        public override int GetSourceId()
+        {
+            return Id;
+        }
+
+        public override string GetName()
+        {
+            return Name;
+        }
     }
 }

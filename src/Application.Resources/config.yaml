@@ -221,15 +221,6 @@ server:
     CHAIR_EXTRA_HEAL_MULTIPLIER: 10    #Due to only being able to be send up-to-255 heal values, values being actually updated is the one displayed times this.
     CHAIR_EXTRA_HEAL_MAX_DELAY: 21      #Players are expected to recover fully after using this skill for N seconds.
 
-    #Player NPC Configuration
-    PLAYERNPC_INITIAL_X: 262            #Map frame width for putting PlayerNPCs.
-    PLAYERNPC_INITIAL_Y: 262            #Map frame height for putting PlayerNPCs.
-    PLAYERNPC_AREA_X: 320               #Initial width gap between PlayerNPCs.
-    PLAYERNPC_AREA_Y: 160               #Initial height gap between PlayerNPCs.
-    PLAYERNPC_AREA_STEPS: 4             #Max number of times gap is shortened to comport PlayerNPCs.
-    PLAYERNPC_ORGANIZE_AREA: true   #Automatically rearranges PlayerNPCs on the map if there is no space set the new NPC. Current distance gap between NPCs is decreased to solve this issue.
-    PLAYERNPC_AUTODEPLOY: true      #Makes PlayerNPC automatically deployed on the Hall of Fame at the instant one reaches max level. If false, eligible players must talk to 1st job instructor to deploy a NPC.
-
     #Pet Auto-Pot Configuration
     USE_COMPULSORY_AUTOPOT: true    #Pets will consume as many potions as needed to fulfill the AUTOHP/MP ratio threshold.
     USE_EQUIPS_ON_AUTOPOT: true     #Player MaxHP and MaxMP check values on autopot handler will be updated by the HP/MP bonuses on equipped items.

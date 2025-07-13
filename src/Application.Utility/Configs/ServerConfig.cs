@@ -224,15 +224,6 @@ public class ServerConfig
     public byte CHAIR_EXTRA_HEAL_MULTIPLIER;
     public int CHAIR_EXTRA_HEAL_MAX_DELAY;
 
-    //Player NPC Configuration
-    public int PLAYERNPC_INITIAL_X;
-    public int PLAYERNPC_INITIAL_Y;
-    public int PLAYERNPC_AREA_X;
-    public int PLAYERNPC_AREA_Y;
-    public int PLAYERNPC_AREA_STEPS;
-    public bool PLAYERNPC_ORGANIZE_AREA;
-    public bool PLAYERNPC_AUTODEPLOY;
-
     //Pet Auto-Pot Configuration
     public bool USE_COMPULSORY_AUTOPOT;
     public bool USE_EQUIPS_ON_AUTOPOT;

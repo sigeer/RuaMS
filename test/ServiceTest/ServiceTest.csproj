@@ -25,12 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Application.Core.Channel.Local\Application.Core.Channel.InProgress.csproj" />
+    <ProjectReference Include="..\..\src\Application.Core.Channel.InProgress\Application.Core.Channel.InProgress.csproj" />
     <ProjectReference Include="..\..\src\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\..\src\Application.Core\Application.Core.csproj" />
     <ProjectReference Include="..\..\src\Application.Resources\Application.Resources.csproj" />
-    <ProjectReference Include="..\..\src\Application.Scripting.JS\Application.Scripting.JS.csproj" />
-    <ProjectReference Include="..\..\src\Application.Scripting.Lua\Application.Scripting.Lua.csproj" />
+    <ProjectReference Include="..\..\src\modules\Application.Module.PlayerNPC.Channel.InProgress\Application.Module.PlayerNPC.Channel.InProgress.csproj" />
   </ItemGroup>
 
 </Project>

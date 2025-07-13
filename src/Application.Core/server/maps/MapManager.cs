@@ -91,6 +91,11 @@ public class MapManager : IDisposable
         return maps.ContainsKey(mapId);
     }
 
+    public bool TryGetMap(int mapId, out IMap map)
+    {
+        return maps.TryGetValue(mapId, out map);
+    }
+
     public Dictionary<int, IMap> getMaps()
     {
         return new(maps);

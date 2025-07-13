@@ -6,9 +6,9 @@ namespace Application.Module.BBS.Channel.Net
 {
     public class BBSPacketCreator
     {
-        public static void addThread(OutPacket p, BBSThreadPreview rs)
+        static void AddThread(OutPacket p, BBSThreadPreviewDto rs)
         {
-            p.writeInt(rs.ThreadId);
+            p.writeInt(rs.Id);
             p.writeInt(rs.PosterId);
             p.writeString(rs.Title);
             p.writeLong(PacketCommon.getTime(rs.Timestamp));
@@ -16,7 +16,7 @@ namespace Application.Module.BBS.Channel.Net
             p.writeInt(rs.ReplyCount);
         }
 
-        public static Packet BBSThreadList(List<BBSThreadPreview> dataList, int start)
+        public static Packet BBSThreadList(List<BBSThreadPreviewDto> dataList, int start)
         {
             OutPacket p = OutPacket.create(SendOpcode.GUILD_BBS_PACKET);
             p.writeByte(0x06);
@@ -28,17 +28,18 @@ namespace Application.Module.BBS.Channel.Net
                 return p;
             }
             int threadCount = dataList.Count;
-            if (dataList[0].ThreadId == 0)
+            if (dataList[0].Id == 0)
             { 
                 //has a notice
                 p.writeByte(1);
-                addThread(p, dataList[0]);
+                AddThread(p, dataList[0]);
                 threadCount--; //one thread didn't count (because it's a notice)
             }
             else
             {
                 p.writeByte(0);
             }
+
             if (start + 1 > threadCount)
             {
                 start = 0;
@@ -47,16 +48,16 @@ namespace Application.Module.BBS.Channel.Net
             p.writeInt(Math.Min(10, threadCount - start));
             for (int i = 0; i < Math.Min(10, threadCount - start); i++)
             {
-                addThread(p, dataList[i]);
+                AddThread(p, dataList[i]);
             }
             return p;
         }
 
-        public static Packet showThread(BBSProto.BBSMainThread threadRS)
+        public static Packet showThread(BBSProto.BBSThreadDto threadRS)
         {
             OutPacket p = OutPacket.create(SendOpcode.GUILD_BBS_PACKET);
             p.writeByte(0x07);
-            p.writeInt(threadRS.ThreadId);
+            p.writeInt(threadRS.Id);
             p.writeInt(threadRS.PosterId);
             p.writeLong(PacketCommon.getTime(threadRS.Timestamp));
             p.writeString(threadRS.Title);

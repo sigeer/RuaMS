@@ -195,43 +195,6 @@ namespace Application.Core.Channel.InProgress
             return Task.FromResult(true);
         }
 
-
-        public void SetPlayerNpcMapPodiumData(int mapId, int podumData)
-        {
-            _world.setPlayerNpcMapPodiumData(mapId, podumData);
-        }
-
-        public int GetPlayerNpcMapPodiumData(int mapId)
-        {
-            return _world.getPlayerNpcMapPodiumData(mapId);
-        }
-
-        public void SetPlayerNpcMapStep(int mapId, int step)
-        {
-            _world.setPlayerNpcMapStep(mapId, step);
-        }
-
-        public int GetPlayerNpcMapStep(int mapId)
-        {
-            return _world.getPlayerNpcMapStep(mapId);
-        }
-
-        public void RequestRemovePlayerNpc(int mapId, IEnumerable<int> playerNpcObjectId)
-        {
-            foreach (var ch in Server.getInstance().getChannelsFromWorld(0))
-            {
-                var map = ch.getMapFactory().getMap(mapId);
-
-
-                foreach (var pn in playerNpcObjectId)
-                {
-                    map.removeMapObject(pn);
-                    map.broadcastMessage(PacketCreator.removeNPCController(pn));
-                    map.broadcastMessage(PacketCreator.removePlayerNPC(pn));
-                }
-            }
-        }
-
         public void BroadcastMessage(Packet p)
         {
             _server.BroadcastWorldMessage(p);

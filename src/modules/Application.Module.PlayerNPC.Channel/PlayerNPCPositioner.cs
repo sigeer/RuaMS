@@ -19,20 +19,41 @@
 */
 
 
-using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Module.PlayerNPC.Channel.Models;
+using Application.Module.PlayerNPC.Common;
+using Application.Shared.MapObjects;
+using Application.Utility.Compatible;
+using Application.Utility.Configs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using net.server;
+using Serilog;
+using System.Drawing;
 using tools;
 
-namespace server.life.positioner;
-/**
- * @author RonanLana
- */
-public class PlayerNPCPositioner
-{
-    private static ILogger log = LogFactory.GetLogger(LogType.PlayerNPC);
+namespace Application.Module.PlayerNPC.Channel;
 
-    private static bool isPlayerNpcNearby(List<Point> otherPos, Point searchPos, int xLimit, int yLimit)
+/// <summary>
+/// @author RonanLana
+/// </summary>
+public class PlayerNPCPositioner : IPlayerPositioner
+{
+    public int NextPositionData { get; set; }
+
+    readonly Configs _config;
+    public PlayerNPCPositioner(Configs config, int nextStep)
+    {
+        NextPositionData = nextStep;
+        _config = config;
+    }
+
+    public void UpdateNextPositionData(int value)
+    {
+        NextPositionData = value;
+    }
+
+    private bool isPlayerNpcNearby(List<Point> otherPos, Point searchPos, int xLimit, int yLimit)
     {
         int xLimit2 = xLimit / 2, yLimit2 = yLimit / 2;
 
@@ -50,22 +71,22 @@ public class PlayerNPCPositioner
         return false;
     }
 
-    private static int calcDx(int newStep)
+    private int calcDx(int newStep)
     {
-        return YamlConfig.config.server.PLAYERNPC_AREA_X / (newStep + 1);
+        return _config.PLAYERNPC_AREA_X / (newStep + 1);
     }
 
-    private static int calcDy(int newStep)
+    private int calcDy(int newStep)
     {
-        return (YamlConfig.config.server.PLAYERNPC_AREA_Y / 2) + (YamlConfig.config.server.PLAYERNPC_AREA_Y / (1 << (newStep + 1)));
+        return (_config.PLAYERNPC_AREA_Y / 2) + (_config.PLAYERNPC_AREA_Y / (1 << (newStep + 1)));
     }
 
-    private static List<Point> rearrangePlayerNpcPositions(IMap map, int newStep, int pnpcsSize)
+    private List<Point> rearrangePlayerNpcPositions(IMap map, int newStep, int pnpcsSize)
     {
         Rectangle mapArea = map.getMapArea();
 
-        int leftPx = mapArea.X + YamlConfig.config.server.PLAYERNPC_INITIAL_X, px, py = mapArea.Y + YamlConfig.config.server.PLAYERNPC_INITIAL_Y;
-        int outx = mapArea.X + mapArea.Width - YamlConfig.config.server.PLAYERNPC_INITIAL_X, outy = mapArea.Y + mapArea.Height;
+        int leftPx = mapArea.X + _config.PLAYERNPC_INITIAL_X, px, py = mapArea.Y + _config.PLAYERNPC_INITIAL_Y;
+        int outx = mapArea.X + mapArea.Width - _config.PLAYERNPC_INITIAL_X, outy = mapArea.Y + mapArea.Height;
         int cx = calcDx(newStep), cy = calcDy(newStep);
 
         List<Point> otherPlayerNpcs = new();
@@ -98,12 +119,12 @@ public class PlayerNPCPositioner
         return null;
     }
 
-    private static Point? rearrangePlayerNpcs(IMap map, int newStep, List<PlayerNPC> pnpcs)
+    private Point? rearrangePlayerNpcs(IMap map, int newStep, List<PlayerNpc> pnpcs)
     {
         Rectangle mapArea = map.getMapArea();
 
-        int leftPx = mapArea.X + YamlConfig.config.server.PLAYERNPC_INITIAL_X, px, py = mapArea.Y + YamlConfig.config.server.PLAYERNPC_INITIAL_Y;
-        int outx = mapArea.X + mapArea.Width - YamlConfig.config.server.PLAYERNPC_INITIAL_X, outy = mapArea.Y + mapArea.Height;
+        int leftPx = mapArea.X + _config.PLAYERNPC_INITIAL_X, px, py = mapArea.Y + _config.PLAYERNPC_INITIAL_Y;
+        int outx = mapArea.X + mapArea.Width - _config.PLAYERNPC_INITIAL_X, outy = mapArea.Y + mapArea.Height;
         int cx = calcDx(newStep), cy = calcDy(newStep);
 
         List<Point> otherPlayerNpcs = new();
@@ -125,7 +146,7 @@ public class PlayerNPCPositioner
                             return searchPos;
                         }
 
-                        PlayerNPC pn = pnpcs[i];
+                        var pn = pnpcs[i];
                         i++;
 
                         pn.updatePlayerNPCPosition(map, searchPos.Value);
@@ -142,51 +163,26 @@ public class PlayerNPCPositioner
         return null;    // this area should not be reached under any scenario
     }
 
-    private static Point? reorganizePlayerNpcs(IMap map, int newStep, List<IMapObject> mmoList)
+    private Point? reorganizePlayerNpcs(IMap map, int newStep, List<IMapObject> mmoList)
     {
         if (mmoList.Count > 0)
         {
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                log.Debug("Re-organizing pnpc map, step {Step}", newStep);
+                Log.Logger.Debug("Re-organizing pnpc map, step {Step}", newStep);
             }
 
-            List<PlayerNPC> playerNpcs = mmoList.OfType<PlayerNPC>().OrderBy(x => x.getScriptId()).ToList();
+            var playerNpcs = mmoList.OfType<PlayerNpc>().OrderBy(x => x.GetSourceId()).ToList();
 
-            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
-            {
-                var m = ch.getMapFactory().getMap(map.getId());
-
-                foreach (var pn in playerNpcs)
-                {
-                    m.removeMapObject(pn);
-                    m.broadcastMessage(PacketCreator.removeNPCController(pn.getObjectId()));
-                    m.broadcastMessage(PacketCreator.removePlayerNPC(pn.getObjectId()));
-                }
-            }
-
-            var ret = rearrangePlayerNpcs(map, newStep, playerNpcs);
-
-            foreach (var ch in Server.getInstance().getChannelsFromWorld(map.getWorld()))
-            {
-                var m = ch.getMapFactory().getMap(map.getId());
-
-                foreach (var pn in playerNpcs)
-                {
-                    m.addPlayerNPCMapObject(pn);
-                    m.broadcastMessage(PacketCreator.spawnPlayerNPC(pn));
-                    m.broadcastMessage(PacketCreator.getPlayerNPC(pn));
-                }
-            }
-
-            return ret;
+            return rearrangePlayerNpcs(map, newStep, playerNpcs);
         }
 
         return null;
     }
 
-    private static Point? getNextPlayerNpcPosition(IMap map, int initStep)
-    {   // automated playernpc position thanks to Ronan
+    private Point? getNextPlayerNpcPosition(IMap map, int initStep)
+    {
+        // automated playernpc position thanks to Ronan
         var mmoList = map.getMapObjectsInRange(new Point(0, 0), double.PositiveInfinity, Arrays.asList(MapObjectType.PLAYER_NPC));
         List<Point> otherPlayerNpcs = new();
         foreach (var mmo in mmoList)
@@ -196,13 +192,13 @@ public class PlayerNPCPositioner
 
         int cx = calcDx(initStep), cy = calcDy(initStep);
         Rectangle mapArea = map.getMapArea();
-        int outx = mapArea.X + mapArea.Width - YamlConfig.config.server.PLAYERNPC_INITIAL_X, outy = mapArea.Y + mapArea.Height;
+        int outx = mapArea.X + mapArea.Width - _config.PLAYERNPC_INITIAL_X, outy = mapArea.Y + mapArea.Height;
         bool reorganize = false;
 
         int i = initStep;
-        while (i < YamlConfig.config.server.PLAYERNPC_AREA_STEPS)
+        while (i < _config.PLAYERNPC_AREA_STEPS)
         {
-            int leftPx = mapArea.X + YamlConfig.config.server.PLAYERNPC_INITIAL_X, px, py = mapArea.Y + YamlConfig.config.server.PLAYERNPC_INITIAL_Y;
+            int leftPx = mapArea.X + _config.PLAYERNPC_INITIAL_X, px, py = mapArea.Y + _config.PLAYERNPC_INITIAL_Y;
 
             while (py < outy)
             {
@@ -217,10 +213,10 @@ public class PlayerNPCPositioner
                         {
                             if (i > initStep)
                             {
-                                map.ChannelServer.Container.Transport.SetPlayerNpcMapStep(map.getId(), i);
+                                UpdateNextPositionData(i);
                             }
 
-                            if (reorganize && YamlConfig.config.server.PLAYERNPC_ORGANIZE_AREA)
+                            if (reorganize && _config.PLAYERNPC_ORGANIZE_AREA)
                             {
                                 return reorganizePlayerNpcs(map, i, mmoList);
                             }
@@ -240,7 +236,7 @@ public class PlayerNPCPositioner
 
             cx = calcDx(i);
             cy = calcDy(i);
-            if (YamlConfig.config.server.PLAYERNPC_ORGANIZE_AREA)
+            if (_config.PLAYERNPC_ORGANIZE_AREA)
             {
                 otherPlayerNpcs = rearrangePlayerNpcPositions(map, i, mmoList.Count);
             }
@@ -248,13 +244,13 @@ public class PlayerNPCPositioner
 
         if (i > initStep)
         {
-            map.ChannelServer.Container.Transport.SetPlayerNpcMapStep(map.getId(), YamlConfig.config.server.PLAYERNPC_AREA_STEPS - 1);
+            UpdateNextPositionData(_config.PLAYERNPC_AREA_STEPS - 1);
         }
         return null;
     }
 
-    public static Point? getNextPlayerNpcPosition(IMap map)
+    public Point? GetNextPlayerNpcPosition(IMap map)
     {
-        return getNextPlayerNpcPosition(map, map.ChannelServer.Container.Transport.GetPlayerNpcMapStep(map.getId()));
+        return getNextPlayerNpcPosition(map, NextPositionData);
     }
 }

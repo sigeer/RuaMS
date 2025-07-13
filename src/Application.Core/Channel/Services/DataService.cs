@@ -5,6 +5,7 @@ using Application.Core.Game.Players;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Constants.Mob;
 using Application.Shared.Constants.Npc;
@@ -237,7 +238,7 @@ namespace Application.Core.Channel.Services
 
             foreach (var card in o.NewYearCards)
             {
-                player.addNewYearRecord(_mapper.Map<NewYearCardModel>(card));
+                player.addNewYearRecord(_mapper.Map<NewYearCardObject>(card));
             }
 
             var mountItem = player.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.Mount);

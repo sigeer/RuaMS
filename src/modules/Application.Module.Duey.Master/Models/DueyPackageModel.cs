@@ -1,14 +1,11 @@
 using Application.Core.Login.Models;
+using Application.Core.Login.Shared;
 
 namespace Application.Module.Duey.Master.Models
 {
-    public class DueyPackageModel
+    public class DueyPackageModel: ITrackableEntityKey<int>
     {
         public int Id { get; set; }
-        /// <summary>
-        /// 仅在读写数据库时使用，其他时候用Id代替（频道获取的packageid都是id）
-        /// </summary>
-        public int PackageId { get; set; }
 
         public int ReceiverId { get; set; }
 

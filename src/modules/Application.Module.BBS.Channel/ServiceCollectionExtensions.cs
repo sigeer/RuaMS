@@ -5,6 +5,7 @@ using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Application.Module.BBS.Channel
 {
@@ -23,7 +24,7 @@ namespace Application.Module.BBS.Channel
 
     public class BBSChannelBootstrap : IServerBootstrap
     {
-        public void ConfigureHost(WebApplication app)
+        public void ConfigureHost(IHost app)
         {
             var channelPacketProcessor = app.Services.GetRequiredService<IPacketProcessor<IChannelClient>>();
 

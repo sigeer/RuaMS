@@ -6,9 +6,10 @@ public partial class PlifeEntity
     {
     }
 
-    public PlifeEntity(int mapId, int mobId, int mobTime, int x, int y, int fh, string type)
+    public PlifeEntity(int id, int mapId, int lifeId, int mobTime, int x, int y, int fh, string type)
     {
-        Life = mobId;
+        Id = id;
+        Life = lifeId;
         F = 0;
         Fh = fh;
         Cy = y;

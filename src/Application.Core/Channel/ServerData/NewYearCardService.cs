@@ -1,4 +1,5 @@
 using Application.Core.Game.Life;
+using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.NewYear;
 using AutoMapper;
@@ -36,7 +37,7 @@ namespace Application.Core.Channel.ServerData
                     sender.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD, -1);
                     sender.getAbstractPlayerInteraction().gainItem(ItemId.NEW_YEARS_CARD_SEND, 1);
 
-                    var model = _mapper.Map<NewYearCardModel>(data.Model);
+                    var model = _mapper.Map<NewYearCardObject>(data.Model);
                     sender.addNewYearRecord(model);
                     sender.sendPacket(PacketCreator.onNewYearCardRes(sender, model, 4, 0));    // successfully sent
                 }
@@ -60,7 +61,7 @@ namespace Application.Core.Channel.ServerData
         {
             if (data.Code == 0)
             {
-                var newCard = _mapper.Map<NewYearCardModel>(data.Model);
+                var newCard = _mapper.Map<NewYearCardObject>(data.Model);
 
                 var receiver = _server.FindPlayerById(data.Request.MasterId);
                 if (receiver != null)
@@ -104,7 +105,7 @@ namespace Application.Core.Channel.ServerData
                 {
                     foreach (var obj in item.List)
                     {
-                        chr.sendPacket(PacketCreator.onNewYearCardRes(chr, _mapper.Map<NewYearCardModel>(obj), 0xC, 0));
+                        chr.sendPacket(PacketCreator.onNewYearCardRes(chr, _mapper.Map<NewYearCardObject>(obj), 0xC, 0));
                     }
                 }
 
@@ -119,7 +120,7 @@ namespace Application.Core.Channel.ServerData
 
         public void OnNewYearCardDiscard(Dto.DiscardNewYearCardResponse data)
         {
-            var cardList = _mapper.Map<NewYearCardModel[]>(data.UpdateList);
+            var cardList = _mapper.Map<NewYearCardObject[]>(data.UpdateList);
             var chr = _server.FindPlayerById(data.Request.MasterId);
 
             foreach (var item in cardList)

@@ -88,6 +88,12 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Members, src => src.Ignore());
 
             CreateMap<NewYearCardModel, Dto.NewYearCardDto>();
+            CreateMap<PLifeModel, BaseProto.PLifeDto>()
+                .ForMember(dest => dest.LifeId, src => src.MapFrom(x => x.Life))
+                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Map))
+                .ReverseMap()
+                .ForMember(dest => dest.Life, src => src.MapFrom(x => x.LifeId))
+                .ForMember(dest => dest.Map, src => src.MapFrom(x => x.MapId));
             CreateMap<ItemQuantity, BaseProto.ItemQuantity>();
         }
     }

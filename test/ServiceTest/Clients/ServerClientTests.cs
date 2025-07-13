@@ -1,12 +1,6 @@
-using Application.Core.Game;
-using Application.EF;
-using Microsoft.EntityFrameworkCore;
-using net.server.coordinator.session;
-using System.Diagnostics;
-
 namespace ServiceTest.Clients
 {
-    public class ServerClientTests: TestBase
+    public class ServerClientTests : TestBase
     {
         //[Test]
         //public void LoadCharacterListTest()
