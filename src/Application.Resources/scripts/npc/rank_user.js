@@ -46,12 +46,10 @@ function action(mode, type, selection) {
             var pnpc = cm.getPlayerNPCByScriptid(cm.getNpc());
 
             if (pnpc != null) {
-                var branchJobName = GameConstants.getJobName(pnpc.getJob());
+                var branchJobName = GameConstants.getJobName(pnpc.job);
 
-                var rankStr = "Hi, I am #b" + pnpc.getName() + "#k, #r" + GameConstants.ordinal(pnpc.getWorldJobRank()) + "#k in the #r" + branchJobName + "#k class to reach the max level.\r\n";
-                rankStr += "\r\n    World rank: #e#b" + GameConstants.ordinal(pnpc.getWorldRank()) + "#k#n";
-                rankStr += "\r\n    Overall " + branchJobName + " rank: #e#b" + GameConstants.ordinal(pnpc.getOverallJobRank()) + "#k#n";
-                rankStr += "\r\n    Overall rank: #e#b" + GameConstants.ordinal(pnpc.getOverallRank()) + "#k#n";
+                var rankStr = "Hi, I am #b" + pnpc.getName() + "#k, #r" + GameConstants.ordinal(pnpc.JobRank) + "#k in the #r" + branchJobName + "#k class to reach the max level.\r\n";
+                rankStr += "\r\n    World rank: #e#b" + GameConstants.ordinal(pnpc.OverallRank) + "#k#n";
 
                 cm.sendOk(rankStr);
             } else {
