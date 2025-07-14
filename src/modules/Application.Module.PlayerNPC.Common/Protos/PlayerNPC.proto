@@ -21,7 +21,9 @@ message PlayerNPCDto {
 	int32 dir = 14;
 	int32 playerId = 15;
 	bool isHonor = 16;
-	repeated PlayerNPCEquip equips = 17;
+	int32 overallRank = 17;
+	int32 jobRank = 18;
+	repeated PlayerNPCEquip equips = 19;
 }
 
 message PlayerNPCEquip {

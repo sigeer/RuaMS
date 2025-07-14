@@ -15,7 +15,9 @@ namespace Application.Module.PlayerNPC.Master.Models
                 .ForMember(dest => dest.Equippos, src => src.MapFrom(x => x.Position))
                 ;
             CreateMap<PlayerNpcModel, PlayerNPCProto.PlayerNPCDto>()
-                .ReverseMap();
+                .ForMember(dest=>dest.MapId, src => src.MapFrom(x => x.Map))
+                .ReverseMap()
+                .ForMember(dest => dest.Map, src => src.MapFrom(x => x.MapId));
 
             CreateMap<PlayerNpcEntity, PlayerNpcModel>()
                 .ReverseMap();

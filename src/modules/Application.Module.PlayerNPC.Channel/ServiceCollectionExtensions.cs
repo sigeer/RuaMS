@@ -25,6 +25,7 @@ namespace Application.Module.PlayerNPC.Channel
                 .BindConfiguration("PlayerNpc");
 
             services.AddSingleton<PlayerNPCManager>();
+            services.AddSingleton<IServerBootstrap, PlayerNPCChannelBootstrap>();
 
             services.AddSingleton<PlayerNpcCommand>();
             services.AddSingleton<PlayerNpcRemoveCommand>();

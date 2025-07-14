@@ -5,6 +5,7 @@ using Application.Module.PlayerNPC.Channel.Models;
 using Application.Module.PlayerNPC.Channel.Net;
 using Application.Module.PlayerNPC.Common;
 using Application.Shared.Constants.Inventory;
+using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Npc;
 using Application.Shared.MapObjects;
 using Application.Utility.Configs;
@@ -47,7 +48,7 @@ namespace Application.Module.PlayerNPC.Channel
             {
                 return _mapper.Map<List<PlayerNpc>>(_transport.GetMapPlayerNPCList(new GetMapPlayerNPCListRequest { MapId = mapId }).List);
             }) ?? [];
-            
+
         }
 
         public void SpawnPlayerNPCByHonor(IPlayer chr)
@@ -186,6 +187,7 @@ namespace Application.Module.PlayerNPC.Channel
 
                 var createRequest = new CreatePlayerNPCRequest { };
                 createRequest.NextStepData = playerPositioner?.NextPositionData ?? -1;
+                createRequest.MapId = mapId;
 
                 int jobId = (chr.getJob().getId() / 100) * 100;
                 var newData = new PlayerNPCDto()
@@ -270,6 +272,8 @@ namespace Application.Module.PlayerNPC.Channel
                     map.broadcastMessage(PlayerNPCPacketCreator.GetPlayerNPC(newData));
                 }
             }
+            _cache.Remove($"Map_{data.MapId}_PlayerNpc");
+
         }
 
 
@@ -292,8 +296,8 @@ namespace Application.Module.PlayerNPC.Channel
                         map.broadcastMessage(PlayerNPCPacketCreator.RemoveNPCController(item.ObjectId));
                         map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(item.ObjectId));
                     }
+                    _cache.Remove($"Map_{item.MapId}_PlayerNpc");
                 }
-
             }
         }
 
@@ -321,6 +325,7 @@ namespace Application.Module.PlayerNPC.Channel
                             map.broadcastMessage(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
                         }
                     }
+                    _cache.Remove($"Map_{mapId}_PlayerNpc");
                 }
 
             }

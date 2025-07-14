@@ -44,11 +44,9 @@ namespace Application.Module.PlayerNPC.Channel.Models
 
         public int Rx1 { get; set; }
 
-        public int Worldrank { get; set; }
+        public int OverallRank { get; set; }
 
-        public int Overallrank { get; set; }
-
-        public int Worldjobrank { get; set; }
+        public int JobRank { get; set; }
 
         public int Job { get; set; }
         public int PlayerId { get; set; }
