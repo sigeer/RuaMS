@@ -9,6 +9,7 @@ namespace Application.Module.Duey.Master.Models
         {
             CreateMap<DueyPackageEntity, DueyPackageModel>()
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.PackageId))
+                .ForMember(dest => dest.IsFrozen, src => src.Ignore())
                 .ReverseMap()
                 .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id));
             CreateMap<DueyPackageModel, DueyDto.DueyPackageDto>()

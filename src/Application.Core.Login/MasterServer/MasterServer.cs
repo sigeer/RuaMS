@@ -292,7 +292,7 @@ namespace Application.Core.Login
 
             foreach (var player in dataList)
             {
-                if (player.Channel <= 0)
+                if (player.Channel < 0)
                     continue;
 
                 var serverName = Channels[player.Channel - 1].ServerName;
@@ -317,10 +317,10 @@ namespace Application.Core.Login
             foreach (var cid in cidList)
             {
                 var player = CharacterManager.FindPlayerById(cid);
-                if (player == null || player.Channel <= 0)
+                if (player == null || player.ActualChannel == 0)
                     continue;
 
-                var serverName = Channels[player.Channel - 1].ServerName;
+                var serverName = Channels[player.ActualChannel - 1].ServerName;
                 var serverWrapper = ChannelServerList[serverName];
                 if (!result.TryGetValue(serverWrapper, out var idList))
                 {

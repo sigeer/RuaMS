@@ -139,34 +139,27 @@ namespace Application.Core.Login.Datas
                 // 理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发
                 if (origin.Channel != obj.Channel)
                 {
-                    if (obj.Channel <= 0)
+                    origin.Channel = obj.Channel;
+                    // 离线通知
+                    if (obj.Channel == 0)
                     {
-                        origin.Channel = obj.Channel;
-                        // 离线通知
-                        if (obj.Channel == 0)
+                        origin.ActualChannel = 0;
+                        _masterServer.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
                         {
-                            _masterServer.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
-                            {
-                                Id = origin.Character.Id,
-                                Name = origin.Character.Name,
-                                GuildId = origin.Character.GuildId,
-                                TeamId = origin.Character.Party,
-                                FamilyId = origin.Character.FamilyId,
-                                Channel = obj.Channel
-                            });
-                            _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
-                            _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
+                            Id = origin.Character.Id,
+                            Name = origin.Character.Name,
+                            GuildId = origin.Character.GuildId,
+                            TeamId = origin.Character.Party,
+                            FamilyId = origin.Character.FamilyId,
+                            Channel = obj.Channel
+                        });
+                        _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.LOG_ONOFF, origin.Character.Id, origin.Character.Id);
+                        _masterServer.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = origin.Character.Id });
 
-                            foreach (var module in _masterServer.Modules)
-                            {
-                                module.OnPlayerLogoff(origin);
-                            }
+                        foreach (var module in _masterServer.Modules)
+                        {
+                            module.OnPlayerLogoff(origin);
                         }
-                    }
-                    else
-                    {
-                        // 退出商城触发
-                        // _logger.LogWarning("意料之外的更新：理论上这里只会被退出游戏（0），进入商城/拍卖（-1）触发");
                     }
                 }
             }
@@ -177,6 +170,7 @@ namespace Application.Core.Login.Datas
             if (_idDataSource.TryGetValue(playerId, out var d))
             {
                 d.Channel = channel;
+                d.ActualChannel = channel;
                 accountId = d.Character.AccountId;
 
                 // 上线通知

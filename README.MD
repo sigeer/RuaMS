@@ -7,7 +7,7 @@
 
 ### 注意 ❗
 
-当前分支(master)正在对`Server`, `World`, `Channel`进行拆分，可能出现大量BUG，不建议搭建游玩。
+当前分支(master)正在对`Server`, `World`, `Channel`进行拆分，大量内容未经测试，可能出现大量BUG，不建议搭建游玩。
 可以尝试使用本次重构之前的[代码（位于分支 v0）](https://github.com/sigeer/RuaMS/tree/v0)。
 
 ## 开发环境
