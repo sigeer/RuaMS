@@ -237,7 +237,7 @@ namespace Application.Core.Login.Datas
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
 
-                var invItems = InventoryManager.LoadItems(dbContext, characterEntity.Id, ItemType.Inventory);
+                var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
 
                 var buddyData = (from a in dbContext.Buddies
                                  join b in dbContext.Characters on a.BuddyId equals b.Id
@@ -259,7 +259,7 @@ namespace Application.Core.Login.Datas
                     Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                     BuddyList = buddyData,
                     Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
-                    InventoryItems = _mapper.Map<ItemModel[]>(invItems),
+                    InventoryItems = invItems,
                     KeyMaps = _mapper.Map<KeyMapModel[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
 
                     MonsterBooks = _mapper.Map<MonsterbookModel[]>(dbContext.Monsterbooks.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
@@ -312,19 +312,10 @@ namespace Application.Core.Login.Datas
             #region 仅需要加载装备栏
             var equipedType = InventoryType.EQUIPPED.getType();
             var items = (from a in dbContext.Inventoryitems.AsNoTracking().Where(x => x.Characterid != null && needLoadFromDB.Contains(x.Characterid.Value))
+                         join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
+                         from bs in bss.DefaultIfEmpty()
                          where a.Inventorytype == equipedType
-                         select new { Item = a }).ToList();
-
-            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
-            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
-                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
-                          from es in ess.DefaultIfEmpty()
-                          select new EquipEntityPair(a, es)).ToList();
-
-            var itemObj = (from a in items
-                           join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
-                           from bs in bss.DefaultIfEmpty()
-                           select new ItemEntityPair(a.Item, bs, null)).ToList();
+                         select new ItemEntityPair(a, bs, null)).ToList();
             #endregion
 
             foreach (var character in characters)
@@ -332,7 +323,7 @@ namespace Application.Core.Login.Datas
                 var obj = new CharacterViewObject()
                 {
                     Character = _mapper.Map<CharacterModel>(character),
-                    InventoryItems = _mapper.Map<ItemModel[]>(itemObj.Where(x => x.Item.Characterid == character.Id))
+                    InventoryItems = _mapper.Map<ItemModel[]>(items.Where(x => x.Item.Characterid == character.Id))
                 };
                 _charcterViewCache[obj.Character.Id] = obj;
                 list.Add(obj);

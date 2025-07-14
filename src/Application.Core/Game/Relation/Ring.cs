@@ -97,20 +97,20 @@ public class Ring
         return SourceId.GetHashCode();
     }
 
-    public static bool operator ==(Ring a, Ring b)
+    public static bool operator ==(Ring? a, Ring? b)
     {
         if (ReferenceEquals(a, b)) return true;
         if (a is null || b is null) return false;
         return a.Equals(b);
     }
 
-    public static bool operator !=(Ring a, Ring b)
+    public static bool operator !=(Ring? a, Ring? b)
     {
         return !(a == b);
     }
 }
 
-public class RingModel
+public class RingSourceModel
 {
     public int Id { get; set; }
     public int ItemId { get; set; }
@@ -126,7 +126,17 @@ public class RingModel
 
     public override bool Equals(object? o)
     {
-        return o is RingModel ring && ring.Id == Id;
+        return o is RingSourceModel ring && ring.Id == Id;
+    }
+
+    public Ring? GetRing(long ringId)
+    {
+        if (ringId == RingId1)
+            return new Ring(Id, RingId1, RingId2, CharacterId2, ItemId, CharacterName2);
+        if (ringId == RingId2)
+            return new Ring(Id, RingId2, RingId1, CharacterId1, ItemId, CharacterName1);
+
+        return null;
     }
 
     public override int GetHashCode()
@@ -134,14 +144,14 @@ public class RingModel
         return Id.GetHashCode();
     }
 
-    public static bool operator ==(RingModel? a, RingModel? b)
+    public static bool operator ==(RingSourceModel? a, RingSourceModel? b)
     {
         if (ReferenceEquals(a, b)) return true;
         if (a is null || b is null) return false;
         return a.Equals(b);
     }
 
-    public static bool operator !=(RingModel? a, RingModel? b)
+    public static bool operator !=(RingSourceModel? a, RingSourceModel? b)
     {
         return !(a == b);
     }

@@ -38,5 +38,5 @@ message BuyCashItemResponse {
 message CreateGiftResponse {
 	int32 code = 1;
 	string recipient = 2;
-	ItemProto.RingDto myRing = 3;
+	ItemProto.RingDto ringSource = 3;
 }

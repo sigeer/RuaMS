@@ -1,3 +1,4 @@
+using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
@@ -12,7 +13,7 @@ using System.Linq.Expressions;
 
 namespace Application.Core.Login.ServerData
 {
-    public class RingManager : StorageBase<int, RingModel>
+    public class RingManager : StorageBase<int, RingSourceModel>
     {
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly ILogger<RingManager> _logger;
@@ -28,9 +29,9 @@ namespace Application.Core.Login.ServerData
             _mapper = mapper;
         }
 
-        public RingModel CreateRing(int itemId, int chr1, int chr2)
+        public RingSourceModel CreateRing(int itemId, int chr1, int chr2)
         {
-            var model = new RingModel()
+            var model = new RingSourceModel()
             {
                 Id = Interlocked.Increment(ref _localId),
                 CharacterId1 = chr1,
@@ -39,12 +40,17 @@ namespace Application.Core.Login.ServerData
                 RingId1 = Yitter.IdGenerator.YitIdHelper.NextId(),
                 RingId2 = Yitter.IdGenerator.YitIdHelper.NextId()
             };
-            SetDirty(model.Id, new Utility.StoreUnit<RingModel>(Utility.StoreFlag.AddOrUpdate, model));
+            SetDirty(model.Id, new Utility.StoreUnit<RingSourceModel>(Utility.StoreFlag.AddOrUpdate, model));
             return model;
         }
 
+        public List<RingSourceModel> LoadRings(long[] ringId)
+        {
+            return Query(x => ringId.Contains(x.RingId1) || ringId.Contains(x.RingId2));
+        }
 
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<RingModel>> updateData)
+
+        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<RingSourceModel>> updateData)
         {
             var updateKeys = updateData.Keys.ToArray();
             await dbContext.Rings.Where(x => updateKeys.Contains(x.Id)).ExecuteDeleteAsync();
@@ -62,13 +68,13 @@ namespace Application.Core.Login.ServerData
             await dbContext.SaveChangesAsync();
         }
 
-        public override List<RingModel> Query(Expression<Func<RingModel, bool>> expression)
+        public override List<RingSourceModel> Query(Expression<Func<RingSourceModel, bool>> expression)
         {
             var entityExpression = _mapper.MapExpression<Expression<Func<Ring_Entity, bool>>>(expression);
 
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dataFromDB = _mapper.Map<List<RingModel>>(dbContext.Rings.Where(entityExpression));
+            var dataFromDB = _mapper.Map<List<RingSourceModel>>(dbContext.Rings.Where(entityExpression));
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
     }

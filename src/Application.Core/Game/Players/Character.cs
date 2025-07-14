@@ -3542,6 +3542,15 @@ public partial class Player
         }
     }
 
+    public void AddPlayerRing(RingSourceModel? ringSource)
+    {
+        if (ringSource == null)
+            return;
+
+        var ring = GetRingFromTotal(ringSource);
+        addPlayerRing(ring);
+    }
+
     public int getRemainingSp()
     {
         return getRemainingSp(JobId); //default

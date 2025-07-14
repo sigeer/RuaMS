@@ -3,7 +3,6 @@ using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Shared.Constants;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
@@ -56,11 +55,9 @@ namespace Application.Core.Login.ServerData
             {
                 Id = newId,
                 From = sender.Character.Id,
-                FromName = sender.Character.Name,
                 Message = message,
                 Sn = sn,
                 To = receiver.Character.Id,
-                ToName = receiver.Character.Name,
                 RingSourceId = ringModel?.Id ?? -1
             };
             SetDirty(newModel.Id, new StoreUnit<GiftModel>(StoreFlag.AddOrUpdate, newModel));
@@ -70,7 +67,7 @@ namespace Application.Core.Login.ServerData
             else
                 _noteService.sendWithFame(message, sender.Character.Name, receiver.Character.Name, _server.getCurrentTime());
 
-            return new CreateGiftResponse { Recipient = toName, MyRing = _mapper.Map<ItemProto.RingDto>(ringModel) };
+            return new CreateGiftResponse { Recipient = toName, RingSource = _mapper.Map<ItemProto.RingDto>(ringModel) };
         }
 
         public GetMyGiftsResponse LoadGifts(GetMyGiftsRequest request)
@@ -85,12 +82,7 @@ namespace Application.Core.Login.ServerData
                 var dto = _mapper.Map<ItemProto.GiftDto>(gifts);
 
                 var ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
-                if (ring != null)
-                {
-                    dto.Ring = _mapper.Map<ItemProto.RingDto>(ring);
-                    dto.Ring.CharacterName1 = _server.CharacterManager.FindPlayerById(dto.Ring.CharacterId1)?.Character.Name ?? StringConstants.CharacterUnknown;
-                    dto.Ring.CharacterName2 = _server.CharacterManager.FindPlayerById(dto.Ring.CharacterId2)?.Character.Name ?? StringConstants.CharacterUnknown;
-                }
+                dto.Ring = _mapper.Map<ItemProto.RingDto>(ring);
                 res.List.Add(dto);
             }
             return res;
@@ -120,13 +112,7 @@ namespace Application.Core.Login.ServerData
 
             var entityExpression = _mapper.MapExpression<Expression<Func<GiftEntity, bool>>>(expression);
 
-            var gifts = _mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList());
-            foreach (var item in gifts)
-            {
-                item.FromName = _server.CharacterManager.FindPlayerById(item.From)?.Character?.Name ?? StringConstants.CharacterUnknown;
-                item.ToName = _server.CharacterManager.FindPlayerById(item.To)?.Character?.Name ?? StringConstants.CharacterUnknown;
-            }
-            return gifts;
+            return _mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList());
         }
     }
 }

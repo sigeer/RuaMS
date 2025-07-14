@@ -46,6 +46,7 @@ namespace Application.Core.Login.Models
         public byte Itemlevel { get; set; }
 
         public int Itemexp { get; set; }
-        public RingModel? RingInfo { get; set; }
+        public long RingId { get; set; }
+        public RingSourceModel? RingSourceInfo { get; set; }
     }
 }

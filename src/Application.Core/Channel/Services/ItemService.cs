@@ -125,7 +125,7 @@ namespace Application.Core.Channel.Services
                     item.setGiftFrom(rs.FromName);
                     if (item is Equip equip)
                     {
-                        equip.Ring = chr.GetRingFromTotal(rs.Ring);
+                        equip.SetRing(rs.Ring?.RingId2 ?? -1, rs.Ring);
                         gifts.Add(new ItemMessagePair(equip, rs.Message));
                     }
                     else
@@ -337,12 +337,11 @@ namespace Application.Core.Channel.Services
                 {
                     var cItem = _cashItemProvider.getItem(data.Sn)!;
                     Item item = CashItem2Item(cItem);
-                    if (data.GiftInfo.MyRing != null && CashItem2Item(cItem) is Equip equip)
+                    if (data.GiftInfo.RingSource != null && CashItem2Item(cItem) is Equip equip)
                     {
-                        var ring = _mapper.Map<RingModel>(data.GiftInfo.MyRing);
-                        var ringSingle = chr.GetRingFromTotal(ring);
-                        equip.Ring = ringSingle;
-                        chr.addPlayerRing(ringSingle);
+                        var ring = _mapper.Map<RingSourceModel>(data.GiftInfo.RingSource);
+                        equip.SetRing(ring.RingId1, ring);
+                        chr.addPlayerRing(ring.GetRing(ring.RingId1));
                         // 原代码中 crush ring 用的是showBoughtCashItem
                         chr.sendPacket(PacketCreator.showBoughtCashRing(item, data.GiftInfo.Recipient, chr.Client.AccountId));
                         chr.getCashShop().addToInventory(item);

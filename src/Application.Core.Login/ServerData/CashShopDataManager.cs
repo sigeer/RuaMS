@@ -36,7 +36,8 @@ namespace Application.Core.Login.ServerData
             CreateGiftResponse? giftResult = null;
             if (request.GiftInfo != null)
             {
-                giftResult = _server.GiftManager.CreateGift(request.MasterId, request.GiftInfo.Recipient, request.CashItemSn, request.CashItemId, request.GiftInfo.Message, request.GiftInfo.CreateRing);
+                giftResult = _server.GiftManager.CreateGift(
+                    request.MasterId, request.GiftInfo.Recipient, request.CashItemSn, request.CashItemId, request.GiftInfo.Message, request.GiftInfo.CreateRing);
                 if (giftResult.Code != 0)
                 {
                     _server.Transport.ReturnBuyCashItem(new BuyCashItemResponse { 
@@ -104,22 +105,6 @@ namespace Application.Core.Login.ServerData
             finally
             {
                 suggestLock.ExitReadLock();
-            }
-        }
-
-        public void AddCashItemBought(int snid)
-        {
-            suggestLock.EnterWriteLock();
-            try
-            {
-                Dictionary<int, int> tabItemBought = cashItemBought[snid / 10000000];
-
-                var cur = tabItemBought.GetValueOrDefault(snid);
-                tabItemBought.AddOrUpdate(snid, cur + 1);
-            }
-            finally
-            {
-                suggestLock.ExitWriteLock();
             }
         }
 

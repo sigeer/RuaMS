@@ -2,64 +2,70 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Scripting.JS;
 using Application.Shared.Items;
+using AutoMapper;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Application.Core.Login.Datas
 {
     public class InventoryManager
     {
+        readonly MasterServer _server;
+        readonly IMapper _mapper;
+
+        public InventoryManager(MasterServer server, IMapper mapper)
+        {
+            _server = server;
+            _mapper = mapper;
+        }
+
+
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="dbContext"></param>
-        /// <param name="targetId"></param>
         /// <param name="isAccount"></param>
-        /// <param name="itemType">需要满足IsAccount == isAccount</param>
+        /// <param name="targetId"></param>
+        /// <param name="itemFactories"></param>
         /// <returns></returns>
-        public static List<ItemEntityPair> LoadItems(DBContext dbContext, int targetId, params ItemType[] itemFactories)
+        public List<ItemModel> LoadItems(DBContext dbContext, bool isAccount, int targetId, params ItemType[] itemFactories)
         {
-            var itemType = itemFactories.Select(x => (int)x).ToArray();
-            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                .Where(x => x.Characterid == targetId)
-                .Where(x => itemType.Contains(x.Type))
-                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
-                         from cs in css.DefaultIfEmpty()
-                         select new { Item = a, Pet = cs }).ToList();
-
-            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
-            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
-                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
-                          from es in ess.DefaultIfEmpty()
-                          select new EquipEntityPair(a, es)).ToList();
-
-            return (from a in items
-                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
-                    from bs in bss.DefaultIfEmpty()
-                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
+            return LoadItems(dbContext, isAccount, [targetId], itemFactories);
         }
 
-        public static List<ItemEntityPair> LoadAccountItems(DBContext dbContext, int targetId, params ItemType[] itemFactories)
+        public List<ItemModel> LoadItems(DBContext dbContext, bool isAccount, int[] targetId, params ItemType[] itemFactories)
         {
             var itemType = itemFactories.Select(x => (int)x).ToArray();
-            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                .Where(x => x.Accountid == targetId)
+            var dataList = (from a in dbContext.Inventoryitems.AsNoTracking()
+                .Where(x => isAccount ? targetId.Contains(x.Accountid!.Value) : targetId.Contains(x.Characterid!.Value))
                 .Where(x => itemType.Contains(x.Type))
-                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
-                         from cs in css.DefaultIfEmpty()
-                         select new { Item = a, Pet = cs }).ToList();
+                            join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
+                            from bs in bss.DefaultIfEmpty()
+                            join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
+                            from cs in css.DefaultIfEmpty()
+                            select new ItemEntityPair(a, bs, cs)).ToList();
 
-            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
-            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
-                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
-                          from es in ess.DefaultIfEmpty()
-                          select new EquipEntityPair(a, es)).ToList();
+            var ringIds = dataList.Where(x => x.Equip != null && x.Equip.RingId > 0).Select(x => x.Equip!.RingId).ToArray();
+            var rings = _server.RingManager.LoadRings(ringIds);
+            List<ItemModel> items = [];
+            foreach (var item in dataList)
+            {
+                RingSourceModel? ring = null;
+                if (item.Equip != null && item.Equip.RingId > 0)
+                    ring = rings.FirstOrDefault(x => x.RingId1 == item.Equip.RingId || x.RingId2 == item.Equip.RingId);
 
-            return (from a in items
-                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
-                    from bs in bss.DefaultIfEmpty()
-                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
+                var obj = _mapper.Map<ItemModel>(item);
+                if (obj.EquipInfo != null)
+                {
+                    obj.EquipInfo.RingSourceInfo = ring;
+                }
+                items.Add(obj);
+            }
+            return items;
         }
 
         public static void CommitInventoryByType(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
@@ -121,7 +127,7 @@ namespace Application.Core.Login.Datas
                         item.EquipInfo.Vicious,
                         item.EquipInfo.Itemlevel,
                         item.EquipInfo.Itemexp,
-                        item.EquipInfo.RingInfo?.Id ?? -1));
+                        item.EquipInfo.RingId));
                 }
                 if (item.PetInfo != null)
                 {
@@ -193,7 +199,7 @@ namespace Application.Core.Login.Datas
                         item.EquipInfo.Vicious,
                         item.EquipInfo.Itemlevel,
                         item.EquipInfo.Itemexp,
-                        item.EquipInfo.RingInfo?.Id ?? -1));
+                        item.EquipInfo.RingId));
                 }
                 if (item.PetInfo != null)
                 {
@@ -203,26 +209,6 @@ namespace Application.Core.Login.Datas
             }
 
             await dbContext.SaveChangesAsync();
-        }
-
-        public static List<ItemEntityPair> LoadDueyItems(DBContext dbContext, int[] packageIdArray)
-        {
-            var items = (from a in dbContext.Inventoryitems.AsNoTracking()
-                .Where(x => x.Characterid != null && packageIdArray.Contains(x.Characterid.Value) && x.Type == (int)ItemType.Duey)
-                         join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
-                         from cs in css.DefaultIfEmpty()
-                         select new { Item = a, Pet = cs }).ToList();
-
-            var invItemId = items.Select(x => x.Item.Inventoryitemid).ToList();
-            var equips = (from a in dbContext.Inventoryequipments.AsNoTracking().Where(x => invItemId.Contains(x.Inventoryitemid))
-                          join e in dbContext.Rings.AsNoTracking() on a.RingId equals e.Id into ess
-                          from es in ess.DefaultIfEmpty()
-                          select new EquipEntityPair(a, es)).ToList();
-
-            return (from a in items
-                    join b in equips on a.Item.Inventoryitemid equals b.Equip.Inventoryitemid into bss
-                    from bs in bss.DefaultIfEmpty()
-                    select new ItemEntityPair(a.Item, bs, a.Pet)).ToList();
         }
     }
 }

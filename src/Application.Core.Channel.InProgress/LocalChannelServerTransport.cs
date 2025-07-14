@@ -583,11 +583,6 @@ namespace Application.Core.Channel.InProgress
             return data;
         }
 
-        public void AddCashItemBought(int sn)
-        {
-            _server.CashShopDataManager.AddCashItemBought(sn);
-        }
-
         #region Team
         public Dto.TeamDto CreateTeam(int playerId)
         {

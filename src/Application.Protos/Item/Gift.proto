@@ -7,10 +7,12 @@ package ItemProto;
 message GiftDto {
   int32 id = 1;
   int32 to = 2;
-  string from = 3;
-  string message = 4;
-  int32 sn = 5;
-  ItemProto.RingDto ring = 6;
+  string toName = 3;
+  int32 from = 4;
+  string fromName = 5;
+  string message = 6;
+  int32 sn = 7;
+  ItemProto.RingDto ring = 8;
 }
 
 message GetMyGiftsRequest {

@@ -14,6 +14,6 @@ namespace Application.Core.Model
         public string Message { get; set; } = null!;
 
         public int Sn { get; set; }
-        public RingModel? Ring { get; set; }
+        public RingSourceModel? Ring { get; set; }
     }
 }

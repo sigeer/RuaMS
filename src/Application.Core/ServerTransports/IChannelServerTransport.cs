@@ -126,7 +126,6 @@ namespace Application.Core.ServerTransports
         void AddOwlItemSearch(int itemid);
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
-        void AddCashItemBought(int sn);
         Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);

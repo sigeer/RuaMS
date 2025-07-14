@@ -31,5 +31,6 @@ message EquipDto {
   int32 vicious = 21;
   int32 itemlevel = 22;
   int32 itemexp = 23;
-  ItemProto.RingDto ringInfo = 24;
+  ItemProto.RingDto ringSourceInfo = 24;
+  int64 ringId = 25;
 }

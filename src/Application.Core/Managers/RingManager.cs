@@ -108,7 +108,7 @@ namespace Application.Core.Managers
             if (it != null)
             {
                 Equip eqp = (Equip)it;
-                eqp.Ring = null;
+                eqp.ResetRing();
             }
         }
 

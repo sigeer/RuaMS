@@ -141,7 +141,7 @@ namespace Application.Core.Mappers
                 .Include<Equip, Dto.ItemDto>()
                 .Include<Pet, Dto.ItemDto>();
 
-            CreateMap<ItemProto.RingDto, RingModel>().ReverseMap();
+            CreateMap<ItemProto.RingDto, RingSourceModel>().ReverseMap();
 
             CreateMap<Dto.ItemDto, Equip>()
                     .ConstructUsing(source => new Equip(source.Itemid, (short)source.Position))
@@ -174,8 +174,7 @@ namespace Application.Core.Mappers
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel((byte)rs.EquipInfo!.Itemlevel);
 
-                        if (rs.EquipInfo!.RingInfo != null)
-                            dest.Ring = ctx.Mapper.Map<Ring>(rs.EquipInfo!.RingInfo);
+                        dest.SetRing(rs.EquipInfo!.RingId, ctx.Mapper.Map<RingSourceModel>(rs.EquipInfo!.RingSourceInfo));
                     })
                     .ReverseMap()
                     .ForMember(dest => dest.EquipInfo, source => source.MapFrom(x => x));
@@ -201,7 +200,8 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.Level, source => source.MapFrom(x => x.getLevel()))
                 .ForMember(dest => dest.Itemlevel, source => source.MapFrom(x => x.getItemLevel()))
                 .ForMember(dest => dest.Itemexp, source => source.MapFrom(x => x.getItemExp()))
-                .ForMember(dest => dest.RingInfo, source => source.MapFrom(x => x.Ring));
+                .ForMember(dest => dest.RingId, source => source.MapFrom(x => x.RingId))
+                .ForMember(dest => dest.RingSourceInfo, source => source.MapFrom(x => x.RingSource));
             #endregion 
 
             CreateMap<Dto.StorageDto, Storage>()

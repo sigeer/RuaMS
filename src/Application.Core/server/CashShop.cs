@@ -178,17 +178,12 @@ public class CashShop
         }
     }
 
-    [Obsolete(message: "使用ItemService.BuyCashItem")]
     public void Buy(int type, CashItem? buyItem)
     {
         if (buyItem == null)
             return;
 
         gainCash(type, -buyItem.getPrice());
-        if (!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
-        {
-            Owner.Client.CurrentServer.Service.AddCashItemBought(buyItem.getSN());
-        }
     }
 
     public bool isOpened()

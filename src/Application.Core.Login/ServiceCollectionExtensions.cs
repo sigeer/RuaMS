@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using net.server.handlers;
 using AutoMapper.Extensions.ExpressionMapping;
+using Application.Core.Login.Datas;
 
 namespace Application.Core.Login
 {
@@ -85,6 +86,9 @@ namespace Application.Core.Login
             services.AddSingleton<NewYearCardManager>();
 
             services.AddSingleton<GiftManager>();
+            services.AddSingleton<RingManager>();
+
+            services.AddSingleton<InventoryManager>();
             return services;
         }
 

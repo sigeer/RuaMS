@@ -104,6 +104,7 @@ namespace Application.Core.Game.Players
 
         void addPet(Pet pet);
         void addPlayerRing(Ring? ring);
+        void AddPlayerRing(RingSourceModel? ring);
         void addSummon(int id, Summon summon);
         void addTrockMap();
         void addVipTrockMap();
@@ -692,6 +693,6 @@ namespace Application.Core.Game.Players
         bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
         Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
         int GetMakerSkillLevel();
-        Ring? GetRingFromTotal(RingModel? ring);
+        Ring? GetRingFromTotal(RingSourceModel? ring);
     }
 }

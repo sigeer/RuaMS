@@ -12,7 +12,8 @@ namespace Application.Module.Duey.Master.Models
                 .ReverseMap()
                 .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id));
             CreateMap<DueyPackageModel, DueyDto.DueyPackageDto>()
-                .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id));
+                .ForMember(dest => dest.PackageId, src => src.MapFrom(x => x.Id))
+                .ForMember(dest => dest.SenderName, src => src.MapFrom<DueyPackageValueResolver>());
         }
     }
 }

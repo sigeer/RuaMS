@@ -553,7 +553,7 @@ namespace Application.Core.Game.Players
             return item;
         }
 
-        public Ring? GetRingFromTotal(RingModel? ring)
+        public Ring? GetRingFromTotal(RingSourceModel? ring)
         {
             if (ring == null)
                 return null;

@@ -47,19 +47,15 @@ namespace Application.Module.Duey.Master
             using var dbContext = _dbContextFactory.CreateDbContext();
 
             var entityExpression = _mapper.MapExpression<Expression<Func<DueyPackageEntity, bool>>>(expression).Compile();
-            var dbList = (from a in dbContext.Dueypackages.AsNoTracking().Where(entityExpression)
-                          join b in dbContext.Characters on a.SenderId equals b.Id
-                          select new { Package = a, SenderName = b.Name }).ToList();
+            var dbList = dbContext.Dueypackages.AsNoTracking().Where(entityExpression).Where(entityExpression).ToList();
 
-            var allPackageItems = InventoryManager.LoadDueyItems(dbContext, dbList.Select(x => x.Package.PackageId).ToArray());
+            var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.PackageId).ToArray(), ItemType.Duey);
 
             List<DueyPackageModel> dataFromDB = [];
             foreach (var item in dbList)
             {
-                var package = _mapper.Map<DueyPackageModel>(item.Package);
-                package.Item = _mapper.Map<ItemModel>(allPackageItems.FirstOrDefault(x => x.Item.Characterid == package.Id));
-                package.SenderName = item.SenderName;
-
+                var package = _mapper.Map<DueyPackageModel>(item);
+                package.Item = allPackageItems.FirstOrDefault(x => x.Characterid == package.Id);
                 dataFromDB.Add(package);
             }
 
@@ -159,7 +155,6 @@ namespace Application.Module.Duey.Master
                     Id = Interlocked.Increment(ref _currentId),
                     ReceiverId = target.Character.Id,
                     SenderId = sender.Character.Id,
-                    SenderName = sender.Character.Name,
                     Mesos = request.SendMeso,
                     Message = request.SendMessage,
                     Type = request.Quick,

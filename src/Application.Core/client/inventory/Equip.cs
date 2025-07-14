@@ -56,7 +56,9 @@ public class Equip : Item
     private bool _wear = false;
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
-    public Ring? Ring { get; set; }
+    public Ring? Ring { get; private set; }
+    public long RingId { get; private set; } = -1;
+    public RingSourceModel? RingSource { get; private set; }
 
     public Equip(int id, short position) : this(id, position, 0)
     {
@@ -825,7 +827,18 @@ public class Equip : Item
     }
     public long getRingId()
     {
-        return Ring?.getRingId() ?? -1;
+        return RingId;
+    }
+
+    public void SetRing(long ringId, RingSourceModel? source)
+    {
+        RingId = ringId;
+        RingSource = source;
+        Ring = RingSource?.GetRing(RingId);
+    }
+    public void ResetRing()
+    {
+        SetRing(-1, null);
     }
 
     public override long getCashId()

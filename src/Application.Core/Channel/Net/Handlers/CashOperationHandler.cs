@@ -179,7 +179,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
-                        _itemService.BuyCashItem(c.OnlinedCharacter, cash, cItem);
+
                         cs.Buy(cash, cItem);
                         if (chr.gainSlots(type, qty, false))
                         {

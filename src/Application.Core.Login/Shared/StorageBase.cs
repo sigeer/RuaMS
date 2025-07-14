@@ -70,7 +70,7 @@ namespace Application.Core.Login.Shared
             var updateData = new Dictionary<TKey, StoreUnit<TModel>>();
             foreach (var key in _localData.Keys.ToList())
             {
-                if (_localData.TryRemove(key, out var d))
+                if (_localData.TryRemove(key, out var d) && d.Flag != StoreFlag.Cached)
                     updateData[key] = d;
             }
 
