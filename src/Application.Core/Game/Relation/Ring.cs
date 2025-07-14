@@ -134,14 +134,14 @@ public class RingModel
         return Id.GetHashCode();
     }
 
-    public static bool operator ==(RingModel a, RingModel b)
+    public static bool operator ==(RingModel? a, RingModel? b)
     {
         if (ReferenceEquals(a, b)) return true;
         if (a is null || b is null) return false;
         return a.Equals(b);
     }
 
-    public static bool operator !=(RingModel a, RingModel b)
+    public static bool operator !=(RingModel? a, RingModel? b)
     {
         return !(a == b);
     }
