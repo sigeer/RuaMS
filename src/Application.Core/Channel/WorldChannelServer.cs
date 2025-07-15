@@ -567,7 +567,8 @@ namespace Application.Core.Channel
             {
                 foreach (var ch in Servers.Values)
                 {
-                    ch.broadcastPacket(PacketCreator.serverNotice(6, string.Format(GameConstants.LevelCongratulations, data.NameWithMedal, data.Level, data.NameWithMedal)));
+                    ch.broadcastPacket(PacketCreator.serverNotice(6, 
+                        string.Format(GameConstants.LevelCongratulations, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, data.MedalItem), data.Level, data.Name)));
                 }
             }
 

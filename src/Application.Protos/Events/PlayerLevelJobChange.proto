@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "Dto/Item.proto";
+
 package Dto;
 
 message PlayerLevelJobChange {
@@ -10,5 +12,5 @@ message PlayerLevelJobChange {
   int32 guildId = 5;
   int32 teamId = 6;
   int32 familyId = 7;
-  string nameWithMedal = 8;
+  Dto.ItemDto medalItem = 8;
 }
