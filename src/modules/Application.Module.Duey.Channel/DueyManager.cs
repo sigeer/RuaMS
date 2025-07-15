@@ -311,7 +311,7 @@ namespace Application.Module.Duey.Channel
             {
                 try
                 {
-                    long timeNow = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    long timeNow = c.CurrentServerContainer.getCurrentTime();
                     if (timeNow - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
                     {
                         c.sendPacket(PacketCreator.enableActions());
