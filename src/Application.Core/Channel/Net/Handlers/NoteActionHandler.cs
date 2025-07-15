@@ -41,7 +41,8 @@ public class NoteActionHandler : ChannelHandlerBase
     {
         int action = p.readByte();
         if (action == 0 && c.OnlinedCharacter.getCashShop().getAvailableNotes() > 0)
-        { // Reply to gift in cash shop
+        { 
+            // Reply to gift in cash shop
             string charname = p.readString();
             string message = p.readString();
             if (c.OnlinedCharacter.getCashShop().isOpened())
@@ -56,7 +57,8 @@ public class NoteActionHandler : ChannelHandlerBase
             }
         }
         else if (action == 1)
-        { // Discard notes in game
+        { 
+            // Discard notes in game
             int num = p.readByte();
             p.readByte();
             p.readByte();

@@ -27,7 +27,9 @@ namespace Application.Core.Login.ServerData
                 PlayerId = request.PlayerId,
                 Status = (int)status,
                 TransactionId = Yitter.IdGenerator.YitIdHelper.NextId(),
-                Meso = request.Meso
+                Meso = request.Meso,
+                CashType = request.CashType,
+                CashValue = request.CashValue,
             };
             tsc.Items.AddRange(request.Items);
             _dataSource.TryAdd(tsc.TransactionId, tsc);

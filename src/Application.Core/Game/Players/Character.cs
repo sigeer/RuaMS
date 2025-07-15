@@ -169,6 +169,7 @@ public partial class Player
     private Trade? trade = null;
     public MonsterBook Monsterbook { get; set; }
     public CashShop CashShopModel { get; set; }
+    public AtomicInteger RewardNxCredit { get; set; }
     public PlayerSavedLocation SavedLocations { get; set; }
 
     private List<WeakReference<IMap>> lastVisitedMaps = new();
@@ -3521,14 +3522,17 @@ public partial class Player
         }
     }
 
-    public void addPlayerRing(Ring ring)
+    public void addPlayerRing(Ring? ring)
     {
+        if (ring == null)
+            return;
+
         int ringItemId = ring.getItemId();
         if (ItemId.isWeddingRing(ringItemId))
         {
             this.addMarriageRing(ring);
         }
-        else if (ring.getItemId() > 1112012)
+        else if (ringItemId > 1112012)
         {
             this.addFriendshipRing(ring);
         }
@@ -3536,6 +3540,15 @@ public partial class Player
         {
             this.addCrushRing(ring);
         }
+    }
+
+    public void AddPlayerRing(RingSourceModel? ringSource)
+    {
+        if (ringSource == null)
+            return;
+
+        var ring = GetRingFromTotal(ringSource);
+        addPlayerRing(ring);
     }
 
     public int getRemainingSp()

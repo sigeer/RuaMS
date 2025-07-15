@@ -73,6 +73,7 @@ namespace Application.Core.Game.Players
         public QuickslotBinding? QuickSlotKeyMapped { get; set; }
         public Fitness? Fitness { get; set; }
         public Ola? Ola { get; set; }
+        public AtomicInteger RewardNxCredit { get; set; }
 
         public object SaveToDBLock { get; set; }
 
@@ -102,7 +103,8 @@ namespace Application.Core.Game.Players
         void addMesosTraded(int gain);
 
         void addPet(Pet pet);
-        void addPlayerRing(Ring ring);
+        void addPlayerRing(Ring? ring);
+        void AddPlayerRing(RingSourceModel? ring);
         void addSummon(int id, Summon summon);
         void addTrockMap();
         void addVipTrockMap();
@@ -691,5 +693,6 @@ namespace Application.Core.Game.Players
         bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
         Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
         int GetMakerSkillLevel();
+        Ring? GetRingFromTotal(RingSourceModel? ring);
     }
 }

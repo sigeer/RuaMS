@@ -22,6 +22,7 @@ using server;
 using server.events;
 using server.life;
 using server.quest;
+using System.Net.NetworkInformation;
 using System.Numerics;
 using tools;
 using XmlWzReader;
@@ -105,19 +106,12 @@ namespace Application.Core.Channel.Services
                 {
                     var equipObj = _mapper.Map<Equip>(item);
                     player.Bag[mit.ordinal()].addItemFromDB(equipObj);
-                    if (item.EquipInfo!.RingInfo != null)
+                    if (equipObj.Ring != null && mit.Equals(InventoryType.EQUIPPED))
                     {
-                        var ring = _mapper.Map<Ring>(item.EquipInfo.RingInfo);
-                        if (ring != null)
-                        {
-                            if (item.InventoryType.Equals(InventoryType.EQUIPPED))
-                            {
-                                ring.equip();
-                            }
-
-                            player.addPlayerRing(ring);
-                        }
+                        equipObj.Ring.equip();
                     }
+
+                    player.addPlayerRing(equipObj.Ring);
                 }
                 else
                 {

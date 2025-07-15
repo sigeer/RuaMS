@@ -29,7 +29,7 @@ namespace Application.Core.Login.Shared
             _localData[key] = new StoreUnit<TModel>(StoreFlag.Remove, null);
         }
 
-        protected abstract List<TModel> Query(Expression<Func<TModel, bool>> expression);
+        public abstract List<TModel> Query(Expression<Func<TModel, bool>> expression);
 
         /// <summary>
         /// 查询，数据库数据 + 修改过的数据 - 移除的数据
@@ -70,7 +70,7 @@ namespace Application.Core.Login.Shared
             var updateData = new Dictionary<TKey, StoreUnit<TModel>>();
             foreach (var key in _localData.Keys.ToList())
             {
-                if (_localData.TryRemove(key, out var d))
+                if (_localData.TryRemove(key, out var d) && d.Flag != StoreFlag.Cached)
                     updateData[key] = d;
             }
 

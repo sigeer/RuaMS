@@ -117,6 +117,7 @@ namespace Application.Core.Channel.Net
                     if (!IsServerTransition)
                     {
                         wserv.removePlayer(Character);
+                        CurrentServerContainer.RemovePlayer(Character.Id);
                         //getChannelServer().removePlayer(player); already being done
 
                         Character.cancelAllDebuffs();

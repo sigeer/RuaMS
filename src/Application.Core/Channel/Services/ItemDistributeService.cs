@@ -12,7 +12,7 @@ namespace Application.Core.Channel.Services
         /// <param name="items"></param>
         /// <param name="meso"></param>
         /// <param name="title"></param>
-        void Distribute(IPlayer chr, List<Item> items, int meso, string? title = null);
+        void Distribute(IPlayer chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null);
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public class DefaultItemDistributeService : IItemDistributeService
     {
-        public void Distribute(IPlayer chr, List<Item> items, int meso, string? title = null)
+        public void Distribute(IPlayer chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
         {
             bool needNotice = false;
             foreach (var item in items)
@@ -45,6 +45,7 @@ namespace Application.Core.Channel.Services
                 }
             }
 
+            chr.getCashShop().gainCash(cashType, cashValue);
             if (needNotice)
             {
                 chr.dropMessage($"你的背包满了，物品掉落在{chr.getMap().getStreetName()}");

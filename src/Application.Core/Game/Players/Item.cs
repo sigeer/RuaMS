@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
+using Application.Core.Game.Relation;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -550,6 +551,20 @@ namespace Application.Core.Game.Players
             }
 
             return item;
+        }
+
+        public Ring? GetRingFromTotal(RingSourceModel? ring)
+        {
+            if (ring == null)
+                return null;
+
+            if (Id == ring.CharacterId1)
+                return new Ring(ring.Id, ring.RingId1, ring.RingId2, ring.CharacterId2, ring.ItemId, ring.CharacterName2);
+            if (Id == ring.CharacterId2)
+                return new Ring(ring.Id, ring.RingId2, ring.RingId1, ring.CharacterId1, ring.ItemId, ring.CharacterName1);
+
+            Log.Fatal("Character{CharacterId} 加载了不属于他的RingSourceId = {RingSourceId}", Id, ring.Id);
+            return null;
         }
     }
 }

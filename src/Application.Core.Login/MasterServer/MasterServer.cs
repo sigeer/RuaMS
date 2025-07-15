@@ -86,6 +86,12 @@ namespace Application.Core.Login
         public CashShopDataManager CashShopDataManager { get; }
         public TeamManager TeamManager { get; }
         public GuildManager GuildManager { get; }
+        readonly Lazy<InventoryManager> _inventoryManager;
+        public InventoryManager InventoryManager => _inventoryManager.Value;
+        readonly Lazy<RingManager> _ringManager;
+        public RingManager RingManager => _ringManager.Value;
+        readonly Lazy<GiftManager> _giftManager;
+        public GiftManager GiftManager => _giftManager.Value;
         public ItemTransactionManager ItemTransactionManager { get; }
         readonly Lazy<ResourceDataManager> _lazyResourceDataManager;
         public ResourceDataManager ResourceDataManager => _lazyResourceDataManager.Value;
@@ -147,6 +153,9 @@ namespace Application.Core.Login
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
             ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
             ItemTransactionManager = ActivatorUtilities.CreateInstance<ItemTransactionManager>(ServiceProvider, this);
+            _inventoryManager = new(() => ServiceProvider.GetRequiredService<InventoryManager>());
+            _giftManager = new(() => ServiceProvider.GetRequiredService<GiftManager>());
+            _ringManager = new(() => ServiceProvider.GetRequiredService<RingManager>());
             _lazyNewYearCardManager = new(() => ServiceProvider.GetRequiredService<NewYearCardManager>());
             _lazyResourceDataManager = new(() => ServiceProvider.GetRequiredService<ResourceDataManager>());
         }
@@ -283,7 +292,7 @@ namespace Application.Core.Login
 
             foreach (var player in dataList)
             {
-                if (player.Channel <= 0)
+                if (player.Channel < 0)
                     continue;
 
                 var serverName = Channels[player.Channel - 1].ServerName;
@@ -308,10 +317,10 @@ namespace Application.Core.Login
             foreach (var cid in cidList)
             {
                 var player = CharacterManager.FindPlayerById(cid);
-                if (player == null || player.Channel <= 0)
+                if (player == null || player.ActualChannel == 0)
                     continue;
 
-                var serverName = Channels[player.Channel - 1].ServerName;
+                var serverName = Channels[player.ActualChannel - 1].ServerName;
                 var serverWrapper = ChannelServerList[serverName];
                 if (!result.TryGetValue(serverWrapper, out var idList))
                 {

@@ -33,7 +33,7 @@ namespace Application.Core.Login.ServerData
             currentId = await dbContext.Newyears.MaxAsync(x => (int?)x.Id) ?? 0;
         }
 
-        protected override List<NewYearCardModel> Query(Expression<Func<NewYearCardModel, bool>> expression)
+        public override List<NewYearCardModel> Query(Expression<Func<NewYearCardModel, bool>> expression)
         {
             var entityExpression = _mapper.MapExpression<Expression<Func<NewYearCardEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();

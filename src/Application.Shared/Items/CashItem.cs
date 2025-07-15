@@ -44,6 +44,11 @@ namespace Application.Shared.Items
         {
             return onSale;
         }
+
+        public bool CanBuy(int cash)
+        {
+            return isOnSale() && getPrice() <= cash;
+        }
     }
 
 }

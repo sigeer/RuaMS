@@ -32,9 +32,12 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<PetIgnoreModel, Dto.PetIgnoreDto>().ReverseMap();
 
-            CreateMap<EquipModel, Dto.EquipDto>().ReverseMap();
+            CreateMap<EquipModel, Dto.EquipDto>()
+                .ReverseMap();
             CreateMap<PetModel, Dto.PetDto>().ReverseMap();
-            CreateMap<RingModel, Dto.RingDto>().ReverseMap();
+            CreateMap<RingSourceModel, ItemProto.RingDto>()
+                .ForMember(dest => dest.CharacterName1, src => src.MapFrom<RingCharacterName1ValueResolver>())
+                .ForMember(dest => dest.CharacterName2, src => src.MapFrom<RingCharacterName2ValueResolver>());
             CreateMap<ItemModel, Dto.ItemDto>().ReverseMap();
 
             CreateMap<AccountCtrl, Dto.AccountCtrlDto>().ReverseMap();
@@ -86,6 +89,10 @@ namespace Application.Core.Login.Mappers
             CreateMap<ChatRoomModel, Dto.ChatRoomDto>()
                 .ForMember(dest => dest.RoomId, src => src.MapFrom(x => x.Id))
                 .ForMember(dest => dest.Members, src => src.Ignore());
+
+            CreateMap<GiftModel, ItemProto.GiftDto>()
+                .ForMember(dest => dest.FromName, src => src.MapFrom<GiftFromNameValueResolver>())
+                .ForMember(dest => dest.ToName, src => src.MapFrom<GiftToNameValueResolver>());
 
             CreateMap<NewYearCardModel, Dto.NewYearCardDto>();
             CreateMap<PLifeModel, BaseProto.PLifeDto>()

@@ -8,6 +8,7 @@ namespace Application.Core.Login.Models
         /// 仅在MasterServer使用
         /// </summary>
         public int Channel { get; set; }
+        public int ActualChannel { get; set; }
         public CharacterModel Character { get; set; }
         public ItemModel[] InventoryItems { get; set; } = [];
     }

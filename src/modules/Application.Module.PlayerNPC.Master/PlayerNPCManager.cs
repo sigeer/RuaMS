@@ -38,7 +38,7 @@ namespace Application.Module.PlayerNPC.Master
             _fields = new(dbContext.PlayernpcsFields.ToList().ToDictionary(x => x.Map, x => (int)x.Step));
         }
 
-        protected override List<PlayerNpcModel> Query(Expression<Func<PlayerNpcModel, bool>> expression)
+        public override List<PlayerNpcModel> Query(Expression<Func<PlayerNpcModel, bool>> expression)
         {
             var entityExpression = _mapper.MapExpression<Expression<Func<PlayerNpcEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();

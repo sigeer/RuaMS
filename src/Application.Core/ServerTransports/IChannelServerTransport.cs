@@ -3,7 +3,9 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Shared.Team;
 using BaseProto;
+using CashProto;
 using Dto;
+using ItemProto;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -105,8 +107,8 @@ namespace Application.Core.ServerTransports
         Dto.DropAllDto RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
         Dto.SpecialCashItemListDto RequestSpecialCashItems();
-        void SendGift(int recipient, string from, string message, int sn, long ringid);
-        Dto.GiftDto[] LoadPlayerGifts(int playerId);
+
+        GetMyGiftsResponse LoadPlayerGifts(GetMyGiftsRequest request);
         void ClearGifts(int[] giftIdArray);
         bool SendNormalNoteMessage(string fromName, string toName, string noteMessage);
         bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
@@ -124,7 +126,6 @@ namespace Application.Core.ServerTransports
         void AddOwlItemSearch(int itemid);
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
-        void AddCashItemBought(int sn);
         Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);
@@ -185,5 +186,6 @@ namespace Application.Core.ServerTransports
         GetPLifeByMapIdResponse RequestPLifeByMapId(GetPLifeByMapIdRequest requestPLifeByMapIdRequest);
         void SendCreatePLife(CreatePLifeRequest createPLifeRequest);
         void SendRemovePLife(RemovePLifeRequest removePLifeRequest);
+        void SendBuyCashItem(BuyCashItemRequest buyCashItemRequest);
     }
 }

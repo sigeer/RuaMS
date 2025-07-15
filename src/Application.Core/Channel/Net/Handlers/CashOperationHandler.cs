@@ -69,7 +69,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     int useNX = p.readInt();
                     int snCS = p.readInt();
                     var cItem = _cashItemProvider.getItem(snCS);
-                    if (!canBuy(chr, cItem, cs.getCash(useNX)))
+                    if (cItem == null  || !canBuy(chr, cItem, cs.getCash(useNX)))
                     {
                         _logger.LogError("Denied to sell cash item with SN {ItemSN}", snCS); // preventing NPE here thanks to MedicOP
                         c.enableCSActions();
@@ -77,7 +77,8 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
 
                     if (action == 0x03)
-                    { // Item
+                    { 
+                        // Item
                         if (ItemConstants.isCashStore(cItem!.getItemId()) && chr.getLevel() < 16)
                         {
                             c.enableCSActions();
@@ -94,34 +95,18 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
-
-                        Item item = _itemService.CashItem2Item(cItem);
-                        cs.Buy(useNX, cItem);  // thanks Rohenn for noticing cash operations after item acquisition
-                        cs.addToInventory(item);
-                        c.sendPacket(PacketCreator.showBoughtCashItem(item, c.AccountEntity!.Id));
                     }
-                    else
-                    {
-                        // Package
-                        cs.Buy(useNX, cItem);
-
-                        List<Item> cashPackage = _itemService.getPackage(cItem.getItemId());
-                        foreach (Item item in cashPackage)
-                        {
-                            cs.addToInventory(item);
-                        }
-                        c.sendPacket(PacketCreator.showBoughtCashPackage(cashPackage, c.AccountEntity!.Id));
-                    }
-                    c.sendPacket(PacketCreator.showCash(chr));
+                    _itemService.BuyCashItem(c.OnlinedCharacter, useNX, cItem);
                 }
                 else if (action == 0x04)
                 {
-                    //TODO check for gender
+                    // TODO check for gender
                     int birthday = p.readInt();
-                    var cItem = _cashItemProvider.getItem(p.readInt());
-                    var recipient = CharacterManager.GetCharacterFromDatabase(p.readString());
+                    var cashId = p.readInt();
+                    var recipientName = p.readString();
+                    var cItem = _cashItemProvider.getItem(cashId);
                     var message = p.readString();
-                    if (canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)) || string.IsNullOrEmpty(message) || message.Length > 73)
+                    if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)) || string.IsNullOrEmpty(message) || message.Length > 73)
                     {
                         c.enableCSActions();
                         return;
@@ -131,23 +116,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
                         return;
                     }
-                    else if (recipient == null)
-                    {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xA9));
-                        return;
-                    }
-                    else if (recipient.AccountId == c.AccountEntity!.Id)
-                    {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xA8));
-                        return;
-                    }
-                    cs.Buy(CashType.NX_PREPAID, cItem);
-                    cs.gift(recipient.CharacterId, chr.getName(), message, cItem.getSN());
-                    c.sendPacket(PacketCreator.showGiftSucceed(recipient.CharacterName, cItem));
-                    c.sendPacket(PacketCreator.showCash(chr));
-
-                    string noteMessage = chr.getName() + " has sent you a gift! Go check out the Cash Shop.";
-                    c.CurrentServerContainer.Transport.SendNormalNoteMessage(chr.Name, recipient.CharacterName, noteMessage);
+                    _itemService.BuyCashItemForGift(c.OnlinedCharacter, CashType.NX_PREPAID, cItem, recipientName, message);
                 }
                 else if (action == 0x05)
                 {
@@ -165,7 +134,8 @@ public class CashOperationHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.showWishList(chr, true));
                 }
                 else if (action == 0x06)
-                { // Increase Inventory Slots
+                { 
+                    // Increase Inventory Slots
                     p.skip(1);
                     int cash = p.readInt();
                     byte mode = p.readByte();
@@ -209,6 +179,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.enableCSActions();
                             return;
                         }
+
                         cs.Buy(cash, cItem);
                         if (chr.gainSlots(type, qty, false))
                         {
@@ -249,7 +220,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             c.sendPacket(PacketCreator.showCash(chr));
                         }
                         else
-                        {
+                        { 
                             _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account.", qty, CharacterManager.makeMapleReadable(chr.getName()));
                         }
                     }
@@ -384,46 +355,16 @@ public class CashOperationHandler : ChannelHandlerBase
                         string text = p.readString();
                         var itemRing = _cashItemProvider.GetItemTrust(SN);
                         var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(recipientName);
-                        if (partner == null)
-                        {
-                            chr.sendPacket(PacketCreator.serverNotice(1, "The partner you specified cannot be found.\r\nPlease make sure your partner is online and in the same channel."));
-                        }
-                        else
-                        {
-
-                            /*  if (partner.getGender() == chr.getGender()) {
-                                  chr.dropMessage(5, "You and your partner are the same gender, please buy a friendship ring.");
-                                  c.enableCSActions();
-                                  return;
-                              }*/ //Gotta let them faggots marry too, hence why this is commented out <3 
-
-                            if (_itemService.CashItem2Item(itemRing) is Equip eqp)
-                            {
-                                var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
-                                if (rings == null)
-                                {
-                                    c.sendPacket(PacketCreator.showCashShopMessage(0xBE));
-                                    return;
-                                }
-                                eqp.Ring = rings.MyRing;
-                                cs.addToInventory(eqp);
-                                c.sendPacket(PacketCreator.showBoughtCashItem(eqp, c.AccountEntity!.Id));
-                                cs.Buy(toCharge, itemRing);
-                                cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRing.getRingId());
-                                chr.addCrushRing(rings.MyRing);
-                                c.CurrentServerContainer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
-                            }
-                        }
+                        _itemService.BuyCashItemForGift(c.OnlinedCharacter, toCharge, itemRing, recipientName, text, true);
                     }
                     else
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
                     }
-
-                    c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x20)
                 {
+                    // 金币购买用于任务的物品
                     int serialNumber = p.readInt();  // thanks GabrielSin for detecting a potential exploit with 1 meso cash items.
                     if (serialNumber / 10000000 != 8)
                     {
@@ -458,7 +399,8 @@ public class CashOperationHandler : ChannelHandlerBase
                     c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x23)
-                { //Friendship :3
+                { 
+                    //Friendship :3
                     int birthday = p.readInt();
                     if (c.CheckBirthday(birthday))
                     {
@@ -467,41 +409,18 @@ public class CashOperationHandler : ChannelHandlerBase
                         var itemRing = _cashItemProvider.GetItemTrust(snID);
                         string sentTo = p.readString();
                         string text = p.readString();
-                        var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(sentTo);
-                        if (partner == null)
-                        {
-                            c.sendPacket(PacketCreator.showCashShopMessage(0xBE));
-                        }
-                        else
-                        {
-                            // Need to check to make sure its actually an equip and the right SN...
-                            if (_itemService.CashItem2Item(itemRing) is Equip eqp)
-                            {
-                                var rings = RingManager.CreateRing(itemRing.getItemId(), chr, partner);
-                                if (rings == null)
-                                {
-                                    c.sendPacket(PacketCreator.showCashShopMessage(0xBE));
-                                    return;
-                                }
-                                eqp.Ring = rings.MyRing;
-                                cs.addToInventory(eqp);
-                                c.sendPacket(PacketCreator.showBoughtCashRing(eqp, partner.getName(), c.AccountEntity!.Id));
-                                cs.gainCash(payment, -itemRing.getPrice());
-                                cs.gift(partner.getId(), chr.getName(), text, eqp.getSN(), rings.PartnerRing.getRingId());
-                                chr.addFriendshipRing(rings.MyRing);
-                                c.CurrentServerContainer.Transport.SendFameNoteMessage(chr.Name, partner.Name, text);
-                            }
-                        }
+                        _itemService.BuyCashItemForGift(c.OnlinedCharacter, payment, itemRing, sentTo, text, true);
                     }
                     else
                     {
                         c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
                     }
-
-                    c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x2E)
-                { //name change
+                {
+                    // TODO: 暂不支持，后续修复
+                    throw new BusinessNotsupportException();
+                    //name change
                     var cItem = _cashItemProvider.getItem(p.readInt());
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)))
                     {
@@ -541,19 +460,9 @@ public class CashOperationHandler : ChannelHandlerBase
                 }
                 else if (action == 0x31)
                 {
-                    //world transfer
-                    var cItem = _cashItemProvider.getItem(p.readInt());
-                    if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)))
-                    {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0));
-                        c.enableCSActions();
-                        return;
-                    }
-                    if (cItem.getSN() == 50600001)
-                    {
-                        throw new BusinessNotsupportException("World Transfer");
-                    }
-                    c.enableCSActions();
+                    //world transfer 
+                    // 移除了大区的概念，转区没有意义
+                    throw new BusinessNotsupportException();
                 }
                 else
                 {

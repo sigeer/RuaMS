@@ -78,11 +78,6 @@ namespace Application.Core.Channel
             return _tranport.GetOwlSearchedItems().Items.ToArray();
         }
 
-        internal void AddCashItemBought(int sn)
-        {
-            _tranport.AddCashItemBought(sn);
-        }
-
         internal void SendTeamChat(string name, string chattext)
         {
             _tranport.SendTeamChat(name, chattext);

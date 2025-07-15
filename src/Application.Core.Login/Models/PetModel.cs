@@ -1,15 +1,8 @@
+using Application.Core.Login.Shared;
+
 namespace Application.Core.Login.Models
 {
-    public class RingModel
-    {
-        public long Id { get; set; }
-        public int ItemId { get; set; }
 
-        public long PartnerRingId { get; set; }
-
-        public int PartnerChrId { get; set; }
-        public string PartnerName { get; set; } = null!;
-    }
     public class PetModel
     {
         public long Petid { get; set; }

@@ -26,8 +26,9 @@ namespace Application.Core.Game.Relation;
 /**
  * @author Danny
  */
-public class Ring : IComparable<Ring>
+public class Ring
 {
+    public int SourceId { get; set; }
     private long ringId;
     private long ringId2;
     private int partnerId;
@@ -36,8 +37,9 @@ public class Ring : IComparable<Ring>
     private bool _equipped = false;
     public long PartnerRingId => ringId2;
 
-    public Ring(long id, long id2, int partnerId, int itemid, string partnername)
+    public Ring(int sourceId, long id, long id2, int partnerId, int itemid, string partnername)
     {
+        SourceId = sourceId;
         ringId = id;
         ringId2 = id2;
         this.partnerId = partnerId;
@@ -87,23 +89,70 @@ public class Ring : IComparable<Ring>
 
     public override bool Equals(object? o)
     {
-        return o is Ring ring && ring.getRingId() == getRingId();
+        return o is Ring ring && ring.SourceId == SourceId;
     }
 
-
-    public int CompareTo(Ring? other)
+    public override int GetHashCode()
     {
-        if (other == null)
-            return 1;
+        return SourceId.GetHashCode();
+    }
 
-        if (ringId < other.getRingId())
-        {
-            return -1;
-        }
-        else if (ringId == other.getRingId())
-        {
-            return 0;
-        }
-        return 1;
+    public static bool operator ==(Ring? a, Ring? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        return a.Equals(b);
+    }
+
+    public static bool operator !=(Ring? a, Ring? b)
+    {
+        return !(a == b);
+    }
+}
+
+public class RingSourceModel
+{
+    public int Id { get; set; }
+    public int ItemId { get; set; }
+    public long RingId1 { get; set; }
+    public long RingId2 { get; set; }
+
+    public int CharacterId1 { get; set; }
+    public string CharacterName1 { get; set; } = null!;
+    public int CharacterId2 { get; set; }
+    public string CharacterName2 { get; set; } = null!;
+
+    public bool Equiped { get; set; }
+
+    public override bool Equals(object? o)
+    {
+        return o is RingSourceModel ring && ring.Id == Id;
+    }
+
+    public Ring? GetRing(long ringId)
+    {
+        if (ringId == RingId1)
+            return new Ring(Id, RingId1, RingId2, CharacterId2, ItemId, CharacterName2);
+        if (ringId == RingId2)
+            return new Ring(Id, RingId2, RingId1, CharacterId1, ItemId, CharacterName1);
+
+        return null;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+
+    public static bool operator ==(RingSourceModel? a, RingSourceModel? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        return a.Equals(b);
+    }
+
+    public static bool operator !=(RingSourceModel? a, RingSourceModel? b)
+    {
+        return !(a == b);
     }
 }

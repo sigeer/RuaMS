@@ -1105,6 +1105,11 @@ public class PacketCreator
         return PacketCommon.serverNotice(type, message, npc);
     }
 
+    public static Packet Popup(string message, int npc = 0)
+    {
+        return PacketCommon.serverNotice(1, message, npc);
+    }
+
     public static Packet serverNotice(int type, int channel, string message, bool smegaEar = false)
     {
         return PacketCommon.serverNotice(type, channel, message, smegaEar);

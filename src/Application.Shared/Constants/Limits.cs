@@ -8,5 +8,7 @@ namespace Application.Shared.Constants
         public const int MaxTameness = 30000;
         public const int MaxLevel = 30;
 
+        public const int MaxCash = 1000000;
+
     }
 }

@@ -139,7 +139,7 @@ namespace Application.Core.Login.Datas
             if (accountData == null)
                 return null;
 
-            var allAccountItems = InventoryManager.LoadAccountItems(dbContext, accountId,
+            var allAccountItems = _server.InventoryManager.LoadItems(dbContext, true, accountId,
                 ItemType.Storage, ItemType.CashAran, ItemType.CashCygnus, ItemType.CashExplorer, ItemType.CashOverall);
 
             data = new AccountGame
@@ -149,11 +149,11 @@ namespace Application.Core.Login.Datas
                 MaplePoint = accountData.MaplePoint ?? 0,
                 NxPrepaid = accountData.NxPrepaid ?? 0,
 
-                StorageItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.Storage)),
-                CashOverallItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashOverall)),
-                CashAranItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashAran)),
-                CashCygnusItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashCygnus)),
-                CashExplorerItems = _maaper.Map<ItemModel[]>(allAccountItems.Where(x => x.Item.Type == (int)ItemType.CashExplorer)),
+                StorageItems = allAccountItems.Where(x => x.Type == (int)ItemType.Storage).ToArray(),
+                CashOverallItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashOverall).ToArray(),
+                CashAranItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashAran).ToArray(),
+                CashCygnusItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashCygnus).ToArray(),
+                CashExplorerItems = allAccountItems.Where(x => x.Type == (int)ItemType.CashExplorer).ToArray(),
                 QuickSlot = _maaper.Map<QuickSlotModel>(dbContext.Quickslotkeymappeds.AsNoTracking().Where(x => x.Accountid == accountId).FirstOrDefault()),
                 Storage = _maaper.Map<StorageModel>(
                     dbContext.Storages.FirstOrDefault(x => x.Accountid == accountId)

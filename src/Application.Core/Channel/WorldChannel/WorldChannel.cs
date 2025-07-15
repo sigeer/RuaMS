@@ -388,6 +388,7 @@ public partial class WorldChannel : ISocketServer
     public void addPlayer(IPlayer chr)
     {
         Players.AddPlayer(chr);
+        Container.PlayerStorage.AddPlayer(chr);
         chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
     }
 
@@ -404,6 +405,11 @@ public partial class WorldChannel : ISocketServer
     public bool removePlayer(IPlayer chr)
     {
         return Players.RemovePlayer(chr.Id) != null;
+    }
+
+    public bool RemovePlayer(int chrId)
+    {
+        return Players.RemovePlayer(chrId) != null;
     }
 
     public int getChannelCapacity()

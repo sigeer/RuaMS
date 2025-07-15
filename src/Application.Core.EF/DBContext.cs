@@ -660,21 +660,21 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Id)
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("id");
-            entity.Property(e => e.From)
-                .HasMaxLength(13)
-                .HasColumnName("from");
+            entity.Property(e => e.FromId)
+                .HasColumnType("int(11)")
+                .HasColumnName("fromId");
             entity.Property(e => e.Message)
                 .HasColumnType("tinytext")
                 .HasColumnName("message");
-            entity.Property(e => e.Ringid)
-                .HasColumnType("bigint")
-                .HasColumnName("ringid");
+            entity.Property(e => e.RingSourceId)
+                .HasColumnType("int(11)")
+                .HasColumnName("ringSourceId");
             entity.Property(e => e.Sn)
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("sn");
-            entity.Property(e => e.To)
+            entity.Property(e => e.ToId)
                 .HasColumnType("int(11)")
-                .HasColumnName("to");
+                .HasColumnName("toId");
         });
 
         modelBuilder.Entity<GuildEntity>(entity =>
@@ -1805,20 +1805,23 @@ public partial class DBContext : DbContext
             entity.ToTable("rings");
 
             entity.Property(e => e.Id)
-                .HasColumnType("bigint")
+                .HasColumnType("int(11)")
                 .HasColumnName("id");
             entity.Property(e => e.ItemId)
                 .HasColumnType("int(11)")
                 .HasColumnName("itemid");
-            entity.Property(e => e.PartnerChrId)
+            entity.Property(e => e.CharacterId1)
                 .HasColumnType("int(11)")
-                .HasColumnName("partnerChrId");
-            entity.Property(e => e.PartnerRingId)
+                .HasColumnName("characterId1");
+            entity.Property(e => e.RingId1)
                 .HasColumnType("bigint")
-                .HasColumnName("partnerRingId");
-            entity.Property(e => e.PartnerName)
-                .HasMaxLength(255)
-                .HasColumnName("partnername");
+                .HasColumnName("ringId1");
+            entity.Property(e => e.CharacterId2)
+                .HasColumnType("int(11)")
+                .HasColumnName("characterId2");
+            entity.Property(e => e.RingId2)
+                .HasColumnType("bigint")
+                .HasColumnName("ringId2");
         });
 
         modelBuilder.Entity<SavedLocationEntity>(entity =>

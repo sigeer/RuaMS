@@ -24,6 +24,7 @@ using Serilog;
 using server;
 using System.Diagnostics;
 using System.Net;
+using System.Security.Cryptography;
 using tools;
 
 namespace Application.Core.Channel
@@ -65,6 +66,9 @@ namespace Application.Core.Channel
         public DataService DataService => _dataService.Value;
         readonly Lazy<IPlayerNPCService> _playerNPCService;
         public IPlayerNPCService PlayerNPCService => _playerNPCService.Value;
+
+        readonly Lazy<ItemService> _itemService;
+        public ItemService ItemService => _itemService.Value;
         #endregion
 
         #region Task
@@ -97,7 +101,7 @@ namespace Application.Core.Channel
         public InviteChannelHandlerRegistry InviteChannelHandlerRegistry { get; }
 
         public ExpeditionService ExpeditionService { get; }
-
+        public ChannelPlayerStorage PlayerStorage { get; }
 
         ScheduledFuture? invitationTask;
         public WorldChannelServer(IServiceProvider sp,
@@ -115,6 +119,7 @@ namespace Application.Core.Channel
             Modules = new();
             Servers = new();
             ServerConfig = serverConfigOptions.Value;
+            PlayerStorage = new();
 
             SkillbookInformationProvider = skillbookInformationProvider;
             CashItemProvider = cashItemProvider;
@@ -140,6 +145,7 @@ namespace Application.Core.Channel
             _noteService = new(() => ServiceProvider.GetRequiredService<NoteService>());
             _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
             _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
+            _itemService = new(() => ServiceProvider.GetRequiredService<ItemService>());
         }
 
         #region 时间
@@ -329,18 +335,26 @@ namespace Application.Core.Channel
 
         }
 
+
+        public void RemovePlayer(int chrId)
+        {
+            if (chrId <= 0)
+                return;
+
+            PlayerStorage.RemovePlayer(chrId);
+            foreach (var ch in Servers.Values)
+            {
+                if (ch.RemovePlayer(chrId))
+                    return;
+            }
+        }
+
         public IPlayer? FindPlayerById(int cid)
         {
             if (cid <= 0)
                 return null;
 
-            foreach (var item in Servers.Values)
-            {
-                var chr = item.Players.getCharacterById(cid);
-                if (chr != null)
-                    return chr;
-            }
-            return null;
+            return PlayerStorage.getCharacterById(cid);
         }
 
         public IPlayer? FindPlayerById(int channel, int cid)
@@ -630,6 +644,8 @@ namespace Application.Core.Channel
         private void InitializeMessage()
         {
             var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
+            MessageDispatcher.Register<CashProto.BuyCashItemResponse>(BroadcastType.OnCashItemPurchased, itemSrc.OnBuyCashItemCallback);
+
             MessageDispatcher.Register<Empty>(BroadcastType.OnShutdown, async data => await Shutdown());
             MessageDispatcher.Register<Dto.SendTextMessage>(BroadcastType.OnMessage, OnBroadcastText);
             MessageDispatcher.Register<ItemProto.UseItemMegaphoneResponse>(BroadcastType.OnItemMegaphone, itemSrc.OnItemMegaphon);

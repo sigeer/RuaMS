@@ -497,16 +497,6 @@ namespace Application.Core.Managers
                 return false;
             }
 
-            try
-            {
-                dbContext.Rings.Where(x => x.PartnerName == oldName).ExecuteUpdate(x => x.SetProperty(y => y.PartnerName, newName));
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e, "Failed to update rings during chr name change for chrId {CharacterId}", characterId);
-                return false;
-            }
-
             /*try (PreparedStatement ps = con.prepareStatement("UPDATE playernpcs SET name = ? WHERE name = ?")) {
                 ps.setString(1, newName);
                 ps.setString(2, oldName);

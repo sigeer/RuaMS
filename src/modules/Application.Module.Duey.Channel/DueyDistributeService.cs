@@ -30,7 +30,7 @@ namespace Application.Module.Duey.Channel
                 Item = _mapper.Map<Dto.ItemDto>(item),
             });
         }
-        public void Distribute(IPlayer chr, List<Item> items, int meso, string? title = null)
+        public void Distribute(IPlayer chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
         {
             bool needNotice = false;
 
@@ -57,6 +57,8 @@ namespace Application.Module.Duey.Channel
                     CreateDueyPackageFromSystem(0, item, title, chr.Name, true);
                 }
             }
+
+            chr.getCashShop().gainCash(cashType, cashValue);
 
             if (needNotice)
             {

@@ -36,7 +36,7 @@ namespace Application.Core.Login.ServerData
             _localPLifeId = await dbContext.Plives.MaxAsync(x => (int?)x.Id) ?? 0;
         }
 
-        protected override List<PLifeModel> Query(Expression<Func<PLifeModel, bool>> expression)
+        public override List<PLifeModel> Query(Expression<Func<PLifeModel, bool>> expression)
         {
             var entityExpression = _mapper.MapExpression<Expression<Func<PlifeEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();

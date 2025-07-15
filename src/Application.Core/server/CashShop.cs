@@ -27,6 +27,7 @@ using Application.Shared.Items;
 using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using net.server;
+using System.Security.Policy;
 
 namespace server;
 
@@ -120,6 +121,47 @@ public class CashShop
 
     }
 
+    public bool TryGainCash(int cashType, int cashValue)
+    {
+        switch (cashType)
+        {
+            case NX_CREDIT:
+                {
+                    var newData = NxCredit + cashValue;
+                    if (newData < 0 || newData > Limits.MaxCash)
+                        return false;
+                    NxCredit = newData;
+                    return true;
+                }
+            case MAPLE_POINT:
+                {
+                    var newData = MaplePoint + cashValue;
+                    if (newData < 0 || newData > Limits.MaxCash)
+                        return false;
+                    MaplePoint = newData;
+                    return true;
+                }
+            case NX_PREPAID:
+                {
+                    var newData = NxPrepaid + cashValue;
+                    if (newData < 0 || newData > Limits.MaxCash)
+                        return false;
+                    NxPrepaid = newData;
+                    return true;
+                }
+            default:
+                return false;
+        }
+    }
+
+    public bool BuyCashItem(int type, CashItem? buyItem)
+    {
+        if (buyItem == null)
+            return false;
+
+        return TryGainCash(type, -buyItem.getPrice());
+    }
+
     public void gainCash(int type, int cash)
     {
         switch (type)
@@ -142,10 +184,6 @@ public class CashShop
             return;
 
         gainCash(type, -buyItem.getPrice());
-        if (!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
-        {
-            Owner.Client.CurrentServer.Service.AddCashItemBought(buyItem.getSN());
-        }
     }
 
     public bool isOpened()
@@ -226,11 +264,6 @@ public class CashShop
     public void addToWishList(int sn)
     {
         wishList.Add(sn);
-    }
-
-    public void gift(int recipient, string from, string message, int sn, long ringid = -1)
-    {
-        Owner.Client.CurrentServerContainer.Transport.SendGift(recipient, from, message, sn, ringid);
     }
 
 

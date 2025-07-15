@@ -57,20 +57,13 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Inventoryequipmentid));
 
-            CreateMap<EquipEntityPair, EquipModel>()
-                .ForMember(dest => dest.RingInfo, source => source.MapFrom(x => x.Ring))
-                .IncludeMembers(source => source.Equip)
-                .ReverseMap()
-                .ForMember(dest => dest.Ring, source => source.MapFrom(x => x.RingInfo))
-                .ForMember(dest => dest.Equip, source => source.MapFrom(x => x));
-
             CreateMap<Inventoryitem, ItemModel>()
                 .ForMember(dest => dest.InventoryItemId, source => source.MapFrom(x => x.Inventoryitemid))
                 .ForMember(dest => dest.InventoryType, source => source.MapFrom(x => x.Inventorytype));
             CreateMap<ItemEntityPair, ItemModel>()
                 .ForMember(des => des.EquipInfo, source => source.MapFrom(x => x.Equip))
                 .ForMember(des => des.PetInfo, source => source.MapFrom(x => x.Pet))
-            .IncludeMembers(source => source.Item);
+                .IncludeMembers(source => source.Item);
 
             CreateMap<ReactorDropEntity, Dto.DropItemDto>()
                 .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Itemid))
@@ -103,13 +96,13 @@ namespace Application.Core.Login.Mappers
             CreateMap<ShopEntity, Dto.ShopDto>();
             CreateMap<Shopitem, Dto.ShopItemDto>();
 
-            CreateMap<Ring_Entity, RingModel>();
+            CreateMap<Ring_Entity, RingSourceModel>();
+            CreateMap<Ring_Entity, ItemProto.RingDto>();
 
-            CreateMap<GiftRingPair, Dto.GiftDto>()
-                .ForMember(x => x.Ring, src => src.MapFrom(x => x.Ring))
-                .IncludeMembers(x => x.Gift);
-            CreateMap<GiftEntity, Dto.GiftDto>();
-            CreateMap<Ring_Entity, Dto.RingDto>();
+            CreateMap<GiftEntity, GiftModel>()
+                .ForMember(dest => dest.To, src => src.MapFrom(x => x.ToId))
+                .ForMember(dest => dest.From, src => src.MapFrom(x => x.FromId));
+
             CreateMap<SpecialCashItemEntity, Dto.SpecialCashItemDto>();
 
             CreateMap<GuildEntity, GuildModel>();
@@ -118,6 +111,7 @@ namespace Application.Core.Login.Mappers
             CreateMap<NewYearCardEntity, NewYearCardModel>().ReverseMap();
 
             CreateMap<PlifeEntity, PLifeModel>().ReverseMap();
+
         }
     }
 }

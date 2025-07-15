@@ -14,15 +14,16 @@ namespace Application.Core.Login.Services
         readonly DataStorage _dataStorage;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
+        readonly MasterServer _server;
 
         protected readonly ILogger<StorageService> _logger;
         readonly IEnumerable<MasterModule> _modules;
-        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, IEnumerable<MasterModule> modules)
+        public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
         {
             _dataStorage = chrStorage;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
-            _modules = modules;
+            _server = server;
             packetChannel = System.Threading.Channels.Channel.CreateUnbounded<StorageType>();
             // 定时触发、特殊事件触发、关闭服务器触发
             Task.Run(async () =>
@@ -82,6 +83,7 @@ namespace Application.Core.Login.Services
                 await _dataStorage.CommitAllianceAsync(dbContext);
                 await _dataStorage.CommitGuildAsync(dbContext);
 
+
                 await dbTrans.CommitAsync();
             }
             finally
@@ -112,7 +114,12 @@ namespace Application.Core.Login.Services
                 await _dataStorage.CommitAllianceAsync(dbContext);
                 await _dataStorage.CommitGuildAsync(dbContext);
 
-                foreach (var plugin in _modules)
+                await _server.GiftManager.Commit(dbContext);
+                await _server.RingManager.Commit(dbContext);
+                await _server.NewYearCardManager.Commit(dbContext);
+                await _server.ResourceDataManager.Commit(dbContext);
+
+                foreach (var plugin in _server.Modules)
                 {
                     await plugin.SaveChangesAsync(dbContext);
                 }

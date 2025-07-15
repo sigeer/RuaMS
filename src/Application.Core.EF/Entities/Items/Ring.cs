@@ -1,25 +1,26 @@
 namespace Application.EF.Entities;
 
 public partial class Ring_Entity
-{
-    public Ring_Entity(long id, int itemId, long partnerRingId, int partnerChrId, string partnerName)
+{    public Ring_Entity(int id, int itemId, long ringId1, long ringId2, int characterId1, int characterId2)
     {
         Id = id;
         ItemId = itemId;
-        PartnerRingId = partnerRingId;
-        PartnerChrId = partnerChrId;
-        PartnerName = partnerName;
+        RingId1 = ringId1;
+        RingId2 = ringId2;
+        CharacterId1 = characterId1;
+        CharacterId2 = characterId2;
     }
 
     private Ring_Entity()
     {
     }
 
-    public long Id { get; set; }
+    public int Id { get; set; }
     public int ItemId { get; set; }
 
-    public long PartnerRingId { get; set; }
+    public long RingId1 { get; set; }
+    public long RingId2 { get; set; }
 
-    public int PartnerChrId { get; set; }
-    public string PartnerName { get; set; } = null!;
+    public int CharacterId1 { get; set; }
+    public int CharacterId2 { get; set; }
 }

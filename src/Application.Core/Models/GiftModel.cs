@@ -7,12 +7,13 @@ namespace Application.Core.Model
         public int Id { get; set; }
 
         public int To { get; set; }
-
-        public string From { get; set; } = null!;
+        public string ToName { get; set; } = null!;
+        public int From { get; set; }
+        public string FromName { get; set; } = null!;
 
         public string Message { get; set; } = null!;
 
         public int Sn { get; set; }
-        public Ring? Ring { get; set; }
+        public RingSourceModel? Ring { get; set; }
     }
 }

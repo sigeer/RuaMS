@@ -9,6 +9,7 @@ using BaseProto;
 using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using ZLinq;
 
@@ -63,23 +64,6 @@ namespace Application.Core.Login.Services
             return data;
         }
 
-        public void InsertGift(int toId, string from, string message, int sn, long ringid = -1)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var giftModel = new GiftEntity(toId, from, message, sn, ringid);
-            dbContext.Gifts.Add(giftModel);
-            dbContext.SaveChanges();
-        }
-
-        public Dto.GiftDto[] LoadPlayerGifts(int playerId)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbData = (from a in dbContext.Gifts.AsNoTracking().Where(x => x.To == playerId)
-                          join b in dbContext.Rings on a.Ringid equals b.Id into bss
-                          from bs in bss.DefaultIfEmpty()
-                          select new GiftRingPair(a, bs)).ToList();
-            return _mapper.Map<Dto.GiftDto[]>(dbData);
-        }
 
         public void ClearGifts(int[] giftIdArray)
         {
