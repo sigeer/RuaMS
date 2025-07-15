@@ -6,15 +6,16 @@ namespace Application.Core.tools
     {
         public static string GetPlayerNameWithMedal(Dto.PlayerViewDto data)
         {
-            return GetPlayerNameWithMedal(data.Character.Name, data.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal));
+            return GetPlayerNameWithMedal(data.Character.Name, 
+                data.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? -1);
         }
 
-        public static string GetPlayerNameWithMedal(string name, Dto.ItemDto? medalItem)
+        public static string GetPlayerNameWithMedal(string name, int medalItemId)
         {
             var displayName = name;
-            if (medalItem != null)
+            if (medalItemId > 0)
             {
-                var medalName = ItemInformationProvider.getInstance().getName(medalItem.InventoryItemId);
+                var medalName = ItemInformationProvider.getInstance().getName(medalItemId);
                 if (!string.IsNullOrWhiteSpace(medalName))
                     displayName = $"<{medalName}>{displayName}";
             }
