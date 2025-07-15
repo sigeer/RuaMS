@@ -114,7 +114,7 @@ namespace Application.Core.Login.Datas
                         GuildId = origin.Character.GuildId,
                         TeamId = origin.Character.Party,
                         FamilyId = origin.Character.FamilyId,
-                        MedalItem = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)
+                        MedalItemId = origin.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? -1
                     });
                     _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }
@@ -131,7 +131,7 @@ namespace Application.Core.Login.Datas
                         GuildId = origin.Character.GuildId,
                         TeamId = origin.Character.Party,
                         FamilyId = origin.Character.FamilyId,
-                        MedalItem = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)
+                        MedalItemId = origin.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? -1
                     });
                     _masterServer.TeamManager.UpdateParty(origin.Character.Party, PartyOperation.SILENT_UPDATE, origin.Character.Id, origin.Character.Id);
                 }

@@ -12,5 +12,5 @@ message PlayerLevelJobChange {
   int32 guildId = 5;
   int32 teamId = 6;
   int32 familyId = 7;
-  Dto.ItemDto medalItem = 8;
+  int32 medalItemId = 8;
 }
