@@ -1,5 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Application.Module.Duey.Master.Models
 {
@@ -44,6 +45,7 @@ namespace Application.Module.Duey.Master.Models
             return Interlocked.CompareExchange(ref _frozen, 1, 0) == 0;
         }
 
+        [NotMapped]
         public bool IsFrozen => _frozen == 1;
         /// <summary>
         /// 尝试解冻（原子操作）
