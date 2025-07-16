@@ -13,7 +13,7 @@ public class DevtestCommand : CommandBase
 
     public override void Execute(IChannelClient client, string[] paramsValue)
     {
-        var scriptEngine = client.CurrentServer.DevtestScriptManager.GetScriptEngine("devtest.js");
+        var scriptEngine = client.CurrentServer.DevtestScriptManager.GetScriptEngine("devtest");
         try
         {
             scriptEngine?.CallFunction("run", client.Character);
