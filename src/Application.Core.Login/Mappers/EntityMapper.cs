@@ -92,7 +92,8 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
 
-            CreateMap<NoteEntity, Dto.NoteDto>();
+            CreateMap<NoteEntity, NoteModel>()
+                .ForMember(dest => dest.IsDeleted, src => src.MapFrom(x => x.Deleted == 1));
             CreateMap<ShopEntity, Dto.ShopDto>();
             CreateMap<Shopitem, Dto.ShopItemDto>();
 

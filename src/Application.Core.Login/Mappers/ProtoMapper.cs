@@ -105,6 +105,10 @@ namespace Application.Core.Login.Mappers
             CreateMap<ItemQuantity, BaseProto.ItemQuantity>();
 
             CreateMap<ItemProto.PlayerShopItemDto, PlayerShopItemModel>().ReverseMap();
+
+            CreateMap<NoteModel, Dto.NoteDto>()
+                .ForMember(dest => dest.From, src => src.MapFrom<NoteSenderNameValueResolver>())
+                .ForMember(dest => dest.To, src => src.MapFrom<NoteReceiverNameValueResolver>());
         }
     }
 }
