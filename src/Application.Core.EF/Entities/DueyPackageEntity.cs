@@ -1,3 +1,6 @@
+using AutoMapper.Configuration.Annotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Application.EF.Entities;
 
 public partial class DueyPackageEntity
@@ -16,6 +19,8 @@ public partial class DueyPackageEntity
     public bool Checked { get; set; } = true;
 
     public bool Type { get; set; } = false;
+    [NotMapped]
+    public bool IsFrozen { get; set; }
     private DueyPackageEntity() { }
 
     public DueyPackageEntity(int id, int receiverId, int senderId, int mesos, string? message, bool @checked, bool type, DateTimeOffset createTime)

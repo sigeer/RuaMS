@@ -112,7 +112,7 @@ namespace Application.Core.Login.ServerData
 
             var entityExpression = _mapper.MapExpression<Expression<Func<GiftEntity, bool>>>(expression);
 
-            return _mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList());
+            return QueryWithDirty(_mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList()), expression.Compile());
         }
     }
 }
