@@ -21,22 +21,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Gachapon;
-using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Channel;
-using Application.Core.Managers;
+using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
-using Application.Shared.Items;
 using client;
 using client.inventory;
+using client.processor.npc;
 using constants.game;
 using constants.String;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using net.server.coordinator.matchchecker;
-using net.server.guild;
 using server;
 using server.expeditions;
 using server.life;
@@ -44,9 +43,6 @@ using server.partyquest;
 using tools;
 using tools.packets;
 using static server.partyquest.Pyramid;
-using Microsoft.Extensions.DependencyInjection;
-using Application.Core.Channel.DataProviders;
-using Application.Core.ServerTransports;
 
 
 namespace scripting.npc;
@@ -512,31 +508,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return getPlayer().AllianceModel!.getCapacity();
     }
 
-    public bool hasMerchant()
+    public PlayerShopLocalInfo LoadFredrickRegistry()
     {
-        return getPlayer().hasMerchant();
+        return c.CurrentServerContainer.PlayerShopService.LoadPlayerHiredMerchant(getPlayer());
     }
 
-    public bool hasMerchantItems()
+    public void ShowFredrick(PlayerShopLocalInfo store)
     {
-        try
-        {
-            if (ItemFactory.MERCHANT.loadItems(getPlayer().getId(), false).Count > 0)
-            {
-                return true;
-            }
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-            return false;
-        }
-        return getPlayer().getMerchantMeso() != 0;
-    }
-
-    public void showFredrick()
-    {
-        c.sendPacket(PacketCreator.getFredrick(getPlayer()));
+        c.sendPacket(PacketCreator.getFredrick(store));
     }
 
     public int partyMembersInMap()

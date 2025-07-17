@@ -63,35 +63,6 @@ public class World
         return Channels.Count;
     }
 
-    public async Task<int> removeChannel()
-    {
-        var chIdx = Channels.Count - 1;
-        if (chIdx < 0)
-        {
-            return -1;
-        }
-
-        var ch = Channels.ElementAtOrDefault(chIdx);
-        if (ch == null || !ch.canUninstall())
-        {
-            return -1;
-        }
-
-        await ch.Shutdown();
-        Channels.RemoveAt(chIdx);
-
-        return ch.getId();
-    }
-
-
-    public bool canUninstall()
-    {
-        if (Players.Count() > 0) return false;
-
-        return this.getChannels().All(x => x.canUninstall());
-    }
-
-
 
     public WorldPlayerStorage getPlayerStorage()
     {
@@ -288,29 +259,19 @@ public class World
         }
     }
 
-    public List<KeyValuePair<PlayerShopItem, AbstractMapObject>> getAvailableItemBundles(int itemid)
+    public List<KeyValuePair<PlayerShopItem, IPlayerShop>> getAvailableItemBundles(int itemid)
     {
-        List<KeyValuePair<PlayerShopItem, AbstractMapObject>> hmsAvailable = new();
+        List<KeyValuePair<PlayerShopItem, IPlayerShop>> hmsAvailable = new();
 
         foreach (var ch in getChannels())
         {
-            foreach (var hm in ch.HiredMerchantManager.getActiveMerchants())
+            foreach (var hm in ch.PlayerShopManager.GetAllShops())
             {
-                List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemid);
+                List<PlayerShopItem> itemBundles = hm.QueryAvailableBundles(itemid);
 
                 foreach (PlayerShopItem mpsi in itemBundles)
                 {
                     hmsAvailable.Add(new(mpsi, hm));
-                }
-            }
-
-            foreach (PlayerShop ps in ch.PlayerShopManager.getActivePlayerShops())
-            {
-                List<PlayerShopItem> itemBundles = ps.sendAvailableBundles(itemid);
-
-                foreach (PlayerShopItem mpsi in itemBundles)
-                {
-                    hmsAvailable.Add(new(mpsi, ps));
                 }
             }
         }

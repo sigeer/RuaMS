@@ -6,17 +6,14 @@ namespace Application.Core.Login.Tasks
     public class DueyFredrickTask : AbstractRunnable
     {
         readonly MasterServer _server;
-        readonly FredrickService _fredrickService;
-
-        public DueyFredrickTask(FredrickService fredrickProcessor, MasterServer server)
+        public DueyFredrickTask(MasterServer server)
         {
-            this._fredrickService = fredrickProcessor;
             _server = server;
         }
 
         public override void HandleRun()
         {
-            _fredrickService.runFredrickSchedule();
+            _server.PlayerShopManager.RunFredrickSchedule();
         }
     }
 

@@ -662,11 +662,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("hair");
 
-                    b.Property<bool>("HasMerchant")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
                     b.Property<int>("Hp")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(11)")
@@ -760,11 +755,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("maxmp")
                         .HasDefaultValueSql("'5'");
-
-                    b.Property<int>("MerchantMesos")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasDefaultValueSql("'0'");
 
                     b.Property<int>("Meso")
                         .HasColumnType("int(11)")
@@ -3305,13 +3295,9 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("fame");
 
-                    b.Property<string>("From")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
-                        .HasColumnName("from")
-                        .HasDefaultValueSql("''");
+                    b.Property<int>("FromId")
+                        .HasColumnType("int(11)")
+                        .HasColumnName("fromId");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -3322,13 +3308,9 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("bigint(20) unsigned")
                         .HasColumnName("timestamp");
 
-                    b.Property<string>("To")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
-                        .HasColumnName("to")
-                        .HasDefaultValueSql("''");
+                    b.Property<int>("ToId")
+                        .HasColumnType("int(11)")
+                        .HasColumnName("toId");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");

@@ -1876,12 +1876,12 @@ public class PacketCreator
             p.writeInt(chrMount.getTiredness());
         }
 
-        var mps = chr.getPlayerShop();
-        if (mps != null && mps.isOwner(chr))
+        var mps = chr.VisitingShop;
+        if (mps is PlayerShop ps && mps.IsOwner(chr))
         {
-            if (mps.hasFreeSlot())
+            if (ps.hasFreeSlot())
             {
-                addAnnounceBox(p, mps, mps.getVisitors().Length);
+                addAnnounceBox(p, mps, ps.getVisitors().Length);
             }
             else
             {
@@ -2091,11 +2091,11 @@ public class PacketCreator
      *             to.
      * @param shop The shop to announce.
      */
-    private static void addAnnounceBox(OutPacket p, PlayerShop shop, int availability)
+    private static void addAnnounceBox(OutPacket p, IPlayerShop shop, int availability)
     {
         p.writeByte(4);
         p.writeInt(shop.getObjectId());
-        p.writeString(shop.getDescription());
+        p.writeString(shop.Title);
         p.writeByte(0);
         p.writeByte(0);
         p.writeByte(1);
@@ -2121,15 +2121,15 @@ public class PacketCreator
 
         p.writeByte(5);
         p.writeInt(hm.getObjectId());
-        p.writeString(hm.getDescription());
-        p.writeByte(hm.getItemId() % 100);
+        p.writeString(hm.Title);
+        p.writeByte(hm.SourceItem.getItemId() % 100);
         p.writeBytes(roomInfo);    // visitor capacity here, thanks GabrielSin
     }
 
     public static Packet updateHiredMerchantBox(HiredMerchant hm)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_HIRED_MERCHANT);
-        p.writeInt(hm.getOwnerId());
+        p.writeInt(hm.OwnerId);
         updateHiredMerchantBoxInfo(p, hm);
         return p;
     }
@@ -2140,9 +2140,9 @@ public class PacketCreator
 
         p.writeByte(4);
         p.writeInt(shop.getObjectId());
-        p.writeString(shop.getDescription());
+        p.writeString(shop.Title);
         p.writeByte(0);                 // pw
-        p.writeByte(shop.getItemId() % 100);
+        p.writeByte(shop.SourceItem.getItemId() % 100);
         p.writeByte(roomInfo[0]);       // curPlayers
         p.writeByte(roomInfo[1]);       // maxPlayers
         p.writeByte(0);
@@ -2151,15 +2151,15 @@ public class PacketCreator
     public static Packet updatePlayerShopBox(PlayerShop shop)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
-        p.writeInt(shop.getOwner().getId());
+        p.writeInt(shop.OwnerId);
         updatePlayerShopBoxInfo(p, shop);
         return p;
     }
 
-    public static Packet removePlayerShopBox(PlayerShop shop)
+    public static Packet removePlayerShopBox(int shopOwnerId)
     {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_CHAR_BOX);
-        p.writeInt(shop.getOwner().getId());
+        p.writeInt(shopOwnerId);
         p.writeByte(0);
         return p;
     }
@@ -3214,7 +3214,7 @@ public class PacketCreator
 
         if (owner)
         {
-            List<SoldItem> sold = shop.getSold();
+            List<SoldItem> sold = shop.SoldHistory;
             p.writeByte(sold.Count);
             foreach (SoldItem s in sold)
             {
@@ -3229,8 +3229,8 @@ public class PacketCreator
             p.writeByte(0);
         }
 
-        addCharLook(p, shop.getOwner(), false);
-        p.writeString(shop.getOwner().getName());
+        addCharLook(p, shop.Owner, false);
+        p.writeString(shop.OwnerName);
 
         var visitors = shop.getVisitors();
         for (int i = 0; i < 3; i++)
@@ -3244,11 +3244,11 @@ public class PacketCreator
         }
 
         p.writeByte(0xFF);
-        p.writeString(shop.getDescription());
-        List<PlayerShopItem> items = shop.getItems();
+        p.writeString(shop.Title);
+        List<PlayerShopItem> items = shop.Commodity;
         p.writeByte(0x10);  //TODO SLOTS, which is 16 for most stores...slotMax
         p.writeByte(items.Count);
-        foreach (PlayerShopItem item in items)
+        foreach (var item in items)
         {
             p.writeShort(item.getBundles());
             p.writeShort(item.getItem().getQuantity());
@@ -5209,23 +5209,22 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getFredrick(IPlayer chr)
+    public static Packet getFredrick(PlayerShopLocalInfo store)
     {
         OutPacket p = OutPacket.create(SendOpcode.FREDRICK);
         p.writeByte(0x23);
         p.writeInt(NpcId.FREDRICK);
         p.writeInt(32272); //id
         p.skip(5);
-        p.writeInt(chr.getMerchantNetMeso());
+        p.writeInt(store.Mesos);
         p.writeByte(0);
         try
         {
-            var items = ItemFactory.MERCHANT.loadItems(chr.getId(), false);
-            p.writeByte(items.Count);
+            p.writeByte(store.Items.Length);
 
-            foreach (var item in items)
+            foreach (var item in store.Items)
             {
-                addItemInfo(p, item.Item, true);
+                addItemInfo(p, item, true);
             }
         }
         catch (Exception e)
@@ -5318,7 +5317,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet owlOfMinerva(IChannelClient c, int itemId, List<KeyValuePair<PlayerShopItem, AbstractMapObject>> hmsAvailable)
+    public static Packet owlOfMinerva(IChannelClient c, int itemId, List<KeyValuePair<PlayerShopItem, IPlayerShop>> hmsAvailable)
     {
         sbyte itemType = ItemConstants.getInventoryType(itemId).getType();
 
@@ -5330,34 +5329,16 @@ public class PacketCreator
         foreach (var hme in hmsAvailable)
         {
             var item = hme.Key;
-            var mo = hme.Value;
+            var ps = hme.Value;
 
-            if (mo is PlayerShop ps)
-            {
-                IPlayer owner = ps.getOwner();
-
-                p.writeString(owner.getName());
-                p.writeInt(owner.getMapId());
-                p.writeString(ps.getDescription());
-                p.writeInt(item.getBundles());
-                p.writeInt(item.getItem().getQuantity());
-                p.writeInt(item.getPrice());
-                p.writeInt(owner.getId());
-                p.writeByte(owner.getClient().getChannel() - 1);
-            }
-            else
-            {
-                HiredMerchant hm = (HiredMerchant)mo;
-
-                p.writeString(hm.getOwner());
-                p.writeInt(hm.getMapId());
-                p.writeString(hm.getDescription());
-                p.writeInt(item.getBundles());
-                p.writeInt(item.getItem().getQuantity());
-                p.writeInt(item.getPrice());
-                p.writeInt(hm.getOwnerId());
-                p.writeByte(hm.getChannel() - 1);
-            }
+            p.writeString(ps.OwnerName);
+            p.writeInt(ps.getMap().getId());
+            p.writeString(ps.Title);
+            p.writeInt(item.getBundles());
+            p.writeInt(item.getItem().getQuantity());
+            p.writeInt(item.getPrice());
+            p.writeInt(ps.OwnerId);
+            p.writeByte(ps.Channel - 1);
 
             p.writeByte(itemType);
             if (itemType == InventoryType.EQUIP.getType())
@@ -5411,21 +5392,22 @@ public class PacketCreator
         p.writeByte(0x05);
         p.writeByte(0x04);
         p.writeShort(hm.getVisitorSlotThreadsafe(chr) + 1);
-        p.writeInt(hm.getItemId());
-        p.writeString("Hired Merchant");
+        p.writeInt(hm.SourceItem.getItemId());
+        p.writeString(hm.SourceItem.GetName());
 
-        IPlayer[] visitors = hm.getVisitorCharacters();
+        var visitors = hm.getVisitorCharacters();
         for (int i = 0; i < 3; i++)
         {
-            if (visitors[i] != null)
+            var visitor = visitors[i];
+            if (visitor != null)
             {
                 p.writeByte(i + 1);
-                addCharLook(p, visitors[i], false);
-                p.writeString(visitors[i].getName());
+                addCharLook(p, visitor, false);
+                p.writeString(visitor.Name);
             }
         }
         p.writeByte(-1);
-        if (hm.isOwner(chr))
+        if (hm.IsOwner(chr))
         {
             var msgList = hm.getMessages();
 
@@ -5440,13 +5422,13 @@ public class PacketCreator
         {
             p.writeShort(0);
         }
-        p.writeString(hm.getOwner());
-        if (hm.isOwner(chr))
+        p.writeString(hm.OwnerName);
+        if (hm.IsOwner(chr))
         {
             p.writeShort(0);
-            p.writeShort(hm.getTimeOpen());
-            p.writeByte(firstTime ? 1 : 0);
-            var sold = hm.getSold();
+            p.writeShort(hm.GetTimeLeft());
+            p.writeBool(firstTime);
+            var sold = hm.SoldHistory;
             p.writeByte(sold.Count);
             foreach (var s in sold)
             {
@@ -5455,11 +5437,11 @@ public class PacketCreator
                 p.writeInt(s.mesos);
                 p.writeString(s.buyer);
             }
-            p.writeInt(chr.getMerchantMeso());//:D?
+            p.writeInt(hm.Mesos);//:D?
         }
-        p.writeString(hm.getDescription());
+        p.writeString(hm.Title);
         p.writeByte(0x10); //TODO SLOTS, which is 16 for most stores...slotMax
-        p.writeInt(hm.isOwner(chr) ? chr.getMerchantMeso() : chr.getMeso());
+        p.writeInt(hm.IsOwner(chr) ? hm.Mesos : chr.getMeso());
         p.writeByte(hm.getItems().Count);
         if (hm.getItems().Count == 0)
         {
@@ -5482,7 +5464,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.UPDATE_MERCHANT.getCode());
-        p.writeInt(hm.isOwner(chr) ? chr.getMerchantMeso() : chr.getMeso());
+        p.writeInt(hm.IsOwner(chr) ? hm.Mesos : chr.getMeso());
         p.writeByte(hm.getItems().Count);
         foreach (PlayerShopItem item in hm.getItems())
         {
@@ -5594,16 +5576,16 @@ public class PacketCreator
     public static Packet spawnHiredMerchantBox(HiredMerchant hm)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_HIRED_MERCHANT);
-        p.writeInt(hm.getOwnerId());
-        p.writeInt(hm.getItemId());
-        p.writeShort((short)hm.getPosition().X);
-        p.writeShort((short)hm.getPosition().Y);
+        p.writeInt(hm.OwnerId);
+        p.writeInt(hm.SourceItem.getItemId());
+        p.writeShort(hm.getPosition().X);
+        p.writeShort(hm.getPosition().Y);
         p.writeShort(0);
-        p.writeString(hm.getOwner());
+        p.writeString(hm.OwnerName);
         p.writeByte(0x05);
         p.writeInt(hm.getObjectId());
-        p.writeString(hm.getDescription());
-        p.writeByte(hm.getItemId() % 100);
+        p.writeString(hm.Title);
+        p.writeByte(hm.SourceItem.getItemId() % 100);
         p.writeBytes(new byte[] { 1, 4 });
         return p;
     }

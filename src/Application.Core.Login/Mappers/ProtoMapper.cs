@@ -1,5 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
+using Application.Core.Login.Models.Items;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
 using AutoMapper;
@@ -102,6 +103,8 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Life, src => src.MapFrom(x => x.LifeId))
                 .ForMember(dest => dest.Map, src => src.MapFrom(x => x.MapId));
             CreateMap<ItemQuantity, BaseProto.ItemQuantity>();
+
+            CreateMap<ItemProto.PlayerShopItemDto, PlayerShopItemModel>().ReverseMap();
         }
     }
 }

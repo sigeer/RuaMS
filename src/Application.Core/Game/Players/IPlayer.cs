@@ -61,6 +61,10 @@ namespace Application.Core.Game.Players
         /// 临时使用，需要他验证邀请时是否进入了聊天室
         /// </summary>
         public int ChatRoomId { get; set; }
+        /// <summary>
+        /// 正在访问的玩家商店（对于PlayerShop而言可能是店主）
+        /// </summary>
+        IPlayerShop? VisitingShop { get; set; }
 
         public IMount? MountModel { get; }
         public Job JobModel { get; set; }
@@ -99,7 +103,6 @@ namespace Application.Core.Game.Players
         void addGachaExp(int gain);
         void addJailExpirationTime(long time);
         void addMarriageRing(Ring? r);
-        void addMerchantMesos(int add);
         void addMesosTraded(int gain);
 
         void addPet(Pet pet);
@@ -170,12 +173,10 @@ namespace Application.Core.Game.Players
         void clearCpqTimer();
         void clearSavedLocation(SavedLocationType type);
         void clearSummons();
-        void closeHiredMerchant(bool closeMerchant);
         void closeMiniGame(bool forceClose);
         void closeNpcShop();
         void closePartySearchInteractions();
         void closePlayerInteractions();
-        void closePlayerShop();
         void closeRPS();
         void closeTrade();
         void collectDiseases();
@@ -223,7 +224,26 @@ namespace Application.Core.Game.Players
         bool gainFame(int delta, IPlayer? fromPlayer, int mode);
         void gainFestivalPoints(int gain);
         void gainGachaExp();
+        [Obsolete("用GainMeso代替")]
         void gainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false);
+        /// <summary>
+        /// 获取金币，当金币无法获取时失败（相当于canHoldMeso + gainMeso）
+        /// </summary>
+        /// <param name="gain"></param>
+        /// <param name="show"></param>
+        /// <param name="enableActions"></param>
+        /// <param name="inChat"></param>
+        /// <returns></returns>
+        bool TryGainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false);
+        /// <summary>
+        /// 获取金币并返回未获取到的部分（取代gainMeso）
+        /// </summary>
+        /// <param name="gain"></param>
+        /// <param name="show"></param>
+        /// <param name="enableActions"></param>
+        /// <param name="inChat"></param>
+        /// <returns>未获取到的部分</returns>
+        int GainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false);
         bool gainSlots(int type, int slots);
         bool gainSlots(int type, int slots, bool update);
 
@@ -300,10 +320,6 @@ namespace Application.Core.Game.Players
         int getGuildId();
         int getGuildRank();
         int getHair();
-        /// <summary>
-        /// 正在访问的雇佣商人，而不是自己的雇佣商人
-        /// </summary>
-        HiredMerchant? getHiredMerchant();
         int getId();
         int getInitialSpawnpoint();
         Inventory getInventory(InventoryType type);
@@ -342,8 +358,6 @@ namespace Application.Core.Game.Players
         int getMaxClassLevel();
         int getMaxLevel();
         string getMedalText();
-        int getMerchantMeso();
-        int getMerchantNetMeso();
         int getMeso();
         float getMesoRate();
         int getMesosTraded();
@@ -359,6 +373,7 @@ namespace Application.Core.Game.Players
         void RemoveNewYearRecord(int id);
         void DiscardNewYearRecord(bool isSender);
         int getNoPets();
+        bool CanTalkNpc();
         long getNpcCooldown();
         int getNumControlledMonsters();
         int getOwlSearch();
@@ -380,7 +395,6 @@ namespace Application.Core.Game.Players
         sbyte getPetIndex(Pet pet);
         Pet?[] getPets();
         Door? getPlayerDoor();
-        PlayerShop? getPlayerShop();
         int getPossibleReports();
         QuestStatus getQuest(int quest);
         QuestStatus getQuest(Quest quest);
@@ -451,7 +465,6 @@ namespace Application.Core.Game.Players
         bool hasEntered(string script, int mapId);
         void hasGivenFame(IPlayer to);
         bool hasJustMarried();
-        bool hasMerchant();
         bool hasNoviceExpRate();
         bool haveCleanItem(int itemid);
         bool haveItem(int itemid);
@@ -601,9 +614,7 @@ namespace Application.Core.Game.Players
         void setGuildId(int _id);
         void setGuildRank(int _rank);
         void setHair(int hair);
-        void setHasMerchant(bool set);
         void setHasSandboxItem();
-        void setHiredMerchant(HiredMerchant? merchant);
         void setInventory(InventoryType type, Inventory inv);
         void setItemEffect(int itemEffect);
         void setJob(Job job);
@@ -619,7 +630,6 @@ namespace Application.Core.Game.Players
         void setMapTransitionComplete();
         void setMarriageItemId(int itemid);
         void setMasteries(int jobId);
-        void setMerchantMeso(int set);
         MiniGame? getMiniGame();
         void setMiniGame(MiniGame? miniGame);
         void setMiniGamePoints(IPlayer visitor, int winnerslot, bool omok);
@@ -635,7 +645,6 @@ namespace Application.Core.Game.Players
         void setPartyQuest(PartyQuest? pq);
         void setPartyQuestItemObtained(string partyquestchar);
         void setPlayerAggro(int mobHash);
-        void setPlayerShop(PlayerShop? playerShop);
         void setQuestAdd(Quest quest, byte status, string customData);
         void setQuestProgress(int id, int infoNumber, string progress);
         void setRPS(RockPaperScissor? rps);
@@ -684,7 +693,6 @@ namespace Application.Core.Game.Players
         void updateSingleStat(Stat stat, int newval);
         void useCP(int ammount);
 
-        void withdrawMerchantMesos();
         void yellowMessage(string m);
 
         List<QuestStatus> getQuests();
@@ -694,5 +702,6 @@ namespace Application.Core.Game.Players
         Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
         int GetMakerSkillLevel();
         Ring? GetRingFromTotal(RingSourceModel? ring);
+        void LeaveVisitingShop();
     }
 }

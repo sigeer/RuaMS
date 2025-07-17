@@ -379,5 +379,6 @@ namespace Application.Core.Channel.Services
             }
             _itemStore.HandleTransaction(data.Transaction);
         }
+
     }
 }

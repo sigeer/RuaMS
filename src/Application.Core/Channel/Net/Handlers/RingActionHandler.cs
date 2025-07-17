@@ -324,7 +324,7 @@ public class RingActionHandler : ChannelHandlerBase
                                     }
                                     else
                                     {
-                                        c.CurrentServerContainer.Transport.SendNormalNoteMessage(groom, name, dueyMessage);
+                                        c.CurrentServerContainer.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, name, dueyMessage);
                                     }
 
                                     // 

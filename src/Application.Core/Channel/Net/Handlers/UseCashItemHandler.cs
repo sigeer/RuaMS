@@ -377,7 +377,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             string sendTo = p.readString();
             string msg = p.readString();
-            bool sendSuccess = c.CurrentServerContainer.Transport.SendNormalNoteMessage(player.getName(), sendTo, msg);
+            bool sendSuccess = c.CurrentServerContainer.Transport.SendNormalNoteMessage(player.Id, sendTo, msg);
             if (sendSuccess)
             {
                 remove(c, position, itemId);

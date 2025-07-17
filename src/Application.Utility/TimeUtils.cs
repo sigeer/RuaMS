@@ -30,5 +30,10 @@ namespace Application.Utility
         {
             return (to - from).Days;
         }
+
+        public static int DayDiff(long from, long to)
+        {
+            return TimeSpan.FromMilliseconds(to - from).Days;
+        }
     }
 }

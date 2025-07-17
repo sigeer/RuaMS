@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using client.inventory.manipulator;
 using Org.BouncyCastle.Ocsp;
@@ -221,5 +222,21 @@ public class Item : IComparable<Item>, IItemProp
     {
         return ((this.getFlag() & ItemConstants.UNTRADEABLE) == ItemConstants.UNTRADEABLE)
             || (ItemInformationProvider.getInstance().isDropRestricted(this.getItemId()) && !KarmaManipulator.hasKarmaFlag(this));
+    }
+
+    public IRelatedItemExpiration Related { get; private set; }
+    public void Relate(IRelatedItemExpiration obj)
+    {
+        Related = obj;
+    }
+
+    public void ExpiredCallback()
+    {
+        Related.ExpiredInvoke();
+    }
+
+    public string GetName()
+    {
+        return ItemInformationProvider.getInstance().getName(getItemId()) ?? StringConstants.ItemUnknown;
     }
 }

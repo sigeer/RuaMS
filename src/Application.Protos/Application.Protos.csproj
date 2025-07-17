@@ -16,6 +16,12 @@
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
 		<Protobuf Include="Cash\Cash.proto" GrpcServices="None" />
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Item\PlayerShopItem.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Item\HiredMerchant.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Item\Ring.proto" GrpcServices="None" />
 		<Protobuf Include="Item\ItemTransaction.proto" GrpcServices="None" />
 		<Protobuf Include="Item\Gift.proto" GrpcServices="None" />
@@ -111,8 +117,6 @@
 		<Protobuf Include="Dto\PlayerSetter.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Shop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ShopItem.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\Merchant.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\PlayerShopItem.proto" GrpcServices="None" />
 
 	</ItemGroup>
 

@@ -49,7 +49,7 @@ public class NPCTalkHandler : ChannelHandlerBase
             return;
         }
 
-        if (c.CurrentServerContainer.getCurrentTime() - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
+        if (!c.OnlinedCharacter.CanTalkNpc())
         {
             c.sendPacket(PacketCreator.enableActions());
             return;

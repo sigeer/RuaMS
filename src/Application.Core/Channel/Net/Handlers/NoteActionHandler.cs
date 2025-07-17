@@ -50,7 +50,7 @@ public class NoteActionHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.showCashInventory(c));
             }
 
-            bool sendNoteSuccess = c.CurrentServerContainer.Transport.SendNormalNoteMessage(c.OnlinedCharacter.getName(), charname, message);
+            bool sendNoteSuccess = c.CurrentServerContainer.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, charname, message);
             if (sendNoteSuccess)
             {
                 c.OnlinedCharacter.getCashShop().decreaseNotes();

@@ -10,5 +10,10 @@ namespace Application.Shared.Constants
 
         public const int MaxCash = 1000000;
 
+        public const int MaxPlayerShopItemCount = 16;
+
+        public const int VISITOR_HISTORY_LIMIT = 10;
+        public const int BLACKLIST_LIMIT = 20;
+
     }
 }

@@ -53,8 +53,6 @@ message CharacterDto {
   int32 matchcardwins = 46;
   int32 matchcardlosses = 47;
   int32 matchcardties = 48;
-  int32 merchantMesos = 49;
-  bool hasMerchant = 50;
   int32 equipslots = 51;
   int32 useslots = 52;
   int32 setupslots = 53;

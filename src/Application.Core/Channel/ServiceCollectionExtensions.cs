@@ -90,6 +90,7 @@ namespace Application.Core.Channel
             services.AddSingleton<ExpeditionService>();
             services.AddSingleton<NewYearCardService>();
             services.AddSingleton<NoteService>();
+            services.AddSingleton<PlayerShopService>();
             services.TryAddSingleton<IFishingService, DefaultFishingService>();
             services.TryAddSingleton<IDueyService, DefaultDueyService>();
             services.TryAddSingleton<IItemDistributeService, DefaultItemDistributeService>();

@@ -23,10 +23,15 @@
 */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Models;
+using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
+using ItemProto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using tools;
 
 namespace client.processor.npc;
@@ -36,19 +41,22 @@ namespace client.processor.npc;
  */
 public class FredrickProcessor
 {
-    private static ILogger log = LogFactory.GetLogger(LogType.Fredrick);
+    readonly ILogger<FredrickProcessor> _logger;
+    readonly IMapper _mapper;
+    readonly WorldChannelServer _server;
 
-    private static byte canRetrieveFromFredrick(IPlayer chr, List<ItemInventoryType> items)
+    public FredrickProcessor(ILogger<FredrickProcessor> logger, IMapper mapper, WorldChannelServer server)
     {
-        if (!Inventory.checkSpotsAndOwnership(chr, items))
-        {
-            List<int> itemids = new();
-            foreach (var it in items)
-            {
-                itemids.Add(it.Item.getItemId());
-            }
+        _logger = logger;
+        _mapper = mapper;
+        _server = server;
+    }
 
-            if (chr.canHoldUniques(itemids))
+    private byte canRetrieveFromFredrick(IPlayer chr, int netMeso, List<Item> items)
+    {
+        if (!Inventory.checkSpot(chr, items))
+        {
+            if (chr.canHoldUniques(items.Select(x => x.getItemId()).ToList()))
             {
                 return 0x22;
             }
@@ -58,7 +66,6 @@ public class FredrickProcessor
             }
         }
 
-        int netMeso = chr.getMerchantNetMeso();
         if (netMeso > 0)
         {
             if (!chr.canHoldMeso(netMeso))
@@ -78,106 +85,69 @@ public class FredrickProcessor
     }
 
 
-
-    public static void removeFredrickLog(DBContext dbContext, int cid)
+    public PlayerShopLocalInfo LoadPlayerHiredMerchant(IPlayer chr)
     {
-        try
-        {
-            dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
-        }
-        catch (Exception sqle)
-        {
-            log.Error(sqle.ToString());
-        }
-    }
-    public static void insertFredrickLog(DBContext dbContext, int cid)
-    {
-        try
-        {
-            var dbModel = new Fredstorage()
-            {
-                Cid = cid,
-                Daynotes = 0,
-                Timestamp = DateTimeOffset.UtcNow
-            };
+        var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id});
 
-            dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
-            dbContext.Fredstorages.Add(dbModel);
-            dbContext.SaveChanges();
-        }
-        catch (Exception sqle)
-        {
-            log.Error(sqle.ToString());
-        }
+        return _mapper.Map<PlayerShopLocalInfo>(res);
     }
 
-
-    private static bool deleteFredrickItems(DBContext dbContext, int cid)
-    {
-        try
-        {
-            var typeValue = ItemFactory.MERCHANT.getValue();
-            dbContext.Inventoryitems.Where(x => x.Type == typeValue && x.Characterid == cid).ExecuteDelete();
-            return true;
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-            return false;
-        }
-    }
-
-    public static void fredrickRetrieveItems(IChannelClient c)
-    {     // thanks Gustav for pointing out the dupe on Fredrick handling
+    public void fredrickRetrieveItems(IChannelClient c)
+    {    
+        // thanks Gustav for pointing out the dupe on Fredrick handling
         if (c.tryacquireClient())
         {
             try
             {
                 var chr = c.OnlinedCharacter;
 
-                List<ItemInventoryType> items;
                 try
                 {
-                    items = ItemFactory.MERCHANT.loadItems(chr.getId(), false);
+                    var res = LoadPlayerHiredMerchant(chr);
+                    if (res.MapId > 0)
+                    {
+                        // 有正在营业的商店
+                        return;
+                    }
 
-                    byte response = canRetrieveFromFredrick(chr, items);
+                    var items = _mapper.Map<List<Item>>(res.Items);
+
+                    byte response = canRetrieveFromFredrick(chr, res.Mesos, items);
                     if (response != 0)
                     {
                         chr.sendPacket(PacketCreator.fredrickMessage(response));
                         return;
                     }
 
-                    chr.withdrawMerchantMesos();
-
-                    using var dbContext = new DBContext();
-                    if (deleteFredrickItems(dbContext, chr.getId()))
+                    CommitRetrievedResponse commitRes = _server.Transport.CommitRetrievedFromFredrick(new CommitRetrievedRequest
                     {
-                        var merchant = chr.getHiredMerchant();
-
-                        if (merchant != null)
-                        {
-                            merchant.clearItems();
-                        }
-
-                        foreach (var it in items)
-                        {
-                            Item item = it.Item;
-                            InventoryManipulator.addFromDrop(chr.Client, item, false);
-                            var itemName = ItemInformationProvider.getInstance().getName(item.getItemId());
-                            log.Debug("Chr {CharacterName} gained {ItemQuantity}x {ItemName} ({CharacterId})", chr.getName(), item.getQuantity(), itemName, item.getItemId());
-                        }
-
-                        chr.sendPacket(PacketCreator.fredrickMessage(0x1E));
-                        removeFredrickLog(dbContext, chr.getId());
-                    }
-                    else
+                        OwnerId = chr.Id,
+                    });
+                    if (!commitRes.IsSuccess)
                     {
-                        chr.message("An unknown error has occured.");
+
+                        return;
                     }
+
+                    chr.GainMeso(res.Mesos, false);
+
+                    var commitRequest = new CommitRetrievedRequest
+                    {
+                        OwnerId = chr.Id,
+                    };
+
+                    foreach (var it in items)
+                    {
+                        InventoryManipulator.addFromDrop(chr.Client, it, false);
+                        var itemName = ItemInformationProvider.getInstance().getName(it.getItemId());
+                        _logger.LogDebug("Chr {CharacterName} gained {ItemQuantity}x {ItemName} ({CharacterId})", chr.getName(), it.getQuantity(), itemName, it.getItemId());
+                    }
+
+                    chr.sendPacket(PacketCreator.fredrickMessage(0x1E));
                 }
                 catch (Exception ex)
                 {
-                    log.Error(ex.ToString());
+                    _logger.LogError(ex.ToString());
                 }
             }
             finally

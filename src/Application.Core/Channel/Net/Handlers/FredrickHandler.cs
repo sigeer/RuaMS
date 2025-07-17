@@ -21,7 +21,9 @@
  */
 
 
+using Application.Core.Channel.Services;
 using client.processor.npc;
+using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -30,8 +32,10 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class FredrickHandler : ChannelHandlerBase
 {
-    public FredrickHandler()
+    readonly PlayerShopService _service;
+    public FredrickHandler(PlayerShopService service)
     {
+        _service = service;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -41,10 +45,10 @@ public class FredrickHandler : ChannelHandlerBase
         switch (operation)
         {
             case 0x19: //Will never come...
-                //c.sendPacket(PacketCreator.getFredrick((byte) 0x24));
+                // c.sendPacket(PacketCreator.getFredrick((byte) 0x24));
                 break;
             case 0x1A:
-                FredrickProcessor.fredrickRetrieveItems(c);
+                _service.FredrickRetrieveItems(c);
                 break;
             case 0x1C: //Exit
                 break;

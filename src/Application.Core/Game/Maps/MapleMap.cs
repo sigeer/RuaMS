@@ -2741,10 +2741,11 @@ public class MapleMap : IMap
             objectLock.ExitWriteLock();
         }
 
-        if (chr.getPlayerShop() != null)
-        {
-            addMapObject(chr.getPlayerShop()!);
-        }
+        // 访问商店/开店时应该没办法切换地图
+        //if (chr.VisitingShop != null)
+        //{
+        //    addMapObject(chr.VisitingShop);
+        //}
 
         var dragon = chr.getDragon();
         if (dragon != null)

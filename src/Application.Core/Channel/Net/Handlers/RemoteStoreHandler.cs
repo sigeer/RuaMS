@@ -39,8 +39,8 @@ public class RemoteStoreHandler : ChannelHandlerBase
         {
             if (hmChannel.Value == chr.getClient().getChannel())
             {
-                var hm = c.CurrentServer.HiredMerchantManager.getHiredMerchant(chr.Id);
-                hm!.visitShop(chr);
+                var hm = c.CurrentServer.PlayerShopManager.GetPlayerShop(PlayerShopType.HiredMerchant, chr.Id);
+                hm!.VisitShop(chr);
             }
             else
             {

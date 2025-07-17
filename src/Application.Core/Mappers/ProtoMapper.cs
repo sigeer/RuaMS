@@ -9,8 +9,10 @@ using Application.Shared.NewYear;
 using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
+using ItemProto;
 using net.server;
 using server;
+using server.life;
 
 namespace Application.Core.Mappers
 {
@@ -233,7 +235,8 @@ namespace Application.Core.Mappers
                     throw new BusinessFatalException("不支持的掉落类型");
                 });
 
-            CreateMap<Dto.NoteDto, NoteObject>();
+            CreateMap<Dto.NoteDto, NoteObject>()
+                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.GetNPCStats(x.FromId).getName() : x.From ));
             CreateMap<Dto.ShopDto, Shop>()
                 .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
             CreateMap<Dto.ShopItemDto, ShopItem>()

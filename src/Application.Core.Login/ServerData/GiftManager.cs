@@ -18,11 +18,11 @@ namespace Application.Core.Login.ServerData
         readonly IMapper _mapper;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _server;
-        readonly NoteService _noteService;
+        readonly NoteManager _noteService;
 
         int _localId = 0;
 
-        public GiftManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server, NoteService noteService)
+        public GiftManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server, NoteManager noteService)
         {
             _mapper = mapper;
             _dbContextFactory = dbContextFactory;
@@ -63,9 +63,9 @@ namespace Application.Core.Login.ServerData
             SetDirty(newModel.Id, new StoreUnit<GiftModel>(StoreFlag.AddOrUpdate, newModel));
 
             if (!createRing)
-                _noteService.sendNormal(sender.Character.Name + " has sent you a gift! Go check out the Cash Shop.", sender.Character.Name, receiver.Character.Name, _server.getCurrentTime());
+                _noteService.SendNormal(sender.Character.Name + " has sent you a gift! Go check out the Cash Shop.", sender.Character.Id, receiver.Character.Name);
             else
-                _noteService.sendWithFame(message, sender.Character.Name, receiver.Character.Name, _server.getCurrentTime());
+                _noteService.SendWithFame(message, sender.Character.Id, receiver.Character.Name);
 
             return new CreateGiftResponse { Recipient = toName, RingSource = _mapper.Map<ItemProto.RingDto>(ringModel) };
         }

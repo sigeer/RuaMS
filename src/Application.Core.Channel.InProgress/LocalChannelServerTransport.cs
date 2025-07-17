@@ -34,7 +34,7 @@ namespace Application.Core.Channel.InProgress
         readonly MasterServer _server;
         readonly StorageService _storageService;
         readonly ItemService _itemService;
-        readonly NoteService _noteService;
+        readonly NoteManager _noteService;
         readonly ShopService _shopManager;
         readonly MessageService _msgService;
         readonly RankService _rankService;
@@ -52,7 +52,7 @@ namespace Application.Core.Channel.InProgress
             LoginService loginService,
             StorageService storageService,
             ItemService itemService,
-            NoteService noteService,
+            NoteManager noteService,
             ShopService shopManager,
             MessageService messageService,
             RankService rankService,
@@ -229,9 +229,9 @@ namespace Application.Core.Channel.InProgress
             var world = Server.getInstance().getWorld(0);
             foreach (var ch in Server.getInstance().getWorld(0).getChannels())
             {
-                foreach (var hm in ch.HiredMerchantManager.getActiveMerchants())
+                foreach (var hm in ch.PlayerShopManager.GetAllShops())
                 {
-                    List<PlayerShopItem> itemBundles = hm.sendAvailableBundles(itemId);
+                    List<PlayerShopItem> itemBundles = hm.QueryAvailableBundles(itemId);
 
                     foreach (PlayerShopItem mpsi in itemBundles)
                     {
@@ -240,35 +240,16 @@ namespace Application.Core.Channel.InProgress
                             Bundles = mpsi.getBundles(),
                             Price = mpsi.getPrice(),
                             Channel = hm.Channel,
-                            Description = hm.getDescription(),
+                            Description = hm.Title,
                             ItemQuantity = mpsi.getItem().getQuantity(),
-                            MapId = hm.getMapId(),
-                            OwnerId = hm.getOwnerId(),
-                            OwnerName = hm.getOwner()
+                            MapId = hm.getMap().getId(),
+                            OwnerId = hm.OwnerId,
+                            OwnerName = hm.OwnerName
                         });
                     }
                 }
             }
 
-            foreach (PlayerShop ps in world.Channels.SelectMany(x => x.PlayerShopManager.getActivePlayerShops()))
-            {
-                List<PlayerShopItem> itemBundles = ps.sendAvailableBundles(itemId);
-
-                foreach (PlayerShopItem mpsi in itemBundles)
-                {
-                    hmsAvailable.Add(new OwlSearchResult
-                    {
-                        Bundles = mpsi.getBundles(),
-                        Price = mpsi.getPrice(),
-                        Channel = ps.Channel,
-                        Description = ps.getDescription(),
-                        ItemQuantity = mpsi.getItem().getQuantity(),
-                        MapId = ps.getMapId(),
-                        OwnerId = ps.getOwner().Id,
-                        OwnerName = ps.getOwner().Name
-                    });
-                }
-            }
             hmsAvailable = hmsAvailable.OrderBy(x => x.Price).Take(200).ToList();
             return hmsAvailable;
         }
@@ -278,7 +259,7 @@ namespace Application.Core.Channel.InProgress
             IPlayerShop? ps = null;
             foreach (var ch in Server.getInstance().getWorld(0).getChannels())
             {
-                ps = ch.HiredMerchantManager.getHiredMerchant(ownerId);
+                ps = ch.PlayerShopManager.GetPlayerShop( Shared.Items.PlayerShopType.HiredMerchant, ownerId);
                 if (ps != null)
                     break;
             }
@@ -287,7 +268,7 @@ namespace Application.Core.Channel.InProgress
             {
                 foreach (var ch in Server.getInstance().getWorld(0).getChannels())
                 {
-                    ps = ch.PlayerShopManager.getPlayerShop(ownerId);
+                    ps = ch.PlayerShopManager.GetPlayerShop(Shared.Items.PlayerShopType.PlayerShop, ownerId);
                     if (ps != null)
                         break;
                 }
@@ -300,8 +281,8 @@ namespace Application.Core.Channel.InProgress
             {
                 MapName = ps.getMap().getMapName(),
                 Channel = ps.Channel,
-                IsOpen = ps.isOpen(),
-                TypeName = ps.TypeName
+                IsOpen = ps.Status.Is(Shared.Items.PlayerShopStatus.Opening),
+                Type = (int)ps.Type
             };
         }
 
@@ -310,7 +291,7 @@ namespace Application.Core.Channel.InProgress
             IPlayerShop? ps = null;
             foreach (var ch in Server.getInstance().getWorld(0).getChannels())
             {
-                ps = ch.HiredMerchantManager.getHiredMerchant(ownerId);
+                ps = ch.PlayerShopManager.GetPlayerShop(Shared.Items.PlayerShopType.HiredMerchant, ownerId);
                 if (ps != null)
                     break;
             }
@@ -495,28 +476,14 @@ namespace Application.Core.Channel.InProgress
             _itemService.ClearGifts(giftIdArray);
         }
 
-        public bool SendNormalNoteMessage(string fromName, string toName, string noteMessage)
+        public bool SendNormalNoteMessage(int senderId, string toName, string noteMessage)
         {
-            var insertResult = _noteService.sendNormal(noteMessage, fromName, toName, _server.getCurrentTime());
-            _noteService.show(toName);
-            return insertResult;
-        }
-
-        public bool SendFameNoteMessage(string fromName, string toName, string noteMessage)
-        {
-            var insertResult = _noteService.sendWithFame(noteMessage, fromName, toName, _server.getCurrentTime());
-            _noteService.show(toName);
-            return insertResult;
-        }
-
-        public void ShowNoteMessage(string name)
-        {
-            _noteService.show(name);
+            return _noteService.SendNormal(noteMessage, senderId, toName);
         }
 
         public Dto.NoteDto? DeleteNoteMessage(int id)
         {
-            return _noteService.delete(id);
+            return _noteService.SetRead(id);
         }
 
         public Dto.ShopDto? GetShop(int id, bool isShopId)
@@ -872,6 +839,26 @@ namespace Application.Core.Channel.InProgress
         public void SendBuyCashItem(BuyCashItemRequest buyCashItemRequest)
         {
             _server.CashShopDataManager.BuyCashItem(buyCashItemRequest);
+        }
+
+        public RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest)
+        {
+            return _server.PlayerShopManager.GetPlayerHiredMerchant(getPlayerShopRequest);
+        }
+
+        public void SyncPlayerShop(SyncPlayerShopRequest request)
+        {
+            _server.PlayerShopManager.SyncPlayerStorage(request);
+        }
+
+        public CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest)
+        {
+            return _server.PlayerShopManager.CommitRetrieve(commitRetrievedRequest);
+        }
+
+        public CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest)
+        {
+            return _server.PlayerShopManager.CanHiredMerchant(canHiredMerchantRequest);
         }
     }
 }

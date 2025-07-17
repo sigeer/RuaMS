@@ -1276,20 +1276,18 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Fame)
                 .HasColumnType("int(11)")
                 .HasColumnName("fame");
-            entity.Property(e => e.From)
-                .HasMaxLength(13)
-                .HasDefaultValueSql("''")
-                .HasColumnName("from");
+            entity.Property(e => e.FromId)
+                .HasColumnType("int(11)")
+                .HasColumnName("fromId");
             entity.Property(e => e.Message)
                 .HasColumnType("text")
                 .HasColumnName("message");
             entity.Property(e => e.Timestamp)
                 .HasColumnType("bigint(20) unsigned")
                 .HasColumnName("timestamp");
-            entity.Property(e => e.To)
-                .HasMaxLength(13)
-                .HasDefaultValueSql("''")
-                .HasColumnName("to");
+            entity.Property(e => e.ToId)
+                .HasColumnType("int(11)")
+                .HasColumnName("toId");
         });
 
         modelBuilder.Entity<Nxcode>(entity =>
@@ -2305,7 +2303,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Hair)
                 .HasColumnType("int(11)")
                 .HasColumnName("hair");
-            entity.Property(e => e.HasMerchant).HasDefaultValue(false);
             entity.Property(e => e.Hp)
                 .HasDefaultValueSql("'50'")
                 .HasColumnType("int(11)")
@@ -2372,9 +2369,6 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'5'")
                 .HasColumnType("int(11)")
                 .HasColumnName("maxmp");
-            entity.Property(e => e.MerchantMesos)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType("int(11)");
             entity.Property(e => e.Meso)
                 .HasColumnType("int(11)")
                 .HasColumnName("meso");

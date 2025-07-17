@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Game.Trades;
 using client.autoban;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -42,7 +43,7 @@ public class ChangeChannelHandler : ChannelHandlerBase
             c.Disconnect(false, false);
             return;
         }
-        else if (c.OnlinedCharacter.getCashShop().isOpened() || c.OnlinedCharacter.getMiniGame() != null || c.OnlinedCharacter.getPlayerShop() != null)
+        else if (c.OnlinedCharacter.getCashShop().isOpened() || c.OnlinedCharacter.getMiniGame() != null || c.OnlinedCharacter.VisitingShop is PlayerShop)
         {
             return;
         }

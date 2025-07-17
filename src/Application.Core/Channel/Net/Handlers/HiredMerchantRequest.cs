@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Utility.Compatible;
@@ -40,10 +41,11 @@ namespace Application.Core.Channel.Net.Handlers;
 public class HiredMerchantRequest : ChannelHandlerBase
 {
     readonly ILogger<HiredMerchantRequest> _logger;
-
-    public HiredMerchantRequest(ILogger<HiredMerchantRequest> logger)
+    readonly PlayerShopService _service;
+    public HiredMerchantRequest(ILogger<HiredMerchantRequest> logger, PlayerShopService service)
     {
         _logger = logger;
+        _service = service;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -52,23 +54,10 @@ public class HiredMerchantRequest : ChannelHandlerBase
 
         try
         {
-            foreach (IMapObject mmo in chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER)))
+            if (chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, Arrays.asList(MapObjectType.HIRED_MERCHANT, MapObjectType.SHOP)).Count > 0)
             {
-                if (mmo is IPlayer mc)
-                {
-
-                    var shop = mc.getPlayerShop();
-                    if (shop != null && shop.isOwner(mc))
-                    {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(13));
-                        return;
-                    }
-                }
-                else
-                {
-                    chr.sendPacket(PacketCreator.getMiniRoomError(13));
-                    return;
-                }
+                chr.sendPacket(PacketCreator.getMiniRoomError(13));
+                return;
             }
 
             Point cpos = chr.getPosition();
@@ -86,28 +75,20 @@ public class HiredMerchantRequest : ChannelHandlerBase
 
         if (GameConstants.isFreeMarketRoom(chr.getMapId()))
         {
-            if (!chr.hasMerchant())
-            {
-                try
-                {
-                    if (ItemFactory.MERCHANT.loadItems(chr.getId(), false).Count == 0 && chr.getMerchantMeso() == 0)
-                    {
-                        c.sendPacket(PacketCreator.hiredMerchantBox());
-                    }
-                    else
-                    {
-                        chr.sendPacket(PacketCreator.retrieveFirstMessage());
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex.ToString());
-                }
-            }
-            else
+            var status = _service.CanHiredMerchant(chr);
+            if (status == PlayerHiredMerchantStatus.Unavailable_Opening)
             {
                 chr.dropMessage(1, "You already have a store open.");
+                return;
             }
+
+            if (status == PlayerHiredMerchantStatus.Unavailable_NeedRetrieve)
+            {
+                chr.sendPacket(PacketCreator.retrieveFirstMessage());
+                return;
+            }
+
+            chr.sendPacket(PacketCreator.hiredMerchantBox());
         }
         else
         {

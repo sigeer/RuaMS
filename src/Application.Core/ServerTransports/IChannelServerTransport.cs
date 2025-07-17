@@ -110,9 +110,7 @@ namespace Application.Core.ServerTransports
 
         GetMyGiftsResponse LoadPlayerGifts(GetMyGiftsRequest request);
         void ClearGifts(int[] giftIdArray);
-        bool SendNormalNoteMessage(string fromName, string toName, string noteMessage);
-        bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
-        void ShowNoteMessage(string name);
+        bool SendNormalNoteMessage(int senderId, string toName, string noteMessage);
         Dto.NoteDto? DeleteNoteMessage(int id);
         Dto.ShopDto? GetShop(int id, bool isShopId);
         int[] GetCardTierSize();
@@ -187,5 +185,9 @@ namespace Application.Core.ServerTransports
         void SendCreatePLife(CreatePLifeRequest createPLifeRequest);
         void SendRemovePLife(RemovePLifeRequest removePLifeRequest);
         void SendBuyCashItem(BuyCashItemRequest buyCashItemRequest);
+        RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest);
+        void SyncPlayerShop(SyncPlayerShopRequest request);
+        CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
+        ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
     }
 }

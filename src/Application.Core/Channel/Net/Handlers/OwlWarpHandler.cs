@@ -19,6 +19,7 @@
 */
 
 
+using Application.Core.Channel.Services;
 using Application.Core.Game.Trades;
 using constants.game;
 using tools;
@@ -30,6 +31,12 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class OwlWarpHandler : ChannelHandlerBase
 {
+    readonly PlayerShopService _service;
+
+    public OwlWarpHandler(PlayerShopService service)
+    {
+        _service = service;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -41,6 +48,9 @@ public class OwlWarpHandler : ChannelHandlerBase
             c.sendPacket(PacketCreator.serverNotice(1, "You cannot visit your own shop."));
             return;
         }
+
+        // TODO: 如果一个玩家同时有雇佣商店+个人商店 应该找哪个？找找有没有其他参数
+        var unknown = p.available();
 
         var dto = c.CurrentServerContainer.Transport.SendOwlWarp(mapid, ownerid, c.OnlinedCharacter.getOwlSearch());
         if (dto == null)
@@ -64,15 +74,14 @@ public class OwlWarpHandler : ChannelHandlerBase
 
                 if (dto.IsOpen)
                 {
-                    IPlayerShop? ps = c.CurrentServer.PlayerShopManager.getPlayerShop(ownerid);
-                    ps ??= c.CurrentServer.HiredMerchantManager.getHiredMerchant(ownerid);
+                    IPlayerShop? ps = c.CurrentServer.PlayerShopManager.GetPlayerShop((PlayerShopType)dto.Type, ownerid);
                     if (ps == null)
                     {
                         c.sendPacket(PacketCreator.getOwlMessage(1));
                         return;
                     }
 
-                    if (!ps.isOpen())
+                    if (!ps.Status.Is(PlayerShopStatus.Opening))
                     {
                         c.sendPacket(PacketCreator.getOwlMessage(18));
                         return;
@@ -80,7 +89,7 @@ public class OwlWarpHandler : ChannelHandlerBase
 
                     if (ps is PlayerShop shop)
                     {
-                        if (!shop.visitShop(c.OnlinedCharacter))
+                        if (!shop.VisitShop(c.OnlinedCharacter))
                         {
                             if (!shop.isBanned(c.OnlinedCharacter.getName()))
                             {
@@ -94,12 +103,7 @@ public class OwlWarpHandler : ChannelHandlerBase
                     }
                     else if (ps is HiredMerchant merchant)
                     {
-                        if (merchant.addVisitor(c.OnlinedCharacter))
-                        {
-                            c.sendPacket(PacketCreator.getHiredMerchant(c.OnlinedCharacter, merchant, false));
-                            c.OnlinedCharacter.setHiredMerchant(merchant);
-                        }
-                        else
+                        if (!merchant.VisitShop(c.OnlinedCharacter))
                         {
                             c.sendPacket(PacketCreator.getOwlMessage(2));
                         }
@@ -113,12 +117,12 @@ public class OwlWarpHandler : ChannelHandlerBase
             }
             else
             {
-                c.sendPacket(PacketCreator.serverNotice(1, $"That {dto.TypeName} is currently located in another channel. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
+                c.sendPacket(PacketCreator.serverNotice(1, $"That {(PlayerShopType)dto.Type} is currently located in another channel. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
             }
         }
         else
         {
-            c.sendPacket(PacketCreator.serverNotice(1, $"That {dto.TypeName} is currently located outside of the FM area. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
+            c.sendPacket(PacketCreator.serverNotice(1, $"That {(PlayerShopType)dto.Type} is currently located outside of the FM area. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
         }
     }
 }

@@ -87,7 +87,7 @@ BuffStatValueHolder：玩家身上的状态
 | ----------- |-----------|-----------|----------- |
 | `InventoryManipulator.addById` |❌|❌ | 传入 itemId |
 | `InventoryManipulator.addFromDrop`|✔|❌  | 传入`Item` |
-| `chr.GainItem`|❌|✔`InventoryManipulator.checkSpace` | 传入itemId，但是调用`InventoryManipulator.addFromDrop` |
+| `chr.GainItem`|✔|✔ | 会通过`InventoryManipulator.checkSpace`进行验证， 虽然传入的是itemId，但是调用`InventoryManipulator.addFromDrop` |
 
 ### 移除物品
 
@@ -95,3 +95,12 @@ BuffStatValueHolder：玩家身上的状态
 | ----------- |----------- |
 | `InventoryManipulator.removeFromSlot`  |  |
 | `InventoryManipulator.removeById`  |  |
+
+### 关闭雇佣商人
+
+| 方法名|   备注 |
+| ----------- |----------- |
+| `forceClose`  | 内部会调用`closeOwnerMerchant` |
+| `closeOwnerMerchant`  | 调用`closeShop` |
+| `closeShop`  |  |
+| `chr.closeHiredMerchant`  | 调用`forceClose` |

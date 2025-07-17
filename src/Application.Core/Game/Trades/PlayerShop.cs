@@ -1,94 +1,64 @@
-/*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-		       Matthias Butz <matze@odinms.de>
-		       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation version 3 as published by
-    the Free Software Foundation. You may not use, modify or distribute
-    this program under any other version of the GNU Affero General Public
-    License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
+using Application.Core.Channel;
 using Application.Core.Game.Maps;
-using Application.Shared.MapObjects;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
 
 namespace Application.Core.Game.Trades;
 
-/**
- * @author Matze
- * @author Ronan - concurrency protection
- */
 public class PlayerShop : AbstractMapObject, IPlayerShop
 {
-    private AtomicBoolean open = new AtomicBoolean(false);
-    private IPlayer owner;
+
+    public IPlayer Owner { get; private set; }
     private int itemid;
 
     private IPlayer?[] visitors = new IPlayer[3];
-    private List<PlayerShopItem> items = new();
-    private List<SoldItem> sold = new();
-    private string description;
+
+
     private int boughtnumber = 0;
-    private List<string> bannedList = new();
     private List<KeyValuePair<IPlayer, string>> chatLog = new();
     private Dictionary<int, byte> chatSlot = new();
     private object visitorLock = new object();
 
-
+    public WorldChannel ChannelServer { get; }
+    public long StartTime { get; }
+    public AtomicEnum<PlayerShopStatus> Status { get; set; }
+    public HashSet<string> BlackList { get; }
+    public string Title { get; private set; }
     public int Channel { get; }
     public string TypeName { get; }
+    public int OwnerId { get; }
+    public int Mesos { get; }
+    public List<PlayerShopItem> Commodity { get; }
 
-    public PlayerShop(IPlayer owner, string description, int itemid)
+    public Item SourceItem { get; set; }
+
+    public string OwnerName { get; }
+
+    public List<SoldItem> SoldHistory { get; }
+
+    public PlayerShopType Type { get; }
+
+    public PlayerShop(IPlayer owner, string description, Item item)
     {
         setPosition(owner.getPosition());
-        this.owner = owner;
-        this.description = description;
-        this.itemid = itemid;
+        Owner = owner;
+        ChannelServer = owner.getChannelServer();
+        StartTime = ChannelServer.Container.getCurrentTime();
+        this.Title = description;
+        SourceItem = item;
+        OwnerId = owner.Id;
+        OwnerName = owner.Name;
+        Commodity = [];
+        SoldHistory = [];
+        BlackList = [];
 
         setMap(owner.getMap());
         Channel = owner.Channel;
 
         TypeName = "shop";
-    }
-
-    public int getChannel()
-    {
-        return owner.getClient().getChannel();
-    }
-
-    public int getMapId()
-    {
-        return owner.getMapId();
-    }
-
-    public int getItemId()
-    {
-        return itemid;
-    }
-
-    public bool isOpen()
-    {
-        return open.Get();
-    }
-
-    public void setOpen(bool openShop)
-    {
-        open.Set(openShop);
+        Type = PlayerShopType.PlayerShop;
+        Status = new AtomicEnum<PlayerShopStatus>(PlayerShopStatus.Maintenance);
     }
 
     public int GetFreeSlot()
@@ -123,9 +93,9 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public bool isOwner(IPlayer chr)
+    public bool IsOwner(IPlayer chr)
     {
-        return owner.Equals(chr);
+        return Owner!.Equals(chr);
     }
 
     private void addVisitor(IPlayer visitor)
@@ -136,18 +106,12 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
             visitors[freeSlot] = visitor;
 
             broadcast(PacketCreator.getPlayerShopNewVisitor(visitor, freeSlot + 1));
-            owner.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+            MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
         }
     }
 
     public void forceRemoveVisitor(IPlayer visitor)
     {
-        if (visitor == owner)
-        {
-            owner.getMap().removeMapObject(this);
-            owner.setPlayerShop(null);
-        }
-
         Monitor.Enter(visitorLock);
         try
         {
@@ -155,11 +119,11 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
             {
                 if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
                 {
-                    visitors[i]!.setPlayerShop(null);
+                    visitors[i]!.VisitingShop = null;
                     visitors[i] = null;
 
                     broadcast(PacketCreator.getPlayerShopRemoveVisitor(i + 1));
-                    owner.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+                    MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
                     return;
                 }
             }
@@ -170,52 +134,44 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void removeVisitor(IPlayer visitor)
+    public void RemoveVisitor(IPlayer visitor)
     {
-        if (visitor == owner)
+        Monitor.Enter(visitorLock);
+        try
         {
-            owner.getMap().removeMapObject(this);
-            owner.setPlayerShop(null);
-        }
-        else
-        {
-            Monitor.Enter(visitorLock);
-            try
+            for (int i = 0; i < 3; i++)
             {
-                for (int i = 0; i < 3; i++)
+                if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
                 {
-                    if (visitors[i] != null && visitors[i]!.getId() == visitor.getId())
+                    for (int j = i; j < 2; j++)
                     {
-                        for (int j = i; j < 2; j++)
+                        if (visitors[j] != null)
                         {
-                            if (visitors[j] != null)
-                            {
-                                owner.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(j + 1));
-                            }
-                            visitors[j] = visitors[j + 1];
+                            Owner.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(j + 1));
                         }
-                        visitors[2] = null;
-                        for (int j = i; j < 2; j++)
-                        {
-                            if (visitors[j] != null)
-                            {
-                                owner.sendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j]!, j + 1));
-                            }
-                        }
-
-                        broadcastRestoreToVisitors();
-                        owner.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(this));
-                        return;
+                        visitors[j] = visitors[j + 1];
                     }
+                    visitors[2] = null;
+                    for (int j = i; j < 2; j++)
+                    {
+                        if (visitors[j] != null)
+                        {
+                            Owner.sendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j]!, j + 1));
+                        }
+                    }
+
+                    broadcastRestoreToVisitors();
+                    MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+                    return;
                 }
             }
-            finally
-            {
-                Monitor.Exit(visitorLock);
-            }
-
-            owner.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(this));
         }
+        finally
+        {
+            Monitor.Exit(visitorLock);
+        }
+
+        MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
     }
 
     public bool isVisitor(IPlayer visitor)
@@ -231,35 +187,30 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    public bool addItem(PlayerShopItem item)
+    public bool AddCommodity(PlayerShopItem item)
     {
-        lock (items)
+        lock (Commodity)
         {
-            if (items.Count >= 16)
+            if (Commodity.Count >= 16)
             {
                 return false;
             }
 
-            items.Add(item);
+            Commodity.Add(item);
             return true;
         }
     }
 
     private void removeFromSlot(int slot)
     {
-        items.RemoveAt(slot);
-    }
-
-    private static bool canBuy(IChannelClient c, Item newItem)
-    {
-        return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && InventoryManipulator.addFromDrop(c, newItem, false);
+        Commodity.RemoveAt(slot);
     }
 
     public void takeItemBack(int slot, IPlayer chr)
     {
-        lock (items)
+        lock (Commodity)
         {
-            var shopItem = items.ElementAt(slot);
+            var shopItem = Commodity.ElementAt(slot);
             if (shopItem.isExist())
             {
                 if (shopItem.getBundles() > 0)
@@ -283,102 +234,33 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
-    /**
-     * no warnings for now o.o
-     *
-     * @param c
-     * @param item
-     * @param quantity
-     */
-    public bool buy(IChannelClient c, int item, short quantity)
+    public void GainMeso(int meso)
     {
-        lock (items)
+        Owner.GainMeso(meso, true);
+    }
+
+    public string? MesoCheck(int meso)
+    {
+        if (!Owner.canHoldMeso(meso))
         {
-            if (isVisitor(c.OnlinedCharacter))
-            {
-                PlayerShopItem pItem = items.get(item);
-                Item newItem = pItem.getItem().copy();
+            return "Transaction failed since the shop owner can't hold any more mesos.";
+        }
+        return null;
+    }
 
-                newItem.setQuantity((short)(pItem.getItem().getQuantity() * quantity));
-                if (quantity < 1 || !pItem.isExist() || pItem.getBundles() < quantity)
-                {
-                    c.sendPacket(PacketCreator.enableActions());
-                    return false;
-                }
-                else if (newItem.getInventoryType().Equals(InventoryType.EQUIP) && newItem.getQuantity() > 1)
-                {
-                    c.sendPacket(PacketCreator.enableActions());
-                    return false;
-                }
+    public void InsertSoldHistory(int idx, SoldItem soldItem)
+    {
+        Owner.sendPacket(PacketCreator.getPlayerShopOwnerUpdate(soldItem, idx));
 
-                KarmaManipulator.toggleKarmaFlagToUntradeable(newItem);
+        SoldHistory.Add(soldItem);
+    }
 
-                Monitor.Enter(visitorLock);
-                try
-                {
-                    int price = (int)Math.Min((float)pItem.getPrice() * quantity, int.MaxValue);
-
-                    if (c.OnlinedCharacter.getMeso() >= price)
-                    {
-                        if (!owner.canHoldMeso(price))
-                        {    // thanks Rohenn for noticing owner hold check misplaced
-                            c.OnlinedCharacter.dropMessage(1, "Transaction failed since the shop owner can't hold any more mesos.");
-                            c.sendPacket(PacketCreator.enableActions());
-                            return false;
-                        }
-
-                        if (canBuy(c, newItem))
-                        {
-                            c.OnlinedCharacter.gainMeso(-price, false);
-                            price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
-                            owner.gainMeso(price, true);
-
-                            SoldItem soldItem = new SoldItem(c.OnlinedCharacter.getName(), pItem.getItem().getItemId(), quantity, price);
-                            owner.sendPacket(PacketCreator.getPlayerShopOwnerUpdate(soldItem, item));
-
-                            lock (sold)
-                            {
-                                sold.Add(soldItem);
-                            }
-
-                            pItem.setBundles((short)(pItem.getBundles() - quantity));
-                            if (pItem.getBundles() < 1)
-                            {
-                                pItem.setDoesExist(false);
-                                if (++boughtnumber == items.Count)
-                                {
-                                    owner.setPlayerShop(null);
-                                    setOpen(false);
-                                    closeShop();
-                                    owner.dropMessage(1, "Your items are sold out, and therefore your shop is closed.");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            c.OnlinedCharacter.dropMessage(1, "Your inventory is full. Please clear a slot before buying this item.");
-                            c.sendPacket(PacketCreator.enableActions());
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        c.OnlinedCharacter.dropMessage(1, "You don't have enough mesos to purchase this item.");
-                        c.sendPacket(PacketCreator.enableActions());
-                        return false;
-                    }
-
-                    return true;
-                }
-                finally
-                {
-                    Monitor.Exit(visitorLock);
-                }
-            }
-            else
-            {
-                return false;
-            }
+    public void OnCommoditySellout()
+    {
+        if (++boughtnumber == Commodity.Count)
+        {
+            Close();
+            Owner.dropMessage(1, "Your items are sold out, and therefore your shop is closed.");
         }
     }
 
@@ -462,15 +344,21 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         {
             forceRemoveVisitor(mc);
         }
-        if (owner != null)
+    }
+
+    public void BroadcastShopItemUpdate()
+    {
+        var client = Owner.getClient();
+        if (client != null)
         {
-            forceRemoveVisitor(owner);
+            client.sendPacket(PacketCreator.getPlayerShopItemUpdate(this));
         }
+        broadcastToVisitors(PacketCreator.getPlayerShopItemUpdate(this));
     }
 
     public void broadcast(Packet packet)
     {
-        var client = owner.getClient();
+        var client = Owner.getClient();
         if (client != null)
         {
             client.sendPacket(packet);
@@ -483,21 +371,21 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return (byte)(Array.FindIndex(getVisitors(), x => x?.Id == chr.Id) + 1);
     }
 
-    public void chat(IChannelClient c, string chat)
+    public void sendMessage(IPlayer fromChar, string chat)
     {
-        byte s = getVisitorSlot(c.OnlinedCharacter);
+        byte s = getVisitorSlot(fromChar);
 
         lock (chatLog)
         {
-            chatLog.Add(new(c.OnlinedCharacter, chat));
+            chatLog.Add(new(fromChar, chat));
             if (chatLog.Count > 25)
             {
                 chatLog.RemoveAt(0);
             }
-            chatSlot.AddOrUpdate(c.OnlinedCharacter.getId(), s);
+            chatSlot.AddOrUpdate(fromChar.getId(), s);
         }
 
-        broadcast(PacketCreator.getPlayerShopChat(c.OnlinedCharacter, chat, s));
+        broadcast(PacketCreator.getPlayerShopChat(fromChar, chat, s));
     }
 
     private void recoverChatLog()
@@ -522,11 +410,34 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
     }
 
+    public void SetOpen()
+    {
+        Status.Set(PlayerShopStatus.Opening);
+    }
+
+    public void SetMaintenance(IPlayer chr)
+    {
+        Status.Set(PlayerShopStatus.Maintenance);
+    }
+    public void Close()
+    {
+        clearChatLog();
+
+        MapModel.removeMapObject(this);
+        MapModel.broadcastMessage(PacketCreator.removePlayerShopBox(OwnerId));
+
+        removeVisitors();
+
+        Retrieve();
+        Owner.VisitingShop = null;
+    }
+
+
     public void closeShop()
     {
         clearChatLog();
         removeVisitors();
-        owner.getMap().broadcastMessage(PacketCreator.removePlayerShopBox(this));
+        MapModel.broadcastMessage(PacketCreator.removePlayerShopBox(OwnerId));
     }
 
     public void sendShop(IChannelClient c)
@@ -534,17 +445,12 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Monitor.Enter(visitorLock);
         try
         {
-            c.sendPacket(PacketCreator.getPlayerShop(this, isOwner(c.OnlinedCharacter)));
+            c.sendPacket(PacketCreator.getPlayerShop(this, IsOwner(c.OnlinedCharacter)));
         }
         finally
         {
             Monitor.Exit(visitorLock);
         }
-    }
-
-    public IPlayer getOwner()
-    {
-        return owner;
     }
 
     public IPlayer?[] getVisitors()
@@ -562,9 +468,9 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public List<PlayerShopItem> getItems()
     {
-        lock (items)
+        lock (Commodity)
         {
-            return new(items);
+            return new(Commodity);
         }
     }
 
@@ -575,19 +481,19 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public string getDescription()
     {
-        return description;
+        return Title;
     }
 
     public void setDescription(string description)
     {
-        this.description = description;
+        this.Title = description;
     }
 
     public void banPlayer(string name)
     {
-        if (!bannedList.Contains(name))
+        if (!BlackList.Contains(name))
         {
-            bannedList.Add(name);
+            BlackList.Add(name);
         }
 
         IPlayer? target = null;
@@ -604,28 +510,27 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         if (target != null)
         {
             target.sendPacket(PacketCreator.shopErrorMessage(5, 1));
-            removeVisitor(target);
+            RemoveVisitor(target);
         }
     }
 
     public bool isBanned(string name)
     {
-        return bannedList.Contains(name);
+        return BlackList.Contains(name);
     }
 
-    // synchronized
-    public bool visitShop(IPlayer chr)
+    public bool VisitShop(IPlayer chr)
     {
         Monitor.Enter(visitorLock);
         try
         {
-            if (isBanned(chr.getName()))
+            if (BlackList.Contains(chr.getName()))
             {
                 chr.dropMessage(1, "You have been banned from this store.");
                 return false;
             }
 
-            if (!isOpen())
+            if (Status.Is(PlayerShopStatus.Opening))
             {
                 chr.dropMessage(1, "This store is not yet open.");
                 return false;
@@ -634,7 +539,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
             if (hasFreeSlot() && !isVisitor(chr))
             {
                 addVisitor(chr);
-                chr.setPlayerShop(this);
+                chr.VisitingShop = this;
                 sendShop(chr.getClient());
 
                 return true;
@@ -649,25 +554,17 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     }
 
-    public List<PlayerShopItem> sendAvailableBundles(int itemid)
+    public List<PlayerShopItem> QueryAvailableBundles(int itemid)
     {
-        lock (items)
+        lock (Commodity)
         {
-            return items.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
-        }
-    }
-
-    public List<SoldItem> getSold()
-    {
-        lock (sold)
-        {
-            return new List<SoldItem>(sold);
+            return Commodity.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
         }
     }
 
     public override void sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removePlayerShopBox(this));
+        client.sendPacket(PacketCreator.removePlayerShopBox(OwnerId));
     }
 
     public override void sendSpawnData(IChannelClient client)
@@ -678,5 +575,46 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     public override MapObjectType getType()
     {
         return MapObjectType.SHOP;
+    }
+
+    Lock tradeLock = new();
+    public bool TradeLock()
+    {
+        return tradeLock.TryEnter();
+    }
+
+    public void TradeUnlock()
+    {
+        tradeLock.Exit();
+    }
+
+    public void ExpiredInvoke()
+    {
+        Close();
+        ChannelServer.PlayerShopManager.UnregisterShop(this);
+    }
+
+
+    public bool Retrieve()
+    {
+        lock (Commodity)
+        {
+            foreach (var mpsi in Commodity)
+            {
+                if (mpsi.getBundles() >= 2)
+                {
+                    var iItem = mpsi.getItem().copy();
+                    iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
+                    InventoryManipulator.addFromDrop(Owner.Client, iItem, false);
+                }
+                else if (mpsi.isExist())
+                {
+                    InventoryManipulator.addFromDrop(Owner.Client, mpsi.getItem(), true);
+                }
+            }
+        }
+
+
+        return true;
     }
 }

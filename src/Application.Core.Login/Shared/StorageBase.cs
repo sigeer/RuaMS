@@ -24,9 +24,16 @@ namespace Application.Core.Login.Shared
             return true;
         }
 
-        protected virtual void SetRemoved(TKey key)
+        protected virtual bool SetRemoved(TKey key)
         {
+            if (_localData.TryGetValue(key, out var d) && d.Flag != StoreFlag.Remove)
+            {
+                d.Flag = StoreFlag.Remove;
+                return true;
+            }
+
             _localData[key] = new StoreUnit<TModel>(StoreFlag.Remove, null);
+            return true;
         }
 
         public abstract List<TModel> Query(Expression<Func<TModel, bool>> expression);

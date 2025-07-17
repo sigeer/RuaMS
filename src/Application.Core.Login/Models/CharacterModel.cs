@@ -101,7 +101,7 @@ namespace Application.Core.Login.Models
 
         public int MerchantMesos { get; set; }
 
-        public bool HasMerchant { get; set; }
+        public int PlayerHiredMerchantStatus { get; set; }
 
         public int Equipslots { get; set; }
 

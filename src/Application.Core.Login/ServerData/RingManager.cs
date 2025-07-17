@@ -29,6 +29,11 @@ namespace Application.Core.Login.ServerData
             _mapper = mapper;
         }
 
+        public async Task Initialize(DBContext dbContext)
+        {
+            _localId = await dbContext.Rings.MaxAsync(x => (int?)x.Id) ?? 0;
+        }
+
         public RingSourceModel CreateRing(int itemId, int chr1, int chr2)
         {
             var model = new RingSourceModel()
