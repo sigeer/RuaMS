@@ -79,7 +79,7 @@ namespace Application.Core.Login.ServerData
             var res = new GetMyGiftsResponse();
             foreach (var gift in gifts)
             {
-                var dto = _mapper.Map<ItemProto.GiftDto>(gifts);
+                var dto = _mapper.Map<ItemProto.GiftDto>(gift);
 
                 var ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
                 dto.Ring = _mapper.Map<ItemProto.RingDto>(ring);
@@ -112,7 +112,7 @@ namespace Application.Core.Login.ServerData
 
             var entityExpression = _mapper.MapExpression<Expression<Func<GiftEntity, bool>>>(expression);
 
-            return _mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList());
+            return QueryWithDirty(_mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList()), expression.Compile());
         }
     }
 }

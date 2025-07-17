@@ -1,5 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
+using Application.Utility.Compatible.Atomics;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Application.Module.Duey.Master.Models
@@ -32,35 +33,6 @@ namespace Application.Module.Duey.Master.Models
         }
 
 
-        /// <summary>
-        /// 取货读取时冻结
-        /// </summary>
-        public int _frozen;
-
-        /// <summary>
-        /// 尝试冻结（原子操作），避免重复领取
-        /// </summary>
-        public bool TryFreeze()
-        {
-            return Interlocked.CompareExchange(ref _frozen, 1, 0) == 0;
-        }
-
-        [NotMapped]
-        public bool IsFrozen => _frozen == 1;
-        /// <summary>
-        /// 尝试解冻（原子操作）
-        /// </summary>
-        public bool TryUnfreeze()
-        {
-            return Interlocked.CompareExchange(ref _frozen, 0, 1) == 1;
-        }
-
-        /// <summary>
-        /// 强制解冻（不关心原状态）
-        /// </summary>
-        public void ForceUnfreeze()
-        {
-            Interlocked.Exchange(ref _frozen, 0);
-        }
+        public AtomicBoolean IsFrozen { get; set; } = new AtomicBoolean(false);
     }
 }

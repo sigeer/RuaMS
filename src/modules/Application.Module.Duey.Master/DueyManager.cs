@@ -83,7 +83,7 @@ namespace Application.Module.Duey.Master
                 return;
             }
 
-            if (!package.TryFreeze())
+            if (package.IsFrozen)
             {
                 _transport.SendTakeDueyPackage(new DueyDto.TakeDueyPackageResponse { Code = 1, Request = request });
                 return;
@@ -97,7 +97,7 @@ namespace Application.Module.Duey.Master
             var packages = Query(x => x.ReceiverId == chrId && x.IsFrozen);
             foreach (var package in packages)
             {
-                package.ForceUnfreeze();
+                package.IsFrozen.Set(false);
                 _logger.LogInformation($"Package {package.Id} automatically unfrozen due to player disconnect.");
             }
         }
@@ -114,7 +114,7 @@ namespace Application.Module.Duey.Master
                 if (package != null)
                 {
                     // 领取失败、解冻
-                    package.ForceUnfreeze();
+                    package.IsFrozen.Set(false);
                 }
             }
         }
