@@ -79,7 +79,7 @@ namespace Application.Core.Login.ServerData
             var res = new GetMyGiftsResponse();
             foreach (var gift in gifts)
             {
-                var dto = _mapper.Map<ItemProto.GiftDto>(gifts);
+                var dto = _mapper.Map<ItemProto.GiftDto>(gift);
 
                 var ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
                 dto.Ring = _mapper.Map<ItemProto.RingDto>(ring);
