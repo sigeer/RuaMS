@@ -860,5 +860,13 @@ namespace Application.Core.Channel.InProgress
         {
             return _server.PlayerShopManager.CanHiredMerchant(canHiredMerchantRequest);
         }
+
+        public void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
+        {
+            foreach (var item in request.List)
+            {
+                _server.PlayerShopManager.SyncPlayerStorage(item);
+            }
+        }
     }
 }

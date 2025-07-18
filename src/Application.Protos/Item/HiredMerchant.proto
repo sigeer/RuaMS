@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import "Dto/Item.proto";
 import "Item/PlayerShopItem.proto";
+import "google/protobuf/wrappers.proto";
 
 package ItemProto;
 

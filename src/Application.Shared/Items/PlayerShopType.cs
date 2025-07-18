@@ -16,7 +16,6 @@ namespace Application.Shared.Items
     {
         Update,
         UpdateByTrade,
-        Open,
         Close
     }
 
@@ -31,7 +30,7 @@ namespace Application.Shared.Items
         /// </summary>
         Unavailable_Opening = 1,
         /// <summary>
-        /// 不可开启：没有开店 但是又未领取的物品
+        /// 不可开启：没有开店 但是有未领取的物品
         /// </summary>
         Unavailable_NeedRetrieve = 2
     }

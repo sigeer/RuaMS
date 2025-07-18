@@ -91,6 +91,7 @@ namespace Application.Core.Login
             var data = new SendNoteResponse() { ReceiverChannel = channel, ReceiverId = id };
             data.List.AddRange(notes);
             SendMessage(BroadcastType.OnNoteSend, data, new PlayerChannelPair(channel, id));
+            SendMessage(BroadcastType.OnNoteSend, data, data.ReceiverId);
         }
 
 

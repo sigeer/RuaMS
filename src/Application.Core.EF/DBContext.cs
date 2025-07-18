@@ -59,7 +59,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<DB_FamilyEntitlement> FamilyEntitlements { get; set; }
 
-    public virtual DbSet<Fredstorage> Fredstorages { get; set; }
+    public virtual DbSet<FredstorageEntity> Fredstorages { get; set; }
 
     public virtual DbSet<GiftEntity> Gifts { get; set; }
 
@@ -72,8 +72,6 @@ public partial class DBContext : DbContext
     public virtual DbSet<Inventoryequipment> Inventoryequipments { get; set; }
 
     public virtual DbSet<Inventoryitem> Inventoryitems { get; set; }
-
-    public virtual DbSet<Inventorymerchant> Inventorymerchants { get; set; }
 
     public virtual DbSet<Ipban> Ipbans { get; set; }
 
@@ -628,7 +626,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("timestamp");
         });
 
-        modelBuilder.Entity<Fredstorage>(entity =>
+        modelBuilder.Entity<FredstorageEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -645,6 +643,12 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Daynotes)
                 .HasColumnType("int(4) unsigned")
                 .HasColumnName("daynotes");
+            entity.Property(e => e.Meso)
+                .HasColumnType("int")
+                .HasColumnName("meso");
+            entity.Property(e => e.ItemMeso)
+                .HasColumnType("bigint")
+                .HasColumnName("itemMeso");
             entity.Property(e => e.Timestamp)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
@@ -2595,28 +2599,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Wdef)
                 .HasColumnType("int(11)")
                 .HasColumnName("wdef");
-        });
-
-        modelBuilder.Entity<Inventorymerchant>(entity =>
-        {
-            entity.HasKey(e => e.Inventorymerchantid).HasName("PRIMARY");
-
-            entity.ToTable("inventorymerchant");
-
-            entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
-
-            entity.Property(e => e.Inventorymerchantid)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("inventorymerchantid");
-            entity.Property(e => e.Bundles)
-                .HasColumnType("int(10)")
-                .HasColumnName("bundles");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int(11)")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int(10) unsigned")
-                .HasColumnName("inventoryitemid");
         });
     }
 }

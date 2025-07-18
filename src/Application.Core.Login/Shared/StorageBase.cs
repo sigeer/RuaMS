@@ -48,8 +48,6 @@ namespace Application.Core.Login.Shared
         {
             Dictionary<TKey, TModel> sourceDict = dataFromDB.ToDictionary(x => x.Id);
 
-            var filteredDirty = _localData.AsValueEnumerable().Where(x => x.Value.Flag == StoreFlag.AddOrUpdate && func(x.Value.Data!));
-
             foreach (var kv in _localData)
             {
                 var entry = kv.Value;

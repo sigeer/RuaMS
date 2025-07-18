@@ -189,5 +189,6 @@ namespace Application.Core.ServerTransports
         void SyncPlayerShop(SyncPlayerShopRequest request);
         CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
         ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
+        void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
     }
 }

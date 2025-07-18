@@ -299,7 +299,7 @@ namespace Application.Core.Login
 
             foreach (var player in dataList)
             {
-                if (player.Channel < 0)
+                if (player.Channel <= 0)
                     continue;
 
                 var serverName = Channels[player.Channel - 1].ServerName;

@@ -6,6 +6,7 @@ using Application.Host.Services;
 using Application.Shared.Servers;
 using Application.Utility;
 using Application.Utility.Configs;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using net.server.coordinator.matchchecker;
@@ -19,7 +20,6 @@ using Yitter.IdGenerator;
 
 try
 {
-
 
     var builder = WebApplication.CreateBuilder(args);
     builder.Configuration.AddEnvironmentVariables(AppSettings.EnvPrefix);

@@ -9,6 +9,7 @@ using ItemProto;
 using System.Collections.Concurrent;
 using tools;
 using Microsoft.Extensions.Logging;
+using server;
 
 namespace Application.Core.Channel
 {
@@ -243,7 +244,7 @@ namespace Application.Core.Channel
 
             if (shop.ChannelServer.PlayerShopManager.RegisterShop(shop))
             {
-                SyncPlayerShop(shop, SyncPlayerShopOperation.Open);
+                SyncPlayerShop(shop);
             }
         }
 
@@ -272,6 +273,11 @@ namespace Application.Core.Channel
         /// <param name="isDestroyed">关店时true</param>
         public void SyncPlayerShop(IPlayerShop shop, SyncPlayerShopOperation operation = SyncPlayerShopOperation.Update)
         {
+            _worldChannel.Container.Transport.SyncPlayerShop(GenrateSyncRequest(shop, operation));
+        }
+
+        private ItemProto.SyncPlayerShopRequest GenrateSyncRequest(IPlayerShop shop, SyncPlayerShopOperation operation = SyncPlayerShopOperation.Update)
+        {
             var request = new ItemProto.SyncPlayerShopRequest()
             {
                 OwnerId = shop.OwnerId,
@@ -283,9 +289,8 @@ namespace Application.Core.Channel
                 Operation = (int)operation,
             };
             request.Items.AddRange(_mapper.Map<ItemProto.PlayerShopItemDto[]>(shop.Commodity));
-            _worldChannel.Container.Transport.SyncPlayerShop(request);
+            return request;
         }
-
 
         public void OnHiredMerchantItemBuy(ItemProto.NotifyItemPurchasedResponse data)
         {
@@ -306,8 +311,7 @@ namespace Application.Core.Channel
             {
                 hm.Close();
 
-                var request = new SyncPlayerShopRequest();
-                requests.Add(request);
+                requests.Add(GenrateSyncRequest(hm));
             }
 
 
@@ -316,7 +320,13 @@ namespace Application.Core.Channel
             foreach (var shop in playerShopData.Values.OfType<PlayerShop>())
             {
                 shop.Close();
+
+                requests.Add(GenrateSyncRequest(shop));
             }
+
+            var request = new ItemProto.BatchSyncPlayerShopRequest();
+            request.List.AddRange(requests);
+            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
         }
     }
 }
