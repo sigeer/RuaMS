@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants.Item;
 using AutoMapper;
 using client.autoban;
 using client.inventory;
@@ -10,6 +11,7 @@ using ItemProto;
 using Microsoft.Extensions.Logging;
 using Mysqlx.Crud;
 using Org.BouncyCastle.Utilities.Collections;
+using System.Data.Common;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -150,5 +152,19 @@ namespace Application.Core.Channel.Services
 
         }
 
+        internal void OwlSearch(IPlayer chr, int useItemId, int searchItemId)
+        {
+            ItemProto.OwlSearchResponse data = _server.Transport.SendOwlSearch(
+                new ItemProto.OwlSearchRequest { MasterId = chr.Id, UsedItemId = useItemId, SearchItemId = searchItemId });
+
+            if (data.Items.Count > 0)
+            {
+                // 消耗道具
+                chr.GainItem(useItemId, -1, false, true);
+            }
+
+            chr.sendPacket(PacketCreator.owlOfMinerva(useItemId, _mapper.Map<OwlSearchResult>(data)));
+            chr.sendPacket(PacketCreator.enableActions());
+        }
     }
 }

@@ -25,22 +25,12 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
-using Application.Core.Servers.Services;
-using Application.Utility.Configs;
-using Application.Utility.Exceptions;
-using Application.Utility.Extensions;
-using client.creator.veteran;
 using client.inventory;
 using client.inventory.manipulator;
-using client.processor.npc;
 using client.processor.stat;
 using constants.game;
 using Microsoft.Extensions.Logging;
 using net.packet.outs;
-using Serilog;
-using server.maps;
-using System.Text;
 using tools;
 using static client.inventory.Equip;
 
@@ -53,13 +43,15 @@ public class UseCashItemHandler : ChannelHandlerBase
     readonly IDueyService _dueyService;
     readonly ItemService _itemService;
     readonly ShopManager _shopManager;
+    readonly PlayerShopService _playerShopService;
 
-    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService, ItemService itemService, ShopManager shopManager)
+    public UseCashItemHandler(ILogger<UseCashItemHandler> logger, IDueyService dueyService, ItemService itemService, ShopManager shopManager, PlayerShopService playerShopService)
     {
         _logger = logger;
         _dueyService = dueyService;
         _itemService = itemService;
         _shopManager = shopManager;
+        _playerShopService = playerShopService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -330,7 +322,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     whisper = p.readByte() == 1;
                     Item? item = null;
                     if (p.readByte() == 1)
-                    { 
+                    {
                         //item
                         item = player.getInventory(InventoryTypeUtils.getByType((sbyte)p.readInt())).getItem((short)p.readInt());
                         if (item == null) //hack
@@ -432,19 +424,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             int itemid = p.readInt();
 
-            if (!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
-            {
-                c.CurrentServerContainer.Transport.AddOwlItemSearch(itemid);
-            }
-            player.setOwlSearch(itemid);
-            var hmsAvailable = c.getWorldServer().getAvailableItemBundles(itemid);
-            if (hmsAvailable.Count > 0)
-            {
-                remove(c, position, itemId);
-            }
-
-            c.sendPacket(PacketCreator.owlOfMinerva(c, itemid, hmsAvailable));
-            c.sendPacket(PacketCreator.enableActions());
+            _playerShopService.OwlSearch(c.OnlinedCharacter, itemId, itemid);
 
         }
         else if (itemType == 524)

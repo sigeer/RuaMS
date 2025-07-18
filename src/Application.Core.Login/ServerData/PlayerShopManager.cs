@@ -10,10 +10,12 @@ using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using client.inventory;
+using Google.Protobuf;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using ZLinq;
 
 namespace Application.Core.Login.ServerData
 {
@@ -116,6 +118,7 @@ namespace Application.Core.Login.ServerData
                 data.Meso = request.Meso;
                 data.Title = request.Title;
                 data.Type = (PlayerShopType)request.Type;
+                data.MapObjectId = request.MapObjectId;
 
                 if (shopType == PlayerShopType.HiredMerchant)
                     _hiredMerchantData[data.Id] = data;
@@ -255,6 +258,23 @@ namespace Application.Core.Login.ServerData
             }
 
             return new CanHiredMerchantResponse { Code = (int)final };
+        }
+
+        public OwlSearchResponse OwlSearch(OwlSearchRequest request)
+        {
+            var res = new OwlSearchResponse();
+            res.Items.AddRange(_hiredMerchantData.Values.Concat(_playerShopData.Values).AsValueEnumerable()
+                .SelectMany(x => x.Items.Where(y => y.Item.Itemid == request.SearchItemId).Select(y => new ItemProto.OwlSearchResultItemDto
+                {
+                    MapObjectId = x.MapObjectId,
+                    Channel = x.Channel,
+                    MapId = x.MapId,
+                    OwnerName = _server.CharacterManager.GetPlayerName(x.Id),
+                    Title = x.Title,
+                    Item = _mapper.Map<ItemProto.PlayerShopItemDto>(y)
+                })).OrderBy(x => x.Item.Price).Take(200).ToArray());
+
+            return res;
         }
     }
 }

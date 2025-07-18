@@ -23,8 +23,6 @@
 
 using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
-using Application.Utility.Configs;
-using client.processor.npc;
 using Microsoft.Extensions.Logging;
 using tools;
 

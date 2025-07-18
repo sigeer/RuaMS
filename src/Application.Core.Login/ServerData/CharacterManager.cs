@@ -10,8 +10,6 @@ using Application.Shared.Team;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
-using client.inventory.manipulator;
-using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -75,6 +73,11 @@ namespace Application.Core.Login.Datas
                 return null;
             _nameDataSource[name] = data;
             return data;
+        }
+
+        public string GetPlayerName(int id)
+        {
+            return FindPlayerById(id)?.Character?.Name ?? StringConstants.CharacterUnknown;
         }
 
         public void Update(Dto.PlayerSaveDto obj)

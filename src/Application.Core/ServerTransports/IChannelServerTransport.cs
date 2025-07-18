@@ -71,8 +71,6 @@ namespace Application.Core.ServerTransports
         #endregion
 
         #region PlayerShop
-        List<OwlSearchResult> OwlSearch(int itemId);
-        Dto.PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem);
         int? FindPlayerShopChannel(int ownerId);
         #endregion
 
@@ -121,7 +119,6 @@ namespace Application.Core.ServerTransports
         void UpdateAccount(AccountCtrl accountEntity);
         Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
         Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);
-        void AddOwlItemSearch(int itemid);
         int[][] GetMostSellerCashItems();
         Dto.OwlSearchResponse GetOwlSearchedItems();
         Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
@@ -190,5 +187,6 @@ namespace Application.Core.ServerTransports
         CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
         ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
         void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
+        ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
     }
 }

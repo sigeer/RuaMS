@@ -223,68 +223,6 @@ namespace Application.Core.Channel.InProgress
             }
         }
 
-        public List<OwlSearchResult> OwlSearch(int itemId)
-        {
-            List<OwlSearchResult> hmsAvailable = new();
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in Server.getInstance().getWorld(0).getChannels())
-            {
-                foreach (var hm in ch.PlayerShopManager.GetAllShops())
-                {
-                    List<PlayerShopItem> itemBundles = hm.QueryAvailableBundles(itemId);
-
-                    foreach (PlayerShopItem mpsi in itemBundles)
-                    {
-                        hmsAvailable.Add(new OwlSearchResult
-                        {
-                            Bundles = mpsi.getBundles(),
-                            Price = mpsi.getPrice(),
-                            Channel = hm.Channel,
-                            Description = hm.Title,
-                            ItemQuantity = mpsi.getItem().getQuantity(),
-                            MapId = hm.getMap().getId(),
-                            OwnerId = hm.OwnerId,
-                            OwnerName = hm.OwnerName
-                        });
-                    }
-                }
-            }
-
-            hmsAvailable = hmsAvailable.OrderBy(x => x.Price).Take(200).ToList();
-            return hmsAvailable;
-        }
-
-        public Dto.PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem)
-        {
-            IPlayerShop? ps = null;
-            foreach (var ch in Server.getInstance().getWorld(0).getChannels())
-            {
-                ps = ch.PlayerShopManager.GetPlayerShop( Shared.Items.PlayerShopType.HiredMerchant, ownerId);
-                if (ps != null)
-                    break;
-            }
-
-            if (ps == null)
-            {
-                foreach (var ch in Server.getInstance().getWorld(0).getChannels())
-                {
-                    ps = ch.PlayerShopManager.GetPlayerShop(Shared.Items.PlayerShopType.PlayerShop, ownerId);
-                    if (ps != null)
-                        break;
-                }
-            }
-
-            if (ps == null || ps.getMap().getId() != mapId || !ps.hasItem(searchItem))
-                return null;
-
-            return new Dto.PlayerShopDto
-            {
-                MapName = ps.getMap().getMapName(),
-                Channel = ps.Channel,
-                IsOpen = ps.Status.Is(Shared.Items.PlayerShopStatus.Opening),
-                Type = (int)ps.Type
-            };
-        }
 
         public int? FindPlayerShopChannel(int ownerId)
         {
@@ -531,11 +469,6 @@ namespace Application.Core.Channel.InProgress
             {
                 Code = _server.CharacterManager.CreatePlayerCheck(request.AccountId, request.Name)
             };
-        }
-
-        public void AddOwlItemSearch(int itemid)
-        {
-            _server.CashShopDataManager.AddOwlItemSearch(itemid);
         }
 
         public int[][] GetMostSellerCashItems()
@@ -867,6 +800,10 @@ namespace Application.Core.Channel.InProgress
             {
                 _server.PlayerShopManager.SyncPlayerStorage(item);
             }
+        }
+        public ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest request)
+        {
+            return _server.PlayerShopManager.OwlSearch(request);
         }
     }
 }

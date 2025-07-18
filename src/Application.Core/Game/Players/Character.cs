@@ -103,7 +103,6 @@ public partial class Player
     private int possibleReports = 10;
     private int dojoEnergy;
     private float expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
-    private int owlSearch;
     private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
     private int equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
@@ -295,18 +294,6 @@ public partial class Player
     {
         return Client.CurrentServerContainer.getCurrentTime() - npcCd >= YamlConfig.config.server.BLOCK_NPC_RACE_CONDT;
     }
-
-    public void setOwlSearch(int Id)
-    {
-        owlSearch = Id;
-    }
-
-    public int getOwlSearch()
-    {
-        return owlSearch;
-    }
-
-
 
     public void addCrushRing(Ring r)
     {

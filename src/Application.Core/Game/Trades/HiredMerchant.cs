@@ -1,14 +1,7 @@
 using Application.Core.Channel;
-using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Maps.Mists;
 using client.inventory;
 using client.inventory.manipulator;
-using client.processor.npc;
-using Microsoft.EntityFrameworkCore;
-using Mysqlx.Crud;
-using net.server;
-using System.Threading;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -416,7 +409,6 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
 
     }
-
 
     public bool VisitShop(IPlayer chr)
     {

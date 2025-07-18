@@ -22,9 +22,7 @@
 
 
 using Application.Core.Managers;
-using client.inventory;
 using client.inventory.manipulator;
-using client.processor.npc;
 using Microsoft.Extensions.Logging;
 using tools;
 using tools.packets;

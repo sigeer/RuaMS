@@ -11,6 +11,7 @@ namespace Application.Core.Login.Models.Items
         public int Channel { get; set; }
         public int MapId { get; set; }
         public PlayerShopType Type { get; set; }
+        public int MapObjectId { get; set; }
 
         public List<PlayerShopItemModel> Items { get; set; } = [];
         public int Meso { get; set; }

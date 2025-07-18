@@ -376,7 +376,6 @@ namespace Application.Core.Game.Players
         bool CanTalkNpc();
         long getNpcCooldown();
         int getNumControlledMonsters();
-        int getOwlSearch();
         IMap? getOwnedMap();
         int getPartnerId();
         Team? getParty();
@@ -638,7 +637,6 @@ namespace Application.Core.Game.Players
         void setName(string name);
         void setNpcCooldown(long d);
         // void setOfflineGuildRank(int newRank);
-        void setOwlSearch(int id);
         void setOwnedMap(IMap? map);
         void setPartnerId(int partnerid);
         void setParty(Team? p);

@@ -40,89 +40,44 @@ public class OwlWarpHandler : ChannelHandlerBase
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
-        int ownerid = p.readInt();
+        int mapObjectId = p.readInt();
         int mapid = p.readInt();
-
-        if (ownerid == c.OnlinedCharacter.getId())
-        {
-            c.sendPacket(PacketCreator.serverNotice(1, "You cannot visit your own shop."));
-            return;
-        }
 
         // TODO: 如果一个玩家同时有雇佣商店+个人商店 应该找哪个？找找有没有其他参数
         var unknown = p.available();
 
-        var dto = c.CurrentServerContainer.Transport.SendOwlWarp(mapid, ownerid, c.OnlinedCharacter.getOwlSearch());
-        if (dto == null)
+        var map = c.CurrentServer.getMapFactory().getMap(mapid);
+        var shop = map.getMapObject(mapObjectId) as IPlayerShop;
+        if (shop == null)
         {
             c.sendPacket(PacketCreator.getOwlMessage(1));
             return;
         }
 
-        if (!dto.IsOpen)
+        if (c.OnlinedCharacter.Id == shop.OwnerId)
+        {
+            c.sendPacket(PacketCreator.serverNotice(1, "You cannot visit your own shop."));
+            return;
+        }
+
+        c.OnlinedCharacter.changeMap(mapid);
+
+        if (shop.Status.Is(PlayerShopStatus.Maintenance))
         {
             c.sendPacket(PacketCreator.getOwlMessage(18));
             return;
         }
 
-
-        if (GameConstants.isFreeMarketRoom(mapid))
+        if (shop.BlackList.Contains(c.OnlinedCharacter.Name))
         {
-            if (dto.Channel == c.Channel)
-            {
-                c.OnlinedCharacter.changeMap(mapid);
-
-                if (dto.IsOpen)
-                {
-                    IPlayerShop? ps = c.CurrentServer.PlayerShopManager.GetPlayerShop((PlayerShopType)dto.Type, ownerid);
-                    if (ps == null)
-                    {
-                        c.sendPacket(PacketCreator.getOwlMessage(1));
-                        return;
-                    }
-
-                    if (!ps.Status.Is(PlayerShopStatus.Opening))
-                    {
-                        c.sendPacket(PacketCreator.getOwlMessage(18));
-                        return;
-                    }
-
-                    if (ps is PlayerShop shop)
-                    {
-                        if (!shop.VisitShop(c.OnlinedCharacter))
-                        {
-                            if (!shop.isBanned(c.OnlinedCharacter.getName()))
-                            {
-                                c.sendPacket(PacketCreator.getOwlMessage(2));
-                            }
-                            else
-                            {
-                                c.sendPacket(PacketCreator.getOwlMessage(17));
-                            }
-                        }
-                    }
-                    else if (ps is HiredMerchant merchant)
-                    {
-                        if (!merchant.VisitShop(c.OnlinedCharacter))
-                        {
-                            c.sendPacket(PacketCreator.getOwlMessage(2));
-                        }
-                    }
-                }
-                else
-                {
-                    //c.sendPacket(PacketCreator.serverNotice(1, "That merchant has either been closed or is under maintenance."));
-                    c.sendPacket(PacketCreator.getOwlMessage(18));
-                }
-            }
-            else
-            {
-                c.sendPacket(PacketCreator.serverNotice(1, $"That {(PlayerShopType)dto.Type} is currently located in another channel. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
-            }
+            c.sendPacket(PacketCreator.getOwlMessage(17));
+            return;
         }
-        else
+
+        if (!shop.VisitShop(c.OnlinedCharacter))
         {
-            c.sendPacket(PacketCreator.serverNotice(1, $"That {(PlayerShopType)dto.Type} is currently located outside of the FM area. Current location: Channel {dto.Channel}, '{dto.MapName}'."));
+            c.sendPacket(PacketCreator.getOwlMessage(2));
+            return;
         }
     }
 }

@@ -287,6 +287,7 @@ namespace Application.Core.Channel
                 Meso = shop.Mesos,
                 Type = (int)shop.Type,
                 Operation = (int)operation,
+                MapObjectId = shop.getObjectId()
             };
             request.Items.AddRange(_mapper.Map<ItemProto.PlayerShopItemDto[]>(shop.Commodity));
             return request;

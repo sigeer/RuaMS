@@ -5295,9 +5295,6 @@ public class PacketCreator
     }
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="msg">
     /// <para>0: Success</para>
     /// <para>1: The room is already closed.</para>
     /// <para>2: You can't enter the room due to full capacity.</para>
@@ -5308,6 +5305,8 @@ public class PacketCreator
     /// <para>18: The owner of the store is currently undergoing store maintenance. Please try again in a bit.</para>
     /// <para>23: This can only be used inside the Free Market.</para>
     /// <para>default: This character is unable to do it.</para>
+    /// </summary>
+    /// <param name="msg">
     /// </param>
     /// <returns></returns>
     public static Packet getOwlMessage(int msg)
@@ -5317,7 +5316,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet owlOfMinerva(IChannelClient c, int itemId, List<KeyValuePair<PlayerShopItem, IPlayerShop>> hmsAvailable)
+    public static Packet owlOfMinerva(int itemId, Application.Core.Game.Trades.OwlSearchResult result)
     {
         sbyte itemType = ItemConstants.getInventoryType(itemId).getType();
 
@@ -5325,25 +5324,22 @@ public class PacketCreator
         p.writeByte(6);
         p.writeInt(0);
         p.writeInt(itemId);
-        p.writeInt(hmsAvailable.Count);
-        foreach (var hme in hmsAvailable)
+        p.writeInt(result.Items.Count);
+        foreach (var item in result.Items)
         {
-            var item = hme.Key;
-            var ps = hme.Value;
-
-            p.writeString(ps.OwnerName);
-            p.writeInt(ps.getMap().getId());
-            p.writeString(ps.Title);
-            p.writeInt(item.getBundles());
-            p.writeInt(item.getItem().getQuantity());
-            p.writeInt(item.getPrice());
-            p.writeInt(ps.OwnerId);
-            p.writeByte(ps.Channel - 1);
+            p.writeString(item.OwnerName);
+            p.writeInt(item.MapId);
+            p.writeString(item.Title);
+            p.writeInt(item.Item.getBundles());
+            p.writeInt(item.Item.getItem().getQuantity());
+            p.writeInt(item.Item.getPrice());
+            p.writeInt(item.MapObjectId);
+            p.writeByte(item.Channel - 1);
 
             p.writeByte(itemType);
             if (itemType == InventoryType.EQUIP.getType())
             {
-                addItemInfo(p, item.getItem(), true);
+                addItemInfo(p, item.Item.getItem(), true);
             }
         }
         return p;
