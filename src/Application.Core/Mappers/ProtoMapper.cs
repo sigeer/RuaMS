@@ -271,6 +271,9 @@ namespace Application.Core.Mappers
 
             CreateMap<Dto.DropItemDto, DropEntry>()
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.DropperId));
+
+            CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
+                .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso));
         }
 
         private int[] TranslateArray(string str)

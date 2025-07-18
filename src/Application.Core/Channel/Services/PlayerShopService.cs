@@ -62,18 +62,11 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public PlayerShopLocalInfo LoadPlayerHiredMerchant(IPlayer chr)
+        public RemoteHiredMerchantData LoadPlayerHiredMerchant(IPlayer chr)
         {
             var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
 
-            return _mapper.Map<PlayerShopLocalInfo>(res);
-        }
-
-        public PlayerShopLocalInfo[] LoadPlayerShops(int chrId)
-        {
-            var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chrId });
-
-            return _mapper.Map<PlayerShopLocalInfo[]>(res);
+            return _mapper.Map<RemoteHiredMerchantData>(res);
         }
 
         public void FredrickRetrieveItems(IChannelClient c)

@@ -508,12 +508,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return getPlayer().AllianceModel!.getCapacity();
     }
 
-    public PlayerShopLocalInfo LoadFredrickRegistry()
+    public RemoteHiredMerchantData LoadFredrickRegistry()
     {
         return c.CurrentServerContainer.PlayerShopService.LoadPlayerHiredMerchant(getPlayer());
     }
 
-    public void ShowFredrick(PlayerShopLocalInfo store)
+    public void ShowFredrick(RemoteHiredMerchantData store)
     {
         c.sendPacket(PacketCreator.getFredrick(store));
     }

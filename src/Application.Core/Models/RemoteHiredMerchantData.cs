@@ -2,7 +2,7 @@ using client.inventory;
 
 namespace Application.Core.Models
 {
-    public class PlayerShopLocalInfo
+    public class RemoteHiredMerchantData
     {
         public int Mesos { get; set; }
         public Item[] Items { get; set; } = [];

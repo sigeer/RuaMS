@@ -5209,7 +5209,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet getFredrick(PlayerShopLocalInfo store)
+    public static Packet getFredrick(RemoteHiredMerchantData store)
     {
         OutPacket p = OutPacket.create(SendOpcode.FREDRICK);
         p.writeByte(0x23);
