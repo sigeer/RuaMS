@@ -2,6 +2,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.Models;
 using Application.Shared.Items;
@@ -271,6 +272,13 @@ namespace Application.Core.Mappers
 
             CreateMap<Dto.DropItemDto, DropEntry>()
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.DropperId));
+
+            CreateMap<PlayerShopItem, ItemProto.PlayerShopItemDto>()
+                .ForMember(dest => dest.Bundles, src => src.MapFrom(x => x.getBundles()))
+                .ForMember(dest => dest.Price, src => src.MapFrom(x => x.getPrice()))
+                .ForMember(dest => dest.Item, src => src.MapFrom(x => x.getItem()))
+                .ReverseMap()
+                .ConstructUsing((src, ctx) => new PlayerShopItem(ctx.Mapper.Map<Item>(src.Item), (short)src.Bundles, src.Price));
 
             CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
                 .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso));

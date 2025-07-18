@@ -289,7 +289,7 @@ namespace Application.Core.Channel
                 Operation = (int)operation,
                 MapObjectId = shop.getObjectId()
             };
-            request.Items.AddRange(_mapper.Map<ItemProto.PlayerShopItemDto[]>(shop.Commodity));
+            request.Items.AddRange(_mapper.Map<ItemProto.PlayerShopItemDto[]>(shop.Commodity.Where(x => x.getBundles() > 0)));
             return request;
         }
 
