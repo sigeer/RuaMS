@@ -16,7 +16,8 @@ namespace Application.Shared.Items
     {
         Update,
         UpdateByTrade,
-        Close
+        Close,
+        CloseWithoutStore
     }
 
     public enum PlayerHiredMerchantStatus
