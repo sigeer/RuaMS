@@ -98,10 +98,6 @@ namespace Application.Core.client.Characters
 
         public int Matchcardties { get; set; }
 
-        public int MerchantMesos { get; set; }
-
-        public bool HasMerchant { get; set; }
-
         public int Equipslots { get; set; }
 
         public int Useslots { get; set; }

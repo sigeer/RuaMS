@@ -2,6 +2,7 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.Guilds;
+using Application.Core.Login.Models.Items;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
@@ -92,12 +93,12 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.MaxCount, src => src.MapFrom(x => x.MaximumQuantity))
                 .ForMember(dest => dest.Chance, src => src.MapFrom(x => x.Chance));
 
-            CreateMap<NoteEntity, Dto.NoteDto>();
+            CreateMap<NoteEntity, NoteModel>()
+                .ForMember(dest => dest.IsDeleted, src => src.MapFrom(x => x.Deleted == 1));
             CreateMap<ShopEntity, Dto.ShopDto>();
             CreateMap<Shopitem, Dto.ShopItemDto>();
 
             CreateMap<Ring_Entity, RingSourceModel>();
-            CreateMap<Ring_Entity, ItemProto.RingDto>();
 
             CreateMap<GiftEntity, GiftModel>()
                 .ForMember(dest => dest.To, src => src.MapFrom(x => x.ToId))
@@ -111,6 +112,11 @@ namespace Application.Core.Login.Mappers
             CreateMap<NewYearCardEntity, NewYearCardModel>().ReverseMap();
 
             CreateMap<PlifeEntity, PLifeModel>().ReverseMap();
+
+            CreateMap<FredstorageEntity, FredrickStoreModel>()
+                .ForMember(dest => dest.UpdateTime, src => src.MapFrom(x => x.Timestamp.ToUnixTimeMilliseconds()))
+                .ReverseMap()
+                .ForMember(dest => dest.Timestamp, src => src.MapFrom(x => DateTimeOffset.FromUnixTimeMilliseconds(x.UpdateTime)));
 
         }
     }

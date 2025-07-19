@@ -22,18 +22,16 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Game.Trades;
-using Application.Utility.Compatible;
-using Application.Utility.Configs;
-using Application.Utility.Extensions;
+using Application.Shared.Constants.Skill;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
 using constants.game;
 using Microsoft.Extensions.Logging;
-using System.Drawing;
+using server;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -144,7 +142,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     game.SendGameInfo(c);
                 }
                 else if (createType == 4 || createType == 5)
-                { // shop
+                {
+                    // shop
                     if (!GameConstants.isFreeMarketRoom(chr.getMapId()))
                     {
                         chr.sendPacket(PacketCreator.getMiniRoomError(15));
@@ -164,30 +163,38 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     }
 
                     string desc = p.readString();
-                    p.skip(3);
+
+                    short unknown1 = p.readShort();
+                    sbyte unknown2 = p.ReadSByte();
+
                     int itemId = p.readInt();
-                    if (chr.getInventory(InventoryType.CASH).countById(itemId) < 1)
+                    var item = chr.getInventory(InventoryType.CASH).findById(itemId);
+                    if (item == null)
                     {
                         chr.sendPacket(PacketCreator.getMiniRoomError(6));
                         return;
                     }
 
+                    IPlayerShop? iShop = null;
                     if (ItemConstants.isPlayerShop(itemId))
                     {
-                        PlayerShop shop = new PlayerShop(chr, desc, itemId);
-                        chr.setPlayerShop(shop);
-                        chr.getMap().addMapObject(shop);
-                        shop.sendShop(c);
-                        c.CurrentServer.PlayerShopManager.registerPlayerShop(shop);
+                        var shop = new PlayerShop(chr, desc, item);
+
+                        chr.sendPacket(PacketCreator.getPlayerShop(shop, true));
+
+                        iShop = shop;
                         //c.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(1));
                     }
                     else if (ItemConstants.isHiredMerchant(itemId))
                     {
-                        HiredMerchant merchant = new HiredMerchant(chr, desc, itemId);
-                        chr.setHiredMerchant(merchant);
-                        c.CurrentServer.HiredMerchantManager.registerHiredMerchant(merchant);
+                        var merchant = new HiredMerchant(chr, desc, item);
+
                         chr.sendPacket(PacketCreator.getHiredMerchant(chr, merchant, true));
+
+                        iShop = merchant;
                     }
+
+                    chr.VisitingShop = iShop;
                 }
             }
             else if (mode == PlayerInterAction.INVITE.getCode())
@@ -229,9 +236,9 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                     int oid = p.readInt();
                     var ob = chr.getMap().getMapObject(oid);
-                    if (ob is PlayerShop shop)
+                    if (ob is IPlayerShop shop)
                     {
-                        shop.visitShop(chr);
+                        shop.VisitShop(chr);
                     }
                     else if (ob is MiniGame game)
                     {
@@ -264,27 +271,16 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                             chr.sendPacket(PacketCreator.getMiniRoomError(22));
                         }
                     }
-                    else if (ob is HiredMerchant merchant && chr.getHiredMerchant() == null)
-                    {
-                        merchant.visitShop(chr);
-                    }
                 }
             }
             else if (mode == PlayerInterAction.CHAT.getCode())
-            { // chat lol
-                var merchant = chr.getHiredMerchant();
+            {
+                // chat lol          
                 if (chr.getTrade() != null)
                 {
                     chr.getTrade()!.chat(p.readString());
                 }
-                else if (chr.getPlayerShop() != null)
-                { //mini game
-                    var shop = chr.getPlayerShop();
-                    if (shop != null)
-                    {
-                        shop.chat(c, p.readString());
-                    }
-                }
+
                 else if (chr.getMiniGame() != null)
                 {
                     var game = chr.getMiniGame();
@@ -293,9 +289,9 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                         game.chat(c, p.readString());
                     }
                 }
-                else if (merchant != null)
+                else if (chr.VisitingShop != null)
                 {
-                    merchant.sendMessage(chr, p.readString());
+                    chr.VisitingShop.sendMessage(chr, p.readString());
                 }
             }
             else if (mode == PlayerInterAction.EXIT.getCode())
@@ -306,13 +302,13 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    chr.closePlayerShop();
+                    chr.LeaveVisitingShop();
                     chr.closeMiniGame(false);
-                    chr.closeHiredMerchant(true);
                 }
             }
             else if (mode == PlayerInterAction.OPEN_STORE.getCode() || mode == PlayerInterAction.OPEN_CASH.getCode())
             {
+                // 开店？
                 if (isTradeOpen(chr))
                 {
                     return;
@@ -340,32 +336,34 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                var shop = chr.getPlayerShop();
-                var merchant = chr.getHiredMerchant();
-                if (shop != null && shop.isOwner(chr))
+                if (chr.VisitingShop == null)
+                    return;
+
+                IPlayerShop manageShop = chr.VisitingShop;
+                if (chr.VisitingShop.Type == PlayerShopType.PlayerShop && chr.VisitingShop.OwnerId == chr.Id)
                 {
                     if (YamlConfig.config.server.USE_ERASE_PERMIT_ON_OPENSHOP)
                     {
-                        try
-                        {
-                            InventoryManipulator.removeById(c, InventoryType.CASH, shop.getItemId(), 1, true, false);
-                        }
-                        catch (Exception)
-                        {
-                        } // fella does not have a player shop permit...
+                        InventoryManipulator.removeById(c, InventoryType.CASH, chr.VisitingShop.SourceItem.getItemId(), 1, true, false);
                     }
 
+                    var shop = (PlayerShop)chr.VisitingShop;
+
+                    chr.getMap().addMapObject(shop);
                     chr.getMap().broadcastMessage(PacketCreator.updatePlayerShopBox(shop));
-                    shop.setOpen(true);
+
+                    shop.SetOpen();
                 }
-                else if (merchant != null && merchant.isOwner(chr))
+                if (chr.VisitingShop.Type == PlayerShopType.HiredMerchant && chr.VisitingShop.OwnerId == chr.Id)
                 {
-                    chr.setHasMerchant(true);
-                    merchant.setOpen(true);
+                    var merchant = (HiredMerchant)chr.VisitingShop;
+
+                    merchant.SetOpen();
+
                     chr.getMap().addMapObject(merchant);
-                    chr.setHiredMerchant(null);
                     chr.getMap().broadcastMessage(PacketCreator.spawnHiredMerchantBox(merchant));
                 }
+                c.getChannelServer().PlayerShopManager.NewPlayerShop(manageShop);
             }
             else if (mode == PlayerInterAction.READY.getCode())
             {
@@ -570,7 +568,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     if ((quantity <= item.getQuantity() && quantity >= 0) || ItemConstants.isRechargeable(item.getItemId()))
                     {
                         if (ii.isDropRestricted(item.getItemId()))
-                        { 
+                        {
                             // ensure that undroppable items do not make it to the trade window
                             if (!KarmaManipulator.hasKarmaFlag(item))
                             {
@@ -636,6 +634,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 InventoryType ivType = InventoryTypeUtils.getByType(p.ReadSByte());
                 short slot = p.readShort();
+                // 多少捆（客户端计算：总数/每捆多少个）perBundles * bundles = quantity
                 short bundles = p.readShort();
                 var ivItem = chr.getInventory(ivType).getItem(slot);
 
@@ -660,6 +659,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
+                // 每捆多少个
                 short perBundle = p.readShort();
 
                 if (ItemConstants.isRechargeable(ivItem.getItemId()))
@@ -668,7 +668,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     bundles = 1;
                 }
                 else if (ivItem.getQuantity() < (bundles * perBundle))
-                {     // thanks GabrielSin for finding a dupe here
+                {     
+                    // thanks GabrielSin for finding a dupe here
                     c.sendPacket(PacketCreator.serverNotice(1, "Could not perform shop operation with that item."));
                     c.sendPacket(PacketCreator.enableActions());
                     return;
@@ -683,109 +684,21 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                Item sellItem = ivItem.copy();
-                if (!ItemConstants.isRechargeable(ivItem.getItemId()))
-                {
-                    sellItem.setQuantity(perBundle);
-                }
-
-                PlayerShopItem shopItem = new PlayerShopItem(sellItem, bundles, price);
-                var shop = chr.getPlayerShop();
-                var merchant = chr.getHiredMerchant();
-                if (shop != null && shop.isOwner(chr))
-                {
-                    if (shop.isOpen() || !shop.addItem(shopItem))
-                    { // thanks Vcoc for pointing an exploit with unlimited shop slots
-                        c.sendPacket(PacketCreator.serverNotice(1, "You can't sell it anymore."));
-                        return;
-                    }
-
-                    if (ItemConstants.isRechargeable(ivItem.getItemId()))
-                    {
-                        InventoryManipulator.removeFromSlot(c, ivType, slot, ivItem.getQuantity(), true);
-                    }
-                    else
-                    {
-                        InventoryManipulator.removeFromSlot(c, ivType, slot, (short)(bundles * perBundle), true);
-                    }
-
-                    c.sendPacket(PacketCreator.getPlayerShopItemUpdate(shop));
-                }
-                else if (merchant != null && merchant.isOwner(chr))
-                {
-                    if (ivType.Equals(InventoryType.CASH) && merchant.isPublished())
-                    {
-                        c.sendPacket(PacketCreator.serverNotice(1, "Cash items are only allowed to be sold when first opening the store."));
-                        return;
-                    }
-
-                    if (merchant.isOpen() || !merchant.addItem(shopItem))
-                    { // thanks Vcoc for pointing an exploit with unlimited shop slots
-                        c.sendPacket(PacketCreator.serverNotice(1, "You can't sell it anymore."));
-                        return;
-                    }
-
-                    if (ItemConstants.isRechargeable(ivItem.getItemId()))
-                    {
-                        InventoryManipulator.removeFromSlot(c, ivType, slot, ivItem.getQuantity(), true);
-                    }
-                    else
-                    {
-                        InventoryManipulator.removeFromSlot(c, ivType, slot, (short)(bundles * perBundle), true);
-                    }
-
-                    c.sendPacket(PacketCreator.updateHiredMerchant(merchant, chr));
-
-                    if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
-                    {
-                        chr.saveCharToDB(false);
-                    }
-
-                    try
-                    {
-                        merchant.saveItems(false);   // thanks Masterrulax for realizing yet another dupe with merchants/Fredrick
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex.ToString());
-                    }
-                }
-                else
-                {
-                    c.sendPacket(PacketCreator.serverNotice(1, "You can't sell without owning a shop."));
-                }
+                c.getChannelServer().PlayerShopManager.AddCommodity(chr, ivType, ivItem, perBundle, bundles, price);
             }
-            else if (mode == PlayerInterAction.REMOVE_ITEM.getCode())
+            else if (mode == PlayerInterAction.REMOVE_ITEM.getCode() || mode == PlayerInterAction.TAKE_ITEM_BACK.getCode())
             {
                 if (isTradeOpen(chr))
                 {
                     return;
                 }
 
-                var shop = chr.getPlayerShop();
-                if (shop != null && shop.isOwner(chr))
-                {
-                    if (shop.isOpen())
-                    {
-                        c.sendPacket(PacketCreator.serverNotice(1, "You can't take it with the store open."));
-                        return;
-                    }
-
-                    int slot = p.readShort();
-                    if (slot >= shop.getItems().Count || slot < 0)
-                    {
-                        AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with a player shop.");
-                        _logger.LogWarning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slot);
-                        c.Disconnect(true, false);
-                        return;
-                    }
-
-                    shop.takeItemBack(slot, chr);
-                }
+                int itemIndex = p.readShort();
+                c.getChannelServer().PlayerShopManager.RemoveCommodity(chr, itemIndex);
             }
             else if (mode == PlayerInterAction.MERCHANT_MESO.getCode())
             {
-                var merchant = chr.getHiredMerchant();
+                var merchant = chr.VisitingShop as HiredMerchant;
                 if (merchant == null)
                 {
                     return;
@@ -796,8 +709,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
             }
             else if (mode == PlayerInterAction.VIEW_VISITORS.getCode())
             {
-                var merchant = chr.getHiredMerchant();
-                if (merchant == null || !merchant.isOwner(chr))
+                var merchant = chr.VisitingShop as HiredMerchant;
+                if (merchant == null || !merchant.IsOwner(chr))
                 {
                     return;
                 }
@@ -805,18 +718,18 @@ public class PlayerInteractionHandler : ChannelHandlerBase
             }
             else if (mode == PlayerInterAction.VIEW_BLACKLIST.getCode())
             {
-                var merchant = chr.getHiredMerchant();
-                if (merchant == null || !merchant.isOwner(chr))
+                var merchant = chr.VisitingShop as HiredMerchant;
+                if (merchant == null || !merchant.IsOwner(chr))
                 {
                     return;
                 }
 
-                c.sendPacket(PacketCreator.viewMerchantBlacklist(merchant.getBlacklist()));
+                c.sendPacket(PacketCreator.viewMerchantBlacklist(merchant.BlackList));
             }
             else if (mode == PlayerInterAction.ADD_TO_BLACKLIST.getCode())
             {
-                var merchant = chr.getHiredMerchant();
-                if (merchant == null || !merchant.isOwner(chr))
+                var merchant = chr.VisitingShop as HiredMerchant;
+                if (merchant == null || !merchant.IsOwner(chr))
                 {
                     return;
                 }
@@ -825,8 +738,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
             }
             else if (mode == PlayerInterAction.REMOVE_FROM_BLACKLIST.getCode())
             {
-                var merchant = chr.getHiredMerchant();
-                if (merchant == null || !merchant.isOwner(chr))
+                var merchant = chr.VisitingShop as HiredMerchant;
+                if (merchant == null || !merchant.IsOwner(chr))
                 {
                     return;
                 }
@@ -835,8 +748,9 @@ public class PlayerInteractionHandler : ChannelHandlerBase
             }
             else if (mode == PlayerInterAction.MERCHANT_ORGANIZE.getCode())
             {
-                var merchant = chr.getHiredMerchant();
-                if (merchant == null || !merchant.isOwner(chr))
+                // 整理道具
+                var merchant = chr.VisitingShop as HiredMerchant;
+                if (merchant == null || !merchant.IsOwner(chr))
                 {
                     return;
                 }
@@ -846,7 +760,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (merchant.getItems().Count == 0)
                 {
-                    merchant.closeOwnerMerchant(chr);
+                    merchant.Close();
                     return;
                 }
                 c.sendPacket(PacketCreator.updateHiredMerchant(merchant, chr));
@@ -859,57 +773,18 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                int itemid = p.ReadSByte();
+                // 从代码来看这里并不是itemId, 而是index
+                int itemIndex = p.ReadSByte();
                 short quantity = p.readShort();
                 if (quantity < 1)
                 {
                     AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with a hired merchant and or player shop.");
-                    _logger.LogWarning("Chr {CharacterName} tried to buy item {ItemId} with quantity {ItemQuantity}", chr.getName(), itemid, quantity);
+                    _logger.LogWarning("Chr {CharacterName} tried to buy item {ItemId} with quantity {ItemQuantity}", chr.getName(), itemIndex, quantity);
                     c.Disconnect(true, false);
                     return;
                 }
-                var shop = chr.getPlayerShop();
-                var merchant = chr.getHiredMerchant();
-                if (shop != null && shop.isVisitor(chr))
-                {
-                    if (shop.buy(c, itemid, quantity))
-                    {
-                        shop.broadcast(PacketCreator.getPlayerShopItemUpdate(shop));
-                    }
-                }
-                else if (merchant != null && !merchant.isOwner(chr))
-                {
-                    merchant.buy(c, itemid, quantity);
-                    merchant.broadcastToVisitorsThreadsafe(PacketCreator.updateHiredMerchant(merchant, chr));
-                }
-            }
-            else if (mode == PlayerInterAction.TAKE_ITEM_BACK.getCode())
-            {
-                if (isTradeOpen(chr))
-                {
-                    return;
-                }
 
-                var merchant = chr.getHiredMerchant();
-                if (merchant != null && merchant.isOwner(chr))
-                {
-                    if (merchant.isOpen())
-                    {
-                        c.sendPacket(PacketCreator.serverNotice(1, "You can't take it with the store open."));
-                        return;
-                    }
-
-                    int slot = p.readShort();
-                    if (slot >= merchant.getItems().Count || slot < 0)
-                    {
-                        AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with a hired merchant.");
-                        _logger.LogWarning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slot);
-                        c.Disconnect(true, false);
-                        return;
-                    }
-
-                    merchant.takeItemBack(slot, chr);
-                }
+                c.getChannelServer().PlayerShopManager.BuyItem(chr, itemIndex, quantity);
             }
             else if (mode == PlayerInterAction.CLOSE_MERCHANT.getCode())
             {
@@ -918,11 +793,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                var merchant = chr.getHiredMerchant();
-                if (merchant != null)
-                {
-                    merchant.closeOwnerMerchant(chr);
-                }
+                c.getChannelServer().PlayerShopManager.CloseByPlayer(chr);
+                
             }
             else if (mode == PlayerInterAction.MAINTENANCE_OFF.getCode())
             {
@@ -931,33 +803,26 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                var merchant = chr.getHiredMerchant();
+                var merchant = chr.VisitingShop as HiredMerchant;
                 if (merchant != null)
                 {
-                    if (merchant.isOwner(chr))
+                    if (merchant.IsOwner(chr))
                     {
-                        if (merchant.getItems().Count == 0)
-                        {
-                            merchant.closeOwnerMerchant(chr);
-                        }
-                        else
-                        {
-                            merchant.clearMessages();
-                            merchant.setOpen(true);
-                            merchant.getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(merchant));
-                        }
+                        merchant.SetOpen();
+                        merchant.getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(merchant));
+
+                        c.getChannelServer().PlayerShopManager.SyncPlayerShop(merchant);
                     }
                 }
 
-                chr.setHiredMerchant(null);
                 c.sendPacket(PacketCreator.enableActions());
             }
             else if (mode == PlayerInterAction.BAN_PLAYER.getCode())
             {
-                p.skip(1);
+                var unknown1 = p.ReadSByte();
 
-                var shop = chr.getPlayerShop();
-                if (shop != null && shop.isOwner(chr))
+                var shop = chr.VisitingShop as PlayerShop;
+                if (shop != null && shop.IsOwner(chr))
                 {
                     shop.banPlayer(p.readString());
                 }
@@ -1002,7 +867,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
     private bool isTradeOpen(IPlayer chr)
     {
         if (chr.getTrade() != null)
-        {   // thanks to Rien dev team
+        {
+            // thanks to Rien dev team
             //Apparently there is a dupe exploit that causes racing conditions when saving/retrieving from the db with stuff like trade open.
             chr.sendPacket(PacketCreator.enableActions());
             return true;
@@ -1024,8 +890,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                         continue;
                     }
 
-                    var shop = mc.getPlayerShop();
-                    if (shop != null && shop.isOwner(mc))
+                    var shop = mc.VisitingShop;
+                    if (shop != null && shop.IsOwner(mc))
                     {
                         chr.sendPacket(PacketCreator.getMiniRoomError(13));
                         return false;

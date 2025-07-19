@@ -41,13 +41,15 @@ namespace Application.Core.Login.Datas
                 await InitializeDataBase(dbContext);
 
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-                await dbContext.Characters.ExecuteUpdateAsync(x => x.SetProperty(y => y.HasMerchant, false));
                 await CleanNxcodeCoupons(dbContext);
                 await _masterServer.CouponManager.Initialize(dbContext);
                 await _masterServer.GuildManager.Initialize(dbContext);
 
                 await _masterServer.NewYearCardManager.Initialize(dbContext);
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
+                await _masterServer.NoteManager.InitializeAsync(dbContext);
+                await _masterServer.GiftManager.Initialize(dbContext);
+                await _masterServer.RingManager.Initialize(dbContext);
 
                 foreach (var module in _masterServer.Modules)
                 {

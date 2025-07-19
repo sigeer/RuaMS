@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Application.Scripting.Lua
 {
     public class NLuaScriptEngine : IEngine
@@ -8,6 +10,7 @@ namespace Application.Scripting.Lua
         {
             _engine = new NLua.Lua();
             _engine.LoadCLRPackage();
+            _engine.State.Encoding = Encoding.UTF8;
             AddHostedType("LuaTableUtils", typeof(LuaTableUtils));
         }
 
@@ -45,7 +48,7 @@ namespace Application.Scripting.Lua
 
         public ScriptResultWrapper Evaluate(string code)
         {
-            return new NLuaResultWrapper(_engine.DoString(code));
+            return new NLuaResultWrapper(_engine.DoString(Encoding.UTF8.GetBytes(code)));
         }
 
         public ScriptResultWrapper Evaluate(ScriptPrepareWrapper prepared)

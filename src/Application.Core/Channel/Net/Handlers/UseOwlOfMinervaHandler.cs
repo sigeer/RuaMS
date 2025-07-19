@@ -24,12 +24,13 @@ using tools;
 namespace Application.Core.Channel.Net.Handlers;
 
 
-/**
- * @author Ronan
- */
+
+/// <summary>
+/// @author Ronan
+/// 用途？
+/// </summary>
 public class UseOwlOfMinervaHandler : ChannelHandlerBase
 {
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var owlSearched = c.CurrentServer.Service.GetOwlSearchedItems();

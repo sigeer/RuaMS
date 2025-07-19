@@ -5,6 +5,7 @@ using Application.Shared.Servers;
 using BaseProto;
 using CashProto;
 using Dto;
+using ItemProto;
 using net.server;
 using tools;
 
@@ -90,6 +91,7 @@ namespace Application.Core.Login
             var data = new SendNoteResponse() { ReceiverChannel = channel, ReceiverId = id };
             data.List.AddRange(notes);
             SendMessage(BroadcastType.OnNoteSend, data, new PlayerChannelPair(channel, id));
+            SendMessage(BroadcastType.OnNoteSend, data, data.ReceiverId);
         }
 
 

@@ -1,86 +1,60 @@
-/*
-This file is part of the OdinMS Maple Story Server
-Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-Matthias Butz <matze@odinms.de>
-Jan Christian Meyer <vimes@odinms.de>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation version 3 as published by
-the Free Software Foundation. You may not use, modify or distribute
-this program under any other version of the GNU Affero General Public
-License.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-using Application.Core.Channel.DataProviders;
+using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using client.inventory;
 using client.inventory.manipulator;
-using client.processor.npc;
-using Microsoft.EntityFrameworkCore;
-using net.server;
 using tools;
 
 namespace Application.Core.Game.Trades;
 
-
-
-/**
- * @author XoticStory
- * @author Ronan - concurrency protection
- */
 public class HiredMerchant : AbstractMapObject, IPlayerShop
 {
-    private const int VISITOR_HISTORY_LIMIT = 10;
-    private const int BLACKLIST_LIMIT = 20;
+    public IPlayer? Owner { get; private set; }
+    public int Mesos { get; private set; }
+    public long StartTime { get; }
+    public TimeSpan LeftTime { get; }
 
-    private int ownerId;
-    private int itemId;
-    private int mesos = 0;
-    private int channel;
-    private int world;
-    private DateTimeOffset start;
-    private string ownerName = "";
-    private string description = "";
-    private List<PlayerShopItem> items = new();
+
     private List<KeyValuePair<string, byte>> messages = new();
-    private List<SoldItem> sold = new();
     private AtomicBoolean open = new AtomicBoolean();
-    private bool published = false;
 
     private Visitor?[] visitors = new Visitor[3];
-    private List<PastVisitor> visitorHistory = new();
-    private HashSet<string> blacklist = new(); // case-sensitive character names
+    FixedSizeQueue<PastVisitor> visitorHistory = new(Limits.VISITOR_HISTORY_LIMIT);
     private object visitorLock = new object();
-
-    public IPlayer Owner { get; set; }
+    public AtomicEnum<PlayerShopStatus> Status { get; set; }
+    public HashSet<string> BlackList { get; }
+    public Item SourceItem { get; }
     public int Channel { get; }
-    public string TypeName { get; }
+    public WorldChannel ChannelServer { get; }
+    public bool SoldNotify { get; }
+    public string Title { get; private set; }
+    public int OwnerId { get; }
+    public string OwnerName { get; }
+    public List<PlayerShopItem> Commodity { get; }
 
-    public HiredMerchant(IPlayer owner, string desc, int itemId)
+    public List<SoldItem> SoldHistory { get; }
+
+    public PlayerShopType Type { get; }
+
+    public HiredMerchant(IPlayer owner, string desc, Item item)
     {
         setPosition(owner.getPosition());
-        start = DateTimeOffset.UtcNow;
+        StartTime = owner.Client.CurrentServerContainer.getCurrentTime();
         Owner = owner;
-        ownerId = owner.getId();
-        channel = owner.getClient().getChannel();
-        world = owner.getWorld();
-        this.itemId = itemId;
-        ownerName = owner.getName();
-        description = desc;
+        OwnerName = owner.Name;
+        OwnerId = owner.getId();
+        Channel = owner.getClient().getChannel();
+        ChannelServer = owner.getChannelServer();
+        SourceItem = item;
+        Title = desc;
         setMap(owner.MapModel);
         Channel = owner.Channel;
+        Commodity = [];
+        SoldHistory = [];
+        BlackList = [];
 
-        TypeName = "merchant";
+        Type = PlayerShopType.HiredMerchant;
+        SoldNotify = ItemId.MerchantWithNotifyBegin <= item.getItemId() && ItemId.MerchantWithNotifyEnd >= item.getItemId();
+        Status = new AtomicEnum<PlayerShopStatus>(PlayerShopStatus.Maintenance);
     }
 
     public void broadcastToVisitorsThreadsafe(Packet packet)
@@ -107,13 +81,24 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
+    public void BroadcastShopItemUpdate()
+    {
+        foreach (var visitor in visitors)
+        {
+            if (visitor != null)
+            {
+                visitor.chr.sendPacket(PacketCreator.updateHiredMerchant(this, visitor.chr));
+            }
+        }
+    }
+
     public byte[] getShopRoomInfo()
     {
         Monitor.Enter(visitorLock);
         try
         {
             byte count = 0;
-            if (isOpen())
+            if (Status.Is(PlayerShopStatus.Opening))
             {
                 foreach (var visitor in visitors)
                 {
@@ -136,7 +121,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public bool addVisitor(IPlayer visitor)
+    public bool AddVisitor(IPlayer visitor)
     {
         Monitor.Enter(visitorLock);
         try
@@ -146,7 +131,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             {
                 visitors[i] = new Visitor(visitor, DateTimeOffset.UtcNow);
                 broadcastToVisitors(PacketCreator.hiredMerchantVisitorAdd(visitor, i + 1));
-                getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
+                MapModel.broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
 
                 return true;
             }
@@ -159,7 +144,18 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void removeVisitor(IPlayer chr)
+    public void OwnerLeave(IPlayer chr)
+    {
+        if (Owner == null)
+            return;
+
+        if (chr.Id != OwnerId)
+            return;
+
+        SetOpen();
+    }
+
+    public void RemoveVisitor(IPlayer chr)
     {
         Monitor.Enter(visitorLock);
         try
@@ -188,12 +184,9 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     private void addVisitorToHistory(Visitor visitor)
     {
-        TimeSpan visitDuration = visitor.enteredAt - DateTimeOffset.UtcNow;
-        visitorHistory.Insert(0, new PastVisitor(visitor.chr.getName(), visitDuration));
-        while (visitorHistory.Count > VISITOR_HISTORY_LIMIT)
-        {
-            visitorHistory.RemoveAt(visitorHistory.Count - 1);
-        }
+        // 只需要时间差，不需要使用系统时间
+        TimeSpan visitDuration = DateTimeOffset.UtcNow - visitor.enteredAt;
+        visitorHistory.Enqueue(new PastVisitor(visitor.chr.getName(), visitDuration));
     }
 
     public int getVisitorSlotThreadsafe(IPlayer visitor)
@@ -225,7 +218,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                 if (visitor != null)
                 {
                     IPlayer visitorChr = visitor.chr;
-                    visitorChr.setHiredMerchant(null);
+                    visitorChr.VisitingShop = null;
                     visitorChr.sendPacket(PacketCreator.leaveHiredMerchant(i + 1, 0x11));
                     visitorChr.sendPacket(PacketCreator.hiredMerchantMaintenanceMessage());
                     visitors[i] = null;
@@ -241,32 +234,34 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    private void removeOwner(IPlayer owner)
+    public void ProcessVisitingOwner()
     {
-        if (owner.getHiredMerchant() == this)
+        if (Owner != null)
         {
-            owner.sendPacket(PacketCreator.hiredMerchantOwnerLeave());
-            owner.sendPacket(PacketCreator.leaveHiredMerchant(0x00, 0x03));
-            owner.setHiredMerchant(null);
+            Owner.sendPacket(PacketCreator.hiredMerchantOwnerLeave());
+            Owner.sendPacket(PacketCreator.leaveHiredMerchant(0x00, 0x03));
+            Owner.VisitingShop = null;
+            Owner = null;
         }
     }
 
+    Lock mesoLock = new Lock();
     public void withdrawMesos(IPlayer chr)
     {
-        if (isOwner(chr))
+        if (IsOwner(chr))
         {
-            lock (items)
+            lock (mesoLock)
             {
-                chr.withdrawMerchantMesos();
+                Mesos = chr.GainMeso(Mesos, false);
             }
         }
     }
 
     public void takeItemBack(int slot, IPlayer chr)
     {
-        lock (items)
+        lock (Commodity)
         {
-            var shopItem = items[slot];
+            var shopItem = Commodity[slot];
             if (shopItem.isExist())
             {
                 if (shopItem.getBundles() > 0)
@@ -301,13 +296,40 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && InventoryManipulator.addFromDrop(c, newItem, false);
     }
 
+    public void GainMeso(int meso)
+    {
+        lock (mesoLock)
+        {
+            Mesos += meso;
+        }
+    }
+
+    public string? MesoCheck(int meso)
+    {
+        if ((long)Mesos + meso > int.MaxValue)
+        {
+            return "Transaction failed since the shop owner can't hold any more mesos.";
+        }
+        return null;
+    }
+
+    public void InsertSoldHistory(int idx, SoldItem soldItem)
+    {
+        SoldHistory.Add(soldItem);
+    }
+
+    public void OnCommoditySellout()
+    {
+
+    }
+
     private int getQuantityLeft(int itemid)
     {
-        lock (items)
+        lock (Commodity)
         {
             int count = 0;
 
-            foreach (PlayerShopItem mpsi in items)
+            foreach (var mpsi in Commodity)
             {
                 if (mpsi.getItem().getItemId() == itemid)
                 {
@@ -319,271 +341,108 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public void buy(IChannelClient c, int item, short quantity)
-    {
-        lock (items)
-        {
-            PlayerShopItem pItem = items.get(item);
-            Item newItem = pItem.getItem().copy();
-
-            newItem.setQuantity((short)(pItem.getItem().getQuantity() * quantity));
-            if (quantity < 1 || !pItem.isExist() || pItem.getBundles() < quantity)
-            {
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-            else if (newItem.getInventoryType().Equals(InventoryType.EQUIP) && newItem.getQuantity() > 1)
-            {
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-
-            KarmaManipulator.toggleKarmaFlagToUntradeable(newItem);
-
-            int price = Math.Min(pItem.getPrice() * quantity, int.MaxValue);
-            if (c.OnlinedCharacter.getMeso() >= price)
-            {
-                if (canBuy(c, newItem))
-                {
-                    c.OnlinedCharacter.gainMeso(-price, false);
-                    price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
-
-                    lock (sold)
-                    {
-                        sold.Add(new SoldItem(c.OnlinedCharacter.getName(), pItem.getItem().getItemId(), newItem.getQuantity(), price));
-                    }
-
-                    pItem.setBundles((short)(pItem.getBundles() - quantity));
-                    if (pItem.getBundles() < 1)
-                    {
-                        pItem.setDoesExist(false);
-                    }
-
-                    if (YamlConfig.config.server.USE_ANNOUNCE_SHOPITEMSOLD)
-                    {   // idea thanks to Vcoc
-                        announceItemSold(newItem, price, getQuantityLeft(pItem.getItem().getItemId()));
-                    }
-
-                    var owner = Server.getInstance().getWorld(world).getPlayerStorage().getCharacterByName(ownerName);
-                    if (owner != null && owner.IsOnlined)
-                    {
-                        owner.addMerchantMesos(price);
-                    }
-                    else
-                    {
-                        using var dbContext = new DBContext();
-                        var merchantMesos = dbContext.Characters.Where(x => x.Id == ownerId).Select(x => new { x.MerchantMesos }).FirstOrDefault()?.MerchantMesos ?? 0;
-                        merchantMesos += price;
-
-                        dbContext.Characters.Where(x => x.Id == ownerId).ExecuteUpdate(x => x.SetProperty(y => y.MerchantMesos, Math.Min(merchantMesos, int.MaxValue)));
-                    }
-                }
-                else
-                {
-                    c.OnlinedCharacter.dropMessage(1, "Your inventory is full. Please clear a slot before buying this item.");
-                    c.sendPacket(PacketCreator.enableActions());
-                    return;
-                }
-            }
-            else
-            {
-                c.OnlinedCharacter.dropMessage(1, "You don't have enough mesos to purchase this item.");
-                c.sendPacket(PacketCreator.enableActions());
-                return;
-            }
-            try
-            {
-                saveItems(false);
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-            }
-        }
-    }
-
-    private void announceItemSold(Item item, int mesos, int inStore)
-    {
-        string qtyStr = item.getQuantity() > 1 ? " x " + item.getQuantity() : "";
-
-        if (Owner.isLoggedinWorld())
-        {
-            Owner.dropMessage(6, "[Hired Merchant] Item '" + ItemInformationProvider.getInstance().getName(item.getItemId()) + "'" + qtyStr + " has been sold for " + mesos + " mesos. (" + inStore + " left)");
-        }
-    }
-
-    public void forceClose()
-    {
-        //Server.getInstance().getChannel(world, channel).removeHiredMerchant(ownerId);
-        MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(getOwnerId()));
-        MapModel.removeMapObject(this);
-
-        Monitor.Enter(visitorLock);
-        try
-        {
-            setOpen(false);
-            removeAllVisitors();
-
-            if (Owner.isLoggedinWorld() && this == Owner.getHiredMerchant())
-            {
-                closeOwnerMerchant(Owner);
-            }
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
-
-        Owner.getChannelServer().HiredMerchantManager.unregisterHiredMerchant(this);
-
-        try
-        {
-            saveItems(true);
-            lock (items)
-            {
-                items.Clear();
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Logger.Error(ex.ToString());
-        }
-
-        if (Owner.IsOnlined)
-        {
-            Owner.setHasMerchant(false);
-        }
-        else
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                dbContext.Characters.Where(x => x.Id == ownerId)
-                    .ExecuteUpdate(x => x.SetProperty(y => y.HasMerchant, false));
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex.ToString());
-            }
-        }
-    }
-
-    public void closeOwnerMerchant(IPlayer chr)
-    {
-        if (isOwner(chr))
-        {
-            closeShop(chr.Client, false);
-            chr.setHasMerchant(false);
-        }
-    }
-
-    private void closeShop(IChannelClient c, bool timeout)
+    public void Close()
     {
         MapModel.removeMapObject(this);
-        MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(ownerId));
-        c.CurrentServer.HiredMerchantManager.unregisterHiredMerchant(ownerId);
+        MapModel.broadcastMessage(PacketCreator.removeHiredMerchantBox(OwnerId));
+
+        ProcessVisitingOwner();
 
         removeAllVisitors();
-        removeOwner(c.OnlinedCharacter);
+    }
 
-        try
+
+    public void SetOpen()
+    {
+        if (Owner == null)
+            return;
+
+        Status.Set(PlayerShopStatus.Opening);
+        Owner.VisitingShop = null;
+        Owner = null;
+    }
+
+    public void SetMaintenance(IPlayer chr)
+    {
+        if (chr.Id == OwnerId)
         {
-            List<PlayerShopItem> copyItems = getItems();
-            if (check(c.OnlinedCharacter, copyItems) && !timeout)
+            Status.Set(PlayerShopStatus.Maintenance);
+            Owner = chr;
+
+            removeAllVisitors();
+        }
+    }
+
+    public bool Retrieve(IPlayer owner)
+    {
+        if (owner.Id != this.OwnerId)
+            return false;
+
+        lock (Commodity)
+        {
+            if (check(owner, Commodity))
             {
-                foreach (PlayerShopItem mpsi in copyItems)
+                foreach (PlayerShopItem mpsi in Commodity)
                 {
                     if (mpsi.isExist())
                     {
                         if (mpsi.getItem().getInventoryType().Equals(InventoryType.EQUIP))
                         {
-                            InventoryManipulator.addFromDrop(c, mpsi.getItem(), false);
+                            InventoryManipulator.addFromDrop(owner.Client, mpsi.getItem(), false);
                         }
                         else
                         {
-                            InventoryManipulator.addById(c, mpsi.getItem().getItemId(), (short)(mpsi.getBundles() * mpsi.getItem().getQuantity()), mpsi.getItem().getOwner(), mpsi.getItem().getFlag(), mpsi.getItem().getExpiration());
+                            InventoryManipulator.addById(owner.Client,
+                                mpsi.getItem().getItemId(),
+                                (short)(mpsi.getBundles() * mpsi.getItem().getQuantity()),
+                                mpsi.getItem().getOwner(),
+                                mpsi.getItem().getFlag(),
+                                mpsi.getItem().getExpiration());
                         }
                     }
                 }
 
-                lock (items)
-                {
-                    items.Clear();
-                }
+                Commodity.Clear();
+                return true;
             }
-
-            try
-            {
-                saveItems(timeout);
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e.ToString());
-            }
-
-            if (Owner.IsOnlined)
-            {
-                Owner.setHasMerchant(false);
-            }
-            else
-            {
-                using var dbContext = new DBContext();
-                dbContext.Characters.Where(x => x.Id == ownerId)
-                    .ExecuteUpdate(x => x.SetProperty(y => y.HasMerchant, false));
-
-
-                if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
-                {
-                    c.OnlinedCharacter.saveCharToDB(false);
-                }
-
-                lock (items)
-                {
-                    items.Clear();
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e.ToString());
+            return false;
         }
 
-        Owner.getChannelServer().HiredMerchantManager.unregisterHiredMerchant(this);
     }
 
-
-    public void visitShop(IPlayer chr)
+    public bool VisitShop(IPlayer chr)
     {
         Monitor.Enter(visitorLock);
         try
         {
-            if (isOwner(chr))
-            {
-                setOpen(false);
-                removeAllVisitors();
-
-                chr.sendPacket(PacketCreator.getHiredMerchant(chr, this, false));
-            }
-            else if (!isOpen())
-            {
-                chr.sendPacket(PacketCreator.getMiniRoomError(18));
-                return;
-            }
-            else if (isBlacklisted(chr.getName()))
+            if (chr.VisitingShop != null)
             {
                 chr.sendPacket(PacketCreator.getMiniRoomError(17));
-                return;
+                return false;
             }
-            else if (!addVisitor(chr))
+            if (IsOwner(chr))
+            {
+                SetMaintenance(chr);
+            }
+            else if (!Status.Is(PlayerShopStatus.Opening))
+            {
+                chr.sendPacket(PacketCreator.getMiniRoomError(18));
+                return false;
+            }
+            else if (BlackList.Contains(chr.getName()))
+            {
+                chr.sendPacket(PacketCreator.getMiniRoomError(17));
+                return false;
+            }
+            else if (!AddVisitor(chr))
             {
                 chr.sendPacket(PacketCreator.getMiniRoomError(2));
-                return;
+                return false;
             }
-            else
-            {
-                chr.sendPacket(PacketCreator.getHiredMerchant(chr, this, false));
-            }
-            chr.setHiredMerchant(this);
+
+            chr.sendPacket(PacketCreator.getHiredMerchant(chr, this, false));
+            chr.VisitingShop = this;
+            return true;
         }
         finally
         {
@@ -591,28 +450,6 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public string getOwner()
-    {
-        return ownerName;
-    }
-
-    public void clearItems()
-    {
-        lock (items)
-        {
-            items.Clear();
-        }
-    }
-
-    public int getOwnerId()
-    {
-        return ownerId;
-    }
-
-    public string getDescription()
-    {
-        return description;
-    }
 
     public IPlayer?[] getVisitorCharacters()
     {
@@ -629,9 +466,9 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public List<PlayerShopItem> getItems()
     {
-        lock (items)
+        lock (Commodity)
         {
-            return items;
+            return Commodity;
         }
     }
 
@@ -640,49 +477,50 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return getItems().Any(x => x.getItem().getItemId() == itemid && x.isExist() && x.getBundles() > 0);
     }
 
-    public bool addItem(PlayerShopItem item)
+    public bool AddCommodity(PlayerShopItem item)
     {
-        lock (items)
+        lock (Commodity)
         {
-            if (items.Count >= 16)
+            if (Commodity.Count >= Limits.MaxPlayerShopItemCount)
             {
                 return false;
             }
 
-            items.Add(item);
+            Commodity.Add(item);
             return true;
+        }
+    }
+    /// <summary>
+    /// 整理道具
+    /// </summary>
+    /// <param name="chr"></param>
+    public void Restore(IPlayer chr)
+    {
+        if (IsOwner(chr))
+        {
+            lock (Commodity)
+            {
+                Commodity.RemoveAll(x => !x.isExist());
+            }
+
+            lock (mesoLock)
+            {
+                Mesos = chr.GainMeso(Mesos, false);
+            }
         }
     }
 
     public void clearInexistentItems()
     {
-        lock (items)
+        lock (Commodity)
         {
-            items = items.Where(x => x.isExist()).ToList();
-
-            try
-            {
-                saveItems(false);
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex.ToString());
-            }
+            Commodity.RemoveAll(x => !x.isExist());
         }
     }
 
     private void removeFromSlot(int slot)
     {
-        items.RemoveAt(slot);
-
-        try
-        {
-            saveItems(false);
-        }
-        catch (Exception ex)
-        {
-            Log.Logger.Error(ex.ToString());
-        }
+        Commodity.RemoveAt(slot);
     }
 
     private int getFreeSlot()
@@ -690,40 +528,15 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return Array.IndexOf(visitors, null);
     }
 
-    public void setDescription(string description)
-    {
-        this.description = description;
-    }
 
-    public bool isPublished()
+    public bool IsOwner(IPlayer chr)
     {
-        return published;
-    }
-
-    public bool isOpen()
-    {
-        return open.Get();
-    }
-
-    public void setOpen(bool set)
-    {
-        open.GetAndSet(set);
-        published = true;
-    }
-
-    public int getItemId()
-    {
-        return itemId;
-    }
-
-    public bool isOwner(IPlayer chr)
-    {
-        return chr.getId() == ownerId;
+        return chr.Id == OwnerId;
     }
 
     public void sendMessage(IPlayer chr, string msg)
     {
-        string message = chr.getName() + " : " + msg;
+        string message = chr.Name + " : " + msg;
         byte slot = (byte)(getVisitorSlot(chr) + 1);
 
         lock (messages)
@@ -731,53 +544,50 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             messages.Add(new(message, slot));
         }
         broadcastToVisitorsThreadsafe(PacketCreator.hiredMerchantChat(message, slot));
+        if (Owner != null)
+        {
+            Owner.sendPacket(PacketCreator.hiredMerchantChat(message, slot));
+        }
     }
 
-    public List<PlayerShopItem> sendAvailableBundles(int itemid)
+    public List<PlayerShopItem> QueryAvailableBundles(int itemid)
     {
         if (!open)
         {
             return [];
         }
 
-        lock (items)
+        lock (Commodity)
         {
-            return items.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
+            return Commodity.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
         }
     }
 
-    public void saveItems(bool shutdown)
-    {
-        List<ItemInventoryType> itemsWithType = new();
-        List<short> bundles = new();
+    //public void saveItems(bool shutdown)
+    //{
+    //    List<ItemInventoryType> itemsWithType = new();
+    //    List<short> bundles = new();
 
-        foreach (PlayerShopItem pItems in getItems())
-        {
-            Item newItem = pItems.getItem();
-            short newBundle = pItems.getBundles();
+    //    foreach (PlayerShopItem pItems in getItems())
+    //    {
+    //        Item newItem = pItems.getItem();
+    //        short newBundle = pItems.getBundles();
 
-            if (shutdown)
-            { //is "shutdown" really necessary?
-                newItem.setQuantity(pItems.getItem().getQuantity());
-            }
-            else
-            {
-                newItem.setQuantity(pItems.getItem().getQuantity());
-            }
-            if (newBundle > 0)
-            {
-                itemsWithType.Add(new(newItem, newItem.getInventoryType()));
-                bundles.Add(newBundle);
-            }
-        }
+    //        newItem.setQuantity(pItems.getItem().getQuantity());
+    //        if (newBundle > 0)
+    //        {
+    //            itemsWithType.Add(new(newItem, newItem.getInventoryType()));
+    //            bundles.Add(newBundle);
+    //        }
+    //    }
 
-        using var dbContext = new DBContext();
-        using var dbTrans = dbContext.Database.BeginTransaction();
-        ItemFactory.MERCHANT.saveItems(itemsWithType, bundles, ownerId, dbContext);
+    //    using var dbContext = new DBContext();
+    //    using var dbTrans = dbContext.Database.BeginTransaction();
+    //    ItemFactory.MERCHANT.saveItems(itemsWithType, bundles, ownerId, dbContext);
 
-        FredrickProcessor.insertFredrickLog(dbContext, ownerId);
-        dbTrans.Commit();
-    }
+    //    FredrickProcessor.insertFredrickLog(dbContext, ownerId);
+    //    dbTrans.Commit();
+    //}
 
     private static bool check(IPlayer chr, List<PlayerShopItem> items)
     {
@@ -793,18 +603,22 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return Inventory.checkSpotsAndOwnership(chr, li);
     }
 
-    public int getChannel()
-    {
-        return channel;
-    }
 
-    public int getTimeOpen()
-    {
-        double openTime = (DateTimeOffset.UtcNow - start).TotalMinutes;
-        openTime /= 1440;   // heuristics since engineered method to count time here is unknown
-        openTime *= 1318;
+    //public int getTimeOpen()
+    //{
+    //    double openTime = (DateTimeOffset.UtcNow - StartTime).TotalMinutes;
+    //    openTime /= 1440;   // heuristics since engineered method to count time here is unknown
+    //    openTime *= 1318;  // 这里为什么要 * 1318
 
-        return (int)Math.Ceiling(openTime);
+    //    return (int)Math.Ceiling(openTime);
+    //}
+
+    public int GetTimeLeft()
+    {
+        var timeLeft = TimeSpan.FromMilliseconds(SourceItem.getExpiration() - StartTime).TotalDays;
+        timeLeft *= 1318;
+
+        return (int)Math.Ceiling(timeLeft);
     }
 
     public void clearMessages()
@@ -825,55 +639,23 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public List<PastVisitor> getVisitorHistory()
     {
-        return visitorHistory;
+        return visitorHistory.ToList();
     }
 
+    // 只有店主能够操作 不会并发 不需要加锁
     public void addToBlacklist(string chrName)
     {
-        Monitor.Enter(visitorLock);
-        try
+        // 是否需要像PlayerShop.ban一样 踢掉访问者
+        if (BlackList.Count >= Limits.BLACKLIST_LIMIT)
         {
-            if (blacklist.Count >= BLACKLIST_LIMIT)
-            {
-                return;
-            }
-            blacklist.Add(chrName);
+            return;
         }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        BlackList.Add(chrName);
     }
 
     public void removeFromBlacklist(string chrName)
     {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            blacklist.Remove(chrName);
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
-    }
-
-    public HashSet<string> getBlacklist()
-    {
-        return blacklist.ToHashSet();
-    }
-
-    private bool isBlacklisted(string chrName)
-    {
-        Monitor.Enter(visitorLock);
-        try
-        {
-            return blacklist.Contains(chrName);
-        }
-        finally
-        {
-            Monitor.Exit(visitorLock);
-        }
+        BlackList.Remove(chrName);
     }
 
     public int getMapId()
@@ -886,18 +668,6 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return MapModel;
     }
 
-    public List<SoldItem> getSold()
-    {
-        lock (sold)
-        {
-            return sold;
-        }
-    }
-
-    public int getMesos()
-    {
-        return mesos;
-    }
 
     public override MapObjectType getType()
     {
@@ -913,15 +683,29 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public override string GetName()
     {
-        return description;
+        return Title;
     }
 
     public override int GetSourceId()
     {
-        return itemId;
+        return SourceItem.getItemId();
+    }
+
+    Lock tradeLock = new();
+    public bool TradeLock()
+    {
+        return tradeLock.TryEnter();
+    }
+
+    public void TradeUnlock()
+    {
+        tradeLock.Exit();
+    }
+
+    public void ExpiredInvoke()
+    {
+        Close();
+        ChannelServer.PlayerShopManager.UnregisterShop(this);
     }
 }
 
-public record Visitor(IPlayer chr, DateTimeOffset enteredAt) { }
-
-public record PastVisitor(string chrName, TimeSpan visitDuration) { }

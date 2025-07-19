@@ -144,9 +144,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             c.CurrentServer.UpdateBuddyByLoggedIn(player.getId(), c.Channel, buddyIds);
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
-
-            c.CurrentServerContainer.Transport.ShowNoteMessage(player.Name);
-
             if (player.getParty() != null)
             {
                 //Use this in case of enabling party HPbar HUD when logging in, however "you created a party" will appear on chat.

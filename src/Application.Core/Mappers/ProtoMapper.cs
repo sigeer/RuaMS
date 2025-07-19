@@ -2,6 +2,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.Models;
 using Application.Shared.Items;
@@ -9,8 +10,12 @@ using Application.Shared.NewYear;
 using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
+using ItemProto;
 using net.server;
 using server;
+using server.life;
+using server.maps;
+using System.Resources;
 
 namespace Application.Core.Mappers
 {
@@ -233,7 +238,8 @@ namespace Application.Core.Mappers
                     throw new BusinessFatalException("不支持的掉落类型");
                 });
 
-            CreateMap<Dto.NoteDto, NoteObject>();
+            CreateMap<Dto.NoteDto, NoteObject>()
+                .ForMember(x => x.From, src => src.MapFrom(x => x.FromId < 0 ? LifeFactory.GetNPCStats(x.FromId).getName() : x.From ));
             CreateMap<Dto.ShopDto, Shop>()
                 .ConstructUsing((src, ctx) => new Shop(src.ShopId, src.NpcId, ctx.Mapper.Map<List<ShopItem>>(src.Items)));
             CreateMap<Dto.ShopItemDto, ShopItem>()
@@ -268,6 +274,19 @@ namespace Application.Core.Mappers
 
             CreateMap<Dto.DropItemDto, DropEntry>()
                 .ForMember(dest => dest.DropperId, src => src.MapFrom(x => x.DropperId));
+
+            CreateMap<PlayerShopItem, ItemProto.PlayerShopItemDto>()
+                .ForMember(dest => dest.Bundles, src => src.MapFrom(x => x.getBundles()))
+                .ForMember(dest => dest.Price, src => src.MapFrom(x => x.getPrice()))
+                .ForMember(dest => dest.Item, src => src.MapFrom(x => x.getItem()))
+                .ReverseMap()
+                .ConstructUsing((src, ctx) => new PlayerShopItem(ctx.Mapper.Map<Item>(src.Item), (short)src.Bundles, src.Price));
+
+            CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
+                .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso))
+                .ForMember(dest => dest.MapName, src => src.MapFrom(x => MapFactory.loadPlaceName(x.MapId)));
+            CreateMap<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
+            CreateMap<ItemProto.OwlSearchResponse, OwlSearchResult>();
         }
 
         private int[] TranslateArray(string str)

@@ -103,7 +103,6 @@ public partial class Player
     private int possibleReports = 10;
     private int dojoEnergy;
     private float expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
-    private int owlSearch;
     private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
     private int equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
@@ -291,17 +290,10 @@ public partial class Player
         npcCd = d;
     }
 
-    public void setOwlSearch(int Id)
+    public bool CanTalkNpc()
     {
-        owlSearch = Id;
+        return Client.CurrentServerContainer.getCurrentTime() - npcCd >= YamlConfig.config.server.BLOCK_NPC_RACE_CONDT;
     }
-
-    public int getOwlSearch()
-    {
-        return owlSearch;
-    }
-
-
 
     public void addCrushRing(Ring r)
     {
@@ -2561,10 +2553,6 @@ public partial class Player
         }
     }
 
-    public PlayerShop? getPlayerShop()
-    {
-        return playerShop;
-    }
 
     public void closePartySearchInteractions()
     {
@@ -2575,10 +2563,10 @@ public partial class Player
     {
         closeNpcShop();
         closeTrade();
-        closePlayerShop();
         closeMiniGame(true);
         closeRPS();
-        closeHiredMerchant(false);
+
+        LeaveVisitingShop();
 
         Client.closePlayerScriptInteractions();
         resetPlayerAggro();
@@ -2593,42 +2581,6 @@ public partial class Player
     {
         getTrade()?.CancelTrade(TradeResult.PARTNER_CANCEL);
     }
-
-    public void closePlayerShop()
-    {
-        PlayerShop? mps = this.getPlayerShop();
-        if (mps == null)
-        {
-            return;
-        }
-
-        if (mps.isOwner(this))
-        {
-            mps.setOpen(false);
-            getChannelServer().PlayerShopManager.unregisterPlayerShop(mps);
-
-            foreach (PlayerShopItem mpsi in mps.getItems())
-            {
-                if (mpsi.getBundles() >= 2)
-                {
-                    Item iItem = mpsi.getItem().copy();
-                    iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
-                    InventoryManipulator.addFromDrop(this.Client, iItem, false);
-                }
-                else if (mpsi.isExist())
-                {
-                    InventoryManipulator.addFromDrop(this.Client, mpsi.getItem(), true);
-                }
-            }
-            mps.closeShop();
-        }
-        else
-        {
-            mps.removeVisitor(this);
-        }
-        this.setPlayerShop(null);
-    }
-
 
     public int getPossibleReports()
     {
@@ -2880,11 +2832,6 @@ public partial class Player
         {
             Log.Error(e.ToString());
         }
-    }
-
-    public bool hasMerchant()
-    {
-        return HasMerchant;
     }
 
 
@@ -4356,11 +4303,6 @@ public partial class Player
         {
             Monitor.Exit(prtLock);
         }
-    }
-
-    public void setPlayerShop(PlayerShop? playerShop)
-    {
-        this.playerShop = playerShop;
     }
 
     public void setSearch(string? find)

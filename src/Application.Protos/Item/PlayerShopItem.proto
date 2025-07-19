@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "Dto/Item.proto";
+
+package ItemProto;
+
+message PlayerShopItemDto {
+	Dto.ItemDto item = 1;
+	int32 price = 2;
+	int32 bundles = 3;
+}

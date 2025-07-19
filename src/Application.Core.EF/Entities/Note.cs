@@ -6,24 +6,25 @@ public partial class NoteEntity
     {
     }
 
-    public NoteEntity(string to, string from, string message, long timestamp)
+    public NoteEntity(int id, int to, int from, string message, long timestamp)
     {
-        To = to;
-        From = from;
+        Id = id;
+        ToId = to;
+        FromId = from;
         Message = message;
         Timestamp = timestamp;
     }
 
-    public NoteEntity(string to, string from, string message, long timestamp, int fame) : this(to, from, message, timestamp)
+    public NoteEntity(int id, int to, int from, string message, long timestamp, int fame) : this(id, to, from, message, timestamp)
     {
         Fame = fame;
     }
 
     public int Id { get; set; }
 
-    public string To { get; set; } = null!;
+    public int ToId { get; set; }
 
-    public string From { get; set; } = null!;
+    public int FromId { get; set; }
 
     public string Message { get; set; } = null!;
 
@@ -32,15 +33,4 @@ public partial class NoteEntity
     public int Fame { get; set; }
 
     public int Deleted { get; set; }
-
-    private static int PLACEHOLDER_ID = -1;
-    public static NoteEntity createNormal(string message, string from, string to, long timestamp)
-    {
-        return new NoteEntity(to, from, message, timestamp, 0);
-    }
-
-    public static NoteEntity createGift(string message, string from, string to, long timestamp)
-    {
-        return new NoteEntity(to, from, message, timestamp, 1);
-    }
 }

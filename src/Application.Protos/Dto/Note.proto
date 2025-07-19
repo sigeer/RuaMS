@@ -11,7 +11,7 @@ message NoteDto {
   string message = 4;
   int64 timestamp = 5;
   int32 fame = 6;
-  int32 deleted = 7;
+  int32 fromId = 7;
 }
 
 message SendNoteResponse {

@@ -465,8 +465,8 @@ namespace Application.Core.Login.ServerData
                 {
                     if (chrTo.Channel == 0)
                     {
-                        _server.ServiceProvider.GetRequiredService<NoteService>()
-                            .sendNormal("You have been expelled from the guild.", master.Character.Name, chrTo.Character.Name, _server.getCurrentTime());
+                        _server.NoteManager
+                            .SendNormal("You have been expelled from the guild.", master.Character.Id, chrTo.Character.Name);
                     }
 
                     chrTo.Character.GuildId = 0;

@@ -1,5 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
+using Application.Core.Login.Models.Items;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
 using AutoMapper;
@@ -37,7 +38,8 @@ namespace Application.Core.Login.Mappers
             CreateMap<PetModel, Dto.PetDto>().ReverseMap();
             CreateMap<RingSourceModel, ItemProto.RingDto>()
                 .ForMember(dest => dest.CharacterName1, src => src.MapFrom<RingCharacterName1ValueResolver>())
-                .ForMember(dest => dest.CharacterName2, src => src.MapFrom<RingCharacterName2ValueResolver>());
+                .ForMember(dest => dest.CharacterName2, src => src.MapFrom<RingCharacterName2ValueResolver>())
+                .ReverseMap();
             CreateMap<ItemModel, Dto.ItemDto>().ReverseMap();
 
             CreateMap<AccountCtrl, Dto.AccountCtrlDto>().ReverseMap();
@@ -102,6 +104,17 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Life, src => src.MapFrom(x => x.LifeId))
                 .ForMember(dest => dest.Map, src => src.MapFrom(x => x.MapId));
             CreateMap<ItemQuantity, BaseProto.ItemQuantity>();
+
+            CreateMap<ItemProto.PlayerShopItemDto, PlayerShopItemModel>().ReverseMap();
+
+            CreateMap<ItemModel, ItemModel>(); 
+            CreateMap<PlayerShopItemModel, ItemModel>()
+                .IncludeMembers(src => src.Item)
+                .ForMember(dest => dest.Quantity, src => src.MapFrom(x => x.Bundles * x.Item.Quantity));
+
+            CreateMap<NoteModel, Dto.NoteDto>()
+                .ForMember(dest => dest.From, src => src.MapFrom<NoteSenderNameValueResolver>())
+                .ForMember(dest => dest.To, src => src.MapFrom<NoteReceiverNameValueResolver>());
         }
     }
 }

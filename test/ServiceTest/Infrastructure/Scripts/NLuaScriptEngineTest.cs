@@ -306,5 +306,19 @@ namespace ServiceTest.Infrastructure.Scripts
                 """;
             base.CheckFunctionReturnValue("test", 0);
         }
+
+        [Test]
+        public override void TestChinese()
+        {
+            Code = """
+                function test_chinese(str)
+                    Console.WriteLine("Lua: " .. str)
+                    print("Lua Print " .. str)
+                    return ScriptTestStaticClass.TestChinese(str)
+                end
+                """;
+
+            base.TestChinese();
+        }
     }
 }

@@ -89,6 +89,8 @@ namespace Application.Core.Game.Players
                             foreach (Item item in toberemove)
                             {
                                 InventoryManipulator.removeFromSlot(Client, inv.getType(), item.getPosition(), item.getQuantity(), true);
+
+                                item.ExpiredCallback();
                             }
 
                             ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -323,6 +325,83 @@ namespace Application.Core.Game.Players
                 sendPacket(PacketCreator.enableActions());
             }
         }
+
+        public bool TryGainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false)
+        {
+            bool canGainMeso = false;
+            long nextMeso;
+            Monitor.Enter(petLock);
+            try
+            {
+                nextMeso = (long)MesoValue.get() + gain;
+                canGainMeso = nextMeso <= int.MaxValue || nextMeso >= 0;
+                if (canGainMeso)
+                {
+                    nextMeso = MesoValue.addAndGet(gain);
+                }
+            }
+            finally
+            {
+                Monitor.Exit(petLock);
+            }
+
+
+            if (canGainMeso)
+            {
+                updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
+                if (show)
+                {
+                    sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
+                }
+            }
+            else
+            {
+                sendPacket(PacketCreator.enableActions());
+            }
+
+            return true;
+        }
+
+        public int GainMeso(int gain, bool show = true, bool enableActions = false, bool inChat = false)
+        {
+            int notGained = 0;
+            long nextMeso;
+            Monitor.Enter(petLock);
+            try
+            {
+                nextMeso = (long)MesoValue.get() + gain;
+                if (nextMeso > int.MaxValue)
+                {
+                    notGained = (int)(nextMeso - int.MaxValue);
+                    gain -= notGained;
+                }
+                else if (nextMeso < 0)
+                {
+                    notGained = (int)nextMeso;
+                    gain = -MesoValue.get();
+                }
+
+                nextMeso = MesoValue.addAndGet(gain);
+            }
+            finally
+            {
+                Monitor.Exit(petLock);
+            }
+
+            if (gain != 0)
+            {
+                updateSingleStat(Stat.MESO, (int)nextMeso, enableActions);
+                if (show)
+                {
+                    sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
+                }
+            }
+            else
+            {
+                sendPacket(PacketCreator.enableActions());
+            }
+            return notGained;
+        }
         #endregion
 
         /// <summary>
@@ -499,6 +578,7 @@ namespace Application.Core.Game.Players
 
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
+                bool addItemResult = false;
                 if (item == null)
                 {
                     if (invType == InventoryType.EQUIP)
@@ -539,12 +619,13 @@ namespace Application.Core.Game.Players
                     item!.setExpiration(Client.CurrentServerContainer.getCurrentTime() + expires);
                 }
 
-                InventoryManipulator.addFromDrop(Client, item!, false);
+                addItemResult = InventoryManipulator.addFromDrop(Client, item!, false);
             }
             else
             {
                 InventoryManipulator.removeById(Client, invType, itemId, -quantity, true, false);
             }
+
             if (showMessage)
             {
                 Client.sendPacket(PacketCreator.getShowItemGain(itemId, quantity, true));

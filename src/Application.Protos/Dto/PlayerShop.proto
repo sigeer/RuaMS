@@ -8,5 +8,5 @@ message PlayerShopDto {
   int32 channel = 1;
   string mapName = 2;
   bool isOpen = 3;
-  string typeName = 4;
+  int32 type = 4;
 }

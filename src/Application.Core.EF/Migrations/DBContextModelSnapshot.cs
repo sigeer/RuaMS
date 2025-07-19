@@ -662,11 +662,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("hair");
 
-                    b.Property<bool>("HasMerchant")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
                     b.Property<int>("Hp")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(11)")
@@ -760,11 +755,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("maxmp")
                         .HasDefaultValueSql("'5'");
-
-                    b.Property<int>("MerchantMesos")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasDefaultValueSql("'0'");
 
                     b.Property<int>("Meso")
                         .HasColumnType("int(11)")
@@ -1252,7 +1242,7 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("family_character", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Fredstorage", b =>
+            modelBuilder.Entity("Application.EF.Entities.FredstorageEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1266,6 +1256,14 @@ namespace Application.Core.EF.Migrations
                     b.Property<int>("Daynotes")
                         .HasColumnType("int(4) unsigned")
                         .HasColumnName("daynotes");
+
+                    b.Property<long>("ItemMeso")
+                        .HasColumnType("bigint")
+                        .HasColumnName("itemMeso");
+
+                    b.Property<int>("Meso")
+                        .HasColumnType("int")
+                        .HasColumnName("meso");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .ValueGeneratedOnAdd()
@@ -1539,34 +1537,6 @@ namespace Application.Core.EF.Migrations
                     b.HasIndex(new[] { "Characterid" }, "CHARID");
 
                     b.ToTable("inventoryitems", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Inventorymerchant", b =>
-                {
-                    b.Property<int>("Inventorymerchantid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("inventorymerchantid");
-
-                    b.Property<int>("Bundles")
-                        .HasColumnType("int(10)")
-                        .HasColumnName("bundles");
-
-                    b.Property<int?>("Characterid")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("characterid");
-
-                    b.Property<int>("Inventoryitemid")
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("inventoryitemid");
-
-                    b.HasKey("Inventorymerchantid")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Inventoryitemid" }, "INVENTORYITEMID")
-                        .HasDatabaseName("INVENTORYITEMID1");
-
-                    b.ToTable("inventorymerchant", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.Ipban", b =>
@@ -3211,7 +3181,7 @@ namespace Application.Core.EF.Migrations
                         .HasName("PRIMARY");
 
                     b.HasIndex(new[] { "Inventoryitemid" }, "INVENTORYITEMID")
-                        .HasDatabaseName("INVENTORYITEMID2");
+                        .HasDatabaseName("INVENTORYITEMID1");
 
                     b.ToTable("inventoryequipment", (string)null);
                 });
@@ -3305,13 +3275,9 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("fame");
 
-                    b.Property<string>("From")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
-                        .HasColumnName("from")
-                        .HasDefaultValueSql("''");
+                    b.Property<int>("FromId")
+                        .HasColumnType("int(11)")
+                        .HasColumnName("fromId");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -3322,13 +3288,9 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("bigint(20) unsigned")
                         .HasColumnName("timestamp");
 
-                    b.Property<string>("To")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
-                        .HasColumnName("to")
-                        .HasDefaultValueSql("''");
+                    b.Property<int>("ToId")
+                        .HasColumnType("int(11)")
+                        .HasColumnName("toId");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");

@@ -27,6 +27,7 @@ using Application.Core.Game.Life.Monsters;
 using Application.Shared.WzEntity;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using tools;
 
 namespace server.life;
@@ -334,11 +335,16 @@ public class LifeFactory
 
     public static NPC getNPC(int nid)
     {
-        return new NPC(nid, new NPCStats(DataTool.getString(nid + "/name", npcStringData) ?? "MISSINGNO"));
+        return new NPC(nid, GetNPCStats(nid));
     }
 
     public static string getNPCDefaultTalk(int nid)
     {
         return DataTool.getString(nid + "/d0", npcStringData) ?? "(...)";
+    }
+
+    public static NPCStats GetNPCStats(int npcId)
+    {
+        return new NPCStats(DataTool.getString(npcId + "/name", npcStringData) ?? "MISSINGNO");
     }
 }

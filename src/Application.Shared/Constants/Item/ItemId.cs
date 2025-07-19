@@ -24,6 +24,9 @@ public class ItemId
     public const int SKILLBOOK_MIN_ITEMID = 2280000;
     public const int SKILLBOOK_MAX_ITEMID = 2300000;  // exclusively
 
+    public const int MerchantWithNotifyBegin = 5030008;
+    public const int MerchantWithNotifyEnd = 5030012;
+
     public static bool isExpIncrease(int itemId)
     {
         return itemId >= 2022450 && itemId <= 2022452;
@@ -354,20 +357,29 @@ public class ItemId
     public const int NEW_YEARS_CARD_RECEIVED = 4301000;
 
     // Popular owl items
-    private static int WORK_GLOVES = 1082002;
-    private static int STEELY_THROWING_KNIVES = 2070005;
-    private static int ILBI_THROWING_STARS = 2070006;
-    private static int OWL_BALL_MASK = 1022047;
-    private static int PINK_ADVENTURER_CAPE = 1102041;
-    private static int CLAW_30_SCROLL = 2044705;
-    private static int HELMET_60_ACC_SCROLL = 2040017;
-    private static int MAPLE_SHIELD = 1092030;
-    private static int GLOVES_ATT_60_SCROLL = 2040804;
+    private const int WORK_GLOVES = 1082002;
+    private const int STEELY_THROWING_KNIVES = 2070005;
+    private const int ILBI_THROWING_STARS = 2070006;
+    private const int OWL_BALL_MASK = 1022047;
+    private const int PINK_ADVENTURER_CAPE = 1102041;
+    private const int CLAW_30_SCROLL = 2044705;
+    private const int HELMET_60_ACC_SCROLL = 2040017;
+    private const int MAPLE_SHIELD = 1092030;
+    private const int GLOVES_ATT_60_SCROLL = 2040804;
 
     public static int[] getOwlItems()
     {
-        return new int[]{WORK_GLOVES, STEELY_THROWING_KNIVES, ILBI_THROWING_STARS, OWL_BALL_MASK, PINK_ADVENTURER_CAPE,
-                CLAW_30_SCROLL, WHITE_SCROLL, HELMET_60_ACC_SCROLL, MAPLE_SHIELD, GLOVES_ATT_60_SCROLL};
+        return new int[]{
+            WORK_GLOVES, 
+            STEELY_THROWING_KNIVES, 
+            ILBI_THROWING_STARS, 
+            OWL_BALL_MASK, 
+            PINK_ADVENTURER_CAPE,
+            CLAW_30_SCROLL, 
+            WHITE_SCROLL, 
+            HELMET_60_ACC_SCROLL, 
+            MAPLE_SHIELD, 
+            GLOVES_ATT_60_SCROLL};
     }
 
     // Henesys PQ

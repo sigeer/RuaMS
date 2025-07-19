@@ -118,6 +118,8 @@ namespace Application.Core.Login.Services
                 await _server.RingManager.Commit(dbContext);
                 await _server.NewYearCardManager.Commit(dbContext);
                 await _server.ResourceDataManager.Commit(dbContext);
+                await _server.PlayerShopManager.Commit(dbContext);
+
 
                 foreach (var plugin in _server.Modules)
                 {

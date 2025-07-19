@@ -81,12 +81,14 @@ namespace Application.Core.Login
 
         static IServiceCollection AddDataManager(this IServiceCollection services)
         {
+            services.AddSingleton<NoteManager>();
             services.AddSingleton<ResourceDataManager>();
 
             services.AddSingleton<NewYearCardManager>();
 
             services.AddSingleton<GiftManager>();
             services.AddSingleton<RingManager>();
+            services.AddSingleton<PlayerShopManager>();
 
             services.AddSingleton<InventoryManager>();
             return services;
@@ -97,8 +99,7 @@ namespace Application.Core.Login
             services.AddSingleton<CharacterService>();
             services.AddSingleton<LoginService>();
             services.AddSingleton<ItemService>();
-            services.AddSingleton<FredrickService>();
-            services.AddSingleton<NoteService>();
+
             services.AddSingleton<ShopService>();
             services.AddSingleton<MessageService>();
             services.AddSingleton<RankService>();

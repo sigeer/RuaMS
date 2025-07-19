@@ -22,9 +22,7 @@
 
 
 using Application.Core.Managers;
-using client.inventory;
 using client.inventory.manipulator;
-using client.processor.npc;
 using Microsoft.Extensions.Logging;
 using tools;
 using tools.packets;
@@ -324,7 +322,7 @@ public class RingActionHandler : ChannelHandlerBase
                                     }
                                     else
                                     {
-                                        c.CurrentServerContainer.Transport.SendNormalNoteMessage(groom, name, dueyMessage);
+                                        c.CurrentServerContainer.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, name, dueyMessage);
                                     }
 
                                     // 

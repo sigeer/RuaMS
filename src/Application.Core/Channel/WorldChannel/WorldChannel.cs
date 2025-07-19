@@ -2,7 +2,6 @@ using Application.Core.Channel.Net;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Trades;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Shared.Servers;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,7 +44,7 @@ public partial class WorldChannel : ISocketServer
     public QuestScriptManager QuestScriptManager { get; }
     public DevtestScriptManager DevtestScriptManager { get; }
 
-    private Dictionary<int, HiredMerchant> hiredMerchants = new();
+
     private Dictionary<int, int> storedVars = new();
     private HashSet<int> playersAway = new();
     private Dictionary<ExpeditionType, Expedition> expeditions = new();
@@ -99,9 +98,7 @@ public partial class WorldChannel : ISocketServer
 
 
     public ChannelConfig ChannelConfig { get; }
-
     public PlayerShopManager PlayerShopManager { get; }
-    public HiredMerchantManager HiredMerchantManager { get; }
 
     public IServiceScope LifeScope { get; }
 
@@ -144,8 +141,7 @@ public partial class WorldChannel : ISocketServer
         NettyServer = new NettyChannelServer(this);
         log = LogFactory.GetLogger(ServerName);
 
-        PlayerShopManager = new PlayerShopManager(this);
-        HiredMerchantManager = new HiredMerchantManager(this);
+        PlayerShopManager = ActivatorUtilities.CreateInstance<PlayerShopManager>(LifeScope.ServiceProvider, this);
         _respawnTask = new RespawnTask(this);
 
         DojoInstance = new DojoInstance(this);
@@ -250,7 +246,6 @@ public partial class WorldChannel : ISocketServer
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
             _serverLogName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
-        HiredMerchantManager.Register(Container.TimerManager);
         _respawnTask.Register(Container.TimerManager);
         EventRecallManager.Register(Container.TimerManager);
 
@@ -296,15 +291,13 @@ public partial class WorldChannel : ISocketServer
 
             log.Information("[{ServerName}] 停止定时任务...", _serverLogName);
 
-            await HiredMerchantManager.StopAsync();
-
             await _respawnTask.StopAsync();
 
             log.Information("[{ServerName}] 停止定时任务>>>完成", _serverLogName);
 
-            closeAllMerchants();
             disconnectAwayPlayers();
             Players.disconnectAll();
+            PlayerShopManager.Dispose();
 
             eventSM.dispose();
 
@@ -347,34 +340,6 @@ public partial class WorldChannel : ISocketServer
         closeChannelServices();
     }
 
-    private void closeAllMerchants()
-    {
-        try
-        {
-            List<HiredMerchant> merchs;
-
-            merchLock.EnterWriteLock();
-            try
-            {
-                merchs = new(hiredMerchants.Values);
-                hiredMerchants.Clear();
-            }
-            finally
-            {
-                merchLock.ExitWriteLock();
-            }
-
-            foreach (HiredMerchant merch in merchs)
-            {
-                merch.forceClose();
-            }
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-        }
-    }
-
     public MapManager getMapFactory()
     {
         return mapManager;
@@ -404,7 +369,7 @@ public partial class WorldChannel : ISocketServer
 
     public bool removePlayer(IPlayer chr)
     {
-        return Players.RemovePlayer(chr.Id) != null;
+        return RemovePlayer(chr.Id);
     }
 
     public bool RemovePlayer(int chrId)

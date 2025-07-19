@@ -1,3 +1,4 @@
+
 using Application.Core.Login.Datas;
 using Application.Core.Login.Events;
 using Application.Core.Login.Models;
@@ -97,8 +98,12 @@ namespace Application.Core.Login
         public ResourceDataManager ResourceDataManager => _lazyResourceDataManager.Value;
         readonly Lazy<NewYearCardManager> _lazyNewYearCardManager;
         public NewYearCardManager NewYearCardManager => _lazyNewYearCardManager.Value;
+        readonly Lazy<PlayerShopManager> _playerShopManager;
+        public PlayerShopManager PlayerShopManager => _playerShopManager.Value;
         #endregion
 
+        readonly Lazy<NoteManager> _noteService;
+        public NoteManager NoteManager => _noteService.Value;
         public IServiceProvider ServiceProvider { get; }
 
         public ChatRoomManager ChatRoomManager { get; }
@@ -158,6 +163,8 @@ namespace Application.Core.Login
             _ringManager = new(() => ServiceProvider.GetRequiredService<RingManager>());
             _lazyNewYearCardManager = new(() => ServiceProvider.GetRequiredService<NewYearCardManager>());
             _lazyResourceDataManager = new(() => ServiceProvider.GetRequiredService<ResourceDataManager>());
+            _playerShopManager = new(() => ServiceProvider.GetRequiredService<PlayerShopManager>());
+            _noteService = new(() => ServiceProvider.GetRequiredService<NoteManager>());
         }
 
         bool isShuttingdown = false;
@@ -292,7 +299,7 @@ namespace Application.Core.Login
 
             foreach (var player in dataList)
             {
-                if (player.Channel < 0)
+                if (player.Channel <= 0)
                     continue;
 
                 var serverName = Channels[player.Channel - 1].ServerName;

@@ -10,8 +10,6 @@ using Application.Shared.Team;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
-using client.inventory.manipulator;
-using client.processor.npc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -75,6 +73,11 @@ namespace Application.Core.Login.Datas
                 return null;
             _nameDataSource[name] = data;
             return data;
+        }
+
+        public string GetPlayerName(int id)
+        {
+            return FindPlayerById(id)?.Character?.Name ?? StringConstants.CharacterUnknown;
         }
 
         public void Update(Dto.PlayerSaveDto obj)
@@ -143,6 +146,7 @@ namespace Application.Core.Login.Datas
                     // 离线通知
                     if (obj.Channel == 0)
                     {
+                        origin.Character.LastLogoutTime = DateTimeOffset.FromUnixTimeMilliseconds(_masterServer.getCurrentTime());
                         origin.ActualChannel = 0;
                         _masterServer.Transport.BroadcastPlayerLoginOff(new Dto.PlayerOnlineChange
                         {
@@ -191,6 +195,8 @@ namespace Application.Core.Login.Datas
                 {
                     module.OnPlayerLogin(d);
                 }
+
+                _masterServer.NoteManager.SendNote(d);
             }
             else
             {
@@ -404,7 +410,7 @@ namespace Application.Core.Login.Datas
                 dbContext.Questprogresses.Where(x => x.Characterid == cid).ExecuteDelete();
                 dbContext.Queststatuses.Where(x => x.Characterid == cid).ExecuteDelete();
 
-                FredrickProcessor.removeFredrickLog(dbContext, cid);   // thanks maple006 for pointing out the player's Fredrick items are not being deleted at character deletion
+                dbContext.Fredstorages.Where(x => x.Cid == cid).ExecuteDelete();
 
                 var mtsCartIdList = dbContext.MtsCarts.Where(x => x.Cid == cid).Select(x => x.Id).ToList();
                 dbContext.MtsItems.Where(x => mtsCartIdList.Contains(x.Id)).ExecuteDelete();

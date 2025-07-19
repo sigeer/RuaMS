@@ -1,6 +1,7 @@
 using Application.Scripting;
 using Application.Scripting.JS;
 using System.Drawing;
+using System.Text;
 
 namespace ServiceTest.Infrastructure.Scripts
 {
@@ -223,6 +224,17 @@ namespace ServiceTest.Infrastructure.Scripts
         {
             _engine.Evaluate(Code);
             Assert.That(_engine.CallFunction(functionName).ToObject<int>(), Is.EqualTo(value));
+        }
+
+        public virtual void TestChinese()
+        {
+            _engine.AddHostedType("Console", typeof(Console));
+            _engine.AddHostedType("ScriptTestStaticClass", typeof(ScriptTestStaticClass));
+            _engine.Evaluate(Code);
+
+
+            var testString = "中文测试";
+            Assert.That(_engine.CallFunction("test_chinese", testString).ToObject<string>(), Is.EqualTo(testString));
         }
     }
 }

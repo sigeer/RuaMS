@@ -15,7 +15,7 @@ namespace Application.Core.Game.TheWorld
             try
             {
                 storage.AddOrUpdate(chr.Id, chr);
-                nameStorage.AddOrUpdate(chr.Name.ToLower(), chr);
+                nameStorage.AddOrUpdate(chr.Name, chr);
                 OnChannelAddPlayer?.Invoke(this, chr);
             }
             finally
@@ -31,7 +31,7 @@ namespace Application.Core.Game.TheWorld
             {
                 storage.Remove(chr, out var mc);
                 if (mc != null)
-                    nameStorage.Remove(mc.Name.ToLower());
+                    nameStorage.Remove(mc.Name);
 
                 return mc;
             }
@@ -46,7 +46,7 @@ namespace Application.Core.Game.TheWorld
             locks.EnterReadLock();
             try
             {
-                return nameStorage.GetValueOrDefault(name.ToLower());
+                return nameStorage.GetValueOrDefault(name);
             }
             finally
             {

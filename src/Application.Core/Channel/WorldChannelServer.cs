@@ -69,6 +69,8 @@ namespace Application.Core.Channel
 
         readonly Lazy<ItemService> _itemService;
         public ItemService ItemService => _itemService.Value;
+        readonly Lazy<PlayerShopService> _playerShopService;
+        public PlayerShopService PlayerShopService => _playerShopService.Value;
         #endregion
 
         #region Task
@@ -146,6 +148,7 @@ namespace Application.Core.Channel
             _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
             _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
             _itemService = new(() => ServiceProvider.GetRequiredService<ItemService>());
+            _playerShopService = new(() => ServiceProvider.GetRequiredService<PlayerShopService>());
         }
 
         #region 时间
@@ -451,20 +454,6 @@ namespace Application.Core.Channel
             }
         }
 
-        public void SendMultiChat(int type, string nameFrom, int[] value, string chatText)
-        {
-            foreach (var server in Servers.Values)
-            {
-                foreach (var cid in value)
-                {
-                    var chr = server.Players.getCharacterById(cid);
-                    if (chr != null)
-                    {
-                        chr.sendPacket(PacketCreator.multiChat(nameFrom, chatText, type));
-                    }
-                }
-            }
-        }
 
         public IPEndPoint GetChannelEndPoint(int channel)
         {

@@ -71,8 +71,6 @@ namespace Application.Core.ServerTransports
         #endregion
 
         #region PlayerShop
-        List<OwlSearchResult> OwlSearch(int itemId);
-        Dto.PlayerShopDto? SendOwlWarp(int mapId, int ownerId, int searchItem);
         int? FindPlayerShopChannel(int ownerId);
         #endregion
 
@@ -110,9 +108,7 @@ namespace Application.Core.ServerTransports
 
         GetMyGiftsResponse LoadPlayerGifts(GetMyGiftsRequest request);
         void ClearGifts(int[] giftIdArray);
-        bool SendNormalNoteMessage(string fromName, string toName, string noteMessage);
-        bool SendFameNoteMessage(string fromName, string toName, string noteMessage);
-        void ShowNoteMessage(string name);
+        bool SendNormalNoteMessage(int senderId, string toName, string noteMessage);
         Dto.NoteDto? DeleteNoteMessage(int id);
         Dto.ShopDto? GetShop(int id, bool isShopId);
         int[] GetCardTierSize();
@@ -123,9 +119,8 @@ namespace Application.Core.ServerTransports
         void UpdateAccount(AccountCtrl accountEntity);
         Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
         Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);
-        void AddOwlItemSearch(int itemid);
         int[][] GetMostSellerCashItems();
-        Dto.OwlSearchResponse GetOwlSearchedItems();
+        ItemProto.OwlSearchRecordResponse GetOwlSearchedItems();
         Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);
@@ -187,5 +182,11 @@ namespace Application.Core.ServerTransports
         void SendCreatePLife(CreatePLifeRequest createPLifeRequest);
         void SendRemovePLife(RemovePLifeRequest removePLifeRequest);
         void SendBuyCashItem(BuyCashItemRequest buyCashItemRequest);
+        RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest);
+        void SyncPlayerShop(SyncPlayerShopRequest request);
+        CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
+        ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
+        void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
+        ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
     }
 }
