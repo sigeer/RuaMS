@@ -476,11 +476,9 @@ namespace Application.Core.Channel.InProgress
             return _mapper.Map<int[][]>(_server.CashShopDataManager.GetMostSellerCashItems());
         }
 
-        public Dto.OwlSearchResponse GetOwlSearchedItems()
+        public ItemProto.OwlSearchRecordResponse GetOwlSearchedItems()
         {
-            var data = new Dto.OwlSearchResponse();
-            data.Items.AddRange(_server.CashShopDataManager.GetOwlSearchedItems());
-            return data;
+            return _server.PlayerShopManager.GetOwlSearchedItems();
         }
 
         #region Team

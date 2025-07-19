@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -18,6 +18,9 @@
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
 		<Protobuf Include="Item\PlayerShopItem.proto">
 		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Item\OwlSearchRecord.proto">
+			<GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Item\HiredMerchant.proto">
 		  <GrpcServices>None</GrpcServices>
@@ -75,7 +78,6 @@
 
 	<ItemGroup>
 		<Protobuf Include="Cash\AddCashItemBoughtRequest.proto" GrpcServices="None" />
-		<Protobuf Include="Cash\OwlSearchRecord.proto" GrpcServices="None" />
 	</ItemGroup>
 
 	<ItemGroup>

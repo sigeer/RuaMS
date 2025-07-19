@@ -312,7 +312,7 @@ namespace Application.Core.Channel
             {
                 hm.Close();
 
-                requests.Add(GenrateSyncRequest(hm));
+                requests.Add(GenrateSyncRequest(hm, SyncPlayerShopOperation.Close));
             }
 
 
@@ -322,7 +322,7 @@ namespace Application.Core.Channel
             {
                 shop.Close();
 
-                requests.Add(GenrateSyncRequest(shop));
+                requests.Add(GenrateSyncRequest(shop, SyncPlayerShopOperation.Close));
             }
 
             var request = new ItemProto.BatchSyncPlayerShopRequest();

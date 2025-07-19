@@ -49,5 +49,11 @@ namespace ServiceTest.Infrastructure.Scripts
         {
             return list.Count;
         }
+
+        public static string TestChinese(string str)
+        {
+            Console.WriteLine("C#: " + str);
+            return str;
+        }
     }
 }

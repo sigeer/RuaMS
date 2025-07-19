@@ -163,7 +163,7 @@ namespace Application.Core.Channel.Services
                 chr.GainItem(useItemId, -1, false, true);
             }
 
-            chr.sendPacket(PacketCreator.owlOfMinerva(useItemId, _mapper.Map<OwlSearchResult>(data)));
+            chr.sendPacket(PacketCreator.owlOfMinerva(searchItemId, _mapper.Map<OwlSearchResult>(data)));
             chr.sendPacket(PacketCreator.enableActions());
         }
     }

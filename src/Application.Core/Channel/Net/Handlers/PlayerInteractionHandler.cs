@@ -339,6 +339,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 if (chr.VisitingShop == null)
                     return;
 
+                IPlayerShop manageShop = chr.VisitingShop;
                 if (chr.VisitingShop.Type == PlayerShopType.PlayerShop && chr.VisitingShop.OwnerId == chr.Id)
                 {
                     if (YamlConfig.config.server.USE_ERASE_PERMIT_ON_OPENSHOP)
@@ -362,7 +363,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     chr.getMap().addMapObject(merchant);
                     chr.getMap().broadcastMessage(PacketCreator.spawnHiredMerchantBox(merchant));
                 }
-                c.getChannelServer().PlayerShopManager.NewPlayerShop(chr.VisitingShop);
+                c.getChannelServer().PlayerShopManager.NewPlayerShop(manageShop);
             }
             else if (mode == PlayerInterAction.READY.getCode())
             {

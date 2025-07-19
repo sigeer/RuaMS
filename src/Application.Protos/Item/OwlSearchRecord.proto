@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package Dto;
+package ItemProto;
 
 message OwlSearchRecordDto {
   int32 itemId = 1;
   int32 count = 2;
 }
 
-message OwlSearchResponse {
+message OwlSearchRecordResponse {
 	repeated OwlSearchRecordDto items = 1;
 }

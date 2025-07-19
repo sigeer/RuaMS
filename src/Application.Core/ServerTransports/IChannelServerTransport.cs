@@ -120,7 +120,7 @@ namespace Application.Core.ServerTransports
         Dto.CreateCharResponseDto SendNewPlayer(Dto.NewPlayerSaveDto data);
         Dto.CreateCharCheckResponse CreatePlayerCheck(Dto.CreateCharCheckRequest request);
         int[][] GetMostSellerCashItems();
-        Dto.OwlSearchResponse GetOwlSearchedItems();
+        ItemProto.OwlSearchRecordResponse GetOwlSearchedItems();
         Dto.UpdateTeamResponse SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId);
         void SendTeamChat(string name, string chattext);
         Dto.GetTeamResponse GetTeam(int party);

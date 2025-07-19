@@ -7,6 +7,7 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Utility;
+using Application.Utility.Configs;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using client.inventory;
@@ -50,10 +51,9 @@ namespace Application.Core.Login.ServerData
             var entityExpression = _mapper.MapExpression<Expression<Func<FredstorageEntity, bool>>>(expression);
             var dataFromDB = _mapper.Map<List<FredrickStoreModel>>(dbContext.Fredstorages.Where(entityExpression).AsNoTracking().ToList());
 
-            var ids = dataFromDB.Select(x => x.Cid).ToList();
             foreach (var item in dataFromDB)
             {
-                item.Items = _server.InventoryManager.LoadItems(dbContext, ItemFactory.MERCHANT.IsAccount, item.Cid, ItemType.Merchant).ToArray();
+                item.Items = _server.InventoryManager.LoadItems(dbContext, ItemFactory.MERCHANT.IsAccount, item.Id, ItemType.Merchant).ToArray();
             }
 
             return QueryWithDirty(dataFromDB, expression.Compile());
@@ -155,7 +155,8 @@ namespace Application.Core.Login.ServerData
 
         public CommitRetrievedResponse CommitRetrieve(ItemProto.CommitRetrievedRequest request)
         {
-            return new CommitRetrievedResponse() { IsSuccess = SetRemoved(request.OwnerId) };
+            var obj = Query(x => x.Cid == request.OwnerId).FirstOrDefault();
+            return new CommitRetrievedResponse() { IsSuccess = obj == null ? false : SetRemoved(obj.Id) };
         }
 
 
@@ -276,5 +277,26 @@ namespace Application.Core.Login.ServerData
 
             return res;
         }
+        private ConcurrentDictionary<int, int> owlSearched = new();
+        public void AddOwlItemSearch(int itemid)
+        {
+            if (owlSearched.TryGetValue(itemid, out var d))
+                owlSearched[itemid] = d + 1;
+            else
+                owlSearched[itemid] = 1;
+        }
+
+        public ItemProto.OwlSearchRecordResponse GetOwlSearchedItems()
+        {
+            if (YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
+            {
+                return new();
+            }
+
+            var res = new ItemProto.OwlSearchRecordResponse();
+            res.Items.AddRange(owlSearched.Select(x => new ItemProto.OwlSearchRecordDto() { ItemId = x.Key, Count = x.Value }).ToList());
+            return res;
+        }
+
     }
 }

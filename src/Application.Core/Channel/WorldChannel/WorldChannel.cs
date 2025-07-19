@@ -295,9 +295,9 @@ public partial class WorldChannel : ISocketServer
 
             log.Information("[{ServerName}] 停止定时任务>>>完成", _serverLogName);
 
-            PlayerShopManager.Dispose();
             disconnectAwayPlayers();
             Players.disconnectAll();
+            PlayerShopManager.Dispose();
 
             eventSM.dispose();
 

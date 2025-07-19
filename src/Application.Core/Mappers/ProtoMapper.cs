@@ -14,6 +14,8 @@ using ItemProto;
 using net.server;
 using server;
 using server.life;
+using server.maps;
+using System.Resources;
 
 namespace Application.Core.Mappers
 {
@@ -281,7 +283,10 @@ namespace Application.Core.Mappers
                 .ConstructUsing((src, ctx) => new PlayerShopItem(ctx.Mapper.Map<Item>(src.Item), (short)src.Bundles, src.Price));
 
             CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
-                .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso));
+                .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso))
+                .ForMember(dest => dest.MapName, src => src.MapFrom(x => MapFactory.loadPlaceName(x.MapId)));
+            CreateMap<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
+            CreateMap<ItemProto.OwlSearchResponse, OwlSearchResult>();
         }
 
         private int[] TranslateArray(string str)

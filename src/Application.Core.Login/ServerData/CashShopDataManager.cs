@@ -10,7 +10,7 @@ namespace Application.Core.Login.ServerData
 {
     public class CashShopDataManager
     {
-        private Dictionary<int, int> owlSearched = new();
+
         private List<Dictionary<int, int>> cashItemBought = new(9);
         private ReaderWriterLockSlim suggestLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
@@ -74,38 +74,6 @@ namespace Application.Core.Login.ServerData
                 Sn = request.CashItemSn,
                 Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, Application.Shared.Items.ItemTransactionStatus.PendingForCommit)
             });
-        }
-
-        public void AddOwlItemSearch(int itemid)
-        {
-            suggestLock.EnterWriteLock();
-            try
-            {
-                var cur = owlSearched.GetValueOrDefault(itemid);
-                owlSearched.AddOrUpdate(itemid, cur + 1);
-            }
-            finally
-            {
-                suggestLock.ExitWriteLock();
-            }
-        }
-
-        public List<Dto.OwlSearchRecordDto> GetOwlSearchedItems()
-        {
-            if (YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
-            {
-                return new(0);
-            }
-
-            suggestLock.EnterReadLock();
-            try
-            {
-                return owlSearched.Select(x => new Dto.OwlSearchRecordDto() { ItemId = x.Key, Count = x.Value }).ToList();
-            }
-            finally
-            {
-                suggestLock.ExitReadLock();
-            }
         }
 
         private List<List<KeyValuePair<int, int>>> GetBoughtCashItems()

@@ -47,6 +47,7 @@ public class FredrickHandler : ChannelHandlerBase
                 break;
             case 0x1A:
                 _service.FredrickRetrieveItems(c);
+                c.NPCConversationManager?.dispose();
                 break;
             case 0x1C: //Exit
                 break;

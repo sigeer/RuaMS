@@ -73,7 +73,7 @@ namespace Application.Core.Channel
             return _mapper.Map<List<List<int>>>(_tranport.GetMostSellerCashItems());
         }
 
-        internal Dto.OwlSearchRecordDto[] GetOwlSearchedItems()
+        internal ItemProto.OwlSearchRecordDto[] GetOwlSearchedItems()
         {
             return _tranport.GetOwlSearchedItems().Items.ToArray();
         }
