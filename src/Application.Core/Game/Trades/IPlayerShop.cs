@@ -56,7 +56,7 @@ namespace Application.Core.Game.Trades
         /// </summary>
         /// <param name="chr"></param>
         /// <returns></returns>
-        bool Retrieve();
+        bool Retrieve(IPlayer owner);
         void Close();
         void SetOpen();
         void SetMaintenance(IPlayer chr);

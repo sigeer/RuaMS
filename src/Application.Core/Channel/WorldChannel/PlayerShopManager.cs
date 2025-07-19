@@ -40,13 +40,18 @@ namespace Application.Core.Channel
             throw new BusinessNotsupportException($"不支持的ShopType{shop.Type}");
         }
 
-        public void UnregisterShop(IPlayerShop shop)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="shop"></param>
+        /// <param name="needStore">需要保存到弗兰德里</param>
+        public void UnregisterShop(IPlayerShop shop, bool needStore = true)
         {
             if (shop.Type == PlayerShopType.PlayerShop)
             {
                 if (playerShopData.TryRemove(shop.OwnerId, out var hm))
                 {
-                    SyncPlayerShop(hm,  SyncPlayerShopOperation.Close);
+                    SyncPlayerShop(hm, SyncPlayerShopOperation.Close);
                 }
                 return;
             }
@@ -55,7 +60,7 @@ namespace Application.Core.Channel
             {
                 if (activeMerchants.TryRemove(shop.OwnerId, out var hm))
                 {
-                    SyncPlayerShop(hm, SyncPlayerShopOperation.Close);
+                    SyncPlayerShop(hm, needStore ? SyncPlayerShopOperation.Close : SyncPlayerShopOperation.CloseWithoutStore);
                 }
                 return;
             }
@@ -258,10 +263,12 @@ namespace Application.Core.Channel
                 return false;
 
             shop.Close();
-            if (shop.Type == PlayerShopType.HiredMerchant)
-                shop.Retrieve();
 
-            shop.ChannelServer.PlayerShopManager.UnregisterShop(shop);
+            bool needStore = true;
+            if (shop.Type == PlayerShopType.HiredMerchant)
+                needStore = !shop.Retrieve(chr);
+
+            shop.ChannelServer.PlayerShopManager.UnregisterShop(shop, needStore);
             return true;
         }
 

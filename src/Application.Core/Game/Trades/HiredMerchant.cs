@@ -373,14 +373,14 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         }
     }
 
-    public bool Retrieve()
+    public bool Retrieve(IPlayer owner)
     {
-        if (Owner == null)
+        if (owner.Id != this.OwnerId)
             return false;
 
         lock (Commodity)
         {
-            if (check(Owner, Commodity))
+            if (check(owner, Commodity))
             {
                 foreach (PlayerShopItem mpsi in Commodity)
                 {
@@ -388,11 +388,11 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                     {
                         if (mpsi.getItem().getInventoryType().Equals(InventoryType.EQUIP))
                         {
-                            InventoryManipulator.addFromDrop(Owner.Client, mpsi.getItem(), false);
+                            InventoryManipulator.addFromDrop(owner.Client, mpsi.getItem(), false);
                         }
                         else
                         {
-                            InventoryManipulator.addById(Owner.Client,
+                            InventoryManipulator.addById(owner.Client,
                                 mpsi.getItem().getItemId(),
                                 (short)(mpsi.getBundles() * mpsi.getItem().getQuantity()),
                                 mpsi.getItem().getOwner(),
@@ -405,7 +405,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                 Commodity.Clear();
                 return true;
             }
-            return true;
+            return false;
         }
 
     }

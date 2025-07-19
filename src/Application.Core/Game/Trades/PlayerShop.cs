@@ -428,7 +428,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
         removeVisitors();
 
-        Retrieve();
+        Retrieve(Owner);
         Owner.VisitingShop = null;
     }
 
@@ -595,8 +595,11 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     }
 
 
-    public bool Retrieve()
+    public bool Retrieve(IPlayer owner)
     {
+        if (owner.Id != this.OwnerId)
+            return false;
+
         lock (Commodity)
         {
             foreach (var mpsi in Commodity)

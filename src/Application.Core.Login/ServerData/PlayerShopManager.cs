@@ -85,15 +85,17 @@ namespace Application.Core.Login.ServerData
             var shopType = (PlayerShopType)request.Type;
 
             var operation = (SyncPlayerShopOperation)request.Operation;
-            if (operation == SyncPlayerShopOperation.Close)
+            if (operation == SyncPlayerShopOperation.Close || operation == SyncPlayerShopOperation.CloseWithoutStore)
             {
                 if (shopType == PlayerShopType.PlayerShop && _playerShopData.TryRemove(request.OwnerId, out var ps))
                 {
-                    // 
+                    if (operation != SyncPlayerShopOperation.CloseWithoutStore)
+                        Store(ps);
                 }
                 else if (shopType == PlayerShopType.HiredMerchant && _hiredMerchantData.TryRemove(request.OwnerId, out var hm))
                 {
-                    Store(hm);
+                    if (operation != SyncPlayerShopOperation.CloseWithoutStore)
+                        Store(hm);
                 }
             }
 
