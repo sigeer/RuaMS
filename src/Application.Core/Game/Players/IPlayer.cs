@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.client.Characters;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -88,6 +89,8 @@ namespace Application.Core.Game.Players
         public MonsterCarnivalParty? MCTeam { get; set; }
         public int TotalCP { get; }
         public int AvailableCP { get; }
+
+        public int EffectMarriageId { get; set; }
 
         public ILogger Log { get; }
         void LeaveGuild();
@@ -409,7 +412,6 @@ namespace Application.Core.Game.Players
         float getRawExpRate();
         float getRawMesoRate();
 
-        int getRelationshipId();
         int getRemainingSp();
         Ring? getRingById(long id);
         RockPaperScissor? getRPS();
@@ -697,9 +699,20 @@ namespace Application.Core.Game.Players
         void SetFly(bool v);
         bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false);
         bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
-        Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
+        Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);        
         int GetMakerSkillLevel();
         Ring? GetRingFromTotal(RingSourceModel? ring);
         void LeaveVisitingShop();
+        /// <summary>
+        /// 使用道具（取代GainItem(xx, -1)）
+        /// </summary>
+        /// <param name="item">使用的道具</param>
+        /// <param name="quantity">需要消耗的数量（正数）</param>
+        /// <param name="codition">使用的条件</param>
+        /// <returns></returns>
+        UseItemCheck UseItem(Item item, short quantity, Func<bool> codition);
+        UseItemCheck TryUseItem(Item item, short quantity);
+        void CancelUseItem(Item item);
+        void CommitUseItem(Item item);
     }
 }

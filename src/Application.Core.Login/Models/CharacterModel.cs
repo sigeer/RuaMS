@@ -132,6 +132,7 @@ namespace Application.Core.Login.Models
         public int SummonValue { get; set; }
 
         public int PartnerId { get; set; }
+        public int EffectMarriageId { get; set; }
 
         public int MarriageItemId { get; set; }
 

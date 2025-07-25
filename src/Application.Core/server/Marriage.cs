@@ -127,52 +127,6 @@ public class Marriage : EventInstanceManager
         return groom;
     }
 
-    public static bool claimGiftItems(IPlayer chr)
-    {
-        List<Item> gifts = loadGiftItemsFromDb(chr.getId());
-        if (Inventory.checkSpot(chr, gifts))
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                ItemFactory.MARRIAGE_GIFTS.saveItems(new(), chr.getId(), dbContext);
-                dbTrans.Commit();
-            }
-            catch (Exception sqle)
-            {
-                Log.Logger.Error(sqle.ToString());
-            }
-
-            foreach (Item item in gifts)
-            {
-                InventoryManipulator.addFromDrop(chr.Client, item, false);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public static List<Item> loadGiftItemsFromDb(int cid)
-    {
-        List<Item> items = new();
-
-        try
-        {
-            foreach (var it in ItemFactory.MARRIAGE_GIFTS.loadItems(cid, false))
-            {
-                items.Add(it.Item);
-            }
-        }
-        catch (Exception sqle)
-        {
-            Log.Logger.Error(sqle.ToString());
-        }
-
-        return items;
-    }
 
     public void saveGiftItemsToDb(IChannelClient c, bool groom, int cid)
     {

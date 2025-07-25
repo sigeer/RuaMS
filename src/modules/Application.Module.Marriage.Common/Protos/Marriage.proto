@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package MarriageProto;
+
+message BreakMarriageRequest {
+	int32 masterId = 1;
+}
+
+message BreakMarriageResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	string masterName = 3;
+	int32 masterPartnerId  = 4;
+	string masterPartnerName = 5;
+	int32 type = 6;
+}
+
+message LoadMarriageGiftsRequest {
+	int32 masterId = 1;
+}
+
+message LoadMarriageGiftsResponse {
+
+}
+
+message TakeMarriageGiftRequest {
+	int32 masterId = 1;
+	int32 itemPos = 2;
+}
+
+message StoreMarriageGiftsRequest {
+	int32 marriageId = 1;
+}
+
+message CreateMarriageRelationRequest {
+	int32 fromId = 1;
+	int32 toId = 2;
+}
+
+message CreateMarriageRelationResponse {
+	int32 code = 1;
+	int32 marriageId = 2;
+}

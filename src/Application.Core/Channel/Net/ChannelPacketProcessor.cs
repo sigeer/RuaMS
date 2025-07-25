@@ -95,7 +95,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.NOTE_ACTION, sp.GetRequiredService<NoteActionHandler>()},
                 {(short)RecvOpcode.CLOSE_CHALKBOARD, sp.GetRequiredService<CloseChalkboardHandler>()},
                 {(short)RecvOpcode.USE_MOUNT_FOOD, sp.GetRequiredService<UseMountFoodHandler>()},
-                {(short)RecvOpcode.RING_ACTION, sp.GetRequiredService<RingActionHandler>()},
+
                 {(short)RecvOpcode.SPOUSE_CHAT, sp.GetRequiredService<SpouseChatHandler>()},
                 {(short)RecvOpcode.PET_AUTO_POT, sp.GetRequiredService<PetAutoPotHandler>()},
                 {(short)RecvOpcode.PET_EXCLUDE_ITEMS, sp.GetRequiredService<PetExcludeItemsHandler>()},
@@ -144,9 +144,6 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.FREDRICK_ACTION, sp.GetRequiredService<FredrickHandler>()},
                 {(short)RecvOpcode.MONSTER_CARNIVAL, sp.GetRequiredService<MonsterCarnivalHandler>()},
                 {(short)RecvOpcode.REMOTE_STORE, sp.GetRequiredService<RemoteStoreHandler>()},
-                {(short)RecvOpcode.WEDDING_ACTION, sp.GetRequiredService<WeddingHandler>()},
-                {(short)RecvOpcode.WEDDING_TALK, sp.GetRequiredService<WeddingTalkHandler>()},
-                // {(short)RecvOpcode.WEDDING_TALK_MORE, sp.GetRequiredService<WeddingTalkMoreHandler>()},
                 {(short)RecvOpcode.WATER_OF_LIFE, sp.GetRequiredService<UseWaterOfLifeHandler>()},
                 {(short)RecvOpcode.ADMIN_CHAT, sp.GetRequiredService<AdminChatHandler>()},
                 {(short)RecvOpcode.MOVE_DRAGON, sp.GetRequiredService<MoveDragonHandler>()},

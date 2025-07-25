@@ -7,16 +7,21 @@
 
 
 
+using Application.Core.Channel.Net;
+using Application.Core.Client;
+using Application.Module.Marriage.Common.Models;
+using Application.Shared.Constants.Inventory;
+using Application.Shared.Constants.Item;
+using Application.Shared.Net;
 using Application.Utility.Compatible;
 using Application.Utility.Configs;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
-using server;
+using Microsoft.Extensions.Options;
 using tools;
-using tools.packets;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Marriage.Channel.Net.Handlers;
 
 /**
  * @author Drago (Dragohe4rt)
@@ -24,10 +29,14 @@ namespace Application.Core.Channel.Net.Handlers;
 public class WeddingHandler : ChannelHandlerBase
 {
     readonly ILogger<WeddingHandler> _logger;
+    readonly WeddingManager _weddingManager;
+    readonly Configs _config;
 
-    public WeddingHandler(ILogger<WeddingHandler> logger)
+    public WeddingHandler(ILogger<WeddingHandler> logger, WeddingManager weddingManager, IOptions<Configs> options)
     {
         _logger = logger;
+        _weddingManager = weddingManager;
+        _config = options.Value;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -41,12 +50,14 @@ public class WeddingHandler : ChannelHandlerBase
                 byte mode = p.readByte();
 
                 if (mode == 6)
-                { //additem
+                {
+                    throw new NotSupportedException();
+                    //additem
                     short slot = p.readShort();
                     int itemid = p.readInt();
                     short quantity = p.readShort();
 
-                    var marriage = c.OnlinedCharacter.getMarriageInstance();
+                    var marriage = _weddingManager.GetMarriageInstance(chr);
                     if (marriage != null)
                     {
                         try
@@ -55,7 +66,7 @@ public class WeddingHandler : ChannelHandlerBase
                             string groomWishlistProp = "giftedItem" + (groomWishlist ? "G" : "B") + chr.getId();
 
                             int giftCount = marriage.getIntProperty(groomWishlistProp);
-                            if (giftCount < YamlConfig.config.server.WEDDING_GIFT_LIMIT)
+                            if (giftCount < _config.WEDDING_GIFT_LIMIT)
                             {
                                 int cid = marriage.getIntProperty(groomWishlist ? "groomId" : "brideId");
                                 if (chr.getId() != cid)
@@ -105,7 +116,7 @@ public class WeddingHandler : ChannelHandlerBase
                                             {
                                                 chr.saveCharToDB(false);
                                             }
-                                            marriage.saveGiftItemsToDb(c, groomWishlist, cid);
+                                            _weddingManager.StoreGifts(marriage, groomWishlist);
                                         }
                                     }
                                     else
@@ -134,11 +145,13 @@ public class WeddingHandler : ChannelHandlerBase
                     }
                 }
                 else if (mode == 7)
-                { // take items
+                {
+                    throw new NotSupportedException();
+                    // take items
                     p.readByte();    // invType
                     int itemPos = p.ReadSByte();
 
-                    var marriage = chr.getMarriageInstance();
+                    var marriage = _weddingManager.GetMarriageInstance(chr);
                     if (marriage != null)
                     {
                         var groomWishlist = marriage.isMarriageGroom(chr);
@@ -150,7 +163,7 @@ public class WeddingHandler : ChannelHandlerBase
                                 if (Inventory.checkSpot(chr, item))
                                 {
                                     marriage.removeGiftItem(groomWishlist.Value, item);
-                                    marriage.saveGiftItemsToDb(c, groomWishlist.Value, chr.getId());
+                                    // marriage.saveGiftItemsToDb(c, groomWishlist.Value, chr.getId());
 
                                     InventoryManipulator.addFromDrop(c, item, true);
 
@@ -171,30 +184,7 @@ public class WeddingHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        List<Item> items = c.getAbstractPlayerInteraction().getUnclaimedMarriageGifts();
-                        try
-                        {
-                            var item = items.ElementAt(itemPos);
-                            if (Inventory.checkSpot(chr, item))
-                            {
-                                items.RemoveAt(itemPos);
-                                Marriage.saveGiftItemsToDb(c, items, chr.getId());
-
-                                InventoryManipulator.addFromDrop(c, item, true);
-                                c.sendPacket(WeddingPackets.onWeddingGiftResult(0xF, Collections.singletonList(""), items));
-                            }
-                            else
-                            {
-                                c.OnlinedCharacter.dropMessage(1, "Free a slot on your inventory before collecting this item.");
-                                c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), items));
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogError(e.ToString());
-                            c.OnlinedCharacter.dropMessage(1, "You have already collected this item.");
-                            c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), items));
-                        }
+                        _weddingManager.TakeItemFromGifts(c.OnlinedCharacter, itemPos);
                     }
                 }
                 else if (mode == 8)

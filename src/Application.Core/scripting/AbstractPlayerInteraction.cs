@@ -1209,11 +1209,6 @@ public class AbstractPlayerInteraction
         return list;
     }
 
-    public List<Item> getUnclaimedMarriageGifts()
-    {
-        return Marriage.loadGiftItemsFromDb(this.getPlayer().getId());
-    }
-
     public bool startDungeonInstance(int dungeonid)
     {
         return c.CurrentServer.addMiniDungeon(dungeonid);

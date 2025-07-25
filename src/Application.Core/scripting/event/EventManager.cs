@@ -258,14 +258,12 @@ public class EventManager
         return ret;
     }
 
-    public Marriage newMarriage(string name)
-    {
-        Marriage ret = new Marriage(this, name);
 
-        if (!instances.TryAdd(name, ret))
-            throw new EventInstanceInProgressException(name, this.getName());
-        return ret;
+    public bool RegisterInstance(string instanceName, EventInstanceManager eim)
+    {
+        return instances.TryAdd(instanceName, eim);
     }
+
 
     public void disposeInstance(string name)
     {

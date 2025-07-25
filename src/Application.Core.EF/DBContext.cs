@@ -89,7 +89,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<MakerRewardDataEntity> Makerrewarddata { get; set; }
 
-    public virtual DbSet<DB_Marriage> Marriages { get; set; }
+    public virtual DbSet<MarriageEntity> Marriages { get; set; }
 
     public virtual DbSet<Medalmap> Medalmaps { get; set; }
 
@@ -955,7 +955,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("quantity");
         });
 
-        modelBuilder.Entity<DB_Marriage>(entity =>
+        modelBuilder.Entity<MarriageEntity>(entity =>
         {
             entity.HasKey(e => e.Marriageid).HasName("PRIMARY");
 

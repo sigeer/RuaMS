@@ -21,13 +21,18 @@
 */
 
 
+using Application.Core.Channel.Net;
+using Application.Core.Client;
 using Application.Core.Managers;
+using Application.Shared.Constants.Inventory;
+using Application.Shared.Constants.Item;
+using Application.Shared.Net;
+using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using tools;
-using tools.packets;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Marriage.Channel.Net.Handlers;
 
 
 /**
@@ -38,10 +43,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RingActionHandler : ChannelHandlerBase
 {
     readonly ILogger<RingActionHandler> _logger;
+    readonly WeddingManager _weddingManager;
 
-    public RingActionHandler(ILogger<RingActionHandler> logger)
+    public RingActionHandler(ILogger<RingActionHandler> logger, WeddingManager weddingManager)
     {
         _logger = logger;
+        _weddingManager = weddingManager;
     }
 
     private static int getEngagementBoxId(int useItemId)
@@ -59,7 +66,7 @@ public class RingActionHandler : ChannelHandlerBase
     public static void sendEngageProposal(IChannelClient c, string name, int itemid)
     {
         int newBoxId = getEngagementBoxId(itemid);
-        var target = c.CurrentServer.getPlayerStorage().getCharacterByName(name);
+        var target = c.CurrentServer.Players.getCharacterByName(name);
         var source = c.OnlinedCharacter;
 
         // TODO: get the correct packet bytes for these popups
@@ -164,11 +171,6 @@ public class RingActionHandler : ChannelHandlerBase
     }
 
 
-
-
-
-
-
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         byte mode = p.readByte();
@@ -187,12 +189,14 @@ public class RingActionHandler : ChannelHandlerBase
                 }
                 break;
 
-            case 2: // Accept/Deny Proposal
+            case 2:
+                // Accept/Deny Proposal
                 bool accepted = p.readByte() > 0;
                 name = p.readString();
+
                 int id = p.readInt();
 
-                var source = c.getWorldServer().getPlayerStorage().getCharacterByName(name);
+                var source = c.CurrentServer.Players.getCharacterByName(name);
                 var target = c.OnlinedCharacter;
 
                 if (source == null || !source.IsOnlined)
@@ -210,37 +214,7 @@ public class RingActionHandler : ChannelHandlerBase
 
                 if (accepted)
                 {
-                    int newItemId = getEngagementBoxId(itemid);
-                    if (!InventoryManipulator.checkSpace(c, newItemId, 1, "") || !InventoryManipulator.checkSpace(source.Client, newItemId, 1, ""))
-                    {
-                        target.sendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-
-                    try
-                    {
-                        InventoryManipulator.removeById(source.Client, InventoryType.USE, itemid, 1, false, false);
-
-                        int tempMarriageId = c.CurrentServerContainer.Transport.CreateRelationship(source.getId(), target.getId());
-                        source.setPartnerId(target.getId()); // engage them (new marriageitemid, partnerid for both)
-                        target.setPartnerId(source.getId());
-
-                        source.setMarriageItemId(newItemId);
-                        target.setMarriageItemId(newItemId + 1);
-
-                        InventoryManipulator.addById(source.Client, newItemId, 1);
-                        InventoryManipulator.addById(c, (newItemId + 1), 1);
-
-                        source.sendPacket(WeddingPackets.OnMarriageResult(tempMarriageId, source, false));
-                        target.sendPacket(WeddingPackets.OnMarriageResult(tempMarriageId, source, false));
-
-                        source.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(target.getId(), target.getMapId()));
-                        target.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(source.getId(), source.getMapId()));
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "Error with engagement");
-                    }
+                    _weddingManager.AcceptProposal(source, target);
                 }
                 else
                 {
@@ -251,135 +225,62 @@ public class RingActionHandler : ChannelHandlerBase
                 }
                 break;
 
-            case 3: // Break Engagement
-                RingManager.BreakMarriageRing(c.OnlinedCharacter, p.readInt());
+            case 3:
+                // Break Engagement
+                // 根据物品来区分解除的关系？
+                var removedItem = p.readInt();
+                var unknown = p.available();
+
+                _weddingManager.BreakMarriageRing(c.OnlinedCharacter);
                 break;
 
-            case 5: // Invite %s to Wedding
-                name = p.readString();
-                int marriageId = p.readInt();
-                slot = p.readByte(); // this is an int
-
-                int itemId;
-                try
+            case 5:
                 {
-                    itemId = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot)?.getItemId() ?? 0;
-                }
-                catch (NullReferenceException e)
-                {
-                    _logger.LogError(e.ToString());
-                    c.sendPacket(PacketCreator.enableActions());
-                    return;
-                }
+                    // Invite %s to Wedding
+                    name = p.readString();
+                    int marriageId = p.readInt();
+                    slot = p.readByte(); // this is an int
 
-                if ((itemId != ItemId.INVITATION_CHAPEL && itemId != ItemId.INVITATION_CATHEDRAL) || !c.OnlinedCharacter.haveItem(itemId))
-                {
-                    c.sendPacket(PacketCreator.enableActions());
-                    return;
-                }
-
-                string groom = c.OnlinedCharacter.getName();
-                string bride = CharacterManager.getNameById(c.OnlinedCharacter.getPartnerId());
-                int guest = CharacterManager.getIdByName(name);
-                if (string.IsNullOrEmpty(groom) || string.IsNullOrEmpty(bride) || guest <= 0)
-                {
-                    c.OnlinedCharacter.dropMessage(5, "Unable to find " + name + "!");
-                    return;
-                }
-
-                try
-                {
-                    var wserv = c.getWorldServer();
-                    var registration = c.CurrentServerContainer.Transport.GetMarriageQueuedLocation(marriageId);
-
-                    if (registration != null)
-                    {
-                        if (c.CurrentServerContainer.Transport.AddMarriageGuest(marriageId, guest))
-                        {
-                            bool cathedral = registration.Value.Key;
-                            int newItemId = cathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
-
-                            var cserv = c.CurrentServer;
-                            int resStatus = cserv.WeddingInstance.GetWeddingReservationStatus(marriageId, cathedral);
-                            if (resStatus > 0)
-                            {
-                                long expiration = cserv.WeddingInstance.GetWeddingTicketExpireTime(resStatus + 1);
-
-                                string baseMessage = $"You've been invited to {groom} and {bride}'s Wedding!";
-                                var guestChr = c.getWorldServer().getPlayerStorage().getCharacterById(guest);
-                                if (guestChr != null && guestChr.isLoggedinWorld()
-                                    && InventoryManipulator.checkSpace(guestChr.Client, newItemId, 1, "")
-                                    && InventoryManipulator.addById(guestChr.Client, newItemId, 1, expiration: expiration))
-                                {
-                                    guestChr.dropMessage(6, $"[Wedding] {baseMessage}");
-                                }
-                                else
-                                {
-                                    string dueyMessage = baseMessage + " Receive your invitation from Duey!";
-                                    if (guestChr != null && guestChr.isLoggedinWorld())
-                                    {
-                                        guestChr.dropMessage(6, $"[Wedding] {dueyMessage}");
-                                    }
-                                    else
-                                    {
-                                        c.CurrentServerContainer.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, name, dueyMessage);
-                                    }
-
-                                    // 
-                                    //Item weddingTicket = new Item(newItemId, 0, 1);
-                                    //weddingTicket.setExpiration(expiration);
-
-                                    //c.CurrentServer.ItemService.CreateDueyPackage(c.OnlinedCharacter.Name, 0, weddingTicket, null, guest, false);
-                                }
-                            }
-                            else
-                            {
-                                c.OnlinedCharacter.dropMessage(5, "Wedding is already under way. You cannot invite any more guests for the event.");
-                            }
-                        }
-                        else
-                        {
-                            c.OnlinedCharacter.dropMessage(5, "'" + name + "' is already invited for your marriage.");
-                        }
-                    }
-                    else
-                    {
-                        c.OnlinedCharacter.dropMessage(5, "Invitation was not sent to '" + name + "'. Either the time for your marriage reservation already came or it was not found.");
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex.ToString());
-                    return;
-                }
-
-                c.getAbstractPlayerInteraction().gainItem(itemId, -1);
-                break;
-
-            case 6: // Open Wedding Invitation
-                slot = (byte)p.readInt();
-                int invitationid = p.readInt();
-
-                if (invitationid == ItemId.RECEIVED_INVITATION_CHAPEL || invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL)
-                {
                     var item = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot);
-                    if (item == null || item.getItemId() != invitationid)
+                    if (item == null)
                     {
                         c.sendPacket(PacketCreator.enableActions());
                         return;
                     }
 
-                    // collision case: most soon-to-come wedding will show up
-                    var coupleId = c.CurrentServerContainer.Transport.GetWeddingCoupleForGuest(c.OnlinedCharacter.getId(), invitationid == ItemId.RECEIVED_INVITATION_CATHEDRAL);
-                    if (coupleId != null)
+                    var itemId = item.getItemId();
+                    if ((itemId != ItemId.INVITATION_CHAPEL && itemId != ItemId.INVITATION_CATHEDRAL) || !c.OnlinedCharacter.haveItem(itemId))
                     {
-                        int groomId = coupleId.HusbandId, brideId = coupleId.WifeId;
-                        c.sendPacket(WeddingPackets.sendWeddingInvitation(CharacterManager.getNameById(groomId), CharacterManager.getNameById(brideId)));
+                        c.sendPacket(PacketCreator.enableActions());
+                        return;
                     }
+
+                    _weddingManager.TryInviteGuest(c.OnlinedCharacter, item, marriageId, name);
+                    break;
                 }
 
-                break;
+            case 6:
+                {
+                    // Open Wedding Invitation
+                    slot = (byte)p.readInt();
+                    int invitationItemId = p.readInt();
+                    // 只有邀请函？如果收到多份邀请函如何区分是谁发送的？
+                    var unknown1 = p.available();
+
+                    if (invitationItemId == ItemId.RECEIVED_INVITATION_CHAPEL || invitationItemId == ItemId.RECEIVED_INVITATION_CATHEDRAL)
+                    {
+                        var item = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot);
+                        if (item == null || item.getItemId() != invitationItemId || int.TryParse(item.getGiftFrom(), out var weddingId))
+                        {
+                            c.sendPacket(PacketCreator.enableActions());
+                            return;
+                        }
+
+                        _weddingManager.TryGetInvitationInfo(c.OnlinedCharacter, weddingId);
+                    }
+
+                    break;
+                }
 
             case 9:
                 try
@@ -389,7 +290,7 @@ public class RingActionHandler : ChannelHandlerBase
 
                     var player = c.OnlinedCharacter;
 
-                    var eim = player.getEventInstance();
+                    var eim = _weddingManager.GetMarriageInstance(player);
                     if (eim != null)
                     {
                         bool isMarrying = (player.getId() == eim.getIntProperty("groomId") || player.getId() == eim.getIntProperty("brideId"));

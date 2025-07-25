@@ -38,7 +38,8 @@ public class ReactorScriptManager : AbstractScriptManager
 {
     private Dictionary<int, List<DropEntry>> drops = new();
 
-    public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
+    public ReactorScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+        : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
         LoadAllReactorDrops();
     }

@@ -6652,7 +6652,7 @@ public class PacketCreator
             var marriageRing = chr.getMarriageRing();
 
             p.writeShort(1);
-            p.writeInt(chr.getRelationshipId());
+            p.writeInt(chr.EffectMarriageId);
             p.writeInt(chr.getGender() == 0 ? chr.getId() : chr.getPartnerId());
             p.writeInt(chr.getGender() == 0 ? chr.getPartnerId() : chr.getId());
             p.writeShort((marriageRing != null) ? 3 : 1);

@@ -1,0 +1,417 @@
+using Application.Core.Channel;
+using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Players;
+using Application.Core.Game.Relation;
+using Application.Module.Marriage.Channel.Models;
+using Application.Module.Marriage.Common.ErrorCodes;
+using Application.Module.Marriage.Common.Models;
+using Application.Shared.Constants.Inventory;
+using Application.Shared.Constants.Item;
+using Application.Utility.Compatible;
+using AutoMapper;
+using client.inventory;
+using client.inventory.manipulator;
+using ItemProto;
+using MarriageProto;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1.X509;
+using scripting.Event;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using tools;
+using tools.packets;
+
+namespace Application.Module.Marriage.Channel
+{
+    public class WeddingManager
+    {
+        readonly ILogger<WeddingManager> _logger;
+        readonly IChannelServerTransport _transport;
+        readonly IMapper _mapper;
+        readonly WorldChannelServer _server;
+        readonly Configs _config;
+
+        /// <summary>
+        /// Key: Channel, Value: WeddingId
+        /// </summary>
+        ConcurrentDictionary<int, ConcurrentQueue<int>> _localData = new();
+
+        public WeddingManager(ILogger<WeddingManager> logger, IChannelServerTransport transport, IMapper mapper, WorldChannelServer server, IOptions<Configs> options)
+        {
+            _logger = logger;
+            _transport = transport;
+            _mapper = mapper;
+            _server = server;
+            _config = options.Value;
+        }
+
+        ConcurrentDictionary<int, WeddingChannelManager> _managerDic = new();
+        public WeddingChannelManager GetWeddingManager(WorldChannel channel)
+        {
+            return _managerDic.GetOrAdd(channel.getId(), ActivatorUtilities.CreateInstance<WeddingChannelManager>(channel.LifeScope.ServiceProvider, channel));
+        }
+
+        private static int getEngagementBoxId(int useItemId)
+        {
+            return useItemId switch
+            {
+                ItemId.ENGAGEMENT_BOX_MOONSTONE => ItemId.EMPTY_ENGAGEMENT_BOX_MOONSTONE,
+                ItemId.ENGAGEMENT_BOX_STAR => ItemId.EMPTY_ENGAGEMENT_BOX_STAR,
+                ItemId.ENGAGEMENT_BOX_GOLDEN => ItemId.EMPTY_ENGAGEMENT_BOX_GOLDEN,
+                ItemId.ENGAGEMENT_BOX_SILVER => ItemId.EMPTY_ENGAGEMENT_BOX_SILVER,
+                _ => ItemId.CARAT_RING_BASE + (useItemId - ItemId.CARAT_RING_BOX_BASE),
+            };
+        }
+        public void AcceptProposal(IPlayer sender, IPlayer receiver)
+        {
+            var usedItem = sender.getMarriageItemId();
+            int newItemId = getEngagementBoxId(sender.getMarriageItemId());
+
+            if (!InventoryManipulator.checkSpace(receiver.Client, newItemId, 1, "") || !InventoryManipulator.checkSpace(sender.Client, newItemId, 1, ""))
+            {
+                receiver.sendPacket(PacketCreator.enableActions());
+                return;
+            }
+
+            var res = _transport.CreateMarriageRelation(new MarriageProto.CreateMarriageRelationRequest { FromId = sender.Id, ToId = receiver.Id });
+            if (res.Code == 0)
+            {
+                InventoryManipulator.removeById(sender.getClient(), InventoryType.USE, usedItem, 1, false, false);
+
+                sender.setPartnerId(receiver.Id); // engage them (new marriageitemid, partnerid for both)
+                sender.EffectMarriageId = res.MarriageId;
+
+                receiver.setPartnerId(sender.Id);
+                receiver.EffectMarriageId = res.MarriageId;
+
+                sender.setMarriageItemId(newItemId);
+                receiver.setMarriageItemId(newItemId + 1);
+
+                InventoryManipulator.addById(sender.Client, newItemId, 1);
+                InventoryManipulator.addById(receiver.Client, (newItemId + 1), 1);
+
+                sender.sendPacket(WeddingPackets.OnMarriageResult(res.MarriageId, sender, false));
+                receiver.sendPacket(WeddingPackets.OnMarriageResult(res.MarriageId, sender, false));
+
+                sender.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(receiver.Id, receiver.getMapId()));
+                receiver.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(sender.Id, sender.getMapId()));
+            }
+        }
+
+        public void ReserveWedding(IPlayer chr, bool isCathedral, bool isPremium)
+        {
+            _transport.ReserveWedding(
+                new MarriageProto.ReserveWeddingRequest
+                {
+                    Channel = chr.Channel,
+                    IsCathedral = isCathedral,
+                    IsPremium = isPremium,
+                    MasterId = chr.Id,
+                });
+        }
+
+        public void TryInviteGuest(IPlayer chr, Item item, int marriageId, string guestName)
+        {
+            chr.UseItem(item, 1, () =>
+            {
+                var res = _transport.TryInviteGuest(new MarriageProto.InviteGuestRequest
+                {
+                    MarriageId = marriageId,
+                    MasterId = chr.Id,
+                    GuestName = guestName,
+                });
+                return res.Code == 0;
+            });
+
+        }
+
+        public void OnGuestInvited(MarriageProto.InviteGuestResponse data)
+        {
+            var code = (InviteErrorCode)data.Code;
+            if (code != InviteErrorCode.Success)
+            {
+                var chr = _server.FindPlayerById(data.Request.MasterId);
+                if (chr != null)
+                {
+                    if (code == InviteErrorCode.GuestNotFound)
+                    {
+                        chr.dropMessage(5, "Unable to find " + data.Request.GuestName + "!");
+                        return;
+                    }
+
+                    if (code == InviteErrorCode.MarriageNotFound)
+                    {
+                        chr.dropMessage(5, $"Invitation was not sent to '{data.Request.GuestName}'. Either the time for your marriage reservation already came or it was not found.");
+                        return;
+                    }
+
+                    if (code == InviteErrorCode.DuplicateInvitation)
+                    {
+                        chr.dropMessage(5, $"'{data.Request.GuestName}' is already invited for your marriage.");
+                        return;
+                    }
+
+                    if (code == InviteErrorCode.WeddingUnderway)
+                    {
+                        chr.dropMessage(5, "Wedding is already under way. You cannot invite any more guests for the event.");
+                        return;
+                    }
+                }
+            }
+            else
+            {
+
+                string baseMessage = $"You've been invited to {data.GroomName} and {data.BrideName}'s Wedding!";
+                var guestChr = _server.FindPlayerById(data.GuestId);
+                if (guestChr != null && guestChr.isLoggedinWorld())
+                {
+                    int newItemId = data.IsCathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
+                    var newItem = Item.CreateVirtualItem(newItemId, 1);
+                    // GiftFrom应该是仅在现金道具上生效，在这里临时使用存放婚礼id
+                    newItem.setGiftFrom(data.Request.MarriageId.ToString());
+
+                    if (InventoryManipulator.addFromDrop(guestChr.Client, newItem, false))
+                    {
+                        guestChr.dropMessage(6, $"[Wedding] {baseMessage}");
+                    }
+
+                }
+            }
+        }
+
+        public void TryGetInvitationInfo(IPlayer chr, int weddingId)
+        {
+            var res = _transport.TryGetInvitationInfo(new MarriageProto.LoadInvitationRequest { WeddingId = weddingId });
+            if (res.MarriageId > 0)
+            {
+                chr.sendPacket(WeddingPackets.sendWeddingInvitation(res.GroomName, res.BrideName));
+            }
+        }
+
+        public void BreakMarriageRing(IPlayer chr)
+        {
+            _transport.BreakMarriage(new MarriageProto.BreakMarriageRequest { MasterId = chr.Id });
+        }
+
+        public void OnMarriageBroken(MarriageProto.BreakMarriageResponse data)
+        {
+            var chr = _server.FindPlayerById(data.MasterId);
+            if (chr != null)
+            {
+                int marriageitemid = chr.getMarriageItemId();
+
+                if (chr.haveItem(marriageitemid))
+                {
+                    InventoryManipulator.removeById(chr.Client, InventoryType.ETC, marriageitemid, 1, false, false);
+                }
+                chr.dropMessage(5, "You have successfully break the engagement with " + data.MasterPartnerName + ".");
+                ResetRingId(chr);
+                //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
+                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                chr.setPartnerId(-1);
+                chr.setMarriageItemId(-1);
+                chr.EffectMarriageId = 0;
+            }
+
+            var partner = _server.FindPlayerById(data.MasterPartnerId);
+            if (partner != null)
+            {
+                partner.dropMessage(5, data.MasterName + " has decided to break up the " + (data.Type == 0 ? "engagement." : "marriage."));
+
+                int partnerMarriageitemid = partner.getMarriageItemId();
+                if (partner.haveItem(partnerMarriageitemid))
+                {
+                    InventoryManipulator.removeById(partner.Client, InventoryType.ETC, partnerMarriageitemid, 1, false, false);
+                }
+                ResetRingId(partner);
+                //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
+                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                partner.setPartnerId(-1);
+                partner.setMarriageItemId(-1);
+                partner.EffectMarriageId = 0;
+            }
+
+        }
+
+
+        private static void ResetRingId(IPlayer player)
+        {
+            int ringitemid = player.getMarriageRing()!.getItemId();
+
+            var it = player.getInventory(InventoryType.EQUIP).findById(ringitemid) ?? player.getInventory(InventoryType.EQUIPPED).findById(ringitemid);
+            if (it != null)
+            {
+                Equip eqp = (Equip)it;
+                eqp.ResetRing();
+            }
+        }
+
+
+        public bool HasWeddingRing(IPlayer chr)
+        {
+            int[] rings = { ItemId.WEDDING_RING_STAR, ItemId.WEDDING_RING_MOONSTONE, ItemId.WEDDING_RING_GOLDEN, ItemId.WEDDING_RING_SILVER };
+            return rings.Any(x => chr.haveItemWithId(x));
+        }
+
+        public bool HasEngagement(IPlayer chr)
+        {
+            int[] rings = {
+                ItemId.EMPTY_ENGAGEMENT_BOX_MOONSTONE,
+                ItemId.ENGAGEMENT_RING_MOONSTONE,
+                ItemId.EMPTY_ENGAGEMENT_BOX_STAR,
+                ItemId.ENGAGEMENT_RING_STAR,
+                ItemId.EMPTY_ENGAGEMENT_BOX_GOLDEN,
+                ItemId.ENGAGEMENT_RING_GOLDEN,
+                ItemId.EMPTY_ENGAGEMENT_BOX_SILVER,
+                ItemId.ENGAGEMENT_RING_SILVER,
+            };
+            return rings.Any(x => chr.haveItemWithId(x));
+        }
+
+        public List<Item> GetUnclaimedMarriageGifts(IPlayer chr)
+        {
+            return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ItemProto.LoadItemsFromStoreRequest { Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
+        }
+
+        public void TakeItemFromGifts(IPlayer chr, int itemPos)
+        {
+            if (chr.Client.tryacquireClient())
+            {
+                var allItems = _mapper.Map<List<Item>>(_transport.LoadMarriageGifts(new LoadMarriageGiftsRequest { MasterId = chr.Id }));
+                try
+                {
+                    var item = allItems.ElementAtOrDefault(itemPos);
+                    if (item != null && InventoryManipulator.addFromDrop(chr.Client, item, true))
+                    {
+                        allItems.RemoveAt(itemPos);
+                        StoreGifts(chr.Id, allItems);
+                        chr.sendPacket(WeddingPackets.onWeddingGiftResult(0xF, Collections.singletonList(""), allItems));
+                    }
+                    else
+                    {
+                        chr.dropMessage(1, "Free a slot on your inventory before collecting this item.");
+                        chr.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.ToString());
+                    chr.dropMessage(1, "You have already collected this item.");
+                    chr.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
+                }
+                finally
+                {
+                    chr.Client.releaseClient();
+                }
+            }
+        }
+
+        public MarriageInstance? GetMarriageInstance(IPlayer chr)
+        {
+            return chr.getEventInstance() as MarriageInstance;
+        }
+
+        public MarriageInstance CreateMarriageInstance(EventManager em, string name)
+        {
+            return GetWeddingManager(em.getChannelServer()).CreateMarriageInstance(em, name);
+        }
+
+        private void StoreGifts(int id, List<Item> items)
+        {
+            var request = new ItemProto.StoreItemsRequest();
+            request.Key = id;
+            request.ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue();
+            request.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(items));
+            _server.Transport.SaveItems(request);
+        }
+
+        public void StoreGifts(MarriageInstance? marriage, bool isGroom)
+        {
+            if (marriage == null)
+                return;
+
+            var items = isGroom ? marriage.GroomGiftList : marriage.BrideGiftList;
+            var cid = isGroom ? marriage.getIntProperty("groomId") : marriage.getIntProperty("brideId");
+
+            StoreGifts(cid, items);
+        }
+
+        public void BroadcastWedding(BroadcastWeddingDto data)
+        {
+            foreach (var ch in _server.Servers.Values)
+            {
+                ch.dropMessage(6, $"{data.GroomName} and {data.BrideName}'s wedding is going to be started at " + (data.IsCathedral ? "Cathedral" : "Chapel") + $" on Channel {data.Channel}.");
+            }
+        }
+
+        /// <summary>
+        /// 通过背包的邀请函获取相应的婚礼信息
+        /// </summary>
+        /// <param name="chr"></param>
+        /// <param name="isCathedral"></param>
+        /// <returns></returns>
+        public List<WeddingInfo> GetWeddingMasterByGuestTicket(IPlayer chr, bool isCathedral)
+        {
+            var manager = GetWeddingManager(chr.getChannelServer());
+            var itemId = isCathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL;
+            var allInvitations = chr.getInventory(InventoryType.ETC).list().Where(x => x.getItemId() == itemId).ToArray();
+            if (allInvitations.Length == 0)
+                return [];
+
+            List<int> list = [];
+            foreach (var item in allInvitations)
+            {
+                if (int.TryParse(item.getGiftFrom(), out var d))
+                {
+                    list.Add(d);
+                }
+            }
+
+            return LoadWeddingInfoFromRemote(list.ToArray());
+        }
+
+        public List<WeddingInfo> LoadWeddingInfoFromRemote(params int[] weddingId)
+        {
+            var request = new LoadWeddingByIdRequest();
+            request.Id.AddRange(weddingId);
+            return _mapper.Map<List<WeddingInfo>>(_transport.LoadAllWeddingById(request));
+        }
+
+        public WeddingInfo? GetPlayerWeddingInfoFromAll(IPlayer chr)
+        {
+            return LoadWeddingInfoFromRemote(chr.EffectMarriageId).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// 婚礼完成，发放戒指、
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="partner"></param>
+        /// <param name="marriageRingItemId"></param>
+        public void CompleteWedding(IPlayer player, IPlayer partner, int marriageRingItemId)
+        {
+            RingDto ring = _transport.CompleteWedding(new CompleteWeddingRequest { MarriageId = player.EffectMarriageId, MarriageItemId = marriageRingItemId });
+            var ringSource = _mapper.Map<RingSourceModel>(ring);
+            var ii = ItemInformationProvider.getInstance();
+
+            Item ringObj = ii.getEquipById(marriageRingItemId);
+            Equip ringEqp = (Equip)ringObj;
+            ringEqp.SetRing(ringSource.RingId1, ringSource);
+            player.addMarriageRing(ringEqp.Ring);
+            InventoryManipulator.addFromDrop(player.Client, ringEqp, false);
+            player.broadcastMarriageMessage();
+
+            ringObj = ii.getEquipById(marriageRingItemId);
+            ringEqp = (Equip)ringObj;
+            ringEqp.SetRing(ringSource.RingId2, ringSource);
+            partner.addMarriageRing(ringEqp.Ring);
+            InventoryManipulator.addFromDrop(partner.Client, ringEqp, false);
+            partner.broadcastMarriageMessage();
+        }
+
+
+    }
+}

@@ -302,13 +302,6 @@ public partial class Player
 
 
 
-    public int getRelationshipId()
-    {
-        return getChannelServer().Container.Transport.GetRelationshipId(Id);
-    }
-
-
-
     public int addDojoPointsByMap(int mapid)
     {
         int pts = 0;

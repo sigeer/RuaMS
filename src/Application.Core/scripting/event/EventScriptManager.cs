@@ -41,7 +41,8 @@ public class EventScriptManager : AbstractScriptManager
     private bool active = false;
     readonly string[] eventScripts;
 
-    public EventScriptManager(WorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor) : base(logger, commandExecutor, channel)
+    public EventScriptManager(WorldChannel channel, ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+        : base(logger, commandExecutor, channel, addtionalRegistries)
     {
         eventScripts = ScriptResFactory.GetEvents();
 

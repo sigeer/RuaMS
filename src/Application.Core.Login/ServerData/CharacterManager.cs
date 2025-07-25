@@ -233,6 +233,17 @@ namespace Application.Core.Login.Datas
 
                 characterId = characterEntity.Id;
                 characterName = characterEntity.Name;
+
+                var chrModel = _mapper.Map<CharacterModel>(characterEntity);
+
+                var marriageData = dbContext.Marriages.AsNoTracking().Where(x => x.Husbandid == characterEntity.Id || x.Wifeid == characterEntity.Id)
+                        .Where(x => x.Status != 2).FirstOrDefault();
+                if (marriageData != null)
+                {
+                    chrModel.EffectMarriageId = marriageData.Marriageid;
+                    chrModel.PartnerId = marriageData.Husbandid == chrModel.Id ? marriageData.Wifeid : marriageData.Husbandid;
+                }
+
                 var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
@@ -253,7 +264,7 @@ namespace Application.Core.Login.Datas
 
                 d = new CharacterLiveObject()
                 {
-                    Character = _mapper.Map<CharacterModel>(characterEntity),
+                    Character = chrModel,
                     Channel = 0,
                     PetIgnores = petIgnores,
                     Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),

@@ -6,6 +6,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
+        public int EffectMarriageId { get; set; }
         private Ring? marriageRing = null;
 
         public int getPartnerId()
@@ -129,7 +130,7 @@ namespace Application.Core.Game.Players
             {
                 MarriageItemId = -1;
             }
-            else if (PartnerId > 0 && getChannelServer().Container.Transport.GetRelationshipId(Id) <= 0)
+            else if (PartnerId > 0 && EffectMarriageId <= 0)
             {
                 MarriageItemId = -1;
                 PartnerId = -1;

@@ -1,10 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.EF.Entities.SystemBase;
-using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Trades;
-using Application.Core.Gameplay.WorldEvents;
-using Microsoft.EntityFrameworkCore;
 using net.server;
 using net.server.channel;
 using net.server.coordinator.matchchecker;
@@ -26,7 +23,6 @@ public class World
 
     private MatchCheckerCoordinator matchChecker = new MatchCheckerCoordinator();
 
-    private ScheduledFuture? marriagesSchedule;
     private ScheduledFuture? timeoutSchedule;
 
     public World(WorldConfigEntity config)
@@ -36,10 +32,6 @@ public class World
 
         this.Id = config.Id;
         Name = config.Name;
-
-        marriagesSchedule = Server.getInstance().GlobalTimerManager.register(new WeddingReservationTask(this),
-            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL),
-            TimeSpan.FromMinutes(YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL));
 #if !DEBUG
         timeoutSchedule = Server.getInstance().GlobalTimerManager.register(new TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
@@ -295,12 +287,6 @@ public class World
         foreach (var ch in getChannels())
         {
             await ch.Shutdown();
-        }
-
-        if (marriagesSchedule != null)
-        {
-            await marriagesSchedule.CancelAsync(false);
-            marriagesSchedule = null;
         }
 
         if (timeoutSchedule != null)

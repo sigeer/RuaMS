@@ -25,7 +25,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using client.inventory.manipulator;
-using Org.BouncyCastle.Ocsp;
 
 namespace client.inventory;
 
@@ -63,7 +62,7 @@ public class Item : IComparable<Item>, IItemProp
         CopyItemProps(ret);
         return ret;
     }
-   
+
     protected void CopyItemProps(Item input)
     {
         input.quantity = quantity;

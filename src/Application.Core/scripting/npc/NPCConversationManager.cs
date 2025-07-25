@@ -1478,6 +1478,16 @@ public class NPCConversationManager : AbstractPlayerInteraction
         sendYesNo(text, speaker);
         NextLevelContext.TwoOption(NextLevelType.SEND_YES_NO, noLevel, yesLevel);
     }
+
+    public void SetContextData(object? data)
+    {
+        NextLevelContext.SetContextData(data);
+    }
+
+    public object? GetContextData()
+    {
+        return NextLevelContext.GetContextData();
+    }
     #endregion
 
     public int[] getCardTierSize()
