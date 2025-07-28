@@ -1,4 +1,6 @@
+using Application.Core.Channel.Modules;
 using Application.Core.Client;
+using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net.Handlers;
 using Application.Module.Marriage.Channel.Scripting;
 using Application.Scripting;
@@ -6,6 +8,7 @@ using Application.Shared.Net;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Application.Module.Marriage.Channel
 {
@@ -13,8 +16,10 @@ namespace Application.Module.Marriage.Channel
     {
         public static IServiceCollection AddMarriageChannel(this IServiceCollection services)
         {
-            // services.TryAddSingleton<IChannelServerTransport, DefaultChannelTransport>();
+            services.AddAutoMapper(typeof(Mapper));
+            services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
             services.AddSingleton<WeddingManager>();
+            services.AddSingleton<ChannelModule, WeddingModule>();
 
             services.AddSingleton<RingActionHandler>();
             services.AddSingleton<IServerBootstrap, MarriageChannelBootstrap>();

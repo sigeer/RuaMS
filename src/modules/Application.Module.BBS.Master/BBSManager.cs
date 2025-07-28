@@ -43,17 +43,17 @@ namespace Application.Module.BBS.Master
             var dbList = dbContext.BbsThreads.Where(entityExpression).ToList();
             var dbIdList = dbList.Select(x => x.Threadid).ToArray();
 
-            var equips = dbContext.PlayernpcsEquips
-                .Where(x => dbIdList.Contains(x.Npcid))
+            var replies = dbContext.BbsReplies
+                .Where(x => dbIdList.Contains(x.Replyid))
                 .AsEnumerable()
-                .GroupBy(x => x.Npcid)
+                .GroupBy(x => x.Threadid)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             var dataFromDB = _mapper.Map<List<BBSThreadModel>>(dbList);
 
             foreach (var item in dataFromDB)
             {
-                if (equips.TryGetValue(item.Id, out var eqList))
+                if (replies.TryGetValue(item.Id, out var eqList))
                 {
                     item.Replies = _mapper.Map<List<BBSReplyModel>>(eqList);
                 }

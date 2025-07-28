@@ -19,23 +19,28 @@ namespace Application.Module.Marriage.Master
         readonly IMapper _mapper;
         readonly MarriageManager _marriageManager;
 
-        int _localMarriageId = 0;
+        public WeddingManager(MasterTransport transport, MasterServer server, IMapper mapper, MarriageManager marriageManager)
+        {
+            _transport = transport;
+            _server = server;
+            _mapper = mapper;
+            _marriageManager = marriageManager;
+        }
 
-
-        public void ReserveWedding(MarriageProto.ReserveWeddingRequest request)
+        public MarriageProto.ReserveWeddingResponse ReserveWedding(MarriageProto.ReserveWeddingRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null)
             {
-                return;
+                return new ReserveWeddingResponse() { Code = 2 };
             }
 
             if (registeredWedding.ContainsKey(chr.Character.EffectMarriageId))
             {
-                return;
+                return new ReserveWeddingResponse() { Code = (int)ReserveErrorCode.AlreadyReserved };
             }
 
-            var weddingInfo = new WeddingInfo(chr.Character.EffectMarriageId, request.Channel, request.IsCathedral, request.IsPremium, request.MasterId, chr.Character.PartnerId, [], request.StartTime);
+            var weddingInfo = new WeddingInfo(chr.Character.EffectMarriageId, request.Channel, request.IsCathedral, request.IsPremium, request.MasterId, chr.Character.PartnerId, [], request.StartTime + (long)TimeSpan.FromMinutes(30).TotalMilliseconds);
             registeredWedding[chr.Character.EffectMarriageId] = weddingInfo;
 
             _transport.BroadcastWedding(new BroadcastWeddingDto
@@ -45,56 +50,82 @@ namespace Application.Module.Marriage.Master
                 GroomName = _server.CharacterManager.GetPlayerName(weddingInfo.GroomId),
                 Channel = weddingInfo.Channel
             });
+
+            return new ReserveWeddingResponse() { StartTime = weddingInfo.StartTime };
         }
 
-        public ItemProto.RingDto CompleteWedding(CompleteWeddingRequest request)
+        public void CloseWedding(CloseWeddingRequest request)
         {
-            if (registeredWedding.TryGetValue(request.MarriageId, out var wedding))
+            registeredWedding.TryRemove(request.MarriageId, out _);
+        }
+
+        public MarriageProto.CompleteWeddingResponse CompleteWedding(CompleteWeddingRequest request)
+        {
+            if (registeredWedding.TryGetValue(request.MarriageId, out var wedding) && _marriageManager.CompleteMarriage(wedding.Id))
             {
-                _marriageManager.CompleteMarriage(wedding.Id);
                 var ring = _server.RingManager.CreateRing(request.MarriageItemId, wedding.GroomId, wedding.BrideId, wedding.Id);
-                return _mapper.Map<ItemProto.RingDto>(ring);
+                return new CompleteWeddingResponse
+                {
+                    GroomRingId = ring.RingId1,
+                    BrideRingId = ring.RingId2,
+                    MarriageId = wedding.Id,
+                    MarriageItemId = ring.ItemId,
+                    RingSourceId = ring.Id,
+                    BrideId = wedding.BrideId,
+                    BrideName = _server.CharacterManager.GetPlayerName(wedding.BrideId),
+                    GroomId = wedding.GroomId,
+                    GroomName = _server.CharacterManager.GetPlayerName(wedding.GroomId),
+                };
             }
-            return new ItemProto.RingDto();
+            return new MarriageProto.CompleteWeddingResponse { Code = 1 };
         }
 
-        public void InviteGuest(MarriageProto.InviteGuestRequest request)
+        public MarriageProto.InviteGuestResponse InviteGuest(MarriageProto.InviteGuestRequest request)
         {
+            InviteErrorCode code = InviteErrorCode.Success;
             var guestChr = _server.CharacterManager.FindPlayerByName(request.GuestName);
             if (guestChr == null)
             {
-                _transport.ReturnGuestInvitation(new MarriageProto.InviteGuestResponse { Code = (int)InviteErrorCode.GuestNotFound, Request = request });
-                return;
+                code = InviteErrorCode.GuestNotFound;
+                return new InviteGuestResponse() { Code = (int)code };
             }
 
             if (!registeredWedding.TryGetValue(request.MarriageId, out var wedding))
             {
-                _transport.ReturnGuestInvitation(new MarriageProto.InviteGuestResponse { Code = (int)InviteErrorCode.MarriageNotFound, Request = request });
-                return;
+                code = InviteErrorCode.MarriageNotFound;
+                return new InviteGuestResponse() { Code = (int)code };
             }
 
             if (wedding.Guests.Contains(guestChr.Character.Id))
             {
-                _transport.ReturnGuestInvitation(new MarriageProto.InviteGuestResponse { Code = (int)InviteErrorCode.DuplicateInvitation, Request = request });
-                return;
+                code = InviteErrorCode.DuplicateInvitation;
+                return new InviteGuestResponse() { Code = (int)code };
             }
 
             if (_server.getCurrentTime() >= wedding.StartTime)
             {
-                _transport.ReturnGuestInvitation(new MarriageProto.InviteGuestResponse { Code = (int)InviteErrorCode.WeddingUnderway, Request = request });
-                return;
+                code = InviteErrorCode.WeddingUnderway;
+                return new InviteGuestResponse() { Code = (int)code };
             }
 
-            var res = new MarriageProto.InviteGuestResponse { Code = (int)InviteErrorCode.Success, Request = request };
+            var res = new MarriageProto.InviteGuestCallback
+            {
+                WeddingId = wedding.Id,
+                BrideName = _server.CharacterManager.GetPlayerName(wedding.BrideId),
+                GroomName = _server.CharacterManager.GetPlayerName(wedding.GroomId),
+                GuestId = guestChr.Character.Id,
+                IsCathedral = wedding.IsCathedral
+            };
             wedding.Guests.Add(guestChr.Character.Id);
             if (guestChr.Channel <= 0)
             {
                 // duey发送
             }
             _transport.ReturnGuestInvitation(res);
+            return new InviteGuestResponse { Code = (int)code };
         }
 
-        public MarriageProto.LoadInvitationResponse GetInvitation(MarriageProto.LoadInvitationRequest request)
+        public MarriageProto.LoadInvitationResponse GetInvitationContent(MarriageProto.LoadInvitationRequest request)
         {
             if (registeredWedding.TryGetValue(request.WeddingId, out var wedding))
             {
@@ -107,6 +138,14 @@ namespace Application.Module.Marriage.Master
             }
 
             return new MarriageProto.LoadInvitationResponse();
+        }
+
+        public MarriageProto.WeddingInfoListDto QueryWeddings(MarriageProto.LoadWeddingByIdRequest request)
+        {
+            var data = registeredWedding.Values.Where(x => request.Id.Contains(x.Id)).ToArray();
+            var res = new MarriageProto.WeddingInfoListDto();
+            res.List.AddRange(_mapper.Map<MarriageProto.WeddingInfoDto[]>(data));
+            return res;
         }
     }
 }

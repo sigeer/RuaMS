@@ -26,5 +26,6 @@ namespace Application.Module.Marriage.Master.Models
         /// 离婚时间
         /// </summary>
         public DateTimeOffset? Time2 { get; set; }
+
     }
 }

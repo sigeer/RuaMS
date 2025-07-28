@@ -6,12 +6,12 @@ namespace Application.Module.Marriage.Channel
     public interface IChannelServerTransport
     {
         void BreakMarriage(BreakMarriageRequest breakMarriageRequest);
-        RingDto CompleteWedding(CompleteWeddingRequest completeWeddingRequest);
+        void CloseWedding(CloseWeddingRequest closeWeddingRequest);
+        CompleteWeddingResponse CompleteWedding(CompleteWeddingRequest completeWeddingRequest);
         CreateMarriageRelationResponse CreateMarriageRelation(CreateMarriageRelationRequest createMarriageRelationRequest);
         WeddingInfoListDto LoadAllWeddingById(LoadWeddingByIdRequest request);
         object LoadMarriageGifts(LoadMarriageGiftsRequest loadMarriageGiftsRequest);
-        void ReserveWedding(ReserveWeddingRequest reserveWeddingRequest);
-        ReserveWeddingCheckResponse ReserveWeddingCheck(ReserveWeddingCheckRequest reserveWeddingCheckRequest);
+        MarriageProto.ReserveWeddingResponse ReserveWedding(ReserveWeddingRequest reserveWeddingRequest);
         LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest);
         InviteGuestResponse TryInviteGuest(InviteGuestRequest inviteGuestRequest);
     }

@@ -1,29 +1,17 @@
 -- High Priest John
--- Marriage NPC (Converted to Lua)
+-- Marriage NPC
 
-local status = -1
-local state
 local eim
 local weddingEventName = "WeddingCathedral"
 local cathedralWedding = true
-local weddingIndoors
-local weddingBlessingExp = YamlConfig.config.server.WEDDING_BLESS_EXP
+local weddingIndoors = false
+local weddingBlessingExp = WeddingManager:GetBlessExp()
 
-local function isWeddingIndoors(mapid)
+function isWeddingIndoors(mapid)
     return mapid >= 680000100 and mapid <= 680000500
 end
 
-local function getMarriageInstance(player)
-    local em = cm:getEventManager(weddingEventName)
-    for _, e in pairs(em:getInstances()) do
-        if e:isEventLeader(player) then
-            return e
-        end
-    end
-    return nil
-end
-
-local function detectPlayerItemid(player)
+function detectPlayerItemid(player)
     for x = 4031357, 4031364 do
         if player:haveItem(x) then
             return x
@@ -32,7 +20,7 @@ local function detectPlayerItemid(player)
     return -1
 end
 
-local function getRingId(boxItemId)
+function getRingId(boxItemId)
     if boxItemId == 4031357 then return 1112803
     elseif boxItemId == 4031359 then return 1112806
     elseif boxItemId == 4031361 then return 1112807
@@ -53,7 +41,7 @@ local function isSuitedForWedding(player, equipped)
     return false
 end
 
-local function getWeddingPreparationStatus(player, partner)
+function getWeddingPreparationStatus(player, partner)
     if not player:haveItem(4000313) then return -3 end
     if not partner:haveItem(4000313) then return 3 end
 
@@ -84,7 +72,7 @@ local function getWeddingPreparationStatus(player, partner)
     return 0
 end
 
-local function giveCoupleBlessings(eim, player, partner)
+function giveCoupleBlessings(eim, player, partner)
     local blessCount = eim:gridSize()
     player:gainExp(blessCount * weddingBlessingExp)
     partner:gainExp(blessCount * weddingBlessingExp)
@@ -105,14 +93,14 @@ end
 function levelNotWeddingInDoorsMain()
     local hasEngagement = false
     for x = 4031357, 4031364 do
-        if cm:haveItem(x, 1) then
+        if cm:haveItem(x) then
             hasEngagement = true
             break
         end
     end
 
     if hasEngagement then
-        local text = "Hi there. How can I help you?"
+        local text = "你好。我能帮你什么吗？"
         local choice = { "我们准备好结婚了。" }
         for i, v in ipairs(choice) do
             text = text .. "\r\n#L" .. (i - 1) .. "##b" .. v .. "#l"
@@ -133,13 +121,13 @@ function levelNotWeddingInDoors0()
         return
     end
 
-    if cm.getClient():getChannelServer():getId() ~= weddingInfo.Channel then
+    if cm:getClient():getChannelServer():getId() ~= weddingInfo.Channel then
         cm:sendOkLevel("Dispose", "您的婚礼将在频道" .. weddingInfo.Channel .. "举办。")
         return
     end
 
     local cserv = cm:getClient():getChannelServer()
-    local partner = cserv:getPlayerStorage():getCharacterById(cm:getPlayer():getPartnerId())
+    local partner = cserv.Players:getCharacterById(cm:getPlayer():getPartnerId())
 
     if partner == nil or cm:getMap() ~= partner:getMap() then
         cm:sendOkLevel("Dispose", "嗯，看来你的伴侣在别处……请让TA在开始仪式之前来这里。")
@@ -147,7 +135,7 @@ function levelNotWeddingInDoors0()
     end
 
     if not cm:canHold(4000313) then
-        cm:sendOkLevel("Dispose", "请确保有一个空闲的杂项栏位以获取#b#t4000313##k。")
+        cm:sendOkLevel("Dispose", "请确保有一个空闲的其他栏位以获取#b#t4000313##k。")
         return
     elseif not partner:canHold(4000313) then
         cm:sendOkLevel("Dispose", "请告知你的伴侣，他的其他栏必须有一个空闲的槽位才能获得#b#t4000313##k。")
@@ -167,21 +155,26 @@ end
 function levelStartWedding()
     local cserv = cm:getClient():getChannelServer()
 
-    local partner = cserv:getPlayerStorage():getCharacterById(cm:getPlayer():getPartnerId())
+    local partner = cserv.Players:getCharacterById(cm:getPlayer():getPartnerId())
     if partner == nil or cm:getMap() ~= partner:getMap() then
         cm:sendOkLevel("Dispose", "嗯，看来你的伴侣在别处……请让TA在开始仪式之前来这里。")
         return
     end
 
-    local wedding = WeddingManager:GetPlayerWeddingInfoFromLocal(cm:getClient():getChannelServer(), cm:getPlayer())
+    local wedding = WeddingManager:GetPlayerWeddingInfoFromAll(cm:getPlayer())
     if wedding == nil
-        cm:sendOkLevel("Dispose", "嗯，很抱歉，目前在这个频道没有为您预订的记录。")
+        cm:sendOkLevel("Dispose", "嗯，很抱歉，没有找到您的预订记录。")
+        return
+    end
+
+    if wedding.Channel ~= cserv:getId() then
+        cm:sendOkLevel("Dispose", "嗯，您得去频道" .. wedding.Channel .. " 。")
         return
     end
 
     local em = cm:getEventManager(weddingEventName)
     if em:startInstance(cm:getPlayer().EffectMarriageId, cm:getPlayer()) then
-        eim = getMarriageInstance(cm:getPlayer())
+        eim = WeddingManager:GetMarriageInstance(cm:getPlayer())
         if eim then
             eim:setIntProperty("weddingId", wedding.MarriageId)
             eim:setIntProperty("groomId", wedding.GroomId)
@@ -211,8 +204,8 @@ function levelMain()
 
     if playerId == eim:getIntProperty("groomId") or playerId == eim:getIntProperty("brideId") then
         if wstg == 2 then
-            cm:sendYesNoLevel("非常好，客人们现在已经把所有的祝福都赐予了你。时机已经成熟，#r我应该让你们成为夫妻了吗#k？")
-            state = 1
+            cm:sendYesNoLevel("Dispose", "ConfirmMarry", "非常好，客人们现在已经把所有的祝福都赐予了你。时机已经成熟，#r我应该让你们成为夫妻了吗#k？")
+            return
         elseif wstg == 1 then
             cm:sendOkLevel("Dispose", "当你们两个向彼此宣誓结婚的时候，你们的客人正在向你们祝福。这是你们两个的幸福时刻，请享受这个仪式。")
             return
@@ -226,8 +219,8 @@ function levelMain()
                 cm:sendOkLevel("Dispose", "大家给这对可爱的夫妇送上祝福吧！")
                 return
             elseif eim:getIntProperty("guestBlessings") == 1 then
-                cm:sendYesNoLevel("你想为这对夫妇祝福吗？")
-                state = 0
+                cm:sendYesNoLevel("Dispose", "ConfirmBless", "你想为这对夫妇祝福吗？")
+                return
             else
                 cm:sendOkLevel("Dispose", "今天我们在这里聚集，为了让这对活泼的夫妇重新团聚在婚姻的殿堂上！")
                 return
@@ -240,4 +233,110 @@ function levelMain()
             return
         end
     end
+end
+
+function levelConfirmMarry( ... )
+    local player = cm:getPlayer()
+    local partner = cm:getMap():getCharacterById(cm:getPlayer().PartnerId)
+    if partner == nil then
+        cm:sendOkLevel("Dispose", "嗯，看来你的伴侣不在这里……很遗憾，如果你的伴侣不在这里，我无法完成婚礼。");
+        return
+    end
+
+    local checkResult = getWeddingPreparationStatus(player, partner)
+
+    if checkResult == -1 then
+        cm:sendOkLevel("Dispose", "看来你不再拥有你和你的伴侣在订婚时共享的戒指/戒指盒了。抱歉，但这是婚礼所需要的...");
+        return
+    end
+
+    if checkResult == -2 then
+        cm:sendOkLevel("Dispose", "似乎你的伴侣不再拥有你们订婚时共同分享的戒指/戒指盒了。抱歉，但这是婚礼所需要的…");
+        return
+    end
+
+    if checkResult == -3 then
+        cm:sendOkLevel("Dispose", "看起来你没有入口处给的 #r#t4000313##k... 请找到它，没有这个物品我不能嫁给你。");
+        return
+    end
+
+    if checkResult == -4 then
+        cm:sendOkLevel("Dispose", "请原谅我的无礼，但服装是仪式的重要组成部分。请为婚礼适当地打扮。");
+        return
+    end
+
+    if checkResult == 1 then
+        cm:sendOkLevel("Dispose", "请空出一个装备栏位以获取结婚戒指，可以吗？");
+        return
+    end
+
+    if checkResult == 2 then
+        cm:sendOkLevel("Dispose", "请让你的伴侣知道要留出一个装备栏位来获取婚戒，好吗？");
+        return
+    end
+
+    if checkResult == 3 then
+        cm:sendOkLevel("Dispose", "看起来你的伴侣没有入口处给的#r#t4000313##k... 请找到它，没有这个物品我不能和你结婚。");
+        return
+    end
+
+    if checkResult == 4 then
+        cm:sendOkLevel("Dispose", "看来你的伴侣没有适当地穿着参加婚礼……请原谅我的无礼，但服装是仪式的重要部分。");
+        return
+    end
+
+	local pid = eim:getIntProperty("confirmedVows")
+    if pid == -1 then
+       eim:setIntProperty("confirmedVows", cm:getPlayer().Id)
+       cm:getMap():dropMessage(6, "Wedding Assistant: " + cm:getPlayer().Name + " has confirmed vows! Alright, one step away to make it official. Tighten your seatbelts!")
+       return
+    end
+
+    if pid == cm:getPlayer().Id then
+       cm:sendOkLevel("Dispose", "你已经确认了你的誓言。现在只剩下你的伴侣需要确认了。")
+       return
+    end
+
+    eim:setIntProperty("weddingStage", 3)
+    local cmPartner = partner:getAbstractPlayerInteraction()
+
+    local playerItemId = detectPlayerItemid(player)
+    local partnerItemId = (playerItemId % 2 == 1) and playerItemId + 1 or playerItemId - 1
+
+    local marriageRingId = getRingId((playerItemId % 2 == 1) and playerItemId or partnerItemId)
+
+    cm:gainItem(playerItemId, -1)
+    cmPartner:gainItem(partnerItemId, -1)
+    WeddingManager:CompleteWedding(player, partner, marriageRingId)
+    player:setMarriageItemId(marriageRingId)
+    partner:setMarriageItemId(marriageRingId)
+
+    --var marriageId = eim.getIntProperty("weddingId")
+    --player.sendPacket(Wedding.OnMarriageResult(marriageId, player, true))
+    --partner.sendPacket(Wedding.OnMarriageResult(marriageId, player, true))
+
+    giveCoupleBlessings(eim, player, partner)
+
+    cm:getMap():dropMessage(6, "High Priest John: By the power vested in me through the mighty Maple tree, I now pronounce you  Husband and Wife. You may kiss the bride!")
+    eim:schedule("showMarriedMsg", 2 * 1000)
+end
+
+
+function levelConfirmBless( ... )
+    eim:gridInsert(cm:getPlayer(), 1)
+    if WeddingManager:IsBlesserShowFX() then
+        local target = cm:getPlayer()
+        target:sendPacket(PacketCreator.showSpecialEffect(9))
+        target:getMap():broadcastMessage(target, PacketCreator:showForeignEffect(target.Id, 9), false)
+    else
+        local groom = eim:getPlayerById(eim:getIntProperty("groomId"))
+        groom:sendPacket(PacketCreator.showSpecialEffect(9))
+        groom:getMap():broadcastMessage(target, PacketCreator:showForeignEffect(groom.Id, 9), false)
+
+        local bride = eim:getPlayerById(eim:getIntProperty("brideId"))
+        bride:sendPacket(PacketCreator.showSpecialEffect(9))
+        bride:getMap():broadcastMessage(bride, PacketCreator:showForeignEffect(bride.Id, 9), false)
+    end
+
+    cm:sendOkLevel("Dispose", "你的祝福已经融入了他们的爱。对于这对可爱的夫妇来说，这是多么高尚的行为！")
 end

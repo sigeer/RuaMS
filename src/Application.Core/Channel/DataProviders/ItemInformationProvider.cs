@@ -1242,12 +1242,7 @@ public class ItemInformationProvider : WZDataBootstrap, IStaticService
         }
     }
 
-    public Item getEquipById(int equipId)
-    {
-        return getEquipById(equipId, -1);
-    }
-
-    private Item getEquipById(int equipId, int ringId)
+    public Item getEquipById(int equipId, int ringId = -1)
     {
         Equip nEquip;
         nEquip = new Equip(equipId, 0, ringId);

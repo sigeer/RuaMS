@@ -10,7 +10,10 @@ message InviteGuestRequest {
 
 message InviteGuestResponse {
 	int32 code = 1;
-	InviteGuestRequest request = 2;
+}
+
+message InviteGuestCallback {
+	int32 weddingId = 2;
 	int32 guestId = 3;
 	bool isCathedral = 7;
 	string groomName = 5;
@@ -26,6 +29,8 @@ message WeddingInfoDto {
 	string brideName = 6;
 	int32 channel = 7;
 	int32 marriageId = 8;
+	repeated int32 guests = 9;
+	int64 startTime = 10;
 }
 
 message LoadInvitationRequest {
@@ -51,13 +56,6 @@ message ReserveWeddingResponse {
 	int64 startTime = 2;
 }
 
-message ReserveWeddingCheckRequest {
-	int32 masterId = 1;
-}
-
-message ReserveWeddingCheckResponse {
-	int64 weddingStartTime = 1;
-}
 
 message WeddingInfoListDto {
 	repeated WeddingInfoDto list = 1;
@@ -78,4 +76,25 @@ message BroadcastWeddingDto {
 message CompleteWeddingRequest {
 	int32 marriageId = 1;
 	int32 marriageItemId = 2;
+}
+
+message CompleteWeddingResponse {
+	int32 code = 1;
+	int32 marriageId = 2;
+	int32 marriageItemId = 3;
+	int64 groomRingId = 4;
+	int64 brideRingId = 5;
+	int32 ringSourceId = 6;
+	int32 groomId =7;
+	string groomName = 8;
+	int32 brideId = 9;
+	string brideName = 10;
+}
+
+message CloseWeddingRequest {
+	int32 marriageId = 1;
+}
+
+message CloseWeddingResponse {
+	int32 code = 1;
 }

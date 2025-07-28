@@ -110,25 +110,28 @@ function level1()
 	end
 end
 
+-- 参加婚礼
 function level2()
     local allInvitation = WeddingManager:GetWeddingMasterByGuestTicket(cm:getPlayer(), cathedralWedding)
     if allInvitation.Count == 0 then
-        cm:sendOkLevel("你没有#b#t婚礼宾客券##k。");
+        cm:sendOkLevel("Dispose", "你没有#b#t婚礼宾客券##k。");
     else if allInvitation.Count == 1 then
         guestSelectWedding(cm:getPlayer(), allInvitation[0].Id)
     end
     else
         local msg = "你要参加谁的婚礼？"
-	    for i = 0, allInvitation.Count do
+	    for i = 0, allInvitation.Count - 1 do
 		    text = text .. "\r\n#L" .. i .. "##b" ..  allInvitation[i].GroomName .. " 与 " .. allInvitation[i].BrideName .. "#l"
             if cm.getClient():getChannelServer():getId() ~= allInvitation[i].Channel then
                 text = text .. "（频道" .. allInvitation[i].Channel .."）"
             end
 	    end
+        cm:SetContextData(allInvitation)
         cm:sendNextSelectLevel("SelectWedding", msg)
     end
 end
 
+-- 选择谁的婚礼
 function levelSelectWedding(idx)
     local selected = cm:GetContextData()[idx]
     if (selected == nil) then

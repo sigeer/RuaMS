@@ -2,23 +2,18 @@ using Application.Core.Client;
 using Application.Core.Game.Players;
 using client.inventory;
 using scripting.Event;
-using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Module.Marriage.Channel
 {
-    public class MarriageInstance: EventInstanceManager
+    public class MarriageInstance : EventInstanceManager
     {
-        public int WeddingId { get; set; }
         public List<Item> GroomGiftList { get; set; } = new();
         public List<Item> BrideGiftList { get; set; } = new();
-        public MarriageInstance(EventManager em, string name) : base(em, name)
-        {
 
+        readonly IChannelServerTransport _transport;
+        public MarriageInstance(EventManager em, string name, IChannelServerTransport transport) : base(em, name)
+        {
+            _transport = transport;
         }
 
         public bool giftItemToSpouse(int cid)
@@ -131,6 +126,12 @@ namespace Application.Module.Marriage.Channel
         //        Log.Logger.Error(sqle.ToString());
         //    }
         //}
+
+        public override void dispose(bool shutdown = false)
+        {
+            base.dispose(shutdown);
+            _transport.CloseWedding(new MarriageProto.CloseWeddingRequest { MarriageId = getIntProperty("weddingId") });
+        }
     }
 
 }

@@ -236,12 +236,9 @@ namespace Application.Core.Login.Datas
 
                 var chrModel = _mapper.Map<CharacterModel>(characterEntity);
 
-                var marriageData = dbContext.Marriages.AsNoTracking().Where(x => x.Husbandid == characterEntity.Id || x.Wifeid == characterEntity.Id)
-                        .Where(x => x.Status != 2).FirstOrDefault();
-                if (marriageData != null)
+                foreach (var module in _masterServer.Modules)
                 {
-                    chrModel.EffectMarriageId = marriageData.Marriageid;
-                    chrModel.PartnerId = marriageData.Husbandid == chrModel.Id ? marriageData.Wifeid : marriageData.Husbandid;
+                    module.OnPlayerLoad(dbContext, chrModel);
                 }
 
                 var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)

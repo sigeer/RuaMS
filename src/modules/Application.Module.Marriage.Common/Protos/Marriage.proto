@@ -8,6 +8,10 @@ message BreakMarriageRequest {
 
 message BreakMarriageResponse {
 	int32 code = 1;
+}
+
+message BreakMarriageCallback {
+	int32 code = 1;
 	int32 masterId = 2;
 	string masterName = 3;
 	int32 masterPartnerId  = 4;

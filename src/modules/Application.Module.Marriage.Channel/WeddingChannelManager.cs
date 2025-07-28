@@ -11,6 +11,7 @@ namespace Application.Module.Marriage.Channel
         readonly ILogger<WeddingChannelManager> _logger;
 
         readonly WorldChannelServer _server;
+        readonly IChannelServerTransport _transport;
         public WorldChannel ChannelServer { get; }
         public List<WeddingInfo> RegisteredWeddings { get; set; } = [];
         public WeddingChannelManager(WorldChannelServer server, ILogger<WeddingChannelManager> logger, WorldChannel worldChannel)
@@ -22,7 +23,7 @@ namespace Application.Module.Marriage.Channel
 
         public MarriageInstance CreateMarriageInstance(EventManager em, string name)
         {
-            MarriageInstance ret = new MarriageInstance(em, name);
+            MarriageInstance ret = new MarriageInstance(em, name, _transport);
 
             if (em.RegisterInstance(name, ret))
                 throw new EventInstanceInProgressException(name, em.getName());

@@ -11,14 +11,19 @@ namespace Application.Module.Marriage.Master
         {
         }
 
+        internal void SendBreakMarriageCallback(BreakMarriageCallback breakMarriageCallback)
+        {
+            SendMessage(MessageType.MarriageBroken, breakMarriageCallback, breakMarriageCallback.MasterId, breakMarriageCallback.MasterPartnerId);
+        }
+
         internal void BroadcastWedding(BroadcastWeddingDto broadcastWeddingDto)
         {
             BroadcastMessage(MessageType.WeddingBroadcast, broadcastWeddingDto);
         }
 
-        internal void ReturnGuestInvitation(InviteGuestResponse inviteGuestResponse)
+        internal void ReturnGuestInvitation(InviteGuestCallback inviteGuestResponse)
         {
-            throw new NotImplementedException();
+            SendMessage(MessageType.WeddingInviteGuest, inviteGuestResponse, inviteGuestResponse.GuestId);
         }
     }
 }

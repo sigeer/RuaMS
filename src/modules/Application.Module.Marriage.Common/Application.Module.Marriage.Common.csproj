@@ -15,6 +15,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Protos\Service.proto"  GrpcServices="Both" />
+
 		<Protobuf Include="Protos\Marriage.proto" GrpcServices="None" />
 		<Protobuf Include="Protos\Wedding.proto" GrpcServices="None" />
 	</ItemGroup>

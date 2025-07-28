@@ -19,6 +19,8 @@ namespace Application.Module.Marriage.Channel
             base.Initialize();
 
             MessageDispatcher.Register<MarriageProto.BroadcastWeddingDto>(MessageType.WeddingBroadcast, _weddingManager.BroadcastWedding);
+            MessageDispatcher.Register<MarriageProto.InviteGuestCallback>(MessageType.WeddingInviteGuest, _weddingManager.OnGuestInvited);
+            MessageDispatcher.Register<MarriageProto.BreakMarriageCallback>(MessageType.MarriageBroken, _weddingManager.OnMarriageBroken);
         }
 
     }

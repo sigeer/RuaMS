@@ -253,7 +253,7 @@ public class EventManager
 
         ret.setName(instanceName);
 
-        if (!instances.TryAdd(instanceName, ret))
+        if (!RegisterInstance(instanceName, ret))
             throw new EventInstanceInProgressException(instanceName, this.getName());
         return ret;
     }

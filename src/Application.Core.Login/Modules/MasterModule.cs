@@ -1,6 +1,8 @@
 using Application.Core.Login.Models;
 using Application.EF;
+using Application.EF.Entities;
 using Application.Utility.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Events
@@ -55,6 +57,11 @@ namespace Application.Core.Login.Events
         {
             _logger.LogInformation("模块 {Name}：卸载", _moduleName);
             return Task.CompletedTask;
+        }
+
+        public virtual void OnPlayerLoad(DBContext dbContext, CharacterModel chrModel)
+        {
+
         }
 
         public virtual void OnPlayerLogin(CharacterLiveObject obj)

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "Protos/Marriage.proto";
+import "Protos/Wedding.proto";
+
+package MarriageServiceProto;
+
+service ChannelService {
+	rpc CreateMarriageRelation(MarriageProto.CreateMarriageRelationRequest) returns(MarriageProto.CreateMarriageRelationResponse);
+	rpc ReserveWedding(MarriageProto.ReserveWeddingRequest) returns(MarriageProto.ReserveWeddingResponse);
+	rpc LoadWeddings(MarriageProto.LoadWeddingByIdRequest) returns(MarriageProto.WeddingInfoListDto);
+	rpc CompleteWedding(MarriageProto.CompleteWeddingRequest) returns(MarriageProto.CompleteWeddingResponse);
+	rpc InviteGuest(MarriageProto.InviteGuestRequest) returns(MarriageProto.InviteGuestResponse);
+	rpc LoadInvitationContent(MarriageProto.LoadInvitationRequest) returns(MarriageProto.LoadInvitationResponse);
+	rpc CloseWedding(MarriageProto.CloseWeddingRequest) returns(MarriageProto.CloseWeddingResponse);
+
+	rpc BreakMarriage(MarriageProto.BreakMarriageRequest) returns(MarriageProto.BreakMarriageResponse);
+}
