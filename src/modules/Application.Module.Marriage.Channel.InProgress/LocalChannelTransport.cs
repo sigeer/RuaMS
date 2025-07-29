@@ -1,6 +1,5 @@
-using Application.Module.Marriage.Master;
+using AutoMapper;
 using MarriageProto;
-using System;
 
 namespace Application.Module.Marriage.Channel.InProgress
 {
@@ -9,7 +8,7 @@ namespace Application.Module.Marriage.Channel.InProgress
         readonly Master.MarriageManager _marriageManager;
         readonly Master.WeddingManager _weddingManager;
 
-        public LocalChannelTransport(MarriageManager marriageManager, Master.WeddingManager weddingManager)
+        public LocalChannelTransport(Master.MarriageManager marriageManager, Master.WeddingManager weddingManager)
         {
             _marriageManager = marriageManager;
             _weddingManager = weddingManager;
@@ -45,9 +44,19 @@ namespace Application.Module.Marriage.Channel.InProgress
             throw new NotImplementedException();
         }
 
+        public LoadMarriageInfoResponse LoadMarriageInfo(LoadMarriageInfoRequest loadMarriageInfoRequest)
+        {
+            return _marriageManager.GetEffectMarriageModelRemote(loadMarriageInfoRequest);
+        }
+
         public ReserveWeddingResponse ReserveWedding(ReserveWeddingRequest reserveWeddingRequest)
         {
             return _weddingManager.ReserveWedding(reserveWeddingRequest);
+        }
+
+        public SendSpouseChatResponse SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest)
+        {
+            return _marriageManager.SpouseChat(sendSpouseChatRequest);
         }
 
         public LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest)

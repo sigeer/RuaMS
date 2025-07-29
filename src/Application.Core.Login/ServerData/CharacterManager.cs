@@ -165,6 +165,13 @@ namespace Application.Core.Login.Datas
                             module.OnPlayerLogoff(origin);
                         }
                     }
+                    else
+                    {
+                        foreach (var module in _masterServer.Modules)
+                        {
+                            module.OnPlayerEnterCashShop(origin);
+                        }
+                    }
                 }
             }
         }
@@ -201,6 +208,28 @@ namespace Application.Core.Login.Datas
             else
             {
                 throw new BusinessFatalException($"未验证的玩家Id {playerId}。{nameof(_idDataSource)} 中包含了所有登录过的玩家，而设置频道的玩家必然登录过。");
+            }
+        }
+
+        public void UpdateMap(int characterId, int mapId)
+        {
+            var chr = FindPlayerById(characterId);
+            if (chr != null)
+            {
+                chr.Character.Map = mapId;
+
+                foreach (var module in _masterServer.Modules)
+                {
+                    module.OnPlayerMapChanged(chr);
+                }
+            }
+        }
+
+        public void BatchUpdateMap(List<SyncProto.MapSyncDto> data)
+        {
+            foreach (var item in data)
+            {
+                UpdateMap(item.MasterId, item.MapId);
             }
         }
 
@@ -529,5 +558,7 @@ namespace Application.Core.Login.Datas
         {
             return _idDataSource.Values.Count(x => x.Channel == channelId);
         }
+
+
     }
 }

@@ -44,11 +44,13 @@ public class RingActionHandler : ChannelHandlerBase
 {
     readonly ILogger<RingActionHandler> _logger;
     readonly WeddingManager _weddingManager;
+    readonly MarriageManager _marriageManager;
 
-    public RingActionHandler(ILogger<RingActionHandler> logger, WeddingManager weddingManager)
+    public RingActionHandler(ILogger<RingActionHandler> logger, WeddingManager weddingManager, MarriageManager marriageManager)
     {
         _logger = logger;
         _weddingManager = weddingManager;
+        _marriageManager = marriageManager;
     }
 
     private static int getEngagementBoxId(int useItemId)
@@ -63,38 +65,42 @@ public class RingActionHandler : ChannelHandlerBase
         };
     }
 
-    public static void sendEngageProposal(IChannelClient c, string name, int itemid)
+    public void sendEngageProposal(IChannelClient c, string name, int itemid)
     {
         int newBoxId = getEngagementBoxId(itemid);
-        var target = c.CurrentServer.Players.getCharacterByName(name);
+
         var source = c.OnlinedCharacter;
 
-        // TODO: get the correct packet bytes for these popups
-        if (source.isMarried())
+        if (source.getLevel() < 50)
+        {
+            source.dropMessage(1, "You can only propose being level 50 or higher.");
+            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            return;
+        }
+
+        var marriageInfo = _marriageManager.GetPlayerMarriageInfo(source.Id);
+        if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Married)
         {
             source.dropMessage(1, "You're already married!");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
-        else if (source.getPartnerId() > 0)
+
+        if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Engaged)
         {
             source.dropMessage(1, "You're already engaged!");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
-        else if (source.getMarriageItemId() > 0)
-        {
-            source.dropMessage(1, "You're already engaging someone!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
-            return;
-        }
-        else if (target == null)
+
+        var target = c.CurrentServer.Players.getCharacterByName(name);
+        if (target == null)
         {
             source.dropMessage(1, "Unable to find " + name + " on this channel.");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
-        else if (target == source)
+        if (target == source)
         {
             source.dropMessage(1, "You can't engage yourself.");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
@@ -103,12 +109,6 @@ public class RingActionHandler : ChannelHandlerBase
         else if (target.getLevel() < 50)
         {
             source.dropMessage(1, "You can only propose to someone level 50 or higher.");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
-            return;
-        }
-        else if (source.getLevel() < 50)
-        {
-            source.dropMessage(1, "You can only propose being level 50 or higher.");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
@@ -123,25 +123,28 @@ public class RingActionHandler : ChannelHandlerBase
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
-        else if (target.isMarried())
+
+        marriageInfo = _marriageManager.GetPlayerMarriageInfo(target.Id);
+        if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Married)
         {
             source.dropMessage(1, "The player is already married!");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
-        else if (target.getPartnerId() > 0 || target.getMarriageItemId() > 0)
+
+        if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Engaged)
         {
             source.dropMessage(1, "The player is already engaged!");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
-        else if (target.haveWeddingRing())
+        else if (_weddingManager.HasWeddingRing(target))
         {
             source.dropMessage(1, "The player already holds a marriage ring...");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
-        else if (source.haveWeddingRing())
+        else if (_weddingManager.HasWeddingRing(source))
         {
             source.dropMessage(1, "You can't propose while holding a marriage ring!");
             source.sendPacket(WeddingPackets.OnMarriageResult(0));
@@ -183,9 +186,9 @@ public class RingActionHandler : ChannelHandlerBase
                 break;
 
             case 1: // Cancel Proposal
-                if (c.OnlinedCharacter.getMarriageItemId() / 1000000 != 4)
+                if (c.OnlinedCharacter.MarriageItemId / 1000000 != 4)
                 {
-                    c.OnlinedCharacter.setMarriageItemId(-1);
+                    c.OnlinedCharacter.MarriageItemId = -1;
                 }
                 break;
 
@@ -194,6 +197,7 @@ public class RingActionHandler : ChannelHandlerBase
                 bool accepted = p.readByte() > 0;
                 name = p.readString();
 
+                // 这个是否可以改成marriage item id？
                 int id = p.readInt();
 
                 var source = c.CurrentServer.Players.getCharacterByName(name);
@@ -205,8 +209,8 @@ public class RingActionHandler : ChannelHandlerBase
                     return;
                 }
 
-                int itemid = source.getMarriageItemId();
-                if (target.getPartnerId() > 0 || source.getId() != id || itemid <= 0 || !source.haveItem(itemid) || source.getPartnerId() > 0 || !source.isAlive() || !target.isAlive())
+                int itemid = source.MarriageItemId;
+                if (source.getId() != id || itemid <= 0 || !source.haveItem(itemid) || !source.isAlive() || !target.isAlive())
                 {
                     target.sendPacket(PacketCreator.enableActions());
                     return;

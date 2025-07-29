@@ -21,36 +21,26 @@
 */
 
 
-using tools;
+using Application.Core.Channel.Net;
+using Application.Core.Client;
+using Application.Shared.Net;
 
-namespace Application.Core.Channel.Net.Handlers;
+namespace Application.Module.Marriage.Channel.Net.Handlers;
 
 public class SpouseChatHandler : ChannelHandlerBase
 {
+    readonly MarriageManager _marriageManager;
+
+    public SpouseChatHandler(MarriageManager marriageManager)
+    {
+        _marriageManager = marriageManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         p.readString();//recipient
         string msg = p.readString();
 
-        int partnerId = c.OnlinedCharacter.getPartnerId();
-        if (partnerId > 0)
-        {
-            // yay marriage
-            var spouse = c.getWorldServer().getPlayerStorage().getCharacterById(partnerId);
-            if (spouse != null && spouse.isLoggedinWorld())
-            {
-                spouse.sendPacket(PacketCreator.OnCoupleMessage(c.OnlinedCharacter.getName(), msg, true));
-                c.sendPacket(PacketCreator.OnCoupleMessage(c.OnlinedCharacter.getName(), msg, true));
-                // ChatLogger.log(c, "Spouse", msg);
-            }
-            else
-            {
-                c.OnlinedCharacter.dropMessage(5, "Your spouse is currently offline.");
-            }
-        }
-        else
-        {
-            c.OnlinedCharacter.dropMessage(5, "You don't have a spouse.");
-        }
+        _marriageManager.SendSpouseChat(c.OnlinedCharacter, msg);
     }
 }

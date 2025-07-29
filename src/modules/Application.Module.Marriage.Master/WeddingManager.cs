@@ -35,13 +35,20 @@ namespace Application.Module.Marriage.Master
                 return new ReserveWeddingResponse() { Code = 2 };
             }
 
-            if (registeredWedding.ContainsKey(chr.Character.EffectMarriageId))
+            var marriageInfo = _marriageManager.GetEffectMarriageModel(chr.Character.Id);
+            if (marriageInfo == null)
+            {
+                return new ReserveWeddingResponse { Code = (int)ReserveErrorCode.NotYetEngaged };
+            }
+
+            if (registeredWedding.ContainsKey(marriageInfo.Id))
             {
                 return new ReserveWeddingResponse() { Code = (int)ReserveErrorCode.AlreadyReserved };
             }
 
-            var weddingInfo = new WeddingInfo(chr.Character.EffectMarriageId, request.Channel, request.IsCathedral, request.IsPremium, request.MasterId, chr.Character.PartnerId, [], request.StartTime + (long)TimeSpan.FromMinutes(30).TotalMilliseconds);
-            registeredWedding[chr.Character.EffectMarriageId] = weddingInfo;
+            var weddingInfo = new WeddingInfo(marriageInfo.Id, request.Channel, request.IsCathedral, request.IsPremium, 
+                request.MasterId, marriageInfo.GetPartnerId(chr.Character.Id), [], request.StartTime + (long)TimeSpan.FromMinutes(30).TotalMilliseconds);
+            registeredWedding[marriageInfo.Id] = weddingInfo;
 
             _transport.BroadcastWedding(new BroadcastWeddingDto
             {
@@ -61,21 +68,28 @@ namespace Application.Module.Marriage.Master
 
         public MarriageProto.CompleteWeddingResponse CompleteWedding(CompleteWeddingRequest request)
         {
-            if (registeredWedding.TryGetValue(request.MarriageId, out var wedding) && _marriageManager.CompleteMarriage(wedding.Id))
+            if (registeredWedding.TryGetValue(request.MarriageId, out var wedding))
             {
-                var ring = _server.RingManager.CreateRing(request.MarriageItemId, wedding.GroomId, wedding.BrideId, wedding.Id);
-                return new CompleteWeddingResponse
+                var marriage = _marriageManager.Query(x => x.Id == request.MarriageId).FirstOrDefault();
+                if (marriage != null && marriage.Status == 0)
                 {
-                    GroomRingId = ring.RingId1,
-                    BrideRingId = ring.RingId2,
-                    MarriageId = wedding.Id,
-                    MarriageItemId = ring.ItemId,
-                    RingSourceId = ring.Id,
-                    BrideId = wedding.BrideId,
-                    BrideName = _server.CharacterManager.GetPlayerName(wedding.BrideId),
-                    GroomId = wedding.GroomId,
-                    GroomName = _server.CharacterManager.GetPlayerName(wedding.GroomId),
-                };
+                    var ring = _server.RingManager.CreateRing(request.MarriageItemId, wedding.GroomId, wedding.BrideId);
+                    _marriageManager.CompleteMarriage(marriage, ring.Id);
+
+                    return new CompleteWeddingResponse
+                    {
+                        GroomRingId = ring.RingId1,
+                        BrideRingId = ring.RingId2,
+                        MarriageId = wedding.Id,
+                        MarriageItemId = ring.ItemId,
+                        RingSourceId = ring.Id,
+                        BrideId = wedding.BrideId,
+                        BrideName = _server.CharacterManager.GetPlayerName(wedding.BrideId),
+                        GroomId = wedding.GroomId,
+                        GroomName = _server.CharacterManager.GetPlayerName(wedding.GroomId),
+                    };
+                }
+
             }
             return new MarriageProto.CompleteWeddingResponse { Code = 1 };
         }

@@ -54,5 +54,15 @@ namespace Application.Module.Marriage.Master
         {
             return Task.FromResult(_marriageManager.BreakMarriage(request));
         }
+
+        public override Task<LoadMarriageInfoResponse> LoadEffectMarriageInfo(LoadMarriageInfoRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(_marriageManager.GetEffectMarriageModelRemote(request));
+        }
+
+        public override Task<SendSpouseChatResponse> SpouseChat(SendSpouseChatRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(_marriageManager.SpouseChat(request));
+        }
     }
 }

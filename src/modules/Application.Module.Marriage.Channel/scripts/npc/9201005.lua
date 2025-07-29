@@ -54,9 +54,9 @@ function level1()
         return
     end
 
-
+    local partnerId = cm:getPlayer().Id == wedding.GroomId and wedding.BrideId or wedding.GroomId
 	local cserv = cm.getClient():getChannelServer()
-	local partner = cserv.Players:getCharacterById(cm:getPlayer():getPartnerId())
+	local partner = cserv.Players:getCharacterById(partnerId)
 	if partner == nil then
 		cm:sendOkLevel("你的伴侣似乎不在这里... 确保在时机成熟时把两个人都召集到这里！")
 		return

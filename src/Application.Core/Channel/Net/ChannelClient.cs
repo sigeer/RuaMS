@@ -173,7 +173,6 @@ namespace Application.Core.Channel.Net
             try
             {
                 player.setDisconnectedFromChannelWorld();
-                player.notifyMapTransferToPartner(-1);
                 player.removeIncomingInvites();
                 player.cancelAllBuffs(true);
 
@@ -450,7 +449,6 @@ namespace Application.Core.Channel.Net
             Character.unregisterChairBuff();
             CurrentServer.Container.DataService.SaveBuff(Character);
             Character.setDisconnectedFromChannelWorld();
-            Character.notifyMapTransferToPartner(-1);
             Character.removeIncomingInvites();
             Character.cancelAllBuffs(true);
             Character.cancelAllDebuffs();

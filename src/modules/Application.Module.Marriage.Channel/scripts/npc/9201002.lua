@@ -114,7 +114,6 @@ end
 function levelNotWeddingInDoors0()
     local wid = cm:getClient():getWorldServer():getRelationshipId(cm:getPlayer():getId())
 
-
     local weddingInfo = WeddingManager:GetPlayerWeddingInfoFromAll(cm:getPlayer())
     if weddingInfo == nil then
         cm:sendOkLevel("Dispose", "嗯，很抱歉，目前在这个频道没有为您预订的记录。")
@@ -126,8 +125,9 @@ function levelNotWeddingInDoors0()
         return
     end
 
+    local partnerId = cm:getPlayer().Id == wedding.GroomId and wedding.BrideId or wedding.GroomId
     local cserv = cm:getClient():getChannelServer()
-    local partner = cserv.Players:getCharacterById(cm:getPlayer():getPartnerId())
+    local partner = cserv.Players:getCharacterById(partnerId)
 
     if partner == nil or cm:getMap() ~= partner:getMap() then
         cm:sendOkLevel("Dispose", "嗯，看来你的伴侣在别处……请让TA在开始仪式之前来这里。")
@@ -153,14 +153,6 @@ function levelNotWeddingInDoors0()
 end
 
 function levelStartWedding()
-    local cserv = cm:getClient():getChannelServer()
-
-    local partner = cserv.Players:getCharacterById(cm:getPlayer():getPartnerId())
-    if partner == nil or cm:getMap() ~= partner:getMap() then
-        cm:sendOkLevel("Dispose", "嗯，看来你的伴侣在别处……请让TA在开始仪式之前来这里。")
-        return
-    end
-
     local wedding = WeddingManager:GetPlayerWeddingInfoFromAll(cm:getPlayer())
     if wedding == nil
         cm:sendOkLevel("Dispose", "嗯，很抱歉，没有找到您的预订记录。")
@@ -172,8 +164,16 @@ function levelStartWedding()
         return
     end
 
+    local partnerId = cm:getPlayer().Id == wedding.GroomId and wedding.BrideId or wedding.GroomId
+    local cserv = cm:getClient():getChannelServer()
+    local partner = cserv.Players:getCharacterById(partnerId)
+    if partner == nil or cm:getMap() ~= partner:getMap() then
+        cm:sendOkLevel("Dispose", "嗯，看来你的伴侣在别处……请让TA在开始仪式之前来这里。")
+        return
+    end
+
     local em = cm:getEventManager(weddingEventName)
-    if em:startInstance(cm:getPlayer().EffectMarriageId, cm:getPlayer()) then
+    if em:startInstance(wedding.MarriageId, cm:getPlayer()) then
         eim = WeddingManager:GetMarriageInstance(cm:getPlayer())
         if eim then
             eim:setIntProperty("weddingId", wedding.MarriageId)
@@ -237,7 +237,7 @@ end
 
 function levelConfirmMarry( ... )
     local player = cm:getPlayer()
-    local partner = cm:getMap():getCharacterById(cm:getPlayer().PartnerId)
+    local partner = cm:getMap():getCharacterById(MarriageManager:GetPartnerId(player.Id))
     if partner == nil then
         cm:sendOkLevel("Dispose", "嗯，看来你的伴侣不在这里……很遗憾，如果你的伴侣不在这里，我无法完成婚礼。");
         return

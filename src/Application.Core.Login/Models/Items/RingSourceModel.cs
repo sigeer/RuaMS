@@ -11,6 +11,5 @@ namespace Application.Core.Login.Models
 
         public int CharacterId1 { get; set; }
         public int CharacterId2 { get; set; }
-        public int MarriageId { get; set; }
     }
 }

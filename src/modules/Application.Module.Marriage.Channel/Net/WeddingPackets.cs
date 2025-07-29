@@ -8,6 +8,7 @@
 
 using Application.Core.Game.Players;
 using Application.Core.Managers;
+using Application.Module.Marriage.Common.Models;
 using Application.Shared.Constants.Item;
 using Application.Shared.Net;
 using client.inventory;
@@ -53,118 +54,56 @@ public class WeddingPackets : PacketCreator
         00000104 CWeddingMan     ends
     */
 
-    public class Field_Wedding
-    {
-        public int m_nNoticeCount;
-        public int m_nCurrentStep;
-        public int m_nBlessStartTime;
-    }
+    //public class Field_Wedding
+    //{
+    //    public int m_nNoticeCount;
+    //    public int m_nCurrentStep;
+    //    public int m_nBlessStartTime;
+    //}
 
-    public class Field_WeddingPhoto
-    {
-        public bool m_bPictureTook;
-    }
+    //public class Field_WeddingPhoto
+    //{
+    //    public bool m_bPictureTook;
+    //}
 
-    public class GW_WeddingReservation
-    {
-        public int dwReservationNo;
-        public int dwGroom, dwBride;
-        public string sGroomName, sBrideName;
-        public int usWeddingType;
-    }
+    //public class GW_WeddingReservation
+    //{
+    //    public int dwReservationNo;
+    //    public int dwGroom, dwBride;
+    //    public string sGroomName, sBrideName;
+    //    public int usWeddingType;
+    //}
 
-    public class WeddingWishList
-    {
-        public IPlayer pUser;
-        public int dwMarriageNo;
-        public int nGender;
-        public int nWLType;
-        public int nSlotCount;
-        public List<string> asWishList = new();
-        public int usModifiedFlag; // dword
-        public bool bLoaded;
-    }
+    //public class WeddingWishList
+    //{
+    //    public IPlayer pUser;
+    //    public int dwMarriageNo;
+    //    public int nGender;
+    //    public int nWLType;
+    //    public int nSlotCount;
+    //    public List<string> asWishList = new();
+    //    public int usModifiedFlag; // dword
+    //    public bool bLoaded;
+    //}
 
-    public class GW_WeddingWishList
-    {
-        public int WEDDINGWL_MAX = 0xA; // enum WEDDINGWL
-        public int dwReservationNo;
-        public byte nGender;
-        public string sItemName;
-    }
+    //public class GW_WeddingWishList
+    //{
+    //    public int WEDDINGWL_MAX = 0xA; // enum WEDDINGWL
+    //    public int dwReservationNo;
+    //    public byte nGender;
+    //    public string sItemName;
+    //}
 
-    public enum MarriageStatus
-    {
-        SINGLE = 0x0,
-        ENGAGED = 0x1,
-        RESERVED = 0x2,
-        MARRIED = 0x3
-    }
-
-    public enum MarriageRequest
-    {
-        AddMarriageRecord = 0x0,
-        SetMarriageRecord = 0x1,
-        DeleteMarriageRecord = 0x2,
-        LoadReservation = 0x3,
-        AddReservation = 0x4,
-        DeleteReservation = 0x5,
-        GetReservation = 0x6
-    }
-
-    public enum WeddingType
-    {
-        CATHEDRAL = 0x1,
-        VEGAS = 0x2,
-        CATHEDRAL_PREMIUM = 0xA,
-        CATHEDRAL_NORMAL = 0xB,
-        VEGAS_PREMIUM = 0x14,
-        VEGAS_NORMAL = 0x15
-    }
-
-    public enum WeddingMap
-    {
-        WEDDINGTOWN = 680000000,
-        CHAPEL_STARTMAP = 680000110,
-        CATHEDRAL_STARTMAP = 680000210,
-        PHOTOMAP = 680000300,
-        EXITMAP = 680000500
-    }
-
-    public enum WeddingItem
-    {
-        WR_MOONSTONE = ItemId.WEDDING_RING_MOONSTONE, // Wedding Ring
-        WR_STARGEM = ItemId.WEDDING_RING_STAR,
-        WR_GOLDENHEART = ItemId.WEDDING_RING_GOLDEN,
-        WR_SILVERSWAN = ItemId.WEDDING_RING_SILVER,
-        ERB_MOONSTONE = ItemId.ENGAGEMENT_BOX_MOONSTONE, // Engagement Ring Box
-        ERB_STARGEM = ItemId.ENGAGEMENT_BOX_STAR,
-        ERB_GOLDENHEART = ItemId.ENGAGEMENT_BOX_GOLDEN,
-        ERB_SILVERSWAN = ItemId.ENGAGEMENT_BOX_SILVER,
-        ERBE_MOONSTONE = ItemId.EMPTY_ENGAGEMENT_BOX_MOONSTONE, // Engagement Ring Box (Empty)
-        ER_MOONSTONE = ItemId.ENGAGEMENT_RING_MOONSTONE, // Engagement Ring
-        ERBE_STARGEM = ItemId.EMPTY_ENGAGEMENT_BOX_STAR,
-        ER_STARGEM = ItemId.ENGAGEMENT_RING_STAR,
-        ERBE_GOLDENHEART = ItemId.EMPTY_ENGAGEMENT_BOX_GOLDEN,
-        ER_GOLDENHEART = ItemId.ENGAGEMENT_RING_GOLDEN,
-        ERBE_SILVERSWAN = ItemId.EMPTY_ENGAGEMENT_BOX_SILVER,
-        ER_SILVERSWAN = ItemId.ENGAGEMENT_RING_SILVER,
-        PARENTS_BLESSING = ItemId.PARENTS_BLESSING, // Parents Blessing
-        OFFICIATORS_PERMISSION = ItemId.OFFICIATORS_PERMISSION, // Officiator's Permission
-        WR_CATHEDRAL_PREMIUM = ItemId.PREMIUM_CATHEDRAL_RESERVATION_RECEIPT, // Wedding Ring?
-        WR_VEGAS_PREMIUM = ItemId.PREMIUM_CHAPEL_RESERVATION_RECEIPT,
-        IB_VEGAS = ItemId.INVITATION_CHAPEL,      // toSend invitation
-        IB_CATHEDRAL = ItemId.INVITATION_CATHEDRAL,  // toSend invitation
-        IG_VEGAS = ItemId.RECEIVED_INVITATION_CHAPEL,      // rcvd invitation
-        IG_CATHEDRAL = ItemId.RECEIVED_INVITATION_CATHEDRAL,  // rcvd invitation
-        OB_FORCOUPLE = ItemId.ONYX_CHEST_FOR_COUPLE, // Onyx Box? For Couple
-        WR_CATHEDRAL_NORMAL = ItemId.NORMAL_CATHEDRAL_RESERVATION_RECEIPT, // Wedding Ring?
-        WR_VEGAS_NORMAL = ItemId.NORMAL_CHAPEL_RESERVATION_RECEIPT,
-        WT_CATHEDRAL_NORMAL = ItemId.NORMAL_WEDDING_TICKET_CATHEDRAL, // Wedding Ticket
-        WT_VEGAS_NORMAL = ItemId.NORMAL_WEDDING_TICKET_CHAPEL,
-        WT_VEGAS_PREMIUM = ItemId.PREMIUM_WEDDING_TICKET_CHAPEL,
-        WT_CATHEDRAL_PREMIUM = ItemId.PREMIUM_WEDDING_TICKET_CATHEDRAL
-    }
+    //public enum MarriageRequest
+    //{
+    //    AddMarriageRecord = 0x0,
+    //    SetMarriageRecord = 0x1,
+    //    DeleteMarriageRecord = 0x2,
+    //    LoadReservation = 0x3,
+    //    AddReservation = 0x4,
+    //    DeleteReservation = 0x5,
+    //    GetReservation = 0x6
+    //}
 
 
     /**
@@ -247,30 +186,21 @@ public class WeddingPackets : PacketCreator
      * @param wedding
      * @return mplew
      */
-    public static Packet OnMarriageResult(int marriageId, IPlayer chr, bool wedding)
+    public static Packet OnMarriageResult(Models.MarriageInfo info)
     {
         OutPacket p = OutPacket.create(SendOpcode.MARRIAGE_RESULT);
         p.writeByte(11);
-        p.writeInt(marriageId);
-        p.writeInt(chr.getGender() == 0 ? chr.getId() : chr.getPartnerId());
-        p.writeInt(chr.getGender() == 0 ? chr.getPartnerId() : chr.getId());
-        p.writeShort(wedding ? 3 : 1);
-        if (wedding)
-        {
-            p.writeInt(chr.getMarriageItemId());
-            p.writeInt(chr.getMarriageItemId());
-        }
-        else
-        {
-            p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
-            p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
-        }
-        p.writeFixedString(chr.getGender() == 0 ? chr.getName() : CharacterManager.getNameById(chr.getPartnerId()));
-        p.writeFixedString(chr.getGender() == 0 ? CharacterManager.getNameById(chr.getPartnerId()) : chr.getName());
+        p.writeInt(info.Id);
+        p.writeInt(info.HusbandId);
+        p.writeInt(info.WifeId);
+        p.writeShort((int)MarriageClientStatus.ENGAGED);
+        p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
+        p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
+        p.writeFixedString(info.HusbandName);
+        p.writeFixedString(info.WifeName);
 
         return p;
     }
-
     /**
      * To exit the Engagement Window (Waiting for her response...), we send a GMS-like pop-up.
      *
@@ -406,6 +336,19 @@ public class WeddingPackets : PacketCreator
                     break;
                 }
         }
+        return p;
+    }
+
+    public static Packet OnCoupleMessage(string fiance, string text, bool spouse)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.SPOUSE_CHAT);
+        p.writeByte(spouse ? 5 : 4); // v2 = CInPacket::Decode1(a1) - 4;
+        if (spouse)
+        { // if ( v2 ) {
+            p.writeString(fiance);
+        }
+        p.writeByte(spouse ? 5 : 1);
+        p.writeString(text);
         return p;
     }
 }

@@ -16,7 +16,7 @@ namespace Application.Core.Login.Mappers
 
         public string Resolve(RingSourceModel source, RingDto destination, string destMember, ResolutionContext context)
         {
-            return _server.CharacterManager.FindPlayerById(source.CharacterId1)?.Character?.Name ?? StringConstants.CharacterUnknown;
+            return _server.CharacterManager.GetPlayerName(source.CharacterId1);
         }
     }
 
@@ -31,7 +31,7 @@ namespace Application.Core.Login.Mappers
 
         public string Resolve(RingSourceModel source, RingDto destination, string destMember, ResolutionContext context)
         {
-            return _server.CharacterManager.FindPlayerById(source.CharacterId2)?.Character?.Name ?? StringConstants.CharacterUnknown;
+            return _server.CharacterManager.GetPlayerName(source.CharacterId2);
         }
     }
 }

@@ -154,8 +154,6 @@ public class CharacterEntity
 
     public int SummonValue { get; set; }
 
-    public int PartnerId { get; set; }
-
     public int MarriageItemId { get; set; }
 
     public int Reborns { get; set; }

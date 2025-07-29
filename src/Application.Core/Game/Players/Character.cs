@@ -1274,18 +1274,6 @@ public partial class Player
         }
     }
 
-    public void notifyMapTransferToPartner(int mapid)
-    {
-        if (PartnerId > 0)
-        {
-            var partner = getWorldServer().getPlayerStorage().getCharacterById(PartnerId);
-            if (partner != null && partner.isLoggedinWorld())
-            {
-                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(Id, mapid));
-            }
-        }
-    }
-
     public void removeIncomingInvites()
     {
         Client.CurrentServer.Service.RemovePlayerIncomingInvites(Id);

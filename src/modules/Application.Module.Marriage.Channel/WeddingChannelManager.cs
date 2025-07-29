@@ -14,11 +14,12 @@ namespace Application.Module.Marriage.Channel
         readonly IChannelServerTransport _transport;
         public WorldChannel ChannelServer { get; }
         public List<WeddingInfo> RegisteredWeddings { get; set; } = [];
-        public WeddingChannelManager(WorldChannelServer server, ILogger<WeddingChannelManager> logger, WorldChannel worldChannel)
+        public WeddingChannelManager(WorldChannelServer server, ILogger<WeddingChannelManager> logger, WorldChannel worldChannel, IChannelServerTransport transport)
         {
             _server = server;
             _logger = logger;
             ChannelServer = worldChannel;
+            _transport = transport;
         }
 
         public MarriageInstance CreateMarriageInstance(EventManager em, string name)

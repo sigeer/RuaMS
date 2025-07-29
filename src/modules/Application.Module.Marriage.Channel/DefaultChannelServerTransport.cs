@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Grpc.Net.Client;
-using ItemProto;
 using MarriageProto;
 
 namespace Application.Module.Marriage.Channel
@@ -43,9 +42,19 @@ namespace Application.Module.Marriage.Channel
             throw new NotImplementedException();
         }
 
+        public LoadMarriageInfoResponse LoadMarriageInfo(LoadMarriageInfoRequest loadMarriageInfoRequest)
+        {
+            return _grpcClient.LoadEffectMarriageInfo(loadMarriageInfoRequest);
+        }
+
         public ReserveWeddingResponse ReserveWedding(ReserveWeddingRequest reserveWeddingRequest)
         {
             return _grpcClient.ReserveWedding(reserveWeddingRequest);
+        }
+
+        public SendSpouseChatResponse SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest)
+        {
+            return _grpcClient.SpouseChat(sendSpouseChatRequest);
         }
 
         public LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest)

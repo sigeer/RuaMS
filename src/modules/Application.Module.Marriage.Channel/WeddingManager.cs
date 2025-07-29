@@ -3,6 +3,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Players;
 using Application.Core.Game.Relation;
 using Application.Module.Marriage.Channel.Models;
+using Application.Module.Marriage.Channel.Net;
 using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Common.Models;
 using Application.Shared.Constants.Inventory;
@@ -18,7 +19,6 @@ using Microsoft.Extensions.Options;
 using scripting.Event;
 using System.Collections.Concurrent;
 using tools;
-using tools.packets;
 
 namespace Application.Module.Marriage.Channel
 {
@@ -29,14 +29,17 @@ namespace Application.Module.Marriage.Channel
         readonly IMapper _mapper;
         readonly WorldChannelServer _server;
         readonly Configs _config;
+        readonly MarriageManager _marriageManager;
 
-        public WeddingManager(ILogger<WeddingManager> logger, IChannelServerTransport transport, IMapper mapper, WorldChannelServer server, IOptions<Configs> options)
+        public WeddingManager(ILogger<WeddingManager> logger, IChannelServerTransport transport, IMapper mapper, WorldChannelServer server, IOptions<Configs> options, 
+            MarriageManager marriageManager)
         {
             _logger = logger;
             _transport = transport;
             _mapper = mapper;
             _server = server;
             _config = options.Value;
+            _marriageManager = marriageManager;
         }
 
         ConcurrentDictionary<int, WeddingChannelManager> _managerDic = new();
@@ -74,22 +77,21 @@ namespace Application.Module.Marriage.Channel
             var res = _transport.CreateMarriageRelation(new MarriageProto.CreateMarriageRelationRequest { FromId = sender.Id, ToId = receiver.Id });
             if (res.Code == 0)
             {
+                var marriageData = _mapper.Map<MarriageInfo>(res.Data);
+                _marriageManager.SetPlayerMarriageInfo(marriageData);
+
                 InventoryManipulator.removeById(sender.getClient(), InventoryType.USE, usedItem, 1, false, false);
 
-                sender.setPartnerId(receiver.Id); // engage them (new marriageitemid, partnerid for both)
-                sender.EffectMarriageId = res.MarriageId;
-
-                receiver.setPartnerId(sender.Id);
-                receiver.EffectMarriageId = res.MarriageId;
-
+                // 空盒子
                 sender.setMarriageItemId(newItemId);
+                // 订婚戒指
                 receiver.setMarriageItemId(newItemId + 1);
 
                 InventoryManipulator.addById(sender.Client, newItemId, 1);
                 InventoryManipulator.addById(receiver.Client, (newItemId + 1), 1);
 
-                sender.sendPacket(WeddingPackets.OnMarriageResult(res.MarriageId, sender, false));
-                receiver.sendPacket(WeddingPackets.OnMarriageResult(res.MarriageId, sender, false));
+                sender.sendPacket(WeddingPackets.OnMarriageResult(marriageData));
+                receiver.sendPacket(WeddingPackets.OnMarriageResult(marriageData));
 
                 sender.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(receiver.Id, receiver.getMapId()));
                 receiver.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(sender.Id, sender.getMapId()));
@@ -190,6 +192,13 @@ namespace Application.Module.Marriage.Channel
 
         public void OnMarriageBroken(MarriageProto.BreakMarriageCallback data)
         {
+            if (data.Code != 0)
+            {
+                return;
+            }
+
+            _marriageManager.RemoveLocalData(data.MasterId, data.MasterPartnerId);
+
             var chr = _server.FindPlayerById(data.MasterId);
             if (chr != null)
             {
@@ -203,9 +212,7 @@ namespace Application.Module.Marriage.Channel
                 ResetRingId(chr);
                 //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
                 chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
-                chr.setPartnerId(-1);
                 chr.setMarriageItemId(-1);
-                chr.EffectMarriageId = 0;
             }
 
             var partner = _server.FindPlayerById(data.MasterPartnerId);
@@ -221,9 +228,7 @@ namespace Application.Module.Marriage.Channel
                 ResetRingId(partner);
                 //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
                 partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
-                partner.setPartnerId(-1);
                 partner.setMarriageItemId(-1);
-                partner.EffectMarriageId = 0;
             }
 
         }
@@ -380,7 +385,11 @@ namespace Application.Module.Marriage.Channel
 
         public WeddingInfo? GetPlayerWeddingInfoFromAll(IPlayer chr)
         {
-            return LoadWeddingInfoFromRemote(chr.EffectMarriageId).FirstOrDefault();
+            var marriageInfo = _marriageManager.GetPlayerMarriageInfo(chr.Id);
+            if (marriageInfo == null)
+                return null;
+
+            return LoadWeddingInfoFromRemote(marriageInfo.Id).FirstOrDefault();
         }
 
         /// <summary>
@@ -391,7 +400,11 @@ namespace Application.Module.Marriage.Channel
         /// <param name="marriageRingItemId"></param>
         public void CompleteWedding(IPlayer player, IPlayer partner, int marriageRingItemId)
         {
-            var res = _transport.CompleteWedding(new CompleteWeddingRequest { MarriageId = player.EffectMarriageId, MarriageItemId = marriageRingItemId });
+            var marriageInfo = _marriageManager.GetPlayerMarriageInfo(player.Id);
+            if (marriageInfo == null)
+                return;
+
+            var res = _transport.CompleteWedding(new CompleteWeddingRequest { MarriageId = marriageInfo.Id, MarriageItemId = marriageRingItemId });
             var ringSource = new RingSourceModel()
             {
                 Id = res.RingSourceId,
@@ -403,6 +416,7 @@ namespace Application.Module.Marriage.Channel
                 RingId2 = res.BrideRingId,
                 ItemId = res.MarriageItemId
             };
+            _marriageManager.RemoveLocalData(marriageInfo);
             var ii = ItemInformationProvider.getInstance();
 
             Item ringObj = ii.getEquipById(marriageRingItemId);
@@ -420,6 +434,60 @@ namespace Application.Module.Marriage.Channel
             partner.broadcastMarriageMessage();
         }
 
+        public void sendMarriageWishlist(IPlayer player, bool groom)
+        {
+            var marriage = GetMarriageInstance(player);
+            if (marriage != null)
+            {
+                int cid = marriage.getIntProperty(groom ? "groomId" : "brideId");
+                var chr = marriage.getPlayerById(cid);
+                if (chr != null)
+                {
+                    if (chr.getId() == player.getId())
+                    {
+                        player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
+                    }
+                    else
+                    {
+                        marriage.setIntProperty("wishlistSelection", groom ? 0 : 1);
+                        player.sendPacket(WeddingPackets.onWeddingGiftResult(0x09, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
+                    }
+                }
+            }
+        }
 
+        public void sendMarriageGifts(IPlayer player, List<Item> gifts)
+        {
+            player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, Collections.singletonList(""), gifts));
+        }
+
+        public bool createMarriageWishlist(IPlayer player)
+        {
+            var marriage = GetMarriageInstance(player);
+            if (marriage != null)
+            {
+                var groom = marriage.isMarriageGroom(player);
+                if (groom != null)
+                {
+                    string wlKey;
+                    if (groom.Value)
+                    {
+                        wlKey = "groomWishlist";
+                    }
+                    else
+                    {
+                        wlKey = "brideWishlist";
+                    }
+
+                    if (string.IsNullOrEmpty(marriage.getProperty(wlKey)))
+                    {
+                        player.sendPacket(WeddingPackets.sendWishList());
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }

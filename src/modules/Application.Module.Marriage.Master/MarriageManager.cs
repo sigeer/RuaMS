@@ -8,6 +8,7 @@ using Application.Module.Marriage.Master.Models;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
+using MarriageProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -46,14 +47,16 @@ namespace Application.Module.Marriage.Master
             if (husband == null)
                 return new MarriageProto.CreateMarriageRelationResponse { Code = (int)ProposalErrorCode.CharacterNotFound };
 
-            if (husband.Character.EffectMarriageId != 0)
+            var marriageInfo = GetEffectMarriageModel(request.FromId);
+            if (marriageInfo != null)
                 return new MarriageProto.CreateMarriageRelationResponse { Code = (int)ProposalErrorCode.AlreadyMarried };
 
             var wife = _server.CharacterManager.FindPlayerById(request.ToId);
             if (wife == null)
                 return new MarriageProto.CreateMarriageRelationResponse { Code = (int)ProposalErrorCode.CharacterNotFound };
 
-            if (wife.Character.EffectMarriageId != 0)
+            marriageInfo = GetEffectMarriageModel(request.ToId);
+            if (marriageInfo != null)
                 return new MarriageProto.CreateMarriageRelationResponse { Code = (int)ProposalErrorCode.AlreadyMarried };
 
             var newModel = new MarriageModel()
@@ -64,11 +67,9 @@ namespace Application.Module.Marriage.Master
                 Husbandid = request.FromId,
                 Wifeid = request.ToId
             };
-            husband.Character.EffectMarriageId = newModel.Id;
-            wife.Character.EffectMarriageId = newModel.Id;
 
             SetDirty(newModel.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, newModel));
-            return new MarriageProto.CreateMarriageRelationResponse { MarriageId = newModel.Id };
+            return new MarriageProto.CreateMarriageRelationResponse { Data = _mapper.Map<MarriageProto.MarriageDto>(newModel) };
         }
 
         public MarriageProto.BreakMarriageResponse BreakMarriage(MarriageProto.BreakMarriageRequest request)
@@ -77,7 +78,7 @@ namespace Application.Module.Marriage.Master
             if (chr == null)
                 return new MarriageProto.BreakMarriageResponse { Code = (int)BreakErrorCode.CharacterNotFound };
 
-            var wedding = Query(x => x.Id == chr.Character.EffectMarriageId).FirstOrDefault();
+            var wedding = GetEffectMarriageModel(chr.Character.Id);
             if (wedding == null)
             {
                 return new MarriageProto.BreakMarriageResponse { Code = (int)BreakErrorCode.Single };
@@ -102,11 +103,10 @@ namespace Application.Module.Marriage.Master
                     MasterPartnerName = partner.Character.Name
                 });
 
-                chr.Character.EffectMarriageId = 0;
-                partner.Character.EffectMarriageId = 0;
-
                 wedding.Status = (int)MarriageStatusEnum.Divorced;
                 wedding.Time2 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
+                wedding.RingSourceId = 0;
+
                 SetDirty(wedding.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, wedding));
 
                 return new MarriageProto.BreakMarriageResponse { Code = 0 };
@@ -123,7 +123,7 @@ namespace Application.Module.Marriage.Master
                 if (item.Value.Flag == StoreFlag.AddOrUpdate)
                 {
                     var obj = item.Value.Data;
-                    dbContext.Marriages.Add(new MarriageEntity(obj.Id, obj.Husbandid, obj.Wifeid, obj.Status, obj.Time0, obj.Time1, obj.Time2));
+                    dbContext.Marriages.Add(new MarriageEntity(obj.Id, obj.Husbandid, obj.Wifeid, obj.Status, obj.Time0, obj.Time1, obj.Time2, obj.RingSourceId));
                 }
             }
             await dbContext.SaveChangesAsync();
@@ -138,16 +138,55 @@ namespace Application.Module.Marriage.Master
 
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
-        internal bool CompleteMarriage(int id)
-        {
-            var model = Query(x => x.Id == id).FirstOrDefault();
-            if (model == null || model.Status != 0)
-                return false;
 
+        public MarriageModel? GetEffectMarriageModel(int chrId)
+        {
+            return Query(x => (x.Husbandid == chrId || x.Wifeid == chrId) && x.Status != (int)MarriageStatusEnum.Divorced).FirstOrDefault();
+        }
+
+        public MarriageProto.LoadMarriageInfoResponse GetEffectMarriageModelRemote(MarriageProto.LoadMarriageInfoRequest request)
+        {
+            return new LoadMarriageInfoResponse() { Data = _mapper.Map<MarriageProto.MarriageDto>(GetEffectMarriageModel(request.MasterId)) };
+        }
+
+        public void CompleteMarriage(MarriageModel model, int ringSourceId)
+        {
+            model.RingSourceId = ringSourceId;
             model.Status = (int)MarriageStatusEnum.Married;
             model.Time1 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
             SetDirty(model.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, model));
-            return true;
+        }
+
+        internal void NotifyPartner(int to, int chrId, int chrMap)
+        {
+            _transport.SendPlayerTransfter(new PlayerTransferDto { ToPlayerId = to, PlayerId = chrId, MapId = chrMap });
+        }
+
+        public MarriageProto.SendSpouseChatResponse SpouseChat(MarriageProto.SendSpouseChatRequest request)
+        {
+            var marriageInfo = GetEffectMarriageModel(request.SenderId);
+            if (marriageInfo == null)
+            {
+                return new SendSpouseChatResponse { Code = 1 };
+            }
+            else
+            {
+                var partnerId = marriageInfo.GetPartnerId(request.SenderId);
+                var partner = _server.CharacterManager.FindPlayerById(partnerId);
+                if (partner == null || partner.Channel <= 0)
+                    return new SendSpouseChatResponse { Code = 2 };
+
+                var chr = _server.CharacterManager.FindPlayerById(request.SenderId)!;
+                _transport.SendSpouseChat(new MarriageProto.OnSpouseChatCallback
+                {
+                    SenderId = chr.Character.Id,
+                    SenderName = chr.Character.Name,
+                    Text = request.Text,
+                    SenderPartnerId = partnerId
+                });
+
+                return new SendSpouseChatResponse();
+            }
         }
     }
 }

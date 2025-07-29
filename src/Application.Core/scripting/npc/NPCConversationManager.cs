@@ -1251,62 +1251,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
-    public void sendMarriageWishlist(bool groom)
-    {
-        var player = this.getPlayer();
-        var marriage = player.getMarriageInstance();
-        if (marriage != null)
-        {
-            int cid = marriage.getIntProperty(groom ? "groomId" : "brideId");
-            var chr = marriage.getPlayerById(cid);
-            if (chr != null)
-            {
-                if (chr.getId() == player.getId())
-                {
-                    player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
-                }
-                else
-                {
-                    marriage.setIntProperty("wishlistSelection", groom ? 0 : 1);
-                    player.sendPacket(WeddingPackets.onWeddingGiftResult(0x09, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
-                }
-            }
-        }
-    }
 
-    public void sendMarriageGifts(List<Item> gifts)
-    {
-        this.getPlayer().sendPacket(WeddingPackets.onWeddingGiftResult(0xA, Collections.singletonList(""), gifts));
-    }
-
-    public bool createMarriageWishlist()
-    {
-        var marriage = this.getPlayer().getMarriageInstance();
-        if (marriage != null)
-        {
-            var groom = marriage.isMarriageGroom(this.getPlayer());
-            if (groom != null)
-            {
-                string wlKey;
-                if (groom.Value)
-                {
-                    wlKey = "groomWishlist";
-                }
-                else
-                {
-                    wlKey = "brideWishlist";
-                }
-
-                if (string.IsNullOrEmpty(marriage.getProperty(wlKey)))
-                {
-                    getClient().sendPacket(WeddingPackets.sendWishList());
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     #region NextLevelTalk
     /// <summary>

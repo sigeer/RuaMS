@@ -11,7 +11,9 @@ namespace Application.Module.Marriage.Channel
         CreateMarriageRelationResponse CreateMarriageRelation(CreateMarriageRelationRequest createMarriageRelationRequest);
         WeddingInfoListDto LoadAllWeddingById(LoadWeddingByIdRequest request);
         object LoadMarriageGifts(LoadMarriageGiftsRequest loadMarriageGiftsRequest);
+        MarriageProto.LoadMarriageInfoResponse LoadMarriageInfo(LoadMarriageInfoRequest loadMarriageInfoRequest);
         MarriageProto.ReserveWeddingResponse ReserveWedding(ReserveWeddingRequest reserveWeddingRequest);
+        SendSpouseChatResponse SendSpouseChat(SendSpouseChatRequest sendSpouseChatRequest);
         LoadInvitationResponse TryGetInvitationInfo(LoadInvitationRequest loadInvitationRequest);
         InviteGuestResponse TryInviteGuest(InviteGuestRequest inviteGuestRequest);
     }

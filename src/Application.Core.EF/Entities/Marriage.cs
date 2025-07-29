@@ -3,7 +3,7 @@ namespace Application.EF.Entities;
 public class MarriageEntity
 {
     protected MarriageEntity(){}
-    public MarriageEntity(int marriageid, int husbandid, int wifeid, int status, DateTimeOffset time0, DateTimeOffset? time1, DateTimeOffset? time2)
+    public MarriageEntity(int marriageid, int husbandid, int wifeid, int status, DateTimeOffset time0, DateTimeOffset? time1, DateTimeOffset? time2, int ringSourceId)
     {
         Marriageid = marriageid;
         Husbandid = husbandid;
@@ -12,6 +12,7 @@ public class MarriageEntity
         Time0 = time0;
         Time1 = time1;
         Time2 = time2;
+        RingSourceId = ringSourceId;
     }
 
     public int Marriageid { get; set; }
@@ -36,4 +37,8 @@ public class MarriageEntity
     /// 离婚时间
     /// </summary>
     public DateTimeOffset? Time2 { get; set; }
+    /// <summary>
+    /// 结婚时获取
+    /// </summary>
+    public int RingSourceId { get; set; }
 }

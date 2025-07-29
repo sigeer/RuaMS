@@ -1,6 +1,28 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
 package MarriageProto;
+
+message MarriageDto {
+	int32 id = 1;
+	int32 ringSourceId = 2;
+	int32 status = 3;
+	int32 husbandId = 4;
+	string husbandName = 5;
+	int32 wifeId = 6;
+	string wifeName = 7;
+	google.protobuf.Timestamp time0 = 8;
+	google.protobuf.Timestamp time1 = 9;
+	google.protobuf.Timestamp time2 = 10;
+}
+
+message LoadMarriageInfoRequest {
+	int32 masterId = 1;
+}
+
+message LoadMarriageInfoResponse {
+	MarriageDto data = 1;
+}
 
 message BreakMarriageRequest {
 	int32 masterId = 1;
@@ -43,5 +65,27 @@ message CreateMarriageRelationRequest {
 
 message CreateMarriageRelationResponse {
 	int32 code = 1;
-	int32 marriageId = 2;
+	MarriageDto data = 2;
+}
+
+message PlayerTransferDto {
+	int32 toPlayerId = 1;
+	int32 playerId = 2;
+	int32 mapId = 3;
+}
+
+message SendSpouseChatRequest {
+	int32 senderId = 1;
+	string text = 2;
+}
+
+message SendSpouseChatResponse {
+	int32 code = 1;
+}
+
+message OnSpouseChatCallback {
+	string senderName = 2;
+	string text = 3;
+	int32 senderId = 4;
+	int32 senderPartnerId = 5;
 }

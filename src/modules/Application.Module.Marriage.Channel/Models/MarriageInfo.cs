@@ -1,19 +1,20 @@
-using Application.Core.Login.Shared;
+using Application.Module.Marriage.Common.Models;
 
-namespace Application.Module.Marriage.Master.Models
+namespace Application.Module.Marriage.Channel.Models
 {
-    public class MarriageModel: ITrackableEntityKey<int>
+    public class MarriageInfo
     {
         public int Id { get; set; }
-
-        public int Husbandid { get; set; }
-
-        public int Wifeid { get; set; }
+        public int RingSourceId { get; set; }
+        public int HusbandId { get; set; }
+        public string HusbandName { get; set; }
+        public int WifeId { get; set; }
+        public string WifeName { get; set; }
 
         /// <summary>
         /// 0. 订婚 1. 结婚 2. 离婚
         /// </summary>
-        public int Status { get; set; }
+        public MarriageStatusEnum Status { get; set; }
         /// <summary>
         /// 订婚时间
         /// </summary>
@@ -26,11 +27,10 @@ namespace Application.Module.Marriage.Master.Models
         /// 离婚时间
         /// </summary>
         public DateTimeOffset? Time2 { get; set; }
-        public int RingSourceId { get; set; }
 
         public int GetPartnerId(int chrId)
         {
-            return Husbandid == chrId ? Wifeid : Husbandid;
+            return HusbandId == chrId ? WifeId : HusbandId;
         }
     }
 }

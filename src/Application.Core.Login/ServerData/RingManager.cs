@@ -34,7 +34,7 @@ namespace Application.Core.Login.ServerData
             _localId = await dbContext.Rings.MaxAsync(x => (int?)x.Id) ?? 0;
         }
 
-        public RingSourceModel CreateRing(int itemId, int chr1, int chr2, int marriageId = 0)
+        public RingSourceModel CreateRing(int itemId, int chr1, int chr2)
         {
             var model = new RingSourceModel()
             {
@@ -65,7 +65,7 @@ namespace Application.Core.Login.ServerData
                 var obj = item.Data;
                 if (item.Flag == StoreFlag.AddOrUpdate && obj != null)
                 {
-                    var dbData = new Ring_Entity(obj.Id, obj.ItemId, obj.RingId1, obj.RingId2, obj.CharacterId1, obj.CharacterId2, obj.MarriageId);
+                    var dbData = new Ring_Entity(obj.Id, obj.ItemId, obj.RingId1, obj.RingId2, obj.CharacterId1, obj.CharacterId2);
                     dbContext.Rings.Add(dbData);
                 }
             }
@@ -79,7 +79,7 @@ namespace Application.Core.Login.ServerData
 
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dataFromDB = _mapper.Map<List<RingSourceModel>>(dbContext.Rings.Where(entityExpression));
+            var dataFromDB = _mapper.Map<List<RingSourceModel>>(dbContext.Rings.AsNoTracking().Where(entityExpression));
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
     }

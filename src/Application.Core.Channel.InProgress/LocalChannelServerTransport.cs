@@ -191,33 +191,9 @@ namespace Application.Core.Channel.InProgress
             return _world.getChannel(channel).getIP();
         }
 
-        public void NotifyPartner(int id)
+        public void BatchSyncMap(List<SyncProto.MapSyncDto> data)
         {
-            IPlayer? player = null;
-            int partnerId = 0;
-            IPlayer? partner = null;
-            foreach (var ch in _world.getChannels())
-            {
-                player = ch.Players.getCharacterById(id);
-                if (player != null)
-                {
-                    partnerId = player.PartnerId;
-                }
-            }
-
-            foreach (var ch in _world.getChannels())
-            {
-                partner = ch.Players.getCharacterById(partnerId);
-                if (partner != null)
-                    break;
-            }
-
-            if (player != null && partner != null)
-            {
-                player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.getMapId()));
-                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
-            }
-
+            _server.CharacterManager.BatchUpdateMap(data);
         }
 
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)

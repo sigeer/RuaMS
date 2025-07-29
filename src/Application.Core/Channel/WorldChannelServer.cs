@@ -14,6 +14,7 @@ using Application.Shared.Servers;
 using Config;
 using constants.game;
 using Dto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -66,6 +67,8 @@ namespace Application.Core.Channel
         public DataService DataService => _dataService.Value;
         readonly Lazy<IPlayerNPCService> _playerNPCService;
         public IPlayerNPCService PlayerNPCService => _playerNPCService.Value;
+        readonly Lazy<IMarriageService> _marriageService;
+        public IMarriageService MarriageService => _marriageService.Value;
 
         readonly Lazy<ItemService> _itemService;
         public ItemService ItemService => _itemService.Value;
@@ -106,6 +109,8 @@ namespace Application.Core.Channel
         public ChannelPlayerStorage PlayerStorage { get; }
 
         ScheduledFuture? invitationTask;
+
+        public BatchSyncManager<SyncProto.MapSyncDto> BatchSynMapManager { get; }
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -140,15 +145,18 @@ namespace Application.Core.Channel
 
             _guildManager = new Lazy<GuildManager>(() => ServiceProvider.GetRequiredService<GuildManager>());
             _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
-            _shopManager = new (() => ServiceProvider.GetRequiredService<ShopManager>());
+            _shopManager = new(() => ServiceProvider.GetRequiredService<ShopManager>());
 
+            _marriageService = new(() => ServiceProvider.GetRequiredService<IMarriageService>());
             _chatRoomService = new Lazy<ChatRoomService>(() => ServiceProvider.GetRequiredService<ChatRoomService>());
-            _newYearService = new(() => ServiceProvider.GetRequiredService<NewYearCardService>())   ;
+            _newYearService = new(() => ServiceProvider.GetRequiredService<NewYearCardService>());
             _noteService = new(() => ServiceProvider.GetRequiredService<NoteService>());
             _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
             _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
             _itemService = new(() => ServiceProvider.GetRequiredService<ItemService>());
             _playerShopService = new(() => ServiceProvider.GetRequiredService<PlayerShopService>());
+
+            BatchSynMapManager = new BatchSyncManager<SyncProto.MapSyncDto>(50, 100, data => Transport.BatchSyncMap(data));
         }
 
         #region 时间
@@ -475,11 +483,6 @@ namespace Application.Core.Channel
             return Transport.CheckCharacterName(name);
         }
 
-        public void NotifyPartner(int id)
-        {
-            Transport.NotifyPartner(id);
-        }
-
         public void DropMessage(DropMessageDto msg)
         {
             foreach (var ch in Servers.Values)
@@ -556,7 +559,7 @@ namespace Application.Core.Channel
             {
                 foreach (var ch in Servers.Values)
                 {
-                    ch.broadcastPacket(PacketCreator.serverNotice(6, 
+                    ch.broadcastPacket(PacketCreator.serverNotice(6,
                         string.Format(GameConstants.LevelCongratulations, CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, data.MedalItemId), data.Level, data.Name)));
                 }
             }

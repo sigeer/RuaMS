@@ -6,6 +6,7 @@ using BaseProto;
 using CashProto;
 using Dto;
 using ItemProto;
+using SyncProto;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -66,7 +67,6 @@ namespace Application.Core.ServerTransports
         #region login
         void SendAccountLogout(int accountId);
         IPEndPoint GetChannelEndPoint(int channel);
-        void NotifyPartner(int id);
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
@@ -176,5 +176,6 @@ namespace Application.Core.ServerTransports
         void CompleteTakeItem(TakeItemSubmit takeItemResolve);
         StoreItemsResponse SaveItems(StoreItemsRequest request);
         LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest loadItemsFromStoreRequest);
+        void BatchSyncMap(List<MapSyncDto> data);
     }
 }

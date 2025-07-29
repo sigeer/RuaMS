@@ -231,18 +231,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             player.receivePartyMemberHP();
 
-            if (player.PartnerId > 0)
-            {
-                c.CurrentServerContainer.NotifyPartner(player.Id);
-                //var partner = wserv.getPlayerStorage().getCharacterById(player.PartnerId);
-
-                //if (partner != null && partner.isLoggedinWorld())
-                //{
-                //    player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.getMapId()));
-                //    partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
-                //}
-            }
-
             if (newcomer)
             {
                 var eim = c.CurrentServer.EventRecallManager.recallEventInstance(cid);

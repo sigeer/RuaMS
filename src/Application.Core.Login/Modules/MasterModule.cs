@@ -73,6 +73,17 @@ namespace Application.Core.Login.Events
         {
 
         }
+
+        public virtual void OnPlayerMapChanged(CharacterLiveObject character)
+        {
+
+        }
+
+        public virtual void OnPlayerEnterCashShop(CharacterLiveObject character)
+        {
+
+        }
+
         public virtual int DeleteCharacterCheck(int id)
         {
             return 0;
@@ -81,6 +92,8 @@ namespace Application.Core.Login.Events
         {
 
         }
+
+
         /// <summary>
         /// Master服务器统一保存数据时调用
         /// </summary>
@@ -91,5 +104,7 @@ namespace Application.Core.Login.Events
             _logger.LogInformation("模块 {Name}：保存数据库", _moduleName);
             return Task.CompletedTask;
         }
+
+
     }
 }

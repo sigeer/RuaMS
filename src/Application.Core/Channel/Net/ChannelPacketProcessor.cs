@@ -96,7 +96,6 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.CLOSE_CHALKBOARD, sp.GetRequiredService<CloseChalkboardHandler>()},
                 {(short)RecvOpcode.USE_MOUNT_FOOD, sp.GetRequiredService<UseMountFoodHandler>()},
 
-                {(short)RecvOpcode.SPOUSE_CHAT, sp.GetRequiredService<SpouseChatHandler>()},
                 {(short)RecvOpcode.PET_AUTO_POT, sp.GetRequiredService<PetAutoPotHandler>()},
                 {(short)RecvOpcode.PET_EXCLUDE_ITEMS, sp.GetRequiredService<PetExcludeItemsHandler>()},
                 {(short)RecvOpcode.OWL_ACTION, sp.GetRequiredService<UseOwlOfMinervaHandler>()},

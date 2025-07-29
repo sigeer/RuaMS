@@ -148,7 +148,6 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("ExpTable", typeof(ExpTable));
             engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
             engine.AddHostedType("Server", typeof(Server));
-            engine.AddHostedType("Wedding", typeof(WeddingPackets));
             engine.AddHostedType("GameConstants", typeof(GameConstants));
             engine.AddHostedObject("PlayerNPC", _channelServer.Container.PlayerNPCService);
             engine.AddHostedType("ShopFactory", typeof(ShopManager));

@@ -257,7 +257,8 @@ namespace Application.Core.Game.Players
                 return;
             }
 
-            notifyMapTransferToPartner(MapModel.getId());
+
+            Client.CurrentServerContainer.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = MapModel.getId() });
 
             //alas, new map has been specified when a warping was being processed...
             if (newWarpMap != -1)

@@ -1,4 +1,5 @@
 using Application.Core.Channel.Modules;
+using Application.Core.Channel.Services;
 using Application.Core.Client;
 using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net.Handlers;
@@ -18,10 +19,19 @@ namespace Application.Module.Marriage.Channel
         {
             services.AddAutoMapper(typeof(Mapper));
             services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
+
+            services.AddSingleton<MarriageManager>();
             services.AddSingleton<WeddingManager>();
-            services.AddSingleton<ChannelModule, WeddingModule>();
+
+            services.AddSingleton<MarriageChannelModule>();
+            services.AddSingleton<IMarriageService, MarriageChannelModule>(sp => sp.GetRequiredService<MarriageChannelModule>());
+            services.AddSingleton<ChannelModule, MarriageChannelModule>(sp => sp.GetRequiredService<MarriageChannelModule>());
 
             services.AddSingleton<RingActionHandler>();
+            services.AddSingleton<WeddingHandler>();
+            services.AddSingleton<WeddingTalkHandler>();
+            services.AddSingleton<WeddingTalkMoreHandler>();
+            services.AddSingleton<SpouseChatHandler>();
             services.AddSingleton<IServerBootstrap, MarriageChannelBootstrap>();
             services.AddSingleton<IAddtionalRegistry, MarriageScriptRegitry>();
             return services;
@@ -37,6 +47,7 @@ namespace Application.Module.Marriage.Channel
             channelPacketProcessor.TryAddHandler((short)RecvOpcode.RING_ACTION, app.Services.GetRequiredService<RingActionHandler>());
             channelPacketProcessor.TryAddHandler((short)RecvOpcode.WEDDING_ACTION, app.Services.GetRequiredService<WeddingHandler>());
             channelPacketProcessor.TryAddHandler((short)RecvOpcode.WEDDING_TALK, app.Services.GetRequiredService<WeddingTalkHandler>());
+            channelPacketProcessor.TryAddHandler((short)RecvOpcode.SPOUSE_CHAT, app.Services.GetRequiredService<SpouseChatHandler>());
             // channelPacketProcessor.TryAddHandler((short)RecvOpcode.WEDDING_TALK_MORE, app.Services.GetRequiredService<WeddingTalkMoreHandler>());
         }
     }
