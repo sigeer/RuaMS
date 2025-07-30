@@ -133,7 +133,8 @@ function action(mode, type, selection) {
                                     var placeTime = cserv.getWeddingReservationTimeLeft(weddingId);
                                     cm.sendOk("你的婚礼定于#r" + placeTime + "#k开始。穿上漂亮的服装，不要迟到！");
                                 } else {
-                                    var partner = wserv.getPlayerStorage().getCharacterById(cm.getPlayer().getPartnerId());
+                                    var partnerId = MarriageManager.GetPartnerId(cm.getPlayer().Id);
+                                    var partner = wserv.getPlayerStorage().getCharacterById(partnerId);
                                     if (partner == null) {
                                         cm.sendOk("你的伙伴目前似乎不在线... 确保在时机成熟时把两个人都聚集在这里！");
                                         cm.dispose();

@@ -1,4 +1,5 @@
 using Application.Core.Login;
+using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
@@ -65,7 +66,8 @@ namespace Application.Module.Marriage.Master
                 Time0 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime()),
                 Status = (int)MarriageStatusEnum.Engaged,
                 Husbandid = request.FromId,
-                Wifeid = request.ToId
+                Wifeid = request.ToId,
+                EngagementItemId = request.ItemId
             };
 
             SetDirty(newModel.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, newModel));
@@ -103,7 +105,7 @@ namespace Application.Module.Marriage.Master
                     MasterPartnerName = partner.Character.Name
                 });
 
-                wedding.Status = (int)MarriageStatusEnum.Divorced;
+                wedding.Status = wedding.Status == (int)MarriageStatusEnum.Engaged ? (int)MarriageStatusEnum.EngagementCanceled :(int)MarriageStatusEnum.Divorced;
                 wedding.Time2 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
                 wedding.RingSourceId = 0;
 
@@ -133,6 +135,7 @@ namespace Application.Module.Marriage.Master
         {
             var entityExpression = _mapper.MapExpression<Expression<Func<MarriageEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
+
             var dbList = dbContext.Marriages.AsNoTracking().Where(entityExpression).ToList();
             var dataFromDB = _mapper.Map<List<MarriageModel>>(dbList);
 
@@ -149,9 +152,9 @@ namespace Application.Module.Marriage.Master
             return new LoadMarriageInfoResponse() { Data = _mapper.Map<MarriageProto.MarriageDto>(GetEffectMarriageModel(request.MasterId)) };
         }
 
-        public void CompleteMarriage(MarriageModel model, int ringSourceId)
+        public void CompleteMarriage(MarriageModel model, RingSourceModel ringSource)
         {
-            model.RingSourceId = ringSourceId;
+            model.RingSourceId = ringSource.Id;
             model.Status = (int)MarriageStatusEnum.Married;
             model.Time1 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
             SetDirty(model.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, model));

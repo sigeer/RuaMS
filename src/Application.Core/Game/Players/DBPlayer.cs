@@ -123,7 +123,6 @@ namespace Application.Core.Game.Players
         public int VanquisherKills { get; set; }
 
         public int SummonValue { get; set; }
-        public int MarriageItemId { get; set; }
 
         public int Reborns { get; set; }
 

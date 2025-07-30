@@ -126,9 +126,6 @@ namespace Application.Core.client.Characters
 
         public int SummonValue { get; set; }
 
-
-        public int MarriageItemId { get; set; }
-
         public int Reborns { get; set; }
 
         public int Pqpoints { get; set; }

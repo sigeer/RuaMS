@@ -5,6 +5,7 @@ namespace Application.Module.Marriage.Channel.Models
     public class MarriageInfo
     {
         public int Id { get; set; }
+        public int EngagementItemId { get; set; }
         public int RingSourceId { get; set; }
         public int HusbandId { get; set; }
         public string HusbandName { get; set; }

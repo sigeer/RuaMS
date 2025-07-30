@@ -123,6 +123,8 @@ wz资源，在同一进程时，没必要每个频道都读取一次 ，所以�
 4. 移除`PartnerId`字段、通过`marriage`表来找到配偶
 5. 婚姻状态：原先通过有无结婚戒指`marriageRing != null && PartnerId > 0`来判断、现在通过`marriage.Status`判断。婚姻状态将以`marriage`为主。
 
+婚姻同时涉及到 `marriage`, `ring`，也许可能存在婚姻状态尚存，戒指丢失的情况。或者婚姻状态结束，戒指没有销毁的情况。
+
 ## 待办事项
 
 - [ ] `DateTimeOffset.UtcNow` 换成 `getCurrentTime()`

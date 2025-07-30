@@ -2353,9 +2353,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Map)
                 .HasColumnType("int(11)")
                 .HasColumnName("map");
-            entity.Property(e => e.MarriageItemId)
-                .HasColumnType("int(11)")
-                .HasColumnName("marriageItemId");
             entity.Property(e => e.Matchcardlosses)
                 .HasColumnType("int(11)")
                 .HasColumnName("matchcardlosses");

@@ -169,8 +169,8 @@ public class RingActionHandler : ChannelHandlerBase
             return;
         }
 
-        source.setMarriageItemId(itemid);
-        target.sendPacket(WeddingPackets.onMarriageRequest(source.getName(), source.getId()));
+        target.sendPacket(WeddingPackets.onMarriageRequest(source.getName(), itemid));
+        _marriageManager.SetInProposal(source);
     }
 
 
@@ -186,10 +186,8 @@ public class RingActionHandler : ChannelHandlerBase
                 break;
 
             case 1: // Cancel Proposal
-                if (c.OnlinedCharacter.MarriageItemId / 1000000 != 4)
-                {
-                    c.OnlinedCharacter.MarriageItemId = -1;
-                }
+                var unknown1 = p.available();
+                _marriageManager.CancelProposal(c.OnlinedCharacter);
                 break;
 
             case 2:
@@ -197,8 +195,7 @@ public class RingActionHandler : ChannelHandlerBase
                 bool accepted = p.readByte() > 0;
                 name = p.readString();
 
-                // 这个是否可以改成marriage item id？
-                int id = p.readInt();
+                int itemid = p.readInt();
 
                 var source = c.CurrentServer.Players.getCharacterByName(name);
                 var target = c.OnlinedCharacter;
@@ -209,8 +206,7 @@ public class RingActionHandler : ChannelHandlerBase
                     return;
                 }
 
-                int itemid = source.MarriageItemId;
-                if (source.getId() != id || itemid <= 0 || !source.haveItem(itemid) || !source.isAlive() || !target.isAlive())
+                if (!_marriageManager.IsProposalActive(source) || !source.haveItem(itemid) || !source.isAlive() || !target.isAlive())
                 {
                     target.sendPacket(PacketCreator.enableActions());
                     return;
@@ -218,14 +214,17 @@ public class RingActionHandler : ChannelHandlerBase
 
                 if (accepted)
                 {
-                    _weddingManager.AcceptProposal(source, target);
+                    if (_weddingManager.AcceptProposal(source, target, itemid))
+                        _marriageManager.CompleteProposal(source);
+                    else
+                        _marriageManager.CancelProposal(source);
                 }
                 else
                 {
                     source.dropMessage(1, "She has politely declined your engagement request.");
                     source.sendPacket(WeddingPackets.OnMarriageResult(0));
 
-                    source.setMarriageItemId(-1);
+                    _marriageManager.CancelProposal(source);
                 }
                 break;
 
@@ -269,7 +268,7 @@ public class RingActionHandler : ChannelHandlerBase
                     slot = (byte)p.readInt();
                     int invitationItemId = p.readInt();
                     // 只有邀请函？如果收到多份邀请函如何区分是谁发送的？
-                    var unknown1 = p.available();
+                    var unknown6 = p.available();
 
                     if (invitationItemId == ItemId.RECEIVED_INVITATION_CHAPEL || invitationItemId == ItemId.RECEIVED_INVITATION_CATHEDRAL)
                     {

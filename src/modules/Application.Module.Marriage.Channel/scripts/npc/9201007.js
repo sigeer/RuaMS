@@ -1,4 +1,4 @@
-﻿/*
+/*
 	This file is part of the OdinMS Maple Story Server
     Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
 		       Matthias Butz <matze@odinms.de>
@@ -109,9 +109,10 @@ function action(mode, type, selection) {
             selection = 20; // Random.
         }
     } else if (status == 1) {
+        var partnerId = MarriageManager.GetPartnerId(cm.getPlayer().Id);
         var cmPartner;
         try {
-            cmPartner = cm.getMap().getCharacterById(cm.getPlayer().getPartnerId()).getAbstractPlayerInteraction();
+            cmPartner = cm.getMap().getCharacterById(partnerId).getAbstractPlayerInteraction();
         } catch (err) {
             cmPartner = null;
         }

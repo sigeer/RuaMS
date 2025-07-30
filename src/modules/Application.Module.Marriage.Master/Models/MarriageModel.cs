@@ -27,6 +27,7 @@ namespace Application.Module.Marriage.Master.Models
         /// </summary>
         public DateTimeOffset? Time2 { get; set; }
         public int RingSourceId { get; set; }
+        public int EngagementItemId { get; set; }
 
         public int GetPartnerId(int chrId)
         {

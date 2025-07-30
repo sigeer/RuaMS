@@ -1,10 +1,10 @@
-local cathedralWedding = true;
-local weddingEventName = "WeddingCathedral";
-local weddingEntryTicketCommon = 5251000;
-local weddingEntryTicketPremium = 5251003;
-local weddingSendTicket = 4031395;
-local weddingGuestTicket = 4031407;
-local weddingAltarMapid = 680000210;
+local cathedralWedding = false;
+local weddingEventName = "WeddingChapel";
+local weddingEntryTicketCommon = 5251001;
+local weddingEntryTicketPremium = 5251002;
+local weddingSendTicket = 4031377;
+local weddingGuestTicket = 4031406;
+local weddingAltarMapid = 680000110;
 
 function start( ... )
 	-- body
@@ -13,7 +13,7 @@ end
 
 function levelMain()
 	-- body
-	local text = "欢迎来到 #b大教堂#k！ 有什么我可以帮到你？"
+	local text = "欢迎来到 #b教堂#k！ 有什么我可以帮到你？"
 	local choice = {
 		"如何举办婚礼？",
 		"我有了订婚戒指，需要举办一场婚礼",
@@ -165,10 +165,11 @@ function levelGuestJoinWedding()
         cm:sendOkLevel("Dispose", "婚礼活动未找到。");
     end
 end
+
 function level3()
     local wedding = GetPlayerWeddingInfoFromAll(cm:getPlayer())
     if wedding == nil then
-        cm:sendOkLevel("Dispose", "您没有在大教堂预订婚礼，无法制作额外的邀请函");
+        cm:sendOkLevel("Dispose", "您没有在教堂预订婚礼，无法制作额外的邀请函");
         return
     end
     if cm:canHold(weddingSendTicket, 3) then

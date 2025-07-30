@@ -38,7 +38,11 @@ public class MarriageEntity
     /// </summary>
     public DateTimeOffset? Time2 { get; set; }
     /// <summary>
-    /// 结婚时获取
+    /// 结婚时获取（订婚时也有戒指，但不是戒指装备）
     /// </summary>
     public int RingSourceId { get; set; }
+    /// <summary>
+    /// 订婚使用的道具
+    /// </summary>
+    public int EngagementItemId { get; set; }
 }

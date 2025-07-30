@@ -639,6 +639,24 @@ namespace Application.Core.Game.Players
             return item;
         }
 
+        public void RemoveById(InventoryType type, IEnumerable<int> itemIds, bool fromDrop)
+        {
+            Inventory inv = Bag[type];
+            int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
+
+            for (short i = 0; i <= slotLimit; i++)
+            {
+                var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
+                if (item != null)
+                {
+                    if (itemIds.Contains(item.getItemId()))
+                    {
+                        RemoveItemBySlotCore(type, item.getPosition(), item.getQuantity(), fromDrop, false);
+                    }
+                }
+            }
+        }
+
         public Ring? GetRingFromTotal(RingSourceModel? ring)
         {
             if (ring == null)

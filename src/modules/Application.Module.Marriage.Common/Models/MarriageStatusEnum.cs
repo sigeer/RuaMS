@@ -4,6 +4,7 @@ namespace Application.Module.Marriage.Common.Models
     {
         Engaged,
         Married,
+        EngagementCanceled,
         Divorced
     }
 }

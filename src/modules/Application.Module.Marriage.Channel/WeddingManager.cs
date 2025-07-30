@@ -52,40 +52,24 @@ namespace Application.Module.Marriage.Channel
             return _managerDic.GetOrAdd(channel.getId(), ActivatorUtilities.CreateInstance<WeddingChannelManager>(channel.LifeScope.ServiceProvider, channel));
         }
 
-        private static int getEngagementBoxId(int useItemId)
+
+        public bool AcceptProposal(IPlayer sender, IPlayer receiver, int usedItem)
         {
-            return useItemId switch
-            {
-                ItemId.ENGAGEMENT_BOX_MOONSTONE => ItemId.EMPTY_ENGAGEMENT_BOX_MOONSTONE,
-                ItemId.ENGAGEMENT_BOX_STAR => ItemId.EMPTY_ENGAGEMENT_BOX_STAR,
-                ItemId.ENGAGEMENT_BOX_GOLDEN => ItemId.EMPTY_ENGAGEMENT_BOX_GOLDEN,
-                ItemId.ENGAGEMENT_BOX_SILVER => ItemId.EMPTY_ENGAGEMENT_BOX_SILVER,
-                _ => ItemId.CARAT_RING_BASE + (useItemId - ItemId.CARAT_RING_BOX_BASE),
-            };
-        }
-        public void AcceptProposal(IPlayer sender, IPlayer receiver)
-        {
-            var usedItem = sender.getMarriageItemId();
-            int newItemId = getEngagementBoxId(sender.getMarriageItemId());
+            int newItemId = EngageItem.GetEngagementBoxId(usedItem);
 
             if (!InventoryManipulator.checkSpace(receiver.Client, newItemId, 1, "") || !InventoryManipulator.checkSpace(sender.Client, newItemId, 1, ""))
             {
                 receiver.sendPacket(PacketCreator.enableActions());
-                return;
+                return false;
             }
 
-            var res = _transport.CreateMarriageRelation(new MarriageProto.CreateMarriageRelationRequest { FromId = sender.Id, ToId = receiver.Id });
+            var res = _transport.CreateMarriageRelation(new MarriageProto.CreateMarriageRelationRequest { FromId = sender.Id, ToId = receiver.Id, ItemId = usedItem });
             if (res.Code == 0)
             {
                 var marriageData = _mapper.Map<MarriageInfo>(res.Data);
                 _marriageManager.SetPlayerMarriageInfo(marriageData);
 
                 InventoryManipulator.removeById(sender.getClient(), InventoryType.USE, usedItem, 1, false, false);
-
-                // 空盒子
-                sender.setMarriageItemId(newItemId);
-                // 订婚戒指
-                receiver.setMarriageItemId(newItemId + 1);
 
                 InventoryManipulator.addById(sender.Client, newItemId, 1);
                 InventoryManipulator.addById(receiver.Client, (newItemId + 1), 1);
@@ -95,7 +79,11 @@ namespace Application.Module.Marriage.Channel
 
                 sender.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(receiver.Id, receiver.getMapId()));
                 receiver.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(sender.Id, sender.getMapId()));
+
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
@@ -202,48 +190,23 @@ namespace Application.Module.Marriage.Channel
             var chr = _server.FindPlayerById(data.MasterId);
             if (chr != null)
             {
-                int marriageitemid = chr.getMarriageItemId();
+                _marriageManager.RemoveMarriageItems(chr);
 
-                if (chr.haveItem(marriageitemid))
-                {
-                    InventoryManipulator.removeById(chr.Client, InventoryType.ETC, marriageitemid, 1, false, false);
-                }
-                chr.dropMessage(5, "You have successfully break the engagement with " + data.MasterPartnerName + ".");
-                ResetRingId(chr);
+                chr.dropMessage(5, "You have successfully break the "+ (data.Type == 0 ? "engagement." : "marriage") + " with " + data.MasterPartnerName + ".");
                 //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
                 chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
-                chr.setMarriageItemId(-1);
             }
 
             var partner = _server.FindPlayerById(data.MasterPartnerId);
             if (partner != null)
             {
-                partner.dropMessage(5, data.MasterName + " has decided to break up the " + (data.Type == 0 ? "engagement." : "marriage."));
+                _marriageManager.RemoveMarriageItems(partner);
 
-                int partnerMarriageitemid = partner.getMarriageItemId();
-                if (partner.haveItem(partnerMarriageitemid))
-                {
-                    InventoryManipulator.removeById(partner.Client, InventoryType.ETC, partnerMarriageitemid, 1, false, false);
-                }
-                ResetRingId(partner);
+                partner.dropMessage(5, data.MasterName + " has decided to break up the " + (data.Type == 0 ? "engagement." : "marriage."));
                 //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
                 partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
-                partner.setMarriageItemId(-1);
             }
 
-        }
-
-
-        private static void ResetRingId(IPlayer player)
-        {
-            int ringitemid = player.getMarriageRing()!.getItemId();
-
-            var it = player.getInventory(InventoryType.EQUIP).findById(ringitemid) ?? player.getInventory(InventoryType.EQUIPPED).findById(ringitemid);
-            if (it != null)
-            {
-                Equip eqp = (Equip)it;
-                eqp.ResetRing();
-            }
         }
 
 
@@ -255,17 +218,7 @@ namespace Application.Module.Marriage.Channel
 
         public bool HasEngagement(IPlayer chr)
         {
-            int[] rings = {
-                ItemId.EMPTY_ENGAGEMENT_BOX_MOONSTONE,
-                ItemId.ENGAGEMENT_RING_MOONSTONE,
-                ItemId.EMPTY_ENGAGEMENT_BOX_STAR,
-                ItemId.ENGAGEMENT_RING_STAR,
-                ItemId.EMPTY_ENGAGEMENT_BOX_GOLDEN,
-                ItemId.ENGAGEMENT_RING_GOLDEN,
-                ItemId.EMPTY_ENGAGEMENT_BOX_SILVER,
-                ItemId.ENGAGEMENT_RING_SILVER,
-            };
-            return rings.Any(x => chr.haveItemWithId(x));
+            return ItemId.GetEngagementItems().Any(x => chr.haveItemWithId(x));
         }
 
         public List<Item> GetUnclaimedMarriageGifts(IPlayer chr)

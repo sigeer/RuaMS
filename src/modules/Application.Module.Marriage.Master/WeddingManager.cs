@@ -74,7 +74,7 @@ namespace Application.Module.Marriage.Master
                 if (marriage != null && marriage.Status == 0)
                 {
                     var ring = _server.RingManager.CreateRing(request.MarriageItemId, wedding.GroomId, wedding.BrideId);
-                    _marriageManager.CompleteMarriage(marriage, ring.Id);
+                    _marriageManager.CompleteMarriage(marriage, ring);
 
                     return new CompleteWeddingResponse
                     {

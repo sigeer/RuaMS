@@ -247,23 +247,42 @@ public class ItemId
     public const int EASTER_BASKET = 4031283;
     public const int EASTER_CHARM = 4140903;
 
-    // Engagement box
+    #region 订婚道具
     public const int ENGAGEMENT_BOX_MOONSTONE = 2240000;
     public const int ENGAGEMENT_BOX_STAR = 2240001;
     public const int ENGAGEMENT_BOX_GOLDEN = 2240002;
     public const int ENGAGEMENT_BOX_SILVER = 2240003;
+
     public const int EMPTY_ENGAGEMENT_BOX_MOONSTONE = 4031357;
     public const int ENGAGEMENT_RING_MOONSTONE = 4031358;
+
     public const int EMPTY_ENGAGEMENT_BOX_STAR = 4031359;
     public const int ENGAGEMENT_RING_STAR = 4031360;
+
     public const int EMPTY_ENGAGEMENT_BOX_GOLDEN = 4031361;
     public const int ENGAGEMENT_RING_GOLDEN = 4031362;
+
     public const int EMPTY_ENGAGEMENT_BOX_SILVER = 4031363;
     public const int ENGAGEMENT_RING_SILVER = 4031364;
+    #endregion
 
     public static bool isWeddingToken(int itemId)
     {
         return itemId >= ItemId.EMPTY_ENGAGEMENT_BOX_MOONSTONE && itemId <= ItemId.ENGAGEMENT_RING_SILVER;
+    }
+
+    public static int[] GetEngagementItems()
+    {
+        return new int[] {
+                ItemId.EMPTY_ENGAGEMENT_BOX_MOONSTONE,
+                ItemId.ENGAGEMENT_RING_MOONSTONE,
+                ItemId.EMPTY_ENGAGEMENT_BOX_STAR,
+                ItemId.ENGAGEMENT_RING_STAR,
+                ItemId.EMPTY_ENGAGEMENT_BOX_GOLDEN,
+                ItemId.ENGAGEMENT_RING_GOLDEN,
+                ItemId.EMPTY_ENGAGEMENT_BOX_SILVER,
+                ItemId.ENGAGEMENT_RING_SILVER,
+            };
     }
 
     // Wedding etc
@@ -370,15 +389,15 @@ public class ItemId
     public static int[] getOwlItems()
     {
         return new int[]{
-            WORK_GLOVES, 
-            STEELY_THROWING_KNIVES, 
-            ILBI_THROWING_STARS, 
-            OWL_BALL_MASK, 
+            WORK_GLOVES,
+            STEELY_THROWING_KNIVES,
+            ILBI_THROWING_STARS,
+            OWL_BALL_MASK,
             PINK_ADVENTURER_CAPE,
-            CLAW_30_SCROLL, 
-            WHITE_SCROLL, 
-            HELMET_60_ACC_SCROLL, 
-            MAPLE_SHIELD, 
+            CLAW_30_SCROLL,
+            WHITE_SCROLL,
+            HELMET_60_ACC_SCROLL,
+            MAPLE_SHIELD,
             GLOVES_ATT_60_SCROLL};
     }
 

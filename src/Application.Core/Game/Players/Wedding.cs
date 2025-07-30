@@ -9,16 +9,6 @@ namespace Application.Core.Game.Players
     {
         private Ring? marriageRing = null;
 
-        public int getMarriageItemId()
-        {
-            return MarriageItemId;
-        }
-
-        public void setMarriageItemId(int itemid)
-        {
-            MarriageItemId = itemid;
-        }
-
         public Ring? getMarriageRing()
         {
             return marriageRing;
