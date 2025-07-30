@@ -39,6 +39,7 @@ namespace Application.Core.Channel.Modules
         public virtual void OnPlayerLevelUp(Dto.PlayerLevelJobChange arg) { }
         public virtual void OnPlayerChangeJob(Dto.PlayerLevelJobChange arg) { }
         public virtual void OnPlayerLogin(Dto.PlayerOnlineChange data) { }
+        public virtual void OnPlayerEnterGame(IPlayer chr, bool isNewComer) { }
         public virtual void OnMonsterReward(MonsterRewardEvent evt) { }
     }
 }

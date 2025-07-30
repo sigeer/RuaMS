@@ -79,7 +79,7 @@ namespace Application.Core.Login.ServerData
 
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dataFromDB = _mapper.Map<List<RingSourceModel>>(dbContext.Rings.Where(entityExpression));
+            var dataFromDB = _mapper.Map<List<RingSourceModel>>(dbContext.Rings.AsNoTracking().Where(entityExpression));
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
     }

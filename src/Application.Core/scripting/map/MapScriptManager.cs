@@ -32,7 +32,8 @@ public class MapScriptManager : AbstractScriptManager
 {
     readonly EngineStorage _scripts = new EngineStorage();
 
-    public MapScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
+    public MapScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+        : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
     }
 

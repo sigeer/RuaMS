@@ -89,7 +89,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<MakerRewardDataEntity> Makerrewarddata { get; set; }
 
-    public virtual DbSet<DB_Marriage> Marriages { get; set; }
+    public virtual DbSet<MarriageEntity> Marriages { get; set; }
 
     public virtual DbSet<Medalmap> Medalmaps { get; set; }
 
@@ -955,7 +955,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("quantity");
         });
 
-        modelBuilder.Entity<DB_Marriage>(entity =>
+        modelBuilder.Entity<MarriageEntity>(entity =>
         {
             entity.HasKey(e => e.Marriageid).HasName("PRIMARY");
 
@@ -2353,9 +2353,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Map)
                 .HasColumnType("int(11)")
                 .HasColumnName("map");
-            entity.Property(e => e.MarriageItemId)
-                .HasColumnType("int(11)")
-                .HasColumnName("marriageItemId");
             entity.Property(e => e.Matchcardlosses)
                 .HasColumnType("int(11)")
                 .HasColumnName("matchcardlosses");
@@ -2406,9 +2403,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Omokwins)
                 .HasColumnType("int(11)")
                 .HasColumnName("omokwins");
-            entity.Property(e => e.PartnerId)
-                .HasColumnType("int(11)")
-                .HasColumnName("partnerId");
             entity.Property(e => e.PartySearch)
                 .IsRequired()
                 .HasDefaultValue(true)

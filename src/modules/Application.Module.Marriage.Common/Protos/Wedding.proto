@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package MarriageProto;
+
+message InviteGuestRequest {
+	int32 marriageId = 1;
+	int32 masterId = 2;
+	string guestName = 3;
+}
+
+message InviteGuestResponse {
+	int32 code = 1;
+}
+
+message InviteGuestCallback {
+	int32 weddingId = 2;
+	int32 guestId = 3;
+	bool isCathedral = 7;
+	string groomName = 5;
+	string brideName = 6;
+}
+
+message WeddingInfoDto {
+	bool isCathedral = 1;
+	bool isPremium = 2;
+	int32 groomId = 3;
+	int32 brideId = 4;
+	string groomName = 5;
+	string brideName = 6;
+	int32 channel = 7;
+	int32 marriageId = 8;
+	repeated int32 guests = 9;
+	int64 startTime = 10;
+}
+
+message LoadInvitationRequest {
+	int32 weddingId = 1;
+}
+
+message LoadInvitationResponse {
+	int32 marriageId = 1;
+	string groomName = 2;
+	string brideName = 3;
+}
+
+message ReserveWeddingRequest {
+	int32 masterId = 1;
+	bool isCathedral = 2;
+	bool isPremium = 3;
+	int32 channel = 4;
+	int64 startTime = 5;
+}
+
+message ReserveWeddingResponse {
+	int32 code = 1;
+	int64 startTime = 2;
+}
+
+
+message WeddingInfoListDto {
+	repeated WeddingInfoDto list = 1;
+}
+
+message LoadWeddingByIdRequest {
+	repeated int32 id = 1;
+}
+
+message BroadcastWeddingDto {
+	string groomName = 1;
+	string brideName = 2;
+	bool isCathedral = 3;
+	bool isPremium = 4;
+	int32 channel = 5;
+}
+
+message CompleteWeddingRequest {
+	int32 marriageId = 1;
+	int32 marriageItemId = 2;
+}
+
+message CompleteWeddingResponse {
+	int32 code = 1;
+	int32 marriageId = 2;
+	int32 marriageItemId = 3;
+	int64 groomRingId = 4;
+	int64 brideRingId = 5;
+	int32 ringSourceId = 6;
+	int32 groomId =7;
+	string groomName = 8;
+	int32 brideId = 9;
+	string brideName = 10;
+}
+
+message CloseWeddingRequest {
+	int32 marriageId = 1;
+}
+
+message CloseWeddingResponse {
+	int32 code = 1;
+}

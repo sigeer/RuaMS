@@ -55,8 +55,6 @@ public partial class WorldChannel : ISocketServer
 
     public DojoInstance DojoInstance { get; }
 
-    public WeddingChannelInstance WeddingInstance { get; }
-
 
     private object lockObj = new object();
     private ReaderWriterLockSlim merchLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -145,7 +143,6 @@ public partial class WorldChannel : ISocketServer
         _respawnTask = new RespawnTask(this);
 
         DojoInstance = new DojoInstance(this);
-        WeddingInstance = new WeddingChannelInstance(this);
 
         EventService = new EventService(this);
         MobAnimationService = new MobAnimationService(this);
@@ -626,45 +623,45 @@ public partial class WorldChannel : ISocketServer
     }
 
     #region wedding
-    public bool isWeddingReserved(int weddingId)
-    {
-        return WeddingInstance.IsWeddingReserved(weddingId);
-    }
+    //public bool isWeddingReserved(int weddingId)
+    //{
+    //    return WeddingInstance.IsWeddingReserved(weddingId);
+    //}
 
-    public int getWeddingReservationStatus(int? weddingId, bool cathedral)
-    {
-        return WeddingInstance.GetWeddingReservationStatus(weddingId, cathedral);
-    }
+    //public int getWeddingReservationStatus(int? weddingId, bool cathedral)
+    //{
+    //    return WeddingInstance.GetWeddingReservationStatus(weddingId, cathedral);
+    //}
 
-    public int pushWeddingReservation(int? weddingId, bool cathedral, bool premium, int groomId, int brideId)
-    {
-        return WeddingInstance.PushWeddingReservation(weddingId, cathedral, premium, groomId, brideId);
-    }
+    //public int pushWeddingReservation(int? weddingId, bool cathedral, bool premium, int groomId, int brideId)
+    //{
+    //    return WeddingInstance.PushWeddingReservation(weddingId, cathedral, premium, groomId, brideId);
+    //}
 
-    public bool isOngoingWeddingGuest(bool cathedral, int playerId)
-    {
-        return WeddingInstance.IsOngoingWeddingGuest(cathedral, playerId);
-    }
+    //public bool isOngoingWeddingGuest(bool cathedral, int playerId)
+    //{
+    //    return WeddingInstance.IsOngoingWeddingGuest(cathedral, playerId);
+    //}
 
-    public int getOngoingWedding(bool cathedral)
-    {
-        return WeddingInstance.GetOngoingWedding(cathedral);
-    }
+    //public int getOngoingWedding(bool cathedral)
+    //{
+    //    return WeddingInstance.GetOngoingWedding(cathedral);
+    //}
 
-    public void closeOngoingWedding(bool cathedral)
-    {
-        WeddingInstance.CloseOngoingWedding(cathedral);
-    }
+    //public void closeOngoingWedding(bool cathedral)
+    //{
+    //    WeddingInstance.CloseOngoingWedding(cathedral);
+    //}
 
-    public bool acceptOngoingWedding(bool cathedral)
-    {
-        return WeddingInstance.AcceptOngoingWedding(cathedral);
-    }
+    //public bool acceptOngoingWedding(bool cathedral)
+    //{
+    //    return WeddingInstance.AcceptOngoingWedding(cathedral);
+    //}
 
-    public string? getWeddingReservationTimeLeft(int? weddingId)
-    {
-        return WeddingInstance.GetWeddingReservationTimeLeft(weddingId);
-    }
+    //public string? getWeddingReservationTimeLeft(int? weddingId)
+    //{
+    //    return WeddingInstance.GetWeddingReservationTimeLeft(weddingId);
+    //}
 
     #endregion
     public void dropMessage(int type, string message)

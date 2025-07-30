@@ -153,11 +153,6 @@ public class CharacterEntity
     public int VanquisherKills { get; set; }
 
     public int SummonValue { get; set; }
-
-    public int PartnerId { get; set; }
-
-    public int MarriageItemId { get; set; }
-
     public int Reborns { get; set; }
 
     public int Pqpoints { get; set; }

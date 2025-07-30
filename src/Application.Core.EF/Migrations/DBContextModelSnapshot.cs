@@ -728,10 +728,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("map");
 
-                    b.Property<int>("MarriageItemId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("marriageItemId");
-
                     b.Property<int>("Matchcardlosses")
                         .HasColumnType("int(11)")
                         .HasColumnName("matchcardlosses");
@@ -803,10 +799,6 @@ namespace Application.Core.EF.Migrations
                     b.Property<int>("Omokwins")
                         .HasColumnType("int(11)")
                         .HasColumnName("omokwins");
-
-                    b.Property<int>("PartnerId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("partnerId");
 
                     b.Property<bool>("PartySearch")
                         .ValueGeneratedOnAdd()
@@ -952,27 +944,6 @@ namespace Application.Core.EF.Migrations
                     b.HasIndex(new[] { "Charid" }, "charid");
 
                     b.ToTable("family_entitlement", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.DB_Marriage", b =>
-                {
-                    b.Property<int>("Marriageid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("marriageid");
-
-                    b.Property<int>("Husbandid")
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("husbandid");
-
-                    b.Property<int>("Wifeid")
-                        .HasColumnType("int(10) unsigned")
-                        .HasColumnName("wifeid");
-
-                    b.HasKey("Marriageid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("marriages", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.DropDataEntity", b =>
@@ -1755,6 +1726,45 @@ namespace Application.Core.EF.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("makerrewarddata", (string)null);
+                });
+
+            modelBuilder.Entity("Application.EF.Entities.MarriageEntity", b =>
+                {
+                    b.Property<int>("Marriageid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int(10) unsigned")
+                        .HasColumnName("marriageid");
+
+                    b.Property<int>("EngagementItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Husbandid")
+                        .HasColumnType("int(10) unsigned")
+                        .HasColumnName("husbandid");
+
+                    b.Property<int>("RingSourceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("Time0")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTimeOffset?>("Time1")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTimeOffset?>("Time2")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("Wifeid")
+                        .HasColumnType("int(10) unsigned")
+                        .HasColumnName("wifeid");
+
+                    b.HasKey("Marriageid")
+                        .HasName("PRIMARY");
+
+                    b.ToTable("marriages", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.Medalmap", b =>

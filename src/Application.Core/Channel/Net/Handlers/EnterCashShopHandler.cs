@@ -80,7 +80,6 @@ public class EnterCashShopHandler : ChannelHandlerBase
             mc.unregisterChairBuff();
             _dataService.SaveBuff(mc);
             mc.setAwayFromChannelWorld();
-            mc.notifyMapTransferToPartner(-1);
             mc.removeIncomingInvites();
 
             mc.StopPlayerTask();

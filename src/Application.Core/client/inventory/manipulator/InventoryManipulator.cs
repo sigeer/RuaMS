@@ -171,7 +171,13 @@ public class InventoryManipulator
         return true;
     }
 
-
+    /// <summary>
+    /// 有背包空间验证，但是如果物品数量大于1时，可能返回false但是会获取到一部分物品
+    /// </summary>
+    /// <param name="c"></param>
+    /// <param name="item"></param>
+    /// <param name="show"></param>
+    /// <returns></returns>
     public static bool addFromDrop(IChannelClient c, Item item, bool show = true)
     {
         var chr = c.OnlinedCharacter;

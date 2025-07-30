@@ -53,14 +53,16 @@ public abstract class AbstractScriptManager
     protected readonly ILogger<AbstractScriptManager> _logger;
     protected readonly CommandExecutor _commandExecutor;
     protected readonly WorldChannel _channelServer;
+    readonly IEnumerable<IAddtionalRegistry> _addtionalRegistries;
 
     static readonly ScriptFile JsUtil = new ScriptFile("", "utils", ScriptType.Js);
 
-    protected AbstractScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel)
+    protected AbstractScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries)
     {
         _logger = logger;
         _commandExecutor = commandExecutor;
         _channelServer = worldChannel;
+        _addtionalRegistries = addtionalRegistries;
     }
 
     protected ScriptMeta? GetScriptMeta(ScriptFile file)
@@ -124,6 +126,11 @@ public abstract class AbstractScriptManager
         engine.AddHostedType("YamlConfig", typeof(YamlConfig));
         engine.AddHostedType("PacketCreator", typeof(PacketCreator));
         engine.AddHostedType("Point", typeof(Point));
+        foreach (var item in _addtionalRegistries)
+        {
+            item.AddHostedObject(engine);
+            item.AddHostedType(engine);
+        }
 
         if (engine is JintEngine js)
         {
@@ -132,7 +139,6 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("BuffStat", typeof(BuffStat));
             engine.AddHostedType("MapId", typeof(MapId));
             engine.AddHostedType("Rectangle", typeof(Rectangle));
-            engine.AddHostedType("RingManager", typeof(RingManager));
             engine.AddHostedType("CommonManager", typeof(CommonManager));
             engine.AddHostedObject("CommandExecutor", _commandExecutor);
             engine.AddHostedType("CharacterManager", typeof(CharacterManager));
@@ -142,7 +148,6 @@ public abstract class AbstractScriptManager
             engine.AddHostedType("ExpTable", typeof(ExpTable));
             engine.AddHostedType("ExpeditionType", typeof(ExpeditionType));
             engine.AddHostedType("Server", typeof(Server));
-            engine.AddHostedType("Wedding", typeof(WeddingPackets));
             engine.AddHostedType("GameConstants", typeof(GameConstants));
             engine.AddHostedObject("PlayerNPC", _channelServer.Container.PlayerNPCService);
             engine.AddHostedType("ShopFactory", typeof(ShopManager));

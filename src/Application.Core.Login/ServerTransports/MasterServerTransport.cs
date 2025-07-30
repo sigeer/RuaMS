@@ -45,46 +45,6 @@ namespace Application.Core.Login
             return new Dto.CreateCharResponseDto() { Code = statusCode };
         }
 
-        public CoupleIdPair? GetAllWeddingCoupleForGuest(int guestId, bool cathedral)
-        {
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in world.Channels)
-            {
-                var p = ch.WeddingInstance.GetWeddingCoupleForGuest(guestId, cathedral);
-                if (p != null)
-                {
-                    return p;
-                }
-            }
-            return null;
-        }
-
-        public int GetAllWeddingReservationStatus(IEnumerable<int> possibleWeddings, bool cathedral)
-        {
-            var world = Server.getInstance().getWorld(0);
-            int selectedPw = -1;
-            int selectedPos = int.MaxValue;
-
-            foreach (int pw in possibleWeddings)
-            {
-                foreach (var ch in world.Channels)
-                {
-                    int pos = ch.WeddingInstance.GetWeddingReservationStatus(pw, cathedral);
-                    if (pos != -1)
-                    {
-                        if (pos < selectedPos)
-                        {
-                            selectedPos = pos;
-                            selectedPw = pw;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return selectedPw;
-        }
-
 
         public void SendNotes(int channel, int id, Dto.NoteDto[] notes)
         {

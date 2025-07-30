@@ -1,5 +1,6 @@
 using Application.Shared.Items;
 using AutoMapper;
+using ItemProto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
@@ -44,6 +45,12 @@ namespace Application.Core.Login.ServerData
         public List<ItemProto.ItemTransaction> GetPlayerPendingTransactions(int chrId)
         {
             return _dataSource.Values.Where(x => x.PlayerId == chrId).ToList();
+        }
+
+        public void CompleteTakeItem(TakeItemSubmit request)
+        {
+            // 通过type找到handler
+            // 通过handler 、transaction id处理
         }
     }
 }

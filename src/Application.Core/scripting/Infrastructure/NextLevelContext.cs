@@ -113,11 +113,20 @@ namespace Application.Core.scripting.Infrastructure
             this.nextLevel = nextLevel;
             this.LevelType = nextLevelType;
         }
+
+        object? tempData;
+        public void SetContextData(object? obj)
+        {
+            tempData = obj;
+        }
+
+        public object? GetContextData() => tempData;
         public void Clear()
         {
             this.LevelType = null;
             this.lastLevel = null;
             this.nextLevel = null;
+            tempData = null;
         }
     }
 }

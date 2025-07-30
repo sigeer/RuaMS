@@ -2069,7 +2069,7 @@ public class PacketCreator
             p.writeByte(1);
 
             var targetChr = target.Character;
-            if (targetChr != null && targetChr.getPartnerId() == chr.getId())
+            if (targetChr != null && targetChr.Id == ring.getPartnerChrId())
             {
                 p.writeInt(0);
                 p.writeInt(0);
@@ -4492,18 +4492,6 @@ public class PacketCreator
     }
     */
 
-    public static Packet OnCoupleMessage(string fiance, string text, bool spouse)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SPOUSE_CHAT);
-        p.writeByte(spouse ? 5 : 4); // v2 = CInPacket::Decode1(a1) - 4;
-        if (spouse)
-        { // if ( v2 ) {
-            p.writeString(fiance);
-        }
-        p.writeByte(spouse ? 5 : 1);
-        p.writeString(text);
-        return p;
-    }
 
     public static Packet addMessengerPlayer(string from, IPlayer chr, int position, int channel)
     {
@@ -6647,32 +6635,7 @@ public class PacketCreator
             p.writeInt(ring.getItemId());
         }
 
-        if (chr.getPartnerId() > 0)
-        {
-            var marriageRing = chr.getMarriageRing();
-
-            p.writeShort(1);
-            p.writeInt(chr.getRelationshipId());
-            p.writeInt(chr.getGender() == 0 ? chr.getId() : chr.getPartnerId());
-            p.writeInt(chr.getGender() == 0 ? chr.getPartnerId() : chr.getId());
-            p.writeShort((marriageRing != null) ? 3 : 1);
-            if (marriageRing != null)
-            {
-                p.writeInt(marriageRing.getItemId());
-                p.writeInt(marriageRing.getItemId());
-            }
-            else
-            {
-                p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
-                p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
-            }
-            p.writeFixedString(chr.getGender() == 0 ? chr.getName() : CharacterManager.getNameById(chr.getPartnerId()));
-            p.writeFixedString(chr.getGender() == 0 ? CharacterManager.getNameById(chr.getPartnerId()) : chr.getName());
-        }
-        else
-        {
-            p.writeShort(0);
-        }
+        chr.Client.CurrentServerContainer.MarriageService.WriteMarriageRing(p, chr);
     }
 
     public static Packet finishedSort(int inv)

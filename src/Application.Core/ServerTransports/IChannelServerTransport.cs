@@ -6,6 +6,7 @@ using BaseProto;
 using CashProto;
 using Dto;
 using ItemProto;
+using SyncProto;
 using System.Net;
 
 namespace Application.Core.ServerTransports
@@ -33,21 +34,6 @@ namespace Application.Core.ServerTransports
         /// </summary>
         /// <param name="p"></param>
         void BroadcastGMMessage(Packet p);
-
-        #region wedding
-        CoupleIdPair? GetRelationshipCouple(int cathedralId);
-        void PutMarriageQueued(int weddingId, bool isCathedral, bool isPremium, int groomId, int bridgeId);
-        bool IsMarriageQueued(int weddingId);
-        CoupleIdPair? GetMarriageQueuedCouple(int weddingId);
-        KeyValuePair<bool, HashSet<int>> RemoveMarriageQueued(int marriageId);
-
-        int CreateRelationship(int groomId, int brideId);
-        int GetRelationshipId(int playerId);
-        void DeleteRelationship(int playerId, int partnerId);
-        KeyValuePair<bool, bool>? GetMarriageQueuedLocation(int marriageId);
-        bool AddMarriageGuest(int marriageId, int playerId);
-        CoupleIdPair? GetWeddingCoupleForGuest(int guestId, bool cathedral);
-        #endregion
 
         #region
         void RemoveGuildQueued(int guildId);
@@ -81,7 +67,6 @@ namespace Application.Core.ServerTransports
         #region login
         void SendAccountLogout(int accountId);
         IPEndPoint GetChannelEndPoint(int channel);
-        void NotifyPartner(int id);
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
@@ -188,5 +173,9 @@ namespace Application.Core.ServerTransports
         ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
         void BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
         ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
+        void CompleteTakeItem(TakeItemSubmit takeItemResolve);
+        StoreItemsResponse SaveItems(StoreItemsRequest request);
+        LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest loadItemsFromStoreRequest);
+        void BatchSyncMap(List<MapSyncDto> data);
     }
 }

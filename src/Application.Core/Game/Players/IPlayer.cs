@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.client.Characters;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -350,8 +351,6 @@ namespace Application.Core.Game.Players
         SkillMacro?[] getMacros();
         Door? getMainTownDoor();
         int getMapId();
-        Marriage? getMarriageInstance();
-        int getMarriageItemId();
         Ring? getMarriageRing();
         int getMasterLevel(int skill);
         int getMasterLevel(Skill? skill);
@@ -377,7 +376,6 @@ namespace Application.Core.Game.Players
         long getNpcCooldown();
         int getNumControlledMonsters();
         IMap? getOwnedMap();
-        int getPartnerId();
         Team? getParty();
         public bool isLeader();
         /// <summary>
@@ -409,7 +407,6 @@ namespace Application.Core.Game.Players
         float getRawExpRate();
         float getRawMesoRate();
 
-        int getRelationshipId();
         int getRemainingSp();
         Ring? getRingById(long id);
         RockPaperScissor? getRPS();
@@ -469,7 +466,6 @@ namespace Application.Core.Game.Players
         bool haveItem(int itemid);
         bool haveItemEquipped(int itemid);
         bool haveItemWithId(int itemid, bool checkEquipped = true);
-        bool haveWeddingRing();
         void Hide(bool hide, bool login = false);
         void increaseEquipExp(int expGain);
         void increaseGuildCapacity();
@@ -508,7 +504,6 @@ namespace Application.Core.Game.Players
         void setEnteredChannelWorld(int channel);
         bool isMale();
         bool isMapObjectVisible(IMapObject mo);
-        bool isMarried();
         bool isPartyLeader();
         bool isPartyMember(IPlayer chr);
         bool isPartyMember(int cid);
@@ -526,7 +521,6 @@ namespace Application.Core.Game.Players
         IMount mount(int id, int skillid);
         bool needQuestItem(int questid, int itemid);
         void LinkNewChannelClient(IChannelClient newClient);
-        void notifyMapTransferToPartner(int mapid);
         void partyOperationUpdate(Team party, List<IPlayer>? exPartyMembers);
         int peekSavedLocation(string type);
         void pickupItem(IMapObject? ob, int petIndex = -1);
@@ -627,7 +621,6 @@ namespace Application.Core.Game.Players
         void setLoginTime(DateTimeOffset time);
         void setMap(int PmapId);
         void setMapTransitionComplete();
-        void setMarriageItemId(int itemid);
         void setMasteries(int jobId);
         MiniGame? getMiniGame();
         void setMiniGame(MiniGame? miniGame);
@@ -638,7 +631,6 @@ namespace Application.Core.Game.Players
         void setNpcCooldown(long d);
         // void setOfflineGuildRank(int newRank);
         void setOwnedMap(IMap? map);
-        void setPartnerId(int partnerid);
         void setParty(Team? p);
         void setPartyQuest(PartyQuest? pq);
         void setPartyQuestItemObtained(string partyquestchar);
@@ -698,8 +690,27 @@ namespace Application.Core.Game.Players
         bool RemoveItemBySlot(InventoryType type, short position, short quantity = 1, bool fromDrop = true, bool consume = false);
         bool RemoveItemById(InventoryType type, int itemId, short quantity = 1, bool fromDrop = true, bool consume = false);
         Item? GainItem(int itemId, short quantity, bool randomStats, bool showMessage, long expires = -1, Pet? from = null);
+        /// <summary>
+        /// 移除背包里的所有 itemIds 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="itemIds"></param>
+        /// <param name="fromDrop"></param>
+        void RemoveById(InventoryType type, IEnumerable<int> itemIds, bool fromDrop);
         int GetMakerSkillLevel();
         Ring? GetRingFromTotal(RingSourceModel? ring);
         void LeaveVisitingShop();
+        /// <summary>
+        /// 使用道具（取代GainItem(xx, -1)）
+        /// </summary>
+        /// <param name="item">使用的道具</param>
+        /// <param name="quantity">需要消耗的数量（正数）</param>
+        /// <param name="codition">使用的条件</param>
+        /// <returns></returns>
+        UseItemCheck UseItem(Item item, short quantity, Func<bool> codition);
+        UseItemCheck TryUseItem(Item item, short quantity);
+        void CancelUseItem(Item item);
+        void CommitUseItem(Item item);
+        Ring? GetRingBySourceId(int sourceId);
     }
 }

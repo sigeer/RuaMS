@@ -302,13 +302,6 @@ public partial class Player
 
 
 
-    public int getRelationshipId()
-    {
-        return getChannelServer().Container.Transport.GetRelationshipId(Id);
-    }
-
-
-
     public int addDojoPointsByMap(int mapid)
     {
         int pts = 0;
@@ -1277,18 +1270,6 @@ public partial class Player
                 DoorObject mdo = door.getTownDoor();
                 mdo.sendSpawnData(partyLeaver.Client);
                 partyLeaver.addVisibleMapObject(mdo);
-            }
-        }
-    }
-
-    public void notifyMapTransferToPartner(int mapid)
-    {
-        if (PartnerId > 0)
-        {
-            var partner = getWorldServer().getPlayerStorage().getCharacterById(PartnerId);
-            if (partner != null && partner.isLoggedinWorld())
-            {
-                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(Id, mapid));
             }
         }
     }

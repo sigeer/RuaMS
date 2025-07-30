@@ -109,16 +109,6 @@ namespace Application.Core.Channel.InProgress
             return _server.getCurrentTimestamp();
         }
 
-        public CoupleIdPair? GetMarriageQueuedCouple(int weddingId)
-        {
-            return _server.WeddingInstance.GetMarriageQueuedCouple(weddingId);
-        }
-
-        public CoupleIdPair? GetRelationshipCouple(int cathedralId)
-        {
-            return _server.WeddingInstance.GetRelationshipCouple(cathedralId);
-        }
-
         public DateTimeOffset GetServerupTime()
         {
             return Server.uptime;
@@ -136,55 +126,6 @@ namespace Application.Core.Channel.InProgress
         public void RemoveGuildQueued(int guildId)
         {
             _server.RemoveGuildQueued(guildId);
-        }
-
-
-        public bool IsMarriageQueued(int weddingId)
-        {
-            return _server.WeddingInstance.IsMarriageQueued(weddingId);
-        }
-
-
-
-        public void PutMarriageQueued(int weddingId, bool isCathedral, bool isPremium, int groomId, int bridgeId)
-        {
-            _server.WeddingInstance.PutMarriageQueued(weddingId, isCathedral, isPremium, groomId, bridgeId);
-        }
-
-
-        public KeyValuePair<bool, HashSet<int>> RemoveMarriageQueued(int marriageId)
-        {
-            return _server.WeddingInstance.RemoveMarriageQueued(marriageId);
-        }
-
-        public int CreateRelationship(int groomId, int brideId)
-        {
-            return _server.WeddingInstance.CreateRelationship(groomId, brideId);
-        }
-
-        public int GetRelationshipId(int playerId)
-        {
-            return _server.WeddingInstance.GetRelationshipId(playerId);
-        }
-
-        public void DeleteRelationship(int playerId, int partnerId)
-        {
-            _server.WeddingInstance.DeleteRelationship(playerId, partnerId);
-        }
-
-        public KeyValuePair<bool, bool>? GetMarriageQueuedLocation(int marriageId)
-        {
-            return _server.WeddingInstance.GetMarriageQueuedLocation(marriageId);
-        }
-
-        public bool AddMarriageGuest(int marriageId, int playerId)
-        {
-            return _server.WeddingInstance.AddMarriageGuest(marriageId, playerId);
-        }
-
-        public CoupleIdPair? GetWeddingCoupleForGuest(int guestId, bool cathedral)
-        {
-            return _server.WeddingInstance.GetWeddingCoupleForGuest(guestId, cathedral);
         }
 
         public void SendWorldConfig(Config.WorldConfig updatePatch)
@@ -250,33 +191,9 @@ namespace Application.Core.Channel.InProgress
             return _world.getChannel(channel).getIP();
         }
 
-        public void NotifyPartner(int id)
+        public void BatchSyncMap(List<SyncProto.MapSyncDto> data)
         {
-            IPlayer? player = null;
-            int partnerId = 0;
-            IPlayer? partner = null;
-            foreach (var ch in _world.getChannels())
-            {
-                player = ch.Players.getCharacterById(id);
-                if (player != null)
-                {
-                    partnerId = player.PartnerId;
-                }
-            }
-
-            foreach (var ch in _world.getChannels())
-            {
-                partner = ch.Players.getCharacterById(partnerId);
-                if (partner != null)
-                    break;
-            }
-
-            if (player != null && partner != null)
-            {
-                player.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(partner.Id, partner.getMapId()));
-                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(player.getId(), player.getMapId()));
-            }
-
+            _server.CharacterManager.BatchUpdateMap(data);
         }
 
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
@@ -802,6 +719,21 @@ namespace Application.Core.Channel.InProgress
         public ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest request)
         {
             return _server.PlayerShopManager.OwlSearch(request);
+        }
+
+        public void CompleteTakeItem(TakeItemSubmit request)
+        {
+            _server.ItemTransactionManager.CompleteTakeItem(request);
+        }
+
+        public StoreItemsResponse SaveItems(StoreItemsRequest request)
+        {
+            return _server.ItemFactoryManager.Store(request);
+        }
+
+        public LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest request)
+        {
+            return _server.ItemFactoryManager.LoadItems(request);
         }
     }
 }

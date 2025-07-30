@@ -165,6 +165,13 @@ namespace Application.Core.Login.Datas
                             module.OnPlayerLogoff(origin);
                         }
                     }
+                    else
+                    {
+                        foreach (var module in _masterServer.Modules)
+                        {
+                            module.OnPlayerEnterCashShop(origin);
+                        }
+                    }
                 }
             }
         }
@@ -204,6 +211,28 @@ namespace Application.Core.Login.Datas
             }
         }
 
+        public void UpdateMap(int characterId, int mapId)
+        {
+            var chr = FindPlayerById(characterId);
+            if (chr != null)
+            {
+                chr.Character.Map = mapId;
+
+                foreach (var module in _masterServer.Modules)
+                {
+                    module.OnPlayerMapChanged(chr);
+                }
+            }
+        }
+
+        public void BatchUpdateMap(List<SyncProto.MapSyncDto> data)
+        {
+            foreach (var item in data)
+            {
+                UpdateMap(item.MasterId, item.MapId);
+            }
+        }
+
         public void Dispose()
         {
             _idDataSource.Clear();
@@ -233,6 +262,14 @@ namespace Application.Core.Login.Datas
 
                 characterId = characterEntity.Id;
                 characterName = characterEntity.Name;
+
+                var chrModel = _mapper.Map<CharacterModel>(characterEntity);
+
+                foreach (var module in _masterServer.Modules)
+                {
+                    module.OnPlayerLoad(dbContext, chrModel);
+                }
+
                 var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
                                   let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
                                   select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
@@ -253,7 +290,7 @@ namespace Application.Core.Login.Datas
 
                 d = new CharacterLiveObject()
                 {
-                    Character = _mapper.Map<CharacterModel>(characterEntity),
+                    Character = chrModel,
                     Channel = 0,
                     PetIgnores = petIgnores,
                     Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
@@ -521,5 +558,7 @@ namespace Application.Core.Login.Datas
         {
             return _idDataSource.Values.Count(x => x.Channel == channelId);
         }
+
+
     }
 }

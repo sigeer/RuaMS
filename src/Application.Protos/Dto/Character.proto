@@ -67,7 +67,6 @@ message CharacterDto {
   bool finishedDojoTutorial = 62;
   int32 vanquisherKills = 63;
   int32 summonValue = 64;
-  int32 partnerId = 65;
   int32 marriageItemId = 66;
   int32 reborns = 67;
   int32 pqpoints = 68;
@@ -76,4 +75,5 @@ message CharacterDto {
   google.protobuf.Timestamp lastExpGainTime = 71;
   bool partySearch = 72;
   int64 jailexpire = 73;
+  int32 effectMarriageId = 74;
 }

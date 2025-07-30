@@ -41,7 +41,8 @@ public class QuestScriptManager : AbstractScriptManager
 
     readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public QuestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
+    public QuestScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+        : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
     }
 

@@ -91,6 +91,7 @@ namespace Application.Core.Login
             services.AddSingleton<PlayerShopManager>();
 
             services.AddSingleton<InventoryManager>();
+            services.AddSingleton<ItemFactoryManager>();
             return services;
         }
 

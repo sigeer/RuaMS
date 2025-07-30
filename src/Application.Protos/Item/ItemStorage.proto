@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+import "Dto/Item.proto";
+
+package ItemProto;
+
+message StoreItemsRequest {
+	int32 key = 1;
+	int32 itemFactory = 2;
+	repeated Dto.ItemDto items = 3;
+}
+
+message StoreItemsResponse {
+	int32 code = 1;
+}
+
+message TakeItemFromRemoteStoreRequest {
+	int32 key = 1;
+	int32 itemFactory = 2;
+	int32 pos = 3;
+}
+
+message TakeItemFromRemoteStoreResponse {
+	int32 code = 1;
+	Dto.ItemDto item = 2;
+	int64 traceId = 3;
+}
+
+message TakeItemFromRemoteStoreCommit {
+	int32 traceId = 1;
+	int32 status = 2;
+}
+
+message LoadItemsFromStoreRequest {
+	int32 key = 1;
+	int32 itemFactory = 2;
+}
+
+message LoadItemsFromStoreResponse {
+	int32 key = 1;
+	int32 itemFactory = 2;
+	repeated Dto.ItemDto items = 3;
+}

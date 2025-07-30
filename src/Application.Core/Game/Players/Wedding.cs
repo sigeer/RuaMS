@@ -1,5 +1,6 @@
 using Application.Core.Game.Relation;
 using server;
+using System.Net.NetworkInformation;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -8,53 +9,34 @@ namespace Application.Core.Game.Players
     {
         private Ring? marriageRing = null;
 
-        public int getPartnerId()
+        public Ring? getMarriageRing()
         {
-            return PartnerId;
+            return marriageRing;
         }
 
-        public void setPartnerId(int partnerid)
+        public Ring? GetRingBySourceId(int sourceId)
         {
-            PartnerId = partnerid;
-        }
-
-        public int getMarriageItemId()
-        {
-            return MarriageItemId;
-        }
-
-        public void setMarriageItemId(int itemid)
-        {
-            MarriageItemId = itemid;
-        }
-
-        public bool isMarried()
-        {
-            return marriageRing != null && PartnerId > 0;
-        }
-
-        public bool haveWeddingRing()
-        {
-            int[] rings = { ItemId.WEDDING_RING_STAR, ItemId.WEDDING_RING_MOONSTONE, ItemId.WEDDING_RING_GOLDEN, ItemId.WEDDING_RING_SILVER };
-
-            foreach (int ringid in rings)
+            foreach (Ring ring in getCrushRings())
             {
-                if (haveItemWithId(ringid, true))
+                if (ring.SourceId == sourceId)
                 {
-                    return true;
+                    return ring;
+                }
+            }
+            foreach (Ring ring in getFriendshipRings())
+            {
+                if (ring.SourceId == sourceId)
+                {
+                    return ring;
                 }
             }
 
-            return false;
-        }
-        public Ring? getMarriageRing()
-        {
-            return PartnerId > 0 ? marriageRing : null;
-        }
+            if (marriageRing?.SourceId == sourceId)
+            {
+                return marriageRing;
+            }
 
-        public Marriage? getMarriageInstance()
-        {
-            return getEventInstance() as Marriage;
+            return null;
         }
 
         public Ring? getRingById(long id)
@@ -125,15 +107,15 @@ namespace Application.Core.Game.Players
 
         public void CheckMarriageData()
         {
-            if (MarriageItemId > 0 && PartnerId <= 0)
-            {
-                MarriageItemId = -1;
-            }
-            else if (PartnerId > 0 && getChannelServer().Container.Transport.GetRelationshipId(Id) <= 0)
-            {
-                MarriageItemId = -1;
-                PartnerId = -1;
-            }
+            //if (MarriageItemId > 0 && PartnerId <= 0)
+            //{
+            //    MarriageItemId = -1;
+            //}
+            //else if (PartnerId > 0 && EffectMarriageId <= 0)
+            //{
+            //    MarriageItemId = -1;
+            //    PartnerId = -1;
+            //}
         }
     }
 }

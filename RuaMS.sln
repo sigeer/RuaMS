@@ -122,6 +122,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.PlayerNP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.PlayerNPC.Channel.InProgress", "src\modules\Application.Module.PlayerNPC.Channel.InProgress\Application.Module.PlayerNPC.Channel.InProgress.csproj", "{C7E53555-1B4E-413A-B6A7-404688C7F7A9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Marriage.Channel", "src\modules\Application.Module.Marriage.Channel\Application.Module.Marriage.Channel.csproj", "{142EBF66-32C0-4714-E3BD-76B38F99AF54}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Marriage", "Marriage", "{AD39738A-121B-4F68-A5FF-ECDF345BEC0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Marriage.Common", "src\modules\Application.Module.Marriage.Common\Application.Module.Marriage.Common.csproj", "{8937DFE0-5CEC-AD7C-4D31-532FAFDCB142}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Marriage.Master", "src\modules\Application.Module.Marriage.Master\Application.Module.Marriage.Master.csproj", "{C9A5A9C2-3D77-62CE-3157-11A73FF5BA90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Module.Marriage.Channel.InProgress", "src\modules\Application.Module.Marriage.Channel.InProgress\Application.Module.Marriage.Channel.InProgress.csproj", "{9C6D04FE-F95B-4C04-A008-D001F6B56AF8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -276,6 +286,22 @@ Global
 		{C7E53555-1B4E-413A-B6A7-404688C7F7A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7E53555-1B4E-413A-B6A7-404688C7F7A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7E53555-1B4E-413A-B6A7-404688C7F7A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{142EBF66-32C0-4714-E3BD-76B38F99AF54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{142EBF66-32C0-4714-E3BD-76B38F99AF54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{142EBF66-32C0-4714-E3BD-76B38F99AF54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{142EBF66-32C0-4714-E3BD-76B38F99AF54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8937DFE0-5CEC-AD7C-4D31-532FAFDCB142}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8937DFE0-5CEC-AD7C-4D31-532FAFDCB142}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8937DFE0-5CEC-AD7C-4D31-532FAFDCB142}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8937DFE0-5CEC-AD7C-4D31-532FAFDCB142}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9A5A9C2-3D77-62CE-3157-11A73FF5BA90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9A5A9C2-3D77-62CE-3157-11A73FF5BA90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9A5A9C2-3D77-62CE-3157-11A73FF5BA90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9A5A9C2-3D77-62CE-3157-11A73FF5BA90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C6D04FE-F95B-4C04-A008-D001F6B56AF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C6D04FE-F95B-4C04-A008-D001F6B56AF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C6D04FE-F95B-4C04-A008-D001F6B56AF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C6D04FE-F95B-4C04-A008-D001F6B56AF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -327,6 +353,11 @@ Global
 		{795C804C-05D0-4578-91B9-392F2FAC0A7D} = {1BBA6168-DD98-4204-9361-F0081C5638F9}
 		{B4A70B1A-2132-4986-9ED3-DAF72875E211} = {1BBA6168-DD98-4204-9361-F0081C5638F9}
 		{C7E53555-1B4E-413A-B6A7-404688C7F7A9} = {1BBA6168-DD98-4204-9361-F0081C5638F9}
+		{142EBF66-32C0-4714-E3BD-76B38F99AF54} = {AD39738A-121B-4F68-A5FF-ECDF345BEC0E}
+		{AD39738A-121B-4F68-A5FF-ECDF345BEC0E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8937DFE0-5CEC-AD7C-4D31-532FAFDCB142} = {AD39738A-121B-4F68-A5FF-ECDF345BEC0E}
+		{C9A5A9C2-3D77-62CE-3157-11A73FF5BA90} = {AD39738A-121B-4F68-A5FF-ECDF345BEC0E}
+		{9C6D04FE-F95B-4C04-A008-D001F6B56AF8} = {AD39738A-121B-4F68-A5FF-ECDF345BEC0E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24613DFE-A8D5-438B-BCD0-3F036C9952D7}

@@ -731,18 +731,12 @@ public class EventInstanceManager
         return killCount.GetValueOrDefault(chr, 0);
     }
 
-    public void dispose()
-    {
-        dispose(false);
-    }
 
     object disposeLock = new object();
-    public void dispose(bool shutdown)
+    public virtual void dispose(bool shutdown = false)
     {
         lock (disposeLock)
         {
-
-
             // should not trigger any event script method after disposed
             if (disposed)
             {

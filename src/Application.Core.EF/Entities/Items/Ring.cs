@@ -1,7 +1,8 @@
 namespace Application.EF.Entities;
 
 public partial class Ring_Entity
-{    public Ring_Entity(int id, int itemId, long ringId1, long ringId2, int characterId1, int characterId2)
+{
+    public Ring_Entity(int id, int itemId, long ringId1, long ringId2, int characterId1, int characterId2)
     {
         Id = id;
         ItemId = itemId;

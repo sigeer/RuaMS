@@ -38,7 +38,8 @@ public class NPCScriptManager : AbstractScriptManager
 
     readonly EngineStorate<IChannelClient> _scripts = new EngineStorate<IChannelClient>();
 
-    public NPCScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel) : base(logger, commandExecutor, worldChannel)
+    public NPCScriptManager(ILogger<AbstractScriptManager> logger, CommandExecutor commandExecutor, WorldChannel worldChannel, IEnumerable<IAddtionalRegistry> addtionalRegistries) 
+        : base(logger, commandExecutor, worldChannel, addtionalRegistries)
     {
     }
 

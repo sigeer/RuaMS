@@ -16,6 +16,10 @@
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
 		<Protobuf Include="Cash\Cash.proto" GrpcServices="None" />
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Config\MessageWrapper.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Item\ItemStorage.proto" GrpcServices="None" />
 		<Protobuf Include="Item\PlayerShopItem.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
@@ -119,6 +123,7 @@
 		<Protobuf Include="Dto\PlayerSetter.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Shop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\ShopItem.proto" GrpcServices="None" />
+		<Protobuf Include="Sync\Map.proto" GrpcServices="None" />
 
 	</ItemGroup>
 
@@ -130,6 +135,7 @@
 
 	<ItemGroup>
 	  <Folder Include="PlayerNPC\" />
+	  <Folder Include="Marriage\" />
 	</ItemGroup>
 
 

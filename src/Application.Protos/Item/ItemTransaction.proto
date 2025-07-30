@@ -25,3 +25,14 @@ message ItemTransaction {
 message FinishTransactionRequest {
 	int64 transactionId = 1;
 }
+
+message TakeItemResponse {
+	int64 transactionId = 1;
+	Dto.ItemDto item = 2;
+}
+
+message TakeItemSubmit {
+	int64 transactionId = 1;
+	int32 type = 2;
+	int32 status = 3;
+}

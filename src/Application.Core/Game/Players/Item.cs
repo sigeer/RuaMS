@@ -1,9 +1,12 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
+using Jint.Native.ShadowRealm;
+using System.Runtime.CompilerServices;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -620,6 +623,8 @@ namespace Application.Core.Game.Players
                 }
 
                 addItemResult = InventoryManipulator.addFromDrop(Client, item!, false);
+                if (!addItemResult)
+                    return null;
             }
             else
             {
@@ -634,6 +639,24 @@ namespace Application.Core.Game.Players
             return item;
         }
 
+        public void RemoveById(InventoryType type, IEnumerable<int> itemIds, bool fromDrop)
+        {
+            Inventory inv = Bag[type];
+            int slotLimit = type == InventoryType.EQUIPPED ? 128 : inv.getSlotLimit();
+
+            for (short i = 0; i <= slotLimit; i++)
+            {
+                var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
+                if (item != null)
+                {
+                    if (itemIds.Contains(item.getItemId()))
+                    {
+                        RemoveItemBySlotCore(type, item.getPosition(), item.getQuantity(), fromDrop, false);
+                    }
+                }
+            }
+        }
+
         public Ring? GetRingFromTotal(RingSourceModel? ring)
         {
             if (ring == null)
@@ -646,6 +669,55 @@ namespace Application.Core.Game.Players
 
             Log.Fatal("Character{CharacterId} 加载了不属于他的RingSourceId = {RingSourceId}", Id, ring.Id);
             return null;
+        }
+
+        readonly ConditionalWeakTable<Item, UseItemAction> _itemLocks = new();
+        public UseItemCheck UseItem(Item item, short quantity, Func<bool> condition)
+        {
+            if (quantity <= 0)
+                throw new BusinessFatalException("不合法的输入：消耗物品消耗的数量不能为负数");
+
+            if (item.getQuantity() < quantity)
+                return UseItemCheck.QuantityNotEnough;
+
+            var itemLock = _itemLocks.GetValue(item, _ => new UseItemAction(quantity));
+
+            lock (itemLock)
+            {
+                if (!condition.Invoke()) 
+                    return UseItemCheck.NotPass;
+
+                RemoveItemBySlot(item.getInventoryType(), item.getPosition(), (short)(-quantity), false);
+                return UseItemCheck.Success;
+            }
+        }
+
+        public UseItemCheck TryUseItem(Item item, short quantity)
+        {
+            if (quantity <= 0)
+                throw new BusinessFatalException("不合法的输入：消耗物品消耗的数量不能为负数");
+
+            if (item.getQuantity() < quantity)
+                return UseItemCheck.QuantityNotEnough;
+
+            if (!_itemLocks.TryAdd(item, new UseItemAction(quantity)))
+                return UseItemCheck.InProgressing;
+
+            return UseItemCheck.Success;
+        }
+
+        public void CancelUseItem(Item item)
+        {
+            _itemLocks.Remove(item);
+        }
+
+        public void CommitUseItem(Item item)
+        {
+            if (_itemLocks.TryGetValue(item, out var action))
+            {
+                _itemLocks.Remove(item);
+                RemoveItemBySlot(item.getInventoryType(), item.getPosition(), (short)(-action.Quantity), false);
+            }
         }
     }
 }

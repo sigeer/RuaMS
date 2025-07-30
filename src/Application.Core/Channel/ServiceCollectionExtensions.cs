@@ -95,6 +95,7 @@ namespace Application.Core.Channel
             services.TryAddSingleton<IDueyService, DefaultDueyService>();
             services.TryAddSingleton<IItemDistributeService, DefaultItemDistributeService>();
             services.TryAddSingleton<IPlayerNPCService, DefaultPlayerNPCService>();
+            services.TryAddSingleton<IMarriageService, DefaultMarriageService>();
 
             services.AddSingleton<ItemTransactionService>();
 

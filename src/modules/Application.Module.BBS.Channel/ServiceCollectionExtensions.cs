@@ -24,7 +24,7 @@ namespace Application.Module.BBS.Channel
 
     public class BBSChannelBootstrap : IServerBootstrap
     {
-        public void ConfigureHost(IHost app)
+        public void ConfigureHost(WebApplication app)
         {
             var channelPacketProcessor = app.Services.GetRequiredService<IPacketProcessor<IChannelClient>>();
 

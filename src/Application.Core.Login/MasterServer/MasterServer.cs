@@ -40,7 +40,6 @@ namespace Application.Core.Login
         /// 频道（一个频道服务器上可能运行多个频道）
         /// </summary>
         public List<RegisteredChannelConfig> Channels { get; }
-        public WeddingManager WeddingInstance { get; }
 
         public string ServerName { get; }
 
@@ -100,6 +99,8 @@ namespace Application.Core.Login
         public NewYearCardManager NewYearCardManager => _lazyNewYearCardManager.Value;
         readonly Lazy<PlayerShopManager> _playerShopManager;
         public PlayerShopManager PlayerShopManager => _playerShopManager.Value;
+        readonly Lazy<ItemFactoryManager> _itemFactoryManager;
+        public ItemFactoryManager ItemFactoryManager => _itemFactoryManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -151,13 +152,13 @@ namespace Application.Core.Login
             CouponManager = ActivatorUtilities.CreateInstance<CouponManager>(ServiceProvider, this);
             CharacterManager = ActivatorUtilities.CreateInstance<CharacterManager>(ServiceProvider, this);
             AccountManager = ActivatorUtilities.CreateInstance<AccountManager>(ServiceProvider, this);
-            WeddingInstance = ActivatorUtilities.CreateInstance<WeddingManager>(ServiceProvider, this);
             BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
             CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
             TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
             GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
             ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
             ItemTransactionManager = ActivatorUtilities.CreateInstance<ItemTransactionManager>(ServiceProvider, this);
+            _itemFactoryManager = new(() => ServiceProvider.GetRequiredService<ItemFactoryManager>());
             _inventoryManager = new(() => ServiceProvider.GetRequiredService<InventoryManager>());
             _giftManager = new(() => ServiceProvider.GetRequiredService<GiftManager>());
             _ringManager = new(() => ServiceProvider.GetRequiredService<RingManager>());

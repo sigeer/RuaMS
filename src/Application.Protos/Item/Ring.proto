@@ -11,4 +11,5 @@ message RingDto {
 	int32 itemId = 6;
 	string characterName1 = 7;
 	string characterName2 = 8;
+	int32 marriageId = 9;
 }

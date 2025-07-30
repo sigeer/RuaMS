@@ -85,8 +85,8 @@ BuffStatValueHolder：玩家身上的状态
 
 | 方法名| 固有道具验证| 背包空间验证|   备注 |
 | ----------- |-----------|-----------|----------- |
-| `InventoryManipulator.addById` |❌|❌ | 传入 itemId |
-| `InventoryManipulator.addFromDrop`|✔|❌  | 传入`Item` |
+| `InventoryManipulator.addById` |❌|❗ | 传入 itemId |
+| `InventoryManipulator.addFromDrop`|✔|❗  | 传入`Item`，有背包空间验证，`short newSlot = inv.addItem(nItem);`，但是如果物品数量大于1，可能会获取到一部分物品 |
 | `chr.GainItem`|✔|✔ | 会通过`InventoryManipulator.checkSpace`进行验证， 虽然传入的是itemId，但是调用`InventoryManipulator.addFromDrop` |
 
 ### 移除物品

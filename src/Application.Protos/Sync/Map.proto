@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package SyncProto;
+
+message MapSyncDto {
+	int32 masterId = 1;
+	int32 mapId = 2;
+}
+
+message MapBatchSyncDto {
+	repeated MapSyncDto list = 1;
+}
