@@ -3,7 +3,7 @@ namespace Application.EF.Entities;
 public class MarriageEntity
 {
     protected MarriageEntity(){}
-    public MarriageEntity(int marriageid, int husbandid, int wifeid, int status, DateTimeOffset time0, DateTimeOffset? time1, DateTimeOffset? time2, int ringSourceId)
+    public MarriageEntity(int marriageid, int husbandid, int wifeid, int status, DateTimeOffset time0, DateTimeOffset? time1, DateTimeOffset? time2, int engagementItemId, int ringSourceId)
     {
         Marriageid = marriageid;
         Husbandid = husbandid;
@@ -12,6 +12,7 @@ public class MarriageEntity
         Time0 = time0;
         Time1 = time1;
         Time2 = time2;
+        EngagementItemId = engagementItemId;
         RingSourceId = ringSourceId;
     }
 

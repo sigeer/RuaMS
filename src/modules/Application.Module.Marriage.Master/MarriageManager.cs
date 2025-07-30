@@ -125,7 +125,7 @@ namespace Application.Module.Marriage.Master
                 if (item.Value.Flag == StoreFlag.AddOrUpdate)
                 {
                     var obj = item.Value.Data;
-                    dbContext.Marriages.Add(new MarriageEntity(obj.Id, obj.Husbandid, obj.Wifeid, obj.Status, obj.Time0, obj.Time1, obj.Time2, obj.RingSourceId));
+                    dbContext.Marriages.Add(new MarriageEntity(obj.Id, obj.Husbandid, obj.Wifeid, obj.Status, obj.Time0, obj.Time1, obj.Time2, obj.EngagementItemId, obj.RingSourceId));
                 }
             }
             await dbContext.SaveChangesAsync();
