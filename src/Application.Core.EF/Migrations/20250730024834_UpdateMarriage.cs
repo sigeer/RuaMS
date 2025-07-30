@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -43,20 +43,20 @@ namespace Application.Core.EF.Migrations
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "Time0",
                 table: "marriages",
-                type: "datetime",
+                type: "timestamp",
                 nullable: false,
-                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
+                defaultValueSql: "CURRENT_TIMESTAMP");
 
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "Time1",
                 table: "marriages",
-                type: "datetime",
+                type: "timestamp",
                 nullable: true);
 
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "Time2",
                 table: "marriages",
-                type: "datetime",
+                type: "timestamp",
                 nullable: true);
         }
 
