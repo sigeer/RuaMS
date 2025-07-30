@@ -222,20 +222,4 @@ public class Item : IComparable<Item>, IItemProp
         return ((this.getFlag() & ItemConstants.UNTRADEABLE) == ItemConstants.UNTRADEABLE)
             || (ItemInformationProvider.getInstance().isDropRestricted(this.getItemId()) && !KarmaManipulator.hasKarmaFlag(this));
     }
-
-    public IRelatedItemExpiration Related { get; private set; }
-    public void Relate(IRelatedItemExpiration obj)
-    {
-        Related = obj;
-    }
-
-    public void ExpiredCallback()
-    {
-        Related.ExpiredInvoke();
-    }
-
-    public string GetName()
-    {
-        return ItemInformationProvider.getInstance().getName(getItemId()) ?? StringConstants.ItemUnknown;
-    }
 }

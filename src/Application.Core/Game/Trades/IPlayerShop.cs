@@ -5,7 +5,7 @@ using client.inventory;
 
 namespace Application.Core.Game.Trades
 {
-    public interface IPlayerShop : IMapObject, IRelatedItemExpiration
+    public interface IPlayerShop : IMapObject
     {
         /// <summary>
         /// 店主（雇佣商人时仅在店主访问时存在）
@@ -13,11 +13,13 @@ namespace Application.Core.Game.Trades
         IPlayer? Owner { get; }
         WorldChannel ChannelServer { get; }
         long StartTime { get; }
+        long ExpirationTime { get; }
         string Title { get; }
         int Channel { get; }
         int OwnerId { get; }
         string OwnerName { get; }
         int Mesos { get; }
+        int SourceItemId { get; }
         List<PlayerShopItem> Commodity { get; }
         List<SoldItem> SoldHistory { get; }
         HashSet<string> BlackList { get; }

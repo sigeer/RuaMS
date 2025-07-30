@@ -257,7 +257,7 @@ public class World
 
         foreach (var ch in getChannels())
         {
-            foreach (var hm in ch.PlayerShopManager.GetAllShops())
+            foreach (var hm in ch.PlayerShopManager.GetAllOpeningShops())
             {
                 List<PlayerShopItem> itemBundles = hm.QueryAvailableBundles(itemid);
 

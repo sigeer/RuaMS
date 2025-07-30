@@ -2122,7 +2122,7 @@ public class PacketCreator
         p.writeByte(5);
         p.writeInt(hm.getObjectId());
         p.writeString(hm.Title);
-        p.writeByte(hm.SourceItem.getItemId() % 100);
+        p.writeByte(hm.SourceItemId % 100);
         p.writeBytes(roomInfo);    // visitor capacity here, thanks GabrielSin
     }
 
@@ -2142,7 +2142,7 @@ public class PacketCreator
         p.writeInt(shop.getObjectId());
         p.writeString(shop.Title);
         p.writeByte(0);                 // pw
-        p.writeByte(shop.SourceItem.getItemId() % 100);
+        p.writeByte(shop.SourceItemId % 100);
         p.writeByte(roomInfo[0]);       // curPlayers
         p.writeByte(roomInfo[1]);       // maxPlayers
         p.writeByte(0);
@@ -5376,8 +5376,8 @@ public class PacketCreator
         p.writeByte(0x05);
         p.writeByte(0x04);
         p.writeShort(hm.getVisitorSlotThreadsafe(chr) + 1);
-        p.writeInt(hm.SourceItem.getItemId());
-        p.writeString(hm.SourceItem.GetName());
+        p.writeInt(hm.SourceItemId);
+        p.writeString(ItemInformationProvider.getInstance().getName(hm.SourceItemId) ?? StringConstants.ItemUnknown);
 
         var visitors = hm.getVisitorCharacters();
         for (int i = 0; i < 3; i++)
@@ -5561,7 +5561,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_HIRED_MERCHANT);
         p.writeInt(hm.OwnerId);
-        p.writeInt(hm.SourceItem.getItemId());
+        p.writeInt(hm.SourceItemId);
         p.writeShort(hm.getPosition().X);
         p.writeShort(hm.getPosition().Y);
         p.writeShort(0);
@@ -5569,7 +5569,7 @@ public class PacketCreator
         p.writeByte(0x05);
         p.writeInt(hm.getObjectId());
         p.writeString(hm.Title);
-        p.writeByte(hm.SourceItem.getItemId() % 100);
+        p.writeByte(hm.SourceItemId % 100);
         p.writeBytes(new byte[] { 1, 4 });
         return p;
     }
