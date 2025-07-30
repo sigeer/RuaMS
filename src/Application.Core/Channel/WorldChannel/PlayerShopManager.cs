@@ -1,15 +1,13 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Services;
 using Application.Core.Game.Trades;
 using AutoMapper;
 using client.autoban;
-using client.inventory.manipulator;
 using client.inventory;
+using client.inventory.manipulator;
 using ItemProto;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using tools;
-using Microsoft.Extensions.Logging;
-using server;
 
 namespace Application.Core.Channel
 {
@@ -27,6 +25,30 @@ namespace Application.Core.Channel
             _mapper = mapper;
             _logger = logger;
             _worldChannel = worldChannel;
+        }
+
+        public void CheckExpired()
+        {
+            List<SyncPlayerShopRequest> requests = [];
+
+            var currentTime = _worldChannel.Container.getCurrentTime();
+            var allShops = GetAllShops().Where(x => x.ExpirationTime >= currentTime).ToArray();
+
+            foreach (var item in allShops)
+            {
+                item.Close();
+
+                if (item.Type == PlayerShopType.PlayerShop)
+                    playerShopData.TryRemove(item.OwnerId, out var _);
+
+                if (item.Type == PlayerShopType.HiredMerchant)
+                    activeMerchants.TryRemove(item.OwnerId, out var _);
+
+                requests.Add(GenrateSyncRequest(item, SyncPlayerShopOperation.Close));
+            }
+            var request = new ItemProto.BatchSyncPlayerShopRequest();
+            request.List.AddRange(requests);
+            _worldChannel.Container.Transport.BatchSyncPlayerShop(request);
         }
 
         public bool RegisterShop(IPlayerShop shop)
@@ -68,6 +90,11 @@ namespace Application.Core.Channel
         }
 
         public List<IPlayerShop> GetAllShops()
+        {
+            return activeMerchants.Values.Concat(playerShopData.Values).ToList();
+        }
+
+        public List<IPlayerShop> GetAllOpeningShops()
         {
             return activeMerchants.Values.Where(x => x.Status.Is(PlayerShopStatus.Opening)).Concat(playerShopData.Values).ToList();
         }
@@ -277,7 +304,6 @@ namespace Application.Core.Channel
         /// 每过一段时间同步所有数据到master供搜索
         /// </summary>
         /// <param name="shop"></param>
-        /// <param name="isDestroyed">关店时true</param>
         public void SyncPlayerShop(IPlayerShop shop, SyncPlayerShopOperation operation = SyncPlayerShopOperation.Update)
         {
             _worldChannel.Container.Transport.SyncPlayerShop(GenrateSyncRequest(shop, operation));
@@ -288,12 +314,12 @@ namespace Application.Core.Channel
             var request = new ItemProto.SyncPlayerShopRequest()
             {
                 OwnerId = shop.OwnerId,
+                Operation = (int)operation,
                 Channel = shop.Channel,
                 MapId = shop.getMap().Id,
                 Title = shop.Title,
                 Meso = shop.Mesos,
                 Type = (int)shop.Type,
-                Operation = (int)operation,
                 MapObjectId = shop.getObjectId()
             };
             request.Items.AddRange(_mapper.Map<ItemProto.PlayerShopItemDto[]>(shop.Commodity.Where(x => x.getBundles() > 0)));
@@ -315,21 +341,20 @@ namespace Application.Core.Channel
         internal void Dispose()
         {
             List<SyncPlayerShopRequest> requests = [];
-            foreach (var hm in activeMerchants.Values)
+
+            var allShops = GetAllShops();
+
+            foreach (var item in allShops)
             {
-                hm.Close();
+                item.Close();
 
-                requests.Add(GenrateSyncRequest(hm, SyncPlayerShopOperation.Close));
-            }
+                if (item.Type == PlayerShopType.PlayerShop)
+                    playerShopData.TryRemove(item.OwnerId, out var _);
 
+                if (item.Type == PlayerShopType.HiredMerchant)
+                    activeMerchants.TryRemove(item.OwnerId, out var _);
 
-
-            // 个人商店
-            foreach (var shop in playerShopData.Values.OfType<PlayerShop>())
-            {
-                shop.Close();
-
-                requests.Add(GenrateSyncRequest(shop, SyncPlayerShopOperation.Close));
+                requests.Add(GenrateSyncRequest(item, SyncPlayerShopOperation.Close));
             }
 
             var request = new ItemProto.BatchSyncPlayerShopRequest();

@@ -7,6 +7,7 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
+using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Mob;
 using Application.Shared.Constants.Npc;
 using Application.Shared.Items;

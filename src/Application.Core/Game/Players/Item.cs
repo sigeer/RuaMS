@@ -92,8 +92,6 @@ namespace Application.Core.Game.Players
                             foreach (Item item in toberemove)
                             {
                                 InventoryManipulator.removeFromSlot(Client, inv.getType(), item.getPosition(), item.getQuantity(), true);
-
-                                item.ExpiredCallback();
                             }
 
                             ItemInformationProvider ii = ItemInformationProvider.getInstance();

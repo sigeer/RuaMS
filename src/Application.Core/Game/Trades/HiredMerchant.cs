@@ -11,6 +11,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     public IPlayer? Owner { get; private set; }
     public int Mesos { get; private set; }
     public long StartTime { get; }
+    public long ExpirationTime { get; }
     public TimeSpan LeftTime { get; }
 
 
@@ -22,7 +23,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     private object visitorLock = new object();
     public AtomicEnum<PlayerShopStatus> Status { get; set; }
     public HashSet<string> BlackList { get; }
-    public Item SourceItem { get; }
+    public int SourceItemId { get; }
     public int Channel { get; }
     public WorldChannel ChannelServer { get; }
     public bool SoldNotify { get; }
@@ -39,12 +40,13 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     {
         setPosition(owner.getPosition());
         StartTime = owner.Client.CurrentServerContainer.getCurrentTime();
+        ExpirationTime = item.getExpiration();
         Owner = owner;
         OwnerName = owner.Name;
         OwnerId = owner.getId();
         Channel = owner.getClient().getChannel();
         ChannelServer = owner.getChannelServer();
-        SourceItem = item;
+        SourceItemId = item.getItemId();
         Title = desc;
         setMap(owner.MapModel);
         Channel = owner.Channel;
@@ -615,7 +617,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public int GetTimeLeft()
     {
-        var timeLeft = TimeSpan.FromMilliseconds(SourceItem.getExpiration() - StartTime).TotalDays;
+        var timeLeft = TimeSpan.FromMilliseconds(ExpirationTime - StartTime).TotalDays;
         timeLeft *= 1318;
 
         return (int)Math.Ceiling(timeLeft);
@@ -688,7 +690,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public override int GetSourceId()
     {
-        return SourceItem.getItemId();
+        return SourceItemId;
     }
 
     Lock tradeLock = new();

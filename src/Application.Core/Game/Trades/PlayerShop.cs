@@ -22,6 +22,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public WorldChannel ChannelServer { get; }
     public long StartTime { get; }
+    public long ExpirationTime { get; }
     public AtomicEnum<PlayerShopStatus> Status { get; set; }
     public HashSet<string> BlackList { get; }
     public string Title { get; private set; }
@@ -31,7 +32,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     public int Mesos { get; }
     public List<PlayerShopItem> Commodity { get; }
 
-    public Item SourceItem { get; set; }
+    public int SourceItemId { get; }
 
     public string OwnerName { get; }
 
@@ -45,8 +46,9 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Owner = owner;
         ChannelServer = owner.getChannelServer();
         StartTime = ChannelServer.Container.getCurrentTime();
+        ExpirationTime = item.getExpiration();
         this.Title = description;
-        SourceItem = item;
+        SourceItemId = item.getItemId();
         OwnerId = owner.Id;
         OwnerName = owner.Name;
         Commodity = [];
