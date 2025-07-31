@@ -119,6 +119,8 @@ namespace Application.Core.Login.Services
                 await _server.NewYearCardManager.Commit(dbContext);
                 await _server.ResourceDataManager.Commit(dbContext);
                 await _server.PlayerShopManager.Commit(dbContext);
+                await _server.AccountHistoryManager.Commit(dbContext);
+                await _server.AccountBanManager.Commit(dbContext);
 
 
                 foreach (var plugin in _server.Modules)
