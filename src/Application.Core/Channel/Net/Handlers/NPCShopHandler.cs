@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 
@@ -32,10 +33,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class NPCShopHandler : ChannelHandlerBase
 {
     readonly ILogger<NPCShopHandler> _logger;
+    readonly AutoBanDataManager _autoBanManager;
 
-    public NPCShopHandler(ILogger<NPCShopHandler> logger)
+    public NPCShopHandler(ILogger<NPCShopHandler> logger, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
+        _autoBanManager = autoBanManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -55,8 +58,7 @@ public class NPCShopHandler : ChannelHandlerBase
                     short quantity = p.readShort();
                     if (quantity < 1)
                     {
-                        AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter,
-                                c.OnlinedCharacter.getName() + " tried to packet edit a npc shop.");
+                        _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit a npc shop.");
                         _logger.LogWarning("Chr {CharacterName} tried to buy quantity {ItemQuantity} of itemid {ItemId}", c.OnlinedCharacter.getName(), quantity, itemId);
                         c.Disconnect(true, false);
                         return;

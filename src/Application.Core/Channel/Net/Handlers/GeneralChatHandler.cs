@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Commands;
 using client.autoban;
 using Microsoft.Extensions.Logging;
@@ -32,11 +33,13 @@ public class GeneralChatHandler : ChannelHandlerBase
 {
     readonly ILogger<GeneralChatHandler> _logger;
     readonly CommandExecutor commandExecutor;
+    readonly AutoBanDataManager _autobanManager;
 
-    public GeneralChatHandler(ILogger<GeneralChatHandler> logger, CommandExecutor commandExecutor)
+    public GeneralChatHandler(ILogger<GeneralChatHandler> logger, CommandExecutor commandExecutor, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
         this.commandExecutor = commandExecutor;
+        _autobanManager = autoBanManager;
     }
 
     private const char COMMAND_HEADING = '!';
@@ -57,7 +60,7 @@ public class GeneralChatHandler : ChannelHandlerBase
         }
         if (s.Length > sbyte.MaxValue && !chr.isGM())
         {
-            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit in General Chat.");
+            _autobanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit in General Chat.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {StringLength}", c.OnlinedCharacter.getName(), s.Length);
             c.Disconnect(true);
             return;

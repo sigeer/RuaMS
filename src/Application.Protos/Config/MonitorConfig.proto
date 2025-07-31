@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "Config/PlayerBase.proto";
+
+package Config;
+
+message ToggleMonitorPlayerRequest {
+	string targetName = 1;
+	int32 masterId = 2;
+}
+
+message ToggleMonitorPlayerResponse {
+	bool isSuccess = 1;
+	bool isMonitored = 2;
+}
+
+message MonitorDataWrapper {
+	repeated Config.PlayerBaseDto list = 1;
+}
+
+message MonitorDataChangedNotifyDto {
+	string operatorName = 1;
+	string targetName = 2;
+	bool isMonitored = 3;
+	repeated int32 gmId = 4;
+}

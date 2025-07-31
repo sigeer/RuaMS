@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using client.autoban;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -31,6 +32,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PetExcludeItemsHandler : ChannelHandlerBase
 {
+    readonly AutoBanDataManager _autoBanManager;
+
+    public PetExcludeItemsHandler(AutoBanDataManager autoBanManager)
+    {
+        _autoBanManager = autoBanManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int petId = p.readInt();
@@ -60,7 +68,7 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
             }
             else
             {
-                AutobanFactory.PACKET_EDIT.alert(chr, "negative item id value in PetExcludeItemsHandler (" + itemId + ")");
+                _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, "negative item id value in PetExcludeItemsHandler (" + itemId + ")");
                 return;
             }
         }

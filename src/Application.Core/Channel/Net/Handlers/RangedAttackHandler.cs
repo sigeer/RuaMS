@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Utility.Configs;
 using client;
@@ -36,7 +37,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class RangedAttackHandler : AbstractDealDamageHandler
 {
-    public RangedAttackHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
+    public RangedAttackHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager) : base(logger, autoBanDataManager)
     {
     }
 

@@ -24,6 +24,8 @@ public partial class DBContext : DbContext
     public DbSet<GachaponPoolItem> GachaponPoolItems { get; set; }
     public virtual DbSet<ExpLogRecord> ExpLogRecords { get; set; }
     public virtual DbSet<AccountEntity> Accounts { get; set; }
+    public virtual DbSet<AccountBindingsEntity> AccountBindings { get; set; }
+    public virtual DbSet<AccountBanEntity> AccountBans { get; set; }
 
     public virtual DbSet<AllianceEntity> Alliances { get; set; }
 
@@ -67,17 +69,17 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Hwidaccount> Hwidaccounts { get; set; }
 
-    public virtual DbSet<Hwidban> Hwidbans { get; set; }
+    public virtual DbSet<HwidbanEntity> Hwidbans { get; set; }
 
     public virtual DbSet<Inventoryequipment> Inventoryequipments { get; set; }
 
     public virtual DbSet<Inventoryitem> Inventoryitems { get; set; }
 
-    public virtual DbSet<Ipban> Ipbans { get; set; }
+    public virtual DbSet<IpbanEntity> Ipbans { get; set; }
 
     public virtual DbSet<KeyMapEntity> Keymaps { get; set; }
 
-    public virtual DbSet<Macban> Macbans { get; set; }
+    public virtual DbSet<MacbanEntity> Macbans { get; set; }
 
     public virtual DbSet<Macfilter> Macfilters { get; set; }
 
@@ -770,7 +772,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("relevance");
         });
 
-        modelBuilder.Entity<Hwidban>(entity =>
+        modelBuilder.Entity<HwidbanEntity>(entity =>
         {
             entity.HasKey(e => e.Hwidbanid).HasName("PRIMARY");
 
@@ -784,11 +786,15 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Hwid)
                 .HasMaxLength(30)
                 .HasColumnName("hwid");
+
+            entity.Property(e => e.AccountId)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("AccountId");
         });
 
         ConfigInventory(modelBuilder);
 
-        modelBuilder.Entity<Ipban>(entity =>
+        modelBuilder.Entity<IpbanEntity>(entity =>
         {
             entity.HasKey(e => e.Ipbanid).HasName("PRIMARY");
 
@@ -798,7 +804,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("ipbanid");
             entity.Property(e => e.Aid)
-                .HasMaxLength(40)
+                .HasColumnType("int(10) unsigned")
                 .HasColumnName("aid");
             entity.Property(e => e.Ip)
                 .HasMaxLength(40)
@@ -829,7 +835,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("type");
         });
 
-        modelBuilder.Entity<Macban>(entity =>
+        modelBuilder.Entity<MacbanEntity>(entity =>
         {
             entity.HasKey(e => e.Macbanid).HasName("PRIMARY");
 
@@ -841,7 +847,7 @@ public partial class DBContext : DbContext
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("macbanid");
             entity.Property(e => e.Aid)
-                .HasMaxLength(40)
+                .HasColumnType("int(10) unsigned")
                 .HasColumnName("aid");
             entity.Property(e => e.Mac)
                 .HasMaxLength(30)
@@ -2129,15 +2135,11 @@ public partial class DBContext : DbContext
 
             entity.HasIndex(e => e.Name, "name").IsUnique();
 
-            entity.HasIndex(e => new { e.Id, e.Banned }, "ranking1");
 
             entity.Property(e => e.Id)
                 .HasColumnType("int(11)")
                 .HasColumnName("id");
-            entity.Property(e => e.Banned).HasColumnName("banned");
-            entity.Property(e => e.Banreason)
-                .HasColumnType("text")
-                .HasColumnName("banreason");
+
             entity.Property(e => e.Birthday)
                 .HasDefaultValueSql("'2005-05-11'")
                 .HasColumnType("date")
@@ -2157,16 +2159,6 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'10'")
                 .HasColumnType("tinyint(2)")
                 .HasColumnName("gender");
-            entity.Property(e => e.Greason)
-                .HasColumnType("tinyint(4)")
-                .HasColumnName("greason");
-            entity.Property(e => e.Hwid)
-                .HasMaxLength(12)
-                .HasDefaultValueSql("''")
-                .HasColumnName("hwid");
-            entity.Property(e => e.Ip)
-                .HasColumnType("text")
-                .HasColumnName("ip");
             entity.Property(e => e.Language)
                 .HasDefaultValueSql("'2'")
                 .HasColumnType("int(1)")
@@ -2174,9 +2166,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Lastlogin)
                 .HasColumnType("timestamp")
                 .HasColumnName("lastlogin");
-            entity.Property(e => e.Macs)
-                .HasColumnType("tinytext")
-                .HasColumnName("macs");
             entity.Property(e => e.MaplePoint)
                 .HasColumnType("int(11)")
                 .HasColumnName("maplePoint");
@@ -2209,10 +2198,77 @@ public partial class DBContext : DbContext
                 .HasColumnType("tinyint")
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("gmlevel");
-            entity.Property(e => e.Tempban)
-                .HasColumnType("timestamp")
-                .HasColumnName("tempban");
             entity.Property(e => e.Tos).HasColumnName("tos");
+        });
+
+        modelBuilder.Entity<AccountBindingsEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("account_bindings");
+
+            entity.HasIndex(e => e.AccountId, "accountid");
+
+            entity.Property(e => e.Id)
+                .HasColumnType("int")
+                .HasColumnName("Id");
+            entity.Property(e => e.AccountId)
+                .HasColumnType("int")
+                .HasColumnName("AccountId");
+
+            entity.Property(e => e.IP)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("''")
+                .HasColumnName("IP");
+
+            entity.Property(e => e.MAC)
+                .HasMaxLength(100)
+                .HasDefaultValueSql("''")
+                .HasColumnName("MAC");
+
+            entity.Property(e => e.HWID)
+                .HasMaxLength(30)
+                .HasDefaultValueSql("''")
+                .HasColumnName("HWID");
+
+            entity.Property(e => e.LastActiveTime)
+                .HasColumnType("timestamp")
+                .HasColumnName("LastActiveTime")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<AccountBanEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("account_ban");
+
+            entity.HasIndex(e => e.AccountId, "accountid");
+
+            entity.Property(e => e.Id)
+                .HasColumnType("int")
+                .HasColumnName("Id");
+            entity.Property(e => e.AccountId)
+                .HasColumnType("int")
+                .HasColumnName("AccountId");
+
+            entity.Property(e => e.Reason)
+                .HasColumnType("tinyint(4)")
+                .HasColumnName("Reason");
+
+            entity.Property(e => e.ReasonDescription)
+                .HasColumnType("text")
+                .HasColumnName("ReasonDescription");
+
+            entity.Property(e => e.StartTime)
+                .HasColumnType("timestamp")
+                .HasColumnName("StartTime")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.EndTime)
+                .HasColumnType("timestamp")
+                .HasColumnName("EndTime")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<CharacterEntity>(entity =>

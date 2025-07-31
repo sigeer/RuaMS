@@ -4,6 +4,7 @@ using Application.Shared.Servers;
 using Application.Shared.Team;
 using BaseProto;
 using CashProto;
+using Config;
 using Dto;
 using ItemProto;
 using SyncProto;
@@ -97,8 +98,6 @@ namespace Application.Core.ServerTransports
         Dto.NoteDto? DeleteNoteMessage(int id);
         Dto.ShopDto? GetShop(int id, bool isShopId);
         int[] GetCardTierSize();
-        void SendUnbanAccount(string playerName);
-        void AddReport(int v1, int v2, int v3, string description, string v4);
         Rank.RankCharacterList LoadPlayerRanking(int topCount);
         void SendToggleCoupon(int v);
         void UpdateAccount(AccountCtrl accountEntity);
@@ -177,5 +176,13 @@ namespace Application.Core.ServerTransports
         StoreItemsResponse SaveItems(StoreItemsRequest request);
         LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest loadItemsFromStoreRequest);
         void BatchSyncMap(List<MapSyncDto> data);
+        SendReportResponse SendReport(SendReportRequest sendReportRequest);
+        ToggleMonitorPlayerResponse SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest);
+        MonitorDataWrapper LoadMonitor();
+        ToggleAutoBanIgnoreResponse SetAutoBanIgnored(ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest);
+        AutoBanIgnoredWrapper LoadAutobanIgnoreData();
+        BanResponse Ban(BanRequest banRequest);
+        UnbanResponse Unban(UnbanRequest unbanRequest);
+        SetGmLevelResponse SetGmLevel(SetGmLevelRequest setGmLevelRequest);
     }
 }

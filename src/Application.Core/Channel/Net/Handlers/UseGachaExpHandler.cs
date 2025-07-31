@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Channel.ServerData;
 using client.autoban;
 using tools;
 
@@ -34,6 +35,12 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseGachaExpHandler : ChannelHandlerBase
 {
+    readonly AutoBanDataManager _autoBanManager;
+
+    public UseGachaExpHandler(AutoBanDataManager autoBanManager)
+    {
+        _autoBanManager = autoBanManager;
+    }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
@@ -44,7 +51,7 @@ public class UseGachaExpHandler : ChannelHandlerBase
             {
                 if (c.OnlinedCharacter.getGachaExp() <= 0)
                 {
-                    AutobanFactory.GACHA_EXP.autoban(c.OnlinedCharacter, "Player tried to redeem GachaEXP, but had none to redeem.");
+                    _autoBanManager.Autoban(AutobanFactory.GACHA_EXP, c.OnlinedCharacter, "Player tried to redeem GachaEXP, but had none to redeem.");
                 }
                 c.OnlinedCharacter.gainGachaExp();
             }

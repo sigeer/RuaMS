@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
@@ -51,9 +52,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
     private const int EXPLODED_MESO_MAX_DELAY = 1000;
 
     protected readonly ILogger<AbstractDealDamageHandler> _logger;
-    protected AbstractDealDamageHandler(ILogger<AbstractDealDamageHandler> logger)
+    protected AutoBanDataManager autoBanDataManager;
+    protected AbstractDealDamageHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager)
     {
         _logger = logger;
+        this.autoBanDataManager = autoBanDataManager;
     }
 
     protected void applyAttack(AttackInfo attack, IPlayer player, int attackCount)
@@ -85,7 +88,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                 if (player.MP < attackEffect.getMpCon())
                 {
-                    AutobanFactory.MPCON.addPoint(player.getAutobanManager(), "Skill: " + attack.skill + "; Player MP: " + player.MP + "; MP Needed: " + attackEffect.getMpCon());
+                    autoBanDataManager.AddPoint(AutobanFactory.MPCON, player, "Skill: " + attack.skill + "; Player MP: " + player.MP + "; MP Needed: " + attackEffect.getMpCon());
                 }
 
                 int mobCount = attackEffect.getMobCount();
@@ -141,7 +144,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                 if (attack.numAttacked > mobCount)
                 {
-                    AutobanFactory.MOB_COUNT.autoban(player, "Skill: " + attack.skill + "; Count: " + attack.numAttacked + " Max: " + attackEffect.getMobCount());
+                    autoBanDataManager.Autoban(AutobanFactory.MOB_COUNT, player, "Skill: " + attack.skill + "; Count: " + attack.numAttacked + " Max: " + attackEffect.getMobCount());
                     return;
                 }
             }
@@ -207,7 +210,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                     if (distance > distanceToDetect)
                     {
-                        AutobanFactory.DISTANCE_HACK.alert(player, "Distance Sq to monster: " + distance + " SID: " + attack.skill + " MID: " + monster.getId());
+                        autoBanDataManager.Alert(AutobanFactory.DISTANCE_HACK, player, "Distance Sq to monster: " + distance + " SID: " + attack.skill + " MID: " + monster.getId());
                         monster.refreshMobPosition();
                     }
 
@@ -493,7 +496,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         {
                             if (totDamageToOneMonster != attackEffect.getFixDamage() && totDamageToOneMonster != 0)
                             {
-                                AutobanFactory.FIX_DAMAGE.autoban(player, totDamageToOneMonster + " damage");
+                                autoBanDataManager.Autoban(AutobanFactory.FIX_DAMAGE, player, totDamageToOneMonster + " damage");
                             }
 
                             int threeSnailsId = player.getJobType() * 10000000 + 1000;
@@ -1052,14 +1055,15 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 // Warn if the damage is over 1.5x what we calculated above.
                 if (damage > maxWithCrit * 1.5)
                 {
-                    AutobanFactory.DAMAGE_HACK.alert(chr,
+                    autoBanDataManager.Alert(AutobanFactory.DAMAGE_HACK, chr,
                         $"DMG: {damage} MaxDMG: {maxWithCrit} SID: {ret.skill} MobID: " + (monster != null ? monster.getId() : "null") + $" Map: {chr.getMap().getMapName()} ({chr.getMapId()})");
                 }
 
                 // Add a ab point if its over 5x what we calculated.
                 if (damage > maxWithCrit * 5)
                 {
-                    AutobanFactory.DAMAGE_HACK.addPoint(chr.getAutobanManager(), "DMG: " + damage + " MaxDMG: " + maxWithCrit + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
+                    autoBanDataManager.AddPoint(AutobanFactory.DAMAGE_HACK, chr,
+                        "DMG: " + damage + " MaxDMG: " + maxWithCrit + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
                 }
 
                 if (ret.skill == Marksman.SNIPE || (canCrit && damage > hitDmgMax))
@@ -1077,7 +1081,8 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     if (ret.numDamage > maxattack)
                     {
-                        AutobanFactory.DAMAGE_HACK.addPoint(chr.getAutobanManager(), "Too many lines: " + ret.numDamage + " Max lines: " + maxattack + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
+                        autoBanDataManager.AddPoint(AutobanFactory.DAMAGE_HACK, chr,
+"Too many lines: " + ret.numDamage + " Max lines: " + maxattack + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
                     }
                 }
 

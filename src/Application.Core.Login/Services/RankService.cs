@@ -13,13 +13,15 @@ namespace Application.Core.Login.Services
         readonly IMapper _mapper;
         readonly ILogger<RankService> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
+        readonly MasterServer _server;
 
-        public RankService(IDistributedCache cache, IMapper mapper, ILogger<RankService> logger, IDbContextFactory<DBContext> dbContextFactory)
+        public RankService(IDistributedCache cache, IMapper mapper, ILogger<RankService> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
         {
             _cache = cache;
             _mapper = mapper;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
+            _server = server;
         }
         public Rank.RankCharacterList LoadPlayerRanking(int topCount = 50, bool ignoreCache = false)
         {
@@ -38,9 +40,11 @@ namespace Application.Core.Login.Services
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
+            var bannedAccountId = _server.AccountBanManager.GetBannedAccounts();
+            var current = _server.GetCurrentTimeDateTimeOffset();
             var dataList = (from a in dbContext.Characters
-                            join b in dbContext.Accounts on a.AccountId equals b.Id
-                            where b.GMLevel < 2 && b.Banned != 1
+                            join b in dbContext.Accounts.Where(x => !bannedAccountId.Contains(x.Id)) on a.AccountId equals b.Id
+                            where b.GMLevel < 2
                             orderby a.Level descending, a.Exp descending, a.LastExpGainTime
                             select new { a.Level, a.Name }).Take(topCount).ToList();
             var obj = new Rank.RankCharacterList();

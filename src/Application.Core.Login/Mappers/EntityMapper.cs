@@ -1,11 +1,14 @@
+using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
+using Application.Core.Login.Models.Accounts;
 using Application.Core.Login.Models.Guilds;
 using Application.Core.Login.Models.Items;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
+using Application.Shared.Login;
 using Application.Shared.NewYear;
 using AutoMapper;
 
@@ -117,6 +120,10 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.UpdateTime, src => src.MapFrom(x => x.Timestamp.ToUnixTimeMilliseconds()))
                 .ReverseMap()
                 .ForMember(dest => dest.Timestamp, src => src.MapFrom(x => DateTimeOffset.FromUnixTimeMilliseconds(x.UpdateTime)));
+
+            CreateMap<AccountBindingsEntity, AccountHistoryModel>();
+            CreateMap<AccountBanEntity, AccountBanModel>()
+                .ForMember(dest => dest.BanLevel, src => src.MapFrom(x => (BanLevel)x.BanLevel));
 
         }
     }

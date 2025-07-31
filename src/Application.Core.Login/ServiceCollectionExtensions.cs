@@ -92,6 +92,9 @@ namespace Application.Core.Login
 
             services.AddSingleton<InventoryManager>();
             services.AddSingleton<ItemFactoryManager>();
+            services.AddSingleton<SystemManager>();
+            services.AddSingleton<AccountHistoryManager>();
+            services.AddSingleton<AccountBanManager>();
             return services;
         }
 

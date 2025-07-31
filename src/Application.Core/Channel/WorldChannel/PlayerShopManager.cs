@@ -19,7 +19,6 @@ namespace Application.Core.Channel
         readonly IMapper _mapper;
         readonly ILogger<PlayerShopManager> _logger;
         readonly WorldChannel _worldChannel;
-
         public PlayerShopManager(IMapper mapper, ILogger<PlayerShopManager> logger, WorldChannel worldChannel)
         {
             _mapper = mapper;
@@ -125,7 +124,7 @@ namespace Application.Core.Channel
 
             if (slotIndex >= shop.Commodity.Count || slotIndex < 0)
             {
-                AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with a player shop.");
+                _worldChannel.Container.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with a player shop.");
                 _logger.LogWarning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slotIndex);
                 chr.Client.Disconnect(true, false);
                 return false;

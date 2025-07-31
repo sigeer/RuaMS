@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel.ServerData;
 using client.autoban;
 using tools;
 
@@ -28,6 +29,13 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class HealOvertimeHandler : ChannelHandlerBase
 {
+    AutoBanDataManager autoBanDataManager;
+
+    public HealOvertimeHandler(AutoBanDataManager autoBanDataManager)
+    {
+        this.autoBanDataManager = autoBanDataManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
@@ -46,14 +54,14 @@ public class HealOvertimeHandler : ChannelHandlerBase
             abm.setTimestamp(8, timestamp, 28);  // thanks Vcoc & Thora for pointing out d/c happening here
             if ((abm.getLastSpam(0) + 1500) > timestamp)
             {
-                AutobanFactory.FAST_HP_HEALING.addPoint(abm, "Fast hp healing");
+                autoBanDataManager.AddPoint(AutobanFactory.FAST_HP_HEALING, chr, "Fast hp healing");
             }
 
             var map = chr.getMap();
             int abHeal = (int)(77 * map.getRecovery() * 1.5); // thanks Ari for noticing players not getting healed in sauna in certain cases
             if (healHP > abHeal)
             {
-                AutobanFactory.HIGH_HP_HEALING.autoban(chr, "Healing: " + healHP + "; Max is " + abHeal + ".");
+                autoBanDataManager.Autoban(AutobanFactory.HIGH_HP_HEALING, chr, "Healing: " + healHP + "; Max is " + abHeal + ".");
                 return;
             }
 
@@ -70,7 +78,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
             abm.setTimestamp(9, timestamp, 28);
             if ((abm.getLastSpam(1) + 1500) > timestamp)
             {
-                AutobanFactory.FAST_MP_HEALING.addPoint(abm, "Fast mp healing");
+                autoBanDataManager.AddPoint(AutobanFactory.FAST_MP_HEALING, chr, "Fast mp healing");
                 return;     // thanks resinate for noticing mp being gained even after detection
             }
             chr.UpdateStatsChunk(() =>

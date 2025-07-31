@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using client.autoban;
@@ -40,10 +41,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class MobDamageMobHandler : ChannelHandlerBase
 {
     readonly ILogger<MobDamageMobHandler> _logger;
+    readonly AutoBanDataManager _autoBanManager;
 
-    public MobDamageMobHandler(ILogger<MobDamageMobHandler> logger)
+    public MobDamageMobHandler(ILogger<MobDamageMobHandler> logger, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
+        _autoBanManager = autoBanManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -65,7 +68,7 @@ public class MobDamageMobHandler : ChannelHandlerBase
 
             if (dmg > maxDmg)
             {
-                AutobanFactory.DAMAGE_HACK.alert(c.OnlinedCharacter, "Possible packet editing hypnotize damage exploit.");   // thanks Rien dev team
+                _autoBanManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing hypnotize damage exploit.");   // thanks Rien dev team
                 string attackerName = MonsterInformationProvider.getInstance().getMobNameFromId(attacker.getId());
                 string damagedName = MonsterInformationProvider.getInstance().getMobNameFromId(damaged.getId());
                 _logger.LogWarning("Chr {CharacterName} had hypnotized {Attacker} to attack {Damaged} with damage {Damage} (max: {MaxDamage})", c.OnlinedCharacter.getName(),

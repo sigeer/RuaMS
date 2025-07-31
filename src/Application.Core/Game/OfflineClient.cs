@@ -109,6 +109,11 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
+        public void CloseSession()
+        {
+            throw new NotImplementedException();
+        }
+
         public void CloseSocket()
         {
             throw new BusinessCharacterOfflineException();

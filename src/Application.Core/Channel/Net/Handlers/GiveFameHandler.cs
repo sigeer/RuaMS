@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Players;
 using client.autoban;
 using Microsoft.Extensions.Logging;
@@ -32,10 +33,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class GiveFameHandler : ChannelHandlerBase
 {
     readonly ILogger<GiveFameHandler> _logger;
+    readonly AutoBanDataManager _autoBanManager;
 
-    public GiveFameHandler(ILogger<GiveFameHandler> logger)
+    public GiveFameHandler(ILogger<GiveFameHandler> logger, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
+        _autoBanManager = autoBanManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -50,7 +53,7 @@ public class GiveFameHandler : ChannelHandlerBase
         }
         else if (famechange != 1 && famechange != -1)
         {
-            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit fame.");
+            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit fame.");
             _logger.LogWarning("Chr {CharacterName} tried to fame hack with famechange {FameChange}", c.OnlinedCharacter.getName(), famechange);
             c.Disconnect(true);
             return;

@@ -175,7 +175,7 @@ namespace Application.Module.Duey.Channel
 
                     if (sendMessage != null && sendMessage.Length > 100)
                     {
-                        AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
+                        _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with too long of a text", c.OnlinedCharacter.getName());
                         c.Disconnect(true, false);
                         return;
@@ -188,7 +188,7 @@ namespace Application.Module.Duey.Channel
                     }
                     else if (!c.OnlinedCharacter.haveItem(ItemId.QUICK_DELIVERY_TICKET))
                     {
-                        AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
+                        _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
                         c.Disconnect(true, false);
                         return;
@@ -197,7 +197,7 @@ namespace Application.Module.Duey.Channel
                     long finalcost = (long)sendMesos + fee;
                     if (sendMesos < 0 || finalcost < 0 || finalcost > int.MaxValue || (amount < 1 && sendMesos == 0))
                     {
-                        AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
+                        _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
                         c.Disconnect(true, false);
                         return;

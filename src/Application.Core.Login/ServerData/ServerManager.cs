@@ -50,6 +50,8 @@ namespace Application.Core.Login.Datas
                 await _masterServer.NoteManager.InitializeAsync(dbContext);
                 await _masterServer.GiftManager.Initialize(dbContext);
                 await _masterServer.RingManager.Initialize(dbContext);
+                await _masterServer.AccountHistoryManager.Initialize(dbContext);
+                await _masterServer.AccountBanManager.Initialize(dbContext);
 
                 foreach (var module in _masterServer.Modules)
                 {

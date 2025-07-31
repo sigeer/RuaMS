@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "Config/PlayerBase.proto";
+
+package Config;
+
+message ToggleAutoBanIgnoreRequest {
+	string targetName = 1;
+	int32 masterId = 2;
+}
+
+message ToggleAutoBanIgnoreResponse {
+	bool isSuccess = 1;
+	bool isIgnored = 2;
+}
+
+message AutoBanIgnoredWrapper {
+	repeated Config.PlayerBaseDto list = 1;
+}
+
+
+message AutoBanIgnoredChangedNotifyDto {
+	string operatorName = 1;
+	string targetName = 2;
+	bool isIgnored = 3;
+	repeated int32 gmId = 4;
+}

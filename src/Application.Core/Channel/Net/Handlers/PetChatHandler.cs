@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -30,10 +31,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PetChatHandler : ChannelHandlerBase
 {
     readonly ILogger<PetChatHandler> _logger;
+    readonly AutoBanDataManager _autoBanManager;
 
-    public PetChatHandler(ILogger<PetChatHandler> logger)
+    public PetChatHandler(ILogger<PetChatHandler> logger, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
+        _autoBanManager = autoBanManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -50,7 +53,7 @@ public class PetChatHandler : ChannelHandlerBase
         string text = p.readString();
         if (text.Length > sbyte.MaxValue)
         {
-            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with pets.");
+            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with pets.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {text.Length}", c.OnlinedCharacter.getName(), text.Length);
             c.Disconnect(true, false);
             return;

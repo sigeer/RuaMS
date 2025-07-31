@@ -22,7 +22,6 @@ namespace Application.Shared.Client
         int AccountId { get; }
         string AccountName { get; }
         int AccountGMLevel { get; }
-        void CommitAccount();
         void SetCharacterOnSessionTransitionState(int cid);
     }
 }

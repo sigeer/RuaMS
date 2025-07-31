@@ -265,11 +265,8 @@ namespace Application.Core.Login.Services
             {
                 var dbModel = allAccounts.FirstOrDefault(x => x.Id == obj.Id)!;
 
-                dbModel.Macs = obj.Macs == null ? null : string.Join(",", obj.Macs.Split(",").Select(x => x.Trim()).ToHashSet());
-                dbModel.Hwid = obj.Hwid;
                 dbModel.Pic = obj.Pic;
                 dbModel.Pin = obj.Pin;
-                dbModel.Ip = obj.Ip;
                 dbModel.Gender = obj.Gender;
                 dbModel.Tos = obj.Tos;
                 dbModel.GMLevel = obj.GMLevel;

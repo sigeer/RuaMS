@@ -21,9 +21,11 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Players;
 using client.autoban;
 using Microsoft.Extensions.Logging;
+using System.Xml.Linq;
 using tools;
 using static tools.PacketCreator;
 
@@ -35,10 +37,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class WhisperHandler : ChannelHandlerBase
 {
     readonly ILogger<WhisperHandler> _logger;
+    readonly AutoBanDataManager _autoBanManager;
 
-    public WhisperHandler(ILogger<WhisperHandler> logger)
+    public WhisperHandler(ILogger<WhisperHandler> logger, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
+        _autoBanManager = autoBanManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -106,7 +110,7 @@ public class WhisperHandler : ChannelHandlerBase
 
         if (message.Length > sbyte.MaxValue)
         {
-            AutobanFactory.PACKET_EDIT.alert(user, user.getName() + " tried to packet edit with whispers.");
+            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, user, user.getName() + " tried to packet edit with whispers.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {MessageLength}", user.getName(), message.Length);
             user.getClient().Disconnect(true, false);
             return;

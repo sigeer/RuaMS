@@ -1,4 +1,4 @@
-﻿using Application.Core.Game.Skills;
+using Application.Core.Game.Skills;
 using client.autoban;
 using constants.game;
 using server;
@@ -38,7 +38,7 @@ namespace Application.Core.Game.Gameplay
                 //Hmm
                 if (!mySkill.getAction())
                 {
-                    AutobanFactory.FAST_ATTACK.autoban(chr, "WZ Edit; adding action to a skill: " + display);
+                    chr.Client.CurrentServerContainer.AutoBanManager.Autoban(AutobanFactory.GACHA_EXP, chr, "WZ Edit; adding action to a skill: " + display);
                     return null;
                 }
             }

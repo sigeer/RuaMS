@@ -1,3 +1,4 @@
+using Application.Core.Channel.Services;
 using Application.Core.Managers;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +7,11 @@ namespace Application.Core.Game.Commands.Gm3;
 
 public class UnBanCommand : CommandBase
 {
-    public UnBanCommand() : base(3, "unban")
+    readonly AdminService _adminService;
+    public UnBanCommand(AdminService adminService) : base(3, "unban")
     {
         Description = "Unban a player.";
+        _adminService = adminService;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -20,16 +23,6 @@ public class UnBanCommand : CommandBase
             return;
         }
 
-        try
-        {
-            c.CurrentServerContainer.Transport.SendUnbanAccount(paramsValue[0]);
-        }
-        catch (Exception e)
-        {
-            log.Error(e.ToString());
-            player.message("Failed to unban " + paramsValue[0]);
-            return;
-        }
-        player.message("Unbanned " + paramsValue[0]);
+        _adminService.Unban(c.OnlinedCharacter, paramsValue[0]);
     }
 }

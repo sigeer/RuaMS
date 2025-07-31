@@ -16,7 +16,14 @@
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />
 		<Protobuf Include="Cash\Cash.proto" GrpcServices="None" />
 		<Protobuf Include="ChatRoom\ChatRoom.proto" GrpcServices="None" />
+		<Protobuf Include="Config\PlayerBase.proto" GrpcServices="None" />
+		<Protobuf Include="Config\AutoBanConfig.proto" GrpcServices="None" />
+		<Protobuf Include="Config\MonitorConfig.proto" GrpcServices="None" />
 		<Protobuf Include="Config\MessageWrapper.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
+		<Protobuf Include="Dto\AccountManage.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\Report.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Item\ItemStorage.proto" GrpcServices="None" />

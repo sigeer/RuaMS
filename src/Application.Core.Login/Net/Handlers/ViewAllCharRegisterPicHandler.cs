@@ -38,10 +38,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
             return;
         }
 
-        c.UpdateMacs(mac);
-        c.Hwid = hwid;
-
-        if (c.HasBannedMac() || c.HasBannedHWID())
+        if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) || _server.AccountBanManager.IsMACBlocked(mac) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
         {
             _sessionCoordinator.closeSession(c, true);
             return;

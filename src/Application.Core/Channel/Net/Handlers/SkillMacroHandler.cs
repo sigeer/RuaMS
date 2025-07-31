@@ -21,13 +21,22 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
+using Application.Shared.Constants.Item;
 using client.autoban;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 public class SkillMacroHandler : ChannelHandlerBase
 {
+    readonly AutoBanDataManager _autoBanManager;
+
+    public SkillMacroHandler(AutoBanDataManager autoBanManager)
+    {
+        _autoBanManager = autoBanManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
@@ -42,7 +51,7 @@ public class SkillMacroHandler : ChannelHandlerBase
             string name = p.readString();
             if (name.Length > 12)
             {
-                AutobanFactory.PACKET_EDIT.alert(chr, "Invalid name length " + name + " (" + name.Length + ") for skill macro.");
+                _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, "Invalid name length " + name + " (" + name.Length + ") for skill macro.");
                 c.Disconnect(false, false);
                 break;
             }

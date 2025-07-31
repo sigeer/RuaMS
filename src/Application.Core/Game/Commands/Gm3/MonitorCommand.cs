@@ -1,13 +1,14 @@
-using net.packet.logging;
-using tools;
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Game.Commands.Gm3;
 
 public class MonitorCommand : CommandBase
 {
-    public MonitorCommand() : base(3, "monitor")
+    readonly MonitorManager _monitorManager;
+    public MonitorCommand(MonitorManager adminService) : base(3, "monitor")
     {
         Description = "Toggle monitored packet logging of a character.";
+        _monitorManager = adminService;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -18,16 +19,7 @@ public class MonitorCommand : CommandBase
             player.yellowMessage("Syntax: !monitor <ign>");
             return;
         }
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (victim == null || !victim.IsOnlined)
-        {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this world.");
-            return;
-        }
-        bool monitored = MonitoredChrLogger.toggleMonitored(victim.getId());
-        player.yellowMessage(victim.getId() + " is " + (monitored ? "now being monitored." : "no longer being monitored."));
-        string message = player.getName() + (monitored ? " has started monitoring " : " has stopped monitoring ") + victim.getId() + ".";
-        c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(5, message));
 
+        _monitorManager.ToggleMonitor(c.OnlinedCharacter, paramsValue[0]);
     }
 }

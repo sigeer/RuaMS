@@ -54,45 +54,6 @@ namespace Application.Core.Managers
         }
 
 
-        public static bool Ban(string id, string reason, bool isAccountId)
-        {
-            using var dbContext = new DBContext();
-
-            // IP的正则？
-            if (Regex.IsMatch(id, "/[0-9]{1,3}\\..*"))
-            {
-                dbContext.Ipbans.Add(new Ipban { Ip = id });
-                dbContext.SaveChanges();
-                return true;
-            }
-            int actualAccId = 0;
-            if (isAccountId)
-            {
-                actualAccId = dbContext.Accounts.Where(x => x.Name == id).Select(x => x.Id).FirstOrDefault();
-
-            }
-            else
-            {
-                actualAccId = dbContext.Characters.Where(x => x.Name == id).Select(x => x.AccountId).FirstOrDefault();
-            }
-            dbContext.Accounts.Where(x => x.Id == actualAccId).ExecuteUpdate(x => x.SetProperty(y => y.Banned, 1).SetProperty(y => y.Banreason, reason));
-
-            return true;
-        }
-
-
-        public static int getIdByName(string name)
-        {
-            using DBContext dbContext = new DBContext();
-            return dbContext.Characters.Where(x => x.Name == name).Select(x => new { x.Id }).FirstOrDefault()?.Id ?? -1;
-        }
-
-        public static string getNameById(int id)
-        {
-            using DBContext dbContext = new DBContext();
-            return dbContext.Characters.Where(x => x.Id == id).Select(x => x.Name).FirstOrDefault()!;
-        }
-
         ///// <summary>
         ///// 角色
         ///// </summary>
@@ -458,31 +419,6 @@ namespace Application.Core.Managers
                 }
             }
             return players;
-        }
-
-        public static CharacterBaseInfo GetCharacterFromDatabase(string name)
-        {
-            using DBContext dbContext = new DBContext();
-            var ds = dbContext.Characters.Where(x => x.Name == name).Select(x => new { x.Id, x.AccountId, x.Name }).FirstOrDefault();
-            return ds == null ? throw new BusinessCharacterNotFoundException(name) : new CharacterBaseInfo(ds.AccountId, ds.Id, ds.Name);
-        }
-
-        public static void doNameChange(int characterId, string oldName, string newName, int nameChangeId)
-        { 
-            //Don't do this while player is online
-            try
-            {
-                using var dbContext = new DBContext();
-                using var dbTrans = dbContext.Database.BeginTransaction();
-                bool success = doNameChange(dbContext, characterId, oldName, newName, nameChangeId);
-                if (!success)
-                    dbTrans.Rollback();
-                dbTrans.Commit();
-            }
-            catch (Exception e)
-            {
-                Log.Logger.Error(e, "Failed to get DB connection for chr name change");
-            }
         }
 
         public static bool doNameChange(DBContext dbContext, int characterId, string oldName, string newName, int nameChangeId)

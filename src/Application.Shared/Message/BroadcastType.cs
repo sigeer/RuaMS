@@ -2,6 +2,13 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string OnGmLevelSet = "OnGmLevelSet";
+        public const string BroadcastBan = "BroadcastBan";
+        public const string OnAutoBanIgnoreChangedNotify = "OnAutoBanIgnoreChangedNotify";
+        public const string OnMonitorChangedNotify = "OnMonitorChangedNotify";
+
+        public const string OnReportReceived = "OnReportReceived";
+
         public const string PS_OnHasHiredMerchant = "PS_OnHasHiredMerchant";
         public const string OnCashItemPurchased = "OnCashItemPurchased";
 

@@ -19,6 +19,49 @@ namespace Application.Core.EF.Migrations
                 .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("Application.Core.EF.Entities.AccountBanEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("Id");
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int")
+                        .HasColumnName("AccountId");
+
+                    b.Property<int>("BanLevel")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("EndTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp")
+                        .HasColumnName("EndTime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<sbyte>("Reason")
+                        .HasColumnType("tinyint(4)")
+                        .HasColumnName("Reason");
+
+                    b.Property<string>("ReasonDescription")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ReasonDescription");
+
+                    b.Property<DateTimeOffset>("StartTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp")
+                        .HasColumnName("StartTime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.HasIndex(new[] { "AccountId" }, "accountid");
+
+                    b.ToTable("account_ban", (string)null);
+                });
+
             modelBuilder.Entity("Application.Core.EF.Entities.ExpLogRecord", b =>
                 {
                     b.Property<long>("Id")
@@ -121,20 +164,62 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("gachapon_pool_level_chance", (string)null);
                 });
 
+            modelBuilder.Entity("Application.EF.Entities.AccountBindingsEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("Id");
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int")
+                        .HasColumnName("AccountId");
+
+                    b.Property<string>("HWID")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("HWID")
+                        .HasDefaultValueSql("''");
+
+                    b.Property<string>("IP")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("IP")
+                        .HasDefaultValueSql("''");
+
+                    b.Property<DateTimeOffset>("LastActiveTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp")
+                        .HasColumnName("LastActiveTime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("MAC")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("MAC")
+                        .HasDefaultValueSql("''");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.HasIndex(new[] { "AccountId" }, "accountid")
+                        .HasDatabaseName("accountid1");
+
+                    b.ToTable("account_bindings", (string)null);
+                });
+
             modelBuilder.Entity("Application.EF.Entities.AccountEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(11)")
                         .HasColumnName("id");
-
-                    b.Property<sbyte>("Banned")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("banned");
-
-                    b.Property<string>("Banreason")
-                        .HasColumnType("text")
-                        .HasColumnName("banreason");
 
                     b.Property<DateTime>("Birthday")
                         .ValueGeneratedOnAdd()
@@ -171,22 +256,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnName("gender")
                         .HasDefaultValueSql("'10'");
 
-                    b.Property<sbyte>("Greason")
-                        .HasColumnType("tinyint(4)")
-                        .HasColumnName("greason");
-
-                    b.Property<string>("Hwid")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(12)
-                        .HasColumnType("varchar(12)")
-                        .HasColumnName("hwid")
-                        .HasDefaultValueSql("''");
-
-                    b.Property<string>("Ip")
-                        .HasColumnType("text")
-                        .HasColumnName("ip");
-
                     b.Property<int>("Language")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(1)")
@@ -196,10 +265,6 @@ namespace Application.Core.EF.Migrations
                     b.Property<DateTimeOffset?>("Lastlogin")
                         .HasColumnType("timestamp")
                         .HasColumnName("lastlogin");
-
-                    b.Property<string>("Macs")
-                        .HasColumnType("tinytext")
-                        .HasColumnName("macs");
 
                     b.Property<int?>("MaplePoint")
                         .HasColumnType("int(11)")
@@ -250,10 +315,6 @@ namespace Application.Core.EF.Migrations
                         .HasColumnName("pin")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTimeOffset?>("Tempban")
-                        .HasColumnType("timestamp")
-                        .HasColumnName("tempban");
-
                     b.Property<bool>("Tos")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("tos");
@@ -267,8 +328,6 @@ namespace Application.Core.EF.Migrations
 
                     b.HasIndex(new[] { "Name" }, "name")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "Id", "Banned" }, "ranking1");
 
                     b.ToTable("accounts", (string)null);
                 });
@@ -877,7 +936,8 @@ namespace Application.Core.EF.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "AccountId" }, "accountid");
+                    b.HasIndex(new[] { "AccountId" }, "accountid")
+                        .HasDatabaseName("accountid2");
 
                     b.HasIndex(new[] { "Id", "AccountId", "World" }, "id")
                         .HasDatabaseName("id1");
@@ -885,8 +945,7 @@ namespace Application.Core.EF.Migrations
                     b.HasIndex(new[] { "Id", "AccountId", "Name" }, "id_2")
                         .HasDatabaseName("id_21");
 
-                    b.HasIndex(new[] { "Level", "Exp" }, "ranking1")
-                        .HasDatabaseName("ranking11");
+                    b.HasIndex(new[] { "Level", "Exp" }, "ranking1");
 
                     b.ToTable("characters", (string)null);
                 });
@@ -1418,12 +1477,16 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("hwidaccounts", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Hwidban", b =>
+            modelBuilder.Entity("Application.EF.Entities.HwidbanEntity", b =>
                 {
                     b.Property<int>("Hwidbanid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(10) unsigned")
                         .HasColumnName("hwidbanid");
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int(10) unsigned")
+                        .HasColumnName("AccountId");
 
                     b.Property<string>("Hwid")
                         .IsRequired()
@@ -1510,16 +1573,15 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("inventoryitems", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Ipban", b =>
+            modelBuilder.Entity("Application.EF.Entities.IpbanEntity", b =>
                 {
                     b.Property<int>("Ipbanid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(10) unsigned")
                         .HasColumnName("ipbanid");
 
-                    b.Property<string>("Aid")
-                        .HasMaxLength(40)
-                        .HasColumnType("varchar(40)")
+                    b.Property<int>("Aid")
+                        .HasColumnType("int(10) unsigned")
                         .HasColumnName("aid");
 
                     b.Property<string>("Ip")
@@ -1565,16 +1627,15 @@ namespace Application.Core.EF.Migrations
                     b.ToTable("keymap", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Macban", b =>
+            modelBuilder.Entity("Application.EF.Entities.MacbanEntity", b =>
                 {
                     b.Property<int>("Macbanid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(10) unsigned")
                         .HasColumnName("macbanid");
 
-                    b.Property<string>("Aid")
-                        .HasMaxLength(40)
-                        .HasColumnType("varchar(40)")
+                    b.Property<int>("Aid")
+                        .HasColumnType("int(10) unsigned")
                         .HasColumnName("aid");
 
                     b.Property<string>("Mac")

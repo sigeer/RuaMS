@@ -23,8 +23,5 @@ namespace Application.Shared.Client
         /// </summary>
         /// <param name="cid"></param>
         public abstract void SetCharacterOnSessionTransitionState(int cid);
-        protected abstract HashSet<string> GetMac();
-
-        public abstract void CommitAccount();
     }
 }

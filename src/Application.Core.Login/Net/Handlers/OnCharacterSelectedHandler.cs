@@ -34,19 +34,17 @@ namespace Application.Core.Login.Net.Handlers
                 return;
             }
 
-            c.UpdateMacs(macs);
-            c.Hwid = hwid;
+
+            if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) || _server.AccountBanManager.IsMACBlocked(macs) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
+            {
+                _sessionCoordinator.closeSession(c, true);
+                return;
+            }
 
             AntiMulticlientResult res = _sessionCoordinator.attemptGameSession(c, c.AccountEntity.Id, hwid);
             if (res != AntiMulticlientResult.SUCCESS)
             {
                 c.sendPacket(LoginPacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
-                return;
-            }
-
-            if (c.HasBannedMac() || c.HasBannedHWID())
-            {
-                _sessionCoordinator.closeSession(c, true);
                 return;
             }
 
@@ -74,7 +72,10 @@ namespace Application.Core.Login.Net.Handlers
 
             _server.UnregisterLoginState(c);
             c.SetCharacterOnSessionTransitionState(charId);
-            c.CommitAccount();
+
+            c.AccountEntity!.CurrentMac = macs;
+            c.AccountEntity!.CurrentHwid = hwid.hwid;
+            _server.AccountHistoryManager.InsertLoginHistory(c.AccountId, c.RemoteAddress, macs, hwid.hwid);
 
             try
             {
