@@ -18,7 +18,7 @@ namespace Application.Shared.Client
         void PongReceived();
 
         void sendPacket(Packet packet);
-
+        void CloseSession();
         void CloseSocket();
         void ForceDisconnect();
         string GetSessionRemoteHost();

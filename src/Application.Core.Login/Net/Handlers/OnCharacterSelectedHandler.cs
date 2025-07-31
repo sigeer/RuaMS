@@ -73,6 +73,10 @@ namespace Application.Core.Login.Net.Handlers
             _server.UnregisterLoginState(c);
             c.SetCharacterOnSessionTransitionState(charId);
 
+            c.AccountEntity!.CurrentMac = macs;
+            c.AccountEntity!.CurrentHwid = hwid.hwid;
+            _server.AccountHistoryManager.InsertLoginHistory(c.AccountId, c.RemoteAddress, macs, hwid.hwid);
+
             try
             {
                 c.sendPacket(LoginPacketCreator.getServerIP(socket, charId));

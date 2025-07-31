@@ -222,6 +222,7 @@ namespace Application.Core.Login.ServerData
             var data = new BanBroadcast
             {
                 TargetId = targetChr.Character.Id,
+                TargetName = targetChr.Character.Name,
                 OperatorName = _server.CharacterManager.GetPlayerName(request.OperatorId),
                 Reason = request.Reason,
                 ReasonDesc = request.ReasonDesc
@@ -230,6 +231,11 @@ namespace Application.Core.Login.ServerData
 
 
             return new BanResponse();
+        }
+
+        public List<int> GetBannedAccounts()
+        {
+            return Query(x => x.EndTime <= _server.GetCurrentTimeDateTimeOffset()).Select(x => x.AccountId).ToList();
         }
 
         public override List<AccountBanModel> Query(Expression<Func<AccountBanModel, bool>> expression)

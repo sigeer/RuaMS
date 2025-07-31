@@ -65,7 +65,7 @@ namespace Application.Core.Channel.Services
                 Timer? timer = null;
                 timer = new System.Threading.Timer(_ =>
                 {
-                    chr.Client.Disconnect(false, false);
+                    chr.Client.CloseSession();
 
                     timer?.Dispose();
                 }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);

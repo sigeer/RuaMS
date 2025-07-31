@@ -40,11 +40,11 @@ namespace Application.Core.Login.Services
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
+            var bannedAccountId = _server.AccountBanManager.GetBannedAccounts();
             var current = _server.GetCurrentTimeDateTimeOffset();
             var dataList = (from a in dbContext.Characters
-                            join b in dbContext.Accounts on a.AccountId equals b.Id
-                            let bindings = dbContext.AccountBans.Where(x => x.AccountId == a.AccountId)
-                            where b.GMLevel < 2 && bindings.Count(x => x.EndTime >= current) == 0
+                            join b in dbContext.Accounts.Where(x => !bannedAccountId.Contains(x.Id)) on a.AccountId equals b.Id
+                            where b.GMLevel < 2
                             orderby a.Level descending, a.Exp descending, a.LastExpGainTime
                             select new { a.Level, a.Name }).Take(topCount).ToList();
             var obj = new Rank.RankCharacterList();

@@ -56,11 +56,11 @@ public class LoginPasswordHandler : LoginHandlerBase
         string login = p.readString();
         string pwd = p.readString();
 
-        var mac = BitConverter.ToString(p.readBytes(6)); // 这里会不会有mac
+        var unknown = p.readBytes(6);
         byte[] hwidNibbles = p.readBytes(4); // 这里获得的hwid，和其他handler里的hostString一样吗？
         Hwid hwid = new Hwid(hwidNibbles.ToHexString());
 
-        if (_server.AccountBanManager.IsIPBlocked(remoteHost) || _server.AccountBanManager.IsMACBlocked(mac) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
+        if (_server.AccountBanManager.IsIPBlocked(remoteHost) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
         {
             c.sendPacket(LoginPacketCreator.GetLoginFailed(3));
             return;
@@ -97,9 +97,6 @@ public class LoginPasswordHandler : LoginHandlerBase
         }
         if (c.FinishLogin() == LoginResultCode.Success && c.CheckChar(c.AccountEntity!.Id))
         {
-            c.AccountEntity.CurrentHwid = hwid.hwid;
-            c.AccountEntity.CurrentMac = mac;
-            _server.AccountHistoryManager.InsertLoginHistory(c.AccountId, remoteHost, mac, hwid.hwid);
             c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));//why the fk did I do c.getAccountName()?
             _server.RegisterLoginState(c);
         }

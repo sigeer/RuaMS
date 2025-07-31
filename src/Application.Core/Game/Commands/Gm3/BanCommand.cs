@@ -18,7 +18,7 @@ public class BanCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         { 
-            player.yellowMessage("Syntax: !ban <玩家昵称> <天> <理由>");
+            player.yellowMessage("Syntax: !ban <玩家昵称> <天>");
             return;
         }
 
@@ -32,7 +32,7 @@ public class BanCommand : CommandBase
         }
         else
         {
-            player.yellowMessage("Syntax: !ban <玩家昵称> <天> <理由>");
+            player.yellowMessage("Syntax: !ban <玩家昵称> <天>");
             return;
         }
     }

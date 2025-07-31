@@ -177,7 +177,7 @@ namespace Application.Shared.Client
 
         protected abstract void CloseSessionInternal();
 
-        private void CloseSession()
+        public void CloseSession()
         {
 
             try
