@@ -60,11 +60,6 @@ public class LoginPasswordHandler : LoginHandlerBase
         byte[] hwidNibbles = p.readBytes(4); // 这里获得的hwid，和其他handler里的hostString一样吗？
         Hwid hwid = new Hwid(hwidNibbles.ToHexString());
 
-        if (_server.AccountBanManager.IsIPBlocked(remoteHost) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
-        {
-            c.sendPacket(LoginPacketCreator.GetLoginFailed(3));
-            return;
-        }
 
         var loginok = c.Login(login, pwd, hwid);
 
@@ -87,6 +82,12 @@ public class LoginPasswordHandler : LoginHandlerBase
         if (banInfo != null)
         {
             c.sendPacket(LoginPacketCreator.GetTempBan(banInfo.EndTime.ToUnixTimeMilliseconds(), (byte)banInfo.Reason));
+            return;
+        }
+
+        if (_server.AccountBanManager.IsIPBlocked(remoteHost) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
+        {
+            c.sendPacket(LoginPacketCreator.GetLoginFailed(3));
             return;
         }
 

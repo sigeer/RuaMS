@@ -160,7 +160,10 @@ namespace Application.Core.Login.ServerData
                 }
                 if (banLevel.HasFlag(BanLevel.Mac))
                 {
-                    bannedMAC.Add(new MacbanEntity(his.MAC, accountId));
+                    foreach (var mac in his.MAC.Split(','))
+                    {
+                        bannedMAC.Add(new MacbanEntity(mac.Trim(), accountId));
+                    }
                 }
                 if (banLevel.HasFlag(BanLevel.Hwid))
                 {

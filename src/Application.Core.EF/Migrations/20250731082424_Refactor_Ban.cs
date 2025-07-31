@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using MySql.EntityFrameworkCore.Metadata;
 
@@ -110,7 +110,7 @@ namespace Application.Core.EF.Migrations
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     AccountId = table.Column<int>(type: "int", nullable: false),
                     IP = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false, defaultValueSql: "''"),
-                    MAC = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false, defaultValueSql: "''"),
+                    MAC = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false, defaultValueSql: "''"),
                     HWID = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false, defaultValueSql: "''"),
                     LastActiveTime = table.Column<DateTimeOffset>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },

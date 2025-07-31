@@ -2222,7 +2222,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("IP");
 
             entity.Property(e => e.MAC)
-                .HasMaxLength(30)
+                .HasMaxLength(100)
                 .HasDefaultValueSql("''")
                 .HasColumnName("MAC");
 
