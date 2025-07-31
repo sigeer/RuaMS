@@ -348,7 +348,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (YamlConfig.config.server.USE_ERASE_PERMIT_ON_OPENSHOP)
                     {
-                        InventoryManipulator.removeById(c, InventoryType.CASH, chr.VisitingShop.SourceItem.getItemId(), 1, true, false);
+                        InventoryManipulator.removeById(c, InventoryType.CASH, chr.VisitingShop.SourceItemId, 1, true, false);
                     }
 
                     var shop = (PlayerShop)chr.VisitingShop;

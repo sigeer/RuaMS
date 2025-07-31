@@ -115,6 +115,7 @@ namespace Application.Core.Channel
         public ChannelPlayerStorage PlayerStorage { get; }
 
         ScheduledFuture? invitationTask;
+        ScheduledFuture? playerShopTask;
 
         public BatchSyncManager<SyncProto.MapSyncDto> BatchSynMapManager { get; }
         public WorldChannelServer(IServiceProvider sp,
@@ -235,6 +236,8 @@ namespace Application.Core.Channel
 
                 if (invitationTask != null)
                     await invitationTask.CancelAsync(false);
+                if (playerShopTask != null)
+                    await playerShopTask.CancelAsync(false);
 
                 InviteChannelHandlerRegistry.Dispose();
 
@@ -296,6 +299,7 @@ namespace Application.Core.Channel
             MapOwnershipManager.Register(TimerManager);
 
             invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
 
             InviteChannelHandlerRegistry.Register(ServiceProvider.GetServices<InviteChannelHandler>());
             InitializeMessage();
