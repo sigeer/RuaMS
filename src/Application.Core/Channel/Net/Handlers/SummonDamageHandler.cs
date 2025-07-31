@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
@@ -37,7 +38,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class SummonDamageHandler : AbstractDealDamageHandler
 {
-    public SummonDamageHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
+    public SummonDamageHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager) : base(logger, autoBanDataManager)
     {
     }
 
@@ -88,7 +89,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
             {
                 if (damage > maxDmg)
                 {
-                    AutobanFactory.DAMAGE_HACK.alert(c.OnlinedCharacter, "Possible packet editing summon damage exploit.");
+                    autoBanDataManager.Alert(AutobanFactory.DAMAGE_HACK, c.OnlinedCharacter, "Possible packet editing summon damage exploit.");
                     string mobName = MonsterInformationProvider.getInstance().getMobNameFromId(target.getId());
                     _logger.LogInformation("Possible exploit - chr {CharacterName} used a summon of skillId {SkillId} to attack {MobName} with damage {Damage} (max: {MaxDamage})",
                             c.OnlinedCharacter.getName(), summon.getSkill(), mobName, damage, maxDmg);

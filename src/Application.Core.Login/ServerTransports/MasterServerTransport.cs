@@ -4,10 +4,13 @@ using Application.Shared.Message;
 using Application.Shared.Servers;
 using BaseProto;
 using CashProto;
+using Config;
 using Dto;
 using ItemProto;
 using net.server;
 using tools;
+using XmlWzReader;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Login
 {
@@ -401,6 +404,31 @@ namespace Application.Core.Login
         internal void ReturnBuyCashItem(BuyCashItemResponse buyCashItemResponse)
         {
             SendMessage(BroadcastType.OnCashItemPurchased, buyCashItemResponse, buyCashItemResponse.MasterId);
+        }
+
+        internal void BroadcastReportNotify(SendReportBroadcast data)
+        {
+            SendMessage(BroadcastType.OnReportReceived, data, data.GmId.ToArray());
+        }
+
+        internal void MonitorChangedNotify(MonitorDataChangedNotifyDto data)
+        {
+            SendMessage(BroadcastType.OnMonitorChangedNotify, data, data.GmId.ToArray());
+        }
+
+        internal void AutobanIgnoresChangedNotify(AutoBanIgnoredChangedNotifyDto data)
+        {
+            SendMessage(BroadcastType.OnAutoBanIgnoreChangedNotify, data, data.GmId.ToArray());
+        }
+
+        internal void BroadcastBanned(BanBroadcast data)
+        {
+            BroadcastMessage(BroadcastType.BroadcastBan, data);
+        }
+
+        internal void BroadcastGmLevelChanged(SetGmLevelBroadcast data)
+        {
+            SendMessage(BroadcastType.OnGmLevelSet, data, data.TargetId);
         }
     }
 }

@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.Infrastructures;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Core.ServerTransports;
@@ -50,12 +51,14 @@ public class ItemInformationProvider : WZDataBootstrap, IStaticService
 
     readonly IChannelServerTransport _transport;
     readonly IMemoryCache _cache;
-    public ItemInformationProvider(IChannelServerTransport transport, IMemoryCache cache, ILogger<WZDataBootstrap> logger) : base(logger)
+    readonly AutoBanDataManager _autoBanDataManager;
+    public ItemInformationProvider(IChannelServerTransport transport, IMemoryCache cache, ILogger<WZDataBootstrap> logger, AutoBanDataManager autoBanDataManager) : base(logger)
     {
         Name = "物品数据";
 
         _transport = transport;
         _cache = cache;
+        _autoBanDataManager = autoBanDataManager;
 
         itemData = DataProviderFactory.getDataProvider(WZFiles.ITEM);
         equipData = DataProviderFactory.getDataProvider(WZFiles.CHARACTER);
@@ -2078,7 +2081,7 @@ public class ItemInformationProvider : WZDataBootstrap, IStaticService
             equip.wear(false);
             var itemName = getInstance().getName(equip.getItemId());
             chr.Client.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
-            AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to forcibly equip an item.");
+            _autoBanDataManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to forcibly equip an item.");
             _logger.LogWarning("Chr {CharacterName} tried to equip {ItemName} into slot {Slot}", chr.getName(), itemName, dst);
             return false;
         }

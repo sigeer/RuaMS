@@ -1489,7 +1489,7 @@ public class MapleMap : IMap
                 {
                     if (monster.getStats().getLevel() >= chr.getLevel() + 30 && !chr.isGM())
                     {
-                        AutobanFactory.GENERAL.alert(chr, " for killing a " + monster.getName() + " which is over 30 levels higher.");
+                        ChannelServer.Container.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, " for killing a " + monster.getName() + " which is over 30 levels higher.");
                     }
 
                     /*if (chr.getQuest(Quest.getInstance(29400)).getStatus().Equals(QuestStatus.Status.STARTED)) {

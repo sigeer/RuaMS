@@ -74,6 +74,12 @@ namespace Application.Core.Channel
         public ItemService ItemService => _itemService.Value;
         readonly Lazy<PlayerShopService> _playerShopService;
         public PlayerShopService PlayerShopService => _playerShopService.Value;
+        readonly Lazy<MonitorManager> _monitorManager;
+        public MonitorManager MonitorManager => _monitorManager.Value;
+        readonly Lazy<AutoBanDataManager> _autoBanManager;
+        public AutoBanDataManager AutoBanManager => _autoBanManager.Value;
+        readonly Lazy<AdminService> _adminService;
+        public AdminService AdminService => _adminService.Value;
         #endregion
 
         #region Task
@@ -146,7 +152,10 @@ namespace Application.Core.Channel
             _guildManager = new Lazy<GuildManager>(() => ServiceProvider.GetRequiredService<GuildManager>());
             _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
             _shopManager = new(() => ServiceProvider.GetRequiredService<ShopManager>());
+            _monitorManager = new(() => ServiceProvider.GetRequiredService<MonitorManager>());
+            _autoBanManager = new(() => ServiceProvider.GetRequiredService<AutoBanDataManager>());
 
+            _adminService = new(() => ServiceProvider.GetRequiredService<AdminService>());
             _marriageService = new(() => ServiceProvider.GetRequiredService<IMarriageService>());
             _chatRoomService = new Lazy<ChatRoomService>(() => ServiceProvider.GetRequiredService<ChatRoomService>());
             _newYearService = new(() => ServiceProvider.GetRequiredService<NewYearCardService>());
@@ -636,6 +645,16 @@ namespace Application.Core.Channel
 
         private void InitializeMessage()
         {
+            var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
+            MessageDispatcher.Register<Dto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
+            MessageDispatcher.Register<Dto.SetGmLevelBroadcast>(BroadcastType.OnGmLevelSet, adminSrv.OnSetGmLevelNotify);
+
+            MessageDispatcher.Register<Config.AutoBanIgnoredChangedNotifyDto>(BroadcastType.OnAutoBanIgnoreChangedNotify, AutoBanManager.OnIgoreDataChanged);
+            MessageDispatcher.Register<Config.MonitorDataChangedNotifyDto>(BroadcastType.OnMonitorChangedNotify, MonitorManager.OnMonitorDataChanged);
+
+            var reportSrv = ServiceProvider.GetRequiredService<ReportService>();
+            MessageDispatcher.Register<Dto.SendReportBroadcast>(BroadcastType.OnReportReceived, reportSrv.OnGMReceivedReport);
+
             var itemSrc = ServiceProvider.GetRequiredService<ItemService>();
             MessageDispatcher.Register<CashProto.BuyCashItemResponse>(BroadcastType.OnCashItemPurchased, itemSrc.OnBuyCashItemCallback);
 

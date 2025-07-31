@@ -8,12 +8,14 @@ namespace Application.Core.scripting.npc
         Default,
         Select,
         InputNumber,
+        InputText,
         YesNo
     }
     public class TempConversation : NPCConversationManager
     {
         Action<int, TempConversation>? _onSelect;
         Action<long, TempConversation>? _onInputNumber;
+        Action<string, TempConversation>? _onInputText;
 
         Action<TempConversation>? _onYes;
         Action<TempConversation>? _onNo;
@@ -81,6 +83,13 @@ namespace Application.Core.scripting.npc
             sendGetNumber(text, 0, int.MinValue, int.MaxValue);
         }
 
+        public void RegisterInput(string text, Action<string, TempConversation> onInputText)
+        {
+            _onInputText = onInputText;
+            _type = TempConversationType.InputText;
+            sendGetText(text);
+        }
+
         public void RegisterYesOrNo(string text, Action<TempConversation> yesCallback, Action<TempConversation>? noCallback = null)
         {
             _type = TempConversationType.YesNo;
@@ -110,6 +119,16 @@ namespace Application.Core.scripting.npc
                 }
 
                 _onInputNumber?.Invoke(selection, this);
+            }
+            else if (_type == TempConversationType.InputText)
+            {
+                if (mode <= 0)
+                {
+                    dispose();
+                    return;
+                }
+
+                _onInputText?.Invoke(getText() ?? "", this);
             }
             else if (_type == TempConversationType.YesNo)
             {

@@ -540,14 +540,6 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public List<int> GetGuildMembers(DBContext dbContext, int guildId)
-        {
-            List<int> dataList = new List<int>();
-            var chrTemp = GetCharactersView(dbContext.Characters.Where(x => x.GuildId == guildId).Select(x => x.Id).ToArray());
-            dataList.AddRange(chrTemp.Where(x => x.Character.GuildId == guildId).Select(x => x.Character.Id));
-            dataList.AddRange(_charcterViewCache.Values.Where(x => x.Character.GuildId == guildId).Select(x => x.Character.Id));
-            return dataList.ToHashSet().ToList();
-        }
 
         public IDictionary<int, int[]> GetPlayerChannelPair(IEnumerable<CharacterViewObject> players)
         {
@@ -559,6 +551,10 @@ namespace Application.Core.Login.Datas
             return _idDataSource.Values.Count(x => x.Channel == channelId);
         }
 
-
+        internal List<int> GetOnlinedGMs()
+        {
+            var accIds = _masterServer.AccountManager.GetOnlinedGmAccId();
+            return _idDataSource.Values.Where(x => x.Channel > 0 && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToList();
+        }
     }
 }

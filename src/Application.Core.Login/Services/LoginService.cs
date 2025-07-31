@@ -36,7 +36,7 @@ namespace Application.Core.Login.Services
                 return null;
 
             var accountData = _masterServer.AccountManager.GetAccount(characterObj.Character.AccountId);
-            if (accountData == null || accountData.Hwid == null)
+            if (accountData == null || accountData.CurrentHwid == null || accountData.CurrentMac == null)
                 return null;
 
             var accountModel = _masterServer.AccountManager.GetAccountLoginStatus(characterObj.Character.AccountId);
@@ -72,17 +72,6 @@ namespace Application.Core.Login.Services
         {
             _masterServer.CharacterManager.CompleteLogin(playerId, channel, out var accId);
             _masterServer.AccountManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
-        }
-
-        public void UnBanAccount(string playerName)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var aid = dbContext.Characters.Where(x => x.Name == playerName).FirstOrDefault()?.AccountId;
-            dbContext.Accounts.Where(x => x.Id == aid).ExecuteUpdate(x => x.SetProperty(y => y.Banned, -1));
-
-            dbContext.Ipbans.Where(x => x.Aid == aid.ToString()).ExecuteDelete();
-
-            dbContext.Macbans.Where(x => x.Aid == aid.ToString()).ExecuteDelete();
         }
     }
 }

@@ -20,11 +20,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
-using Application.Core.Managers;
-using tools;
-
 namespace client.autoban;
 
 /**
@@ -52,8 +47,6 @@ public class AutobanFactory : EnumClass
     public static readonly AutobanFactory FAST_ATTACK = new(10, 30000);
     public static readonly AutobanFactory MPCON = new(25, 30000);
 
-    private static HashSet<int> ignoredChrIds = new();
-
     private int points;
     private long expiretime;
 
@@ -80,67 +73,5 @@ public class AutobanFactory : EnumClass
     public long getExpire()
     {
         return expiretime;
-    }
-
-    public void addPoint(AutobanManager ban, string reason)
-    {
-        ban.addPoint(this, reason);
-    }
-
-    public void alert(IPlayer chr, string reason)
-    {
-        if (YamlConfig.config.server.USE_AUTOBAN)
-        {
-            if (chr == null || isIgnored(chr.getId()))
-            {
-                return;
-            }
-            chr.Client.CurrentServerContainer.BroadcastWorldGMPacket(
-                PacketCreator.sendYellowTip((chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason));
-        }
-        if (YamlConfig.config.server.USE_AUTOBAN_LOG)
-        {
-            string chrName = chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "";
-            Log.Logger.Information("Autoban alert - chr {CharacterName} caused {AutoBanType}-{AutoBanReason}", chrName, this.name(), reason);
-        }
-    }
-
-    public void autoban(IPlayer chr, string value)
-    {
-        if (YamlConfig.config.server.USE_AUTOBAN)
-        {
-            chr.autoban("Autobanned for (" + this.name() + " : " + value + ")");
-            //chr.sendPolice("You will be disconnected for(" + this.name() + " : " + value + ")");
-        }
-    }
-
-    /**
-     * Toggle ignored status for a character id.
-     * An ignored character will not trigger GM alerts.
-     *
-     * @return new status. true if the chrId is now ignored, otherwise false.
-     */
-    public static bool toggleIgnored(int chrId)
-    {
-        if (ignoredChrIds.Contains(chrId))
-        {
-            ignoredChrIds.Remove(chrId);
-            return false;
-        }
-        else
-        {
-            ignoredChrIds.Add(chrId);
-            return true;
-        }
-    }
-
-    private static bool isIgnored(int chrId)
-    {
-        return ignoredChrIds.Contains(chrId);
-    }
-
-    public static ICollection<int> getIgnoredChrIds()
-    {
-        return ignoredChrIds;
     }
 }

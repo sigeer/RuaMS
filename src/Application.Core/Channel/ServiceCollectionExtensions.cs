@@ -79,9 +79,13 @@ namespace Application.Core.Channel
             services.AddSingleton<WZDataBootstrap, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
 
             services.AddSingleton<ShopManager>();
+            services.AddSingleton<MonitorManager>();
+            services.AddSingleton<AutoBanDataManager>();
 
             services.AddSingleton<ItemService>();
             services.AddSingleton<RankService>();
+            services.AddSingleton<ReportService>();
+            services.AddSingleton<AdminService>();
 
             // 频道的数据中心不再与频道关联，而是与频道所在的进程关联（同一进程多个频道）
             services.AddSingleton<TeamManager>();

@@ -1,20 +1,22 @@
-using Application.Core.Managers;
-using net.packet.logging;
+using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Game.Commands.Gm3;
 public class MonitorsCommand : CommandBase
 {
-    public MonitorsCommand() : base(3, "monitors")
+    readonly MonitorManager _adminService;
+    public MonitorsCommand(MonitorManager adminService) : base(3, "monitors")
     {
         Description = "Show all characters being monitored for packet logging";
+        _adminService = adminService;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (int chrId in MonitoredChrLogger.getMonitoredChrIds())
+        var data = _adminService.GetMonitor();
+        foreach (var item in data)
         {
-            player.yellowMessage(CharacterManager.getNameById(chrId) + " is being monitored.");
+            player.yellowMessage(item.Value + " is being monitored.");
         }
     }
 }

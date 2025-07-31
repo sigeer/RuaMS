@@ -22,11 +22,10 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Managers;
-using Application.Utility.Compatible;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
@@ -40,10 +39,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AdminCommandHandler : ChannelHandlerBase
 {
     readonly ILogger<AdminCommandHandler> _logger;
+    readonly AdminService _adminService;
 
-    public AdminCommandHandler(ILogger<AdminCommandHandler> logger)
+    public AdminCommandHandler(ILogger<AdminCommandHandler> logger, AdminService adminService)
     {
         _logger = logger;
+        _adminService = adminService;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -95,32 +96,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 int type = p.readByte(); //reason
                 int duration = p.readInt();
                 string description = p.readString();
-                string reason = c.OnlinedCharacter.getName() + " used /ban to ban";
-                target = c.CurrentServer.getPlayerStorage().getCharacterByName(victim);
-                if (target != null)
-                {
-                    string readableTargetName = CharacterManager.makeMapleReadable(target.getName());
-                    string ip = target.Client.RemoteAddress;
-                    reason += readableTargetName + " (IP: " + ip + ")";
-                    if (duration == -1)
-                    {
-                        target.ban(description + " " + reason);
-                    }
-                    else
-                    {
-                        target.block(type, duration, description);
-                        target.sendPolice(duration, reason, 6000);
-                    }
-                    c.sendPacket(PacketCreator.getGMEffect(4, 0));
-                }
-                else if (CharacterManager.Ban(victim, reason, false))
-                {
-                    c.sendPacket(PacketCreator.getGMEffect(4, 0));
-                }
-                else
-                {
-                    c.sendPacket(PacketCreator.getGMEffect(6, 1));
-                }
+                _adminService.Ban(c.OnlinedCharacter, victim, type, description, duration);
                 break;
             case 0x10: // /h, information added by vana -- <and tele mode f1> ... hide ofcourse
                 c.OnlinedCharacter.Hide(p.readByte() == 1);

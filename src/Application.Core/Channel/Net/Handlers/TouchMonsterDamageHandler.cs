@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using client;
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class TouchMonsterDamageHandler : AbstractDealDamageHandler
 {
-    public TouchMonsterDamageHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
+    public TouchMonsterDamageHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager) : base(logger, autoBanDataManager)
     {
     }
 

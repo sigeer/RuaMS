@@ -21,7 +21,8 @@
  */
 
 
-using Application.Core.Managers;
+using Application.Core.Channel.Services;
+using Microsoft.Extensions.Logging;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -33,6 +34,15 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ReportHandler : ChannelHandlerBase
 {
+    readonly ReportService _reportService;
+    readonly ILogger<ReportHandler> _logger;
+
+    public ReportHandler(ReportService reportService, ILogger<ReportHandler> logger)
+    {
+        _reportService = reportService;
+        _logger = logger;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int type = p.ReadSByte(); //00 = Illegal program claim, 01 = Conversation claim
@@ -59,8 +69,7 @@ public class ReportHandler : ChannelHandlerBase
                 c.sendPacket(PacketCreator.reportResponse(2));
                 return;
             }
-            c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            c.CurrentServerContainer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, "");
+            _reportService.SendReport(c.OnlinedCharacter, victim, description, 0, "");
         }
         else if (type == 1)
         {
@@ -82,12 +91,11 @@ public class ReportHandler : ChannelHandlerBase
                     return;
                 }
             }
-            c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, victim + " was reported for: " + description));
-            c.CurrentServerContainer.Transport.AddReport(c.OnlinedCharacter.getId(), CharacterManager.getIdByName(victim), 0, description, chatlog);
+            _reportService.SendReport(c.OnlinedCharacter, victim, description, reason, chatlog);
         }
         else
         {
-            c.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type, which is impossible."));
+            _logger.LogWarning(c.OnlinedCharacter.getName() + " is probably packet editing. Got unknown report type: {Type}, which is impossible.", type);
         }
     }
 }

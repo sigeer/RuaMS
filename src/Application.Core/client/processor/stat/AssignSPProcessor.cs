@@ -47,7 +47,7 @@ public class AssignSPProcessor
             || (!player.isGM() && GameConstants.isGMSkills(skillid))
             || (!GameConstants.isInJobTree(skillid, player.getJob().getId()) && !player.isGM()))
         {
-            AutobanFactory.PACKET_EDIT.alert(player, "tried to packet edit in distributing sp.");
+            player.Client.CurrentServerContainer.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, player, "tried to packet edit in distributing sp.");
             player.Log.Warning("Chr {CharacterName} tried to use skill {SkillId} without it being in their job.", player.getName(), skillid);
 
             player.Client.Disconnect(true, false);

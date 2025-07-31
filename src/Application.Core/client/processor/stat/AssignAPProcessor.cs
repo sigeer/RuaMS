@@ -424,7 +424,7 @@ public class AssignAPProcessor
             {
                 if (inPacket.available() < 16)
                 {
-                    AutobanFactory.PACKET_EDIT.alert(chr, "Didn't send full packet for Auto Assign.");
+                    c.CurrentServerContainer.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, "Didn't send full packet for Auto Assign.");
 
                     c.Disconnect(true, false);
                     return;

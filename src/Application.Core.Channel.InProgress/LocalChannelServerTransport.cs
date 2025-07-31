@@ -1,4 +1,3 @@
-using Application.Core.Game.Players;
 using Application.Core.Game.TheWorld;
 using Application.Core.Game.Trades;
 using Application.Core.Login;
@@ -6,7 +5,6 @@ using Application.Core.Login.ServerData;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
-using Application.Shared.MapObjects;
 using Application.Shared.Message;
 using Application.Shared.Models;
 using Application.Shared.Net;
@@ -14,6 +12,7 @@ using Application.Shared.Team;
 using AutoMapper;
 using BaseProto;
 using CashProto;
+using Config;
 using Dto;
 using ItemProto;
 using net.server;
@@ -21,7 +20,6 @@ using server.expeditions;
 using System.Net;
 using System.Text;
 using tools;
-using tools.packets;
 
 namespace Application.Core.Channel.InProgress
 {
@@ -351,14 +349,9 @@ namespace Application.Core.Channel.InProgress
             return _itemService.GetCardTierSize();
         }
 
-        public void SendUnbanAccount(string playerName)
+        public SendReportResponse SendReport(SendReportRequest request)
         {
-            _loginService.UnBanAccount(playerName);
-        }
-
-        public void AddReport(int fromId, int toId, int reason, string description, string chatLog)
-        {
-            _msgService.AddReport(fromId, toId, reason, description, chatLog);
+            return _msgService.AddReport(request);
         }
 
         public Rank.RankCharacterList LoadPlayerRanking(int topCount)
@@ -734,6 +727,41 @@ namespace Application.Core.Channel.InProgress
         public LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest request)
         {
             return _server.ItemFactoryManager.LoadItems(request);
+        }
+
+        public ToggleMonitorPlayerResponse SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest)
+        {
+            return _server.SystemManager.ToggleMonitor(toggleMonitorPlayerRequest);
+        }
+
+        public MonitorDataWrapper LoadMonitor()
+        {
+            return _server.SystemManager.LoadMonitorData();
+        }
+
+        public ToggleAutoBanIgnoreResponse SetAutoBanIgnored(ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest)
+        {
+            return _server.SystemManager.ToggleAutoBanIgnored(toggleAutoBanIgnoreRequest);
+        }
+
+        public AutoBanIgnoredWrapper LoadAutobanIgnoreData()
+        {
+            return _server.SystemManager.LoadAutobanIgnoreData();
+        }
+
+        public BanResponse Ban(BanRequest banRequest)
+        {
+            return _server.AccountBanManager.Ban(banRequest);
+        }
+
+        public UnbanResponse Unban(UnbanRequest unbanRequest)
+        {
+            return _server.AccountBanManager.Unban(unbanRequest);
+        }
+
+        public SetGmLevelResponse SetGmLevel(SetGmLevelRequest setGmLevelRequest)
+        {
+            return _server.AccountManager.SetGmLevel(setGmLevelRequest);
         }
     }
 }

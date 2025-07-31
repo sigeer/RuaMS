@@ -112,14 +112,6 @@ namespace Application.Core.Login.Client
             packetChannel.Writer.TryComplete();
         }
 
-        protected override HashSet<string> GetMac()
-        {
-            if (AccountEntity == null || string.IsNullOrEmpty(AccountEntity.Macs))
-                return [];
-
-            return AccountEntity.Macs.Split(",").Select(x => x.Trim()).ToHashSet();
-        }
-
         public bool CanBypassPin()
         {
             return _loginBypassCoordinator.canLoginBypass(Hwid, AccountEntity!.Id, false);
@@ -217,8 +209,6 @@ namespace Application.Core.Login.Client
                     AccountEntity = dbModel;
                     string passhash = dbModel.Password;
                     var tos = dbModel.Tos;
-                    if (dbModel.Banned == 1)
-                        return LoginResultCode.Fail_Banned;
 
                     if (GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
                     {
@@ -300,44 +290,7 @@ namespace Application.Core.Login.Client
                 return true;
 
             AccountEntity.Tos = true;
-            CommitAccount();
             return false;
-        }
-
-        public bool HasBannedIP()
-        {
-            using var dbContext = new DBContext();
-            return dbContext.Ipbans.Any(x => x.Ip.Contains(RemoteAddress));
-        }
-
-        public void UpdateMacs(string macData)
-        {
-            if (AccountEntity == null)
-                return;
-
-            if (!string.IsNullOrWhiteSpace(macData))
-                AccountEntity.Macs += "," + macData;
-        }
-
-        public bool HasBannedMac()
-        {
-            var macs = GetMac();
-            if (macs.Count == 0)
-            {
-                return false;
-            }
-            using var _dbContext = new DBContext();
-            return _dbContext.Macbans.Any(x => macs.Contains(x.Mac));
-        }
-
-        public bool HasBannedHWID()
-        {
-            if (Hwid == null)
-            {
-                return false;
-            }
-            using var dbContext = new DBContext();
-            return dbContext.Hwidbans.Any(x => x.Hwid.Contains(Hwid.hwid));
         }
 
         public bool CheckChar(int accid)
@@ -366,17 +319,6 @@ namespace Application.Core.Login.Client
         public bool isLoggedIn()
         {
             return IsOnlined;
-        }
-
-        public override void CommitAccount()
-        {
-            if (AccountEntity == null)
-                return;
-
-            if (Hwid != null)
-                AccountEntity.Hwid = Hwid.hwid;
-
-            CurrentServer.CommitAccountEntity(AccountEntity);
         }
 
         public void SendCharList()

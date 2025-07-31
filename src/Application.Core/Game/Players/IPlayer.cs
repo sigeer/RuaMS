@@ -121,8 +121,6 @@ namespace Application.Core.Game.Players
         void applyPartyDoor(Door door, bool partyUpdate);
         void autoban(string reason);
         void awardQuestPoint(int awardedPoints);
-        void ban(string reason);
-        void block(int reason, int days, string desc);
         void blockPortal(string? scriptName);
         void unblockPortal(string? scriptName);
         void broadcastAcquaintances(int type, string message);

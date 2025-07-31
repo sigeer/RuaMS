@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Utility.Configs;
 using client;
@@ -31,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MagicDamageHandler : AbstractDealDamageHandler
 {
-    public MagicDamageHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
+    public MagicDamageHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager) : base(logger, autoBanDataManager)
     {
     }
 

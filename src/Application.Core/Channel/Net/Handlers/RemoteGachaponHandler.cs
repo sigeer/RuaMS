@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.ServerData;
 using client.autoban;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -30,25 +31,32 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RemoteGachaponHandler : ChannelHandlerBase
 {
+    readonly AutoBanDataManager _autoBanManager;
+
+    public RemoteGachaponHandler(AutoBanDataManager autoBanManager)
+    {
+        _autoBanManager = autoBanManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int ticket = p.readInt();
         int gacha = p.readInt();
         if (ticket != ItemId.REMOTE_GACHAPON_TICKET)
         {
-            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with item id: " + ticket);
+            _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with item id: " + ticket);
             c.Disconnect(false, false);
             return;
         }
         else if (gacha < 0 || gacha > 11)
         {
-            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with mode: " + gacha);
+            _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler with mode: " + gacha);
             c.Disconnect(false, false);
             return;
         }
         else if (c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(ticket)).countById(ticket) < 1)
         {
-            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, " Tried to use RemoteGachaponHandler without a ticket.");
+            _autoBanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, " Tried to use RemoteGachaponHandler without a ticket.");
             c.Disconnect(false, false);
             return;
         }

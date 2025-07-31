@@ -6307,22 +6307,20 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a gm effect packet (ie. hide, banned, etc.)
-     * <p>
-     * Possible values for <code>type</code>:<br> 0x04: You have successfully
-     * blocked access.<br>
-     * 0x05: The unblocking has been successful.<br> 0x06 with Mode 0: You have
-     * successfully removed the name from the ranks.<br> 0x06 with Mode 1: You
-     * have entered an invalid character name.<br> 0x10: GM Hide, mode
-     * determines whether or not it is on.<br> 0x1E: Mode 0: Failed to send
-     * warning Mode 1: Sent warning<br> 0x13 with Mode 0: + mapid 0x13 with Mode
-     * 1: + ch (FF = Unable to find merchant)
-     *
-     * @param type The type
-     * @param mode The mode
-     * @return The gm effect packet
-     */
+
+    /// <summary>
+    /// <para>0x04: You have successfully blocked access. </para>
+    /// <para>0x05: The unblocking has been successful.</para>
+    /// <para>0x06 with Mode 0: You have successfully removed the name from the ranks.</para>
+    /// <para>0x06 with Mode 1: You have entered an invalid character name.</para>
+    /// <para>0x10: GM Hide, mode determines whether or not it is on.</para>
+    /// <para>0x1E: Mode 0: Failed to send warning, Mode 1: Sent warning</para>
+    /// <para>0x13 with Mode 0: + mapid</para>
+    /// <para>0x13 with Mode 1: + ch (FF = Unable to find merchant)</para>
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="mode"></param>
+    /// <returns></returns>
     public static Packet getGMEffect(int type, byte mode)
     {
         OutPacket p = OutPacket.create(SendOpcode.ADMIN_RESULT);

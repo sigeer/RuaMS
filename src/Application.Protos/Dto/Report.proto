@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package Dto;
+
+message SendReportRequest {
+	int32 masterId = 1;
+	string victim = 2;
+	string text = 3;
+	int32 reason = 4;
+	string chatLog = 5;
+}
+
+message SendReportResponse {
+	bool isSuccess = 1;
+}
+
+message SendReportBroadcast {
+	repeated int32 gmId = 1;
+	string text = 2;
+}

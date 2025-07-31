@@ -5,7 +5,6 @@ using Application.Shared.Net.Logging;
 using Application.Shared.Team;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
-using net.packet.logging;
 using net.server;
 using net.server.guild;
 using scripting;
@@ -49,14 +48,6 @@ namespace Application.Core.Channel.Net
 
         public override string AccountName => AccountName;
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
-
-        public override void CommitAccount()
-        {
-            if (AccountEntity == null)
-                return;
-
-            CurrentServerContainer.CommitAccountEntity(AccountEntity);
-        }
 
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
@@ -278,7 +269,7 @@ namespace Application.Core.Channel.Net
             {
                 if (handler.ValidateState(this))
                 {
-                    MonitoredChrLogger.logPacketIfMonitored(this, opcode, packet.getBytes());
+                    CurrentServerContainer.MonitorManager.LogPacketIfMonitored(this, opcode, packet.getBytes());
                     handler.HandlePacket(packet, this);
                 }
             }
@@ -530,36 +521,5 @@ namespace Application.Core.Channel.Net
                 return CheckBirthday(d);
             return false;
         }
-
-        public void BanMacs()
-        {
-            try
-            {
-                using var dbContext = new DBContext();
-                List<string> filtered = dbContext.Macfilters.Select(x => x.Filter).ToList();
-
-                foreach (string mac in GetMac())
-                {
-                    if (!filtered.Any(x => Regex.IsMatch(mac, x)))
-                    {
-                        dbContext.Macbans.Add(new Macban(mac, AccountEntity!.Id.ToString()));
-                    }
-                }
-                dbContext.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                log.LogError(e.ToString());
-            }
-        }
-
-        protected override HashSet<string> GetMac()
-        {
-            if (AccountEntity == null || string.IsNullOrEmpty(AccountEntity.Macs))
-                return [];
-
-            return AccountEntity.Macs.Split(",").Select(x => x.Trim()).ToHashSet();
-        }
-
     }
 }

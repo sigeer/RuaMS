@@ -175,7 +175,7 @@ namespace Application.Core.Login.Datas
 
             using var dbContext = _dbContextFactory.CreateDbContext();
             var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
-            if (accountData == null) 
+            if (accountData == null)
                 return null;
 
             accountCtrl = _maaper.Map<AccountCtrl>(accountData);
@@ -202,6 +202,30 @@ namespace Application.Core.Login.Datas
                 }
             }
 
+        }
+
+        public int[] GetOnlinedGmAccId()
+        {
+            return _accDataSource.Values.Where(x => x.GMLevel > 1).Select(x => x.Id).ToArray();
+        }
+
+        public SetGmLevelResponse SetGmLevel(SetGmLevelRequest request)
+        {
+            var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
+            if (targetChr == null)
+                return new SetGmLevelResponse { Code = 1 };
+
+            var accountDto = GetAccount(targetChr.Character.AccountId)!;
+            accountDto.GMLevel = (sbyte)request.Level;
+
+            _server.Transport.BroadcastGmLevelChanged(new SetGmLevelBroadcast
+            {
+                TargetId = targetChr.Character.Id,
+                OperatorName = _server.CharacterManager.GetPlayerName(request.OperatorId),
+                TargetName = request.TargetName,
+                Level = request.Level
+            });
+            return new SetGmLevelResponse();
         }
     }
 }

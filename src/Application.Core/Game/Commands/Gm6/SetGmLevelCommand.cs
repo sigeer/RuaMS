@@ -1,10 +1,14 @@
+using Application.Core.Channel.Services;
+
 namespace Application.Core.Game.Commands.Gm6;
 
 public class SetGmLevelCommand : CommandBase
 {
-    public SetGmLevelCommand() : base(6, "setgmlevel")
+    readonly AdminService _adminService;
+    public SetGmLevelCommand(AdminService adminService) : base(6, "setgmlevel")
     {
         Description = "Set GM level of a player.";
+        _adminService = adminService;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
@@ -16,18 +20,11 @@ public class SetGmLevelCommand : CommandBase
             return;
         }
 
-        int newLevel = int.Parse(paramsValue[1]);
-        var target = c.CurrentServer.getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (target != null && target.Client.AccountEntity != null)
+        if (!int.TryParse(paramsValue[1], out var newLevel))
         {
-            target.Client.AccountEntity.GMLevel = (sbyte)newLevel;
-            target.Client.CommitAccount();
-            target.dropMessage("You are now a level " + newLevel + " GM. See @commands for a list of available commands.");
-            player.dropMessage(target + " is now a level " + newLevel + " GM.");
+            player.yellowMessage("Syntax: !setgmlevel <playername> <newlevel>");
+            return;
         }
-        else
-        {
-            player.dropMessage("Player '" + paramsValue[0] + "' was not found on this channel.");
-        }
+        _adminService.SetGmLevel(c.OnlinedCharacter, paramsValue[0], newLevel);
     }
 }

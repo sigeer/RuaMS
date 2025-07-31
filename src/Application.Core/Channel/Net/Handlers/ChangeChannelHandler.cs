@@ -21,6 +21,7 @@
  */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Trades;
 using client.autoban;
 
@@ -32,6 +33,13 @@ namespace Application.Core.Channel.Net.Handlers;
 public class ChangeChannelHandler : ChannelHandlerBase
 {
 
+    readonly AutoBanDataManager _autobanManager;
+
+    public ChangeChannelHandler(AutoBanDataManager autobanManager)
+    {
+        _autobanManager = autobanManager;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
         int channel = p.readByte() + 1;
@@ -39,7 +47,7 @@ public class ChangeChannelHandler : ChannelHandlerBase
         c.OnlinedCharacter.getAutobanManager().setTimestamp(6, c.CurrentServerContainer.getCurrentTimestamp(), 3);
         if (c.Channel == channel)
         {
-            AutobanFactory.GENERAL.alert(c.OnlinedCharacter, "CCing to same channel.");
+            _autobanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, "CCing to same channel.");
             c.Disconnect(false, false);
             return;
         }

@@ -101,6 +101,12 @@ namespace Application.Core.Login
         public PlayerShopManager PlayerShopManager => _playerShopManager.Value;
         readonly Lazy<ItemFactoryManager> _itemFactoryManager;
         public ItemFactoryManager ItemFactoryManager => _itemFactoryManager.Value;
+        readonly Lazy<SystemManager> _systemManager;
+        public SystemManager SystemManager => _systemManager.Value;
+        readonly Lazy<AccountHistoryManager> _accountHistoryManager;
+        public AccountHistoryManager AccountHistoryManager => _accountHistoryManager.Value;
+        readonly Lazy<AccountBanManager> _accountBanManager;
+        public AccountBanManager AccountBanManager => _accountBanManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -166,6 +172,9 @@ namespace Application.Core.Login
             _lazyResourceDataManager = new(() => ServiceProvider.GetRequiredService<ResourceDataManager>());
             _playerShopManager = new(() => ServiceProvider.GetRequiredService<PlayerShopManager>());
             _noteService = new(() => ServiceProvider.GetRequiredService<NoteManager>());
+            _systemManager = new(() => ServiceProvider.GetRequiredService<SystemManager>());
+            _accountHistoryManager = new(() => ServiceProvider.GetRequiredService<AccountHistoryManager>());
+            _accountBanManager = new(() => ServiceProvider.GetRequiredService<AccountBanManager>());
         }
 
         bool isShuttingdown = false;
@@ -506,6 +515,11 @@ namespace Application.Core.Login
         public long getCurrentTime()
         {
             return serverCurrentTime;
+        }
+
+        public DateTimeOffset GetCurrentTimeDateTimeOffset()
+        {
+            return DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime());
         }
         public void UpdateServerTime()
         {

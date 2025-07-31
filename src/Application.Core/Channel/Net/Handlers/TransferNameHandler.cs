@@ -61,14 +61,15 @@ public class TransferNameHandler : ChannelHandlerBase
             c.sendPacket(PacketCreator.sendNameTransferRules(4));
             return;
         }
-        else if (c.AccountEntity?.Tempban != null && c.AccountEntity?.Tempban.Value.AddDays(30) < DateTimeOffset.UtcNow)
-        {
-            c.sendPacket(PacketCreator.sendNameTransferRules(2));
-            return;
-        }
+        //else if (c.AccountEntity?.Tempban != null && c.AccountEntity?.Tempban.Value.AddDays(30) < DateTimeOffset.UtcNow)
+        //{
+        //    c.sendPacket(PacketCreator.sendNameTransferRules(2));
+        //    return;
+        //}
         //sql queries
         try
-        { //double check, just in case
+        { 
+            //double check, just in case
             using var dbContext = new DBContext();
             var dataList = dbContext.Namechanges.Where(x => x.Characterid == chr.getId()).Select(x => new { x.CompletionTime }).ToList();
             foreach (var rs in dataList)

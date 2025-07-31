@@ -235,17 +235,6 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
-        public static Packet GetPermBan(byte reason)
-        {
-            OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);
-            p.writeByte(2); // Account is banned
-            p.writeByte(0);
-            p.writeInt(0);
-            p.writeByte(reason);
-            p.writeLong(PacketCommon.getTime(-1));
-            return p;
-        }
-
         public static Packet GetTempBan(long timestampTill, byte reason)
         {
             OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);

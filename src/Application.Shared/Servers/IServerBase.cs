@@ -35,6 +35,5 @@ namespace Application.Shared.Servers
         void BroadcastWorldGMPacket(Packet packet);
         [Obsolete("避免把Packet传给MasterServer再分发，后期再改")]
         void BroadcastWorldMessage(Packet p);
-        void CommitAccountEntity(AccountCtrl accountEntity);
     }
 }

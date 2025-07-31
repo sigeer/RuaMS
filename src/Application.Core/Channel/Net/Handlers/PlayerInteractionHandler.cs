@@ -22,9 +22,11 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Trades;
+using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Skill;
 using client.autoban;
 using client.inventory;
@@ -44,10 +46,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PlayerInteractionHandler : ChannelHandlerBase
 {
     readonly ILogger<PlayerInteractionHandler> _logger;
+    readonly AutoBanDataManager _autoBanManager;
 
-    public PlayerInteractionHandler(ILogger<PlayerInteractionHandler> logger)
+    public PlayerInteractionHandler(ILogger<PlayerInteractionHandler> logger, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
+        _autoBanManager = autoBanManager;
     }
 
     private static int establishMiniroomStatus(IPlayer chr, bool isMinigame)
@@ -678,7 +682,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 int price = p.readInt();
                 if (perBundle <= 0 || perBundle * bundles > 2000 || bundles <= 0 || price <= 0 || price > int.MaxValue)
                 {
-                    AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with hired merchants.");
+                    _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, chr.getName() + " tried to packet edit with hired merchants.");
                     _logger.LogWarning("Chr {CharacterName} might possibly have packet edited Hired Merchants. perBundle: {0}, perBundle * bundles (This multiplied cannot be greater than 2000): {1}, bundles: {2}, price: {Price}",
                             chr.getName(), perBundle, perBundle * bundles, bundles, price);
                     return;
@@ -778,7 +782,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 short quantity = p.readShort();
                 if (quantity < 1)
                 {
-                    AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit with a hired merchant and or player shop.");
+                    _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, chr.getName() + " tried to packet edit with a hired merchant and or player shop.");
                     _logger.LogWarning("Chr {CharacterName} tried to buy item {ItemId} with quantity {ItemQuantity}", chr.getName(), itemIndex, quantity);
                     c.Disconnect(true, false);
                     return;

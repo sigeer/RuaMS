@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package Dto;
+
+message BanRequest {
+	int32 operatorId = 1;
+	string victim = 2;
+	int32 banLevel = 3;
+	string reasonDesc = 4;
+	int32 reason = 5;
+	int32 days = 6;
+}
+
+message BanResponse {
+	int32 code = 1;
+}
+
+message BanBroadcast {
+	int32 targetId = 1;
+	string targetName = 2;
+	string operatorName = 3;
+
+	int32 reason = 4;
+	string reasonDesc = 5;
+}
+
+message UnbanRequest {
+	int32 operatorId = 1;
+	string victim = 2;
+}
+
+message UnbanResponse {
+	int32 code = 1;
+}
+
+message SetGmLevelRequest {
+	int32 operatorId = 1;
+	string targetName = 2;
+	int32 level = 3;
+}
+
+message SetGmLevelResponse {
+	int32 code = 1;
+}
+
+message SetGmLevelBroadcast {
+	int32 targetId = 1;
+	string targetName = 2;
+	string operatorName = 3;
+	int32 level = 4;
+}

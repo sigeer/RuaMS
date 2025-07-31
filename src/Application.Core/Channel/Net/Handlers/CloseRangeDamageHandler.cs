@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
 using Application.Utility.Configs;
 using client;
@@ -33,7 +34,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class CloseRangeDamageHandler : AbstractDealDamageHandler
 {
-    public CloseRangeDamageHandler(ILogger<AbstractDealDamageHandler> logger) : base(logger)
+    public CloseRangeDamageHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager) : base(logger, autoBanDataManager)
     {
     }
 

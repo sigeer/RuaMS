@@ -45,19 +45,17 @@ public class RegisterPicHandler : LoginHandlerBase
             return;
         }
 
-        c.UpdateMacs(macs);
-        c.Hwid = hwid;
+        if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) || _server.AccountBanManager.IsMACBlocked(macs) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
+        {
+            sessionCoordinator.closeSession(c, true);
+            return;
+        }
+
 
         AntiMulticlientResult res = sessionCoordinator.attemptGameSession(c, c.AccountEntity.Id, hwid);
         if (res != AntiMulticlientResult.SUCCESS)
         {
             c.sendPacket(PacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
-            return;
-        }
-
-        if (c.HasBannedMac() || c.HasBannedHWID())
-        {
-            sessionCoordinator.closeSession(c, true);
             return;
         }
 

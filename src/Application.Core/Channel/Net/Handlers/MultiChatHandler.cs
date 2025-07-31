@@ -33,11 +33,13 @@ public class MultiChatHandler : ChannelHandlerBase
 {
     readonly GuildManager _guildManager;
     readonly ILogger<MultiChatHandler> _logger;
+    readonly AutoBanDataManager _autoBanManager;
 
-    public MultiChatHandler(ILogger<MultiChatHandler> logger, GuildManager guildManager )
+    public MultiChatHandler(ILogger<MultiChatHandler> logger, GuildManager guildManager, AutoBanDataManager autoBanManager)
     {
         _logger = logger;
         _guildManager = guildManager;
+        _autoBanManager = autoBanManager;
     }
 
     public override void HandlePacket(InPacket p, IChannelClient c)
@@ -58,7 +60,7 @@ public class MultiChatHandler : ChannelHandlerBase
         string chattext = p.readString();
         if (chattext.Length > sbyte.MaxValue && !player.isGM())
         {
-            AutobanFactory.PACKET_EDIT.alert(c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit chats.");
+            _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit chats.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {ChatContent}", c.OnlinedCharacter.getName(), chattext.Length);
             c.Disconnect(true, false);
             return;

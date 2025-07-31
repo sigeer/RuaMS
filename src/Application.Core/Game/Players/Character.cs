@@ -37,6 +37,7 @@ using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Shared.Items;
 using Application.Shared.KeyMaps;
+using Application.Shared.Login;
 using Application.Shared.Team;
 using client;
 using client.autoban;
@@ -350,20 +351,6 @@ public partial class Player
     {
         visibleMapObjects.TryAdd(mo, 0);
     }
-
-    public void ban(string reason)
-    {
-        this.isbanned = true;
-
-        if (Client.AccountEntity != null)
-        {
-            Client.AccountEntity.Banned = 1;
-            Client.AccountEntity.Banreason = reason;
-            Client.CommitAccount();
-        }
-    }
-
-
 
     public int calculateMaxBaseDamage(int watk, WeaponType weapon)
     {
@@ -4788,28 +4775,9 @@ public partial class Player
             return;
         }
 
-        this.ban(reason);
-        sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for HACK reason.#k", "Cosmic")));
-        Client.CurrentServerContainer.TimerManager.schedule(() =>
-        {
-            Client.Disconnect(false, false);
-
-        }, 5000);
-
-        Client.CurrentServerContainer.BroadcastWorldGMPacket(PacketCreator.serverNotice(6, CharacterManager.makeMapleReadable(Name) + " was autobanned for " + reason));
+        Client.CurrentServerContainer.AdminService.AutoBan(this, (int)BanReason.HACK, reason, -1);
     }
 
-    public void block(int reason, int days, string desc)
-    {
-        if (Client.AccountEntity != null)
-        {
-            var tempBan = DateTimeOffset.UtcNow.AddDays(days);
-            Client.AccountEntity.Banreason = desc;
-            Client.AccountEntity.Tempban = tempBan;
-            Client.AccountEntity.Greason = (sbyte)reason;
-            Client.CommitAccount();
-        }
-    }
 
     public bool isBanned()
     {

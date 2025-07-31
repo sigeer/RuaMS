@@ -20,12 +20,6 @@ namespace Application.Core.Login.Client
         LoginResultCode Login(string login, string pwd, Hwid nibbleHwid);
         LoginResultCode FinishLogin();
         bool CheckChar(int accid);
-        bool HasBannedMac();
-        bool HasBannedIP();
-        bool HasBannedHWID();
-
-        void UpdateMacs(string macData);
-
         void SendCharList();
         List<CharacterViewObject> LoadCharactersView();
         bool CanRequestCharlist();
