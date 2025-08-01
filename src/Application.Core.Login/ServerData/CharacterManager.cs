@@ -558,6 +558,11 @@ namespace Application.Core.Login.Datas
             return _idDataSource.Values.Where(x => x.Channel > 0 && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToList();
         }
 
+        public List<int> GetOnlinedPlayerAccountId()
+        {
+            return _idDataSource.Values.Where(x => x.Channel > 0).Select(x => x.Character.AccountId).ToList();
+        }
+
         public ShowOnlinePlayerResponse GetOnlinedPlayers()
         {
             var list = _idDataSource.Values.Where(x => x.Channel > 0).ToList();

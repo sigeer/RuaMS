@@ -772,5 +772,20 @@ namespace Application.Core.Channel.InProgress
         {
             return _server.CrossServerService.SummonPlayerByName(summonPlayerByNameRequest);
         }
+
+        public DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest request)
+        {
+            return _server.CrossServerService.DisconnectPlayerByName(request);
+        }
+
+        public void DisconnectAll(DisconnectAllRequest disconnectAllRequest)
+        {
+            _server.Transport.BroadcastMessage(BroadcastType.SendPlayerDisconnectAll, new Google.Protobuf.WellKnownTypes.Empty());
+        }
+
+        public GetAllClientInfo GetOnliendClientInfo()
+        {
+            return _server.AccountManager.GetOnliendClientInfo();
+        }
     }
 }

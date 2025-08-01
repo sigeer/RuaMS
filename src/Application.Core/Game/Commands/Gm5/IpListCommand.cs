@@ -1,3 +1,4 @@
+using Application.Core.Channel.Services;
 using Application.Core.scripting.npc;
 using net.server;
 
@@ -10,8 +11,10 @@ namespace Application.Core.Game.Commands.Gm5;
  */
 public class IpListCommand : CommandBase
 {
-    public IpListCommand() : base(5, "iplist")
+    readonly AdminService _adminService;
+    public IpListCommand(AdminService adminService) : base(5, "iplist")
     {
+        _adminService = adminService;
         Description = "Show IP of all players.";
     }
 
@@ -19,19 +22,11 @@ public class IpListCommand : CommandBase
     {
         string str = "Player-IP relation:";
 
-        foreach (var w in Server.getInstance().getWorlds())
+        var clientInfos = _adminService.GetOnliendClientInfo();
+
+        foreach (var chr in clientInfos)
         {
-            var chars = w.getPlayerStorage().GetAllOnlinedPlayers();
-
-            if (chars.Count > 0)
-            {
-                str += $"\r\n{w.Name}\r\n";
-
-                foreach (var chr in chars)
-                {
-                    str += "  " + chr.getName() + " - " + chr.getClient().RemoteAddress + "\r\n";
-                }
-            }
+            str += "  " + chr.CharacterName + " - " + chr.CurrentIP + "\r\n";
         }
 
         TempConversation.Create(c, 22000)?.RegisterTalk(str);

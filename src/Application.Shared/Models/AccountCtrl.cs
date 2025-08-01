@@ -23,6 +23,7 @@ namespace Application.Shared.Models
         public int Language { get; set; } = 2;
         public bool CanFly { get; set; }
 
+        public string CurrentIP { get; set; } = null!;
         public string CurrentMac { get; set; } = null!;
         public string CurrentHwid { get; set; } = null!;
 

@@ -14,19 +14,13 @@ public class MapPlayersCommand : CommandBase
         var player = c.OnlinedCharacter;
         string names = "";
         int map = player.getMapId();
-        foreach (var world in Server.getInstance().getWorlds())
+
+        foreach (var chr in player.getMap().getPlayers().OfType<IPlayer>())
         {
-            foreach (var chr in world.getPlayerStorage().GetAllOnlinedPlayers())
-            {
-                int curMap = chr.getMapId();
-                string hp = chr.HP.ToString();
-                string maxhp = chr.ActualMaxHP.ToString();
-                string name = chr.getName() + ": " + hp + "/" + maxhp;
-                if (map == curMap)
-                {
-                    names = names.Equals("") ? name : (names + ", " + name);
-                }
-            }
+            int curMap = chr.getMapId();
+            string hp = chr.HP.ToString();
+            string maxhp = chr.ActualMaxHP.ToString();
+            string name = chr.getName() + ": " + hp + "/" + maxhp;
         }
         player.message("Players on mapid " + map + ": " + names);
     }

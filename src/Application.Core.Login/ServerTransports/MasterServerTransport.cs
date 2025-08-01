@@ -401,5 +401,10 @@ namespace Application.Core.Login
         {
             SendMessage(BroadcastType.SendWrapPlayerByName, data, data.MasterId);
         }
+
+        internal void SendPlayerDisconnect(DisconnectPlayerByNameBroadcast data)
+        {
+            SendMessage(BroadcastType.SendPlayerDisconnect, data, data.MasterId);
+        }
     }
 }

@@ -648,6 +648,8 @@ namespace Application.Core.Channel
         private void InitializeMessage()
         {
             var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
+            MessageDispatcher.Register<Empty>(BroadcastType.SendPlayerDisconnectAll, adminSrv.OnDisconnectAll);
+            MessageDispatcher.Register<Dto.DisconnectPlayerByNameBroadcast>(BroadcastType.SendPlayerDisconnect, adminSrv.OnReceivedDisconnectCommand);
             MessageDispatcher.Register<Dto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
             MessageDispatcher.Register<Dto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
             MessageDispatcher.Register<Dto.SetGmLevelBroadcast>(BroadcastType.OnGmLevelSet, adminSrv.OnSetGmLevelNotify);

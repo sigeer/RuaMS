@@ -16,7 +16,7 @@ public class UnJailCommand : CommandBase
             return;
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             if (victim.getJailExpirationTimeLeft() <= 0)
@@ -30,7 +30,7 @@ public class UnJailCommand : CommandBase
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found.");
+            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
     }
 }

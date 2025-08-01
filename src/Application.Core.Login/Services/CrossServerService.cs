@@ -1,6 +1,7 @@
 using Application.Core.Login.Models;
 using Application.Shared.Constants;
 using AutoMapper;
+using Dto;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Services
@@ -65,6 +66,17 @@ namespace Application.Core.Login.Services
             if (_callbacks.TryRemove(chrId, out var d))
                 return _mapper.Map<Dto.RemoteCallDto[]>(d);
             return [];
+        }
+
+        public DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest request)
+        {
+            var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
+            if (targetChr == null || targetChr.Channel <= 0)
+                return new Dto.DisconnectPlayerByNameResponse { Code = 1 };
+
+            _server.Transport.SendPlayerDisconnect(new Dto.DisconnectPlayerByNameBroadcast { MasterId = targetChr.Character.Id });
+
+            return new Dto.DisconnectPlayerByNameResponse();
         }
     }
 }

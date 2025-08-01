@@ -79,7 +79,6 @@ namespace Application.Core.Game.TheWorld
                 locks.ExitReadLock();
             }
         }
-
         public void disconnectAll()
         {
             List<IPlayer> chrList;

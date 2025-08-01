@@ -59,7 +59,7 @@ public class GiveNxCommand : CommandBase
             value = int.Parse(paramsValue[0]);
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(recv);
+        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(recv);
         if (victim != null && victim.IsOnlined)
         {
             victim.getCashShop().gainCash(type, value);
@@ -67,7 +67,7 @@ public class GiveNxCommand : CommandBase
         }
         else
         {
-            player.message("Player '" + recv + "' could not be found.");
+            player.message("Player '" + recv + "' could not be found on this channel.");
         }
     }
 }

@@ -24,7 +24,7 @@ public class JobCommand : CommandBase
         }
         else if (paramsValue.Length == 2)
         {
-            var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+            var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
 
             if (victim != null && victim.IsOnlined)
             {
@@ -40,7 +40,7 @@ public class JobCommand : CommandBase
             }
             else
             {
-                player.message("Player '" + paramsValue[0] + "' could not be found.");
+                player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
             }
         }
         else

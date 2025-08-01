@@ -186,5 +186,8 @@ namespace Application.Core.ServerTransports
         ShowOnlinePlayerResponse GetOnlinedPlayers();
         WrapPlayerByNameResponse WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest);
         SummonPlayerByNameResponse SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest);
+        DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
+        void DisconnectAll(DisconnectAllRequest disconnectAllRequest);
+        GetAllClientInfo GetOnliendClientInfo();
     }
 }

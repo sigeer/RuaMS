@@ -1,9 +1,13 @@
+using Application.Core.Channel.Services;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class ReachCommand : CommandBase
 {
-    public ReachCommand() : base(2, "reach", "follow", "warpto")
+    readonly AdminService _adminService;
+    public ReachCommand(AdminService adminService) : base(2, "reach", "follow", "warpto")
     {
+        _adminService = adminService;
         Description = "Warp to a player.";
     }
 
@@ -16,23 +20,6 @@ public class ReachCommand : CommandBase
             return;
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (victim != null && victim.IsOnlined)
-        {
-            if (player.getClient().getChannel() != victim.getClient().getChannel())
-            {
-                player.dropMessage(5, "Player '" + victim.getName() + "' is at channel " + victim.getClient().getChannel() + ".");
-            }
-            else
-            {
-                var map = victim.getMap();
-                player.saveLocationOnWarp();
-                player.forceChangeMap(map, map.findClosestPortal(victim.getPosition()));
-            }
-        }
-        else
-        {
-            player.dropMessage(6, "Unknown player.");
-        }
+        _adminService.WarpPlayerByName(c.OnlinedCharacter, paramsValue[0]);
     }
 }

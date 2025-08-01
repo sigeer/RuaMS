@@ -54,7 +54,7 @@ public class GiveMesosCommand : CommandBase
             }
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(recv_);
+        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(recv_);
         if (victim != null && victim.IsOnlined)
         {
             victim.gainMeso((int)mesos_, true);
@@ -62,7 +62,7 @@ public class GiveMesosCommand : CommandBase
         }
         else
         {
-            player.message("Player '" + recv_ + "' could not be found.");
+            player.message("Player '" + recv_ + "' could not be found on this channel.");
         }
     }
 }

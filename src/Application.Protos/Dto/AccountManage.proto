@@ -87,3 +87,24 @@ message SummonPlayerByNameBroadcast {
 	string warpToName = 1;
 	int32 masterId = 2;
 }
+
+message DisconnectPlayerByNameRequest {
+	int32 masterId = 1;
+	string victim = 2;
+}
+
+message DisconnectPlayerByNameResponse {
+	int32 code = 1;
+}
+
+message DisconnectPlayerByNameBroadcast {
+	int32 masterId = 1;
+}
+
+message DisconnectAllRequest {
+	int32 masterId = 1;
+}
+
+message DisconnectAllBroadcast {
+	int32 exceptId = 1;
+}

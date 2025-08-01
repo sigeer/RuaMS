@@ -15,7 +15,7 @@ public class HpMpCommand : CommandBase
 
         if (paramsValue.Length == 2)
         {
-            victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+            victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
             statUpdate = int.Parse(paramsValue[1]);
         }
         else if (paramsValue.Length == 1)
@@ -37,7 +37,7 @@ public class HpMpCommand : CommandBase
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this world.");
+            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
     }
 }

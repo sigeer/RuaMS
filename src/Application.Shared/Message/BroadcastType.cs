@@ -2,6 +2,8 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string SendPlayerDisconnectAll = "SendPlayerDisconnectAll";
+        public const string SendPlayerDisconnect = "SendPlayerDisconnect";
         public const string SendWrapPlayerByName = "SendWrapPlayerByName";
 
         public const string OnGmLevelSet = "OnGmLevelSet";
