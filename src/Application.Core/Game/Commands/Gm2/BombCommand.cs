@@ -15,7 +15,7 @@ public class BombCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length > 0)
         {
-            var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+            var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
             if (victim != null && victim.IsOnlined)
             {
                 victim.getMap().spawnMonsterOnGroundBelow(LifeFactory.getMonster(MobId.ARPQ_BOMB), victim.getPosition());
@@ -23,7 +23,7 @@ public class BombCommand : CommandBase
             }
             else
             {
-                player.message("Player '" + paramsValue[0] + "' could not be found on this world.");
+                player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
             }
         }
         else

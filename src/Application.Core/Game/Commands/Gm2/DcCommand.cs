@@ -1,9 +1,13 @@
+using Application.Core.Channel.Services;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class DcCommand : CommandBase
 {
-    public DcCommand() : base(2, "dc")
+    readonly AdminService _adminService;
+    public DcCommand(AdminService adminService) : base(2, "dc")
     {
+        _adminService = adminService;
         Description = "Disconnect a player.";
     }
 
@@ -16,35 +20,6 @@ public class DcCommand : CommandBase
             return;
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-        if (victim == null || !victim.IsOnlined)
-        {
-            victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
-            if (victim == null)
-            {
-                victim = player.getMap().getCharacterByName(paramsValue[0]);
-                if (victim != null)
-                {
-                    try
-                    {//sometimes bugged because the map = null
-                        victim.getClient().Disconnect(true, false);
-                        player.getMap().removePlayer(victim);
-                    }
-                    catch (Exception e)
-                    {
-                        log.Error(e.ToString());
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            }
-        }
-        if (player.gmLevel() < victim.gmLevel())
-        {
-            victim = player;
-        }
-        victim.getClient().Disconnect(false, false);
+        _adminService.DisconnectPlayerByName(c.OnlinedCharacter, paramsValue[0]);
     }
 }

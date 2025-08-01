@@ -10,14 +10,14 @@ public class HealPersonCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             victim.healHpMp();
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found.");
+            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
     }
 }

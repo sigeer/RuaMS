@@ -1,27 +1,20 @@
+using Application.Core.Channel.Services;
 using net.server;
 
 namespace Application.Core.Game.Commands.Gm6;
 
 public class DCAllCommand : CommandBase
 {
-    public DCAllCommand() : base(6, "dcall")
+    readonly AdminService _adminService;
+    public DCAllCommand(AdminService adminService) : base(6, "dcall")
     {
+        _adminService = adminService;
         Description = "Disconnect all players (online or logged in).";
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
-        var player = c.OnlinedCharacter;
-        foreach (var world in Server.getInstance().getWorlds())
-        {
-            foreach (var chr in world.getPlayerStorage().GetAllOnlinedPlayers())
-            {
-                if (!chr.isGM())
-                {
-                    chr.getClient().Disconnect(false, false);
-                }
-            }
-        }
-        player.message("All players successfully disconnected.");
+        _adminService.DisconnectAll(c.OnlinedCharacter);
+
     }
 }

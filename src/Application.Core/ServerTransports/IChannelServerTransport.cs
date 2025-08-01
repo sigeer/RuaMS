@@ -71,7 +71,6 @@ namespace Application.Core.ServerTransports
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
-        bool WarpPlayer(string name, int? channel, int mapId, int? portal);
         string LoadExpeditionInfo();
         Dto.PlayerGetterDto? GetPlayerData(string clientSession, int channelId, int cid);
         int GetAccountCharacterCount(int accId);
@@ -184,5 +183,11 @@ namespace Application.Core.ServerTransports
         BanResponse Ban(BanRequest banRequest);
         UnbanResponse Unban(UnbanRequest unbanRequest);
         SetGmLevelResponse SetGmLevel(SetGmLevelRequest setGmLevelRequest);
+        ShowOnlinePlayerResponse GetOnlinedPlayers();
+        WrapPlayerByNameResponse WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest);
+        SummonPlayerByNameResponse SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest);
+        DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
+        void DisconnectAll(DisconnectAllRequest disconnectAllRequest);
+        GetAllClientInfo GetOnliendClientInfo();
     }
 }

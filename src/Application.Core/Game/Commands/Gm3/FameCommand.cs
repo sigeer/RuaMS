@@ -24,7 +24,7 @@ public class FameCommand : CommandBase
             return;
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             victim.setFame(fame);
@@ -33,7 +33,7 @@ public class FameCommand : CommandBase
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found.");
+            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
     }
 }

@@ -22,6 +22,8 @@
 		<Protobuf Include="Config\MessageWrapper.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
+		<Protobuf Include="Dto\ClientInfo.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\ServerCrossCallback.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\AccountManage.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Report.proto">
 		  <GrpcServices>None</GrpcServices>

@@ -86,6 +86,7 @@ namespace Application.Core.Channel
             services.AddSingleton<RankService>();
             services.AddSingleton<ReportService>();
             services.AddSingleton<AdminService>();
+            services.AddSingleton<CrossServerCallbackService>();
 
             // 频道的数据中心不再与频道关联，而是与频道所在的进程关联（同一进程多个频道）
             services.AddSingleton<TeamManager>();

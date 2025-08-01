@@ -110,6 +110,7 @@ namespace Application.Core.Login
 
             services.TryAddSingleton<IExpeditionService, DefaultExpeditionService>();
             services.AddInvitationService();
+            services.AddSingleton<CrossServerService>();
             return services;
         }
 

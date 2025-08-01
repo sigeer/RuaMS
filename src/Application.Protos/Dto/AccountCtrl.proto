@@ -13,6 +13,7 @@ message AccountCtrlDto {
   google.protobuf.Timestamp birthday = 5;
   string currentHwid = 6;
   string currentMac = 7;
+  string currentIP = 8;
   int32 characterslots = 9;
   int32 gender = 10;
   bool tos = 13;

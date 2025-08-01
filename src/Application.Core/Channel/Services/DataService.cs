@@ -410,6 +410,7 @@ namespace Application.Core.Channel.Services
             _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
 
             _transactionStore.HandleTransactions(chr, o.PendingTransactions);
+            _server.RemoteCallService.RunEventAfterLogin(chr, o.RemoteCallList);
         }
 
         //public PlayerSaveDto DeserializeCashShop(IPlayer player)

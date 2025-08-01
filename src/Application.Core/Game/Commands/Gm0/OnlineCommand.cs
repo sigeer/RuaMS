@@ -1,28 +1,56 @@
-using Application.Core.Managers;
-using net.server;
+using Application.Core.Channel.Services;
+using Application.Core.scripting.npc;
+using server.maps;
+using System.Text;
 
 namespace Application.Core.Game.Commands.Gm0;
 
 public class OnlineCommand : CommandBase
 {
-    public OnlineCommand() : base(0, "online")
+    readonly AdminService _adminService;
+    public OnlineCommand(AdminService adminService) : base(0, "online")
     {
         Description = "Show all online players.";
+        _adminService = adminService;
     }
 
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        foreach (var ch in Server.getInstance().getChannelsFromWorld(player.World))
+
+        var channelGroup = _adminService.GetOnlinedPlayers().GroupBy(x => x.Channel).OrderBy(x => x.Key).ToList();
+
+        StringBuilder sb = new StringBuilder();
+
+        List<Dto.OnlinedPlayerInfoDto> list = [];
+        int i = 0;
+        foreach (var item in channelGroup)
         {
-            player.yellowMessage("Players in Channel " + ch.getId() + ":");
-            foreach (var chr in ch.getPlayerStorage().getAllCharacters())
+            sb.Append($"===> 频道{item.Key}：\r\n");
+            foreach (var chr in item)
             {
-                if (!chr.isGM())
-                {
-                    player.message(" >> " + CharacterManager.makeMapleReadable(chr.getName()) + " is at " + chr.getMap().getMapName() + ".");
-                }
+                sb.Append($"\r\n#L{i}# {chr.Name}：{MapFactory.loadPlaceName(chr.MapId)} - {MapFactory.loadStreetName(chr.MapId)} #l\r\n");
+                list.Add(chr);
+                i++;
             }
         }
+
+        TempConversation.Create(c)?.RegisterSelect(sb.ToString(), (idx, ctx) =>
+        {
+            var item = list[idx];
+            if (item.Id == c.OnlinedCharacter.Id)
+            {
+                ctx.RegisterTalk("不能传送到自己");
+            }
+            else
+            {
+                ctx.RegisterYesOrNo($"传送到 {item.Name} 身边？", ctx =>
+                {
+                    _adminService.WarpPlayerByName(c.OnlinedCharacter, item.Name);
+                    list.Clear();
+                    ctx.dispose();
+                });
+            }
+        });
     }
 }

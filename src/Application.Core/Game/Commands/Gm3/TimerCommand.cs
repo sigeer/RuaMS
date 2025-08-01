@@ -18,7 +18,7 @@ public class TimerCommand : CommandBase
             return;
         }
 
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = player.getMap().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             if (paramsValue[1].Equals("remove", StringComparison.OrdinalIgnoreCase))

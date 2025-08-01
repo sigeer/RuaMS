@@ -10,6 +10,7 @@ using Application.Shared.Team;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
+using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -555,6 +556,19 @@ namespace Application.Core.Login.Datas
         {
             var accIds = _masterServer.AccountManager.GetOnlinedGmAccId();
             return _idDataSource.Values.Where(x => x.Channel > 0 && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToList();
+        }
+
+        public List<int> GetOnlinedPlayerAccountId()
+        {
+            return _idDataSource.Values.Where(x => x.Channel > 0).Select(x => x.Character.AccountId).ToList();
+        }
+
+        public ShowOnlinePlayerResponse GetOnlinedPlayers()
+        {
+            var list = _idDataSource.Values.Where(x => x.Channel > 0).ToList();
+            var res = new ShowOnlinePlayerResponse();
+            res.List.AddRange(list.Select(x => new Dto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
+            return res;
         }
     }
 }

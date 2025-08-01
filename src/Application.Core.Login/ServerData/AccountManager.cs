@@ -9,6 +9,7 @@ using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
+using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -226,6 +227,16 @@ namespace Application.Core.Login.Datas
                 Level = request.Level
             });
             return new SetGmLevelResponse();
+        }
+
+        public GetAllClientInfo GetOnliendClientInfo()
+        {
+            var onlinedPlayerAccounts = _server.CharacterManager.GetOnlinedPlayerAccountId();
+            var accountInfo = _accDataSource.Values.Where(x => onlinedPlayerAccounts.Contains(x.Id));
+
+            var res = new GetAllClientInfo();
+            res.List.AddRange(accountInfo.Select(x => new ClientInfo { AccountName = x.Name, CharacterName = "", CurrentHWID = x.CurrentHwid, CurrentIP = x.CurrentIP, CurrentMAC = x.CurrentMac }));
+            return res;
         }
     }
 }

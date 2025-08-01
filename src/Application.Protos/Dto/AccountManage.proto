@@ -52,3 +52,59 @@ message SetGmLevelBroadcast {
 	string operatorName = 3;
 	int32 level = 4;
 }
+
+message OnlinedPlayerInfoDto {
+	int32 id = 1;
+	string name = 2;
+	int32 channel = 3;
+	int32 mapId = 4;
+}
+
+message ShowOnlinePlayerResponse {
+	repeated OnlinedPlayerInfoDto list = 1;
+}
+
+message WrapPlayerByNameRequest {
+	int32 masterId = 1;
+	string victim = 2;
+}
+
+message WrapPlayerByNameResponse {
+	int32 code = 1;
+	int32 targetChannel = 2;
+}
+
+message SummonPlayerByNameRequest {
+	int32 masterId = 1;
+	string victim = 2;
+}
+
+message SummonPlayerByNameResponse {
+	int32 code = 1;
+}
+
+message SummonPlayerByNameBroadcast {
+	string warpToName = 1;
+	int32 masterId = 2;
+}
+
+message DisconnectPlayerByNameRequest {
+	int32 masterId = 1;
+	string victim = 2;
+}
+
+message DisconnectPlayerByNameResponse {
+	int32 code = 1;
+}
+
+message DisconnectPlayerByNameBroadcast {
+	int32 masterId = 1;
+}
+
+message DisconnectAllRequest {
+	int32 masterId = 1;
+}
+
+message DisconnectAllBroadcast {
+	int32 exceptId = 1;
+}

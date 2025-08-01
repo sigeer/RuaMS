@@ -12,7 +12,7 @@ public class CheckDmgCommand : CommandBase
     public override void Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var victim = c.getWorldServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
+        var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
             int maxBase = victim.calculateMaxBaseDamage(victim.getTotalWatk());
@@ -27,7 +27,7 @@ public class CheckDmgCommand : CommandBase
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this world.");
+            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
     }
 }
