@@ -80,6 +80,8 @@ namespace Application.Core.Channel
         public AutoBanDataManager AutoBanManager => _autoBanManager.Value;
         readonly Lazy<AdminService> _adminService;
         public AdminService AdminService => _adminService.Value;
+        readonly Lazy<CrossServerCallbackService> _remoteCallService;
+        public CrossServerCallbackService RemoteCallService => _remoteCallService.Value;
         #endregion
 
         #region Task
@@ -165,6 +167,7 @@ namespace Application.Core.Channel
             _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
             _itemService = new(() => ServiceProvider.GetRequiredService<ItemService>());
             _playerShopService = new(() => ServiceProvider.GetRequiredService<PlayerShopService>());
+            _remoteCallService = new(() => ServiceProvider.GetRequiredService<CrossServerCallbackService>());
 
             BatchSynMapManager = new BatchSyncManager<SyncProto.MapSyncDto>(50, 100, data => Transport.BatchSyncMap(data));
         }
@@ -481,11 +484,6 @@ namespace Application.Core.Channel
             return Transport.GetChannelEndPoint(channel);
         }
 
-        public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
-        {
-            return Transport.WarpPlayer(name, channel, mapId, portal);
-        }
-
         public string GetExpeditionInfo()
         {
             return Transport.LoadExpeditionInfo();
@@ -650,6 +648,7 @@ namespace Application.Core.Channel
         private void InitializeMessage()
         {
             var adminSrv = ServiceProvider.GetRequiredService<AdminService>();
+            MessageDispatcher.Register<Dto.SummonPlayerByNameBroadcast>(BroadcastType.SendWrapPlayerByName, adminSrv.OnPlayerSummoned);
             MessageDispatcher.Register<Dto.BanBroadcast>(BroadcastType.BroadcastBan, adminSrv.OnBannedNotify);
             MessageDispatcher.Register<Dto.SetGmLevelBroadcast>(BroadcastType.OnGmLevelSet, adminSrv.OnSetGmLevelNotify);
 

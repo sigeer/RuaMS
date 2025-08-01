@@ -1,9 +1,13 @@
+using Application.Core.Channel.Services;
+
 namespace Application.Core.Game.Commands.Gm2;
 
 public class SummonCommand : CommandBase
 {
-    public SummonCommand() : base(2, "warphere", "summon")
+    readonly AdminService _adminService;
+    public SummonCommand(AdminService adminService) : base(2, "warphere", "summon")
     {
+        _adminService = adminService;
         Description = "Move a player to your location.";
     }
 
@@ -16,11 +20,6 @@ public class SummonCommand : CommandBase
             return;
         }
 
-        var map = player.getMap();
-
-        if (!c.CurrentServerContainer.WarpPlayer(paramsValue[0], player.Channel, player.getMapId(), map.findClosestPortal(player.getPosition())?.getId()))
-        {
-            player.dropMessage(6, "Unknown player.");
-        }
+        _adminService.SummonPlayerByName(c.OnlinedCharacter, paramsValue[0]);
     }
 }

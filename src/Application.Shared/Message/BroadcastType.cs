@@ -2,6 +2,8 @@ namespace Application.Shared.Message
 {
     public class BroadcastType
     {
+        public const string SendWrapPlayerByName = "SendWrapPlayerByName";
+
         public const string OnGmLevelSet = "OnGmLevelSet";
         public const string BroadcastBan = "BroadcastBan";
         public const string OnAutoBanIgnoreChangedNotify = "OnAutoBanIgnoreChangedNotify";

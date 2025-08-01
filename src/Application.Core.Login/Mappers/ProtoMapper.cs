@@ -115,6 +115,9 @@ namespace Application.Core.Login.Mappers
             CreateMap<NoteModel, Dto.NoteDto>()
                 .ForMember(dest => dest.From, src => src.MapFrom<NoteSenderNameValueResolver>())
                 .ForMember(dest => dest.To, src => src.MapFrom<NoteReceiverNameValueResolver>());
+
+            CreateMap<CallbackModel, Dto.RemoteCallDto>();
+            CreateMap<CallbackParamModel, Dto.RemoteCallParamDto>();
         }
     }
 }

@@ -65,6 +65,8 @@ namespace Application.Core.Login.Services
             data.AccountGame = _mapper.Map<Dto.AccountGameDto>(_masterServer.AccountManager.GetAccountGameData(data.Character.AccountId));
             data.Account = _mapper.Map<Dto.AccountCtrlDto>(accountData);
             data.PendingTransactions.AddRange(_masterServer.ItemTransactionManager.GetPlayerPendingTransactions(data.Character.Id));
+
+            data.RemoteCallList.AddRange(_masterServer.CrossServerService.GetCallback(characterId));
             return data;
         }
 

@@ -209,12 +209,6 @@ namespace Application.Core.Channel.InProgress
             return _server.HasCharacteridInTransition(clientSession);
         }
 
-        public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
-        {
-            return _server.WarpPlayer(name, channel, mapId, portal);
-
-        }
-
         public string LoadExpeditionInfo()
         {
             StringBuilder sb = new StringBuilder();
@@ -762,6 +756,21 @@ namespace Application.Core.Channel.InProgress
         public SetGmLevelResponse SetGmLevel(SetGmLevelRequest setGmLevelRequest)
         {
             return _server.AccountManager.SetGmLevel(setGmLevelRequest);
+        }
+
+        public ShowOnlinePlayerResponse GetOnlinedPlayers()
+        {
+            return _server.CharacterManager.GetOnlinedPlayers();
+        }
+
+        public WrapPlayerByNameResponse WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest)
+        {
+            return _server.CrossServerService.WarpPlayerByName(wrapPlayerByNameRequest);
+        }
+
+        public SummonPlayerByNameResponse SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest)
+        {
+            return _server.CrossServerService.SummonPlayerByName(summonPlayerByNameRequest);
         }
     }
 }

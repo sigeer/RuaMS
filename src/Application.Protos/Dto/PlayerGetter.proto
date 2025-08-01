@@ -21,6 +21,7 @@ import "Dto/Buddy.proto";
 import "Dto/AccountGame.proto";
 import "Dto/NewYearCard.proto";
 import "Item/ItemTransaction.proto";
+import "Dto/ServerCrossCallback.proto";
 
 package Dto;
 
@@ -61,4 +62,5 @@ message PlayerGetterDto {
   repeated int32 wishItems = 20;
   repeated NewYearCardDto newYearCards = 21;
   repeated ItemProto.ItemTransaction pendingTransactions = 22;
+  repeated RemoteCallDto remoteCallList = 23;
 }

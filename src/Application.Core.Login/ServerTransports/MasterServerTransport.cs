@@ -88,40 +88,6 @@ namespace Application.Core.Login
             }
         }
 
-        public bool WrapPlayer(string name, int? channel, int mapId, int? portal)
-        {
-            var world = Server.getInstance().getWorld(0);
-            foreach (var ch in world.getChannels())
-            {
-                var target = ch.Players.getCharacterByName(name);
-                if (target != null)
-                {
-                    if (portal != null)
-                        target.changeMap(mapId, portal.Value);
-                    else
-                        target.changeMap(mapId);
-
-                    if (channel != null && target.Channel != channel)
-                    {
-                        target.Client.ChangeChannel(channel.Value);
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        ///  把<paramref name="chrId"/>传送到<paramref name="toChrId"/>
-        /// </summary>
-        /// <param name="chrId"></param>
-        /// <param name="toChrId"></param>
-        public void SummonPlayer(int chrId, int toChrId)
-        {
-
-        }
-
-
         internal void BroadcastTeamUpdate(UpdateTeamResponse response)
         {
             foreach (var server in _server.ChannelServerList.Values)
@@ -429,6 +395,11 @@ namespace Application.Core.Login
         internal void BroadcastGmLevelChanged(SetGmLevelBroadcast data)
         {
             SendMessage(BroadcastType.OnGmLevelSet, data, data.TargetId);
+        }
+
+        internal void SendWrapPlayerByName(SummonPlayerByNameBroadcast data)
+        {
+            SendMessage(BroadcastType.SendWrapPlayerByName, data, data.MasterId);
         }
     }
 }

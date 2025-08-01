@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package Dto;
+
+message RemoteCallParamDto {
+	int32 index = 1;
+	string schema = 2;
+	string value = 3;
+}
+
+message RemoteCallDto {
+	string callbackName = 1;
+	repeated RemoteCallParamDto params = 2;
+}

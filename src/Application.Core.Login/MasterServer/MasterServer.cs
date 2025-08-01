@@ -107,6 +107,9 @@ namespace Application.Core.Login
         public AccountHistoryManager AccountHistoryManager => _accountHistoryManager.Value;
         readonly Lazy<AccountBanManager> _accountBanManager;
         public AccountBanManager AccountBanManager => _accountBanManager.Value;
+
+        readonly Lazy<CrossServerService> _crossServerService;
+        public CrossServerService CrossServerService => _crossServerService.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -175,6 +178,7 @@ namespace Application.Core.Login
             _systemManager = new(() => ServiceProvider.GetRequiredService<SystemManager>());
             _accountHistoryManager = new(() => ServiceProvider.GetRequiredService<AccountHistoryManager>());
             _accountBanManager = new(() => ServiceProvider.GetRequiredService<AccountBanManager>());
+            _crossServerService = new(() => ServiceProvider.GetRequiredService<CrossServerService>());
         }
 
         bool isShuttingdown = false;
@@ -482,13 +486,6 @@ namespace Application.Core.Login
             }
 
             return status;
-        }
-
-
-
-        public bool WarpPlayer(string name, int? channel, int mapId, int? portal)
-        {
-            return Transport.WrapPlayer(name, channel, mapId, portal);
         }
 
         public void BroadcastWorldMessage(Packet p)
