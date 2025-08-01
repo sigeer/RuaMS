@@ -173,7 +173,7 @@ namespace Application.Core.Channel.Services
             var summoned = _server.FindPlayerById(data.MasterId);
             if (summoned != null)
             {
-                if (summoned.getEventInstance() != null)
+                if (summoned.getEventInstance() == null)
                 {
                     WarpPlayerByName(summoned, data.WarpToName);
                 }

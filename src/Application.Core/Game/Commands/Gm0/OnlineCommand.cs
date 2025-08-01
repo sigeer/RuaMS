@@ -18,7 +18,7 @@ public class OnlineCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
 
-        var channelGroup = _adminService.GetOnlinedPlayers().GroupBy(x => x.Channel);
+        var channelGroup = _adminService.GetOnlinedPlayers().GroupBy(x => x.Channel).OrderBy(x => x.Key).ToList();
 
         StringBuilder sb = new StringBuilder();
 
@@ -29,8 +29,9 @@ public class OnlineCommand : CommandBase
             sb.Append($"===> 频道{item.Key}：\r\n");
             foreach (var chr in item)
             {
-                sb.Append($"\r\n#L{i}# {chr.Name}：{MapFactory.loadPlaceName(chr.MapId)} - {MapFactory.loadStreetName(chr.MapId)} #l");
+                sb.Append($"\r\n#L{i}# {chr.Name}：{MapFactory.loadPlaceName(chr.MapId)} - {MapFactory.loadStreetName(chr.MapId)} #l\r\n");
                 list.Add(chr);
+                i++;
             }
         }
 
