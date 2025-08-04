@@ -1,8 +1,16 @@
-﻿
+
 namespace Application.EF.Entities;
 
-public partial class Famelog
+public partial class FamelogEntity
 {
+    private FamelogEntity() { }
+    public FamelogEntity(int characterid, int characteridTo, DateTimeOffset when)
+    {
+        Characterid = characterid;
+        CharacteridTo = characteridTo;
+        When = when;
+    }
+
     public int Famelogid { get; set; }
 
     public int Characterid { get; set; }

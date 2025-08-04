@@ -14,11 +14,13 @@ using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using MySql.EntityFrameworkCore.Extensions;
 using net.server;
 using Serilog;
 using System.Collections.Concurrent;
 using System.Xml.Linq;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Login.Datas
 {
@@ -100,6 +102,7 @@ namespace Application.Core.Login.Datas
                 origin.SavedLocations = _mapper.Map<SavedLocationModel[]>(obj.SavedLocations);
                 origin.TrockLocations = _mapper.Map<TrockLocationModel[]>(obj.TrockLocations);
                 origin.CoolDowns = _mapper.Map<CoolDownModel[]>(obj.CoolDowns);
+                origin.FameLogs = _mapper.Map<FameLogModel[]>(obj.FameLogs);
 
                 _masterServer.AccountManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
 
@@ -289,6 +292,9 @@ namespace Application.Core.Login.Datas
                                        select new QuestStatusEntityPair(a, bs, cs)).ToArray();
                 #endregion
 
+                var now = _masterServer.GetCurrentTimeDateTimeOffset();
+                var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
+
                 d = new CharacterLiveObject()
                 {
                     Character = chrModel,
@@ -296,6 +302,7 @@ namespace Application.Core.Login.Datas
                     PetIgnores = petIgnores,
                     Areas = _mapper.Map<AreaModel[]>(dbContext.AreaInfos.AsNoTracking().Where(x => x.Charid == characterId).ToArray()),
                     BuddyList = buddyData,
+                    FameLogs = _mapper.Map<FameLogModel[]>(fameRecords),
                     Events = _mapper.Map<EventModel[]>(dbContext.Eventstats.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),
                     InventoryItems = invItems,
                     KeyMaps = _mapper.Map<KeyMapModel[]>(dbContext.Keymaps.AsNoTracking().Where(x => x.Characterid == characterId).ToArray()),

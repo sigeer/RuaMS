@@ -55,7 +55,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Eventstat> Eventstats { get; set; }
 
-    public virtual DbSet<Famelog> Famelogs { get; set; }
+    public virtual DbSet<FamelogEntity> Famelogs { get; set; }
 
     public virtual DbSet<FamilyCharacter> FamilyCharacters { get; set; }
 
@@ -538,7 +538,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("name");
         });
 
-        modelBuilder.Entity<Famelog>(entity =>
+        modelBuilder.Entity<FamelogEntity>(entity =>
         {
             entity.HasKey(e => e.Famelogid).HasName("PRIMARY");
 

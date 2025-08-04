@@ -2,6 +2,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Models;
 using client;
 using client.autoban;
 using server;
@@ -23,6 +24,8 @@ namespace Application.Core.Game.Players
 
         public PlayerKeyMap KeyMap { get; set; }
         public MapManager MapManager => Client.CurrentServer.getMapFactory();
+
+        public List<FameLogObject> FameLogs { get; set; }
 
         public object SaveToDBLock { get; set; } = new object();
 
@@ -59,7 +62,6 @@ namespace Application.Core.Game.Players
             GachaExpValue = new AtomicInteger();
 
             BuddyList = new BuddyList(this, 20);
-            LastFameCIds = new List<int>();
 
             KeyMap = new(this);
 
@@ -71,6 +73,8 @@ namespace Application.Core.Game.Players
             Bag = new PlayerBag(this);
             Monsterbook = new MonsterBook(this);
             CashShopModel = new CashShop(this);
+
+            FameLogs = new();
 
             setStance(0);
 

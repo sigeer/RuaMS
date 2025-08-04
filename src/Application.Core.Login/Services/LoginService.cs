@@ -46,18 +46,12 @@ namespace Application.Core.Login.Services
             if (YamlConfig.config.server.USE_IP_VALIDATION && !_masterServer.ValidateCharacteridInTransition(clientSession, characterId))
                 return null;
 
-
             var data = _mapper.Map<Dto.PlayerGetterDto>(characterObj);
             data.LoginInfo = new Dto.LoginInfo { IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION };
 
 
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var now = DateTimeOffset.UtcNow;
-            var fameRecords = dbContext.Famelogs.AsNoTracking().Where(x => x.Characterid == characterId && Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay(now, x.When) < 30).ToList();
 
-            data.FameRecord = new Dto.RecentFameRecordDto();
-            data.FameRecord.LastUpdateTime = fameRecords.Count == 0 ? 0 : fameRecords.Max(x => x.When).ToUnixTimeMilliseconds();
-            data.FameRecord.ChararacterIds.AddRange(fameRecords.Select(x => x.CharacteridTo));
 
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
                 .Select(x => new Dto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();

@@ -33,6 +33,9 @@ namespace Application.Core.Login.Mappers
             CreateMap<Trocklocation, TrockLocationModel>();
             CreateMap<AreaInfo, AreaModel>();
             CreateMap<Eventstat, EventModel>();
+            CreateMap<FamelogEntity, FameLogModel>()
+                .ForMember(dest => dest.ToId, src => src.MapFrom(x => x.CharacteridTo))
+                .ForMember(dest => dest.Time, src => src.MapFrom(x => x.When.ToUnixTimeMilliseconds()));
 
             CreateMap<QuestStatusEntity, QuestStatusModel>()
                 .ForMember(x => x.QuestId, src => src.MapFrom(x => x.Quest))

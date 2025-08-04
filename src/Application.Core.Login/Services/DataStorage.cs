@@ -28,12 +28,14 @@ namespace Application.Core.Login.Services
 
         readonly IMapper _mapper;
         readonly ILogger<DataStorage> _logger;
+        readonly MasterServer _server;
 
 
-        public DataStorage(IMapper mapper, ILogger<DataStorage> logger)
+        public DataStorage(IMapper mapper, ILogger<DataStorage> logger, MasterServer server)
         {
             _mapper = mapper;
             _logger = logger;
+            _server = server;
         }
 
         public int CommitNewPlayer(DBContext dbContext, Dto.NewPlayerSaveDto newCharacter)
@@ -87,6 +89,9 @@ namespace Application.Core.Login.Services
             if (updateCount == 0)
                 return;
 
+            var now = _server.getCurrentTime();
+
+            var monthDuration = (long)TimeSpan.FromDays(30).TotalMilliseconds;
             _logger.LogInformation("正在保存用户数据...");
 
             try
@@ -110,6 +115,7 @@ namespace Application.Core.Login.Services
                 await dbContext.Questprogresses.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Queststatuses.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
                 await dbContext.Medalmaps.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
+                await dbContext.Famelogs.Where(x => updateData.Keys.Contains(x.Characterid)).ExecuteDeleteAsync();
 
                 foreach (var obj in updateData.Values)
                 {
@@ -139,6 +145,9 @@ namespace Application.Core.Login.Services
                     await dbContext.Buddies.AddRangeAsync(obj.BuddyList.Select(x => new BuddyEntity(obj.Character.Id, x.CharacterId, x.Pending, x.Group)));
                     await dbContext.AreaInfos.AddRangeAsync(obj.Areas.Select(x => new AreaInfo(obj.Character.Id, x.Area, x.Info)));
                     await dbContext.Eventstats.AddRangeAsync(obj.Events.Select(x => new Eventstat(obj.Character.Id, x.Name, x.Info)));
+
+                    await dbContext.Famelogs.AddRangeAsync(obj.FameLogs.Where(x => now - x.Time < monthDuration)
+                        .Select(x => new FamelogEntity(obj.Character.Id, x.ToId, DateTimeOffset.FromUnixTimeMilliseconds(x.Time))));
 
                     foreach (var q in obj.QuestStatuses)
                     {

@@ -79,6 +79,7 @@ namespace Application.Core.Game.Players
         public Fitness? Fitness { get; set; }
         public Ola? Ola { get; set; }
         public AtomicInteger RewardNxCredit { get; set; }
+        public List<FameLogObject> FameLogs { get; }
 
         public object SaveToDBLock { get; set; }
 
