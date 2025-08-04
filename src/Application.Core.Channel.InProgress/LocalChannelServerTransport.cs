@@ -787,5 +787,10 @@ namespace Application.Core.Channel.InProgress
         {
             return _server.AccountManager.GetOnliendClientInfo();
         }
+
+        public GacheponDataDto GetGachaponData()
+        {
+            return _server.GachaponManager.GetGachaponData();
+        }
     }
 }

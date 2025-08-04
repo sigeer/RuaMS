@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Gachapon;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
@@ -448,7 +448,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public void doGachapon()
     {
-        var item = GachaponStorage.Instance.DoGachapon(npc);
+        var item = c.CurrentServerContainer.GachaponManager.DoGachapon(npc);
 
         var itemGained = gainItem(item.ItemId, (short)(ItemConstants.isPotion(item.ItemId) ? 100 : 1), true, true); // For normal potions, make it give 100.
 

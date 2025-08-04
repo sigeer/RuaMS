@@ -1,15 +1,24 @@
-﻿using Application.Core.Game.Gachapon;
-using Application.Core.Managers;
+using Application.Core.Channel.ServerData;
 using Application.Core.tools.RandomUtils;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace ServiceTest.Games
 {
     public class GachaponTests : TestBase
     {
-        [Test]
-        public void GetLootInfoTest()
+        GachaponManager _gachaponManager;
+
+        public GachaponTests()
         {
-            var arr = GachaponManager.GetLootInfo();
+            _gachaponManager = _sp.GetRequiredService<GachaponManager>();
+        }
+
+        [Test]
+        public async Task GetLootInfoTest()
+        {
+            await LoadServer();
+            var arr = _gachaponManager.GetLootInfo();
             Console.WriteLine(string.Join(Environment.NewLine, arr));
             Assert.That(arr.Length, Is.EqualTo(13));
         }
@@ -17,7 +26,7 @@ namespace ServiceTest.Games
         [Test]
         public void GetItemTest()
         {
-            Assert.That(GachaponStorage.Instance.GetItems(2, 2).Count > 0);
+            Assert.That(_gachaponManager.GetItems(2, 2).Count > 0);
         }
 
         [Test]

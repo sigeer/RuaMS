@@ -82,6 +82,9 @@ namespace Application.Core.Channel
         public AdminService AdminService => _adminService.Value;
         readonly Lazy<CrossServerCallbackService> _remoteCallService;
         public CrossServerCallbackService RemoteCallService => _remoteCallService.Value;
+
+        readonly Lazy<GachaponManager> _gachaponManager;
+        public GachaponManager GachaponManager => _gachaponManager.Value;
         #endregion
 
         #region Task
@@ -157,6 +160,7 @@ namespace Application.Core.Channel
             _shopManager = new(() => ServiceProvider.GetRequiredService<ShopManager>());
             _monitorManager = new(() => ServiceProvider.GetRequiredService<MonitorManager>());
             _autoBanManager = new(() => ServiceProvider.GetRequiredService<AutoBanDataManager>());
+            _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
 
             _adminService = new(() => ServiceProvider.GetRequiredService<AdminService>());
             _marriageService = new(() => ServiceProvider.GetRequiredService<IMarriageService>());
@@ -280,7 +284,7 @@ namespace Application.Core.Channel
             if (IsRunning)
                 return;
 
-            foreach (var item in ServiceProvider.GetServices<WZDataBootstrap>())
+            foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
                 _ = Task.Run(() =>
                 {

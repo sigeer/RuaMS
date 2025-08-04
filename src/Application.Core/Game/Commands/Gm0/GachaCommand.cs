@@ -1,20 +1,23 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.EF.Entities.Gachapons;
-using Application.Core.Game.Gachapon;
+using Application.Core.Models;
 using Application.Core.scripting.npc;
 
 namespace Application.Core.Game.Commands.Gm0;
 
 public class GachaCommand : CommandBase
 {
-    public GachaCommand() : base(0, "gacha")
+    readonly GachaponManager _gachaponManager;
+    public GachaCommand(GachaponManager gachaponManager) : base(0, "gacha")
     {
         Description = "Show gachapon rewards.";
+        _gachaponManager = gachaponManager;
     }
 
     public override void Execute(IChannelClient c, string[] paramValues)
     {
-        GachaponPool? gacha = null;
+        GachaponDataObject? gacha = null;
         string search = c.OnlinedCharacter.getLastCommandMessage();
         string gachaName = "";
         string[] names = { "Henesys", "Ellinia", "Perion", "Kerning City", "Sleepywood", "Mushroom Shrine", "Showa Spa Male", "Showa Spa Female", "New Leaf City", "Nautilus Harbor" };
@@ -35,7 +38,7 @@ public class GachaCommand : CommandBase
             if (search.Equals(names[i], StringComparison.OrdinalIgnoreCase))
             {
                 gachaName = names[i];
-                gacha = GachaponStorage.Instance.GetByNpcId(ids[i]);
+                gacha = _gachaponManager.GetByNpcId(ids[i]);
                 break;
             }
         }
@@ -50,9 +53,9 @@ public class GachaCommand : CommandBase
             return;
         }
         string talkStr = "The #b" + gachaName + "#k Gachapon contains the following items.\r\n\r\n";
-        foreach (var chance in GachaponStorage.Instance.GetPoolLevelList(gacha.Id))
+        foreach (var chance in _gachaponManager.GetPoolLevelList(gacha.Id))
         {
-            foreach (var item in GachaponStorage.Instance.GetItems(gacha.Id, chance.Level))
+            foreach (var item in _gachaponManager.GetItems(gacha.Id, chance.Level))
             {
                 talkStr += "-" + ItemInformationProvider.getInstance().getName(item.ItemId) + "\r\n";
             }

@@ -28,6 +28,9 @@
 		<Protobuf Include="Dto\Report.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
+		<Protobuf Include="Item\Gachapon.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Item\ItemStorage.proto" GrpcServices="None" />
 		<Protobuf Include="Item\PlayerShopItem.proto">
 		  <GrpcServices>None</GrpcServices>

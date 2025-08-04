@@ -19,9 +19,9 @@ public partial class DBContext : DbContext
     }
 
     #region Entities
-    public DbSet<GachaponPoolLevelChance> GachaponPoolLevelChances { get; set; }
-    public DbSet<GachaponPool> GachaponPools { get; set; }
-    public DbSet<GachaponPoolItem> GachaponPoolItems { get; set; }
+    public DbSet<GachaponPoolLevelChanceEntity> GachaponPoolLevelChances { get; set; }
+    public DbSet<GachaponPoolEntity> GachaponPools { get; set; }
+    public DbSet<GachaponPoolItemEntity> GachaponPoolItems { get; set; }
     public virtual DbSet<ExpLogRecord> ExpLogRecords { get; set; }
     public virtual DbSet<AccountEntity> Accounts { get; set; }
     public virtual DbSet<AccountBindingsEntity> AccountBindings { get; set; }
@@ -2095,21 +2095,21 @@ public partial class DBContext : DbContext
                 .HasColumnName("charid");
         });
 
-        modelBuilder.Entity<GachaponPool>(entity =>
+        modelBuilder.Entity<GachaponPoolEntity>(entity =>
         {
             entity.ToTable("gachapon_pool");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
             entity.Property(e => e.Name).HasColumnType("varchar(50)").IsRequired().HasDefaultValueSql("''");
         });
 
-        modelBuilder.Entity<GachaponPoolItem>(entity =>
+        modelBuilder.Entity<GachaponPoolItemEntity>(entity =>
         {
             entity.ToTable("gachapon_pool_item");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
         });
 
 
-        modelBuilder.Entity<GachaponPoolLevelChance>(entity =>
+        modelBuilder.Entity<GachaponPoolLevelChanceEntity>(entity =>
         {
             entity.ToTable("gachapon_pool_level_chance");
             entity.HasKey(e => e.Id).HasName("PRIMARY");

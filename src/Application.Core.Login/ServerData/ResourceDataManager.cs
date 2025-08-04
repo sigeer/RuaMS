@@ -6,6 +6,7 @@ using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using BaseProto;
+using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;

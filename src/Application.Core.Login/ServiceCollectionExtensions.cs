@@ -95,6 +95,7 @@ namespace Application.Core.Login
             services.AddSingleton<SystemManager>();
             services.AddSingleton<AccountHistoryManager>();
             services.AddSingleton<AccountBanManager>();
+            services.AddSingleton<GachaponManager>();
             return services;
         }
 

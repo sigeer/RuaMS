@@ -52,6 +52,7 @@ namespace Application.Core.Login.Datas
                 await _masterServer.RingManager.Initialize(dbContext);
                 await _masterServer.AccountHistoryManager.Initialize(dbContext);
                 await _masterServer.AccountBanManager.Initialize(dbContext);
+                await _masterServer.GachaponManager.InitializeAsync(dbContext);
 
                 foreach (var module in _masterServer.Modules)
                 {

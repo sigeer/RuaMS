@@ -1,6 +1,6 @@
-﻿namespace Application.Core.EF.Entities.Gachapons
+namespace Application.Core.EF.Entities.Gachapons
 {
-    public class GachaponPoolLevelChance
+    public class GachaponPoolLevelChanceEntity
     {
         public int Id { get; set; }
         public int PoolId { get; set; }

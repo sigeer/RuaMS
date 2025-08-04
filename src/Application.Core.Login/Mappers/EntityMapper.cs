@@ -1,8 +1,10 @@
 using Application.Core.EF.Entities;
+using Application.Core.EF.Entities.Gachapons;
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.Accounts;
+using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Models.Guilds;
 using Application.Core.Login.Models.Items;
 using Application.EF;
@@ -124,6 +126,10 @@ namespace Application.Core.Login.Mappers
             CreateMap<AccountBindingsEntity, AccountHistoryModel>();
             CreateMap<AccountBanEntity, AccountBanModel>()
                 .ForMember(dest => dest.BanLevel, src => src.MapFrom(x => (BanLevel)x.BanLevel));
+
+            CreateMap<GachaponPoolEntity, GachaponPoolModel>();
+            CreateMap<GachaponPoolLevelChanceEntity, GachaponPoolLevelChanceModel>();
+            CreateMap<GachaponPoolItemEntity, GachaponPoolItemModel>();
 
         }
     }
