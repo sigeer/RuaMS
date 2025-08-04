@@ -96,6 +96,17 @@ namespace Application.Core.Login
             services.AddSingleton<AccountHistoryManager>();
             services.AddSingleton<AccountBanManager>();
             services.AddSingleton<GachaponManager>();
+            services.AddSingleton<ServerManager>();
+            services.AddSingleton<CouponManager>();
+            services.AddSingleton<GuildManager>();
+            services.AddSingleton<TeamManager>();
+            services.AddSingleton<AccountManager>();
+            services.AddSingleton<CharacterManager>();
+            services.AddSingleton<BuffManager>();
+            services.AddSingleton<ChatRoomManager>();
+            services.AddSingleton<CashShopDataManager>();
+            services.AddSingleton<InvitationManager>();
+            services.AddSingleton<ItemTransactionManager>();
             return services;
         }
 

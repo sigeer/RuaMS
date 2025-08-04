@@ -78,21 +78,30 @@ namespace Application.Core.Login
         #endregion
 
         #region Managers
-        public CouponManager CouponManager { get; }
-        public AccountManager AccountManager { get; }
-        public CharacterManager CharacterManager { get; }
-        public ServerManager ServerManager { get; }
-        public BuffManager BuffManager { get; }
-        public CashShopDataManager CashShopDataManager { get; }
-        public TeamManager TeamManager { get; }
-        public GuildManager GuildManager { get; }
+        readonly Lazy<CouponManager> _couponManager;
+        public CouponManager CouponManager => _couponManager.Value;
+        readonly Lazy<AccountManager> _accountManager;
+        public AccountManager AccountManager => _accountManager.Value;
+        readonly Lazy<CharacterManager> _characterManager;
+        public CharacterManager CharacterManager => _characterManager.Value;
+        readonly Lazy<ServerManager> _serverManager;
+        public ServerManager ServerManager => _serverManager.Value;
+        readonly Lazy<BuffManager> _buffManager;
+        public BuffManager BuffManager => _buffManager.Value;
+        readonly Lazy<CashShopDataManager> _cashShopDataManager;
+        public CashShopDataManager CashShopDataManager => _cashShopDataManager.Value;
+        readonly Lazy<TeamManager> _teamManager;
+        public TeamManager TeamManager => _teamManager.Value;
+        readonly Lazy<GuildManager> _guildManager;
+        public GuildManager GuildManager => _guildManager.Value;
         readonly Lazy<InventoryManager> _inventoryManager;
         public InventoryManager InventoryManager => _inventoryManager.Value;
         readonly Lazy<RingManager> _ringManager;
         public RingManager RingManager => _ringManager.Value;
         readonly Lazy<GiftManager> _giftManager;
         public GiftManager GiftManager => _giftManager.Value;
-        public ItemTransactionManager ItemTransactionManager { get; }
+        readonly Lazy<ItemTransactionManager> _itemTransactionManager;
+        public ItemTransactionManager ItemTransactionManager => _itemTransactionManager.Value;
         readonly Lazy<ResourceDataManager> _lazyResourceDataManager;
         public ResourceDataManager ResourceDataManager => _lazyResourceDataManager.Value;
         readonly Lazy<NewYearCardManager> _lazyNewYearCardManager;
@@ -112,17 +121,21 @@ namespace Application.Core.Login
         public CrossServerService CrossServerService => _crossServerService.Value;
         readonly Lazy<GachaponManager> _gachaponManager;
         public GachaponManager GachaponManager => _gachaponManager.Value;
+
+        readonly Lazy<DataStorage> _dataStorage;
+        public DataStorage DataStorage => _dataStorage.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
         public NoteManager NoteManager => _noteService.Value;
         public IServiceProvider ServiceProvider { get; }
+        readonly Lazy<ChatRoomManager> _chatRoomManager;
+        public ChatRoomManager ChatRoomManager => _chatRoomManager.Value;
 
-        public ChatRoomManager ChatRoomManager { get; }
+        readonly Lazy<InvitationManager> _invitationManager;
+        public InvitationManager InvitationManager => _invitationManager.Value;
+
         public List<MasterModule> Modules { get; private set; }
-        public InvitationManager InvitationManager { get; }
-
-
         CharacterService _characterSevice;
         public ITimerManager TimerManager { get; private set; } = null!;
         public MasterServer(IServiceProvider sp, CharacterService characterManager)
@@ -156,19 +169,18 @@ namespace Application.Core.Login
             ServerMessage = serverSection.GetValue<string>("ServerMessage", "");
             WhyAmIRecommended = serverSection.GetValue<string>("WhyAmIRecommended", "");
 
+            _invitationManager = new(() => ServiceProvider.GetRequiredService<InvitationManager>());
 
-            InvitationManager = ActivatorUtilities.CreateInstance<InvitationManager>(ServiceProvider, this);
-
-            ServerManager = ActivatorUtilities.CreateInstance<ServerManager>(ServiceProvider, this);
-            CouponManager = ActivatorUtilities.CreateInstance<CouponManager>(ServiceProvider, this);
-            CharacterManager = ActivatorUtilities.CreateInstance<CharacterManager>(ServiceProvider, this);
-            AccountManager = ActivatorUtilities.CreateInstance<AccountManager>(ServiceProvider, this);
-            BuffManager = ActivatorUtilities.CreateInstance<BuffManager>(ServiceProvider, this);
-            CashShopDataManager = ActivatorUtilities.CreateInstance<CashShopDataManager>(ServiceProvider, this);
-            TeamManager = ActivatorUtilities.CreateInstance<TeamManager>(ServiceProvider, this);
-            GuildManager = ActivatorUtilities.CreateInstance<GuildManager>(ServiceProvider, this);
-            ChatRoomManager = ActivatorUtilities.CreateInstance<ChatRoomManager>(ServiceProvider, this);
-            ItemTransactionManager = ActivatorUtilities.CreateInstance<ItemTransactionManager>(ServiceProvider, this);
+            _serverManager = new(() => ServiceProvider.GetRequiredService<ServerManager>());
+            _couponManager = new(() => ServiceProvider.GetRequiredService<CouponManager>());
+            _characterManager = new(() => ServiceProvider.GetRequiredService<CharacterManager>());
+            _accountManager = new(() => ServiceProvider.GetRequiredService<AccountManager>());
+            _buffManager = new(() => ServiceProvider.GetRequiredService<BuffManager>());
+            _cashShopDataManager = new(() => ServiceProvider.GetRequiredService<CashShopDataManager>());
+            _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
+            _guildManager = new(() => ServiceProvider.GetRequiredService<GuildManager>());
+            _chatRoomManager = new(() => ServiceProvider.GetRequiredService<ChatRoomManager>());
+            _itemTransactionManager = new(() => ServiceProvider.GetRequiredService<ItemTransactionManager>());
             _itemFactoryManager = new(() => ServiceProvider.GetRequiredService<ItemFactoryManager>());
             _inventoryManager = new(() => ServiceProvider.GetRequiredService<InventoryManager>());
             _giftManager = new(() => ServiceProvider.GetRequiredService<GiftManager>());
@@ -182,6 +194,7 @@ namespace Application.Core.Login
             _accountBanManager = new(() => ServiceProvider.GetRequiredService<AccountBanManager>());
             _crossServerService = new(() => ServiceProvider.GetRequiredService<CrossServerService>());
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
+            _dataStorage = new(() => ServiceProvider.GetRequiredService<DataStorage>());
         }
 
         bool isShuttingdown = false;

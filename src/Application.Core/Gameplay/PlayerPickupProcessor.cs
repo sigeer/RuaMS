@@ -185,7 +185,7 @@ namespace Application.Core.Gameplay
             {
                 // Add NX to account, show effect and make item disappear
                 int nxGain = mapItem.getItemId() == ItemId.NX_CARD_100 ? 100 : 250;
-                _player.RewardNxCredit.addAndGet(nxGain);
+                // _player.RewardNxCredit.addAndGet(nxGain);
                 _player.getCashShop().gainCash(1, nxGain);
 
                 if (YamlConfig.config.server.USE_ANNOUNCE_NX_COUPON_LOOT)
