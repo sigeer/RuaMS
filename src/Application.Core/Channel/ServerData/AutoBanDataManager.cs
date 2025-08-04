@@ -107,7 +107,7 @@ namespace Application.Core.Channel.ServerData
             if (YamlConfig.config.server.USE_AUTOBAN_LOG)
             {
                 string chrName = chr != null ? CharacterManager.makeMapleReadable(chr.getName()) : "";
-                Log.Logger.Information("Autoban alert - chr {CharacterName} caused {AutoBanType}-{AutoBanReason}", chrName, type.name(), reason);
+                _logger.LogInformation("Autoban alert - chr {CharacterName} caused {AutoBanType}-{AutoBanReason}", chrName, type.name(), reason);
             }
         }
     }

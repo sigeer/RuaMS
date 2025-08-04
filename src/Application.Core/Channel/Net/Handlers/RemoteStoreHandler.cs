@@ -22,6 +22,8 @@
 
 
 
+using Application.Core.Channel.ServerData;
+using client.autoban;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -31,9 +33,25 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RemoteStoreHandler : ChannelHandlerBase
 {
+    readonly AutoBanDataManager _autoBan;
+
+    public RemoteStoreHandler(AutoBanDataManager autoBan)
+    {
+        _autoBan = autoBan;
+    }
+
     public override void HandlePacket(InPacket p, IChannelClient c)
     {
+        var unknown = p.available();
+
         var chr = c.OnlinedCharacter;
+
+        if (chr.getInventory(InventoryType.CASH).findById(ItemId.REMOTE_CONTROLLER) == null)
+        {
+            _autoBan.Alert(AutobanFactory.ITEM_VAC, chr, $"没有道具 {ItemId.REMOTE_CONTROLLER} 却尝试远程打开雇佣商店");
+            return;
+        }
+
         var hmChannel = c.CurrentServerContainer.Transport.FindPlayerShopChannel(chr.Id);
         if (hmChannel != null)
         {
@@ -50,7 +68,7 @@ public class RemoteStoreHandler : ChannelHandlerBase
         }
         else
         {
-            chr.dropMessage(1, "You don't have a Merchant open.");
+            chr.dropMessage(1, "你没有一个正在运营的雇佣商店.");
         }
         c.sendPacket(PacketCreator.enableActions());
     }

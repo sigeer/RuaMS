@@ -195,6 +195,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     {
                         if (!_service.CanHiredMerchant(chr))
                         {
+                            _autoBanManager.Autoban(AutobanFactory.ITEM_VAC, chr, "尝试绕过重复开店的检测");
                             return;
                         }
 

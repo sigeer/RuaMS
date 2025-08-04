@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public void Ban(IPlayer chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
+        public void Ban(IPlayer chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
             var res = _transport.Ban(new Dto.BanRequest
             {
