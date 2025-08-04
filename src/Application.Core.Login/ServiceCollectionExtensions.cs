@@ -82,20 +82,35 @@ namespace Application.Core.Login
         static IServiceCollection AddDataManager(this IServiceCollection services)
         {
             services.AddSingleton<NoteManager>();
+            services.AddSingleton<IStorage, NoteManager>(sp => sp.GetRequiredService<NoteManager>());
+
             services.AddSingleton<ResourceDataManager>();
+            services.AddSingleton<IStorage, ResourceDataManager>(sp => sp.GetRequiredService<ResourceDataManager>());
 
             services.AddSingleton<NewYearCardManager>();
+            services.AddSingleton<IStorage, NewYearCardManager>(sp => sp.GetRequiredService<NewYearCardManager>());
 
             services.AddSingleton<GiftManager>();
+            services.AddSingleton<IStorage, GiftManager>(sp => sp.GetRequiredService<GiftManager>());
+
             services.AddSingleton<RingManager>();
+            services.AddSingleton<IStorage, RingManager>(sp => sp.GetRequiredService<RingManager>());
+
             services.AddSingleton<PlayerShopManager>();
+            services.AddSingleton<IStorage, PlayerShopManager>(sp => sp.GetRequiredService<PlayerShopManager>());
+
+            services.AddSingleton<AccountHistoryManager>();
+            services.AddSingleton<IStorage, AccountHistoryManager>(sp => sp.GetRequiredService<AccountHistoryManager>());
+            services.AddSingleton<AccountBanManager>();
+            services.AddSingleton<IStorage, AccountBanManager>(sp => sp.GetRequiredService<AccountBanManager>());
+
+            services.AddSingleton<GachaponManager>();
+            services.AddSingleton<IStorage, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
 
             services.AddSingleton<InventoryManager>();
             services.AddSingleton<ItemFactoryManager>();
             services.AddSingleton<SystemManager>();
-            services.AddSingleton<AccountHistoryManager>();
-            services.AddSingleton<AccountBanManager>();
-            services.AddSingleton<GachaponManager>();
+
             services.AddSingleton<ServerManager>();
             services.AddSingleton<CouponManager>();
             services.AddSingleton<GuildManager>();

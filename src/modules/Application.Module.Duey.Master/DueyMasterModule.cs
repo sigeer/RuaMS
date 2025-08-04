@@ -19,12 +19,6 @@ namespace Application.Module.Duey.Master
             _dueyTask = dueyTask;
         }
 
-        public override async Task IntializeDatabaseAsync(DBContext dbContext)
-        {
-            await base.IntializeDatabaseAsync(dbContext);
-            await _manager.Initialize(dbContext);
-        }
-
         public override void RegisterTask(ITimerManager timerManager)
         {
             base.RegisterTask(timerManager);

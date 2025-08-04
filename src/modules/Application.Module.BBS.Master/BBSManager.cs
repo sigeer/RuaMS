@@ -31,7 +31,7 @@ namespace Application.Module.BBS.Master
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _threadId = (await dbContext.BbsThreads.MaxAsync(x => (int?)x.Threadid)) ?? 0;
         }

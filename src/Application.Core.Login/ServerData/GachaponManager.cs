@@ -1,4 +1,5 @@
 using Application.Core.Login.Models.Gachpons;
+using Application.Core.Login.Shared;
 using Application.EF;
 using AutoMapper;
 using ItemProto;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
 {
-    public class GachaponManager
+    public class GachaponManager: IStorage
     {
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly ILogger<GachaponManager> _logger;
@@ -39,6 +40,11 @@ namespace Application.Core.Login.ServerData
             res.Items.AddRange(_mapper.Map<ItemProto.GachaponPoolItemDto[]>(_item));
             res.Chances.AddRange(_mapper.Map<ItemProto.GachaponPoolChanceDto[]>(_itemChance));
             return res;
+        }
+
+        public Task Commit(DBContext dbContext)
+        {
+            return Task.CompletedTask;
         }
     }
 }

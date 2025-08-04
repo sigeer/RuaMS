@@ -17,7 +17,6 @@ namespace Application.Core.Login.Services
         readonly MasterServer _server;
 
         protected readonly ILogger<StorageService> _logger;
-        readonly IEnumerable<MasterModule> _modules;
         public StorageService(DataStorage chrStorage, ILogger<StorageService> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
         {
             _dataStorage = chrStorage;

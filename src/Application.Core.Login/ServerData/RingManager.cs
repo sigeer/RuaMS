@@ -29,7 +29,7 @@ namespace Application.Core.Login.ServerData
             _mapper = mapper;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _localId = await dbContext.Rings.MaxAsync(x => (int?)x.Id) ?? 0;
         }

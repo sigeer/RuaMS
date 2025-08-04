@@ -1,4 +1,5 @@
 using Application.Core.Login.Events;
+using Application.Core.Login.Shared;
 using Application.Module.Marriage.Master.Models;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +13,8 @@ namespace Application.Module.Marriage.Master
         {
             services.AddAutoMapper(typeof(Mapper));
             services.AddSingleton<MarriageManager>();
+            services.AddSingleton<IStorage, MarriageManager>(sp => sp.GetRequiredService<MarriageManager>());
+
             services.AddSingleton<WeddingManager>();
             services.AddSingleton<MasterTransport>();
             services.AddSingleton<MasterModule, MarriageMasterModule>();

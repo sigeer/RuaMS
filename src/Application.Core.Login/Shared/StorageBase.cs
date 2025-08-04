@@ -10,6 +10,8 @@ namespace Application.Core.Login.Shared
     {
         protected ConcurrentDictionary<TKey, StoreUnit<TModel>> _localData = new();
 
+        public abstract Task InitializeAsync(DBContext dbContext);
+
         protected abstract Task CommitInternal(DBContext dbContext, Dictionary<TKey, StoreUnit<TModel>> updateData);
 
         protected virtual bool SetDirty(TKey key, StoreUnit<TModel> model)

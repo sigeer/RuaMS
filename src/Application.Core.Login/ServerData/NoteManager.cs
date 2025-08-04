@@ -4,12 +4,11 @@ using Application.EF;
 using Application.Utility;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using client.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
-namespace Application.Core.Login.Services;
+namespace Application.Core.Login.ServerData;
 
 
 public class NoteManager : StorageBase<int, NoteModel>
@@ -28,7 +27,7 @@ public class NoteManager : StorageBase<int, NoteModel>
         _server = masterServer;
     }
 
-    public async Task InitializeAsync(DBContext dbContext)
+    public override async Task InitializeAsync(DBContext dbContext)
     {
         _localId = await dbContext.Notes.MaxAsync(x => (int?)x.Id) ?? 0;
     }

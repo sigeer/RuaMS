@@ -21,11 +21,6 @@ namespace Application.Core.Login.Services
 
         ConcurrentDictionary<int, AccountLoginStatus> _accLoginUpdate = new();
 
-
-        ConcurrentDictionary<int, ItemModel[]> _merchantUpdate = new();
-
-        ConcurrentDictionary<int, ItemModel[]> _marriageUpdate = new();
-
         readonly IMapper _mapper;
         readonly ILogger<DataStorage> _logger;
         readonly MasterServer _server;

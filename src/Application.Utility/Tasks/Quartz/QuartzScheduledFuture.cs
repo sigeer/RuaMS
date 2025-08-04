@@ -16,6 +16,9 @@ namespace Application.Utility.Tasks
         public string JobId { get; set; }
         public async Task<bool> CancelAsync(bool immediately)
         {
+            if (!_timeManager.TaskScheduler.ContainsKey(JobId))
+                return true;
+
             var jobKey = JobKey.Create(JobId);
             if (immediately)
                 await _timeManager.Scheduler.Interrupt(jobKey);
