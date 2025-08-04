@@ -69,16 +69,8 @@ public class HiredMerchantRequest : ChannelHandlerBase
 
         if (GameConstants.isFreeMarketRoom(chr.getMapId()))
         {
-            var status = _service.CanHiredMerchant(chr);
-            if (status == PlayerHiredMerchantStatus.Unavailable_Opening)
+            if (!_service.CanHiredMerchant(chr))
             {
-                chr.dropMessage(1, "You already have a store open.");
-                return;
-            }
-
-            if (status == PlayerHiredMerchantStatus.Unavailable_NeedRetrieve)
-            {
-                chr.sendPacket(PacketCreator.retrieveFirstMessage());
                 return;
             }
 
