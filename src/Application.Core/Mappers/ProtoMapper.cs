@@ -287,6 +287,10 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.MapName, src => src.MapFrom(x => MapFactory.loadPlaceName(x.MapId)));
             CreateMap<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
             CreateMap<ItemProto.OwlSearchResponse, OwlSearchResult>();
+
+            CreateMap<ItemProto.GachaponPoolDto, GachaponDataObject>();
+            CreateMap<ItemProto.GachaponPoolChanceDto, GachaponPoolLevelChanceDataObject>();
+            CreateMap<ItemProto.GachaponPoolItemDto, GachaponPoolItemDataObject>();
         }
 
         private int[] TranslateArray(string str)

@@ -36,13 +36,13 @@ namespace Application.Core.Channel.DataProviders;
 /**
  * Only used in 1 script that gives players information about where skillbooks can be found
  */
-public class SkillbookInformationProvider : WZDataBootstrap
+public class SkillbookInformationProvider : DataBootstrap
 {
     private volatile Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     readonly IChannelServerTransport _transport;
 
-    public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<WZDataBootstrap> logger) : base(logger)
+    public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<DataBootstrap> logger) : base(logger)
     {
         Name = "能手册";
         _transport = transport;

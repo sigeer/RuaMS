@@ -65,22 +65,25 @@ namespace Application.Core.Channel
         {
             // 可能同一机器创建多个频道，wz资源读取使用单例
             services.AddSingleton<SkillbookInformationProvider>();
-            services.AddSingleton<WZDataBootstrap, SkillbookInformationProvider>(sp => sp.GetRequiredService<SkillbookInformationProvider>());
+            services.AddSingleton<DataBootstrap, SkillbookInformationProvider>(sp => sp.GetRequiredService<SkillbookInformationProvider>());
 
             services.AddSingleton<CashItemProvider>();
-            services.AddSingleton<WZDataBootstrap, CashItemProvider>(sp => sp.GetRequiredService<CashItemProvider>());
+            services.AddSingleton<DataBootstrap, CashItemProvider>(sp => sp.GetRequiredService<CashItemProvider>());
 
             services.AddSingleton<MonsterInformationProvider>();
             services.AddSingleton<IStaticService, MonsterInformationProvider>(sp => sp.GetRequiredService<MonsterInformationProvider>());
-            services.AddSingleton<WZDataBootstrap, MonsterInformationProvider>(sp => sp.GetRequiredService<MonsterInformationProvider>());
+            services.AddSingleton<DataBootstrap, MonsterInformationProvider>(sp => sp.GetRequiredService<MonsterInformationProvider>());
 
             services.AddSingleton<ItemInformationProvider>();
             services.AddSingleton<IStaticService, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
-            services.AddSingleton<WZDataBootstrap, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
+            services.AddSingleton<DataBootstrap, ItemInformationProvider>(sp => sp.GetRequiredService<ItemInformationProvider>());
 
             services.AddSingleton<ShopManager>();
             services.AddSingleton<MonitorManager>();
             services.AddSingleton<AutoBanDataManager>();
+
+            services.AddSingleton<DataBootstrap, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
+            services.AddSingleton<GachaponManager>();
 
             services.AddSingleton<ItemService>();
             services.AddSingleton<RankService>();

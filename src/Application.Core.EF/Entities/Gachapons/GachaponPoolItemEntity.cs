@@ -1,9 +1,9 @@
-﻿namespace Application.Core.EF.Entities.Gachapons
+namespace Application.Core.EF.Entities.Gachapons
 {
-    public class GachaponPoolItem
+    public class GachaponPoolItemEntity
     {
-        private GachaponPoolItem() { }
-        public GachaponPoolItem(int poolId, int level, int itemId)
+        private GachaponPoolItemEntity() { }
+        public GachaponPoolItemEntity(int poolId, int level, int itemId)
         {
             PoolId = poolId;
             Level = level;

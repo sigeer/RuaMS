@@ -189,5 +189,6 @@ namespace Application.Core.ServerTransports
         DisconnectPlayerByNameResponse DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
         void DisconnectAll(DisconnectAllRequest disconnectAllRequest);
         GetAllClientInfo GetOnliendClientInfo();
+        ItemProto.GacheponDataDto GetGachaponData();
     }
 }

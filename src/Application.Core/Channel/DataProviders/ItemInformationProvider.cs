@@ -40,7 +40,7 @@ namespace Application.Core.Channel.DataProviders;
 /**
  * @author Matze
  */
-public class ItemInformationProvider : WZDataBootstrap, IStaticService
+public class ItemInformationProvider : DataBootstrap, IStaticService
 {
     private static ItemInformationProvider? _instance;
 
@@ -52,7 +52,7 @@ public class ItemInformationProvider : WZDataBootstrap, IStaticService
     readonly IChannelServerTransport _transport;
     readonly IMemoryCache _cache;
     readonly AutoBanDataManager _autoBanDataManager;
-    public ItemInformationProvider(IChannelServerTransport transport, IMemoryCache cache, ILogger<WZDataBootstrap> logger, AutoBanDataManager autoBanDataManager) : base(logger)
+    public ItemInformationProvider(IChannelServerTransport transport, IMemoryCache cache, ILogger<DataBootstrap> logger, AutoBanDataManager autoBanDataManager) : base(logger)
     {
         Name = "物品数据";
 

@@ -6,7 +6,7 @@ using ZLinq;
 
 namespace Application.Core.Channel.DataProviders
 {
-    public class CashItemProvider : WZDataBootstrap
+    public class CashItemProvider : DataBootstrap
     {
         volatile Dictionary<int, CashItem> items = new();
         volatile Dictionary<int, List<int>> packages = new();
@@ -14,7 +14,7 @@ namespace Application.Core.Channel.DataProviders
 
         readonly Lazy<ItemService> _lazyItemService;
 
-        public CashItemProvider(IServiceProvider sp, ILogger<WZDataBootstrap> logger) : base(logger)
+        public CashItemProvider(IServiceProvider sp, ILogger<DataBootstrap> logger) : base(logger)
         {
             Name = "现金道具";
             _lazyItemService = new Lazy<ItemService>(() => sp.GetRequiredService<ItemService>());

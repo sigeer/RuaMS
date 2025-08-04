@@ -110,6 +110,8 @@ namespace Application.Core.Login
 
         readonly Lazy<CrossServerService> _crossServerService;
         public CrossServerService CrossServerService => _crossServerService.Value;
+        readonly Lazy<GachaponManager> _gachaponManager;
+        public GachaponManager GachaponManager => _gachaponManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -179,6 +181,7 @@ namespace Application.Core.Login
             _accountHistoryManager = new(() => ServiceProvider.GetRequiredService<AccountHistoryManager>());
             _accountBanManager = new(() => ServiceProvider.GetRequiredService<AccountBanManager>());
             _crossServerService = new(() => ServiceProvider.GetRequiredService<CrossServerService>());
+            _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
         }
 
         bool isShuttingdown = false;

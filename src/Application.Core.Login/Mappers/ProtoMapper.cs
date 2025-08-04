@@ -1,5 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.ChatRoom;
+using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Models.Items;
 using Application.Shared.Items;
 using Application.Shared.NewYear;
@@ -118,6 +119,10 @@ namespace Application.Core.Login.Mappers
 
             CreateMap<CallbackModel, Dto.RemoteCallDto>();
             CreateMap<CallbackParamModel, Dto.RemoteCallParamDto>();
+
+            CreateMap<GachaponPoolModel, ItemProto.GachaponPoolDto>();
+            CreateMap<GachaponPoolLevelChanceModel, ItemProto.GachaponPoolChanceDto>();
+            CreateMap<GachaponPoolItemModel, ItemProto.GachaponPoolItemDto>();
         }
     }
 }

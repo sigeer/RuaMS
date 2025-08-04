@@ -33,11 +33,11 @@ using System.Collections.Concurrent;
 namespace Application.Core.Channel.DataProviders;
 
 
-public class MonsterInformationProvider : WZDataBootstrap, IStaticService
+public class MonsterInformationProvider : DataBootstrap, IStaticService
 {
     readonly IChannelServerTransport _transport;
     readonly IMapper _mapper;
-    public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<WZDataBootstrap> logger) : base(logger)
+    public MonsterInformationProvider(IChannelServerTransport transport, IMapper mapper, ILogger<DataBootstrap> logger) : base(logger)
     {
         Name = "怪物数据";
         _transport = transport;
