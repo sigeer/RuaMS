@@ -47,7 +47,12 @@ public class GiveFameHandler : ChannelHandlerBase
         int mode = p.readByte();
         int famechange = 2 * mode - 1;
         var player = c.OnlinedCharacter;
-        if (target == null || target.getId() == player.getId() || player.getLevel() < 15)
+        if (player.Level < 15)
+        {
+            player.sendPacket(PacketCreator.giveFameErrorResponse(2));
+            return;
+        }
+        if (target == null || target.getId() == player.getId())
         {
             return;
         }
