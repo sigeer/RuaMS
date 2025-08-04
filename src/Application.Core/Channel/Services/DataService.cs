@@ -228,8 +228,7 @@ namespace Application.Core.Channel.Services
             player.KeyMap.LoadData(o.KeyMaps);
             player.SavedLocations.LoadData(o.SavedLocations);
 
-            player.LastFameTime = o.FameRecord.LastUpdateTime;
-            player.LastFameCIds = o.FameRecord.ChararacterIds.ToList();
+            player.FameLogs = _mapper.Map<List<FameLogObject>>(o.FameLogs);
 
             foreach (var card in o.NewYearCards)
             {
@@ -340,6 +339,7 @@ namespace Application.Core.Channel.Services
                 Channel = player.ActualChannel,
                 Character = playerDto
             };
+            data.FameLogs.AddRange(_mapper.Map<Dto.FameLogRecordDto[]>(player.FameLogs));
             data.Areas.AddRange(player.AreaInfo.Select(x => new Dto.AreaDto() { Area = x.Key, Info = x.Value }));
             data.MonsterBooks.AddRange(player.Monsterbook.ToDto());
             data.SavedLocations.AddRange(player.SavedLocations.ToDto());
@@ -627,7 +627,7 @@ namespace Application.Core.Channel.Services
                             map.addMapObject(npc);
                             map.broadcastMessage(PacketCreator.spawnNPC(npc));
 
-                        }   
+                        }
                     }
                     else if (data.Data.Type == LifeType.Monster)
                     {
@@ -643,7 +643,7 @@ namespace Application.Core.Channel.Services
                             map.addMonsterSpawn(mob, data.Data.Mobtime, data.Data.Team);
                             map.addAllMonsterSpawn(mob, data.Data.Mobtime, data.Data.Team);
 
-                 
+
                         }
                     }
                 }

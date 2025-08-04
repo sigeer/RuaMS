@@ -32,6 +32,7 @@ namespace Application.Core.Login.Mappers
             CreateMap<CharacterModel, Dto.CharacterDto>()
                 .ReverseMap();
 
+            CreateMap<FameLogModel, Dto.FameLogRecordDto>().ReverseMap();
             CreateMap<PetIgnoreModel, Dto.PetIgnoreDto>().ReverseMap();
 
             CreateMap<EquipModel, Dto.EquipDto>()

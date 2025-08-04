@@ -20,6 +20,7 @@ import "Dto/QuickSlot.proto";
 import "Dto/Storage.proto";
 import "Dto/Buddy.proto";
 import "Dto/AccountGame.proto";
+import "Dto/Fame.proto";
 
 package Dto;
 
@@ -43,4 +44,5 @@ message PlayerSaveDto {
   StorageDto storageInfo = 17; // CHECK TYPE
   repeated BuddyDto buddyList = 18; // CHECK TYPE
   repeated int32 wishItems = 19;
+  repeated FameLogRecordDto fameLogs = 20;
 }

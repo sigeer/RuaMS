@@ -22,16 +22,12 @@ import "Dto/AccountGame.proto";
 import "Dto/NewYearCard.proto";
 import "Item/ItemTransaction.proto";
 import "Dto/ServerCrossCallback.proto";
+import "Dto/Fame.proto";
 
 package Dto;
 
 message LoginInfo {
 	bool isNewCommer = 1;
-}
-
-message RecentFameRecordDto {
-  repeated int32 chararacterIds = 1;
-  int64 lastUpdateTime = 2;
 }
 
 message CharacterLinkDto {
@@ -58,7 +54,7 @@ message PlayerGetterDto {
   repeated BuddyDto buddyList = 16; // CHECK TYPE
   LoginInfo loginInfo = 17;
   CharacterLinkDto link = 18;
-  RecentFameRecordDto fameRecord = 19;
+  repeated FameLogRecordDto fameLogs = 19;
   repeated int32 wishItems = 20;
   repeated NewYearCardDto newYearCards = 21;
   repeated ItemProto.ItemTransaction pendingTransactions = 22;

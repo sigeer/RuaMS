@@ -37,7 +37,7 @@ namespace Application.Module.Duey.Master
             _transport = transport;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _currentId = await dbContext.Dueypackages.MaxAsync(x => (int?)x.PackageId) ?? 0;
         }

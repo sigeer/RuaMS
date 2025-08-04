@@ -32,7 +32,7 @@ namespace Application.Core.Login.ServerData
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _localPLifeId = await dbContext.Plives.MaxAsync(x => (int?)x.Id) ?? 0;
         }

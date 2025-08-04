@@ -1,5 +1,4 @@
 using Application.Core.Login.Models;
-using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
@@ -30,7 +29,7 @@ namespace Application.Core.Login.ServerData
             _noteService = noteService;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _localId = await dbContext.Gifts.MaxAsync(x => (int?)x.Id) ?? 0;
         }

@@ -167,7 +167,7 @@ public class CharacterEntity
 
     public long Jailexpire { get; set; }
 
-    public virtual ICollection<Famelog> Famelogs { get; set; } = new List<Famelog>();
+    public virtual ICollection<FamelogEntity> Famelogs { get; set; } = new List<FamelogEntity>();
 
     public virtual FamilyCharacter? FamilyCharacter { get; set; }
 

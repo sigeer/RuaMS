@@ -33,6 +33,7 @@ namespace Application.Core.Login.Models
         public SavedLocationModel[] SavedLocations { get; set; }
         public BuddyModel[] BuddyList { get; set; }
         public NewYearCardModel[] NewYearCards { get; set; }
+        public FameLogModel[] FameLogs { get; set; }
 
     }
 

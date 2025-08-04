@@ -14,11 +14,6 @@ namespace Application.Module.Marriage.Master
             _marriageManager = marriageManager;
         }
 
-        public override async Task IntializeDatabaseAsync(DBContext dbContext)
-        {
-            await _marriageManager.InitializeAsync(dbContext);
-        }
-
         public override async Task SaveChangesAsync(DBContext dbContext)
         {
             await _marriageManager.Commit(dbContext);

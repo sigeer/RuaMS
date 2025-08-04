@@ -13,12 +13,6 @@ namespace Application.Module.PlayerNPC.Master
             _manager = manager;
         }
 
-        public override async Task IntializeDatabaseAsync(DBContext dbContext)
-        {
-            await base.IntializeDatabaseAsync(dbContext);
-            await _manager.Initialize(dbContext);
-        }
-
         public override async Task SaveChangesAsync(DBContext dbContext)
         {
             await base.SaveChangesAsync(dbContext);

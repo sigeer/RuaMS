@@ -29,7 +29,7 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _localId = await dbContext.AccountBindings.MaxAsync(x => (int?)x.Id) ?? 0;
         }
@@ -99,7 +99,7 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _localId = await dbContext.AccountBans.MaxAsync(x => (int?)x.Id) ?? 0;
 

@@ -1,11 +1,10 @@
 using Application.Core.Login.Services;
-using Application.Core.model;
+using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Serilog;
 using System.Diagnostics;
 
 namespace Application.Core.Login.Datas
@@ -45,14 +44,12 @@ namespace Application.Core.Login.Datas
                 await _masterServer.CouponManager.Initialize(dbContext);
                 await _masterServer.GuildManager.Initialize(dbContext);
 
-                await _masterServer.NewYearCardManager.Initialize(dbContext);
                 await _masterServer.AccountManager.SetupAccountPlayerCache(dbContext);
-                await _masterServer.NoteManager.InitializeAsync(dbContext);
-                await _masterServer.GiftManager.Initialize(dbContext);
-                await _masterServer.RingManager.Initialize(dbContext);
-                await _masterServer.AccountHistoryManager.Initialize(dbContext);
-                await _masterServer.AccountBanManager.Initialize(dbContext);
-                await _masterServer.GachaponManager.InitializeAsync(dbContext);
+
+                foreach (var item in _masterServer.ServiceProvider.GetServices<IStorage>())
+                {
+                    await item.InitializeAsync(dbContext);
+                }
 
                 foreach (var module in _masterServer.Modules)
                 {

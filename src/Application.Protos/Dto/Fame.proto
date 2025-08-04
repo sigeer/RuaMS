@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package Dto;
+
+message FameLogRecordDto {
+	int32 toId = 1;
+	int64 time = 2;
+}

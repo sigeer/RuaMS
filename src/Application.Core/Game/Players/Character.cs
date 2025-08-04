@@ -112,10 +112,6 @@ public partial class Player
     private bool equippedMesoMagnet = false, equippedItemPouch = false, equippedPetItemIgnore = false;
     private bool usedSafetyCharm = false;
     private float autopotHpAlert, autopotMpAlert;
-
-    public long LastFameTime { get; set; }
-    public List<int> LastFameCIds { get; set; }
-
     public CharacterLink? Link { get; set; }
 
     private string? chalktext = null;
@@ -169,7 +165,7 @@ public partial class Player
     private Trade? trade = null;
     public MonsterBook Monsterbook { get; set; }
     public CashShop CashShopModel { get; set; }
-    public AtomicInteger RewardNxCredit { get; set; }
+    public AtomicInteger RewardNxCredit { get; set; } = new AtomicInteger();
     public PlayerSavedLocation SavedLocations { get; set; }
 
     private List<WeakReference<IMap>> lastVisitedMaps = new();
@@ -652,18 +648,17 @@ public partial class Player
         {
             return FameStatus.OK;
         }
-        else if (LastFameTime >= DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeMilliseconds())
-        {
-            return FameStatus.NOT_TODAY;
-        }
-        else if (LastFameCIds.Contains(from.getId()))
-        {
-            return FameStatus.NOT_THIS_MONTH;
-        }
-        else
-        {
+
+        if (FameLogs.Count == 0)
             return FameStatus.OK;
-        }
+
+        if (TimeSpan.FromMilliseconds(FameLogs[FameLogs.Count - 1].Time - Client.CurrentServerContainer.getCurrentTime()) < TimeSpan.FromDays(1))
+            return FameStatus.NOT_TODAY;
+
+        if (FameLogs.Any(x => x.ToId == from.getId()))
+            return FameStatus.NOT_THIS_MONTH;
+
+        return FameStatus.OK;
     }
 
 
@@ -1403,7 +1398,7 @@ public partial class Player
             pickerProcessor = new PlayerPickupProcessor(this, petIndex);
             _pickerProcessor[petIndex] = pickerProcessor;
         }
-        
+
         if (ob is MapItem mapitem)
         {
             pickerProcessor.Handle(mapitem);
@@ -2782,24 +2777,7 @@ public partial class Player
 
     public void hasGivenFame(IPlayer to)
     {
-        try
-        {
-            LastFameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            LastFameCIds.Add(to.getId());
-
-            using var dbContext = new DBContext();
-            var dbModel = new Famelog()
-            {
-                Characterid = Id,
-                CharacteridTo = to.Id
-            };
-            dbContext.Famelogs.Add(dbModel);
-            dbContext.SaveChanges();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.ToString());
-        }
+        FameLogs.Add(new Core.Models.FameLogObject(to.Id, Client.CurrentServerContainer.getCurrentTime()));
     }
 
 

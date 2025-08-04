@@ -32,7 +32,7 @@ namespace Application.Module.Marriage.Master
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task InitializeAsync(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _localMarriageId = await dbContext.Marriages.MaxAsync(x => (int?)x.Marriageid) ?? 0;
         }

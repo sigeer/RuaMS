@@ -44,6 +44,11 @@ namespace Application.Core.Login.ServerData
             _dbContextFactory = dbContextFactory;
         }
 
+        public override Task InitializeAsync(DBContext dbContext)
+        {
+            return Task.CompletedTask;
+        }
+
         public override List<FredrickStoreModel> Query(Expression<Func<FredrickStoreModel, bool>> expression)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();

@@ -31,7 +31,7 @@ namespace Application.Module.PlayerNPC.Master
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task Initialize(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
             _currentId = await dbContext.Playernpcs.MaxAsync(x => (int?)x.Id) ?? NpcId.PlayerNpc_ObjectId_Base;
 

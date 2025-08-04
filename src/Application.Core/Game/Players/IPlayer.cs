@@ -78,7 +78,9 @@ namespace Application.Core.Game.Players
         public QuickslotBinding? QuickSlotKeyMapped { get; set; }
         public Fitness? Fitness { get; set; }
         public Ola? Ola { get; set; }
+        // 未使用
         public AtomicInteger RewardNxCredit { get; set; }
+        public List<FameLogObject> FameLogs { get; }
 
         public object SaveToDBLock { get; set; }
 
