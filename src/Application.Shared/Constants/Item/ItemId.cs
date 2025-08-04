@@ -348,6 +348,8 @@ public class ItemId
     public const int MAPLE_LIFE_B = 5432000;
     public const int VICIOUS_HAMMER = 5570000;
 
+    public const int REMOTE_CONTROLLER = 5470000;
+
     public const int NX_CARD_100 = 4031865;
     public const int NX_CARD_250 = 4031866;
 

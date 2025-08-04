@@ -2,16 +2,11 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Trades;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
-using Application.Shared.Constants.Item;
 using AutoMapper;
-using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
 using ItemProto;
 using Microsoft.Extensions.Logging;
-using Mysqlx.Crud;
-using Org.BouncyCastle.Utilities.Collections;
-using System.Data.Common;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -134,9 +129,22 @@ namespace Application.Core.Channel.Services
                 }
             }
         }
-        public PlayerHiredMerchantStatus CanHiredMerchant(IPlayer chr)
+        public bool CanHiredMerchant(IPlayer chr)
         {
-            return (PlayerHiredMerchantStatus)_transport.CanHiredMerchant(new ItemProto.CanHiredMerchantRequest { MasterId = chr.Id }).Code;
+            var status = (PlayerHiredMerchantStatus)_transport.CanHiredMerchant(new ItemProto.CanHiredMerchantRequest { MasterId = chr.Id }).Code;
+            if (status == PlayerHiredMerchantStatus.Unavailable_Opening)
+            {
+                chr.dropMessage(1, "You already have a store open.");
+                return false;
+            }
+
+            if (status == PlayerHiredMerchantStatus.Unavailable_NeedRetrieve)
+            {
+                chr.sendPacket(PacketCreator.retrieveFirstMessage());
+                return false;
+            }
+
+            return true;
         }
 
 

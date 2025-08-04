@@ -47,11 +47,13 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 {
     readonly ILogger<PlayerInteractionHandler> _logger;
     readonly AutoBanDataManager _autoBanManager;
+    readonly PlayerShopService _service;
 
-    public PlayerInteractionHandler(ILogger<PlayerInteractionHandler> logger, AutoBanDataManager autoBanManager)
+    public PlayerInteractionHandler(ILogger<PlayerInteractionHandler> logger, AutoBanDataManager autoBanManager, PlayerShopService service)
     {
         _logger = logger;
         _autoBanManager = autoBanManager;
+        _service = service;
     }
 
     private static int establishMiniroomStatus(IPlayer chr, bool isMinigame)
@@ -191,6 +193,12 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     }
                     else if (ItemConstants.isHiredMerchant(itemId))
                     {
+                        if (!_service.CanHiredMerchant(chr))
+                        {
+                            _autoBanManager.Autoban(AutobanFactory.ITEM_VAC, chr, "尝试绕过重复开店的检测");
+                            return;
+                        }
+
                         var merchant = new HiredMerchant(chr, desc, item);
 
                         chr.sendPacket(PacketCreator.getHiredMerchant(chr, merchant, true));
