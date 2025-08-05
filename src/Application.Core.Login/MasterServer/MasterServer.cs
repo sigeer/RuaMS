@@ -230,9 +230,8 @@ namespace Application.Core.Login
             await TimerManager.Stop();
             await Server.getInstance().Stop(false);
 
-            var storageService = ServiceProvider.GetRequiredService<StorageService>();
             _logger.LogInformation("[{ServerName}] 正在保存玩家数据...", ServerName);
-            await storageService.CommitAllImmediately();
+            await ServerManager.CommitAllImmediately();
             _logger.LogInformation("[{ServerName}] 玩家数据已保存", ServerName);
 
             IsRunning = false;
@@ -457,7 +456,7 @@ namespace Application.Core.Login
             TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
             TimerManager.register(new NamedRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
-            TimerManager.register(new CharacterAutosaverTask(ServiceProvider.GetRequiredService<StorageService>()), TimeSpan.FromHours(1), TimeSpan.FromHours(1));
+            
             TimerManager.register(new LoginCoordinatorTask(sessionCoordinator), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(new LoginStorageTask(sessionCoordinator, ServiceProvider.GetRequiredService<LoginBypassCoordinator>()), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
             TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
@@ -465,6 +464,8 @@ namespace Application.Core.Login
             TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
             TimerManager.register(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
             InvitationManager.Register(TimerManager);
+            ServerManager.Register(TimerManager);
+
             TimerManager.register(() =>
             {
                 NewYearCardManager.NotifyNewYearCard();

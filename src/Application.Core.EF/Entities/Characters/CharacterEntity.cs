@@ -169,6 +169,6 @@ public class CharacterEntity
 
     public virtual ICollection<FamelogEntity> Famelogs { get; set; } = new List<FamelogEntity>();
 
-    public virtual FamilyCharacter? FamilyCharacter { get; set; }
+    public virtual FamilyCharacterEntity? FamilyCharacter { get; set; }
 
 }

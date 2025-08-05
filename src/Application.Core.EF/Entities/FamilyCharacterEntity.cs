@@ -1,15 +1,15 @@
 namespace Application.EF.Entities;
 
-public partial class FamilyCharacter
+public partial class FamilyCharacterEntity
 {
-    public FamilyCharacter(int cid, int familyid, int seniorid)
+    public FamilyCharacterEntity(int cid, int familyid, int seniorid)
     {
         Cid = cid;
         Familyid = familyid;
         Seniorid = seniorid;
     }
 
-    protected FamilyCharacter()
+    protected FamilyCharacterEntity()
     {
     }
 

@@ -40,12 +40,5 @@ namespace Application.Module.Duey.Master
 
             _manager.PackageUnfreeze(obj.Character.Id);
         }
-
-        public override async Task SaveChangesAsync(DBContext dbContext)
-        {
-            await base.SaveChangesAsync(dbContext);
-
-             await _manager.Commit(dbContext);
-        }
     }
 }

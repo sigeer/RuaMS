@@ -1,14 +1,13 @@
-using Application.Core.Login.Events;
+using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
 using Application.Utility.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Module.ExpeditionBossLog.Master
 {
-    public class ExpeditionBossLogManager
+    public class ExpeditionBossLogManager : IStorage
     {
         readonly ILogger<ExpeditionBossLogManager> _logger;
         List<PlayerBossLogModel> _dataSource = new();
@@ -20,7 +19,7 @@ namespace Application.Module.ExpeditionBossLog.Master
             _logger = logger;
         }
 
-        public async Task LoadDataAsync(DBContext dbContext)
+        public async Task InitializeAsync(DBContext dbContext)
         {
             var weeklyData = await dbContext.BosslogWeeklies.AsNoTracking()
                 .Select(x => new PlayerBossLogModel { BossName = x.Bosstype, CharacterId = x.CharacterId, Time = x.Attempttime }).ToArrayAsync();
@@ -30,7 +29,7 @@ namespace Application.Module.ExpeditionBossLog.Master
             _dataSource.AddRange(dailyData);
         }
 
-        public async Task CommitDataAsync(DBContext dbContext)
+        public async Task Commit(DBContext dbContext)
         {
             await dbContext.BosslogWeeklies.ExecuteDeleteAsync();
             await dbContext.BosslogDailies.ExecuteDeleteAsync();
@@ -48,9 +47,6 @@ namespace Application.Module.ExpeditionBossLog.Master
             }
             await dbContext.SaveChangesAsync();
         }
-
-
-
         public void ResetBossLogTable()
         {
             /*

@@ -41,7 +41,7 @@ namespace Application.Module.Family.Master
 
             }
 
-            else if (_familyManager.GetFamilyByPlayer(toPlayer.Character.Id) == _familyManager.GetFamilyByPlayer(fromPlayer.Character.Id))
+            else if (_familyManager.GetFamilyCharacter(toPlayer.Character.Id)?.Familyid == _familyManager.GetFamilyCharacter(fromPlayer.Character.Id)?.Familyid)
             {
 
             }

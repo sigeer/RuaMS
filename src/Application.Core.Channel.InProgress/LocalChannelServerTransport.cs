@@ -30,7 +30,6 @@ namespace Application.Core.Channel.InProgress
     {
         readonly LoginService _loginService;
         readonly MasterServer _server;
-        readonly StorageService _storageService;
         readonly ItemService _itemService;
         readonly NoteManager _noteService;
         readonly ShopService _shopManager;
@@ -48,7 +47,6 @@ namespace Application.Core.Channel.InProgress
         public LocalChannelServerTransport(
             MasterServer server,
             LoginService loginService,
-            StorageService storageService,
             ItemService itemService,
             NoteManager noteService,
             ShopService shopManager,
@@ -61,7 +59,6 @@ namespace Application.Core.Channel.InProgress
         {
             _server = server;
             _loginService = loginService;
-            _storageService = storageService;
             _itemService = itemService;
             _noteService = noteService;
             _shopManager = shopManager;
@@ -295,7 +292,7 @@ namespace Application.Core.Channel.InProgress
 
         public void CallSaveDB()
         {
-            _ = _storageService.CommitAllImmediately();
+            _ = _server.ServerManager.CommitAllImmediately();
         }
 
         public Dto.DropAllDto RequestAllReactorDrops()
