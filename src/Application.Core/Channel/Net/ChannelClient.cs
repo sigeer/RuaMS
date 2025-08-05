@@ -513,6 +513,8 @@ namespace Application.Core.Channel.Net
 
         public bool CheckBirthday(int dateInt)
         {
+            return true;
+
             if (DateTime.TryParseExact(dateInt.ToString(), "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d))
                 return CheckBirthday(d);
             return false;

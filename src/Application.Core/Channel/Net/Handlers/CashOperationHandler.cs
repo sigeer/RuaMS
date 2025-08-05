@@ -441,11 +441,12 @@ public class CashOperationHandler : ChannelHandlerBase
                         if (_itemService.RegisterNameChange(c.OnlinedCharacter, newName))
                         { 
                             //success
+                            cs.Buy(CashType.NX_PREPAID, cItem);
+
                             Item item = _itemService.CashItem2Item(cItem);
                             c.sendPacket(PacketCreator.showNameChangeSuccess(item, c.AccountEntity!.Id));
-                            cs.gainCash(CashType.NX_PREPAID, -cItem.getPrice());
-                            //cs.Buy(CashType.NX_PREPAID, cItem);
-                            //cs.addToInventory(item);
+                            // cs.addToInventory(item);
+
                         }
                         else
                         {
