@@ -7,10 +7,12 @@ using Application.EF;
 using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Shared.Team;
+using Application.Utility;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
 using AutoMapper;
 using Dto;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -18,6 +20,7 @@ using MySql.EntityFrameworkCore.Extensions;
 using net.server;
 using Serilog;
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using tools;
 using XmlWzReader;
@@ -498,11 +501,32 @@ namespace Application.Core.Login.Datas
             if (accountInfo.Characterslots - _masterServer.AccountManager.GetAccountPlayerIds(accountId).Count <= 0)
                 return CreateCharResult.CharSlotLimited;
 
-            if (!_masterServer.CheckCharacterName(name))
+            if (!CheckCharacterName(name))
                 return CreateCharResult.NameInvalid;
 
             return CreateCharResult.Success;
         }
+
+        public bool CheckCharacterName(string name)
+        {
+            // 禁用名
+            if (StringConstants.BLOCKED_NAMES.Any(x => x.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                return false;
+
+            var bLength = GlobalVariable.Encoding.GetBytes(name).Length;
+            if (bLength < 3 || bLength > 12)
+                return false;
+
+            if (!Regex.IsMatch(name, "^[a-zA-Z0-9\\u4e00-\\u9fa5]+$"))
+                return false;
+
+            if (_nameDataSource.ContainsKey(name))
+                return false;
+
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            return !dbContext.Characters.Any(x => !_idDataSource.Keys.Contains(x.Id) && x.Name == name);
+        }
+
 
         public int CreatePlayer(int accountId, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender, int type)
         {
@@ -576,6 +600,32 @@ namespace Application.Core.Login.Datas
             var res = new ShowOnlinePlayerResponse();
             res.List.AddRange(list.Select(x => new Dto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
             return res;
+        }
+
+        public Dto.NameChangeResponse ChangeName(Dto.NameChangeRequest request)
+        {
+            if (!_masterServer.CharacterManager.CheckCharacterName(request.NewName))
+            {
+                return new NameChangeResponse() { Code = (int)ChangeNameResponseCode.InvalidName };
+            }
+
+            var chr = FindPlayerById(request.MasterId);
+            if (chr == null)
+            {
+                return new NameChangeResponse() { Code = (int)ChangeNameResponseCode.CharacterNotFound };
+            }
+
+            if (chr.Character.Level < 10)
+            {
+                return new NameChangeResponse() { Code = (int)ChangeNameResponseCode.Level };
+            }
+
+            if (chr != null)
+            {
+                chr.Character.Name = request.NewName;
+            }
+
+            return new NameChangeResponse();
         }
     }
 }

@@ -78,7 +78,8 @@ namespace Application.Core.Login.Mappers
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Character.Id))
                 .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Character.Name))
                 .ForMember(dest => dest.Job, src => src.MapFrom(x => x.Character.JobId))
-                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level));
+                .ForMember(dest => dest.Level, src => src.MapFrom(x => x.Character.Level))
+                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Character.Map));
 
             CreateMap<CharacterLiveObject, Dto.GuildMemberDto>()
                 .ForMember(dest => dest.Channel, src => src.MapFrom(x => x.Channel))

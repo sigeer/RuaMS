@@ -148,7 +148,6 @@ namespace Application.Core.Game.Players
         void cancelEffectFromBuffStat(BuffStat stat);
         void cancelExpirationTask();
         void cancelMagicDoor();
-        bool cancelPendingNameChange();
         void cancelQuestExpirationTask();
         void cancelSkillCooldownTask();
         bool canDoor();
@@ -201,7 +200,6 @@ namespace Application.Core.Game.Players
         void dispelDebuffs();
         void dispelSkill(int skillid);
         void doHurtHp();
-        void doPendingNameChange();
         void dropMessage(int type, string message);
         void dropMessage(string message);
         void Dispose();
@@ -534,7 +532,6 @@ namespace Application.Core.Game.Players
         void receivePartyMemberHP();
         bool registerChairBuff();
         void registerEffect(StatEffect effect, long starttime, long expirationtime, bool isSilent);
-        bool registerNameChange(string newName);
         void releaseControlledMonsters();
         void reloadQuestExpirations();
         void removeAllCooldownsExcept(int id, bool packet);

@@ -73,28 +73,6 @@ namespace Application.Core.Game.TheWorld
             AddOrUpdate(new DataLevel(level, player));
             return player;
         }
-        public static List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList, int level = 0)
-        {
-            List<IPlayer> list = new();
-
-            List<string> notFound = new();
-            foreach (var name in nameList)
-            {
-                var m = NamedCacheData.GetValueOrDefault(name);
-                if (m != null && m.Level >= level)
-                    list.Add(m.Data);
-                else
-                    notFound.Add(name);
-            }
-
-            var notFoundList = CharacterManager.GetPlayersByName(notFound);
-            foreach (var item in notFoundList)
-            {
-                AddOrUpdate(new DataLevel(level, item));
-                list.Add(item);
-            }
-            return list;
-        }
 
         public static void DeleteCharacter(int id)
         {

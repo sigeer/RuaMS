@@ -166,7 +166,7 @@ namespace Application.Core.Login.Services
             using var dbContext = _dbContextFactory.CreateDbContext();
             var dbList = dbContext.Monstercarddata.AsNoTracking().ToList();
             var res = new QueryMonsterCardDataResponse();
-            res.List.AddRange(dbList.Select(x => new MonsterCardData { CardId = x.Cardid, MobId = x.Mobid} ));
+            res.List.AddRange(dbList.Select(x => new MonsterCardData { CardId = x.Cardid, MobId = x.Mobid }));
             return res;
         }
     }

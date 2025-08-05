@@ -190,5 +190,6 @@ namespace Application.Core.ServerTransports
         void DisconnectAll(DisconnectAllRequest disconnectAllRequest);
         GetAllClientInfo GetOnliendClientInfo();
         ItemProto.GacheponDataDto GetGachaponData();
+        NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest);
     }
 }

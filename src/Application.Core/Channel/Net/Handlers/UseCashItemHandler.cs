@@ -487,11 +487,11 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 540)
         {
-            p.readByte();
-            p.readInt();
+            var unknownByte540 = p.readByte();
+            var unknownInt540 = p.readInt();
             if (itemId == ItemId.NAME_CHANGE)
             {
-                c.sendPacket(PacketCreator.showNameChangeCancel(player.cancelPendingNameChange()));
+                // c.sendPacket(PacketCreator.showNameChangeCancel(player.cancelPendingNameChange()));
             }
             else if (itemId == ItemId.WORLD_TRANSFER)
             {

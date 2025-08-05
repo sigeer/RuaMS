@@ -44,6 +44,7 @@ public class TransferNameHandler : ChannelHandlerBase
     {
         p.readInt(); //cid
         int birthday = p.readInt();
+        var unknown = p.available();
         if (!c.CheckBirthday(birthday))
         {
             c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
@@ -67,30 +68,30 @@ public class TransferNameHandler : ChannelHandlerBase
         //    return;
         //}
         //sql queries
-        try
-        { 
-            //double check, just in case
-            using var dbContext = new DBContext();
-            var dataList = dbContext.Namechanges.Where(x => x.Characterid == chr.getId()).Select(x => new { x.CompletionTime }).ToList();
-            foreach (var rs in dataList)
-            {
-                if (rs.CompletionTime == null)
-                { //has pending name request
-                    c.sendPacket(PacketCreator.sendNameTransferRules(1));
-                    return;
-                }
-                else if (rs.CompletionTime.Value.AddMilliseconds(YamlConfig.config.server.NAME_CHANGE_COOLDOWN) > DateTimeOffset.UtcNow)
-                {
-                    c.sendPacket(PacketCreator.sendNameTransferRules(3));
-                    return;
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.ToString());
-            return;
-        }
+        //try
+        //{ 
+        //    //double check, just in case
+        //    using var dbContext = new DBContext();
+        //    var dataList = dbContext.Namechanges.Where(x => x.Characterid == chr.getId()).Select(x => new { x.CompletionTime }).ToList();
+        //    foreach (var rs in dataList)
+        //    {
+        //        if (rs.CompletionTime == null)
+        //        { //has pending name request
+        //            c.sendPacket(PacketCreator.sendNameTransferRules(1));
+        //            return;
+        //        }
+        //        else if (rs.CompletionTime.Value.AddMilliseconds(YamlConfig.config.server.NAME_CHANGE_COOLDOWN) > DateTimeOffset.UtcNow)
+        //        {
+        //            c.sendPacket(PacketCreator.sendNameTransferRules(3));
+        //            return;
+        //        }
+        //    }
+        //}
+        //catch (Exception e)
+        //{
+        //    _logger.LogError(e.ToString());
+        //    return;
+        //}
         c.sendPacket(PacketCreator.sendNameTransferRules(0));
     }
 }

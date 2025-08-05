@@ -75,9 +75,5 @@ namespace Application.Core.Game.TheWorld
         {
             return AllPlayerStorage.GetPlayersByIds(idList, level).Where(x => x.World == _world).ToList();
         }
-        public List<IPlayer> GetPlayersByNames(IEnumerable<string> nameList, int level = 0)
-        {
-            return AllPlayerStorage.GetPlayersByNames(nameList, level).Where(x => x.World == _world).ToList();
-        }
     }
 }

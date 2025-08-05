@@ -125,7 +125,6 @@ namespace Application.Core.Login
 
         static IServiceCollection AddServices(this IServiceCollection services)
         {
-            services.AddSingleton<CharacterService>();
             services.AddSingleton<LoginService>();
             services.AddSingleton<ItemService>();
 
